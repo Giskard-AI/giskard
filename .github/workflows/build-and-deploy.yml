@@ -1,0 +1,55 @@
+name: Deploy to production
+
+# Controls when the action will run. Workflow runs when manually triggered using the UI
+# or API.
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+concurrency: staging_environment
+
+jobs:
+  build:
+    runs-on: self-hosted
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+      
+    - name: Login to container registry
+      env:
+        AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
+        AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
+      run: |
+        aws ecr get-login-password --region $AWS_DEFAULT_REGION \
+        | docker login --username AWS \
+        --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com
+
+    - name: Test
+      run: sh ./scripts/test.sh
+
+#    - name: Sonar
+#      uses: sonarsource/sonarqube-scan-action@master
+#      env:
+#        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+#        SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+#    # If you wish to fail your job when the Quality Gate is red, uncomment the
+#    # following lines. This would typically be used to fail a deployment.
+#     - uses: sonarsource/sonarqube-quality-gate-action@master
+#       timeout-minutes: 5
+
+    - name: Build and push
+      run: TAG=prod FRONTEND_ENV=production sh ./scripts/build-push.sh
+
+    - name: Deploy
+      run: |
+        DOMAIN=app.giskard.ai \
+        TRAEFIK_TAG=app.giskard.ai \
+        STACK_NAME=app-giskard-ai \
+        TAG=prod \
+        sh ./scripts/deploy.sh
+        
+    - name: Remove unused Docker stuff
+      run: docker system prune -f

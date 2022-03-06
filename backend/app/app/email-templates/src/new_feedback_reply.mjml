@@ -1,0 +1,14 @@
+<mjml>
+  <mj-body background-color="#fff">
+    <mj-section>
+      <mj-column>
+        <mj-divider border-color="#555"></mj-divider>
+        <mj-text font-size="20px" color="#555" font-family="helvetica">Hello from {{platform}}!</mj-text>
+        <mj-text font-size="16px" color="#555"><b>{{commenter}}</b> has replied to your comment on project <b>{{project}}</b>:</mj-text>
+        <mj-text font-size="16px" color="#555"><quote><i>"{{message}}"</i></quote></mj-text>
+        <mj-button padding="10px 0px" background-color="rgb(0, 151, 167)" href="{{ feedback_link }}">Open</mj-button>
+        <mj-divider border-color="#555" border-width="2px" />
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

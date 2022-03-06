@@ -1,0 +1,11 @@
+.mypy_cache
+.coverage
+htmlcov
+*.pkl
+*.pkl.zst
+*.csv
+*.txt
+
+/files-bucket
+
+.vscode/

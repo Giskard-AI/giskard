@@ -1,0 +1,5 @@
+__pycache__
+app.egg-info
+
+# Mac stuff
+.DS_Store

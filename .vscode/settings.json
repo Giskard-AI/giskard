@@ -1,0 +1,11 @@
+{
+    "python.linting.flake8Enabled": true,
+    "python.linting.pylintEnabled": false,
+    "python.linting.enabled": true,
+    "jupyter.jupyterServerType": "local",
+    "python.analysis.extraPaths": [
+        "backend/app"
+    ],
+    "python.pythonPath": "backend/app/.venv/bin/python",
+    "files.eol": "\n"
+}

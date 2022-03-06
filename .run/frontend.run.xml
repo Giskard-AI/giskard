@@ -1,0 +1,14 @@
+<component name="ProjectRunConfigurationManager">
+    <configuration default="false" name="frontend" type="js.build_tools.npm">
+        <package-json value="$PROJECT_DIR$/frontend/package.json"/>
+        <command value="run"/>
+        <scripts>
+            <script value="serve"/>
+        </scripts>
+        <node-interpreter value="$USER_HOME$/.nvm/versions/node/v16.13.2/bin/node"/>
+        <envs>
+            <env name="VUE_APP_DOMAIN_DEV" value="localhost:8000"/>
+        </envs>
+        <method v="2"/>
+    </configuration>
+</component>
