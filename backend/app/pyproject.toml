@@ -63,7 +63,7 @@ sqlalchemy-stubs = "^0.4"
 pytest-cov = "^3.0.0"
 pydocstyle = "^6.1.1"
 safety = "^1.10.3"
-bandit = "^1.7.1"
+bandit = "^1.7.4"
 darglint = "^1.8.1"
 
 [tool.black]
