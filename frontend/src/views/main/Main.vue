@@ -31,8 +31,8 @@
           <v-divider></v-divider>
           <v-list-item v-show="hasAdminAccess" to="/main/admin/">
             <v-list-item-content>
-              <v-icon>mdi-account-group</v-icon>
-              <div class="caption">Admin</div>
+              <v-icon>mdi-cog</v-icon>
+              <div class="caption">Settings</div>
             </v-list-item-content>
           </v-list-item>
           <v-divider></v-divider>
