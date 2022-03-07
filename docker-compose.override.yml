@@ -13,11 +13,13 @@ services:
     environment:
       - JUPYTER=jupyter lab --ip=0.0.0.0 --allow-root --NotebookApp.custom_display_url=http://127.0.0.1:8888
       - SERVER_HOST=http://${DOMAIN?Variable not set}
+
     build:
       context: ./backend
       dockerfile: backend.dockerfile
       args:
-        INSTALL_DEV: '${INSTALL_DEV-true}'
+        INSTALL_DEV: ${INSTALL_DEV-false}
+
     command: /start-reload.sh
     # command: bash -c "while true; do sleep 1; done"  # Infinite loop to keep container live doing nothing
     # command: ["uvicorn", "main:app", "--host", "0.0.0.0", "--debug", "--port", "80", "--reload-dir", "/app"]
@@ -26,6 +28,11 @@ services:
     ports:
       - "19000:80"
     build:
+      context: ./frontend
       args:
-        FRONTEND_ENV: dev
+        FRONTEND_ENV: ${FRONTEND_ENV-production}
 
+  jupyter:
+    build:
+      context: ./backend/demo-notebook
+      dockerfile: demo-notebook.dockerfile
