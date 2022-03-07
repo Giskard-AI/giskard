@@ -1,5 +1,5 @@
 # Stage 0, "build-stage", based on Node.js, to build and compile the frontend
-FROM node:lts as build-stage
+FROM node:lts-bullseye as build-stage
 
 WORKDIR /app
 
