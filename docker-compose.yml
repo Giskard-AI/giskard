@@ -45,6 +45,7 @@ services:
         FRONTEND_ENV: ${FRONTEND_ENV-production}
 
   jupyter:
+    image: '${DOCKER_REGISTRY}/giskard-jupyter:${TAG-latest}'
     build:
       context: ./backend/demo-notebook
       dockerfile: demo-notebook.dockerfile
