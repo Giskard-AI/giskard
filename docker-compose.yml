@@ -26,6 +26,10 @@ services:
 
   frontend:
     image: '${DOCKER_REGISTRY}/giskard-frontend:${TAG-latest}'
+    ports:
+      - "19000:80"
+    expose:
+      - 19000
     depends_on:
       - backend
     env_file:
