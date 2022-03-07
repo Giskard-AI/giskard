@@ -4,3 +4,24 @@ services:
   db:
     ports:
       - "5432:5432"
+
+  jupyter:
+    build:
+      context: ./backend/demo-notebook
+      dockerfile: demo-notebook.dockerfile
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        FRONTEND_ENV: ${FRONTEND_ENV-production}
+
+  backend:
+    volumes:
+      - ./backend/app:/app
+    command: /start-reload.sh
+    build:
+      context: ./backend
+      dockerfile: backend.dockerfile
+      args:
+        INSTALL_DEV: ${INSTALL_DEV-false}
