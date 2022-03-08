@@ -3,7 +3,7 @@
 # Exit in case of error
 set -e
 
-TAG=${TAG?Variable not set} \
+TAG=${TAG-latest} \
 FRONTEND_ENV=${FRONTEND_ENV-production} \
   sh ./scripts/build.sh
 
