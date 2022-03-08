@@ -11,6 +11,7 @@ services:
       dockerfile: demo-notebook.dockerfile
 
   frontend:
+    platform: linux/amd64
     build:
       context: ./frontend
       args:
