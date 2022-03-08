@@ -9,10 +9,6 @@ services:
       - .env
     environment:
       - PGDATA=/var/lib/postgresql/data/pgdata
-    deploy:
-      placement:
-        constraints:
-          - node.labels.${STACK_NAME?Variable not set}.app-db-data == true
 
   backend:
     image: '${DOCKER_REGISTRY}/giskard-backend:${TAG-latest}'
@@ -27,27 +23,20 @@ services:
       - SERVER_HOST=https://${DOMAIN?Variable not set}
       # Allow explicit env var override for tests
       - SMTP_HOST=${SMTP_HOST}
-    build:
-      context: ./backend
-      dockerfile: backend.dockerfile
-      args:
-        INSTALL_DEV: '${INSTALL_DEV-false}'
 
   frontend:
     image: '${DOCKER_REGISTRY}/giskard-frontend:${TAG-latest}'
+    ports:
+      - "19000:80"
+    expose:
+      - 19000
     depends_on:
       - backend
     env_file:
       - .env
-    build:
-      context: ./frontend
-      args:
-        FRONTEND_ENV: ${FRONTEND_ENV-production}
 
   jupyter:
-    build:
-      context: ./backend/demo-notebook
-      dockerfile: demo-notebook.dockerfile
+    image: '${DOCKER_REGISTRY}/giskard-jupyter:${TAG-latest}'
     entrypoint:
       - /usr/local/bin/start.sh
       - jupyter
