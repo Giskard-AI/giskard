@@ -8,7 +8,7 @@ SMTP_HOST="" \
 TRAEFIK_PUBLIC_NETWORK_IS_EXTERNAL=false \
 INSTALL_DEV=true \
 GISKARD_PLAN=enterprise \
-docker-compose -f docker-compose.yml config \
+docker-compose -f docker-compose.yml -f docker-compose.dev.yml config \
 | sed 's/app-db-data/app-db-test-data/g;s/pgadmin-data/pgadmin-test-data/g' > docker-stack.yml
 
 docker-compose -f docker-stack.yml build
