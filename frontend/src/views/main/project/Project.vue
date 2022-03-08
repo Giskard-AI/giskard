@@ -103,7 +103,7 @@
 				<v-tab :to="{name: 'project-datasets'}"><v-icon left>stacked_bar_chart</v-icon>Datasets</v-tab>
 				<v-tab :to="{name: 'project-models'}"><v-icon left>settings_suggest</v-icon>Models</v-tab>
 				<v-tab :to="{name: 'project-inspector', query: tempInspectorQuery}" v-show="showInspector"><v-icon left>model_training</v-icon>Inspector</v-tab>
-				<v-tab :to="{name: 'project-feedbacks'}"><v-icon left small>mdi-comment-multiple-outline</v-icon>Feedbacks</v-tab>
+				<v-tab :to="{name: 'project-feedbacks'}"><v-icon left small>mdi-comment-multiple-outline</v-icon>Feedback</v-tab>
 			</v-tabs>
       <keep-alive>
         <router-view :isProjectOwnerOrAdmin="isProjectOwnerOrAdmin"></router-view>
