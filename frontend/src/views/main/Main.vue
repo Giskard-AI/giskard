@@ -22,7 +22,7 @@
           <v-list-item to="/main/projects">
             <v-list-item-content>
               <v-icon>web</v-icon>
-              <div class="caption">MODELS TEST AHAH</div>
+              <div class="caption">MODELS TEST </div>
             </v-list-item-content>
           </v-list-item>
         </v-list>
