@@ -36,7 +36,9 @@ def send_email(
     template_environment: Dict[str, Any] = {},
     from_email: str = settings.WELCOME_FROM_EMAIL,
 ) -> None:
-    assert settings.EMAILS_ENABLED, "no provided configuration for email variables"
+    if not settings.EMAILS_ENABLED:
+        logging.warning("Trying to send and email, while EMAILS_ENABLED is not set")
+        return
     html = Template(html_template).render(**template_environment)
     text = BeautifulSoup(html, "html.parser").get_text().strip()
     try:
