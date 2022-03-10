@@ -3,7 +3,8 @@
 </p>
 <h3 align="center">Quality Assurance for AI</h3>
 <br />
-Giskard is an open-source quality assurance platform for AI models.
+
+#### Giskard is an open-source quality assurance platform for AI models.
 
 - **Inspect** ML models visually from your Python notebook 📗
 - **Review** ML models collaboratively to get feedback on potential errors 🧐
