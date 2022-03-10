@@ -38,7 +38,7 @@ http://localhost:19000
 <h3 align="center">Quick Start</h3>
 
 You can upload models to Giskard from Jupyter notebooks or any other python environment. 
-Models are uploaded using [Giskard client library](https://docs.giskard.ai/start/guides/upload-your-model#1.-load-ai-inspector)
+it can be done using [Giskard client library](https://docs.giskard.ai/start/guides/upload-your-model#1.-load-ai-inspector)
 
 There's a demo python notebook available at http://localhost:18888 that can be used to upload a first model. 
 
