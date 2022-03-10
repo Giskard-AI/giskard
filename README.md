@@ -1,20 +1,23 @@
 <p align="center">
   <img width="300" alt="giskardlogo" src="frontend/src/assets/logo_full.svg">
 </p>
-
 <h3 align="center">Quality Assurance for AI</h3>
-<br />
-<p align="center">
-    <img src="readme/inspect.png" alt="Administration panel" />
-</p>
 
-<br/>
+<br />
 
 Giskard is an open-source quality assurance platform for AI models.
 
 - **Inspect** python models using visual interface
 - Allow people leave **feedback** related to the model behaviour
 - Create automatic **tests** to prevent model related bugs to appear in production
+<br />
+
+<p align="center">
+    <img src="readme/inspect.png" alt="Administration panel" />
+</p>
+
+<br/>
+
 
 <h3 align="center">Installation</h3>
 
