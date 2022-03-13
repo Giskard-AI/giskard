@@ -1,0 +1,63 @@
+{
+  "name": "giskard",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Description for giskard",
+  "license": "UNLICENSED",
+  "scripts": {
+    "app:start": "./gradlew",
+    "backend:build-cache": "npm run backend:info && npm run backend:nohttp:test && npm run ci:e2e:package",
+    "backend:doc:test": "./gradlew javadoc ",
+    "backend:info": "./gradlew -v",
+    "backend:nohttp:test": "./gradlew checkstyleNohttp ",
+    "backend:start": "./gradlew ",
+    "backend:unit:test": "./gradlew test integrationTest  -Dlogging.level.ROOT=OFF -Dlogging.level.org.zalando=OFF -Dlogging.level.tech.jhipster=OFF -Dlogging.level.ai.giskard=OFF -Dlogging.level.org.springframework=OFF -Dlogging.level.org.springframework.web=OFF -Dlogging.level.org.springframework.security=OFF",
+    "ci:backend:test": "npm run backend:info && npm run backend:doc:test && npm run backend:nohttp:test && npm run backend:unit:test -- -P$npm_package_config_default_environment",
+    "ci:e2e:package": "npm run java:$npm_package_config_packaging:$npm_package_config_default_environment -- -Pe2e -Denforcer.skip=true",
+    "postci:e2e:package": "cp build/libs/*.$npm_package_config_packaging e2e.$npm_package_config_packaging",
+    "ci:e2e:prepare": "npm run ci:e2e:prepare:docker",
+    "ci:e2e:prepare:docker": "npm run docker:db:up && npm run docker:others:up && docker ps -a",
+    "preci:e2e:server:start": "npm run docker:db:await --if-present && npm run docker:others:await --if-present",
+    "ci:e2e:server:start": "java -jar e2e.$npm_package_config_packaging --spring.profiles.active=$npm_package_config_default_environment -Dlogging.level.ROOT=OFF -Dlogging.level.org.zalando=OFF -Dlogging.level.tech.jhipster=OFF -Dlogging.level.ai.giskard=OFF -Dlogging.level.org.springframework=OFF -Dlogging.level.org.springframework.web=OFF -Dlogging.level.org.springframework.security=OFF --logging.level.org.springframework.web=ERROR",
+    "ci:e2e:teardown": "npm run ci:e2e:teardown:docker",
+    "ci:e2e:teardown:docker": "npm run docker:db:down --if-present && npm run docker:others:down && docker ps -a",
+    "docker:app:up": "docker-compose -f src/main/docker/app.yml up -d",
+    "docker:db:down": "docker-compose -f src/main/docker/postgresql.yml down -v --remove-orphans",
+    "docker:db:up": "docker-compose -f src/main/docker/postgresql.yml up -d",
+    "docker:others:await": "",
+    "docker:others:down": "",
+    "predocker:others:up": "",
+    "docker:others:up": "",
+    "java:docker": "./gradlew bootJar -Pprod jibDockerBuild",
+    "java:docker:dev": "npm run java:docker -- -Pdev,webapp",
+    "java:docker:prod": "npm run java:docker -- -Pprod",
+    "java:jar": "./gradlew bootJar -x test -x integrationTest",
+    "java:jar:dev": "npm run java:jar -- -Pdev,webapp",
+    "java:jar:prod": "npm run java:jar -- -Pprod",
+    "java:war": "./gradlew bootWar -Pwar -x test -x integrationTest",
+    "java:war:dev": "npm run java:war -- -Pdev,webapp",
+    "java:war:prod": "npm run java:war -- -Pprod",
+    "prepare": "husky install",
+    "prettier:check": "prettier --check \"{,src/**/}*.{md,json,yml,html,java}\"",
+    "prettier:format": "prettier --write \"{,src/**/}*.{md,json,yml,html,java}\""
+  },
+  "config": {
+    "backend_port": "8080",
+    "default_environment": "prod",
+    "packaging": "jar"
+  },
+  "devDependencies": {
+    "generator-jhipster": "7.5.0",
+    "husky": "7.0.4",
+    "lint-staged": "12.1.4",
+    "prettier": "2.5.1",
+    "prettier-plugin-java": "1.6.0",
+    "prettier-plugin-packagejson": "2.2.15"
+  },
+  "engines": {
+    "node": ">=16.13.1"
+  },
+  "cacheDirectories": [
+    "node_modules"
+  ]
+}

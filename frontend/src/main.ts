@@ -10,6 +10,7 @@ import store from '@/store';
 import './registerServiceWorker';
 import 'vuetify/dist/vuetify.min.css';
 import 'vuetify-dialog/dist/vuetify-dialog.css'
+import './filters'
 
 Vue.config.productionTip = false;
 

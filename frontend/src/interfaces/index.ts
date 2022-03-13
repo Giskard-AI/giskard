@@ -12,7 +12,7 @@ export interface IAppSettings {
 export interface IUserProfile {
     email: string;
     is_active: boolean;
-    role: IRole;
+    roles: string[];
     display_name: string;
     user_id: string;
     id: number;
@@ -24,14 +24,14 @@ export interface IUserProfileUpdate {
     display_name?: string;
     password?: string;
     is_active?: boolean;
-    role_id?: number;
+    roles?: [string];
 }
 
 export interface IUserProfileCreate {
     email: string;
     user_id: string;
     password: string;
-    role_id?: number;
+    roles?: [string];
     display_name?: string;
 }
 
