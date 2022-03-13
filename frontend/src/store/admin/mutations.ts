@@ -12,7 +12,7 @@ export const mutations = {
         users.push(payload);
         state.users = users;
     },
-    setRoles(state: AdminState, payload: IRole[]) {
+    setRoles(state: AdminState, payload: string[]) {
         state.roles = payload;
     },
 };

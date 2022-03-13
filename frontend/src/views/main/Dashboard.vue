@@ -59,7 +59,7 @@ export default class Dashboard extends Vue {
   }
 
   get isCreator() {
-    return this.userProfile?.role.id == Role.AICREATOR; 
+    return this.userProfile?.roles.includes(Role.AICREATOR.id);
   }
 
   get projects() {

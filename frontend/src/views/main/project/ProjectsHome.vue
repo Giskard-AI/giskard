@@ -121,7 +121,7 @@ export default class ProjectsHome extends Vue {
   }
 
   public get isCreator() {
-    return this.userProfile?.role.id == Role.AICREATOR; 
+    return this.userProfile?.roles.includes(Role.AICREATOR.id);
   }
 
   get projects() {

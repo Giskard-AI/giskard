@@ -1,0 +1,184 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext" xmlns:pro="http://www.liquibase.org/xml/ns/pro" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-4.1.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.1.xsd">
+    <changeSet author="andreyavtomonov (generated)" id="1647125162000-1">
+        <createSequence incrementBy="1" sequenceName="hibernate_sequence" startValue="1"/>
+    </changeSet>
+    <changeSet author="andreyavtomonov (generated)" id="1647125162000-2">
+        <createSequence incrementBy="50" sequenceName="sequence_generator" startValue="1"/>
+    </changeSet>
+    <changeSet author="andreyavtomonov (generated)" id="1647125162000-3">
+        <createTable tableName="datasets">
+            <column autoIncrement="true" name="id" type="BIGINT">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="datasetsPK"/>
+            </column>
+            <column name="created_on" type="TIMESTAMP WITHOUT TIME ZONE"/>
+            <column name="file_name" type="VARCHAR(255)"/>
+            <column name="location" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="owner_id" type="BIGINT"/>
+            <column name="project_id" type="BIGINT"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="andreyavtomonov (generated)" id="1647125162000-4">
+        <createTable tableName="feedback">
+            <column autoIncrement="true" name="id" type="BIGINT">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="feedbackPK"/>
+            </column>
+            <column name="created_on" type="TIMESTAMP WITHOUT TIME ZONE"/>
+            <column name="feature_name" type="VARCHAR(255)"/>
+            <column name="feature_value" type="VARCHAR(255)"/>
+            <column name="feedback_choice" type="VARCHAR(255)"/>
+            <column name="feedback_message" type="VARCHAR(255)"/>
+            <column name="feedback_type" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="original_data" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="target_feature" type="VARCHAR(255)"/>
+            <column name="user_data" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="dataset_id" type="BIGINT"/>
+            <column name="model_id" type="BIGINT"/>
+            <column name="project_id" type="BIGINT"/>
+            <column name="user_id" type="BIGINT"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="andreyavtomonov (generated)" id="1647125162000-5">
+        <createTable tableName="feedback_reply">
+            <column autoIncrement="true" name="id" type="BIGINT">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="feedback_replyPK"/>
+            </column>
+            <column name="content" type="VARCHAR(255)"/>
+            <column name="created_on" type="TIMESTAMP WITHOUT TIME ZONE"/>
+            <column name="reply_to_reply" type="INTEGER">
+                <constraints nullable="false"/>
+            </column>
+            <column name="feedback_id" type="BIGINT"/>
+            <column name="user_id" type="BIGINT"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="andreyavtomonov (generated)" id="1647125162000-6">
+        <createTable tableName="gsk_role">
+            <column name="name" type="VARCHAR(50)">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="gsk_rolePK"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="andreyavtomonov (generated)" id="1647125162000-7">
+        <createTable tableName="jhi_user">
+            <column autoIncrement="true" name="id" type="BIGINT">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="jhi_userPK"/>
+            </column>
+            <column name="created_by" type="VARCHAR(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_date" type="TIMESTAMP WITHOUT TIME ZONE"/>
+            <column name="last_modified_by" type="VARCHAR(50)"/>
+            <column name="last_modified_date" type="TIMESTAMP WITHOUT TIME ZONE"/>
+            <column name="activated" type="BOOLEAN">
+                <constraints nullable="false"/>
+            </column>
+            <column name="activation_key" type="VARCHAR(20)"/>
+            <column name="display_name" type="VARCHAR(150)"/>
+            <column name="email" type="VARCHAR(254)"/>
+            <column name="first_name" type="VARCHAR(50)"/>
+            <column name="image_url" type="VARCHAR(256)"/>
+            <column name="lang_key" type="VARCHAR(10)"/>
+            <column name="last_name" type="VARCHAR(50)"/>
+            <column name="login" type="VARCHAR(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="password_hash" type="VARCHAR(60)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="reset_date" type="TIMESTAMP WITHOUT TIME ZONE"/>
+            <column name="reset_key" type="VARCHAR(20)"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="andreyavtomonov (generated)" id="1647125162000-8">
+        <createTable tableName="jhi_user_role">
+            <column name="user_id" type="BIGINT">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="role_name" type="VARCHAR(50)">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="andreyavtomonov (generated)" id="1647125162000-9">
+        <createTable tableName="project_model">
+            <column autoIncrement="true" name="id" type="BIGINT">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="project_modelPK"/>
+            </column>
+            <column name="created_on" type="TIMESTAMP WITHOUT TIME ZONE"/>
+            <column name="file_name" type="VARCHAR(255)"/>
+            <column name="location" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="python_version" type="VARCHAR(255)"/>
+            <column name="requirements_file_location" type="VARCHAR(255)"/>
+            <column name="owner_id" type="BIGINT"/>
+            <column name="project_id" type="BIGINT"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="andreyavtomonov (generated)" id="1647125162000-10">
+        <createTable tableName="projects">
+            <column autoIncrement="true" name="id" type="BIGINT">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="projectsPK"/>
+            </column>
+            <column name="description" type="VARCHAR(255)"/>
+            <column name="key" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="local_date_time" type="TIMESTAMP WITHOUT TIME ZONE"/>
+            <column name="name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="andreyavtomonov (generated)" id="1647125162000-11">
+        <addUniqueConstraint columnNames="email" constraintName="UC_JHI_USEREMAIL_COL" tableName="jhi_user"/>
+    </changeSet>
+    <changeSet author="andreyavtomonov (generated)" id="1647125162000-12">
+        <addUniqueConstraint columnNames="login" constraintName="UC_JHI_USERLOGIN_COL" tableName="jhi_user"/>
+    </changeSet>
+    <changeSet author="andreyavtomonov (generated)" id="1647125162000-13">
+        <addForeignKeyConstraint baseColumnNames="project_id" baseTableName="datasets" constraintName="FK25dg6rrolv9vwid5yvnsspgo6" deferrable="false" initiallyDeferred="false" referencedColumnNames="id" referencedTableName="projects" validate="true"/>
+    </changeSet>
+    <changeSet author="andreyavtomonov (generated)" id="1647125162000-14">
+        <addForeignKeyConstraint baseColumnNames="owner_id" baseTableName="datasets" constraintName="FK25vokxyts72g0gnpmg4ukx99p" deferrable="false" initiallyDeferred="false" referencedColumnNames="id" referencedTableName="jhi_user" validate="true"/>
+    </changeSet>
+    <changeSet author="andreyavtomonov (generated)" id="1647125162000-15">
+        <addForeignKeyConstraint baseColumnNames="user_id" baseTableName="feedback_reply" constraintName="FK4ggm3gui1nmtfdmi2qy05uk1m" deferrable="false" initiallyDeferred="false" referencedColumnNames="id" referencedTableName="jhi_user" validate="true"/>
+    </changeSet>
+    <changeSet author="andreyavtomonov (generated)" id="1647125162000-16">
+        <addForeignKeyConstraint baseColumnNames="user_id" baseTableName="jhi_user_role" constraintName="FK4v0uhs28bliqvrgcdk2j1peo7" deferrable="false" initiallyDeferred="false" referencedColumnNames="id" referencedTableName="jhi_user" validate="true"/>
+    </changeSet>
+    <changeSet author="andreyavtomonov (generated)" id="1647125162000-17">
+        <addForeignKeyConstraint baseColumnNames="role_name" baseTableName="jhi_user_role" constraintName="FK8nr398ty8dvs918h9p5sfdeia" deferrable="false" initiallyDeferred="false" referencedColumnNames="name" referencedTableName="gsk_role" validate="true"/>
+    </changeSet>
+    <changeSet author="andreyavtomonov (generated)" id="1647125162000-18">
+        <addForeignKeyConstraint baseColumnNames="feedback_id" baseTableName="feedback_reply" constraintName="FKbpnhh37vewd38yycdhyde7j66" deferrable="false" initiallyDeferred="false" referencedColumnNames="id" referencedTableName="feedback" validate="true"/>
+    </changeSet>
+    <changeSet author="andreyavtomonov (generated)" id="1647125162000-19">
+        <addForeignKeyConstraint baseColumnNames="user_id" baseTableName="feedback" constraintName="FKhg1dnj0occ834melx5ijs1bjs" deferrable="false" initiallyDeferred="false" referencedColumnNames="id" referencedTableName="jhi_user" validate="true"/>
+    </changeSet>
+    <changeSet author="andreyavtomonov (generated)" id="1647125162000-20">
+        <addForeignKeyConstraint baseColumnNames="project_id" baseTableName="project_model" constraintName="FKkttg3gjgvfpftokeuplebj6f3" deferrable="false" initiallyDeferred="false" referencedColumnNames="id" referencedTableName="projects" validate="true"/>
+    </changeSet>
+    <changeSet author="andreyavtomonov (generated)" id="1647125162000-21">
+        <addForeignKeyConstraint baseColumnNames="project_id" baseTableName="feedback" constraintName="FKnaghy89pdwcocukx1xxh8eg2l" deferrable="false" initiallyDeferred="false" referencedColumnNames="id" referencedTableName="projects" validate="true"/>
+    </changeSet>
+    <changeSet author="andreyavtomonov (generated)" id="1647125162000-22">
+        <addForeignKeyConstraint baseColumnNames="model_id" baseTableName="feedback" constraintName="FKnwyanrfj9iq6eqsliccyygtcu" deferrable="false" initiallyDeferred="false" referencedColumnNames="id" referencedTableName="project_model" validate="true"/>
+    </changeSet>
+    <changeSet author="andreyavtomonov (generated)" id="1647125162000-23">
+        <addForeignKeyConstraint baseColumnNames="dataset_id" baseTableName="feedback" constraintName="FKqm7iwynatugv6blknvic1sbrn" deferrable="false" initiallyDeferred="false" referencedColumnNames="id" referencedTableName="datasets" validate="true"/>
+    </changeSet>
+    <changeSet author="andreyavtomonov (generated)" id="1647125162000-24">
+        <addForeignKeyConstraint baseColumnNames="owner_id" baseTableName="project_model" constraintName="FKtrmg4qjyl70aeibev4lu9gi7h" deferrable="false" initiallyDeferred="false" referencedColumnNames="id" referencedTableName="jhi_user" validate="true"/>
+    </changeSet>
+</databaseChangeLog>

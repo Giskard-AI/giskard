@@ -1,6 +1,6 @@
 import { api } from '@/api';
 import { ActionContext } from 'vuex';
-import { IUserProfileCreate, IUserProfileUpdate } from '@/interfaces';
+import {IUserProfile, IUserProfileCreate, IUserProfileUpdate} from '@/interfaces';
 import { State } from '../state';
 import { AdminState } from './state';
 import { getStoreAccessors } from 'typesafe-vuex';
@@ -31,11 +31,11 @@ export const actions = {
             await dispatchCheckApiError(context, error);
         }
     },
-    async actionUpdateUser(context: MainContext, payload: { id: number, user: IUserProfileUpdate }) {
+    async actionUpdateUser(context: MainContext, payload: { user: IUserProfile }) {
         const loadingNotification = { content: 'saving', showProgress: true };
         try {
             commitAddNotification(context, loadingNotification);
-            const response = await api.updateUser(context.rootState.main.token, payload.id, payload.user);
+            const response = await api.updateUser(context.rootState.main.token, payload.user);
             commitSetUser(context, response.data);
             commitRemoveNotification(context, loadingNotification);
             commitAddNotification(context, { content: 'User successfully updated', color: 'success' });
@@ -61,11 +61,11 @@ export const actions = {
             throw new Error(error.response.data.detail);
         }
     },
-    async actionDeleteUser(context: MainContext, payload: {id: number}) {
+    async actionDeleteUser(context: MainContext, payload: {login: string}) {
         const loadingNotification = { content: 'saving', showProgress: true };
         try {
             commitAddNotification(context, loadingNotification);
-            const response = await api.deleteUser(context.rootState.main.token, payload.id);
+            const response = await api.deleteUser(context.rootState.main.token, payload.login);
             commitSetUser(context, response.data);
             commitRemoveNotification(context, loadingNotification);
             commitAddNotification(context, { content: 'Successfully deleted', color: 'success' });
