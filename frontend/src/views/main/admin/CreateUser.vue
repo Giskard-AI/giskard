@@ -64,7 +64,6 @@ import { IUserProfileCreate } from '@/interfaces';
 import {dispatchCreateUser, dispatchGetRoles, dispatchGetUsers} from '@/store/admin/actions';
 import { readAdminRoles } from '@/store/admin/getters';
 import {readAppSettings} from "@/store/main/getters";
-import {Role} from "@/enums";
 
 @Component
 export default class CreateUser extends Vue {
@@ -76,7 +75,7 @@ export default class CreateUser extends Vue {
   public userId: string = '';
   public displayName: string = '';
   public email: string = '';
-  public roleId: string = Role.AITESTER.id;
+  public roleId: number = 2;
   public password1: string = '';
   public password2: string = '';
   public canAddUsers: boolean = true;
@@ -98,7 +97,7 @@ export default class CreateUser extends Vue {
     this.userId = '';
     this.displayName = '';
     this.email = '';
-    this.roleId = Role.AITESTER.id;
+    this.roleId = 2;
     this.password1 = '';
     this.password2 = '';
     this.$refs.observer.reset();
@@ -113,7 +112,7 @@ export default class CreateUser extends Vue {
       const profileCreate: IUserProfileCreate = {
         email: this.email,
         user_id: this.userId,
-        roles: [this.roleId],
+        role_id: this.roleId,
         password: this.password1
       };
       if (this.displayName) {

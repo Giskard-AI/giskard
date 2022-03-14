@@ -175,7 +175,7 @@ export default class Project extends Vue {
 	}
 
 	get isProjectOwnerOrAdmin() {
-    return this.isUserProjectOwner || this.userProfile?.roles.includes(Role.ADMIN.id)
+		return this.isUserProjectOwner || this.userProfile?.role.id == Role.ADMIN
 	}
 
 	get isUserProjectOwner() {
