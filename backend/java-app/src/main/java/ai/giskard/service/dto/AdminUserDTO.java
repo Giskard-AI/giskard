@@ -3,18 +3,16 @@ package ai.giskard.service.dto;
 import ai.giskard.config.Constants;
 import ai.giskard.domain.Role;
 import ai.giskard.domain.User;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-import javax.persistence.Column;
+import javax.persistence.Transient;
 import javax.validation.constraints.*;
 import java.time.Instant;
-import java.util.Arrays;
-import java.util.List;
+import java.util.Collections;
 import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * A DTO representing a user, with his authorities.
@@ -95,6 +93,7 @@ public class AdminUserDTO {
 
     @lombok.Setter
     @lombok.Getter
+    @Transient
     private Set<String> roles;
 
     //@JsonProperty("display_name")
@@ -118,7 +117,19 @@ public class AdminUserDTO {
         this.createdDate = user.getCreatedDate();
         this.lastModifiedBy = user.getLastModifiedBy();
         this.lastModifiedDate = user.getLastModifiedDate();
-        this.roles = user.getRoles().stream().map(Role::getName).collect(Collectors.toSet());
+        this.roles = Collections.singleton(user.getRole().getName());
+    }
+
+    @NoArgsConstructor
+    public static class AdminUserDTOMigration extends AdminUserDTO{
+
+        @Getter @Setter
+        private Role role;
+
+        public AdminUserDTOMigration(User user) {
+            super(user);
+            role = user.getRole();
+        }
     }
 
 }

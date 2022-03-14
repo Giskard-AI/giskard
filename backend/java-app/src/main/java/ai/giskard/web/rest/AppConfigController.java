@@ -1,8 +1,7 @@
 package ai.giskard.web.rest;
 
 import ai.giskard.service.UserService;
-import ai.giskard.service.dto.AdminUserDTO;
-import ai.giskard.service.dto.UserDTO;
+import ai.giskard.service.dto.AdminUserDTO.AdminUserDTOMigration;
 import ai.giskard.service.dto.config.AppConfigDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,9 +23,9 @@ public class AppConfigController {
     @GetMapping("/users/me")
     public AppConfigDTO getApplicationSettings() {
         log.debug("REST request to get all public User names");
-        AdminUserDTO userDTO = userService
+        AdminUserDTOMigration userDTO = userService
             .getUserWithAuthorities()
-            .map(AdminUserDTO::new)
+            .map(AdminUserDTOMigration::new)
             .orElseThrow(() -> new RuntimeException("User could not be found"));
         return new AppConfigDTO(
             new AppConfigDTO.AppInfoDTO("basic", "Basic", 1),

@@ -84,16 +84,20 @@ public class TokenProvider {
 
     public Authentication getAuthentication(String token) {
         Claims claims = jwtParser.parseClaimsJws(token).getBody();
+// TODO andreyavtomonov (14/03/2022): migration
+        //Collection<? extends GrantedAuthority> authorities = Arrays
+        //    .stream(claims.get(AUTHORITIES_KEY).toString().split(","))
+        //    .filter(auth -> !auth.trim().isEmpty())
+        //    .map(SimpleGrantedAuthority::new)
+        //    .collect(Collectors.toList());
 
-        Collection<? extends GrantedAuthority> authorities = Arrays
-            .stream(claims.get(AUTHORITIES_KEY).toString().split(","))
-            .filter(auth -> !auth.trim().isEmpty())
-            .map(SimpleGrantedAuthority::new)
-            .collect(Collectors.toList());
+        //User principal = new User(claims.getSubject(), "", authorities);
 
-        User principal = new User(claims.getSubject(), "", authorities);
+        //return new UsernamePasswordAuthenticationToken(principal, token, authorities);
 
-        return new UsernamePasswordAuthenticationToken(principal, token, authorities);
+
+        User principal = new User(claims.getSubject(), "", Collections.singleton(new SimpleGrantedAuthority("ROLE_ADMIN")));
+        return new UsernamePasswordAuthenticationToken(principal, token, Collections.singleton(new SimpleGrantedAuthority("ROLE_ADMIN")));
     }
 
     public boolean validateToken(String authToken) {

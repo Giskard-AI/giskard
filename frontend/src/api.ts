@@ -39,7 +39,7 @@ export const api = {
     return axios.get<IUserProfile>(`${apiUrl}/api/v1/app-config`, authHeaders(token));
   },
   async getMe(token: string) {
-    return axios.get<IAppInitData>(`${apiUrlJava}/api/v1/users/me`, authHeaders(token));
+    return axios.get<IAppInitData>(`${apiUrlJava}/api/v2/users/me`, authHeaders(token));
   },
   async updateMe(token: string, data: IUserProfileUpdate) {
     return axios.put<IUserProfile>(`${apiUrl}/api/v1/users/me`, data, authHeaders(token));
