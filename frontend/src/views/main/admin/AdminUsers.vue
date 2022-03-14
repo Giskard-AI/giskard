@@ -6,15 +6,15 @@
       </v-toolbar-title>
       <v-spacer></v-spacer>
       <v-text-field
-          v-model="searchTerm"
-          label="Search"
-          single-line
-          hide-details
-          outlined
-          dense
-          clearable
-          class="shrink"
-          append-icon="mdi-magnify"
+        v-model="searchTerm"
+        label="Search"
+        single-line
+        hide-details
+        outlined
+        dense
+        clearable
+        class="shrink"
+        append-icon="mdi-magnify"
       ></v-text-field>
       <v-checkbox dense v-model="showInactive" label="Show inactive" class="pt-4 mx-1"></v-checkbox>
 
@@ -40,29 +40,29 @@
     </v-toolbar>
 
     <v-container fluid>
-      <v-data-table height="75vh" fixed-header :headers="headers" :items="users" sort-by="id" :search="searchTerm">
-        <!-- eslint-disable vue/valid-v-slot vue/no-unused-vars-->
-        <template v-slot:item.is_active="{item}">
-          <v-icon v-if="item.is_active">checkmark</v-icon>
-          <v-icon v-else>close</v-icon>
-        </template>
-        <template v-slot:item.action="{item}" v-slot:item.id="{item}">
-          <v-btn icon slot="activator" :to="{name: 'main-admin-users-edit', params: {id: item.id}}">
-            <v-icon color="primary">edit</v-icon>
-          </v-btn>
-          <v-btn icon @click="deleteUser(item)">
-            <v-icon color="accent">delete</v-icon>
-          </v-btn>
-        </template>
-      </v-data-table>
+    <v-data-table height="75vh" fixed-header :headers="headers" :items="users" sort-by="id" :search="searchTerm">
+      <!-- eslint-disable vue/valid-v-slot vue/no-unused-vars-->
+      <template v-slot:item.is_active="{item}">
+        <v-icon v-if="item.is_active">checkmark</v-icon>
+        <v-icon v-else>close</v-icon>
+      </template>
+      <template v-slot:item.action="{item}" v-slot:item.id="{item}">
+        <v-btn icon slot="activator" :to="{name: 'main-admin-users-edit', params: {id: item.id}}">
+          <v-icon color="primary">edit</v-icon>
+        </v-btn>
+        <v-btn icon @click="deleteUser(item)">
+          <v-icon color="accent">delete</v-icon>
+        </v-btn>
+      </template>
+    </v-data-table>
     </v-container>
   </div>
 </template>
 
 <script lang="ts">
-import {Component, Vue} from 'vue-property-decorator';
-import {readAdminUsers} from '@/store/admin/getters';
-import {dispatchGetUsers, dispatchDeleteUser} from '@/store/admin/actions';
+import { Component, Vue } from 'vue-property-decorator';
+import { readAdminUsers } from '@/store/admin/getters';
+import { dispatchGetUsers, dispatchDeleteUser } from '@/store/admin/actions';
 import {readAppSettings} from "@/store/main/getters";
 
 @Component
@@ -74,63 +74,54 @@ export default class AdminUsers extends Vue {
 
   get headers() {
     return [
-      {
-        text: 'id',
-        sortable: true,
-        value: 'id',
-        align: 'left',
-      },
-      {
-        text: 'User ID',
-        sortable: true,
-        value: 'user_id',
-        align: 'left',
-      },
-      {
-        text: 'Email',
-        sortable: true,
-        value: 'email',
-        align: 'left',
-      },
-      {
-        text: 'Display Name',
-        sortable: true,
-        value: 'display_name',
-        align: 'left',
-      },
-      {
-        text: 'Is Active',
-        value: 'is_active',
-        align: 'left',
-        filter: value => this.showInactive || value
-      },
-      {
-        text: 'Role',
-        sortable: true,
-        filterable: false,
-        value: 'roles[0]',
-        align: 'left',
-      },
-      {
-        sortable: false,
-        filterable: false,
-        text: 'Actions',
-        value: 'action'
-      }
+    {
+      text: 'id',
+      sortable: true,
+      value: 'id',
+      align: 'left',
+    },
+    {
+      text: 'User ID',
+      sortable: true,
+      value: 'user_id',
+      align: 'left',
+    },
+    {
+      text: 'Email',
+      sortable: true,
+      value: 'email',
+      align: 'left',
+    },
+    {
+      text: 'Display Name',
+      sortable: true,
+      value: 'display_name',
+      align: 'left',
+    },
+    {
+      text: 'Is Active',
+      value: 'is_active',
+      align: 'left',
+      filter: value => this.showInactive || value
+    },
+    {
+      text: 'Role',
+      sortable: true,
+      filterable: false,
+      value: 'role.name',
+      align: 'left',
+    },
+    {
+      sortable: false,
+      filterable: false,
+      text: 'Actions',
+      value: 'action'
+    }
     ]
   }
 
   get users() {
-        // return readAdminUsers(this.$store);
-    return readAdminUsers(this.$store).map(user => {
-      let u = {...user};
-      if (u.roles) {
-        u.roles = u.roles.map(role => {
-          return Vue.filter('humanReadableRole')(role);
-        })
-      }
-      return u;
-    });
+    return readAdminUsers(this.$store);
   }
 
   public async mounted() {
@@ -145,7 +136,7 @@ export default class AdminUsers extends Vue {
       title: 'Delete user'
     })) {
       try {
-        await dispatchDeleteUser(this.$store, {login: user.user_id});
+        await dispatchDeleteUser(this.$store, {id: user.id});
       } catch (e) {
         console.error(e.message);
       }

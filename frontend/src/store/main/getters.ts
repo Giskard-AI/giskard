@@ -7,7 +7,7 @@ export const getters = {
     hasAdminAccess: (state: MainState) => {
         return (
             state.userProfile &&
-            state.userProfile.roles.includes(Role.ADMIN.id) &&
+            state.userProfile.role.id == Role.ADMIN && 
             state.userProfile.is_active);
     },
     loginError: (state: MainState) => state.logInError,
