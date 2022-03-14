@@ -14,7 +14,7 @@ public class AppConfigDTO {
     @Setter
     private AdminUserDTO user;
 
-    public AppConfigDTO(AppInfoDTO app, AdminUserDTO user) {
+    public AppConfigDTO(AppInfoDTO app, AdminUserDTO.AdminUserDTOMigration user) {
         this.app = app;
         this.user = user;
     }

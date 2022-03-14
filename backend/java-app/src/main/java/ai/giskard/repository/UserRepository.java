@@ -15,17 +15,21 @@ import org.springframework.stereotype.Repository;
  */
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
-    Optional<User> findOneByActivationKey(String activationKey);
+    default Optional<User> findOneByActivationKey(String activationKey){
+        return Optional.empty();
+    }
 
-    List<User> findAllByActivatedIsFalseAndActivationKeyIsNotNullAndCreatedDateBefore(Instant dateTime);
+    //List<User> findAllByActivatedIsFalseAndActivationKeyIsNotNullAndCreatedDateBefore(Instant dateTime);
 
-    Optional<User> findOneByResetKey(String resetKey);
+    default Optional<User> findOneByResetKey(String resetKey){
+        return Optional.empty();
+    }
 
     Optional<User> findOneByEmailIgnoreCase(String email);
 
     Optional<User> findOneByLogin(String login);
 
-    Optional<User> findOneById(String id);
+    Optional<User> findOneById(Long id);
 
     @EntityGraph(attributePaths = "roles")
     Optional<User> findOneWithRolesByLogin(String login);

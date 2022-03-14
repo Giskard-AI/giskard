@@ -13,6 +13,8 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
+
+import org.apache.commons.compress.utils.Sets;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -116,7 +118,7 @@ public class UserService {
         newUser.setActivationKey(RandomUtil.generateActivationKey());
         Set<Role> authorities = new HashSet<>();
         authorityRepository.findById(AuthoritiesConstants.AICREATOR).ifPresent(authorities::add);
-        newUser.setRoles(authorities);
+        newUser.setRole(authorities.stream().findFirst().get());
         userRepository.save(newUser);
         log.debug("Created Information for User: {}", newUser);
         return newUser;
@@ -159,7 +161,7 @@ public class UserService {
                 .filter(Optional::isPresent)
                 .map(Optional::get)
                 .collect(Collectors.toSet());
-            user.setRoles(authorities);
+            user.setRole(authorities.stream().findFirst().get());
         }
         userRepository.save(user);
         log.debug("Created Information for User: {}", user);
@@ -188,7 +190,7 @@ public class UserService {
                 user.setImageUrl(userDTO.getImageUrl());
                 user.setActivated(userDTO.isActivated());
                 user.setLangKey(userDTO.getLangKey());
-                Set<Role> managedAuthorities = user.getRoles();
+                Set<Role> managedAuthorities = Sets.newHashSet(user.getRole());
                 managedAuthorities.clear();
                 userDTO
                     .getRoles()
@@ -280,7 +282,7 @@ public class UserService {
 
     @Transactional(readOnly = true)
     public Optional<User> getUserWithAuthorities() {
-        return SecurityUtils.getCurrentUserLogin().flatMap(userRepository::findOneWithRolesByLogin);
+        return SecurityUtils.getCurrentUserLogin().flatMap(userId-> userRepository.findOneById(Long.valueOf(userId)));
     }
 
     /**
