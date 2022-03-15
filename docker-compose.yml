@@ -24,6 +24,19 @@ services:
       # Allow explicit env var override for tests
       - SMTP_HOST=${SMTP_HOST}
 
+  backend-java:
+    image: backend-java
+    env_file:
+      - .env
+    environment:
+      - _JAVA_OPTIONS=-Xmx2048m -Xms256m
+      - SPRING_PROFILES_ACTIVE=prod
+      - MANAGEMENT_METRICS_EXPORT_PROMETHEUS_ENABLED=true
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=y1QYbF2BtFUC
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/app
+      - SPRING_LIQUIBASE_URL=jdbc:postgresql://db:5432/app
+
   frontend:
     image: '${DOCKER_REGISTRY}/giskard-frontend:${TAG-latest}'
     ports:

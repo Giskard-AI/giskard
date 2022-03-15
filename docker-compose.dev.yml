@@ -26,3 +26,8 @@ services:
       dockerfile: backend.dockerfile
       args:
         INSTALL_DEV: ${INSTALL_DEV-false}
+
+  backend-java:
+    build:
+      dockerfile: ./src/main/docker/app/app.dockerfile
+      context: ./backend/java-app
