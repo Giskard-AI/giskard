@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/v1")
+@RequestMapping("/api/v2")
 public class AppConfigController {
     private final Logger log = LoggerFactory.getLogger(AppConfigController.class);
     private UserService userService;

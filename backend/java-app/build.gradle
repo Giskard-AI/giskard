@@ -13,13 +13,13 @@ plugins {
     id "idea"
     id "eclipse"
     id "jacoco"
-    id "org.springframework.boot"
-    id "com.google.cloud.tools.jib"
-    id "com.gorylenko.gradle-git-properties"
-    id "org.liquibase.gradle"
-    id "org.sonarqube"
-    id "io.spring.nohttp"
-    id "com.github.andygoossens.gradle-modernizer-plugin"
+    id "org.springframework.boot" version "${springBootVersion}"
+    id "com.google.cloud.tools.jib" version "3.2.0"
+    id "com.gorylenko.gradle-git-properties" version "2.4.0"
+    id "org.liquibase.gradle" version "2.1.1"
+    id "org.sonarqube" version "3.3"
+    id "io.spring.nohttp" version "0.0.10"
+    id "com.github.andygoossens.gradle-modernizer-plugin" version "1.6.2"
     id "io.freefair.lombok" version "6.4.1"
     //jhipster-needle-gradle-plugins - JHipster will add additional gradle plugins here
 }
@@ -138,16 +138,16 @@ if (!project.hasProperty("runList")) {
     project.ext.runList = "main"
 }
 
-//project.ext.diffChangelogFile = "src/main/resources/config/liquibase/changelog/" + new Date().format("yyyyMMddHHmmss") + "_changelog.xml"
-project.ext.diffChangelogFile = "src/main/resources/config/liquibase/changelog/00000000000000_initial_schema.xml"
+project.ext.diffChangelogFile = "src/main/resources/config/liquibase/changelog/" + new Date().format("yyyyMMddHHmmss") + "_changelog.xml"
+//project.ext.diffChangelogFile = "src/main/resources/config/liquibase/changelog/00000000000000_initial_schema.xml"
 
 liquibase {
     activities {
         main {
             driver "org.postgresql.Driver"
-            url "jdbc:postgresql://localhost:5432/giskard"
-            username "giskard"
-            password ""
+            url System.getenv().getOrDefault("SPRING_LIQUIBASE_URL", "jdbc:postgresql://localhost:5432/giskard")
+            username System.getenv().getOrDefault("SPRING_DATASOURCE_USERNAME","giskard")
+            password System.getenv().getOrDefault("SPRING_DATASOURCE_PASSWORD","")
             changeLogFile "src/main/resources/config/liquibase/master.xml"
             defaultSchemaName ""
             logLevel "debug"
@@ -155,9 +155,9 @@ liquibase {
         }
         diffLog {
             driver "org.postgresql.Driver"
-            url "jdbc:postgresql://localhost:5432/giskard"
-            username "giskard"
-            password ""
+            url System.getenv().getOrDefault("SPRING_LIQUIBASE_URL", "jdbc:postgresql://localhost:5432/giskard")
+            username System.getenv().getOrDefault("SPRING_DATASOURCE_USERNAME","giskard")
+            password System.getenv().getOrDefault("SPRING_DATASOURCE_PASSWORD","")
             changeLogFile project.ext.diffChangelogFile
             referenceUrl "hibernate:spring:ai.giskard.domain?dialect=tech.jhipster.domain.util.FixedPostgreSQL10Dialect&hibernate.physical_naming_strategy=org.springframework.boot.orm.jpa.hibernate.SpringPhysicalNamingStrategy&hibernate.implicit_naming_strategy=org.springframework.boot.orm.jpa.hibernate.SpringImplicitNamingStrategy"
             defaultSchemaName ""
