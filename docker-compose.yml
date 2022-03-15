@@ -45,6 +45,7 @@ services:
       - 19000
     depends_on:
       - backend
+      - backend-java
     env_file:
       - .env
 
