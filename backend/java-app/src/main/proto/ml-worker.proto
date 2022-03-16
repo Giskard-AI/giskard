@@ -1,0 +1,36 @@
+syntax = "proto3";
+import "google/protobuf/any.proto";
+
+option java_multiple_files = true;
+option java_package = "ai.giskard.worker";
+option java_outer_classname = "WorkerProto";
+option objc_class_prefix = "WRK";
+
+package worker;
+
+service MLWorker {
+    rpc loadModel (LoadModelRequest) returns (LoadModelResponse) {}
+    rpc predict (PredictRequest) returns (PredictResponse) {}
+}
+
+message LoadModelRequest {
+    string name = 1;
+}
+
+message LoadModelResponse {
+    string message = 1;
+}
+
+message PredictRequest {
+    string model_path = 1;
+    map<string, google.protobuf.Any> features = 2;
+}
+
+message PredictResponse {
+    oneof prediction {
+        int32 prediction_int = 1;
+        float prediction_float = 2;
+        string prediction_string = 3;
+    }
+    map<string, float> probabilities = 4;
+}

@@ -21,7 +21,7 @@ plugins {
     id "io.spring.nohttp" version "0.0.10"
     id "com.github.andygoossens.gradle-modernizer-plugin" version "1.6.2"
     id "io.freefair.lombok" version "6.4.1"
-    //jhipster-needle-gradle-plugins - JHipster will add additional gradle plugins here
+    id 'com.google.protobuf' version '0.8.18'
 }
 
 group = "ai.giskard"
@@ -203,6 +203,11 @@ repositories {
 }
 
 dependencies {
+    implementation "io.grpc:grpc-protobuf:${grpcVersion}"
+    implementation "io.grpc:grpc-stub:${grpcVersion}"
+    runtimeOnly "io.grpc:grpc-netty-shaded:${grpcVersion}"
+    testImplementation "io.grpc:grpc-testing:${grpcVersion}"
+
     // import JHipster dependencies BOM
     if (!project.hasProperty("gae")) {
         implementation platform("tech.jhipster:jhipster-dependencies:${jhipsterDependenciesVersion}")
@@ -271,6 +276,28 @@ dependencies {
     testImplementation "com.h2database:h2"
     developmentOnly "org.springframework.boot:spring-boot-devtools:${springBootVersion}"
     //jhipster-needle-gradle-dependency - JHipster will add additional dependencies here
+}
+
+protobuf {
+    protoc { artifact = "com.google.protobuf:protoc:${protocVersion}" }
+    plugins {
+        grpc { artifact = "io.grpc:protoc-gen-grpc-java:${grpcVersion}" }
+    }
+    generateProtoTasks {
+        all()*.plugins {
+            grpc {}
+        }
+    }
+}
+
+// Inform IDEs like IntelliJ IDEA, Eclipse or NetBeans about the generated code.
+sourceSets {
+    main {
+        java {
+            srcDirs 'build/generated/source/proto/main/grpc'
+            srcDirs 'build/generated/source/proto/main/java'
+        }
+    }
 }
 
 if (project.hasProperty("gae")) {
