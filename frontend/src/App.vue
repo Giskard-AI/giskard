@@ -29,6 +29,9 @@ import NotificationsManager from "@/components/NotificationsManager.vue";
 import { readIsLoggedIn } from "@/store/main/getters";
 import { dispatchCheckLoggedIn } from "@/store/main/actions";
 import posthog from "posthog-js";
+import {editor} from "monaco-editor";
+import IEditorOptions = editor.IEditorOptions;
+
 
 if (
   !window.location.href.includes("127.0.0.1") &&
@@ -51,6 +54,13 @@ export default class App extends Vue {
 
   public async created() {
     await dispatchCheckLoggedIn(this.$store);
+    ((this.$root as any).monacoOptions as IEditorOptions) = {
+      automaticLayout: true,
+      minimap: {
+        enabled: false
+      },
+      renderLineHighlight: "none"
+    };
   }
 }
 </script>

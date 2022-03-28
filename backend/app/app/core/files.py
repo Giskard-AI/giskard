@@ -1,12 +1,10 @@
 from io import BytesIO
 from pathlib import Path
 import re
-import cloudpickle
 
 from fastapi.datastructures import UploadFile
 from sqlalchemy.orm import Session
 from zstandard import ZstdCompressor, ZstdDecompressor
-import pandas as pd
 
 from app.core.config import settings
 from app import schemas, crud, models
@@ -35,27 +33,6 @@ def save_dataset_file(db: Session, file: UploadFile, project: models.Project, us
         return dataset_out
     except (IOError, ValueError) as e:
         raise e
-
-
-def read_dataset_file(file_path: str) -> pd.DataFrame:
-    try:
-        df = pd.DataFrame()
-        dzst = ZstdDecompressor()
-        with open(file_path, "rb") as f:
-            bytes_io = BytesIO(dzst.decompress(f.read()))
-        if ".csv" in file_path:
-            df = pd.read_csv(bytes_io)
-        elif ".xls" in file_path:
-            df = pd.read_excel(bytes_io)
-        return df
-    except Exception as e:
-        raise e
-
-
-def read_model_file(file_path: str) -> object:
-    dzst = ZstdDecompressor()
-    with open(file_path, "rb") as f:
-        return cloudpickle.loads(dzst.decompress(f.read()))
 
 
 def has_read_access(user: models.User, project: models.Project, file: models.ProjectFile) -> bool:

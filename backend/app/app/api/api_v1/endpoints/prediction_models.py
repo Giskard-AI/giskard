@@ -9,7 +9,7 @@ from sqlalchemy.orm import Session
 
 from app import crud, models, schemas
 from app.api import deps
-from app.core import files
+from app.core import files, files_utils
 from app.core.model_explanation import (
     background_example,
     summary_shap_classification,
@@ -35,7 +35,7 @@ def get_model_metadata(
     project = crud.project.get(db, model_file.project_id)
     if files.has_read_access(current_user, project, model_file):
         try:
-            model_inspector = files.read_model_file(model_file.location)
+            model_inspector = files_utils.read_model_file(model_file.location)
             return schemas.ModelMetadata(
                 prediction_task=model_inspector.prediction_task,
                 input_types=model_inspector.input_types,
@@ -64,8 +64,8 @@ def get_model_features_metadata(
         current_user, project, data_file
     ):
         try:
-            model_inspector = files.read_model_file(model_file.location)
-            data_df = files.read_dataset_file(data_file.location)
+            model_inspector = files_utils.read_model_file(model_file.location)
+            data_df = files_utils.read_dataset_file(data_file.location)
             feat_metadata = []
             for k, v in model_inspector.input_types.items():
                 feat_desc = {"feat_name": k, "feat_type": v}
@@ -94,7 +94,7 @@ def predict(
     project = crud.project.get(db, model_file.project_id)
     if files.has_read_access(current_user, project, model_file):
         try:
-            model_inspector = files.read_model_file(model_file.location)
+            model_inspector = files_utils.read_model_file(model_file.location)
         except Exception as e:
             logger.exception(e)
             raise HTTPException(status.HTTP_500_INTERNAL_SERVER_ERROR, "Model file cannot be read")
@@ -137,9 +137,9 @@ def get_model_explanation_on_dataset(
         current_user, project, data_file
     ):
         try:
-            model_inspector = files.read_model_file(model_file.location)
+            model_inspector = files_utils.read_model_file(model_file.location)
             feature_columns = list(model_inspector.input_types.keys())
-            df = files.read_dataset_file(data_file.location)[feature_columns]
+            df = files_utils.read_dataset_file(data_file.location)[feature_columns]
         except Exception as e:
             logger.exception(e)
             raise HTTPException(
@@ -198,7 +198,7 @@ def get_model_explanation_on_text_column(
     project = crud.project.get(db, model_file.project_id)
     if files.has_read_access(current_user, project, model_file):
         try:
-            model_inspector = files.read_model_file(model_file.location)
+            model_inspector = files_utils.read_model_file(model_file.location)
             feature_columns = list(model_inspector.input_types.keys())
         except Exception as e:
             logger.exception(e)

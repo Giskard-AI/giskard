@@ -1,0 +1,56 @@
+<template>
+  <v-form @submit.prevent="">
+    <ValidationObserver ref="observer" v-slot="{ invalid }">
+
+      <v-container fluid>
+        <v-card-title>
+          Create new test suite
+        </v-card-title>
+        <v-card-text>
+          <v-row>
+            <v-col cols=12>
+              <ValidationProvider name="Test suite name" mode="eager" rules="required" v-slot="{errors}">
+                <v-text-field label="Test suite name" v-model="name" :error-messages="errors"></v-text-field>
+              </ValidationProvider>
+              <ValidationProvider name="Model" mode="eager" rules="required" v-slot="{errors}">
+                <ModelSelector :project-id="projectId" :value.sync="model"/>
+              </ValidationProvider>
+            </v-col>
+          </v-row>
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer/>
+          <v-btn tile small class="primary" @click="submit" :disabled="invalid">Create</v-btn>
+        </v-card-actions>
+      </v-container>
+    </ValidationObserver>
+  </v-form>
+
+</template>
+
+<script lang="ts">
+import Component from "vue-class-component";
+import Vue from "vue";
+import {Prop} from "vue-property-decorator";
+import {api} from "@/api";
+import ModelSelector from "@/views/main/utils/ModelSelector.vue";
+import {IProjetFileModel} from "@/interfaces";
+
+@Component({
+  components: {ModelSelector}
+})
+export default class TestSuiteCreateModal extends Vue {
+  @Prop({required: true}) projectId!: number;
+  public name: string = "";
+  model: IProjetFileModel | null = null;
+
+  public async submit() {
+    let createdTestSuite = (await api.createTestSuite(this.projectId, this.name, this.model!.id)).data;
+    this.$emit('submit', createdTestSuite)
+  }
+}
+</script>
+
+<style scoped lang="scss">
+
+</style>

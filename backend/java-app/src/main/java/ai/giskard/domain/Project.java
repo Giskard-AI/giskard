@@ -1,6 +1,8 @@
 package ai.giskard.domain;
 
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -12,6 +14,8 @@ import java.time.LocalDateTime;
 @Entity(name = "projects")
 @NoArgsConstructor
 public class Project {
+    @Getter
+    @Setter
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;

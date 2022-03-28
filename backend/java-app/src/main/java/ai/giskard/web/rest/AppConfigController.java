@@ -3,6 +3,8 @@ package ai.giskard.web.rest;
 import ai.giskard.service.UserService;
 import ai.giskard.service.dto.AdminUserDTO.AdminUserDTOMigration;
 import ai.giskard.service.dto.config.AppConfigDTO;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -21,6 +23,7 @@ public class AppConfigController {
 
     // TODO andreyavtomonov (12/03/2022): change url to more explainable
     @GetMapping("/users/me")
+    @Operation(security = { @SecurityRequirement(name = "Bearer") })
     public AppConfigDTO getApplicationSettings() {
         log.debug("REST request to get all public User names");
         AdminUserDTOMigration userDTO = userService

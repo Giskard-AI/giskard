@@ -1,5 +1,7 @@
 package ai.giskard.domain;
 
+import ai.giskard.domain.ml.Dataset;
+import ai.giskard.domain.ml.ProjectModel;
 import lombok.Getter;
 import lombok.Setter;
 

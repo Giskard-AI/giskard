@@ -7,7 +7,7 @@ import grpc
 from pydantic import BaseSettings
 from pydantic.class_validators import validator
 
-from generated.ml_worker_pb2_grpc import add_MLWorkerServicer_to_server
+from ml_worker_pb2_grpc import add_MLWorkerServicer_to_server
 
 
 class Settings(BaseSettings):

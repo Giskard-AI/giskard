@@ -1,12 +1,10 @@
 import logging
-import threading
-from pathlib import Path
-
-import grpc
 
 import ml_worker_pb2
+from core.files_utils import read_dataset_file, read_model_file
 from ml_worker_pb2_grpc import MLWorkerServicer
 from mltask_server_runner import settings
+from testing.functions import TestFunctions
 
 logger = logging.getLogger()
 
@@ -19,14 +17,18 @@ class MLTaskServer(MLWorkerServicer):
         super().__init__()
         self.counter = start_counter
 
-    def loadModel(self, request: ml_worker_pb2.LoadModelRequest,
-                  context: grpc.ServicerContext) -> ml_worker_pb2.LoadModelResponse:
-        self.counter += 1
-        return ml_worker_pb2.LoadModelResponse(
-            message=f"RESPONSE[{threading.current_thread().name}]: {request.name} = {self.counter}")
-
-    def predict(self, request: ml_worker_pb2.PredictRequest,
-                context: grpc.ServicerContext) -> ml_worker_pb2.PredictResponse:
-        logger.info(f'Running a model: {request.model_path}')
+    def runTest(self, request: ml_worker_pb2.RunTestRequest, context) -> ml_worker_pb2.TestResultMessage:
         model_path = settings.storage_root / request.model_path
-        return ml_worker_pb2.PredictResponse(prediction_string="HELLO WORLD", probabilities={"asd": 123.321})
+        train_ds_path = settings.storage_root / request.train_dataset_path
+        test_ds_path = settings.storage_root / request.test_dataset_path
+
+        tests = TestFunctions()
+        _globals = {
+            'train_df': read_dataset_file(str(train_ds_path.absolute())),
+            'test_df': read_dataset_file(str(test_ds_path.absolute())),
+            'clf_predict': read_model_file(str(model_path.absolute())).prediction_function,
+            'tests': tests
+        }
+        exec(request.code, _globals)
+
+        return ml_worker_pb2.TestResultMessage(results=tests.tests_results)
