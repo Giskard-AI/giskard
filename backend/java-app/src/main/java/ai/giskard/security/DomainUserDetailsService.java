@@ -3,18 +3,18 @@ package ai.giskard.security;
 import ai.giskard.domain.Role;
 import ai.giskard.domain.User;
 import ai.giskard.repository.UserRepository;
-import java.util.*;
-import java.util.stream.Collectors;
 import org.hibernate.validator.internal.constraintvalidators.hv.EmailValidator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Collections;
+import java.util.Locale;
 
 /**
  * Authenticate a user from the database.
@@ -43,8 +43,10 @@ public class DomainUserDetailsService implements UserDetailsService {
         }
 
         String lowercaseLogin = login.toLowerCase(Locale.ENGLISH);
+        // TODO andreyavtomonov (17/03/2022): migration
         return userRepository
-            .findOneWithRolesByLogin(lowercaseLogin)
+            //.findOneWithRolesByLogin(lowercaseLogin)
+            .findOneByLogin(lowercaseLogin)
             .map(user -> createSpringSecurityUser(lowercaseLogin, user))
             .orElseThrow(() -> new UsernameNotFoundException("User " + lowercaseLogin + " was not found in the database"));
     }

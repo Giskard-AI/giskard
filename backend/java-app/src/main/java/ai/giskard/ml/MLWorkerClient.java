@@ -16,6 +16,8 @@
 
 package ai.giskard.ml;
 
+import ai.giskard.domain.ml.TestSuite;
+import ai.giskard.domain.ml.testing.Test;
 import ai.giskard.worker.*;
 import com.google.protobuf.Any;
 import com.google.protobuf.InvalidProtocolBufferException;
@@ -23,18 +25,20 @@ import io.grpc.Channel;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.StatusRuntimeException;
+import org.apache.commons.lang3.RandomStringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * A java-python bridge for model execution
  */
 public class MLWorkerClient {
-    private static final Logger logger = Logger.getLogger(MLWorkerClient.class.getName());
+    private final String id;
+    private final Logger logger;
 
     private final MLWorkerGrpc.MLWorkerBlockingStub blockingStub;
 
@@ -43,10 +47,15 @@ public class MLWorkerClient {
         // shut it down.
 
         // Passing Channels to code makes code easier to test and makes it easier to reuse Channels.
+        id = RandomStringUtils.randomAlphanumeric(8);
+        logger = LoggerFactory.getLogger("MLWorkerClient [" + id + "]");
+
+        logger.debug("Creating MLWorkerClient");
         blockingStub = MLWorkerGrpc.newBlockingStub(channel);
     }
 
     public void predict() {
+        logger.debug("Calling predict");
         PredictRequest request = null;
         try {
             request = PredictRequest.newBuilder()
@@ -54,17 +63,28 @@ public class MLWorkerClient {
                 .putFeatures("Hello", Any.parseFrom("Hello".getBytes(StandardCharsets.UTF_8)))
                 .build();
         } catch (InvalidProtocolBufferException e) {
-            logger.log(Level.WARNING, "failed to initialize features map");
+            logger.warn("failed to initialize features map");
         }
         PredictResponse response;
         try {
             response = blockingStub.predict(request);
         } catch (StatusRuntimeException e) {
-            logger.log(Level.WARNING, "RPC failed: {0}", e.getStatus());
+            logger.warn("RPC failed: %s", e.getStatus());
             return;
         }
         Map<String, Float> probabilities = response.getProbabilitiesMap();
         logger.info("Prediction results: " + probabilities);
+    }
+
+    public TestResultMessage runTest(TestSuite testSuite, Test test) {
+        RunTestRequest request = RunTestRequest.newBuilder()
+            .setCode(test.getCode())
+            .setModelPath(testSuite.getModel().getLocation())
+            .setTrainDatasetPath(testSuite.getTrainDataset().getLocation())
+            .setTestDatasetPath(testSuite.getTestDataset().getLocation())
+            .build();
+        TestResultMessage runTestResponse = blockingStub.runTest(request);
+        return runTestResponse;
 
     }
 
@@ -75,10 +95,33 @@ public class MLWorkerClient {
         try {
             response = blockingStub.loadModel(request);
         } catch (StatusRuntimeException e) {
-            logger.log(Level.WARNING, "RPC failed: {0}", e.getStatus());
+            logger.warn("RPC failed: %s", e.getStatus());
             return;
         }
         logger.info("Greeting: " + response.getMessage());
+    }
+
+    public void shutdown() {
+        logger.debug("Shutting down MLWorkerClient");
+        Channel channel = this.blockingStub.getChannel();
+        if (channel instanceof ManagedChannel) {
+            try {
+                ((ManagedChannel) channel).shutdownNow().awaitTermination(5, TimeUnit.SECONDS);
+            } catch (InterruptedException e) {
+                logger.error("Failed to shutdown worker", e);
+            }
+        }
+    }
+
+    public static MLWorkerClient createClient() throws InterruptedException {
+        String target = "localhost:50051";
+        ManagedChannel channel = ManagedChannelBuilder.forTarget(target)
+            // Channels are secure by default (via SSL/TLS). For the example we disable TLS to avoid
+            // needing certificates.
+            .usePlaintext()
+            .build();
+
+        return new MLWorkerClient(channel);
     }
 
     /**

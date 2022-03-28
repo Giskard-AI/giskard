@@ -9,7 +9,7 @@ from sqlalchemy.orm import Session
 
 from app import crud, schemas, models
 from app.api import deps
-from app.core import files
+from app.core import files, files_utils
 
 router = APIRouter()
 
@@ -138,7 +138,7 @@ def peak_data_file(
     project = crud.project.get(db, data_file.project_id)
     if files.has_read_access(current_user, project, data_file):
         try:
-            df = files.read_dataset_file(data_file.location)
+            df = files_utils.read_dataset_file(data_file.location)
             return df.head().to_json(orient="table")
         except Exception as e:
             logger.exception(e)
@@ -157,7 +157,7 @@ def get_data_by_row_random(
     project = crud.project.get(db, data_file.project_id)
     if files.has_read_access(current_user, project, data_file):
         try:
-            df = files.read_dataset_file(data_file.location)
+            df = files_utils.read_dataset_file(data_file.location)
             randomRowId = random.randint(0, len(df.index))
             sub_df = df.iloc[randomRowId]
             sub_df_dict = {col_name: str(col_value) for col_name, col_value in sub_df.to_dict().items()}
@@ -181,7 +181,7 @@ def get_data_by_row(
     project = crud.project.get(db, data_file.project_id)
     if files.has_read_access(current_user, project, data_file):
         try:  # TODO: change all later to avoid reloading DF at every request
-            df = files.read_dataset_file(data_file.location)
+            df = files_utils.read_dataset_file(data_file.location)
         except Exception as e:
             logger.exception(e)
             raise HTTPException(status.HTTP_500_INTERNAL_SERVER_ERROR, "Data file cannot be read")

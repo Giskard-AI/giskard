@@ -10,13 +10,16 @@ import java.time.LocalDateTime;
 @MappedSuperclass
 @Table(indexes = @Index(columnList = "fileName"))
 public abstract class ProjectFile {
+    @Getter
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
+    @Getter
     private String fileName;
 
     @NotNull
+    @Getter
     private String location;
 
     private LocalDateTime createdOn;

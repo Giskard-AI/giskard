@@ -1,3 +1,42 @@
+export interface ITest {
+    id: number;
+    name: string;
+    code: string;
+    language: 'PYTHON';
+    testSuite: ITestSuite;
+    type: 'CODE';
+}
+
+interface ITestResultMessage {
+    partialUnexpectedIndexList: number[],
+    unexpectedIndexList: number[],
+    missingCount: number,
+    missingPercent: number,
+    unexpectedCount: number,
+    unexpectedPercent: number,
+    unexpectedPercentTotal: number,
+    unexpectedPercentNonmissing: number,
+    elementCount: number
+}
+
+export interface ITestExecutionResult {
+    status: 'SUCCESS' | 'WARNING' | 'FAIL' | 'ERROR';
+    result: Map<string, ITestResultMessage>;
+    message: string;
+}
+
+export interface ITestSuite {
+    id: number;
+    name: string;
+    projectId: number;
+    model: IProjetFileModel;
+    trainDataset: IProjetFileDataset;
+    testDataset: IProjetFileDataset;
+}
+
+export interface IProjetFileDataset extends IProjectFile {
+}
+
 export interface IAppInitData {
     user: IUserProfile,
     app: IAppSettings
@@ -77,6 +116,7 @@ export interface IProjetFileModel extends IProjectFile {
     python_version: string
 }
 
+
 export interface IDataMetadata {
     feat_name: string,
     feat_type: string,
@@ -120,8 +160,8 @@ export interface IFeedbackDisplay {
     id: number,
     user: IUserProfileMinimal,
     created_on: Date,
-    model: {id: number, file_name: string},
-    dataset: {id: number, file_name: string},
+    model: { id: number, file_name: string },
+    dataset: { id: number, file_name: string },
     target_feature?: string,
     feedback_type: string,
     feature_name?: string,

@@ -1,0 +1,12 @@
+$color-pack: false;
+
+@import '~vuetify/src/styles/main.sass';
+
+
+.v-data-table.row-pointer tr {
+  cursor: pointer;
+}
+
+.v-dialog-wrapper{
+  background-color: white;
+}

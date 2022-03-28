@@ -3,8 +3,9 @@ import {apiUrl, apiUrlJava} from '@/env';
 import {
   IUserProfile, IUserProfileUpdate, IUserProfileCreate, IRole, IProject, IProjectCreate,
   IProjectUpdate, IUserProfileMinimal, IProjectFile, IProjetFileModel, IDataMetadata, IModelMetadata,
-  IFeedbackCreate, IFeedbackForList, IFeedbackDisplay, IAppInitData
+  IFeedbackCreate, IFeedbackForList, IFeedbackDisplay, IAppInitData, ITestSuite, ITest, ITestExecutionResult
 } from './interfaces';
+import {getLocalToken} from "@/utils";
 
 function authHeaders(token: string) {
   return {
@@ -17,6 +18,15 @@ function authHeaders(token: string) {
 const axiosProject = axios.create({
   baseURL: `${apiUrl}/api/v1/projects`
 });
+axios.interceptors.request.use(function (config) {
+  // Do something before request is sent
+  let jwtToken = getLocalToken();
+  if (jwtToken && config && config.headers) {
+    config.headers.Authorization = `Bearer ${jwtToken}`;
+  }
+  return config;
+});
+
 // this is to automatically parse responses from the projects API, be it array or single objects
 axiosProject.interceptors.response.use(resp => {
   if (Array.isArray(resp.data)) {
@@ -33,7 +43,7 @@ export const api = {
     params.append('username', username);
     params.append('password', password);
 
-    return axios.post(`${apiUrl}/api/v1/login/access-token`, params);
+    return  axios.post(`${apiUrl}/api/v1/login/access-token`, params);
   },
   async getAppConfig(token: string) {
     return axios.get<IUserProfile>(`${apiUrl}/api/v1/app-config`, authHeaders(token));
@@ -154,7 +164,7 @@ export const api = {
     return axios.post(`${apiUrl}/api/v1/models/${modelId}/${datasetId}/explain`, { features: inputData }, authHeaders(token));
   },
   async explainText(token: string, modelId: number, inputData: object, featureName: string) {
-    return axios.post(`${apiUrl}/api/v1/models/${modelId}/explain_text/${featureName}`, {features: inputData}, authHeaders(token)); 
+    return axios.post(`${apiUrl}/api/v1/models/${modelId}/explain_text/${featureName}`, {features: inputData}, authHeaders(token));
   },
   // feedbacks
   async submitFeedback(token: string, payload: IFeedbackCreate, projectId: number) {
@@ -168,6 +178,37 @@ export const api = {
   },
   async replyToFeedback(token: string, feedbackId: number, content: string, replyToId: number | null = null) {
     return axios.post(`${apiUrl}/api/v1/feedbacks/${feedbackId}/reply`, {content, reply_to_reply: replyToId}, authHeaders(token));
-  }
+  },
+  async getTestSuites(projectId: number) {
+    return await axios.get<Array<ITestSuite>>(`${apiUrlJava}/api/v2/testing/suites/${projectId}`);
+  },
+  async getTests(suiteId: number) {
+      return await axios.get<Array<ITest>>(`${apiUrlJava}/api/v2/testing/tests`, {params: {suiteId}});
+  },
+  async getTestSuite(testSuiteId: number) {
+    return await axios.get<ITestSuite>(`${apiUrlJava}/api/v2/testing/suite/${testSuiteId}`);
+  },
+  async createTestSuite(projectId: number, name: string, modelId: number) {
+    return await axios.post(`${apiUrlJava}/api/v2/testing/suites`, {
+      name: name,
+      projectId: projectId,
+      model: {id: modelId}
+    })
+  },
+  async saveTestSuite(testSuite: ITestSuite) {
+    return await axios.put(`${apiUrlJava}/api/v2/testing/suites`, testSuite)
+  },
+  async getTestDetails(testId: number) {
+    return await axios.get(`${apiUrlJava}/api/v2/testing/tests/${testId}`)
 
+  },
+  async getTestEditorConfig() {
+    return await axios.get(`${apiUrlJava}/api/v2/testing/tests/editorConfig`)
+  },
+  async saveTest(testDetails: ITest) {
+    return await axios.put(`${apiUrlJava}/api/v2/testing/tests`, testDetails);
+  },
+  async runTest(testId: number) {
+    return await axios.post<ITestExecutionResult>(`${apiUrlJava}/api/v2/testing/tests/${testId}/run`)
+  }
 };

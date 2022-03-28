@@ -77,14 +77,14 @@ export default new Router({
                   path: 'inspect',
                   name: 'project-inspector',
                   component: () => import('./views/main/project/InspectorWrapper.vue'),
-                  props: route => ({ 
-                    modelId: parseInt(route.query.model.toString()), 
+                  props: route => ({
+                    modelId: parseInt(route.query.model.toString()),
                     datasetId: parseInt(route.query.dataset.toString()),
                     targetFeature: route.query.target,
                   }),
                   beforeEnter(to, from, next) {
-                    if (!to.query.dataset || !to.query.model 
-                      || isNaN(parseInt(to.query.model.toString())) 
+                    if (!to.query.dataset || !to.query.model
+                      || isNaN(parseInt(to.query.model.toString()))
                       || isNaN(parseInt(to.query.dataset.toString()))) {
                         // query is not valid, redirect back to basic project view
                         next({name: 'project-models', params: {id: to.params.id}})
@@ -105,7 +105,41 @@ export default new Router({
                       meta: {openFeedbackDetail: true}
                     }
                   ]
+                },
+                {
+                  path: 'test-suites',
+                  name: 'project-test-suites',
+                  component: () => import('./views/main/project/TestSuites.vue'),
+                  props: (route) => { return {projectId: Number(route.params.id)} },
+                  children: []
+                },
+                {
+                  path: 'test-suites/:suiteId',
+                  name: 'suite-details',
+                  component: () => import('./views/main/project/TestSuite.vue'),
+                  redirect: { name: 'suite-test-list' },
+                  props: (route) => {
+                    return {suiteId: Number(route.params.suiteId), projectId: Number(route.params.id)}
+                  },
+                  children: [
+                    {
+                      path: '',
+                      name: 'suite-test-list',
+                      component: () => import('./views/main/project/Tests.vue'),
+                      props: (route) => {
+                        return {suiteId: Number(route.params.suiteId), projectId: Number(route.params.id)}
+                      }                    },
+                    {
+                      path: 'test/:testId',
+                      name: 'test-editor',
+                      component: () => import('./views/main/project/TestEditor.vue'),
+                      props: (route) => {
+                        return {testId: Number(route.params.testId)}
+                      }
+                    }
+                  ]
                 }
+
               ]
             },
             {
