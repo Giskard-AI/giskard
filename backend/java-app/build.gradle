@@ -22,7 +22,6 @@ plugins {
     id "com.github.andygoossens.gradle-modernizer-plugin" version "1.6.2"
     id "io.freefair.lombok" version "6.4.1"
     id 'com.google.protobuf' version '0.8.18'
-    id "org.sonarqube" version "3.3"
 }
 
 group = "ai.giskard"
