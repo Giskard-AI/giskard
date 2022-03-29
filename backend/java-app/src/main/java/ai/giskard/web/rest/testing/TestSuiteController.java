@@ -37,7 +37,7 @@ public class TestSuiteController {
     }
 
     @PostMapping("suites")
-    public TestSuiteDTO createCodeBasedTestPreset(@Valid @RequestBody TestSuiteDTO dto) {
+    public TestSuiteDTO createTestSuite(@Valid @RequestBody TestSuiteDTO dto) {
         TestSuite testSuite = new TestSuite();
         testSuite.setName(dto.getName());
         projectRepository.findById(dto.getProjectId()).ifPresentOrElse(testSuite::setProject, () -> {
@@ -56,13 +56,13 @@ public class TestSuiteController {
         //return testSuiteRepository.findTestSuitesByProject(projectId);
     }
 
-    @GetMapping("suite/{testSuiteId}")
-    public TestSuiteDTO getGetSuite(@PathVariable Long testSuiteId) {
-        Optional<TestSuite> testSuite = testSuiteRepository.findById(testSuiteId);
+    @GetMapping("suite/{suiteId}")
+    public TestSuiteDTO getGetSuite(@PathVariable Long suiteId) {
+        Optional<TestSuite> testSuite = testSuiteRepository.findById(suiteId);
         if (testSuite.isPresent()) {
             return new TestSuiteDTO(testSuite.get());
         } else {
-            throw new EntityNotFoundException(TEST_SUITE, testSuiteId);
+            throw new EntityNotFoundException(TEST_SUITE, suiteId);
         }
     }
 

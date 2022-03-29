@@ -79,7 +79,15 @@ export default class TestSuites extends Vue {
     });
   }
 
+  public async activated() {
+    await this.init();
+  }
+
   public async mounted() {
+    await this.init();
+  }
+
+  private async init() {
     this.testSuites = (await api.getTestSuites(this.projectId)).data;
   }
 }

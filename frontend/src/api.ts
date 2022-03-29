@@ -185,8 +185,8 @@ export const api = {
   async getTests(suiteId: number) {
       return await axios.get<Array<ITest>>(`${apiUrlJava}/api/v2/testing/tests`, {params: {suiteId}});
   },
-  async getTestSuite(testSuiteId: number) {
-    return await axios.get<ITestSuite>(`${apiUrlJava}/api/v2/testing/suite/${testSuiteId}`);
+  async getTestSuite(suiteId: number) {
+    return await axios.get<ITestSuite>(`${apiUrlJava}/api/v2/testing/suite/${suiteId}`);
   },
   async createTestSuite(projectId: number, name: string, modelId: number) {
     return await axios.post(`${apiUrlJava}/api/v2/testing/suites`, {
@@ -210,5 +210,11 @@ export const api = {
   },
   async runTest(testId: number) {
     return await axios.post<ITestExecutionResult>(`${apiUrlJava}/api/v2/testing/tests/${testId}/run`)
+  },
+  async createTest(suiteId: number, name: string) {
+    return await axios.post(`${apiUrlJava}/api/v2/testing/tests`, {
+      name: name,
+      suiteId: suiteId
+    })
   }
 };

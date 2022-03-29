@@ -1,19 +1,15 @@
 <template>
   <v-form @submit.prevent="">
     <ValidationObserver ref="observer" v-slot="{ invalid }">
-
       <v-container fluid>
         <v-card-title>
-          Create new test suite
+          Create new test
         </v-card-title>
         <v-card-text>
           <v-row>
             <v-col cols=12>
-              <ValidationProvider name="Test suite name" mode="eager" rules="required" v-slot="{errors}">
-                <v-text-field label="Test suite name" v-model="name" :error-messages="errors"></v-text-field>
-              </ValidationProvider>
-              <ValidationProvider name="Model" mode="eager" rules="required" v-slot="{errors}">
-                <ModelSelector :project-id="projectId" :value.sync="model"/>
+              <ValidationProvider name="Test name" mode="eager" rules="required" v-slot="{errors}">
+                <v-text-field label="Test name" v-model="name" :error-messages="errors"></v-text-field>
               </ValidationProvider>
             </v-col>
           </v-row>
@@ -35,17 +31,19 @@ import {Prop} from "vue-property-decorator";
 import {api} from "@/api";
 import ModelSelector from "@/views/main/utils/ModelSelector.vue";
 import {IProjetFileModel} from "@/interfaces";
+import {format} from 'date-fns'
+
 
 @Component({
   components: {ModelSelector}
 })
-export default class TestSuiteCreateModal extends Vue {
-  @Prop({required: true}) projectId!: number;
-  public name: string = "";
+export default class TestCreateModal extends Vue {
+  @Prop({required: true}) suiteId!: number;
+  public name: string = "Test-" + format(new Date(), 'yyyy.MM.dd HH:mm');
   model: IProjetFileModel | null = null;
 
   public async submit() {
-    let createdTestSuite = (await api.createTestSuite(this.projectId, this.name, this.model!.id)).data;
+    let createdTestSuite = (await api.createTest(this.suiteId, this.name)).data;
     this.$emit('submit', createdTestSuite)
   }
 }

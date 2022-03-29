@@ -12,10 +12,12 @@ public class ModelDTO {
     private Long id;
     private String name;
     private Long projectId;
+    private String filename;
 
     public ModelDTO(ProjectModel model) {
         this.id = model.getId();
         this.name = model.getName();
         this.projectId = model.getProject().getId();
+        this.filename = model.getFileName();
     }
 }

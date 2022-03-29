@@ -10,9 +10,12 @@ import ai.giskard.service.dto.ml.TestExecutionResultDTO;
 import ai.giskard.web.rest.errors.EntityNotFoundException;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
+import static ai.giskard.web.rest.errors.EntityNotFoundException.Entity.TEST_SUITE;
 
 @RestController
 @RequestMapping("/api/v2/testing/tests")
@@ -25,17 +28,6 @@ public class TestController {
         this.testService = testService;
         this.testSuiteRepository = testSuiteRepository;
         this.testRepository = testRepository;
-    }
-
-    @PostMapping("")
-    private TestDTO createTest(@RequestBody TestDTO dto) {
-        Test test = new Test();
-        test.setName(dto.getName());
-        test.setCode(dto.getCode());
-        testSuiteRepository.findById(dto.getTestSuiteId()).ifPresent(test::setTestSuite);
-        Test saved = testRepository.save(test);
-        return new TestDTO(saved);
-
     }
 
     @GetMapping("")
@@ -57,6 +49,19 @@ public class TestController {
             throw new EntityNotFoundException(EntityNotFoundException.Entity.TEST, testId);
         }
     }
+
+    @PostMapping("")
+    public TestDTO createTest(@Valid @RequestBody TestDTO dto) {
+        Test test = new Test();
+        test.setName(dto.getName());
+        testSuiteRepository.findById(dto.getSuiteId()).ifPresentOrElse(test::setTestSuite, () -> {
+            throw new EntityNotFoundException(TEST_SUITE, dto.getSuiteId());
+        });
+
+        Test savedTest = testRepository.save(test);
+        return new TestDTO(savedTest);
+    }
+
 
     @PostMapping("/{testId}/run")
     public TestExecutionResultDTO runTest(

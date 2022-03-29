@@ -1,10 +1,15 @@
 <template>
-    <v-select
-        outlined
-        class="model-selector"
-        label="Model" :value="value" :items="projectModels" item-text="name" item-value="id" return-object
-        @input="onInput"
-    ></v-select>
+  <v-select
+      outlined
+      class="model-selector"
+      label="Model"
+      :value="value"
+      :items="projectModels"
+      :item-text="extractModelName"
+      item-value="id"
+      return-object
+      @input="onInput"
+  ></v-select>
 </template>
 
 <script lang="ts">
@@ -20,6 +25,10 @@ export default class ModelSelector extends Vue {
   @Prop({required: true}) projectId!: number;
   projectModels: Array<IProjetFileModel> = [];
   @Prop() value?: IProjetFileModel;
+
+  extractModelName(model: IProjetFileModel) {
+    return model.name || model.filename;
+  }
 
   onInput(value) {
     this.$emit("update:value", value);
