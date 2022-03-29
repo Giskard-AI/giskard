@@ -35,7 +35,6 @@ import {ITestSuite} from "@/interfaces";
 import ModelSelector from "@/views/main/utils/ModelSelector.vue";
 import DatasetSelector from "@/views/main/utils/DatasetSelector.vue";
 import * as _ from "lodash";
-import EditableLabel from "@/views/main/utils/EditableLabel.vue";
 import Tests from "@/views/main/project/Tests.vue";
 import TestSuiteSettings from "@/views/main/project/modals/TestSuiteSettings.vue";
 
@@ -43,7 +42,7 @@ import TestSuiteSettings from "@/views/main/project/modals/TestSuiteSettings.vue
 @Component({
   components:
       {
-        EditableLabel, DatasetSelector, ModelSelector,
+        DatasetSelector, ModelSelector,
         Tests, TestSuiteSettings
       }
 })
@@ -52,7 +51,6 @@ export default class TestSuite extends Vue {
   @Prop({required: true}) suiteId!: number;
   testSuite: ITestSuite | null = null;
   savedTestSuite: ITestSuite | null = null;
-  tabs = 2;
 
   selectedModel: number | null = null;
   selectedDataset: number | null = null;

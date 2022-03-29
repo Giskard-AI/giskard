@@ -115,6 +115,7 @@ export interface IProjectFile {
     name: string,
     size: number,
     creation_date: string,
+    filename: string;
 }
 
 export interface IProjetFileModel extends IProjectFile {

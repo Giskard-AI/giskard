@@ -22,7 +22,7 @@ public class TestDTO {
 
     private CodeLanguage language;
 
-    private Long testSuiteId;
+    private Long suiteId;
 
     private TestType type;
 
@@ -31,7 +31,7 @@ public class TestDTO {
         name = test.getName();
         code = test.getCode();
         language = test.getLanguage();
-        testSuiteId = test.getTestSuite().getId();
+        suiteId = test.getTestSuite().getId();
         type = test.getType();
     }
 }

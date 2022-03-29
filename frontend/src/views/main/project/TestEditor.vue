@@ -5,14 +5,6 @@
         <span>Test: </span><span class="text-h6">{{ testDetails.name }}</span>
       </v-col>
       <v-col :align="'right'">
-        <v-select
-            hide-details
-            dense
-            clearable label="Test function" :items="testEditorConfig.functions"
-            @change="selectTestPreset"
-            item-text="name" return-object></v-select>
-      </v-col>
-      <v-col :align="'right'" :cols="1">
         <v-btn tile color="primary"
                :disabled="!isDirty()"
                @click="save()">
@@ -22,7 +14,7 @@
       </v-col>
     </v-row>
     <v-row>
-      <v-col :cols="4">
+      <v-col :cols="3">
         <v-alert
             text
             style="opacity: 80%"
@@ -52,15 +44,48 @@
         </v-alert>
 
       </v-col>
-      <v-col :cols="8">
+      <v-col :cols="6">
         <MonacoEditor
             v-if="testDetails.type === 'CODE'"
             v-model="testDetails.code"
             class="editor"
-            height="500"
             language="python"
             :options="$root.monacoOptions"
         />
+      </v-col>
+      <v-col :cols="3">
+        <v-list>
+          <v-subheader>Code presets</v-subheader>
+
+          <template v-for="snippet in codeSnippets">
+            <v-hover v-slot="{ hover }" class="snippet">
+              <v-list-item dense v-ripple class="no-user-select" @click="copyCodeFromSnippet(snippet.code)">
+                <v-list-item-icon>
+                  <v-icon class="mirror" v-show="hover" dense>exit_to_app</v-icon>
+                </v-list-item-icon>
+                <v-list-item-content class="text-center">
+                  <v-list-item-title>{{ snippet.name }}</v-list-item-title>
+                </v-list-item-content>
+                <v-list-item-action>
+                  <v-tooltip bottom>
+                    <template v-slot:activator="{ on, attrs }">
+                      <v-icon color="grey lighten-1"
+                              dense
+                              v-bind="attrs"
+                              v-on="on">mdi-information
+                      </v-icon>
+                    </template>
+                    <span>{{ snippet.hint }}</span>
+                  </v-tooltip>
+                </v-list-item-action>
+
+              </v-list-item>
+            </v-hover>
+
+            <v-divider/>
+          </template>
+
+        </v-list>
       </v-col>
     </v-row>
     <v-row>
@@ -173,16 +198,17 @@ export default class TestEditor extends Vue {
     this.testDetailsOriginal = (await api.saveTest(this.testDetails!)).data;
   }
 
-  async selectTestPreset(selectedTest: ITestFunction) {
-    if (selectedTest.type === 'CODE') {
-
-      if (_.isEqual(this.testDetailsOriginal?.code, this.testDetails?.code) || await this.$dialog.confirm({
-        text: `Test code changes will be discarded. Would you like to continue?`,
-        title: 'Change test code'
-      })) {
-        this.testDetails!.code = selectedTest.code;
+  async copyCodeFromSnippet(code: string) {
+    if (!this.testDetails!.code || this.testDetails!.code !== code && await this.$dialog.confirm({
+      text: `Your current code will be discarded, would you like to continue?`,
+      title: 'Change code',
+      showClose: false,
+      actions: {
+        false: 'No',
+        true: 'Yes'
       }
-
+    })) {
+      this.testDetails!.code = code;
     }
   }
 
@@ -207,41 +233,123 @@ export default class TestEditor extends Vue {
     this.runResult = null;
   }
 
+  codeSnippets: any[] = [];
+
   private async init() {
     this.testDetails = (await api.getTestDetails(this.testId)).data;
+    if (this.testDetails) {
+      if (this.testDetails.type == null) {
+        this.testDetails.type = "CODE";
+      }
+      if (this.testDetails.language == null) {
+        this.testDetails.language = "PYTHON";
+      }
+      if (this.testDetails.code == null) {
+        this.testDetails!.code = "";
+      }
+    }
 
     this.testDetailsOriginal = _.cloneDeep(this.testDetails);
-
-    this.testEditorConfig = {
-      functions: [{
-        id: "test_metamorphic_invariance",
-        name: "Metamorphic Invariance",
-        type: "CODE",
-        // language=Python
-        /* tslint:disable-next-line */
-        code: `
-          perturbation = {"YOUR_FEATURE": lambda x: x}
-          population = test_df
-
-          test_metamorphic_invariance(
-            df=test_df,
-            model_fn=clf_predict,
-            perturbation_dict=perturbation,
-            filter=population)
-
-        `
-      }],
-
-
-    }
+    this.codeSnippets = [{
+      id: "test_metamorphic_invariance",
+      name: "Metamorphic Invariance",
+      type: "CODE",
+      // language=Python
+      code: "perturbation = {\n" +
+          "    \"duration_in_month\": lambda x: x.duration_in_month * 1,\n" +
+          "    \"sex\": lambda x: \'female\' if x.sex == \'male\' else \'male\'\n" +
+          "}\n" +
+          "\n" +
+          "tests.test_metamorphic_invariance(\n" +
+          "    df=train_df,\n" +
+          "    model=clf_predict,\n" +
+          "    perturbation_dict=perturbation\n" +
+          ")"
+    }, {
+      id: "test_metamorphic_increasing",
+      name: "Metamorphic Increasing",
+      hint: "Tests that the prediction probability increases with the increase of a feature value",
+      type: "CODE",
+      // language=Python
+      /* tslint:disable-next-line */
+      code: "tests.test_metamorphic_increasing(\n" +
+          "    df=train_df,\n" +
+          "    model=clf_predict,\n" +
+          "    column_name='age',\n" +
+          "    perturbation_percent=0.1,\n" +
+          "    classification_label_index=1\n" +
+          ")"
+    }, {
+      id: "test_metamorphic_decreasing",
+      name: "Metamorphic Decreasing",
+      type: "CODE",
+      hint: "Tests that the prediction probability decreases with the increase of a feature value",
+      // language=Python
+      /* tslint:disable-next-line */
+      code: "tests.test_metamorphic_decreasing(\n" +
+          "    df=train_df,\n" +
+          "    model=clf_predict,\n" +
+          "    column_name='age',\n" +
+          "    perturbation_percent=0.1,\n" +
+          "    classification_label_index=1\n" +
+          ")"
+    }, {
+      id: "test_metamorphic_invariance",
+      name: "Metamorphic Heuristic",
+      type: "CODE",
+      // language=Python
+      /* tslint:disable-next-line */
+      code: "tests.test_heuristic(\n" +
+          "    df=train_df,\n" +
+          "    model=clf_predict,\n" +
+          "    classification_label=0\n" +
+          ")"
+    }];
+    // this.testEditorConfig = {
+    //   functions: [{
+    //     id: "test_metamorphic_invariance",
+    //     name: "Metamorphic Invariance",
+    //     type: "CODE",
+    //     // language=Python
+    //     /* tslint:disable-next-line */
+    //     code: `
+    //       perturbation = {"YOUR_FEATURE": lambda x: x}
+    //       population = test_df
+    //
+    //       test_metamorphic_invariance(
+    //         df=test_df,
+    //         model_fn=clf_predict,
+    //         perturbation_dict=perturbation,
+    //         filter=population)
+    //
+    //     `
+    //   }],
+    //
+    //
+    // }
     // this.testEditorConfig = (await api.getTestEditorConfig()).data;
   }
 }
 </script>
 
-<style scoped>
+<style scoped lang="scss">
+@import "/src/styles/colors.scss";
+
+.mirror {
+  transform: rotate(180deg);
+
+}
+
 .editor {
-  height: 500px;
+  height: 400px;
   border: 1px solid grey;
+}
+
+.snippet {
+  cursor: pointer;
+
+  &:hover {
+    background-color: $hover;
+  }
 }
 </style>

@@ -31,6 +31,7 @@ import org.slf4j.LoggerFactory;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -77,15 +78,40 @@ public class MLWorkerClient {
     }
 
     public TestResultMessage runTest(TestSuite testSuite, Test test) {
-        RunTestRequest request = RunTestRequest.newBuilder()
+        RunTestRequest.Builder requestBuilder = RunTestRequest.newBuilder()
             .setCode(test.getCode())
-            .setModelPath(testSuite.getModel().getLocation())
-            .setTrainDatasetPath(testSuite.getTrainDataset().getLocation())
-            .setTestDatasetPath(testSuite.getTestDataset().getLocation())
+            .setModelPath(testSuite.getModel().getLocation());
+        if (testSuite.getTrainDataset() != null) {
+            requestBuilder.setTrainDatasetPath(testSuite.getTrainDataset().getLocation());
+        }
+        if (testSuite.getTestDataset() != null) {
+            requestBuilder.setTestDatasetPath(testSuite.getTestDataset().getLocation());
+        }
+        RunTestRequest request = requestBuilder
             .build();
-        TestResultMessage runTestResponse = blockingStub.runTest(request);
-        return runTestResponse;
+        TestResultMessage testResultMessage = null;
+        try {
+            testResultMessage = blockingStub.runTest(request);
+        } catch (StatusRuntimeException e) {
+            interpretTestExecutionError(testSuite, e);
+        }
+        return testResultMessage;
 
+    }
+
+    private void interpretTestExecutionError(TestSuite testSuite, StatusRuntimeException e) {
+        switch (Objects.requireNonNull(e.getStatus().getDescription())) {
+            case "Exception calling application: name 'train_df' is not defined":
+                if (testSuite.getTrainDataset() == null) {
+                    throw new RuntimeException("Failed to execute test: Train dataset is not specified");
+                }
+            case "Exception calling application: name 'test_df' is not defined":
+                if (testSuite.getTestDataset() == null) {
+                    throw new RuntimeException("Failed to execute test: Test dataset is not specified");
+                }
+            default:
+                throw e;
+        }
     }
 
     public void loadModel(String name) {

@@ -24,7 +24,6 @@ public class Test extends AbstractAuditingEntity {
 
     @Getter
     @Setter
-    @Lob
     private String code;
 
     @Getter
