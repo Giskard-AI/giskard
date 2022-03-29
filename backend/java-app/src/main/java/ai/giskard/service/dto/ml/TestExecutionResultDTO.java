@@ -6,21 +6,18 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Getter
 @Setter
 @NoArgsConstructor
 public class TestExecutionResultDTO {
     private TestResult status;
-    private Map<String, SingleTestResultDTO> result;
+    private List<NamedSingleTestResultDTO> result;
     private String message;
 
-    public void setResult(TestResultMessage message){
-        result = new HashMap<>();
-        message.getResultsMap().forEach((key, value) -> {
-            result.put(key, new SingleTestResultDTO(value));
-        });
+    public void setResult(TestResultMessage message) {
+        result = message.getResultsList().stream().map(NamedSingleTestResultDTO::new).collect(Collectors.toList());
     }
 }

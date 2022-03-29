@@ -1,27 +1,39 @@
 import inspect
-from typing import Dict
+import logging
+from typing import Dict, List, Any
 
 import great_expectations as ge
 import pandas as pd
 from pandas.core.frame import DataFrame
 
 import ml_worker_pb2
-from ml_worker_pb2 import SingleTestResult
+from ml_worker_pb2 import SingleTestResult, NamedSingleTestResult
 from testing.utils import ge_result_to_test_result, apply_perturbation_inplace
 
 EMPTY_SINGLE_TEST_RESULT = ml_worker_pb2.SingleTestResult()
 
 
 class GiskardTestFunctions:
+    tests_results: List[NamedSingleTestResult]
 
     def __init__(self) -> None:
-        self.tests_results: Dict[str, SingleTestResult] = {}
+        self.tests_results = []
 
     def save_results(self, result: ml_worker_pb2.SingleTestResult, test_name=None):
         if test_name is None:
-            test_name = inspect.currentframe().f_back.f_code.co_name
-        self.tests_results[test_name] = result
+            test_name = self.find_caller_test_name()
+
+        self.tests_results.append(NamedSingleTestResult(name=test_name, result=result))
         return result
+
+    def find_caller_test_name(self):
+        curr_frame = inspect.currentframe()
+        try:
+            while curr_frame.f_back.f_code.co_name != '<module>':
+                curr_frame = curr_frame.f_back
+        except Exception as e:
+            logging.error(f"Failed to extract test method name", e)
+        return curr_frame.f_code.co_name
 
     def test_metamorphic_invariance(self, df: DataFrame, model, perturbation_dict) -> ml_worker_pb2.SingleTestResult:
         results_df = self._perturb_and_predict(df, model, perturbation_dict)
@@ -108,12 +120,12 @@ class GiskardTestFunctions:
         results_df["prediction_proba"] = model(df).max(1)
         results_df["prediction"] = model(df).argmax(1)
         matching_prediction_mask = (results_df["prediction"] == classification_label) & \
-                                (results_df["prediction_proba"] <= max_proba) & \
-                                (results_df["prediction_proba"] >= min_proba)
+                                   (results_df["prediction_proba"] <= max_proba) & \
+                                   (results_df["prediction_proba"] >= min_proba)
 
         unexpected = df[~matching_prediction_mask]
-        return SingleTestResult(
+        return self.save_results(SingleTestResult(
             element_count=len(df),
             unexpected_count=len(unexpected),
-            unexpected_percent=len(unexpected) / len(df)
-        )
+            unexpected_percent=100 * len(unexpected) / len(df)
+        ))

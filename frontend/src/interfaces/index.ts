@@ -7,6 +7,11 @@ export interface ITest {
     type: 'CODE';
 }
 
+interface INamedTestResult {
+    name: string;
+    result: ITestResultMessage;
+}
+
 interface ITestResultMessage {
     partialUnexpectedIndexList: number[],
     unexpectedIndexList: number[],
@@ -21,7 +26,7 @@ interface ITestResultMessage {
 
 export interface ITestExecutionResult {
     status: 'SUCCESS' | 'WARNING' | 'FAIL' | 'ERROR';
-    result: Map<string, ITestResultMessage>;
+    result: INamedTestResult[];
     message: string;
 }
 
