@@ -86,7 +86,7 @@
             v-if="runResult.status === 'ERROR'">
           <pre>{{ runResult.message }}</pre>
         </v-alert>
-        <template v-for="(testResults, testName) in runResult.result">
+        <template v-for="testResult in runResult.result">
           <v-alert
               v-if="runResult.status === 'SUCCESS'"
               v-model="showRunResult"
@@ -95,7 +95,7 @@
               outlined
               dismissible
           >
-            <div class="text-h6">Test results: {{ testName }}</div>
+            <div class="text-h6">Test results: {{ testResult.name }}</div>
             <table style="width: 100%; text-align: center">
               <tr>
                 <th>Total rows tested</th>
@@ -103,9 +103,9 @@
                 <th>Failed rows (%)</th>
               </tr>
               <tr>
-                <td>{{ testResults.elementCount }}</td>
-                <td>{{ testResults.unexpectedCount }}</td>
-                <td>{{ testResults.unexpectedPercent | formatNumber }}</td>
+                <td>{{ testResult.result.elementCount }}</td>
+                <td>{{ testResult.result.unexpectedCount }}</td>
+                <td>{{ testResult.result.unexpectedPercent | formatNumber }}</td>
               </tr>
             </table>
 

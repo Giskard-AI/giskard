@@ -54,6 +54,12 @@ message Partial_unexpected_counts {
     uint32 count = 2;
 }
 
+message NamedSingleTestResult{
+    string name = 1;
+    SingleTestResult result = 2;
+
+}
+
 message SingleTestResult{
     uint32 element_count = 1;
     uint32 missing_count = 2;
@@ -70,6 +76,6 @@ message SingleTestResult{
 }
 
 message TestResultMessage {
-    map<string, SingleTestResult> results = 1;
+    repeated NamedSingleTestResult results = 1;
 }
 
