@@ -4,7 +4,7 @@ import ml_worker_pb2
 from core.files_utils import read_dataset_file, read_model_file
 from ml_worker_pb2_grpc import MLWorkerServicer
 from mltask_server_runner import settings
-from testing.functions import TestFunctions
+from testing.functions import GiskardTestFunctions
 
 logger = logging.getLogger()
 
@@ -22,7 +22,7 @@ class MLTaskServer(MLWorkerServicer):
         train_ds_path = settings.storage_root / request.train_dataset_path
         test_ds_path = settings.storage_root / request.test_dataset_path
 
-        tests = TestFunctions()
+        tests = GiskardTestFunctions()
         _globals = {
             'train_df': read_dataset_file(str(train_ds_path.absolute())),
             'test_df': read_dataset_file(str(test_ds_path.absolute())),

@@ -2,7 +2,12 @@
   <v-container fluid v-if="testSuite">
     <v-row>
       <v-col>
-        <span>Test suite: </span><span class="text-h6">{{ testSuite.name }}</span>
+        <span>Test suite: </span>
+        <router-link class="text-h6 text-decoration-none" :to="{name: 'suite-details', params: {
+          suiteId: this.suiteId
+         } }">
+          {{ testSuite.name }}
+        </router-link>
       </v-col>
       <v-col :align="'right'">
         <v-btn

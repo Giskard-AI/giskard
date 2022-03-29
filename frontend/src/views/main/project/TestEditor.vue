@@ -56,16 +56,21 @@
         <MonacoEditor
             v-if="testDetails.type === 'CODE'"
             v-model="testDetails.code"
-            style="border: 1px solid grey"
+            class="editor"
             height="500"
             language="python"
             :options="$root.monacoOptions"
-        ></MonacoEditor>
+        />
       </v-col>
     </v-row>
     <v-row>
       <v-col :align="'right'">
-        <v-btn tile @click="runTest()">
+        <v-btn tile
+               @click="runTest()"
+               :loading="executingTest"
+               :disabled="executingTest"
+
+        >
           <v-icon>arrow_right</v-icon>
           <span>Run</span>
         </v-btn>
@@ -90,7 +95,7 @@
               outlined
               dismissible
           >
-            <div class="text-h6">Test results: {{testName}}</div>
+            <div class="text-h6">Test results: {{ testName }}</div>
             <table style="width: 100%; text-align: center">
               <tr>
                 <th>Total rows tested</th>
@@ -120,7 +125,8 @@
 <script lang="ts">
 import Vue from "vue";
 /* tslint:disable-next-line */
-import MonacoEditor from 'monaco-editor-vue';
+import MonacoEditor from 'vue-monaco'
+
 import Component from "vue-class-component";
 import {Prop} from "vue-property-decorator";
 import {api} from "@/api";
@@ -153,6 +159,7 @@ export default class TestEditor extends Vue {
   testFunction: ITestFunction | null = null;
   showRunResult: boolean = false;
   runResult: ITestExecutionResult | null = null;
+  executingTest = false;
 
   async mounted() {
     await this.init();
@@ -180,12 +187,18 @@ export default class TestEditor extends Vue {
   }
 
   async runTest() {
-    this.resetTestResults();
+    try {
+      this.executingTest = true;
 
-    if (this.isDirty()) {
-      await this.save();
+      this.resetTestResults();
+
+      if (this.isDirty()) {
+        await this.save();
+      }
+      this.runResult = (await api.runTest(this.testId)).data;
+    } finally {
+      this.executingTest = false;
     }
-    this.runResult = (await api.runTest(this.testId)).data;
 
   }
 
@@ -227,5 +240,8 @@ export default class TestEditor extends Vue {
 </script>
 
 <style scoped>
-
+.editor {
+  height: 500px;
+  border: 1px solid grey;
+}
 </style>

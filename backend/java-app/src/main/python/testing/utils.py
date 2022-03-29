@@ -17,18 +17,20 @@ def ge_result_to_test_result(result) -> ml_worker_pb2.SingleTestResult:
         unexpected_percent_total=result['unexpected_percent_total'],
         unexpected_percent_nonmissing=result['unexpected_percent_nonmissing'],
         partial_unexpected_index_list=result['partial_unexpected_index_list'],
-        partial_unexpected_counts=result['partial_unexpected_counts'],
+        # partial_unexpected_counts=result['partial_unexpected_counts'],
         unexpected_index_list=result['unexpected_index_list']
     )
 
 
-def perturb_inplace(df, perturbation_dict):
+def apply_perturbation_inplace(df, perturbation_dict):
     modified_rows = []
     for idx, r in df.iterrows():
+        added = False
         for pert_col, pert_func in perturbation_dict.items():
             original_value = r[pert_col]
             new_value = pert_func(r)
-            if original_value != new_value:
+            if original_value != new_value and not added:
+                added = True
                 modified_rows.append(idx)
                 df.loc[idx, pert_col] = new_value
     return modified_rows
