@@ -11,7 +11,7 @@
       </v-col>
       <v-col :align="'right'">
         <v-btn
-            class="mx-2"
+            class="mx-2 mr-0"
             dark
             small
             outlined
