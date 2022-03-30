@@ -1,155 +1,161 @@
 <template>
   <v-container fluid v-if="testDetails">
-    <v-row v-if="testDetails">
-      <v-col :cols="4">
-        <span>Test: </span><span class="text-h6">{{ testDetails.name }}</span>
-      </v-col>
-      <v-col :align="'right'">
-        <v-btn tile color="primary"
-               :disabled="!isDirty()"
-               @click="save()">
-          <v-icon dense left>save</v-icon>
-          Save
-        </v-btn>
-      </v-col>
-    </v-row>
-    <v-row>
-      <v-col :cols="3">
-        <v-alert
-            text
-            style="opacity: 80%"
-            color="blue"
-            outlined
-            type="info"
-        >
-          <p class="font-weight-bold text-center">Available variables</p>
-          <table style="width: 100%">
-            <tr>
-              <td><code>clf_predict</code></td>
-              <td>Model function</td>
-            </tr>
-            <tr>
-              <td><code>test_df</code></td>
-              <td>Test dataframe</td>
-            </tr>
-            <tr>
-              <td><code>train_df</code></td>
-              <td>Train dataframe</td>
-            </tr>
-          </table>
-          <div class="mt-4 mb-0">
-            <p class="ma-0">These variables will be provided at the test execution time</p>
-            <p class="ma-0">you can reference them in the custom test script</p>
-          </div>
-        </v-alert>
+    <ValidationObserver v-slot="{ invalid }">
 
-      </v-col>
-      <v-col :cols="6">
-        <MonacoEditor
-            v-if="testDetails.type === 'CODE'"
-            v-model="testDetails.code"
-            class="editor"
-            language="python"
-            :options="$root.monacoOptions"
-        />
-      </v-col>
-      <v-col :cols="3">
-        <v-list>
-          <v-subheader>Code presets</v-subheader>
-
-          <template v-for="snippet in codeSnippets">
-            <v-hover v-slot="{ hover }" class="snippet">
-              <v-list-item dense v-ripple class="no-user-select" @click="copyCodeFromSnippet(snippet.code)">
-                <v-list-item-icon>
-                  <v-icon class="mirror" v-show="hover" dense>exit_to_app</v-icon>
-                </v-list-item-icon>
-                <v-list-item-content class="text-center">
-                  <v-list-item-title>{{ snippet.name }}</v-list-item-title>
-                </v-list-item-content>
-                <v-list-item-action>
-                  <v-tooltip bottom>
-                    <template v-slot:activator="{ on, attrs }">
-                      <v-icon color="grey lighten-1"
-                              dense
-                              v-bind="attrs"
-                              v-on="on">mdi-information
-                      </v-icon>
-                    </template>
-                    <span>{{ snippet.hint }}</span>
-                  </v-tooltip>
-                </v-list-item-action>
-
-              </v-list-item>
-            </v-hover>
-
-            <v-divider/>
-          </template>
-
-        </v-list>
-      </v-col>
-    </v-row>
-    <v-row>
-      <v-col :align="'right'">
-        <v-btn tile
-               @click="runTest()"
-               :loading="executingTest"
-               :disabled="executingTest"
-
-        >
-          <v-icon>arrow_right</v-icon>
-          <span>Run</span>
-        </v-btn>
-      </v-col>
-    </v-row>
-    <v-row v-if="runResult">
-      <v-col>
-        <v-alert
-            v-model="showRunResult"
-            dismissible
-            border="left"
-            type="error"
-            v-if="runResult.status === 'ERROR'">
-          <pre>{{ runResult.message }}</pre>
-        </v-alert>
-        <template v-for="testResult in runResult.result">
+      <v-row v-if="testDetails">
+        <v-col :cols="3">
+        <span class="text-h6">
+    <ValidationProvider name="Test name" mode="eager" rules="required" v-slot="{errors}">
+              <v-text-field
+                  label="Test name"
+                  class="shrink"
+                  type="text"
+                  v-model="testDetails.name"
+                  :error-messages="errors"
+              ></v-text-field>
+    </ValidationProvider>
+        </span>
+        </v-col>
+        <v-col :align="'right'">
+          <v-btn tile color="primary"
+                 :disabled="!isDirty() || invalid"
+                 @click="save()">
+            <v-icon dense left>save</v-icon>
+            Save
+          </v-btn>
+        </v-col>
+      </v-row>
+      <v-row>
+        <v-col :cols="3">
           <v-alert
-              v-if="runResult.status === 'SUCCESS'"
-              v-model="showRunResult"
-              type="success"
-              color="green"
+              text
+              style="opacity: 80%"
+              color="blue"
               outlined
-              dismissible
+              type="info"
           >
-            <div class="text-h6">Test results: {{ testResult.name }}</div>
-            <table style="width: 100%; text-align: center">
+            <p class="font-weight-bold text-center">Available variables</p>
+            <table style="width: 100%">
               <tr>
-                <th>Total rows tested</th>
-                <th>Failed rows</th>
-                <th>Failed rows (%)</th>
+                <td><code>clf_predict</code></td>
+                <td>Model function</td>
               </tr>
               <tr>
-                <td>{{ testResult.result.elementCount }}</td>
-                <td>{{ testResult.result.unexpectedCount }}</td>
-                <td>{{ testResult.result.unexpectedPercent | formatNumber }}</td>
+                <td><code>test_df</code></td>
+                <td>Test dataframe</td>
+              </tr>
+              <tr>
+                <td><code>train_df</code></td>
+                <td>Train dataframe</td>
               </tr>
             </table>
-
-            <!--          <pre>{{runResult}}</pre>-->
+            <div class="mt-4 mb-0">
+              <p class="ma-0">These variables will be provided at the test execution time</p>
+              <p class="ma-0">you can reference them in the custom test script</p>
+            </div>
           </v-alert>
-        </template>
-      </v-col>
-    </v-row>
-    <!--    <v-row>-->
-    <!--      <v-col>-->
-    <!--        <pre>{{ testDetails }}</pre>-->
-    <!--      </v-col>-->
-    <!--    </v-row>-->
+
+        </v-col>
+        <v-col :cols="6">
+          <MonacoEditor
+              v-if="testDetails.type === 'CODE'"
+              v-model="testDetails.code"
+              class="editor"
+              language="python"
+              :options="$root.monacoOptions"
+          />
+        </v-col>
+        <v-col :cols="3">
+          <v-list>
+            <v-subheader>Code presets</v-subheader>
+
+            <template v-for="snippet in codeSnippets">
+              <v-hover v-slot="{ hover }" class="snippet">
+                <v-list-item dense v-ripple class="no-user-select" @click="copyCodeFromSnippet(snippet.code)">
+                  <v-list-item-icon>
+                    <v-icon class="mirror" v-show="hover" dense>exit_to_app</v-icon>
+                  </v-list-item-icon>
+                  <v-list-item-content class="text-center">
+                    <v-list-item-title>{{ snippet.name }}</v-list-item-title>
+                  </v-list-item-content>
+                  <v-list-item-action>
+                    <v-tooltip bottom>
+                      <template v-slot:activator="{ on, attrs }">
+                        <v-icon color="grey lighten-1"
+                                dense
+                                v-bind="attrs"
+                                v-on="on">mdi-information
+                        </v-icon>
+                      </template>
+                      <span>{{ snippet.hint }}</span>
+                    </v-tooltip>
+                  </v-list-item-action>
+
+                </v-list-item>
+              </v-hover>
+
+              <v-divider/>
+            </template>
+
+          </v-list>
+        </v-col>
+      </v-row>
+      <v-row>
+        <v-col :align="'right'">
+          <v-btn tile
+                 @click="runTest()"
+                 :loading="executingTest"
+                 :disabled="executingTest"
+
+          >
+            <v-icon>arrow_right</v-icon>
+            <span>Run</span>
+          </v-btn>
+        </v-col>
+      </v-row>
+      <v-row v-if="runResult">
+        <v-col>
+          <v-alert
+              v-model="showRunResult"
+              dismissible
+              border="left"
+              type="error"
+              v-if="runResult.status === 'ERROR'">
+            <pre>{{ runResult.message }}</pre>
+          </v-alert>
+          <template v-for="testResult in runResult.result">
+            <v-alert
+                v-if="runResult.status === 'SUCCESS'"
+                v-model="showRunResult"
+                type="success"
+                color="green"
+                outlined
+                dismissible
+            >
+              <div class="text-h6">Test results: {{ testResult.name }}</div>
+              <table style="width: 100%; text-align: center">
+                <tr>
+                  <th>Total rows tested</th>
+                  <th>Failed rows</th>
+                  <th>Failed rows (%)</th>
+                </tr>
+                <tr>
+                  <td>{{ testResult.result.elementCount }}</td>
+                  <td>{{ testResult.result.unexpectedCount }}</td>
+                  <td>{{ testResult.result.unexpectedPercent | formatNumber }}</td>
+                </tr>
+              </table>
+            </v-alert>
+          </template>
+        </v-col>
+      </v-row>
+    </ValidationObserver>
   </v-container>
 </template>
 
 <script lang="ts">
 import Vue from "vue";
-/* tslint:disable-next-line */
+// @ts-ignore
 import MonacoEditor from 'vue-monaco'
 
 import Component from "vue-class-component";
@@ -255,6 +261,7 @@ export default class TestEditor extends Vue {
       name: "Metamorphic Invariance",
       type: "CODE",
       // language=Python
+      /* tslint:disable-next-line */
       code: "perturbation = {\n" +
           "    \"duration_in_month\": lambda x: x.duration_in_month * 1,\n" +
           "    \"sex\": lambda x: \'female\' if x.sex == \'male\' else \'male\'\n" +
