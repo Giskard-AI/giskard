@@ -1,4 +1,5 @@
 import logging
+import os.path
 from concurrent import futures
 from logging.config import fileConfig
 from pathlib import Path
@@ -15,6 +16,7 @@ class Settings(BaseSettings):
     max_workers: int = 10
 
     storage_root: Path
+    environment: str = ""
 
     @validator("storage_root", pre=True)
     def __storage_root_setter(cls, v: str) -> Path:
@@ -26,7 +28,20 @@ class Settings(BaseSettings):
 
 
 settings = Settings()
-fileConfig('logging_config.ini')
+
+
+def load_logging_config():
+    if settings.environment:
+        config_path = f'logging_config{"." + settings.environment}.ini'
+        if os.path.exists(config_path):
+            fileConfig(config_path)
+        else:
+            print(f"Failed to load logging config from {config_path}")
+    else:
+        fileConfig('logging_config.ini')
+
+
+load_logging_config()
 logger = logging.getLogger()
 
 

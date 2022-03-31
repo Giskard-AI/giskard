@@ -27,6 +27,11 @@ services:
       args:
         INSTALL_DEV: ${INSTALL_DEV-false}
 
+  ml-worker:
+    build:
+      context: .
+      dockerfile: ./backend/mlworker.dockerfile
+
   backend-java:
     build:
       dockerfile: ./src/main/docker/app/app.dockerfile

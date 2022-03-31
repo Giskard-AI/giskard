@@ -6,6 +6,7 @@ import ai.giskard.ml.MLWorkerClient;
 import ai.giskard.repository.ml.TestRepository;
 import ai.giskard.service.dto.ml.TestDTO;
 import ai.giskard.service.dto.ml.TestExecutionResultDTO;
+import ai.giskard.service.ml.MLWorkerService;
 import ai.giskard.web.rest.errors.EntityNotFoundException;
 import ai.giskard.worker.TestResultMessage;
 import org.slf4j.LoggerFactory;
@@ -15,13 +16,15 @@ import java.util.Optional;
 
 @Service
 public class TestService {
+    MLWorkerService mlWorkerService;
     private static final org.slf4j.Logger logger = LoggerFactory.getLogger(TestService.class);
 
 
     private final TestRepository testRepository;
 
-    public TestService(TestRepository testRepository) {
+    public TestService(TestRepository testRepository, MLWorkerService mlWorkerService) {
         this.testRepository = testRepository;
+        this.mlWorkerService = mlWorkerService;
     }
 
 
@@ -45,7 +48,7 @@ public class TestService {
         Test test = testRepository.findById(testId).orElseThrow(() -> new EntityNotFoundException(EntityNotFoundException.Entity.TEST, testId));
         MLWorkerClient client = null;
         try {
-            client = MLWorkerClient.createClient();
+            client = mlWorkerService.createClient();
             TestResultMessage runTestResult = client.runTest(test.getTestSuite(), test);
 
             res.setStatus(TestResult.SUCCESS);

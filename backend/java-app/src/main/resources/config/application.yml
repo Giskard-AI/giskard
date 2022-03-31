@@ -204,4 +204,6 @@ jhipster:
 # https://www.jhipster.tech/common-application-properties/
 # ===================================================================
 
-# application:
+application:
+  ml-worker-host: localhost
+  ml-worker-port: 50051
