@@ -25,9 +25,9 @@
                   <v-list-item-title v-html="test.name"></v-list-item-title>
                   <v-list-item-subtitle>
                     <span class="font-weight-regular">Last executed</span>:
-                    <UseTimeAgo v-slot="{ timeAgo }" :time="new Date(2022, 2, parseInt(Math.random()*22))">
-                      {{ timeAgo }}
-                    </UseTimeAgo>
+<!--                    <UseTimeAgo v-slot="{ timeAgo }" :time="new Date(2022, 2, parseInt(Math.random()*22))">-->
+<!--                      {{ timeAgo }}-->
+<!--                    </UseTimeAgo>-->
 
                   </v-list-item-subtitle>
                 </v-list-item-content>
@@ -63,11 +63,11 @@ import {Prop, Vue} from "vue-property-decorator";
 import Component from "vue-class-component";
 import TestSuiteCreateModal from "@/views/main/project/modals/TestSuiteCreateModal.vue";
 import {api} from "@/api";
-import {UseTimeAgo} from "@vueuse/components";
+// import {UseTimeAgo} from "@vueuse/components";
 import TestCreateModal from "@/views/main/project/modals/TestCreateModal.vue";
 
 @Component({
-  components: {TestSuiteCreateModal, UseTimeAgo, TestCreateModal}
+  components: {TestSuiteCreateModal, TestCreateModal}
 })
 export default class Tests extends Vue {
   @Prop({required: true}) suiteId!: number;
