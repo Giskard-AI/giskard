@@ -24,8 +24,17 @@ services:
       # Allow explicit env var override for tests
       - SMTP_HOST=${SMTP_HOST}
 
+  ml-worker:
+    image: '${DOCKER_REGISTRY}/ml-worker:${TAG-latest}'
+    environment:
+      - GSK_ENVIRONMENT=prod
+      - GSK_STORAGE_ROOT=/app
+      - GSK_PORT=50000
+    volumes:
+      - app-files-bucket:/app/files-bucket
+
   backend-java:
-    image: backend-java
+    image: '${DOCKER_REGISTRY}/backend-java:${TAG-latest}'
     env_file:
       - .env
     environment:
@@ -36,6 +45,8 @@ services:
       - SPRING_DATASOURCE_PASSWORD=y1QYbF2BtFUC
       - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/app
       - SPRING_LIQUIBASE_URL=jdbc:postgresql://db:5432/app
+      - APPLICATION_ML_WORKER_HOST=ml-worker
+      - APPLICATION_ML_WORKER_PORT=50000
 
   frontend:
     image: '${DOCKER_REGISTRY}/giskard-frontend:${TAG-latest}'
