@@ -2,7 +2,7 @@ Copyright (c) 2022-present Giskard AI
 
 Portions of the Giskard AI software are licensed as follows:
 
-* All content that resides under the "ee/" directory of this repository, if that directory exists, is licensed under the license defined in "ee/LICENSE".
+* All software that resides under an "ee/" directory (the “EE Software”), if that directory exists, is licensed under the license defined in "ee/LICENSE".
 * All third party components incorporated into the Giskard AI Software are licensed under the original license provided by the owner of the applicable component.
 * All software outside of the above-mentioned directories or restrictions above is available under the "Apache License Version 2.0" license as defined below.
 
