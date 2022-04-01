@@ -10,7 +10,7 @@ RUN apt-get update -y && apt-get install -y curl git build-essential libxml2-dev
     poetry config virtualenvs.create false
 
 # Copy poetry.lock* in case it doesn't exist in the repo
-COPY ./app/pyproject.toml ./app/poetry.lock* /app/
+COPY pyproject.toml ./app/poetry.lock* /app/
 
 # Allow installing dev dependencies to run tests
 ARG INSTALL_DEV=false

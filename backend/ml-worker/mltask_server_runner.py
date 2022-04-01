@@ -46,7 +46,7 @@ logger = logging.getLogger()
 
 
 def serve():
-    from server.ml_task_server import MLTaskServer
+    from ml_worker.server.ml_task_server import MLTaskServer
 
     server = grpc.server(futures.ThreadPoolExecutor(
         max_workers=settings.max_workers,

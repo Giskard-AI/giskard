@@ -1,14 +1,14 @@
 import inspect
 import logging
-from typing import Dict, List, Any
+from typing import List
 
 import great_expectations as ge
 import pandas as pd
 from pandas.core.frame import DataFrame
+from ml_worker.testing.utils import ge_result_to_test_result, apply_perturbation_inplace
 
 import ml_worker_pb2
 from ml_worker_pb2 import SingleTestResult, NamedSingleTestResult
-from testing.utils import ge_result_to_test_result, apply_perturbation_inplace
 
 EMPTY_SINGLE_TEST_RESULT = ml_worker_pb2.SingleTestResult()
 
@@ -26,7 +26,8 @@ class GiskardTestFunctions:
         self.tests_results.append(NamedSingleTestResult(name=test_name, result=result))
         return result
 
-    def find_caller_test_name(self):
+    @staticmethod
+    def find_caller_test_name():
         curr_frame = inspect.currentframe()
         try:
             while curr_frame.f_back.f_code.co_name != '<module>':
@@ -41,7 +42,7 @@ class GiskardTestFunctions:
         ge_df = ge.from_pandas(results_df)
         result = ge_df.expect_column_pair_values_to_be_equal(
             "prediction",
-            "perturbated_prediction",
+            "perturbed_prediction",
             result_format="COMPLETE"
         )["result"]
 
@@ -49,16 +50,17 @@ class GiskardTestFunctions:
 
     @staticmethod
     def _perturb_and_predict(df, model, perturbation_dict, classification_label_index=None):
-        extract_prediction = lambda x: \
-            x.argmax(1) if classification_label_index is None else x[:, classification_label_index]
+        def extract_prediction(x):
+            return x.argmax(1) if classification_label_index is None else x[:, classification_label_index]
+
         results_df = pd.DataFrame()
         results_df["prediction"] = extract_prediction(model(df))
         modified_rows = apply_perturbation_inplace(df, perturbation_dict)
         results_df = results_df.loc[modified_rows]
         if len(modified_rows):
-            results_df["perturbated_prediction"] = extract_prediction(model(df.loc[modified_rows]))
+            results_df["perturbed_prediction"] = extract_prediction(model(df.loc[modified_rows]))
         else:
-            results_df["perturbated_prediction"] = results_df["prediction"]
+            results_df["perturbed_prediction"] = results_df["prediction"]
         return results_df
 
     def test_metamorphic_increasing(self,
@@ -99,8 +101,8 @@ class GiskardTestFunctions:
 
         ge_df = ge.from_pandas(results_df)
         result = ge_df.expect_column_pair_values_A_to_be_greater_than_B(
-            "perturbated_prediction" if is_increasing else "prediction",
-            "prediction" if is_increasing else "perturbated_prediction",
+            "perturbed_prediction" if is_increasing else "prediction",
+            "prediction" if is_increasing else "perturbed_prediction",
             result_format="COMPLETE"
         )["result"]
 

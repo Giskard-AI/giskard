@@ -23,16 +23,16 @@ services:
     command: /start-reload.sh
     build:
       context: ./backend
-      dockerfile: backend.dockerfile
+      dockerfile: ./app/app.dockerfile
       args:
         INSTALL_DEV: ${INSTALL_DEV-false}
 
   ml-worker:
     build:
-      context: .
-      dockerfile: ./backend/mlworker.dockerfile
+      context: ./backend
+      dockerfile: ./ml-worker/ml-worker.dockerfile
 
   backend-java:
     build:
-      dockerfile: ./src/main/docker/app/app.dockerfile
-      context: ./backend/java-app
+      dockerfile: ./java-app/src/main/docker/app/app.dockerfile
+      context: ./backend
