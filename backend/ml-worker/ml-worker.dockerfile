@@ -46,7 +46,7 @@ RUN curl -sSL https://raw.githubusercontent.com/sdispater/poetry/master/get-poet
 
 # copy project requirement files here to ensure they will be cached.
 WORKDIR $PYSETUP_PATH
-COPY ./backend/java-app/src/main/python/pyproject.toml ./backend/java-app/src/main/python/poetry.lock* ./
+COPY ./ml-worker/pyproject.toml ./ml-worker/poetry.lock* ./
 
 # install deps - uses $POETRY_VIRTUALENVS_IN_PROJECT internally
 RUN poetry install --no-dev
@@ -59,22 +59,24 @@ RUN poetry install
 
 # copy makefile and proto to generate python sources
 WORKDIR /app
-COPY ./Makefile ./
-COPY ./backend/java-app/src/main/proto ./backend/java-app/src/main/proto
+COPY ./ml-worker/ml_worker/proto ml_worker/proto
+COPY ./ml-worker/generate-proto.sh ./generate-proto.sh
 
-RUN make generate-python
+RUN bash generate-proto.sh
 
 
 # `production` image used for runtime
 FROM python-base as production
 COPY --from=builder-base $PYSETUP_PATH $PYSETUP_PATH
-COPY ./backend/java-app/src/main/python /app
+COPY ./ml-worker /app
+WORKDIR /app
+COPY --from=proto-builder /app/generated ./generated
+
 
 # replace symlinked directory by actual copy
-RUN rm -rf /app/core
-COPY ./backend/app/app/core /app/core
-COPY --from=proto-builder /app/backend/java-app/build/generated/source/proto/main/python /app/generated
-WORKDIR /app
+# Docker preserves symlinks when its parent is copied and copies real files when only synlink is copied
+RUN rm -rf ./ml_worker/core
+COPY ./ml-worker/ml_worker/core ./ml_worker/core
 
 ENV PYTHONPATH "${PYTHONPATH}:/app/generated"
 
