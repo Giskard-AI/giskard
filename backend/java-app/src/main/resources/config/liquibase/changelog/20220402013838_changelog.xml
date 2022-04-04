@@ -1,0 +1,250 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext" xmlns:pro="http://www.liquibase.org/xml/ns/pro" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-4.1.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.1.xsd">
+    <changeSet author="andreyavtomonov (generated)" id="1648856323731-17">
+        <createSequence incrementBy="1" sequenceName="hibernate_sequence" startValue="1"/>
+    </changeSet>
+    <changeSet author="andreyavtomonov (generated)" id="1648856323731-18">
+        <createSequence incrementBy="50" sequenceName="sequence_generator" startValue="1"/>
+    </changeSet>
+    <changeSet author="andreyavtomonov (generated)" id="1648856323731-19">
+        <createTable tableName="code_based_test_preset">
+            <column autoIncrement="true" name="id" type="BIGINT">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="code_based_test_presetPK"/>
+            </column>
+            <column name="code" type="VARCHAR(255)"/>
+            <column name="language" type="VARCHAR(255)"/>
+            <column name="name" type="VARCHAR(255)"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="andreyavtomonov (generated)" id="1648856323731-20">
+        <createTable tableName="feedback">
+            <column autoIncrement="true" name="id" type="BIGINT">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="feedbackPK"/>
+            </column>
+            <column name="created_on" type="TIMESTAMP WITHOUT TIME ZONE"/>
+            <column name="feature_name" type="VARCHAR(255)"/>
+            <column name="feature_value" type="VARCHAR(255)"/>
+            <column name="feedback_choice" type="VARCHAR(255)"/>
+            <column name="feedback_message" type="VARCHAR(255)"/>
+            <column name="feedback_type" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="original_data" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="target_feature" type="VARCHAR(255)"/>
+            <column name="user_data" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="dataset_id" type="BIGINT"/>
+            <column name="model_id" type="BIGINT"/>
+            <column name="project_id" type="BIGINT"/>
+            <column name="user_id" type="BIGINT"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="andreyavtomonov (generated)" id="1648856323731-21">
+        <createTable tableName="feedback_reply">
+            <column autoIncrement="true" name="id" type="BIGINT">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="feedback_replyPK"/>
+            </column>
+            <column name="content" type="VARCHAR(255)"/>
+            <column name="created_on" type="TIMESTAMP WITHOUT TIME ZONE"/>
+            <column name="reply_to_reply" type="INTEGER">
+                <constraints nullable="false"/>
+            </column>
+            <column name="feedback_id" type="BIGINT"/>
+            <column name="user_id" type="BIGINT"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="andreyavtomonov (generated)" id="1648856323731-22">
+        <createTable tableName="test">
+            <column autoIncrement="true" name="id" type="BIGINT">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="testPK"/>
+            </column>
+            <column name="code" type="VARCHAR(255)"/>
+            <column name="language" type="INTEGER"/>
+            <column name="name" type="VARCHAR(255)"/>
+            <column name="type" type="VARCHAR(255)"/>
+            <column name="test_suite_id" type="BIGINT"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="andreyavtomonov (generated)" id="1648856323731-23">
+        <createTable tableName="test_execution">
+            <column autoIncrement="true" name="id" type="BIGINT">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="test_executionPK"/>
+            </column>
+            <column name="execution_date" type="TIMESTAMP WITHOUT TIME ZONE"/>
+            <column name="result" type="VARCHAR(255)"/>
+            <column name="test_id" type="BIGINT"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="andreyavtomonov (generated)" id="1648856323731-24">
+        <createTable tableName="test_suite">
+            <column autoIncrement="true" name="id" type="BIGINT">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="test_suitePK"/>
+            </column>
+            <column name="name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="model_id" type="BIGINT"/>
+            <column name="project_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="test_dataset_id" type="BIGINT"/>
+            <column name="train_dataset_id" type="BIGINT"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="andreyavtomonov (generated)" id="1648856323731-25">
+        <addColumn tableName="projects">
+            <column name="local_date_time" type="timestamp"/>
+        </addColumn>
+    </changeSet>
+    <changeSet author="andreyavtomonov (generated)" id="1648856323731-26">
+        <addColumn tableName="datasets">
+            <column name="name" type="varchar(255)"/>
+        </addColumn>
+    </changeSet>
+    <changeSet author="andreyavtomonov (generated)" id="1648856323731-27">
+        <addColumn tableName="project_models">
+            <column name="name" type="varchar(255)"/>
+        </addColumn>
+    </changeSet>
+    <changeSet author="andreyavtomonov (generated)" id="1648856323731-28">
+        <addUniqueConstraint columnNames="email" constraintName="UC_USEREMAIL_COL" tableName="user"/>
+    </changeSet>
+    <changeSet author="andreyavtomonov (generated)" id="1648856323731-29">
+        <addUniqueConstraint columnNames="user_id" constraintName="UC_USERUSER_ID_COL" tableName="user"/>
+    </changeSet>
+    <changeSet author="andreyavtomonov (generated)" id="1648856323731-30">
+        <addForeignKeyConstraint baseColumnNames="test_id" baseTableName="test_execution" constraintName="FK1d9g3pqkl379jc19kd3xcxf99" deferrable="false" initiallyDeferred="false" referencedColumnNames="id" referencedTableName="test" validate="true"/>
+    </changeSet>
+    <changeSet author="andreyavtomonov (generated)" id="1648856323731-31">
+        <addForeignKeyConstraint baseColumnNames="model_id" baseTableName="feedback" constraintName="FK9p7qk36khvkhniqix0r7o967k" deferrable="false" initiallyDeferred="false" referencedColumnNames="id" referencedTableName="project_models" validate="true"/>
+    </changeSet>
+    <changeSet author="andreyavtomonov (generated)" id="1648856323731-32">
+        <addForeignKeyConstraint baseColumnNames="user_id" baseTableName="feedback_reply" constraintName="FKahu9xgx56qa3j2rr1c7pcx7fh" deferrable="false" initiallyDeferred="false" referencedColumnNames="id" referencedTableName="user" validate="true"/>
+    </changeSet>
+    <changeSet author="andreyavtomonov (generated)" id="1648856323731-33">
+        <addForeignKeyConstraint baseColumnNames="feedback_id" baseTableName="feedback_reply" constraintName="FKbpnhh37vewd38yycdhyde7j66" deferrable="false" initiallyDeferred="false" referencedColumnNames="id" referencedTableName="feedback" validate="true"/>
+    </changeSet>
+    <changeSet author="andreyavtomonov (generated)" id="1648856323731-34">
+        <addForeignKeyConstraint baseColumnNames="project_id" baseTableName="test_suite" constraintName="FKh4vcclx0xbhy3dcy7ynvnyso9" deferrable="false" initiallyDeferred="false" referencedColumnNames="id" referencedTableName="projects" validate="true"/>
+    </changeSet>
+    <changeSet author="andreyavtomonov (generated)" id="1648856323731-35">
+        <addForeignKeyConstraint baseColumnNames="train_dataset_id" baseTableName="test_suite" constraintName="FKh6vq8p6egn0rppye946cugw73" deferrable="false" initiallyDeferred="false" referencedColumnNames="id" referencedTableName="datasets" validate="true"/>
+    </changeSet>
+    <changeSet author="andreyavtomonov (generated)" id="1648856323731-36">
+        <addForeignKeyConstraint baseColumnNames="test_suite_id" baseTableName="test" constraintName="FKm67rmf2x1wa80068isib8pm8e" deferrable="false" initiallyDeferred="false" referencedColumnNames="id" referencedTableName="test_suite" validate="true"/>
+    </changeSet>
+    <changeSet author="andreyavtomonov (generated)" id="1648856323731-37">
+        <addForeignKeyConstraint baseColumnNames="project_id" baseTableName="feedback" constraintName="FKnaghy89pdwcocukx1xxh8eg2l" deferrable="false" initiallyDeferred="false" referencedColumnNames="id" referencedTableName="projects" validate="true"/>
+    </changeSet>
+    <changeSet author="andreyavtomonov (generated)" id="1648856323731-38">
+        <addForeignKeyConstraint baseColumnNames="model_id" baseTableName="test_suite" constraintName="FKnwiqw82vbn8cxvxyrtrlveabn" deferrable="false" initiallyDeferred="false" referencedColumnNames="id" referencedTableName="project_models" validate="true"/>
+    </changeSet>
+    <changeSet author="andreyavtomonov (generated)" id="1648856323731-39">
+        <addForeignKeyConstraint baseColumnNames="user_id" baseTableName="feedback" constraintName="FKoo5uvhvgp6iolcdki7b62xyr" deferrable="false" initiallyDeferred="false" referencedColumnNames="id" referencedTableName="user" validate="true"/>
+    </changeSet>
+    <changeSet author="andreyavtomonov (generated)" id="1648856323731-40">
+        <addForeignKeyConstraint baseColumnNames="dataset_id" baseTableName="feedback" constraintName="FKqm7iwynatugv6blknvic1sbrn" deferrable="false" initiallyDeferred="false" referencedColumnNames="id" referencedTableName="datasets" validate="true"/>
+    </changeSet>
+    <changeSet author="andreyavtomonov (generated)" id="1648856323731-41">
+        <addForeignKeyConstraint baseColumnNames="test_dataset_id" baseTableName="test_suite" constraintName="FKse03kmjjgnhtf1hg7760jack2" deferrable="false" initiallyDeferred="false" referencedColumnNames="id" referencedTableName="datasets" validate="true"/>
+    </changeSet>
+<!--    <changeSet author="andreyavtomonov (generated)" id="1648856323731-42">-->
+<!--        <dropForeignKeyConstraint baseTableName="feedback_replies" constraintName="feedback_replies_feedback_id_fkey"/>-->
+<!--    </changeSet>-->
+<!--    <changeSet author="andreyavtomonov (generated)" id="1648856323731-43">-->
+<!--        <dropForeignKeyConstraint baseTableName="feedback_replies" constraintName="feedback_replies_reply_to_reply_fkey"/>-->
+<!--    </changeSet>-->
+<!--    <changeSet author="andreyavtomonov (generated)" id="1648856323731-44">-->
+<!--        <dropForeignKeyConstraint baseTableName="feedback_replies" constraintName="feedback_replies_user_id_fkey"/>-->
+<!--    </changeSet>-->
+<!--    <changeSet author="andreyavtomonov (generated)" id="1648856323731-45">-->
+<!--        <dropForeignKeyConstraint baseTableName="feedbacks" constraintName="feedbacks_dataset_id_fkey"/>-->
+<!--    </changeSet>-->
+<!--    <changeSet author="andreyavtomonov (generated)" id="1648856323731-46">-->
+<!--        <dropForeignKeyConstraint baseTableName="feedbacks" constraintName="feedbacks_model_id_fkey"/>-->
+<!--    </changeSet>-->
+<!--    <changeSet author="andreyavtomonov (generated)" id="1648856323731-47">-->
+<!--        <dropForeignKeyConstraint baseTableName="feedbacks" constraintName="feedbacks_project_id_fkey"/>-->
+<!--    </changeSet>-->
+<!--    <changeSet author="andreyavtomonov (generated)" id="1648856323731-48">-->
+<!--        <dropForeignKeyConstraint baseTableName="feedbacks" constraintName="feedbacks_user_id_fkey"/>-->
+<!--    </changeSet>-->
+<!--    <changeSet author="andreyavtomonov (generated)" id="1648856323731-49">-->
+<!--        <dropForeignKeyConstraint baseTableName="projects_guests" constraintName="projects_guests_project_id_fkey"/>-->
+<!--    </changeSet>-->
+<!--    <changeSet author="andreyavtomonov (generated)" id="1648856323731-50">-->
+<!--        <dropForeignKeyConstraint baseTableName="projects_guests" constraintName="projects_guests_user_id_fkey"/>-->
+<!--    </changeSet>-->
+<!--    <changeSet author="andreyavtomonov (generated)" id="1648856323731-51">-->
+<!--        <dropForeignKeyConstraint baseTableName="projects" constraintName="projects_owner_id_fkey"/>-->
+<!--    </changeSet>-->
+<!--    <changeSet author="andreyavtomonov (generated)" id="1648856323731-52">-->
+<!--        <dropTable tableName="alembic_version"/>-->
+<!--    </changeSet>-->
+<!--    <changeSet author="andreyavtomonov (generated)" id="1648856323731-53">-->
+<!--        <dropTable tableName="feedback_replies"/>-->
+<!--    </changeSet>-->
+<!--    <changeSet author="andreyavtomonov (generated)" id="1648856323731-54">-->
+<!--        <dropTable tableName="feedbacks"/>-->
+<!--    </changeSet>-->
+<!--    <changeSet author="andreyavtomonov (generated)" id="1648856323731-55">-->
+<!--        <dropTable tableName="projects_guests"/>-->
+<!--    </changeSet>-->
+<!--    <changeSet author="andreyavtomonov (generated)" id="1648856323731-56">-->
+<!--        <dropColumn columnName="created_on" tableName="projects"/>-->
+<!--    </changeSet>-->
+<!--    <changeSet author="andreyavtomonov (generated)" id="1648856323731-57">-->
+<!--        <dropColumn columnName="owner_id" tableName="projects"/>-->
+<!--    </changeSet>-->
+<!--    <changeSet author="andreyavtomonov (generated)" id="1648856323731-1">-->
+<!--        <dropNotNullConstraint columnDataType="varchar(254)" columnName="email" tableName="user"/>-->
+<!--    </changeSet>-->
+<!--    <changeSet author="andreyavtomonov (generated)" id="1648856323731-2">-->
+<!--        <dropNotNullConstraint columnDataType="varchar(255)" columnName="file_name" tableName="datasets"/>-->
+<!--    </changeSet>-->
+<!--    <changeSet author="andreyavtomonov (generated)" id="1648856323731-3">-->
+<!--        <dropNotNullConstraint columnDataType="varchar(255)" columnName="file_name" tableName="project_models"/>-->
+<!--    </changeSet>-->
+    <changeSet author="andreyavtomonov (generated)" id="1648856323731-4">
+        <addNotNullConstraint columnDataType="boolean" columnName="is_active" tableName="user" validate="true"/>
+    </changeSet>
+<!--    <changeSet author="andreyavtomonov (generated)" id="1648856323731-5">-->
+<!--        <dropNotNullConstraint columnDataType="bigint" columnName="owner_id" tableName="datasets"/>-->
+<!--    </changeSet>-->
+<!--    <changeSet author="andreyavtomonov (generated)" id="1648856323731-6">-->
+<!--        <dropNotNullConstraint columnDataType="bigint" columnName="owner_id" tableName="project_models"/>-->
+<!--    </changeSet>-->
+<!--    <changeSet author="andreyavtomonov (generated)" id="1648856323731-7">-->
+<!--        <dropNotNullConstraint columnDataType="bigint" columnName="project_id" tableName="datasets"/>-->
+<!--    </changeSet>-->
+<!--    <changeSet author="andreyavtomonov (generated)" id="1648856323731-8">-->
+<!--        <dropNotNullConstraint columnDataType="bigint" columnName="project_id" tableName="project_models"/>-->
+<!--    </changeSet>-->
+<!--    <changeSet author="andreyavtomonov (generated)" id="1648856323731-9">-->
+<!--        <dropNotNullConstraint columnDataType="varchar(255)" columnName="python_version" tableName="project_models"/>-->
+<!--    </changeSet>-->
+<!--    <changeSet author="andreyavtomonov (generated)" id="1648856323731-10">-->
+<!--        <dropNotNullConstraint columnDataType="varchar(255)" columnName="requirements_file_location" tableName="project_models"/>-->
+<!--    </changeSet>-->
+<!--    <changeSet author="andreyavtomonov (generated)" id="1648856323731-11">-->
+<!--        <dropPrimaryKey tableName="project_models"/>-->
+<!--    </changeSet>-->
+<!--    <changeSet author="andreyavtomonov (generated)" id="1648856323731-12">-->
+<!--        <addPrimaryKey columnNames="id" constraintName="project_modelsPK" tableName="project_models"/>-->
+<!--    </changeSet>-->
+<!--    <changeSet author="andreyavtomonov (generated)" id="1648856323731-13">-->
+<!--        <dropPrimaryKey tableName="role"/>-->
+<!--    </changeSet>-->
+<!--    <changeSet author="andreyavtomonov (generated)" id="1648856323731-14">-->
+<!--        <addPrimaryKey columnNames="id" constraintName="rolePK" tableName="role"/>-->
+<!--    </changeSet>-->
+<!--    <changeSet author="andreyavtomonov (generated)" id="1648856323731-15">-->
+<!--        <dropPrimaryKey tableName="user"/>-->
+<!--    </changeSet>-->
+<!--    <changeSet author="andreyavtomonov (generated)" id="1648856323731-16">-->
+<!--        <addPrimaryKey columnNames="id" constraintName="userPK" tableName="user"/>-->
+<!--    </changeSet>-->
+</databaseChangeLog>

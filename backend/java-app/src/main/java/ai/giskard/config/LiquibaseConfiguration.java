@@ -2,6 +2,7 @@ package ai.giskard.config;
 
 import java.util.concurrent.Executor;
 import javax.sql.DataSource;
+
 import liquibase.integration.spring.SpringLiquibase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,16 +37,21 @@ public class LiquibaseConfiguration {
         ObjectProvider<DataSource> dataSource,
         DataSourceProperties dataSourceProperties
     ) {
-        // If you don't want Liquibase to start asynchronously, substitute by this:
-        // SpringLiquibase liquibase = SpringLiquibaseUtil.createSpringLiquibase(liquibaseDataSource.getIfAvailable(), liquibaseProperties, dataSource.getIfUnique(), dataSourceProperties);
-        SpringLiquibase liquibase = SpringLiquibaseUtil.createAsyncSpringLiquibase(
-            this.env,
-            executor,
+        SpringLiquibase liquibase = SpringLiquibaseUtil.createSpringLiquibase(
             liquibaseDataSource.getIfAvailable(),
             liquibaseProperties,
             dataSource.getIfUnique(),
             dataSourceProperties
         );
+        // If you want Liquibase to start asynchronously, substitute by this:
+        //SpringLiquibase liquibase = SpringLiquibaseUtil.createAsyncSpringLiquibase(
+        //    this.env,
+        //    executor,
+        //    liquibaseDataSource.getIfAvailable(),
+        //    liquibaseProperties,
+        //    dataSource.getIfUnique(),
+        //    dataSourceProperties
+        //);
         liquibase.setChangeLog("classpath:config/liquibase/master.xml");
         liquibase.setContexts(liquibaseProperties.getContexts());
         liquibase.setDefaultSchema(liquibaseProperties.getDefaultSchema());
