@@ -60,18 +60,6 @@
           </v-col>
         </v-row>
         </v-container>
-        <v-container class="w100 ma-0">
-          <v-row>
-            <v-col>
-              <v-tooltip left dense>
-                <template v-slot:activator="{ on, attrs }">
-                  <v-btn class="float-right" v-bind="attrs" v-on="on" color="primary">Create test</v-btn>
-                </template>
-                <span>🚧 Coming in v.2</span>
-              </v-tooltip>
-            </v-col>
-          </v-row>
-        </v-container>
 
 
       </div>
