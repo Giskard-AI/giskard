@@ -145,15 +145,14 @@ if (!project.hasProperty("runList")) {
 }
 
 project.ext.diffChangelogFile = "src/main/resources/config/liquibase/changelog/" + new Date().format("yyyyMMddHHmmss") + "_changelog.xml"
-//project.ext.diffChangelogFile = "src/main/resources/config/liquibase/changelog/00000000000000_initial_schema.xml"
 
 liquibase {
     activities {
         main {
             driver "org.postgresql.Driver"
-            url System.getenv().getOrDefault("SPRING_LIQUIBASE_URL", "jdbc:postgresql://localhost:5432/giskard")
-            username System.getenv().getOrDefault("SPRING_DATASOURCE_USERNAME","giskard")
-            password System.getenv().getOrDefault("SPRING_DATASOURCE_PASSWORD","")
+            url System.getenv().getOrDefault("SPRING_LIQUIBASE_URL", "jdbc:postgresql://localhost:5432/app")
+            username System.getenv().getOrDefault("POSTGRES_USER","postgres")
+            password System.getenv().getOrDefault("POSTGRES_PASSWORD","y1QYbF2BtFUC")
             changeLogFile "src/main/resources/config/liquibase/master.xml"
             defaultSchemaName ""
             logLevel "debug"
@@ -161,9 +160,9 @@ liquibase {
         }
         diffLog {
             driver "org.postgresql.Driver"
-            url System.getenv().getOrDefault("SPRING_LIQUIBASE_URL", "jdbc:postgresql://localhost:5432/giskard")
-            username System.getenv().getOrDefault("SPRING_DATASOURCE_USERNAME","giskard")
-            password System.getenv().getOrDefault("SPRING_DATASOURCE_PASSWORD","")
+            url System.getenv().getOrDefault("SPRING_LIQUIBASE_URL", "jdbc:postgresql://localhost:5432/app")
+            username System.getenv().getOrDefault("POSTGRES_USER","postgres")
+            password System.getenv().getOrDefault("POSTGRES_PASSWORD","y1QYbF2BtFUC")
             changeLogFile project.ext.diffChangelogFile
             referenceUrl "hibernate:spring:ai.giskard.domain?dialect=tech.jhipster.domain.util.FixedPostgreSQL10Dialect&hibernate.physical_naming_strategy=org.springframework.boot.orm.jpa.hibernate.SpringPhysicalNamingStrategy&hibernate.implicit_naming_strategy=org.springframework.boot.orm.jpa.hibernate.SpringImplicitNamingStrategy"
             defaultSchemaName ""
