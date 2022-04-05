@@ -22,7 +22,7 @@
 
 <script lang="ts">
 
-import {ITestSuite} from "@/interfaces";
+import {IProjectFile, ITestSuite} from "@/interfaces";
 import {Prop, Vue} from "vue-property-decorator";
 import Component from "vue-class-component";
 import TestSuiteCreateModal from "@/views/main/project/modals/TestSuiteCreateModal.vue";
@@ -35,6 +35,10 @@ export default class TestSuites extends Vue {
   @Prop({required: true}) projectId!: number;
 
   testSuites: Array<ITestSuite> = []
+
+  private getProjectFileName(obj: IProjectFile) {
+    return obj ? (obj.name || obj.filename) : "";
+  }
 
   get tableHeaders() {
     return [
@@ -88,7 +92,12 @@ export default class TestSuites extends Vue {
   }
 
   private async init() {
-    this.testSuites = (await api.getTestSuites(this.projectId)).data;
+    this.testSuites = (await api.getTestSuites(this.projectId)).data.map((ts: ITestSuite) => {
+      ts.model.name = this.getProjectFileName(ts.model);
+      ts.trainDataset.name = this.getProjectFileName(ts.trainDataset);
+      ts.testDataset.name = this.getProjectFileName(ts.testDataset);
+      return ts;
+    });
   }
 }
 </script>
