@@ -1,34 +1,29 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="Python Backend" type="PythonConfigurationType" factoryName="Python">
+  <configuration default="false" name="ML Task runner" type="PythonConfigurationType" factoryName="Python">
+    <module name="ml-worker" />
     <option name="INTERPRETER_OPTIONS" value="" />
     <option name="PARENT_ENVS" value="true" />
     <envs>
       <env name="PYTHONUNBUFFERED" value="1" />
-      <env name="SERVER_NAME" value="localhost" />
-      <env name="SERVER_HOST" value="http://localhost" />
-      <env name="POSTGRES_SERVER" value="localhost" />
-      <env name="GISKARD_PLAN" value="enterprise" />
+      <env name="GSK_STORAGE_ROOT" value="$PROJECT_DIR$/backend/app/app/" />
     </envs>
-    <option name="SDK_HOME" value="$PROJECT_DIR$/backend/app/.venv/bin/python" />
-    <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/backend/app/app" />
-    <option name="IS_MODULE_SDK" value="false" />
+    <option name="SDK_HOME" value="$PROJECT_DIR$/backend/ml-worker/.venv/bin/python" />
+    <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/backend/ml-worker" />
+    <option name="IS_MODULE_SDK" value="true" />
     <option name="ADD_CONTENT_ROOTS" value="true" />
     <option name="ADD_SOURCE_ROOTS" value="true" />
-    <module name="" />
     <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
     <EXTENSION ID="net.ashald.envfile">
-      <option name="IS_ENABLED" value="true" />
+      <option name="IS_ENABLED" value="false" />
       <option name="IS_SUBST" value="false" />
       <option name="IS_PATH_MACRO_SUPPORTED" value="false" />
       <option name="IS_IGNORE_MISSING_FILES" value="false" />
       <option name="IS_ENABLE_EXPERIMENTAL_INTEGRATIONS" value="false" />
       <ENTRIES>
         <ENTRY IS_ENABLED="true" PARSER="runconfig" />
-        <ENTRY IS_ENABLED="true" PARSER="env" PATH=".env" />
-        <ENTRY IS_ENABLED="true" PARSER="env" PATH=".env.dev" />
       </ENTRIES>
     </EXTENSION>
-    <option name="SCRIPT_NAME" value="$PROJECT_DIR$/backend/app/app/main.py" />
+    <option name="SCRIPT_NAME" value="$PROJECT_DIR$/backend/ml-worker/mltask_server_runner.py" />
     <option name="PARAMETERS" value="" />
     <option name="SHOW_COMMAND_LINE" value="false" />
     <option name="EMULATE_TERMINAL" value="false" />
