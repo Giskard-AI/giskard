@@ -1,6 +1,7 @@
 package ai.giskard.service;
 
 import ai.giskard.domain.ml.TestResult;
+import ai.giskard.domain.ml.TestSuite;
 import ai.giskard.domain.ml.testing.Test;
 import ai.giskard.ml.MLWorkerClient;
 import ai.giskard.repository.ml.TestRepository;
@@ -11,10 +12,12 @@ import ai.giskard.web.rest.errors.EntityNotFoundException;
 import ai.giskard.worker.TestResultMessage;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
 @Service
+@Transactional
 public class TestService {
     MLWorkerService mlWorkerService;
     private static final org.slf4j.Logger logger = LoggerFactory.getLogger(TestService.class);
@@ -55,7 +58,7 @@ public class TestService {
             res.setResult(runTestResult);
         } catch (InterruptedException e) {
             logger.error("Failed to crete MLWorkerClient", e);
-        } catch (Exception e){
+        } catch (Exception e) {
             res.setStatus(TestResult.ERROR);
             res.setMessage(e.getMessage());
         } finally {
@@ -64,5 +67,12 @@ public class TestService {
             }
         }
         return res;
+    }
+
+    public TestSuite deleteTest(Long testId) {
+        Test test = testRepository.getById(testId);
+        TestSuite testSuite = test.getTestSuite();
+        testRepository.deleteById(testId);
+        return testSuite;
     }
 }

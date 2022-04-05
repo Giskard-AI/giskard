@@ -1,6 +1,6 @@
 <template>
   <div>
-    <v-container fluid>
+    <v-container fluid class="pa-0">
       <v-row>
         <v-col :align="'right'">
           <v-btn small tile color="primary" class="mx-1" @click="createTest()">
@@ -17,7 +17,7 @@
             <template v-for="(test, index) in tests">
               <v-divider :inset="false"></v-divider>
 
-              <v-list-item :key="test.name" v-ripple class="test-list-item" @click="openTest(test.id)">
+              <v-list-item :key="test.id" v-ripple class="test-list-item" @click="openTest(test.id)">
                 <v-list-item-avatar>
                   <v-icon color="green lighten-2">circle</v-icon>
                 </v-list-item-avatar>

@@ -20,6 +20,14 @@
         >
           <v-icon>settings</v-icon>
         </v-btn>
+        <v-btn
+            class="mx-2 mr-0"
+            dark
+            small
+            outlined
+            color="primary"
+            @click="remove()"
+        ><v-icon>delete</v-icon></v-btn>
       </v-col>
     </v-row>
     <router-view></router-view>
@@ -69,6 +77,20 @@ export default class TestSuite extends Vue {
     this.testSuite = _.cloneDeep(this.savedTestSuite);
   }
 
+  async remove() {
+    if (await this.$dialog.confirm({
+      text: `Would you like to delete test suite "${this.testSuite?.name}"?`,
+      title: 'Delete test suite',
+      showClose: false,
+      actions: {
+        false: 'Cancel',
+        true: 'Delete'
+      }
+    })){
+      await api.deleteTestSuite(this.testSuite!.id);
+      await this.$router.push({name: 'project-test-suites', params: {projectId: this.projectId!.toString()}})
+    }
+  }
   async openSettings() {
     let modifiedSuite = await this.$dialog.showAndWait(TestSuiteSettings, {width: 800, testSuite: this.testSuite});
     if (modifiedSuite) {

@@ -7,6 +7,7 @@ import ai.giskard.service.TestService;
 import ai.giskard.service.dto.ml.TestDTO;
 import ai.giskard.service.dto.ml.TestEditorConfigDTO;
 import ai.giskard.service.dto.ml.TestExecutionResultDTO;
+import ai.giskard.service.dto.ml.TestSuiteDTO;
 import ai.giskard.web.rest.errors.EntityNotFoundException;
 import org.springframework.web.bind.annotation.*;
 
@@ -48,6 +49,13 @@ public class TestController {
         } else {
             throw new EntityNotFoundException(EntityNotFoundException.Entity.TEST, testId);
         }
+    }
+
+    @DeleteMapping("/{testId}")
+    public TestSuiteDTO deleteTest(
+        @PathVariable() Long testId
+    ) {
+        return new TestSuiteDTO(testService.deleteTest(testId));
     }
 
     @PostMapping("")
