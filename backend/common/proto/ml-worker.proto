@@ -9,8 +9,6 @@ option objc_class_prefix = "WRK";
 package worker;
 
 service MLWorker {
-    rpc loadModel (LoadModelRequest) returns (LoadModelResponse) {}
-    rpc predict (PredictRequest) returns (PredictResponse) {}
     rpc runTest (RunTestRequest) returns (TestResultMessage) {}
 }
 
@@ -25,30 +23,6 @@ message RunTestResponse {
     string name = 1;
 }
 
-message LoadModelRequest {
-    string name = 1;
-}
-
-message LoadModelResponse {
-    string message = 1;
-}
-
-message PredictRequest {
-    string model_path = 1;
-    map<string, google.protobuf.Any> features = 2;
-}
-
-message PredictResponse {
-    oneof prediction {
-        int32 prediction_int = 1;
-        float prediction_float = 2;
-        string prediction_string = 3;
-    }
-    map<string, float> probabilities = 4;
-}
-
-
-// --------------
 message Partial_unexpected_counts {
     repeated uint32 value = 1;
     uint32 count = 2;
