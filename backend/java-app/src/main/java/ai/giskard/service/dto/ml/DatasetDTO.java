@@ -17,10 +17,13 @@ public class DatasetDTO {
     private String name;
     @NotNull
     private Long projectId;
+    private String filename;
+
 
     public DatasetDTO(Dataset dataset) {
         this.id = dataset.getId();
         this.name = dataset.getName();
         this.projectId = dataset.getProject().getId();
+        this.filename = dataset.getFileName();
     }
 }

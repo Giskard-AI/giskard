@@ -1,10 +1,15 @@
 <template>
-    <v-select
-        outlined
-        class="dataset-selector"
-        :label="label" :value="value" :items="projectDatasets" item-text="name" return-object
-        @input="onInput"
-    ></v-select>
+  <v-select
+      outlined
+      class="dataset-selector"
+      :label="label"
+      :value="value"
+      :items="projectDatasets"
+      :item-text="extractDatasetName"
+      item-value="id"
+      return-object
+      @input="onInput"
+  ></v-select>
 </template>
 
 <script lang="ts">
@@ -21,6 +26,11 @@ export default class DatasetSelector extends Vue {
   @Prop({default: 'Dataset', required: true}) label!: string;
   @Prop() value?: IProjetFileDataset;
   projectDatasets: Array<IProjetFileDataset> = [];
+
+  extractDatasetName(dataset: IProjetFileDataset) {
+    console.log(dataset)
+    return dataset.name || dataset.filename;
+  }
 
   onInput(value) {
     this.$emit("update:value", value);
