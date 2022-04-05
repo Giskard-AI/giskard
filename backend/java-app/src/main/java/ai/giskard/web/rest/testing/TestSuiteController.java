@@ -57,13 +57,17 @@ public class TestSuiteController {
     }
 
     @GetMapping("suite/{suiteId}")
-    public TestSuiteDTO getGetSuite(@PathVariable Long suiteId) {
+    public TestSuiteDTO getTestSuite(@PathVariable Long suiteId) {
         Optional<TestSuite> testSuite = testSuiteRepository.findById(suiteId);
         if (testSuite.isPresent()) {
             return new TestSuiteDTO(testSuite.get());
         } else {
             throw new EntityNotFoundException(TEST_SUITE, suiteId);
         }
+    }
+    @DeleteMapping("suite/{suiteId}")
+    public void deleteTestSuite(@PathVariable Long suiteId) {
+        testSuiteService.deleteSuite(suiteId);
     }
 
 }

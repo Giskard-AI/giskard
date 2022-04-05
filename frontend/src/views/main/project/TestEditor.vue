@@ -16,11 +16,15 @@
         </span>
       </v-col>
       <v-col :align="'right'">
-        <v-btn tile color="primary"
-               :disabled="!isDirty() || invalid"
-               @click="save()">
-          <v-icon dense left>save</v-icon>
-          Save
+        <v-btn
+            class="mx-2 mr-0"
+            dark
+            small
+            outlined
+            color="primary"
+            @click="remove()"
+        >
+          <v-icon>delete</v-icon>
         </v-btn>
       </v-col>
     </v-row>
@@ -101,6 +105,13 @@
     </v-row>
     <v-row>
       <v-col :align="'right'">
+        <v-btn tile color="primary"
+               class="mr-3"
+               :disabled="!isDirty() || invalid"
+               @click="save()">
+          <v-icon dense left>save</v-icon>
+          Save
+        </v-btn>
         <v-btn
             tile
             @click="runTest()"
@@ -163,7 +174,6 @@ import {ITest, ITestExecutionResult} from "@/interfaces";
 import _ from "lodash";
 import numeral from "numeral";
 
-
 type ITestFunction = {
   id: string;
   code: string;
@@ -200,6 +210,26 @@ export default class TestEditor extends Vue {
 
   async save() {
     this.testDetailsOriginal = (await api.saveTest(this.testDetails!)).data;
+  }
+
+  async remove() {
+    if (await this.$dialog.confirm({
+      text: `Would you like to delete test "${this.testDetails?.name}"?`,
+      title: 'Delete test',
+      showClose: false,
+      actions: {
+        false: 'Cancel',
+        true: 'Delete'
+      }
+    })) {
+      let testSuite = (await api.deleteTest(this.testId)).data;
+      await this.$router.push({
+        name: 'suite-details', params: {
+          suiteId: testSuite.id.toString(),
+          projectId: testSuite.projectId.toString(),
+        }
+      })
+    }
   }
 
   async copyCodeFromSnippet(code: string) {

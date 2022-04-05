@@ -188,6 +188,9 @@ export const api = {
   async getTestSuite(suiteId: number) {
     return await axios.get<ITestSuite>(`${apiUrlJava}/api/v2/testing/suite/${suiteId}`);
   },
+    async deleteTestSuite(suiteId: number) {
+    return await axios.delete<ITestSuite>(`${apiUrlJava}/api/v2/testing/suite/${suiteId}`);
+  },
   async createTestSuite(projectId: number, name: string, modelId: number) {
     return await axios.post(`${apiUrlJava}/api/v2/testing/suites`, {
       name: name,
@@ -200,7 +203,9 @@ export const api = {
   },
   async getTestDetails(testId: number) {
     return await axios.get(`${apiUrlJava}/api/v2/testing/tests/${testId}`)
-
+  },
+  async deleteTest(testId: number) {
+    return await axios.delete<ITestSuite>(`${apiUrlJava}/api/v2/testing/tests/${testId}`)
   },
   async getTestEditorConfig() {
     return await axios.get(`${apiUrlJava}/api/v2/testing/tests/editorConfig`)

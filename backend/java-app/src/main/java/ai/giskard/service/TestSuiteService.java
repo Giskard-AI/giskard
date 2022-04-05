@@ -3,6 +3,7 @@ package ai.giskard.service;
 import ai.giskard.repository.ProjectRepository;
 import ai.giskard.repository.ml.DatasetRepository;
 import ai.giskard.repository.ml.ModelRepository;
+import ai.giskard.repository.ml.TestRepository;
 import ai.giskard.repository.ml.TestSuiteRepository;
 import ai.giskard.service.dto.ml.TestSuiteDTO;
 import org.springframework.stereotype.Service;
@@ -14,6 +15,7 @@ import java.util.Optional;
 @Transactional
 public class TestSuiteService {
     private final TestSuiteRepository testSuiteRepository;
+    private final TestRepository testRepository;
     private final ModelRepository modelRepository;
     private final DatasetRepository datasetRepository;
     private final ProjectRepository projectRepository;
@@ -21,11 +23,13 @@ public class TestSuiteService {
     public TestSuiteService(TestSuiteRepository testSuiteRepository,
                             ModelRepository modelRepository,
                             DatasetRepository datasetRepository,
-                            ProjectRepository projectRepository) {
+                            ProjectRepository projectRepository,
+                            TestRepository testRepository) {
         this.testSuiteRepository = testSuiteRepository;
         this.modelRepository = modelRepository;
         this.datasetRepository = datasetRepository;
         this.projectRepository = projectRepository;
+        this.testRepository = testRepository;
     }
 
     public Optional<TestSuiteDTO> updateTestSuite(TestSuiteDTO dto) {
@@ -50,5 +54,10 @@ public class TestSuiteService {
                 return testSuiteRepository.save(testSuite);
             })
             .map(TestSuiteDTO::new);
+    }
+
+    public void deleteSuite(Long suiteId) {
+        testRepository.deleteAllByTestSuiteId(suiteId);
+        testSuiteRepository.deleteById(suiteId);
     }
 }
