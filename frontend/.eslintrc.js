@@ -2,8 +2,7 @@ module.exports = {
   root: true,
   extends: [
     'plugin:vue/essential',
-    'eslint:recommended',
-    '@vue/typescript'
+    'eslint:recommended'
   ],
   rules: {
     "no-console": "warn",
