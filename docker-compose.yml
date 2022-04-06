@@ -69,10 +69,10 @@ services:
       - jupyter
       - notebook
       - --NotebookApp.token=''
+      - --NotebookApp.allow_origin='*'
+      - --NotebookApp.base_url='/jupyter'
     volumes:
       - ./backend/demo-notebook/notebook:/home/jovyan
-    ports:
-      - '18888:8888'
 
 volumes:
   app-db-data:
