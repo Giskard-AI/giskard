@@ -1,6 +1,8 @@
 package ai.giskard.web.rest.testing;
 
 import ai.giskard.domain.ml.testing.Test;
+import ai.giskard.domain.ml.testing.TestExecution;
+import ai.giskard.repository.ml.TestExecutionRepository;
 import ai.giskard.repository.ml.TestRepository;
 import ai.giskard.repository.ml.TestSuiteRepository;
 import ai.giskard.service.TestService;
@@ -24,19 +26,29 @@ public class TestController {
     private final TestRepository testRepository;
     private final TestService testService;
     private final TestSuiteRepository testSuiteRepository;
+    private final TestExecutionRepository testExecutionRepository;
 
-    public TestController(TestService testService, TestSuiteRepository testSuiteRepository, TestRepository testRepository) {
+    public TestController(TestService testService, TestSuiteRepository testSuiteRepository,
+                          TestRepository testRepository, TestExecutionRepository testExecutionRepository) {
         this.testService = testService;
         this.testSuiteRepository = testSuiteRepository;
         this.testRepository = testRepository;
+        this.testExecutionRepository = testExecutionRepository;
     }
 
     @GetMapping("")
     public List<TestDTO> getTests(
         @RequestParam Long suiteId
     ) {
-        return testRepository.findAllByTestSuiteId(suiteId).stream()
-            .map(TestDTO::new).collect(Collectors.toList());
+        return testRepository.findAllByTestSuiteId(suiteId).stream().map(test -> {
+            TestDTO res = new TestDTO(test);
+            Optional<TestExecution> exec = testExecutionRepository.findFirstByTestIdOrderByExecutionDateDesc(test.getId());
+            exec.ifPresent(testExecution -> {
+                res.setStatus(testExecution.getResult());
+                res.setLastExecutionDate(testExecution.getExecutionDate());
+            });
+            return res;
+        }).collect(Collectors.toList());
     }
 
     @GetMapping("/{testId}")

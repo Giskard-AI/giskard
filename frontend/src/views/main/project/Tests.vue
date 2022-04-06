@@ -7,6 +7,10 @@
             <v-icon left>add</v-icon>
             create test
           </v-btn>
+          <v-btn small tile class="mx-1" @click="executeTestSuite()">
+            <v-icon>arrow_right</v-icon>
+            run all
+          </v-btn>
         </v-col>
       </v-row>
 
@@ -23,12 +27,9 @@
                 </v-list-item-avatar>
                 <v-list-item-content>
                   <v-list-item-title v-html="test.name"></v-list-item-title>
-                  <v-list-item-subtitle>
+                  <v-list-item-subtitle v-if="test.lastExecutionDate">
                     <span class="font-weight-regular">Last executed</span>:
-<!--                    <UseTimeAgo v-slot="{ timeAgo }" :time="new Date(2022, 2, parseInt(Math.random()*22))">-->
-<!--                      {{ timeAgo }}-->
-<!--                    </UseTimeAgo>-->
-
+                    <span :title="test.lastExecutionDate | moment('dddd, MMMM Do YYYY, h:mm:ss a')">{{ test.lastExecutionDate | moment("from") }}</span>
                   </v-list-item-subtitle>
                 </v-list-item-content>
                 <v-spacer/>
@@ -79,6 +80,9 @@ export default class Tests extends Vue {
     this.$router.push({name: 'suite-details', params: {suiteId: suite.id}})
   }
 
+  public async executeTestSuite() {
+    await api.executeTestSuite(this.suiteId);
+  }
   public async createTest() {
     const newTest = await this.$dialog.showAndWait(TestCreateModal, {width: 800, suiteId: this.suiteId});
     await this.$router.push({

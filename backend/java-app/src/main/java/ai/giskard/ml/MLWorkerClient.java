@@ -5,15 +5,18 @@ import ai.giskard.domain.ml.testing.Test;
 import ai.giskard.worker.MLWorkerGrpc;
 import ai.giskard.worker.RunTestRequest;
 import ai.giskard.worker.TestResultMessage;
+import com.google.common.util.concurrent.ListenableFuture;
 import io.grpc.Channel;
 import io.grpc.ManagedChannel;
 import io.grpc.StatusRuntimeException;
+import io.grpc.stub.AbstractStub;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Stream;
 
 /**
  * A java-python bridge for model execution
@@ -22,6 +25,7 @@ public class MLWorkerClient {
     private final Logger logger;
 
     private final MLWorkerGrpc.MLWorkerBlockingStub blockingStub;
+    private final MLWorkerGrpc.MLWorkerFutureStub futureStub;
 
     public MLWorkerClient(Channel channel) {
         // 'channel' here is a Channel, not a ManagedChannel, so it is not this code's responsibility to
@@ -33,9 +37,10 @@ public class MLWorkerClient {
 
         logger.debug("Creating MLWorkerClient");
         blockingStub = MLWorkerGrpc.newBlockingStub(channel);
+        futureStub = MLWorkerGrpc.newFutureStub(channel);
     }
 
-    public TestResultMessage runTest(TestSuite testSuite, Test test) {
+    public ListenableFuture<TestResultMessage> runTest(TestSuite testSuite, Test test) {
         RunTestRequest.Builder requestBuilder = RunTestRequest.newBuilder()
             .setCode(test.getCode())
             .setModelPath(testSuite.getModel().getLocation());
@@ -47,40 +52,21 @@ public class MLWorkerClient {
         }
         RunTestRequest request = requestBuilder
             .build();
-        TestResultMessage testResultMessage = null;
-        try {
-            testResultMessage = blockingStub.runTest(request);
-        } catch (StatusRuntimeException e) {
-            interpretTestExecutionError(testSuite, e);
-        }
+        ListenableFuture<TestResultMessage> testResultMessage = null;
+        testResultMessage = futureStub.runTest(request);
         return testResultMessage;
-
     }
 
     public void shutdown() {
         logger.debug("Shutting down MLWorkerClient");
-        Channel channel = this.blockingStub.getChannel();
-        if (channel instanceof ManagedChannel) {
-            try {
-                ((ManagedChannel) channel).shutdownNow().awaitTermination(5, TimeUnit.SECONDS);
-            } catch (InterruptedException e) {
-                logger.error("Failed to shutdown worker", e);
+        Stream.of(this.blockingStub, this.futureStub).map(AbstractStub::getChannel).forEach(channel -> {
+            if (channel instanceof ManagedChannel) {
+                try {
+                    ((ManagedChannel) channel).shutdownNow().awaitTermination(5, TimeUnit.SECONDS);
+                } catch (InterruptedException e) {
+                    logger.error("Failed to shutdown worker", e);
+                }
             }
-        }
-    }
-
-    private void interpretTestExecutionError(TestSuite testSuite, StatusRuntimeException e) {
-        switch (Objects.requireNonNull(e.getStatus().getDescription())) {
-            case "Exception calling application: name 'train_df' is not defined":
-                if (testSuite.getTrainDataset() == null) {
-                    throw new RuntimeException("Failed to execute test: Train dataset is not specified");
-                }
-            case "Exception calling application: name 'test_df' is not defined":
-                if (testSuite.getTestDataset() == null) {
-                    throw new RuntimeException("Failed to execute test: Test dataset is not specified");
-                }
-            default:
-                throw e;
-        }
+        });
     }
 }

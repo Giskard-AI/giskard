@@ -170,20 +170,9 @@ import MonacoEditor from 'vue-monaco'
 import Component from "vue-class-component";
 import {Prop} from "vue-property-decorator";
 import {api} from "@/api";
-import {ITest, ITestExecutionResult} from "@/interfaces";
+import {IEditorConfig, ITest, ITestExecutionResult, ITestFunction} from "@/interfaces";
 import _ from "lodash";
 import numeral from "numeral";
-
-type ITestFunction = {
-  id: string;
-  code: string;
-  name: string;
-  type: 'CODE'
-};
-
-interface IEditorConfig {
-  functions: ITestFunction[]
-}
 
 Vue.filter("formatNumber", function (value) {
   return numeral(value).format("0.0"); // displaying other groupings/separators is possible, look at the docs
@@ -209,7 +198,17 @@ export default class TestEditor extends Vue {
   }
 
   async save() {
-    this.testDetailsOriginal = (await api.saveTest(this.testDetails!)).data;
+    const t = this.testDetails;
+    if (t) {
+      this.testDetailsOriginal = (await api.saveTest({
+        testSuite: t.testSuite,
+        language: t.language,
+        code: t.code,
+        type: t.type,
+        name: t.name,
+        id: t.id
+      })).data;
+    }
   }
 
   async remove() {

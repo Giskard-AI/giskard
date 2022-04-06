@@ -7,8 +7,10 @@ import {adminModule} from './admin';
 import vuetify from '@/plugins/vuetify'
 
 import VuetifyDialog from 'vuetify-dialog'
+import VueMoment from "vue-moment";
 
 Vue.use(Vuex);
+Vue.use(VueMoment);
 Vue.use(VuetifyDialog, {
   context: {
     vuetify
