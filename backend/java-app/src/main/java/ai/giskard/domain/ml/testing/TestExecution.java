@@ -24,10 +24,14 @@ public class TestExecution {
 
     @Getter
     @Setter
-    Date executionDate;
+    Date executionDate = new Date();
 
     @Getter
     @Setter
     @Enumerated(EnumType.STRING)
     TestResult result;
+
+    public TestExecution(Test test) {
+        this.test = test;
+    }
 }

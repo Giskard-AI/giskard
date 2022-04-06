@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -16,6 +17,7 @@ public class TestExecutionResultDTO {
     private TestResult status;
     private List<NamedSingleTestResultDTO> result;
     private String message;
+    private Date executionDate;
 
     public void setResult(TestResultMessage message) {
         result = message.getResultsList().stream().map(NamedSingleTestResultDTO::new).collect(Collectors.toList());

@@ -5,14 +5,27 @@ export interface ITest {
     language: 'PYTHON';
     testSuite: ITestSuite;
     type: 'CODE';
+    status?: TestStatus,
+    lastExecutionDate?: Date
 }
 
-interface INamedTestResult {
+export interface IEditorConfig {
+    functions: ITestFunction[]
+}
+
+export type ITestFunction = {
+    id: string;
+    code: string;
+    name: string;
+    type: 'CODE'
+};
+
+export interface INamedTestResult {
     name: string;
     result: ITestResultMessage;
 }
 
-interface ITestResultMessage {
+export interface ITestResultMessage {
     partialUnexpectedIndexList: number[],
     unexpectedIndexList: number[],
     missingCount: number,
@@ -24,8 +37,10 @@ interface ITestResultMessage {
     elementCount: number
 }
 
+type TestStatus = 'SUCCESS' | 'WARNING' | 'FAIL' | 'ERROR';
+
 export interface ITestExecutionResult {
-    status: 'SUCCESS' | 'WARNING' | 'FAIL' | 'ERROR';
+    status: TestStatus;
     result: INamedTestResult[];
     message: string;
 }

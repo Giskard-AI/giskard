@@ -4,7 +4,10 @@ import ai.giskard.domain.ml.TestSuite;
 import ai.giskard.repository.ProjectRepository;
 import ai.giskard.repository.ml.ModelRepository;
 import ai.giskard.repository.ml.TestSuiteRepository;
+import ai.giskard.service.TestService;
 import ai.giskard.service.TestSuiteService;
+import ai.giskard.service.dto.ml.ExecuteTestSuiteRequest;
+import ai.giskard.service.dto.ml.TestExecutionResultDTO;
 import ai.giskard.service.dto.ml.TestSuiteDTO;
 import ai.giskard.web.rest.errors.EntityNotFoundException;
 import org.springframework.web.bind.annotation.*;
@@ -23,17 +26,25 @@ public class TestSuiteController {
     private final ProjectRepository projectRepository;
     private final ModelRepository modelRepository;
     private final TestSuiteService testSuiteService;
+    private final TestService testService;
 
-    public TestSuiteController(TestSuiteRepository testSuiteRepository, ProjectRepository projectRepository, ModelRepository modelRepository, TestSuiteService testSuiteService) {
+    public TestSuiteController(TestSuiteRepository testSuiteRepository, ProjectRepository projectRepository,
+                               ModelRepository modelRepository, TestSuiteService testSuiteService, TestService testService) {
         this.testSuiteRepository = testSuiteRepository;
         this.projectRepository = projectRepository;
         this.modelRepository = modelRepository;
         this.testSuiteService = testSuiteService;
+        this.testService = testService;
     }
 
     @PutMapping("suites")
     public Optional<TestSuiteDTO> saveCodeBasedTestPreset(@Valid @RequestBody TestSuiteDTO dto) {
         return testSuiteService.updateTestSuite(dto);
+    }
+
+    @PostMapping("suites/execute")
+    public List<TestExecutionResultDTO> executeTestSuite(@Valid @RequestBody ExecuteTestSuiteRequest request) {
+        return testService.executeTestSuite(request.getSuiteId());
     }
 
     @PostMapping("suites")
