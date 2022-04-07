@@ -78,7 +78,7 @@ def test_heuristic(german_credit_test_data, german_credit_model):
     assert results.element_count == 1000
     assert results.missing_count == 0
     assert results.unexpected_count == 768
-    assert results.unexpected_percent == 0.768
+    assert results.unexpected_percent == 76.8
 
 
 def test_heuristic_opposite(german_credit_test_data, german_credit_model):
@@ -91,7 +91,7 @@ def test_heuristic_opposite(german_credit_test_data, german_credit_model):
     assert results.element_count == 1000
     assert results.missing_count == 0
     assert results.unexpected_count == 1000 - 768
-    assert pytest.approx(results.unexpected_percent, 0.001) == 1 - 0.768
+    assert pytest.approx(results.unexpected_percent, 0.1) == 100 - 76.8
 
 
 def test_heuristic_proba_limits(german_credit_test_data, german_credit_model):
@@ -101,4 +101,4 @@ def test_heuristic_proba_limits(german_credit_test_data, german_credit_model):
     assert results.element_count == 1000
     assert results.missing_count == 0
     assert results.unexpected_count == 914
-    assert pytest.approx(results.unexpected_percent, 0.001) == 0.914
+    assert pytest.approx(results.unexpected_percent, 0.1) == 91.4

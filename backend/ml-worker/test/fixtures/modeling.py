@@ -1,10 +1,10 @@
 import logging
+import time
 from logging.config import fileConfig
 from pathlib import Path
 
 import pandas as pd
 import pytest
-import time
 from sklearn import model_selection
 from sklearn.compose import ColumnTransformer
 from sklearn.impute import SimpleImputer
@@ -13,13 +13,18 @@ from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder
 from sklearn.preprocessing import StandardScaler
 
-fileConfig('../logging_config.ini')
+
+def path(p):
+    return Path(__file__).parent / p
+
+
+fileConfig(path('../../logging_config.ini'))
 
 
 @pytest.fixture()
 def german_credit_data():
     logging.info("Reading german_credit_prepared.csv")
-    return pd.read_csv(Path('test_data', 'german_credit_prepared.csv'))
+    return pd.read_csv(path('../test_data/german_credit_prepared.csv'))
 
 
 @pytest.fixture()

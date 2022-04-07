@@ -21,3 +21,6 @@ backend:
 
 liquibase-difflog:
 	cd ./backend/java-app && ./gradlew liquibaseDiffChangelog -PrunList=diffLog
+
+test-python:
+	cd ./backend/ml-worker && PYTHONPATH=generated:ml_worker .venv/bin/python -m pytest test
