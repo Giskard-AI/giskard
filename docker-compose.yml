@@ -57,6 +57,7 @@ services:
     expose:
       - 19000
     depends_on:
+      - jupyter
       - backend
       - backend-java
     env_file:
