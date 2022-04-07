@@ -72,7 +72,7 @@ services:
       - --NotebookApp.allow_origin='*'
       - --NotebookApp.base_url='/jupyter'
     volumes:
-      - ./backend/demo-notebook/notebook:/home/jovyan
+      - ./backend/demo-notebook/notebook/German_credit_scoring_giskard.ipynb:/home/jovyan/German_credit_scoring_giskard.ipynb
 
 volumes:
   app-db-data:
