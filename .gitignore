@@ -133,8 +133,6 @@ dmypy.json
 # Mac stuff
 .DS_Store
 
-# IDEA files
-.idea/
 
 cookiecutter-config-file.yml
 
