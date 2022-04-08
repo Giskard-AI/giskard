@@ -127,7 +127,7 @@ def predict(
 def select_single_prediction(model_inspector: ModelInspector, probabilities):
     labels = model_inspector.classification_labels
     if model_inspector.classification_threshold is not None and len(labels) == 2:
-        return labels[0] if probabilities[labels[0]] >= model_inspector.classification_threshold else labels[1]
+        return labels[1] if probabilities[labels[1]] >= model_inspector.classification_threshold else labels[0]
     else:
         return max(probabilities, key=lambda key: probabilities[key])
 
