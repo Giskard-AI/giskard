@@ -1,6 +1,7 @@
 from typing import Any
 import logging
 import pandas as pd
+from ai_inspector import ModelInspector
 from alibi.explainers import KernelShap
 from eli5.lime import TextExplainer
 
@@ -106,9 +107,10 @@ def predict(
             elif model_inspector.prediction_task == "classification":
                 probabilities = dict(zip(model_inspector.classification_labels, raw_prediction))
                 result = schemas.ModelPredictionResults(
-                    prediction=max(probabilities, key=lambda key: probabilities[key]),
+                    prediction=select_single_prediction(model_inspector, probabilities),
                     probabilities=probabilities,
                 )
+                print(1)
             else:
                 raise ValueError(
                     f"Prediction task is not supported: {model_inspector.prediction_task}"
@@ -120,6 +122,14 @@ def predict(
 
     else:
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Not enough permissions")
+
+
+def select_single_prediction(model_inspector: ModelInspector, probabilities):
+    labels = model_inspector.classification_labels
+    if model_inspector.classification_threshold is not None and len(labels) == 2:
+        return labels[1] if probabilities[labels[1]] >= model_inspector.classification_threshold else labels[0]
+    else:
+        return max(probabilities, key=lambda key: probabilities[key])
 
 
 @router.post("/{modelId}/{datasetId}/explain")
