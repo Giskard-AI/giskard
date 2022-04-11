@@ -81,6 +81,7 @@ export default class PredictionExplanations extends Vue {
     if (Object.keys(this.inputData).length) {
       try {
         this.loading = true;
+        this.errorMsg = "";
         const explainResponse = await api.explain(
           readToken(this.$store),
           this.modelId,
