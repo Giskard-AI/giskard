@@ -141,3 +141,5 @@ cookiecutter-config-file.yml
 files-bucket
 backend/demo-notebook/.*
 backend/demo-notebook/notebook/.*
+
+.gradle
