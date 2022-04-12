@@ -35,6 +35,8 @@ message NamedSingleTestResult{
 }
 
 message SingleTestResult{
+    bool passed = 13;
+    map<string, google.protobuf.Any> props = 14;
     uint32 element_count = 1;
     uint32 missing_count = 2;
     double missing_percent = 3;
