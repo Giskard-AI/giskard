@@ -1,7 +1,7 @@
 import ml_worker_pb2
 
 
-def ge_result_to_test_result(result) -> ml_worker_pb2.SingleTestResult:
+def ge_result_to_test_result(result, passed=True) -> ml_worker_pb2.SingleTestResult:
     """
         Converts a result of Great Expectations to TestResultMessage - java/python bridge test result class
     :param result: Great Expectations result
@@ -9,6 +9,7 @@ def ge_result_to_test_result(result) -> ml_worker_pb2.SingleTestResult:
     """
 
     return ml_worker_pb2.SingleTestResult(
+        passed=passed,
         element_count=result['element_count'],
         missing_count=result['missing_count'],
         missing_percent=result['missing_percent'],
