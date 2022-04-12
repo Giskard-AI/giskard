@@ -5,11 +5,14 @@
     <option name="linkedExternalProjectsSettings">
       <GradleProjectSettings>
         <option name="distributionType" value="DEFAULT_WRAPPED" />
-        <option name="externalProjectPath" value="$PROJECT_DIR$/backend/java-app" />
-        <option name="gradleJvm" value="openjdk-17" />
+        <option name="externalProjectPath" value="$PROJECT_DIR$" />
         <option name="modules">
           <set>
-            <option value="$PROJECT_DIR$/backend/java-app" />
+            <option value="$PROJECT_DIR$" />
+            <option value="$PROJECT_DIR$/giskard-frontend" />
+            <option value="$PROJECT_DIR$/giskard-legacy-server" />
+            <option value="$PROJECT_DIR$/giskard-ml-worker" />
+            <option value="$PROJECT_DIR$/giskard-server" />
           </set>
         </option>
       </GradleProjectSettings>

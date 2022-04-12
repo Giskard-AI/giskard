@@ -1,5 +1,6 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="Python Backend" type="PythonConfigurationType" factoryName="Python">
+    <module name="giskard.giskard-legacy-server" />
     <option name="INTERPRETER_OPTIONS" value="" />
     <option name="PARENT_ENVS" value="true" />
     <envs>
@@ -9,12 +10,11 @@
       <env name="POSTGRES_SERVER" value="localhost" />
       <env name="GISKARD_PLAN" value="enterprise" />
     </envs>
-    <option name="SDK_HOME" value="$PROJECT_DIR$/backend/app/.venv/bin/python" />
-    <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/backend/app/app" />
-    <option name="IS_MODULE_SDK" value="false" />
+    <option name="SDK_HOME" value="$PROJECT_DIR$/giskard-ml-worker/.venv/bin/python" />
+    <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/giskard-legacy-server/app/" />
+    <option name="IS_MODULE_SDK" value="true" />
     <option name="ADD_CONTENT_ROOTS" value="true" />
     <option name="ADD_SOURCE_ROOTS" value="true" />
-    <module name="" />
     <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
     <EXTENSION ID="net.ashald.envfile">
       <option name="IS_ENABLED" value="true" />
@@ -28,7 +28,7 @@
         <ENTRY IS_ENABLED="true" PARSER="env" PATH=".env.dev" />
       </ENTRIES>
     </EXTENSION>
-    <option name="SCRIPT_NAME" value="$PROJECT_DIR$/backend/app/app/main.py" />
+    <option name="SCRIPT_NAME" value="$PROJECT_DIR$/giskard-legacy-server/app/main.py" />
     <option name="PARAMETERS" value="" />
     <option name="SHOW_COMMAND_LINE" value="false" />
     <option name="EMULATE_TERMINAL" value="false" />

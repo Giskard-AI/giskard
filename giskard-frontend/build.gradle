@@ -1,0 +1,28 @@
+plugins {
+    id "base"
+    id "com.github.node-gradle.node" version "3.2.1"
+}
+
+node {
+    version = "16.14.0"
+    npmVersion = "8.3.1"
+    npmInstallCommand = "ci"
+    distBaseUrl = "https://nodejs.org/dist"
+    download = true
+}
+
+npm_run_build {
+    inputs.files fileTree('public')
+    inputs.files fileTree('src')
+    inputs.file 'package.json'
+    inputs.file 'package-lock.json'
+
+    outputs.dir project.buildDir
+}
+
+task cleanup(type: Delete) {
+    delete 'build', 'node_modules'
+}
+
+build.dependsOn npm_run_build
+clean.dependsOn cleanup
