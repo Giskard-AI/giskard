@@ -51,16 +51,37 @@ COPY ./giskard-ml-worker/pyproject.toml ./giskard-ml-worker/poetry.lock* ./
 # install deps - uses $POETRY_VIRTUALENVS_IN_PROJECT internally
 RUN poetry install --no-dev
 
+
+FROM builder-base as proto-builder
+WORKDIR $PYSETUP_PATH
+# install dev dependencies needed to protobuf code generation
+RUN poetry install
+
+# copy makefile and proto to generate python sources
+WORKDIR /app
+
+RUN mkdir "generated"
+COPY ./giskard-common/proto proto
+
+RUN python3.7 -m grpc_tools.protoc \
+      -Iproto \
+      --python_out=generated \
+      --grpc_python_out=generated \
+      --mypy_out=generated \
+      proto/ml-worker.proto
+
 # `production` image used for runtime
 FROM python-base as production
 COPY --from=builder-base $PYSETUP_PATH $PYSETUP_PATH
 COPY ./giskard-ml-worker /app
 
 WORKDIR /app
+COPY --from=proto-builder /app/generated ./generated
 
 # replace symlinked directory by actual copy
 # Docker preserves symlinks when its parent is copied and copies real files when only synlink is copied
 RUN rm -rf ./ml_worker/core
 COPY ./giskard-ml-worker/ml_worker/core ./ml_worker/core
+ENV PYTHONPATH "/app/generated"
 
 CMD ["python", "mltask_server_runner.py"]

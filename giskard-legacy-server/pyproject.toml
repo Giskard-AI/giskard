@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "app"
-version = "0.1.0"
+version = "0.1.1"
 description = ""
 authors = ["Admin <admin@example.com>"]
 
@@ -19,6 +19,7 @@ raven = "^6.10.0"
 gunicorn = "^20.0.4"
 alembic = "^1.7.5"
 sqlalchemy = "^1.4.27"
+pytest = "^6.2.5"
 python-jose = {extras = ["cryptography"], version = "^3.3.0"}
 mjml = "^0.6.2"
 Django = "^3.2.10"
@@ -57,13 +58,13 @@ black = "^21.12b0"
 isort = "^5.10.1"
 autoflake = "^1.4"
 flake8 = "^3.8.4"
+pytest = "^6.2.5"
 sqlalchemy-stubs = "^0.4"
 pytest-cov = "^3.0.0"
 pydocstyle = "^6.1.1"
 safety = "^1.10.3"
 bandit = "^1.7.1"
 darglint = "^1.8.1"
-pytest = "^6.2.5"
 
 [tool.black]
 # https://github.com/psf/black
