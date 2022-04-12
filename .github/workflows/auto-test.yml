@@ -23,7 +23,7 @@ jobs:
       uses: actions/checkout@v2
 
     - name: Gradle build
-      run: ./gradlew build
+      run: ./gradlew build --parallel
 
     - name: Generate docker config file
       run: |
