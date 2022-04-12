@@ -1,4 +1,5 @@
 syntax = "proto3";
+import "google/protobuf/any.proto";
 
 option java_multiple_files = true;
 option java_package = "ai.giskard.worker";
