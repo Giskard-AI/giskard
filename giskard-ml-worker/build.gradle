@@ -1,0 +1,59 @@
+plugins {
+    id "base"
+    id "idea"
+    id "ru.vyarus.use-python" version "2.3.0"
+}
+
+python {
+    envPath = '.venv'
+    minPythonVersion = '3.7'
+    scope = 'VIRTUALENV'
+    installVirtualenv = true
+    pip 'poetry:1.1.13'
+}
+
+task install(type: PythonTask) {
+    dependsOn python: pipInstall
+
+    module = "poetry"
+    command "install"
+
+}
+
+task cleanup(type: Delete) {
+    delete 'generated', '.venv'
+}
+
+task generateProto(type: PythonTask) {
+    dependsOn install
+
+    def out = 'generated'
+    def fout = file(out)
+    def pdir = file('../giskard-common/proto')
+
+    doFirst {
+        mkdir fout
+    }
+    doLast {
+        ant.replaceregexp(match: 'import ([^\\.]*?_pb2)', replace: 'import ' + out + '.\\1', flags: 'g', byline: true) {
+            fileset(dir: fout, includes: '*py')
+        }
+    }
+
+    module = "grpc_tools.protoc"
+    command("-I$pdir --python_out=$fout --grpc_python_out=$fout --mypy_out=$fout $pdir/ml-worker.proto")
+}
+
+task test(type: PythonTask) {
+    module = "pytest"
+    command("test")
+}
+
+idea {
+    module {
+        excludeDirs += file('.venv')
+    }
+}
+
+build.dependsOn install, generateProto
+clean.dependsOn cleanup

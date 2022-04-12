@@ -140,3 +140,15 @@ files-bucket
 backend/demo-notebook/.*
 backend/demo-notebook/notebook/.*
 .gradle
+
+######################
+# IntelliJ
+######################
+.idea/
+*.iml
+*.iws
+*.ipr
+*.ids
+*.orig
+classes/
+out/

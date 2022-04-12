@@ -7,32 +7,32 @@ services:
 
   jupyter:
     build:
-      context: ./backend/demo-notebook
+      context: ./giskard-demo-notebook
       dockerfile: demo-notebook.dockerfile
 
   frontend:
     platform: linux/amd64
     build:
-      context: ./frontend
+      context: giskard-frontend
+      dockerfile: Dockerfile
       args:
         FRONTEND_ENV: ${FRONTEND_ENV-production}
 
   backend:
     volumes:
-      - ./backend/app:/app
-    command: /start-reload.sh
+      - ./giskard-legacy-server:/app
     build:
-      context: ./backend
-      dockerfile: ./app/app.dockerfile
+      context: ./giskard-legacy-server
+      dockerfile: app.dockerfile
       args:
         INSTALL_DEV: ${INSTALL_DEV-false}
 
   ml-worker:
     build:
-      context: ./backend
-      dockerfile: ./ml-worker/ml-worker.dockerfile
+      context: .
+      dockerfile: ./giskard-ml-worker/ml-worker.dockerfile
 
   backend-java:
     build:
-      dockerfile: ./java-app/src/main/docker/app/app.dockerfile
-      context: ./backend
+      dockerfile: ./src/main/docker/app/app.dockerfile
+      context: ./giskard-server
