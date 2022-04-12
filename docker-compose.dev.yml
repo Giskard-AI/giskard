@@ -34,5 +34,5 @@ services:
 
   backend-java:
     build:
-      dockerfile: ./src/main/docker/app/app.dockerfile
-      context: ./giskard-server
+      dockerfile: ./giskard-server/src/main/docker/app/app.dockerfile
+      context: .

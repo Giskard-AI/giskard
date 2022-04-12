@@ -21,7 +21,7 @@ npm_run_build {
 }
 
 task cleanup(type: Delete) {
-    delete 'build', 'node_modules'
+    delete 'build', 'node_modules', 'dist'
 }
 
 build.dependsOn npm_run_build
