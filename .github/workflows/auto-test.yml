@@ -22,6 +22,9 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v2
 
+    - name: Gradle build
+      run: ./gradlew build
+
     - name: Generate docker config file
       run: |
         sudo sysctl -w kernel.unprivileged_userns_clone=1
