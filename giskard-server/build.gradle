@@ -1,0 +1,323 @@
+buildscript {
+    repositories {
+        gradlePluginPortal()
+    }
+}
+
+plugins {
+    id "java"
+    id "maven-publish"
+    id "idea"
+    id "eclipse"
+    id "jacoco"
+    id "org.springframework.boot" version "${springBootVersion}"
+    id "com.google.cloud.tools.jib" version "3.2.0"
+    id "com.gorylenko.gradle-git-properties" version "2.4.0"
+    id "org.liquibase.gradle" version "2.1.1"
+    id "org.sonarqube" version "3.3"
+    id "io.spring.nohttp" version "0.0.10"
+    id "com.github.andygoossens.gradle-modernizer-plugin" version "1.6.2"
+    id "io.freefair.lombok" version "6.4.1"
+    id 'com.google.protobuf' version '0.8.18'
+}
+
+group = "ai.giskard"
+version = "0.0.1-SNAPSHOT"
+
+description = ""
+
+sourceCompatibility=11
+targetCompatibility=11
+assert System.properties["java.specification.version"] == "11" || "12" || "13" || "14" || "15" || "16" || "17"
+
+apply from: "gradle/docker.gradle"
+apply from: "gradle/sonar.gradle"
+
+if (project.hasProperty("prod") || project.hasProperty("gae")) {
+    apply from: "gradle/profile_prod.gradle"
+} else {
+    apply from: "gradle/profile_dev.gradle"
+}
+
+if (project.hasProperty("war")) {
+    apply from: "gradle/war.gradle"
+}
+
+if (project.hasProperty("gae")) {
+    apply plugin: 'maven'
+    apply plugin: 'org.springframework.boot.experimental.thin-launcher'
+    apply plugin: 'io.spring.dependency-management'
+
+    dependencyManagement {
+        imports {
+            mavenBom "tech.jhipster:jhipster-dependencies:${jhipsterDependenciesVersion}"
+        }
+    }
+    appengineStage.dependsOn thinResolve
+}
+
+if (project.hasProperty("zipkin")) {
+    apply from: "gradle/zipkin.gradle"
+}
+
+idea {
+    module {
+        excludeDirs += files("node_modules")
+    }
+}
+
+sonarqube {
+    properties {
+        property "sonar.projectKey", "Giskard-AI_giskard"
+    }
+}
+
+eclipse {
+    sourceSets {
+        main {
+            java {
+                srcDirs += ["build/generated/sources/annotationProcessor/java/main"]
+            }
+        }
+    }
+}
+
+defaultTasks "bootRun"
+
+springBoot {
+    mainClassName = "ai.giskard.GiskardApp"
+}
+
+// TODO Andrey: restore
+//test {
+//    useJUnitPlatform()
+//    exclude "**/*IT*", "**/*IntTest*"
+//    testLogging {
+//        events 'FAILED', 'SKIPPED'
+//    }
+//    jvmArgs += '-Djava.security.egd=file:/dev/./urandom -Xmx256m'
+//    // uncomment if the tests reports are not generated
+//    // see https://github.com/jhipster/generator-jhipster/pull/2771 and https://github.com/jhipster/generator-jhipster/pull/4484
+//    // ignoreFailures true
+//    reports.html.enabled = false
+//}
+
+modernizer {
+    failOnViolations = true
+    includeTestClasses = true
+}
+
+task integrationTest(type: Test) {
+    useJUnitPlatform()
+    description = "Execute integration tests."
+    group = "verification"
+    include "**/*IT*", "**/*IntTest*"
+    testLogging {
+        events 'FAILED', 'SKIPPED'
+    }
+    jvmArgs += '-Djava.security.egd=file:/dev/./urandom -Xmx256m'
+    if (project.hasProperty('testcontainers')) {
+        environment 'spring.profiles.active', 'testcontainers'
+    }
+
+    // uncomment if the tests reports are not generated
+    // see https://github.com/jhipster/generator-jhipster/pull/2771 and https://github.com/jhipster/generator-jhipster/pull/4484
+    // ignoreFailures true
+    reports.html.enabled = false
+}
+// TODO Andrey: restore
+//check.dependsOn integrationTest
+task testReport(type: TestReport) {
+    destinationDir = file("$buildDir/reports/tests")
+    reportOn test
+}
+
+task integrationTestReport(type: TestReport) {
+    destinationDir = file("$buildDir/reports/tests")
+    reportOn integrationTest
+}
+
+if (!project.hasProperty("runList")) {
+    project.ext.runList = "main"
+}
+
+project.ext.diffChangelogFile = "src/main/resources/config/liquibase/changelog/" + new Date().format("yyyyMMddHHmmss") + "_changelog.xml"
+
+liquibase {
+    activities {
+        main {
+            driver "org.postgresql.Driver"
+            url System.getenv().getOrDefault("SPRING_LIQUIBASE_URL", "jdbc:postgresql://localhost:5432/app")
+            username System.getenv().getOrDefault("POSTGRES_USER","postgres")
+            password System.getenv().getOrDefault("POSTGRES_PASSWORD","y1QYbF2BtFUC")
+            changeLogFile "src/main/resources/config/liquibase/master.xml"
+            defaultSchemaName ""
+            logLevel "debug"
+            classpath "src/main/resources/"
+        }
+        diffLog {
+            driver "org.postgresql.Driver"
+            url System.getenv().getOrDefault("SPRING_LIQUIBASE_URL", "jdbc:postgresql://localhost:5432/app")
+            username System.getenv().getOrDefault("POSTGRES_USER","postgres")
+            password System.getenv().getOrDefault("POSTGRES_PASSWORD","y1QYbF2BtFUC")
+            changeLogFile project.ext.diffChangelogFile
+            referenceUrl "hibernate:spring:ai.giskard.domain?dialect=tech.jhipster.domain.util.FixedPostgreSQL10Dialect&hibernate.physical_naming_strategy=org.springframework.boot.orm.jpa.hibernate.SpringPhysicalNamingStrategy&hibernate.implicit_naming_strategy=org.springframework.boot.orm.jpa.hibernate.SpringImplicitNamingStrategy"
+            defaultSchemaName ""
+            logLevel "debug"
+            classpath "$buildDir/classes/java/main"
+        }
+    }
+
+    runList = project.ext.runList
+}
+
+gitProperties {
+    failOnNoGitDirectory = false
+    keys = ["git.branch", "git.commit.id.abbrev", "git.commit.id.describe"]
+}
+
+checkstyle {
+    toolVersion "${checkstyleVersion}"
+    configFile file("checkstyle.xml")
+    checkstyleTest.enabled = false
+}
+nohttp {
+    source.include "build.gradle", "README.md"
+}
+
+configurations {
+    providedRuntime
+    implementation.exclude module: "spring-boot-starter-tomcat"
+    all {
+        resolutionStrategy {
+            // Inherited version from Spring Boot can't be used because of regressions:
+            // To be removed as soon as spring-boot use the same version
+            force 'org.liquibase:liquibase-core:4.6.1'
+        }
+    }
+}
+
+repositories {
+    // Local maven repository is required for libraries built locally with maven like development jhipster-bom.
+    // mavenLocal()
+    mavenCentral()
+}
+
+dependencies {
+    implementation "io.grpc:grpc-protobuf:${grpcVersion}"
+    implementation "io.grpc:grpc-stub:${grpcVersion}"
+    runtimeOnly "io.grpc:grpc-netty-shaded:${grpcVersion}"
+    testImplementation "io.grpc:grpc-testing:${grpcVersion}"
+
+    // import JHipster dependencies BOM
+    if (!project.hasProperty("gae")) {
+        implementation platform("tech.jhipster:jhipster-dependencies:${jhipsterDependenciesVersion}")
+    }
+
+    // Use ", version: jhipsterDependenciesVersion, changing: true" if you want
+    // to use a SNAPSHOT release instead of a stable release
+    implementation group: "tech.jhipster", name: "jhipster-framework"
+    implementation "javax.annotation:javax.annotation-api"
+    implementation "io.dropwizard.metrics:metrics-core"
+    implementation "io.micrometer:micrometer-registry-prometheus"
+    implementation "com.fasterxml.jackson.datatype:jackson-datatype-hppc"
+    implementation "com.fasterxml.jackson.datatype:jackson-datatype-jsr310"
+    implementation "com.fasterxml.jackson.module:jackson-module-jaxb-annotations"
+    implementation "com.fasterxml.jackson.datatype:jackson-datatype-hibernate5"
+    implementation "com.fasterxml.jackson.core:jackson-annotations"
+    implementation "com.fasterxml.jackson.core:jackson-databind"
+    implementation "org.hibernate:hibernate-core"
+    implementation "com.zaxxer:HikariCP"
+    implementation "org.apache.commons:commons-lang3"
+    implementation "javax.transaction:javax.transaction-api"
+    implementation "org.hibernate:hibernate-entitymanager"
+    implementation "org.hibernate.validator:hibernate-validator"
+    implementation "org.liquibase:liquibase-core"
+    liquibaseRuntime "org.liquibase:liquibase-core"
+    liquibaseRuntime "org.liquibase.ext:liquibase-hibernate5:${liquibaseHibernate5Version}"
+    liquibaseRuntime sourceSets.main.compileClasspath
+    implementation "org.springframework.boot:spring-boot-loader-tools"
+    implementation "org.springframework.boot:spring-boot-starter-mail"
+    implementation "org.springframework.boot:spring-boot-starter-logging"
+    implementation "org.springframework.boot:spring-boot-starter-actuator"
+    implementation "org.springframework.boot:spring-boot-starter-data-jpa"
+    testImplementation "org.testcontainers:postgresql"
+    implementation "org.springframework.boot:spring-boot-starter-security"
+    implementation ("org.springframework.boot:spring-boot-starter-web") {
+        exclude module: "spring-boot-starter-tomcat"
+    }
+    implementation "org.springframework.boot:spring-boot-starter-undertow"
+    implementation "org.springframework.boot:spring-boot-starter-thymeleaf"
+    implementation "org.zalando:problem-spring-web"
+    implementation "org.springframework.cloud:spring-cloud-starter-bootstrap"
+    implementation "org.springframework.security:spring-security-config"
+    implementation "org.springframework.security:spring-security-data"
+    implementation "org.springframework.security:spring-security-web"
+    implementation "io.jsonwebtoken:jjwt-api"
+    if (!project.hasProperty("gae")) {
+        runtimeOnly "io.jsonwebtoken:jjwt-impl"
+        runtimeOnly "io.jsonwebtoken:jjwt-jackson"
+    } else {
+        implementation "io.jsonwebtoken:jjwt-impl"
+        implementation "io.jsonwebtoken:jjwt-jackson"
+    }
+    implementation ("org.springdoc:springdoc-openapi-webmvc-core")
+    implementation group: 'org.springdoc', name: 'springdoc-openapi-ui', version: '1.6.6'
+    implementation "org.postgresql:postgresql"
+    liquibaseRuntime "org.postgresql:postgresql"
+    implementation "org.mapstruct:mapstruct:${mapstructVersion}"
+    annotationProcessor "org.mapstruct:mapstruct-processor:${mapstructVersion}"
+    annotationProcessor "org.hibernate:hibernate-jpamodelgen:${hibernateVersion}"
+    annotationProcessor "org.glassfish.jaxb:jaxb-runtime:${jaxbRuntimeVersion}"
+    annotationProcessor "org.springframework.boot:spring-boot-configuration-processor:${springBootVersion}"
+    testImplementation "org.springframework.boot:spring-boot-starter-test"
+    testImplementation "org.springframework.security:spring-security-test"
+    testImplementation "org.springframework.boot:spring-boot-test"
+    testImplementation "com.tngtech.archunit:archunit-junit5-api:${archunitJunit5Version}"
+    testRuntimeOnly "com.tngtech.archunit:archunit-junit5-engine:${archunitJunit5Version}"
+    testImplementation "com.h2database:h2"
+    developmentOnly "org.springframework.boot:spring-boot-devtools:${springBootVersion}"
+    protobuf files("../giskard-common/proto")
+}
+
+protobuf {
+    protoc { artifact = "com.google.protobuf:protoc:${protocVersion}" }
+    plugins {
+        grpc { artifact = "io.grpc:protoc-gen-grpc-java:${grpcVersion}" }
+    }
+    generateProtoTasks {
+        all()*.plugins {
+            grpc {}
+        }
+    }
+}
+
+// Inform IDEs like IntelliJ IDEA, Eclipse or NetBeans about the generated code.
+sourceSets {
+    main {
+        java {
+            srcDirs 'build/generated/source/proto/main/grpc'
+            srcDirs 'build/generated/source/proto/main/java'
+            srcDirs 'build/generated/source/proto/main/python'
+        }
+    }
+}
+
+if (project.hasProperty("gae")) {
+    task createPom {
+        def basePath = 'build/resources/main/META-INF/maven'
+        doLast {
+            pom {
+                withXml(dependencyManagement.pomConfigurer)
+            }.writeTo("${basePath}/${project.group}/${project.name}/pom.xml")
+        }
+    }
+    bootJar.dependsOn = [createPom]
+}
+
+task cleanResources(type: Delete) {
+    delete "build/resources"
+}
+
+compileJava.dependsOn processResources
+processResources.dependsOn bootBuildInfo

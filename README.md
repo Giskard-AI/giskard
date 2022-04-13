@@ -1,5 +1,5 @@
 <p align="center">
-  <img width="300" alt="giskardlogo" src="frontend/src/assets/logo_full.svg">
+  <img width="300" alt="giskardlogo" src="giskard-frontend/src/assets/logo_full.svg">
 </p>
 <h3 align="center">Quality Assurance for AI</h3>
 <br />
