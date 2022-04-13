@@ -35,7 +35,7 @@ task generateProto(type: PythonTask) {
         mkdir fout
     }
     doLast {
-        ant.replaceregexp(match: 'import ([^\\.]*?_pb2)', replace: 'import ' + out + '.\\1', flags: 'g', byline: true) {
+        ant.replaceregexp(match: '^import ([^\\.]*?_pb2)', replace: 'import ' + out + '.\\1', flags: 'g', byline: true) {
             fileset(dir: fout, includes: '*py')
         }
     }
