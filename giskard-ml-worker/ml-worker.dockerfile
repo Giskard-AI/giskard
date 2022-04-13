@@ -49,7 +49,10 @@ WORKDIR $PYSETUP_PATH
 COPY ./giskard-ml-worker/pyproject.toml ./giskard-ml-worker/poetry.lock* ./
 
 # install deps - uses $POETRY_VIRTUALENVS_IN_PROJECT internally
-RUN poetry install --no-dev
+# Allow installing dev dependencies to run tests
+ARG INSTALL_DEV=false
+RUN bash -c "if [ $INSTALL_DEV == 'true' ] ; then poetry install --no-root ; else poetry install --no-root --no-dev ; fi"
+
 
 
 FROM builder-base as proto-builder
