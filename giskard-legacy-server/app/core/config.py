@@ -1,5 +1,6 @@
 import os
 import secrets
+from base64 import b64decode
 from enum import Enum
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
@@ -12,7 +13,12 @@ from app.ee.models.license import Plan, BASIC, PLANS_BY_CODE
 
 class Settings(BaseSettings):
     API_V1_STR: str = "/api/v1"
-    SECRET_KEY: str = secrets.token_urlsafe(32)
+    SECRET_KEY: str
+
+    @validator("SECRET_KEY", pre=True)
+    def secret_key(cls, v: str) -> Optional[str]:
+        return v if b64decode(v).decode() else secrets.token_urlsafe(32)
+
     # 60 minutes * 24 hours * 8 days = 8 days
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 8
     SERVER_NAME: str
