@@ -1,15 +1,18 @@
 package ai.giskard.domain;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
+import java.io.Serializable;
 import java.time.LocalDateTime;
+
 
 @MappedSuperclass
 @Table(indexes = @Index(columnList = "fileName"))
-public abstract class ProjectFile {
+public abstract class ProjectFile implements Serializable {
     @Getter
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -32,5 +35,6 @@ public abstract class ProjectFile {
     @Getter
     @Setter
     @ManyToOne
+    @JsonBackReference
     private Project project;
 }

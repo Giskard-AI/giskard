@@ -265,6 +265,7 @@ dependencies {
         implementation "io.jsonwebtoken:jjwt-impl"
         implementation "io.jsonwebtoken:jjwt-jackson"
     }
+    implementation ("org.springframework.data:spring-data-rest-webmvc")
     implementation ("org.springdoc:springdoc-openapi-webmvc-core")
     implementation group: 'org.springdoc', name: 'springdoc-openapi-ui', version: '1.6.6'
     implementation "org.postgresql:postgresql"
