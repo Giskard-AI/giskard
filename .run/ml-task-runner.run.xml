@@ -5,7 +5,7 @@
     <option name="PARENT_ENVS" value="true" />
     <envs>
       <env name="PYTHONUNBUFFERED" value="1" />
-      <env name="GSK_STORAGE_ROOT" value="$PROJECT_DIR$/backend/app/app/" />
+      <env name="GSK_STORAGE_ROOT" value="$PROJECT_DIR$/giskard-legacy-server/app" />
     </envs>
     <option name="SDK_HOME" value="$PROJECT_DIR$/giskard-ml-worker/.venv/bin/python" />
     <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/giskard-ml-worker" />
