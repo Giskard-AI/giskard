@@ -26,6 +26,7 @@ export interface INamedTestResult {
 }
 
 export interface ITestResultMessage {
+    passed: boolean,
     partialUnexpectedIndexList: number[],
     unexpectedIndexList: number[],
     missingCount: number,

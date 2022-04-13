@@ -12,6 +12,7 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 public class SingleTestResultDTO {
+    private boolean passed;
     private List<Integer> partialUnexpectedIndexList;
     //private List<TestResultMessage.Partial_unexpected_counts> partialUnexpectedCounts;
     private List<Integer> unexpectedIndexList;
@@ -34,5 +35,6 @@ public class SingleTestResultDTO {
         this.partialUnexpectedIndexList = message.getPartialUnexpectedIndexListList();
         //this.partialUnexpectedCounts = message.getPartialUnexpectedCountsList();
         this.unexpectedIndexList = message.getUnexpectedIndexListList();
+        this.passed = message.getPassed();
     }
 }
