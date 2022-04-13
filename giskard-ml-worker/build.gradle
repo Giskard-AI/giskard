@@ -27,6 +27,8 @@ task cleanup(type: Delete) {
 task generateProto(type: PythonTask) {
     dependsOn install
 
+    environment "PATH", file(project.extensions.python.envPath + "/bin")
+
     def out = 'generated'
     def fout = file(out)
     def pdir = file('../giskard-common/proto')
