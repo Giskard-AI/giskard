@@ -1,15 +1,17 @@
 package ai.giskard.domain;
 
+import ai.giskard.domain.ml.Dataset;
+import ai.giskard.domain.ml.ProjectModel;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.experimental.Delegate;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
+import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity(name = "projects")
 @NoArgsConstructor
@@ -22,10 +24,40 @@ public class Project {
 
     @NotNull
     private String key;
+
+    @Getter
+    @Setter
     @NotNull
     private String name;
+    @Getter
+    @Setter
     private String description;
+
+    @Getter
+    @Setter
     private LocalDateTime localDateTime;
+
+    @Getter
+    @Setter
+    @OneToMany(mappedBy = "project", fetch = FetchType.LAZY)
+    @JsonManagedReference
+    private List<ProjectModel> models;
+
+    @Getter
+    @Setter
+    @OneToMany(mappedBy = "project", fetch = FetchType.LAZY)
+    @JsonManagedReference
+    private List<Dataset> datasets;
+
+    @Getter
+    @Setter
+    @ManyToMany
+    @JoinTable(
+        name = "projects_guests",
+        joinColumns = @JoinColumn(name = "project_id"),
+        inverseJoinColumns = @JoinColumn(name = "user_id"))
+    @Delegate
+    private List<User> users;
 
     public Project(String key, String name, String description, LocalDateTime localDateTime) {
         this.key = key;

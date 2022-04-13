@@ -2,23 +2,20 @@ package ai.giskard.domain;
 
 import ai.giskard.config.Constants;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import java.io.Serializable;
-import java.time.Instant;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Locale;
-import java.util.Set;
+import org.apache.commons.lang3.StringUtils;
+import org.hibernate.annotations.BatchSize;
+
 import javax.persistence.*;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
-import org.apache.commons.lang3.StringUtils;
-import org.hibernate.annotations.BatchSize;
-import org.springframework.data.annotation.CreatedBy;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedBy;
-import org.springframework.data.annotation.LastModifiedDate;
+import java.io.Serializable;
+import java.time.Instant;
+import java.util.Collections;
+import java.util.List;
+import java.util.Locale;
+import java.util.Set;
 
 /**
  * A user.
@@ -133,7 +130,7 @@ public class User extends AbstractAuditingEntity implements Serializable {
     }
 
     // TODO andreyavtomonov (14/03/2022): migration
-    public Set<Role> getRoles(){
+    public Set<Role> getRoles() {
         return Collections.singleton(role);
     }
 
@@ -153,6 +150,12 @@ public class User extends AbstractAuditingEntity implements Serializable {
         // see https://vladmihalcea.com/how-to-implement-equals-and-hashcode-using-the-jpa-entity-identifier/
         return getClass().hashCode();
     }
+
+    @lombok.Setter
+    @lombok.Getter
+    @JsonIgnore
+    @ManyToMany
+    private List<Project> projects;
 
     //// TODO andreyavtomonov (14/03/2022): remove after inge
     //public String getCreatedBy() {
