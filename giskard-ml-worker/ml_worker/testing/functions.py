@@ -20,13 +20,13 @@ class GiskardTestFunctions:
 
     def save_results(self, result: SingleTestResult, test_name=None):
         if test_name is None:
-            test_name = self.find_caller_test_name()
+            test_name = self._find_caller_test_name()
 
         self.tests_results.append(NamedSingleTestResult(name=test_name, result=result))
         return result
 
     @staticmethod
-    def find_caller_test_name():
+    def _find_caller_test_name():
         curr_frame = inspect.currentframe()
         try:
             while curr_frame.f_back.f_code.co_name != '<module>':
@@ -34,18 +34,6 @@ class GiskardTestFunctions:
         except Exception as e:
             logging.error(f"Failed to extract test method name", e)
         return curr_frame.f_code.co_name
-
-    def test_metamorphic_invariance(self, df: DataFrame, model, perturbation_dict) -> SingleTestResult:
-        results_df = self._perturb_and_predict(df, model, perturbation_dict)
-
-        ge_df = ge.from_pandas(results_df)
-        result = ge_df.expect_column_pair_values_to_be_equal(
-            "prediction",
-            "perturbed_prediction",
-            result_format="COMPLETE"
-        )["result"]
-
-        return self.save_results(ge_result_to_test_result(result))
 
     @staticmethod
     def _perturb_and_predict(df, model, perturbation_dict, classification_label_index=None):
@@ -62,39 +50,14 @@ class GiskardTestFunctions:
             results_df["perturbed_prediction"] = results_df["prediction"]
         return results_df
 
-    def test_metamorphic_increasing(self,
-                                    df: DataFrame,
-                                    column_name: str,
-                                    model,
-                                    perturbation_percent: float,
-                                    classification_label_index: int):
-        return self._test_metamorphic_direction(is_increasing=True,
-                                                df=df,
-                                                column_name=column_name,
-                                                model=model,
-                                                perturbation_percent=perturbation_percent,
-                                                classification_label_index=classification_label_index)
-
-    def test_metamorphic_decreasing(self,
-                                    df: DataFrame,
-                                    column_name: str,
-                                    model,
-                                    perturbation_percent: float,
-                                    classification_label_index: int):
-        return self._test_metamorphic_direction(is_increasing=False,
-                                                df=df,
-                                                column_name=column_name,
-                                                model=model,
-                                                perturbation_percent=perturbation_percent,
-                                                classification_label_index=classification_label_index)
-
     def _test_metamorphic_direction(self,
                                     is_increasing,
                                     df: DataFrame,
                                     column_name: str,
                                     model,
                                     perturbation_percent: float,
-                                    classification_label_index: int) -> SingleTestResult:
+                                    classification_label_index: int,
+                                    failed_threshold: int) -> SingleTestResult:
         perturbation_dict = {column_name: lambda x: x[column_name] * (1 + perturbation_percent)}
         results_df = self._perturb_and_predict(df, model, perturbation_dict, classification_label_index)
 
@@ -105,7 +68,59 @@ class GiskardTestFunctions:
             result_format="COMPLETE"
         )["result"]
 
-        return self.save_results(ge_result_to_test_result(result))
+        return self.save_results(
+            ge_result_to_test_result(result, result.get('unexpected_percent') / 100 <= failed_threshold))
+
+    def test_metamorphic_invariance(self,
+                                    df: DataFrame,
+                                    model,
+                                    perturbation_dict,
+                                    failed_threshold=1) -> SingleTestResult:
+        results_df = self._perturb_and_predict(df, model, perturbation_dict)
+
+        ge_df = ge.from_pandas(results_df)
+        result = ge_df.expect_column_pair_values_to_be_equal(
+            "prediction",
+            "perturbed_prediction",
+            result_format="COMPLETE"
+        )["result"]
+
+        failed = result.get('unexpected_percent')
+        return self.save_results(
+            ge_result_to_test_result(result,
+                                     failed is not None and (failed / 100 <= failed_threshold)
+                                     )
+        )
+
+    def test_metamorphic_increasing(self,
+                                    df: DataFrame,
+                                    column_name: str,
+                                    model,
+                                    perturbation_percent: float,
+                                    classification_label_index: int,
+                                    failed_threshold=1):
+        return self._test_metamorphic_direction(is_increasing=True,
+                                                df=df,
+                                                column_name=column_name,
+                                                model=model,
+                                                perturbation_percent=perturbation_percent,
+                                                classification_label_index=classification_label_index,
+                                                failed_threshold=failed_threshold)
+
+    def test_metamorphic_decreasing(self,
+                                    df: DataFrame,
+                                    column_name: str,
+                                    model,
+                                    perturbation_percent: float,
+                                    classification_label_index: int,
+                                    failed_threshold=1):
+        return self._test_metamorphic_direction(is_increasing=False,
+                                                df=df,
+                                                column_name=column_name,
+                                                model=model,
+                                                perturbation_percent=perturbation_percent,
+                                                classification_label_index=classification_label_index,
+                                                failed_threshold=failed_threshold)
 
     def test_heuristic(self,
                        df: DataFrame,
@@ -113,7 +128,8 @@ class GiskardTestFunctions:
                        classification_label: int,
                        min_proba: float = 0,
                        max_proba: float = 1,
-                       mask=None) -> SingleTestResult:
+                       mask=None,
+                       failed_threshold=1) -> SingleTestResult:
         results_df = pd.DataFrame()
         if mask is not None:
             df = df.loc[mask]
@@ -125,8 +141,10 @@ class GiskardTestFunctions:
                                    (results_df["prediction_proba"] >= min_proba)
 
         unexpected = df[~matching_prediction_mask]
+        failed_ratio = len(unexpected) / len(df)
         return self.save_results(SingleTestResult(
             element_count=len(df),
             unexpected_count=len(unexpected),
-            unexpected_percent=100 * len(unexpected) / len(df)
+            unexpected_percent=failed_ratio * 100,
+            passed=failed_ratio <= failed_threshold
         ))
