@@ -49,7 +49,9 @@ WORKDIR $PYSETUP_PATH
 COPY ./pyproject.toml ./poetry.lock* ./
 
 # install deps - uses $POETRY_VIRTUALENVS_IN_PROJECT internally
-RUN poetry install --no-dev
+# Allow installing dev dependencies to run tests
+ARG INSTALL_DEV=false
+RUN bash -c "if [ $INSTALL_DEV == 'true' ] ; then poetry install --no-root ; else poetry install --no-root --no-dev ; fi"
 
 # `production` image used for runtime
 FROM python-base as production
