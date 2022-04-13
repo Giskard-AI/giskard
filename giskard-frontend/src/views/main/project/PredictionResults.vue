@@ -40,6 +40,7 @@
             </div>
             <div class="caption">
               <div v-if="targetFeature">target: {{ targetFeature }}</div>
+              <div v-if="respMetadata && respMetadata.classification_threshold">threshold: {{ respMetadata.classification_threshold }}</div>
               <div v-if="actual">{{ labelsAndValues }}</div>
             </div>
           </div>
@@ -83,6 +84,7 @@ import { use } from "echarts/core";
 import { BarChart } from "echarts/charts";
 import { CanvasRenderer } from "echarts/renderers";
 import { GridComponent } from "echarts/components";
+import {IModelMetadata} from "@/interfaces";
 
 use([CanvasRenderer, BarChart, GridComponent]);
 Vue.component("v-chart", ECharts);
@@ -102,8 +104,11 @@ export default class PredictionResults extends Vue {
   resultProbabilities: object = {};
   loading: boolean = false;
   errorMsg: string = "";
+  respMetadata!: IModelMetadata;
 
-  mounted() {
+  async mounted() {
+    this.respMetadata = (await api.getModelMetadata(readToken(this.$store), this.modelId)).data
+
     this.submitPrediction()
   }
   
