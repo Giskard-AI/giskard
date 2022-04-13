@@ -1,8 +1,0 @@
-{
-  "generator-jhipster:7.5.0": {
-    "promptValues": {
-      "packageName": "ai.giskard",
-      "nativeLanguage": "en"
-    }
-  }
-}
