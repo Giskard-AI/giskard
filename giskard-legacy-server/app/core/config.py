@@ -17,7 +17,7 @@ class Settings(BaseSettings):
 
     @validator("SECRET_KEY", pre=True)
     def secret_key(cls, v: str) -> Optional[str]:
-        return v if b64decode(v).decode() else secrets.token_urlsafe(32)
+        return b64decode(v).decode() if v else secrets.token_urlsafe(32)
 
     # 60 minutes * 24 hours * 8 days = 8 days
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 8
