@@ -135,10 +135,8 @@
         </v-alert>
         <template v-for="testResult in runResult.result">
           <v-alert
-              v-if="runResult.status === 'SUCCESS'"
               v-model="showRunResult"
-              type="success"
-              color="green"
+              :type="testResult.result.passed ? 'success' : 'error'"
               outlined
               dismissible
           >
@@ -367,7 +365,7 @@ export default class TestEditor extends Vue {
 </script>
 
 <style scoped lang="scss">
-@import "/src/styles/colors.scss";
+@import "src/styles/colors.scss";
 
 .mirror {
   transform: rotate(180deg);
