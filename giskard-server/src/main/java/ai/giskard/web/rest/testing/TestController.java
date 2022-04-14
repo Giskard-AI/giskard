@@ -11,6 +11,7 @@ import ai.giskard.service.dto.ml.TestEditorConfigDTO;
 import ai.giskard.service.dto.ml.TestExecutionResultDTO;
 import ai.giskard.service.dto.ml.TestSuiteDTO;
 import ai.giskard.web.rest.errors.EntityNotFoundException;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
