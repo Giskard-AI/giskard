@@ -1,6 +1,6 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="Java Backend" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot">
-    <module name="ai.giskard.giskard.main" />
+    <module name="giskard" />
     <extension name="net.ashald.envfile">
       <option name="IS_ENABLED" value="false" />
       <option name="IS_SUBST" value="false" />
