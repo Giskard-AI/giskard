@@ -61,19 +61,19 @@ public class TestService {
     }
 
     public TestExecutionResultDTO runTest(Long testId) {
-        TestExecutionResultDTO res = new TestExecutionResultDTO();
+        TestExecutionResultDTO res = new TestExecutionResultDTO(testId);
         Test test = testRepository.findById(testId).orElseThrow(() -> new EntityNotFoundException(EntityNotFoundException.Entity.TEST, testId));
 
         TestExecution testExecution = new TestExecution(test);
         testExecutionRepository.save(testExecution);
+        res.setExecutionDate(testExecution.getExecutionDate());
 
         MLWorkerClient client = null;
         try {
             client = mlWorkerService.createClient();
             ListenableFuture<TestResultMessage> runTestFuture = client.runTest(test.getTestSuite(), test);
 
-            res.setResult(runTestFuture.get());
-            res.setStatus(TestResult.SUCCESS);
+            applyTestExecutionResults(res, runTestFuture.get());
         } catch (InterruptedException e) {
             logger.error("Failed to crete MLWorkerClient", e);
         } catch (StatusRuntimeException e) {
@@ -89,6 +89,15 @@ public class TestService {
         testExecution.setResult(res.getStatus());
         testExecutionRepository.save(testExecution);
         return res;
+    }
+
+    private void applyTestExecutionResults(TestExecutionResultDTO res, TestResultMessage testResult) {
+        res.setResult(testResult);
+        if (testResult.getResultsList().stream().anyMatch(r -> !r.getResult().getPassed())) {
+            res.setStatus(TestResult.FAILED);
+        } else {
+            res.setStatus(TestResult.PASSED);
+        }
     }
 
     private void interpretTestExecutionError(TestSuite testSuite, StatusRuntimeException e, TestExecutionResultDTO res) {
