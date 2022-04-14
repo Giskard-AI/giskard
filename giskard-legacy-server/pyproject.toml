@@ -51,6 +51,7 @@ websocket = "^0.2.1"
 #catboost = "^1.0"
 ai-inspector = "^0.1.2"
 #dask = "^2022.1.0"
+filelock = "^3.6.0"
 
 [tool.poetry.dev-dependencies]
 mypy = "^0.910"
