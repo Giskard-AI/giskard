@@ -1,8 +1,7 @@
 package ai.giskard.domain.ml;
 
 public enum TestResult {
-    SUCCESS,
-    WARNING,
-    FAIL,
+    PASSED,
+    FAILED,
     ERROR
 }

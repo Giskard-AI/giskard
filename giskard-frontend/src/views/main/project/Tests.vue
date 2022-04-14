@@ -1,13 +1,15 @@
 <template>
   <div>
-    <v-container fluid class="pa-0">
+    <v-container fluid class='pa-0'>
       <v-row>
         <v-col :align="'right'">
-          <v-btn small tile color="primary" class="mx-1" @click="createTest()">
+          <v-btn small tile color='primary' class='mx-1' @click='createTest()'>
             <v-icon left>add</v-icon>
             create test
           </v-btn>
-          <v-btn small tile class="mx-1" @click="executeTestSuite()">
+          <v-btn small tile class='mx-1' @click='executeTestSuite()'
+                 :loading='isTestSuiteRunning'
+                 :disabled='isTestSuiteRunning'>
             <v-icon>arrow_right</v-icon>
             run all
           </v-btn>
@@ -16,31 +18,35 @@
 
       <v-row>
         <v-col>
+          <v-list two-line class='tests-list'>
+            <template v-for='(test, index) in tests'>
+              <v-divider :inset='false'></v-divider>
 
-          <v-list two-line class="tests-list">
-            <template v-for="(test, index) in tests">
-              <v-divider :inset="false"></v-divider>
-
-              <v-list-item :key="test.id" v-ripple class="test-list-item" @click="openTest(test.id)">
+              <v-list-item :key='test.id' v-ripple class='test-list-item' @click='openTest(test.id)'>
                 <v-list-item-avatar>
-                  <v-icon color="green lighten-2">circle</v-icon>
+                  <v-icon :color='testStatusToColor(test.status)'>circle</v-icon>
                 </v-list-item-avatar>
                 <v-list-item-content>
-                  <v-list-item-title v-html="test.name"></v-list-item-title>
-                  <v-list-item-subtitle v-if="test.lastExecutionDate">
-                    <span class="font-weight-regular">Last executed</span>:
-                    <span :title="test.lastExecutionDate | moment('dddd, MMMM Do YYYY, h:mm:ss a')">{{ test.lastExecutionDate | moment("from") }}</span>
+                  <v-list-item-title v-html='test.name'></v-list-item-title>
+                  <v-list-item-subtitle v-if='test.lastExecutionDate'>
+                    <span class='font-weight-regular'>Last executed</span>:
+                    <span :title="test.lastExecutionDate | moment('dddd, MMMM Do YYYY, h:mm:ss a')">{{
+                        test.lastExecutionDate | moment('from')
+                      }}</span>
                   </v-list-item-subtitle>
                 </v-list-item-content>
-                <v-spacer/>
-                <v-btn tile small @click="runTest($event, test.id)">
+                <v-spacer />
+                <v-btn tile small @click='runTest($event, test)'
+                       :disabled='isTestSuiteRunning || isTestRunning(test.id)'
+                       :loading='isTestRunning(test.id)'
+                >
                   <v-icon>arrow_right</v-icon>
                   <span>Run</span>
                 </v-btn>
               </v-list-item>
 
             </template>
-            <v-divider :inset="false"></v-divider>
+            <v-divider :inset='false'></v-divider>
 
             <!--          </v-list-item-group>-->
           </v-list>
@@ -57,54 +63,95 @@
   </div>
 </template>
 
-<script lang="ts">
+<script lang='ts'>
 
-import {ITest} from "@/interfaces";
-import {Prop, Vue} from "vue-property-decorator";
-import Component from "vue-class-component";
-import TestSuiteCreateModal from "@/views/main/project/modals/TestSuiteCreateModal.vue";
-import {api} from "@/api";
-// import {UseTimeAgo} from "@vueuse/components";
-import TestCreateModal from "@/views/main/project/modals/TestCreateModal.vue";
+import { ITest, ITestExecutionResult, TestStatus } from '@/interfaces';
+import { Prop, Vue } from 'vue-property-decorator';
+import Component from 'vue-class-component';
+import TestSuiteCreateModal from '@/views/main/project/modals/TestSuiteCreateModal.vue';
+import { api } from '@/api';
+import TestCreateModal from '@/views/main/project/modals/TestCreateModal.vue';
 
 @Component({
-  components: {TestSuiteCreateModal, TestCreateModal}
+  components: { TestSuiteCreateModal, TestCreateModal }
 })
 export default class Tests extends Vue {
-  @Prop({required: true}) suiteId!: number;
+  @Prop({ required: true }) suiteId!: number;
 
-  tests: Array<ITest> = []
-  selectedItem = 1;
+  tests: { [id: number]: ITest } = {};
+  isTestSuiteRunning = false;
+  runningTestIds = new Set();
 
-  public openTestSuite(suite) {
-    this.$router.push({name: 'suite-details', params: {suiteId: suite.id}})
+  testStatusToColor(status: TestStatus) {
+    switch (status) {
+      case 'PASSED':
+        return 'green lighten-2';
+      case 'FAILED':
+        return 'orange lighten-2';
+      case 'ERROR':
+        return 'red lighten-2';
+      default:
+        return 'grey lighten-2';
+    }
+  }
+
+  public isTestRunning(testId: number) {
+    return this.runningTestIds.has(testId);
   }
 
   public async executeTestSuite() {
-    await api.executeTestSuite(this.suiteId);
+    this.isTestSuiteRunning = true;
+    try {
+
+      let res = (await api.executeTestSuite(this.suiteId)).data;
+      res.forEach((testResult: ITestExecutionResult) => {
+        Tests.applyTestExecutionResults(this.tests[testResult.testId], testResult);
+      });
+    } finally {
+      this.isTestSuiteRunning = false;
+    }
   }
+
+
   public async createTest() {
-    const newTest = await this.$dialog.showAndWait(TestCreateModal, {width: 800, suiteId: this.suiteId});
+    const newTest = await this.$dialog.showAndWait(TestCreateModal, { width: 800, suiteId: this.suiteId });
     await this.$router.push({
       name: 'test-editor', params: {
         testId: newTest.id
       }
     });
   }
+
   async activated() {
     await this.init();
   }
-  private async init(){
-    this.tests = (await api.getTests(this.suiteId)).data;
+
+  private async init() {
+    let testsList = (await api.getTests(this.suiteId)).data;
+    this.tests = Object.assign({}, ...testsList.map((x) => ({ [x.id]: x })));
+
   }
+
   public async mounted() {
     await this.init();
   }
 
-  public async runTest(event: Event, testId: number) {
+  public async runTest(event: Event, test: ITest) {
     event.stopPropagation();
-    let runResult = (await api.runTest(testId)).data;
-    console.log('RUN', runResult);
+    this.runningTestIds.add(test.id);
+    this.$forceUpdate();
+    console.log('After added', this.runningTestIds);
+    try {
+      let runResult = (await api.runTest(test.id)).data;
+      Tests.applyTestExecutionResults(test, runResult);
+    } finally {
+      this.runningTestIds.delete(test.id);
+    }
+  }
+
+  private static applyTestExecutionResults(test: ITest, runResult: ITestExecutionResult) {
+    test.lastExecutionDate = runResult.executionDate;
+    test.status = runResult.status;
   }
 
   /**
@@ -113,12 +160,12 @@ export default class Tests extends Vue {
    * @param testId
    */
   public openTest(testId: number) {
-    this.$router.push({name: 'test-editor', params: {testId: testId.toString()}});
+    this.$router.push({ name: 'test-editor', params: { testId: testId.toString() } });
   }
 }
 </script>
-<style scoped lang="scss">
-@import "/src/styles/colors.scss";
+<style scoped lang='scss'>
+@import "src/styles/colors.scss";
 
 .test-list-item {
   cursor: pointer;
