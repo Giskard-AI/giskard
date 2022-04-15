@@ -45,6 +45,7 @@ def create_demo_project(db, user):
     if demo_project:
         logging.info("Demo project already exists, skipping")
     else:
+        logging.info("Creating demo project")
         project = crud.project.create(
             db,
             schemas.ProjectCreate(
