@@ -42,11 +42,11 @@ def create_superuser(db):
 
 
 def create_demo_project(db, user):
-    logging.info("Creating demo project")
     demo_project = crud.project.get_by_key(db, query_key='giskard-demo-project')
     if demo_project:
         logging.info("Demo project already exists, skipping")
     else:
+        logging.info("Creating demo project")
         project = crud.project.create(
             db,
             schemas.ProjectCreate(
@@ -81,4 +81,4 @@ def create_demo_project(db, user):
 
 
 def demo_file_path(fname):
-    return Path(settings.DEMO_PROJECT_DIR) / fname
+    return settings.DEMO_PROJECT_DIR / fname
