@@ -337,28 +337,6 @@ export default class TestEditor extends Vue {
         '    failed_threshold=0.1\n' +
         ')'
     }];
-    // this.testEditorConfig = {
-    //   functions: [{
-    //     id: "test_metamorphic_invariance",
-    //     name: "Metamorphic Invariance",
-    //     type: "CODE",
-    //     // language=Python
-    //     code: `
-    //       perturbation = {"YOUR_FEATURE": lambda x: x}
-    //       population = test_df
-    //
-    //       test_metamorphic_invariance(
-    //         df=test_df,
-    //         model_fn=clf_predict,
-    //         perturbation_dict=perturbation,
-    //         filter=population)
-    //
-    //     `
-    //   }],
-    //
-    //
-    // }
-    // this.testEditorConfig = (await api.getTestEditorConfig()).data;
   }
 }
 </script>
