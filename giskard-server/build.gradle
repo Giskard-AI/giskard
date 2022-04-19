@@ -263,7 +263,7 @@ dependencies {
     }
     implementation ("org.springframework.data:spring-data-rest-webmvc")
     implementation ("org.springdoc:springdoc-openapi-webmvc-core")
-    implementation group: 'org.springdoc', name: 'springdoc-openapi-ui', version: '1.6.6'
+    implementation group: 'org.springdoc', name: 'springdoc-openapi-ui', version: '1.6.7'
     implementation "org.postgresql:postgresql"
     liquibaseRuntime "org.postgresql:postgresql"
     implementation "org.mapstruct:mapstruct:${mapstructVersion}"
