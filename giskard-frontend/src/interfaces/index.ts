@@ -38,9 +38,11 @@ export interface ITestResultMessage {
     elementCount: number
 }
 
-type TestStatus = 'SUCCESS' | 'WARNING' | 'FAIL' | 'ERROR';
+export type TestStatus = 'PASSED' | 'FAILED' | 'ERROR';
 
 export interface ITestExecutionResult {
+    testId: number;
+    executionDate: Date;
     status: TestStatus;
     result: INamedTestResult[];
     message: string;

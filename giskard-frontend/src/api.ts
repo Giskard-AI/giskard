@@ -226,6 +226,6 @@ export const api = {
         })
     },
     async executeTestSuite(suiteId: number) {
-        return await axios.post(`${apiUrlJava}/api/v2/testing/suites/execute`, {suiteId});
+        return await axios.post<Array<ITestExecutionResult>>(`${apiUrlJava}/api/v2/testing/suites/execute`, {suiteId});
     }
 };

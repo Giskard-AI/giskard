@@ -104,6 +104,8 @@ spring:
   jmx:
     enabled: false
   data:
+    rest:
+      base-path: "/api"
     jpa:
       repositories:
         bootstrap-mode: deferred
@@ -155,7 +157,7 @@ server:
         http-only: true
 
 springdoc:
-  show-actuator: true
+  show-actuator: false
 
 # Properties to be exposed on the /info management endpoint
 info:
