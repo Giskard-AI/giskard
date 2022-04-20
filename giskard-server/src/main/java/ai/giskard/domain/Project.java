@@ -2,7 +2,10 @@ package ai.giskard.domain;
 
 import ai.giskard.domain.ml.Dataset;
 import ai.giskard.domain.ml.ProjectModel;
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -15,6 +18,7 @@ import java.util.List;
 
 @Entity(name = "projects")
 @NoArgsConstructor
+@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
 public class Project {
     @Getter
     @Setter
@@ -29,6 +33,7 @@ public class Project {
     @Setter
     @NotNull
     private String name;
+
     @Getter
     @Setter
     private String description;
@@ -39,7 +44,13 @@ public class Project {
 
     @Getter
     @Setter
+    @ManyToOne
+    private User owner;
+
+    @Getter
+    @Setter
     @OneToMany(mappedBy = "project", fetch = FetchType.LAZY)
+    @JsonIgnore
     @JsonManagedReference
     private List<ProjectModel> models;
 
@@ -52,6 +63,7 @@ public class Project {
     @Getter
     @Setter
     @ManyToMany
+    @JsonIgnore
     @JoinTable(
         name = "projects_guests",
         joinColumns = @JoinColumn(name = "project_id"),
@@ -59,11 +71,13 @@ public class Project {
     @Delegate
     private List<User> users;
 
-    public Project(String key, String name, String description, LocalDateTime localDateTime) {
+
+    public Project(String key, String name, String description, LocalDateTime localDateTime, User owner) {
         this.key = key;
         this.name = name;
         this.description = description;
         this.localDateTime = localDateTime;
+        this.owner = owner;
     }
 
     //    class Project(Base):
