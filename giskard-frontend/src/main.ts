@@ -1,3 +1,4 @@
+import './global-keys'
 import '@babel/polyfill';
 // Import Component hooks before component definitions
 import './component-hooks';
@@ -9,9 +10,9 @@ import router from './router';
 import store from '@/store';
 import './registerServiceWorker';
 import 'vuetify/dist/vuetify.min.css';
-import 'vuetify-dialog/dist/vuetify-dialog.css'
-import './styles/global.scss'
-import './styles/colors.scss'
+import 'vuetify-dialog/dist/vuetify-dialog.css';
+import './styles/global.scss';
+import './styles/colors.scss';
 
 Vue.config.productionTip = false;
 
@@ -19,5 +20,5 @@ new Vue({
   router,
   store,
   vuetify,
-  render: (h) => h(App),
+  render: (h) => h(App)
 }).$mount('#app');
