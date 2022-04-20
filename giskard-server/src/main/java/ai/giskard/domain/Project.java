@@ -62,15 +62,24 @@ public class Project {
 
     @Getter
     @Setter
-    @ManyToMany
+    @ManyToMany(cascade=CascadeType.ALL)
     @JsonIgnore
     @JoinTable(
         name = "projects_guests",
         joinColumns = @JoinColumn(name = "project_id"),
         inverseJoinColumns = @JoinColumn(name = "user_id"))
-    @Delegate
     private List<User> users;
 
+
+    public void addUser(User user) {
+        this.users.add(user);
+        user.getProjects().add(this);
+    }
+
+    public void removeUser(User user) {
+        this.users.remove(user);
+        user.getProjects().remove(this);
+    }
 
     public Project(String key, String name, String description, LocalDateTime localDateTime, User owner) {
         this.key = key;

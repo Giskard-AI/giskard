@@ -6,13 +6,10 @@ import ai.giskard.repository.ProjectRepository;
 import ai.giskard.repository.UserRepository;
 import ai.giskard.security.AuthoritiesConstants;
 import ai.giskard.service.ProjectService;
-import ai.giskard.service.dto.ml.ModelDTO;
 import ai.giskard.service.dto.ml.ProjectDTO;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -47,6 +44,71 @@ public class ProjectController {
             projects = user.getProjects();
         }
         return projects.stream().map(ProjectDTO::new).collect(Collectors.toList());
-
     }
+
+    /**
+     * Update the project with the specified project
+     *
+     * @param project: project updated to save
+     * @param id:      id of the existing project
+     * @return updated project
+     */
+    @PutMapping(value = "/project/{id}")
+    public ProjectDTO updatePerson(@RequestBody Project project, @PathVariable("id") Long id) {
+        return new ProjectDTO(this.projectService.update(id, project));
+    }
+
+    /**
+     * Create new project
+     *
+     * @param project: project to save
+     * @return created project
+     */
+    @PostMapping(value = "/project/")
+    public ProjectDTO create(@RequestBody Project project) {
+        return new ProjectDTO(this.projectService.create(project));
+    }
+
+    /**
+     * Show the specified project
+     *
+     * @param id: id of the project
+     * @return created project
+     */
+    @GetMapping(value = "/project/{id}")
+    public ProjectDTO show(@PathVariable("id") Long id) {
+        return new ProjectDTO(this.projectRepository.getById(id));
+    }
+
+    @DeleteMapping(value = "/project/{id}")
+    private boolean delete(Project project) {
+        return this.projectService.delete(project);
+    }
+
+    /**
+     * Remove user from project's guestlist
+     *
+     * @param id:     project's id
+     * @param userId: user's id
+     * @return: updated project
+     */
+    @PutMapping(value = "/project/{id}/uninvite")
+    public ProjectDTO uninvite(@PathVariable("id") Long id, @RequestBody Long userId) {
+        Project project = this.projectService.uninvite(id, userId);
+        return new ProjectDTO(project);
+    }
+
+    /**
+     * Add user to project's guestlist
+     *
+     * @param id:     project's id
+     * @param userId: user's id
+     * @return project updated
+     */
+    @PutMapping(value = "/project/{id}/invite")
+    public ProjectDTO invite(@PathVariable("id") Long id, @RequestBody Long userId) {
+        Project project = this.projectService.invite(id, userId);
+        return new ProjectDTO(project);
+    }
+
 }
