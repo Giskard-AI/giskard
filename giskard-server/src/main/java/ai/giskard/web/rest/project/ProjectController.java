@@ -54,7 +54,8 @@ public class ProjectController {
      * @return updated project
      */
     @PutMapping(value = "/project/{id}")
-    public ProjectDTO updatePerson(@RequestBody Project project, @PathVariable("id") Long id) {
+    public ProjectDTO updatePerson(@RequestBody Project project, @PathVariable("id") Long id, @AuthenticationPrincipal final UserDetails userDetails) {
+        this.projectService.accessControlAdminOrOwner(id, userDetails);
         return new ProjectDTO(this.projectService.update(id, project));
     }
 
@@ -65,7 +66,8 @@ public class ProjectController {
      * @return created project
      */
     @PostMapping(value = "/project/")
-    public ProjectDTO create(@RequestBody Project project) {
+    public ProjectDTO create(@RequestBody Project project, @AuthenticationPrincipal final UserDetails userDetails) {
+        boolean isAdmin = userDetails.getAuthorities().stream().anyMatch(authority -> authority.getAuthority() == AuthoritiesConstants.ADMIN);
         return new ProjectDTO(this.projectService.create(project));
     }
 
@@ -81,7 +83,8 @@ public class ProjectController {
     }
 
     @DeleteMapping(value = "/project/{id}")
-    private boolean delete(Project project) {
+    private boolean delete(Project project, @AuthenticationPrincipal final UserDetails userDetails) {
+        this.projectService.accessControlAdminOrOwner(project.getId(), userDetails);
         return this.projectService.delete(project);
     }
 
@@ -93,7 +96,8 @@ public class ProjectController {
      * @return: updated project
      */
     @PutMapping(value = "/project/{id}/uninvite")
-    public ProjectDTO uninvite(@PathVariable("id") Long id, @RequestBody Long userId) {
+    public ProjectDTO uninvite(@PathVariable("id") Long id, @RequestBody Long userId, @AuthenticationPrincipal final UserDetails userDetails) {
+        this.projectService.accessControlAdminOrOwner(id, userDetails);
         Project project = this.projectService.uninvite(id, userId);
         return new ProjectDTO(project);
     }
@@ -106,7 +110,8 @@ public class ProjectController {
      * @return project updated
      */
     @PutMapping(value = "/project/{id}/invite")
-    public ProjectDTO invite(@PathVariable("id") Long id, @RequestBody Long userId) {
+    public ProjectDTO invite(@PathVariable("id") Long id, @RequestBody Long userId,@AuthenticationPrincipal final UserDetails userDetails) {
+        this.projectService.accessControlAdminOrOwner(id, userDetails);
         Project project = this.projectService.invite(id, userId);
         return new ProjectDTO(project);
     }

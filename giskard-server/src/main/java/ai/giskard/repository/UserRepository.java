@@ -28,6 +28,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     Optional<User> findOneByLogin(String login);
 
+    User getOneByLogin(String login);
+
     Optional<User> findOneById(Long id);
 
     @EntityGraph(attributePaths = "roles")
