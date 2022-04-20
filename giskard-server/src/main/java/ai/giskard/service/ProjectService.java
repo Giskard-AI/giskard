@@ -84,6 +84,24 @@ public class ProjectService {
     }
 
     /**
+     * Giving access only for admin and project owner for specified project
+     * TODO: move it to permission
+     *
+     * @param projectId:   id of the project
+     * @param userDetails: user details
+     * @throws EntityAccessControlException
+     */
+    public void accessControlAdminOrOwner(@NotNull Long projectId, UserDetails userDetails) throws EntityAccessControlException {
+        boolean isAdmin = userDetails.getAuthorities().stream().anyMatch(authority -> authority.getAuthority() == AuthoritiesConstants.ADMIN);
+        User user = userRepository.getOneByLogin(userDetails.getUsername());
+        Project project = this.projectRepository.getById(projectId);
+        if (project.getOwner() != user && !isAdmin) {
+            throw new EntityAccessControlException(EntityAccessControlException.Entity.PROJECT, projectId);
+        }
+    }
+    
+
+    /**
      * Delete the project
      *
      * @param project: project to delete
@@ -98,7 +116,7 @@ public class ProjectService {
     /**
      * Uninvite user from project guestlist
      *
-     * @param id: id of the project
+     * @param id:     id of the project
      * @param userId: id of the user
      * @return update project
      */
@@ -113,7 +131,7 @@ public class ProjectService {
     /**
      * Inviting user to the project guestlist
      *
-     * @param id: id of the project
+     * @param id:     id of the project
      * @param userId: id of the user
      * @return updated project
      */
