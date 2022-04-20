@@ -1,10 +1,14 @@
 package ai.giskard.repository;
 
 import ai.giskard.domain.Project;
-import org.springframework.data.repository.PagingAndSortingRepository;
-import org.springframework.data.rest.core.annotation.RepositoryRestResource;
+import org.springframework.data.jpa.repository.EntityGraph;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
-@RepositoryRestResource(collectionResourceRel = "projects", path = "projects")
-public interface ProjectRepository extends PagingAndSortingRepository<Project, Long> {
+@Repository
+public interface ProjectRepository extends JpaRepository<Project, Long> {
+
+    @EntityGraph(attributePaths = "users")
+    Project getOneWithUsersById(Long id);
 
 }

@@ -1,7 +1,9 @@
 package ai.giskard.domain;
 
 import ai.giskard.config.Constants;
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.annotations.BatchSize;
 
@@ -22,6 +24,7 @@ import java.util.Set;
  */
 @Entity
 @Table(name = "\"user\"")
+@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class,property = "id")
 public class User extends AbstractAuditingEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -119,7 +122,7 @@ public class User extends AbstractAuditingEntity implements Serializable {
 
     @lombok.Setter
     @lombok.Getter
-    @JsonIgnore
+    //@JsonIgnore
     @ManyToOne()
     @BatchSize(size = 20)
     private Role role;
@@ -154,8 +157,14 @@ public class User extends AbstractAuditingEntity implements Serializable {
     @lombok.Setter
     @lombok.Getter
     @JsonIgnore
-    @ManyToMany
+    @ManyToMany()
+    @JoinTable(
+        name = "projects_guests",
+        joinColumns = @JoinColumn(name = "user_id"),
+        inverseJoinColumns =  @JoinColumn(name = "project_id"))
     private List<Project> projects;
+
+
 
     //// TODO andreyavtomonov (14/03/2022): remove after inge
     //public String getCreatedBy() {

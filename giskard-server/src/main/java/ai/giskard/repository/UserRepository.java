@@ -1,27 +1,26 @@
 package ai.giskard.repository;
 
 import ai.giskard.domain.User;
-import java.time.Instant;
-import java.util.List;
-import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
+
 /**
  * Spring Data JPA repository for the {@link User} entity.
  */
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
-    default Optional<User> findOneByActivationKey(String activationKey){
+    default Optional<User> findOneByActivationKey(String activationKey) {
         return Optional.empty();
     }
 
     //List<User> findAllByActivatedIsFalseAndActivationKeyIsNotNullAndCreatedDateBefore(Instant dateTime);
 
-    default Optional<User> findOneByResetKey(String resetKey){
+    default Optional<User> findOneByResetKey(String resetKey) {
         return Optional.empty();
     }
 
@@ -33,6 +32,9 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     @EntityGraph(attributePaths = "roles")
     Optional<User> findOneWithRolesByLogin(String login);
+
+    @EntityGraph(attributePaths = "projects")
+    User getOneWithProjectsByLogin(String login);
 
     @EntityGraph(attributePaths = "roles")
     Optional<User> findOneWithRolesByEmailIgnoreCase(String email);
