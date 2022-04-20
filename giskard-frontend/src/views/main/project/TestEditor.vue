@@ -131,7 +131,7 @@
           border='left'
           type='error'
           v-if="runResult.status === 'ERROR'">
-          <pre>{{ runResult.message }}</pre>
+          {{ runResult.message }}
         </v-alert>
         <template v-for='testResult in runResult.result'>
           <v-alert
