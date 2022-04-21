@@ -56,8 +56,8 @@ public class ProjectController {
      * @return updated project
      */
     @PutMapping(value = "/project/{id}")
-    public ProjectDTO updateProject(@RequestBody ProjectPostDTO projectDTO, @PathVariable("id") Long id, @AuthenticationPrincipal final UserDetails userDetails) {
-        this.projectService.accessControlAdminOrOwner(id, userDetails);
+    public ProjectDTO updateProject(@RequestBody ProjectPostDTO projectDTO, @PathVariable("id") Long id) {
+        this.projectService.accessControlWrite(id);
         Project updatedProject = this.projectService.update(id, projectDTO);
         return new ProjectDTO(updatedProject);
     }
@@ -88,8 +88,8 @@ public class ProjectController {
     }
 
     @DeleteMapping(value = "/project/{id}")
-    public boolean delete(@PathVariable("id") Long id, @AuthenticationPrincipal final UserDetails userDetails) {
-        this.projectService.accessControlAdminOrOwner(id, userDetails);
+    public boolean delete(@PathVariable("id") Long id) {
+        this.projectService.accessControlWrite(id);
         return this.projectService.delete(id);
     }
 
@@ -101,8 +101,8 @@ public class ProjectController {
      * @return: updated project
      */
     @DeleteMapping(value = "/project/{id}/users/{userId}")
-    public ProjectDTO uninvite(@PathVariable("id") Long id, @PathVariable("userId") Long userId, @AuthenticationPrincipal final UserDetails userDetails) {
-        this.projectService.accessControlAdminOrOwner(id, userDetails);
+    public ProjectDTO uninvite(@PathVariable("id") Long id, @PathVariable("userId") Long userId) {
+        this.projectService.accessControlWrite(id);
         Project project = this.projectService.uninvite(id, userId);
         return new ProjectDTO(project);
     }
@@ -115,8 +115,8 @@ public class ProjectController {
      * @return project updated
      */
     @PutMapping(value = "/project/{id}/users/{userId}")
-    public ProjectDTO invite(@PathVariable("id") Long id, @PathVariable("userId") Long userId, @AuthenticationPrincipal final UserDetails userDetails) {
-        this.projectService.accessControlAdminOrOwner(id, userDetails);
+    public ProjectDTO invite(@PathVariable("id") Long id, @PathVariable("userId") Long userId) {
+        this.projectService.accessControlWrite(id);
         Project project = this.projectService.invite(id, userId);
         return new ProjectDTO(project);
     }

@@ -37,12 +37,11 @@ public class DatasetsController {
      * Returns all the project's datasets if the user is admin, project's owner or in project's guest list
      *
      * @param projectId:   id of the project
-     * @param userDetails: authenticated user
      * @return: List of datasets
      */
     @GetMapping("project/{projectId}/datasets")
-    public List<DatasetDTO> listProjectDatasets(@PathVariable @NotNull Long projectId, @AuthenticationPrincipal UserDetails userDetails) {
-        this.projectService.accessControlById(projectId, userDetails);
+    public List<DatasetDTO> listProjectDatasets(@PathVariable @NotNull Long projectId) {
+        this.projectService.accessControlRead(projectId);
         return this.datasetRepository.findAllByProjectId(projectId).stream().map(DatasetDTO::new).collect(Collectors.toList());
     }
 
