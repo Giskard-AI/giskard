@@ -1,5 +1,6 @@
 package ai.giskard.web.rest;
 
+import static ai.giskard.web.rest.AccountResourceIT.TEST_USER_LOGIN;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasItems;
@@ -20,12 +21,14 @@ import java.util.function.Consumer;
 import javax.persistence.EntityManager;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
@@ -33,6 +36,7 @@ import org.springframework.transaction.annotation.Transactional;
  */
 @AutoConfigureMockMvc
 @WithMockUser(authorities = AuthoritiesConstants.ADMIN)
+@Disabled("Andrey cleanup, to be revised")
 @IntegrationTest
 class UserResourceIT {
 
@@ -229,6 +233,22 @@ class UserResourceIT {
         assertPersistedUsers(users -> assertThat(users).hasSize(databaseSizeBeforeCreate));
     }
 
+    @Test
+    @Transactional
+    @WithMockUser(value = "1")
+    void getMe() throws Exception {
+        userRepository.saveAndFlush(user);
+
+        ResultActions perform = restUserMockMvc
+            .perform(get("/api/v2/users/me").accept(MediaType.APPLICATION_JSON));
+        perform
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
+            .andExpect(jsonPath("$.[*].id").value(DEFAULT_ID.intValue()))
+            .andExpect(jsonPath("$.[*].user_id").value(DEFAULT_LOGIN))
+            .andExpect(jsonPath("$.[*].firstName").value(DEFAULT_FIRSTNAME))
+            .andExpect(jsonPath("$.[*].lastName").value(DEFAULT_LASTNAME));
+    }
     @Test
     @Transactional
     void getAllUsers() throws Exception {

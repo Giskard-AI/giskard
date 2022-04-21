@@ -281,8 +281,8 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
-    public Optional<User> getUserWithAuthorities() {
-        return SecurityUtils.getCurrentUserLogin().flatMap(userId-> userRepository.findOneById(Long.valueOf(userId)));
+    public Optional<User> getUserWithAuthorities(String username) {
+        return userRepository.findOneByLogin(username);
     }
 
     /**

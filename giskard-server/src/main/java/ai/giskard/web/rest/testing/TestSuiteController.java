@@ -64,7 +64,6 @@ public class TestSuiteController {
     @GetMapping("suites/{projectId}")
     public List<TestSuiteDTO> listSuites(@PathVariable Long projectId) {
         return testSuiteRepository.findAllByProjectId(projectId).stream().map(TestSuiteDTO::new).collect(Collectors.toList());
-        //return testSuiteRepository.findTestSuitesByProject(projectId);
     }
 
     @GetMapping("suite/{suiteId}")

@@ -24,7 +24,8 @@ public class TestSuiteService {
                             ModelRepository modelRepository,
                             DatasetRepository datasetRepository,
                             ProjectRepository projectRepository,
-                            TestRepository testRepository) {
+                            TestRepository testRepository
+    ) {
         this.testSuiteRepository = testSuiteRepository;
         this.modelRepository = modelRepository;
         this.datasetRepository = datasetRepository;
