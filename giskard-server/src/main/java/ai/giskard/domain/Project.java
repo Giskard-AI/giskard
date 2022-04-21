@@ -26,6 +26,8 @@ public class Project {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
+    @Getter
+    @Setter
     @NotNull
     private String key;
 
