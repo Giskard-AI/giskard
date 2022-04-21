@@ -3,15 +3,16 @@ package ai.giskard.domain;
 import ai.giskard.config.Constants;
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.annotations.BatchSize;
-
 import javax.persistence.*;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
+
 import java.io.Serializable;
 import java.time.Instant;
 import java.util.Collections;
@@ -23,7 +24,7 @@ import java.util.Set;
  * A user.
  */
 @Entity
-@Table(name = "\"user\"")
+@Table(name = "giskard_users")
 @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class,property = "id")
 public class User extends AbstractAuditingEntity implements Serializable {
 
@@ -134,6 +135,9 @@ public class User extends AbstractAuditingEntity implements Serializable {
 
     // TODO andreyavtomonov (14/03/2022): migration
     public Set<Role> getRoles() {
+        if (role == null) {
+            return Collections.emptySet();
+        }
         return Collections.singleton(role);
     }
 
@@ -154,6 +158,14 @@ public class User extends AbstractAuditingEntity implements Serializable {
         return getClass().hashCode();
     }
 
+    @Override
+    public String toString() {
+        return "User{" +
+            "id=" + id +
+            ", login='" + login + '\'' +
+            '}';
+    }
+//// TODO andreyavtomonov (14/03/2022): remove after inge
     @lombok.Setter
     @lombok.Getter
     @JsonIgnore

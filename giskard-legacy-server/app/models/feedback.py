@@ -16,7 +16,7 @@ class Feedback(Base):
     dataset_id = Column(Integer, ForeignKey("datasets.id", ondelete="SET NULL"), index=True)
     dataset = relationship('Dataset')
     target_feature = Column(String)
-    user_id = Column(Integer, ForeignKey("user.id"), nullable=False)
+    user_id = Column(Integer, ForeignKey("giskard_users.id"), nullable=False)
     user = relationship('User')
     created_on = Column(DateTime(timezone=True), default=datetime.datetime.now)
     feedback_type = Column(String, nullable=False, index=True)

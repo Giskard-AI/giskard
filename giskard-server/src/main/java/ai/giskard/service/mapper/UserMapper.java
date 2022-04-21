@@ -53,8 +53,10 @@ public class UserMapper {
             user.setImageUrl(userDTO.getImageUrl());
             user.setActivated(userDTO.isActivated());
             user.setLangKey(userDTO.getLangKey());
-            //Set<Role> authorities = this.authoritiesFromStrings(userDTO.getRoles());
-            //user.setRoles(authorities);
+            Set<Role> authorities = this.authoritiesFromStrings(userDTO.getRoles());
+            if (!authorities.isEmpty()) {
+                user.setRole(authorities.iterator().next());
+            }
             return user;
         }
     }

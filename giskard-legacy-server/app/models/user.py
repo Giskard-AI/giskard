@@ -12,6 +12,7 @@ if TYPE_CHECKING:
 
 
 class User(Base):
+    __tablename__ = "giskard_users"
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(String, unique=True, index=True, nullable=False)
     display_name = Column(String)

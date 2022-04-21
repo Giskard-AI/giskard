@@ -16,6 +16,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Collections;
 import java.util.Locale;
 
+import static ai.giskard.security.AuthoritiesConstants.AICREATOR;
+
 /**
  * Authenticate a user from the database.
  */
@@ -55,12 +57,12 @@ public class DomainUserDetailsService implements UserDetailsService {
         if (!user.isActivated()) {
             throw new UserNotActivatedException("User " + lowercaseLogin + " was not activated");
         }
-        Role role = user
-            .getRole();
+        Role role = user.getRole();
+
         return new org.springframework.security.core.userdetails.User(
             user.getLogin(),
             user.getPassword(),
-            Collections.singleton(new SimpleGrantedAuthority(role.getName()))
+            Collections.singleton(new SimpleGrantedAuthority(role != null ? role.getName() : AICREATOR))
         );
     }
 }

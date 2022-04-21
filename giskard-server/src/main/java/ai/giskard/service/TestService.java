@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.ExecutionException;
 
 @Service
 @Transactional
@@ -37,8 +38,7 @@ public class TestService {
 
     private final TestRepository testRepository;
 
-    public TestService(TestRepository testRepository, MLWorkerService mlWorkerService,
-                       TestExecutionRepository testExecutionRepository) {
+    public TestService(TestRepository testRepository, MLWorkerService mlWorkerService, TestExecutionRepository testExecutionRepository) {
         this.testRepository = testRepository;
         this.mlWorkerService = mlWorkerService;
         this.testExecutionRepository = testExecutionRepository;
@@ -46,18 +46,13 @@ public class TestService {
 
 
     public Optional<TestDTO> saveTest(TestDTO dto) {
-        return Optional
-            .of(testRepository.findById(dto.getId()))
-            .filter(Optional::isPresent)
-            .map(Optional::get)
-            .map(test -> {
-                test.setName(dto.getName());
-                test.setCode(dto.getCode());
-                test.setLanguage(dto.getLanguage());
-                test.setType(dto.getType());
-                return testRepository.save(test);
-            })
-            .map(TestDTO::new);
+        return Optional.of(testRepository.findById(dto.getId())).filter(Optional::isPresent).map(Optional::get).map(test -> {
+            test.setName(dto.getName());
+            test.setCode(dto.getCode());
+            test.setLanguage(dto.getLanguage());
+            test.setType(dto.getType());
+            return testRepository.save(test);
+        }).map(TestDTO::new);
     }
 
     public TestExecutionResultDTO runTest(Long testId) {
@@ -73,14 +68,25 @@ public class TestService {
             client = mlWorkerService.createClient();
             ListenableFuture<TestResultMessage> runTestFuture = client.runTest(test.getTestSuite(), test);
 
-            applyTestExecutionResults(res, runTestFuture.get());
+            TestResultMessage testResult = runTestFuture.get();
+            res.setResult(testResult);
+            if (testResult.getResultsList().stream().anyMatch(r -> !r.getResult().getPassed())) {
+                res.setStatus(TestResult.FAILED);
+            } else {
+                res.setStatus(TestResult.PASSED);
+            }
         } catch (InterruptedException e) {
-            logger.error("Failed to crete MLWorkerClient", e);
-        } catch (StatusRuntimeException e) {
-            interpretTestExecutionError(test.getTestSuite(), e, res);
-        } catch (Exception e) {
+            logger.error("Failed to create MLWorkerClient", e);
+        } catch (ExecutionException e) {
+            logger.warn("Test execution failed. Project: {}, Suite: {}, Test: {} ",
+                test.getTestSuite().getProject().getId(),
+                test.getTestSuite().getId(),
+                test.getId(), e);
             res.setStatus(TestResult.ERROR);
-            res.setMessage(ExceptionUtils.getMessage(e));
+            interpretTestExecutionError(test.getTestSuite(), e.getCause(), res);
+            if (res.getMessage() == null) {
+                res.setMessage(ExceptionUtils.getMessage(e));
+            }
         } finally {
             if (client != null) {
                 client.shutdown();
@@ -100,19 +106,16 @@ public class TestService {
         }
     }
 
-    private void interpretTestExecutionError(TestSuite testSuite, StatusRuntimeException e, TestExecutionResultDTO res) {
-        res.setStatus(TestResult.ERROR);
-        switch (Objects.requireNonNull(e.getStatus().getDescription())) {
-            case "Exception calling application: name 'train_df' is not defined":
-                if (testSuite.getTrainDataset() == null) {
-                    res.setMessage("Failed to execute test: Train dataset is not specified");
-                }
-            case "Exception calling application: name 'test_df' is not defined":
-                if (testSuite.getTestDataset() == null) {
-                    res.setMessage("Failed to execute test: Test dataset is not specified");
-                }
-            default:
-                throw e;
+    private void interpretTestExecutionError(TestSuite testSuite, Throwable e, TestExecutionResultDTO res) {
+        if (e instanceof StatusRuntimeException) {
+            String description = Objects.requireNonNull(((StatusRuntimeException) e).getStatus().getDescription());
+            if (description.contains("name 'train_df' is not defined") && testSuite.getTrainDataset() == null) {
+                res.setMessage("Failed to execute test: Train dataset is not specified");
+            } else if (description.contains("name 'test_df' is not defined") && testSuite.getTestDataset() == null) {
+                res.setMessage("Failed to execute test: Test dataset is not specified");
+            } else {
+                res.setMessage(description);
+            }
         }
     }
 
