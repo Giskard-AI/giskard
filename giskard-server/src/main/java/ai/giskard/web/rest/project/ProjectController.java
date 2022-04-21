@@ -7,8 +7,10 @@ import ai.giskard.repository.UserRepository;
 import ai.giskard.security.AuthoritiesConstants;
 import ai.giskard.service.ProjectService;
 import ai.giskard.service.dto.ml.ProjectDTO;
+import ai.giskard.service.dto.ml.ProjectPostDTO;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -49,26 +51,27 @@ public class ProjectController {
     /**
      * Update the project with the specified project
      *
-     * @param project: project updated to save
-     * @param id:      id of the existing project
+     * @param projectDTO: project updated to save
+     * @param id:         id of the existing project
      * @return updated project
      */
     @PutMapping(value = "/project/{id}")
-    public ProjectDTO updatePerson(@RequestBody Project project, @PathVariable("id") Long id, @AuthenticationPrincipal final UserDetails userDetails) {
+    public ProjectDTO updateProject(@RequestBody ProjectPostDTO projectDTO, @PathVariable("id") Long id, @AuthenticationPrincipal final UserDetails userDetails) {
         this.projectService.accessControlAdminOrOwner(id, userDetails);
-        return new ProjectDTO(this.projectService.update(id, project));
+        Project updatedProject = this.projectService.update(id, projectDTO);
+        return new ProjectDTO(updatedProject);
     }
 
     /**
      * Create new project
      *
-     * @param project: project to save
+     * @param projectPostDTO: project to save
      * @return created project
      */
     @PostMapping(value = "/project/")
-    public ProjectDTO create(@RequestBody Project project, @AuthenticationPrincipal final UserDetails userDetails) {
-        boolean isAdmin = userDetails.getAuthorities().stream().anyMatch(authority -> authority.getAuthority() == AuthoritiesConstants.ADMIN);
-        return new ProjectDTO(this.projectService.create(project));
+    public ProjectDTO create(@RequestBody ProjectPostDTO projectPostDTO, @AuthenticationPrincipal final UserDetails userDetails) {
+        Project savedProject = this.projectService.create(projectPostDTO, userDetails);
+        return new ProjectDTO(savedProject);
     }
 
     /**
@@ -78,14 +81,16 @@ public class ProjectController {
      * @return created project
      */
     @GetMapping(value = "/project/{id}")
+    @Transactional
     public ProjectDTO show(@PathVariable("id") Long id) {
-        return new ProjectDTO(this.projectRepository.getById(id));
+        Project project = this.projectRepository.getById(id);
+        return new ProjectDTO(project);
     }
 
     @DeleteMapping(value = "/project/{id}")
-    private boolean delete(Project project, @AuthenticationPrincipal final UserDetails userDetails) {
-        this.projectService.accessControlAdminOrOwner(project.getId(), userDetails);
-        return this.projectService.delete(project);
+    public boolean delete(@PathVariable("id") Long id, @AuthenticationPrincipal final UserDetails userDetails) {
+        this.projectService.accessControlAdminOrOwner(id, userDetails);
+        return this.projectService.delete(id);
     }
 
     /**
@@ -95,8 +100,8 @@ public class ProjectController {
      * @param userId: user's id
      * @return: updated project
      */
-    @PutMapping(value = "/project/{id}/uninvite")
-    public ProjectDTO uninvite(@PathVariable("id") Long id, @RequestBody Long userId, @AuthenticationPrincipal final UserDetails userDetails) {
+    @DeleteMapping(value = "/project/{id}/users/{userId}")
+    public ProjectDTO uninvite(@PathVariable("id") Long id, @PathVariable("userId") Long userId, @AuthenticationPrincipal final UserDetails userDetails) {
         this.projectService.accessControlAdminOrOwner(id, userDetails);
         Project project = this.projectService.uninvite(id, userId);
         return new ProjectDTO(project);
@@ -109,8 +114,8 @@ public class ProjectController {
      * @param userId: user's id
      * @return project updated
      */
-    @PutMapping(value = "/project/{id}/invite")
-    public ProjectDTO invite(@PathVariable("id") Long id, @RequestBody Long userId,@AuthenticationPrincipal final UserDetails userDetails) {
+    @PutMapping(value = "/project/{id}/users/{userId}")
+    public ProjectDTO invite(@PathVariable("id") Long id, @PathVariable("userId") Long userId, @AuthenticationPrincipal final UserDetails userDetails) {
         this.projectService.accessControlAdminOrOwner(id, userDetails);
         Project project = this.projectService.invite(id, userId);
         return new ProjectDTO(project);

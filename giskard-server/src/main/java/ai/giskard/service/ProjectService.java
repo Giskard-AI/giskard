@@ -5,8 +5,11 @@ import ai.giskard.domain.User;
 import ai.giskard.repository.ProjectRepository;
 import ai.giskard.repository.UserRepository;
 import ai.giskard.security.AuthoritiesConstants;
+import ai.giskard.service.dto.ml.ProjectPostDTO;
+import ai.giskard.service.mapper.GiskardMapper;
 import ai.giskard.web.rest.errors.EntityAccessControlException;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,49 +23,40 @@ public class ProjectService {
 
     UserRepository userRepository;
     ProjectRepository projectRepository;
+    GiskardMapper giskardMapper;
 
-    public ProjectService(UserRepository userRepository, ProjectRepository projectRepository) {
+    public ProjectService(UserRepository userRepository, ProjectRepository projectRepository, GiskardMapper giskardMapper) {
         this.userRepository = userRepository;
         this.projectRepository = projectRepository;
+        this.giskardMapper = giskardMapper;
     }
 
     /**
      * Update project
      *
-     * @param id:             id of the project to update
-     * @param updatedProject: updated project
+     * @param id:         id of the project to update
+     * @param projectDTO: updated project
      * @return: project updated
      */
-    public Project update(@NotNull Long id, Project updatedProject) {
+    @Transactional
+    public Project update(@NotNull Long id, ProjectPostDTO projectDTO) {
         Project project = this.projectRepository.getById(id);
-        project.setName(updatedProject.getName());
-        project.setDatasets(updatedProject.getDatasets());
-        project.setDescription(updatedProject.getDescription());
-        project.setLocalDateTime(updatedProject.getLocalDateTime());
-        project.setOwner(updatedProject.getOwner());
-        project.setUsers(updatedProject.getUsers());
-        project.setModels(updatedProject.getModels());
-        this.projectRepository.save(project);
-        return project;
+        this.giskardMapper.updateProjectFromDto(projectDTO, project);
+        Project savedProject = this.projectRepository.save(project);
+        return savedProject;
     }
 
     /**
      * Create project
      *
-     * @param updatedProject: updated project
+     * @param projectDTO: projectDTO to save
      * @return: project saved
      */
-    public Project create(Project updatedProject) {
-        Project project = new Project();
-        project.setName(updatedProject.getName());
-        project.setDatasets(updatedProject.getDatasets());
-        project.setDescription(updatedProject.getDescription());
-        project.setLocalDateTime(updatedProject.getLocalDateTime());
-        project.setOwner(updatedProject.getOwner());
-        project.setUsers(updatedProject.getUsers());
-        project.setModels(updatedProject.getModels());
-        this.projectRepository.save(project);
-        return project;
+    public Project create(ProjectPostDTO projectDTO, @AuthenticationPrincipal final UserDetails userDetails) {
+        Project project = this.giskardMapper.projectPostDTOToProject(projectDTO);
+        User owner = this.userRepository.getOneByLogin(userDetails.getUsername());
+        project.setOwner(owner);
+        return this.projectRepository.save(project);
     }
 
     /**
@@ -99,17 +93,16 @@ public class ProjectService {
             throw new EntityAccessControlException(EntityAccessControlException.Entity.PROJECT, projectId);
         }
     }
-    
+
 
     /**
      * Delete the project
      *
-     * @param project: project to delete
+     * @param id: id of the project to delete
      * @return: boolean success
      */
-    public boolean delete(Project project) {
-        this.projectRepository.delete(project);
-        this.projectRepository.flush();
+    public boolean delete(Long id) {
+        this.projectRepository.deleteById(id);
         return true;
     }
 
