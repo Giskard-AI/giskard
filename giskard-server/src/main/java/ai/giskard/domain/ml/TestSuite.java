@@ -1,5 +1,6 @@
 package ai.giskard.domain.ml;
 
+import ai.giskard.domain.AbstractAuditingEntity;
 import ai.giskard.domain.Project;
 import lombok.Getter;
 import lombok.Setter;
@@ -8,7 +9,7 @@ import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 
 @Entity
-public class TestSuite {
+public class TestSuite extends AbstractAuditingEntity {
     @lombok.Setter
     @lombok.Getter
     @Id
@@ -42,6 +43,4 @@ public class TestSuite {
     @Setter
     @ManyToOne
     private ProjectModel model;
-
-
 }

@@ -11,12 +11,14 @@ import ai.giskard.repository.UserRepository;
 import ai.giskard.security.AuthoritiesConstants;
 import javax.persistence.EntityManager;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
@@ -47,6 +49,7 @@ class PublicUserResourceIT {
 
     @Test
     @Transactional
+    @Disabled("Andrey cleanup, to be revised")
     void getAllPublicUsers() throws Exception {
         // Initialize the database
         userRepository.saveAndFlush(user);
@@ -64,6 +67,7 @@ class PublicUserResourceIT {
 
     @Test
     @Transactional
+    @Disabled("Andrey cleanup, to be revised")
     void getAllAuthorities() throws Exception {
         restUserMockMvc
             .perform(get("/api/authorities").accept(MediaType.APPLICATION_JSON).contentType(MediaType.APPLICATION_JSON))
@@ -75,6 +79,7 @@ class PublicUserResourceIT {
 
     @Test
     @Transactional
+    @Disabled("Andrey cleanup, to be revised")
     void getAllUsersSortedByParameters() throws Exception {
         // Initialize the database
         userRepository.saveAndFlush(user);

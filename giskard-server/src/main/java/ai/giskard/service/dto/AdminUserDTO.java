@@ -117,7 +117,10 @@ public class AdminUserDTO {
         this.createdDate = user.getCreatedDate();
         this.lastModifiedBy = user.getLastModifiedBy();
         this.lastModifiedDate = user.getLastModifiedDate();
-        this.roles = Collections.singleton(user.getRole().getName());
+        Role role = user.getRole();
+        if (role != null) {
+            this.roles = Collections.singleton(role.getName());
+        }
     }
 
     @NoArgsConstructor

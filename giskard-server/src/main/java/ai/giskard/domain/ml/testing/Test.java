@@ -24,7 +24,7 @@ public class Test extends AbstractAuditingEntity {
 
     @Getter
     @Setter
-    @Column(columnDefinition="TEXT")
+    @Column(columnDefinition="VARCHAR")
     private String code;
 
     @Getter

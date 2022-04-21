@@ -88,19 +88,18 @@ springBoot {
     mainClassName = "ai.giskard.GiskardApp"
 }
 
-// TODO Andrey: restore
-//test {
-//    useJUnitPlatform()
-//    exclude "**/*IT*", "**/*IntTest*"
-//    testLogging {
-//        events 'FAILED', 'SKIPPED'
-//    }
-//    jvmArgs += '-Djava.security.egd=file:/dev/./urandom -Xmx256m'
-//    // uncomment if the tests reports are not generated
-//    // see https://github.com/jhipster/generator-jhipster/pull/2771 and https://github.com/jhipster/generator-jhipster/pull/4484
-//    // ignoreFailures true
-//    reports.html.enabled = false
-//}
+test {
+    useJUnitPlatform()
+    exclude "**/*IT*", "**/*IntTest*"
+    testLogging {
+        events 'FAILED', 'SKIPPED'
+    }
+    jvmArgs += '-Djava.security.egd=file:/dev/./urandom -Xmx256m'
+    // uncomment if the tests reports are not generated
+    // see https://github.com/jhipster/generator-jhipster/pull/2771 and https://github.com/jhipster/generator-jhipster/pull/4484
+    // ignoreFailures true
+    reports.html.enabled = false
+}
 
 modernizer {
     failOnViolations = true
@@ -152,7 +151,7 @@ liquibase {
             password System.getenv().getOrDefault("POSTGRES_PASSWORD","y1QYbF2BtFUC")
             changeLogFile "src/main/resources/config/liquibase/master.xml"
             defaultSchemaName ""
-            logLevel "debug"
+            logLevel "info"
             classpath "src/main/resources/"
         }
         diffLog {
@@ -163,12 +162,28 @@ liquibase {
             changeLogFile project.ext.diffChangelogFile
             referenceUrl "hibernate:spring:ai.giskard.domain?dialect=tech.jhipster.domain.util.FixedPostgreSQL10Dialect&hibernate.physical_naming_strategy=org.springframework.boot.orm.jpa.hibernate.SpringPhysicalNamingStrategy&hibernate.implicit_naming_strategy=org.springframework.boot.orm.jpa.hibernate.SpringImplicitNamingStrategy"
             defaultSchemaName ""
-            logLevel "debug"
+            logLevel "info"
             classpath "$buildDir/classes/java/main"
+//            Andrey: removed foreignkeys because they blocked entity deletion
+            diffTypes "catalog,tables,functions,views,columns,indexes,primarykeys,uniqueconstraints,data,storedprocedure,triggers,sequences,databasePackage,databasePackageBody"
+//            excludeObjects "sequence:hibernate_sequence,sequence_generator"
         }
     }
 
     runList = project.ext.runList
+}
+
+task liquibaseJavaDBdiff(type: GradleBuild) {
+    doFirst{
+        test.enabled = false
+    }
+    doLast{
+        test.enabled = true
+    }
+
+    dependsOn build
+    startParameter.projectProperties = ['runList': 'diffLog']
+    tasks = ['liquibaseDiffChangelog']
 }
 
 gitProperties {

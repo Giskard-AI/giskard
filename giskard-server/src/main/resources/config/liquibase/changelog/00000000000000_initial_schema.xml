@@ -5,10 +5,10 @@
     <changeSet author="andreyavtomonov (generated)" id="1648855574756-1">
         <preConditions onFail="MARK_RAN">
             <not>
-                <tableExists tableName="user"/>
+                <tableExists tableName="giskard_users"/>
             </not>
         </preConditions>
-        <createTable tableName="user">
+        <createTable tableName="giskard_users">
             <column autoIncrement="true" name="id" type="INTEGER">
                 <constraints nullable="false" primaryKey="true" primaryKeyName="user_pkey"/>
             </column>
@@ -191,7 +191,7 @@
                 <indexExists indexName="ix_user_email"/>
             </not>
         </preConditions>
-        <createIndex indexName="ix_user_email" tableName="user" unique="true">
+        <createIndex indexName="ix_user_email" tableName="giskard_users" unique="true">
             <column name="email"/>
         </createIndex>
     </changeSet>
@@ -201,7 +201,7 @@
                 <indexExists indexName="ix_user_user_id"/>
             </not>
         </preConditions>
-        <createIndex indexName="ix_user_user_id" tableName="user" unique="true">
+        <createIndex indexName="ix_user_user_id" tableName="giskard_users" unique="true">
             <column name="user_id"/>
         </createIndex>
     </changeSet>
@@ -214,7 +214,7 @@
         <addForeignKeyConstraint baseColumnNames="owner_id" baseTableName="datasets"
                                  constraintName="datasets_owner_id_fkey" deferrable="false" initiallyDeferred="false"
                                  onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id"
-                                 referencedTableName="user" validate="true"/>
+                                 referencedTableName="giskard_users" validate="true"/>
     </changeSet>
     <changeSet author="andreyavtomonov (generated)" id="1648855574756-12">
         <preConditions onFail="MARK_RAN">
@@ -225,7 +225,7 @@
         <addForeignKeyConstraint baseColumnNames="user_id" baseTableName="feedback_replies"
                                  constraintName="feedback_replies_user_id_fkey" deferrable="false"
                                  initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION"
-                                 referencedColumnNames="id" referencedTableName="user" validate="true"/>
+                                 referencedColumnNames="id" referencedTableName="giskard_users" validate="true"/>
     </changeSet>
     <changeSet author="andreyavtomonov (generated)" id="1648855574756-13">
         <preConditions onFail="MARK_RAN">
@@ -236,7 +236,7 @@
         <addForeignKeyConstraint baseColumnNames="user_id" baseTableName="feedbacks"
                                  constraintName="feedbacks_user_id_fkey" deferrable="false" initiallyDeferred="false"
                                  onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id"
-                                 referencedTableName="user" validate="true"/>
+                                 referencedTableName="giskard_users" validate="true"/>
     </changeSet>
     <changeSet author="andreyavtomonov (generated)" id="1648855574756-14">
         <preConditions onFail="MARK_RAN">
@@ -247,7 +247,7 @@
         <addForeignKeyConstraint baseColumnNames="owner_id" baseTableName="project_models"
                                  constraintName="project_models_owner_id_fkey" deferrable="false"
                                  initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION"
-                                 referencedColumnNames="id" referencedTableName="user" validate="true"/>
+                                 referencedColumnNames="id" referencedTableName="giskard_users" validate="true"/>
     </changeSet>
     <changeSet author="andreyavtomonov (generated)" id="1648855574756-15">
         <preConditions onFail="MARK_RAN">
@@ -258,7 +258,7 @@
         <addForeignKeyConstraint baseColumnNames="user_id" baseTableName="projects_guests"
                                  constraintName="projects_guests_user_id_fkey" deferrable="false"
                                  initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION"
-                                 referencedColumnNames="id" referencedTableName="user" validate="true"/>
+                                 referencedColumnNames="id" referencedTableName="giskard_users" validate="true"/>
     </changeSet>
     <changeSet author="andreyavtomonov (generated)" id="1648855574756-16">
         <preConditions onFail="MARK_RAN">
@@ -269,7 +269,7 @@
         <addForeignKeyConstraint baseColumnNames="owner_id" baseTableName="projects"
                                  constraintName="projects_owner_id_fkey" deferrable="false" initiallyDeferred="false"
                                  onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id"
-                                 referencedTableName="user" validate="true"/>
+                                 referencedTableName="giskard_users" validate="true"/>
     </changeSet>
     <changeSet author="andreyavtomonov (generated)" id="1648855574756-17">
         <preConditions onFail="MARK_RAN">
@@ -277,7 +277,7 @@
                 <foreignKeyConstraintExists foreignKeyName="user_role_id_fkey"/>
             </not>
         </preConditions>
-        <addForeignKeyConstraint baseColumnNames="role_id" baseTableName="user" constraintName="user_role_id_fkey"
+        <addForeignKeyConstraint baseColumnNames="role_id" baseTableName="giskard_users" constraintName="user_role_id_fkey"
                                  deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION"
                                  referencedColumnNames="id" referencedTableName="role" validate="true"/>
     </changeSet>
