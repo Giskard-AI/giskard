@@ -13,7 +13,7 @@ class ProjectFile(Base):
     created_on = Column(DateTime(timezone=True), default=datetime.datetime.now)
     @declared_attr
     def owner_id(cls):
-        return Column(Integer, ForeignKey("user.id"), nullable=False)
+        return Column(Integer, ForeignKey("giskard_users.id"), nullable=False)
     @declared_attr
     def project_id(cls):
         return Column(Integer, ForeignKey("projects.id"), nullable=False)

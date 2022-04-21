@@ -8,7 +8,7 @@ association_table = Table(
     "projects_guests",
     Base.metadata,
     Column("project_id", Integer, ForeignKey("projects.id")),
-    Column("user_id", Integer, ForeignKey("user.id")),
+    Column("user_id", Integer, ForeignKey("giskard_users.id")),
 )
 
 
@@ -20,7 +20,7 @@ class Project(Base):
     name = Column(String, nullable=False)
     description = Column(String)
     created_on = Column(DateTime(timezone=True), default=datetime.datetime.now)
-    owner_id = Column(Integer, ForeignKey("user.id"), nullable=False)
+    owner_id = Column(Integer, ForeignKey("giskard_users.id"), nullable=False)
     owner_details = relationship("User")
     guest_list = relationship("User", secondary=association_table)
     model_files = relationship("ProjectModel", cascade="all, delete")

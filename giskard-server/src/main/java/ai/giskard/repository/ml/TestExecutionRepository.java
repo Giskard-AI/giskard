@@ -11,5 +11,8 @@ import java.util.Optional;
 public interface TestExecutionRepository extends JpaRepository<TestExecution, Long> {
     List<TestExecution> findAllByTestId(long testId);
 
+
     Optional<TestExecution> findFirstByTestIdOrderByExecutionDateDesc(long testId);
+
+    List<TestExecution> deleteAllByTestIn(List<Long> testIds);
 }

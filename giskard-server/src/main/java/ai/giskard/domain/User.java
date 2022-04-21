@@ -2,6 +2,7 @@ package ai.giskard.domain;
 
 import ai.giskard.config.Constants;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import java.io.Serializable;
 import java.time.Instant;
 import java.util.Collections;
@@ -13,6 +14,7 @@ import javax.validation.constraints.Email;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
+
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.annotations.BatchSize;
 import org.springframework.data.annotation.CreatedBy;
@@ -24,7 +26,7 @@ import org.springframework.data.annotation.LastModifiedDate;
  * A user.
  */
 @Entity
-@Table(name = "\"user\"")
+@Table(name = "giskard_users")
 public class User extends AbstractAuditingEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -133,7 +135,10 @@ public class User extends AbstractAuditingEntity implements Serializable {
     }
 
     // TODO andreyavtomonov (14/03/2022): migration
-    public Set<Role> getRoles(){
+    public Set<Role> getRoles() {
+        if (role == null) {
+            return Collections.emptySet();
+        }
         return Collections.singleton(role);
     }
 
@@ -154,7 +159,14 @@ public class User extends AbstractAuditingEntity implements Serializable {
         return getClass().hashCode();
     }
 
-    //// TODO andreyavtomonov (14/03/2022): remove after inge
+    @Override
+    public String toString() {
+        return "User{" +
+            "id=" + id +
+            ", login='" + login + '\'' +
+            '}';
+    }
+//// TODO andreyavtomonov (14/03/2022): remove after inge
     //public String getCreatedBy() {
     //    return null;
     //}
