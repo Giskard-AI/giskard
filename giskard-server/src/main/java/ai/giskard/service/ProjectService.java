@@ -5,16 +5,20 @@ import ai.giskard.domain.User;
 import ai.giskard.repository.ProjectRepository;
 import ai.giskard.repository.UserRepository;
 import ai.giskard.security.AuthoritiesConstants;
+import ai.giskard.security.SecurityUtils;
 import ai.giskard.service.dto.ml.ProjectPostDTO;
 import ai.giskard.service.mapper.GiskardMapper;
 import ai.giskard.web.rest.errors.EntityAccessControlException;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.validation.constraints.NotNull;
+import java.util.List;
 
 @Service
 @Transactional
@@ -60,36 +64,54 @@ public class ProjectService {
     }
 
     /**
+     * Test if the specified name is the connected user
+     *
+     * @param login: specified login to test
+     * @return: true if login match the current user
+     */
+    public boolean isCurrentUser(String login) {
+        return login != SecurityUtils.getCurrentUserLogin().get();
+    }
+
+    /**
+     * Test if the authenticated user is in the guestlist
+     *
+     * @param userList: list of users
+     * @return: boolean
+     */
+    public boolean isUserInGuestList(List<User> userList) {
+        return userList.stream().anyMatch(guest -> guest.getLogin() == SecurityUtils.getCurrentUserLogin().get());
+    }
+
+    /**
      * Managing access control for specified project
+     * Accessing if project's owner, in project's guestlist or admin
      * TODO: move it to permission
      *
-     * @param projectId:   id of the project
-     * @param userDetails: user details
+     * @param projectId: id of the project
      * @throws EntityAccessControlException
      */
-    public void accessControlById(@NotNull Long projectId, UserDetails userDetails) throws EntityAccessControlException {
-        boolean isAdmin = userDetails.getAuthorities().stream().anyMatch(authority -> authority.getAuthority() == AuthoritiesConstants.ADMIN);
-        User user = userRepository.getOneWithProjectsByLogin(userDetails.getUsername());
+    public void accessControlRead(@NotNull Long projectId) throws EntityAccessControlException {
+        boolean isAdmin = SecurityUtils.hasCurrentUserThisAuthority(AuthoritiesConstants.ADMIN);
         Project project = this.projectRepository.getOneWithUsersById(projectId);
-        boolean isUserInGuestListProject = project.getUsers().contains(user);
-        if (!isUserInGuestListProject && project.getOwner() != user && !isAdmin) {
+        if (!isUserInGuestList(project.getUsers()) && isCurrentUser(project.getOwner().getLogin()) && !isAdmin) {
             throw new EntityAccessControlException(EntityAccessControlException.Entity.PROJECT, projectId);
         }
     }
+
+
 
     /**
      * Giving access only for admin and project owner for specified project
      * TODO: move it to permission
      *
      * @param projectId:   id of the project
-     * @param userDetails: user details
      * @throws EntityAccessControlException
      */
-    public void accessControlAdminOrOwner(@NotNull Long projectId, UserDetails userDetails) throws EntityAccessControlException {
-        boolean isAdmin = userDetails.getAuthorities().stream().anyMatch(authority -> authority.getAuthority() == AuthoritiesConstants.ADMIN);
-        User user = userRepository.getOneByLogin(userDetails.getUsername());
+    public void accessControlWrite(@NotNull Long projectId) throws EntityAccessControlException {
+        boolean isAdmin = SecurityUtils.hasCurrentUserThisAuthority(AuthoritiesConstants.ADMIN);
         Project project = this.projectRepository.getById(projectId);
-        if (project.getOwner() != user && !isAdmin) {
+        if (isCurrentUser(project.getOwner().getLogin()) && !isAdmin) {
             throw new EntityAccessControlException(EntityAccessControlException.Entity.PROJECT, projectId);
         }
     }
