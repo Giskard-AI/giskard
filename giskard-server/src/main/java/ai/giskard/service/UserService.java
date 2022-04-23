@@ -117,7 +117,7 @@ public class UserService {
         // new user gets registration key
         newUser.setActivationKey(RandomUtil.generateActivationKey());
         Set<Role> authorities = new HashSet<>();
-        authorityRepository.findById(AuthoritiesConstants.AICREATOR).ifPresent(authorities::add);
+        authorityRepository.findByName(AuthoritiesConstants.AICREATOR).ifPresent(authorities::add);
         newUser.setRole(authorities.stream().findFirst().get());
         userRepository.save(newUser);
         log.debug("Created Information for User: {}", newUser);

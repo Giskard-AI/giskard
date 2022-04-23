@@ -5,9 +5,11 @@ import ai.giskard.domain.User;
 import ai.giskard.repository.ProjectRepository;
 import ai.giskard.repository.UserRepository;
 import ai.giskard.security.AuthoritiesConstants;
+import ai.giskard.security.SecurityUtils;
 import ai.giskard.service.ProjectService;
 import ai.giskard.service.dto.ml.ProjectDTO;
 import ai.giskard.service.dto.ml.ProjectPostDTO;
+import ai.giskard.web.rest.errors.NotInDatabaseException;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.transaction.annotation.Transactional;
@@ -36,14 +38,17 @@ public class ProjectController {
      * @return: List of projects
      */
     @GetMapping("project")
-    public List<ProjectDTO> list(@AuthenticationPrincipal final UserDetails userDetails) {
-        boolean isAdmin = userDetails.getAuthorities().stream().anyMatch(authority -> authority.getAuthority() == AuthoritiesConstants.ADMIN);
+    public List<ProjectDTO> list(@AuthenticationPrincipal final UserDetails userDetails) throws NotInDatabaseException {
+        boolean isAdmin = SecurityUtils.hasCurrentUserThisAuthority(AuthoritiesConstants.ADMIN);
+        User user = userRepository.getOneByLogin(userDetails.getUsername().toLowerCase());
+        if (user == null) {
+            throw new NotInDatabaseException(NotInDatabaseException.Entity.USER, userDetails.getUsername().toLowerCase());
+        }
         List<Project> projects;
         if (isAdmin) {
             projects = projectRepository.findAll();
         } else {
-            User user = userRepository.getOneWithProjectsByLogin(userDetails.getUsername());
-            projects = user.getProjects();
+            projects = projectRepository.getProjectsByOwnerOrGuestsContains(user, user);
         }
         return projects.stream().map(ProjectDTO::new).collect(Collectors.toList());
     }
@@ -87,9 +92,14 @@ public class ProjectController {
         return new ProjectDTO(project);
     }
 
+    /**
+     * Delete project
+     *
+     * @param id: id of the project to delete
+     * @return: true if success
+     */
     @DeleteMapping(value = "/project/{id}")
     public boolean delete(@PathVariable("id") Long id) {
-        this.projectService.accessControlWrite(id);
         return this.projectService.delete(id);
     }
 
@@ -100,9 +110,8 @@ public class ProjectController {
      * @param userId: user's id
      * @return: updated project
      */
-    @DeleteMapping(value = "/project/{id}/users/{userId}")
+    @DeleteMapping(value = "/project/{id}/guests/{userId}")
     public ProjectDTO uninvite(@PathVariable("id") Long id, @PathVariable("userId") Long userId) {
-        this.projectService.accessControlWrite(id);
         Project project = this.projectService.uninvite(id, userId);
         return new ProjectDTO(project);
     }
@@ -114,9 +123,8 @@ public class ProjectController {
      * @param userId: user's id
      * @return project updated
      */
-    @PutMapping(value = "/project/{id}/users/{userId}")
+    @PutMapping(value = "/project/{id}/guests/{userId}")
     public ProjectDTO invite(@PathVariable("id") Long id, @PathVariable("userId") Long userId) {
-        this.projectService.accessControlWrite(id);
         Project project = this.projectService.invite(id, userId);
         return new ProjectDTO(project);
     }

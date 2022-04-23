@@ -10,9 +10,7 @@ import ai.giskard.service.dto.ml.ProjectPostDTO;
 import ai.giskard.service.mapper.GiskardMapper;
 import ai.giskard.web.rest.errors.EntityAccessControlException;
 import org.slf4j.LoggerFactory;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -94,18 +92,17 @@ public class ProjectService {
     public void accessControlRead(@NotNull Long projectId) throws EntityAccessControlException {
         boolean isAdmin = SecurityUtils.hasCurrentUserThisAuthority(AuthoritiesConstants.ADMIN);
         Project project = this.projectRepository.getOneWithUsersById(projectId);
-        if (!isUserInGuestList(project.getUsers()) && isCurrentUser(project.getOwner().getLogin()) && !isAdmin) {
+        if (!isUserInGuestList(project.getGuests()) && isCurrentUser(project.getOwner().getLogin()) && !isAdmin) {
             throw new EntityAccessControlException(EntityAccessControlException.Entity.PROJECT, projectId);
         }
     }
-
 
 
     /**
      * Giving access only for admin and project owner for specified project
      * TODO: move it to permission
      *
-     * @param projectId:   id of the project
+     * @param projectId: id of the project
      * @throws EntityAccessControlException
      */
     public void accessControlWrite(@NotNull Long projectId) throws EntityAccessControlException {
@@ -124,6 +121,7 @@ public class ProjectService {
      * @return: boolean success
      */
     public boolean delete(Long id) {
+        accessControlWrite(id);
         this.projectRepository.deleteById(id);
         return true;
     }
@@ -136,6 +134,7 @@ public class ProjectService {
      * @return update project
      */
     public Project uninvite(Long id, Long userId) {
+        accessControlWrite(id);
         User user = this.userRepository.getById(userId);
         Project project = this.projectRepository.getOneWithUsersById(id);
         project.removeUser(user);
@@ -151,6 +150,7 @@ public class ProjectService {
      * @return updated project
      */
     public Project invite(Long id, Long userId) {
+        accessControlWrite(id);
         User user = this.userRepository.getById(userId);
         Project project = this.projectRepository.getOneWithUsersById(id);
         project.addUser(user);

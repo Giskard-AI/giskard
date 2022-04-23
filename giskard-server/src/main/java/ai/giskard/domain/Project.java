@@ -9,11 +9,9 @@ import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import lombok.experimental.Delegate;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity(name = "projects")
@@ -40,9 +38,15 @@ public class Project {
     @Setter
     private String description;
 
-    @Getter
+    /*@Getter
     @Setter
     private LocalDateTime localDateTime;
+*/
+    /*@CreatedDate
+    @Column(name = "CREATED", insertable = true, updatable = false)
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date created;
+*/
 
     @Getter
     @Setter
@@ -56,6 +60,7 @@ public class Project {
     @JsonManagedReference
     private List<ProjectModel> models;
 
+
     @Getter
     @Setter
     @OneToMany(mappedBy = "project", fetch = FetchType.LAZY)
@@ -64,30 +69,30 @@ public class Project {
 
     @Getter
     @Setter
-    @ManyToMany(cascade=CascadeType.ALL)
+    @ManyToMany(cascade = CascadeType.ALL)
     @JsonIgnore
     @JoinTable(
         name = "projects_guests",
         joinColumns = @JoinColumn(name = "project_id"),
         inverseJoinColumns = @JoinColumn(name = "user_id"))
-    private List<User> users;
+    private List<User> guests;
 
 
     public void addUser(User user) {
-        this.users.add(user);
+        this.guests.add(user);
         user.getProjects().add(this);
     }
 
     public void removeUser(User user) {
-        this.users.remove(user);
+        this.guests.remove(user);
         user.getProjects().remove(this);
     }
 
-    public Project(String key, String name, String description, LocalDateTime localDateTime, User owner) {
+    public Project(String key, String name, String description, User owner) {
         this.key = key;
         this.name = name;
         this.description = description;
-        this.localDateTime = localDateTime;
+        //this.localDateTime = localDateTime;
         this.owner = owner;
     }
 
