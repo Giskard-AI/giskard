@@ -11,5 +11,8 @@ public final class AuthoritiesConstants {
 
     public static final String AITESTER = "ROLE_AITESTER";
 
-    private AuthoritiesConstants() {}
+    public static final String[] authorities = new String[]{ADMIN, AITESTER, AICREATOR};
+
+    private AuthoritiesConstants() {
+    }
 }

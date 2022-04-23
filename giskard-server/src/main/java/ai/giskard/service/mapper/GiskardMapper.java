@@ -12,7 +12,10 @@ public interface GiskardMapper {
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     void updateProjectFromDto(ProjectPostDTO dto, @MappingTarget Project entity);
 
-    //ProjectDTO projectToProjectDTO(Project project);
-
     Project projectPostDTOToProject(ProjectPostDTO projectPostDto);
+
+    //User userPostDTOToUser(AdminUserDTO userPostDTO);
+
+    //List<User> userPostDTOToUsers(List<AdminUserDTO> userPostDTOs);
+
 }
