@@ -17,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.validation.constraints.NotNull;
 import java.util.List;
+import java.util.Set;
 
 @Service
 @Transactional
@@ -77,7 +78,7 @@ public class ProjectService {
      * @param userList: list of users
      * @return: boolean
      */
-    public boolean isUserInGuestList(List<User> userList) {
+    public boolean isUserInGuestList(Set<User> userList) {
         return userList.stream().anyMatch(guest -> guest.getLogin() == SecurityUtils.getCurrentUserLogin().get());
     }
 
@@ -91,7 +92,7 @@ public class ProjectService {
      */
     public void accessControlRead(@NotNull Long projectId) throws EntityAccessControlException {
         boolean isAdmin = SecurityUtils.hasCurrentUserThisAuthority(AuthoritiesConstants.ADMIN);
-        Project project = this.projectRepository.getOneWithUsersById(projectId);
+        Project project = this.projectRepository.getOneWithGuestsById(projectId);
         if (!isUserInGuestList(project.getGuests()) && isCurrentUser(project.getOwner().getLogin()) && !isAdmin) {
             throw new EntityAccessControlException(EntityAccessControlException.Entity.PROJECT, projectId);
         }
@@ -136,8 +137,8 @@ public class ProjectService {
     public Project uninvite(Long id, Long userId) {
         accessControlWrite(id);
         User user = this.userRepository.getById(userId);
-        Project project = this.projectRepository.getOneWithUsersById(id);
-        project.removeUser(user);
+        Project project = this.projectRepository.getOneWithGuestsById(id);
+        project.removeGuest(user);
         this.projectRepository.save(project);
         return project;
     }
@@ -152,8 +153,8 @@ public class ProjectService {
     public Project invite(Long id, Long userId) {
         accessControlWrite(id);
         User user = this.userRepository.getById(userId);
-        Project project = this.projectRepository.getOneWithUsersById(id);
-        project.addUser(user);
+        Project project = this.projectRepository.getOneWithGuestsById(id);
+        project.addGuest(user);
         this.projectRepository.save(project);
         return project;
     }

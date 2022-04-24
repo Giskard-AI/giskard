@@ -1,12 +1,10 @@
-package ai.giskard.web.rest.project;
+package ai.giskard.web.rest.controllers;
 
 import ai.giskard.repository.ProjectRepository;
 import ai.giskard.repository.UserRepository;
 import ai.giskard.repository.ml.DatasetRepository;
 import ai.giskard.service.ProjectService;
 import ai.giskard.service.dto.ml.DatasetDTO;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
