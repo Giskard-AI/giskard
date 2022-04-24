@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.annotations.BatchSize;
+
 import javax.persistence.*;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotNull;
@@ -15,17 +16,14 @@ import javax.validation.constraints.Size;
 
 import java.io.Serializable;
 import java.time.Instant;
-import java.util.Collections;
-import java.util.List;
-import java.util.Locale;
-import java.util.Set;
+import java.util.*;
 
 /**
  * A user.
  */
 @Entity
 @Table(name = "giskard_users")
-@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class,property = "id")
+@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
 public class User extends AbstractAuditingEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -166,16 +164,16 @@ public class User extends AbstractAuditingEntity implements Serializable {
             '}';
     }
 //// TODO andreyavtomonov (14/03/2022): remove after inge
+
     @lombok.Setter
     @lombok.Getter
     @JsonIgnore
-    @ManyToMany()
-    @JoinTable(
+    @ManyToMany(mappedBy = "guests")
+    /*@JoinTable(
         name = "projects_guests",
         joinColumns = @JoinColumn(name = "user_id"),
-        inverseJoinColumns =  @JoinColumn(name = "project_id"))
-    private List<Project> projects;
-
+        inverseJoinColumns = @JoinColumn(name = "project_id"))*/
+    private Set<Project> projects = new HashSet<Project>();
 
 
     //// TODO andreyavtomonov (14/03/2022): remove after inge

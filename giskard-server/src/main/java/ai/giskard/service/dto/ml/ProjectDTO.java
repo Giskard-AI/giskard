@@ -19,11 +19,14 @@ public class ProjectDTO {
     private String name;
     @Getter
     private String owner;
-
+    @Getter
+    private String key;
 
     public ProjectDTO(Project project) {
         this.id = project.getId();
         this.name = project.getName();
-        this.owner=project.getOwner().getLogin();
+        this.owner = project.getOwner().getLogin();
+        this.key = project.getKey();
+
     }
 }

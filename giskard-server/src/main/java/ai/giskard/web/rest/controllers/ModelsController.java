@@ -1,12 +1,11 @@
-package ai.giskard.web.rest.project;
+package ai.giskard.web.rest.controllers;
 
+import ai.giskard.domain.ml.ProjectModel;
 import ai.giskard.repository.ProjectRepository;
 import ai.giskard.repository.UserRepository;
 import ai.giskard.repository.ml.ModelRepository;
 import ai.giskard.service.ProjectService;
 import ai.giskard.service.dto.ml.ModelDTO;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -35,8 +34,8 @@ public class ModelsController {
      * Retrieve the list of models from the specified project
      * Returns all the project's models if the user is admin, project's owner or in project's guest list
      *
-     * @param projectId:   id of the project
-     * @param : authenticated user
+     * @param projectId: id of the project
+     * @param :          authenticated user
      * @return: List of models
      */
     @GetMapping("project/{projectId}/models")
@@ -44,5 +43,19 @@ public class ModelsController {
         this.projectService.accessControlRead(projectId);
         return this.modelRepository.findAllByProjectId(projectId).stream().map(ModelDTO::new).collect(Collectors.toList());
     }
+
+
+    /**
+     * Create new model
+     *
+     * @param :          authenticated user
+     * @return: List of models
+     *//**
+    @GetMapping("project/{projectId}/models")
+    public ProjectModel create() {
+        this.modelService.save();
+        return ProjectModel
+    }
+    **/
 
 }

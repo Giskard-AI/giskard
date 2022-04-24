@@ -1,4 +1,4 @@
-package ai.giskard.web.rest.project;
+package ai.giskard.web.rest.controllers;
 
 import ai.giskard.domain.Project;
 import ai.giskard.domain.User;
@@ -73,7 +73,7 @@ public class ProjectController {
      * @param projectPostDTO: project to save
      * @return created project
      */
-    @PostMapping(value = "/project/")
+    @PostMapping(value = "/project")
     public ProjectDTO create(@RequestBody ProjectPostDTO projectPostDTO, @AuthenticationPrincipal final UserDetails userDetails) {
         Project savedProject = this.projectService.create(projectPostDTO, userDetails);
         return new ProjectDTO(savedProject);

@@ -12,7 +12,7 @@ import lombok.Setter;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
-import java.util.List;
+import java.util.*;
 
 @Entity(name = "projects")
 @NoArgsConstructor
@@ -58,14 +58,15 @@ public class Project {
     @OneToMany(mappedBy = "project", fetch = FetchType.LAZY)
     @JsonIgnore
     @JsonManagedReference
-    private List<ProjectModel> models;
+    private Set<ProjectModel> models = new HashSet<ProjectModel>();
 
 
     @Getter
     @Setter
     @OneToMany(mappedBy = "project", fetch = FetchType.LAZY)
     @JsonManagedReference
-    private List<Dataset> datasets;
+    private Set<Dataset> datasets = new HashSet<Dataset>();
+
 
     @Getter
     @Setter
@@ -75,15 +76,15 @@ public class Project {
         name = "projects_guests",
         joinColumns = @JoinColumn(name = "project_id"),
         inverseJoinColumns = @JoinColumn(name = "user_id"))
-    private List<User> guests;
+    private Set<User> guests = new HashSet<>();
 
 
-    public void addUser(User user) {
+    public void addGuest(User user) {
         this.guests.add(user);
-        user.getProjects().add(this);
+        //user.getProjects().add(this);
     }
 
-    public void removeUser(User user) {
+    public void removeGuest(User user) {
         this.guests.remove(user);
         user.getProjects().remove(this);
     }
@@ -109,4 +110,5 @@ public class Project {
 //    guest_list = relationship("User", secondary=association_table)
 //    model_files = relationship("ProjectModel", cascade="all, delete")
 //    data_files = relationship("Dataset", cascade="all, delete")
+
 }
