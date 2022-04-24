@@ -1,4 +1,4 @@
-package ai.giskard.web.rest.testing;
+package ai.giskard.web.rest.controllers.testing;
 
 import ai.giskard.domain.ml.TestSuite;
 import ai.giskard.repository.ProjectRepository;
