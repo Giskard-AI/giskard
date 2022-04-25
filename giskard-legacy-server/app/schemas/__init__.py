@@ -12,7 +12,6 @@ from .project_file import (
 )
 from .prediction_model import (
     ModelPredictionInput,
-    ModelPredictionResults,
     ModelExplanationResults,
     ModelMetadata,
 )

@@ -13,10 +13,5 @@ class ModelPredictionInput(BaseModel):
     features: Dict
 
 
-class ModelPredictionResults(BaseModel):
-    prediction: Union[str, int, float]
-    probabilities: Optional[Dict[str, float]]
-
-
 class ModelExplanationResults(BaseModel):
     explanations: Union[Dict[str, float], Dict[str, Dict[str, float]]]
