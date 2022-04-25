@@ -9,6 +9,7 @@ import ai.giskard.security.SecurityUtils;
 import ai.giskard.service.dto.ml.ProjectPostDTO;
 import ai.giskard.service.mapper.GiskardMapper;
 import ai.giskard.web.rest.errors.EntityAccessControlException;
+import ai.giskard.web.rest.errors.UnauthorizedException;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -16,8 +17,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.validation.constraints.NotNull;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
+
+import static ai.giskard.security.SecurityUtils.hasCurrentUserAnyOfAuthorities;
 
 @Service
 @Transactional
@@ -69,7 +73,7 @@ public class ProjectService {
      * @return: true if login match the current user
      */
     public boolean isCurrentUser(String login) {
-        return login != SecurityUtils.getCurrentUserLogin().get();
+        return login.equals(SecurityUtils.getCurrentUserLogin().get());
     }
 
     /**
@@ -109,8 +113,22 @@ public class ProjectService {
     public void accessControlWrite(@NotNull Long projectId) throws EntityAccessControlException {
         boolean isAdmin = SecurityUtils.hasCurrentUserThisAuthority(AuthoritiesConstants.ADMIN);
         Project project = this.projectRepository.getById(projectId);
-        if (isCurrentUser(project.getOwner().getLogin()) && !isAdmin) {
+        if (!isCurrentUser(project.getOwner().getLogin()) && !isAdmin) {
             throw new EntityAccessControlException(EntityAccessControlException.Entity.PROJECT, projectId);
+        }
+    }
+
+    /**
+     * Giving access only for admin and aicreator
+     * TODO: move it to permission
+     *
+     * @throws EntityAccessControlException
+     */
+    public void accessControlWrite() throws UnauthorizedException {
+        String[] writeAuthorities = {AuthoritiesConstants.AICREATOR, AuthoritiesConstants.ADMIN};
+        boolean isAdminOrCreator = hasCurrentUserAnyOfAuthorities(writeAuthorities);
+        if (!isAdminOrCreator) {
+            throw new UnauthorizedException("CREATION", UnauthorizedException.Entity.PROJECT);
         }
     }
 
