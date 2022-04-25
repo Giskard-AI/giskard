@@ -1,10 +1,9 @@
 import logging
 import time
-from logging.config import fileConfig
-from pathlib import Path
 
 import pandas as pd
 import pytest
+from ai_inspector import ModelInspector
 from sklearn import model_selection
 from sklearn.compose import ColumnTransformer
 from sklearn.impute import SimpleImputer
@@ -13,18 +12,13 @@ from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder
 from sklearn.preprocessing import StandardScaler
 
-
-def path(p):
-    return Path(__file__).parent / p
-
-
-fileConfig(path('../../logging_config.ini'))
+from test import path
 
 
 @pytest.fixture()
 def german_credit_data():
     logging.info("Reading german_credit_prepared.csv")
-    return pd.read_csv(path('../test_data/german_credit_prepared.csv'))
+    return pd.read_csv(path('test_data/german_credit_prepared.csv'))
 
 
 @pytest.fixture()
@@ -33,7 +27,7 @@ def german_credit_test_data(german_credit_data):
 
 
 @pytest.fixture()
-def german_credit_model(german_credit_data):
+def german_credit_model(german_credit_data) -> ModelInspector:
     logging.info('Training German credit scoring classification model')
     start = time.time()
 
@@ -89,4 +83,11 @@ def german_credit_model(german_credit_data):
     train_time = time.time() - start
     model_score = clf.score(X_test, Y_test)
     logging.info(f"Trained model with score: {model_score} in {round(train_time * 1000)} ms")
-    return clf.predict_proba
+
+    return ModelInspector(
+        prediction_function=clf.predict_proba,
+        prediction_task='classification',
+        input_types=input_types,
+        classification_threshold=0.5,
+        classification_labels=clf.classes_
+    )
