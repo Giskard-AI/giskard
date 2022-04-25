@@ -5,7 +5,7 @@ from ml_worker.testing.functions import GiskardTestFunctions
 
 def _test_heuristic(german_credit_test_data, german_credit_model, failed_threshold):
     tests = GiskardTestFunctions()
-    results = tests.test_heuristic(
+    results = tests.heuristic.test_heuristic(
         german_credit_test_data,
         german_credit_model,
         classification_label=1,
@@ -20,7 +20,7 @@ def _test_heuristic(german_credit_test_data, german_credit_model, failed_thresho
 
 def test_heuristic_opposite(german_credit_test_data, german_credit_model):
     tests = GiskardTestFunctions()
-    results = tests.test_heuristic(
+    results = tests.heuristic.test_heuristic(
         german_credit_test_data,
         german_credit_model,
         0)
@@ -33,7 +33,8 @@ def test_heuristic_opposite(german_credit_test_data, german_credit_model):
 
 def test_heuristic_proba_limits(german_credit_test_data, german_credit_model):
     tests = GiskardTestFunctions()
-    results = tests.test_heuristic(german_credit_test_data, german_credit_model, 0, min_proba=0.4, max_proba=0.6)
+    results = tests.heuristic.test_heuristic(german_credit_test_data, german_credit_model,
+                                             0, min_proba=0.4, max_proba=0.6)
 
     assert results.element_count == 1000
     assert results.missing_count == 0
@@ -51,7 +52,7 @@ def test_heuristic_fail(german_credit_test_data, german_credit_model):
 
 def test_heuristic_mask(german_credit_test_data, german_credit_model):
     tests = GiskardTestFunctions()
-    results = tests.test_heuristic(
+    results = tests.heuristic.test_heuristic(
         german_credit_test_data,
         german_credit_model,
         classification_label=1,

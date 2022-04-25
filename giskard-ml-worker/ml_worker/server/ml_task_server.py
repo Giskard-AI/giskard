@@ -24,7 +24,7 @@ class MLTaskServer(MLWorkerServicer):
 
         tests = GiskardTestFunctions()
         _globals = {
-            'clf_predict': read_model_file(str(model_path.absolute())).prediction_function,
+            'model': read_model_file(str(model_path.absolute())),
             'tests': tests
         }
         if request.train_dataset_path:
