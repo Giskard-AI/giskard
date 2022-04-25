@@ -6,9 +6,9 @@ import ai.giskard.domain.User;
 import ai.giskard.repository.ProjectRepository;
 import ai.giskard.repository.UserRepository;
 import ai.giskard.security.AuthoritiesConstants;
+import ai.giskard.service.InitService;
 import ai.giskard.service.dto.ml.ProjectPostDTO;
 import ai.giskard.service.mapper.GiskardMapper;
-import ai.giskard.web.rest.InitService;
 import ai.giskard.web.rest.controllers.ProjectController;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
@@ -33,15 +33,16 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @IntegrationTest
 @WithMockUser(username = "admin", authorities = AuthoritiesConstants.ADMIN)
-class ProjectResourceIT {
+class AdminProjectResourceIT {
 
     @Autowired
     private ProjectRepository projectRepository;
 
     @Autowired
     private UserRepository userRepository;
+
     @Autowired
-    private InitService userTestService;
+    private InitService initService;
 
     @Autowired
     private MockMvc restUserMockMvc;
@@ -51,15 +52,25 @@ class ProjectResourceIT {
 
     User loggedUser;
 
-    public static String PROJECTKEY = "ADMINProject";
-    public static String USERKEY = "admin";
+    public String PROJECTKEY;
+    public String USERKEY;
+    public String OTHERUSERKEY;
+    public String OTHERPROJECTKEY;
+
+    protected void initKeys() {
+        this.USERKEY = initService.getUserName("admin");
+        this.PROJECTKEY = initService.getProjectName("admin");
+        this.OTHERUSERKEY = initService.getUserName("aicreator");
+        this.OTHERPROJECTKEY = initService.getProjectName("aicreator");
+    }
 
     @BeforeEach
     public void initTest() {
-        userTestService.init();
+        initService.init();
+        initKeys();
         loggedUser = userRepository.getOneByLogin(USERKEY);
-
     }
+
 
     /**
      * Get all Projects
@@ -69,7 +80,6 @@ class ProjectResourceIT {
     @Test
     @Transactional
     void getAllProjects() throws Exception {
-        // Get all the users
         restUserMockMvc.perform(get("/api/v2/project").accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
@@ -89,6 +99,20 @@ class ProjectResourceIT {
         restUserMockMvc.perform(get("/api/v2/project").accept(MediaType.APPLICATION_JSON)).andExpect(status().is5xxServerError());
     }
 
+    /**
+     * Show a project
+     *
+     * @throws Exception
+     */
+    @Test
+    @Transactional
+    void show() throws Exception {
+        Project project = projectRepository.getOneByName(PROJECTKEY);
+        restUserMockMvc.perform(get(String.format("/api/v2/project/%d", project.getId())).accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
+            .andExpect(content().string(containsString(PROJECTKEY)));
+    }
 
     /**
      * Create new Project
@@ -131,6 +155,25 @@ class ProjectResourceIT {
         assertThat(projectRepository.findOneByName("updateProject")).isPresent();
     }
 
+    /**
+     * Update project when not owner
+     *
+     * @throws Exception
+     */
+    @Test
+    @Transactional
+    void updateNotOwner() throws Exception {
+        Project project = projectRepository.getOneByName(OTHERPROJECTKEY);
+        ProjectPostDTO projectPostDTO = giskardMapper.projectToProjectPostDTO(project);
+        projectPostDTO.setName("updateProject");
+        projectPostDTO.setKey("updateKey");
+        restUserMockMvc.perform(put("/api/v2/project/" + project.getId())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(new ObjectMapper().writeValueAsString(projectPostDTO)))
+            .andExpect(status().isOk());
+        assertThat(projectRepository.findOneByName("updateProject")).isPresent();
+    }
+
 
     /**
      * Remove project
@@ -156,7 +199,7 @@ class ProjectResourceIT {
     @Transactional
     void addGuest() throws Exception {
         Project project = projectRepository.getOneByName(PROJECTKEY);
-        User user = userRepository.getOneByLogin("aitest");
+        User user = userRepository.getOneByLogin(USERKEY);
         String url = String.format("/api/v2/project/%d/guests/%d", project.getId(), user.getId());
         assertThat(project.getGuests()).isNullOrEmpty();
         restUserMockMvc.perform(put(url).accept(MediaType.APPLICATION_JSON))
@@ -164,6 +207,7 @@ class ProjectResourceIT {
         Project updatedProject = projectRepository.getOneByName(PROJECTKEY);
         assertThat(updatedProject.getGuests()).contains(user);
     }
+
 
     /**
      * Remove user from the guestlist
@@ -174,7 +218,7 @@ class ProjectResourceIT {
     @Transactional
     void removeGuest() throws Exception {
         Project project = projectRepository.getOneByName(PROJECTKEY);
-        User user = userRepository.getOneByLogin("aitest");
+        User user = userRepository.getOneByLogin(OTHERUSERKEY);
         project.addGuest(user);
         String url = String.format("/api/v2/project/%d/guests/%d", project.getId(), user.getId());
         restUserMockMvc.perform(delete(url).accept(MediaType.APPLICATION_JSON))
@@ -182,6 +226,5 @@ class ProjectResourceIT {
         Project updatedProject = projectRepository.getOneWithGuestsById(project.getId());
         assertThat(updatedProject.getGuests()).doesNotContain(user);
     }
-
 
 }
