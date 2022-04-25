@@ -11,6 +11,7 @@ from sqlalchemy.orm import Session
 from app import crud, models, schemas
 from app.api import deps
 from app.core import files, files_utils
+from app.core.ml import run_predict, ModelPredictionResults, ModelPredictionResultsDTO
 from app.core.model_explanation import (
     background_example,
     summary_shap_classification,
@@ -27,9 +28,9 @@ logger.setLevel(logging.INFO)
 
 @router.get("/{id}/metadata")
 def get_model_metadata(
-    id: int,
-    db: Session = Depends(deps.get_db),
-    current_user: models.User = Depends(deps.get_current_active_user),
+        id: int,
+        db: Session = Depends(deps.get_db),
+        current_user: models.User = Depends(deps.get_current_active_user),
 ):
     model_file = crud.project_model.get(db, id)
 
@@ -52,17 +53,17 @@ def get_model_metadata(
 
 @router.get("/{modelId}/features/{datasetId}")
 def get_model_features_metadata(
-    modelId: int,
-    datasetId: int,
-    db: Session = Depends(deps.get_db),
-    current_user: models.User = Depends(deps.get_current_active_user),
+        modelId: int,
+        datasetId: int,
+        db: Session = Depends(deps.get_db),
+        current_user: models.User = Depends(deps.get_current_active_user),
 ):
     model_file = crud.project_model.get(db, modelId)
     data_file = crud.dataset.get(db, datasetId)
 
     project = crud.project.get(db, model_file.project_id)
     if files.has_read_access(current_user, project, model_file) and files.has_read_access(
-        current_user, project, data_file
+            current_user, project, data_file
     ):
         try:
             model_inspector = files_utils.read_model_file(model_file.location)
@@ -84,13 +85,21 @@ def get_model_features_metadata(
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Not enough permissions")
 
 
+def select_single_prediction(model_inspector: ModelInspector, probabilities):
+    labels = model_inspector.classification_labels
+    if model_inspector.classification_threshold is not None and len(labels) == 2:
+        return labels[1] if probabilities[labels[1]] >= model_inspector.classification_threshold else labels[0]
+    else:
+        return max(probabilities, key=lambda key: probabilities[key])
+
+
 @router.post("/{modelId}/predict")
 def predict(
-    modelId: int,
-    input_data: schemas.ModelPredictionInput,
-    db: Session = Depends(deps.get_db),
-    current_user: models.User = Depends(deps.get_current_active_user),
-) -> schemas.ModelPredictionResults:
+        modelId: int,
+        input_data: schemas.ModelPredictionInput,
+        db: Session = Depends(deps.get_db),
+        current_user: models.User = Depends(deps.get_current_active_user),
+) -> ModelPredictionResults:
     model_file = crud.project_model.get(db, modelId)
     project = crud.project.get(db, model_file.project_id)
     if files.has_read_access(current_user, project, model_file):
@@ -101,16 +110,16 @@ def predict(
             raise HTTPException(status.HTTP_500_INTERNAL_SERVER_ERROR, "Model file cannot be read")
         try:
             input_df = pd.DataFrame({k: [v] for k, v in input_data.features.items()})
-            raw_prediction = model_inspector.prediction_function(input_df)[0]
+
+            # raw_prediction = model_inspector.prediction_function(input_df)[0]
+            prediction_results = run_predict(input_df, model_inspector)
             if model_inspector.prediction_task == "regression":
-                result = schemas.ModelPredictionResults(prediction=raw_prediction)
+                result = ModelPredictionResultsDTO(prediction=prediction_results.raw_prediction[0])
             elif model_inspector.prediction_task == "classification":
-                probabilities = dict(zip(model_inspector.classification_labels, raw_prediction))
-                result = schemas.ModelPredictionResults(
-                    prediction=select_single_prediction(model_inspector, probabilities),
-                    probabilities=probabilities,
+                result = ModelPredictionResultsDTO(
+                    prediction=prediction_results.prediction[0],
+                    probabilities=prediction_results.all_predictions.iloc[0].to_dict(),
                 )
-                print(1)
             else:
                 raise ValueError(
                     f"Prediction task is not supported: {model_inspector.prediction_task}"
@@ -124,27 +133,19 @@ def predict(
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Not enough permissions")
 
 
-def select_single_prediction(model_inspector: ModelInspector, probabilities):
-    labels = model_inspector.classification_labels
-    if model_inspector.classification_threshold is not None and len(labels) == 2:
-        return labels[1] if probabilities[labels[1]] >= model_inspector.classification_threshold else labels[0]
-    else:
-        return max(probabilities, key=lambda key: probabilities[key])
-
-
 @router.post("/{modelId}/{datasetId}/explain")
 def get_model_explanation_on_dataset(
-    modelId: int,
-    datasetId: int,
-    input_data: schemas.ModelPredictionInput,
-    db: Session = Depends(deps.get_db),
-    current_user: models.User = Depends(deps.get_current_active_user),
+        modelId: int,
+        datasetId: int,
+        input_data: schemas.ModelPredictionInput,
+        db: Session = Depends(deps.get_db),
+        current_user: models.User = Depends(deps.get_current_active_user),
 ) -> schemas.ModelExplanationResults:
     model_file = crud.project_model.get(db, modelId)
     data_file = crud.dataset.get(db, datasetId)
     project = crud.project.get(db, model_file.project_id)
     if files.has_read_access(current_user, project, model_file) and files.has_read_access(
-        current_user, project, data_file
+            current_user, project, data_file
     ):
         try:
             model_inspector = files_utils.read_model_file(model_file.location)
@@ -197,12 +198,12 @@ def get_model_explanation_on_dataset(
 
 @router.post("/{modelId}/explain_text/{text_column}")
 def get_model_explanation_on_text_column(
-    modelId: int,
-    input_data: schemas.ModelPredictionInput,
-    text_column: str,
-    n_samples: int = 500,
-    db: Session = Depends(deps.get_db),
-    current_user: models.User = Depends(deps.get_current_active_user),
+        modelId: int,
+        input_data: schemas.ModelPredictionInput,
+        text_column: str,
+        n_samples: int = 500,
+        db: Session = Depends(deps.get_db),
+        current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
     model_file = crud.project_model.get(db, modelId)
     project = crud.project.get(db, model_file.project_id)
@@ -227,8 +228,9 @@ def get_model_explanation_on_text_column(
                 model_inspector.prediction_function, input_df, text_column
             )
             text_explainer.fit(text_document, prediction_function)
-            html_response = text_explainer.show_prediction(target_names=model_inspector.classification_labels)._repr_html_()
-            return parse_text_explainer_response(html_response) 
+            html_response = text_explainer.show_prediction(
+                target_names=model_inspector.classification_labels)._repr_html_()
+            return parse_text_explainer_response(html_response)
         except Exception as e:
             logger.exception(e)
             raise HTTPException(
