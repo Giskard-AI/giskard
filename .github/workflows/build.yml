@@ -17,6 +17,10 @@ jobs:
         uses: actions/setup-java@v1
         with:
           java-version: 17
+      - name: Set up Python
+        uses: actions/setup-python@v3
+        with:
+          python-version: '3.7'
       - name: Cache SonarQube packages
         uses: actions/cache@v1
         with:
