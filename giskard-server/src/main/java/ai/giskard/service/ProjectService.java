@@ -6,9 +6,11 @@ import ai.giskard.repository.ProjectRepository;
 import ai.giskard.repository.UserRepository;
 import ai.giskard.security.AuthoritiesConstants;
 import ai.giskard.security.SecurityUtils;
+import ai.giskard.service.dto.ml.ProjectDTO;
 import ai.giskard.service.dto.ml.ProjectPostDTO;
 import ai.giskard.service.mapper.GiskardMapper;
 import ai.giskard.web.rest.errors.EntityAccessControlException;
+import ai.giskard.web.rest.errors.NotInDatabaseException;
 import ai.giskard.web.rest.errors.UnauthorizedException;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -19,7 +21,9 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.validation.constraints.NotNull;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import static ai.giskard.security.SecurityUtils.hasCurrentUserAnyOfAuthorities;
 
@@ -67,16 +71,6 @@ public class ProjectService {
     }
 
     /**
-     * Test if the specified name is the connected user
-     *
-     * @param login: specified login to test
-     * @return: true if login match the current user
-     */
-    public boolean isCurrentUser(String login) {
-        return login.equals(SecurityUtils.getCurrentUserLogin().get());
-    }
-
-    /**
      * Test if the authenticated user is in the guestlist
      *
      * @param userList: list of users
@@ -87,60 +81,12 @@ public class ProjectService {
     }
 
     /**
-     * Managing access control for specified project
-     * Accessing if project's owner, in project's guestlist or admin
-     * TODO: move it to permission
-     *
-     * @param projectId: id of the project
-     * @throws EntityAccessControlException
-     */
-    public void accessControlRead(@NotNull Long projectId) throws EntityAccessControlException {
-        boolean isAdmin = SecurityUtils.hasCurrentUserThisAuthority(AuthoritiesConstants.ADMIN);
-        Project project = this.projectRepository.getOneWithGuestsById(projectId);
-        if (!isUserInGuestList(project.getGuests()) && isCurrentUser(project.getOwner().getLogin()) && !isAdmin) {
-            throw new EntityAccessControlException(EntityAccessControlException.Entity.PROJECT, projectId);
-        }
-    }
-
-
-    /**
-     * Giving access only for admin and project owner for specified project
-     * TODO: move it to permission
-     *
-     * @param projectId: id of the project
-     * @throws EntityAccessControlException
-     */
-    public void accessControlWrite(@NotNull Long projectId) throws EntityAccessControlException {
-        boolean isAdmin = SecurityUtils.hasCurrentUserThisAuthority(AuthoritiesConstants.ADMIN);
-        Project project = this.projectRepository.getById(projectId);
-        if (!isCurrentUser(project.getOwner().getLogin()) && !isAdmin) {
-            throw new EntityAccessControlException(EntityAccessControlException.Entity.PROJECT, projectId);
-        }
-    }
-
-    /**
-     * Giving access only for admin and aicreator
-     * TODO: move it to permission
-     *
-     * @throws EntityAccessControlException
-     */
-    public void accessControlWrite() throws UnauthorizedException {
-        String[] writeAuthorities = {AuthoritiesConstants.AICREATOR, AuthoritiesConstants.ADMIN};
-        boolean isAdminOrCreator = hasCurrentUserAnyOfAuthorities(writeAuthorities);
-        if (!isAdminOrCreator) {
-            throw new UnauthorizedException("CREATION", UnauthorizedException.Entity.PROJECT);
-        }
-    }
-
-
-    /**
      * Delete the project
      *
      * @param id: id of the project to delete
      * @return: boolean success
      */
     public boolean delete(Long id) {
-        accessControlWrite(id);
         this.projectRepository.deleteById(id);
         return true;
     }
@@ -153,7 +99,6 @@ public class ProjectService {
      * @return update project
      */
     public Project uninvite(Long id, Long userId) {
-        accessControlWrite(id);
         User user = this.userRepository.getById(userId);
         Project project = this.projectRepository.getOneWithGuestsById(id);
         project.removeGuest(user);
@@ -169,7 +114,6 @@ public class ProjectService {
      * @return updated project
      */
     public Project invite(Long id, Long userId) {
-        accessControlWrite(id);
         User user = this.userRepository.getById(userId);
         Project project = this.projectRepository.getOneWithGuestsById(id);
         project.addGuest(user);
@@ -177,4 +121,25 @@ public class ProjectService {
         return project;
     }
 
+    /**
+     * Listing projects accessible by the use
+     * Handling access control
+     *
+     * @return list of projects
+     */
+    public List<Project> list() {
+        boolean isAdmin = SecurityUtils.hasCurrentUserThisAuthority(AuthoritiesConstants.ADMIN);
+        String username = SecurityUtils.getCurrentUserLogin().get().toLowerCase();
+        User user = userRepository.getOneByLogin(username);
+        if (user == null) {
+            throw new NotInDatabaseException(NotInDatabaseException.Entity.USER, username);
+        }
+        List<Project> projects;
+        if (isAdmin) {
+            projects = projectRepository.findAll();
+        } else {
+            projects = projectRepository.getProjectsByOwnerOrGuestsContains(user, user);
+        }
+        return projects;
+    }
 }

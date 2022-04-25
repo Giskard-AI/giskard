@@ -40,7 +40,6 @@ public class ModelsController {
      */
     @GetMapping("project/{projectId}/models")
     public List<ModelDTO> listProjectModels(@PathVariable @NotNull Long projectId) {
-        this.projectService.accessControlRead(projectId);
         return this.modelRepository.findAllByProjectId(projectId).stream().map(ModelDTO::new).collect(Collectors.toList());
     }
 
