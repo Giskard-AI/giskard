@@ -75,6 +75,7 @@ public class ProjectController {
      */
     @PostMapping(value = "/project")
     public ProjectDTO create(@RequestBody ProjectPostDTO projectPostDTO, @AuthenticationPrincipal final UserDetails userDetails) {
+        this.projectService.accessControlWrite();
         Project savedProject = this.projectService.create(projectPostDTO, userDetails);
         return new ProjectDTO(savedProject);
     }

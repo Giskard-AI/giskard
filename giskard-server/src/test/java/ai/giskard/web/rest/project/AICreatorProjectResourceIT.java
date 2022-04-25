@@ -1,4 +1,4 @@
-package ai.giskard.web.rest;
+package ai.giskard.web.rest.project;
 
 import ai.giskard.IntegrationTest;
 import ai.giskard.domain.Project;
@@ -7,9 +7,11 @@ import ai.giskard.repository.ProjectRepository;
 import ai.giskard.repository.UserRepository;
 import ai.giskard.security.AuthoritiesConstants;
 import ai.giskard.service.dto.ml.ProjectPostDTO;
+import ai.giskard.service.mapper.GiskardMapper;
+import ai.giskard.web.rest.InitService;
 import ai.giskard.web.rest.controllers.ProjectController;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.jupiter.api.BeforeEach;
+import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -21,67 +23,64 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.CoreMatchers.containsString;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 /**
- * Integration tests for the {@link ProjectController} REST controller.
+ * Integration tests for the {@link ProjectController} REST controller with AICreator authorities
  */
 @AutoConfigureMockMvc
 @IntegrationTest
-@WithMockUser(username = "admin", authorities = AuthoritiesConstants.ADMIN)
-class ProjectResourceIT {
+@WithMockUser(username = "aicreator", authorities = AuthoritiesConstants.AICREATOR)
+class AICreatorProjectResourceIT extends ProjectResourceIT {
 
     @Autowired
     private ProjectRepository projectRepository;
 
     @Autowired
     private UserRepository userRepository;
+
     @Autowired
     private InitService userTestService;
 
     @Autowired
     private MockMvc restUserMockMvc;
 
-    @BeforeEach
-    public void initTest() {
-        userTestService.init();
-    }
+    @Autowired
+    private GiskardMapper giskardMapper;
+
+    User loggedUser;
+
+    public static String PROJECTKEY = "AICREATORProject";
+    public static String USERKEY = "aicreator";
+
 
     /**
-     * Get all Projects with Admin authority
+     * Get all Projects
      *
      * @throws Exception
      */
+    @Override
     @Test
     @Transactional
-    void getAllProjectsWithAdminUser() throws Exception {
-        // Get all the users
-        restUserMockMvc.perform(get("/api/v2/project").accept(MediaType.APPLICATION_JSON)).andExpect(status().isOk()).andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE));
-    }
-
-    /**
-     * Get all projects with user not in database authority
-     * Expect NotInDatabaseException
-     *
-     * @throws Exception
-     */
-    @Test
-    @Transactional
-    @WithMockUser(username = "notInDatabaseUser", authorities = AuthoritiesConstants.ADMIN)
-    void getAllProjectsWithUnknownUser() throws Exception {
-        restUserMockMvc.perform(get("/api/v2/project").accept(MediaType.APPLICATION_JSON)).andExpect(status().is5xxServerError());
+    void getAllProjects() throws Exception {
+        restUserMockMvc.perform(get("/api/v2/project").accept(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
+            .andExpect(content().string(containsString(PROJECTKEY)))
+            .andExpect(content().string(CoreMatchers.not(containsString("ADMINProject"))));
     }
 
 
     /**
-     * Create new Project with admin authority
+     * Create new Project
      *
      * @throws Exception
      */
+    @Override
     @Test
     @Transactional
-    void createByAdmin() throws Exception {
+    void create() throws Exception {
         ProjectPostDTO projectDTO = new ProjectPostDTO();
         projectDTO.setName("createdProject");
         projectDTO.setKey("keyProject");
@@ -95,16 +94,21 @@ class ProjectResourceIT {
 
 
     /**
-     * Update Project with admin authority
+     * Update Project
      *
      * @throws Exception
      */
+    @Override
     @Test
     @Transactional
     void update() throws Exception {
-        Project project = projectRepository.getOneByName("ADMINProject");
-        User admin = userRepository.getOneByLogin("admin");
-        project.setOwner(admin);
+        Project project = projectRepository.getOneByName(PROJECTKEY);
+        User user = userRepository.getOneByLogin(USERKEY);
+        ProjectPostDTO projectPostDTO = giskardMapper.projectToProjectPostDTO(project);
+        projectPostDTO.setName("updateProject");
+        projectPostDTO.setKey("updateKey");
+
+        project.setOwner(user);
         project.setName("updateProject");
         project.setKey("updateKey");
         restUserMockMvc.perform(put("/api/v2/project/" + project.getId())
@@ -118,56 +122,57 @@ class ProjectResourceIT {
 
 
     /**
-     * Remove project with admin authority
+     * Remove project
      *
      * @throws Exception
      */
+    @Override
     @Test
     @Transactional
     void remove() throws Exception {
-        Project project = projectRepository.getOneByName("ADMINProject");
+        Project project = projectRepository.getOneByName(PROJECTKEY);
         restUserMockMvc.perform(delete("/api/v2/project/" + project.getId()).accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk());
-        Optional<Project> projectOptional = projectRepository.findOneByName("ADMINProject");
+        Optional<Project> projectOptional = projectRepository.findOneByName(PROJECTKEY);
         assertThat(projectOptional).isEmpty();
     }
 
     /**
-     * Add user to project's guestlist with admin authority
+     * Add user to project's guestlist
      *
      * @throws Exception
      */
+    @Override
     @Test
     @Transactional
     void addGuest() throws Exception {
-        Project project = projectRepository.getOneByName("ADMINProject");
-        User user = userRepository.getOneByLogin("aitest");
+        Project project = projectRepository.getOneByName(PROJECTKEY);
+        User user = userRepository.getOneByLogin(USERKEY);
         String url = String.format("/api/v2/project/%d/guests/%d", project.getId(), user.getId());
         assertThat(project.getGuests()).isNullOrEmpty();
         restUserMockMvc.perform(put(url).accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk());
-        Project updatedProject = projectRepository.getOneByName("ADMINProject");
+        Project updatedProject = projectRepository.getOneByName(PROJECTKEY);
         assertThat(updatedProject.getGuests()).contains(user);
     }
 
     /**
-     * Remove user from the guestlist with admin authority
+     * Remove user from the guestlist
      *
      * @throws Exception
      */
+    @Override
     @Test
     @Transactional
     void removeGuest() throws Exception {
-        Project project = projectRepository.getOneByName("ADMINProject");
-        User user = userRepository.getOneByLogin("aitest");
+        Project project = projectRepository.getOneByName(PROJECTKEY);
+        User user = userRepository.getOneByLogin(USERKEY);
         project.addGuest(user);
-        projectRepository.save(project);
         String url = String.format("/api/v2/project/%d/guests/%d", project.getId(), user.getId());
         restUserMockMvc.perform(delete(url).accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk());
         Project updatedProject = projectRepository.getOneWithGuestsById(project.getId());
         assertThat(updatedProject.getGuests()).doesNotContain(user);
     }
-
 
 }

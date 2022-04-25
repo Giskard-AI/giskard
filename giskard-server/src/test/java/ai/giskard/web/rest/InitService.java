@@ -12,6 +12,7 @@ import ai.giskard.service.UserService;
 import ai.giskard.web.rest.vm.ManagedUserVM;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
 import java.util.*;
@@ -43,8 +44,9 @@ public class InitService {
     }
 
     /**
-     * Initialising users with differents authorities
+     * Initialising users with different authorities
      */
+    @Transactional
     public void initUsers() {
         Arrays.stream(mockKeys).forEach(key -> saveUser(key, "ROLE_" + key));
     }
