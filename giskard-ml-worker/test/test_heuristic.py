@@ -3,13 +3,13 @@ import pytest
 from ml_worker.testing.functions import GiskardTestFunctions
 
 
-def _test_heuristic(german_credit_test_data, german_credit_model, failed_threshold):
+def _test_heuristic(german_credit_test_data, german_credit_model, threshold):
     tests = GiskardTestFunctions()
     results = tests.heuristic.test_heuristic(
         german_credit_test_data,
         german_credit_model,
-        classification_label=1,
-        failed_threshold=failed_threshold)
+        classification_label='Default',
+        threshold=threshold)
 
     assert results.element_count == 1000
     assert results.missing_count == 0
@@ -23,7 +23,7 @@ def test_heuristic_opposite(german_credit_test_data, german_credit_model):
     results = tests.heuristic.test_heuristic(
         german_credit_test_data,
         german_credit_model,
-        0)
+        'Not default')
 
     assert results.element_count == 1000
     assert results.missing_count == 0
@@ -34,7 +34,7 @@ def test_heuristic_opposite(german_credit_test_data, german_credit_model):
 def test_heuristic_proba_limits(german_credit_test_data, german_credit_model):
     tests = GiskardTestFunctions()
     results = tests.heuristic.test_heuristic(german_credit_test_data, german_credit_model,
-                                             0, min_proba=0.4, max_proba=0.6)
+                                             'Not default', min_proba=0.4, max_proba=0.6)
 
     assert results.element_count == 1000
     assert results.missing_count == 0
@@ -50,13 +50,12 @@ def test_heuristic_fail(german_credit_test_data, german_credit_model):
     assert not _test_heuristic(german_credit_test_data, german_credit_model, 0.5)
 
 
-def test_heuristic_mask(german_credit_test_data, german_credit_model):
+def test_heuristic_filtered(german_credit_test_data, german_credit_model):
     tests = GiskardTestFunctions()
     results = tests.heuristic.test_heuristic(
-        german_credit_test_data,
+        german_credit_test_data.head(10),
         german_credit_model,
-        classification_label=1,
-        mask=list(range(10))
+        classification_label='Default'
     )
 
     assert results.element_count == 10

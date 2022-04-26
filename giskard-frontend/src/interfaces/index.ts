@@ -36,6 +36,7 @@ export interface ITestResultMessage {
     unexpectedPercentTotal: number,
     unexpectedPercentNonmissing: number,
     elementCount: number
+    metric: number
 }
 
 export type TestStatus = 'PASSED' | 'FAILED' | 'ERROR';

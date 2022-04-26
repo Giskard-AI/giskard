@@ -40,8 +40,8 @@
           <p class='font-weight-bold text-center'>Available variables</p>
           <table style='width: 100%'>
             <tr>
-              <td><code>clf_predict</code></td>
-              <td>Model function</td>
+              <td><code>model</code></td>
+              <td>Model Inspector</td>
             </tr>
             <tr>
               <td><code>test_df</code></td>
@@ -71,35 +71,42 @@
       <v-col :cols='3'>
         <v-list>
           <v-subheader>Code presets</v-subheader>
-
-          <template v-for='snippet in codeSnippets'>
-            <v-hover v-slot='{ hover }' class='snippet'>
-              <v-list-item dense v-ripple class='no-user-select' @click='copyCodeFromSnippet(snippet.code)'>
-                <v-list-item-icon>
-                  <v-icon class='mirror' v-show='hover' dense>exit_to_app</v-icon>
-                </v-list-item-icon>
-                <v-list-item-content class='text-center'>
-                  <v-list-item-title>{{ snippet.name }}</v-list-item-title>
-                </v-list-item-content>
-                <v-list-item-action>
-                  <v-tooltip bottom>
-                    <template v-slot:activator='{ on, attrs }'>
-                      <v-icon color='grey lighten-1'
-                              dense
-                              v-bind='attrs'
-                              v-on='on'>mdi-information
-                      </v-icon>
-                    </template>
-                    <span>{{ snippet.hint }}</span>
-                  </v-tooltip>
-                </v-list-item-action>
-
-              </v-list-item>
-            </v-hover>
-
-            <v-divider />
-          </template>
-
+          <v-list-group
+            v-for='snippet in codeSnippets'
+            :key='snippet.title'
+            v-model='snippet.active'
+            no-action
+          >
+            <template v-slot:activator>
+              <v-list-item-content>
+                <v-list-item-title v-text='snippet.title'></v-list-item-title>
+              </v-list-item-content>
+            </template>
+            <template v-for='child in snippet.items'>
+              <v-hover v-slot='{ hover }' class='snippet pl-3'>
+                <v-list-item :key='child.title' @click='copyCodeFromSnippet(child.code)'>
+                  <v-list-item-icon>
+                    <v-icon class='mirror code-snippet-icon' v-show='hover' dense>exit_to_app</v-icon>
+                  </v-list-item-icon>
+                  <v-list-item-content>
+                    <v-list-item-title v-text='child.title'></v-list-item-title>
+                  </v-list-item-content>
+                  <v-list-item-action>
+                    <v-tooltip bottom>
+                      <template v-slot:activator='{ on, attrs }'>
+                        <v-icon color='grey lighten-1'
+                                dense
+                                v-bind='attrs'
+                                v-on='on'>mdi-information
+                        </v-icon>
+                      </template>
+                      <span>{{ snippet.hint }}</span>
+                    </v-tooltip>
+                  </v-list-item-action>
+                </v-list-item>
+              </v-hover>
+            </template>
+          </v-list-group>
         </v-list>
       </v-col>
     </v-row>
@@ -146,11 +153,13 @@
                 <th>Total rows tested</th>
                 <th>Failed rows</th>
                 <th>Failed rows (%)</th>
+                <th>Metric</th>
               </tr>
               <tr>
                 <td>{{ testResult.result.elementCount }}</td>
                 <td>{{ testResult.result.unexpectedCount }}</td>
                 <td>{{ testResult.result.unexpectedPercent | formatNumber }}</td>
+                <td>{{ testResult.result.metric | formatNumber('0.00000') }}</td>
               </tr>
             </table>
           </v-alert>
@@ -172,8 +181,8 @@ import { IEditorConfig, ITest, ITestExecutionResult, ITestFunction } from '@/int
 import _ from 'lodash';
 import numeral from 'numeral';
 
-Vue.filter('formatNumber', function(value) {
-  return numeral(value).format('0.0'); // displaying other groupings/separators is possible, look at the docs
+Vue.filter('formatNumber', function(value, fmt) {
+  return numeral(value).format(fmt || '0.0'); // displaying other groupings/separators is possible, look at the docs
 });
 
 @Component({ components: { MonacoEditor } })
@@ -186,6 +195,8 @@ export default class TestEditor extends Vue {
   showRunResult: boolean = false;
   runResult: ITestExecutionResult | null = null;
   executingTest = false;
+  codeSnippetCategories = {};
+
 
   async mounted() {
     await this.init();
@@ -281,62 +292,143 @@ export default class TestEditor extends Vue {
     }
 
     this.testDetailsOriginal = _.cloneDeep(this.testDetails);
-    this.codeSnippets = [{
-      id: 'test_metamorphic_invariance',
-      name: 'Metamorphic Invariance',
-      type: 'CODE',
-      // language=Python
-      code: 'perturbation = {\n' +
-        '    "duration_in_month": lambda x: x.duration_in_month * 1,\n' +
-        '    "sex": lambda x: \'female\' if x.sex == \'male\' else \'male\'\n' +
-        '}\n' +
-        '\n' +
-        'tests.test_metamorphic_invariance(\n' +
-        '    df=train_df,\n' +
-        '    model=clf_predict,\n' +
-        '    perturbation_dict=perturbation,\n' +
-        '    failed_threshold=0.1\n' +
-        ')'
-    }, {
-      id: 'test_metamorphic_increasing',
-      name: 'Metamorphic Increasing',
-      hint: 'Tests that the prediction probability increases with the increase of a feature value',
-      type: 'CODE',
-      // language=Python
-      code: 'tests.test_metamorphic_increasing(\n' +
-        '    df=train_df,\n' +
-        '    model=clf_predict,\n' +
-        '    column_name=\'age\',\n' +
-        '    perturbation_percent=0.1,\n' +
-        '    classification_label_index=1,\n' +
-        '    failed_threshold=0.1\n' +
-        ')'
-    }, {
-      id: 'test_metamorphic_decreasing',
-      name: 'Metamorphic Decreasing',
-      type: 'CODE',
-      hint: 'Tests that the prediction probability decreases with the increase of a feature value',
-      // language=Python
-      code: 'tests.test_metamorphic_decreasing(\n' +
-        '    df=train_df,\n' +
-        '    model=clf_predict,\n' +
-        '    column_name=\'age\',\n' +
-        '    perturbation_percent=0.1,\n' +
-        '    classification_label_index=1,\n' +
-        '    failed_threshold=0.1\n' +
-        ')'
-    }, {
-      id: 'test_metamorphic_invariance',
-      name: 'Metamorphic Heuristic',
-      type: 'CODE',
-      // language=Python
-      code: 'tests.test_heuristic(\n' +
-        '    df=train_df,\n' +
-        '    model=clf_predict,\n' +
-        '    classification_label=0,\n' +
-        '    failed_threshold=0.1\n' +
-        ')'
-    }];
+    this.codeSnippetCategories = {
+      'metamorphic': 'Metamorphic',
+      'heuristic': 'Heuristic'
+
+    };
+    this.codeSnippets = [
+      {
+        active: false,
+        items: [
+          {
+            id: 'test_heuristic',
+            title: 'Heuristic',
+            type: 'CODE',
+            // language=Python
+            code: 'tests.heuristic.test_heuristic(\n    df=test_df,\n    model=model,\n    classification_label=model.classification_labels[0],\n    min_proba=0,\n    max_proba=1,\n    threshold=1,\n)'
+          }
+        ],
+        title: 'Heuristic'
+      },
+      {
+        active: false,
+        items: [
+          {
+            id: 'test_metamorphic_invariance',
+            title: 'Invariance',
+            type: 'CODE',
+            // language=Python
+            code: 'perturbation = {\n    "<FEATURE NAME>": lambda x: x["<FEATURE NAME>"] * 2,\n}\n\ntests.metamorphic.test_metamorphic_invariance(\n    df=train_df,\n    model=model,\n    perturbation_dict=perturbation,\n    threshold=0.1\n)'
+          }, {
+            id: 'test_metamorphic_increasing',
+            title: 'Increasing',
+            hint: 'Tests that the prediction probability increases with the increase of a feature value',
+            type: 'CODE',
+            // language=Python
+            code: 'tests.metamorphic.test_metamorphic_increasing(\n    df=train_df,\n    model=model,\n    column_name=\'<NUMERIC FEATURE NAME>\',\n    perturbation_percent=0.1,\n    threshold=0.1\n)'
+          }, {
+            id: 'test_metamorphic_decreasing',
+            title: 'Decreasing',
+            type: 'CODE',
+            hint: 'Tests that the prediction probability decreases with the increase of a feature value',
+            // language=Python
+            code: 'tests.metamorphic.test_metamorphic_decreasing(\n    df=train_df,\n    model=model,\n    column_name=\'<NUMERIC FEATURE NAME>\',\n    perturbation_percent=0.1,\n    threshold=0.1\n)'
+          }
+        ],
+        title: 'Metamorphic'
+      },
+      {
+        active: false,
+        items: [
+          {
+            id: 'test_auc',
+            title: 'AUC',
+            type: 'CODE',
+            // language=Python
+            code: 'tests.performance.test_auc(\n    test_df,\n    model,\n    threshold=0.1,\n    target=\'<TARGET COLUMN>\'\n)'
+          },
+          {
+            id: 'test_f1',
+            title: 'F1',
+            type: 'CODE',
+            // language=Python
+            code: 'tests.performance.test_f1(\n    test_df,\n    model,\n    threshold=0.1,\n    target=\'<TARGET COLUMN>\'\n)'
+          },
+          {
+            id: 'test_diff_f1',
+            title: 'F1 difference',
+            type: 'CODE',
+            // language=Python
+            code: 'tests.performance.test_diff_f1(\n    test_df,\n    model,\n    filter_1=test_df[:len(test_df)//2].index,\n    filter_2=test_df[len(test_df)//2:].index,\n    threshold=0.1,\n    target=\'<TARGET COLUMN>\'\n)'
+          },
+          {
+            id: 'test_accuracy',
+            title: 'Accuracy',
+            type: 'CODE',
+            // language=Python
+            code: 'tests.performance.test_accuracy(\n    test_df,\n    model,\n    threshold=0.1,\n    target=\'<TARGET COLUMN>\'\n)'
+          },
+          {
+            id: 'test_diff_accuracy',
+            title: 'Accuracy difference',
+            type: 'CODE',
+            // language=Python
+            code: 'tests.performance.test_diff_accuracy(\n    test_df,\n    model,\n    filter_1=test_df[:len(test_df)//2].index,\n    filter_2=test_df[len(test_df)//2:].index,\n    threshold=0.1,\n    target=\'<TARGET COLUMN>\'\n)'
+          },
+          {
+            id: 'test_precision',
+            title: 'Precision',
+            type: 'CODE',
+            // language=Python
+            code: 'tests.performance.test_precision(\n    test_df,\n    model,\n    threshold=0.1,\n    target=\'<TARGET COLUMN>\'\n)'
+          },
+          {
+            id: 'test_diff_precision',
+            title: 'Precision difference',
+            type: 'CODE',
+            // language=Python
+            code: 'tests.performance.test_diff_precision(\n    test_df,\n    model,\n    filter_1=test_df[:len(test_df)//2].index,\n    filter_2=test_df[len(test_df)//2:].index,\n    threshold=0.1,\n    target=\'<TARGET COLUMN>\'\n)'
+          },
+          {
+            id: 'test_recall',
+            title: 'Recall',
+            type: 'CODE',
+            // language=Python
+            code: 'tests.performance.test_recall(\n    test_df,\n    model,\n    threshold=0.1,\n    target=\'<TARGET COLUMN>\'\n)'
+          },
+          {
+            id: 'test_diff_recall',
+            title: 'Recall difference',
+            type: 'CODE',
+            // language=Python
+            code: 'tests.performance.test_diff_recall(\n    test_df,\n    model,\n    filter_1=test_df[:len(test_df)//2].index,\n    filter_2=test_df[len(test_df)//2:].index,\n    threshold=0.1,\n    target=\'<TARGET COLUMN>\'\n)'
+          },
+          {
+            id: 'test_neg_rmse',
+            title: 'Negative RMSE',
+            type: 'CODE',
+            // language=Python
+            code: 'tests.performance.test_neg_rmse(\n    test_df,\n    model,\n    threshold=0.1,\n    target=\'<TARGET COLUMN>\'\n)'
+          },
+          {
+            id: 'test_neg_mae',
+            title: 'Negative MAE',
+            type: 'CODE',
+            // language=Python
+            code: 'tests.performance.test_neg_mae(\n    test_df,\n    model,\n    threshold=0.1,\n    target=\'<TARGET COLUMN>\'\n)'
+          },
+          {
+            id: 'test_r2',
+            title: 'R2',
+            type: 'CODE',
+            // language=Python
+            code: 'tests.performance.test_r2(\n    test_df,\n    model,\n    threshold=0.1,\n    target=\'<TARGET COLUMN>\'\n)'
+          }
+        ],
+        title: 'Performance'
+      }
+    ];
   }
 }
 </script>
@@ -356,6 +448,10 @@ export default class TestEditor extends Vue {
 
 .snippet {
   cursor: pointer;
+
+  .code-snippet-icon {
+    font-size: 16px;
+  }
 
   &:hover {
     background-color: $hover;

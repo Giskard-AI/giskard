@@ -38,18 +38,18 @@ def linear_regression_diabetes() -> ModelInspector:
     diabetes_y_test = diabetes_y[-20:]
 
     # Create linear regression object
-    regr = linear_model.LinearRegression()
+    regressor = linear_model.LinearRegression()
 
     # Train the model using the training sets
-    regr.fit(diabetes_x_train, diabetes_y_train)
+    regressor.fit(diabetes_x_train, diabetes_y_train)
 
     # Make predictions using the testing set
-    diabetes_y_pred = regr.predict(diabetes_x_test)
+    diabetes_y_pred = regressor.predict(diabetes_x_test)
 
     logging.info(f"Model MSE: {mean_squared_error(diabetes_y_test, diabetes_y_pred)}")
 
     return ModelInspector(
-        prediction_function=regr.predict,
+        prediction_function=regressor.predict,
         prediction_task='regression',
         input_types={feature: 'numeric' for feature in diabetes['feature_names']},
     )

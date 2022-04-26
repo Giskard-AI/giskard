@@ -1,11 +1,15 @@
 from ml_worker.testing.functions import GiskardTestFunctions
 
 
-def _test_metamorphic_increasing(german_credit_test_data, german_credit_model, failed_threshold):
+def _test_metamorphic_increasing(german_credit_test_data, german_credit_model, threshold):
     tests = GiskardTestFunctions()
     results = tests.metamorphic.test_metamorphic_increasing(
-        german_credit_test_data, 'credit_amount', german_credit_model,
-        0.5, 0, failed_threshold)
+        df=german_credit_test_data,
+        column_name='credit_amount',
+        model=german_credit_model,
+        perturbation_percent=0.5,
+        threshold=threshold
+    )
 
     assert results.element_count == 1000
     assert results.missing_count == 0
@@ -21,12 +25,15 @@ def test_metamorphic_increasing_pass(german_credit_test_data, german_credit_mode
     _test_metamorphic_increasing(german_credit_test_data, german_credit_model, 1)
 
 
-def _test_metamorphic_decreasing(german_credit_test_data, german_credit_model, failed_threshold):
+def _test_metamorphic_decreasing(german_credit_test_data, german_credit_model, threshold):
     tests = GiskardTestFunctions()
     results = tests.metamorphic.test_metamorphic_decreasing(
-        german_credit_test_data, 'credit_amount', german_credit_model,
-        -0.5, 0, failed_threshold)
-
+        df=german_credit_test_data,
+        column_name='credit_amount',
+        model=german_credit_model,
+        perturbation_percent=-0.5,
+        threshold=threshold
+    )
     assert results.element_count == 1000
     assert results.missing_count == 0
     assert results.unexpected_count == 966
@@ -48,7 +55,7 @@ def test_regression_increasing(linear_regression_diabetes, diabetes_dataset):
         column_name='age',
         model=linear_regression_diabetes,
         perturbation_percent=0.5,
-        failed_threshold=0.6)
+        threshold=0.6)
 
     assert results.element_count == len(diabetes_dataset)
     assert results.missing_count == 0
@@ -63,7 +70,7 @@ def test_regression_decreasing(linear_regression_diabetes, diabetes_dataset):
         column_name='age',
         model=linear_regression_diabetes,
         perturbation_percent=-0.5,
-        failed_threshold=0.6)
+        threshold=0.6)
 
     assert results.element_count == len(diabetes_dataset)
     assert results.missing_count == 0
