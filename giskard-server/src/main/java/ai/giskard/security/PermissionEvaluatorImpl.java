@@ -4,12 +4,9 @@ import ai.giskard.domain.Project;
 import ai.giskard.repository.ProjectRepository;
 import ai.giskard.repository.UserRepository;
 import ai.giskard.service.ProjectService;
-import ai.giskard.web.rest.errors.EntityAccessControlException;
-import ai.giskard.web.rest.errors.UnauthorizedException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.PermissionEvaluator;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 import javax.validation.constraints.NotNull;
@@ -19,7 +16,6 @@ import static ai.giskard.security.SecurityUtils.hasCurrentUserAnyOfAuthorities;
 
 @Component(value = "permissionEvaluator")
 public class PermissionEvaluatorImpl implements PermissionEvaluator {
-    //public PermissionEvaluatorImpl() {}
     @Autowired
     ProjectRepository projectRepository;
 
@@ -36,7 +32,7 @@ public class PermissionEvaluatorImpl implements PermissionEvaluator {
      * Determine if a user can write a project, i.e. is admin or project's owner
      *
      * @param id: id of the project
-     * @return: true if the user can write
+     * @return true if the user can write
      */
     public boolean canWriteProject(@NotNull Long id) {
         boolean isAdmin = SecurityUtils.hasCurrentUserThisAuthority(AuthoritiesConstants.ADMIN);
@@ -56,7 +52,7 @@ public class PermissionEvaluatorImpl implements PermissionEvaluator {
      * Determine if the user can read the project, is admin, in project's guestlist or project's owner
      *
      * @param id: project's id
-     * @return: true if user can read
+     * @return true if user can read
      */
     public boolean canReadProject(@NotNull Long id) {
         boolean isAdmin = SecurityUtils.hasCurrentUserThisAuthority(AuthoritiesConstants.ADMIN);

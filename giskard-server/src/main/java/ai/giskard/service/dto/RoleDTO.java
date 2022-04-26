@@ -22,7 +22,6 @@ public class RoleDTO {
     @lombok.Getter
     @NotNull
     @Size(max = 50)
-    @Column(length = 50)
     private String name;
 
 

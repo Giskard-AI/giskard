@@ -15,9 +15,4 @@ public interface GiskardMapper {
     Project projectPostDTOToProject(ProjectPostDTO projectPostDto);
 
     ProjectPostDTO projectToProjectPostDTO(Project project);
-
-    //User userPostDTOToUser(AdminUserDTO userPostDTO);
-
-    //List<User> userPostDTOToUsers(List<AdminUserDTO> userPostDTOs);
-
 }

@@ -34,13 +34,11 @@ public class DatasetsController {
      * Retrieve the list of datasets from the specified project
      * Returns all the project's datasets if the user is admin, project's owner or in project's guest list
      *
-     * @param projectId:   id of the project
-     * @return: List of datasets
+     * @param projectId id of the project
+     * @return List of datasets
      */
     @GetMapping("project/{projectId}/datasets")
     public List<DatasetDTO> listProjectDatasets(@PathVariable @NotNull Long projectId) {
         return this.datasetRepository.findAllByProjectId(projectId).stream().map(DatasetDTO::new).collect(Collectors.toList());
     }
-
-
 }
