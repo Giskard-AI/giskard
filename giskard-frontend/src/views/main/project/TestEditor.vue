@@ -40,8 +40,8 @@
           <p class='font-weight-bold text-center'>Available variables</p>
           <table style='width: 100%'>
             <tr>
-              <td><code>clf_predict</code></td>
-              <td>Model function</td>
+              <td><code>model</code></td>
+              <td>Model Inspector</td>
             </tr>
             <tr>
               <td><code>test_df</code></td>
@@ -146,11 +146,13 @@
                 <th>Total rows tested</th>
                 <th>Failed rows</th>
                 <th>Failed rows (%)</th>
+                <th>Metric</th>
               </tr>
               <tr>
                 <td>{{ testResult.result.elementCount }}</td>
                 <td>{{ testResult.result.unexpectedCount }}</td>
                 <td>{{ testResult.result.unexpectedPercent | formatNumber }}</td>
+                <td>{{ testResult.result.metric | formatNumber('0.00000') }}</td>
               </tr>
             </table>
           </v-alert>
@@ -172,8 +174,8 @@ import { IEditorConfig, ITest, ITestExecutionResult, ITestFunction } from '@/int
 import _ from 'lodash';
 import numeral from 'numeral';
 
-Vue.filter('formatNumber', function(value) {
-  return numeral(value).format('0.0'); // displaying other groupings/separators is possible, look at the docs
+Vue.filter('formatNumber', function(value, fmt) {
+  return numeral(value).format(fmt || '0.0'); // displaying other groupings/separators is possible, look at the docs
 });
 
 @Component({ components: { MonacoEditor } })
@@ -286,57 +288,106 @@ export default class TestEditor extends Vue {
       name: 'Metamorphic Invariance',
       type: 'CODE',
       // language=Python
-      code: 'perturbation = {\n' +
-        '    "duration_in_month": lambda x: x.duration_in_month * 1,\n' +
-        '    "sex": lambda x: \'female\' if x.sex == \'male\' else \'male\'\n' +
-        '}\n' +
-        '\n' +
-        'tests.test_metamorphic_invariance(\n' +
-        '    df=train_df,\n' +
-        '    model=clf_predict,\n' +
-        '    perturbation_dict=perturbation,\n' +
-        '    failed_threshold=0.1\n' +
-        ')'
+      code: 'perturbation = {\n    "<FEATURE NAME>": lambda x: x["<FEATURE NAME>"] * 2,\n}\n\ntests.metamorphic.test_metamorphic_invariance(\n    df=train_df,\n    model=model,\n    perturbation_dict=perturbation,\n    threshold=0.1\n)'
     }, {
       id: 'test_metamorphic_increasing',
       name: 'Metamorphic Increasing',
       hint: 'Tests that the prediction probability increases with the increase of a feature value',
       type: 'CODE',
       // language=Python
-      code: 'tests.test_metamorphic_increasing(\n' +
-        '    df=train_df,\n' +
-        '    model=clf_predict,\n' +
-        '    column_name=\'age\',\n' +
-        '    perturbation_percent=0.1,\n' +
-        '    classification_label_index=1,\n' +
-        '    failed_threshold=0.1\n' +
-        ')'
+      code: 'tests.metamorphic.test_metamorphic_increasing(\n    df=train_df,\n    model=model,\n    column_name=\'<NUMERIC FEATURE NAME>\',\n    perturbation_percent=0.1,\n    threshold=0.1\n)'
     }, {
       id: 'test_metamorphic_decreasing',
       name: 'Metamorphic Decreasing',
       type: 'CODE',
       hint: 'Tests that the prediction probability decreases with the increase of a feature value',
       // language=Python
-      code: 'tests.test_metamorphic_decreasing(\n' +
-        '    df=train_df,\n' +
-        '    model=clf_predict,\n' +
-        '    column_name=\'age\',\n' +
-        '    perturbation_percent=0.1,\n' +
-        '    classification_label_index=1,\n' +
-        '    failed_threshold=0.1\n' +
-        ')'
+      code: 'tests.metamorphic.test_metamorphic_decreasing(\n    df=train_df,\n    model=model,\n    column_name=\'<NUMERIC FEATURE NAME>\',\n    perturbation_percent=0.1,\n    threshold=0.1\n)'
     }, {
-      id: 'test_metamorphic_invariance',
-      name: 'Metamorphic Heuristic',
+      id: 'test_auc',
+      name: 'AUC',
       type: 'CODE',
       // language=Python
-      code: 'tests.test_heuristic(\n' +
-        '    df=train_df,\n' +
-        '    model=clf_predict,\n' +
-        '    classification_label=0,\n' +
-        '    failed_threshold=0.1\n' +
-        ')'
-    }];
+      code: 'tests.performance.test_auc(\n    test_df,\n    model,\n    threshold=0.1,\n    target=\'<TARGET COLUMN>\'\n)'
+    },
+      {
+        id: 'test_f1',
+        name: 'F1',
+        type: 'CODE',
+        // language=Python
+        code: 'tests.performance.test_f1(\n    test_df,\n    model,\n    threshold=0.1,\n    target=\'<TARGET COLUMN>\'\n)'
+      },
+      {
+        id: 'test_diff_f1',
+        name: 'F1 difference',
+        type: 'CODE',
+        // language=Python
+        code: 'tests.performance.test_diff_f1(\n    test_df,\n    model,\n    filter_1=test_df[:len(test_df)//2].index,\n    filter_2=test_df[len(test_df)//2:].index,\n    threshold=0.1,\n    target=\'<TARGET COLUMN>\'\n)'
+      },
+      {
+        id: 'test_accuracy',
+        name: 'Accuracy',
+        type: 'CODE',
+        // language=Python
+        code: 'tests.performance.test_accuracy(\n    test_df,\n    model,\n    threshold=0.1,\n    target=\'<TARGET COLUMN>\'\n)'
+      },
+      {
+        id: 'test_diff_accuracy',
+        name: 'Accuracy difference',
+        type: 'CODE',
+        // language=Python
+        code: 'tests.performance.test_diff_accuracy(\n    test_df,\n    model,\n    filter_1=test_df[:len(test_df)//2].index,\n    filter_2=test_df[len(test_df)//2:].index,\n    threshold=0.1,\n    target=\'<TARGET COLUMN>\'\n)'
+      },
+      {
+        id: 'test_precision',
+        name: 'Precision',
+        type: 'CODE',
+        // language=Python
+        code: 'tests.performance.test_precision(\n    test_df,\n    model,\n    threshold=0.1,\n    target=\'<TARGET COLUMN>\'\n)'
+      },
+      {
+        id: 'test_diff_precision',
+        name: 'Precision difference',
+        type: 'CODE',
+        // language=Python
+        code: 'tests.performance.test_diff_precision(\n    test_df,\n    model,\n    filter_1=test_df[:len(test_df)//2].index,\n    filter_2=test_df[len(test_df)//2:].index,\n    threshold=0.1,\n    target=\'<TARGET COLUMN>\'\n)'
+      },
+      {
+        id: 'test_recall',
+        name: 'Recall',
+        type: 'CODE',
+        // language=Python
+        code: 'tests.performance.test_recall(\n    test_df,\n    model,\n    threshold=0.1,\n    target=\'<TARGET COLUMN>\'\n)'
+      },
+      {
+        id: 'test_diff_recall',
+        name: 'Recall difference',
+        type: 'CODE',
+        // language=Python
+        code: 'tests.performance.test_diff_recall(\n    test_df,\n    model,\n    filter_1=test_df[:len(test_df)//2].index,\n    filter_2=test_df[len(test_df)//2:].index,\n    threshold=0.1,\n    target=\'<TARGET COLUMN>\'\n)'
+      },
+      {
+        id: 'test_neg_rmse',
+        name: 'Negative RMSE',
+        type: 'CODE',
+        // language=Python
+        code: 'tests.performance.test_neg_rmse(\n    test_df,\n    model,\n    threshold=0.1,\n    target=\'<TARGET COLUMN>\'\n)'
+      },
+      {
+        id: 'test_neg_mae',
+        name: 'Negative MAE',
+        type: 'CODE',
+        // language=Python
+        code: 'tests.performance.test_neg_mae(\n    test_df,\n    model,\n    threshold=0.1,\n    target=\'<TARGET COLUMN>\'\n)'
+      },
+      {
+        id: 'test_r2',
+        name: 'R2',
+        type: 'CODE',
+        // language=Python
+        code: 'tests.performance.test_r2(\n    test_df,\n    model,\n    threshold=0.1,\n    target=\'<TARGET COLUMN>\'\n)'
+      }
+    ];
   }
 }
 </script>
