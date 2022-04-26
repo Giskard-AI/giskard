@@ -9,7 +9,7 @@ from ml_worker.testing.abstract_test_collection import AbstractTestCollection
 
 
 class PerformanceTests(AbstractTestCollection):
-    def test_auc(self, df, model: ModelInspector, target, classification_labels, mask=None, failed_threshold=1):
+    def test_auc(self, df, model: ModelInspector, target, threshold=1):
         """
         Compute Area Under the Receiver Operating Characteristic Curve (ROC AUC)
         """
@@ -20,11 +20,8 @@ class PerformanceTests(AbstractTestCollection):
             else:
                 return roc_auc_score(true_value, prediction, average='macro', multi_class='ovr')
 
-        if mask is not None:
-            df = df.loc[mask]
-
         metric = _calculate_auc(
-            len(classification_labels) == 2,
+            len(model.classification_labels) == 2,
             run_predict(df, model).raw_prediction,
             df[target]
         )
@@ -32,16 +29,12 @@ class PerformanceTests(AbstractTestCollection):
         return self.save_results(
             SingleTestResult(
                 element_count=len(df),
-                props={"metric": str(metric)},
-                passed=metric >= failed_threshold
+                metric=metric,
+                passed=metric >= threshold
             ))
 
-    def _test_classification_score(self, score_fn, df, model: ModelInspector, target, classification_labels, mask=None,
-                                   failed_threshold=1):
-        if mask is not None:
-            df = df.loc[mask]
-
-        is_binary_classification = len(classification_labels) == 2
+    def _test_classification_score(self, score_fn, df, model: ModelInspector, target, threshold=1):
+        is_binary_classification = len(model.classification_labels) == 2
         prediction = run_predict(df, model).raw_prediction
 
         if is_binary_classification:
@@ -52,15 +45,11 @@ class PerformanceTests(AbstractTestCollection):
         return self.save_results(
             SingleTestResult(
                 element_count=len(df),
-                props={"metric": str(metric)},
-                passed=metric >= failed_threshold
+                metric=metric,
+                passed=metric >= threshold
             ))
 
-    def _test_regression_score(self, score_fn, df, model: ModelInspector, target, mask=None, failed_threshold=1,
-                               negative=False):
-        if mask is not None:
-            df = df.loc[mask]
-
+    def _test_regression_score(self, score_fn, df, model: ModelInspector, target, threshold=1, negative=False):
         metric = (-1 if negative else 1) * score_fn(
             run_predict(df, model).raw_prediction,
             df[target]
@@ -69,48 +58,76 @@ class PerformanceTests(AbstractTestCollection):
         return self.save_results(
             SingleTestResult(
                 element_count=len(df),
-                props={"metric": str(metric)},
-                passed=metric >= failed_threshold
+                metric=metric,
+                passed=metric >= threshold
             ))
 
-    def test_f1(self, df, model: ModelInspector, target, classification_labels, mask=None, failed_threshold=1):
+    def test_f1(self, df, model: ModelInspector, target, threshold=1):
         """
         Compute the F1 score
         """
 
         return self._test_classification_score(f1_score,
-                                               df, model, target, classification_labels, mask, failed_threshold)
+                                               df, model, target, threshold)
 
-    def test_accuracy(self, df, model: ModelInspector, target, classification_labels, mask=None, failed_threshold=1):
+    def test_accuracy(self, df, model: ModelInspector, target, threshold=1):
         """
         Compute Accuracy
         """
 
         return self._test_classification_score(accuracy_score,
-                                               df, model, target, classification_labels, mask, failed_threshold)
+                                               df, model, target, threshold)
 
-    def test_precision(self, df, model: ModelInspector, target, classification_labels, mask=None, failed_threshold=1):
+    def test_precision(self, df, model: ModelInspector, target, threshold=1):
         """
         Compute Precision
         """
 
         return self._test_classification_score(precision_score,
-                                               df, model, target, classification_labels, mask, failed_threshold)
+                                               df, model, target, threshold)
 
-    def test_recall(self, df, model: ModelInspector, target, classification_labels, mask=None, failed_threshold=1):
+    def test_recall(self, df, model: ModelInspector, target, threshold=1):
         """
         Compute Recall
         """
 
         return self._test_classification_score(recall_score,
-                                               df, model, target, classification_labels, mask, failed_threshold)
+                                               df, model, target, threshold)
 
-    def test_neg_rmse(self, df, model: ModelInspector, target, mask=None, failed_threshold=1):
-        return self._test_regression_score(mean_squared_error, df, model, target, mask, failed_threshold, negative=True)
+    def test_neg_rmse(self, df, model: ModelInspector, target, threshold=1):
+        return self._test_regression_score(mean_squared_error, df, model, target, threshold, negative=True)
 
-    def test_neg_mae(self, df, model: ModelInspector, target, mask=None, failed_threshold=1):
-        return self._test_regression_score(mean_absolute_error, df, model, target, mask, failed_threshold,
+    def test_neg_mae(self, df, model: ModelInspector, target, threshold=1):
+        return self._test_regression_score(mean_absolute_error, df, model, target, threshold,
                                            negative=True)
 
-    def test_r2(self, df, model: ModelInspector, target, mask=None, failed_threshold=1):
-        return self._test_regression_score(r2_score, df, model, target, mask, failed_threshold)
+    def test_r2(self, df, model: ModelInspector, target, threshold=1):
+        return self._test_regression_score(r2_score, df, model, target, threshold)
+
+    def _test_diff_classification(self, test_fn, model, df, target, threshold=0.1, filter_1=None, filter_2=None):
+        self.do_save_results = False
+        df_1 = df.loc[filter_1] if filter_1 is not None else df
+        df_2 = df.loc[filter_2] if filter_2 is not None else df
+        metric_1 = test_fn(df_1, model, target).metric
+        metric_2 = test_fn(df_2, model, target).metric
+        self.do_save_results = True
+        change_pct = abs(metric_1 - metric_2) / metric_1
+
+        return self.save_results(
+            SingleTestResult(
+                element_count=len(df),
+                metric=change_pct,
+                passed=change_pct < threshold
+            ))
+
+    def test_diff_accuracy(self, df, model, target, threshold=0.1, filter_1=None, filter_2=None):
+        return self._test_diff_classification(self.test_accuracy, model, df, target, threshold, filter_1, filter_2)
+
+    def test_diff_f1(self, df, model, target, threshold=0.1, filter_1=None, filter_2=None):
+        return self._test_diff_classification(self.test_f1, model, df, target, threshold, filter_1, filter_2)
+
+    def test_diff_precision(self, df, model, target, threshold=0.1, filter_1=None, filter_2=None):
+        return self._test_diff_classification(self.test_precision, model, df, target, threshold, filter_1, filter_2)
+
+    def test_diff_recall(self, df, model, target, threshold=0.1, filter_1=None, filter_2=None):
+        return self._test_diff_classification(self.test_recall, model, df, target, threshold, filter_1, filter_2)
