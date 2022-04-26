@@ -77,8 +77,8 @@ public class InitService {
     /**
      * Registering the specified user
      *
-     * @param key:  key string used for identifying the user
-     * @param role: role given to the user
+     * @param key  key string used for identifying the user
+     * @param role role given to the user
      * @return
      */
     private User saveUser(String key, String role) {
@@ -105,8 +105,8 @@ public class InitService {
     /**
      * Save project
      *
-     * @param key:        key used to easily identify the project
-     * @param ownerLogin: login of the owner
+     * @param key        key used to easily identify the project
+     * @param ownerLogin login of the owner
      */
     private void saveProject(String key, String ownerLogin) {
         User owner = userRepository.getOneByLogin(ownerLogin.toLowerCase());

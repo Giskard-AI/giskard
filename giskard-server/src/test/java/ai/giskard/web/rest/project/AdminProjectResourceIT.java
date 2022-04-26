@@ -24,6 +24,7 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.Matchers.hasSize;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -83,7 +84,8 @@ class AdminProjectResourceIT {
         restUserMockMvc.perform(get("/api/v2/project").accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
-            .andExpect(content().string(containsString(PROJECTKEY)));
+            .andExpect(content().string(containsString(PROJECTKEY)))
+            .andExpect(jsonPath("$", hasSize(projectRepository.findAll().size())));
     }
 
     /**
