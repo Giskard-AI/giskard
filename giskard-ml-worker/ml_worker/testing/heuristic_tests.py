@@ -14,11 +14,8 @@ class HeuristicTests(AbstractTestCollection):
                        classification_label: int,
                        min_proba: float = 0,
                        max_proba: float = 1,
-                       mask=None,
-                       failed_threshold=1) -> SingleTestResult:
+                       threshold=1) -> SingleTestResult:
         results_df = pd.DataFrame()
-        if mask is not None:
-            df = df.loc[mask]
 
         prediction_results = run_predict(df, model)
         results_df["prediction_proba"] = prediction_results.probabilities
@@ -33,5 +30,5 @@ class HeuristicTests(AbstractTestCollection):
             element_count=len(df),
             unexpected_count=len(unexpected),
             unexpected_percent=failed_ratio * 100,
-            passed=failed_ratio <= failed_threshold
+            passed=failed_ratio <= threshold
         ))

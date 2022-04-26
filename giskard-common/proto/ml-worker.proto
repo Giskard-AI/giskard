@@ -9,49 +9,50 @@ option objc_class_prefix = "WRK";
 package worker;
 
 service MLWorker {
-    rpc runTest (RunTestRequest) returns (TestResultMessage) {}
+  rpc runTest (RunTestRequest) returns (TestResultMessage) {}
 }
 
 message RunTestRequest {
-    string code = 1;
-    string model_path = 2;
-    string train_dataset_path = 3;
-    string test_dataset_path = 4;
+  string code = 1;
+  string model_path = 2;
+  string train_dataset_path = 3;
+  string test_dataset_path = 4;
 }
 
 message RunTestResponse {
-    string name = 1;
+  string name = 1;
 }
 
 message Partial_unexpected_counts {
-    repeated uint32 value = 1;
-    uint32 count = 2;
+  repeated uint32 value = 1;
+  uint32 count = 2;
 }
 
 message NamedSingleTestResult{
-    string name = 1;
-    SingleTestResult result = 2;
+  string name = 1;
+  SingleTestResult result = 2;
 
 }
 
 message SingleTestResult{
-    bool passed = 13;
-    map<string, string> props = 14;
-    uint32 element_count = 1;
-    uint32 missing_count = 2;
-    double missing_percent = 3;
-    uint32 unexpected_count = 4;
-    double unexpected_percent = 5;
-    double unexpected_percent_total = 6;
-    double unexpected_percent_nonmissing = 7;
-    //    repeated google.protobuf.Any partial_unexpected_list = 8;
-    repeated uint32 partial_unexpected_index_list = 9;
-    repeated Partial_unexpected_counts partial_unexpected_counts = 10;
-    //    repeated google.protobuf.Any unexpected_list = 11;
-    repeated uint32 unexpected_index_list = 12;
+  bool passed = 13;
+  map<string, string> props = 14;
+  float metric = 15;
+  uint32 element_count = 1;
+  uint32 missing_count = 2;
+  double missing_percent = 3;
+  uint32 unexpected_count = 4;
+  double unexpected_percent = 5;
+  double unexpected_percent_total = 6;
+  double unexpected_percent_nonmissing = 7;
+  //    repeated google.protobuf.Any partial_unexpected_list = 8;
+  repeated uint32 partial_unexpected_index_list = 9;
+  repeated Partial_unexpected_counts partial_unexpected_counts = 10;
+  //    repeated google.protobuf.Any unexpected_list = 11;
+  repeated uint32 unexpected_index_list = 12;
 }
 
 message TestResultMessage {
-    repeated NamedSingleTestResult results = 1;
+  repeated NamedSingleTestResult results = 1;
 }
 
