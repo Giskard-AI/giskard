@@ -21,6 +21,7 @@ public class PermissionEvaluatorImpl {
 
     @Autowired
     UserRepository userRepository;
+
     @Autowired
     ProjectService projectService;
 
