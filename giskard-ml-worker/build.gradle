@@ -59,3 +59,4 @@ idea {
 
 build.dependsOn install, generateProto
 clean.dependsOn cleanup
+check.dependsOn test
