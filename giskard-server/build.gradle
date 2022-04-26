@@ -124,8 +124,7 @@ task integrationTest(type: Test) {
     // ignoreFailures true
     reports.html.enabled = false
 }
-// TODO Andrey: restore
-//check.dependsOn integrationTest
+check.dependsOn integrationTest
 task testReport(type: TestReport) {
     destinationDir = file("$buildDir/reports/tests")
     reportOn test
