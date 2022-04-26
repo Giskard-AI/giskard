@@ -1,11 +1,8 @@
 package ai.giskard.web.rest.controllers;
 
 import ai.giskard.domain.Project;
-import ai.giskard.domain.User;
 import ai.giskard.repository.ProjectRepository;
 import ai.giskard.repository.UserRepository;
-import ai.giskard.security.AuthoritiesConstants;
-import ai.giskard.security.SecurityUtils;
 import ai.giskard.service.ProjectService;
 import ai.giskard.service.dto.ml.ProjectDTO;
 import ai.giskard.service.dto.ml.ProjectPostDTO;
@@ -35,7 +32,7 @@ public class ProjectController {
     /**
      * Retrieve the list of projects accessible by the authenticated user
      *
-     * @return: List of projects
+     * @return List of projects
      */
     @GetMapping("project")
     public List<ProjectDTO> list() throws NotInDatabaseException {
@@ -46,8 +43,8 @@ public class ProjectController {
     /**
      * Update the project with the specified project
      *
-     * @param projectDTO: project updated to save
-     * @param id:         id of the existing project
+     * @param projectDTO project updated to save
+     * @param id         id of the existing project
      * @return updated project
      */
     @PreAuthorize("@permissionEvaluator.canWriteProject( #id)")
@@ -60,7 +57,7 @@ public class ProjectController {
     /**
      * Create new project
      *
-     * @param projectPostDTO: project to save
+     * @param projectPostDTO project to save
      * @return created project
      */
     @PostMapping(value = "/project")
@@ -73,7 +70,7 @@ public class ProjectController {
     /**
      * Show the specified project
      *
-     * @param id: id of the project
+     * @param id id of the project
      * @return created project
      */
     @PreAuthorize("@permissionEvaluator.canReadProject(#id)")
@@ -87,8 +84,8 @@ public class ProjectController {
     /**
      * Delete project
      *
-     * @param id: id of the project to delete
-     * @return: true if success
+     * @param id  project's id to delete
+     * @return true if success
      */
     @DeleteMapping(value = "/project/{id}")
     @PreAuthorize("@permissionEvaluator.canWriteProject( #id)")
@@ -99,9 +96,9 @@ public class ProjectController {
     /**
      * Remove user from project's guestlist
      *
-     * @param id:     project's id
-     * @param userId: user's id
-     * @return: updated project
+     * @param id     project's id
+     * @param userId user's id
+     * @return updated project
      */
     @DeleteMapping(value = "/project/{id}/guests/{userId}")
     @PreAuthorize("@permissionEvaluator.canWriteProject( #id)")
@@ -113,8 +110,8 @@ public class ProjectController {
     /**
      * Add user to project's guestlist
      *
-     * @param id:     project's id
-     * @param userId: user's id
+     * @param id     project's id
+     * @param userId user's id
      * @return project updated
      */
     @PreAuthorize("@permissionEvaluator.canWriteProject( #id)")

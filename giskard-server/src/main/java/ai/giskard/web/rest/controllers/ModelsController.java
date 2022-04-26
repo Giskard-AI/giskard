@@ -34,27 +34,12 @@ public class ModelsController {
      * Retrieve the list of models from the specified project
      * Returns all the project's models if the user is admin, project's owner or in project's guest list
      *
-     * @param projectId: id of the project
-     * @param :          authenticated user
-     * @return: List of models
+     * @param projectId     id of the project
+     * @return List of models
      */
     @GetMapping("project/{projectId}/models")
     public List<ModelDTO> listProjectModels(@PathVariable @NotNull Long projectId) {
         return this.modelRepository.findAllByProjectId(projectId).stream().map(ModelDTO::new).collect(Collectors.toList());
     }
-
-
-    /**
-     * Create new model
-     *
-     * @param :          authenticated user
-     * @return: List of models
-     *//**
-    @GetMapping("project/{projectId}/models")
-    public ProjectModel create() {
-        this.modelService.save();
-        return ProjectModel
-    }
-    **/
 
 }

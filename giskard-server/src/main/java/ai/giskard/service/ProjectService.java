@@ -6,12 +6,9 @@ import ai.giskard.repository.ProjectRepository;
 import ai.giskard.repository.UserRepository;
 import ai.giskard.security.AuthoritiesConstants;
 import ai.giskard.security.SecurityUtils;
-import ai.giskard.service.dto.ml.ProjectDTO;
 import ai.giskard.service.dto.ml.ProjectPostDTO;
 import ai.giskard.service.mapper.GiskardMapper;
-import ai.giskard.web.rest.errors.EntityAccessControlException;
 import ai.giskard.web.rest.errors.NotInDatabaseException;
-import ai.giskard.web.rest.errors.UnauthorizedException;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -19,18 +16,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.validation.constraints.NotNull;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Locale;
 import java.util.Set;
-import java.util.stream.Collectors;
-
-import static ai.giskard.security.SecurityUtils.hasCurrentUserAnyOfAuthorities;
 
 @Service
 @Transactional
 public class ProjectService {
-    private static final org.slf4j.Logger logger = LoggerFactory.getLogger(ProjectService.class);
 
     UserRepository userRepository;
     ProjectRepository projectRepository;
@@ -45,9 +36,9 @@ public class ProjectService {
     /**
      * Update project
      *
-     * @param id:         id of the project to update
-     * @param projectDTO: updated project
-     * @return: project updated
+     * @param id         id of the project to update
+     * @param projectDTO updated project
+     * @return project updated
      */
     @Transactional
     public Project update(@NotNull Long id, ProjectPostDTO projectDTO) {
@@ -60,8 +51,8 @@ public class ProjectService {
     /**
      * Create project
      *
-     * @param projectDTO: projectDTO to save
-     * @return: project saved
+     * @param projectDTO projectDTO to save
+     * @return project saved
      */
     public Project create(ProjectPostDTO projectDTO, @AuthenticationPrincipal final UserDetails userDetails) {
         Project project = this.giskardMapper.projectPostDTOToProject(projectDTO);
@@ -73,8 +64,8 @@ public class ProjectService {
     /**
      * Test if the authenticated user is in the guestlist
      *
-     * @param userList: list of users
-     * @return: boolean
+     * @param userList list of users
+     * @return boolean
      */
     public boolean isUserInGuestList(Set<User> userList) {
         return userList.stream().anyMatch(guest -> guest.getLogin() == SecurityUtils.getCurrentUserLogin().get());
@@ -83,8 +74,8 @@ public class ProjectService {
     /**
      * Delete the project
      *
-     * @param id: id of the project to delete
-     * @return: boolean success
+     * @param id id of the project to delete
+     * @return boolean success
      */
     public boolean delete(Long id) {
         this.projectRepository.deleteById(id);
@@ -94,8 +85,8 @@ public class ProjectService {
     /**
      * Uninvite user from project guestlist
      *
-     * @param id:     id of the project
-     * @param userId: id of the user
+     * @param id     id of the project
+     * @param userId id of the user
      * @return update project
      */
     public Project uninvite(Long id, Long userId) {
@@ -109,8 +100,8 @@ public class ProjectService {
     /**
      * Inviting user to the project guestlist
      *
-     * @param id:     id of the project
-     * @param userId: id of the user
+     * @param id     id of the project
+     * @param userId id of the user
      * @return updated project
      */
     public Project invite(Long id, Long userId) {
@@ -122,7 +113,7 @@ public class ProjectService {
     }
 
     /**
-     * Listing projects accessible by the use
+     * Listing projects accessible by the user
      * Handling access control
      *
      * @return list of projects
