@@ -77,7 +77,9 @@ class AITesterProjectResourceIT extends AICreatorProjectResourceIT {
         ProjectPostDTO projectDTO = new ProjectPostDTO();
         projectDTO.setName("createdProject");
         projectDTO.setKey("keyProject");
-        restUserMockMvc.perform(post("/api/v2/project").contentType(MediaType.APPLICATION_JSON).content(new ObjectMapper().writeValueAsString(projectDTO))).andExpect(status().is4xxClientError());
+        restUserMockMvc.perform(post("/api/v2/project").contentType(MediaType.APPLICATION_JSON)
+            .content(new ObjectMapper().writeValueAsString(projectDTO)))
+            .andExpect(status().is4xxClientError());
         assertThat(projectRepository.findOneByName("createdProject")).isEmpty();
     }
 
