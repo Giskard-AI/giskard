@@ -32,7 +32,8 @@ public class InitService {
 
     @Autowired
     ProjectRepository projectRepository;
-    String[] mockKeys = Arrays.stream(AuthoritiesConstants.authorities).map(key -> key.replace("ROLE_", "").toLowerCase()).toArray(String[]::new);
+
+    String[] mockKeys = Arrays.stream(AuthoritiesConstants.authorities).map(key -> key.replace("ROLE_", "")).toArray(String[]::new);
     public Map<String, String> users = Arrays.stream(mockKeys).collect(Collectors.toMap(String::toLowerCase, String::toLowerCase));
     public Map<String, String> projects = Arrays.stream(mockKeys).collect(Collectors.toMap(String::toLowerCase, name -> name + "Project"));
 

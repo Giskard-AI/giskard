@@ -27,7 +27,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  */
 @AutoConfigureMockMvc
 @IntegrationTest
-@WithMockUser(username = "aitest", authorities = AuthoritiesConstants.AITESTER)
+@WithMockUser(username = "aitester", authorities = AuthoritiesConstants.AITESTER)
 class AITesterProjectResourceIT extends AICreatorProjectResourceIT {
 
     @Autowired
@@ -41,8 +41,8 @@ class AITesterProjectResourceIT extends AICreatorProjectResourceIT {
 
     @Override
     public void initKeys() {
-        this.USERKEY = initService.getUserName("aitest");
-        this.PROJECTKEY = initService.getProjectName("aitest");
+        this.USERKEY = initService.getUserName("aitester");
+        this.PROJECTKEY = initService.getProjectName("aitester");
         this.OTHERUSERKEY = initService.getUserName("admin");
         this.OTHERPROJECTKEY = initService.getProjectName("admin");
     }

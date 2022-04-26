@@ -10,6 +10,7 @@ import ai.giskard.repository.ml.TestRepository;
 import ai.giskard.service.dto.ml.TestDTO;
 import ai.giskard.service.dto.ml.TestExecutionResultDTO;
 import ai.giskard.service.ml.MLWorkerService;
+import ai.giskard.web.rest.errors.Entity;
 import ai.giskard.web.rest.errors.EntityNotFoundException;
 import ai.giskard.worker.TestResultMessage;
 import com.google.common.collect.Lists;
@@ -57,7 +58,7 @@ public class TestService {
 
     public TestExecutionResultDTO runTest(Long testId) {
         TestExecutionResultDTO res = new TestExecutionResultDTO(testId);
-        Test test = testRepository.findById(testId).orElseThrow(() -> new EntityNotFoundException(EntityNotFoundException.Entity.TEST, testId));
+        Test test = testRepository.findById(testId).orElseThrow(() -> new EntityNotFoundException(Entity.TEST, testId));
 
         TestExecution testExecution = new TestExecution(test);
         testExecutionRepository.save(testExecution);
