@@ -17,7 +17,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static ai.giskard.web.rest.errors.EntityNotFoundException.Entity.*;
+import static ai.giskard.web.rest.errors.Entity.*;
+
 
 @RestController
 @RequestMapping("/api/v2/testing/")

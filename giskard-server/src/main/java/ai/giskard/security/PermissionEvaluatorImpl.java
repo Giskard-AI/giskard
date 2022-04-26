@@ -15,7 +15,7 @@ import java.io.Serializable;
 import static ai.giskard.security.SecurityUtils.hasCurrentUserAnyOfAuthorities;
 
 @Component(value = "permissionEvaluator")
-public class PermissionEvaluatorImpl implements PermissionEvaluator {
+public class PermissionEvaluatorImpl {
     @Autowired
     ProjectRepository projectRepository;
 
@@ -31,13 +31,12 @@ public class PermissionEvaluatorImpl implements PermissionEvaluator {
     /**
      * Determine if a user can write a project, i.e. is admin or project's owner
      *
-     * @param id: id of the project
+     * @param id id of the project
      * @return true if the user can write
      */
     public boolean canWriteProject(@NotNull Long id) {
-        boolean isAdmin = SecurityUtils.hasCurrentUserThisAuthority(AuthoritiesConstants.ADMIN);
         Project project = this.projectRepository.getById(id);
-        return (isCurrentUser(project.getOwner().getLogin()) || isAdmin);
+        return (isCurrentUser(project.getOwner().getLogin()) || SecurityUtils.isAdmin());
     }
 
     /**
@@ -51,22 +50,12 @@ public class PermissionEvaluatorImpl implements PermissionEvaluator {
     /**
      * Determine if the user can read the project, is admin, in project's guestlist or project's owner
      *
-     * @param id: project's id
+     * @param id project's id
      * @return true if user can read
      */
     public boolean canReadProject(@NotNull Long id) {
-        boolean isAdmin = SecurityUtils.hasCurrentUserThisAuthority(AuthoritiesConstants.ADMIN);
         Project project = this.projectRepository.getOneWithGuestsById(id);
-        return (projectService.isUserInGuestList(project.getGuests()) || isCurrentUser(project.getOwner().getLogin()) || isAdmin);
+        return (projectService.isUserInGuestList(project.getGuests()) || isCurrentUser(project.getOwner().getLogin()) || SecurityUtils.isAdmin());
     }
 
-    @Override
-    public boolean hasPermission(Authentication authentication, Object targetDomainObject, Object permission) {
-        return false;
-    }
-
-    @Override
-    public boolean hasPermission(Authentication authentication, Serializable targetId, String targetType, Object permission) {
-        return false;
-    }
 }
