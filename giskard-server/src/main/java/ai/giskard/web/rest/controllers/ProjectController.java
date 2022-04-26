@@ -20,12 +20,10 @@ import java.util.stream.Collectors;
 @RequestMapping("/api/v2")
 public class ProjectController {
     private final ProjectRepository projectRepository;
-    private final UserRepository userRepository;
     private final ProjectService projectService;
 
-    public ProjectController(ProjectRepository projectRepository, UserRepository userRepository, ProjectService projectService) {
+    public ProjectController(ProjectRepository projectRepository, ProjectService projectService) {
         this.projectRepository = projectRepository;
-        this.userRepository = userRepository;
         this.projectService = projectService;
     }
 
@@ -84,7 +82,7 @@ public class ProjectController {
     /**
      * Delete project
      *
-     * @param id  project's id to delete
+     * @param id project's id to delete
      * @return true if success
      */
     @DeleteMapping(value = "/project/{id}")

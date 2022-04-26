@@ -21,9 +21,6 @@ public interface ProjectRepository extends JpaRepository<Project, Long> {
 
     Project getOneByName(String name);
 
-
-
     Optional<Project> findOneByName(String name);
-
 
 }

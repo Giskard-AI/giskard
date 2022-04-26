@@ -10,8 +10,8 @@ import ai.giskard.service.dto.ml.TestDTO;
 import ai.giskard.service.dto.ml.TestEditorConfigDTO;
 import ai.giskard.service.dto.ml.TestExecutionResultDTO;
 import ai.giskard.service.dto.ml.TestSuiteDTO;
+import ai.giskard.web.rest.errors.Entity;
 import ai.giskard.web.rest.errors.EntityNotFoundException;
-import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -19,7 +19,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static ai.giskard.web.rest.errors.EntityNotFoundException.Entity.TEST_SUITE;
+import static ai.giskard.web.rest.errors.Entity.TEST_SUITE;
+
 
 @RestController
 @RequestMapping("/api/v2/testing/tests")
@@ -60,7 +61,7 @@ public class TestController {
         if (test.isPresent()) {
             return new TestDTO(test.get());
         } else {
-            throw new EntityNotFoundException(EntityNotFoundException.Entity.TEST, testId);
+            throw new EntityNotFoundException(Entity.TEST, testId);
         }
     }
 

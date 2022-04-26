@@ -9,6 +9,7 @@ import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.data.annotation.CreatedDate;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
@@ -38,15 +39,13 @@ public class Project {
     @Setter
     private String description;
 
-    /*@Getter
+    @Getter
     @Setter
-    private LocalDateTime localDateTime;
-*/
-    /*@CreatedDate
-    @Column(name = "CREATED", insertable = true, updatable = false)
+    @CreatedDate
+    @Column(name = "created_on", updatable = false)
     @Temporal(TemporalType.TIMESTAMP)
     private Date created;
-*/
+
 
     @Getter
     @Setter
@@ -93,7 +92,6 @@ public class Project {
         this.key = key;
         this.name = name;
         this.description = description;
-        //this.localDateTime = localDateTime;
         this.owner = owner;
     }
 

@@ -121,7 +121,7 @@ public class User extends AbstractAuditingEntity implements Serializable {
 
     @lombok.Setter
     @lombok.Getter
-    //@JsonIgnore
+    @JsonIgnore
     @ManyToOne()
     @BatchSize(size = 20)
     private Role role;

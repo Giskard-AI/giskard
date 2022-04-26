@@ -4,13 +4,11 @@ import ai.giskard.domain.Project;
 import ai.giskard.domain.User;
 import ai.giskard.repository.ProjectRepository;
 import ai.giskard.repository.UserRepository;
-import ai.giskard.security.AuthoritiesConstants;
 import ai.giskard.security.SecurityUtils;
 import ai.giskard.service.dto.ml.ProjectPostDTO;
 import ai.giskard.service.mapper.GiskardMapper;
+import ai.giskard.web.rest.errors.Entity;
 import ai.giskard.web.rest.errors.NotInDatabaseException;
-import org.slf4j.LoggerFactory;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -40,7 +38,6 @@ public class ProjectService {
      * @param projectDTO updated project
      * @return project updated
      */
-    @Transactional
     public Project update(@NotNull Long id, ProjectPostDTO projectDTO) {
         Project project = this.projectRepository.getById(id);
         this.giskardMapper.updateProjectFromDto(projectDTO, project);
@@ -54,7 +51,7 @@ public class ProjectService {
      * @param projectDTO projectDTO to save
      * @return project saved
      */
-    public Project create(ProjectPostDTO projectDTO, @AuthenticationPrincipal final UserDetails userDetails) {
+    public Project create(ProjectPostDTO projectDTO, UserDetails userDetails) {
         Project project = this.giskardMapper.projectPostDTOToProject(projectDTO);
         User owner = this.userRepository.getOneByLogin(userDetails.getUsername());
         project.setOwner(owner);
@@ -68,7 +65,7 @@ public class ProjectService {
      * @return boolean
      */
     public boolean isUserInGuestList(Set<User> userList) {
-        return userList.stream().anyMatch(guest -> guest.getLogin() == SecurityUtils.getCurrentUserLogin().get());
+        return userList.stream().anyMatch(guest -> guest.getLogin().equals(SecurityUtils.getCurrentUserLogin().get()));
     }
 
     /**
@@ -119,14 +116,13 @@ public class ProjectService {
      * @return list of projects
      */
     public List<Project> list() {
-        boolean isAdmin = SecurityUtils.hasCurrentUserThisAuthority(AuthoritiesConstants.ADMIN);
         String username = SecurityUtils.getCurrentUserLogin().get().toLowerCase();
         User user = userRepository.getOneByLogin(username);
         if (user == null) {
-            throw new NotInDatabaseException(NotInDatabaseException.Entity.USER, username);
+            throw new NotInDatabaseException(Entity.USER, username);
         }
         List<Project> projects;
-        if (isAdmin) {
+        if (SecurityUtils.isAdmin()) {
             projects = projectRepository.findAll();
         } else {
             projects = projectRepository.getProjectsByOwnerOrGuestsContains(user, user);
