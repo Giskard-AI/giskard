@@ -39,11 +39,7 @@ axiosProject.interceptors.response.use(resp => {
 
 export const api = {
     async logInGetToken(username: string, password: string) {
-        const params = new URLSearchParams();
-        params.append('username', username);
-        params.append('password', password);
-
-        return axios.post(`${apiUrl}/api/v1/login/access-token`, params);
+        return axios.post(`${apiUrlJava}/api/authenticate`, { username, password });
     },
     async getAppConfig(token: string) {
         return axios.get<IUserProfile>(`${apiUrl}/api/v1/app-config`, authHeaders(token));

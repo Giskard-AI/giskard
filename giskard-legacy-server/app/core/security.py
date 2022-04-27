@@ -9,7 +9,7 @@ from app.core.config import settings
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
-ALGORITHM = "HS256"
+ALGORITHM = "HS512"
 
 
 def create_access_token(

@@ -369,7 +369,7 @@ class AccountResourceIT {
             .perform(post("/api/register").contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(validUser)))
             .andExpect(status().isCreated());
 
-        Optional<User> userDup = userRepository.findOneWithRolesByLogin("badguy");
+        Optional<User> userDup = userRepository.findOneWithRoleByLogin("badguy");
         assertThat(userDup).isPresent();
         // TODO andreyavtomonov (14/03/2022): migration
         //assertThat(userDup.get().getRoles())
@@ -427,7 +427,7 @@ class AccountResourceIT {
             .perform(post("/api/account").contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(userDTO)))
             .andExpect(status().isOk());
 
-        User updatedUser = userRepository.findOneWithRolesByLogin(user.getLogin()).orElse(null);
+        User updatedUser = userRepository.findOneWithRoleByLogin(user.getLogin()).orElse(null);
         assertThat(updatedUser.getFirstName()).isEqualTo(userDTO.getFirstName());
         assertThat(updatedUser.getLastName()).isEqualTo(userDTO.getLastName());
         assertThat(updatedUser.getEmail()).isEqualTo(userDTO.getEmail());
