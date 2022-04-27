@@ -27,6 +27,7 @@ class UserUpdate(BaseModel):
 
 
 class UserMinimalSchema(BaseModel):
+    id: int
     user_id: str
     display_name: Optional[str] = None
 
