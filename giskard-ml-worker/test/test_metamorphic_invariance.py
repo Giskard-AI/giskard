@@ -10,13 +10,13 @@ def test_metamorphic_invariance_no_change(german_credit_test_data, german_credit
     assert results.unexpected_count == 0
 
 
-def _test_metamorphic_invariance_male_female(german_credit_test_data, german_credit_model, failed_threshold):
+def _test_metamorphic_invariance_male_female(german_credit_test_data, german_credit_model, threshold):
     perturbation = {
         "sex": lambda x: 'female' if x.sex == 'male' else 'male'
     }
     tests = GiskardTestFunctions()
     results = tests.metamorphic.test_metamorphic_invariance(german_credit_test_data, german_credit_model, perturbation,
-                                                failed_threshold=failed_threshold)
+                                                            threshold=threshold)
     assert results.element_count == len(german_credit_test_data)
     assert results.missing_count == 0
     assert results.unexpected_count == 64

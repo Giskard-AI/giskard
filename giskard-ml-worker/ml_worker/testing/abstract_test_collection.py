@@ -8,21 +8,22 @@ from generated.ml_worker_pb2 import NamedSingleTestResult, SingleTestResult
 
 class AbstractTestCollection(ABC):
     tests_results: List[NamedSingleTestResult]
+    do_save_results = True
 
     def __init__(self, test_results: List[NamedSingleTestResult]) -> None:
         self.tests_results = test_results
 
     @staticmethod
     def _find_caller_test_name():
-        curr_frame = inspect.currentframe()
-        try:
-            while curr_frame.f_back.f_code.co_name != '<module>':
-                curr_frame = curr_frame.f_back
-        except Exception as e:
-            logging.error(f"Failed to extract test method name", e)
-        return curr_frame.f_code.co_name
+        stack = inspect.stack()
+        for frame in stack:
+            if frame.function.startswith('test_'):
+                return frame.function
+        logging.warning(f"Failed to extract test method name")
 
     def save_results(self, result: SingleTestResult, test_name=None):
+        if not self.do_save_results:
+            return result
         if test_name is None:
             test_name = self._find_caller_test_name()
 
