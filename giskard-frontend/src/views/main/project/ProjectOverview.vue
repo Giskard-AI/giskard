@@ -14,7 +14,7 @@
 			<table v-if="project.guest_list.length">
 				<tr v-for="p in project.guest_list" :key="p.user_id">
 					<td class="caption pr-4">{{ getUserFullDisplayName(p) }}</td>
-					<td v-if="isProjectOwnerOrAdmin"><v-btn icon small color="accent" @click="cancelUserInvitation(p.user_id)"><v-icon small>person_remove</v-icon></v-btn></td>
+					<td v-if="isProjectOwnerOrAdmin"><v-btn icon small color="accent" @click="cancelUserInvitation(p)"><v-icon small>person_remove</v-icon></v-btn></td>
 				</tr>
 			</table>
 			<p v-else class="caption">None</p>
@@ -30,6 +30,7 @@ import { getUserFullDisplayName } from '@/utils';
 import Models from '@/views/main/project/Models.vue';
 import Datasets from '@/views/main/project/Datasets.vue';
 import FeedbackList from '@/views/main/project/FeedbackList.vue';
+import { IUserProfileMinimal } from '@/interfaces';
 
 @Component({
 	components: {
@@ -47,14 +48,14 @@ export default class ProjectOverview extends Vue {
 
 	private getUserFullDisplayName = getUserFullDisplayName
 
-	public async cancelUserInvitation(userId: string) {
+	public async cancelUserInvitation(user: IUserProfileMinimal) {
 		const confirm = await this.$dialog.confirm({
-			text: `Are you sure you want to cancel invitation of user <strong>${userId}</strong>?`,
+			text: `Are you sure you want to cancel invitation of user <strong>${user.user_id}</strong>?`,
 			title: 'Cancel user invitation'
     });
 		if (this.project && confirm) {
 			try {
-				await dispatchUninviteUser(this.$store, {projectId: this.project.id, userId})
+				await dispatchUninviteUser(this.$store, {projectId: this.project.id, userId:user.id})
 			}	catch (e) {
 				console.error(e)
 			}
