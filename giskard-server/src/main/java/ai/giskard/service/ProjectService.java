@@ -5,9 +5,11 @@ import ai.giskard.domain.User;
 import ai.giskard.repository.ProjectRepository;
 import ai.giskard.repository.UserRepository;
 import ai.giskard.security.SecurityUtils;
+import ai.giskard.service.dto.ml.ProjectDTO;
 import ai.giskard.service.dto.ml.ProjectPostDTO;
 import ai.giskard.service.mapper.GiskardMapper;
 import ai.giskard.web.rest.errors.Entity;
+import ai.giskard.web.rest.errors.EntityNotFoundException;
 import ai.giskard.web.rest.errors.NotInDatabaseException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
@@ -38,11 +40,11 @@ public class ProjectService {
      * @param projectDTO updated project
      * @return project updated
      */
-    public Project update(@NotNull Long id, ProjectPostDTO projectDTO) {
+    public ProjectDTO update(@NotNull Long id, ProjectPostDTO projectDTO) {
         Project project = this.projectRepository.getById(id);
         this.giskardMapper.updateProjectFromDto(projectDTO, project);
         Project savedProject = this.projectRepository.save(project);
-        return savedProject;
+        return giskardMapper.projectToProjectDTO(savedProject);
     }
 
     /**
@@ -51,11 +53,12 @@ public class ProjectService {
      * @param projectDTO projectDTO to save
      * @return project saved
      */
-    public Project create(ProjectPostDTO projectDTO, UserDetails userDetails) {
+    public ProjectDTO create(ProjectPostDTO projectDTO, UserDetails userDetails) {
         Project project = this.giskardMapper.projectPostDTOToProject(projectDTO);
+        project.setKey(project.getName());
         User owner = this.userRepository.getOneByLogin(userDetails.getUsername());
         project.setOwner(owner);
-        return this.projectRepository.save(project);
+        return giskardMapper.projectToProjectDTO(this.projectRepository.save(project));
     }
 
     /**
@@ -86,13 +89,14 @@ public class ProjectService {
      * @param userId id of the user
      * @return update project
      */
-    public Project uninvite(Long id, Long userId) {
-        User user = this.userRepository.getById(userId);
-        Project project = this.projectRepository.getOneWithGuestsById(id);
+    public ProjectDTO uninvite(Long id, Long userId) {
+        User user = this.userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException(Entity.USER, userId));
+        Project project = this.projectRepository.findOneWithGuestsById(id).orElseThrow(() -> new EntityNotFoundException(Entity.PROJECT, id));
         project.removeGuest(user);
         this.projectRepository.save(project);
-        return project;
+        return giskardMapper.projectToProjectDTO(project);
     }
+
 
     /**
      * Inviting user to the project guestlist
@@ -101,12 +105,12 @@ public class ProjectService {
      * @param userId id of the user
      * @return updated project
      */
-    public Project invite(Long id, Long userId) {
+    public ProjectDTO invite(Long id, Long userId) {
         User user = this.userRepository.getById(userId);
-        Project project = this.projectRepository.getOneWithGuestsById(id);
+        Project project = this.projectRepository.findOneWithGuestsById(id).orElseThrow(() -> new EntityNotFoundException(Entity.PROJECT, id));
         project.addGuest(user);
         this.projectRepository.save(project);
-        return project;
+        return giskardMapper.projectToProjectDTO(project);
     }
 
     /**
@@ -115,18 +119,15 @@ public class ProjectService {
      *
      * @return list of projects
      */
-    public List<Project> list() {
+    public List<ProjectDTO> list() {
         String username = SecurityUtils.getCurrentUserLogin().get().toLowerCase();
-        User user = userRepository.getOneByLogin(username);
-        if (user == null) {
-            throw new NotInDatabaseException(Entity.USER, username);
-        }
+        User user = userRepository.findOneByLogin(username).orElseThrow(() -> new NotInDatabaseException(Entity.USER, username));
         List<Project> projects;
         if (SecurityUtils.isAdmin()) {
             projects = projectRepository.findAll();
         } else {
             projects = projectRepository.getProjectsByOwnerOrGuestsContains(user, user);
         }
-        return projects;
+        return giskardMapper.projectsToProjectDTOs(projects);
     }
 }
