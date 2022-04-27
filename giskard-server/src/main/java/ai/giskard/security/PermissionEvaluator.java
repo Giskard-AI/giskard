@@ -4,26 +4,27 @@ import ai.giskard.domain.Project;
 import ai.giskard.repository.ProjectRepository;
 import ai.giskard.repository.UserRepository;
 import ai.giskard.service.ProjectService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.access.PermissionEvaluator;
-import org.springframework.security.core.Authentication;
+import ai.giskard.web.rest.errors.Entity;
+import ai.giskard.web.rest.errors.EntityNotFoundException;
 import org.springframework.stereotype.Component;
 
 import javax.validation.constraints.NotNull;
-import java.io.Serializable;
 
 import static ai.giskard.security.SecurityUtils.hasCurrentUserAnyOfAuthorities;
 
 @Component(value = "permissionEvaluator")
-public class PermissionEvaluatorImpl {
-    @Autowired
-    ProjectRepository projectRepository;
+public class PermissionEvaluator {
+    final ProjectRepository projectRepository;
 
-    @Autowired
-    UserRepository userRepository;
+    final UserRepository userRepository;
 
-    @Autowired
-    ProjectService projectService;
+    final ProjectService projectService;
+
+    public PermissionEvaluator(ProjectRepository projectRepository, UserRepository userRepository, ProjectService projectService) {
+        this.projectRepository = projectRepository;
+        this.userRepository = userRepository;
+        this.projectService = projectService;
+    }
 
     public boolean isCurrentUser(String login) {
         return login.equals(SecurityUtils.getCurrentUserLogin().get());
@@ -35,8 +36,8 @@ public class PermissionEvaluatorImpl {
      * @param id id of the project
      * @return true if the user can write
      */
-    public boolean canWriteProject(@NotNull Long id) {
-        Project project = this.projectRepository.getById(id);
+    public boolean canWriteProject(@NotNull Long id) throws Exception {
+        Project project = this.projectRepository.findById(id).orElseThrow(() -> new EntityNotFoundException(Entity.PROJECT, id));
         return (isCurrentUser(project.getOwner().getLogin()) || SecurityUtils.isAdmin());
     }
 
@@ -55,7 +56,7 @@ public class PermissionEvaluatorImpl {
      * @return true if user can read
      */
     public boolean canReadProject(@NotNull Long id) {
-        Project project = this.projectRepository.getOneWithGuestsById(id);
+        Project project = this.projectRepository.findOneWithGuestsById(id).orElseThrow(() -> new EntityNotFoundException(Entity.PROJECT, id));
         return (projectService.isUserInGuestList(project.getGuests()) || isCurrentUser(project.getOwner().getLogin()) || SecurityUtils.isAdmin());
     }
 

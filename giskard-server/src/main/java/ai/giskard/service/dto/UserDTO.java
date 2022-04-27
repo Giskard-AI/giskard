@@ -19,10 +19,16 @@ public class UserDTO {
     @JsonProperty("user_id")
     private String login;
 
+    @lombok.Setter
+    @lombok.Getter
+    @JsonProperty("display_name")
+    private String displayName;
+
     public UserDTO(User user) {
         this.id = user.getId();
         // Customize it here if you need, or not, firstName/lastName/etc
         this.login = user.getLogin();
+        this.displayName = user.getDisplayName();
     }
 
 }

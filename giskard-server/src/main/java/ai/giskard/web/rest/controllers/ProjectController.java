@@ -2,10 +2,10 @@ package ai.giskard.web.rest.controllers;
 
 import ai.giskard.domain.Project;
 import ai.giskard.repository.ProjectRepository;
-import ai.giskard.repository.UserRepository;
 import ai.giskard.service.ProjectService;
 import ai.giskard.service.dto.ml.ProjectDTO;
 import ai.giskard.service.dto.ml.ProjectPostDTO;
+import ai.giskard.service.mapper.GiskardMapper;
 import ai.giskard.web.rest.errors.NotInDatabaseException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -14,17 +14,18 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/v2")
 public class ProjectController {
     private final ProjectRepository projectRepository;
     private final ProjectService projectService;
+    private final GiskardMapper giskardMapper;
 
-    public ProjectController(ProjectRepository projectRepository, ProjectService projectService) {
+    public ProjectController(ProjectRepository projectRepository, ProjectService projectService, GiskardMapper giskardMapper) {
         this.projectRepository = projectRepository;
         this.projectService = projectService;
+        this.giskardMapper = giskardMapper;
     }
 
     /**
@@ -34,8 +35,8 @@ public class ProjectController {
      */
     @GetMapping("project")
     public List<ProjectDTO> list() throws NotInDatabaseException {
-        List<Project> projects = projectService.list();
-        return projects.stream().map(ProjectDTO::new).collect(Collectors.toList());
+        List<ProjectDTO> projectDTOs = projectService.list();
+        return projectDTOs;
     }
 
     /**
@@ -48,8 +49,8 @@ public class ProjectController {
     @PreAuthorize("@permissionEvaluator.canWriteProject( #id)")
     @PutMapping(value = "/project/{id}")
     public ProjectDTO updateProject(@RequestBody ProjectPostDTO projectDTO, @PathVariable("id") Long id) {
-        Project updatedProject = this.projectService.update(id, projectDTO);
-        return new ProjectDTO(updatedProject);
+        ProjectDTO updatedProjectDTO = this.projectService.update(id, projectDTO);
+        return updatedProjectDTO;
     }
 
     /**
@@ -61,8 +62,8 @@ public class ProjectController {
     @PostMapping(value = "/project")
     @PreAuthorize("@permissionEvaluator.canWrite()")
     public ProjectDTO create(@RequestBody ProjectPostDTO projectPostDTO, @AuthenticationPrincipal final UserDetails userDetails) {
-        Project savedProject = this.projectService.create(projectPostDTO, userDetails);
-        return new ProjectDTO(savedProject);
+        ProjectDTO savedProject = this.projectService.create(projectPostDTO, userDetails);
+        return savedProject;
     }
 
     /**
@@ -76,7 +77,7 @@ public class ProjectController {
     @Transactional
     public ProjectDTO show(@PathVariable("id") Long id) {
         Project project = this.projectRepository.getById(id);
-        return new ProjectDTO(project);
+        return giskardMapper.projectToProjectDTO(project);
     }
 
     /**
@@ -101,8 +102,8 @@ public class ProjectController {
     @DeleteMapping(value = "/project/{id}/guests/{userId}")
     @PreAuthorize("@permissionEvaluator.canWriteProject( #id)")
     public ProjectDTO uninvite(@PathVariable("id") Long id, @PathVariable("userId") Long userId) {
-        Project project = this.projectService.uninvite(id, userId);
-        return new ProjectDTO(project);
+        ProjectDTO projectDTO = this.projectService.uninvite(id, userId);
+        return projectDTO;
     }
 
     /**
@@ -115,8 +116,8 @@ public class ProjectController {
     @PreAuthorize("@permissionEvaluator.canWriteProject( #id)")
     @PutMapping(value = "/project/{id}/guests/{userId}")
     public ProjectDTO invite(@PathVariable("id") Long id, @PathVariable("userId") Long userId) {
-        Project project = this.projectService.invite(id, userId);
-        return new ProjectDTO(project);
+        ProjectDTO projectDTO = this.projectService.invite(id, userId);
+        return projectDTO;
     }
 
 }

@@ -13,7 +13,7 @@ import java.util.Optional;
 public interface ProjectRepository extends JpaRepository<Project, Long> {
 
     @EntityGraph(attributePaths = "guests")
-    Project getOneWithGuestsById(Long id);
+    Optional<Project> findOneWithGuestsById(Long id);
 
     List<Project> getProjectsByOwnerOrGuestsContains(User owner, User guest);
 
