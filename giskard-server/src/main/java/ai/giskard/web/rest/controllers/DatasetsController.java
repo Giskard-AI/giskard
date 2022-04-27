@@ -3,6 +3,7 @@ package ai.giskard.web.rest.controllers;
 import ai.giskard.repository.ml.DatasetRepository;
 import ai.giskard.service.dto.ml.DatasetDTO;
 import ai.giskard.service.mapper.GiskardMapper;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -12,17 +13,12 @@ import javax.validation.constraints.NotNull;
 import java.util.List;
 
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/api/v2/")
 public class DatasetsController {
 
-    private DatasetRepository datasetRepository;
-    private GiskardMapper giskardMapper;
-
-
-    public DatasetsController(DatasetRepository datasetRepository, GiskardMapper giskardMapper) {
-        this.datasetRepository = datasetRepository;
-        this.giskardMapper = giskardMapper;
-    }
+    final DatasetRepository datasetRepository;
+    final GiskardMapper giskardMapper;
 
     /**
      * Retrieve the list of datasets from the specified project
@@ -33,6 +29,6 @@ public class DatasetsController {
      */
     @GetMapping("project/{projectId}/datasets")
     public List<DatasetDTO> listProjectDatasets(@PathVariable @NotNull Long projectId) {
-        return giskardMapper.datasetsToDatasetDTOs(this.datasetRepository.findAllByProjectId(projectId));
+        return giskardMapper.datasetsToDatasetDTOs(datasetRepository.findAllByProjectId(projectId));
     }
 }

@@ -1,6 +1,5 @@
 package ai.giskard.service.init;
 
-import ai.giskard.config.Constants;
 import ai.giskard.domain.Project;
 import ai.giskard.domain.Role;
 import ai.giskard.domain.User;
@@ -9,21 +8,22 @@ import ai.giskard.repository.ProjectRepository;
 import ai.giskard.repository.UserRepository;
 import ai.giskard.security.AuthoritiesConstants;
 import ai.giskard.service.UserService;
-import ai.giskard.service.UsernameAlreadyUsedException;
-import ai.giskard.web.rest.vm.ManagedUserVM;
-import org.hibernate.exception.ConstraintViolationException;
+import ai.giskard.web.rest.errors.Entity;
+import ai.giskard.web.rest.errors.EntityNotFoundException;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class InitService {
 
     private final Logger logger = LoggerFactory.getLogger(InitService.class);
@@ -36,16 +36,13 @@ public class InitService {
 
     final ProjectRepository projectRepository;
 
+    final PasswordEncoder passwordEncoder;
+
+
     String[] mockKeys = Arrays.stream(AuthoritiesConstants.authorities).map(key -> key.replace("ROLE_", "")).toArray(String[]::new);
     public Map<String, String> users = Arrays.stream(mockKeys).collect(Collectors.toMap(String::toLowerCase, String::toLowerCase));
     public Map<String, String> projects = Arrays.stream(mockKeys).collect(Collectors.toMap(String::toLowerCase, name -> name + "Project"));
 
-    public InitService(UserRepository userRepository, AuthorityRepository authorityRepository, UserService userService, ProjectRepository projectRepository) {
-        this.userRepository = userRepository;
-        this.authorityRepository = authorityRepository;
-        this.userService = userService;
-        this.projectRepository = projectRepository;
-    }
 
     public String getUserName(String key) {
         return users.get(key);
@@ -93,26 +90,19 @@ public class InitService {
     /**
      * Registering the specified user
      *
-     * @param key  key string used for identifying the user
-     * @param role role given to the user
+     * @param key      key string used for identifying the user
+     * @param roleName role given to the user
      * @return
      */
-    private void saveUser(String key, String role) {
-        ManagedUserVM validUser = new ManagedUserVM();
-        validUser.setLogin(key);
-        validUser.setPassword(key);
-        validUser.setFirstName(key);
-        validUser.setLastName(key);
-        validUser.setEmail(String.format("%s@%s", key, "giskard.ai"));
-        validUser.setActivated(true);
-        validUser.setImageUrl("http://placehold.it/50x50");
-        validUser.setLangKey(Constants.DEFAULT_LANGUAGE);
-        validUser.setRoles(Collections.singleton(role));
-        try {
-            userService.registerUser(validUser, validUser.getPassword());
-        } catch (UsernameAlreadyUsedException | ConstraintViolationException e) {
-            logger.info("User with name {} already exists", key);
-        }
+    private void saveUser(String key, String roleName) {
+        User user = new User();
+        user.setLogin(key);
+        user.setEmail(String.format("%s@example.com", key.toLowerCase()));
+        user.setActivated(true);
+        Role role = authorityRepository.findByName(roleName).orElseThrow(() -> new EntityNotFoundException(Entity.ROLE, roleName));
+        user.setRole(role);
+        user.setPassword(passwordEncoder.encode(key).toLowerCase());
+        userRepository.saveAndFlush(user);
     }
 
     /**

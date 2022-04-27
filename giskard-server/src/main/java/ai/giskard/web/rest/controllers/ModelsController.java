@@ -3,6 +3,7 @@ package ai.giskard.web.rest.controllers;
 import ai.giskard.repository.ml.ModelRepository;
 import ai.giskard.service.dto.ml.ModelDTO;
 import ai.giskard.service.mapper.GiskardMapper;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -12,15 +13,12 @@ import javax.validation.constraints.NotNull;
 import java.util.List;
 
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/api/v2/")
 public class ModelsController {
-    private ModelRepository modelRepository;
-    private GiskardMapper giskardMapper;
+    final ModelRepository modelRepository;
+    final GiskardMapper giskardMapper;
 
-    public ModelsController(ModelRepository modelRepository, GiskardMapper giskardMapper) {
-        this.modelRepository = modelRepository;
-        this.giskardMapper = giskardMapper;
-    }
 
     /**
      * Retrieve the list of models from the specified project
@@ -31,7 +29,7 @@ public class ModelsController {
      */
     @GetMapping("project/{projectId}/models")
     public List<ModelDTO> listProjectModels(@PathVariable @NotNull Long projectId) {
-        return this.giskardMapper.modelsToModelDTOs(modelRepository.findAllByProjectId(projectId));
+        return giskardMapper.modelsToModelDTOs(modelRepository.findAllByProjectId(projectId));
     }
 
 }

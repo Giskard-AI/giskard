@@ -11,27 +11,24 @@ import ai.giskard.service.mapper.GiskardMapper;
 import ai.giskard.web.rest.errors.Entity;
 import ai.giskard.web.rest.errors.EntityNotFoundException;
 import ai.giskard.web.rest.errors.NotInDatabaseException;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.validation.constraints.NotNull;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 @Service
 @Transactional
+@RequiredArgsConstructor
 public class ProjectService {
 
-    UserRepository userRepository;
-    ProjectRepository projectRepository;
-    GiskardMapper giskardMapper;
-
-    public ProjectService(UserRepository userRepository, ProjectRepository projectRepository, GiskardMapper giskardMapper) {
-        this.userRepository = userRepository;
-        this.projectRepository = projectRepository;
-        this.giskardMapper = giskardMapper;
-    }
+    final UserRepository userRepository;
+    final ProjectRepository projectRepository;
+    final GiskardMapper giskardMapper;
 
     /**
      * Update project
@@ -41,9 +38,9 @@ public class ProjectService {
      * @return project updated
      */
     public ProjectDTO update(@NotNull Long id, ProjectPostDTO projectDTO) {
-        Project project = this.projectRepository.getById(id);
-        this.giskardMapper.updateProjectFromDto(projectDTO, project);
-        Project savedProject = this.projectRepository.save(project);
+        Project project = projectRepository.getById(id);
+        giskardMapper.updateProjectFromDto(projectDTO, project);
+        Project savedProject = projectRepository.save(project);
         return giskardMapper.projectToProjectDTO(savedProject);
     }
 
@@ -54,11 +51,13 @@ public class ProjectService {
      * @return project saved
      */
     public ProjectDTO create(ProjectPostDTO projectDTO, UserDetails userDetails) {
-        Project project = this.giskardMapper.projectPostDTOToProject(projectDTO);
-        project.setKey(project.getName());
-        User owner = this.userRepository.getOneByLogin(userDetails.getUsername());
+        Project project = giskardMapper.projectPostDTOToProject(projectDTO);
+        if (Objects.isNull(project.getKey())) {
+            project.setKey(project.getName());
+        }
+        User owner = userRepository.getOneByLogin(userDetails.getUsername());
         project.setOwner(owner);
-        return giskardMapper.projectToProjectDTO(this.projectRepository.save(project));
+        return giskardMapper.projectToProjectDTO(projectRepository.save(project));
     }
 
     /**
@@ -78,7 +77,7 @@ public class ProjectService {
      * @return boolean success
      */
     public boolean delete(Long id) {
-        this.projectRepository.deleteById(id);
+        projectRepository.deleteById(id);
         return true;
     }
 
@@ -90,13 +89,12 @@ public class ProjectService {
      * @return update project
      */
     public ProjectDTO uninvite(Long id, Long userId) {
-        User user = this.userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException(Entity.USER, userId));
-        Project project = this.projectRepository.findOneWithGuestsById(id).orElseThrow(() -> new EntityNotFoundException(Entity.PROJECT, id));
+        User user = userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException(Entity.USER, userId));
+        Project project = projectRepository.findOneWithGuestsById(id).orElseThrow(() -> new EntityNotFoundException(Entity.PROJECT, id));
         project.removeGuest(user);
-        this.projectRepository.save(project);
+        projectRepository.save(project);
         return giskardMapper.projectToProjectDTO(project);
     }
-
 
     /**
      * Inviting user to the project guestlist
@@ -106,10 +104,10 @@ public class ProjectService {
      * @return updated project
      */
     public ProjectDTO invite(Long id, Long userId) {
-        User user = this.userRepository.getById(userId);
-        Project project = this.projectRepository.findOneWithGuestsById(id).orElseThrow(() -> new EntityNotFoundException(Entity.PROJECT, id));
+        User user = userRepository.getById(userId);
+        Project project = projectRepository.findOneWithGuestsById(id).orElseThrow(() -> new EntityNotFoundException(Entity.PROJECT, id));
         project.addGuest(user);
-        this.projectRepository.save(project);
+        projectRepository.save(project);
         return giskardMapper.projectToProjectDTO(project);
     }
 
