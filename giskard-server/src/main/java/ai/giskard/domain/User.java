@@ -168,11 +168,7 @@ public class User extends AbstractAuditingEntity implements Serializable {
     @lombok.Setter
     @lombok.Getter
     @JsonIgnore
-    @ManyToMany(mappedBy = "guests")
-    /*@JoinTable(
-        name = "projects_guests",
-        joinColumns = @JoinColumn(name = "user_id"),
-        inverseJoinColumns = @JoinColumn(name = "project_id"))*/
+    @ManyToMany(mappedBy = "guests", cascade = CascadeType.ALL)
     private Set<Project> projects = new HashSet<Project>();
 
 

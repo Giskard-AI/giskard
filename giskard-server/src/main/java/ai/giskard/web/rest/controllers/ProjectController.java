@@ -7,6 +7,7 @@ import ai.giskard.service.dto.ml.ProjectDTO;
 import ai.giskard.service.dto.ml.ProjectPostDTO;
 import ai.giskard.service.mapper.GiskardMapper;
 import ai.giskard.web.rest.errors.NotInDatabaseException;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -16,17 +17,12 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/api/v2")
 public class ProjectController {
     private final ProjectRepository projectRepository;
     private final ProjectService projectService;
     private final GiskardMapper giskardMapper;
-
-    public ProjectController(ProjectRepository projectRepository, ProjectService projectService, GiskardMapper giskardMapper) {
-        this.projectRepository = projectRepository;
-        this.projectService = projectService;
-        this.giskardMapper = giskardMapper;
-    }
 
     /**
      * Retrieve the list of projects accessible by the authenticated user

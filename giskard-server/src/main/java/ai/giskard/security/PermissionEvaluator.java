@@ -2,10 +2,10 @@ package ai.giskard.security;
 
 import ai.giskard.domain.Project;
 import ai.giskard.repository.ProjectRepository;
-import ai.giskard.repository.UserRepository;
 import ai.giskard.service.ProjectService;
 import ai.giskard.web.rest.errors.Entity;
 import ai.giskard.web.rest.errors.EntityNotFoundException;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import javax.validation.constraints.NotNull;
@@ -13,21 +13,14 @@ import javax.validation.constraints.NotNull;
 import static ai.giskard.security.SecurityUtils.hasCurrentUserAnyOfAuthorities;
 
 @Component(value = "permissionEvaluator")
+@RequiredArgsConstructor
 public class PermissionEvaluator {
     final ProjectRepository projectRepository;
 
-    final UserRepository userRepository;
-
     final ProjectService projectService;
 
-    public PermissionEvaluator(ProjectRepository projectRepository, UserRepository userRepository, ProjectService projectService) {
-        this.projectRepository = projectRepository;
-        this.userRepository = userRepository;
-        this.projectService = projectService;
-    }
-
-    public boolean isCurrentUser(String login) {
-        return login.equals(SecurityUtils.getCurrentUserLogin().get());
+    public boolean isCurrentUser(String login) throws Exception {
+        return login.equals(SecurityUtils.getCurrentUserLogin().orElseThrow(() -> new Exception(String.format("User %s not connected", login))));
     }
 
     /**
@@ -55,7 +48,7 @@ public class PermissionEvaluator {
      * @param id project's id
      * @return true if user can read
      */
-    public boolean canReadProject(@NotNull Long id) {
+    public boolean canReadProject(@NotNull Long id) throws Exception {
         Project project = this.projectRepository.findOneWithGuestsById(id).orElseThrow(() -> new EntityNotFoundException(Entity.PROJECT, id));
         return (projectService.isUserInGuestList(project.getGuests()) || isCurrentUser(project.getOwner().getLogin()) || SecurityUtils.isAdmin());
     }
