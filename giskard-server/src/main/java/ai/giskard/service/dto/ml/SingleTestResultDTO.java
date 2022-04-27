@@ -23,6 +23,7 @@ public class SingleTestResultDTO {
     private double unexpectedPercentTotal;
     private double unexpectedPercentNonmissing;
     private int elementCount;
+    private float metric;
 
     public SingleTestResultDTO(SingleTestResult message) {
         this.elementCount = message.getElementCount();
@@ -36,5 +37,6 @@ public class SingleTestResultDTO {
         //this.partialUnexpectedCounts = message.getPartialUnexpectedCountsList();
         this.unexpectedIndexList = message.getUnexpectedIndexListList();
         this.passed = message.getPassed();
+        this.metric = message.getMetric();
     }
 }

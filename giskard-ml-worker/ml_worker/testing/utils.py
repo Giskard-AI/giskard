@@ -4,6 +4,7 @@ from generated.ml_worker_pb2 import SingleTestResult
 def ge_result_to_test_result(result, passed=True) -> SingleTestResult:
     """
         Converts a result of Great Expectations to TestResultMessage - java/python bridge test result class
+    :param passed: boolean flag containing result of a test
     :param result: Great Expectations result
     :return: TestResultMessage - a protobuf generated test result class
     """
@@ -25,6 +26,7 @@ def ge_result_to_test_result(result, passed=True) -> SingleTestResult:
 
 def apply_perturbation_inplace(df, perturbation_dict):
     modified_rows = []
+    i = 0
     for idx, r in df.iterrows():
         added = False
         for pert_col, pert_func in perturbation_dict.items():
@@ -32,8 +34,7 @@ def apply_perturbation_inplace(df, perturbation_dict):
             new_value = pert_func(r)
             if original_value != new_value and not added:
                 added = True
-                modified_rows.append(idx)
+                modified_rows.append(i)
                 df.loc[idx, pert_col] = new_value
+        i += 1
     return modified_rows
-
-
