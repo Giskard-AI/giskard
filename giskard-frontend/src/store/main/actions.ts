@@ -245,7 +245,7 @@ export const actions = {
             await dispatchCheckApiError(context, error);
         }
     },
-    async actionInviteUserToProject(context: MainContext, payload: {projectId: number, userId: string}) {
+    async actionInviteUserToProject(context: MainContext, payload: {projectId: number, userId: number}) {
         const loadingNotification = { content: 'Sending...', showProgress: true };
         try {
             commitAddNotification(context, loadingNotification);
@@ -260,7 +260,7 @@ export const actions = {
             throw new Error(error.response.data.detail);
         }
     },
-    async actionUninviteUserFromProject(context: MainContext, payload: {projectId: number, userId: string}) {
+    async actionUninviteUserFromProject(context: MainContext, payload: {projectId: number, userId: number}) {
 		const loadingNotification = { content: 'Sending...', showProgress: true };
         try {
 			commitAddNotification(context, loadingNotification);
