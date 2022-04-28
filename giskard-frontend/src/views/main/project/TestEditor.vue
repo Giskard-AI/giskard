@@ -100,7 +100,7 @@
                                 v-on='on'>mdi-information
                         </v-icon>
                       </template>
-                      <span>{{ snippet.hint }}</span>
+                      <span>{{ child.hint }}</span>
                     </v-tooltip>
                   </v-list-item-action>
                 </v-list-item>
@@ -300,6 +300,7 @@ export default class TestEditor extends Vue {
     this.codeSnippets = [
       {
         active: false,
+        title: 'Heuristic',
         items: [
           {
             id: 'test_heuristic',
@@ -308,11 +309,11 @@ export default class TestEditor extends Vue {
             // language=Python
             code: 'tests.heuristic.test_heuristic(\n    df=test_df,\n    model=model,\n    classification_label=model.classification_labels[0],\n    min_proba=0,\n    max_proba=1,\n    threshold=1,\n)'
           }
-        ],
-        title: 'Heuristic'
+        ]
       },
       {
         active: false,
+        title: 'Metamorphic',
         items: [
           {
             id: 'test_metamorphic_invariance',
@@ -335,11 +336,11 @@ export default class TestEditor extends Vue {
             // language=Python
             code: 'tests.metamorphic.test_metamorphic_decreasing(\n    df=train_df,\n    model=model,\n    column_name=\'<NUMERIC FEATURE NAME>\',\n    perturbation_percent=0.1,\n    threshold=0.1\n)'
           }
-        ],
-        title: 'Metamorphic'
+        ]
       },
       {
         active: false,
+        title: 'Performance',
         items: [
           {
             id: 'test_auc',
@@ -425,8 +426,73 @@ export default class TestEditor extends Vue {
             // language=Python
             code: 'tests.performance.test_r2(\n    test_df,\n    model,\n    threshold=0.1,\n    target=\'<TARGET COLUMN>\'\n)'
           }
-        ],
-        title: 'Performance'
+        ]
+      },
+      {
+        active: false,
+        title: 'Data drift',
+        items: [
+          {
+          id: 'test_drift_psi',
+          title: 'Population Stability Index',
+          type: 'CODE',
+          // language=Python
+          code: 'tests.drift.test_drift_psi(\n    expected_series=train_df[\'<CATEGORICAL FEATURE NAME>\'],\n    actual_series=test_df[\'<CATEGORICAL FEATURE NAME>\'],\n    threshold=0.02,\n    max_categories=10\n)\n'
+        },
+          {
+            id: 'test_drift_chi_square',
+            title: 'Chi-squared',
+            type: 'CODE',
+            // language=Python
+            code: 'tests.drift.test_drift_chi_square(\n    expected_series=train_df[\'<FEATURE NAME>\'],\n    actual_series=test_df[\'<FEATURE NAME>\'],\n    threshold=0.02,\n    p_value_threshold=None,\n    max_categories=10\n)\n'
+          },
+          {
+            id: 'test_drift_ks',
+            title: 'Kolmogorov–Smirnov',
+            type: 'CODE',
+            // language=Python
+            code: 'tests.drift.test_drift_ks(\n    expected_series=train_df[\'<FEATURE NAME>\'],\n    actual_series=test_df[\'<FEATURE NAME>\'],\n    threshold=0.02,\n    p_value_threshold=None\n)\n'
+          },
+          {
+            id: 'test_drift_earth_movers_distance',
+            title: 'Earth mover\'s distance',
+            type: 'CODE',
+            // language=Python
+            code: 'tests.drift.test_drift_earth_movers_distance(\n    expected_series=train_df[\'<NUMERIC FEATURE NAME>\'],\n    actual_series=test_df[\'<NUMERIC FEATURE NAME>\'],\n    threshold=0.02\n)\n'
+          }]
+      },
+      {
+        active: false,
+        title: 'Prediction drift',
+        items: [
+          {
+            id: 'test_drift_prediction_psi',
+            title: 'Population Stability Index',
+            type: 'CODE',
+            // language=Python
+            code: 'tests.drift.test_drift_prediction_psi(\n    train_df=train_df,\n    test_df=test_df,\n    model=model,\n    threshold=0.1,\n    max_categories=10,\n    psi_contribution_percent=0.2\n)\n'
+          },
+          {
+            id: 'test_drift_prediction_chi_square',
+            title: 'Chi-squared',
+            type: 'CODE',
+            // language=Python
+            code: 'tests.drift.test_drift_prediction_chi_square(\n    train_df=train_df,\n    test_df=test_df,\n    model=model,\n    threshold=0.1,\n    max_categories=10,\n    chi_square_contribution_percent=0.2\n)\n'
+          },
+          {
+            id: 'test_drift_prediction_ks',
+            title: 'Kolmogorov–Smirnov',
+            type: 'CODE',
+            // language=Python
+            code: 'tests.drift.test_drift_prediction_ks(\n    train_df=train_df,\n    test_df=test_df,\n    model=model,\n    threshold=0.1\n)'
+          },
+          {
+            id: 'test_drift_prediction_earth_movers_distance',
+            title: 'Earth mover\'s distance',
+            type: 'CODE',
+            // language=Python
+            code: 'tests.drift.test_drift_prediction_earth_movers_distance(\n    train_df=train_df,\n    test_df=test_df,\n    model=model,\n    threshold=0.1\n)'
+          }]
       }
     ];
   }
