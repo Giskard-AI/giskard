@@ -22,11 +22,12 @@
 
 <script lang="ts">
 
-import {IProjectFile, ITestSuite} from "@/interfaces";
+import {IProjectFile} from "@/interfaces";
 import {Prop, Vue} from "vue-property-decorator";
 import Component from "vue-class-component";
 import TestSuiteCreateModal from "@/views/main/project/modals/TestSuiteCreateModal.vue";
 import {api} from "@/api";
+import { DatasetDTO, ModelDTO, TestSuiteDTO } from '@/generated-sources';
 
 @Component({
   components: {TestSuiteCreateModal}
@@ -34,9 +35,9 @@ import {api} from "@/api";
 export default class TestSuites extends Vue {
   @Prop({required: true}) projectId!: number;
 
-  testSuites: Array<ITestSuite> = []
+  testSuites: Array<TestSuiteDTO> = []
 
-  private getProjectFileName(obj: IProjectFile) {
+  private getProjectFileName(obj: ModelDTO | DatasetDTO) {
     return obj ? (obj.name || obj.filename) : "";
   }
 
@@ -92,7 +93,7 @@ export default class TestSuites extends Vue {
   }
 
   private async init() {
-    this.testSuites = (await api.getTestSuites(this.projectId)).data.map((ts: ITestSuite) => {
+    this.testSuites = (await api.getTestSuites(this.projectId)).data.map((ts: TestSuiteDTO) => {
       ts.model.name = this.getProjectFileName(ts.model);
       if (ts.trainDataset) {
         ts.trainDataset.name = this.getProjectFileName(ts.trainDataset);

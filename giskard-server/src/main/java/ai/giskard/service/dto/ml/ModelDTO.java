@@ -1,6 +1,7 @@
 package ai.giskard.service.dto.ml;
 
 import ai.giskard.domain.ml.ProjectModel;
+import com.dataiku.j2ts.annotations.UIModel;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
@@ -17,13 +18,15 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 @NoArgsConstructor
+@UIModel
 public class ModelDTO {
     @JsonProperty("id")
     @NotNull
     protected Long id;
     @JsonIgnore
     protected ProjectDTO project;
-    @JsonProperty("name")
+    protected String name;
+    @JsonProperty("filename")
     protected String fileName;
     @JsonProperty("python_version")
     private String pythonVersion;
@@ -47,6 +50,7 @@ public class ModelDTO {
     public ModelDTO(ProjectModel model) {
         this.id = model.getId();
         this.fileName = model.getFileName();
+        this.name = model.getName();
         this.pythonVersion = model.getPythonVersion();
     }
 

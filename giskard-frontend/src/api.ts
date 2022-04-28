@@ -1,11 +1,19 @@
 import axios from 'axios';
 import { apiUrl, apiUrlJava } from '@/env';
 import {
-    IUserProfile, IUserProfileUpdate, IUserProfileCreate, IRole, IProject, IProjectCreate,
-    IProjectUpdate, IUserProfileMinimal, IProjectFile, IProjetFileModel, IDataMetadata, IModelMetadata,
-    IFeedbackCreate, IFeedbackForList, IFeedbackDisplay, IAppInitData, ITestSuite, ITest, ITestExecutionResult
+    IUserProfileUpdate, IUserProfileCreate, IUserProfileMinimal, IProjectFile, IProjetFileModel, IDataMetadata, IModelMetadata,
+    IFeedbackCreate, IFeedbackForList, IFeedbackDisplay
 } from './interfaces';
 import { getLocalToken } from '@/utils';
+import {
+    ProjectDTO,
+    RoleDTO,
+    TestDTO,
+    TestSuiteDTO,
+    TestExecutionResultDTO,
+    ProjectPostDTO, AppConfigDTO, AdminUserDTO
+} from '@/generated-sources';
+import AdminUserDTOMigration = AdminUserDTO.AdminUserDTOMigration;
 
 function authHeaders(token: string) {
     return {
@@ -45,20 +53,17 @@ export const api = {
 
         return axios.post(`${apiUrl}/api/v1/login/access-token`, params);
     },
-    async getAppConfig(token: string) {
-        return axios.get<IUserProfile>(`${apiUrl}/api/v1/app-config`, authHeaders(token));
-    },
     async getMe(token: string) {
-        return axios.get<IAppInitData>(`${apiUrlJava}/api/v2/users/me`, authHeaders(token));
+        return axios.get<AppConfigDTO>(`${apiUrlJava}/api/v2/users/me`, authHeaders(token));
     },
     async updateMe(token: string, data: IUserProfileUpdate) {
-        return axios.put<IUserProfile>(`${apiUrl}/api/v1/users/me`, data, authHeaders(token));
+        return axios.put<AdminUserDTOMigration>(`${apiUrl}/api/v1/users/me`, data, authHeaders(token));
     },
     async getUsers(token: string) {
-        return axios.get<IUserProfile[]>(`${apiUrl}/api/v1/users/`, authHeaders(token));
+        return axios.get<AdminUserDTOMigration[]>(`${apiUrl}/api/v1/users/`, authHeaders(token));
     },
     async getRoles(token: string) {
-        return axios.get<IRole[]>(`${apiUrl}/api/v1/roles/`, authHeaders(token));
+        return axios.get<RoleDTO[]>(`${apiUrl}/api/v1/roles/`, authHeaders(token));
     },
     async updateUser(token: string, userId: number, data: IUserProfileUpdate) {
         return axios.put(`${apiUrl}/api/v1/users/${userId}`, data, authHeaders(token));
@@ -96,32 +101,29 @@ export const api = {
 
     // Projects
     async getProjects(token: string) {
-        return axiosProject.get<IProject[]>(`/`, authHeaders(token));
+        return axiosProject.get<ProjectDTO[]>(`/`, authHeaders(token));
     },
     async getProject(token: string, id: number) {
-        return axiosProject.get<IProject>(`/${id}`, authHeaders(token));
+        return axiosProject.get<ProjectDTO>(`/${id}`, authHeaders(token));
     },
-    async createProject(token: string, data: IProjectCreate) {
-        return axiosProject.post<IProject>(`/`, data, authHeaders(token));
+    async createProject(token: string, data: ProjectPostDTO) {
+        return axiosProject.post<ProjectDTO>(`/`, data, authHeaders(token));
     },
     async deleteProject(token: string, id: number) {
-        return axiosProject.delete<IProject>(`/${id}`, authHeaders(token));
+        return axiosProject.delete<ProjectDTO>(`/${id}`, authHeaders(token));
     },
-    async editProject(token: string, id: number, data: IProjectUpdate) {
-        return axiosProject.put<IProject>(`/${id}`, data, authHeaders(token));
+    async editProject(token: string, id: number, data: ProjectPostDTO) {
+        return axiosProject.put<ProjectDTO>(`/${id}`, data, authHeaders(token));
     },
     async inviteUserToProject(token: string, projectId: number, userId: number) {
-        return axiosProject.put<IProject>(`/${projectId}/guests/${userId}`, null, authHeaders(token));
+        return axiosProject.put<ProjectDTO>(`/${projectId}/guests/${userId}`, null, authHeaders(token));
     },
     async uninviteUserFromProject(token: string, projectId: number, userId: number) {
-        return axiosProject.delete<IProject>(`/${projectId}/guests/${userId}`, authHeaders(token));
+        return axiosProject.delete<ProjectDTO>(`/${projectId}/guests/${userId}`, authHeaders(token));
     },
     // Models
     async getProjectModels(token: string, id: number) {
         return axiosProject.get<IProjetFileModel[]>(`/${id}/models`, authHeaders(token));
-    },
-    async deleteModelFiles(token: string, modelId: number) {
-        return axios.delete(`${apiUrl}/api/v1/files/models/${modelId}`, authHeaders(token));
     },
     async deleteDatasetFile(token: string, id: number) {
         return axios.delete(`${apiUrl}/api/v1/files/datasets/${id}`, authHeaders(token));
@@ -183,16 +185,16 @@ export const api = {
         }, authHeaders(token));
     },
     async getTestSuites(projectId: number) {
-        return await axios.get<Array<ITestSuite>>(`${apiUrlJava}/api/v2/testing/suites/${projectId}`);
+        return await axios.get<Array<TestSuiteDTO>>(`${apiUrlJava}/api/v2/testing/suites/${projectId}`);
     },
     async getTests(suiteId: number) {
-        return await axios.get<Array<ITest>>(`${apiUrlJava}/api/v2/testing/tests`, { params: { suiteId } });
+        return await axios.get<Array<TestDTO>>(`${apiUrlJava}/api/v2/testing/tests`, { params: { suiteId } });
     },
     async getTestSuite(suiteId: number) {
-        return await axios.get<ITestSuite>(`${apiUrlJava}/api/v2/testing/suite/${suiteId}`);
+        return await axios.get<TestSuiteDTO>(`${apiUrlJava}/api/v2/testing/suite/${suiteId}`);
     },
     async deleteTestSuite(suiteId: number) {
-        return await axios.delete<ITestSuite>(`${apiUrlJava}/api/v2/testing/suite/${suiteId}`);
+        return await axios.delete<TestSuiteDTO>(`${apiUrlJava}/api/v2/testing/suite/${suiteId}`);
     },
     async createTestSuite(projectId: number, name: string, modelId: number) {
         return await axios.post(`${apiUrlJava}/api/v2/testing/suites`, {
@@ -201,23 +203,20 @@ export const api = {
             model: { id: modelId }
         });
     },
-    async saveTestSuite(testSuite: ITestSuite) {
+    async saveTestSuite(testSuite: TestSuiteDTO) {
         return await axios.put(`${apiUrlJava}/api/v2/testing/suites`, testSuite);
     },
     async getTestDetails(testId: number) {
         return await axios.get(`${apiUrlJava}/api/v2/testing/tests/${testId}`);
     },
     async deleteTest(testId: number) {
-        return await axios.delete<ITestSuite>(`${apiUrlJava}/api/v2/testing/tests/${testId}`);
+        return await axios.delete<TestSuiteDTO>(`${apiUrlJava}/api/v2/testing/tests/${testId}`);
     },
-    async getTestEditorConfig() {
-        return await axios.get(`${apiUrlJava}/api/v2/testing/tests/editorConfig`);
-    },
-    async saveTest(testDetails: ITest) {
+    async saveTest(testDetails: TestDTO) {
         return await axios.put(`${apiUrlJava}/api/v2/testing/tests`, testDetails);
     },
     async runTest(testId: number) {
-        return await axios.post<ITestExecutionResult>(`${apiUrlJava}/api/v2/testing/tests/${testId}/run`);
+        return await axios.post<TestExecutionResultDTO>(`${apiUrlJava}/api/v2/testing/tests/${testId}/run`);
     },
     async createTest(suiteId: number, name: string) {
         return await axios.post(`${apiUrlJava}/api/v2/testing/tests`, {
@@ -226,6 +225,6 @@ export const api = {
         });
     },
     async executeTestSuite(suiteId: number) {
-        return await axios.post<Array<ITestExecutionResult>>(`${apiUrlJava}/api/v2/testing/suites/execute`, { suiteId });
+        return await axios.post<Array<TestExecutionResultDTO>>(`${apiUrlJava}/api/v2/testing/suites/execute`, { suiteId });
     }
-};
+}
