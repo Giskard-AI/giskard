@@ -113,7 +113,7 @@ def _test_drift_prediction_psi(german_credit_test_data, german_credit_model, thr
         german_credit_test_data[:len(german_credit_test_data) // 2],
         german_credit_test_data[len(german_credit_test_data) // 2:],
         german_credit_model,
-        psi_threshold=threshold)
+        threshold=threshold)
 
     assert pytest.approx(results.metric, 0.1) == 0.036
     return results.passed
@@ -130,7 +130,7 @@ def _test_drift_prediction_chi_square(german_credit_test_data, german_credit_mod
         german_credit_test_data[:len(german_credit_test_data) // 2],
         german_credit_test_data[len(german_credit_test_data) // 2:],
         german_credit_model,
-        chi_square_threshold=threshold)
+        threshold=threshold)
 
     assert pytest.approx(results.metric, 0.1) == 16.2
     return results.passed
