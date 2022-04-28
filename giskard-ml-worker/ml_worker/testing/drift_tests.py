@@ -1,3 +1,4 @@
+import typing
 import uuid
 from collections import Counter
 from typing import Union
@@ -25,11 +26,6 @@ class DriftTests(AbstractTestCollection):
         modality_psi = (expected_distribution_bounded - actual_distribution_bounded) * \
                        np.log(expected_distribution_bounded / actual_distribution_bounded)
         return modality_psi
-
-    @staticmethod
-    def _calculate_chi_square(actual_frequencies, expected_frequencies, i, k_norm):
-        return (actual_frequencies[i] - expected_frequencies[i] * k_norm) ** 2 / (
-                expected_frequencies[i] * k_norm)
 
     @staticmethod
     def _calculate_frequencies(actual_series, expected_series, max_categories):
@@ -126,30 +122,7 @@ class DriftTests(AbstractTestCollection):
         :return:
         """
 
-        all_modalities, actual_frequencies, expected_frequencies = self._calculate_frequencies(
-            actual_series, expected_series, max_categories)
-
-        chi_square = 0
-
-        # it's necessary for comparison purposes to normalize expected_frequencies
-        # so that train and test has the same size
-        # See https://github.com/scipy/scipy/blob/v1.8.0/scipy/stats/_stats_py.py#L6787
-        k_norm = actual_series.shape[0] / expected_series.shape[0]
-
-        output_data = pd.DataFrame(columns=["Modality", "Train_frequencies", "Test_frequencies", "Chi_square"])
-        for i in range(len(all_modalities)):
-            chi_square_value = self._calculate_chi_square(actual_frequencies, expected_frequencies, i, k_norm)
-            chi_square += chi_square_value
-
-            row = {"Modality": all_modalities[i],
-                   "Train_frequencies": expected_frequencies[i],
-                   "Test_frequencies": actual_frequencies[i],
-                   "Chi_square": chi_square_value}
-
-            output_data = output_data.append(pd.Series(row), ignore_index=True)
-
-        # if expected_series and actual_series has only one modality it turns nan (len(all_modalities)=1)
-        p_value = 1 - chi2.cdf(chi_square, len(all_modalities) - 1)
+        chi_square, p_value, _ = self._calculate_chi_square(actual_series, expected_series, max_categories)
 
         return self.save_results(SingleTestResult(
             passed=(threshold is None or chi_square <= threshold) and
@@ -158,11 +131,35 @@ class DriftTests(AbstractTestCollection):
             props={"p_value": str(p_value)}
         ))
 
-    def test_drift_ks_stat(self,
-                           expected_series: pd.Series,
-                           actual_series: pd.Series,
-                           threshold=None,
-                           p_value_threshold=None) -> SingleTestResult:
+    def _calculate_chi_square(self, actual_series, expected_series, max_categories):
+        all_modalities, actual_frequencies, expected_frequencies = self._calculate_frequencies(
+            actual_series, expected_series, max_categories)
+        chi_square = 0
+        # it's necessary for comparison purposes to normalize expected_frequencies
+        # so that train and test has the same size
+        # See https://github.com/scipy/scipy/blob/v1.8.0/scipy/stats/_stats_py.py#L6787
+        k_norm = actual_series.shape[0] / expected_series.shape[0]
+        output_data = pd.DataFrame(columns=["Modality", "Train_frequencies", "Test_frequencies", "Chi_square"])
+        for i in range(len(all_modalities)):
+            chi_square_value = (actual_frequencies[i] - expected_frequencies[i] * k_norm) ** 2 / (
+                    expected_frequencies[i] * k_norm)
+            chi_square += chi_square_value
+
+            row = {"Modality": all_modalities[i],
+                   "Train_frequencies": expected_frequencies[i],
+                   "Test_frequencies": actual_frequencies[i],
+                   "Chi_square": chi_square_value}
+
+            output_data = output_data.append(pd.Series(row), ignore_index=True)
+        # if expected_series and actual_series has only one modality it turns nan (len(all_modalities)=1)
+        p_value = 1 - chi2.cdf(chi_square, len(all_modalities) - 1)
+        return chi_square, p_value, output_data
+
+    def test_drift_ks(self,
+                      expected_series: pd.Series,
+                      actual_series: pd.Series,
+                      threshold=None,
+                      p_value_threshold=None) -> SingleTestResult:
         """
          Compute the the two-sample Kolmogorov-Smirnov test (goodness of fit)
          for a numerical variable between a train and test datasets
@@ -178,7 +175,7 @@ class DriftTests(AbstractTestCollection):
         :return:
         """
 
-        result: Ks_2sampResult = ks_2samp(expected_series, actual_series)
+        result = self._calculate_ks(actual_series, expected_series)
 
         return self.save_results(SingleTestResult(
             passed=(threshold is None or result.statistic <= threshold) and
@@ -186,6 +183,10 @@ class DriftTests(AbstractTestCollection):
             metric=result.statistic,
             props={"p_value": str(result.pvalue)})
         )
+
+    @staticmethod
+    def _calculate_ks(actual_series, expected_series) -> Ks_2sampResult:
+        return ks_2samp(expected_series, actual_series)
 
     def test_drift_earth_movers_distance(self,
                                          expected_series: Union[np.ndarray, pd.Series],
@@ -213,14 +214,18 @@ class DriftTests(AbstractTestCollection):
         Any
             The computed Wasserstein distance between the two distributions.
         """
+        metric = self._calculate_earth_movers_distance(actual_series, expected_series)
+        return self.save_results(SingleTestResult(
+            passed=True if threshold is None else metric <= threshold,
+            metric=metric
+        ))
+
+    def _calculate_earth_movers_distance(self, actual_series, expected_series):
         unique_train = np.unique(expected_series)
         unique_test = np.unique(actual_series)
-
         sample_space = list(set(unique_train).union(set(unique_test)))
-
         val_max = max(sample_space)
         val_min = min(sample_space)
-
         if val_max == val_min:
             metric = 0
         else:
@@ -229,20 +234,17 @@ class DriftTests(AbstractTestCollection):
             actual_series = (actual_series - val_min) / (val_max - val_min)
 
             metric = wasserstein_distance(expected_series, actual_series)
-        return self.save_results(SingleTestResult(
-            passed=True if threshold is None else metric <= threshold,
-            metric=metric
-        ))
+        return metric
 
     def test_drift_prediction_psi(self, df_train: pd.DataFrame, df_test: pd.DataFrame, model: ModelInspector,
                                   max_categories: int = 10, psi_threshold: float = 0.2,
                                   psi_contribution_percent: float = 0.2):
-        label_train = run_predict(df_train, model).prediction
-        label_test = run_predict(df_test, model).prediction
-        total_psi, output_data = self._calculate_drift_psi(label_train, label_test, max_categories)
+        prediction_train = run_predict(df_train, model).prediction
+        prediction_test = run_predict(df_test, model).prediction
+        total_psi, output_data = self._calculate_drift_psi(prediction_train, prediction_test, max_categories)
 
-        passed = True if psi_threshold is None else total_psi < psi_threshold
-        messages = None
+        passed = True if psi_threshold is None else total_psi <= psi_threshold
+        messages: Union[typing.List[TestMessage], None] = None
         if not passed:
             main_drifting_modalities_bool = output_data["Psi"] > psi_contribution_percent * total_psi
             modalities_list = output_data[main_drifting_modalities_bool]["Modality"].tolist()
@@ -255,4 +257,65 @@ class DriftTests(AbstractTestCollection):
             passed=passed,
             metric=total_psi,
             messages=messages
+        ))
+
+    def test_drift_prediction_chi_square(self, df_train, df_test, model,
+                                         max_categories: int = 10,
+                                         chi_square_threshold: float = None,
+                                         chi_square_contribution_percent: float = 0.2):
+        prediction_train = run_predict(df_train, model).prediction
+        prediction_test = run_predict(df_test, model).prediction
+        chi_square, p_value, output_data = self._calculate_chi_square(prediction_train, prediction_test, max_categories)
+
+        passed = True if chi_square_threshold is None else chi_square <= chi_square_threshold
+        messages: Union[typing.List[TestMessage], None] = None
+        if not passed:
+            main_drifting_modalities_bool = output_data["Chi_square"] > chi_square_contribution_percent * chi_square
+            modalities_list = output_data[main_drifting_modalities_bool]["Modality"].tolist()
+            messages = [TestMessage(
+                type=TestMessageType.ERROR,
+                text=f"The prediction is drifting for the following modalities {*modalities_list,}"
+            )]
+
+        return self.save_results(SingleTestResult(
+            passed=passed,
+            metric=chi_square,
+            messages=messages
+        ))
+
+    def test_drift_prediction_ks(self,
+                                 df_train: pd.DataFrame,
+                                 df_test: pd.DataFrame,
+                                 model: ModelInspector,
+                                 threshold=None) -> SingleTestResult:
+        prediction_train = run_predict(df_train, model).prediction
+        prediction_test = run_predict(df_test, model).prediction
+        result: Ks_2sampResult = self._calculate_ks(prediction_train, prediction_test)
+        passed = True if threshold is None else result.statistic <= threshold
+        messages: Union[typing.List[TestMessage], None] = None
+        if not passed:
+            messages = [TestMessage(
+                type=TestMessageType.ERROR,
+                text=f"The prediction is drifting (pvalue is equal to {result.pvalue} and is below the test risk level {threshold})"
+            )]
+
+        return self.save_results(SingleTestResult(
+            passed=passed,
+            metric=result.statistic,
+            props={"p_value": str(result.pvalue)},
+            messages=messages
+        ))
+
+    def test_drift_prediction_earth_movers_distance(self,
+                                                    df_train: pd.DataFrame,
+                                                    df_test: pd.DataFrame,
+                                                    model: ModelInspector,
+                                                    threshold=None) -> SingleTestResult:
+        prediction_train = run_predict(df_train, model).prediction
+        prediction_test = run_predict(df_test, model).prediction
+        metric = self._calculate_earth_movers_distance(prediction_train, prediction_test)
+
+        return self.save_results(SingleTestResult(
+            passed=True if threshold is None else metric <= threshold,
+            metric=metric,
         ))

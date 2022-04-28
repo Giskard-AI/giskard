@@ -100,7 +100,7 @@
                                 v-on='on'>mdi-information
                         </v-icon>
                       </template>
-                      <span>{{ snippet.hint }}</span>
+                      <span>{{ child.hint }}</span>
                     </v-tooltip>
                   </v-list-item-action>
                 </v-list-item>

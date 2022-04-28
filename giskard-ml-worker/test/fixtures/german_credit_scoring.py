@@ -28,7 +28,6 @@ def german_credit_test_data(german_credit_data):
 
 @pytest.fixture()
 def german_credit_model(german_credit_data) -> ModelInspector:
-    logging.info('Training German credit scoring classification model')
     start = time.time()
 
     input_types = {'account_check_status': "category",

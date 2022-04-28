@@ -71,19 +71,19 @@ def test_drift_chi_square_pass_fail():
 def test_drift_ks_stat():
     tests = GiskardTestFunctions()
 
-    assert tests.drift.test_drift_ks_stat(expected_series=SERIES_100_A, actual_series=SERIES_100_A).metric == 0
+    assert tests.drift.test_drift_ks(expected_series=SERIES_100_A, actual_series=SERIES_100_A).metric == 0
 
-    assert pytest.approx(tests.drift.test_drift_ks_stat(
+    assert pytest.approx(tests.drift.test_drift_ks(
         expected_series=SERIES_100_A, actual_series=SERIES_100_B).metric, 0.1) == 1
 
-    assert pytest.approx(tests.drift.test_drift_ks_stat(
+    assert pytest.approx(tests.drift.test_drift_ks(
         expected_series=SERIES_1, actual_series=SERIES_2).metric, 0.1) == 0.3
 
 
 def test_drift_ks_stat_pass_fail():
     tests = GiskardTestFunctions()
-    assert not tests.drift.test_drift_ks_stat(expected_series=SERIES_1, actual_series=SERIES_2, threshold=0.2).passed
-    assert tests.drift.test_drift_ks_stat(expected_series=SERIES_1, actual_series=SERIES_2, threshold=0.4).passed
+    assert not tests.drift.test_drift_ks(expected_series=SERIES_1, actual_series=SERIES_2, threshold=0.2).passed
+    assert tests.drift.test_drift_ks(expected_series=SERIES_1, actual_series=SERIES_2, threshold=0.4).passed
 
 
 def test_drift_earth_movers_distance():
@@ -122,3 +122,59 @@ def _test_drift_prediction_psi(german_credit_test_data, german_credit_model, thr
 def test_drift_prediction_psi_pass_fail(german_credit_test_data, german_credit_model):
     assert not _test_drift_prediction_psi(german_credit_test_data, german_credit_model, 0.02)
     assert _test_drift_prediction_psi(german_credit_test_data, german_credit_model, 0.1)
+
+
+def _test_drift_prediction_chi_square(german_credit_test_data, german_credit_model, threshold=0.02):
+    tests = GiskardTestFunctions()
+    results = tests.drift.test_drift_prediction_chi_square(
+        german_credit_test_data[:len(german_credit_test_data) // 2],
+        german_credit_test_data[len(german_credit_test_data) // 2:],
+        german_credit_model,
+        chi_square_threshold=threshold)
+
+    assert pytest.approx(results.metric, 0.1) == 16.2
+    return results.passed
+
+
+def test_drift_prediction_chi_square_pass_fail(german_credit_test_data, german_credit_model):
+    assert not _test_drift_prediction_chi_square(german_credit_test_data, german_credit_model, 15)
+    assert _test_drift_prediction_chi_square(german_credit_test_data, german_credit_model, 17)
+
+
+def _test_drift_prediction_ks(diabetes_dataset_with_target, linear_regression_diabetes, threshold=0.02):
+    tests = GiskardTestFunctions()
+    df = diabetes_dataset_with_target
+    results = tests.drift.test_drift_prediction_ks(
+        df[:len(df) // 2],
+        df[len(df) // 2:],
+        linear_regression_diabetes,
+        threshold=threshold)
+
+    assert pytest.approx(results.metric, 0.1) == 0.07
+    return results.passed
+
+
+def test_drift_prediction_ks_pass_fail(diabetes_dataset_with_target, linear_regression_diabetes):
+    assert not _test_drift_prediction_ks(diabetes_dataset_with_target, linear_regression_diabetes, 0.06)
+    assert _test_drift_prediction_ks(diabetes_dataset_with_target, linear_regression_diabetes, 0.08)
+
+
+def _test_drift_prediction_earth_movers_distance(diabetes_dataset_with_target, linear_regression_diabetes,
+                                                 threshold=0.02):
+    tests = GiskardTestFunctions()
+    df = diabetes_dataset_with_target
+    results = tests.drift.test_drift_prediction_earth_movers_distance(
+        df[:len(df) // 2],
+        df[len(df) // 2:],
+        linear_regression_diabetes,
+        threshold=threshold)
+
+    assert pytest.approx(results.metric, 0.1) == 0.02
+    return results.passed
+
+
+def test_drift_prediction_earth_movers_distance_pass_fail(diabetes_dataset_with_target, linear_regression_diabetes):
+    assert not _test_drift_prediction_earth_movers_distance(
+        diabetes_dataset_with_target, linear_regression_diabetes, 0.01)
+    assert _test_drift_prediction_earth_movers_distance(
+        diabetes_dataset_with_target, linear_regression_diabetes, 0.03)
