@@ -65,12 +65,12 @@
 
 <script lang='ts'>
 
-import { ITest, ITestExecutionResult, TestStatus } from '@/interfaces';
 import { Prop, Vue } from 'vue-property-decorator';
 import Component from 'vue-class-component';
 import TestSuiteCreateModal from '@/views/main/project/modals/TestSuiteCreateModal.vue';
 import { api } from '@/api';
 import TestCreateModal from '@/views/main/project/modals/TestCreateModal.vue';
+import { TestDTO, TestExecutionResultDTO, TestResult } from '@/generated-sources';
 
 @Component({
   components: { TestSuiteCreateModal, TestCreateModal }
@@ -78,17 +78,17 @@ import TestCreateModal from '@/views/main/project/modals/TestCreateModal.vue';
 export default class Tests extends Vue {
   @Prop({ required: true }) suiteId!: number;
 
-  tests: { [id: number]: ITest } = {};
+  tests: { [id: number]: TestDTO } = {};
   isTestSuiteRunning = false;
   runningTestIds = new Set();
 
-  testStatusToColor(status: TestStatus) {
+  testStatusToColor(status: TestResult) {
     switch (status) {
-      case 'PASSED':
+      case TestResult.PASSED:
         return 'green lighten-2';
-      case 'FAILED':
+      case TestResult.FAILED:
         return 'orange lighten-2';
-      case 'ERROR':
+      case TestResult.ERROR:
         return 'red lighten-2';
       default:
         return 'grey lighten-2';
@@ -104,7 +104,7 @@ export default class Tests extends Vue {
     try {
 
       let res = (await api.executeTestSuite(this.suiteId)).data;
-      res.forEach((testResult: ITestExecutionResult) => {
+      res.forEach((testResult: TestExecutionResultDTO) => {
         Tests.applyTestExecutionResults(this.tests[testResult.testId], testResult);
       });
     } finally {
@@ -136,7 +136,7 @@ export default class Tests extends Vue {
     await this.init();
   }
 
-  public async runTest(event: Event, test: ITest) {
+  public async runTest(event: Event, test: TestDTO) {
     event.stopPropagation();
     this.runningTestIds.add(test.id);
     this.$forceUpdate();
@@ -149,7 +149,7 @@ export default class Tests extends Vue {
     }
   }
 
-  private static applyTestExecutionResults(test: ITest, runResult: ITestExecutionResult) {
+  private static applyTestExecutionResults(test: TestDTO, runResult: TestExecutionResultDTO) {
     test.lastExecutionDate = runResult.executionDate;
     test.status = runResult.status;
   }

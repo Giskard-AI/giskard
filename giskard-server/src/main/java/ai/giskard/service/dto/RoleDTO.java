@@ -1,6 +1,7 @@
 package ai.giskard.service.dto;
 
 import ai.giskard.domain.User;
+import com.dataiku.j2ts.annotations.UIModel;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.NoArgsConstructor;
 
@@ -12,6 +13,7 @@ import javax.validation.constraints.Size;
  * A DTO representing a user, with only the public attributes.
  */
 @NoArgsConstructor
+@UIModel
 public class RoleDTO {
 
     @lombok.Setter

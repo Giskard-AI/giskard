@@ -1,6 +1,7 @@
 package ai.giskard.service.dto.ml;
 
 import ai.giskard.domain.ml.TestSuite;
+import com.dataiku.j2ts.annotations.UIModel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -8,6 +9,7 @@ import lombok.Setter;
 import javax.validation.constraints.NotNull;
 
 @NoArgsConstructor
+@UIModel
 public class TestSuiteDTO {
     @Setter
     @Getter
