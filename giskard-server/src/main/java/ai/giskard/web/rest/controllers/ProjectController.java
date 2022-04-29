@@ -89,10 +89,8 @@ public class ProjectController {
      */
     @DeleteMapping(value = "/project/{id}")
     @PreAuthorize("@permissionEvaluator.canWriteProject( #id)")
-    public Map<String, String> delete(@PathVariable("id") Long id) {
-        boolean isSuccess = this.projectService.delete(id);
-        String msg = isSuccess ? "Deleted" : "Error";
-        return Collections.singletonMap("msg", msg);
+    public void delete(@PathVariable("id") Long id) {
+        this.projectService.delete(id);
     }
 
     /**
