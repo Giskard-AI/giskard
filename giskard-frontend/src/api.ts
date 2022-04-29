@@ -31,7 +31,8 @@ axios.interceptors.request.use(function(config) {
 axiosProject.interceptors.response.use(resp => {
     if (Array.isArray(resp.data)) {
         resp.data.map(p => p.created_on = new Date(p.created_on));
-    } else {
+    }
+    else if (resp.data.hasOwnProperty("created_on"))  {
         resp.data.created_on = new Date(resp.data.created_on);
     }
     return resp;
