@@ -29,8 +29,4 @@ public class ProjectPostDTO {
     @Getter
     @NotNull
     private String description;
-
-    @Getter
-    @NotNull
-    private String description;
 }

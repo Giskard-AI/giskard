@@ -1,14 +1,8 @@
-import type {ProjectDTO} from './project-dto';
+import type {_FileDTO} from './file-dto';
 
 /**
  * Generated from ai.giskard.service.dto.ml.ModelDTO
  */
-export interface ModelDTO {
-    creation_date: any /* TODO: Missing translation of java.time.LocalDateTime */;
-    filename: string;
-    id: number;
-    location: string;
-    name: string;
-    project: ProjectDTO;
+export interface ModelDTO extends _FileDTO {
     python_version: string;
 }

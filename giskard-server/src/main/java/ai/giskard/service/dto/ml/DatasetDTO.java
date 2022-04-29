@@ -14,7 +14,7 @@ public class DatasetDTO extends FileDTO {
 
     public DatasetDTO(Dataset dataset) {
         this.id = dataset.getId();
-        this.fileName = dataset.getFileName();
-        this.name = dataset.getName();
+        this.setFileName(dataset.getFileName());
+        this.setName(dataset.getName());
     }
 }

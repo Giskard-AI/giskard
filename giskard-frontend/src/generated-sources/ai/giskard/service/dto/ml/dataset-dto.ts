@@ -1,6 +1,6 @@
-import type {ModelDTO} from './model-dto';
+import type {_FileDTO} from './file-dto';
 
 /**
  * Generated from ai.giskard.service.dto.ml.DatasetDTO
  */
-export interface DatasetDTO extends ModelDTO {}
+export interface DatasetDTO extends _FileDTO {}
