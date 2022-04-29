@@ -111,16 +111,24 @@ export default class InspectorWrapper extends Vue {
     await this.fetchRowData(0);
   }
 
-  beforeRouteEnter(to, from, next) {
-    next(vm => {
-      vm.mouseTrap.bind('left', vm.previous);
-      vm.mouseTrap.bind('right', vm.next);
-    });
+  bindKeys() {
+    this.mouseTrap.bind('left', this.previous);
+    this.mouseTrap.bind('right', this.next);
   }
 
-  beforeRouteLeave(to, from, next) {
+  resetKeys() {
     this.mouseTrap.reset();
-    next();
+  }
+
+  /**
+   * Call on active tab
+   */
+  activated() {
+    this.bindKeys();
+  }
+
+  deactivated() {
+    this.resetKeys();
   }
 
   public next() {
