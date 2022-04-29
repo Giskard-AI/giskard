@@ -6,7 +6,7 @@ import ai.giskard.repository.UserRepository;
 import ai.giskard.security.AuthoritiesConstants;
 import ai.giskard.service.MailService;
 import ai.giskard.service.UserService;
-import ai.giskard.service.dto.AdminUserDTO;
+import ai.giskard.web.dto.user.AdminUserDTO;
 import ai.giskard.web.rest.errors.BadRequestAlertException;
 import ai.giskard.web.rest.errors.EmailAlreadyUsedException;
 import ai.giskard.web.rest.errors.LoginAlreadyUsedException;

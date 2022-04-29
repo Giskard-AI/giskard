@@ -2,7 +2,7 @@ package ai.giskard.domain.ml.testing;
 
 import ai.giskard.domain.AbstractAuditingEntity;
 import ai.giskard.domain.ml.CodeLanguage;
-import ai.giskard.service.dto.ml.CodeBasedTestPresetDTO;
+import ai.giskard.web.dto.ml.CodeBasedTestPresetDTO;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;

@@ -1,8 +1,8 @@
 package ai.giskard.web.rest;
 
 import ai.giskard.service.UserService;
-import ai.giskard.service.dto.AdminUserDTO;
-import ai.giskard.service.dto.UserDTO;
+import ai.giskard.web.dto.user.AdminUserDTO;
+
 import java.util.*;
 import java.util.Collections;
 import org.slf4j.Logger;

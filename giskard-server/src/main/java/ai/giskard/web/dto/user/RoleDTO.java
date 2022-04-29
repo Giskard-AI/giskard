@@ -1,4 +1,4 @@
-package ai.giskard.service.dto;
+package ai.giskard.web.dto.user;
 
 import lombok.NoArgsConstructor;
 

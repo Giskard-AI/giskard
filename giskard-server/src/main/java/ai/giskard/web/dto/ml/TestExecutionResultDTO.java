@@ -1,9 +1,8 @@
-package ai.giskard.service.dto.ml;
+package ai.giskard.web.dto.ml;
 
 import ai.giskard.domain.ml.TestResult;
 import ai.giskard.worker.TestResultMessage;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.Date;

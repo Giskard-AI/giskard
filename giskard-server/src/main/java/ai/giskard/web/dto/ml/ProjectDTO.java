@@ -1,6 +1,6 @@
-package ai.giskard.service.dto.ml;
+package ai.giskard.web.dto.ml;
 
-import ai.giskard.service.dto.UserDTO;
+import ai.giskard.web.dto.user.UserDTO;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
