@@ -22,7 +22,6 @@
 
 <script lang="ts">
 
-import {IProjectFile} from "@/interfaces";
 import {Prop, Vue} from "vue-property-decorator";
 import Component from "vue-class-component";
 import TestSuiteCreateModal from "@/views/main/project/modals/TestSuiteCreateModal.vue";

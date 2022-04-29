@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { apiUrl, apiUrlJava } from '@/env';
 import {
-    IUserProfileUpdate, IUserProfileCreate, IUserProfileMinimal, IProjectFile, IProjetFileModel, IDataMetadata, IModelMetadata,
+    IUserProfileUpdate, IUserProfileCreate, IUserProfileMinimal, IDataMetadata, IModelMetadata,
     IFeedbackCreate, IFeedbackForList, IFeedbackDisplay
 } from './interfaces';
 import { getLocalToken } from '@/utils';
@@ -11,7 +11,7 @@ import {
     TestDTO,
     TestSuiteDTO,
     TestExecutionResultDTO,
-    ProjectPostDTO, AppConfigDTO, AdminUserDTO
+    ProjectPostDTO, AppConfigDTO, AdminUserDTO, FileDTO, ModelDTO
 } from '@/generated-sources';
 import AdminUserDTOMigration = AdminUserDTO.AdminUserDTOMigration;
 
@@ -123,7 +123,7 @@ export const api = {
     },
     // Models
     async getProjectModels(token: string, id: number) {
-        return axiosProject.get<IProjetFileModel[]>(`/${id}/models`, authHeaders(token));
+        return axiosProject.get<ModelDTO[]>(`/${id}/models`, authHeaders(token));
     },
     async deleteDatasetFile(token: string, id: number) {
         return axios.delete(`${apiUrl}/api/v1/files/datasets/${id}`, authHeaders(token));
@@ -147,7 +147,7 @@ export const api = {
         return axios.get(`${apiUrl}/api/v1/files/datasets/${datasetId}/row/random`, authHeaders(token));
     },
     async getProjectDatasets(token: string, id: number) {
-        return axiosProject.get<IProjectFile[]>(`/${id}/datasets`, authHeaders(token));
+        return axiosProject.get<FileDTO[]>(`/${id}/datasets`, authHeaders(token));
     },
     async uploadDataFile(token: string, projectId: number, fileData: any) {
         const formData = new FormData();
