@@ -18,6 +18,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Controller for the {@link Project} resource
+ */
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v2")
