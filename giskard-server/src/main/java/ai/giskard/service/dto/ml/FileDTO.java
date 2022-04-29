@@ -1,6 +1,5 @@
 package ai.giskard.service.dto.ml;
 
-import ai.giskard.domain.ml.ProjectModel;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
@@ -28,13 +27,16 @@ public abstract class FileDTO {
     @JsonProperty("file_name")
     protected String fileName;
 
-    @JsonProperty("name")
     private String name;
 
     @JsonProperty("creation_date")
     protected LocalDateTime createdOn;
 
     protected String location;
+
+    public String getName() {
+        return name != null ? name : fileName;
+    }
 
     public Long getSize() throws IOException {
         Path path = Paths.get(location);
