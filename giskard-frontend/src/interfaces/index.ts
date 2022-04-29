@@ -1,6 +1,3 @@
-export interface IProjetFileDataset extends IProjectFile {
-}
-
 export interface IUserProfileUpdate {
   email?: string;
   display_name?: string;
@@ -22,19 +19,6 @@ export interface IUserProfileMinimal {
   user_id: string,
   display_name?: string
 }
-
-export interface IProjectFile {
-  id: number,
-  name: string,
-  size: number,
-  creation_date: string,
-  file_name: string;
-}
-
-export interface IProjetFileModel extends IProjectFile {
-  python_version: string;
-}
-
 
 export interface IDataMetadata {
   feat_name: string,
