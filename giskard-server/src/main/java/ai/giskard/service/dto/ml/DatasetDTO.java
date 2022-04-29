@@ -8,7 +8,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-public class DatasetDTO extends ModelDTO {
+public class DatasetDTO extends FileDTO {
 
     public DatasetDTO(Dataset dataset) {
         this.id = dataset.getId();
