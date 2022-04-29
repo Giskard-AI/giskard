@@ -126,14 +126,14 @@ def generate_password_reset_token(email: str) -> str:
     encoded_jwt = jwt.encode(
         {"exp": exp, "nbf": now, "sub": email},
         settings.SECRET_KEY,
-        algorithm="HS256",
+        algorithm="HS512",
     )
     return encoded_jwt
 
 
 def verify_password_reset_token(token: str) -> Optional[str]:
     try:
-        decoded_token = jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
+        decoded_token = jwt.decode(token, settings.SECRET_KEY, algorithms=["HS512"])
         expiryDate = datetime.fromtimestamp(decoded_token["exp"])
         if expiryDate < datetime.utcnow():
             return None
@@ -151,14 +151,14 @@ def generate_signup_token(issuer: str, recipient: str = "") -> str:
     encoded_jwt = jwt.encode(
         {"exp": exp, "nbf": now, "iss": issuer, "sub": recipient},
         settings.SECRET_KEY,
-        algorithm="HS256",
+        algorithm="HS512",
     )
     return encoded_jwt
 
 
 def decode_signup_token(token: str) -> Optional[str]:
     try:
-        decoded_token = jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
+        decoded_token = jwt.decode(token, settings.SECRET_KEY, algorithms=["HS512"])
         expiryDate = datetime.fromtimestamp(decoded_token["exp"])
         if expiryDate < datetime.utcnow():
             return None
@@ -170,7 +170,7 @@ def decode_signup_token(token: str) -> Optional[str]:
 
 def verify_api_access_token(token: str) -> Optional[str]:
     try:
-        decoded_token = jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
+        decoded_token = jwt.decode(token, settings.SECRET_KEY, algorithms=["HS512"])
         return decoded_token["sub"]
     except jwt.JWTError as e:
         logging.error(f"Exception while decoding JWT token: {e}")

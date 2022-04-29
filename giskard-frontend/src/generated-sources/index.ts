@@ -9,6 +9,7 @@ export const GENERATED_MAPPING = {
     'ai.giskard.domain.ml.TestResult' : 'TestResult',
     'ai.giskard.service.dto.ml.ExecuteTestSuiteRequest' : 'ExecuteTestSuiteRequest',
     'ai.giskard.service.dto.ml.TestDTO' : 'TestDTO',
+    'ai.giskard.web.dto.JWTToken' : 'JWTToken',
     'ai.giskard.service.dto.ml.NamedSingleTestResultDTO' : 'NamedSingleTestResultDTO',
     'ai.giskard.service.dto.UserDTO' : 'UserDTO',
     'ai.giskard.service.dto.ml.SingleTestResultDTO' : 'SingleTestResultDTO',
@@ -35,6 +36,7 @@ export * from './ai/giskard/service/dto/admin-user-dto';
 export * from './ai/giskard/domain/ml/test-result';
 export * from './ai/giskard/service/dto/ml/execute-test-suite-request';
 export * from './ai/giskard/service/dto/ml/test-dto';
+export * from './ai/giskard/web/dto/jwttoken';
 export * from './ai/giskard/service/dto/ml/named-single-test-result-dto';
 export * from './ai/giskard/service/dto/user-dto';
 export * from './ai/giskard/service/dto/ml/single-test-result-dto';

@@ -7,12 +7,11 @@ import ai.giskard.service.MailService;
 import ai.giskard.service.UserService;
 import ai.giskard.service.dto.AdminUserDTO;
 import ai.giskard.service.dto.PasswordChangeDTO;
-import ai.giskard.web.rest.errors.*;
+import ai.giskard.web.rest.errors.EmailAlreadyUsedException;
+import ai.giskard.web.rest.errors.InvalidPasswordException;
+import ai.giskard.web.rest.errors.LoginAlreadyUsedException;
 import ai.giskard.web.rest.vm.KeyAndPasswordVM;
 import ai.giskard.web.rest.vm.ManagedUserVM;
-import java.util.*;
-import javax.servlet.http.HttpServletRequest;
-import javax.validation.Valid;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,6 +19,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.validation.Valid;
+import java.util.Optional;
 
 /**
  * REST controller for managing the current user's account.

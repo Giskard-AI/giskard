@@ -37,5 +37,5 @@ def get_password_hash(password: str) -> str:
 def create_api_access_token(user_id: str) -> str:
     return jwt.encode(
         {"sub": user_id, "nbf": datetime.utcnow()},
-        settings.SECRET_KEY, algorithm="HS256")
+        settings.SECRET_KEY, algorithm="HS512")
     # TODO: store in DB as well? to show to user later
