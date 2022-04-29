@@ -38,7 +38,7 @@ export default class TestSuites extends Vue {
   testSuites: Array<TestSuiteDTO> = []
 
   private getProjectFileName(obj: ModelDTO | DatasetDTO) {
-    return obj ? (obj.name || obj.filename) : "";
+    return obj ? (obj.name || obj.file_name) : "";
   }
 
   get tableHeaders() {

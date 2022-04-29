@@ -17,9 +17,11 @@ public class ProjectPostDTO {
     @NotNull
     @UINullable
     private Long id;
+
     @Getter
     @NotNull
     private String name;
+
     @Getter
     @NotNull
     @UINullable
@@ -28,4 +30,7 @@ public class ProjectPostDTO {
     @NotNull
     private String description;
 
+    @Getter
+    @NotNull
+    private String description;
 }

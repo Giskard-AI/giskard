@@ -67,7 +67,7 @@ public class ProjectService {
      * @return boolean
      */
     public boolean isUserInGuestList(Set<User> userList) {
-        return userList.stream().anyMatch(guest -> guest.getLogin().equals(SecurityUtils.getCurrentUserLogin().get()));
+        return userList.stream().anyMatch(guest -> guest.getLogin().equals(SecurityUtils.getCurrentAuthenticatedUserLogin()));
     }
 
     /**
@@ -118,7 +118,7 @@ public class ProjectService {
      * @return list of projects
      */
     public List<ProjectDTO> list() {
-        String username = SecurityUtils.getCurrentUserLogin().get().toLowerCase();
+        String username = SecurityUtils.getCurrentAuthenticatedUserLogin().toLowerCase();
         User user = userRepository.findOneByLogin(username).orElseThrow(() -> new NotInDatabaseException(Entity.USER, username));
         List<Project> projects;
         if (SecurityUtils.isAdmin()) {

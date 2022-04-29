@@ -33,6 +33,4 @@ public class ProjectDTO {
     @Getter
     @JsonProperty("created_on")
     private LocalDateTime createdOn;
-
-
 }

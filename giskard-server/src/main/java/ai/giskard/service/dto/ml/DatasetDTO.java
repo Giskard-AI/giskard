@@ -10,7 +10,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @UIModel
-public class DatasetDTO extends ModelDTO {
+public class DatasetDTO extends FileDTO {
 
     public DatasetDTO(Dataset dataset) {
         this.id = dataset.getId();

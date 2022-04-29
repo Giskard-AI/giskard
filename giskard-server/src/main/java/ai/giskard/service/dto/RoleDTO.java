@@ -5,7 +5,6 @@ import com.dataiku.j2ts.annotations.UIModel;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.NoArgsConstructor;
 
-import javax.persistence.Column;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
@@ -25,6 +24,4 @@ public class RoleDTO {
     @NotNull
     @Size(max = 50)
     private String name;
-
-
 }
