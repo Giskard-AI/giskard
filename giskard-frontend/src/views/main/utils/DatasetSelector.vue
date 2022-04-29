@@ -16,20 +16,20 @@
 import Component from "vue-class-component";
 import Vue from "vue";
 import axios from "axios";
-import {IProjetFileDataset, IProjetFileModel} from "@/interfaces";
 import {apiUrlJava} from "@/env";
 import {Prop} from "vue-property-decorator";
+import { DatasetDTO, ModelDTO } from '@/generated-sources';
 
 @Component
 export default class DatasetSelector extends Vue {
   @Prop({required: true}) projectId!: number;
   @Prop({default: 'Dataset', required: true}) label!: string;
-  @Prop() value?: IProjetFileDataset;
-  projectDatasets: Array<IProjetFileDataset> = [];
+  @Prop() value?: DatasetDTO;
+  projectDatasets: Array<DatasetDTO> = [];
 
-  extractDatasetName(dataset: IProjetFileDataset) {
+  extractDatasetName(dataset: DatasetDTO) {
     console.log(dataset)
-    return dataset.name || dataset.filename;
+    return dataset.name || dataset.file_name;
   }
 
   onInput(value) {
@@ -37,7 +37,7 @@ export default class DatasetSelector extends Vue {
   }
 
   async mounted() {
-    this.projectDatasets = (await axios.get<Array<IProjetFileModel>>(`${apiUrlJava}/api/v2/project/datasets`, {params: {projectId: this.projectId}})).data;
+    this.projectDatasets = (await axios.get<Array<ModelDTO>>(`${apiUrlJava}/api/v2/project/datasets`, {params: {projectId: this.projectId}})).data;
   }
 }
 </script>

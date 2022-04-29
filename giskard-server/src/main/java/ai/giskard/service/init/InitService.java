@@ -1,6 +1,5 @@
-package ai.giskard.service;
+package ai.giskard.service.init;
 
-import ai.giskard.config.Constants;
 import ai.giskard.domain.Project;
 import ai.giskard.domain.Role;
 import ai.giskard.domain.User;
@@ -9,33 +8,41 @@ import ai.giskard.repository.ProjectRepository;
 import ai.giskard.repository.UserRepository;
 import ai.giskard.security.AuthoritiesConstants;
 import ai.giskard.service.UserService;
-import ai.giskard.web.rest.vm.ManagedUserVM;
-import org.springframework.beans.factory.annotation.Autowired;
+import ai.giskard.web.rest.errors.Entity;
+import ai.giskard.web.rest.errors.EntityNotFoundException;
+import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class InitService {
 
-    @Autowired
-    UserRepository userRepository;
+    private final Logger logger = LoggerFactory.getLogger(InitService.class);
 
-    @Autowired
-    AuthorityRepository authorityRepository;
+    final UserRepository userRepository;
 
-    @Autowired
-    UserService userService;
+    final AuthorityRepository authorityRepository;
 
-    @Autowired
-    ProjectRepository projectRepository;
+    final UserService userService;
+
+    final ProjectRepository projectRepository;
+
+    final PasswordEncoder passwordEncoder;
+
 
     String[] mockKeys = Arrays.stream(AuthoritiesConstants.authorities).map(key -> key.replace("ROLE_", "")).toArray(String[]::new);
     public Map<String, String> users = Arrays.stream(mockKeys).collect(Collectors.toMap(String::toLowerCase, String::toLowerCase));
     public Map<String, String> projects = Arrays.stream(mockKeys).collect(Collectors.toMap(String::toLowerCase, name -> name + "Project"));
+
 
     public String getUserName(String key) {
         return users.get(key);
@@ -68,35 +75,38 @@ public class InitService {
      */
     public void initAuthorities() {
         Arrays.stream(AuthoritiesConstants.authorities).forEach(authName -> {
+            if (authorityRepository.findByName(authName).isPresent()) {
+                logger.info("Authority {} already exists", authName);
+                return;
+            }
             Role role = new Role();
             role.setName(authName);
+
             authorityRepository.save(role);
+
         });
     }
 
     /**
      * Registering the specified user
      *
-     * @param key  key string used for identifying the user
-     * @param role role given to the user
+     * @param key      key string used for identifying the user
+     * @param roleName role given to the user
      * @return
      */
-    private User saveUser(String key, String role) {
-        ManagedUserVM validUser = new ManagedUserVM();
-        validUser.setLogin(key);
-        validUser.setPassword(key);
-        validUser.setFirstName(key);
-        validUser.setLastName(key);
-        validUser.setEmail(String.format("%s@%s", key, "giskard.ai"));
-        validUser.setActivated(true);
-        validUser.setImageUrl("http://placehold.it/50x50");
-        validUser.setLangKey(Constants.DEFAULT_LANGUAGE);
-        validUser.setRoles(Collections.singleton(role));
-        return userService.registerUser(validUser, validUser.getPassword());
+    private void saveUser(String key, String roleName) {
+        User user = new User();
+        user.setLogin(key);
+        user.setEmail(String.format("%s@example.com", key.toLowerCase()));
+        user.setActivated(true);
+        Role role = authorityRepository.findByName(roleName).orElseThrow(() -> new EntityNotFoundException(Entity.ROLE, roleName));
+        user.setRole(role);
+        user.setPassword(passwordEncoder.encode(key).toLowerCase());
+        userRepository.saveAndFlush(user);
     }
 
     /**
-     * Initialized with fake projects
+     * Initialized with default projects
      */
     public void initProjects() {
         Arrays.stream(mockKeys).forEach(key -> saveProject(key + "Project", key));
@@ -112,6 +122,10 @@ public class InitService {
         User owner = userRepository.getOneByLogin(ownerLogin.toLowerCase());
         Assert.notNull(owner, "Owner does not exist in database");
         Project project = new Project(key, key, key, owner);
-        projectRepository.save(project);
+        try {
+            projectRepository.save(project);
+        } catch (Exception e) {
+            logger.info(String.format("Project with name %s already exists", key));
+        }
     }
 }

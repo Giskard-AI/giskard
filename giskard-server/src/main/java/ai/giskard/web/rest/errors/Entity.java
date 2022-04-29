@@ -7,7 +7,8 @@ public enum Entity {
     PROJECT_MODEL("Model"),
     TEST_SUITE("Test suite"),
     TEST("Test"),
-    USER("User");
+    USER("User"),
+    ROLE("Role");
 
     @Getter
     private final String name;

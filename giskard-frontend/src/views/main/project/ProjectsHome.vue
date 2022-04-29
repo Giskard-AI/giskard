@@ -28,7 +28,7 @@
         <v-card outlined tile class="grey lighten-5 project" 
           :class="[{'info': hover}]"
           :to="{name: 'project-overview', params: {id: p.id}}" 
-          v-show="creatorFilter == 0 || creatorFilter == 1 && p.owner_id == userProfile.id || creatorFilter == 2 && p.owner_id != userProfile.id">
+          v-show="creatorFilter == 0 || creatorFilter == 1 && p.owner_details.id == userProfile.id || creatorFilter == 2 && p.owner_details.id != userProfile.id">
           <v-row class="pa-2">
             <v-col cols=3>
               <div class="subtitle-2 primary--text text--darken-1">{{ p.name }}</div>
@@ -37,7 +37,7 @@
               <div>{{ p.description || "-"}}</div>
             </v-col>
             <v-col cols=2>
-              <div :class="{'font-weight-bold': p.owner_id == userProfile.id}">
+              <div :class="{'font-weight-bold': p.owner_details.id == userProfile.id}">
                 {{ p.owner_details.user_id == userProfile.user_id ? "me" : (p.owner_details.display_name || p.owner_details.user_id) }}
               </div>
             </v-col>
@@ -87,7 +87,7 @@ import { ValidationObserver } from 'vee-validate'
 import { readUserProfile, readAllProjects, readHasAdminAccess } from '@/store/main/getters';
 import { Role } from '@/enums';
 import { dispatchGetProjects, dispatchCreateProject } from '@/store/main/actions';
-import { IProjectCreate } from '@/interfaces';
+import { ProjectPostDTO } from '@/generated-sources';
 
 @Component
 export default class ProjectsHome extends Vue {
@@ -147,7 +147,7 @@ export default class ProjectsHome extends Vue {
 
   public async submitNewProject() {
     if (this.newProjectName) {
-      const proj: IProjectCreate = {
+      const proj: ProjectPostDTO = {
         name: this.newProjectName.trim(),
         description: this.newProjectDesc.trim(),
       }

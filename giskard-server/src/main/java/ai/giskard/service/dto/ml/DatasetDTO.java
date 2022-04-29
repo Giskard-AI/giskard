@@ -1,29 +1,20 @@
 package ai.giskard.service.dto.ml;
 
 import ai.giskard.domain.ml.Dataset;
+import com.dataiku.j2ts.annotations.UIModel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import javax.validation.constraints.NotNull;
-
 @Getter
 @Setter
 @NoArgsConstructor
-public class DatasetDTO {
-    @NotNull
-    private Long id;
-    @NotNull
-    private String name;
-    @NotNull
-    private Long projectId;
-    private String filename;
-
+@UIModel
+public class DatasetDTO extends FileDTO {
 
     public DatasetDTO(Dataset dataset) {
         this.id = dataset.getId();
-        this.name = dataset.getName();
-        this.projectId = dataset.getProject().getId();
-        this.filename = dataset.getFileName();
+        this.setFileName(dataset.getFileName());
+        this.setName(dataset.getName());
     }
 }

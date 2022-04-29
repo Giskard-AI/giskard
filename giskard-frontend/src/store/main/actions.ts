@@ -1,5 +1,5 @@
 import { api } from '@/api';
-import { IProject, IProjectUpdate, IProjectCreate, IUserProfileCreate } from '@/interfaces';
+import { IUserProfileCreate } from '@/interfaces';
 import router from '@/router';
 import { getLocalToken, removeLocalToken, saveLocalToken } from '@/utils';
 import { AxiosError } from 'axios';
@@ -18,6 +18,7 @@ import {
     commitSetProject, commitSetAppSettings
 } from './mutations';
 import { AppNotification, MainState } from './state';
+import { ProjectPostDTO } from '@/generated-sources';
 
 type MainContext = ActionContext<MainState, State>;
 
@@ -204,7 +205,7 @@ export const actions = {
             await dispatchCheckApiError(context, error);
         }
     },
-    async actionCreateProject(context: MainContext, payload: IProjectCreate) {
+    async actionCreateProject(context: MainContext, payload: ProjectPostDTO) {
         const loadingNotification = { content: 'Saving...', showProgress: true };
         try {
             commitAddNotification(context, loadingNotification);
@@ -231,7 +232,7 @@ export const actions = {
             await dispatchCheckApiError(context, error);
         }
     },
-    async actionEditProject(context: MainContext, payload: {id: number, data: IProjectUpdate}) {
+    async actionEditProject(context: MainContext, payload: {id: number, data: ProjectPostDTO}) {
         const loadingNotification = { content: 'Deleting...', showProgress: true };
         try {
             commitAddNotification(context, loadingNotification);
@@ -245,7 +246,7 @@ export const actions = {
             await dispatchCheckApiError(context, error);
         }
     },
-    async actionInviteUserToProject(context: MainContext, payload: {projectId: number, userId: string}) {
+    async actionInviteUserToProject(context: MainContext, payload: {projectId: number, userId: number}) {
         const loadingNotification = { content: 'Sending...', showProgress: true };
         try {
             commitAddNotification(context, loadingNotification);
@@ -260,7 +261,7 @@ export const actions = {
             throw new Error(error.response.data.detail);
         }
     },
-    async actionUninviteUserFromProject(context: MainContext, payload: {projectId: number, userId: string}) {
+    async actionUninviteUserFromProject(context: MainContext, payload: {projectId: number, userId: number}) {
 		const loadingNotification = { content: 'Sending...', showProgress: true };
         try {
 			commitAddNotification(context, loadingNotification);

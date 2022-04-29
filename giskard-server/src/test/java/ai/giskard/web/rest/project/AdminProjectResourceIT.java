@@ -6,10 +6,12 @@ import ai.giskard.domain.User;
 import ai.giskard.repository.ProjectRepository;
 import ai.giskard.repository.UserRepository;
 import ai.giskard.security.AuthoritiesConstants;
-import ai.giskard.service.InitService;
 import ai.giskard.service.dto.ml.ProjectPostDTO;
+import ai.giskard.service.init.InitService;
 import ai.giskard.service.mapper.GiskardMapper;
 import ai.giskard.web.rest.controllers.ProjectController;
+import ai.giskard.web.rest.errors.Entity;
+import ai.giskard.web.rest.errors.EntityNotFoundException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -225,7 +227,7 @@ class AdminProjectResourceIT {
         String url = String.format("/api/v2/project/%d/guests/%d", project.getId(), user.getId());
         restUserMockMvc.perform(delete(url).accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk());
-        Project updatedProject = projectRepository.getOneWithGuestsById(project.getId());
+        Project updatedProject = projectRepository.findOneWithGuestsById(project.getId()).orElseThrow(() -> new EntityNotFoundException(Entity.PROJECT, project.getId()));
         assertThat(updatedProject.getGuests()).doesNotContain(user);
     }
 

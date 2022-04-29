@@ -1,5 +1,7 @@
 package ai.giskard.domain;
 
+import org.checkerframework.common.aliasing.qual.Unique;
+
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
@@ -25,6 +27,7 @@ public class Role implements Serializable {
     @lombok.Setter
     @lombok.Getter
     @NotNull
+    @Unique
     @Size(max = 50)
     @Column(length = 50)
     private String name;

@@ -3,12 +3,11 @@ package ai.giskard.web.rest.project;
 import ai.giskard.IntegrationTest;
 import ai.giskard.repository.ProjectRepository;
 import ai.giskard.security.AuthoritiesConstants;
-import ai.giskard.service.InitService;
 import ai.giskard.service.dto.ml.ProjectPostDTO;
+import ai.giskard.service.init.InitService;
 import ai.giskard.web.rest.controllers.ProjectController;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.hamcrest.CoreMatchers;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -19,8 +18,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.CoreMatchers.containsString;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
  * Integration tests for the {@link ProjectController} REST controller with AITester authorities

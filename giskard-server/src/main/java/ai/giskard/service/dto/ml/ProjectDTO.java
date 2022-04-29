@@ -1,15 +1,20 @@
 package ai.giskard.service.dto.ml;
 
-import ai.giskard.domain.Project;
+import ai.giskard.service.dto.UserDTO;
+import com.dataiku.j2ts.annotations.UIModel;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.validation.constraints.NotNull;
+import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter
 @Setter
 @NoArgsConstructor
+@UIModel
 public class ProjectDTO {
     @Getter
     @NotNull
@@ -18,15 +23,14 @@ public class ProjectDTO {
     @NotNull
     private String name;
     @Getter
-    private String owner;
+    @JsonProperty("owner_details")
+    private UserDTO owner;
     @Getter
     private String key;
-
-    public ProjectDTO(Project project) {
-        this.id = project.getId();
-        this.name = project.getName();
-        this.owner = project.getOwner().getLogin();
-        this.key = project.getKey();
-
-    }
+    @Getter
+    @JsonProperty("guest_list")
+    private List<UserDTO> guests;
+    @Getter
+    @JsonProperty("created_on")
+    private LocalDateTime createdOn;
 }
