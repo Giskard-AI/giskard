@@ -3,10 +3,8 @@ package ai.giskard.service.mapper;
 import ai.giskard.domain.Project;
 import ai.giskard.domain.ml.Dataset;
 import ai.giskard.domain.ml.ProjectModel;
-import ai.giskard.service.dto.ml.DatasetDTO;
-import ai.giskard.service.dto.ml.ModelDTO;
-import ai.giskard.service.dto.ml.ProjectDTO;
-import ai.giskard.service.dto.ml.ProjectPostDTO;
+import ai.giskard.domain.ml.TestSuite;
+import ai.giskard.service.dto.ml.*;
 import org.mapstruct.BeanMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.MappingTarget;
@@ -20,6 +18,8 @@ public interface GiskardMapper {
     void updateProjectFromDto(ProjectPostDTO dto, @MappingTarget Project entity);
 
     Project projectPostDTOToProject(ProjectPostDTO projectPostDto);
+
+    TestSuiteDTO testSuiteToTestSuiteDTO(TestSuite testSuite);
 
     ProjectPostDTO projectToProjectPostDTO(Project project);
 
