@@ -14,7 +14,9 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
@@ -80,12 +82,14 @@ public class ProjectController {
      * Delete project
      *
      * @param id project's id to delete
-     * @return true if success
+     * @return msg Deleted if deleted
      */
     @DeleteMapping(value = "/project/{id}")
     @PreAuthorize("@permissionEvaluator.canWriteProject( #id)")
-    public boolean delete(@PathVariable("id") Long id) {
-        return this.projectService.delete(id);
+    public Map<String, String> delete(@PathVariable("id") Long id) {
+        boolean isSuccess = this.projectService.delete(id);
+        String msg = isSuccess ? "Deleted" : "Error";
+        return Collections.singletonMap("msg", msg);
     }
 
     /**
