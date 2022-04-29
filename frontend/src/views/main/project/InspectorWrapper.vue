@@ -25,8 +25,8 @@
     <!-- For general feedback -->
     <v-tooltip left>
       <template v-slot:activator="{ on, attrs }">
-      <v-btn fab fixed bottom right 
-        @click="feedbackPopupToggle = !feedbackPopupToggle" 
+      <v-btn fab fixed bottom right
+        @click="feedbackPopupToggle = !feedbackPopupToggle"
         :class="feedbackPopupToggle? 'secondary': 'primary'"
         v-bind="attrs" v-on="on"
         >
@@ -83,6 +83,7 @@ import { readToken } from '@/store/main/getters';
 import { IFeedbackCreate } from '@/interfaces';
 import FeedbackPopover from '@/components/FeedbackPopover.vue';
 import Inspector from './Inspector.vue';
+import Mousetrap from 'mousetrap';
 
 @Component({
   components: { OverlayLoader, Inspector, PredictionResults, FeedbackPopover, PredictionExplanations, TextExplanation }
@@ -92,6 +93,7 @@ export default class InspectorWrapper extends Vue {
 	@Prop({ required: true }) datasetId!: number
   @Prop() targetFeature!: string
 
+  mouseTrap= new Mousetrap();
   loadingData = false;
   inputData = {}
   originalData = {}
@@ -109,6 +111,18 @@ export default class InspectorWrapper extends Vue {
     await this.fetchRowData(0);
   }
 
+  beforeRouteEnter(to, from, next) {
+    next(vm => {
+      vm.mouseTrap.bind('left', vm.previous);
+      vm.mouseTrap.bind('right', vm.next);
+    });
+  }
+
+  beforeRouteLeave(to, from, next) {
+    this.mouseTrap.reset();
+    next();
+  }
+
   public next() {
     this.clearFeedback();
     this.fetchRowData(this.rowNb + 1);
@@ -117,7 +131,7 @@ export default class InspectorWrapper extends Vue {
     this.clearFeedback();
     this.fetchRowData(Math.max(0, this.rowNb - 1))
   }
-  
+
   @Watch("datasetId")
   async reload() {
     await this.fetchRowData(0)
@@ -128,7 +142,7 @@ export default class InspectorWrapper extends Vue {
       this.loadingData = true
       const resp = this.shuffleMode
         ? await api.getDataRandom(readToken(this.$store), this.datasetId)
-        : await api.getDataByRowId(readToken(this.$store), this.datasetId, rowId) 
+        : await api.getDataByRowId(readToken(this.$store), this.datasetId, rowId)
       this.inputData = resp.data
       this.originalData = {...this.inputData} // deep copy to avoid caching mechanisms
       this.rowNb = resp.data.rowNb
@@ -168,7 +182,7 @@ export default class InspectorWrapper extends Vue {
       ...this.commonFeedbackData,
       feedback_type: "general",
       feedback_choice: this.feedbackChoice || undefined,
-      feedback_message: this.feedback 
+      feedback_message: this.feedback
     }
     try {
       await this.doSubmitFeedback(feedback)
