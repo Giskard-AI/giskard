@@ -9,6 +9,7 @@ import ai.giskard.service.TestSuiteService;
 import ai.giskard.service.dto.ml.ExecuteTestSuiteRequest;
 import ai.giskard.service.dto.ml.TestExecutionResultDTO;
 import ai.giskard.service.dto.ml.TestSuiteDTO;
+import ai.giskard.service.mapper.GiskardMapper;
 import ai.giskard.web.rest.errors.EntityNotFoundException;
 import org.springframework.web.bind.annotation.*;
 
@@ -28,14 +29,17 @@ public class TestSuiteController {
     private final ModelRepository modelRepository;
     private final TestSuiteService testSuiteService;
     private final TestService testService;
+    private final GiskardMapper giskardMapper;
 
     public TestSuiteController(TestSuiteRepository testSuiteRepository, ProjectRepository projectRepository,
-                               ModelRepository modelRepository, TestSuiteService testSuiteService, TestService testService) {
+                               ModelRepository modelRepository, TestSuiteService testSuiteService, TestService testService,
+                               GiskardMapper giskardMapper) {
         this.testSuiteRepository = testSuiteRepository;
         this.projectRepository = projectRepository;
         this.modelRepository = modelRepository;
         this.testSuiteService = testSuiteService;
         this.testService = testService;
+        this.giskardMapper = giskardMapper;
     }
 
     @PutMapping("suites")
@@ -64,14 +68,14 @@ public class TestSuiteController {
 
     @GetMapping("suites/{projectId}")
     public List<TestSuiteDTO> listSuites(@PathVariable Long projectId) {
-        return testSuiteRepository.findAllByProjectId(projectId).stream().map(TestSuiteDTO::new).collect(Collectors.toList());
+        return testSuiteRepository.findAllByProjectId(projectId).stream().map(testSuite -> giskardMapper.testSuiteToTestSuiteDTO(testSuite)).collect(Collectors.toList());
     }
 
     @GetMapping("suite/{suiteId}")
     public TestSuiteDTO getTestSuite(@PathVariable Long suiteId) {
         Optional<TestSuite> testSuite = testSuiteRepository.findById(suiteId);
         if (testSuite.isPresent()) {
-            return new TestSuiteDTO(testSuite.get());
+            return giskardMapper.testSuiteToTestSuiteDTO(testSuite.get());
         } else {
             throw new EntityNotFoundException(TEST_SUITE, suiteId);
         }
