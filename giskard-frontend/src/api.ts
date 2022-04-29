@@ -11,7 +11,7 @@ import {
     TestDTO,
     TestSuiteDTO,
     TestExecutionResultDTO,
-    ProjectPostDTO, AppConfigDTO, AdminUserDTO, FileDTO, ModelDTO
+    ProjectPostDTO, AppConfigDTO, AdminUserDTO, FileDTO, ModelDTO, JWTToken
 } from '@/generated-sources';
 import AdminUserDTOMigration = AdminUserDTO.AdminUserDTOMigration;
 
@@ -47,7 +47,7 @@ axiosProject.interceptors.response.use(resp => {
 
 export const api = {
     async logInGetToken(username: string, password: string) {
-        return axios.post(`${apiUrlJava}/api/authenticate`, { username, password });
+        return axios.post(`${apiUrlJava}/api/v2/authenticate`, { username, password });
     },
     async getMe(token: string) {
         return axios.get<AppConfigDTO>(`${apiUrlJava}/api/v2/users/me`, authHeaders(token));
@@ -92,7 +92,7 @@ export const api = {
         return axios.get<IUserProfileMinimal[]>(`${apiUrl}/api/v1/users/me/coworkers`, authHeaders(token));
     },
     async getApiAccessToken(token: string) {
-        return axios.get(`${apiUrl}/api/v1/security/api-access-token`, authHeaders(token));
+        return axios.get<JWTToken>(`${apiUrlJava}/api/v2/api-access-token`, authHeaders(token));
     },
 
     // Projects

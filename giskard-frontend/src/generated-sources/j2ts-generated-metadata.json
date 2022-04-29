@@ -16,6 +16,7 @@
     "ai.giskard.domain.ml.CodeLanguage": "CodeLanguage",
     "ai.giskard.service.dto.AdminUserDTO$AdminUserDTOMigration": "AdminUserDTO.AdminUserDTOMigration",
     "ai.giskard.service.dto.ml.ProjectDTO": "ProjectDTO",
+    "ai.giskard.web.dto.JWTToken": "JWTToken",
     "ai.giskard.service.dto.ml.NamedSingleTestResultDTO": "NamedSingleTestResultDTO",
     "ai.giskard.service.dto.RoleDTO": "RoleDTO",
     "ai.giskard.service.dto.config.AppConfigDTO$AppInfoDTO": "AppConfigDTO.AppInfoDTO",
