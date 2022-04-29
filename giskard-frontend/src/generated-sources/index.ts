@@ -2,6 +2,7 @@ export const GENERATED_MAPPING = {
     'ai.giskard.service.dto.ml.TestExecutionStatusDTO' : 'TestExecutionStatusDTO',
     'ai.giskard.domain.ml.TestType' : 'TestType',
     'ai.giskard.service.dto.ml.ModelDTO' : 'ModelDTO',
+    'ai.giskard.service.dto.ml.FileDTO' : 'FileDTO',
     'ai.giskard.domain.Role' : 'Role',
     'ai.giskard.service.dto.AdminUserDTO' : 'AdminUserDTO',
     'ai.giskard.service.dto.AdminUserDTO$AdminUserDTOMigration' : 'AdminUserDTO.AdminUserDTOMigration',
@@ -28,6 +29,7 @@ export const GENERATED_MAPPING = {
 export * from './ai/giskard/service/dto/ml/test-execution-status-dto';
 export * from './ai/giskard/domain/ml/test-type';
 export * from './ai/giskard/service/dto/ml/model-dto';
+export * from './ai/giskard/service/dto/ml/file-dto';
 export * from './ai/giskard/domain/role';
 export * from './ai/giskard/service/dto/admin-user-dto';
 export * from './ai/giskard/domain/ml/test-result';
