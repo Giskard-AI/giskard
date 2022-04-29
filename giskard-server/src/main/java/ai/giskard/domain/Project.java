@@ -58,13 +58,13 @@ public class Project {
     @Setter
     @OneToMany(mappedBy = "project", fetch = FetchType.LAZY)
     @JsonIgnore
-    private Set<ProjectModel> models = new HashSet<ProjectModel>();
+    private Set<ProjectModel> models = new HashSet<>();
 
 
     @Getter
     @Setter
     @OneToMany(mappedBy = "project", fetch = FetchType.LAZY)
-    private Set<Dataset> datasets = new HashSet<Dataset>();
+    private Set<Dataset> datasets = new HashSet<>();
 
 
     @Getter
@@ -80,7 +80,6 @@ public class Project {
 
     public void addGuest(User user) {
         this.guests.add(user);
-        //user.getProjects().add(this);
     }
 
     public void removeGuest(User user) {
@@ -94,19 +93,4 @@ public class Project {
         this.description = description;
         this.owner = owner;
     }
-
-    //    class Project(Base):
-//    __tablename__ = "projects"
-//
-    //    id = Column(Integer, primary_key=True, index=True)
-    //    key = Column(String, index=True, unique=True, nullable=False)
-    //    name = Column(String, nullable=False)
-    //    description = Column(String)
-//    created_on = Column(DateTime(timezone=True), default=datetime.datetime.now)
-//    owner_id = Column(Integer, ForeignKey("user.id"), nullable=False)
-//    owner_details = relationship("User")
-//    guest_list = relationship("User", secondary=association_table)
-//    model_files = relationship("ProjectModel", cascade="all, delete")
-//    data_files = relationship("Dataset", cascade="all, delete")
-
 }
