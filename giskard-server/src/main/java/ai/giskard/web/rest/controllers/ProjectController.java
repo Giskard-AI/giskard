@@ -3,9 +3,9 @@ package ai.giskard.web.rest.controllers;
 import ai.giskard.domain.Project;
 import ai.giskard.repository.ProjectRepository;
 import ai.giskard.service.ProjectService;
-import ai.giskard.service.dto.ml.ProjectDTO;
-import ai.giskard.service.dto.ml.ProjectPostDTO;
-import ai.giskard.service.mapper.GiskardMapper;
+import ai.giskard.web.dto.ml.ProjectDTO;
+import ai.giskard.web.dto.ml.ProjectPostDTO;
+import ai.giskard.web.dto.mapper.GiskardMapper;
 import ai.giskard.web.rest.errors.NotInDatabaseException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -14,9 +14,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Controller for the {@link Project} resource
@@ -36,8 +34,8 @@ public class ProjectController {
      */
     @GetMapping("project")
     public List<ProjectDTO> list() throws NotInDatabaseException {
-        List<ProjectDTO> projectDTOs = projectService.list();
-        return projectDTOs;
+        List<Project> projects = projectService.list();
+        return giskardMapper.projectsToProjectDTOs(projects);
     }
 
     /**
@@ -50,8 +48,8 @@ public class ProjectController {
     @PreAuthorize("@permissionEvaluator.canWriteProject( #id)")
     @PutMapping(value = "/project/{id}")
     public ProjectDTO updateProject(@RequestBody ProjectPostDTO projectDTO, @PathVariable("id") Long id) {
-        ProjectDTO updatedProjectDTO = this.projectService.update(id, projectDTO);
-        return updatedProjectDTO;
+        Project updatedProject = this.projectService.update(id, projectDTO);
+        return giskardMapper.projectToProjectDTO(updatedProject);
     }
 
     /**
@@ -63,8 +61,8 @@ public class ProjectController {
     @PostMapping(value = "/project")
     @PreAuthorize("@permissionEvaluator.canWrite()")
     public ProjectDTO create(@RequestBody ProjectPostDTO projectPostDTO, @AuthenticationPrincipal final UserDetails userDetails) {
-        ProjectDTO savedProject = this.projectService.create(projectPostDTO, userDetails);
-        return savedProject;
+        Project savedProject = this.projectService.create(projectPostDTO, userDetails);
+        return giskardMapper.projectToProjectDTO(savedProject);
     }
 
     /**
@@ -103,8 +101,8 @@ public class ProjectController {
     @DeleteMapping(value = "/project/{id}/guests/{userId}")
     @PreAuthorize("@permissionEvaluator.canWriteProject( #id)")
     public ProjectDTO uninvite(@PathVariable("id") Long id, @PathVariable("userId") Long userId) {
-        ProjectDTO projectDTO = this.projectService.uninvite(id, userId);
-        return projectDTO;
+        Project project = this.projectService.uninvite(id, userId);
+        return giskardMapper.projectToProjectDTO(project);
     }
 
     /**
@@ -117,8 +115,8 @@ public class ProjectController {
     @PreAuthorize("@permissionEvaluator.canWriteProject( #id)")
     @PutMapping(value = "/project/{id}/guests/{userId}")
     public ProjectDTO invite(@PathVariable("id") Long id, @PathVariable("userId") Long userId) {
-        ProjectDTO projectDTO = this.projectService.invite(id, userId);
-        return projectDTO;
+        Project project = this.projectService.invite(id, userId);
+        return giskardMapper.projectToProjectDTO(project);
     }
 
 }

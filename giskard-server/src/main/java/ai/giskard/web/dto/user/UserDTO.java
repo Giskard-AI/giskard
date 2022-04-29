@@ -1,4 +1,4 @@
-package ai.giskard.service.dto;
+package ai.giskard.web.dto.user;
 
 import ai.giskard.domain.User;
 import com.fasterxml.jackson.annotation.JsonProperty;

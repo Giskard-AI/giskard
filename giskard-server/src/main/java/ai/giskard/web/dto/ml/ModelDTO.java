@@ -1,4 +1,4 @@
-package ai.giskard.service.dto.ml;
+package ai.giskard.web.dto.ml;
 
 import ai.giskard.domain.ml.ProjectModel;
 import com.fasterxml.jackson.annotation.JsonProperty;

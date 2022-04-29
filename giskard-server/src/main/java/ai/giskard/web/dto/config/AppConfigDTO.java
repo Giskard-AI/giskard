@@ -1,6 +1,6 @@
-package ai.giskard.service.dto.config;
+package ai.giskard.web.dto.config;
 
-import ai.giskard.service.dto.AdminUserDTO;
+import ai.giskard.web.dto.user.AdminUserDTO;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;

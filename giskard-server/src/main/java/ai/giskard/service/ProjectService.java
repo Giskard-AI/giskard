@@ -5,9 +5,8 @@ import ai.giskard.domain.User;
 import ai.giskard.repository.ProjectRepository;
 import ai.giskard.repository.UserRepository;
 import ai.giskard.security.SecurityUtils;
-import ai.giskard.service.dto.ml.ProjectDTO;
-import ai.giskard.service.dto.ml.ProjectPostDTO;
-import ai.giskard.service.mapper.GiskardMapper;
+import ai.giskard.web.dto.ml.ProjectPostDTO;
+import ai.giskard.web.dto.mapper.GiskardMapper;
 import ai.giskard.web.rest.errors.Entity;
 import ai.giskard.web.rest.errors.EntityNotFoundException;
 import ai.giskard.web.rest.errors.NotInDatabaseException;
@@ -37,11 +36,10 @@ public class ProjectService {
      * @param projectDTO updated project
      * @return project updated
      */
-    public ProjectDTO update(@NotNull Long id, ProjectPostDTO projectDTO) {
+    public Project update(@NotNull Long id, ProjectPostDTO projectDTO) {
         Project project = projectRepository.getById(id);
         giskardMapper.updateProjectFromDto(projectDTO, project);
-        Project savedProject = projectRepository.save(project);
-        return giskardMapper.projectToProjectDTO(savedProject);
+        return projectRepository.save(project);
     }
 
     /**
@@ -50,14 +48,14 @@ public class ProjectService {
      * @param projectDTO projectDTO to save
      * @return project saved
      */
-    public ProjectDTO create(ProjectPostDTO projectDTO, UserDetails userDetails) {
+    public Project create(ProjectPostDTO projectDTO, UserDetails userDetails) {
         Project project = giskardMapper.projectPostDTOToProject(projectDTO);
         if (Objects.isNull(project.getKey())) {
             project.setKey(project.getName());
         }
         User owner = userRepository.getOneByLogin(userDetails.getUsername());
         project.setOwner(owner);
-        return giskardMapper.projectToProjectDTO(projectRepository.save(project));
+        return projectRepository.save(project);
     }
 
     /**
@@ -88,12 +86,12 @@ public class ProjectService {
      * @param userId id of the user
      * @return update project
      */
-    public ProjectDTO uninvite(Long id, Long userId) {
+    public Project uninvite(Long id, Long userId) {
         User user = userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException(Entity.USER, userId));
         Project project = projectRepository.findOneWithGuestsById(id).orElseThrow(() -> new EntityNotFoundException(Entity.PROJECT, id));
         project.removeGuest(user);
         projectRepository.save(project);
-        return giskardMapper.projectToProjectDTO(project);
+        return project;
     }
 
     /**
@@ -103,12 +101,12 @@ public class ProjectService {
      * @param userId id of the user
      * @return updated project
      */
-    public ProjectDTO invite(Long id, Long userId) {
+    public Project invite(Long id, Long userId) {
         User user = userRepository.getById(userId);
         Project project = projectRepository.findOneWithGuestsById(id).orElseThrow(() -> new EntityNotFoundException(Entity.PROJECT, id));
         project.addGuest(user);
         projectRepository.save(project);
-        return giskardMapper.projectToProjectDTO(project);
+        return project;
     }
 
     /**
@@ -117,7 +115,7 @@ public class ProjectService {
      *
      * @return list of projects
      */
-    public List<ProjectDTO> list() {
+    public List<Project> list() {
         String username = SecurityUtils.getCurrentAuthenticatedUserLogin().toLowerCase();
         User user = userRepository.findOneByLogin(username).orElseThrow(() -> new NotInDatabaseException(Entity.USER, username));
         List<Project> projects;
@@ -126,6 +124,6 @@ public class ProjectService {
         } else {
             projects = projectRepository.getProjectsByOwnerOrGuestsContains(user, user);
         }
-        return giskardMapper.projectsToProjectDTOs(projects);
+        return projects;
     }
 }
