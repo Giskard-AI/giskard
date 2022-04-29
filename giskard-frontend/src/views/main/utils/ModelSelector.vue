@@ -27,7 +27,7 @@ export default class ModelSelector extends Vue {
   @Prop() value?: IProjetFileModel;
 
   extractModelName(model: IProjetFileModel) {
-    return model.name || model.filename;
+    return model.name || model.file_name;
   }
 
   onInput(value) {
