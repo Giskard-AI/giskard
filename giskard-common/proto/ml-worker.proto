@@ -34,8 +34,19 @@ message NamedSingleTestResult{
 
 }
 
+
+enum TestMessageType{
+  ERROR = 0;
+  INFO = 1;
+}
+message TestMessage{
+  TestMessageType type = 1;
+  string text = 2;
+}
+
 message SingleTestResult{
   bool passed = 13;
+  repeated TestMessage messages = 16;
   map<string, string> props = 14;
   float metric = 15;
   uint32 element_count = 1;

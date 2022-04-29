@@ -6,6 +6,7 @@ import ai.giskard.repository.ml.ModelRepository;
 import ai.giskard.repository.ml.TestRepository;
 import ai.giskard.repository.ml.TestSuiteRepository;
 import ai.giskard.service.dto.ml.TestSuiteDTO;
+import ai.giskard.service.mapper.GiskardMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,18 +20,21 @@ public class TestSuiteService {
     private final ModelRepository modelRepository;
     private final DatasetRepository datasetRepository;
     private final ProjectRepository projectRepository;
+    private final GiskardMapper giskardMapper;
 
     public TestSuiteService(TestSuiteRepository testSuiteRepository,
                             ModelRepository modelRepository,
                             DatasetRepository datasetRepository,
                             ProjectRepository projectRepository,
-                            TestRepository testRepository
+                            TestRepository testRepository,
+                            GiskardMapper giskardMapper
     ) {
         this.testSuiteRepository = testSuiteRepository;
         this.modelRepository = modelRepository;
         this.datasetRepository = datasetRepository;
         this.projectRepository = projectRepository;
         this.testRepository = testRepository;
+        this.giskardMapper = giskardMapper;
     }
 
     public Optional<TestSuiteDTO> updateTestSuite(TestSuiteDTO dto) {
@@ -54,7 +58,7 @@ public class TestSuiteService {
                 }
                 return testSuiteRepository.save(testSuite);
             })
-            .map(TestSuiteDTO::new);
+            .map(giskardMapper::testSuiteToTestSuiteDTO);
     }
 
     public void deleteSuite(Long suiteId) {

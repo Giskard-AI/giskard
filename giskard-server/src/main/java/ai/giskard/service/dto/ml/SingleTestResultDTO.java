@@ -2,6 +2,7 @@ package ai.giskard.service.dto.ml;
 
 import ai.giskard.worker.SingleTestResult;
 import ai.giskard.worker.TestResultMessage;
+import com.dataiku.j2ts.annotations.UIModel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -11,6 +12,7 @@ import java.util.List;
 @Getter
 @Setter
 @NoArgsConstructor
+@UIModel
 public class SingleTestResultDTO {
     private boolean passed;
     private List<Integer> partialUnexpectedIndexList;

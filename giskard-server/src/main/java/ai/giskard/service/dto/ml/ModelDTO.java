@@ -1,23 +1,25 @@
 package ai.giskard.service.dto.ml;
 
 import ai.giskard.domain.ml.ProjectModel;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import com.dataiku.j2ts.annotations.UIModel;
 
 @Getter
 @Setter
 @NoArgsConstructor
-public class ModelDTO {
-    private Long id;
-    private String name;
-    private Long projectId;
-    private String filename;
+@UIModel
+public class ModelDTO extends FileDTO {
+
+    @JsonProperty("python_version")
+    private String pythonVersion;
 
     public ModelDTO(ProjectModel model) {
         this.id = model.getId();
-        this.name = model.getName();
-        this.projectId = model.getProject().getId();
-        this.filename = model.getFileName();
+        this.fileName = model.getFileName();
+        this.pythonVersion = model.getPythonVersion();
     }
+
 }

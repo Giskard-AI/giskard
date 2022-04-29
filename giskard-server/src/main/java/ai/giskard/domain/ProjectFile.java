@@ -25,6 +25,7 @@ public abstract class ProjectFile implements Serializable {
     @Getter
     private String location;
 
+    @Getter
     private LocalDateTime createdOn;
 
     @Getter

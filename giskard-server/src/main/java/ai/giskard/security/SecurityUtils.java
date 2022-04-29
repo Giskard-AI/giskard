@@ -28,6 +28,16 @@ public final class SecurityUtils {
         return Optional.ofNullable(extractPrincipal(securityContext.getAuthentication()));
     }
 
+    /**
+     * Get the login of the current user.
+     * If the user is not authenticated the method throws NoSuchElementException
+     *
+     * @return the login of the current user.
+     */
+    public static String getCurrentAuthenticatedUserLogin() {
+        return getCurrentUserLogin().orElseThrow();
+    }
+
     private static String extractPrincipal(Authentication authentication) {
         if (authentication == null) {
             return null;

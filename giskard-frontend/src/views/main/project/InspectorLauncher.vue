@@ -85,11 +85,11 @@
 
 <script lang="ts">
 import { Component, Vue, Prop, Emit } from "vue-property-decorator";
-import { IProjectFile } from "@/interfaces";
 import OverlayLoader from "@/components/OverlayLoader.vue";
 import { readToken } from "@/store/main/getters";
 import { commitAddNotification } from "@/store/main/mutations";
 import { api } from "@/api";
+import { FileDTO } from '@/generated-sources';
 
 @Component({
   components: { OverlayLoader },
@@ -99,7 +99,7 @@ export default class InspectorLauncher extends Vue {
   @Prop({ required: true }) modelId!: number;
   loading = false;
   step = 1;
-  datasets: IProjectFile[] = [];
+  datasets: FileDTO[] = [];
   datasetSelected: number | null = null;
   targetFeature: string | null = null;
   datasetFeatures: string[] = [];

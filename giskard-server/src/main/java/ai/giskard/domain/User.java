@@ -163,46 +163,9 @@ public class User extends AbstractAuditingEntity implements Serializable {
             ", login='" + login + '\'' +
             '}';
     }
-//// TODO andreyavtomonov (14/03/2022): remove after inge
-
     @lombok.Setter
     @lombok.Getter
     @JsonIgnore
-    @ManyToMany(mappedBy = "guests")
-    /*@JoinTable(
-        name = "projects_guests",
-        joinColumns = @JoinColumn(name = "user_id"),
-        inverseJoinColumns = @JoinColumn(name = "project_id"))*/
+    @ManyToMany(mappedBy = "guests", cascade = CascadeType.ALL)
     private Set<Project> projects = new HashSet<Project>();
-
-
-    //// TODO andreyavtomonov (14/03/2022): remove after inge
-    //public String getCreatedBy() {
-    //    return null;
-    //}
-    //
-    //public void setCreatedBy(String createdBy) {
-    //}
-    //
-    //public Instant getCreatedDate() {
-    //    return null;
-    //}
-    //
-    //public void setCreatedDate(Instant createdDate) {
-    //}
-    //
-    //public String getLastModifiedBy() {
-    //    return null;
-    //}
-    //
-    //public void setLastModifiedBy(String lastModifiedBy) {
-    //}
-    //
-    //public Instant getLastModifiedDate() {
-    //    return null;
-    //}
-    //
-    //public void setLastModifiedDate(Instant lastModifiedDate) {
-    //}
-
 }
