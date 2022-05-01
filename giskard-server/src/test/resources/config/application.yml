@@ -15,8 +15,8 @@
 
 spring:
   profiles:
-    # Uncomment the following line to enable tests against production database type rather than H2, using Testcontainers
-    #active: testcontainers
+  # Uncomment the following line to enable tests against production database type rather than H2, using Testcontainers
+  #active: testcontainers
   application:
     name: giskard
   datasource:
@@ -50,7 +50,10 @@ spring:
   liquibase:
     contexts: test
   mail:
-    host: localhost
+    host:
+    port:
+    username:
+    password:
   main:
     allow-bean-definition-overriding: true
   messages:
@@ -91,7 +94,7 @@ jhipster:
       port: 5000
       queue-size: 512
   mail:
-    from: test@localhost
+    from: welcome@giskard.ai
     base-url: http://127.0.0.1:8080
   security:
     authentication:

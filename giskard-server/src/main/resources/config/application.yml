@@ -182,7 +182,7 @@ jhipster:
   #   allow-credentials: true
   #   max-age: 1800
   mail:
-    from: giskard@localhost
+    from: welcome@giskard.ai
   api-docs:
     default-include-pattern: ${server.servlet.context-path:}/api/**
     management-include-pattern: ${server.servlet.context-path:}/management/**

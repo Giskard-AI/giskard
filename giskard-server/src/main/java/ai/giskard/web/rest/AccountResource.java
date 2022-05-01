@@ -7,10 +7,11 @@ import ai.giskard.service.MailService;
 import ai.giskard.service.UserService;
 import ai.giskard.service.dto.AdminUserDTO;
 import ai.giskard.service.dto.PasswordChangeDTO;
+import ai.giskard.web.dto.PasswordResetRequest;
 import ai.giskard.web.rest.errors.EmailAlreadyUsedException;
 import ai.giskard.web.rest.errors.InvalidPasswordException;
 import ai.giskard.web.rest.errors.LoginAlreadyUsedException;
-import ai.giskard.web.rest.vm.KeyAndPasswordVM;
+import ai.giskard.web.rest.vm.TokenAndPasswordVM;
 import ai.giskard.web.rest.vm.ManagedUserVM;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -28,7 +29,7 @@ import java.util.Optional;
  * REST controller for managing the current user's account.
  */
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/api/v2")
 public class AccountResource {
 
     private static class AccountResourceException extends RuntimeException {
@@ -156,11 +157,11 @@ public class AccountResource {
     /**
      * {@code POST   /account/reset-password/init} : Send an email to reset the password of the user.
      *
-     * @param mail the mail of the user.
+     * @param request the mail of the user.
      */
-    @PostMapping(path = "/account/reset-password/init")
-    public void requestPasswordReset(@RequestBody String mail) {
-        Optional<User> user = userService.requestPasswordReset(mail);
+    @PostMapping(path = "/account/password-recovery")
+    public void requestPasswordReset(@Valid @RequestBody PasswordResetRequest request) {
+        Optional<User> user = userService.requestPasswordReset(request.getEmail());
         if (user.isPresent()) {
             mailService.sendPasswordResetMail(user.get());
         } else {
@@ -177,14 +178,14 @@ public class AccountResource {
      * @throws InvalidPasswordException {@code 400 (Bad Request)} if the password is incorrect.
      * @throws RuntimeException {@code 500 (Internal Server Error)} if the password could not be reset.
      */
-    @PostMapping(path = "/account/reset-password/finish")
-    public void finishPasswordReset(@RequestBody KeyAndPasswordVM keyAndPassword) {
+    @PostMapping(path = "/account/reset-password")
+    public void finishPasswordReset(@RequestBody TokenAndPasswordVM keyAndPassword) {
         if (isPasswordLengthInvalid(keyAndPassword.getNewPassword())) {
             throw new InvalidPasswordException();
         }
-        Optional<User> user = userService.completePasswordReset(keyAndPassword.getNewPassword(), keyAndPassword.getKey());
+        Optional<User> user = userService.completePasswordReset(keyAndPassword.getNewPassword(), keyAndPassword.getToken());
 
-        if (!user.isPresent()) {
+        if (user.isEmpty()) {
             throw new AccountResourceException("No user was found for this reset key");
         }
     }

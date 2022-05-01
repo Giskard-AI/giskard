@@ -52,7 +52,7 @@ class UserJWTControllerIT {
         login.setUsername("user-jwt-controller");
         login.setPassword("test");
         mockMvc
-            .perform(post("/api/authenticate").contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(login)))
+            .perform(post("/api/v2/authenticate").contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(login)))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.id_token").isString())
             .andExpect(jsonPath("$.id_token").isNotEmpty())
@@ -76,7 +76,7 @@ class UserJWTControllerIT {
         login.setPassword("test");
         login.setRememberMe(true);
         mockMvc
-            .perform(post("/api/authenticate").contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(login)))
+            .perform(post("/api/v2/authenticate").contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(login)))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.id_token").isString())
             .andExpect(jsonPath("$.id_token").isNotEmpty())
@@ -90,7 +90,7 @@ class UserJWTControllerIT {
         login.setUsername("wrong-user");
         login.setPassword("wrong password");
         mockMvc
-            .perform(post("/api/authenticate").contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(login)))
+            .perform(post("/api/v2/authenticate").contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(login)))
             .andExpect(status().isUnauthorized())
             .andExpect(jsonPath("$.id_token").doesNotExist())
             .andExpect(header().doesNotExist("Authorization"));
