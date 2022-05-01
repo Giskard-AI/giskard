@@ -1,8 +1,8 @@
 package ai.giskard.web.rest.controllers;
 
 import ai.giskard.repository.ml.DatasetRepository;
-import ai.giskard.service.dto.ml.DatasetDTO;
-import ai.giskard.service.mapper.GiskardMapper;
+import ai.giskard.web.dto.mapper.GiskardMapper;
+import ai.giskard.web.dto.ml.DatasetDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;

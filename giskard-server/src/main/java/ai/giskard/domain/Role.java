@@ -27,9 +27,8 @@ public class Role implements Serializable {
     @lombok.Setter
     @lombok.Getter
     @NotNull
-    @Unique
     @Size(max = 50)
-    @Column(length = 50)
+    @Column(length = 50, unique = true)
     private String name;
 
     @Override

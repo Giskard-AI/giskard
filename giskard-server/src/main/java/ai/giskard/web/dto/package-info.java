@@ -1,4 +1,4 @@
 /**
  * Data Transfer Objects.
  */
-package ai.giskard.service.dto;
+package ai.giskard.web.dto;

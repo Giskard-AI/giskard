@@ -1,4 +1,4 @@
-package ai.giskard.service.dto.ml;
+package ai.giskard.web.dto.ml;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
