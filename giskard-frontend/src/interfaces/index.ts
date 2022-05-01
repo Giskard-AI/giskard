@@ -52,7 +52,7 @@ export interface ITestExecutionResult {
 export interface ITestSuite {
     id: number;
     name: string;
-    projectId: number;
+    project: IProject;
     model: IProjetFileModel;
     trainDataset: IProjetFileDataset;
     testDataset: IProjetFileDataset;

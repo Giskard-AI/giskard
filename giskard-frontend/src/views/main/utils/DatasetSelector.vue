@@ -28,16 +28,15 @@ export default class DatasetSelector extends Vue {
   projectDatasets: Array<IProjetFileDataset> = [];
 
   extractDatasetName(dataset: IProjetFileDataset) {
-    console.log(dataset)
     return dataset.name || dataset.file_name;
   }
 
   onInput(value) {
-    this.$emit("update:value", value);
+    this.$emit('update:value', value);
   }
 
   async mounted() {
-    this.projectDatasets = (await axios.get<Array<IProjetFileModel>>(`${apiUrlJava}/api/v2/project/datasets`, {params: {projectId: this.projectId}})).data;
+    this.projectDatasets = (await axios.get<Array<IProjetFileModel>>(`${apiUrlJava}/api/v2/project/${this.projectId}/datasets`)).data;
   }
 }
 </script>

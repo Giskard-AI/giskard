@@ -35,7 +35,7 @@ export default class ModelSelector extends Vue {
   }
 
   async mounted() {
-    this.projectModels = (await axios.get<Array<IProjetFileModel>>(`${apiUrlJava}/api/v2/project/models`, {params: {projectId: this.projectId}})).data;
+    this.projectModels = (await axios.get<Array<IProjetFileModel>>(`${apiUrlJava}/api/v2/project/${this.projectId}/models`)).data;
   }
 }
 </script>
