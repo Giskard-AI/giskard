@@ -1,4 +1,4 @@
-package ai.giskard.service.dto;
+package ai.giskard.web.dto.user;
 
 import ai.giskard.config.Constants;
 import ai.giskard.domain.Role;

@@ -6,10 +6,10 @@ import ai.giskard.repository.ml.ModelRepository;
 import ai.giskard.repository.ml.TestSuiteRepository;
 import ai.giskard.service.TestService;
 import ai.giskard.service.TestSuiteService;
-import ai.giskard.service.dto.ml.ExecuteTestSuiteRequest;
-import ai.giskard.service.dto.ml.TestExecutionResultDTO;
-import ai.giskard.service.dto.ml.TestSuiteDTO;
-import ai.giskard.service.mapper.GiskardMapper;
+import ai.giskard.web.dto.mapper.GiskardMapper;
+import ai.giskard.web.dto.ml.ExecuteTestSuiteRequest;
+import ai.giskard.web.dto.ml.TestExecutionResultDTO;
+import ai.giskard.web.dto.ml.TestSuiteDTO;
 import ai.giskard.web.rest.errors.EntityNotFoundException;
 import org.springframework.web.bind.annotation.*;
 

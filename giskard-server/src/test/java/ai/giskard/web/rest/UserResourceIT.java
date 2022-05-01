@@ -1,6 +1,5 @@
 package ai.giskard.web.rest;
 
-import static ai.giskard.web.rest.AccountResourceIT.TEST_USER_LOGIN;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasItems;
@@ -12,8 +11,8 @@ import ai.giskard.domain.Role;
 import ai.giskard.domain.User;
 import ai.giskard.repository.UserRepository;
 import ai.giskard.security.AuthoritiesConstants;
-import ai.giskard.service.dto.AdminUserDTO;
-import ai.giskard.service.mapper.UserMapper;
+import ai.giskard.web.dto.user.AdminUserDTO;
+import ai.giskard.web.dto.mapper.UserMapper;
 import ai.giskard.web.rest.vm.ManagedUserVM;
 import java.time.Instant;
 import java.util.*;

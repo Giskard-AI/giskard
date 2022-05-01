@@ -1,4 +1,4 @@
-package ai.giskard.service.dto.ml;
+package ai.giskard.web.dto.ml;
 
 import ai.giskard.worker.SingleTestResult;
 import ai.giskard.worker.TestResultMessage;
