@@ -157,11 +157,11 @@ public class UserService {
             Set<Role> authorities = userDTO
                 .getRoles()
                 .stream()
-                .map(authorityRepository::findById)
+                .map(authorityRepository::findByName)
                 .filter(Optional::isPresent)
                 .map(Optional::get)
                 .collect(Collectors.toSet());
-            user.setRole(authorities.stream().findFirst().get());
+            authorities.stream().findFirst().ifPresent(user::setRole);
         }
         userRepository.save(user);
         log.debug("Created Information for User: {}", user);

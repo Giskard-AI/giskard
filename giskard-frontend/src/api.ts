@@ -11,7 +11,7 @@ import {
     TestDTO,
     TestSuiteDTO,
     TestExecutionResultDTO,
-    ProjectPostDTO, AppConfigDTO, AdminUserDTO, FileDTO, ModelDTO, JWTToken
+    ProjectPostDTO, AppConfigDTO, AdminUserDTO, FileDTO, ModelDTO, JWTToken, PasswordResetRequest, TokenAndPasswordVM
 } from '@/generated-sources';
 import AdminUserDTOMigration = AdminUserDTO.AdminUserDTOMigration;
 
@@ -74,11 +74,11 @@ export const api = {
         return axios.delete(`${apiUrl}/api/v1/users/${userId}`, authHeaders(token));
     },
     async passwordRecovery(email: string) {
-        return axios.post(`${apiUrl}/api/v1/password-recovery/${email}`);
+        return axios.post(`${apiUrlJava}/api/v2/account/password-recovery`, <PasswordResetRequest>{ email });
     },
     async resetPassword(password: string, token: string) {
-        return axios.post(`${apiUrl}/api/v1/reset-password/`, {
-            new_password: password,
+        return axios.post(`${apiUrlJava}/api/v2/account/reset-password`, <TokenAndPasswordVM>{
+            newPassword: password,
             token
         });
     },
