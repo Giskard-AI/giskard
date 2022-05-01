@@ -3,10 +3,8 @@ package ai.giskard.web.dto.mapper;
 import ai.giskard.domain.Project;
 import ai.giskard.domain.ml.Dataset;
 import ai.giskard.domain.ml.ProjectModel;
-import ai.giskard.web.dto.ml.DatasetDTO;
-import ai.giskard.web.dto.ml.ModelDTO;
-import ai.giskard.web.dto.ml.ProjectDTO;
-import ai.giskard.web.dto.ml.ProjectPostDTO;
+import ai.giskard.domain.ml.TestSuite;
+import ai.giskard.web.dto.ml.*;
 import org.mapstruct.BeanMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.MappingTarget;
@@ -33,5 +31,10 @@ public interface GiskardMapper {
 
     List<DatasetDTO> datasetsToDatasetDTOs(List<Dataset> datasets);
 
+    TestSuiteDTO testSuiteToTestSuiteDTO(TestSuite testSuite);
 
+    List<TestSuiteDTO> testSuitesToTestSuiteDTOs(List<TestSuite> testSuites);
+
+    @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
+    void updateTestSuiteFromDTO(TestSuiteDTO dto, @MappingTarget TestSuite entity);
 }

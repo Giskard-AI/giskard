@@ -20,7 +20,7 @@ public class TestSuiteDTO {
 
     @Getter
     @Setter
-    private Long projectId;
+    private ProjectDTO project;
 
     @Getter
     @Setter
@@ -37,7 +37,6 @@ public class TestSuiteDTO {
     public TestSuiteDTO(TestSuite suite) {
         this.setId(suite.getId());
         this.setName(suite.getName());
-        this.setProjectId(suite.getProject().getId());
         if (suite.getTestDataset() != null) {
             this.testDataset = new DatasetDTO(suite.getTestDataset());
         }
