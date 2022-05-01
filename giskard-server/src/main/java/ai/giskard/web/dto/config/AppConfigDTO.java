@@ -1,6 +1,6 @@
-package ai.giskard.service.dto.config;
+package ai.giskard.web.dto.config;
 
-import ai.giskard.service.dto.AdminUserDTO;
+import ai.giskard.web.dto.user.AdminUserDTO;
 import com.dataiku.j2ts.annotations.UIModel;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;

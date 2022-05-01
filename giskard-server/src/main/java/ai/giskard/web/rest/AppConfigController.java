@@ -1,8 +1,8 @@
 package ai.giskard.web.rest;
 
 import ai.giskard.service.UserService;
-import ai.giskard.service.dto.AdminUserDTO.AdminUserDTOMigration;
-import ai.giskard.service.dto.config.AppConfigDTO;
+import ai.giskard.web.dto.user.AdminUserDTO.AdminUserDTOMigration;
+import ai.giskard.web.dto.config.AppConfigDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
