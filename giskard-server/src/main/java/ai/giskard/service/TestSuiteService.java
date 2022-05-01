@@ -5,7 +5,7 @@ import ai.giskard.repository.ml.DatasetRepository;
 import ai.giskard.repository.ml.ModelRepository;
 import ai.giskard.repository.ml.TestRepository;
 import ai.giskard.repository.ml.TestSuiteRepository;
-import ai.giskard.service.dto.ml.TestSuiteDTO;
+import ai.giskard.web.dto.ml.TestSuiteDTO;
 import ai.giskard.service.mapper.GiskardMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

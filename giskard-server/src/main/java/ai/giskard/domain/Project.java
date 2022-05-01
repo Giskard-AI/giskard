@@ -56,14 +56,14 @@ public class Project {
 
     @Getter
     @Setter
-    @OneToMany(mappedBy = "project", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "project", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JsonIgnore
     private Set<ProjectModel> models = new HashSet<>();
 
 
     @Getter
     @Setter
-    @OneToMany(mappedBy = "project", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "project", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private Set<Dataset> datasets = new HashSet<>();
 
 

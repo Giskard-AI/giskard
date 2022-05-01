@@ -4,7 +4,7 @@ import ai.giskard.domain.ml.testing.CodeBasedTestPreset;
 import ai.giskard.domain.ml.TestType;
 import ai.giskard.repository.ml.CodeBasedTestPresetRepository;
 import ai.giskard.service.UsernameAlreadyUsedException;
-import ai.giskard.service.dto.ml.CodeBasedTestPresetDTO;
+import ai.giskard.web.dto.ml.CodeBasedTestPresetDTO;
 import org.apache.commons.lang3.NotImplementedException;
 import org.springframework.web.bind.annotation.*;
 

@@ -1,9 +1,9 @@
-package ai.giskard.service.mapper;
+package ai.giskard.web.dto.mapper;
 
 import ai.giskard.domain.Role;
 import ai.giskard.domain.User;
-import ai.giskard.service.dto.AdminUserDTO;
-import ai.giskard.service.dto.UserDTO;
+import ai.giskard.web.dto.user.AdminUserDTO;
+import ai.giskard.web.dto.user.UserDTO;
 import java.util.*;
 import java.util.stream.Collectors;
 import org.mapstruct.BeanMapping;

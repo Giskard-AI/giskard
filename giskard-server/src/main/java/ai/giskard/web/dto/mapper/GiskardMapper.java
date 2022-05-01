@@ -1,10 +1,12 @@
-package ai.giskard.service.mapper;
+package ai.giskard.web.dto.mapper;
 
 import ai.giskard.domain.Project;
 import ai.giskard.domain.ml.Dataset;
 import ai.giskard.domain.ml.ProjectModel;
-import ai.giskard.domain.ml.TestSuite;
-import ai.giskard.service.dto.ml.*;
+import ai.giskard.web.dto.ml.DatasetDTO;
+import ai.giskard.web.dto.ml.ModelDTO;
+import ai.giskard.web.dto.ml.ProjectDTO;
+import ai.giskard.web.dto.ml.ProjectPostDTO;
 import org.mapstruct.BeanMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.MappingTarget;
