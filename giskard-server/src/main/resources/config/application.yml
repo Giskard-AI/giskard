@@ -209,3 +209,4 @@ jhipster:
 application:
   ml-worker-host: localhost
   ml-worker-port: 50051
+  bucketPath: giskard-legacy-server/app

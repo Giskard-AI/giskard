@@ -205,3 +205,8 @@ export interface IFeedbackReply {
     content: string,
     reply_to_reply?: number
 }
+
+export interface RowDetails {
+    index: number;
+    item: any;
+};

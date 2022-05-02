@@ -1,78 +1,86 @@
 <template>
   <v-container fluid>
-    <v-toolbar flat height="32" id="data-explorer-toolbar">
-      <span class="subtitle-2 mr-2">Dataset Explorer</span>
-      <v-btn icon @click="shuffleMode = !shuffleMode">
-        <v-icon v-if="shuffleMode" color="primary">mdi-shuffle-variant</v-icon>
+    <v-toolbar flat height='32' id='data-explorer-toolbar'>
+      <span class='subtitle-2 mr-2'>Dataset Explorer</span>
+      <v-btn icon @click='shuffleMode = !shuffleMode'>
+        <v-icon v-if='shuffleMode' color='primary'>mdi-shuffle-variant</v-icon>
         <v-icon v-else>mdi-shuffle-variant</v-icon>
       </v-btn>
-      <v-btn icon @click="previous" :disabled="shuffleMode || rowNb == 0"><v-icon>mdi-skip-previous</v-icon></v-btn>
-      <v-btn icon @click="next"><v-icon>mdi-skip-next</v-icon></v-btn>
-      <span class="caption grey--text">Entry #{{rowNb}}</span>
+      <v-btn icon @click='previous' :disabled='shuffleMode || rowNb == 0'>
+        <v-icon>mdi-skip-previous</v-icon>
+      </v-btn>
+      <v-btn icon @click='next'>
+        <v-icon>mdi-skip-next</v-icon>
+      </v-btn>
+      <span class='caption grey--text'>Entry #{{ rowNb }}</span>
     </v-toolbar>
 
-    <Inspector class="px-0"
-      :modelId="modelId"
-      :datasetId="datasetId"
-      :originalData="originalData"
-      :inputData.sync="inputData"
-      :targetFeature="targetFeature"
-      @reset="resetInput"
-      @submitValueFeedback="submitValueFeedback"
-      @submitVariationFeedback="submitValueVariationFeedback"
+    <RowList class='px-0' :datasetId='datasetId' @currentRow='getCurrentRow'
+    />
+
+    <Inspector class='px-0'
+               :modelId='modelId'
+               :datasetId='datasetId'
+               :originalData='originalData'
+               :inputData.sync='inputData'
+               :targetFeature='targetFeature'
+               @reset='resetInput'
+               @submitValueFeedback='submitValueFeedback'
+               @submitVariationFeedback='submitValueVariationFeedback'
     />
 
     <!-- For general feedback -->
     <v-tooltip left>
-      <template v-slot:activator="{ on, attrs }">
-      <v-btn fab fixed bottom right 
-        @click="feedbackPopupToggle = !feedbackPopupToggle" 
-        :class="feedbackPopupToggle? 'secondary': 'primary'"
-        v-bind="attrs" v-on="on"
+      <template v-slot:activator='{ on, attrs }'>
+        <v-btn fab fixed bottom right
+               @click='feedbackPopupToggle = !feedbackPopupToggle'
+               :class="feedbackPopupToggle? 'secondary': 'primary'"
+               v-bind='attrs' v-on='on'
         >
-        <v-icon v-if="feedbackPopupToggle">mdi-close</v-icon>
-        <v-icon v-else>mdi-message-plus</v-icon>
-      </v-btn>
+          <v-icon v-if='feedbackPopupToggle'>mdi-close</v-icon>
+          <v-icon v-else>mdi-message-plus</v-icon>
+        </v-btn>
       </template>
-      <span v-if="feedbackPopupToggle">Close</span>
+      <span v-if='feedbackPopupToggle'>Close</span>
       <span v-else>Feedback</span>
     </v-tooltip>
     <v-overlay
-      :value="feedbackPopupToggle"
-      :z-index="1"
+      :value='feedbackPopupToggle'
+      :z-index='1'
     ></v-overlay>
-    <v-card v-if="feedbackPopupToggle" id="feedback-card" dark color="primary">
+    <v-card v-if='feedbackPopupToggle' id='feedback-card' dark color='primary'>
       <v-card-title>Is this input case insightful?</v-card-title>
-      <v-card-text class="px-3 py-0">
-        <v-radio-group v-model="feedbackChoice" dark row hide-details class="mb-2 mt-0">
-          <v-radio label="Yes" value="yes"></v-radio>
-          <v-radio label="No" value="no"></v-radio>
-          <v-radio label="Other" value="other"></v-radio>
+      <v-card-text class='px-3 py-0'>
+        <v-radio-group v-model='feedbackChoice' dark row hide-details class='mb-2 mt-0'>
+          <v-radio label='Yes' value='yes'></v-radio>
+          <v-radio label='No' value='no'></v-radio>
+          <v-radio label='Other' value='other'></v-radio>
         </v-radio-group>
         <v-textarea
-          v-model="feedback"
-          :disabled="feedbackSubmitted"
-          placeholder="Why?"
-          rows=2
+          v-model='feedback'
+          :disabled='feedbackSubmitted'
+          placeholder='Why?'
+          rows='2'
           no-resize
           outlined
           hide-details
         ></v-textarea>
       </v-card-text>
-      <p v-if="feedbackError" class="caption error--text mb-0">{{ feedbackError }}</p>
+      <p v-if='feedbackError' class='caption error--text mb-0'>{{ feedbackError }}</p>
       <v-card-actions>
         <v-spacer></v-spacer>
-        <v-btn small text light @click="clearFeedback" :disabled="feedbackSubmitted">Cancel</v-btn>
-        <v-btn small class="mx-1" color="white" light @click="submitGeneralFeedback"
-          :disabled="!(feedback && feedbackChoice) || feedbackSubmitted">Send</v-btn>
-        <v-icon color="white" v-show="feedbackSubmitted">mdi-check</v-icon>
+        <v-btn small text light @click='clearFeedback' :disabled='feedbackSubmitted'>Cancel</v-btn>
+        <v-btn small class='mx-1' color='white' light @click='submitGeneralFeedback'
+               :disabled='!(feedback && feedbackChoice) || feedbackSubmitted'>Send
+        </v-btn>
+        <v-icon color='white' v-show='feedbackSubmitted'>mdi-check</v-icon>
       </v-card-actions>
     </v-card>
     <!-- End For general feedback -->
   </v-container>
 </template>
 
-<script lang="ts">
+<script lang='ts'>
 import { Component, Vue, Prop, Watch } from 'vue-property-decorator';
 import OverlayLoader from '@/components/OverlayLoader.vue';
 import PredictionResults from './PredictionResults.vue';
@@ -80,75 +88,95 @@ import PredictionExplanations from './PredictionExplanations.vue';
 import TextExplanation from './TextExplanation.vue';
 import { api } from '@/api';
 import { readToken } from '@/store/main/getters';
-import { IFeedbackCreate } from '@/interfaces';
+import { IFeedbackCreate, RowDetails } from '@/interfaces';
 import FeedbackPopover from '@/components/FeedbackPopover.vue';
 import Inspector from './Inspector.vue';
+import RowList from '@/views/main/project/RowList.vue';
 
 @Component({
-  components: { OverlayLoader, Inspector, PredictionResults, FeedbackPopover, PredictionExplanations, TextExplanation }
+  components: {
+    OverlayLoader,
+    Inspector,
+    PredictionResults,
+    FeedbackPopover,
+    PredictionExplanations,
+    TextExplanation,
+    RowList
+  }
 })
 export default class InspectorWrapper extends Vue {
-	@Prop({ required: true }) modelId!: number
-	@Prop({ required: true }) datasetId!: number
-  @Prop() targetFeature!: string
+  @Prop({ required: true }) modelId!: number;
+  @Prop({ required: true }) datasetId!: number;
+  @Prop() targetFeature!: string;
 
   loadingData = false;
-  inputData = {}
-  originalData = {}
-  rowNb: number = 0
-  shuffleMode: boolean = false
-  dataErrorMsg = ""
+  inputData = {};
+  originalData = {};
+  rowNb: number = 0;
+  shuffleMode: boolean = false;
+  dataErrorMsg = '';
 
-  feedbackPopupToggle = false
-  feedback = ""
-  feedbackChoice = null
-  feedbackError = ""
-  feedbackSubmitted = false
+  feedbackPopupToggle = false;
+  feedback = '';
+  feedbackChoice = null;
+  feedbackError = '';
+  feedbackSubmitted = false;
 
   async mounted() {
-    await this.fetchRowData(0);
+    //await this.fetchRowData(0);
+  }
+
+  private getCurrentRow(rowDetails: RowDetails) {
+    console.log(rowDetails)
+    this.loadingData = true;
+    this.inputData = rowDetails.item;
+    this.originalData = { ...this.inputData }; // deep copy to avoid caching mechanisms
+    this.rowNb = rowDetails.index;
+    this.dataErrorMsg = '';
+    this.loadingData = false;
   }
 
   public next() {
     this.clearFeedback();
-    this.fetchRowData(this.rowNb + 1);
+    //this.fetchRowData(this.rowNb + 1);
   }
+
   public previous() {
     this.clearFeedback();
-    this.fetchRowData(Math.max(0, this.rowNb - 1))
+    //this.fetchRowData(Math.max(0, this.rowNb - 1))
   }
-  
-  @Watch("datasetId")
-  async reload() {
-    await this.fetchRowData(0)
-  }
+
+  // @Watch("datasetId")
+  // async reload() {
+  //   await this.fetchRowData(0)
+  // }
 
   private async fetchRowData(rowId) {
     try {
-      this.loadingData = true
+      this.loadingData = true;
       const resp = this.shuffleMode
         ? await api.getDataRandom(readToken(this.$store), this.datasetId)
-        : await api.getDataByRowId(readToken(this.$store), this.datasetId, rowId) 
-      this.inputData = resp.data
-      this.originalData = {...this.inputData} // deep copy to avoid caching mechanisms
-      this.rowNb = resp.data.rowNb
-      this.dataErrorMsg = "";
+        : await api.getDataByRowId(readToken(this.$store), this.datasetId, rowId);
+      this.inputData = resp.data;
+      this.originalData = { ...this.inputData }; // deep copy to avoid caching mechanisms
+      this.rowNb = resp.data.rowNb;
+      this.dataErrorMsg = '';
     } catch (error) {
-      this.dataErrorMsg = error.response.data.detail
+      this.dataErrorMsg = error.response.data.detail;
     } finally {
-      this.loadingData = false
+      this.loadingData = false;
     }
   }
 
   private resetInput() {
-    this.inputData = {...this.originalData}
+    this.inputData = { ...this.originalData };
   }
 
   public clearFeedback() {
-    this.feedback = ""
-    this.feedbackError = ""
-    this.feedbackSubmitted = false
-    this.feedbackChoice = null
+    this.feedback = '';
+    this.feedbackError = '';
+    this.feedbackSubmitted = false;
+    this.feedbackChoice = null;
     this.feedbackPopupToggle = false;
   }
 
@@ -160,44 +188,44 @@ export default class InspectorWrapper extends Vue {
       target_feature: this.targetFeature,
       user_data: this.inputData,
       original_data: this.originalData
-    }
+    };
   }
 
   public async submitGeneralFeedback() {
     const feedback: IFeedbackCreate = {
       ...this.commonFeedbackData,
-      feedback_type: "general",
+      feedback_type: 'general',
       feedback_choice: this.feedbackChoice || undefined,
-      feedback_message: this.feedback 
-    }
+      feedback_message: this.feedback
+    };
     try {
-      await this.doSubmitFeedback(feedback)
-      this.feedbackSubmitted = true
+      await this.doSubmitFeedback(feedback);
+      this.feedbackSubmitted = true;
     } catch (err) {
-      this.feedbackError = err.response.data.detail
+      this.feedbackError = err.response.data.detail;
     }
   }
 
   public async submitValueFeedback(userData: object) {
     const feedback: IFeedbackCreate = {
       ...this.commonFeedbackData,
-      feedback_type: "value",
+      feedback_type: 'value',
       ...userData
-    }
-    await this.doSubmitFeedback(feedback)
+    };
+    await this.doSubmitFeedback(feedback);
   }
 
   public async submitValueVariationFeedback(userData: object) {
     const feedback: IFeedbackCreate = {
       ...this.commonFeedbackData,
-      feedback_type: "value perturbation",
+      feedback_type: 'value perturbation',
       ...userData
-    }
-    await this.doSubmitFeedback(feedback)
+    };
+    await this.doSubmitFeedback(feedback);
   }
 
   private async doSubmitFeedback(payload: IFeedbackCreate) {
-    await api.submitFeedback(readToken(this.$store), payload, payload.project_id)
+    await api.submitFeedback(readToken(this.$store), payload, payload.project_id);
   }
 
 }
@@ -219,8 +247,8 @@ export default class InspectorWrapper extends Vue {
 }
 
 #feedback-card .v-card__title {
-    font-size: 1.1rem;
-    padding: 0 12px;
-    padding-top: 8px;
+  font-size: 1.1rem;
+  padding: 0 12px;
+  padding-top: 8px;
 }
 </style>

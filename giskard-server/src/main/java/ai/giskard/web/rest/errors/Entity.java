@@ -4,6 +4,7 @@ import lombok.Getter;
 
 public enum Entity {
     PROJECT("Project"),
+    DATASET("Dataset"),
     PROJECT_MODEL("Model"),
     TEST_SUITE("Test suite"),
     TEST("Test"),
