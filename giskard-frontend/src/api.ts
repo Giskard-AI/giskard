@@ -144,6 +144,14 @@ export const api = {
     async getDataRandom(token: string, datasetId: number) {
         return axios.get(`${apiUrl}/api/v1/files/datasets/${datasetId}/row/random`, authHeaders(token));
     },
+    async getDataByRange(token: string, datasetId: number, rangeMin: number, rangeMax:number) {
+        return axios.get(`${apiUrlJava}/api/v2/dataset/${datasetId}/rows`, { ...authHeaders(token),  params: {
+                "rangeMin": rangeMin, "rangeMax": rangeMax
+            }});
+    },
+    async getDatasetDetails(token: string, datasetId: number) {
+        return axios.get(`${apiUrlJava}/api/v2/dataset/${datasetId}/details`, authHeaders(token));
+    },
     async getProjectDatasets(token: string, id: number) {
         return axiosProject.get<IProjectFile[]>(`/${id}/datasets`, authHeaders(token));
     },
