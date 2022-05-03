@@ -11,9 +11,11 @@
   "dependencies": {
     "@babel/polyfill": "^7.2.5",
     "@sentry/types": "^6.13.3",
+    "@types/mousetrap": "^1.6.9",
     "axios": "^0.24.0",
     "core-js": "^3.19.0",
     "echarts": "^5.1.1",
+    "mousetrap": "^1.6.5",
     "posthog-js": "^1.11.3",
     "register-service-worker": "^1.0.0",
     "rrweb-snapshot": "^1.1.9",
