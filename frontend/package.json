@@ -12,7 +12,7 @@
     "@babel/polyfill": "^7.2.5",
     "@sentry/types": "^6.13.3",
     "@types/mousetrap": "^1.6.9",
-    "axios": "^0.24.0",
+    "axios": "^0.27.2",
     "core-js": "^3.19.0",
     "echarts": "^5.1.1",
     "mousetrap": "^1.6.5",
