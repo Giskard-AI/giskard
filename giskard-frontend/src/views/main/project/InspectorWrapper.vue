@@ -15,7 +15,13 @@
       <span class='caption grey--text'>Entry #{{ rowNb }}</span>
     </v-toolbar>
 
-    <RowList class='px-0' :datasetId='datasetId' @currentRow='getCurrentRow'
+    <v-select
+      :items="filterTypes"
+      label="Standard"
+      v-model="selectedFilter"
+    ></v-select>
+
+    <RowList class='px-0' :datasetId='datasetId' :model-id='modelId' :selectedFilter='selectedFilter' @currentRow='getCurrentRow'
     />
 
     <Inspector class='px-0'
@@ -108,6 +114,8 @@ export default class InspectorWrapper extends Vue {
   @Prop({ required: true }) modelId!: number;
   @Prop({ required: true }) datasetId!: number;
   @Prop() targetFeature!: string;
+  filterTypes= ['GREATER', 'LOWER']
+  selectedFilter=this.filterTypes[0]
 
   loadingData = false;
   inputData = {};
@@ -151,22 +159,22 @@ export default class InspectorWrapper extends Vue {
   //   await this.fetchRowData(0)
   // }
 
-  private async fetchRowData(rowId) {
-    try {
-      this.loadingData = true;
-      const resp = this.shuffleMode
-        ? await api.getDataRandom(readToken(this.$store), this.datasetId)
-        : await api.getDataByRowId(readToken(this.$store), this.datasetId, rowId);
-      this.inputData = resp.data;
-      this.originalData = { ...this.inputData }; // deep copy to avoid caching mechanisms
-      this.rowNb = resp.data.rowNb;
-      this.dataErrorMsg = '';
-    } catch (error) {
-      this.dataErrorMsg = error.response.data.detail;
-    } finally {
-      this.loadingData = false;
-    }
-  }
+  // private async fetchRowData(rowId) {
+  //   try {
+  //     this.loadingData = true;
+  //     const resp = this.shuffleMode
+  //       ? await api.getDataRandom(readToken(this.$store), this.datasetId)
+  //       : await api.getDataByRowId(readToken(this.$store), this.datasetId, rowId);
+  //     this.inputData = resp.data;
+  //     this.originalData = { ...this.inputData }; // deep copy to avoid caching mechanisms
+  //     this.rowNb = resp.data.rowNb;
+  //     this.dataErrorMsg = '';
+  //   } catch (error) {
+  //     this.dataErrorMsg = error.response.data.detail;
+  //   } finally {
+  //     this.loadingData = false;
+  //   }
+  // }
 
   private resetInput() {
     this.inputData = { ...this.originalData };

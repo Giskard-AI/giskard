@@ -1,41 +1,41 @@
 <template>
-  <v-stepper v-model="step">
+  <v-stepper v-model='step'>
     <v-stepper-header>
-      <v-stepper-step :complete="step > 1" step="1">
+      <v-stepper-step :complete='step > 1' step='1'>
         Select dataset
       </v-stepper-step>
       <v-divider></v-divider>
-      <v-stepper-step :complete="step > 2" step="2">
+      <v-stepper-step :complete='step > 2' step='2'>
         Select target feature (if any)
       </v-stepper-step>
     </v-stepper-header>
 
     <v-stepper-items>
-      <OverlayLoader v-show="loading" />
-      <v-stepper-content step="1">
+      <OverlayLoader v-show='loading' />
+      <v-stepper-content step='1'>
         <v-card flat>
-          <v-card-text class="scrollable-with-limits">
-            <div v-if="datasets.length > 0">
-              <v-radio-group v-model="datasetSelected" class="ma-0 pa-0">
+          <v-card-text class='scrollable-with-limits'>
+            <div v-if='datasets.length > 0'>
+              <v-radio-group v-model='datasetSelected' class='ma-0 pa-0'>
                 <v-radio
-                  v-for="n in datasets"
-                  :key="n.id"
-                  :label="n.name"
-                  :value="n.id"
+                  v-for='n in datasets'
+                  :key='n.id'
+                  :label='n.name'
+                  :value='n.id'
                 ></v-radio>
               </v-radio-group>
             </div>
             <div v-else>No dataset uploaded yet on this project.</div>
           </v-card-text>
-          <v-card-actions class="justify-end">
-            <v-btn text @click="reset()"> Cancel </v-btn>
+          <v-card-actions class='justify-end'>
+            <v-btn text @click='reset()'> Cancel</v-btn>
             <v-btn
-              color="primary"
-              @click="
+              color='primary'
+              @click='
                 step++;
                 loadDatasetFeatures();
-              "
-              :disabled="!datasetSelected"
+              '
+              :disabled='!datasetSelected'
             >
               Continue
             </v-btn>
@@ -43,36 +43,36 @@
         </v-card>
       </v-stepper-content>
 
-      <v-stepper-content step="2">
+      <v-stepper-content step='2'>
         <v-card flat>
-          <v-card-text class="scrollable-with-limits">
-            <div v-if="datasetFeatures.length > 0">
-              <v-radio-group v-model="targetFeature" class="ma-0 pa-0">
+          <v-card-text class='scrollable-with-limits'>
+            <div v-if='datasetFeatures.length > 0'>
+              <v-radio-group v-model='targetFeature' class='ma-0 pa-0'>
                 <v-radio
-                  v-for="f in datasetFeatures"
-                  :key="f"
-                  :label="f"
-                  :value="f"
+                  v-for='f in datasetFeatures'
+                  :key='f'
+                  :label='f'
+                  :value='f'
                 ></v-radio>
               </v-radio-group>
             </div>
             <div v-else>
-              <div v-if="errorLoadingFeatures">
+              <div v-if='errorLoadingFeatures'>
                 Could not load features:
-                <span class="error--text">{{ errorLoadingFeatures }}</span>
+                <span class='error--text'>{{ errorLoadingFeatures }}</span>
                 <br />Please try another dataset.
               </div>
             </div>
           </v-card-text>
           <v-card-actions>
-            <v-btn text @click="step--">Back</v-btn>
+            <v-btn text @click='step--'>Back</v-btn>
             <v-spacer></v-spacer>
-            <v-btn text @click="reset()"> Cancel </v-btn>
-            <v-btn text @click="targetFeature = null">Clear</v-btn>
+            <v-btn text @click='reset()'> Cancel</v-btn>
+            <v-btn text @click='targetFeature = null'>Clear</v-btn>
             <v-btn
-              color="primary"
-              @click="launchInspector()"
-              :disabled="errorLoadingFeatures"
+              color='primary'
+              @click='launchInspector()'
+              :disabled='errorLoadingFeatures'
             >
               Go
             </v-btn>
@@ -83,16 +83,16 @@
   </v-stepper>
 </template>
 
-<script lang="ts">
-import { Component, Vue, Prop, Emit } from "vue-property-decorator";
-import { IProjectFile } from "@/interfaces";
-import OverlayLoader from "@/components/OverlayLoader.vue";
-import { readToken } from "@/store/main/getters";
-import { commitAddNotification } from "@/store/main/mutations";
-import { api } from "@/api";
+<script lang='ts'>
+import { Component, Vue, Prop, Emit } from 'vue-property-decorator';
+import { IProjectFile } from '@/interfaces';
+import OverlayLoader from '@/components/OverlayLoader.vue';
+import { readToken } from '@/store/main/getters';
+import { commitAddNotification } from '@/store/main/mutations';
+import { api } from '@/api';
 
 @Component({
-  components: { OverlayLoader },
+  components: { OverlayLoader }
 })
 export default class InspectorLauncher extends Vue {
   @Prop({ required: true }) projectId!: number;
@@ -109,7 +109,7 @@ export default class InspectorLauncher extends Vue {
     this.loadDatasets();
   }
 
-  @Emit("cancel")
+  @Emit('cancel')
   public reset() {
     this.step = 1;
     this.datasetSelected = null;
@@ -138,14 +138,14 @@ export default class InspectorLauncher extends Vue {
           readToken(this.$store),
           this.datasetSelected
         );
-        const headers = JSON.parse(response.data)["schema"]["fields"];
+        const headers = JSON.parse(response.data)['schema']['fields'];
         this.datasetFeatures = headers
-          .map((e) => e["name"].trim())
-          .filter((e) => e != "index");
+          .map((e) => e['name'].trim())
+          .filter((e) => e != 'index');
       } catch (error) {
         commitAddNotification(this.$store, {
           content: error.response.data.detail,
-          color: "error",
+          color: 'error'
         });
         this.errorLoadingFeatures = error.response.data.detail;
       } finally {
@@ -154,13 +154,14 @@ export default class InspectorLauncher extends Vue {
     }
   }
 
-  public launchInspector() {
+  public async launchInspector() {
     const query = {
       model: this.modelId.toString(),
-			dataset: this.datasetSelected?.toString(),
-			target: this.targetFeature || undefined,
-		}
-    this.$router.push({ name: 'project-inspector', query })
+      dataset: this.datasetSelected?.toString(),
+      target: this.targetFeature || undefined
+    };
+    await api.prepareInspection(readToken(this.$store), query.model, query.dataset!, query.target!);
+    this.$router.push({ name: 'project-inspector', query });
     this.reset();
   }
 }

@@ -2,6 +2,7 @@ package ai.giskard.web.rest.controllers;
 
 import ai.giskard.config.ApplicationProperties;
 import ai.giskard.domain.ml.Dataset;
+import ai.giskard.domain.ml.RowFilter;
 import ai.giskard.repository.ml.DatasetRepository;
 import ai.giskard.service.DatasetService;
 import ai.giskard.web.dto.mapper.GiskardMapper;
@@ -51,7 +52,7 @@ public class DatasetsController {
     }
 
     /**
-     * Retrieve the row specified by the given index on the dataset
+     * Get the rows in the specified range
      *
      * @param datasetId id of the dataset
      * @return List of datasets
@@ -74,6 +75,23 @@ public class DatasetsController {
     @GetMapping("/dataset/{datasetId}/details")
     public DatasetDetailsDTO datasetDetails(@PathVariable @NotNull Long datasetId) {
         return datasetService.getDetails(datasetId);
+    }
+
+    /**
+     * Retrieve the row specified by the given index on the dataset
+     *
+     * @param datasetId id of the dataset
+     * @return List of datasets
+     */
+
+    @GetMapping("/dataset/{datasetId}/rowsFiltered")
+    public HashMap<String, String> getRowsFiltered(@PathVariable @NotNull Long datasetId,@RequestParam("modelId") @NotNull Long modelId, @RequestParam("threshold") @NotNull float threshold, @RequestParam("target") @NotNull String target, @RequestParam("filter") @NotNull RowFilter filter, @RequestParam("rangeMin") @NotNull int rangeMin, @RequestParam("rangeMax") @NotNull int rangeMax) throws IOException {
+        Table filteredTable = datasetService.getRowsFiltered(datasetId,modelId, target, threshold, filter);
+        Table filteredMTable=filteredTable.inRange(rangeMin, rangeMax);
+        HashMap<String, String> map = new HashMap<>();
+        map.put("data",  filteredMTable.write().toString("json"));
+        map.put("rowNb",  ""+filteredTable.rowCount());
+        return map;
     }
 
 }

@@ -149,6 +149,11 @@ export const api = {
                 "rangeMin": rangeMin, "rangeMax": rangeMax
             }});
     },
+    async getDataFilteredByRange(token: string, datasetId: number,modelId:number,target:string,  threshold:number, filter: string,rangeMin: number, rangeMax:number) {
+        return axios.get(`${apiUrlJava}/api/v2/dataset/${datasetId}/rowsFiltered`, { ...authHeaders(token),  params: {
+                modelId:modelId,threshold:threshold, target:target, filter:filter, rangeMin: rangeMin, rangeMax: rangeMax
+            }});
+    },
     async getDatasetDetails(token: string, datasetId: number) {
         return axios.get(`${apiUrlJava}/api/v2/dataset/${datasetId}/details`, authHeaders(token));
     },
@@ -167,6 +172,12 @@ export const api = {
     },
     async predict(token: string, modelId: number, inputData: object) {
         return axios.post(`${apiUrl}/api/v1/models/${modelId}/predict`, { features: inputData }, authHeaders(token));
+    },
+    async predictDf(token: string, modelId: number, inputData: object) {
+        return axios.post(`${apiUrl}/api/v1/models/${modelId}/predicts`, { features: inputData }, authHeaders(token));
+    },
+    async prepareInspection(token: string, modelId: string, datasetId: string, target:string) {
+        return axios.get(`${apiUrl}/api/v1/files/inspect`,  {...authHeaders(token),params: { model_id: modelId,dataset_id:datasetId , target:target }});
     },
     async explain(token: string, modelId: number, datasetId: number, inputData: object) {
         return axios.post(`${apiUrl}/api/v1/models/${modelId}/${datasetId}/explain`, { features: inputData }, authHeaders(token));
