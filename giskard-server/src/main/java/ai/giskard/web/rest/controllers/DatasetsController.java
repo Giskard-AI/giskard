@@ -1,33 +1,19 @@
 package ai.giskard.web.rest.controllers;
 
-import ai.giskard.config.ApplicationProperties;
-import ai.giskard.domain.ml.Dataset;
 import ai.giskard.domain.ml.RowFilter;
 import ai.giskard.repository.ml.DatasetRepository;
 import ai.giskard.service.DatasetService;
 import ai.giskard.web.dto.mapper.GiskardMapper;
 import ai.giskard.web.dto.ml.DatasetDTO;
 import ai.giskard.web.dto.ml.DatasetDetailsDTO;
-import ai.giskard.web.dto.ml.ModelDTO;
-import ai.giskard.web.rest.errors.Entity;
-import ai.giskard.web.rest.errors.EntityNotFoundException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
-import tech.tablesaw.api.Row;
 import tech.tablesaw.api.Table;
-import tech.tablesaw.io.DataFrameWriter;
-import tech.tablesaw.io.json.JsonWriter;
 
 import javax.validation.constraints.NotNull;
-import java.io.File;
 import java.io.IOException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
