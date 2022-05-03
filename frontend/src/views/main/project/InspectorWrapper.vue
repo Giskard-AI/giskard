@@ -6,7 +6,7 @@
         <v-icon v-if="shuffleMode" color="primary">mdi-shuffle-variant</v-icon>
         <v-icon v-else>mdi-shuffle-variant</v-icon>
       </v-btn>
-      <v-btn icon @click="previous" :disabled="shuffleMode || rowNb == 0"><v-icon>mdi-skip-previous</v-icon></v-btn>
+      <v-btn icon @click="previous" :disabled="!canPrevious()"><v-icon>mdi-skip-previous</v-icon></v-btn>
       <v-btn icon @click="next"><v-icon>mdi-skip-next</v-icon></v-btn>
       <span class="caption grey--text">Entry #{{rowNb}}</span>
     </v-toolbar>
@@ -120,6 +120,9 @@ export default class InspectorWrapper extends Vue {
     this.mouseTrap.reset();
   }
 
+  public canPrevious(){ return !this.shuffleMode && this.rowNb> 0}
+
+
   /**
    * Call on active tab
    */
@@ -135,9 +138,12 @@ export default class InspectorWrapper extends Vue {
     this.clearFeedback();
     this.fetchRowData(this.rowNb + 1);
   }
+
   public previous() {
-    this.clearFeedback();
-    this.fetchRowData(Math.max(0, this.rowNb - 1))
+    if (this.canPrevious()) {
+      this.clearFeedback();
+      this.fetchRowData(Math.max(0, this.rowNb - 1))
+    }
   }
 
   @Watch("datasetId")
