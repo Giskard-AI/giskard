@@ -1,33 +1,25 @@
 package ai.giskard.service;
 
 import ai.giskard.config.ApplicationProperties;
-import ai.giskard.domain.Project;
-import ai.giskard.domain.User;
 import ai.giskard.domain.ml.Dataset;
-import ai.giskard.repository.ProjectRepository;
+import ai.giskard.domain.ml.RowFilter;
 import ai.giskard.repository.UserRepository;
 import ai.giskard.repository.ml.DatasetRepository;
-import ai.giskard.security.SecurityUtils;
-import ai.giskard.web.dto.mapper.GiskardMapper;
+import ai.giskard.repository.ml.ModelRepository;
 import ai.giskard.web.dto.ml.DatasetDetailsDTO;
-import ai.giskard.web.dto.ml.ProjectPostDTO;
 import ai.giskard.web.rest.errors.Entity;
 import ai.giskard.web.rest.errors.EntityNotFoundException;
-import ai.giskard.web.rest.errors.NotInDatabaseException;
-import lombok.Data;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import tech.tablesaw.api.DoubleColumn;
 import tech.tablesaw.api.IntColumn;
 import tech.tablesaw.api.Table;
+import tech.tablesaw.selection.Selection;
 
 import javax.validation.constraints.NotNull;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
 
 @Service
 @Transactional
@@ -36,6 +28,7 @@ public class DatasetService {
 
     final UserRepository userRepository;
     final DatasetRepository datasetRepository;
+    final ModelRepository modelRepository;
     private final ApplicationProperties applicationProperties;
 
     public Table getTableFromDatasetId(@NotNull Long id) {
@@ -43,6 +36,11 @@ public class DatasetService {
         Path filePath = Paths.get(applicationProperties.getBucketPath(), dataset.getLocation());
         String filePathName = filePath.toAbsolutePath().toString().replace(".zst", "");
         return Table.read().csv(filePathName);
+    }
+
+    public Table getProbsTableFromModelId(@NotNull Long datasetId, @NotNull Long modelId) {
+        Path filePath = Paths.get(applicationProperties.getBucketPath(),"files-bucket", String.format("%s_%s.csv", modelId,datasetId ));
+        return Table.read().csv(filePath.toAbsolutePath().toString());
     }
 
     /**
@@ -70,6 +68,28 @@ public class DatasetService {
         Table table = getTableFromDatasetId(id);
         table.addColumns(IntColumn.indexColumn("Index", table.rowCount(), 0));
         Table filteredTable = table.inRange(rangeMin, rangeMax);
+        return filteredTable;
+    }
+
+    /**
+     * Get filtered rows
+     *
+     * @param datasetId dataset id
+     * @return filtered table
+     */
+    public Table getRowsFiltered(@NotNull Long datasetId, @NotNull Long modelId, @NotNull String target, @NotNull float threshold, @NotNull RowFilter rowFilter) {
+        Table table = getTableFromDatasetId(datasetId);
+        Table probsTable = getProbsTableFromModelId(datasetId, modelId);
+        //Table result = table.append(probsTable);
+        table.addColumns(IntColumn.indexColumn("Index", table.rowCount(), 0));
+        DoubleColumn probTarget = (DoubleColumn) probsTable.column("predictions_"+target);
+        Selection selection = probTarget.isPositive();
+        if (rowFilter == RowFilter.GREATER) {
+            selection = probTarget.isGreaterThan(threshold);
+        } else if (rowFilter == RowFilter.LOWER) {
+            selection = probTarget.isLessThan(threshold);
+        }
+        Table filteredTable = table.where(selection);
         return filteredTable;
     }
 }
