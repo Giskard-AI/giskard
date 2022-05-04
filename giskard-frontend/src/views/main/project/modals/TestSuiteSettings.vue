@@ -11,13 +11,13 @@
             v-model="modifiedTestSuite.name"
             label="Name"
         ></v-text-field>
-        <ModelSelector :value.sync="modifiedTestSuite.model" :project-id="testSuite.projectId"/>
+        <ModelSelector :value.sync="modifiedTestSuite.model" :project-id="testSuite.project.id"/>
         <DatasetSelector
-            :value.sync="modifiedTestSuite.trainDataset" :project-id="testSuite.projectId"
+            :value.sync="modifiedTestSuite.trainDataset" :project-id="testSuite.project.id"
             label="Train dataset"
         />
         <DatasetSelector
-            :value.sync="modifiedTestSuite.testDataset" :project-id="testSuite.projectId"
+            :value.sync="modifiedTestSuite.testDataset" :project-id="testSuite.project.id"
             label="Test dataset"
         />
       </v-form>

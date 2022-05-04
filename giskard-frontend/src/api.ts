@@ -203,7 +203,7 @@ export const api = {
   async createTestSuite(projectId: number, name: string, modelId: number) {
     return await axios.post(`${apiUrlJava}/api/v2/testing/suites`, {
       name: name,
-      projectId: projectId,
+      project: { id: projectId },
       model: { id: modelId }
     });
   },

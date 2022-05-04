@@ -1,8 +1,8 @@
 {
   "targetRoot": "src/generated-sources",
   "mapping": {
-    "ai.giskard.web.dto.user.AdminUserDTO$AdminUserDTOWithPassword": "AdminUserDTO.AdminUserDTOWithPassword",
     "ai.giskard.web.dto.user.PasswordChangeDTO": "PasswordChangeDTO",
+    "ai.giskard.web.dto.user.AdminUserDTO$AdminUserDTOMigration": "AdminUserDTO.AdminUserDTOMigration",
     "ai.giskard.web.dto.ml.ExecuteTestSuiteRequest": "ExecuteTestSuiteRequest",
     "ai.giskard.web.rest.vm.TokenAndPasswordVM": "TokenAndPasswordVM",
     "ai.giskard.web.dto.ml.ProjectDTO": "ProjectDTO",
@@ -13,7 +13,6 @@
     "ai.giskard.domain.ml.TestType": "TestType",
     "ai.giskard.web.dto.ml.TestSuiteDTO": "TestSuiteDTO",
     "ai.giskard.web.dto.config.AppConfigDTO$AppInfoDTO": "AppConfigDTO.AppInfoDTO",
-    "ai.giskard.web.dto.user.UpdateMeDTO": "UpdateMeDTO",
     "ai.giskard.web.dto.user.AdminUserDTO": "AdminUserDTO",
     "ai.giskard.domain.ml.CodeLanguage": "CodeLanguage",
     "ai.giskard.web.dto.ml.CodeBasedTestPresetDTO": "CodeBasedTestPresetDTO",
@@ -22,11 +21,11 @@
     "ai.giskard.web.dto.JWTToken": "JWTToken",
     "ai.giskard.web.dto.config.AppConfigDTO": "AppConfigDTO",
     "ai.giskard.web.dto.ml.FileDTO": "FileDTO",
-    "ai.giskard.web.rest.vm.ManagedUserVM": "ManagedUserVM",
     "ai.giskard.web.dto.ml.TestExecutionResultDTO": "TestExecutionResultDTO",
     "ai.giskard.web.dto.ml.NamedSingleTestResultDTO": "NamedSingleTestResultDTO",
     "ai.giskard.web.dto.user.RoleDTO": "RoleDTO",
     "ai.giskard.web.dto.ml.TestEditorConfigDTO": "TestEditorConfigDTO",
+    "ai.giskard.domain.Role": "Role",
     "ai.giskard.web.dto.user.UserDTO": "UserDTO",
     "ai.giskard.domain.ml.TestResult": "TestResult",
     "ai.giskard.web.dto.ml.DatasetDTO": "DatasetDTO"

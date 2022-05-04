@@ -2,6 +2,6 @@
  * Generated from ai.giskard.web.dto.user.RoleDTO
  */
 export interface RoleDTO {
-    id: string;
+    id: number;
     name: string;
 }
