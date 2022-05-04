@@ -2,23 +2,26 @@ package ai.giskard.web.rest;
 
 import ai.giskard.security.jwt.JWTFilter;
 import ai.giskard.security.jwt.TokenProvider;
+import ai.giskard.web.dto.JWTToken;
 import ai.giskard.web.rest.vm.LoginVM;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import javax.validation.Valid;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+
+import javax.validation.Valid;
 
 /**
  * Controller to authenticate users.
  */
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/api/v2")
 public class UserJWTController {
 
     private final TokenProvider tokenProvider;
@@ -45,24 +48,9 @@ public class UserJWTController {
         return new ResponseEntity<>(new JWTToken(jwt), httpHeaders, HttpStatus.OK);
     }
 
-    /**
-     * Object to return as body in JWT Authentication.
-     */
-    static class JWTToken {
-
-        private String idToken;
-
-        JWTToken(String idToken) {
-            this.idToken = idToken;
-        }
-
-        @JsonProperty("id_token")
-        String getIdToken() {
-            return idToken;
-        }
-
-        void setIdToken(String idToken) {
-            this.idToken = idToken;
-        }
+    @GetMapping(path = "/api-access-token")
+    public ResponseEntity<JWTToken> getAPIaccessToken(@AuthenticationPrincipal final UserDetails user) {
+        JWTToken token = new JWTToken(tokenProvider.createAPIaccessToken(user.getUsername()));
+        return new ResponseEntity<>(token, HttpStatus.OK);
     }
 }

@@ -27,7 +27,7 @@ export const actions = {
     async actionLogIn(context: MainContext, payload: { username: string; password: string }) {
         try {
             const response = await api.logInGetToken(payload.username, payload.password);
-            const token = response.data.access_token;
+            const token = response.data.id_token;
             if (token) {
                 saveLocalToken(token);
                 commitSetToken(context, token);
@@ -144,13 +144,20 @@ export const actions = {
         const loadingNotification = { content: 'Sending password recovery email', showProgress: true };
         try {
             commitAddNotification(context, loadingNotification);
-            const response = await api.passwordRecovery(payload.userId);
+            await api.passwordRecovery(payload.userId);
             commitRemoveNotification(context, loadingNotification);
-            commitAddNotification(context, { color: 'success', content: response.data.msg });
+            commitAddNotification(context, { color: 'success', content: 'Password recovery link has been sent' });
             await dispatchLogOut(context);
         } catch (error) {
             commitRemoveNotification(context, loadingNotification);
-            commitAddNotification(context, { color: 'error', content: error.response.data.detail });
+            let data = error.response.data;
+            let errMessage = "";
+            if (data.message === 'error.validation') {
+                errMessage = data.fieldErrors.map(e => `${e.field}: ${e.message}`).join('\n');
+            } else {
+                errMessage = data.detail;
+            }
+            commitAddNotification(context, { color: 'error', content: errMessage });
         }
     },
     async resetPassword(context: MainContext, payload: { password: string, token: string }) {
@@ -159,7 +166,7 @@ export const actions = {
             commitAddNotification(context, loadingNotification);
             const response = await api.resetPassword(payload.password, payload.token);
             commitRemoveNotification(context, loadingNotification);
-            commitAddNotification(context, { color: 'success', content: response.data.msg });
+            commitAddNotification(context, { color: 'success', content: 'Password successfully changed' });
             await dispatchLogOut(context);
         } catch (error) {
             commitRemoveNotification(context, loadingNotification);

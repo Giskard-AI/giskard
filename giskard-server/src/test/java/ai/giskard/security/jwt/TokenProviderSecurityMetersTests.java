@@ -2,6 +2,7 @@ package ai.giskard.security.jwt;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import ai.giskard.config.ApplicationProperties;
 import ai.giskard.management.SecurityMetersService;
 import ai.giskard.security.AuthoritiesConstants;
 import io.jsonwebtoken.Jwts;
@@ -11,10 +12,12 @@ import io.jsonwebtoken.security.Keys;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
+
 import java.security.Key;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -36,6 +39,7 @@ class TokenProviderSecurityMetersTests {
     @BeforeEach
     public void setup() {
         JHipsterProperties jHipsterProperties = new JHipsterProperties();
+        ApplicationProperties applicationProperties = new ApplicationProperties();
         String base64Secret = "fd54a45s65fds737b9aafcb3412e07ed99b267f33413274720ddbb7f6c5e64e9f14075f2d7ed041592f0b7657baf8";
         jHipsterProperties.getSecurity().getAuthentication().getJwt().setBase64Secret(base64Secret);
 
@@ -43,7 +47,7 @@ class TokenProviderSecurityMetersTests {
 
         SecurityMetersService securityMetersService = new SecurityMetersService(meterRegistry);
 
-        tokenProvider = new TokenProvider(jHipsterProperties, securityMetersService);
+        tokenProvider = new TokenProvider(jHipsterProperties, applicationProperties, securityMetersService);
         Key key = Keys.hmacShaKeyFor(Decoders.BASE64.decode(base64Secret));
 
         ReflectionTestUtils.setField(tokenProvider, "key", key);

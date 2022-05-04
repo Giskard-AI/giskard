@@ -20,9 +20,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     //List<User> findAllByActivatedIsFalseAndActivationKeyIsNotNullAndCreatedDateBefore(Instant dateTime);
 
-    default Optional<User> findOneByResetKey(String resetKey) {
-        return Optional.empty();
-    }
+    Optional<User> findOneByResetKey(String resetKey);
 
     Optional<User> findOneByEmailIgnoreCase(String email);
 
@@ -32,8 +30,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     Optional<User> findOneById(Long id);
 
-    @EntityGraph(attributePaths = "roles")
-    Optional<User> findOneWithRolesByLogin(String login);
+    @EntityGraph(attributePaths = "role")
+    Optional<User> findOneWithRoleByLogin(String login);
 
     @EntityGraph(attributePaths = "projects")
     User getOneWithProjectsByLogin(String login);

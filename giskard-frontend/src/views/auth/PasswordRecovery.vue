@@ -8,9 +8,8 @@
               <v-toolbar-title>{{appName}} - Password Recovery</v-toolbar-title>
             </v-toolbar>
             <v-card-text>
-              <p class="subtitle-1">Please enter your User ID.</p>
-              <p class="subtitle-2">A password recovery email will be sent to the corresponding email address.</p>
-              <v-text-field @keyup.enter="submit" label="User ID" type="text" prepend-inner-icon="person" v-model="userId" required></v-text-field>
+              <p class="subtitle-1">Please enter your email address to receive a password recovery link</p>
+              <v-text-field @keyup.enter="submit" label="Email" type="text" prepend-inner-icon="person" v-model="userId" required></v-text-field>
             </v-card-text>
             <v-card-actions>
               <v-spacer></v-spacer>

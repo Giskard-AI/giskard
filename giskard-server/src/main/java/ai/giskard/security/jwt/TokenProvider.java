@@ -1,14 +1,11 @@
 package ai.giskard.security.jwt;
 
+import ai.giskard.config.ApplicationProperties;
 import ai.giskard.management.SecurityMetersService;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import io.jsonwebtoken.security.SignatureException;
-import java.nio.charset.StandardCharsets;
-import java.security.Key;
-import java.util.*;
-import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -19,6 +16,12 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ObjectUtils;
 import tech.jhipster.config.JHipsterProperties;
+
+import java.nio.charset.StandardCharsets;
+import java.security.Key;
+import java.util.Collections;
+import java.util.Date;
+import java.util.stream.Collectors;
 
 @Component
 public class TokenProvider {
@@ -34,12 +37,13 @@ public class TokenProvider {
     private final JwtParser jwtParser;
 
     private final long tokenValidityInMilliseconds;
+    private final long apiTokenValidityInMilliseconds;
 
     private final long tokenValidityInMillisecondsForRememberMe;
 
     private final SecurityMetersService securityMetersService;
 
-    public TokenProvider(JHipsterProperties jHipsterProperties, SecurityMetersService securityMetersService) {
+    public TokenProvider(JHipsterProperties jHipsterProperties, ApplicationProperties applicationProperties, SecurityMetersService securityMetersService) {
         byte[] keyBytes;
         String secret = jHipsterProperties.getSecurity().getAuthentication().getJwt().getBase64Secret();
         if (!ObjectUtils.isEmpty(secret)) {
@@ -48,7 +52,7 @@ public class TokenProvider {
         } else {
             log.warn(
                 "Warning: the JWT key used is not Base64-encoded. " +
-                "We recommend using the `jhipster.security.authentication.jwt.base64-secret` key for optimum security."
+                    "We recommend using the `jhipster.security.authentication.jwt.base64-secret` key for optimum security."
             );
             secret = jHipsterProperties.getSecurity().getAuthentication().getJwt().getSecret();
             keyBytes = secret.getBytes(StandardCharsets.UTF_8);
@@ -56,6 +60,7 @@ public class TokenProvider {
         key = Keys.hmacShaKeyFor(keyBytes);
         jwtParser = Jwts.parserBuilder().setSigningKey(key).build();
         this.tokenValidityInMilliseconds = 1000 * jHipsterProperties.getSecurity().getAuthentication().getJwt().getTokenValidityInSeconds();
+        this.apiTokenValidityInMilliseconds = 24 * 60 * 60 * 1000 * applicationProperties.getApiTokenValidityInDays();
         this.tokenValidityInMillisecondsForRememberMe =
             1000 * jHipsterProperties.getSecurity().getAuthentication().getJwt().getTokenValidityInSecondsForRememberMe();
 
@@ -81,6 +86,17 @@ public class TokenProvider {
             .setExpiration(validity)
             .compact();
     }
+
+    public String createAPIaccessToken(String username) {
+        long now = (new Date()).getTime();
+        return Jwts
+            .builder()
+            .setSubject(username)
+            .signWith(key, SignatureAlgorithm.HS512)
+            .setExpiration(new Date(now + this.apiTokenValidityInMilliseconds))
+            .compact();
+    }
+
 
     public Authentication getAuthentication(String token) {
         Claims claims = jwtParser.parseClaimsJws(token).getBody();
@@ -121,7 +137,8 @@ public class TokenProvider {
             this.securityMetersService.trackTokenInvalidSignature();
 
             log.trace(INVALID_JWT_TOKEN, e);
-        } catch (IllegalArgumentException e) { // TODO: should we let it bubble (no catch), to avoid defensive programming and follow the fail-fast principle?
+        } catch (
+            IllegalArgumentException e) { // TODO: should we let it bubble (no catch), to avoid defensive programming and follow the fail-fast principle?
             log.error("Token validation error {}", e.getMessage());
         }
 

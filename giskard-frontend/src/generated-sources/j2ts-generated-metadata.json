@@ -4,7 +4,9 @@
     "ai.giskard.web.dto.user.PasswordChangeDTO": "PasswordChangeDTO",
     "ai.giskard.web.dto.user.AdminUserDTO$AdminUserDTOMigration": "AdminUserDTO.AdminUserDTOMigration",
     "ai.giskard.web.dto.ml.ExecuteTestSuiteRequest": "ExecuteTestSuiteRequest",
+    "ai.giskard.web.rest.vm.TokenAndPasswordVM": "TokenAndPasswordVM",
     "ai.giskard.web.dto.ml.ProjectDTO": "ProjectDTO",
+    "ai.giskard.web.dto.PasswordResetRequest": "PasswordResetRequest",
     "ai.giskard.web.dto.ml.ProjectPostDTO": "ProjectPostDTO",
     "ai.giskard.web.dto.ml.ModelDTO": "ModelDTO",
     "ai.giskard.web.dto.ml.SingleTestResultDTO": "SingleTestResultDTO",
@@ -16,15 +18,16 @@
     "ai.giskard.web.dto.ml.CodeBasedTestPresetDTO": "CodeBasedTestPresetDTO",
     "ai.giskard.web.dto.ml.TestDTO": "TestDTO",
     "ai.giskard.web.dto.ml.TestExecutionStatusDTO": "TestExecutionStatusDTO",
+    "ai.giskard.web.dto.JWTToken": "JWTToken",
     "ai.giskard.web.dto.config.AppConfigDTO": "AppConfigDTO",
     "ai.giskard.web.dto.ml.FileDTO": "FileDTO",
     "ai.giskard.web.dto.ml.TestExecutionResultDTO": "TestExecutionResultDTO",
-    "ai.giskard.web.dto.user.RoleDTO": "RoleDTO",
     "ai.giskard.web.dto.ml.NamedSingleTestResultDTO": "NamedSingleTestResultDTO",
+    "ai.giskard.web.dto.user.RoleDTO": "RoleDTO",
     "ai.giskard.web.dto.ml.TestEditorConfigDTO": "TestEditorConfigDTO",
     "ai.giskard.domain.Role": "Role",
-    "ai.giskard.domain.ml.TestResult": "TestResult",
     "ai.giskard.web.dto.user.UserDTO": "UserDTO",
+    "ai.giskard.domain.ml.TestResult": "TestResult",
     "ai.giskard.web.dto.ml.DatasetDTO": "DatasetDTO"
   }
 }
