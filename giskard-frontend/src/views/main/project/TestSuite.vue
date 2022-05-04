@@ -39,12 +39,12 @@ import Vue from "vue";
 import Component from "vue-class-component";
 import {Prop} from "vue-property-decorator";
 import {api} from "@/api";
-import {ITestSuite} from "@/interfaces";
 import ModelSelector from "@/views/main/utils/ModelSelector.vue";
 import DatasetSelector from "@/views/main/utils/DatasetSelector.vue";
 import * as _ from "lodash";
 import Tests from "@/views/main/project/Tests.vue";
 import TestSuiteSettings from "@/views/main/project/modals/TestSuiteSettings.vue";
+import { TestSuiteDTO } from '@/generated-sources';
 
 
 @Component({
@@ -57,8 +57,8 @@ import TestSuiteSettings from "@/views/main/project/modals/TestSuiteSettings.vue
 export default class TestSuite extends Vue {
   @Prop({required: true}) projectId?: number;
   @Prop({required: true}) suiteId!: number;
-  testSuite: ITestSuite | null = null;
-  savedTestSuite: ITestSuite | null = null;
+  testSuite: TestSuiteDTO | null = null;
+  savedTestSuite: TestSuiteDTO | null = null;
 
   selectedModel: number | null = null;
   selectedDataset: number | null = null;

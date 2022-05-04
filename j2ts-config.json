@@ -1,0 +1,8 @@
+{
+  "path": [
+    "giskard-server/src/main/java"
+  ],
+  "src-root": "giskard-server/src/main/java",
+  "front-root": "giskard-frontend",
+  "target-root": "src/generated-sources"
+}

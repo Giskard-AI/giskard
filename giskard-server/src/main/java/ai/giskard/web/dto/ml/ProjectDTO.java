@@ -1,6 +1,7 @@
 package ai.giskard.web.dto.ml;
 
 import ai.giskard.web.dto.user.UserDTO;
+import com.dataiku.j2ts.annotations.UIModel;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -13,6 +14,7 @@ import java.util.List;
 @Getter
 @Setter
 @NoArgsConstructor
+@UIModel
 public class ProjectDTO {
     @Getter
     @NotNull

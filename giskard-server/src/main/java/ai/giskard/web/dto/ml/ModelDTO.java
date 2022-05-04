@@ -5,10 +5,12 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import com.dataiku.j2ts.annotations.UIModel;
 
 @Getter
 @Setter
 @NoArgsConstructor
+@UIModel
 public class ModelDTO extends FileDTO {
 
     @JsonProperty("python_version")

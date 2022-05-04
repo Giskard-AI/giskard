@@ -2,12 +2,15 @@ package ai.giskard.security.jwt;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import ai.giskard.config.ApplicationProperties;
 import ai.giskard.management.SecurityMetersService;
 import ai.giskard.security.AuthoritiesConstants;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
+
 import java.util.Collections;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
@@ -30,11 +33,12 @@ class JWTFilterTest {
     public void setup() {
         JHipsterProperties jHipsterProperties = new JHipsterProperties();
         String base64Secret = "fd54a45s65fds737b9aafcb3412e07ed99b267f33413274720ddbb7f6c5e64e9f14075f2d7ed041592f0b7657baf8";
+        ApplicationProperties applicationProperties = new ApplicationProperties();
         jHipsterProperties.getSecurity().getAuthentication().getJwt().setBase64Secret(base64Secret);
 
         SecurityMetersService securityMetersService = new SecurityMetersService(new SimpleMeterRegistry());
 
-        tokenProvider = new TokenProvider(jHipsterProperties, securityMetersService);
+        tokenProvider = new TokenProvider(jHipsterProperties, applicationProperties, securityMetersService);
         ReflectionTestUtils.setField(tokenProvider, "key", Keys.hmacShaKeyFor(Decoders.BASE64.decode(base64Secret)));
 
         ReflectionTestUtils.setField(tokenProvider, "tokenValidityInMilliseconds", 60000);

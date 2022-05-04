@@ -182,7 +182,7 @@ jhipster:
   #   allow-credentials: true
   #   max-age: 1800
   mail:
-    from: giskard@localhost
+    from: welcome@giskard.ai
   api-docs:
     default-include-pattern: ${server.servlet.context-path:}/api/**
     management-include-pattern: ${server.servlet.context-path:}/management/**
@@ -209,4 +209,6 @@ jhipster:
 application:
   ml-worker-host: localhost
   ml-worker-port: 50051
+  api-token-validity-in-days: 90
+  invitation-token-validity-in-days: 3
   bucketPath: giskard-legacy-server/app

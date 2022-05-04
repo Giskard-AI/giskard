@@ -38,7 +38,7 @@
             </v-col>
             <v-col cols=2>
               <div :class="{'font-weight-bold': p.owner_details.id == userProfile.id}">
-                {{ p.owner_details.user_id == userProfile.user_id ? "me" : (p.owner_details.display_name || p.owner_details.user_id) }}
+                {{ p.owner_details.user_id == userProfile.user_id ? "me" : (p.owner_details.displayName || p.owner_details.user_id) }}
               </div>
             </v-col>
             <v-col cols=2>
@@ -87,7 +87,7 @@ import { ValidationObserver } from 'vee-validate'
 import { readUserProfile, readAllProjects, readHasAdminAccess } from '@/store/main/getters';
 import { Role } from '@/enums';
 import { dispatchGetProjects, dispatchCreateProject } from '@/store/main/actions';
-import { IProjectCreate } from '@/interfaces';
+import { ProjectPostDTO } from '@/generated-sources';
 
 @Component
 export default class ProjectsHome extends Vue {
@@ -121,7 +121,7 @@ export default class ProjectsHome extends Vue {
   }
 
   public get isCreator() {
-    return this.userProfile?.role.id == Role.AICREATOR; 
+    return this.userProfile?.roles?.includes(Role.AICREATOR);
   }
 
   get projects() {
@@ -147,7 +147,7 @@ export default class ProjectsHome extends Vue {
 
   public async submitNewProject() {
     if (this.newProjectName) {
-      const proj: IProjectCreate = {
+      const proj: ProjectPostDTO = {
         name: this.newProjectName.trim(),
         description: this.newProjectDesc.trim(),
       }

@@ -34,7 +34,7 @@ import Vue from "vue";
 import {Prop} from "vue-property-decorator";
 import {api} from "@/api";
 import ModelSelector from "@/views/main/utils/ModelSelector.vue";
-import {IProjetFileModel} from "@/interfaces";
+import { ModelDTO } from '@/generated-sources';
 
 @Component({
   components: {ModelSelector}
@@ -42,7 +42,7 @@ import {IProjetFileModel} from "@/interfaces";
 export default class TestSuiteCreateModal extends Vue {
   @Prop({required: true}) projectId!: number;
   public name: string = "";
-  model: IProjetFileModel | null = null;
+  model: ModelDTO | null = null;
 
   public async submit() {
     let createdTestSuite = (await api.createTestSuite(this.projectId, this.name, this.model!.id)).data;

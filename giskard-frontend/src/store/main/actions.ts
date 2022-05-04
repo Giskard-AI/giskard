@@ -1,5 +1,4 @@
 import { api } from '@/api';
-import { IProject, IProjectUpdate, IProjectCreate, IUserProfileCreate } from '@/interfaces';
 import router from '@/router';
 import { getLocalToken, removeLocalToken, saveLocalToken } from '@/utils';
 import { AxiosError } from 'axios';
@@ -18,6 +17,8 @@ import {
     commitSetProject, commitSetAppSettings
 } from './mutations';
 import { AppNotification, MainState } from './state';
+import { AdminUserDTO, ManagedUserVM, ProjectPostDTO, UpdateMeDTO } from '@/generated-sources';
+import AdminUserDTOWithPassword = AdminUserDTO.AdminUserDTOWithPassword;
 
 type MainContext = ActionContext<MainState, State>;
 
@@ -26,7 +27,7 @@ export const actions = {
     async actionLogIn(context: MainContext, payload: { username: string; password: string }) {
         try {
             const response = await api.logInGetToken(payload.username, payload.password);
-            const token = response.data.access_token;
+            const token = response.data.id_token;
             if (token) {
                 saveLocalToken(token);
                 commitSetToken(context, token);
@@ -64,7 +65,7 @@ export const actions = {
             await dispatchCheckApiError(context, error);
         }
     },
-    async actionUpdateUserProfile(context: MainContext, payload) {
+    async actionUpdateUserProfile(context: MainContext, payload: UpdateMeDTO) {
         const loadingNotification = { content: 'saving', showProgress: true };
         try {
             commitAddNotification(context, loadingNotification);
@@ -143,13 +144,20 @@ export const actions = {
         const loadingNotification = { content: 'Sending password recovery email', showProgress: true };
         try {
             commitAddNotification(context, loadingNotification);
-            const response = await api.passwordRecovery(payload.userId);
+            await api.passwordRecovery(payload.userId);
             commitRemoveNotification(context, loadingNotification);
-            commitAddNotification(context, { color: 'success', content: response.data.msg });
+            commitAddNotification(context, { color: 'success', content: 'Password recovery link has been sent' });
             await dispatchLogOut(context);
         } catch (error) {
             commitRemoveNotification(context, loadingNotification);
-            commitAddNotification(context, { color: 'error', content: error.response.data.detail });
+            let data = error.response.data;
+            let errMessage = "";
+            if (data.message === 'error.validation') {
+                errMessage = data.fieldErrors.map(e => `${e.field}: ${e.message}`).join('\n');
+            } else {
+                errMessage = data.detail;
+            }
+            commitAddNotification(context, { color: 'error', content: errMessage });
         }
     },
     async resetPassword(context: MainContext, payload: { password: string, token: string }) {
@@ -158,18 +166,18 @@ export const actions = {
             commitAddNotification(context, loadingNotification);
             const response = await api.resetPassword(payload.password, payload.token);
             commitRemoveNotification(context, loadingNotification);
-            commitAddNotification(context, { color: 'success', content: response.data.msg });
+            commitAddNotification(context, { color: 'success', content: 'Password successfully changed' });
             await dispatchLogOut(context);
         } catch (error) {
             commitRemoveNotification(context, loadingNotification);
             commitAddNotification(context, { color: 'error', content: error.response.data.detail });
         }
     },
-    async actionSignupUser(context: MainContext, payload: {userData: IUserProfileCreate, token: string}) {
+    async actionSignupUser(context: MainContext, payload: {userData: ManagedUserVM}) {
         const loadingNotification = { content: 'saving', showProgress: true };
         try {
             commitAddNotification(context, loadingNotification);
-            await api.signupUser(payload.userData, payload.token);
+            await api.signupUser(payload.userData);
             commitRemoveNotification(context, loadingNotification);
             commitAddNotification(context, { content: 'Success! Please proceed to login', color: 'success' });
             await dispatchLogOut(context);
@@ -204,7 +212,7 @@ export const actions = {
             await dispatchCheckApiError(context, error);
         }
     },
-    async actionCreateProject(context: MainContext, payload: IProjectCreate) {
+    async actionCreateProject(context: MainContext, payload: ProjectPostDTO) {
         const loadingNotification = { content: 'Saving...', showProgress: true };
         try {
             commitAddNotification(context, loadingNotification);
@@ -231,7 +239,7 @@ export const actions = {
             await dispatchCheckApiError(context, error);
         }
     },
-    async actionEditProject(context: MainContext, payload: {id: number, data: IProjectUpdate}) {
+    async actionEditProject(context: MainContext, payload: {id: number, data: ProjectPostDTO}) {
         const loadingNotification = { content: 'Deleting...', showProgress: true };
         try {
             commitAddNotification(context, loadingNotification);

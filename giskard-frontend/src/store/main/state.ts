@@ -1,4 +1,6 @@
-import {IUserProfile, IProject, IUserProfileMinimal, IAppSettings} from '@/interfaces';
+import {IUserProfileMinimal} from '@/interfaces';
+import { AdminUserDTO, AppConfigDTO, ProjectDTO } from '@/generated-sources';
+import AppInfoDTO = AppConfigDTO.AppInfoDTO;
 
 export interface AppNotification {
     content: string;
@@ -10,9 +12,9 @@ export interface MainState {
     token: string;
     isLoggedIn: boolean | null;
     logInError: string | null;
-    userProfile: IUserProfile | null;
-    appSettings: IAppSettings | null;
+    userProfile: AdminUserDTO | null;
+    appSettings: AppInfoDTO | null;
     coworkers: IUserProfileMinimal[];
     notifications: AppNotification[];
-    projects: IProject[];
+    projects: ProjectDTO[];
 }
