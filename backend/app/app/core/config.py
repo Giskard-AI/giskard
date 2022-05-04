@@ -108,5 +108,8 @@ class Settings(BaseSettings):
     class Config:
         case_sensitive = True
 
+    DEMO_PROJECT_DIR = Path("demo_project")
+
+
 
 settings = Settings()
