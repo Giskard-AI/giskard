@@ -22,7 +22,7 @@ sqlalchemy = "^1.4.27"
 pytest = "^6.2.5"
 python-jose = {extras = ["cryptography"], version = "^3.3.0"}
 mjml = "^0.6.2"
-Django = "^3.2.10"
+Django = "^3.2.13"
 beautifulsoup4 = "^4.10.0"
 Jinja2 = "^3.0.2"
 psycopg2-binary = "^2.9.2"
