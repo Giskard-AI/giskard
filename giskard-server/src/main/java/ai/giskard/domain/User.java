@@ -3,7 +3,6 @@ package ai.giskard.domain;
 import ai.giskard.config.Constants;
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import lombok.Getter;
 import lombok.Setter;
@@ -15,10 +14,11 @@ import javax.validation.constraints.Email;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
-
 import java.io.Serializable;
 import java.time.Instant;
-import java.util.*;
+import java.util.HashSet;
+import java.util.Locale;
+import java.util.Set;
 
 /**
  * A user.
@@ -55,22 +55,8 @@ public class User extends AbstractAuditingEntity implements Serializable {
     @Setter
     @Getter
     @Size(max = 150)
-    @Column(name = "display_name", length = 150)
+    @Column(length = 150)
     private String displayName;
-
-    @Setter
-    @Getter
-    @Size(max = 50)
-    @Column(name = "first_name", length = 50)
-    @Transient
-    private String firstName;
-
-    @Setter
-    @Getter
-    @Size(max = 50)
-    @Column(name = "last_name", length = 50)
-    @Transient
-    private String lastName;
 
     @Setter
     @Getter
@@ -90,20 +76,6 @@ public class User extends AbstractAuditingEntity implements Serializable {
     @NotNull
     @Column(nullable = false)
     private boolean enabled = false;
-
-    @Setter
-    @Getter
-    @Size(min = 2, max = 10)
-    @Column(name = "lang_key", length = 10)
-    @Transient
-    private String langKey = "en";
-
-    @Setter
-    @Getter
-    @Size(max = 256)
-    @Column(name = "image_url", length = 256)
-    @Transient
-    private String imageUrl;
 
     @Setter
     @Getter

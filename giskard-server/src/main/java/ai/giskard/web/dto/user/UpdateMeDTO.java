@@ -28,7 +28,6 @@ public class UpdateMeDTO {
     @Setter
     @Getter
     @Size(max = 150)
-    @JsonProperty("display_name")
     @UINullable
     private String displayName;
 

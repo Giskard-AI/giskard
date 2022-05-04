@@ -114,7 +114,7 @@ export default class EditUser extends Vue {
     this.password2 = '';
     this.$refs.observer.reset();
     if (this.user) {
-      this.displayName = this.user.display_name!;
+      this.displayName = this.user.displayName!;
       this.email = this.user.email;
       this.roles = this.user.roles;
     }
@@ -129,7 +129,7 @@ export default class EditUser extends Vue {
       const updatedProfile: Partial<AdminUserDTOWithPassword> = {
         id: this.user!.id,
         user_id: this.user!.user_id,
-        display_name: this.displayName,
+        displayName: this.displayName,
         email: this.email,
         roles: this.roles,
       };

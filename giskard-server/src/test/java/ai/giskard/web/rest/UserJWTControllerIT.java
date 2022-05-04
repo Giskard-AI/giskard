@@ -14,6 +14,7 @@ import ai.giskard.IntegrationTest;
 import ai.giskard.domain.User;
 import ai.giskard.repository.UserRepository;
 import ai.giskard.security.AuthoritiesConstants;
+import ai.giskard.utils.TestUtil;
 import ai.giskard.web.rest.controllers.UserJWTController;
 import ai.giskard.web.rest.vm.LoginVM;
 import org.junit.jupiter.api.Test;

@@ -85,7 +85,7 @@ export default class Login extends Vue {
           token: token
         };
         if (this.displayName) {
-          profileCreate.display_name = this.displayName;
+          profileCreate.displayName = this.displayName;
         }
         try {
           await dispatchSignupUser(this.$store, {userData: profileCreate});

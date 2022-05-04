@@ -75,8 +75,8 @@ export default class Dashboard extends Vue {
   get greetedUser() {
     const userProfile = this.userProfile;
     if (userProfile) {
-      if (userProfile.display_name) {
-        return userProfile.display_name;
+      if (userProfile.displayName) {
+        return userProfile.displayName;
       } else if (userProfile.user_id) {
         return userProfile.user_id;
       } else {

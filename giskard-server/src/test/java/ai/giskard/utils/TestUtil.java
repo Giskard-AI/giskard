@@ -1,4 +1,4 @@
-package ai.giskard.web.rest;
+package ai.giskard.utils;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

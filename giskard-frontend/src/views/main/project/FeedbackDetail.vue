@@ -12,7 +12,7 @@
                 <v-row>
                   <v-col>
                     <div class="caption font-weight-light">Originator</div>
-                    <div class="subtitle-2">{{ data.user.display_name || data.user.user_id }}</div>
+                    <div class="subtitle-2">{{ data.user.displayName || data.user.user_id }}</div>
                     <div class="caption font-weight-light">Sent On</div>
                     <div class="subtitle-2">{{ new Date(data.created_on).toLocaleString() }}</div>
                     <div class="caption font-weight-light">Model</div>

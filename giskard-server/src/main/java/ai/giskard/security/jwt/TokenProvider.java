@@ -134,7 +134,7 @@ public class TokenProvider {
         try {
             Jws<Claims> claims = jwtParser.parseClaimsJws(authToken);
             if (tokenType != null) {
-                JWTTokenType receivedTokenType = claims.getBody().get(TOKEN_TYPE_KEY, JWTTokenType.class);
+                JWTTokenType receivedTokenType = JWTTokenType.valueOf(claims.getBody().get(TOKEN_TYPE_KEY, String.class));
                 if (tokenType != receivedTokenType) {
                     log.warn("Incorrect token type, expected {}, but received {}", tokenType, receivedTokenType);
                     return false;

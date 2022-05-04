@@ -53,20 +53,7 @@ public class AdminUserDTO {
 
     @Setter
     @Getter
-    @Size(max = 50)
-    @UINullable
-    private String firstName;
-
-    @Setter
-    @Getter
-    @Size(max = 50)
-    @UINullable
-    private String lastName;
-
-    @Setter
-    @Getter
     @Size(max = 150)
-    @JsonProperty("display_name")
     @UINullable
     private String displayName;
 
@@ -78,12 +65,6 @@ public class AdminUserDTO {
 
     @Setter
     @Getter
-    @Size(max = 256)
-    @UINullable
-    private String imageUrl;
-
-    @Setter
-    @Getter
     @UINullable
     private boolean enabled = false;
 
@@ -91,12 +72,6 @@ public class AdminUserDTO {
     @Getter
     @UINullable
     private boolean activated = false;
-
-    @Setter
-    @Getter
-    @Size(min = 2, max = 10)
-    @UINullable
-    private String langKey;
 
     @Setter
     @Getter
@@ -123,24 +98,13 @@ public class AdminUserDTO {
     @UINullable
     private Set<String> roles;
 
-    //@JsonProperty("display_name")
-    //public String displayName() {
-    //    return Stream.of(firstName, lastName)
-    //        .filter(s -> s != null && !s.isEmpty())
-    //        .collect(Collectors.joining(" "));
-    //}
-
     public AdminUserDTO(User user) {
         this.id = user.getId();
         this.login = user.getLogin();
-        this.firstName = user.getFirstName();
-        this.lastName = user.getLastName();
         this.displayName = user.getDisplayName();
         this.email = user.getEmail();
         this.activated = user.isActivated();
         this.enabled = user.isEnabled();
-        this.imageUrl = user.getImageUrl();
-        this.langKey = user.getLangKey();
         this.createdBy = user.getCreatedBy();
         this.createdDate = user.getCreatedDate();
         this.lastModifiedBy = user.getLastModifiedBy();

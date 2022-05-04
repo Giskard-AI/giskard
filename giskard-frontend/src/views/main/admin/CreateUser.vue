@@ -118,7 +118,7 @@ export default class CreateUser extends Vue {
         password: this.password1
       };
       if (this.displayName) {
-        profileCreate.display_name = this.displayName;
+        profileCreate.displayName = this.displayName;
       }
       try {
         await dispatchCreateUser(this.$store, profileCreate);

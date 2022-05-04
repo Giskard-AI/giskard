@@ -47,12 +47,9 @@ public class UserMapper {
             User user = new User();
             user.setId(userDTO.getId());
             user.setLogin(userDTO.getLogin());
-            user.setFirstName(userDTO.getFirstName());
-            user.setLastName(userDTO.getLastName());
             user.setEmail(userDTO.getEmail());
-            user.setImageUrl(userDTO.getImageUrl());
+            user.setDisplayName(userDTO.getDisplayName());
             user.setActivated(userDTO.isActivated());
-            user.setLangKey(userDTO.getLangKey());
             user.setRoles(this.rolesFromStrings(userDTO.getRoles()));
             return user;
         }
