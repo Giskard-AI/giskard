@@ -10,7 +10,7 @@
         </span>
 			</v-toolbar-title>
       <v-spacer></v-spacer>
-			<v-btn small tile color="primary" v-if="isProjectOwnerOrAdmin" 
+			<v-btn small tile color="primary" v-if="isProjectOwnerOrAdmin"
 				@click="openShareDialog = true">
 				<v-icon dense left>people</v-icon>
 					Invite
@@ -45,7 +45,8 @@
 							v-model="userToInvite"
 							:items="coworkerNamesAvailable"
 							:item-text="getUserFullDisplayName"
-							item-value="user_id"
+              :item-value="id"
+              return-object
 							class="mx-2"
 							outlined dense single-line hide-details
 							clearable
@@ -119,7 +120,7 @@ import { Component, Vue, Prop, Watch } from 'vue-property-decorator';
 import { readProject, readCoworkers, readUserProfile } from '@/store/main/getters';
 import { dispatchGetProject, dispatchGetCoworkers, dispatchInviteUserToProject,
 	dispatchEditProject, dispatchDeleteProject } from '@/store/main/actions';
-import { IProjectUpdate } from '@/interfaces';
+import { IProjectUpdate, IUserProfileMinimal } from '@/interfaces';
 import { getUserFullDisplayName } from '@/utils';
 import Models from '@/views/main/project/Models.vue';
 import Datasets from '@/views/main/project/Datasets.vue';
@@ -133,9 +134,10 @@ import { Role } from '@/enums';
 })
 export default class Project extends Vue {
 
+
 	@Prop({ required: true }) id!: number;
 
-	userToInvite = "";
+	userToInvite:Partial<IUserProfileMinimal>={};
 	openShareDialog = false;
 	openEditDialog = false;
 	openDeleteDialog = false;
@@ -149,7 +151,7 @@ export default class Project extends Vue {
 		// make sure project is loaded first
 		await dispatchGetProject(this.$store, {id: this.id});
     await dispatchGetCoworkers(this.$store);
-	
+
 		this.setInspector(this.$router.currentRoute);
 	}
 
@@ -170,7 +172,7 @@ export default class Project extends Vue {
 			// remove users already in guest list
 			// .filter(e => !this.project?.guest_list.map(i => i.user_id).includes(e.user_id));
 	}
-	
+
 	get project() {
 		return readProject(this.$store)(this.id)
 	}
@@ -180,7 +182,7 @@ export default class Project extends Vue {
 	}
 
 	get isUserProjectOwner() {
-		return this.project && this.userProfile? this.project.owner_id == this.userProfile.id : false;
+		return this.project && this.userProfile? this.project.owner_details.id == this.userProfile.id : false;
 	}
 
 	private getUserFullDisplayName = getUserFullDisplayName
@@ -188,8 +190,7 @@ export default class Project extends Vue {
 	public async inviteUser() {
 		if (this.project && this.userToInvite) {
 			try {
-				await dispatchInviteUserToProject(this.$store, {projectId: this.project.id, userId: this.userToInvite})
-				this.userToInvite = ""
+				await dispatchInviteUserToProject(this.$store, {projectId: this.project.id, userId: this.userToInvite.id!})
 				this.openShareDialog = false
 			}	catch (e) {
 				console.error(e)

@@ -3,8 +3,9 @@ package ai.giskard.service.mapper;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import ai.giskard.domain.User;
-import ai.giskard.service.dto.AdminUserDTO;
-import ai.giskard.service.dto.UserDTO;
+import ai.giskard.web.dto.mapper.UserMapper;
+import ai.giskard.web.dto.user.AdminUserDTO;
+import ai.giskard.web.dto.user.UserDTO;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;

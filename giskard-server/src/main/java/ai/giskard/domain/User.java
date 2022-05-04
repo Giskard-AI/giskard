@@ -1,32 +1,29 @@
 package ai.giskard.domain;
 
 import ai.giskard.config.Constants;
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-import java.io.Serializable;
-import java.time.Instant;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Locale;
-import java.util.Set;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
+import org.apache.commons.lang3.StringUtils;
+import org.hibernate.annotations.BatchSize;
+
 import javax.persistence.*;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 
-import org.apache.commons.lang3.StringUtils;
-import org.hibernate.annotations.BatchSize;
-import org.springframework.data.annotation.CreatedBy;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedBy;
-import org.springframework.data.annotation.LastModifiedDate;
+import java.io.Serializable;
+import java.time.Instant;
+import java.util.*;
 
 /**
  * A user.
  */
 @Entity
 @Table(name = "giskard_users")
+@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
 public class User extends AbstractAuditingEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -166,33 +163,9 @@ public class User extends AbstractAuditingEntity implements Serializable {
             ", login='" + login + '\'' +
             '}';
     }
-//// TODO andreyavtomonov (14/03/2022): remove after inge
-    //public String getCreatedBy() {
-    //    return null;
-    //}
-    //
-    //public void setCreatedBy(String createdBy) {
-    //}
-    //
-    //public Instant getCreatedDate() {
-    //    return null;
-    //}
-    //
-    //public void setCreatedDate(Instant createdDate) {
-    //}
-    //
-    //public String getLastModifiedBy() {
-    //    return null;
-    //}
-    //
-    //public void setLastModifiedBy(String lastModifiedBy) {
-    //}
-    //
-    //public Instant getLastModifiedDate() {
-    //    return null;
-    //}
-    //
-    //public void setLastModifiedDate(Instant lastModifiedDate) {
-    //}
-
+    @lombok.Setter
+    @lombok.Getter
+    @JsonIgnore
+    @ManyToMany(mappedBy = "guests", cascade = CascadeType.ALL)
+    private Set<Project> projects = new HashSet<Project>();
 }

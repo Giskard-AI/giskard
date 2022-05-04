@@ -10,7 +10,7 @@ export interface ITest {
 }
 
 export interface IEditorConfig {
-    functions: ITestFunction[]
+    functions: ITestFunction[];
 }
 
 export type ITestFunction = {
@@ -52,7 +52,7 @@ export interface ITestExecutionResult {
 export interface ITestSuite {
     id: number;
     name: string;
-    projectId: number;
+    project: IProject;
     model: IProjetFileModel;
     trainDataset: IProjetFileDataset;
     testDataset: IProjetFileDataset;
@@ -67,9 +67,9 @@ export interface IAppInitData {
 }
 
 export interface IAppSettings {
-    plan_code: 'basic' | 'enterprise'
-    plan_name: string
-    seats_available?: number
+    plan_code: 'basic' | 'enterprise';
+    plan_name: string;
+    seats_available?: number;
 }
 
 export interface IUserProfile {
@@ -99,6 +99,7 @@ export interface IUserProfileCreate {
 }
 
 export interface IUserProfileMinimal {
+    id: number,
     user_id: string,
     display_name?: string
 }
@@ -114,7 +115,6 @@ export interface IProject {
     name: string,
     description: string,
     created_on: Date,
-    owner_id: number,
     owner_details: IUserProfileMinimal,
     guest_list: IUserProfileMinimal[]
 }
@@ -134,11 +134,11 @@ export interface IProjectFile {
     name: string,
     size: number,
     creation_date: string,
-    filename: string;
+    file_name: string;
 }
 
 export interface IProjetFileModel extends IProjectFile {
-    python_version: string
+    python_version: string;
 }
 
 

@@ -7,8 +7,8 @@ import ai.giskard.repository.AuthorityRepository;
 import ai.giskard.repository.UserRepository;
 import ai.giskard.security.AuthoritiesConstants;
 import ai.giskard.security.SecurityUtils;
-import ai.giskard.service.dto.AdminUserDTO;
-import ai.giskard.service.dto.UserDTO;
+import ai.giskard.web.dto.user.AdminUserDTO;
+import ai.giskard.web.dto.user.UserDTO;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
@@ -117,7 +117,7 @@ public class UserService {
         // new user gets registration key
         newUser.setActivationKey(RandomUtil.generateActivationKey());
         Set<Role> authorities = new HashSet<>();
-        authorityRepository.findById(AuthoritiesConstants.AICREATOR).ifPresent(authorities::add);
+        authorityRepository.findByName(AuthoritiesConstants.AICREATOR).ifPresent(authorities::add);
         newUser.setRole(authorities.stream().findFirst().get());
         userRepository.save(newUser);
         log.debug("Created Information for User: {}", newUser);

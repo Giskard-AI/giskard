@@ -7,7 +7,7 @@
     <v-row>
       <v-col sm=4 lg=3 v-if="isAdmin || isCreator">
         <v-card dark tile color="success" :to="{path: '/main/projects', query: {f: 1}}">
-          <v-card-title class="text-h2">{{ projects.filter(p => p.owner_id == userProfile.id).length }}
+          <v-card-title class="text-h2">{{ projects.filter(p => p.owner_details.id == userProfile.id).length }}
             <v-spacer></v-spacer>
             <v-icon style="font-size: 4rem">model_training</v-icon></v-card-title>
           <v-card-subtitle class="text-h5">projects</v-card-subtitle>
@@ -15,7 +15,7 @@
       </v-col>
       <v-col sm=4 lg=3>
         <v-card dark tile color="secondary" :to="{path: '/main/projects', query: {f: 2}}">
-          <v-card-title class="text-h2">{{ projects.filter(p => p.owner_id != userProfile.id).length }}
+          <v-card-title class="text-h2">{{ projects.filter(p => p.owner_details.id != userProfile.id).length }}
             <v-spacer></v-spacer>
             <v-icon style="font-size: 4rem">group_work</v-icon></v-card-title>
           <v-card-subtitle class="text-h5">projects invited to</v-card-subtitle>
