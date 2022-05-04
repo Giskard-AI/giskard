@@ -77,7 +77,7 @@ export default class AdminUsers extends Vue {
         commitAddNotification(this.$store, loadingNotification);
         const response = await api.getSignupLink(readToken(this.$store));
         commitRemoveNotification(this.$store, loadingNotification);
-        this.link = response.data.msg;
+        this.link = response.data;
     } catch (error) {
         commitRemoveNotification(this.$store, loadingNotification);
         commitAddNotification(this.$store, { content: 'Could not reach server', color: 'error' });

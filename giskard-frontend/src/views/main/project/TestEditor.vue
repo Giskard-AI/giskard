@@ -177,9 +177,9 @@ import MonacoEditor from 'vue-monaco';
 import Component from 'vue-class-component';
 import { Prop } from 'vue-property-decorator';
 import { api } from '@/api';
-import { IEditorConfig, ITest, ITestExecutionResult, ITestFunction } from '@/interfaces';
 import _ from 'lodash';
 import numeral from 'numeral';
+import { TestDTO, TestEditorConfigDTO, TestExecutionResultDTO, TestType } from '@/generated-sources';
 
 Vue.filter('formatNumber', function(value, fmt) {
   return numeral(value).format(fmt || '0.0'); // displaying other groupings/separators is possible, look at the docs
@@ -188,12 +188,10 @@ Vue.filter('formatNumber', function(value, fmt) {
 @Component({ components: { MonacoEditor } })
 export default class TestEditor extends Vue {
   @Prop({ required: true }) testId!: number;
-  testDetails: ITest | null = null;
-  testDetailsOriginal: ITest | null = null;
-  testEditorConfig: IEditorConfig | null = null;
-  testFunction: ITestFunction | null = null;
+  testDetails: TestDTO | null = null;
+  testDetailsOriginal: TestDTO | null = null;
   showRunResult: boolean = false;
-  runResult: ITestExecutionResult | null = null;
+  runResult: TestExecutionResultDTO | null = null;
   executingTest = false;
   codeSnippetCategories = {};
 
@@ -209,14 +207,7 @@ export default class TestEditor extends Vue {
   async save() {
     const t = this.testDetails;
     if (t) {
-      this.testDetailsOriginal = (await api.saveTest({
-        testSuite: t.testSuite,
-        language: t.language,
-        code: t.code,
-        type: t.type,
-        name: t.name,
-        id: t.id
-      })).data;
+      this.testDetailsOriginal = (await api.saveTest(t)).data;
     }
   }
 
@@ -234,7 +225,7 @@ export default class TestEditor extends Vue {
       await this.$router.push({
         name: 'suite-details', params: {
           suiteId: testSuite.id.toString(),
-          projectId: testSuite.projectId.toString()
+          projectId: testSuite.project.id.toString()
         }
       });
     }
@@ -281,10 +272,7 @@ export default class TestEditor extends Vue {
     this.testDetails = (await api.getTestDetails(this.testId)).data;
     if (this.testDetails) {
       if (this.testDetails.type == null) {
-        this.testDetails.type = 'CODE';
-      }
-      if (this.testDetails.language == null) {
-        this.testDetails.language = 'PYTHON';
+        this.testDetails.type = TestType.CODE;
       }
       if (this.testDetails.code == null) {
         this.testDetails!.code = '';

@@ -58,14 +58,14 @@ import { dialogDownloadFile, performApiActionWithNotif } from '@/api-commons';
 import { readToken } from "@/store/main/getters";
 import { formatSizeForDisplay } from '@/utils';
 import { commitAddNotification } from '@/store/main/mutations';
-import { IProjectFile } from "@/interfaces";
+import { FileDTO } from '@/generated-sources';
 
 @Component
 export default class Datasets extends Vue {
   @Prop({type: Number, required: true}) projectId!: number;
 	@Prop({type: Boolean, default: false}) isProjectOwnerOrAdmin!: boolean;
 
-  public files: IProjectFile[] = [];
+  public files: FileDTO[] = [];
   public fileData = null;
   public lastVisitedFileId;
   public filePreviewHeader: string[] = [];

@@ -16,17 +16,17 @@
 import Component from "vue-class-component";
 import Vue from "vue";
 import axios from "axios";
-import {IProjetFileModel} from "@/interfaces";
 import {apiUrlJava} from "@/env";
 import {Prop} from "vue-property-decorator";
+import { ModelDTO } from '@/generated-sources';
 
 @Component
 export default class ModelSelector extends Vue {
   @Prop({required: true}) projectId!: number;
-  projectModels: Array<IProjetFileModel> = [];
-  @Prop() value?: IProjetFileModel;
+  projectModels: Array<ModelDTO> = [];
+  @Prop() value?: ModelDTO;
 
-  extractModelName(model: IProjetFileModel) {
+  extractModelName(model: ModelDTO) {
     return model.name || model.file_name;
   }
 
@@ -35,7 +35,7 @@ export default class ModelSelector extends Vue {
   }
 
   async mounted() {
-    this.projectModels = (await axios.get<Array<IProjetFileModel>>(`${apiUrlJava}/api/v2/project/${this.projectId}/models`)).data;
+    this.projectModels = (await axios.get<Array<ModelDTO>>(`${apiUrlJava}/api/v2/project/${this.projectId}/models`)).data;
   }
 }
 </script>

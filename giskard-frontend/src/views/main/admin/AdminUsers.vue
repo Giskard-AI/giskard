@@ -42,8 +42,11 @@
     <v-container fluid>
     <v-data-table height="75vh" fixed-header :headers="headers" :items="users" sort-by="id" :search="searchTerm">
       <!-- eslint-disable vue/valid-v-slot vue/no-unused-vars-->
-      <template v-slot:item.is_active="{item}">
-        <v-icon v-if="item.is_active">checkmark</v-icon>
+      <template v-slot:item.roles="{ item }">
+        <span v-for='r in item.roles'>{{r | roleName}}</span>
+      </template>
+      <template v-slot:item.enabled="{item}">
+        <v-icon v-if="item.enabled">checkmark</v-icon>
         <v-icon v-else>close</v-icon>
       </template>
       <template v-slot:item.action="{item}" v-slot:item.id="{item}">
@@ -95,12 +98,12 @@ export default class AdminUsers extends Vue {
     {
       text: 'Display Name',
       sortable: true,
-      value: 'display_name',
+      value: 'displayName',
       align: 'left',
     },
     {
-      text: 'Is Active',
-      value: 'is_active',
+      text: 'Enabled',
+      value: 'enabled',
       align: 'left',
       filter: value => this.showInactive || value
     },
@@ -108,7 +111,7 @@ export default class AdminUsers extends Vue {
       text: 'Role',
       sortable: true,
       filterable: false,
-      value: 'role.name',
+      value: 'roles',
       align: 'left',
     },
     {
@@ -136,7 +139,7 @@ export default class AdminUsers extends Vue {
       title: 'Delete user'
     })) {
       try {
-        await dispatchDeleteUser(this.$store, {id: user.id});
+        await dispatchDeleteUser(this.$store, {id: user.user_id});
       } catch (e) {
         console.error(e.message);
       }

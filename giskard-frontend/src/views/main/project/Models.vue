@@ -73,13 +73,13 @@
 
 <script lang="ts">
 import { Component, Vue, Prop, Watch } from 'vue-property-decorator';
-import { IProjetFileModel } from '@/interfaces';
 import { api } from '@/api';
 import { dialogDownloadFile, performApiActionWithNotif } from '@/api-commons';
 import { readToken } from '@/store/main/getters';
 import { formatSizeForDisplay } from '@/utils';
 import { commitAddNotification } from '@/store/main/mutations';
 import InspectorLauncher from './InspectorLauncher.vue';
+import { ModelDTO } from '@/generated-sources';
 
 @Component({
   components: { InspectorLauncher }
@@ -88,7 +88,7 @@ export default class Models extends Vue {
 	@Prop({type: Number, required: true}) projectId!: number;
 	@Prop({type: Boolean, required: true, default: false}) isProjectOwnerOrAdmin!: boolean;
 
-	models: IProjetFileModel[] = [];
+	models: ModelDTO[] = [];
   showInspectDialog = false;
   modelToInspect: number | null = null;
 

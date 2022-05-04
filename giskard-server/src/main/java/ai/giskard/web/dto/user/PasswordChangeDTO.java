@@ -1,8 +1,11 @@
 package ai.giskard.web.dto.user;
 
+import com.dataiku.j2ts.annotations.UIModel;
+
 /**
  * A DTO representing a password change required data - current and new password.
  */
+@UIModel
 public class PasswordChangeDTO {
 
     private String currentPassword;

@@ -299,6 +299,9 @@ dependencies {
     // MapStruct
     compileOnly "org.mapstruct:mapstruct:${mapstructVersion}"
     annotationProcessor "org.mapstruct:mapstruct-processor:${mapstructVersion}"
+
+//    compile files("${projectDir.absolutePath}/src/main/resources/third-party/j2ts-api.jar")
+    implementation files("$projectDir/src/main/resources/third-party/j2ts-api.jar")
 }
 
 protobuf {

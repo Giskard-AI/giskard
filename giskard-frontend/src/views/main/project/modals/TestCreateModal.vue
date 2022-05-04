@@ -30,8 +30,8 @@ import Vue from "vue";
 import {Prop} from "vue-property-decorator";
 import {api} from "@/api";
 import ModelSelector from "@/views/main/utils/ModelSelector.vue";
-import {IProjetFileModel} from "@/interfaces";
 import {format} from 'date-fns'
+import { ModelDTO } from '@/generated-sources';
 
 
 @Component({
@@ -40,7 +40,7 @@ import {format} from 'date-fns'
 export default class TestCreateModal extends Vue {
   @Prop({required: true}) suiteId!: number;
   public name: string = "Test-" + format(new Date(), 'yyyy.MM.dd HH:mm');
-  model: IProjetFileModel | null = null;
+  model: ModelDTO | null = null;
 
   public async submit() {
     let createdTestSuite = (await api.createTest(this.suiteId, this.name)).data;

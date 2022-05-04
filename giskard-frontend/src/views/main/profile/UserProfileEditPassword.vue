@@ -48,10 +48,11 @@
 
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator';
-import { IUserProfileUpdate } from '@/interfaces';
 import { readUserProfile } from '@/store/main/getters';
 import { dispatchUpdateUserProfile } from '@/store/main/actions';
 import ButtonModalConfirmation from '@/components/ButtonModalConfirmation.vue';
+import { AdminUserDTO, UpdateMeDTO } from '@/generated-sources';
+import AdminUserDTOWithPassword = AdminUserDTO.AdminUserDTOWithPassword;
 
 @Component({
   components: {
@@ -79,8 +80,9 @@ export default class UserProfileEdit extends Vue {
 
   public submit() {
     (this.$refs.observer as any).validate().then(async () => {
-      const updatedProfile: IUserProfileUpdate = {};
-      updatedProfile.password = this.password1;
+      const updatedProfile: UpdateMeDTO = {
+        password : this.password1
+      };
       await dispatchUpdateUserProfile(this.$store, updatedProfile);
       this.$router.push('/main/profile');
     })

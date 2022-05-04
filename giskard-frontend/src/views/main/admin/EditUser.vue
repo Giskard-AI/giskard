@@ -27,7 +27,7 @@
               </v-col>
               <v-col cols=6>
                 <ValidationProvider name="Role" mode="eager" v-slot="{errors}">
-                <v-select label="Role" v-model="roleId" :items="roles" item-text="name" item-value="id" :error-messages="errors"></v-select>
+                <v-select label="Role" multiple v-model="roles" :items="allRoles" item-text="name" item-value="id" :error-messages="errors"></v-select>
                 </ValidationProvider>
                 <ValidationProvider name="Display name" mode="eager" rules="min:4" v-slot="{errors}">
                 <v-text-field label="Display Name" v-model="displayName" :error-messages="errors"></v-text-field>
@@ -70,10 +70,12 @@
 
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator';
-import { IUserProfileUpdate } from '@/interfaces';
 import { dispatchGetRoles, dispatchGetUsers, dispatchUpdateUser } from '@/store/admin/actions';
 import { readAdminOneUser, readAdminRoles } from '@/store/admin/getters';
 import ButtonModalConfirmation from '@/components/ButtonModalConfirmation.vue';
+import { AdminUserDTO } from '@/generated-sources';
+import { Role } from '@/enums';
+import AdminUserDTOWithPassword = AdminUserDTO.AdminUserDTOWithPassword;
 
 @Component({
   components: {
@@ -83,7 +85,7 @@ import ButtonModalConfirmation from '@/components/ButtonModalConfirmation.vue';
 export default class EditUser extends Vue {
   public displayName: string = '';
   public email: string = '';
-  public roleId: number = 3;
+  public roles?: string[] | null = [Role.AITESTER];
   public setPassword = false;
   public password1: string = '';
   public password2: string = '';
@@ -98,7 +100,7 @@ export default class EditUser extends Vue {
     this.reset();
   }
 
-  get roles() {
+  get allRoles() {
     return readAdminRoles(this.$store);
   }
 
@@ -112,9 +114,9 @@ export default class EditUser extends Vue {
     this.password2 = '';
     this.$refs.observer.reset();
     if (this.user) {
-      this.displayName = this.user.display_name;
+      this.displayName = this.user.displayName!;
       this.email = this.user.email;
-      this.roleId = this.user.role.id;
+      this.roles = this.user.roles;
     }
   }
 
@@ -124,19 +126,18 @@ export default class EditUser extends Vue {
 
   public submit() {
     this.$refs.observer.validate().then(async () => {
-      const updatedProfile: IUserProfileUpdate = {};
-      if (this.displayName && this.displayName !== this.user?.display_name) {
-        updatedProfile.display_name = this.displayName;
-      }
-      if (this.email && this.email !== this.user?.email) {
-        updatedProfile.email = this.email;
-      }
-      updatedProfile.role_id = this.roleId;
+      const updatedProfile: Partial<AdminUserDTOWithPassword> = {
+        id: this.user!.id,
+        user_id: this.user!.user_id,
+        displayName: this.displayName,
+        email: this.email,
+        roles: this.roles,
+      };
       if (this.setPassword && this.password1) {
         updatedProfile.password = this.password1;
       }
       try {
-        await dispatchUpdateUser(this.$store, { id: this.user!.id, user: updatedProfile });
+        await dispatchUpdateUser(this.$store, { user: updatedProfile });
         this.$router.push('/main/admin/users');
       } catch (e) {
         console.error(e.message);

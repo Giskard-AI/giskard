@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+import ai.giskard.web.rest.controllers.AccountController;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContext;
@@ -35,7 +36,8 @@ public final class SecurityUtils {
      * @return the login of the current user.
      */
     public static String getCurrentAuthenticatedUserLogin() {
-        return getCurrentUserLogin().orElseThrow();
+        return getCurrentUserLogin()
+            .orElseThrow(() -> new AccountController.AccountResourceException("Current user login not found"));
     }
 
     private static String extractPrincipal(Authentication authentication) {

@@ -1,11 +1,19 @@
 package ai.giskard.web.dto.config;
 
 import ai.giskard.web.dto.user.AdminUserDTO;
+import ai.giskard.web.dto.user.RoleDTO;
+import com.dataiku.j2ts.annotations.UIModel;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.List;
+
 @NoArgsConstructor
+@AllArgsConstructor
+@UIModel
 public class AppConfigDTO {
     @Getter
     @Setter
@@ -14,31 +22,24 @@ public class AppConfigDTO {
     @Setter
     private AdminUserDTO user;
 
-    public AppConfigDTO(AppInfoDTO app, AdminUserDTO.AdminUserDTOMigration user) {
-        this.app = app;
-        this.user = user;
-    }
-
     @NoArgsConstructor
+    @AllArgsConstructor
     public static class AppInfoDTO {
         @Getter
         @Setter
+        @JsonProperty("plan_code")
         private String planCode;
         @Getter
         @Setter
+        @JsonProperty("plan_name")
         private String planName;
         @Getter
         @Setter
+        @JsonProperty("seats_available")
         private int seatsAvailable;
 
-        public AppInfoDTO(String planCode, String planName, int seatsAvailable) {
-            this.planCode = planCode;
-            this.planName = planName;
-            this.seatsAvailable = seatsAvailable;
-        }
-        //plan_code: "basic"
-        //plan_name: "Basic Plan"
-        //seats_available: 1
-
+        @Getter
+        @Setter
+        List<RoleDTO> roles;
     }
 }

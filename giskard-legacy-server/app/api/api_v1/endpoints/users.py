@@ -16,35 +16,35 @@ from app.services.users_service import UsersService
 router = APIRouter()
 
 
-@router.get("/", response_model=List[schemas.UserSchema])
-def read_users(
-    db: Session = Depends(deps.get_db),
-    skip: int = 0,
-    limit: int = 100,
-    current_user: models.User = Depends(deps.get_current_active_superuser),
-) -> Any:
-    """
-    Retrieve users.
-    """
-    users = crud.user.get_all(db, skip=skip, limit=limit)
-    return users
+# @router.get("/", response_model=List[schemas.UserSchema])
+# def read_users(
+#     db: Session = Depends(deps.get_db),
+#     skip: int = 0,
+#     limit: int = 100,
+#     current_user: models.User = Depends(deps.get_current_active_superuser),
+# ) -> Any:
+#     """
+#     Retrieve users.
+#     """
+#     users = crud.user.get_all(db, skip=skip, limit=limit)
+#     return users
 
 
-@router.post("/", response_model=schemas.UserSchema)
-def create_user(
-    *,
-    user_service: UsersService = Depends(),
-    user_in: schemas.UserCreate,
-    current_user: models.User = Depends(deps.get_current_active_superuser),
-) -> Any:
-    """
-    Create new user (from admin side)
-    """
-    user = user_service.create_user(user_in)
-
-    if settings.EMAILS_ENABLED and user_in.email:
-        utils.send_new_account_email(email_to=user_in.email, new_user_id=user_in.user_id)
-    return user
+# @router.post("/", response_model=schemas.UserSchema)
+# def create_user(
+#     *,
+#     user_service: UsersService = Depends(),
+#     user_in: schemas.UserCreate,
+#     current_user: models.User = Depends(deps.get_current_active_superuser),
+# ) -> Any:
+#     """
+#     Create new user (from admin side)
+#     """
+#     user = user_service.create_user(user_in)
+#
+#     if settings.EMAILS_ENABLED and user_in.email:
+#         utils.send_new_account_email(email_to=user_in.email, new_user_id=user_in.user_id)
+#     return user
 
 
 @router.put("/me", response_model=schemas.UserSchema)

@@ -86,11 +86,15 @@ public class GiskardApp {
         } catch (UnknownHostException e) {
             log.warn("The host name could not be determined, using `localhost` as fallback");
         }
+        String[] profiles = env.getActiveProfiles().length == 0 ? env.getDefaultProfiles() : env.getActiveProfiles();
+        boolean hasApiDocsProfile = Arrays.asList(profiles).contains("api-docs");
+        String swaggerURL = hasApiDocsProfile ? String.format("Swagger UI: %s://localhost:%s%sswagger-ui/index.html\t\n\t", protocol, serverPort, contextPath) : "";
         log.info(
             "\n----------------------------------------------------------\n\t" +
                 "Application '{}' is running! Access URLs:\n\t" +
                 "Local: \t\t{}://localhost:{}{}\n\t" +
                 "External: \t{}://{}:{}{}\n\t" +
+                swaggerURL +
                 "Profile(s): \t{}\n----------------------------------------------------------",
             env.getProperty("spring.application.name"),
             protocol,
@@ -100,7 +104,7 @@ public class GiskardApp {
             hostAddress,
             serverPort,
             contextPath,
-            env.getActiveProfiles().length == 0 ? env.getDefaultProfiles() : env.getActiveProfiles()
+            profiles
         );
     }
 }

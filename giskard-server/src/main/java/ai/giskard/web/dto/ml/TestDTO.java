@@ -5,6 +5,7 @@ import ai.giskard.domain.ml.TestResult;
 import ai.giskard.domain.ml.TestType;
 import ai.giskard.domain.ml.testing.Test;
 import ai.giskard.domain.ml.testing.TestExecution;
+import com.dataiku.j2ts.annotations.UIModel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -15,6 +16,7 @@ import java.util.Date;
 @Setter
 @Getter
 @NoArgsConstructor
+@UIModel
 public class TestDTO {
     private Long id;
 
