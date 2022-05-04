@@ -19,6 +19,8 @@ public interface GiskardMapper {
 
     Project projectPostDTOToProject(ProjectPostDTO projectPostDto);
 
+    TestSuiteDTO testSuiteToTestSuiteDTO(TestSuite testSuite);
+
     ProjectPostDTO projectToProjectPostDTO(Project project);
 
     ProjectDTO projectToProjectDTO(Project project);
@@ -30,8 +32,6 @@ public interface GiskardMapper {
     ModelDTO modelToModelDTO(ProjectModel model);
 
     List<DatasetDTO> datasetsToDatasetDTOs(List<Dataset> datasets);
-
-    TestSuiteDTO testSuiteToTestSuiteDTO(TestSuite testSuite);
 
     List<TestSuiteDTO> testSuitesToTestSuiteDTOs(List<TestSuite> testSuites);
 

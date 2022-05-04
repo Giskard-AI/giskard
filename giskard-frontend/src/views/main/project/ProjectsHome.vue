@@ -87,7 +87,7 @@ import { ValidationObserver } from 'vee-validate'
 import { readUserProfile, readAllProjects, readHasAdminAccess } from '@/store/main/getters';
 import { Role } from '@/enums';
 import { dispatchGetProjects, dispatchCreateProject } from '@/store/main/actions';
-import { IProjectCreate } from '@/interfaces';
+import { ProjectPostDTO } from '@/generated-sources';
 
 @Component
 export default class ProjectsHome extends Vue {
@@ -147,7 +147,7 @@ export default class ProjectsHome extends Vue {
 
   public async submitNewProject() {
     if (this.newProjectName) {
-      const proj: IProjectCreate = {
+      const proj: ProjectPostDTO = {
         name: this.newProjectName.trim(),
         description: this.newProjectDesc.trim(),
       }

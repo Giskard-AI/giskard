@@ -41,9 +41,9 @@ import Component from "vue-class-component";
 import DatasetSelector from "@/views/main/utils/DatasetSelector.vue";
 import ModelSelector from "@/views/main/utils/ModelSelector.vue";
 import {Prop} from "vue-property-decorator";
-import {ITestSuite} from "@/interfaces";
 import * as _ from "lodash";
 import {api} from "@/api";
+import { TestSuiteDTO } from '@/generated-sources';
 
 @Component({
   components:
@@ -53,8 +53,8 @@ import {api} from "@/api";
 })
 
 export default class TestSuiteSettings extends Vue {
-  @Prop({required: true}) testSuite!: ITestSuite;
-  modifiedTestSuite: ITestSuite | null = null;
+  @Prop({required: true}) testSuite!: TestSuiteDTO;
+  modifiedTestSuite: TestSuiteDTO | null = null;
 
   isDirty() {
     return !_.isEqual(this.modifiedTestSuite, this.testSuite);
