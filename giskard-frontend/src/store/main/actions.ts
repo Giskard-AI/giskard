@@ -1,5 +1,4 @@
 import { api } from '@/api';
-import { IUserProfileCreate } from '@/interfaces';
 import router from '@/router';
 import { getLocalToken, removeLocalToken, saveLocalToken } from '@/utils';
 import { AxiosError } from 'axios';
@@ -18,7 +17,8 @@ import {
     commitSetProject, commitSetAppSettings
 } from './mutations';
 import { AppNotification, MainState } from './state';
-import { ProjectPostDTO } from '@/generated-sources';
+import { AdminUserDTO, ManagedUserVM, ProjectPostDTO, UpdateMeDTO } from '@/generated-sources';
+import AdminUserDTOWithPassword = AdminUserDTO.AdminUserDTOWithPassword;
 
 type MainContext = ActionContext<MainState, State>;
 
@@ -65,7 +65,7 @@ export const actions = {
             await dispatchCheckApiError(context, error);
         }
     },
-    async actionUpdateUserProfile(context: MainContext, payload) {
+    async actionUpdateUserProfile(context: MainContext, payload: UpdateMeDTO) {
         const loadingNotification = { content: 'saving', showProgress: true };
         try {
             commitAddNotification(context, loadingNotification);
@@ -173,11 +173,11 @@ export const actions = {
             commitAddNotification(context, { color: 'error', content: error.response.data.detail });
         }
     },
-    async actionSignupUser(context: MainContext, payload: {userData: IUserProfileCreate, token: string}) {
+    async actionSignupUser(context: MainContext, payload: {userData: ManagedUserVM}) {
         const loadingNotification = { content: 'saving', showProgress: true };
         try {
             commitAddNotification(context, loadingNotification);
-            await api.signupUser(payload.userData, payload.token);
+            await api.signupUser(payload.userData);
             commitRemoveNotification(context, loadingNotification);
             commitAddNotification(context, { content: 'Success! Please proceed to login', color: 'success' });
             await dispatchLogOut(context);

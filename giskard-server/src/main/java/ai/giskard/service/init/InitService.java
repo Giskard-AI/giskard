@@ -3,13 +3,14 @@ package ai.giskard.service.init;
 import ai.giskard.domain.Project;
 import ai.giskard.domain.Role;
 import ai.giskard.domain.User;
-import ai.giskard.repository.AuthorityRepository;
+import ai.giskard.repository.RoleRepository;
 import ai.giskard.repository.ProjectRepository;
 import ai.giskard.repository.UserRepository;
 import ai.giskard.security.AuthoritiesConstants;
 import ai.giskard.service.UserService;
 import ai.giskard.web.rest.errors.Entity;
 import ai.giskard.web.rest.errors.EntityNotFoundException;
+import com.google.common.collect.Sets;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,7 +31,7 @@ public class InitService {
 
     final UserRepository userRepository;
 
-    final AuthorityRepository authorityRepository;
+    final RoleRepository roleRepository;
 
     final UserService userService;
 
@@ -39,7 +40,7 @@ public class InitService {
     final PasswordEncoder passwordEncoder;
 
 
-    String[] mockKeys = Arrays.stream(AuthoritiesConstants.authorities).map(key -> key.replace("ROLE_", "")).toArray(String[]::new);
+    String[] mockKeys = Arrays.stream(AuthoritiesConstants.AUTHORITIES).map(key -> key.replace("ROLE_", "")).toArray(String[]::new);
     public Map<String, String> users = Arrays.stream(mockKeys).collect(Collectors.toMap(String::toLowerCase, String::toLowerCase));
     public Map<String, String> projects = Arrays.stream(mockKeys).collect(Collectors.toMap(String::toLowerCase, name -> name + "Project"));
 
@@ -74,15 +75,15 @@ public class InitService {
      * Initiating authorities with AuthoritiesConstants values
      */
     public void initAuthorities() {
-        Arrays.stream(AuthoritiesConstants.authorities).forEach(authName -> {
-            if (authorityRepository.findByName(authName).isPresent()) {
+        Arrays.stream(AuthoritiesConstants.AUTHORITIES).forEach(authName -> {
+            if (roleRepository.findByName(authName).isPresent()) {
                 logger.info("Authority {} already exists", authName);
                 return;
             }
             Role role = new Role();
             role.setName(authName);
 
-            authorityRepository.save(role);
+            roleRepository.save(role);
 
         });
     }
@@ -99,8 +100,8 @@ public class InitService {
         user.setLogin(key);
         user.setEmail(String.format("%s@example.com", key.toLowerCase()));
         user.setActivated(true);
-        Role role = authorityRepository.findByName(roleName).orElseThrow(() -> new EntityNotFoundException(Entity.ROLE, roleName));
-        user.setRole(role);
+        Role role = roleRepository.findByName(roleName).orElseThrow(() -> new EntityNotFoundException(Entity.ROLE, roleName));
+        user.setRoles(Sets.newHashSet(role));
         user.setPassword(passwordEncoder.encode(key).toLowerCase());
         userRepository.saveAndFlush(user);
     }

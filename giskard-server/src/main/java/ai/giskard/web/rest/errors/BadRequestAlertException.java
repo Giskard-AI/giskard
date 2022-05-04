@@ -18,6 +18,10 @@ public class BadRequestAlertException extends AbstractThrowableProblem {
         this(ErrorConstants.DEFAULT_TYPE, defaultMessage, entityName, errorKey);
     }
 
+    public BadRequestAlertException(String defaultMessage) {
+        this(ErrorConstants.DEFAULT_TYPE, defaultMessage, null, null);
+    }
+
     public BadRequestAlertException(URI type, String defaultMessage, String entityName, String errorKey) {
         super(type, defaultMessage, Status.BAD_REQUEST, null, null, null, getAlertParameters(entityName, errorKey));
         this.entityName = entityName;

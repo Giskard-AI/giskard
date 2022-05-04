@@ -1,19 +1,3 @@
-export interface IUserProfileUpdate {
-  email?: string;
-  display_name?: string;
-  password?: string;
-  is_active?: boolean;
-  role_id?: number;
-}
-
-export interface IUserProfileCreate {
-  email: string;
-  user_id: string;
-  password: string;
-  role_id?: number;
-  display_name?: string;
-}
-
 export interface IUserProfileMinimal {
   id: number,
   user_id: string,

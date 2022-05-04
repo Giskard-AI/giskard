@@ -53,15 +53,12 @@ public class UserMapper {
             user.setImageUrl(userDTO.getImageUrl());
             user.setActivated(userDTO.isActivated());
             user.setLangKey(userDTO.getLangKey());
-            Set<Role> authorities = this.authoritiesFromStrings(userDTO.getRoles());
-            if (!authorities.isEmpty()) {
-                user.setRole(authorities.iterator().next());
-            }
+            user.setRoles(this.rolesFromStrings(userDTO.getRoles()));
             return user;
         }
     }
 
-    public Set<Role> authoritiesFromStrings(Set<String> authoritiesAsString) {
+    public Set<Role> rolesFromStrings(Set<String> authoritiesAsString) {
         Set<Role> authorities = new HashSet<>();
 
         if (authoritiesAsString != null) {
