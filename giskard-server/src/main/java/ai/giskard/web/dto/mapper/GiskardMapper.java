@@ -33,5 +33,10 @@ public interface GiskardMapper {
 
     List<DatasetDTO> datasetsToDatasetDTOs(List<Dataset> datasets);
 
+    TestSuiteDTO testSuiteToTestSuiteDTO(TestSuite testSuite);
 
+    List<TestSuiteDTO> testSuitesToTestSuiteDTOs(List<TestSuite> testSuites);
+
+    @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
+    void updateTestSuiteFromDTO(TestSuiteDTO dto, @MappingTarget TestSuite entity);
 }
