@@ -1,7 +1,6 @@
 package tablesaw;
 
 import ai.giskard.IntegrationTest;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import tech.tablesaw.api.StringColumn;
 import tech.tablesaw.api.Table;
@@ -10,7 +9,6 @@ import tech.tablesaw.selection.Selection;
 
 import java.io.FileInputStream;
 import java.io.InputStreamReader;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;

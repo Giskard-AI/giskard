@@ -39,7 +39,7 @@ public class DatasetService {
     }
 
     public Table getProbsTableFromModelId(@NotNull Long datasetId, @NotNull Long modelId) {
-        Path filePath = Paths.get(applicationProperties.getBucketPath(),"files-bucket", String.format("%s_%s.csv", modelId,datasetId ));
+        Path filePath = Paths.get(applicationProperties.getBucketPath(), "files-bucket", String.format("%s_%s.csv", modelId, datasetId));
         return Table.read().csv(filePath.toAbsolutePath().toString());
     }
 
@@ -82,14 +82,16 @@ public class DatasetService {
         Table probsTable = getProbsTableFromModelId(datasetId, modelId);
         //Table result = table.append(probsTable);
         table.addColumns(IntColumn.indexColumn("Index", table.rowCount(), 0));
-        DoubleColumn probTarget = (DoubleColumn) probsTable.column("predictions_"+target);
-        Selection selection = probTarget.isPositive();
+        DoubleColumn probTarget = (DoubleColumn) probsTable.column("predictions_" + target);
+        Selection selection = null;
+        IntColumn labelColumn= (IntColumn) table.column(target.toLowerCase());
+        DoubleColumn finalColumn= labelColumn.multiply(probTarget);
         if (rowFilter == RowFilter.GREATER) {
-            selection = probTarget.isGreaterThan(threshold);
+            selection = finalColumn.isGreaterThan(threshold);
         } else if (rowFilter == RowFilter.LOWER) {
-            selection = probTarget.isLessThan(threshold);
+            selection = finalColumn.isLessThan(threshold);
         }
-        Table filteredTable = table.where(selection);
+        Table filteredTable = selection == null ?  table: table.where(selection);
         return filteredTable;
     }
 }
