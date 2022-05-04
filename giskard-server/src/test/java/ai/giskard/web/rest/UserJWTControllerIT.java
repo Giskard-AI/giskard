@@ -4,6 +4,7 @@ import static org.hamcrest.Matchers.emptyString;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -12,12 +13,15 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import ai.giskard.IntegrationTest;
 import ai.giskard.domain.User;
 import ai.giskard.repository.UserRepository;
+import ai.giskard.security.AuthoritiesConstants;
+import ai.giskard.web.rest.controllers.UserJWTController;
 import ai.giskard.web.rest.vm.LoginVM;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -44,6 +48,7 @@ class UserJWTControllerIT {
         user.setLogin("user-jwt-controller");
         user.setEmail("user-jwt-controller@example.com");
         user.setActivated(true);
+        user.setEnabled(true);
         user.setPassword(passwordEncoder.encode("test"));
 
         userRepository.saveAndFlush(user);
@@ -67,6 +72,7 @@ class UserJWTControllerIT {
         user.setLogin("user-jwt-controller-remember-me");
         user.setEmail("user-jwt-controller-remember-me@example.com");
         user.setActivated(true);
+        user.setEnabled(true);
         user.setPassword(passwordEncoder.encode("test"));
 
         userRepository.saveAndFlush(user);
@@ -82,6 +88,17 @@ class UserJWTControllerIT {
             .andExpect(jsonPath("$.id_token").isNotEmpty())
             .andExpect(header().string("Authorization", not(nullValue())))
             .andExpect(header().string("Authorization", not(is(emptyString()))));
+    }
+
+    @Test
+    @Transactional
+    @WithMockUser(authorities = AuthoritiesConstants.ADMIN)
+    void testApiAccessToken() throws Exception {
+        mockMvc
+            .perform(get("/api/v2/api-access-token").contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.id_token").exists())
+            .andExpect(jsonPath("$.id_token").isNotEmpty());
     }
 
     @Test

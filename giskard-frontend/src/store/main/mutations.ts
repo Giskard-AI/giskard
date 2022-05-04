@@ -4,7 +4,6 @@ import { getStoreAccessors } from 'typesafe-vuex';
 import { State } from '../state';
 import { AdminUserDTO, AppConfigDTO, ProjectDTO } from '@/generated-sources';
 import AppInfoDTO = AppConfigDTO.AppInfoDTO;
-import AdminUserDTOMigration = AdminUserDTO.AdminUserDTOMigration;
 
 
 export const mutations = {
@@ -17,7 +16,7 @@ export const mutations = {
     setLogInError(state: MainState, payload: string | null) {
         state.logInError = payload;
     },
-    setUserProfile(state: MainState, payload: AdminUserDTOMigration) {
+    setUserProfile(state: MainState, payload: AdminUserDTO) {
         state.userProfile = payload;
     },
     setAppSettings(state: MainState, payload: AppInfoDTO) {

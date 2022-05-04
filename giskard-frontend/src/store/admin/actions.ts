@@ -1,19 +1,20 @@
 import { api } from '@/api';
 import { ActionContext } from 'vuex';
-import { IUserProfileCreate, IUserProfileUpdate } from '@/interfaces';
 import { State } from '../state';
 import { AdminState } from './state';
 import { getStoreAccessors } from 'typesafe-vuex';
 import { commitSetUsers, commitSetUser, mutations, commitSetRoles } from './mutations';
 import { dispatchCheckApiError } from '../main/actions';
 import { commitAddNotification, commitRemoveNotification } from '../main/mutations';
+import { AdminUserDTO } from '@/generated-sources';
+import AdminUserDTOWithPassword = AdminUserDTO.AdminUserDTOWithPassword;
 
 type MainContext = ActionContext<AdminState, State>;
 
 export const actions = {
     async actionGetRoles(context: MainContext) {
         try {
-            const response = await api.getRoles(context.rootState.main.token);
+            const response = await api.getRoles();
             if (response) {
                 commitSetRoles(context, response.data);
             }
@@ -31,11 +32,11 @@ export const actions = {
             await dispatchCheckApiError(context, error);
         }
     },
-    async actionUpdateUser(context: MainContext, payload: { id: number, user: IUserProfileUpdate }) {
+    async actionUpdateUser(context: MainContext, payload: { user: Partial<AdminUserDTOWithPassword> }) {
         const loadingNotification = { content: 'saving', showProgress: true };
         try {
             commitAddNotification(context, loadingNotification);
-            const response = await api.updateUser(context.rootState.main.token, payload.id, payload.user);
+            const response = await api.updateUser(context.rootState.main.token, payload.user);
             commitSetUser(context, response.data);
             commitRemoveNotification(context, loadingNotification);
             commitAddNotification(context, { content: 'User successfully updated', color: 'success' });
@@ -46,7 +47,7 @@ export const actions = {
             throw new Error(error.response.data.detail);
         }
     },
-    async actionCreateUser(context: MainContext, payload: IUserProfileCreate) {
+    async actionCreateUser(context: MainContext, payload: AdminUserDTOWithPassword) {
         const loadingNotification = { content: 'saving', showProgress: true };
         try {
             commitAddNotification(context, loadingNotification);

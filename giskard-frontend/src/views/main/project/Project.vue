@@ -45,7 +45,7 @@
 							v-model="userToInvite"
 							:items="coworkerNamesAvailable"
 							:item-text="getUserFullDisplayName"
-              :item-value="id"
+              item-value="id"
               return-object
 							class="mx-2"
 							outlined dense single-line hide-details
@@ -179,7 +179,7 @@ export default class Project extends Vue {
 	}
 
 	get isProjectOwnerOrAdmin() {
-		return this.isUserProjectOwner || this.userProfile?.role.id == Role.ADMIN
+		return this.isUserProjectOwner || this.userProfile?.roles?.includes(Role.ADMIN)
 	}
 
 	get isUserProjectOwner() {

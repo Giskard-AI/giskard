@@ -33,9 +33,10 @@
 
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator';
-import { IUserProfileCreate } from '@/interfaces';
 import { dispatchSignupUser } from '@/store/main/actions';
 import { commitAddNotification } from '@/store/main/mutations';
+import { AdminUserDTO, ManagedUserVM } from '@/generated-sources';
+import AdminUserDTOWithPassword = AdminUserDTO.AdminUserDTOWithPassword;
 
 @Component
 export default class Login extends Vue {
@@ -77,16 +78,17 @@ export default class Login extends Vue {
     this.$refs.observer.validate().then(async () => {
       const token = this.checkToken();
       if (token) {
-        const profileCreate: IUserProfileCreate = {
+        const profileCreate: ManagedUserVM = {
           email: this.email,
           user_id: this.userId,
-          password: this.password
+          password: this.password,
+          token: token
         };
         if (this.displayName) {
           profileCreate.display_name = this.displayName;
         }
         try {
-          await dispatchSignupUser(this.$store, {userData: profileCreate, token});
+          await dispatchSignupUser(this.$store, {userData: profileCreate});
           this.$router.push('/');
         } catch (e) {
           this.errorMsg = e.message;

@@ -7,7 +7,6 @@ import ai.giskard.repository.ml.TestRepository;
 import ai.giskard.repository.ml.TestSuiteRepository;
 import ai.giskard.service.TestService;
 import ai.giskard.web.dto.ml.TestDTO;
-import ai.giskard.web.dto.ml.TestEditorConfigDTO;
 import ai.giskard.web.dto.ml.TestExecutionResultDTO;
 import ai.giskard.web.dto.ml.TestSuiteDTO;
 import ai.giskard.web.rest.errors.Entity;
@@ -98,12 +97,4 @@ public class TestController {
     ) {
         return testService.saveTest(dto);
     }
-
-
-    @GetMapping("/editorConfig")
-    public TestEditorConfigDTO getTestEditorConfig() {
-        return new TestEditorConfigDTO();
-    }
-
-
 }

@@ -2,14 +2,14 @@ import { AdminState } from './state';
 import { getStoreAccessors } from 'typesafe-vuex';
 import { State } from '../state';
 import { AdminUserDTO, RoleDTO } from '@/generated-sources';
-import AdminUserDTOMigration = AdminUserDTO.AdminUserDTOMigration;
+import AdminUserDTOWithPassword = AdminUserDTO.AdminUserDTOWithPassword;
 
 export const mutations = {
-    setUsers(state: AdminState, payload: AdminUserDTOMigration[]) {
+    setUsers(state: AdminState, payload: AdminUserDTO[]) {
         state.users = payload;
     },
-    setUser(state: AdminState, payload: AdminUserDTOMigration) {
-        const users = state.users.filter((user: AdminUserDTOMigration) => user.id !== payload.id);
+    setUser(state: AdminState, payload: AdminUserDTOWithPassword) {
+        const users = state.users.filter((user: AdminUserDTO) => user.id !== payload.id);
         users.push(payload);
         state.users = users;
     },

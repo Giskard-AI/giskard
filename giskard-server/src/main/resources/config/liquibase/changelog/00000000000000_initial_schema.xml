@@ -18,7 +18,7 @@
             <column name="hashed_password" type="VARCHAR">
                 <constraints nullable="false"/>
             </column>
-            <column name="is_active" type="BOOLEAN"/>
+            <column name="is_active" type="BOOLEAN" defaultValue="true"/>
             <column name="user_id" type="VARCHAR">
                 <constraints nullable="false"/>
             </column>
