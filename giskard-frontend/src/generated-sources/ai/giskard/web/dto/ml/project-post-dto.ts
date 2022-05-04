@@ -1,5 +1,5 @@
 /**
- * Generated from ai.giskard.service.dto.ml.ProjectPostDTO
+ * Generated from ai.giskard.web.dto.ml.ProjectPostDTO
  */
 export interface ProjectPostDTO {
     description: string;

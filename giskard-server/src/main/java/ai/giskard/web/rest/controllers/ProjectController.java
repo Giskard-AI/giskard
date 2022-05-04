@@ -100,6 +100,7 @@ public class ProjectController {
      */
     @DeleteMapping(value = "/project/{id}/guests/{userId}")
     @PreAuthorize("@permissionEvaluator.canWriteProject( #id)")
+    @Transactional
     public ProjectDTO uninvite(@PathVariable("id") Long id, @PathVariable("userId") Long userId) {
         Project project = this.projectService.uninvite(id, userId);
         return giskardMapper.projectToProjectDTO(project);
@@ -114,6 +115,7 @@ public class ProjectController {
      */
     @PreAuthorize("@permissionEvaluator.canWriteProject( #id)")
     @PutMapping(value = "/project/{id}/guests/{userId}")
+    @Transactional
     public ProjectDTO invite(@PathVariable("id") Long id, @PathVariable("userId") Long userId) {
         Project project = this.projectService.invite(id, userId);
         return giskardMapper.projectToProjectDTO(project);

@@ -1,7 +1,7 @@
-import type {Role} from './../../domain/role';
+import type {Role} from './../../../domain/role';
 
 /**
- * Generated from ai.giskard.service.dto.AdminUserDTO
+ * Generated from ai.giskard.web.dto.user.AdminUserDTO
  */
 export interface AdminUserDTO {
     createdBy: string;
@@ -22,7 +22,7 @@ export interface AdminUserDTO {
 
 export namespace AdminUserDTO {
     /**
-     * Generated from ai.giskard.service.dto.AdminUserDTO$AdminUserDTOMigration
+     * Generated from ai.giskard.web.dto.user.AdminUserDTO$AdminUserDTOMigration
      */
     export interface AdminUserDTOMigration extends AdminUserDTO {
         role: Role;

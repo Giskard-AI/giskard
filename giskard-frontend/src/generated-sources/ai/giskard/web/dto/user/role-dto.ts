@@ -1,5 +1,5 @@
 /**
- * Generated from ai.giskard.service.dto.RoleDTO
+ * Generated from ai.giskard.web.dto.user.RoleDTO
  */
 export interface RoleDTO {
     id: number;
