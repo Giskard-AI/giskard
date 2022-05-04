@@ -1,4 +1,4 @@
-package ai.giskard.service.init;
+package ai.giskard.config;
 
 import ai.giskard.domain.Project;
 import ai.giskard.domain.Role;
