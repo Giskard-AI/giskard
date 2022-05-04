@@ -49,19 +49,9 @@ def upload_model(
                 status.HTTP_401_UNAUTHORIZED, "No permission to upload on this project"
             )
 
-        storageDir = settings.BUCKET_PATH / project_key
-        storageDir.mkdir(parents=True, exist_ok=True)
+        model_path, storage_dir = save_model_file(model.file, model_name, project_key)
 
-        model_file_name = f"{model_name}.pkl.zst"
-        model_path = storageDir / model_file_name
-        model_path = files.make_unique_path(model_path, num_file_extensions=2)
-        with open(model_path, "wb") as buffer:
-            shutil.copyfileobj(model.file, buffer)
-
-        requirements_path = storageDir / f"{model_name}-requirements.txt"
-        requirements_path = files.make_unique_path(requirements_path, num_file_extensions=1)
-        with open(requirements_path, "wb") as buffer:
-            shutil.copyfileobj(requirements.file, buffer)
+        requirements_path = save_requirements_file(model_name, requirements.file, storage_dir)
         # store info in DB
         project_in = schemas.ProjectModelCreateSchema(
             file_name=model_path.stem,
@@ -78,6 +68,25 @@ def upload_model(
             status.HTTP_500_INTERNAL_SERVER_ERROR,
             f"Could not upload model to server. Reason: [{type(e).__name__}] {e}",
         )
+
+
+def save_requirements_file(model_name, requirements_file, storage_dir):
+    requirements_path = storage_dir / f"{model_name}-requirements.txt"
+    requirements_path = files.make_unique_path(requirements_path, num_file_extensions=1)
+    with open(requirements_path, "wb") as buffer:
+        shutil.copyfileobj(requirements_file, buffer)
+    return requirements_path
+
+
+def save_model_file(model_file, model_name, project_key):
+    storage_dir = settings.BUCKET_PATH / project_key
+    storage_dir.mkdir(parents=True, exist_ok=True)
+    model_file_name = f"{model_name}.pkl.zst"
+    model_path = storage_dir / model_file_name
+    model_path = files.make_unique_path(model_path, num_file_extensions=2)
+    with open(model_path, "wb") as buffer:
+        shutil.copyfileobj(model_file, buffer)
+    return model_path, storage_dir
 
 
 @router.post("/data/upload")

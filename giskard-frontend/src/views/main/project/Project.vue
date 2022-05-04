@@ -120,12 +120,13 @@ import { Component, Vue, Prop, Watch } from 'vue-property-decorator';
 import { readProject, readCoworkers, readUserProfile } from '@/store/main/getters';
 import { dispatchGetProject, dispatchGetCoworkers, dispatchInviteUserToProject,
 	dispatchEditProject, dispatchDeleteProject } from '@/store/main/actions';
-import { IProjectUpdate, IUserProfileMinimal } from '@/interfaces';
+import { IUserProfileMinimal } from '@/interfaces';
 import { getUserFullDisplayName } from '@/utils';
 import Models from '@/views/main/project/Models.vue';
 import Datasets from '@/views/main/project/Datasets.vue';
 import FeedbackList from '@/views/main/project/FeedbackList.vue';
 import { Role } from '@/enums';
+import { ProjectPostDTO } from '@/generated-sources';
 
 @Component({
 	components: {
@@ -200,7 +201,7 @@ export default class Project extends Vue {
 
 	public async submitEditProject() {
 		if (this.project && this.newName) {
-			const proj: IProjectUpdate = {
+			const proj: ProjectPostDTO = {
 				name: this.newName,
 				description: this.newDescription,
 			}

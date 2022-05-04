@@ -1,7 +1,10 @@
-import {IAppSettings, IProject, IUserProfile, IUserProfileMinimal} from '@/interfaces';
+import { IUserProfileMinimal } from '@/interfaces';
 import { MainState, AppNotification } from './state';
 import { getStoreAccessors } from 'typesafe-vuex';
 import { State } from '../state';
+import { AdminUserDTO, AppConfigDTO, ProjectDTO } from '@/generated-sources';
+import AppInfoDTO = AppConfigDTO.AppInfoDTO;
+import AdminUserDTOMigration = AdminUserDTO.AdminUserDTOMigration;
 
 
 export const mutations = {
@@ -14,20 +17,20 @@ export const mutations = {
     setLogInError(state: MainState, payload: string | null) {
         state.logInError = payload;
     },
-    setUserProfile(state: MainState, payload: IUserProfile) {
+    setUserProfile(state: MainState, payload: AdminUserDTOMigration) {
         state.userProfile = payload;
     },
-    setAppSettings(state: MainState, payload: IAppSettings) {
+    setAppSettings(state: MainState, payload: AppInfoDTO) {
         state.appSettings = payload;
     },
     setCoworkers(state: MainState, payload: IUserProfileMinimal[]) {
         state.coworkers = payload;
     },
-    setProjects(state: MainState, payload: IProject[]) {
+    setProjects(state: MainState, payload: ProjectDTO[]) {
         state.projects = payload;
     },
-    setProject(state: MainState, payload: IProject) {
-        const projects = state.projects.filter((p: IProject) => p.id !== payload.id);
+    setProject(state: MainState, payload: ProjectDTO) {
+        const projects = state.projects.filter((p: ProjectDTO) => p.id !== payload.id);
         projects.push(payload);
         state.projects = projects;
     },

@@ -1,6 +1,7 @@
-import { IRole, IUserProfile } from '@/interfaces';
+import { AdminUserDTO, RoleDTO } from '@/generated-sources';
+import AdminUserDTOMigration = AdminUserDTO.AdminUserDTOMigration;
 
 export interface AdminState {
-    users: IUserProfile[];
-    roles: IRole[];
+    users: AdminUserDTOMigration[];
+    roles: RoleDTO[];
 }

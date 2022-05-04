@@ -3,6 +3,7 @@ package ai.giskard.web.dto.user;
 import ai.giskard.config.Constants;
 import ai.giskard.domain.Role;
 import ai.giskard.domain.User;
+import com.dataiku.j2ts.annotations.UIModel;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -18,8 +19,9 @@ import java.util.Set;
  * A DTO representing a user, with his authorities.
  */
 @NoArgsConstructor
+@UIModel
 public class AdminUserDTO {
-    public static class AdminUserDTOWithPassword extends AdminUserDTO{
+    public static class AdminUserDTOWithPassword extends AdminUserDTO {
         @lombok.Setter
         @lombok.Getter
         @NotNull
@@ -124,9 +126,11 @@ public class AdminUserDTO {
     }
 
     @NoArgsConstructor
-    public static class AdminUserDTOMigration extends AdminUserDTO{
-
-        @Getter @Setter
+    @UIModel
+    public static class AdminUserDTOMigration extends AdminUserDTO {
+        // TODO andreyavtomonov (29/04/2022): get rid of this class once the rest of the code knows how to handle a list of roles
+        @Getter
+        @Setter
         private Role role;
 
         public AdminUserDTOMigration(User user) {
