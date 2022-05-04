@@ -13,9 +13,9 @@ import org.mapstruct.NullValuePropertyMappingStrategy;
 
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring",
+    uses = {RoleMapper.class, RoleDTOMapper.class})
 public interface GiskardMapper {
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     void updateProjectFromDto(ProjectPostDTO dto, @MappingTarget Project entity);
@@ -41,7 +41,6 @@ public interface GiskardMapper {
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     void updateTestSuiteFromDTO(TestSuiteDTO dto, @MappingTarget TestSuite entity);
 
-    default Set<String> map(Set<Role> value){
-        return value.stream().map(Role::getName).collect(Collectors.toSet());
-    }
+
+
 }
