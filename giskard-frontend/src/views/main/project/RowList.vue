@@ -127,7 +127,7 @@ export default class RowList extends Vue {
     try {
       const props={"datasetId": this.datasetId, "modelId":this.modelId, "minRange":this.page * this.itemsPerPage,
        "maxRange" : (this.page + 1) * this.itemsPerPage,
-       "threshold": 0.8,// TODO get respMetadata.classification_threshold
+       "threshold": 0.5,// TODO get respMetadata.classification_threshold
         "target": "Default",
         filter:this.selectedFilter,
         "token":readToken(this.$store)}
