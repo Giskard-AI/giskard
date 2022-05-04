@@ -4,16 +4,20 @@ import ai.giskard.config.Constants;
 import ai.giskard.domain.Role;
 import ai.giskard.domain.User;
 import com.dataiku.j2ts.annotations.UIModel;
+import com.dataiku.j2ts.annotations.UINullable;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import javax.persistence.Transient;
-import javax.validation.constraints.*;
+import javax.validation.constraints.Email;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Pattern;
+import javax.validation.constraints.Size;
 import java.time.Instant;
-import java.util.Collections;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * A DTO representing a user, with his authorities.
@@ -21,122 +25,90 @@ import java.util.Set;
 @NoArgsConstructor
 @UIModel
 public class AdminUserDTO {
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @UIModel
     public static class AdminUserDTOWithPassword extends AdminUserDTO {
-        @lombok.Setter
-        @lombok.Getter
-        @NotNull
+        @Setter
+        @Getter
         private String password;
+
+        public AdminUserDTOWithPassword(User user) {
+            super(user);
+        }
     }
 
-    @lombok.Setter
-    @lombok.Getter
+    @Setter
+    @Getter
+    @UINullable
     private Long id;
 
-    @lombok.Setter
-    @lombok.Getter
+    @Setter
+    @Getter
     @NotBlank
     @Pattern(regexp = Constants.LOGIN_REGEX)
     @Size(min = 1, max = 50)
     @JsonProperty("user_id")
     private String login;
 
-    @lombok.Setter
-    @lombok.Getter
-    @Size(max = 50)
-    private String firstName;
-
-    @lombok.Setter
-    @lombok.Getter
-    @Size(max = 50)
-    private String lastName;
-
-    @lombok.Setter
-    @lombok.Getter
+    @Setter
+    @Getter
     @Size(max = 150)
-    @JsonProperty("display_name")
+    @UINullable
     private String displayName;
 
-    @lombok.Setter
-    @lombok.Getter
+    @Setter
+    @Getter
     @Email
     @Size(min = 5, max = 254)
     private String email;
 
-    @lombok.Setter
-    @lombok.Getter
-    @Size(max = 256)
-    private String imageUrl;
+    @Setter
+    @Getter
+    @UINullable
+    private boolean enabled = false;
 
-    @lombok.Setter
-    @lombok.Getter
-    @JsonProperty("is_active")
+    @Setter
+    @Getter
+    @UINullable
     private boolean activated = false;
 
-    @lombok.Setter
-    @lombok.Getter
-    @Size(min = 2, max = 10)
-    private String langKey;
-
-    @lombok.Setter
-    @lombok.Getter
+    @Setter
+    @Getter
+    @UINullable
     private String createdBy;
 
-    @lombok.Setter
-    @lombok.Getter
+    @Setter
+    @Getter
+    @UINullable
     private Instant createdDate;
 
-    @lombok.Setter
-    @lombok.Getter
+    @Setter
+    @Getter
+    @UINullable
     private String lastModifiedBy;
 
-    @lombok.Setter
-    @lombok.Getter
+    @Setter
+    @Getter
+    @UINullable
     private Instant lastModifiedDate;
 
-    @lombok.Setter
-    @lombok.Getter
-    @Transient
+    @Setter
+    @Getter
+    @UINullable
     private Set<String> roles;
-
-    //@JsonProperty("display_name")
-    //public String displayName() {
-    //    return Stream.of(firstName, lastName)
-    //        .filter(s -> s != null && !s.isEmpty())
-    //        .collect(Collectors.joining(" "));
-    //}
 
     public AdminUserDTO(User user) {
         this.id = user.getId();
         this.login = user.getLogin();
-        this.firstName = user.getFirstName();
-        this.lastName = user.getLastName();
         this.displayName = user.getDisplayName();
         this.email = user.getEmail();
         this.activated = user.isActivated();
-        this.imageUrl = user.getImageUrl();
-        this.langKey = user.getLangKey();
+        this.enabled = user.isEnabled();
         this.createdBy = user.getCreatedBy();
         this.createdDate = user.getCreatedDate();
         this.lastModifiedBy = user.getLastModifiedBy();
         this.lastModifiedDate = user.getLastModifiedDate();
-        Role role = user.getRole();
-        if (role != null) {
-            this.roles = Collections.singleton(role.getName());
-        }
+        this.roles = user.getRoles().stream().map(Role::getName).collect(Collectors.toSet());
     }
-
-    @NoArgsConstructor
-    @UIModel
-    public static class AdminUserDTOMigration extends AdminUserDTO {
-        // TODO andreyavtomonov (29/04/2022): get rid of this class once the rest of the code knows how to handle a list of roles
-        @Getter
-        @Setter
-        private Role role;
-
-        public AdminUserDTOMigration(User user) {
-            super(user);
-            role = user.getRole();
-        }
-    }
-
 }

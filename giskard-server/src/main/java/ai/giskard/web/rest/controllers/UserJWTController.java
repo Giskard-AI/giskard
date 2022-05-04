@@ -1,4 +1,4 @@
-package ai.giskard.web.rest;
+package ai.giskard.web.rest.controllers;
 
 import ai.giskard.security.jwt.JWTFilter;
 import ai.giskard.security.jwt.TokenProvider;

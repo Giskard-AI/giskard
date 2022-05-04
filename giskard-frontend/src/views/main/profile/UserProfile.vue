@@ -21,7 +21,7 @@
                 <div class="mt-3">
                   <div class="caption secondary--text text--lighten-3">Display Name</div>
                   <div v-if="!editModeToggle">
-                    <div class="subtitle-1" v-if="userProfile.display_name">{{userProfile.display_name}}</div>
+                    <div class="subtitle-1" v-if="userProfile.displayName">{{userProfile.displayName}}</div>
                     <div class="subtitle-1" v-else>(not set)</div>
                   </div>
                   <div v-else>
@@ -33,8 +33,8 @@
               </v-col>
               <v-col cols=6>
                 <div>
-                  <div class="caption secondary--text text--lighten-3">Role</div>
-                  <div class="subtitle-1">{{userProfile.role.name}}</div>
+                  <div class="caption secondary--text text--lighten-3">Roles</div>
+                  <div class="subtitle-1" v-for='role in userProfile.roles'>{{role | roleName}}</div>
                 </div>
                 <div class="mt-3">
                   <div class="caption secondary--text text--lighten-3">Email</div>
@@ -85,11 +85,11 @@
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator';
 import { readUserProfile, readToken } from '@/store/main/getters';
-import { IUserProfileUpdate } from '@/interfaces';
 import { api } from '@/api';
 import { commitAddNotification, commitRemoveNotification } from '@/store/main/mutations';
 import { dispatchUpdateUserProfile } from '@/store/main/actions';
 import ButtonModalConfirmation from '@/components/ButtonModalConfirmation.vue';
+import { AdminUserDTO, UpdateMeDTO, UserDTO } from '@/generated-sources';
 
 @Component({
   components: {
@@ -106,7 +106,9 @@ export default class UserProfile extends Vue {
   private resetFormData() {
     const userProfile = readUserProfile(this.$store);
     if (userProfile) {
-      this.displayName = userProfile.display_name;
+      if (userProfile.displayName) {
+        this.displayName = userProfile.displayName;
+      }
       this.email = userProfile.email;
     }
   }
@@ -122,9 +124,9 @@ export default class UserProfile extends Vue {
   public submit() {
     (this.$refs.observer as any).validate().then(() => {
       const currentProfile = readUserProfile(this.$store);
-      const updatedProfile: IUserProfileUpdate = {};
-      if (this.displayName && this.displayName !== currentProfile?.display_name) {
-        updatedProfile.display_name = this.displayName;
+      const updatedProfile: UpdateMeDTO = {};
+      if (this.displayName && this.displayName !== currentProfile?.displayName) {
+        updatedProfile.displayName = this.displayName;
       }
       if (this.email && this.email !== currentProfile?.email) {
         updatedProfile.email = this.email;

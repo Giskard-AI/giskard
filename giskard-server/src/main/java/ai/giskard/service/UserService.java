@@ -3,18 +3,18 @@ package ai.giskard.service;
 import ai.giskard.config.Constants;
 import ai.giskard.domain.Role;
 import ai.giskard.domain.User;
-import ai.giskard.repository.AuthorityRepository;
+import ai.giskard.repository.RoleRepository;
 import ai.giskard.repository.UserRepository;
 import ai.giskard.security.AuthoritiesConstants;
 import ai.giskard.security.SecurityUtils;
 import ai.giskard.web.dto.user.AdminUserDTO;
 import ai.giskard.web.dto.user.UserDTO;
+
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import org.apache.commons.compress.utils.Sets;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -38,12 +38,12 @@ public class UserService {
 
     private final PasswordEncoder passwordEncoder;
 
-    private final AuthorityRepository authorityRepository;
+    private final RoleRepository roleRepository;
 
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, AuthorityRepository authorityRepository) {
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, RoleRepository roleRepository) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
-        this.authorityRepository = authorityRepository;
+        this.roleRepository = roleRepository;
     }
 
     public Optional<User> activateRegistration(String key) {
@@ -105,20 +105,15 @@ public class UserService {
         newUser.setLogin(userDTO.getLogin().toLowerCase());
         // new user gets initially a generated password
         newUser.setPassword(encryptedPassword);
-        newUser.setFirstName(userDTO.getFirstName());
-        newUser.setLastName(userDTO.getLastName());
         if (userDTO.getEmail() != null) {
             newUser.setEmail(userDTO.getEmail().toLowerCase());
         }
-        newUser.setImageUrl(userDTO.getImageUrl());
-        newUser.setLangKey(userDTO.getLangKey());
-        // new user is not active
-        newUser.setActivated(false);
+        newUser.setActivated(true);
         // new user gets registration key
         newUser.setActivationKey(RandomUtil.generateActivationKey());
         Set<Role> authorities = new HashSet<>();
-        authorityRepository.findByName(AuthoritiesConstants.AICREATOR).ifPresent(authorities::add);
-        newUser.setRole(authorities.stream().findFirst().get());
+        roleRepository.findByName(AuthoritiesConstants.AICREATOR).ifPresent(authorities::add);
+        newUser.setRoles(authorities);
         userRepository.save(newUser);
         log.debug("Created Information for User: {}", newUser);
         return newUser;
@@ -136,32 +131,25 @@ public class UserService {
     public User createUser(AdminUserDTO.AdminUserDTOWithPassword userDTO) {
         User user = new User();
         user.setLogin(userDTO.getLogin().toLowerCase());
-        user.setFirstName(userDTO.getFirstName());
-        user.setLastName(userDTO.getLastName());
         user.setDisplayName(userDTO.getDisplayName());
         if (userDTO.getEmail() != null) {
             user.setEmail(userDTO.getEmail().toLowerCase());
-        }
-        user.setImageUrl(userDTO.getImageUrl());
-        if (userDTO.getLangKey() == null) {
-            user.setLangKey(Constants.DEFAULT_LANGUAGE); // default language
-        } else {
-            user.setLangKey(userDTO.getLangKey());
         }
         String encryptedPassword = passwordEncoder.encode(userDTO.getPassword());
         user.setPassword(encryptedPassword);
         user.setResetKey(RandomUtil.generateResetKey());
         user.setResetDate(Instant.now());
         user.setActivated(true);
+        user.setEnabled(true);
         if (userDTO.getRoles() != null) {
-            Set<Role> authorities = userDTO
+            Set<Role> roles = userDTO
                 .getRoles()
                 .stream()
-                .map(authorityRepository::findByName)
+                .map(roleRepository::findByName)
                 .filter(Optional::isPresent)
                 .map(Optional::get)
                 .collect(Collectors.toSet());
-            authorities.stream().findFirst().ifPresent(user::setRole);
+            user.setRoles(roles);
         }
         userRepository.save(user);
         log.debug("Created Information for User: {}", user);
@@ -174,28 +162,27 @@ public class UserService {
      * @param userDTO user to update.
      * @return updated user.
      */
-    public Optional<AdminUserDTO> updateUser(AdminUserDTO userDTO) {
+    public Optional<AdminUserDTO> updateUser(AdminUserDTO.AdminUserDTOWithPassword userDTO) {
         return Optional
             .of(userRepository.findById(userDTO.getId()))
             .filter(Optional::isPresent)
             .map(Optional::get)
             .map(user -> {
                 user.setLogin(userDTO.getLogin().toLowerCase());
-                user.setFirstName(userDTO.getFirstName());
-                user.setLastName(userDTO.getLastName());
                 user.setDisplayName(userDTO.getDisplayName());
                 if (userDTO.getEmail() != null) {
                     user.setEmail(userDTO.getEmail().toLowerCase());
                 }
-                user.setImageUrl(userDTO.getImageUrl());
+                if (userDTO.getPassword() != null) {
+                    user.setPassword(passwordEncoder.encode(userDTO.getPassword()));
+                }
                 user.setActivated(userDTO.isActivated());
-                user.setLangKey(userDTO.getLangKey());
-                Set<Role> managedAuthorities = Sets.newHashSet(user.getRole());
+                Set<Role> managedAuthorities = user.getRoles();
                 managedAuthorities.clear();
                 userDTO
                     .getRoles()
                     .stream()
-                    .map(authorityRepository::findById)
+                    .map(roleRepository::findByName)
                     .filter(Optional::isPresent)
                     .map(Optional::get)
                     .forEach(managedAuthorities::add);
@@ -209,8 +196,9 @@ public class UserService {
         userRepository
             .findOneByLogin(login)
             .ifPresent(user -> {
-                userRepository.delete(user);
-                log.debug("Deleted User: {}", user);
+                user.setActivated(false);
+                user.setEnabled(false);
+                log.debug("Deleted[deactivated] user : {}", user);
             });
     }
 
@@ -227,41 +215,25 @@ public class UserService {
     /**
      * Update basic information (first name, last name, email, language) for the current user.
      *
-     * @param firstName first name of user.
-     * @param lastName  last name of user.
-     * @param email     email id of user.
-     * @param langKey   language key.
-     * @param imageUrl  image URL of user.
+     * @param email       user email address
+     * @param displayName display name of a user
+     * @param password    user's new password
+     * @return
      */
-    public void updateUser(String firstName, String lastName, String email, String langKey, String imageUrl) {
-        SecurityUtils
-            .getCurrentUserLogin()
-            .flatMap(userRepository::findOneByLogin)
-            .ifPresent(user -> {
-                user.setFirstName(firstName);
-                user.setLastName(lastName);
+    public Optional<User> updateUser(String login, String email, String displayName, String password) {
+        return userRepository.findOneWithRolesByLogin(login)
+            .map(user -> {
+                if (displayName != null) {
+                    user.setDisplayName(displayName);
+                }
                 if (email != null) {
                     user.setEmail(email.toLowerCase());
                 }
-                user.setLangKey(langKey);
-                user.setImageUrl(imageUrl);
-                log.debug("Changed Information for User: {}", user);
-            });
-    }
-
-    @Transactional
-    public void changePassword(String currentClearTextPassword, String newPassword) {
-        SecurityUtils
-            .getCurrentUserLogin()
-            .flatMap(userRepository::findOneByLogin)
-            .ifPresent(user -> {
-                String currentEncryptedPassword = user.getPassword();
-                if (!passwordEncoder.matches(currentClearTextPassword, currentEncryptedPassword)) {
-                    throw new InvalidPasswordException();
+                if (password!=null) {
+                    user.setPassword(password);
                 }
-                String encryptedPassword = passwordEncoder.encode(newPassword);
-                user.setPassword(encryptedPassword);
-                log.debug("Changed password for User: {}", user);
+                log.debug("Changed Information for User: {}", user);
+                return user;
             });
     }
 
@@ -271,18 +243,23 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
+    public List<User> getAllCoworkers(String currentUserLogin) {
+        return new ArrayList<>(userRepository.getAllWithRolesByLoginNot(currentUserLogin));
+    }
+
+    @Transactional(readOnly = true)
     public Page<UserDTO> getAllPublicUsers(Pageable pageable) {
         return userRepository.findAllByIdNotNullAndActivatedIsTrue(pageable).map(UserDTO::new);
     }
 
     @Transactional(readOnly = true)
     public Optional<User> getUserWithAuthoritiesByLogin(String login) {
-        return userRepository.findOneWithRoleByLogin(login);
+        return userRepository.findOneWithRolesByLogin(login);
     }
 
     @Transactional(readOnly = true)
-    public Optional<User> getUserWithAuthorities(String username) {
-        return userRepository.findOneByLogin(username);
+    public User getUserByLogin(String login) {
+        return userRepository.getOneByLogin(login);
     }
 
     /**
@@ -302,10 +279,11 @@ public class UserService {
 
     /**
      * Gets a list of all the authorities.
+     *
      * @return a list of all the authorities.
      */
     @Transactional(readOnly = true)
     public List<String> getAuthorities() {
-        return authorityRepository.findAll().stream().map(Role::getName).collect(Collectors.toList());
+        return roleRepository.findAll().stream().map(Role::getName).collect(Collectors.toList());
     }
 }

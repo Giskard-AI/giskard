@@ -19,8 +19,7 @@ import tech.jhipster.config.JHipsterProperties;
 
 import java.nio.charset.StandardCharsets;
 import java.security.Key;
-import java.util.Collections;
-import java.util.Date;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Component
@@ -29,6 +28,7 @@ public class TokenProvider {
     private final Logger log = LoggerFactory.getLogger(TokenProvider.class);
 
     private static final String AUTHORITIES_KEY = "auth";
+    private static final String TOKEN_TYPE_KEY = "token_type";
 
     private static final String INVALID_JWT_TOKEN = "Invalid JWT token.";
 
@@ -38,6 +38,7 @@ public class TokenProvider {
 
     private final long tokenValidityInMilliseconds;
     private final long apiTokenValidityInMilliseconds;
+    private final long invitationTokenValidityInMilliseconds;
 
     private final long tokenValidityInMillisecondsForRememberMe;
 
@@ -60,7 +61,8 @@ public class TokenProvider {
         key = Keys.hmacShaKeyFor(keyBytes);
         jwtParser = Jwts.parserBuilder().setSigningKey(key).build();
         this.tokenValidityInMilliseconds = 1000 * jHipsterProperties.getSecurity().getAuthentication().getJwt().getTokenValidityInSeconds();
-        this.apiTokenValidityInMilliseconds = 24 * 60 * 60 * 1000 * applicationProperties.getApiTokenValidityInDays();
+        this.apiTokenValidityInMilliseconds = (long) 24 * 60 * 60 * 1000 * applicationProperties.getApiTokenValidityInDays();
+        this.invitationTokenValidityInMilliseconds = (long) 24 * 60 * 60 * 1000 * applicationProperties.getInvitationTokenValidityInDays();
         this.tokenValidityInMillisecondsForRememberMe =
             1000 * jHipsterProperties.getSecurity().getAuthentication().getJwt().getTokenValidityInSecondsForRememberMe();
 
@@ -82,6 +84,7 @@ public class TokenProvider {
             .builder()
             .setSubject(authentication.getName())
             .claim(AUTHORITIES_KEY, authorities)
+            .claim(TOKEN_TYPE_KEY, JWTTokenType.UI)
             .signWith(key, SignatureAlgorithm.HS512)
             .setExpiration(validity)
             .compact();
@@ -92,34 +95,51 @@ public class TokenProvider {
         return Jwts
             .builder()
             .setSubject(username)
+            .claim(TOKEN_TYPE_KEY, JWTTokenType.API)
             .signWith(key, SignatureAlgorithm.HS512)
             .setExpiration(new Date(now + this.apiTokenValidityInMilliseconds))
+            .compact();
+    }
+
+    public String createInvitationToken(String invitorEmail, String invitedEmail) {
+        long now = (new Date()).getTime();
+        return Jwts
+            .builder()
+            .setSubject(invitorEmail)
+            .setAudience(invitedEmail)
+            .claim(TOKEN_TYPE_KEY, JWTTokenType.INVITATION)
+            .signWith(key, SignatureAlgorithm.HS512)
+            .setExpiration(new Date(now + this.invitationTokenValidityInMilliseconds))
             .compact();
     }
 
 
     public Authentication getAuthentication(String token) {
         Claims claims = jwtParser.parseClaimsJws(token).getBody();
-// TODO andreyavtomonov (14/03/2022): migration
-        //Collection<? extends GrantedAuthority> authorities = Arrays
-        //    .stream(claims.get(AUTHORITIES_KEY).toString().split(","))
-        //    .filter(auth -> !auth.trim().isEmpty())
-        //    .map(SimpleGrantedAuthority::new)
-        //    .collect(Collectors.toList());
+        Collection<? extends GrantedAuthority> authorities = Arrays
+            .stream(claims.get(AUTHORITIES_KEY).toString().split(","))
+            .filter(auth -> !auth.trim().isEmpty())
+            .map(SimpleGrantedAuthority::new)
+            .collect(Collectors.toList());
 
-        //User principal = new User(claims.getSubject(), "", authorities);
+        User principal = new User(claims.getSubject(), "", authorities);
 
-        //return new UsernamePasswordAuthenticationToken(principal, token, authorities);
-
-
-        User principal = new User(claims.getSubject(), "", Collections.singleton(new SimpleGrantedAuthority("ROLE_ADMIN")));
-        return new UsernamePasswordAuthenticationToken(principal, token, Collections.singleton(new SimpleGrantedAuthority("ROLE_ADMIN")));
+        return new UsernamePasswordAuthenticationToken(principal, token, authorities);
     }
 
     public boolean validateToken(String authToken) {
+        return validateToken(authToken, null);
+    }
+    public boolean validateToken(String authToken, JWTTokenType tokenType) {
         try {
-            jwtParser.parseClaimsJws(authToken);
-
+            Jws<Claims> claims = jwtParser.parseClaimsJws(authToken);
+            if (tokenType != null) {
+                JWTTokenType receivedTokenType = JWTTokenType.valueOf(claims.getBody().get(TOKEN_TYPE_KEY, String.class));
+                if (tokenType != receivedTokenType) {
+                    log.warn("Incorrect token type, expected {}, but received {}", tokenType, receivedTokenType);
+                    return false;
+                }
+            }
             return true;
         } catch (ExpiredJwtException e) {
             this.securityMetersService.trackTokenExpired();

@@ -31,9 +31,7 @@ class AppConfigIT {
 
     private static final String DEFAULT_EMAIL = "johndoe@localhost";
 
-    private static final String DEFAULT_FIRSTNAME = "john";
-
-    private static final String DEFAULT_LASTNAME = "doe";
+    private static final String DEFAULT_DISPLAY_NAME = "john doe";
 
     @Autowired
     private UserRepository userRepository;
@@ -53,8 +51,6 @@ class AppConfigIT {
         user.setPassword(RandomStringUtils.random(60));
         user.setActivated(true);
         user.setEmail(RandomStringUtils.randomAlphabetic(5) + DEFAULT_EMAIL);
-        user.setFirstName(DEFAULT_FIRSTNAME);
-        user.setLastName(DEFAULT_LASTNAME);
         return user;
     }
 
@@ -64,6 +60,7 @@ class AppConfigIT {
     public static void initTestUser(UserRepository userRepository) {
         User user = createUser();
         user.setLogin(DEFAULT_LOGIN);
+        user.setDisplayName(DEFAULT_DISPLAY_NAME);
         user.setEmail(DEFAULT_EMAIL);
         User createdUser = userRepository.saveAndFlush(user);
         log.info("Created User {}", createdUser);
@@ -78,11 +75,10 @@ class AppConfigIT {
         initTestUser(userRepository);
 
         ResultActions perform = restUserMockMvc
-            .perform(get("/api/v2/users/me").accept(MediaType.APPLICATION_JSON))
+            .perform(get("/api/v2/account").accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(jsonPath("$.[*].user_id").value(DEFAULT_LOGIN))
-            .andExpect(jsonPath("$.[*].firstName").value(DEFAULT_FIRSTNAME))
-            .andExpect(jsonPath("$.[*].lastName").value(DEFAULT_LASTNAME));
+            .andExpect(jsonPath("$.[*].displayName").value(DEFAULT_DISPLAY_NAME));
     }
 }

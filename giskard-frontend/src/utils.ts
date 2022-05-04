@@ -12,9 +12,7 @@ export const formatSizeForDisplay = (size: number): string => {
     else return (size / 1024 / 1024).toFixed(2) + ' Mb';
 }
 
-import { IUserProfileMinimal } from '@/interfaces';
-import AdminUserDTOMigration = AdminUserDTO.AdminUserDTOMigration;
 
-export const getUserFullDisplayName = (user: AdminUserDTOMigration | IUserProfileMinimal): string => {
-    return user.display_name? `${user.display_name} (${user.user_id})`: user.user_id;
+export const getUserFullDisplayName = (user: AdminUserDTO): string => {
+    return user.displayName? `${user.displayName} (${user.user_id})`: user.user_id;
 }

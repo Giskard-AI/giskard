@@ -1,45 +1,57 @@
-package ai.giskard.web.rest;
+package ai.giskard.web.rest.controllers;
 
 import ai.giskard.domain.User;
 import ai.giskard.repository.UserRepository;
+import ai.giskard.security.AuthoritiesConstants;
 import ai.giskard.security.SecurityUtils;
+import ai.giskard.security.jwt.JWTTokenType;
+import ai.giskard.security.jwt.TokenProvider;
 import ai.giskard.service.MailService;
 import ai.giskard.service.UserService;
-import ai.giskard.web.dto.user.AdminUserDTO;
-import ai.giskard.web.dto.user.PasswordChangeDTO;
 import ai.giskard.web.dto.PasswordResetRequest;
+import ai.giskard.web.dto.config.AppConfigDTO;
+import ai.giskard.web.dto.user.AdminUserDTO;
+import ai.giskard.web.dto.user.RoleDTO;
+import ai.giskard.web.dto.user.UpdateMeDTO;
 import ai.giskard.web.rest.errors.EmailAlreadyUsedException;
 import ai.giskard.web.rest.errors.InvalidPasswordException;
 import ai.giskard.web.rest.errors.LoginAlreadyUsedException;
-import ai.giskard.web.rest.vm.TokenAndPasswordVM;
 import ai.giskard.web.rest.vm.ManagedUserVM;
+import ai.giskard.web.rest.vm.TokenAndPasswordVM;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+import tech.jhipster.config.JHipsterProperties;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
+
+import static ai.giskard.security.AuthoritiesConstants.ADMIN;
 
 /**
  * REST controller for managing the current user's account.
  */
 @RestController
 @RequestMapping("/api/v2")
-public class AccountResource {
+public class AccountController {
 
-    private static class AccountResourceException extends RuntimeException {
+    public static class AccountResourceException extends RuntimeException {
 
-        private AccountResourceException(String message) {
+        public AccountResourceException(String message) {
             super(message);
         }
     }
 
-    private final Logger log = LoggerFactory.getLogger(AccountResource.class);
+    private final Logger log = LoggerFactory.getLogger(AccountController.class);
 
     private final UserRepository userRepository;
 
@@ -47,28 +59,48 @@ public class AccountResource {
 
     private final MailService mailService;
 
-    public AccountResource(UserRepository userRepository, UserService userService, MailService mailService) {
+    private final TokenProvider tokenProvider;
+
+    private final JHipsterProperties jHipsterProperties;
+
+    public AccountController(UserRepository userRepository, UserService userService, MailService mailService, TokenProvider tokenProvider, JHipsterProperties jHipsterProperties) {
         this.userRepository = userRepository;
         this.userService = userService;
         this.mailService = mailService;
+
+        this.tokenProvider = tokenProvider;
+        this.jHipsterProperties = jHipsterProperties;
+    }
+
+
+    @GetMapping("/signuplink")
+    @PreAuthorize("hasAuthority(\"" + ADMIN + "\")")
+    public String getSignupLink(@AuthenticationPrincipal UserDetails user) {
+
+        String token = tokenProvider.createInvitationToken(userRepository.getOneByLogin(user.getUsername()).getEmail(), null);
+        return jHipsterProperties.getMail().getBaseUrl() + "/auth/signup?token=" + token;
     }
 
     /**
      * {@code POST  /register} : register the user.
      *
      * @param managedUserVM the managed user View Model.
-     * @throws InvalidPasswordException {@code 400 (Bad Request)} if the password is incorrect.
+     * @return
+     * @throws InvalidPasswordException  {@code 400 (Bad Request)} if the password is incorrect.
      * @throws EmailAlreadyUsedException {@code 400 (Bad Request)} if the email is already used.
      * @throws LoginAlreadyUsedException {@code 400 (Bad Request)} if the login is already used.
      */
     @PostMapping("/register")
-    @ResponseStatus(HttpStatus.CREATED)
-    public void registerAccount(@Valid @RequestBody ManagedUserVM managedUserVM) {
+    public ResponseEntity<Void> registerAccount(@Valid @RequestBody ManagedUserVM managedUserVM) {
         if (isPasswordLengthInvalid(managedUserVM.getPassword())) {
             throw new InvalidPasswordException();
         }
-        User user = userService.registerUser(managedUserVM, managedUserVM.getPassword());
-        mailService.sendActivationEmail(user);
+        if (!tokenProvider.validateToken(managedUserVM.getToken(), JWTTokenType.INVITATION)) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
+        userService.registerUser(managedUserVM, managedUserVM.getPassword());
+        //mailService.sendActivationEmail(user);
+        return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
     /**
@@ -97,61 +129,47 @@ public class AccountResource {
         return request.getRemoteUser();
     }
 
-    /**
-     * {@code GET  /account} : get the current user.
-     *
-     * @return the current user.
-     * @throws RuntimeException {@code 500 (Internal Server Error)} if the user couldn't be returned.
-     */
     @GetMapping("/account")
-    public AdminUserDTO getAccount(@AuthenticationPrincipal final UserDetails user) {
-        return userService
-            .getUserWithAuthorities(user.getUsername())
+    public AppConfigDTO getApplicationSettings(@AuthenticationPrincipal final UserDetails user) {
+        log.debug("REST request to get all public User names");
+        AdminUserDTO userDTO = userRepository
+            .findOneWithRolesByLogin(user.getUsername())
             .map(AdminUserDTO::new)
-            .orElseThrow(() -> new AccountResourceException("User could not be found"));
+            .orElseThrow(() -> new RuntimeException("User could not be found"));
+
+        List<RoleDTO> roles = AuthoritiesConstants.AUTHORITY_NAMES.entrySet().stream()
+            .map(auth -> new RoleDTO(auth.getKey(), auth.getValue()))
+            .collect(Collectors.toList());
+        return new AppConfigDTO(
+            new AppConfigDTO.AppInfoDTO("basic", "Basic", 1, roles), userDTO);
     }
 
     /**
      * {@code POST  /account} : update the current user information.
      *
      * @param userDTO the current user information.
+     * @return
      * @throws EmailAlreadyUsedException {@code 400 (Bad Request)} if the email is already used.
-     * @throws RuntimeException {@code 500 (Internal Server Error)} if the user login wasn't found.
+     * @throws RuntimeException          {@code 500 (Internal Server Error)} if the user login wasn't found.
      */
-    @PostMapping("/account")
-    public void saveAccount(@Valid @RequestBody AdminUserDTO userDTO) {
-        String userLogin = SecurityUtils
-            .getCurrentUserLogin()
-            .orElseThrow(() -> new AccountResourceException("Current user login not found"));
+    @PutMapping("/account")
+    public AdminUserDTO saveAccount(@Valid @RequestBody UpdateMeDTO userDTO) {
+        String login = SecurityUtils.getCurrentAuthenticatedUserLogin();
         Optional<User> existingUser = userRepository.findOneByEmailIgnoreCase(userDTO.getEmail());
-        if (existingUser.isPresent() && (!existingUser.get().getLogin().equalsIgnoreCase(userLogin))) {
+        if (existingUser.isPresent() && (!existingUser.get().getLogin().equalsIgnoreCase(login))) {
             throw new EmailAlreadyUsedException();
         }
-        Optional<User> user = userRepository.findOneByLogin(userLogin);
-        if (!user.isPresent()) {
+        Optional<User> user = userRepository.findOneByLogin(login);
+        if (user.isEmpty()) {
             throw new AccountResourceException("User could not be found");
         }
-        userService.updateUser(
-            userDTO.getFirstName(),
-            userDTO.getLastName(),
+        Optional<User> updatedUser = userService.updateUser(
+            login,
             userDTO.getEmail(),
-            userDTO.getLangKey(),
-            userDTO.getImageUrl()
+            userDTO.getDisplayName(),
+            userDTO.getPassword()
         );
-    }
-
-    /**
-     * {@code POST  /account/change-password} : changes the current user's password.
-     *
-     * @param passwordChangeDto current and new password.
-     * @throws InvalidPasswordException {@code 400 (Bad Request)} if the new password is incorrect.
-     */
-    @PostMapping(path = "/account/change-password")
-    public void changePassword(@RequestBody PasswordChangeDTO passwordChangeDto) {
-        if (isPasswordLengthInvalid(passwordChangeDto.getNewPassword())) {
-            throw new InvalidPasswordException();
-        }
-        userService.changePassword(passwordChangeDto.getCurrentPassword(), passwordChangeDto.getNewPassword());
+        return new AdminUserDTO(updatedUser.get());
     }
 
     /**

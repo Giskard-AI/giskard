@@ -1,11 +1,11 @@
 package ai.giskard.security;
 
-import ai.giskard.domain.Role;
 import ai.giskard.domain.User;
 import ai.giskard.repository.UserRepository;
 import org.hibernate.validator.internal.constraintvalidators.hv.EmailValidator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -13,10 +13,9 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Collections;
+import java.util.List;
 import java.util.Locale;
-
-import static ai.giskard.security.AuthoritiesConstants.AICREATOR;
+import java.util.stream.Collectors;
 
 /**
  * Authenticate a user from the database.
@@ -45,10 +44,8 @@ public class DomainUserDetailsService implements UserDetailsService {
         }
 
         String lowercaseLogin = login.toLowerCase(Locale.ENGLISH);
-        // TODO andreyavtomonov (17/03/2022): migration
         return userRepository
-            //.findOneWithRolesByLogin(lowercaseLogin)
-            .findOneByLogin(lowercaseLogin)
+            .findOneWithRolesByLogin(lowercaseLogin)
             .map(user -> createSpringSecurityUser(lowercaseLogin, user))
             .orElseThrow(() -> new UsernameNotFoundException("User " + lowercaseLogin + " was not found in the database"));
     }
@@ -57,12 +54,20 @@ public class DomainUserDetailsService implements UserDetailsService {
         if (!user.isActivated()) {
             throw new UserNotActivatedException("User " + lowercaseLogin + " was not activated");
         }
-        Role role = user.getRole();
+        List<GrantedAuthority> roles = user
+            .getRoles()
+            .stream()
+            .map(authority -> new SimpleGrantedAuthority(authority.getName()))
+            .collect(Collectors.toList());
 
         return new org.springframework.security.core.userdetails.User(
             user.getLogin(),
             user.getPassword(),
-            Collections.singleton(new SimpleGrantedAuthority(role != null ? role.getName() : AICREATOR))
+            user.isEnabled(),
+            true,
+            true,
+            true,
+            roles
         );
     }
 }

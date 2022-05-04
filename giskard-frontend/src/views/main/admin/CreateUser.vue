@@ -34,7 +34,7 @@
             </ValidationProvider>
           </v-col>
           <v-col cols=6>
-            <v-select label="Role" v-model="roleId" :items="roles" item-text="name" item-value="id"></v-select>
+            <v-select label="Role" multiple v-model="roles" :items="allRoles" item-text="name" item-value="id"></v-select>
             <ValidationProvider name="Display name" mode="eager" rules="min:4" v-slot="{errors}">
             <v-text-field label="Display Name" v-model="displayName" :error-messages="errors"></v-text-field>
             </ValidationProvider>
@@ -60,10 +60,12 @@
 
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator';
-import { IUserProfileCreate } from '@/interfaces';
 import {dispatchCreateUser, dispatchGetRoles, dispatchGetUsers} from '@/store/admin/actions';
 import { readAdminRoles } from '@/store/admin/getters';
 import {readAppSettings} from "@/store/main/getters";
+import { AdminUserDTO } from '@/generated-sources';
+import AdminUserDTOWithPassword = AdminUserDTO.AdminUserDTOWithPassword;
+import { Role } from '@/enums';
 
 @Component
 export default class CreateUser extends Vue {
@@ -75,7 +77,7 @@ export default class CreateUser extends Vue {
   public userId: string = '';
   public displayName: string = '';
   public email: string = '';
-  public roleId: number = 2;
+  public roles: string[] = [Role.AICREATOR];
   public password1: string = '';
   public password2: string = '';
   public canAddUsers: boolean = true;
@@ -89,7 +91,7 @@ export default class CreateUser extends Vue {
 
   }
 
-  get roles() {
+  get allRoles() {
     return readAdminRoles(this.$store);
   }
 
@@ -97,7 +99,7 @@ export default class CreateUser extends Vue {
     this.userId = '';
     this.displayName = '';
     this.email = '';
-    this.roleId = 2;
+    this.roles = [Role.AICREATOR];
     this.password1 = '';
     this.password2 = '';
     this.$refs.observer.reset();
@@ -109,14 +111,14 @@ export default class CreateUser extends Vue {
 
   public async submit() {
     this.$refs.observer.validate().then(async () => {
-      const profileCreate: IUserProfileCreate = {
+      const profileCreate: AdminUserDTOWithPassword = {
         email: this.email,
         user_id: this.userId,
-        role_id: this.roleId,
+        roles: this.roles,
         password: this.password1
       };
       if (this.displayName) {
-        profileCreate.display_name = this.displayName;
+        profileCreate.displayName = this.displayName;
       }
       try {
         await dispatchCreateUser(this.$store, profileCreate);

@@ -1,10 +1,12 @@
 package ai.giskard.service;
 
 import ai.giskard.domain.User;
+
 import java.nio.charset.StandardCharsets;
 import java.util.Locale;
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.MessageSource;
@@ -83,13 +85,26 @@ public class MailService {
             log.debug("Email doesn't exist for user '{}'", user.getLogin());
             return;
         }
-        Locale locale = Locale.forLanguageTag(user.getLangKey());
-        Context context = new Context(locale);
+        Context context = new Context();
         context.setVariable(USER, user);
         context.setVariable(BASE_URL, jHipsterProperties.getMail().getBaseUrl());
         String content = templateEngine.process(templateName, context);
-        String subject = messageSource.getMessage(titleKey, null, locale);
+        String subject = messageSource.getMessage(titleKey, null, Locale.ENGLISH);
         sendEmail(user.getEmail(), subject, content, false, true);
+    }
+
+    @Async
+    public void sendUserInvitationEmail(String currentEmail, String email, String inviteLink, String projectName) {
+        log.debug("Sending user invitation email to '{}'", email);
+        Context context = new Context();
+        context.setVariable("projectName", projectName);
+        context.setVariable("email", email);
+        context.setVariable("inviter", currentEmail);
+        context.setVariable("inviteLink", inviteLink);
+        context.setVariable(BASE_URL, jHipsterProperties.getMail().getBaseUrl());
+
+        String content = templateEngine.process("mail/inviteUser", context);
+        sendEmail(email, "Giskard invitation: " + projectName, content, false, true);
     }
 
     @Async

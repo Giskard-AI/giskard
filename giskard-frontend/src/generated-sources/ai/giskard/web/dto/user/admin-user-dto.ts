@@ -1,30 +1,25 @@
-import type {Role} from './../../../domain/role';
-
 /**
  * Generated from ai.giskard.web.dto.user.AdminUserDTO
  */
 export interface AdminUserDTO {
-    createdBy: string;
-    createdDate: any /* TODO: Missing translation of java.time.Instant */;
-    display_name: string;
+    activated?: boolean | null;
+    createdBy?: string | null;
+    createdDate?: any /* TODO: Missing translation of java.time.Instant */ | null;
+    displayName?: string | null;
     email: string;
-    firstName: string;
-    id: number;
-    imageUrl: string;
-    is_active: boolean;
-    langKey: string;
-    lastModifiedBy: string;
-    lastModifiedDate: any /* TODO: Missing translation of java.time.Instant */;
-    lastName: string;
-    roles: string[];
+    enabled?: boolean | null;
+    id?: number | null;
+    lastModifiedBy?: string | null;
+    lastModifiedDate?: any /* TODO: Missing translation of java.time.Instant */ | null;
+    roles?: string[] | null;
     user_id: string;
 }
 
 export namespace AdminUserDTO {
     /**
-     * Generated from ai.giskard.web.dto.user.AdminUserDTO$AdminUserDTOMigration
+     * Generated from ai.giskard.web.dto.user.AdminUserDTO$AdminUserDTOWithPassword
      */
-    export interface AdminUserDTOMigration extends AdminUserDTO {
-        role: Role;
+    export interface AdminUserDTOWithPassword extends AdminUserDTO {
+        password: string;
     }
 }
