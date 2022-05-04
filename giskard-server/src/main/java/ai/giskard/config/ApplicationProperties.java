@@ -16,5 +16,6 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 public class ApplicationProperties {
     private String mlWorkerHost;
     private int mlWorkerPort;
-    private long apiTokenValidityInDays;
+    private int apiTokenValidityInDays;
+    private int invitationTokenValidityInDays;
 }

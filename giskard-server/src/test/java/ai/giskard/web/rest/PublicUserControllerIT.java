@@ -10,6 +10,8 @@ import ai.giskard.domain.User;
 import ai.giskard.repository.UserRepository;
 import ai.giskard.security.AuthoritiesConstants;
 import javax.persistence.EntityManager;
+
+import ai.giskard.web.rest.controllers.UserAdminController;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -18,16 +20,15 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * Integration tests for the {@link UserResource} REST controller.
+ * Integration tests for the {@link UserAdminController} REST controller.
  */
 @AutoConfigureMockMvc
 @WithMockUser(authorities = AuthoritiesConstants.ADMIN)
 @IntegrationTest
-class PublicUserResourceIT {
+class PublicUserControllerIT {
 
     private static final String DEFAULT_LOGIN = "johndoe";
 
@@ -44,25 +45,7 @@ class PublicUserResourceIT {
 
     @BeforeEach
     public void initTest() {
-        user = UserResourceIT.initTestUser(userRepository, em);
-    }
-
-    @Test
-    @Transactional
-    @Disabled("Andrey cleanup, to be revised")
-    void getAllPublicUsers() throws Exception {
-        // Initialize the database
-        userRepository.saveAndFlush(user);
-
-        // Get all the users
-        restUserMockMvc
-            .perform(get("/api/users?sort=id,desc").accept(MediaType.APPLICATION_JSON))
-            .andExpect(status().isOk())
-            .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
-            .andExpect(jsonPath("$.[*].login").value(hasItem(DEFAULT_LOGIN)))
-            .andExpect(jsonPath("$.[*].email").doesNotExist())
-            .andExpect(jsonPath("$.[*].imageUrl").doesNotExist())
-            .andExpect(jsonPath("$.[*].langKey").doesNotExist());
+        user = UserAdminControllerIT.initTestUser(userRepository, em);
     }
 
     @Test

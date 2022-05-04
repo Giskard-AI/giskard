@@ -210,3 +210,4 @@ application:
   ml-worker-host: localhost
   ml-worker-port: 50051
   api-token-validity-in-days: 90
+  invitation-token-validity-in-days: 3

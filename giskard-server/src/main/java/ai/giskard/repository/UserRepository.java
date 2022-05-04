@@ -7,6 +7,8 @@ import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import javax.swing.text.html.Option;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -17,6 +19,9 @@ public interface UserRepository extends JpaRepository<User, Long> {
     default Optional<User> findOneByActivationKey(String activationKey) {
         return Optional.empty();
     }
+
+    @EntityGraph(attributePaths = "roles")
+    List<User> getAllWithRolesByLoginNot(String login);
 
     //List<User> findAllByActivatedIsFalseAndActivationKeyIsNotNullAndCreatedDateBefore(Instant dateTime);
 
@@ -30,8 +35,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     Optional<User> findOneById(Long id);
 
-    @EntityGraph(attributePaths = "role")
-    Optional<User> findOneWithRoleByLogin(String login);
+    @EntityGraph(attributePaths = "roles")
+    Optional<User> findOneWithRolesByLogin(String login);
 
     @EntityGraph(attributePaths = "projects")
     User getOneWithProjectsByLogin(String login);
@@ -40,4 +45,5 @@ public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findOneWithRolesByEmailIgnoreCase(String email);
 
     Page<User> findAllByIdNotNullAndActivatedIsTrue(Pageable pageable);
+    List<User> findAllByIdNotNullAndActivatedIsTrue();
 }
