@@ -4,7 +4,7 @@ import ai.giskard.IntegrationTest;
 import ai.giskard.repository.ProjectRepository;
 import ai.giskard.security.AuthoritiesConstants;
 import ai.giskard.web.dto.ml.ProjectPostDTO;
-import ai.giskard.service.init.InitService;
+import ai.giskard.config.InitService;
 import ai.giskard.web.rest.controllers.ProjectController;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.hamcrest.CoreMatchers;
