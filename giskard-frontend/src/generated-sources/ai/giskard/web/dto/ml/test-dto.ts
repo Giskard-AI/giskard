@@ -3,7 +3,7 @@ import type {TestResult} from './../../../domain/ml/test-result';
 import type {TestType} from './../../../domain/ml/test-type';
 
 /**
- * Generated from ai.giskard.service.dto.ml.TestDTO
+ * Generated from ai.giskard.web.dto.ml.TestDTO
  */
 export interface TestDTO {
     code: string;

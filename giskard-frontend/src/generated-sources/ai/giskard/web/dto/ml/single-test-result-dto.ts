@@ -1,5 +1,5 @@
 /**
- * Generated from ai.giskard.service.dto.ml.SingleTestResultDTO
+ * Generated from ai.giskard.web.dto.ml.SingleTestResultDTO
  */
 export interface SingleTestResultDTO {
     elementCount: number;
