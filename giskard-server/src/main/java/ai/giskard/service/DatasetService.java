@@ -18,6 +18,9 @@ import tech.tablesaw.api.Table;
 import tech.tablesaw.selection.Selection;
 
 import javax.validation.constraints.NotNull;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStreamReader;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -38,9 +41,11 @@ public class DatasetService {
         return Table.read().csv(filePathName);
     }
 
-    public Table getProbsTableFromModelId(@NotNull Long datasetId, @NotNull Long modelId) {
+    public Table getProbsTableFromModelId(@NotNull Long datasetId, @NotNull Long modelId) throws FileNotFoundException {
         Path filePath = Paths.get(applicationProperties.getBucketPath(), "files-bucket", String.format("%s_%s.csv", modelId, datasetId));
-        return Table.read().csv(filePath.toAbsolutePath().toString());
+        InputStreamReader reader = new InputStreamReader(
+            new FileInputStream(filePath.toAbsolutePath().toString()));
+        return Table.read().csv(reader);
     }
 
     /**
@@ -77,10 +82,9 @@ public class DatasetService {
      * @param datasetId dataset id
      * @return filtered table
      */
-    public Table getRowsFiltered(@NotNull Long datasetId, @NotNull Long modelId, @NotNull String target, @NotNull float threshold, @NotNull RowFilter rowFilter) {
+    public Table getRowsFiltered(@NotNull Long datasetId, @NotNull Long modelId, @NotNull String target, @NotNull float threshold, @NotNull RowFilter rowFilter) throws FileNotFoundException {
         Table table = getTableFromDatasetId(datasetId);
         Table probsTable = getProbsTableFromModelId(datasetId, modelId);
-        //Table result = table.append(probsTable);
         table.addColumns(IntColumn.indexColumn("Index", table.rowCount(), 0));
         DoubleColumn probTarget = (DoubleColumn) probsTable.column("predictions_" + target);
         Selection selection = null;
