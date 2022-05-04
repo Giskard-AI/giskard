@@ -1,5 +1,5 @@
 /**
- * Generated from ai.giskard.service.dto.PasswordChangeDTO
+ * Generated from ai.giskard.web.dto.user.PasswordChangeDTO
  */
 export interface PasswordChangeDTO {
     currentPassword: string;
