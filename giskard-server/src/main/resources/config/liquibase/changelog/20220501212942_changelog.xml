@@ -24,4 +24,10 @@
             </column>
         </addColumn>
     </changeSet>
+    <changeSet id="insert-admin-role" author="andreyavtomonov">
+        <insert tableName="giskard_user_role">
+            <column name="role_name" value="ROLE_ADMIN"/>
+            <column name="user_id" value="1"/>
+        </insert>
+    </changeSet>
 </databaseChangeLog>
