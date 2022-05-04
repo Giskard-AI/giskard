@@ -98,7 +98,7 @@ export default class AdminUsers extends Vue {
     {
       text: 'Display Name',
       sortable: true,
-      value: 'display_name',
+      value: 'displayName',
       align: 'left',
     },
     {

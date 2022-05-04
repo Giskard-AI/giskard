@@ -21,7 +21,7 @@
                 <div class="mt-3">
                   <div class="caption secondary--text text--lighten-3">Display Name</div>
                   <div v-if="!editModeToggle">
-                    <div class="subtitle-1" v-if="userProfile.display_name">{{userProfile.display_name}}</div>
+                    <div class="subtitle-1" v-if="userProfile.displayName">{{userProfile.displayName}}</div>
                     <div class="subtitle-1" v-else>(not set)</div>
                   </div>
                   <div v-else>
@@ -106,8 +106,8 @@ export default class UserProfile extends Vue {
   private resetFormData() {
     const userProfile = readUserProfile(this.$store);
     if (userProfile) {
-      if (userProfile.display_name) {
-        this.displayName = userProfile.display_name;
+      if (userProfile.displayName) {
+        this.displayName = userProfile.displayName;
       }
       this.email = userProfile.email;
     }
@@ -125,8 +125,8 @@ export default class UserProfile extends Vue {
     (this.$refs.observer as any).validate().then(() => {
       const currentProfile = readUserProfile(this.$store);
       const updatedProfile: UpdateMeDTO = {};
-      if (this.displayName && this.displayName !== currentProfile?.display_name) {
-        updatedProfile.display_name = this.displayName;
+      if (this.displayName && this.displayName !== currentProfile?.displayName) {
+        updatedProfile.displayName = this.displayName;
       }
       if (this.email && this.email !== currentProfile?.email) {
         updatedProfile.email = this.email;

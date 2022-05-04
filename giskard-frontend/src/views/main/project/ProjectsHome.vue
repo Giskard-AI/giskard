@@ -38,7 +38,7 @@
             </v-col>
             <v-col cols=2>
               <div :class="{'font-weight-bold': p.owner_details.id == userProfile.id}">
-                {{ p.owner_details.user_id == userProfile.user_id ? "me" : (p.owner_details.display_name || p.owner_details.user_id) }}
+                {{ p.owner_details.user_id == userProfile.user_id ? "me" : (p.owner_details.displayName || p.owner_details.user_id) }}
               </div>
             </v-col>
             <v-col cols=2>

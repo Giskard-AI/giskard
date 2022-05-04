@@ -1,14 +1,15 @@
 package ai.giskard.web.rest;
 
 import ai.giskard.IntegrationTest;
-import ai.giskard.config.Constants;
 import ai.giskard.domain.User;
 import ai.giskard.repository.RoleRepository;
 import ai.giskard.repository.UserRepository;
 import ai.giskard.security.AuthoritiesConstants;
+import ai.giskard.security.jwt.TokenProvider;
 import ai.giskard.service.UserService;
+import ai.giskard.utils.TestUtil;
+import ai.giskard.utils.TestUtilService;
 import ai.giskard.web.dto.user.AdminUserDTO;
-import ai.giskard.web.dto.user.PasswordChangeDTO;
 import ai.giskard.web.dto.PasswordResetRequest;
 import ai.giskard.web.rest.controllers.AccountController;
 import ai.giskard.web.rest.vm.ManagedUserVM;
@@ -61,6 +62,11 @@ class AccountControllerIT {
 
     @Autowired
     private MockMvc restAccountMockMvc;
+    @Autowired
+    private TokenProvider tokenProvider;
+
+    @Autowired
+    private TestUtilService testUtilService;
 
     @Test
     @WithUnauthenticatedMockUser
@@ -93,12 +99,8 @@ class AccountControllerIT {
 
         AdminUserDTO.AdminUserDTOWithPassword user = new AdminUserDTO.AdminUserDTOWithPassword();
         user.setLogin(TEST_USER_LOGIN);
-        user.setFirstName("john");
-        user.setLastName("doe");
         user.setPassword("secret");
         user.setEmail("john.doe@jhipster.com");
-        user.setImageUrl("http://placehold.it/50x50");
-        user.setLangKey("en");
         user.setRoles(authorities);
         userService.createUser(user);
 
@@ -121,15 +123,15 @@ class AccountControllerIT {
     @Test
     @Transactional
     void testRegisterValid() throws Exception {
+        User adminUser = testUtilService.createAdminUser();
+
         ManagedUserVM validUser = new ManagedUserVM();
         validUser.setLogin("test-register-valid");
         validUser.setPassword("password");
-        validUser.setFirstName("Alice");
-        validUser.setLastName("Test");
-        validUser.setEmail("test-register-valid@example.com");
-        validUser.setImageUrl("http://placehold.it/50x50");
-        validUser.setLangKey(Constants.DEFAULT_LANGUAGE);
+        String invitedEmail = "test-register-valid@example.com";
+        validUser.setEmail(invitedEmail);
         validUser.setRoles(Collections.singleton(AuthoritiesConstants.AICREATOR));
+        validUser.setToken(tokenProvider.createInvitationToken(adminUser.getEmail(), invitedEmail));
         assertThat(userRepository.findOneByLogin("test-register-valid")).isEmpty();
 
         restAccountMockMvc
@@ -145,12 +147,8 @@ class AccountControllerIT {
         ManagedUserVM invalidUser = new ManagedUserVM();
         invalidUser.setLogin("funky-log(n"); // <-- invalid
         invalidUser.setPassword("password");
-        invalidUser.setFirstName("Funky");
-        invalidUser.setLastName("One");
         invalidUser.setEmail("funky@example.com");
         invalidUser.setActivated(true);
-        invalidUser.setImageUrl("http://placehold.it/50x50");
-        invalidUser.setLangKey(Constants.DEFAULT_LANGUAGE);
         invalidUser.setRoles(Collections.singleton(AuthoritiesConstants.AICREATOR));
 
         restAccountMockMvc
@@ -167,12 +165,8 @@ class AccountControllerIT {
         ManagedUserVM invalidUser = new ManagedUserVM();
         invalidUser.setLogin("bob");
         invalidUser.setPassword("password");
-        invalidUser.setFirstName("Bob");
-        invalidUser.setLastName("Green");
         invalidUser.setEmail("invalid"); // <-- invalid
         invalidUser.setActivated(true);
-        invalidUser.setImageUrl("http://placehold.it/50x50");
-        invalidUser.setLangKey(Constants.DEFAULT_LANGUAGE);
         invalidUser.setRoles(Collections.singleton(AuthoritiesConstants.AICREATOR));
 
         restAccountMockMvc
@@ -189,12 +183,8 @@ class AccountControllerIT {
         ManagedUserVM invalidUser = new ManagedUserVM();
         invalidUser.setLogin("bob");
         invalidUser.setPassword("123"); // password with only 3 digits
-        invalidUser.setFirstName("Bob");
-        invalidUser.setLastName("Green");
         invalidUser.setEmail("bob@example.com");
         invalidUser.setActivated(true);
-        invalidUser.setImageUrl("http://placehold.it/50x50");
-        invalidUser.setLangKey(Constants.DEFAULT_LANGUAGE);
         invalidUser.setRoles(Collections.singleton(AuthoritiesConstants.AICREATOR));
 
         restAccountMockMvc
@@ -211,12 +201,8 @@ class AccountControllerIT {
         ManagedUserVM invalidUser = new ManagedUserVM();
         invalidUser.setLogin("bob");
         invalidUser.setPassword(null); // invalid null password
-        invalidUser.setFirstName("Bob");
-        invalidUser.setLastName("Green");
         invalidUser.setEmail("bob@example.com");
         invalidUser.setActivated(true);
-        invalidUser.setImageUrl("http://placehold.it/50x50");
-        invalidUser.setLangKey(Constants.DEFAULT_LANGUAGE);
         invalidUser.setRoles(Collections.singleton(AuthoritiesConstants.AICREATOR));
 
         restAccountMockMvc
@@ -235,22 +221,14 @@ class AccountControllerIT {
         ManagedUserVM firstUser = new ManagedUserVM();
         firstUser.setLogin("alice");
         firstUser.setPassword("password");
-        firstUser.setFirstName("Alice");
-        firstUser.setLastName("Something");
         firstUser.setEmail("alice@example.com");
-        firstUser.setImageUrl("http://placehold.it/50x50");
-        firstUser.setLangKey(Constants.DEFAULT_LANGUAGE);
         firstUser.setRoles(Collections.singleton(AuthoritiesConstants.AICREATOR));
 
         // Duplicate login, different email
         ManagedUserVM secondUser = new ManagedUserVM();
         secondUser.setLogin(firstUser.getLogin());
         secondUser.setPassword(firstUser.getPassword());
-        secondUser.setFirstName(firstUser.getFirstName());
-        secondUser.setLastName(firstUser.getLastName());
         secondUser.setEmail("alice2@example.com");
-        secondUser.setImageUrl(firstUser.getImageUrl());
-        secondUser.setLangKey(firstUser.getLangKey());
         secondUser.setCreatedBy(firstUser.getCreatedBy());
         secondUser.setCreatedDate(firstUser.getCreatedDate());
         secondUser.setLastModifiedBy(firstUser.getLastModifiedBy());
@@ -286,11 +264,7 @@ class AccountControllerIT {
         ManagedUserVM firstUser = new ManagedUserVM();
         firstUser.setLogin("test-register-duplicate-email");
         firstUser.setPassword("password");
-        firstUser.setFirstName("Alice");
-        firstUser.setLastName("Test");
         firstUser.setEmail("test-register-duplicate-email@example.com");
-        firstUser.setImageUrl("http://placehold.it/50x50");
-        firstUser.setLangKey(Constants.DEFAULT_LANGUAGE);
         firstUser.setRoles(Collections.singleton(AuthoritiesConstants.AICREATOR));
 
         // Register first user
@@ -305,11 +279,7 @@ class AccountControllerIT {
         ManagedUserVM secondUser = new ManagedUserVM();
         secondUser.setLogin("test-register-duplicate-email-2");
         secondUser.setPassword(firstUser.getPassword());
-        secondUser.setFirstName(firstUser.getFirstName());
-        secondUser.setLastName(firstUser.getLastName());
         secondUser.setEmail(firstUser.getEmail());
-        secondUser.setImageUrl(firstUser.getImageUrl());
-        secondUser.setLangKey(firstUser.getLangKey());
         secondUser.setRoles(new HashSet<>(firstUser.getRoles()));
 
         // Register second (non activated) user
@@ -330,11 +300,7 @@ class AccountControllerIT {
         userWithUpperCaseEmail.setId(firstUser.getId());
         userWithUpperCaseEmail.setLogin("test-register-duplicate-email-3");
         userWithUpperCaseEmail.setPassword(firstUser.getPassword());
-        userWithUpperCaseEmail.setFirstName(firstUser.getFirstName());
-        userWithUpperCaseEmail.setLastName(firstUser.getLastName());
         userWithUpperCaseEmail.setEmail("TEST-register-duplicate-email@example.com");
-        userWithUpperCaseEmail.setImageUrl(firstUser.getImageUrl());
-        userWithUpperCaseEmail.setLangKey(firstUser.getLangKey());
         userWithUpperCaseEmail.setRoles(new HashSet<>(firstUser.getRoles()));
 
         // Register third (not activated) user
@@ -362,15 +328,15 @@ class AccountControllerIT {
     @Test
     @Transactional
     void testRegisterAdminIsIgnored() throws Exception {
+        User adminUser = testUtilService.createAdminUser();
+
         ManagedUserVM validUser = new ManagedUserVM();
         validUser.setLogin("badguy");
         validUser.setPassword("password");
-        validUser.setFirstName("Bad");
-        validUser.setLastName("Guy");
-        validUser.setEmail("badguy@example.com");
+        String invitedEmail = "badguy@example.com";
+        validUser.setEmail(invitedEmail);
         validUser.setActivated(true);
-        validUser.setImageUrl("http://placehold.it/50x50");
-        validUser.setLangKey(Constants.DEFAULT_LANGUAGE);
+        validUser.setToken(tokenProvider.createInvitationToken(adminUser.getEmail(), invitedEmail));
         validUser.setRoles(Collections.singleton(AuthoritiesConstants.ADMIN));
 
         restAccountMockMvc
@@ -452,12 +418,8 @@ class AccountControllerIT {
 
         AdminUserDTO userDTO = new AdminUserDTO();
         userDTO.setLogin("not-used");
-        userDTO.setFirstName("firstname");
-        userDTO.setLastName("lastname");
         userDTO.setEmail("invalid email");
         userDTO.setActivated(false);
-        userDTO.setImageUrl("http://placehold.it/50x50");
-        userDTO.setLangKey(Constants.DEFAULT_LANGUAGE);
         userDTO.setRoles(Collections.singleton(AuthoritiesConstants.ADMIN));
 
         restAccountMockMvc
@@ -488,12 +450,8 @@ class AccountControllerIT {
 
         AdminUserDTO userDTO = new AdminUserDTO();
         userDTO.setLogin("not-used");
-        userDTO.setFirstName("firstname");
-        userDTO.setLastName("lastname");
         userDTO.setEmail("save-existing-email2@example.com");
         userDTO.setActivated(false);
-        userDTO.setImageUrl("http://placehold.it/50x50");
-        userDTO.setLangKey(Constants.DEFAULT_LANGUAGE);
         userDTO.setRoles(Collections.singleton(AuthoritiesConstants.ADMIN));
 
         restAccountMockMvc
@@ -517,12 +475,8 @@ class AccountControllerIT {
 
         AdminUserDTO userDTO = new AdminUserDTO();
         userDTO.setLogin("not-used");
-        userDTO.setFirstName("firstname");
-        userDTO.setLastName("lastname");
         userDTO.setEmail("save-existing-email-and-login@example.com");
         userDTO.setActivated(false);
-        userDTO.setImageUrl("http://placehold.it/50x50");
-        userDTO.setLangKey(Constants.DEFAULT_LANGUAGE);
         userDTO.setRoles(Collections.singleton(AuthoritiesConstants.ADMIN));
 
         restAccountMockMvc

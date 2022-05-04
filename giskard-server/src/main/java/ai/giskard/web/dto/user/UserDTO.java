@@ -29,7 +29,6 @@ public class UserDTO {
 
     @Setter
     @Getter
-    @JsonProperty("display_name")
     private String displayName;
 
     @Setter
