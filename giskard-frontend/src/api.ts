@@ -11,7 +11,7 @@ import {
     TestDTO,
     TestSuiteDTO,
     TestExecutionResultDTO,
-    ProjectPostDTO, AppConfigDTO, AdminUserDTO, FileDTO, ModelDTO
+    ProjectPostDTO, AppConfigDTO, AdminUserDTO, FileDTO, ModelDTO, JWTToken, PasswordResetRequest, TokenAndPasswordVM
 } from '@/generated-sources';
 import AdminUserDTOMigration = AdminUserDTO.AdminUserDTOMigration;
 
@@ -47,11 +47,7 @@ axiosProject.interceptors.response.use(resp => {
 
 export const api = {
     async logInGetToken(username: string, password: string) {
-        const params = new URLSearchParams();
-        params.append('username', username);
-        params.append('password', password);
-
-        return axios.post(`${apiUrl}/api/v1/login/access-token`, params);
+        return axios.post(`${apiUrlJava}/api/v2/authenticate`, { username, password });
     },
     async getMe(token: string) {
         return axios.get<AppConfigDTO>(`${apiUrlJava}/api/v2/users/me`, authHeaders(token));
@@ -78,11 +74,11 @@ export const api = {
         return axios.delete(`${apiUrl}/api/v1/users/${userId}`, authHeaders(token));
     },
     async passwordRecovery(email: string) {
-        return axios.post(`${apiUrl}/api/v1/password-recovery/${email}`);
+        return axios.post(`${apiUrlJava}/api/v2/account/password-recovery`, <PasswordResetRequest>{ email });
     },
     async resetPassword(password: string, token: string) {
-        return axios.post(`${apiUrl}/api/v1/reset-password/`, {
-            new_password: password,
+        return axios.post(`${apiUrlJava}/api/v2/account/reset-password`, <TokenAndPasswordVM>{
+            newPassword: password,
             token
         });
     },
@@ -96,7 +92,7 @@ export const api = {
         return axios.get<IUserProfileMinimal[]>(`${apiUrl}/api/v1/users/me/coworkers`, authHeaders(token));
     },
     async getApiAccessToken(token: string) {
-        return axios.get(`${apiUrl}/api/v1/security/api-access-token`, authHeaders(token));
+        return axios.get<JWTToken>(`${apiUrlJava}/api/v2/api-access-token`, authHeaders(token));
     },
 
     // Projects

@@ -88,7 +88,7 @@ public class User extends AbstractAuditingEntity implements Serializable {
     @Size(min = 2, max = 10)
     @Column(name = "lang_key", length = 10)
     @Transient
-    private String langKey;
+    private String langKey = "en";
 
     @lombok.Setter
     @lombok.Getter
@@ -102,7 +102,6 @@ public class User extends AbstractAuditingEntity implements Serializable {
     @Size(max = 20)
     @Column(name = "activation_key", length = 20)
     @JsonIgnore
-    @Transient
     private String activationKey;
 
     @lombok.Setter
@@ -110,13 +109,11 @@ public class User extends AbstractAuditingEntity implements Serializable {
     @Size(max = 20)
     @Column(name = "reset_key", length = 20)
     @JsonIgnore
-    @Transient
     private String resetKey;
 
     @lombok.Setter
     @lombok.Getter
     @Column(name = "reset_date")
-    @Transient
     private Instant resetDate = null;
 
     @lombok.Setter
