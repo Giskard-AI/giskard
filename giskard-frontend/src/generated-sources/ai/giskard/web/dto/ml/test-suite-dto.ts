@@ -1,14 +1,15 @@
 import type {DatasetDTO} from './dataset-dto';
 import type {ModelDTO} from './model-dto';
+import type {ProjectDTO} from './project-dto';
 
 /**
- * Generated from ai.giskard.service.dto.ml.TestSuiteDTO
+ * Generated from ai.giskard.web.dto.ml.TestSuiteDTO
  */
 export interface TestSuiteDTO {
     id: number;
     model: ModelDTO;
     name: string;
-    projectId: number;
+    project: ProjectDTO;
     testDataset: DatasetDTO;
     trainDataset: DatasetDTO;
 }

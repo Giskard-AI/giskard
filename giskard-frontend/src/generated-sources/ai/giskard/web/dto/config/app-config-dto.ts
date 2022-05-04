@@ -1,7 +1,7 @@
-import type {AdminUserDTO} from './../admin-user-dto';
+import type {AdminUserDTO} from './../user/admin-user-dto';
 
 /**
- * Generated from ai.giskard.service.dto.config.AppConfigDTO
+ * Generated from ai.giskard.web.dto.config.AppConfigDTO
  */
 export interface AppConfigDTO {
     app: AppConfigDTO.AppInfoDTO;
@@ -10,7 +10,7 @@ export interface AppConfigDTO {
 
 export namespace AppConfigDTO {
     /**
-     * Generated from ai.giskard.service.dto.config.AppConfigDTO$AppInfoDTO
+     * Generated from ai.giskard.web.dto.config.AppConfigDTO$AppInfoDTO
      */
     export interface AppInfoDTO {
         plan_code: string;

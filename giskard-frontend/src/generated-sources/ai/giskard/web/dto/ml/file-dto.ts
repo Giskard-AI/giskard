@@ -3,7 +3,7 @@ import type {ModelDTO} from './model-dto';
 import type {ProjectDTO} from './project-dto';
 
 /**
- * Generated from ai.giskard.service.dto.ml.FileDTO
+ * Generated from ai.giskard.web.dto.ml.FileDTO
  */
 export interface _FileDTO {
     creation_date: any /* TODO: Missing translation of java.time.LocalDateTime */;

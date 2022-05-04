@@ -1,7 +1,7 @@
-import type {UserDTO} from './../user-dto';
+import type {UserDTO} from './../user/user-dto';
 
 /**
- * Generated from ai.giskard.service.dto.ml.ProjectDTO
+ * Generated from ai.giskard.web.dto.ml.ProjectDTO
  */
 export interface ProjectDTO {
     created_on: any /* TODO: Missing translation of java.time.LocalDateTime */;

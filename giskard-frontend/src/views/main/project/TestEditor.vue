@@ -225,7 +225,7 @@ export default class TestEditor extends Vue {
       await this.$router.push({
         name: 'suite-details', params: {
           suiteId: testSuite.id.toString(),
-          projectId: testSuite.projectId.toString()
+          projectId: testSuite.project.id.toString()
         }
       });
     }
