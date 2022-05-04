@@ -2,8 +2,7 @@
  * Generated from ai.giskard.web.dto.user.UserDTO
  */
 export interface UserDTO {
-    displayName: string;
+    display_name: string;
     id: number;
-    roles: string[];
     user_id: string;
 }

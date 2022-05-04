@@ -1,6 +1,6 @@
 {
   "name": "frontend",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "private": true,
   "scripts": {
     "serve": "vue-cli-service serve",
@@ -17,6 +17,7 @@
     "core-js": "^3.19.0",
     "date-fns": "^2.28.0",
     "echarts": "^5.1.1",
+    "posthog-js": "^1.11.3",
     "lodash": "^4.17.21",
     "mousetrap": "^1.6.5",
     "numeral": "^2.0.6",

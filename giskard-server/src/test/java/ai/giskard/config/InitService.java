@@ -1,4 +1,4 @@
-package ai.giskard.service.init;
+package ai.giskard.config;
 
 import ai.giskard.domain.Project;
 import ai.giskard.domain.Role;
@@ -68,7 +68,11 @@ public class InitService {
      */
     @Transactional
     public void initUsers() {
-        Arrays.stream(mockKeys).forEach(key -> saveUser(key, "ROLE_" + key));
+        Arrays.stream(mockKeys).forEach(key -> {
+            if (userRepository.findOneByLogin(key.toLowerCase()).isEmpty()) {
+                saveUser(key, "ROLE_" + key);
+            }
+        });
     }
 
     /**
@@ -123,9 +127,9 @@ public class InitService {
         User owner = userRepository.getOneByLogin(ownerLogin.toLowerCase());
         Assert.notNull(owner, "Owner does not exist in database");
         Project project = new Project(key, key, key, owner);
-        try {
+        if (projectRepository.findOneByName(key).isEmpty()) {
             projectRepository.save(project);
-        } catch (Exception e) {
+        } else {
             logger.info(String.format("Project with name %s already exists", key));
         }
     }
