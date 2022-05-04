@@ -37,7 +37,7 @@ export default class TestSuites extends Vue {
   testSuites: Array<ITestSuite> = []
 
   private getProjectFileName(obj: IProjectFile) {
-    return obj ? (obj.name || obj.filename) : "";
+    return obj ? (obj.name || obj.file_name) : "";
   }
 
   get tableHeaders() {

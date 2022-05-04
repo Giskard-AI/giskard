@@ -3,6 +3,7 @@ package ai.giskard.security;
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.stream.Stream;
+
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContext;
@@ -14,7 +15,8 @@ import org.springframework.security.core.userdetails.UserDetails;
  */
 public final class SecurityUtils {
 
-    private SecurityUtils() {}
+    private SecurityUtils() {
+    }
 
     /**
      * Get the login of the current user.
@@ -24,6 +26,16 @@ public final class SecurityUtils {
     public static Optional<String> getCurrentUserLogin() {
         SecurityContext securityContext = SecurityContextHolder.getContext();
         return Optional.ofNullable(extractPrincipal(securityContext.getAuthentication()));
+    }
+
+    /**
+     * Get the login of the current user.
+     * If the user is not authenticated the method throws NoSuchElementException
+     *
+     * @return the login of the current user.
+     */
+    public static String getCurrentAuthenticatedUserLogin() {
+        return getCurrentUserLogin().orElseThrow();
     }
 
     private static String extractPrincipal(Authentication authentication) {
@@ -93,6 +105,16 @@ public final class SecurityUtils {
     public static boolean hasCurrentUserThisAuthority(String authority) {
         return hasCurrentUserAnyOfAuthorities(authority);
     }
+
+    /**
+     * Checks if the current user is admin.
+     *
+     * @return true if the current user has the admin authority, false otherwise.
+     */
+    public static boolean isAdmin() {
+        return hasCurrentUserAnyOfAuthorities(AuthoritiesConstants.ADMIN);
+    }
+
 
     private static Stream<String> getAuthorities(Authentication authentication) {
         return authentication.getAuthorities().stream().map(GrantedAuthority::getAuthority);

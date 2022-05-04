@@ -1,9 +1,8 @@
 package ai.giskard.domain;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import org.checkerframework.common.aliasing.qual.Unique;
+
+import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.io.Serializable;
@@ -22,13 +21,14 @@ public class Role implements Serializable {
     @lombok.Getter
     @NotNull
     @Id
+    @GeneratedValue
     private int id;
 
     @lombok.Setter
     @lombok.Getter
     @NotNull
     @Size(max = 50)
-    @Column(length = 50)
+    @Column(length = 50, unique = true)
     private String name;
 
     @Override
@@ -43,4 +43,6 @@ public class Role implements Serializable {
     public int hashCode() {
         return Objects.hash(id, name);
     }
+
+
 }

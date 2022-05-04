@@ -7,10 +7,14 @@ import lombok.NonNull;
 import lombok.Setter;
 
 import javax.persistence.Entity;
+import java.io.Serializable;
+
 
 @Entity(name = "project_models")
 @NoArgsConstructor
-public class ProjectModel extends ProjectFile {
+public class ProjectModel extends ProjectFile implements Serializable {
+    @Getter
+    @Setter
     @NonNull
     private String pythonVersion;
     @NonNull

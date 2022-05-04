@@ -1,6 +1,6 @@
 package ai.giskard.web.rest.vm;
 
-import ai.giskard.service.dto.AdminUserDTO;
+import ai.giskard.web.dto.user.AdminUserDTO;
 import javax.validation.constraints.Size;
 
 /**

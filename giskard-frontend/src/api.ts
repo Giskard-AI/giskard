@@ -1,24 +1,24 @@
 import axios from 'axios';
-import {apiUrl, apiUrlJava} from '@/env';
+import { apiUrl, apiUrlJava } from '@/env';
 import {
     IUserProfile, IUserProfileUpdate, IUserProfileCreate, IRole, IProject, IProjectCreate,
     IProjectUpdate, IUserProfileMinimal, IProjectFile, IProjetFileModel, IDataMetadata, IModelMetadata,
     IFeedbackCreate, IFeedbackForList, IFeedbackDisplay, IAppInitData, ITestSuite, ITest, ITestExecutionResult
 } from './interfaces';
-import {getLocalToken} from "@/utils";
+import { getLocalToken } from '@/utils';
 
 function authHeaders(token: string) {
     return {
         headers: {
-            Authorization: `Bearer ${token}`,
-        },
+            Authorization: `Bearer ${token}`
+        }
     };
 }
 
 const axiosProject = axios.create({
-    baseURL: `${apiUrl}/api/v1/projects`
+    baseURL: `${apiUrlJava}/api/v2/project`
 });
-axios.interceptors.request.use(function (config) {
+axios.interceptors.request.use(function(config) {
     // Do something before request is sent
     let jwtToken = getLocalToken();
     if (jwtToken && config && config.headers) {
@@ -30,12 +30,12 @@ axios.interceptors.request.use(function (config) {
 // this is to automatically parse responses from the projects API, be it array or single objects
 axiosProject.interceptors.response.use(resp => {
     if (Array.isArray(resp.data)) {
-        resp.data.map(p => p.created_on = new Date(p.created_on))
-    } else {
-        resp.data.created_on = new Date(resp.data.created_on)
+        resp.data.map(p => p.created_on = new Date(p.created_on));
+    } else if (resp.data.hasOwnProperty('created_on')) {
+        resp.data.created_on = new Date(resp.data.created_on);
     }
-    return resp
-})
+    return resp;
+});
 
 export const api = {
     async logInGetToken(username: string, password: string) {
@@ -67,7 +67,7 @@ export const api = {
         return axios.post(`${apiUrl}/api/v1/users/`, data, authHeaders(token));
     },
     async signupUser(userData: IUserProfileCreate, token: string) {
-        return axios.post(`${apiUrl}/api/v1/users/open`, {...userData, token});
+        return axios.post(`${apiUrl}/api/v1/users/open`, { ...userData, token });
     },
     async deleteUser(token: string, userId: number) {
         return axios.delete(`${apiUrl}/api/v1/users/${userId}`, authHeaders(token));
@@ -78,14 +78,14 @@ export const api = {
     async resetPassword(password: string, token: string) {
         return axios.post(`${apiUrl}/api/v1/reset-password/`, {
             new_password: password,
-            token,
+            token
         });
     },
     async getSignupLink(token: string) {
         return axios.get(`${apiUrl}/api/v1/users/signuplink`, authHeaders(token));
     },
     async inviteToSignup(token: string, email: string) {
-        return axios.post(`${apiUrl}/api/v1/users/invite`, {email}, authHeaders(token));
+        return axios.post(`${apiUrl}/api/v1/users/invite`, { email }, authHeaders(token));
     },
     async getCoworkersMinimal(token: string) {
         return axios.get<IUserProfileMinimal[]>(`${apiUrl}/api/v1/users/me/coworkers`, authHeaders(token));
@@ -96,7 +96,7 @@ export const api = {
 
     // Projects
     async getProjects(token: string) {
-        return axiosProject.get<IProject[]>(`/`, authHeaders(token))
+        return axiosProject.get<IProject[]>(`/`, authHeaders(token));
     },
     async getProject(token: string, id: number) {
         return axiosProject.get<IProject>(`/${id}`, authHeaders(token));
@@ -110,15 +110,15 @@ export const api = {
     async editProject(token: string, id: number, data: IProjectUpdate) {
         return axiosProject.put<IProject>(`/${id}`, data, authHeaders(token));
     },
-    async inviteUserToProject(token: string, projectId: number, userId: string) {
-        return axiosProject.put<IProject>(`/${projectId}/invite`, {user_id: userId}, authHeaders(token));
+    async inviteUserToProject(token: string, projectId: number, userId: number) {
+        return axiosProject.put<IProject>(`/${projectId}/guests/${userId}`, null, authHeaders(token));
     },
-    async uninviteUserFromProject(token: string, projectId: number, userId: string) {
-        return axiosProject.put<IProject>(`/${projectId}/uninvite`, {user_id: userId}, authHeaders(token));
+    async uninviteUserFromProject(token: string, projectId: number, userId: number) {
+        return axiosProject.delete<IProject>(`/${projectId}/guests/${userId}`, authHeaders(token));
     },
     // Models
     async getProjectModels(token: string, id: number) {
-        return axios.get<IProjetFileModel[]>(`${apiUrl}/api/v1/projects/${id}/models`, authHeaders(token));
+        return axiosProject.get<IProjetFileModel[]>(`/${id}/models`, authHeaders(token));
     },
     async deleteModelFiles(token: string, modelId: number) {
         return axios.delete(`${apiUrl}/api/v1/files/models/${modelId}`, authHeaders(token));
@@ -127,10 +127,10 @@ export const api = {
         return axios.delete(`${apiUrl}/api/v1/files/datasets/${id}`, authHeaders(token));
     },
     async downloadModelFile(token: string, modelId: number) {
-        return axios.get(`${apiUrl}/api/v1/files/models/${modelId}`, {...authHeaders(token), 'responseType': 'blob'});
+        return axios.get(`${apiUrl}/api/v1/files/models/${modelId}`, { ...authHeaders(token), 'responseType': 'blob' });
     },
     async downloadDataFile(token: string, id: number) {
-        return axios.get(`${apiUrl}/api/v1/files/datasets/${id}`, {...authHeaders(token), 'responseType': 'blob'});
+        return axios.get(`${apiUrl}/api/v1/files/datasets/${id}`, { ...authHeaders(token), 'responseType': 'blob' });
     },
     async peakDataFile(token: string, id: number) {
         return axios.get(`${apiUrl}/api/v1/files/datasets/${id}/peak`, authHeaders(token));
@@ -145,26 +145,26 @@ export const api = {
         return axios.get(`${apiUrl}/api/v1/files/datasets/${datasetId}/row/random`, authHeaders(token));
     },
     async getProjectDatasets(token: string, id: number) {
-        return axios.get<IProjectFile[]>(`${apiUrl}/api/v1/projects/${id}/datasets`, authHeaders(token));
+        return axiosProject.get<IProjectFile[]>(`/${id}/datasets`, authHeaders(token));
     },
     async uploadDataFile(token: string, projectId: number, fileData: any) {
         const formData = new FormData();
-        formData.append("file", fileData);
-        const config = authHeaders(token)
-        config.headers["content-type"] = "multipart/form-data"
-        return axios.post(`${apiUrl}/api/v1/files/data/upload?projectId=${projectId}`, formData, config)
+        formData.append('file', fileData);
+        const config = authHeaders(token);
+        config.headers['content-type'] = 'multipart/form-data';
+        return axios.post(`${apiUrl}/api/v1/files/data/upload?projectId=${projectId}`, formData, config);
     },
     async getModelMetadata(token: string, modelId: number) {
         return axios.get<IModelMetadata>(`${apiUrl}/api/v1/models/${modelId}/metadata`, authHeaders(token));
     },
     async predict(token: string, modelId: number, inputData: object) {
-        return axios.post(`${apiUrl}/api/v1/models/${modelId}/predict`, {features: inputData}, authHeaders(token));
+        return axios.post(`${apiUrl}/api/v1/models/${modelId}/predict`, { features: inputData }, authHeaders(token));
     },
     async explain(token: string, modelId: number, datasetId: number, inputData: object) {
-        return axios.post(`${apiUrl}/api/v1/models/${modelId}/${datasetId}/explain`, {features: inputData}, authHeaders(token));
+        return axios.post(`${apiUrl}/api/v1/models/${modelId}/${datasetId}/explain`, { features: inputData }, authHeaders(token));
     },
     async explainText(token: string, modelId: number, inputData: object, featureName: string) {
-        return axios.post(`${apiUrl}/api/v1/models/${modelId}/explain_text/${featureName}`, {features: inputData}, authHeaders(token));
+        return axios.post(`${apiUrl}/api/v1/models/${modelId}/explain_text/${featureName}`, { features: inputData }, authHeaders(token));
     },
     // feedbacks
     async submitFeedback(token: string, payload: IFeedbackCreate, projectId: number) {
@@ -186,7 +186,7 @@ export const api = {
         return await axios.get<Array<ITestSuite>>(`${apiUrlJava}/api/v2/testing/suites/${projectId}`);
     },
     async getTests(suiteId: number) {
-        return await axios.get<Array<ITest>>(`${apiUrlJava}/api/v2/testing/tests`, {params: {suiteId}});
+        return await axios.get<Array<ITest>>(`${apiUrlJava}/api/v2/testing/tests`, { params: { suiteId } });
     },
     async getTestSuite(suiteId: number) {
         return await axios.get<ITestSuite>(`${apiUrlJava}/api/v2/testing/suite/${suiteId}`);
@@ -197,35 +197,35 @@ export const api = {
     async createTestSuite(projectId: number, name: string, modelId: number) {
         return await axios.post(`${apiUrlJava}/api/v2/testing/suites`, {
             name: name,
-            projectId: projectId,
-            model: {id: modelId}
-        })
+            project: { id: projectId },
+            model: { id: modelId }
+        });
     },
     async saveTestSuite(testSuite: ITestSuite) {
-        return await axios.put(`${apiUrlJava}/api/v2/testing/suites`, testSuite)
+        return await axios.put(`${apiUrlJava}/api/v2/testing/suites`, testSuite);
     },
     async getTestDetails(testId: number) {
-        return await axios.get(`${apiUrlJava}/api/v2/testing/tests/${testId}`)
+        return await axios.get(`${apiUrlJava}/api/v2/testing/tests/${testId}`);
     },
     async deleteTest(testId: number) {
-        return await axios.delete<ITestSuite>(`${apiUrlJava}/api/v2/testing/tests/${testId}`)
+        return await axios.delete<ITestSuite>(`${apiUrlJava}/api/v2/testing/tests/${testId}`);
     },
     async getTestEditorConfig() {
-        return await axios.get(`${apiUrlJava}/api/v2/testing/tests/editorConfig`)
+        return await axios.get(`${apiUrlJava}/api/v2/testing/tests/editorConfig`);
     },
     async saveTest(testDetails: ITest) {
         return await axios.put(`${apiUrlJava}/api/v2/testing/tests`, testDetails);
     },
     async runTest(testId: number) {
-        return await axios.post<ITestExecutionResult>(`${apiUrlJava}/api/v2/testing/tests/${testId}/run`)
+        return await axios.post<ITestExecutionResult>(`${apiUrlJava}/api/v2/testing/tests/${testId}/run`);
     },
     async createTest(suiteId: number, name: string) {
         return await axios.post(`${apiUrlJava}/api/v2/testing/tests`, {
             name: name,
             suiteId: suiteId
-        })
+        });
     },
     async executeTestSuite(suiteId: number) {
-        return await axios.post<Array<ITestExecutionResult>>(`${apiUrlJava}/api/v2/testing/suites/execute`, {suiteId});
+        return await axios.post<Array<ITestExecutionResult>>(`${apiUrlJava}/api/v2/testing/suites/execute`, { suiteId });
     }
 };
