@@ -1,10 +1,10 @@
 package ai.giskard.service;
 
+import ai.giskard.config.InitService;
 import ai.giskard.domain.Project;
 import ai.giskard.repository.ProjectRepository;
 import ai.giskard.security.AuthoritiesConstants;
 import ai.giskard.security.PermissionEvaluator;
-import ai.giskard.service.init.InitService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

@@ -9,7 +9,6 @@ import lombok.Setter;
 import javax.validation.constraints.NotNull;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
 
@@ -39,12 +38,7 @@ public abstract class FileDTO {
     }
 
     public Long getSize() throws IOException {
-        Path path = Paths.get(location);
-        if (Files.exists(path)) {
-            return Files.size(path);
-        } else {
-            return 0L;
-        }
+        return (location != null && Files.exists(Paths.get(location))) ? Files.size(Paths.get(location)) : 0L;
     }
 
     public Long getProjectId() {

@@ -7,7 +7,7 @@ import ai.giskard.repository.ProjectRepository;
 import ai.giskard.repository.UserRepository;
 import ai.giskard.security.AuthoritiesConstants;
 import ai.giskard.web.dto.ml.ProjectPostDTO;
-import ai.giskard.service.init.InitService;
+import ai.giskard.config.InitService;
 import ai.giskard.web.dto.mapper.GiskardMapper;
 import ai.giskard.web.rest.controllers.ProjectController;
 import ai.giskard.web.rest.errors.Entity;

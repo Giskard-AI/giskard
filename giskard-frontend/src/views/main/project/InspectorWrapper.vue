@@ -6,7 +6,7 @@
         <v-icon v-if="shuffleMode" color="primary">mdi-shuffle-variant</v-icon>
         <v-icon v-else>mdi-shuffle-variant</v-icon>
       </v-btn>
-      <v-btn icon @click="previous" :disabled="shuffleMode || rowNb == 0"><v-icon>mdi-skip-previous</v-icon></v-btn>
+      <v-btn icon @click="previous" :disabled="!canPrevious()"><v-icon>mdi-skip-previous</v-icon></v-btn>
       <v-btn icon @click="next"><v-icon>mdi-skip-next</v-icon></v-btn>
       <span class="caption grey--text">Entry #{{rowNb}}</span>
     </v-toolbar>
@@ -25,8 +25,8 @@
     <!-- For general feedback -->
     <v-tooltip left>
       <template v-slot:activator="{ on, attrs }">
-      <v-btn fab fixed bottom right 
-        @click="feedbackPopupToggle = !feedbackPopupToggle" 
+      <v-btn fab fixed bottom right
+        @click="feedbackPopupToggle = !feedbackPopupToggle"
         :class="feedbackPopupToggle? 'secondary': 'primary'"
         v-bind="attrs" v-on="on"
         >
@@ -83,6 +83,7 @@ import { readToken } from '@/store/main/getters';
 import { IFeedbackCreate } from '@/interfaces';
 import FeedbackPopover from '@/components/FeedbackPopover.vue';
 import Inspector from './Inspector.vue';
+import Mousetrap from 'mousetrap';
 
 @Component({
   components: { OverlayLoader, Inspector, PredictionResults, FeedbackPopover, PredictionExplanations, TextExplanation }
@@ -92,6 +93,7 @@ export default class InspectorWrapper extends Vue {
 	@Prop({ required: true }) datasetId!: number
   @Prop() targetFeature!: string
 
+  mouseTrap= new Mousetrap();
   loadingData = false;
   inputData = {}
   originalData = {}
@@ -109,15 +111,41 @@ export default class InspectorWrapper extends Vue {
     await this.fetchRowData(0);
   }
 
+  bindKeys() {
+    this.mouseTrap.bind('left', this.previous);
+    this.mouseTrap.bind('right', this.next);
+  }
+
+  resetKeys() {
+    this.mouseTrap.reset();
+  }
+
+  public canPrevious(){ return !this.shuffleMode && this.rowNb> 0}
+
+
+  /**
+   * Call on active tab
+   */
+  activated() {
+    this.bindKeys();
+  }
+
+  deactivated() {
+    this.resetKeys();
+  }
+
   public next() {
     this.clearFeedback();
     this.fetchRowData(this.rowNb + 1);
   }
+
   public previous() {
-    this.clearFeedback();
-    this.fetchRowData(Math.max(0, this.rowNb - 1))
+    if (this.canPrevious()) {
+      this.clearFeedback();
+      this.fetchRowData(Math.max(0, this.rowNb - 1))
+    }
   }
-  
+
   @Watch("datasetId")
   async reload() {
     await this.fetchRowData(0)
@@ -128,7 +156,7 @@ export default class InspectorWrapper extends Vue {
       this.loadingData = true
       const resp = this.shuffleMode
         ? await api.getDataRandom(readToken(this.$store), this.datasetId)
-        : await api.getDataByRowId(readToken(this.$store), this.datasetId, rowId) 
+        : await api.getDataByRowId(readToken(this.$store), this.datasetId, rowId)
       this.inputData = resp.data
       this.originalData = {...this.inputData} // deep copy to avoid caching mechanisms
       this.rowNb = resp.data.rowNb
@@ -168,7 +196,7 @@ export default class InspectorWrapper extends Vue {
       ...this.commonFeedbackData,
       feedback_type: "general",
       feedback_choice: this.feedbackChoice || undefined,
-      feedback_message: this.feedback 
+      feedback_message: this.feedback
     }
     try {
       await this.doSubmitFeedback(feedback)
