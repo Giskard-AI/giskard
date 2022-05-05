@@ -28,7 +28,6 @@
     "ai.giskard.web.dto.user.RoleDTO": "RoleDTO",
     "ai.giskard.web.dto.ml.NamedSingleTestResultDTO": "NamedSingleTestResultDTO",
     "ai.giskard.web.dto.ml.TestEditorConfigDTO": "TestEditorConfigDTO",
-    "ai.giskard.web.dto.ml.NewDTO": "NewDTO",
     "ai.giskard.domain.ml.TestResult": "TestResult",
     "ai.giskard.web.dto.user.UserDTO": "UserDTO",
     "ai.giskard.web.dto.ml.DatasetDTO": "DatasetDTO"
