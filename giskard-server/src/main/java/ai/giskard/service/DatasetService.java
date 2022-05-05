@@ -82,20 +82,15 @@ public class DatasetService {
      * @param datasetId dataset id
      * @return filtered table
      */
-    public Table getRowsFiltered(@NotNull Long datasetId, @NotNull Long modelId, @NotNull String target, @NotNull float threshold, @NotNull RowFilter rowFilter) throws FileNotFoundException {
+    public Table getRowsFiltered(@NotNull Long datasetId, @NotNull Long modelId, @NotNull String target, @NotNull float minThreshold, @NotNull float maxThreshold) throws FileNotFoundException {
         Table table = getTableFromDatasetId(datasetId);
         Table probsTable = getProbsTableFromModelId(datasetId, modelId);
         table.addColumns(IntColumn.indexColumn("Index", table.rowCount(), 0));
         DoubleColumn probTarget = (DoubleColumn) probsTable.column("predictions_" + target);
-        Selection selection = null;
-        IntColumn labelColumn= (IntColumn) table.column(target.toLowerCase());
-        DoubleColumn finalColumn= labelColumn.multiply(probTarget);
-        if (rowFilter == RowFilter.GREATER) {
-            selection = finalColumn.isGreaterThan(threshold);
-        } else if (rowFilter == RowFilter.LOWER) {
-            selection = finalColumn.isLessThan(threshold);
-        }
-        Table filteredTable = selection == null ?  table: table.where(selection);
+        IntColumn labelColumn = (IntColumn) table.column(target.toLowerCase());
+        DoubleColumn finalColumn = labelColumn.multiply(probTarget);
+        Selection selection = finalColumn.isGreaterThan(minThreshold).and(finalColumn.isLessThan(maxThreshold));
+        Table filteredTable = selection == null ? table : table.where(selection);
         return filteredTable;
     }
 }
