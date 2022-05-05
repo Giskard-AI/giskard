@@ -17,6 +17,7 @@
           <v-icon>mdi-skip-next</v-icon>
         </v-btn>
         <span class='caption grey--text'>Entry #{{ rowNb }} / {{ totalRows }}</span>
+        <span style='margin-left: 15px' class='caption grey--text'>Row Index {{ originalData.Index }}</span>
       </v-toolbar>
     </v-row>
 
@@ -157,6 +158,7 @@ export default class InspectorWrapper extends Vue {
   private getCurrentRow(rowDetails, totalRows: number) {
     this.loadingData = true;
     this.inputData = rowDetails;
+    console.log(rowDetails.Index)
     this.originalData = { ...this.inputData }; // deep copy to avoid caching mechanisms
     this.dataErrorMsg = '';
     this.loadingData = false;
@@ -176,8 +178,12 @@ export default class InspectorWrapper extends Vue {
     return !this.shuffleMode && this.rowNb > 0;
   }
 
+  /**
+   * Resetting the row idx in the results and setting the min/max thresholds for the filtering
+   */
   @Watch('selectedFilter')
   updateThresholdsGivenFilters() {
+    this.rowNb=0;
     if (this.selectedFilter == RowFilter.ALL) {
       this.minThreshold = 0.;
       this.maxThreshold = 1.;
