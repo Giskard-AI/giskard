@@ -6,18 +6,24 @@
         <v-icon v-if='shuffleMode' color='primary'>mdi-shuffle-variant</v-icon>
         <v-icon v-else>mdi-shuffle-variant</v-icon>
       </v-btn>
-      <v-btn icon @click="previous" :disabled="!canPrevious()"><v-icon>mdi-skip-previous</v-icon></v-btn>
-      <v-btn icon @click="next"><v-icon>mdi-skip-next</v-icon></v-btn>
-      <span class="caption grey--text">Entry #{{rowNb}}</span>
+      <v-btn icon @click='previous' :disabled='!canPrevious()'>
+        <v-icon>mdi-skip-previous</v-icon>
+      </v-btn>
+      <v-btn icon @click='next'>
+        <v-icon>mdi-skip-next</v-icon>
+      </v-btn>
+      <span class='caption grey--text'>Entry #{{ rowNb }}</span>
     </v-toolbar>
 
     <v-select
-      :items="filterTypes"
-      label="Standard"
-      v-model="selectedFilter"
+      :items='filterTypes'
+      label='Filter'
+      v-model='selectedFilter'
     ></v-select>
 
-    <RowList class='px-0' :datasetId='datasetId' :model-id='modelId' :selectedFilter='selectedFilter' @currentRow='getCurrentRow'
+
+    <RowList ref='rowList' class='px-0' :datasetId='datasetId' :model-id='modelId' :selectedFilter='selectedFilter'
+             :currentRowIdx='rowNb' :min-threshold='minThreshold' :max-threshold='maxThreshold' @fetchedRow='getCurrentRow'
     />
 
     <Inspector class='px-0'
@@ -90,11 +96,12 @@ import PredictionExplanations from './PredictionExplanations.vue';
 import TextExplanation from './TextExplanation.vue';
 import { api } from '@/api';
 import { readToken } from '@/store/main/getters';
-import { IFeedbackCreate, RowDetails } from '@/interfaces';
+import { IFeedbackCreate } from '@/interfaces';
 import FeedbackPopover from '@/components/FeedbackPopover.vue';
 import Inspector from './Inspector.vue';
 import Mousetrap from 'mousetrap';
 import RowList from '@/views/main/project/RowList.vue';
+import { RowFilter } from '@/generated-sources';
 
 @Component({
   components: {
@@ -111,10 +118,9 @@ export default class InspectorWrapper extends Vue {
   @Prop({ required: true }) modelId!: number;
   @Prop({ required: true }) datasetId!: number;
   @Prop() targetFeature!: string;
-  filterTypes= ['GREATER', 'LOWER']
-  selectedFilter=this.filterTypes[0]
-
-  mouseTrap= new Mousetrap();
+  filterTypes = Object.keys(RowFilter);
+  selectedFilter = this.filterTypes[0];
+  mouseTrap = new Mousetrap();
   loadingData = false;
   inputData = {};
   originalData = {};
@@ -123,23 +129,25 @@ export default class InspectorWrapper extends Vue {
   dataErrorMsg = '';
 
   feedbackPopupToggle = false;
-  feedback = '';
+  feedback :string= '';
   feedbackChoice = null;
-  feedbackError = '';
-  feedbackSubmitted = false;
+  feedbackError :string= '';
+  feedbackSubmitted :boolean= false;
+  minThreshold :number= 0.;
+  maxThreshold :number= 1.;
+  totalRows=0;
 
   async mounted() {
-    //await this.fetchRowData(0);
   }
 
-  private getCurrentRow(rowDetails: RowDetails) {
-    console.log(rowDetails)
+  private getCurrentRow(rowDetails, totalRows:number) {
+    console.log(rowDetails);
     this.loadingData = true;
-    this.inputData = rowDetails.item;
+    this.inputData = rowDetails;
     this.originalData = { ...this.inputData }; // deep copy to avoid caching mechanisms
-    this.rowNb = rowDetails.index;
     this.dataErrorMsg = '';
     this.loadingData = false;
+    this.totalRows=totalRows
   }
 
   bindKeys() {
@@ -151,8 +159,25 @@ export default class InspectorWrapper extends Vue {
     this.mouseTrap.reset();
   }
 
-  public canPrevious(){ return !this.shuffleMode && this.rowNb> 0}
+  public canPrevious() {
+    return !this.shuffleMode && this.rowNb > 0;
+  }
 
+  @Watch("selectedFilter")
+  updateThresholdsGivenFilters(){
+    if (this.selectedFilter==RowFilter.ALL){
+      this.minThreshold=0.
+      this.maxThreshold=1.
+    }
+    else if (this.selectedFilter==RowFilter.CORRECT){
+      this.minThreshold=0.5 // TODO get respMetadata.classification_threshold
+      this.maxThreshold=1.
+    }
+    else if (this.selectedFilter==RowFilter.WRONG){
+      this.minThreshold=0. // TODO get respMetadata.classification_threshold
+      this.maxThreshold=0.5
+    }
+  }
 
   /**
    * Call on active tab
@@ -165,39 +190,18 @@ export default class InspectorWrapper extends Vue {
     this.resetKeys();
   }
 
-  public next() {
+  public async next() {
     this.clearFeedback();
-    //this.fetchRowData(this.rowNb + 1);
+    this.rowNb += 1;
   }
 
-  public previous() {
+  public async previous() {
     if (this.canPrevious()) {
       this.clearFeedback();
-      //this.fetchRowData(Math.max(0, this.rowNb - 1))
+      this.rowNb -= 1;
     }
   }
 
-  // @Watch("datasetId")
-  // async reload() {
-  //   await this.fetchRowData(0)
-  // }
-
-  // private async fetchRowData(rowId) {
-  //   try {
-  //     this.loadingData = true;
-  //     const resp = this.shuffleMode
-  //       ? await api.getDataRandom(readToken(this.$store), this.datasetId)
-  //       : await api.getDataByRowId(readToken(this.$store), this.datasetId, rowId);
-  //     this.inputData = resp.data;
-  //     this.originalData = { ...this.inputData }; // deep copy to avoid caching mechanisms
-  //     this.rowNb = resp.data.rowNb;
-  //     this.dataErrorMsg = '';
-  //   } catch (error) {
-  //     this.dataErrorMsg = error.response.data.detail;
-  //   } finally {
-  //     this.loadingData = false;
-  //   }
-  // }
 
   private resetInput() {
     this.inputData = { ...this.originalData };
