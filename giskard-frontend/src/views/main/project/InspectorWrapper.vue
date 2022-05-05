@@ -1,29 +1,43 @@
 <template>
   <v-container fluid>
-    <v-toolbar flat height='32' id='data-explorer-toolbar'>
-      <span class='subtitle-2 mr-2'>Dataset Explorer</span>
-      <v-btn icon @click='shuffleMode = !shuffleMode'>
-        <v-icon v-if='shuffleMode' color='primary'>mdi-shuffle-variant</v-icon>
-        <v-icon v-else>mdi-shuffle-variant</v-icon>
-      </v-btn>
-      <v-btn icon @click='previous' :disabled='!canPrevious()'>
-        <v-icon>mdi-skip-previous</v-icon>
-      </v-btn>
-      <v-btn icon @click='next'>
-        <v-icon>mdi-skip-next</v-icon>
-      </v-btn>
-      <span class='caption grey--text'>Entry #{{ rowNb }}</span>
-    </v-toolbar>
+    <v-row
+      no-gutters
+      style='height: 60px;'
+    >
+      <v-toolbar flat id='data-explorer-toolbar'>
+        <span class='subtitle-2 mr-2'>Dataset Explorer</span>
+        <v-btn icon @click='shuffleMode = !shuffleMode'>
+          <v-icon v-if='shuffleMode' color='primary'>mdi-shuffle-variant</v-icon>
+          <v-icon v-else>mdi-shuffle-variant</v-icon>
+        </v-btn>
+        <v-btn icon @click='previous' :disabled='!canPrevious()'>
+          <v-icon>mdi-skip-previous</v-icon>
+        </v-btn>
+        <v-btn icon @click='next'>
+          <v-icon>mdi-skip-next</v-icon>
+        </v-btn>
+        <span class='caption grey--text'>Entry #{{ rowNb }} / {{ totalRows }}</span>
+      </v-toolbar>
+    </v-row>
 
-    <v-select
-      :items='filterTypes'
-      label='Filter'
-      v-model='selectedFilter'
-    ></v-select>
+    <v-row
+      no-gutters
+      style='height: 70px;margin-left:15px'
+    >
+      <v-col>
+        <v-select
+          style='width: 200px'
+          :items='filterTypes'
+          label='Filter'
+          v-model='selectedFilter'
+        ></v-select>
+      </v-col>
+    </v-row>
 
 
     <RowList ref='rowList' class='px-0' :datasetId='datasetId' :model-id='modelId' :selectedFilter='selectedFilter'
-             :currentRowIdx='rowNb' :min-threshold='minThreshold' :max-threshold='maxThreshold' @fetchedRow='getCurrentRow'
+             :currentRowIdx='rowNb' :min-threshold='minThreshold' :max-threshold='maxThreshold'
+             @fetchedRow='getCurrentRow'
     />
 
     <Inspector class='px-0'
@@ -129,25 +143,25 @@ export default class InspectorWrapper extends Vue {
   dataErrorMsg = '';
 
   feedbackPopupToggle = false;
-  feedback :string= '';
+  feedback: string = '';
   feedbackChoice = null;
-  feedbackError :string= '';
-  feedbackSubmitted :boolean= false;
-  minThreshold :number= 0.;
-  maxThreshold :number= 1.;
-  totalRows=0;
+  feedbackError: string = '';
+  feedbackSubmitted: boolean = false;
+  minThreshold: number = 0.;
+  maxThreshold: number = 1.;
+  totalRows = 0;
 
   async mounted() {
   }
 
-  private getCurrentRow(rowDetails, totalRows:number) {
+  private getCurrentRow(rowDetails, totalRows: number) {
     console.log(rowDetails);
     this.loadingData = true;
     this.inputData = rowDetails;
     this.originalData = { ...this.inputData }; // deep copy to avoid caching mechanisms
     this.dataErrorMsg = '';
     this.loadingData = false;
-    this.totalRows=totalRows
+    this.totalRows = totalRows;
   }
 
   bindKeys() {
@@ -163,19 +177,17 @@ export default class InspectorWrapper extends Vue {
     return !this.shuffleMode && this.rowNb > 0;
   }
 
-  @Watch("selectedFilter")
-  updateThresholdsGivenFilters(){
-    if (this.selectedFilter==RowFilter.ALL){
-      this.minThreshold=0.
-      this.maxThreshold=1.
-    }
-    else if (this.selectedFilter==RowFilter.CORRECT){
-      this.minThreshold=0.5 // TODO get respMetadata.classification_threshold
-      this.maxThreshold=1.
-    }
-    else if (this.selectedFilter==RowFilter.WRONG){
-      this.minThreshold=0. // TODO get respMetadata.classification_threshold
-      this.maxThreshold=0.5
+  @Watch('selectedFilter')
+  updateThresholdsGivenFilters() {
+    if (this.selectedFilter == RowFilter.ALL) {
+      this.minThreshold = 0.;
+      this.maxThreshold = 1.;
+    } else if (this.selectedFilter == RowFilter.CORRECT) {
+      this.minThreshold = 0.5; // TODO get respMetadata.classification_threshold
+      this.maxThreshold = 1.;
+    } else if (this.selectedFilter == RowFilter.WRONG) {
+      this.minThreshold = 0.; // TODO get respMetadata.classification_threshold
+      this.maxThreshold = 0.5;
     }
   }
 
