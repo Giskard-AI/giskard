@@ -5,7 +5,6 @@ export const GENERATED_MAPPING = {
     'ai.giskard.web.dto.ml.ProjectDTO' : 'ProjectDTO',
     'ai.giskard.web.dto.ml.TestDTO' : 'TestDTO',
     'ai.giskard.web.dto.user.RoleDTO' : 'RoleDTO',
-    'ai.giskard.web.dto.ml.NewDTO' : 'NewDTO',
     'ai.giskard.web.dto.config.AppConfigDTO$AppInfoDTO' : 'AppConfigDTO.AppInfoDTO',
     'ai.giskard.web.dto.config.AppConfigDTO' : 'AppConfigDTO',
     'ai.giskard.web.rest.vm.TokenAndPasswordVM' : 'TokenAndPasswordVM',
@@ -38,7 +37,6 @@ export * from './ai/giskard/domain/ml/test-type';
 export * from './ai/giskard/web/dto/ml/project-dto';
 export * from './ai/giskard/web/dto/ml/test-dto';
 export * from './ai/giskard/web/dto/user/role-dto';
-export * from './ai/giskard/web/dto/ml/new-dto';
 export * from './ai/giskard/web/dto/config/app-config-dto';
 export * from './ai/giskard/web/rest/vm/token-and-password-vm';
 export * from './ai/giskard/web/dto/user/password-change-dto';
