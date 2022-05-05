@@ -71,12 +71,16 @@ public class DatasetsController {
      */
 
     @GetMapping("/dataset/{datasetId}/rowsFiltered")
-    public HashMap<String, String> getRowsFiltered(@PathVariable @NotNull Long datasetId,@RequestParam("modelId") @NotNull Long modelId, @RequestParam("minThreshold") @NotNull float minThreshold, @RequestParam("maxThreshold") @NotNull float maxThreshold, @RequestParam("target") @NotNull String target,  @RequestParam("minRange") @NotNull int rangeMin, @RequestParam("maxRange") @NotNull int rangeMax) throws IOException {
-        Table filteredTable = datasetService.getRowsFiltered(datasetId,modelId, target, minThreshold,maxThreshold);
-        Table filteredMTable=filteredTable.inRange(rangeMin, rangeMax);
+    public HashMap<String, String> getRowsFiltered(@PathVariable @NotNull Long datasetId, @RequestParam("modelId") @NotNull Long modelId, @RequestParam("minThreshold") @NotNull float minThreshold, @RequestParam("maxThreshold") @NotNull float maxThreshold, @RequestParam("target") @NotNull String target, @RequestParam("minRange") @NotNull int rangeMin, @RequestParam("maxRange") @NotNull int rangeMax) throws Exception {
+        Table filteredTable = datasetService.getRowsFiltered(datasetId, modelId, target, minThreshold, maxThreshold);
+        if (rangeMin >= rangeMax || rangeMin >= filteredTable.rowCount()) {
+            throw new Exception("range are not correct for the results");//TODO Precise exception
+        }
+        rangeMax = Math.min(rangeMax, filteredTable.rowCount());
+        Table filteredMTable = filteredTable.inRange(rangeMin, rangeMax);
         HashMap<String, String> map = new HashMap<>();
-        map.put("data",  filteredMTable.write().toString("json"));
-        map.put("rowNb",  ""+filteredTable.rowCount());
+        map.put("data", filteredMTable.write().toString("json"));
+        map.put("rowNb", "" + filteredTable.rowCount());
         return map;
     }
 

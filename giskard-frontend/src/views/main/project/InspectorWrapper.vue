@@ -155,7 +155,6 @@ export default class InspectorWrapper extends Vue {
   }
 
   private getCurrentRow(rowDetails, totalRows: number) {
-    console.log(rowDetails);
     this.loadingData = true;
     this.inputData = rowDetails;
     this.originalData = { ...this.inputData }; // deep copy to avoid caching mechanisms
