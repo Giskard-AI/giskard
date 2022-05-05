@@ -1,8 +1,4 @@
 <template>
-  <div>
-    <v-container fluid>
-    </v-container>
-  </div>
 </template>
 
 <script lang='ts'>
@@ -10,10 +6,9 @@ import { Component, Prop, Vue, Watch } from 'vue-property-decorator';
 import { api } from '@/api';
 import { readToken } from '@/store/main/getters';
 import { commitAddNotification } from '@/store/main/mutations';
-import { RowFilter } from '@/generated-sources';
 
 /**
- * TODO: This class should be on the wrapper
+ * TODO: This class should be on the wrapper, no template for the moment
  */
 @Component({
   components: {}
@@ -31,13 +26,11 @@ export default class RowList extends Vue {
   numberOfRows: number = 0;
   numberOfPages: number = 0;
   page: number = 0;
-  itemsPerPage = 5;
+  itemsPerPage = 200;
   prediction: string | number | undefined = '';
   loading = false;
   errorMsg: string = '';
   rowIdxInPage: number = 0;
-
-
 
   async activated() {
     await this.fetchRowAndEmit();
@@ -61,7 +54,7 @@ export default class RowList extends Vue {
   }
 
   /**
-   * Calling fetch rows if necessary
+   * Calling fetch rows if necessary, i.e. when start or end of the page
    * @param rowIdxInResults index of the row in the results
    */
   public async fetchRows(rowIdxInResults: number) {
@@ -82,6 +75,11 @@ export default class RowList extends Vue {
     return this.rows[this.rowIdxInPage];
   }
 
+  /**
+   * Requesting the filtered rows in a given range
+   * @param minRange
+   * @param maxRange
+   */
   public async fetchRowsByRange(minRange: number, maxRange: number) {
     try {
       const props = {
