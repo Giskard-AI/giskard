@@ -89,7 +89,7 @@ public class DatasetService {
         DoubleColumn probTarget = (DoubleColumn) probsTable.column("predictions_" + target);
         IntColumn labelColumn = (IntColumn) table.column(target.toLowerCase());
         DoubleColumn finalColumn = labelColumn.multiply(probTarget);
-        Selection selection = finalColumn.isGreaterThan(minThreshold).and(finalColumn.isLessThan(maxThreshold));
+        Selection selection = finalColumn.isGreaterThanOrEqualTo(minThreshold).and(finalColumn.isLessThanOrEqualTo(maxThreshold));
         Table filteredTable = selection == null ? table : table.where(selection);
         return filteredTable;
     }
