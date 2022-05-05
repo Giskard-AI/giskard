@@ -33,22 +33,25 @@ export default class RowList extends Vue {
   rowIdxInPage: number = 0;
 
   async activated() {
-    await this.fetchRowAndEmit();
+    await this.fetchRowAndEmit(true);
   }
 
   async mounted() {
-    await this.fetchRowAndEmit();
+    await this.fetchRowAndEmit(true);
   }
 
+  @Watch('currentRowIdx')
+  async reloadOnRowIdx() {
+    await this.fetchRowAndEmit(false);
+  }
   @Watch('datasetId')
   @Watch('selectedFilter')
-  @Watch('currentRowIdx')
-  async reload() {
-    await this.fetchRowAndEmit();
+  async reloadAlways() {
+    await this.fetchRowAndEmit(true);
   }
 
-  async fetchRowAndEmit() {
-    await this.fetchRows(this.currentRowIdx);
+  async fetchRowAndEmit(hasFilterChanged) {
+    await this.fetchRows(this.currentRowIdx, hasFilterChanged);
     const row = await this.getRow(this.currentRowIdx);
     this.$emit('fetchedRow', row, this.numberOfRows);
   }
@@ -57,10 +60,10 @@ export default class RowList extends Vue {
    * Calling fetch rows if necessary, i.e. when start or end of the page
    * @param rowIdxInResults index of the row in the results
    */
-  public async fetchRows(rowIdxInResults: number) {
+  public async fetchRows(rowIdxInResults: number, hasFilterChanged:boolean) {
     const remainder = rowIdxInResults % this.itemsPerPage;
     const newPage = Math.floor(rowIdxInResults % this.itemsPerPage);
-    if (remainder == 0) {
+    if (remainder == 0 || hasFilterChanged) {
       await this.fetchRowsByRange(newPage * this.itemsPerPage, (newPage + 1) * this.itemsPerPage);
     }
   }
