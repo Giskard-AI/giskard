@@ -109,8 +109,9 @@ public class UserService {
             newUser.setEmail(userDTO.getEmail().toLowerCase());
         }
         newUser.setActivated(true);
+        newUser.setEnabled(true);
         // new user gets registration key
-        newUser.setActivationKey(RandomUtil.generateActivationKey());
+        //newUser.setActivationKey(RandomUtil.generateActivationKey());
         Set<Role> authorities = new HashSet<>();
         roleRepository.findByName(AuthoritiesConstants.AICREATOR).ifPresent(authorities::add);
         newUser.setRoles(authorities);

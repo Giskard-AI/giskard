@@ -62,7 +62,7 @@ export default class AdminUsers extends Vue {
           commitAddNotification(this.$store, loadingNotification);
           const response = await api.inviteToSignup(readToken(this.$store), this.emailToInvite);
           commitRemoveNotification(this.$store, loadingNotification);
-          commitAddNotification(this.$store, { content: response.data.msg, color: 'success'});
+          commitAddNotification(this.$store, { content: 'User is invited', color: 'success'});
           this.emailToInvite = "";
       } catch (error) {
           commitRemoveNotification(this.$store, loadingNotification);

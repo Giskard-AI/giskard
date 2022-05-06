@@ -14,7 +14,7 @@ def _test_auc(german_credit_data, german_credit_model, threshold):
 
     assert results.element_count == 1000
     assert results.missing_count == 0
-    assert pytest.approx(results.metric, 0.001) == 0.715
+    assert pytest.approx(results.metric, 0.001) == 0.709761917591095
     return results.passed
 
 
@@ -34,13 +34,13 @@ def _test_f1(german_credit_data, german_credit_model, threshold):
 
     assert results.element_count == 1000
     assert results.missing_count == 0
-    assert pytest.approx(results.metric, 0.001) == 0.602
+    assert pytest.approx(results.metric, 0.001) == 0.2661668360233307
     return results.passed
 
 
 def test_f1(german_credit_data, german_credit_model):
-    assert _test_f1(german_credit_data, german_credit_model, 0.6)
-    assert not _test_f1(german_credit_data, german_credit_model, 0.7)
+    assert _test_f1(german_credit_data, german_credit_model, 0.2)
+    assert not _test_f1(german_credit_data, german_credit_model, 0.3)
 
 
 def _test_precision(german_credit_data, german_credit_model, threshold):
@@ -54,13 +54,13 @@ def _test_precision(german_credit_data, german_credit_model, threshold):
 
     assert results.element_count == 1000
     assert results.missing_count == 0
-    assert pytest.approx(results.metric, 0.001) == 0.690
+    assert pytest.approx(results.metric, 0.001) == 0.18513689935207367
     return results.passed
 
 
 def test_precision(german_credit_data, german_credit_model):
-    assert _test_precision(german_credit_data, german_credit_model, 0.6)
-    assert not _test_precision(german_credit_data, german_credit_model, 0.7)
+    assert _test_precision(german_credit_data, german_credit_model, 0.18)
+    assert not _test_precision(german_credit_data, german_credit_model, 0.19)
 
 
 def _test_recall(german_credit_data, german_credit_model, threshold):
@@ -74,13 +74,13 @@ def _test_recall(german_credit_data, german_credit_model, threshold):
 
     assert results.element_count == 1000
     assert results.missing_count == 0
-    assert pytest.approx(results.metric, 0.001) == 0.533
+    assert pytest.approx(results.metric, 0.001) == 0.47333332896232605
     return results.passed
 
 
 def test_recall(german_credit_data, german_credit_model):
-    assert _test_recall(german_credit_data, german_credit_model, 0.5)
-    assert not _test_recall(german_credit_data, german_credit_model, 0.6)
+    assert _test_recall(german_credit_data, german_credit_model, 0.4)
+    assert not _test_recall(german_credit_data, german_credit_model, 0.5)
 
 
 def _test_accuracy(german_credit_data, german_credit_model, threshold):
@@ -94,13 +94,13 @@ def _test_accuracy(german_credit_data, german_credit_model, threshold):
 
     assert results.element_count == 1000
     assert results.missing_count == 0
-    assert pytest.approx(results.metric, 0.001) == 0.788
+    assert pytest.approx(results.metric, 0.001) == 0.21699999272823334
     return results.passed
 
 
 def test_accuracy(german_credit_data, german_credit_model):
-    assert _test_accuracy(german_credit_data, german_credit_model, 0.7)
-    assert not _test_accuracy(german_credit_data, german_credit_model, 0.8)
+    assert _test_accuracy(german_credit_data, german_credit_model, 0.2)
+    assert not _test_accuracy(german_credit_data, german_credit_model, 0.3)
 
 
 def _test_neg_rmse(diabetes_dataset_with_target, linear_regression_diabetes, threshold):
@@ -179,13 +179,13 @@ def _test_diff_accuracy(german_credit_data, german_credit_model, threshold):
     test_execution = tests.tests_results[0]
     result = test_execution.result
     assert test_execution.name == 'test_diff_accuracy'
-    assert pytest.approx(result.metric, 0.001) == 0.0368
+    assert pytest.approx(result.metric, 0.001) == 0.12836022675037384
     return result.passed
 
 
 def test_diff_accuracy(german_credit_data, german_credit_model):
-    assert _test_diff_accuracy(german_credit_data, german_credit_model, 0.04)
-    assert not _test_diff_accuracy(german_credit_data, german_credit_model, 0.02)
+    assert _test_diff_accuracy(german_credit_data, german_credit_model, 0.2)
+    assert not _test_diff_accuracy(german_credit_data, german_credit_model, 0.1)
 
 
 def _test_diff_f1(german_credit_data, german_credit_model, threshold):
@@ -198,13 +198,13 @@ def _test_diff_f1(german_credit_data, german_credit_model, threshold):
         threshold=threshold,
         target='default'
     )
-    assert pytest.approx(result.metric, 0.001) == 0.14
+    assert pytest.approx(result.metric, 0.001) == 0.07218418270349503
     return result.passed
 
 
 def test_diff_f1(german_credit_data, german_credit_model):
-    assert _test_diff_f1(german_credit_data, german_credit_model, 0.15)
-    assert not _test_diff_f1(german_credit_data, german_credit_model, 0.13)
+    assert _test_diff_f1(german_credit_data, german_credit_model, 0.08)
+    assert not _test_diff_f1(german_credit_data, german_credit_model, 0.07)
 
 
 def _test_diff_recall(german_credit_data, german_credit_model, threshold):
@@ -217,13 +217,13 @@ def _test_diff_recall(german_credit_data, german_credit_model, threshold):
         threshold=threshold,
         target='default'
     )
-    assert pytest.approx(result.metric, 0.001) == 0.2624
+    assert pytest.approx(result.metric, 0.001) == 0.312826007604599
     return result.passed
 
 
 def test_diff_recall(german_credit_data, german_credit_model):
-    assert _test_diff_recall(german_credit_data, german_credit_model, 0.263)
-    assert not _test_diff_recall(german_credit_data, german_credit_model, 0.262)
+    assert _test_diff_recall(german_credit_data, german_credit_model, 0.4)
+    assert not _test_diff_recall(german_credit_data, german_credit_model, 0.3)
 
 
 def _test_diff_precision(german_credit_data, german_credit_model, threshold):
@@ -236,10 +236,10 @@ def _test_diff_precision(german_credit_data, german_credit_model, threshold):
         threshold=threshold,
         target='default'
     )
-    assert pytest.approx(result.metric, 0.001) == 0.00266
+    assert pytest.approx(result.metric, 0.001) == 0.053921569138765335
     return result.passed
 
 
 def test_diff_precision(german_credit_data, german_credit_model):
-    assert _test_diff_precision(german_credit_data, german_credit_model, 0.00267)
-    assert not _test_diff_precision(german_credit_data, german_credit_model, 0.00265)
+    assert _test_diff_precision(german_credit_data, german_credit_model, 0.06)
+    assert not _test_diff_precision(german_credit_data, german_credit_model, 0.05   )
