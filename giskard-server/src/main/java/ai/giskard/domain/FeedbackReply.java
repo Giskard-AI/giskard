@@ -7,7 +7,7 @@ import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 
-@Entity
+@Entity(name = "feedback_replies")
 public class FeedbackReply {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
