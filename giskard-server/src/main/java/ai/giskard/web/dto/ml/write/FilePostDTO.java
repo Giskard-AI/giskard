@@ -1,5 +1,6 @@
-package ai.giskard.web.dto.ml;
+package ai.giskard.web.dto.ml.write;
 
+import ai.giskard.web.dto.ml.ProjectDTO;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
@@ -7,15 +8,12 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.validation.constraints.NotNull;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.time.LocalDateTime;
 
 @Getter
 @Setter
 @NoArgsConstructor
-public abstract class FileDTO {
+public abstract class FilePostDTO {
     @JsonProperty("id")
     @NotNull
     protected Long id;
@@ -32,17 +30,5 @@ public abstract class FileDTO {
     protected LocalDateTime createdOn;
 
     protected String location;
-
-    public String getName() {
-        return name != null ? name : fileName;
-    }
-
-    public Long getSize() throws IOException {
-        return (location != null && Files.exists(Paths.get(location))) ? Files.size(Paths.get(location)) : 0L;
-    }
-
-    public Long getProjectId() {
-        return project == null ? null : project.getId();
-    }
 
 }
