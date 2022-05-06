@@ -68,7 +68,7 @@ public class User extends AbstractAuditingEntity implements Serializable {
     @Setter
     @Getter
     @NotNull
-    @Column(name="is_active",nullable = false)
+    @Column(name="is_active", nullable = false)
     private boolean activated = false;
 
     @Setter
