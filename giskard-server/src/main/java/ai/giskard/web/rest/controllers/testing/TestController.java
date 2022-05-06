@@ -1,16 +1,19 @@
 package ai.giskard.web.rest.controllers.testing;
 
+import ai.giskard.domain.ml.CodeTestCollection;
 import ai.giskard.domain.ml.testing.Test;
 import ai.giskard.domain.ml.testing.TestExecution;
 import ai.giskard.repository.ml.TestExecutionRepository;
 import ai.giskard.repository.ml.TestRepository;
 import ai.giskard.repository.ml.TestSuiteRepository;
+import ai.giskard.service.CodeTestTemplateService;
 import ai.giskard.service.TestService;
 import ai.giskard.web.dto.ml.TestDTO;
 import ai.giskard.web.dto.ml.TestExecutionResultDTO;
 import ai.giskard.web.dto.ml.TestSuiteDTO;
 import ai.giskard.web.rest.errors.Entity;
 import ai.giskard.web.rest.errors.EntityNotFoundException;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -23,19 +26,13 @@ import static ai.giskard.web.rest.errors.Entity.TEST_SUITE;
 
 @RestController
 @RequestMapping("/api/v2/testing/tests")
+@RequiredArgsConstructor
 public class TestController {
     private final TestRepository testRepository;
     private final TestService testService;
     private final TestSuiteRepository testSuiteRepository;
     private final TestExecutionRepository testExecutionRepository;
-
-    public TestController(TestService testService, TestSuiteRepository testSuiteRepository,
-                          TestRepository testRepository, TestExecutionRepository testExecutionRepository) {
-        this.testService = testService;
-        this.testSuiteRepository = testSuiteRepository;
-        this.testRepository = testRepository;
-        this.testExecutionRepository = testExecutionRepository;
-    }
+    private final CodeTestTemplateService codeTestTemplateService;
 
     @GetMapping("")
     public List<TestDTO> getTests(
@@ -97,4 +94,10 @@ public class TestController {
     ) {
         return testService.saveTest(dto);
     }
+
+    @GetMapping("/code-test-templates")
+    public List<CodeTestCollection> getCodeTestTemplates() {
+        return codeTestTemplateService.getTemplates();
+    }
+
 }
