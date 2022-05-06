@@ -19,7 +19,7 @@ import {
   JWTToken,
   PasswordResetRequest,
   TokenAndPasswordVM,
-  UpdateMeDTO, UserDTO, ManagedUserVM
+  UpdateMeDTO, UserDTO, ManagedUserVM, CodeTestCollection
 } from '@/generated-sources';
 import AdminUserDTOWithPassword = AdminUserDTO.AdminUserDTOWithPassword;
 
@@ -215,6 +215,9 @@ export const api = {
   },
   async getTestDetails(testId: number) {
     return await axios.get(`${apiUrlJava}/api/v2/testing/tests/${testId}`);
+  },
+  async getCodeTestTemplates() {
+    return await axios.get<CodeTestCollection[]>(`${apiUrlJava}/api/v2/testing/tests/code-test-templates`);
   },
   async deleteTest(testId: number) {
     return await axios.delete<TestSuiteDTO>(`${apiUrlJava}/api/v2/testing/tests/${testId}`);

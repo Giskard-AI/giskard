@@ -17,6 +17,8 @@
     "ai.giskard.web.dto.user.AdminUserDTO": "AdminUserDTO",
     "ai.giskard.domain.ml.CodeLanguage": "CodeLanguage",
     "ai.giskard.web.dto.ml.CodeBasedTestPresetDTO": "CodeBasedTestPresetDTO",
+    "ai.giskard.domain.ml.CodeTestCollection": "CodeTestCollection",
+    "ai.giskard.domain.ml.CodeTestTemplate": "CodeTestTemplate",
     "ai.giskard.web.dto.ml.TestDTO": "TestDTO",
     "ai.giskard.web.dto.ml.TestExecutionStatusDTO": "TestExecutionStatusDTO",
     "ai.giskard.web.dto.JWTToken": "JWTToken",
