@@ -59,7 +59,7 @@ public class InitService {
     /**
      * Initializing first authorities, mock users, and mock projects
      */
-    @EventListener(ApplicationReadyEvent.class)
+    //@EventListener(ApplicationReadyEvent.class)
     public void init() {
         initAuthorities();
         initUsers();
