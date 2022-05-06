@@ -94,7 +94,10 @@ export const api = {
     return axios.get(`${apiUrlJava}/api/v2/signuplink`, authHeaders(token));
   },
   async inviteToSignup(token: string, email: string) {
-    return axios.post(`${apiUrlJava}/api/v2/users/invite`, { email }, authHeaders(token));
+    const params = new URLSearchParams();
+    params.append('email', email);
+
+    return axios.post(`${apiUrlJava}/api/v2/users/invite`, params, authHeaders(token));
   },
   async getCoworkersMinimal(token: string) {
     return axios.get<UserDTO[]>(`${apiUrlJava}/api/v2/users/coworkers`, authHeaders(token));
