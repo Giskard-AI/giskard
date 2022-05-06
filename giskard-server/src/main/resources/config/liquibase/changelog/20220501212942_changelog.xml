@@ -17,13 +17,6 @@
             </column>
         </addColumn>
     </changeSet>
-    <changeSet author="andreyavtomonov (generated)" id="1651515188887-22">
-        <addColumn tableName="giskard_users">
-            <column name="activated" type="boolean" defaultValue="true">
-                <constraints nullable="false"/>
-            </column>
-        </addColumn>
-    </changeSet>
     <changeSet id="insert-admin-role" author="andreyavtomonov">
         <insert tableName="giskard_user_role">
             <column name="role_name" value="ROLE_ADMIN"/>

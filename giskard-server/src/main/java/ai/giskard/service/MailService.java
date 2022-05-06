@@ -53,7 +53,7 @@ public class MailService {
         this.templateEngine = templateEngine;
     }
 
-    @Async
+    //@Async
     public void sendEmail(String to, String subject, String content, boolean isMultipart, boolean isHtml) {
         log.debug(
             "Send email[multipart '{}' and html '{}'] to '{}' with subject '{}' and content={}",
@@ -93,18 +93,18 @@ public class MailService {
         sendEmail(user.getEmail(), subject, content, false, true);
     }
 
-    @Async
-    public void sendUserInvitationEmail(String currentEmail, String email, String inviteLink, String projectName) {
+    //@Async
+    public void sendUserSignupInvitationEmail(String currentEmail, String email, String inviteLink) {
         log.debug("Sending user invitation email to '{}'", email);
         Context context = new Context();
-        context.setVariable("projectName", projectName);
+        //context.setVariable("projectName", projectName);
         context.setVariable("email", email);
         context.setVariable("inviter", currentEmail);
         context.setVariable("inviteLink", inviteLink);
         context.setVariable(BASE_URL, jHipsterProperties.getMail().getBaseUrl());
 
         String content = templateEngine.process("mail/inviteUser", context);
-        sendEmail(email, "Giskard invitation: " + projectName, content, false, true);
+        sendEmail(email, "Giskard invitation", content, false, true);
     }
 
     @Async
