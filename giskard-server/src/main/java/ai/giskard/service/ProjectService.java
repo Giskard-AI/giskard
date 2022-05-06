@@ -74,9 +74,8 @@ public class ProjectService {
      * @param id id of the project to delete
      * @return boolean success
      */
-    public boolean delete(Long id) {
+    public void delete(Long id) {
         projectRepository.deleteById(id);
-        return true;
     }
 
     /**
