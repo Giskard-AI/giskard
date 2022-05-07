@@ -29,7 +29,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @IntegrationTest
 @WithMockUser(username = "aitester", authorities = AuthoritiesConstants.AITESTER)
-class AITesterProjectResourceIT extends AICreatorProjectResourceIT {
+class AITesterProjectControllerIT extends AICreatorProjectControllerIT {
 
     @Autowired
     private ProjectRepository projectRepository;
