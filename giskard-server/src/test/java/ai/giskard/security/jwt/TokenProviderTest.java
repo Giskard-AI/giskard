@@ -3,6 +3,7 @@ package ai.giskard.security.jwt;
 import ai.giskard.config.ApplicationProperties;
 import ai.giskard.management.SecurityMetersService;
 import ai.giskard.security.AuthoritiesConstants;
+import ai.giskard.security.GiskardUser;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtParser;
 import io.jsonwebtoken.Jwts;
@@ -26,6 +27,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -146,7 +148,13 @@ class TokenProviderTest {
     private Authentication createAuthentication() {
         Collection<GrantedAuthority> authorities = new ArrayList<>();
         authorities.add(new SimpleGrantedAuthority(AuthoritiesConstants.AITESTER));
-        return new UsernamePasswordAuthenticationToken("anonymous", "anonymous", authorities);
+        GiskardUser giskardUser = new GiskardUser(
+            1L, "anonymous", "",
+            Collections.singletonList(new SimpleGrantedAuthority(AuthoritiesConstants.AICREATOR)));
+        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+            giskardUser, "anonymous", giskardUser.getAuthorities()
+        );
+        return authentication;
     }
 
     private String createUnsupportedToken() {
