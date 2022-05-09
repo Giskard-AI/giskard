@@ -53,7 +53,7 @@ ai-inspector = "^0.1.2"
 #dask = "^2022.1.0"
 
 [tool.poetry.dev-dependencies]
-mypy = "^0.910"
+mypy = "^0.950"
 black = "^21.12b0"
 isort = "^5.10.1"
 autoflake = "^1.4"
