@@ -8,7 +8,8 @@ public enum Entity {
     TEST_SUITE("Test suite"),
     TEST("Test"),
     USER("User"),
-    ROLE("Role");
+    ROLE("Role"),
+    FEEDBACK("Feedback");
 
     @Getter
     private final String name;

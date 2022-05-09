@@ -118,7 +118,7 @@ public class ProjectService {
         String username = SecurityUtils.getCurrentAuthenticatedUserLogin().toLowerCase();
         User user = userRepository.findOneByLogin(username).orElseThrow(() -> new NotInDatabaseException(Entity.USER, username));
         List<Project> projects;
-        if (SecurityUtils.isAdmin()) {
+        if (SecurityUtils.isCurrentUserAdmin()) {
             projects = projectRepository.findAll();
         } else {
             projects = projectRepository.getProjectsByOwnerOrGuestsContains(user, user);

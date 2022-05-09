@@ -10,64 +10,70 @@ import lombok.Setter;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
 import org.hibernate.annotations.TypeDefs;
+import org.springframework.data.annotation.CreatedDate;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.HashSet;
 import java.util.Set;
 
-@Entity(name="feedbacks")
+@Getter
+@Entity(name = "feedbacks")
 @TypeDefs({
     @TypeDef(name = "json", typeClass = JsonStringType.class),
     @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class)
 })
 public class Feedback {
-    @Getter
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
-    @Getter
     @Setter
     @ManyToOne
     private Project project;
 
-    @Getter
     @Setter
     @ManyToOne
     private ProjectModel model;
 
-    @Getter
     @Setter
     @ManyToOne
     private Dataset dataset;
 
-    @Getter
     @Setter
     @ManyToOne
     private User user;
 
-    @Getter
     @Setter
     @OneToMany(mappedBy = "feedback", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JsonIgnore
     private Set<FeedbackReply> feedbackReplies = new HashSet<>();
 
-
+    @Setter
     private String targetFeature;
 
-    private LocalDateTime createdOn;
+    @CreatedDate
+    @Column(name = "created_on", updatable = false)
+    private Instant createdOn = Instant.now();
+
+    @Setter
     @NotNull
     private String feedbackType;
+    @Setter
     private String featureName;
+    @Setter
     private String featureValue;
+    @Setter
     private String feedbackChoice;
+    @Setter
     private String feedbackMessage;
+    @Setter
     @NotNull
     @Type(type = "jsonb")
     @Column(columnDefinition = "jsonb")
     private String userData;
+    @Setter
     @NotNull
     @Type(type = "jsonb")
     @Column(columnDefinition = "jsonb")

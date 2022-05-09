@@ -2,12 +2,12 @@
 <div>
   <div>
     <span class="subtitle-2">{{isCurrentUser? 'me' : (author.displayName || author.user_id)}}</span>
-    <span class="caption font-weight-light mx-2">{{new Date(created_on).toLocaleString()}}</span>
+    <span class="caption font-weight-light mx-2">{{new Date(createdOn).toLocaleString()}}</span>
   </div>
   <div style="white-space: break-spaces">{{content}}</div>
   <div v-if="replies">
     <div v-for="r in replies" :key="r.id" class="indented my-1">
-      <message-reply :author="r.user" :created_on="r.created_on" :content="r.content" ></message-reply>
+      <message-reply :author="r.user" :createdOn="r.createdOn" :content="r.content" ></message-reply>
     </div>
   </div>
   <div v-if="repliable" class="my-1" :class="{'indented': replies && replies.length}">
@@ -39,7 +39,7 @@ export default {
   name: 'message-reply',
   props: {
     author: {type: Object, required: true},
-    created_on: {type: String, required: true},
+    createdOn: {type: String, required: true},
     content: {type: String, required: true},
     repliable: {type: Boolean, default: false},
     hideableBox: {type: Boolean, default: true},
@@ -53,7 +53,7 @@ export default {
   },
   computed: {
     isCurrentUser: function() {
-      return readUserProfile(this.$store).user_id == this.author.user_id
+      return readUserProfile(this.$store).user_id === this.author.user_id
     },
     openReplyBox: function() {
       return !this.hideableBox || this.replyBoxToggle
