@@ -8,6 +8,7 @@ import ai.giskard.repository.ml.TestRepository;
 import ai.giskard.repository.ml.TestSuiteRepository;
 import ai.giskard.service.CodeTestTemplateService;
 import ai.giskard.service.TestService;
+import ai.giskard.web.dto.mapper.GiskardMapper;
 import ai.giskard.web.dto.ml.TestDTO;
 import ai.giskard.web.dto.ml.TestExecutionResultDTO;
 import ai.giskard.web.dto.ml.TestSuiteDTO;
@@ -33,6 +34,7 @@ public class TestController {
     private final TestSuiteRepository testSuiteRepository;
     private final TestExecutionRepository testExecutionRepository;
     private final CodeTestTemplateService codeTestTemplateService;
+    private final GiskardMapper giskardMapper;
 
     @GetMapping("")
     public List<TestDTO> getTests(
@@ -65,7 +67,7 @@ public class TestController {
     public TestSuiteDTO deleteTest(
         @PathVariable() Long testId
     ) {
-        return new TestSuiteDTO(testService.deleteTest(testId));
+        return giskardMapper.testSuiteToTestSuiteDTO(testService.deleteTest(testId));
     }
 
     @PostMapping("")
