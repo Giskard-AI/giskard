@@ -11,10 +11,10 @@ from app.schemas.project_file import ProjectFileCreateSchema, InspectionCreateSc
 
 class CRUDInspection(CRUDBase[Inspection, InspectionCreateSchema, InspectionCreateSchema]):
     def create(
-        self, db: Session, obj_in: InspectionCreateSchema,
+        self, db: Session, obj_in: InspectionCreateSchema,model_id, dataset_id,
     ) -> Inspection:
         obj_in_data = jsonable_encoder(obj_in)
-        db_obj = self.model(**obj_in_data)
+        db_obj = self.model(**obj_in_data,model_id=model_id, dataset_id=dataset_id)
         db.add(db_obj)
         db.commit()
         db.refresh(db_obj)
