@@ -1,11 +1,12 @@
-package ai.giskard.domain.ml;
+package ai.giskard.domain.ml.table;
 
 import com.dataiku.j2ts.annotations.UIModel;
 
 @UIModel
-public enum RowFilter {
+public enum RowFilterType {
     ALL,
     WRONG,
     CORRECT,
+    BORDERLINE,
     CUSTOM
 }
