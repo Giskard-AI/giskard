@@ -2,31 +2,33 @@ package ai.giskard.domain;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.data.annotation.CreatedDate;
 
 import javax.persistence.*;
-import javax.validation.constraints.NotNull;
-import java.time.LocalDateTime;
+import java.time.Instant;
 
+@Getter
 @Entity(name = "feedback_replies")
 public class FeedbackReply {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
-
-    @Getter
     @Setter
     @ManyToOne
     private Feedback feedback;
 
-    @Getter
     @Setter
     @ManyToOne
     private User user;
 
-    @NotNull
-    private int replyToReply;
+    @Setter
+    private Long replyToReply;
+    @Setter
     private String content;
-    private LocalDateTime createdOn;
+
+    @CreatedDate
+    @Column(name = "created_on", updatable = false)
+    private Instant createdOn = Instant.now();
 
 }

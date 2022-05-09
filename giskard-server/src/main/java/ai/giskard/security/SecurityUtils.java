@@ -29,6 +29,11 @@ public final class SecurityUtils {
         return Optional.ofNullable(extractPrincipal(securityContext.getAuthentication()));
     }
 
+    public static Optional<Long> getCurrentUserId() {
+        SecurityContext securityContext = SecurityContextHolder.getContext();
+        return Optional.ofNullable(extractUserId(securityContext.getAuthentication()));
+    }
+
     /**
      * Get the login of the current user.
      * If the user is not authenticated the method throws NoSuchElementException
@@ -37,6 +42,10 @@ public final class SecurityUtils {
      */
     public static String getCurrentAuthenticatedUserLogin() {
         return getCurrentUserLogin()
+            .orElseThrow(() -> new AccountController.AccountResourceException("Current user login not found"));
+    }
+    public static Long getCurrentAuthenticatedUserId() {
+        return getCurrentUserId()
             .orElseThrow(() -> new AccountController.AccountResourceException("Current user login not found"));
     }
 
@@ -48,6 +57,15 @@ public final class SecurityUtils {
             return springSecurityUser.getUsername();
         } else if (authentication.getPrincipal() instanceof String) {
             return (String) authentication.getPrincipal();
+        }
+        return null;
+    }
+    private static Long extractUserId(Authentication authentication) {
+        if (authentication == null) {
+            return null;
+        } else if (authentication.getPrincipal() instanceof GiskardUser) {
+            GiskardUser springSecurityUser = (GiskardUser) authentication.getPrincipal();
+            return springSecurityUser.getId();
         }
         return null;
     }
@@ -113,7 +131,7 @@ public final class SecurityUtils {
      *
      * @return true if the current user has the admin authority, false otherwise.
      */
-    public static boolean isAdmin() {
+    public static boolean isCurrentUserAdmin() {
         return hasCurrentUserAnyOfAuthorities(AuthoritiesConstants.ADMIN);
     }
 

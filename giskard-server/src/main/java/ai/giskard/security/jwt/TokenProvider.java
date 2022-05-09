@@ -2,6 +2,7 @@ package ai.giskard.security.jwt;
 
 import ai.giskard.config.ApplicationProperties;
 import ai.giskard.management.SecurityMetersService;
+import ai.giskard.security.GiskardUser;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
@@ -28,6 +29,7 @@ public class TokenProvider {
     private final Logger log = LoggerFactory.getLogger(TokenProvider.class);
 
     private static final String AUTHORITIES_KEY = "auth";
+    private static final String ID = "id";
     private static final String TOKEN_TYPE_KEY = "token_type";
 
     private static final String INVALID_JWT_TOKEN = "Invalid JWT token.";
@@ -84,6 +86,7 @@ public class TokenProvider {
             .builder()
             .setSubject(authentication.getName())
             .claim(AUTHORITIES_KEY, authorities)
+            .claim(ID, ((GiskardUser) authentication.getPrincipal()).getId())
             .claim(TOKEN_TYPE_KEY, JWTTokenType.UI)
             .signWith(key, SignatureAlgorithm.HS512)
             .setExpiration(validity)
@@ -122,7 +125,7 @@ public class TokenProvider {
             .map(SimpleGrantedAuthority::new)
             .collect(Collectors.toList());
 
-        User principal = new User(claims.getSubject(), "", authorities);
+        GiskardUser principal = new GiskardUser(claims.get(ID, Long.class), claims.getSubject(), "", authorities);
 
         return new UsernamePasswordAuthenticationToken(principal, token, authorities);
     }
@@ -130,6 +133,7 @@ public class TokenProvider {
     public boolean validateToken(String authToken) {
         return validateToken(authToken, null);
     }
+
     public boolean validateToken(String authToken, JWTTokenType tokenType) {
         try {
             Jws<Claims> claims = jwtParser.parseClaimsJws(authToken);

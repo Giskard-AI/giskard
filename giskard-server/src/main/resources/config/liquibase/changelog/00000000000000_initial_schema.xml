@@ -166,7 +166,7 @@
             <column name="feedback_id" type="INTEGER">
                 <constraints nullable="false"/>
             </column>
-            <column name="reply_to_reply" type="INTEGER"/>
+            <column name="reply_to_reply" type="bigint"/>
             <column name="user_id" type="INTEGER">
                 <constraints nullable="false"/>
             </column>
