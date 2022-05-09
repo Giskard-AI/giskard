@@ -155,8 +155,8 @@ export const api = {
                 "rangeMin": rangeMin, "rangeMax": rangeMax
             }});
     },
-    async getDataFilteredByRange(token,datasetId,  props) {
-        return axios.get(`${apiUrlJava}/api/v2/dataset/${datasetId}/rowsFiltered`,{ ...authHeaders(token),  params:props});
+    async getDataFilteredByRange(token,datasetId,  props, filter) {
+        return axios.post(`${apiUrlJava}/api/v2/dataset/${datasetId}/rowsFiltered`,filter,{ ...authHeaders(token),  params:props});
             },
     async getDatasetDetails(token: string, datasetId: number) {
         return axios.get(`${apiUrlJava}/api/v2/dataset/${datasetId}/details`, authHeaders(token));

@@ -1,6 +1,6 @@
 package ai.giskard.web.rest.controllers;
 
-import ai.giskard.domain.ml.RowFilter;
+import ai.giskard.domain.ml.table.Filter;
 import ai.giskard.repository.ml.DatasetRepository;
 import ai.giskard.service.DatasetService;
 import ai.giskard.web.dto.mapper.GiskardMapper;
@@ -65,14 +65,13 @@ public class DatasetsController {
 
     /**
      * Retrieve the row specified by the given index on the dataset
-     *
+     * TODO Replace with spring pagination
      * @param datasetId id of the dataset
      * @return List of datasets
      */
-
-    @GetMapping("/dataset/{datasetId}/rowsFiltered")
-    public HashMap<String, String> getRowsFiltered(@PathVariable @NotNull Long datasetId, @RequestParam("modelId") @NotNull Long modelId, @RequestParam("minThreshold") @NotNull float minThreshold, @RequestParam("maxThreshold") @NotNull float maxThreshold, @RequestParam("target") @NotNull String target, @RequestParam("minRange") @NotNull int rangeMin, @RequestParam("maxRange") @NotNull int rangeMax) throws Exception {
-        Table filteredTable = datasetService.getRowsFiltered(datasetId, modelId, target, minThreshold, maxThreshold);
+    @PostMapping("/dataset/{datasetId}/rowsFiltered")
+    public HashMap<String, String> getRowsFiltered(@PathVariable @NotNull Long datasetId, @RequestParam("modelId") @NotNull Long modelId, @RequestBody Filter filter, @RequestParam("minRange") @NotNull int rangeMin, @RequestParam("maxRange") @NotNull int rangeMax) throws Exception {
+        Table filteredTable = datasetService.getRowsFiltered(datasetId, modelId, filter);
         if (rangeMin >= rangeMax || rangeMin >= filteredTable.rowCount()) {
             throw new Exception("range are not correct for the results");//TODO Precise exception
         }

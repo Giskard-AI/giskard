@@ -2,6 +2,7 @@ export const GENERATED_MAPPING = {
     'ai.giskard.web.dto.ml.SingleTestResultDTO' : 'SingleTestResultDTO',
     'ai.giskard.domain.ml.TestResult' : 'TestResult',
     'ai.giskard.domain.ml.TestType' : 'TestType',
+    'ai.giskard.domain.ml.table.RowFilterType' : 'RowFilterType',
     'ai.giskard.web.dto.ml.ProjectDTO' : 'ProjectDTO',
     'ai.giskard.web.dto.ml.TestDTO' : 'TestDTO',
     'ai.giskard.web.dto.user.RoleDTO' : 'RoleDTO',
@@ -16,7 +17,6 @@ export const GENERATED_MAPPING = {
     'ai.giskard.web.dto.JWTToken' : 'JWTToken',
     'ai.giskard.web.dto.ml.ModelDTO' : 'ModelDTO',
     'ai.giskard.web.dto.ml.ProjectPostDTO' : 'ProjectPostDTO',
-    'ai.giskard.domain.ml.RowFilter' : 'RowFilter',
     'ai.giskard.web.dto.user.AdminUserDTO$AdminUserDTOWithPassword' : 'AdminUserDTO.AdminUserDTOWithPassword',
     'ai.giskard.web.dto.user.AdminUserDTO' : 'AdminUserDTO',
     'ai.giskard.web.dto.ml.DatasetDTO' : 'DatasetDTO',
@@ -28,12 +28,15 @@ export const GENERATED_MAPPING = {
     'ai.giskard.web.dto.ml.TestSuiteDTO' : 'TestSuiteDTO',
     'ai.giskard.web.dto.ml.TestExecutionResultDTO' : 'TestExecutionResultDTO',
     'ai.giskard.web.dto.ml.TestEditorConfigDTO' : 'TestEditorConfigDTO',
+    'ai.giskard.domain.ml.table.Filter' : 'Filter',
+    'ai.giskard.domain.ml.PredictionType' : 'PredictionType',
     'ai.giskard.web.dto.PasswordResetRequest' : 'PasswordResetRequest'
 
 };
 export * from './ai/giskard/web/dto/ml/single-test-result-dto';
 export * from './ai/giskard/domain/ml/test-result';
 export * from './ai/giskard/domain/ml/test-type';
+export * from './ai/giskard/domain/ml/table/row-filter-type';
 export * from './ai/giskard/web/dto/ml/project-dto';
 export * from './ai/giskard/web/dto/ml/test-dto';
 export * from './ai/giskard/web/dto/user/role-dto';
@@ -47,7 +50,6 @@ export * from './ai/giskard/web/dto/user/user-dto';
 export * from './ai/giskard/web/dto/jwttoken';
 export * from './ai/giskard/web/dto/ml/model-dto';
 export * from './ai/giskard/web/dto/ml/project-post-dto';
-export * from './ai/giskard/domain/ml/row-filter';
 export * from './ai/giskard/web/dto/user/admin-user-dto';
 export * from './ai/giskard/web/dto/ml/dataset-dto';
 export * from './ai/giskard/web/rest/vm/managed-user-vm';
@@ -58,4 +60,6 @@ export * from './ai/giskard/web/dto/ml/file-dto';
 export * from './ai/giskard/web/dto/ml/test-suite-dto';
 export * from './ai/giskard/web/dto/ml/test-execution-result-dto';
 export * from './ai/giskard/web/dto/ml/test-editor-config-dto';
+export * from './ai/giskard/domain/ml/table/filter';
+export * from './ai/giskard/domain/ml/prediction-type';
 export * from './ai/giskard/web/dto/password-reset-request';
