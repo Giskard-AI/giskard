@@ -33,6 +33,7 @@
           v-model='selectedFilter'
         ></v-select>
       </v-col>
+
     </v-row>
 
 
@@ -116,7 +117,7 @@ import FeedbackPopover from '@/components/FeedbackPopover.vue';
 import Inspector from './Inspector.vue';
 import Mousetrap from 'mousetrap';
 import RowList from '@/views/main/project/RowList.vue';
-import { RowFilter } from '@/generated-sources';
+import { RowFilterType } from '@/generated-sources';
 
 @Component({
   components: {
@@ -133,7 +134,7 @@ export default class InspectorWrapper extends Vue {
   @Prop({ required: true }) modelId!: number;
   @Prop({ required: true }) datasetId!: number;
   @Prop() targetFeature!: string;
-  filterTypes = Object.keys(RowFilter);
+  filterTypes = Object.keys(RowFilterType);
   selectedFilter = this.filterTypes[0];
   mouseTrap = new Mousetrap();
   loadingData = false;
@@ -184,13 +185,13 @@ export default class InspectorWrapper extends Vue {
   @Watch('selectedFilter')
   updateThresholdsGivenFilters() {
     this.rowNb=0;
-    if (this.selectedFilter == RowFilter.ALL) {
+    if (this.selectedFilter == RowFilterType.ALL) {
       this.minThreshold = 0.;
       this.maxThreshold = 1.;
-    } else if (this.selectedFilter == RowFilter.CORRECT) {
+    } else if (this.selectedFilter == RowFilterType.CORRECT) {
       this.minThreshold = 0.5; // TODO get respMetadata.classification_threshold
       this.maxThreshold = 1.;
-    } else if (this.selectedFilter == RowFilter.WRONG) {
+    } else if (this.selectedFilter == RowFilterType.WRONG) {
       this.minThreshold = 0.; // TODO get respMetadata.classification_threshold
       this.maxThreshold = 0.5;
     }

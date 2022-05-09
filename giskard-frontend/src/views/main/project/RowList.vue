@@ -44,6 +44,7 @@ export default class RowList extends Vue {
   async reloadOnRowIdx() {
     await this.fetchRowAndEmit(false);
   }
+
   @Watch('datasetId')
   @Watch('selectedFilter')
   async reloadAlways() {
@@ -60,7 +61,7 @@ export default class RowList extends Vue {
    * Calling fetch rows if necessary, i.e. when start or end of the page
    * @param rowIdxInResults index of the row in the results
    */
-  public async fetchRows(rowIdxInResults: number, hasFilterChanged:boolean) {
+  public async fetchRows(rowIdxInResults: number, hasFilterChanged: boolean) {
     const remainder = rowIdxInResults % this.itemsPerPage;
     const newPage = Math.floor(rowIdxInResults % this.itemsPerPage);
     if (remainder == 0 || hasFilterChanged) {
@@ -88,12 +89,15 @@ export default class RowList extends Vue {
       const props = {
         'modelId': this.modelId,
         'minRange': minRange,
-        'maxRange': maxRange,
+        'maxRange': maxRange
+      };
+      const filter = {
         'minThreshold': this.minThreshold,
         'maxThreshold': this.maxThreshold,
         'target': 'Default',
+        'rowFilter': this.selectedFilter
       };
-      const response = await api.getDataFilteredByRange(readToken(this.$store),this.datasetId, props);
+      const response = await api.getDataFilteredByRange(readToken(this.$store), this.datasetId, props, filter);
       this.rows = eval(response.data.data); // TODO send directly json with page from java
       this.numberOfRows = response.data.rowNb;
     } catch (error) {
