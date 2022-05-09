@@ -5,18 +5,33 @@ import ai.giskard.domain.Role;
 import ai.giskard.domain.ml.Dataset;
 import ai.giskard.domain.ml.ProjectModel;
 import ai.giskard.domain.ml.TestSuite;
+import ai.giskard.repository.ml.DatasetRepository;
+import ai.giskard.repository.ml.ModelRepository;
 import ai.giskard.web.dto.ml.*;
-import org.mapstruct.BeanMapping;
-import org.mapstruct.Mapper;
-import org.mapstruct.MappingTarget;
-import org.mapstruct.NullValuePropertyMappingStrategy;
+import org.mapstruct.*;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
-@Mapper(componentModel = "spring",
-    uses = {RoleMapper.class, RoleDTOMapper.class})
+@Mapper(componentModel = "spring", uses = {DatasetRepository.class, ModelRepository.class})
 public interface GiskardMapper {
+    default Set<String> roleNames(Set<Role> value) {
+        return value.stream().map(Role::getName).collect(Collectors.toSet());
+    }
+
+    default Set<Role> map(Set<String> value) {
+        if (value == null) {
+            return Collections.emptySet();
+        }
+        return value.stream().map(roleName -> {
+            Role role = new Role();
+            role.setName(roleName);
+            return role;
+        }).collect(Collectors.toSet());
+    }
+
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     void updateProjectFromDto(ProjectPostDTO dto, @MappingTarget Project entity);
 
@@ -36,11 +51,14 @@ public interface GiskardMapper {
 
     List<DatasetDTO> datasetsToDatasetDTOs(List<Dataset> datasets);
 
+    Dataset datasetDTOtoDataset(DatasetDTO dto);
+
     List<TestSuiteDTO> testSuitesToTestSuiteDTOs(List<TestSuite> testSuites);
 
-    @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
-    void updateTestSuiteFromDTO(TestSuiteDTO dto, @MappingTarget TestSuite entity);
-
-
-
+    @Mappings({
+        @Mapping(source = "testDatasetId", target = "testDataset"),
+        @Mapping(source = "trainDatasetId", target = "trainDataset"),
+        @Mapping(source = "modelId", target = "model")
+    })
+    void updateTestSuiteFromDTO(UpdateTestSuiteDTO dto, @MappingTarget TestSuite entity);
 }

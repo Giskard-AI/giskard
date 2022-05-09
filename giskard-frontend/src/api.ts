@@ -19,7 +19,7 @@ import {
   JWTToken,
   PasswordResetRequest,
   TokenAndPasswordVM,
-  UpdateMeDTO, UserDTO, ManagedUserVM, CodeTestCollection
+  UpdateMeDTO, UserDTO, ManagedUserVM, CodeTestCollection, UpdateTestSuiteDTO
 } from '@/generated-sources';
 import AdminUserDTOWithPassword = AdminUserDTO.AdminUserDTOWithPassword;
 
@@ -210,7 +210,7 @@ export const api = {
       model: { id: modelId }
     });
   },
-  async saveTestSuite(testSuite: TestSuiteDTO) {
+  async saveTestSuite(testSuite: UpdateTestSuiteDTO) {
     return await axios.put(`${apiUrlJava}/api/v2/testing/suites`, testSuite);
   },
   async getTestDetails(testId: number) {

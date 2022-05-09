@@ -7,6 +7,7 @@ export const GENERATED_MAPPING = {
     'ai.giskard.web.rest.vm.TokenAndPasswordVM' : 'TokenAndPasswordVM',
     'ai.giskard.web.dto.JWTToken' : 'JWTToken',
     'ai.giskard.web.dto.ml.ModelDTO' : 'ModelDTO',
+    'ai.giskard.web.dto.ml.UpdateTestSuiteDTO' : 'UpdateTestSuiteDTO',
     'ai.giskard.web.dto.PasswordResetRequest' : 'PasswordResetRequest',
     'ai.giskard.domain.ml.CodeTestCollection' : 'CodeTestCollection',
     'ai.giskard.web.dto.ml.NamedSingleTestResultDTO' : 'NamedSingleTestResultDTO',
@@ -39,6 +40,7 @@ export * from './ai/giskard/web/dto/user/user-dto';
 export * from './ai/giskard/web/rest/vm/token-and-password-vm';
 export * from './ai/giskard/web/dto/jwttoken';
 export * from './ai/giskard/web/dto/ml/model-dto';
+export * from './ai/giskard/web/dto/ml/update-test-suite-dto';
 export * from './ai/giskard/web/dto/password-reset-request';
 export * from './ai/giskard/domain/ml/code-test-collection';
 export * from './ai/giskard/web/dto/ml/named-single-test-result-dto';

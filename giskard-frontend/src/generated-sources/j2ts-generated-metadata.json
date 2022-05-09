@@ -6,6 +6,7 @@
     "ai.giskard.web.dto.ml.ExecuteTestSuiteRequest": "ExecuteTestSuiteRequest",
     "ai.giskard.web.rest.vm.TokenAndPasswordVM": "TokenAndPasswordVM",
     "ai.giskard.web.dto.ml.ProjectDTO": "ProjectDTO",
+    "ai.giskard.web.dto.ml.UpdateTestSuiteDTO": "UpdateTestSuiteDTO",
     "ai.giskard.web.dto.PasswordResetRequest": "PasswordResetRequest",
     "ai.giskard.web.dto.ml.ProjectPostDTO": "ProjectPostDTO",
     "ai.giskard.web.dto.ml.ModelDTO": "ModelDTO",

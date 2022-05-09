@@ -9,12 +9,11 @@ import javax.validation.constraints.NotNull;
 @Getter
 @UIModel
 @AllArgsConstructor
-public class TestSuiteDTO {
+public class UpdateTestSuiteDTO {
     private Long id;
     @NotNull
     private String name;
-    private ProjectDTO project;
-    private DatasetDTO trainDataset;
-    private DatasetDTO testDataset;
-    private ModelDTO model;
+    private Long trainDatasetId;
+    private Long testDatasetId;
+    private Long modelId;
 }
