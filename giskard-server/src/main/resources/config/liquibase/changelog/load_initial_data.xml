@@ -13,7 +13,9 @@
 <!--            <column name="activated" type="boolean"/>-->
 <!--            <column name="created_date" type="timestamp"/>-->
 <!--        </loadData>-->
-
+        <update tableName="giskard_users">
+            <column name="role_id"/>
+        </update>
         <delete tableName="role"/>
 
         <loadData
