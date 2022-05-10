@@ -84,11 +84,11 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue, Prop, Emit } from "vue-property-decorator";
-import OverlayLoader from "@/components/OverlayLoader.vue";
-import { readToken } from "@/store/main/getters";
-import { commitAddNotification } from "@/store/main/mutations";
-import { api } from "@/api";
+import { Component, Emit, Prop, Vue } from 'vue-property-decorator';
+import OverlayLoader from '@/components/OverlayLoader.vue';
+import { readToken } from '@/store/main/getters';
+import { commitAddNotification } from '@/store/main/mutations';
+import { api } from '@/api';
 import { FileDTO } from '@/generated-sources';
 
 @Component({
@@ -155,13 +155,14 @@ export default class InspectorLauncher extends Vue {
   }
 
   public async launchInspector() {
+    const inspection=await api.prepareInspection(readToken(this.$store), this.modelId.toString(), this.datasetSelected?.toString()!, this.targetFeature!);
     const query = {
       model: this.modelId.toString(),
       dataset: this.datasetSelected?.toString(),
-      target: this.targetFeature || undefined
+      target: this.targetFeature || undefined,
+      inspection:inspection.data.id
     };
-    await api.prepareInspection(readToken(this.$store), query.model, query.dataset!, query.target!);
-    this.$router.push({ name: 'project-inspector', query });
+    this.$router.push({ name: 'project-inspector', query});
     this.reset();
   }
 }

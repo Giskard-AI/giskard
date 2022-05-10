@@ -1,4 +1,55 @@
-<template>
+<template >
+  <v-row v-if='selectedFilter=="CUSTOM"'>
+      <v-select
+        style='width: 200px;margin-left:15px'
+        :items='labels'
+        label='Target Label'
+        v-model='targetLabel'
+      ></v-select>
+
+      <v-select
+        style='width: 200px;margin-left:15px'
+        :items='labels'
+        label='Predicted Label'
+        v-model='predictedLabel'
+        step='0.001'
+      ></v-select>
+
+      <v-range-slider
+        v-model="range"
+        :max="1"
+        :min="0"
+        step='0.001'
+        hide-details
+        class="align-center"
+
+      >
+        <template v-slot:prepend>
+          <v-text-field
+            :value="range[0]"
+            step='0.001'
+            class="mt-0 pt-0"
+            hide-details
+            single-line
+            type="number"
+            style="width: 60px"
+            @change="$set(range, 1, $event)"
+          ></v-text-field>
+        </template>
+        <template v-slot:append>
+          <v-text-field
+            :value="range[1]"
+            class="mt-0 pt-0"
+            hide-details
+            single-line
+            type="number"
+            style="width: 60px"
+            @change="$set(range, 1, $event)"
+          ></v-text-field>
+        </template>
+      </v-range-slider>
+  </v-row>
+
 </template>
 
 <script lang='ts'>
@@ -6,6 +57,7 @@ import { Component, Prop, Vue, Watch } from 'vue-property-decorator';
 import { api } from '@/api';
 import { readToken } from '@/store/main/getters';
 import { commitAddNotification } from '@/store/main/mutations';
+import { RowFilterType } from '@/generated-sources';
 
 /**
  * TODO: This class should be on the wrapper, no template for the moment
@@ -19,8 +71,7 @@ export default class RowList extends Vue {
   @Prop({ required: true }) modelId!: number;
   @Prop({ required: true }) selectedFilter!: string;
   @Prop({ required: true }) currentRowIdx!: number;
-  @Prop({ required: true }) minThreshold!: number;
-  @Prop({ required: true }) maxThreshold!: number;
+  @Prop({ required: true }) inspectionId!: number;
 
   rows: Record<string, any>[] = [];
   numberOfRows: number = 0;
@@ -31,12 +82,16 @@ export default class RowList extends Vue {
   loading = false;
   errorMsg: string = '';
   rowIdxInPage: number = 0;
+  labels: string[] = [];
+  predictedLabel: string="";
+  targetLabel: string="" ;
+  range:number[]=[0,1]
 
-  async activated() {
-    await this.fetchRowAndEmit(true);
-  }
 
   async mounted() {
+    await this.fetchDetails();
+    this.predictedLabel=this.labels[0]
+    this.targetLabel=this.labels[0]
     await this.fetchRowAndEmit(true);
   }
 
@@ -45,9 +100,13 @@ export default class RowList extends Vue {
     await this.fetchRowAndEmit(false);
   }
 
-  @Watch('datasetId')
+  //@Watch('datasetId')
   @Watch('selectedFilter')
+  @Watch('range')
+  @Watch('targetLabel')
+  @Watch('predictedLabel')
   async reloadAlways() {
+    console.log(this.selectedFilter==RowFilterType.CUSTOM)
     await this.fetchRowAndEmit(true);
   }
 
@@ -92,14 +151,16 @@ export default class RowList extends Vue {
         'maxRange': maxRange
       };
       const filter = {
-        'minThreshold': this.minThreshold,
-        'maxThreshold': this.maxThreshold,
-        'target': 'Default',
+        'minThreshold': this.range[0],
+        'maxThreshold': this.range[1],
+        'target': this.targetLabel,
+        'predicted': this.predictedLabel,
         'rowFilter': this.selectedFilter
       };
       const response = await api.getDataFilteredByRange(readToken(this.$store), this.datasetId, props, filter);
-      this.rows = eval(response.data.data); // TODO send directly json with page from java
+      this.rows = response.data.data; // TODO send directly json with page from java
       this.numberOfRows = response.data.rowNb;
+      //this.columns = response.data.columns;
     } catch (error) {
       commitAddNotification(this.$store, { content: error.response.data.detail, color: 'error' });
     }
@@ -107,9 +168,8 @@ export default class RowList extends Vue {
 
   public async fetchDetails() {
     try {
-      const response = await api.getDatasetDetails(readToken(this.$store), this.datasetId);
-      this.numberOfRows = response.data.numberOfRows;
-      this.numberOfPages = response.data.numberOfRows % this.itemsPerPage + 1;
+      const response = await api.getLabelsForTarget(readToken(this.$store), this.inspectionId);
+      this.labels=response.data;
     } catch (error) {
       commitAddNotification(this.$store, { content: error.response.data.detail, color: 'error' });
     }

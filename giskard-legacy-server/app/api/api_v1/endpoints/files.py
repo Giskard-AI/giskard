@@ -222,10 +222,9 @@ def upload_inspect(model_id: str, dataset_id: str, target: str, db: Session = De
             calculated=prediction_results.all_predictions.idxmax(axis="columns")
             calculated.to_csv(calculated_path, index=False)
             # TODO understand why creation is not working
-            # obj_in=schemas.InspectionCreateSchema( location=str(inspection_folder.absolute()), target=target)
-            # inspection = crud.inspection.create(db,  obj_in=obj_in,model_id=model_id, dataset_id=dataset_id)
-            # print(prediction_results)
-
+            obj_in=schemas.InspectionCreateSchema( location=str(inspection_folder.absolute()), target=target)
+            inspection = crud.inspection.create(db,  obj_in=obj_in,model_id=model_id, dataset_id=dataset_id)
+            return inspection
         except Exception as e:
             logger.exception(e)
             raise HTTPException(
