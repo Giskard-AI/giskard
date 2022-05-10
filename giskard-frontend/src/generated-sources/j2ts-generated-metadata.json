@@ -23,6 +23,7 @@
     "ai.giskard.web.dto.ml.TestDTO": "TestDTO",
     "ai.giskard.web.dto.ml.TestExecutionStatusDTO": "TestExecutionStatusDTO",
     "ai.giskard.web.dto.JWTToken": "JWTToken",
+    "ai.giskard.web.dto.ml.InspectionDTO": "InspectionDTO",
     "ai.giskard.web.dto.config.AppConfigDTO": "AppConfigDTO",
     "ai.giskard.web.dto.ml.FileDTO": "FileDTO",
     "ai.giskard.web.rest.vm.ManagedUserVM": "ManagedUserVM",

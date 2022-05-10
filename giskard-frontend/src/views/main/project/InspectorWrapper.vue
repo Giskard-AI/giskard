@@ -38,7 +38,7 @@
 
 
     <RowList ref='rowList' class='px-0' :datasetId='datasetId' :model-id='modelId' :selectedFilter='selectedFilter'
-             :currentRowIdx='rowNb' :min-threshold='minThreshold' :max-threshold='maxThreshold'
+             :currentRowIdx='rowNb' :range='range' :inspection-id='inspection'
              @fetchedRow='getCurrentRow'
     />
 
@@ -134,6 +134,7 @@ export default class InspectorWrapper extends Vue {
   @Prop({ required: true }) modelId!: number;
   @Prop({ required: true }) datasetId!: number;
   @Prop() targetFeature!: string;
+  @Prop() inspection!:any;
   filterTypes = Object.keys(RowFilterType);
   selectedFilter = this.filterTypes[0];
   mouseTrap = new Mousetrap();
@@ -149,8 +150,7 @@ export default class InspectorWrapper extends Vue {
   feedbackChoice = null;
   feedbackError: string = '';
   feedbackSubmitted: boolean = false;
-  minThreshold: number = 0.;
-  maxThreshold: number = 1.;
+
   totalRows = 0;
 
   async mounted() {
@@ -159,7 +159,6 @@ export default class InspectorWrapper extends Vue {
   private getCurrentRow(rowDetails, totalRows: number) {
     this.loadingData = true;
     this.inputData = rowDetails;
-    console.log(rowDetails.Index)
     this.originalData = { ...this.inputData }; // deep copy to avoid caching mechanisms
     this.dataErrorMsg = '';
     this.loadingData = false;
@@ -179,23 +178,6 @@ export default class InspectorWrapper extends Vue {
     return !this.shuffleMode && this.rowNb > 0;
   }
 
-  /**
-   * Resetting the row idx in the results and setting the min/max thresholds for the filtering
-   */
-  @Watch('selectedFilter')
-  updateThresholdsGivenFilters() {
-    this.rowNb=0;
-    if (this.selectedFilter == RowFilterType.ALL) {
-      this.minThreshold = 0.;
-      this.maxThreshold = 1.;
-    } else if (this.selectedFilter == RowFilterType.CORRECT) {
-      this.minThreshold = 0.5; // TODO get respMetadata.classification_threshold
-      this.maxThreshold = 1.;
-    } else if (this.selectedFilter == RowFilterType.WRONG) {
-      this.minThreshold = 0.; // TODO get respMetadata.classification_threshold
-      this.maxThreshold = 0.5;
-    }
-  }
 
   /**
    * Call on active tab

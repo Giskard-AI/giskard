@@ -16,6 +16,8 @@ public class Filter {
 
     private String target;
 
+    private String predicted;
+
     private Float minThreshold;
 
     private Float maxThreshold;

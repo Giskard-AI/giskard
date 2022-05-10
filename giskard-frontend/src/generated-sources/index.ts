@@ -1,4 +1,5 @@
 export const GENERATED_MAPPING = {
+    'ai.giskard.web.dto.ml.InspectionDTO' : 'InspectionDTO',
     'ai.giskard.web.dto.ml.SingleTestResultDTO' : 'SingleTestResultDTO',
     'ai.giskard.domain.ml.TestResult' : 'TestResult',
     'ai.giskard.domain.ml.TestType' : 'TestType',
@@ -33,6 +34,7 @@ export const GENERATED_MAPPING = {
     'ai.giskard.web.dto.PasswordResetRequest' : 'PasswordResetRequest'
 
 };
+export * from './ai/giskard/web/dto/ml/inspection-dto';
 export * from './ai/giskard/web/dto/ml/single-test-result-dto';
 export * from './ai/giskard/domain/ml/test-result';
 export * from './ai/giskard/domain/ml/test-type';

@@ -80,6 +80,7 @@ export default new Router({
                   props: route => ({
                     modelId: parseInt(route.query.model.toString()),
                     datasetId: parseInt(route.query.dataset.toString()),
+                    inspection:parseInt(route.query.inspection.toString()),
                     targetFeature: route.query.target,
                   }),
                   beforeEnter(to, from, next) {
