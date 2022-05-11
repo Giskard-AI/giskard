@@ -1,25 +1,15 @@
 package ai.giskard.web.rest;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.Matchers.hasItem;
-import static org.hamcrest.Matchers.hasItems;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-
 import ai.giskard.IntegrationTest;
 import ai.giskard.domain.Role;
 import ai.giskard.domain.User;
 import ai.giskard.repository.UserRepository;
 import ai.giskard.security.AuthoritiesConstants;
 import ai.giskard.utils.TestUtil;
+import ai.giskard.web.dto.mapper.GiskardMapper;
 import ai.giskard.web.dto.user.AdminUserDTO;
-import ai.giskard.web.dto.mapper.UserMapper;
 import ai.giskard.web.rest.controllers.UserAdminController;
 import ai.giskard.web.rest.vm.ManagedUserVM;
-import java.time.Instant;
-import java.util.*;
-import java.util.function.Consumer;
-import javax.persistence.EntityManager;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -30,6 +20,19 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.transaction.annotation.Transactional;
+
+import javax.persistence.EntityManager;
+import java.time.Instant;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.function.Consumer;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.hasItem;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 /**
  * Integration tests for the {@link UserAdminController} REST controller.
@@ -57,7 +60,7 @@ class UserAdminControllerIT {
     private UserRepository userRepository;
 
     @Autowired
-    private UserMapper userMapper;
+    private GiskardMapper giskardMapper;
 
     @Autowired
     private EntityManager em;
@@ -442,17 +445,15 @@ class UserAdminControllerIT {
         userDTO.setLastModifiedBy(DEFAULT_LOGIN);
         userDTO.setRoles(Collections.singleton(AuthoritiesConstants.AICREATOR));
 
-        User user = userMapper.userDTOToUser(userDTO);
+        User user = giskardMapper.adminUserDTOtoUser(userDTO);
 
         assertThat(user.getId()).isEqualTo(DEFAULT_ID);
         assertThat(user.getLogin()).isEqualTo(DEFAULT_LOGIN);
         assertThat(user.getDisplayName()).isEqualTo(DEFAULT_DISPLAY_NAME);
         assertThat(user.getEmail()).isEqualTo(DEFAULT_EMAIL);
         assertThat(user.isActivated()).isTrue();
-        assertThat(user.getCreatedBy()).isNull();
-        assertThat(user.getCreatedDate()).isNotNull();
-        assertThat(user.getLastModifiedBy()).isNull();
-        assertThat(user.getLastModifiedDate()).isNotNull();
+        assertThat(user.getCreatedBy()).isEqualTo(DEFAULT_LOGIN);
+        assertThat(user.getLastModifiedBy()).isEqualTo(DEFAULT_LOGIN);
         assertThat(user.getRoles()).extracting("name").containsExactly(AuthoritiesConstants.AICREATOR);
     }
 
@@ -471,7 +472,7 @@ class UserAdminControllerIT {
         authorities.add(role);
         user.setRoles(authorities);
 
-        AdminUserDTO userDTO = userMapper.userToAdminUserDTO(user);
+        AdminUserDTO userDTO = giskardMapper.userToAdminUserDTO(user);
 
         assertThat(userDTO.getId()).isEqualTo(DEFAULT_ID);
         assertThat(userDTO.getLogin()).isEqualTo(DEFAULT_LOGIN);

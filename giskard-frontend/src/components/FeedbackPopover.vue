@@ -79,10 +79,10 @@ export default class FeedbackPopover extends Vue {
 
   public submitFeedback() {
     const feedback = {
-      feedback_choice: this.selected,
-      feedback_message: this.message,
-      feature_name: this.inputLabel,
-      feature_value: (this.inputValue !== this.originalValue) ? this.originalValue + " -> " + this.inputValue : this.inputValue,
+      feedbackChoice: this.selected,
+      feedbackMessage: this.message,
+      featureName: this.inputLabel,
+      featureValue: (this.inputValue !== this.originalValue) ? this.originalValue + " -> " + this.inputValue : this.inputValue,
     }
     this.$emit('submit', feedback)
     this.submitted = true;

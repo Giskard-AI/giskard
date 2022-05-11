@@ -58,19 +58,19 @@
     <v-container fluid>
       <v-data-table
         dense
-				:group-by="groupByFeature ? 'feature_name': null"
+				:group-by="groupByFeature ? 'featureName': null"
         :items="feedbacks"
         :headers="tableHeaders"
         :search="search"
         @click:row="openFeedback"
       >
 				<!-- eslint-disable-next-line vue/valid-v-slot -->
-				<template v-slot:item.created_on="{ item }">
-					<span>{{ new Date(item.created_on).toLocaleString() }}</span>
+				<template v-slot:item.createdOn="{ item }">
+					<span>{{ item.createdOn | date }}</span>
 				</template>
 				<!-- eslint-disable-next-line vue/valid-v-slot -->
-				<template v-slot:item.feature_value="{ item }">
-					<span>{{ (item.feature_value && item.feature_value.length > 140) ? item.feature_value.slice(0, 140) + "..." : item.feature_value }}</span>
+				<template v-slot:item.featureValue="{ item }">
+					<span>{{ (item.featureValue && item.featureValue.length > 140) ? item.featureValue.slice(0, 140) + "..." : item.featureValue }}</span>
 				</template>
       </v-data-table>
     </v-container>
@@ -81,12 +81,12 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue, Prop, Watch } from "vue-property-decorator";
-import { api } from "@/api";
-import { readToken } from "@/store/main/getters";
-import { IFeedbackForList } from "@/interfaces";
-import { commitAddNotification } from '@/store/main/mutations';
+import {Component, Prop, Vue, Watch} from "vue-property-decorator";
+import {api} from "@/api";
+import {readToken} from "@/store/main/getters";
+import {commitAddNotification} from '@/store/main/mutations';
 import FeedbackDetail from './FeedbackDetail.vue';
+import {FeedbackMinimalDTO} from "@/generated-sources";
 
 @Component({
   components: {FeedbackDetail}
@@ -94,7 +94,7 @@ import FeedbackDetail from './FeedbackDetail.vue';
 export default class FeedbackList extends Vue {
   @Prop({ required: true }) projectId!: number;
 
-  feedbacks: IFeedbackForList[] = [];
+  feedbacks: FeedbackMinimalDTO[] = [];
   search = "";
   modelFilter = "";
   datasetFilter = "";
@@ -118,26 +118,26 @@ export default class FeedbackList extends Vue {
       {
         text: "Model",
         sortable: true,
-        value: "model_name",
+        value: "modelFilename",
         align: "left",
         filter: (value) => !this.modelFilter ? true : value == this.modelFilter,
       },
       {
         text: "Dataset",
         sortable: true,
-        value: "dataset_name",
+        value: "datasetFilename",
         align: "left",
         filter: (value) => !this.datasetFilter ? true : value == this.datasetFilter,
       },
       {
         text: "User ID",
         sortable: true,
-        value: "user_id",
+        value: "userLogin",
         align: "left",
       },
       {
 				text: 'On',
-				value: 'created_on',
+				value: 'createdOn',
 				sortable: true,
 				filterable: false,
 				align: 'left'
@@ -145,47 +145,47 @@ export default class FeedbackList extends Vue {
       {
         text: "Type",
         sortable: true,
-        value: "feedback_type",
+        value: "feedbackType",
         align: "left",
         filter: (value) => !this.typeFilter ? true : value == this.typeFilter,
       },
       {
         text: "Feature name",
         sortable: true,
-        value: "feature_name",
+        value: "featureName",
         align: "left",
       },
       {
         text: "Feature value",
         sortable: true,
-        value: "feature_value",
+        value: "featureValue",
         align: "left",
       },
       {
         text: "Choice",
         sortable: true,
-        value: "feedback_choice",
+        value: "feedbackChoice",
         align: "left",
       },
       {
         text: "Message",
         sortable: true,
-        value: "feedback_message",
+        value: "feedbackMessage",
         align: "left",
       },
     ];
   }
 
   get existingModels() {
-    return this.feedbacks.map((e) => e.model_name);
+    return this.feedbacks.map((e) => e.modelFilename);
   }
 
   get existingDatasets() {
-    return this.feedbacks.map((e) => e.dataset_name);
+    return this.feedbacks.map((e) => e.datasetFilename);
   }
 
   get existingTypes() {
-    return this.feedbacks.map((e) => e.feedback_type);
+    return this.feedbacks.map((e) => e.feedbackType);
   }
 
   public async fetchFeedbacks() {

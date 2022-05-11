@@ -19,16 +19,13 @@ def _test_metamorphic_invariance_male_female(german_credit_test_data, german_cre
                                                             threshold=threshold)
     assert results.element_count == len(german_credit_test_data)
     assert results.missing_count == 0
-    assert results.unexpected_count == 64
+    assert results.unexpected_count == 33
     return results.passed
 
 
-def test_metamorphic_invariance_male_female_pass(german_credit_test_data, german_credit_model):
-    assert _test_metamorphic_invariance_male_female(german_credit_test_data, german_credit_model, 0.07)
-
-
-def test_metamorphic_invariance_male_female_fail(german_credit_test_data, german_credit_model):
-    assert not _test_metamorphic_invariance_male_female(german_credit_test_data, german_credit_model, 0.06)
+def test_metamorphic_invariance_male_female(german_credit_test_data, german_credit_model):
+    assert _test_metamorphic_invariance_male_female(german_credit_test_data, german_credit_model, 0.04)
+    assert not _test_metamorphic_invariance_male_female(german_credit_test_data, german_credit_model, 0.03)
 
 
 def test_metamorphic_invariance_2_perturbations(german_credit_test_data, german_credit_model):
@@ -40,7 +37,7 @@ def test_metamorphic_invariance_2_perturbations(german_credit_test_data, german_
     results = tests.metamorphic.test_metamorphic_invariance(german_credit_test_data, german_credit_model, perturbation)
     assert results.element_count == len(german_credit_test_data)
     assert results.missing_count == 0
-    assert results.unexpected_count == 110
+    assert results.unexpected_count == 142
 
 
 def test_metamorphic_invariance_some_rows(german_credit_test_data, german_credit_model):
@@ -51,4 +48,4 @@ def test_metamorphic_invariance_some_rows(german_credit_test_data, german_credit
     results = tests.metamorphic.test_metamorphic_invariance(german_credit_test_data, german_credit_model, perturbation)
     assert results.element_count == 690
     assert results.missing_count == 0
-    assert results.unexpected_count == 41
+    assert results.unexpected_count == 24

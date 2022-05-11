@@ -1,0 +1,16 @@
+title: Heuristic
+id: heuristic
+order: 1
+items:
+  - id: heuristic
+    title: Heuristic
+    # language=Python
+    code: |-
+      tests.heuristic.test_heuristic(
+        df=test_df,
+        model=model,
+        classification_label=model.classification_labels[0],
+        min_proba=0,
+        max_proba=1,
+        threshold=1,
+      )
