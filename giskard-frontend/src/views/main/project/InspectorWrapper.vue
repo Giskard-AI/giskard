@@ -1,23 +1,45 @@
 <template>
   <v-container fluid>
-    <v-toolbar flat height='32' id='data-explorer-toolbar'>
-      <span class='subtitle-2 mr-2'>Dataset Explorer</span>
-      <v-btn icon @click='shuffleMode = !shuffleMode'>
-        <v-icon v-if='shuffleMode' color='primary'>mdi-shuffle-variant</v-icon>
-        <v-icon v-else>mdi-shuffle-variant</v-icon>
-      </v-btn>
-      <v-btn icon @click="previous" :disabled="!canPrevious()"><v-icon>mdi-skip-previous</v-icon></v-btn>
-      <v-btn icon @click="next"><v-icon>mdi-skip-next</v-icon></v-btn>
-      <span class="caption grey--text">Entry #{{rowNb}}</span>
-    </v-toolbar>
+    <v-row
+      no-gutters
+      style='height: 60px;'
+    >
+      <v-toolbar flat id='data-explorer-toolbar'>
+        <span class='subtitle-2 mr-2'>Dataset Explorer</span>
+        <v-btn icon @click='shuffleMode = !shuffleMode'>
+          <v-icon v-if='shuffleMode' color='primary'>mdi-shuffle-variant</v-icon>
+          <v-icon v-else>mdi-shuffle-variant</v-icon>
+        </v-btn>
+        <v-btn icon @click='previous' :disabled='!canPrevious()'>
+          <v-icon>mdi-skip-previous</v-icon>
+        </v-btn>
+        <v-btn icon @click='next'>
+          <v-icon>mdi-skip-next</v-icon>
+        </v-btn>
+        <span class='caption grey--text'>Entry #{{ rowNb }} / {{ totalRows }}</span>
+        <span style='margin-left: 15px' class='caption grey--text'>Row Index {{ originalData.Index }}</span>
+      </v-toolbar>
+    </v-row>
 
-    <v-select
-      :items="filterTypes"
-      label="Standard"
-      v-model="selectedFilter"
-    ></v-select>
+    <v-row
+      no-gutters
+      style='height: 70px;margin-left:15px'
+    >
+      <v-col>
+        <v-select
+          style='width: 200px'
+          :items='filterTypes'
+          label='Filter'
+          v-model='selectedFilter'
+        ></v-select>
+      </v-col>
 
-    <RowList class='px-0' :datasetId='datasetId' :model-id='modelId' :selectedFilter='selectedFilter' @currentRow='getCurrentRow'
+    </v-row>
+
+
+    <RowList ref='rowList' class='px-0' :datasetId='datasetId' :model-id='modelId' :selectedFilter='selectedFilter'
+             :currentRowIdx='rowNb' :min-threshold='minThreshold' :max-threshold='maxThreshold'
+             @fetchedRow='getCurrentRow'
     />
 
     <Inspector class='px-0'
@@ -95,6 +117,7 @@ import FeedbackPopover from '@/components/FeedbackPopover.vue';
 import Inspector from './Inspector.vue';
 import Mousetrap from 'mousetrap';
 import RowList from '@/views/main/project/RowList.vue';
+import { RowFilterType } from '@/generated-sources';
 import {CreateFeedbackDTO} from "@/generated-sources";
 
 type CreatedFeedbackCommonDTO = {
@@ -120,10 +143,9 @@ export default class InspectorWrapper extends Vue {
   @Prop({ required: true }) modelId!: number;
   @Prop({ required: true }) datasetId!: number;
   @Prop() targetFeature!: string;
-  filterTypes= ['GREATER', 'LOWER']
-  selectedFilter=this.filterTypes[0]
-
-  mouseTrap= new Mousetrap();
+  filterTypes = Object.keys(RowFilterType);
+  selectedFilter = this.filterTypes[0];
+  mouseTrap = new Mousetrap();
   loadingData = false;
   inputData = {};
   originalData = {};
@@ -132,23 +154,25 @@ export default class InspectorWrapper extends Vue {
   dataErrorMsg = '';
 
   feedbackPopupToggle = false;
-  feedback = '';
+  feedback: string = '';
   feedbackChoice = null;
-  feedbackError = '';
-  feedbackSubmitted = false;
+  feedbackError: string = '';
+  feedbackSubmitted: boolean = false;
+  minThreshold: number = 0.;
+  maxThreshold: number = 1.;
+  totalRows = 0;
 
   async mounted() {
-    //await this.fetchRowData(0);
   }
 
-  private getCurrentRow(rowDetails: RowDetails) {
-    console.log(rowDetails)
+  private getCurrentRow(rowDetails, totalRows: number) {
     this.loadingData = true;
-    this.inputData = rowDetails.item;
+    this.inputData = rowDetails;
+    console.log(rowDetails.Index)
     this.originalData = { ...this.inputData }; // deep copy to avoid caching mechanisms
-    this.rowNb = rowDetails.index;
     this.dataErrorMsg = '';
     this.loadingData = false;
+    this.totalRows = totalRows;
   }
 
   bindKeys() {
@@ -160,8 +184,27 @@ export default class InspectorWrapper extends Vue {
     this.mouseTrap.reset();
   }
 
-  public canPrevious(){ return !this.shuffleMode && this.rowNb> 0}
+  public canPrevious() {
+    return !this.shuffleMode && this.rowNb > 0;
+  }
 
+  /**
+   * Resetting the row idx in the results and setting the min/max thresholds for the filtering
+   */
+  @Watch('selectedFilter')
+  updateThresholdsGivenFilters() {
+    this.rowNb=0;
+    if (this.selectedFilter == RowFilterType.ALL) {
+      this.minThreshold = 0.;
+      this.maxThreshold = 1.;
+    } else if (this.selectedFilter == RowFilterType.CORRECT) {
+      this.minThreshold = 0.5; // TODO get respMetadata.classification_threshold
+      this.maxThreshold = 1.;
+    } else if (this.selectedFilter == RowFilterType.WRONG) {
+      this.minThreshold = 0.; // TODO get respMetadata.classification_threshold
+      this.maxThreshold = 0.5;
+    }
+  }
 
   /**
    * Call on active tab
@@ -174,39 +217,18 @@ export default class InspectorWrapper extends Vue {
     this.resetKeys();
   }
 
-  public next() {
+  public async next() {
     this.clearFeedback();
-    //this.fetchRowData(this.rowNb + 1);
+    this.rowNb += 1;
   }
 
-  public previous() {
+  public async previous() {
     if (this.canPrevious()) {
       this.clearFeedback();
-      //this.fetchRowData(Math.max(0, this.rowNb - 1))
+      this.rowNb -= 1;
     }
   }
 
-  // @Watch("datasetId")
-  // async reload() {
-  //   await this.fetchRowData(0)
-  // }
-
-  // private async fetchRowData(rowId) {
-  //   try {
-  //     this.loadingData = true;
-  //     const resp = this.shuffleMode
-  //       ? await api.getDataRandom(readToken(this.$store), this.datasetId)
-  //       : await api.getDataByRowId(readToken(this.$store), this.datasetId, rowId);
-  //     this.inputData = resp.data;
-  //     this.originalData = { ...this.inputData }; // deep copy to avoid caching mechanisms
-  //     this.rowNb = resp.data.rowNb;
-  //     this.dataErrorMsg = '';
-  //   } catch (error) {
-  //     this.dataErrorMsg = error.response.data.detail;
-  //   } finally {
-  //     this.loadingData = false;
-  //   }
-  // }
 
   private resetInput() {
     this.inputData = { ...this.originalData };
