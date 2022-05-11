@@ -5,6 +5,7 @@ import {getLocalToken} from '@/utils';
 import {
   AdminUserDTO,
   AppConfigDTO,
+  CodeTestCollection,
   CreateFeedbackDTO,
   CreateFeedbackReplyDTO,
   FeedbackDTO,
@@ -21,8 +22,8 @@ import {
   TestExecutionResultDTO,
   TestSuiteDTO,
   TokenAndPasswordVM,
-  UpdateMeDTO, UserDTO, ManagedUserVM, CodeTestCollection, UpdateTestSuiteDTO,
   UpdateMeDTO,
+  UpdateTestSuiteDTO,
   UserDTO
 } from '@/generated-sources';
 import AdminUserDTOWithPassword = AdminUserDTO.AdminUserDTOWithPassword;
