@@ -27,7 +27,7 @@ public class Inspection {
 
     private String target;
 
-
+    private String predictionTask;
 
     public Path getPredictionsPath() {
         return Paths.get(location, "predictions.csv");

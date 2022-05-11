@@ -22,3 +22,5 @@ class Inspection(Base):
     location = Column(String, nullable=False)
 
     target = Column(String, nullable=False)
+
+    prediction_task = Column(String, nullable=False)
