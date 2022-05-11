@@ -300,8 +300,6 @@ dependencies {
 
 //    compile files("${projectDir.absolutePath}/src/main/resources/third-party/j2ts-api.jar")
     implementation files("$projectDir/src/main/resources/third-party/j2ts-api.jar")
-    implementation group: 'com.vladmihalcea', name: 'hibernate-types-55', version: '2.16.2'
-
 }
 
 protobuf {

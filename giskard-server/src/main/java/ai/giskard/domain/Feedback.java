@@ -3,13 +3,8 @@ package ai.giskard.domain;
 import ai.giskard.domain.ml.Dataset;
 import ai.giskard.domain.ml.ProjectModel;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
-import com.vladmihalcea.hibernate.type.json.JsonStringType;
 import lombok.Getter;
 import lombok.Setter;
-import org.hibernate.annotations.Type;
-import org.hibernate.annotations.TypeDef;
-import org.hibernate.annotations.TypeDefs;
 import org.springframework.data.annotation.CreatedDate;
 
 import javax.persistence.*;
@@ -20,10 +15,6 @@ import java.util.Set;
 
 @Getter
 @Entity(name = "feedbacks")
-@TypeDefs({
-    @TypeDef(name = "json", typeClass = JsonStringType.class),
-    @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class)
-})
 public class Feedback {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -70,12 +61,8 @@ public class Feedback {
     private String feedbackMessage;
     @Setter
     @NotNull
-    @Type(type = "jsonb")
-    @Column(columnDefinition = "jsonb")
     private String userData;
     @Setter
     @NotNull
-    @Type(type = "jsonb")
-    @Column(columnDefinition = "jsonb")
     private String originalData;
 }
