@@ -41,14 +41,13 @@
           :max='1'
           :min='0'
           step='0.001'
-          class='align-center'
           hide-details
+          style='align-items: flex-end'
         >
           <template v-slot:prepend>
             <v-text-field
               :value='range[0]'
               step='0.001'
-              class='mt-0 pt-0'
               hide-details
               single-line
               type='number'
@@ -58,7 +57,6 @@
           <template v-slot:append>
             <v-text-field
               :value='range[1]'
-              class='mt-0 pt-0'
               hide-details
               single-line
               type='number'
@@ -90,7 +88,7 @@ export default class RowList extends Vue {
   @Prop({ required: true }) modelId!: number;
   @Prop({ required: true }) currentRowIdx!: number;
   @Prop({ required: true }) inspectionId!: number;
-  @Prop({ required: true }) shuffleMode!: number;
+  @Prop({ required: true }) shuffleMode!: boolean;
 
   rows: Record<string, any>[] = [];
   numberOfRows: number = 0;
@@ -215,13 +213,8 @@ export default class RowList extends Vue {
   }
 }
 </script>
-
 <style scoped>
-.v-data-table ::v-deep tr.v-data-table__selected {
-  background: #0097a7 !important;
-}
-
-.v-data-table >>> tbody > tr {
-  cursor: pointer;
+.v-slider {
+  margin-top: 20px!important;
 }
 </style>

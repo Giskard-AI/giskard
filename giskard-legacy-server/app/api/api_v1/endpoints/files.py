@@ -221,24 +221,26 @@ def upload_inspect(model_id: str, dataset_id: str, target: str, db: Session = De
             inspection_folder.mkdir(parents=True, exist_ok=True)
             preds_path = Path(inspection_folder, "predictions.csv")
             calculated_path = Path(inspection_folder, "calculated.csv")
-            sorted_path = Path(inspection_folder, "sorted_preds.csv")
-            if model_inspector.prediction_task != "classification":
+            if model_inspector.prediction_task == "classification":
+                results = prediction_results.all_predictions
+                labels = {v: k for v, k in enumerate(model_inspector.classification_labels)}
+                label_serie = data_df[target].map(labels).rename("label")
+                if len(labels) > 2 or model_inspector.classification_threshold is None:
+                    preds_serie = prediction_results.all_predictions.idxmax(axis="columns")
+                    sorted_predictions = np.sort(prediction_results.all_predictions.values)
+                    abs_diff = pd.Series(sorted_predictions[:, -1] - sorted_predictions[:, -2], name="absDiff")
+                else:
+                    diff = prediction_results.all_predictions.iloc[:, 1] - model_inspector.classification_threshold
+                    preds_serie = (diff >= 0).astype(int).map(labels).rename("predictions")
+                    abs_diff = pd.Series(diff.abs(), name="absDiff")
+                calculated = pd.concat([preds_serie, label_serie, abs_diff], axis=1)
+            else:
                 results = pd.Series(prediction_results.prediction)
                 predsSerie = results
                 target_serie = data_df[target]
                 abs_diff = pd.Series((predsSerie - target_serie).abs(), name="absDiff")
-                abs_diff_percent = pd.Series(abs_diff/target_serie, name="absDiffPercent")
+                abs_diff_percent = pd.Series(abs_diff / target_serie, name="absDiffPercent")
                 calculated = pd.concat([predsSerie, target_serie, abs_diff, abs_diff_percent], axis=1)
-            else:
-                results = prediction_results.all_predictions
-                predsSerie = prediction_results.all_predictions.idxmax(axis="columns")
-                labels = {v: k for v, k in enumerate(model_inspector.classification_labels)}
-                label_serie = data_df[target].map(labels)
-                predictions = np.sort(prediction_results.all_predictions.values)
-                abs_diff = pd.Series(predictions[:, -1] - predictions[:, -2], name="absDiff")
-                calculated = pd.concat([predsSerie, label_serie, abs_diff], axis=1)
-                sorted_probs = prediction_results.all_predictions.sort_values(by=1, ascending=False, axis=1)
-                sorted_probs.to_csv(sorted_path)
             results.to_csv(preds_path, index=False)
             calculated.to_csv(calculated_path, index=False)
             return inspection
