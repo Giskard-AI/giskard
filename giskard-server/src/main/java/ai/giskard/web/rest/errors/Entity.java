@@ -10,6 +10,7 @@ public enum Entity {
     TEST("Test"),
     USER("User"),
     ROLE("Role"),
+    FEEDBACK("Feedback"),
     INSPECTION("Inspection");
 
     @Getter

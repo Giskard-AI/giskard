@@ -85,7 +85,7 @@ eclipse {
 defaultTasks "bootRun"
 
 springBoot {
-    mainClassName = "ai.giskard.GiskardApp"
+    mainClass = "ai.giskard.GiskardApp"
 }
 
 test {
@@ -281,8 +281,9 @@ dependencies {
     implementation ("org.springdoc:springdoc-openapi-webmvc-core")
     implementation group: 'org.springdoc', name: 'springdoc-openapi-ui', version: '1.6.7'
     implementation "org.postgresql:postgresql"
+    implementation "com.h2database:h2"
     liquibaseRuntime "org.postgresql:postgresql"
-    annotationProcessor "org.hibernate:hibernate-jpamodelgen:${hibernateVersion}"
+    annotationProcessor "org.hibernate:hibernate-jpamodelgen:${hibernateVersion}.Final"
     annotationProcessor "org.glassfish.jaxb:jaxb-runtime:${jaxbRuntimeVersion}"
     annotationProcessor "org.springframework.boot:spring-boot-configuration-processor:${springBootVersion}"
     testImplementation "org.springframework.boot:spring-boot-starter-test"
@@ -300,8 +301,8 @@ dependencies {
     compileOnly "org.mapstruct:mapstruct:${mapstructVersion}"
     annotationProcessor "org.mapstruct:mapstruct-processor:${mapstructVersion}"
 
-//    compile files("${projectDir.absolutePath}/src/main/resources/third-party/j2ts-api.jar")
     implementation files("$projectDir/src/main/resources/third-party/j2ts-api.jar")
+    implementation group: 'com.fasterxml.jackson.dataformat', name: 'jackson-dataformat-yaml', version: '2.13.2'
 }
 
 protobuf {

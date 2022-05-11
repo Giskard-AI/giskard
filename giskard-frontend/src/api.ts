@@ -1,25 +1,30 @@
 import axios from 'axios';
-import { apiUrl, apiUrlJava } from '@/env';
+import {apiUrl, apiUrlJava} from '@/env';
+import {IDataMetadata, IModelMetadata} from './interfaces';
+import {getLocalToken} from '@/utils';
 import {
-  IDataMetadata, IModelMetadata,
-  IFeedbackCreate, IFeedbackForList, IFeedbackDisplay
-} from './interfaces';
-import { getLocalToken } from '@/utils';
-import {
+  AdminUserDTO,
+  AppConfigDTO,
+  CodeTestCollection,
+  CreateFeedbackDTO,
+  CreateFeedbackReplyDTO,
+  FeedbackDTO,
+  FeedbackMinimalDTO,
+  FileDTO,
+  JWTToken,
+  ManagedUserVM,
+  ModelDTO,
+  PasswordResetRequest,
   ProjectDTO,
+  ProjectPostDTO,
   RoleDTO,
   TestDTO,
-  TestSuiteDTO,
   TestExecutionResultDTO,
-  ProjectPostDTO,
-  AppConfigDTO,
-  AdminUserDTO,
-  FileDTO,
-  ModelDTO,
-  JWTToken,
-  PasswordResetRequest,
+  TestSuiteDTO,
   TokenAndPasswordVM,
-  UpdateMeDTO, UserDTO, ManagedUserVM
+  UpdateMeDTO,
+  UpdateTestSuiteDTO,
+  UserDTO
 } from '@/generated-sources';
 import AdminUserDTOWithPassword = AdminUserDTO.AdminUserDTOWithPassword;
 
@@ -94,7 +99,10 @@ export const api = {
     return axios.get(`${apiUrlJava}/api/v2/signuplink`, authHeaders(token));
   },
   async inviteToSignup(token: string, email: string) {
-    return axios.post(`${apiUrlJava}/api/v2/users/invite`, { email }, authHeaders(token));
+    const params = new URLSearchParams();
+    params.append('email', email);
+
+    return axios.post(`${apiUrlJava}/api/v2/users/invite`, params, authHeaders(token));
   },
   async getCoworkersMinimal(token: string) {
     return axios.get<UserDTO[]>(`${apiUrlJava}/api/v2/users/coworkers`, authHeaders(token));
@@ -182,20 +190,21 @@ export const api = {
     return axios.post(`${apiUrl}/api/v1/models/${modelId}/explain_text/${featureName}`, { features: inputData }, authHeaders(token));
   },
   // feedbacks
-  async submitFeedback(token: string, payload: IFeedbackCreate, projectId: number) {
-    return axios.post(`${apiUrl}/api/v1/feedbacks/${projectId}`, payload, authHeaders(token));
+  async submitFeedback(token: string, payload: CreateFeedbackDTO, projectId: number) {
+    return axios.post(`${apiUrlJava}/api/v2/feedbacks/${projectId}`, payload, authHeaders(token));
   },
   async getProjectFeedbacks(token: string, projectId: number) {
-    return axios.get<IFeedbackForList[]>(`${apiUrl}/api/v1/feedbacks/all/${projectId}`, authHeaders(token));
+    return axios.get<FeedbackMinimalDTO[]>(`${apiUrlJava}/api/v2/feedbacks/all/${projectId}`, authHeaders(token));
   },
   async getFeedback(token: string, id: number) {
-    return axios.get<IFeedbackDisplay>(`${apiUrl}/api/v1/feedbacks/${id}`, authHeaders(token));
+    return axios.get<FeedbackDTO>(`${apiUrlJava}/api/v2/feedbacks/${id}`, authHeaders(token));
   },
   async replyToFeedback(token: string, feedbackId: number, content: string, replyToId: number | null = null) {
-    return axios.post(`${apiUrl}/api/v1/feedbacks/${feedbackId}/reply`, {
-      content,
-      reply_to_reply: replyToId
-    }, authHeaders(token));
+    return axios.post(`${apiUrlJava}/api/v2/feedbacks/${feedbackId}/reply`,
+        <CreateFeedbackReplyDTO>{
+          content,
+          replyToReply: replyToId
+        }, authHeaders(token));
   },
   async getTestSuites(projectId: number) {
     return await axios.get<Array<TestSuiteDTO>>(`${apiUrlJava}/api/v2/testing/suites/${projectId}`);
@@ -216,11 +225,14 @@ export const api = {
       model: { id: modelId }
     });
   },
-  async saveTestSuite(testSuite: TestSuiteDTO) {
+  async saveTestSuite(testSuite: UpdateTestSuiteDTO) {
     return await axios.put(`${apiUrlJava}/api/v2/testing/suites`, testSuite);
   },
   async getTestDetails(testId: number) {
     return await axios.get(`${apiUrlJava}/api/v2/testing/tests/${testId}`);
+  },
+  async getCodeTestTemplates() {
+    return await axios.get<CodeTestCollection[]>(`${apiUrlJava}/api/v2/testing/tests/code-test-templates`);
   },
   async deleteTest(testId: number) {
     return await axios.delete<TestSuiteDTO>(`${apiUrlJava}/api/v2/testing/tests/${testId}`);

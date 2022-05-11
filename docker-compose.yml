@@ -47,6 +47,11 @@ services:
       - SPRING_LIQUIBASE_URL=jdbc:postgresql://db:5432/app
       - APPLICATION_ML_WORKER_HOST=ml-worker
       - APPLICATION_ML_WORKER_PORT=50000
+      - SPRING_MAIL_HOST
+      - SPRING_MAIL_PORT
+      - SPRING_MAIL_USERNAME
+      - SPRING_MAIL_PASSWORD
+      - JHIPSTER_MAIL_BASEURL
     command: [ "/giskard/wait-for-python-app.sh", "backend", "java", "-jar","/giskard/lib/giskard.jar" ]
 
 
