@@ -36,11 +36,11 @@ class PerformanceTests(AbstractTestCollection):
     def _test_classification_score(self, score_fn, df, model: ModelInspector, target, threshold=1):
         is_binary_classification = len(model.classification_labels) == 2
         prediction = run_predict(df, model).raw_prediction
-
+        labels_mapping = {model.classification_labels[i]: i for i in range(len(model.classification_labels))}
         if is_binary_classification:
-            metric = score_fn(df[target], prediction)
+            metric = score_fn(df[target].map(labels_mapping), prediction)
         else:
-            metric = score_fn(df[target], prediction, average='macro', multi_class='ovr')
+            metric = score_fn(df[target].map(labels_mapping), prediction, average='macro', multi_class='ovr')
 
         return self.save_results(
             SingleTestResult(

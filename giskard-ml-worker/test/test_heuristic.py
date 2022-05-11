@@ -13,8 +13,8 @@ def _test_heuristic(german_credit_test_data, german_credit_model, threshold):
 
     assert results.element_count == 1000
     assert results.missing_count == 0
-    assert results.unexpected_count == 768
-    assert results.unexpected_percent == 76.8
+    assert results.unexpected_count == 233
+    assert results.unexpected_percent == 23.3
     return results.passed
 
 
@@ -27,8 +27,8 @@ def test_heuristic_opposite(german_credit_test_data, german_credit_model):
 
     assert results.element_count == 1000
     assert results.missing_count == 0
-    assert results.unexpected_count == 1000 - 768
-    assert pytest.approx(results.unexpected_percent, 0.1) == 100 - 76.8
+    assert results.unexpected_count == 1000 - 233
+    assert pytest.approx(results.unexpected_percent, 0.1) == 100 - 23.3
 
 
 def test_heuristic_proba_limits(german_credit_test_data, german_credit_model):
@@ -38,16 +38,15 @@ def test_heuristic_proba_limits(german_credit_test_data, german_credit_model):
 
     assert results.element_count == 1000
     assert results.missing_count == 0
-    assert results.unexpected_count == 914
-    assert pytest.approx(results.unexpected_percent, 0.1) == 91.4
+    assert results.unexpected_count == 927
+    assert pytest.approx(results.unexpected_percent, 0.1) == 92.7
 
 
-def test_heuristic_pass(german_credit_test_data, german_credit_model):
-    assert _test_heuristic(german_credit_test_data, german_credit_model, 0.8)
+def test_heuristic_pass_fail(german_credit_test_data, german_credit_model):
+    assert _test_heuristic(german_credit_test_data, german_credit_model, 0.3)
+    assert not _test_heuristic(german_credit_test_data, german_credit_model, 0.2)
 
 
-def test_heuristic_fail(german_credit_test_data, german_credit_model):
-    assert not _test_heuristic(german_credit_test_data, german_credit_model, 0.5)
 
 
 def test_heuristic_filtered(german_credit_test_data, german_credit_model):
@@ -60,5 +59,5 @@ def test_heuristic_filtered(german_credit_test_data, german_credit_model):
 
     assert results.element_count == 10
     assert results.missing_count == 0
-    assert results.unexpected_count == 7
-    assert results.unexpected_percent == 70
+    assert results.unexpected_count == 4
+    assert results.unexpected_percent == 40

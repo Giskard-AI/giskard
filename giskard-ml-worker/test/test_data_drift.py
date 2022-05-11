@@ -115,7 +115,7 @@ def _test_drift_prediction_psi(german_credit_test_data, german_credit_model, thr
         german_credit_model,
         threshold=threshold)
 
-    assert pytest.approx(results.metric, 0.1) == 0.036
+    assert pytest.approx(results.metric, 0.1) == 0.022
     return results.passed
 
 
@@ -132,13 +132,13 @@ def _test_drift_prediction_chi_square(german_credit_test_data, german_credit_mod
         german_credit_model,
         threshold=threshold)
 
-    assert pytest.approx(results.metric, 0.1) == 16.2
+    assert pytest.approx(results.metric, 0.1) == 9.89
     return results.passed
 
 
 def test_drift_prediction_chi_square_pass_fail(german_credit_test_data, german_credit_model):
-    assert not _test_drift_prediction_chi_square(german_credit_test_data, german_credit_model, 15)
-    assert _test_drift_prediction_chi_square(german_credit_test_data, german_credit_model, 17)
+    assert not _test_drift_prediction_chi_square(german_credit_test_data, german_credit_model, 9)
+    assert _test_drift_prediction_chi_square(german_credit_test_data, german_credit_model, 10)
 
 
 def _test_drift_prediction_ks(diabetes_dataset_with_target, linear_regression_diabetes, threshold=0.02):

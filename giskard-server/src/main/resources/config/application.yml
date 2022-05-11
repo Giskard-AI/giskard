@@ -101,6 +101,11 @@ spring:
         - api-docs
         # Uncomment to activate TLS for the dev profile
         #- tls
+  mail:
+    host:
+    port:
+    username:
+    password:
   jmx:
     enabled: false
   data:
@@ -124,6 +129,7 @@ spring:
       hibernate.order_updates: true
       hibernate.query.fail_on_pagination_over_collection_fetch: true
       hibernate.query.in_clause_parameter_padding: true
+      hibernate.types.print.banner: false
     hibernate:
       ddl-auto: none
       naming:

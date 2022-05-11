@@ -1,7 +1,5 @@
 package ai.giskard.security.jwt;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 import ai.giskard.config.ApplicationProperties;
 import ai.giskard.management.SecurityMetersService;
 import ai.giskard.security.AuthoritiesConstants;
@@ -12,20 +10,18 @@ import io.jsonwebtoken.security.Keys;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.springframework.security.core.Authentication;
+import org.springframework.test.util.ReflectionTestUtils;
+import tech.jhipster.config.JHipsterProperties;
 
 import java.security.Key;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.test.util.ReflectionTestUtils;
-import tech.jhipster.config.JHipsterProperties;
+import static ai.giskard.security.jwt.JWTFilterTest.createAuthentication;
+import static org.assertj.core.api.Assertions.assertThat;
 
 class TokenProviderSecurityMetersTests {
 
@@ -112,7 +108,7 @@ class TokenProviderSecurityMetersTests {
     }
 
     private String createValidToken() {
-        Authentication authentication = createAuthentication();
+        Authentication authentication = createAuthentication(AuthoritiesConstants.AITESTER);
 
         return tokenProvider.createToken(authentication, false);
     }
@@ -120,15 +116,9 @@ class TokenProviderSecurityMetersTests {
     private String createExpiredToken() {
         ReflectionTestUtils.setField(tokenProvider, "tokenValidityInMilliseconds", -ONE_MINUTE);
 
-        Authentication authentication = createAuthentication();
+        Authentication authentication = createAuthentication(AuthoritiesConstants.AITESTER);
 
         return tokenProvider.createToken(authentication, false);
-    }
-
-    private Authentication createAuthentication() {
-        Collection<GrantedAuthority> authorities = new ArrayList<>();
-        authorities.add(new SimpleGrantedAuthority(AuthoritiesConstants.AITESTER));
-        return new UsernamePasswordAuthenticationToken("anonymous", "anonymous", authorities);
     }
 
     private String createUnsupportedToken() {

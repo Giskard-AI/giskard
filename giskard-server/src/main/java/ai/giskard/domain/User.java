@@ -68,7 +68,7 @@ public class User extends AbstractAuditingEntity implements Serializable {
     @Setter
     @Getter
     @NotNull
-    @Column(nullable = false)
+    @Column(name = "is_active", nullable = false)
     private boolean activated = false;
 
     @Setter
@@ -137,9 +137,14 @@ public class User extends AbstractAuditingEntity implements Serializable {
             ", login='" + login + '\'' +
             '}';
     }
+
     @Setter
     @Getter
     @JsonIgnore
     @ManyToMany(mappedBy = "guests", cascade = CascadeType.ALL)
     private Set<Project> projects = new HashSet<Project>();
+
+    public String getDisplayNameOrLogin() {
+        return displayName != null ? displayName : login;
+    }
 }

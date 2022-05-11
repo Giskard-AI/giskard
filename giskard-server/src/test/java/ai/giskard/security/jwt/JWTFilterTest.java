@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import ai.giskard.config.ApplicationProperties;
 import ai.giskard.management.SecurityMetersService;
 import ai.giskard.security.AuthoritiesConstants;
+import ai.giskard.security.GiskardUser;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
@@ -48,11 +49,7 @@ class JWTFilterTest {
 
     @Test
     void testJWTFilter() throws Exception {
-        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-            "test-user",
-            "test-password",
-            Collections.singletonList(new SimpleGrantedAuthority(AuthoritiesConstants.AICREATOR))
-        );
+        UsernamePasswordAuthenticationToken authentication = createAuthentication(AuthoritiesConstants.AICREATOR);
         String jwt = tokenProvider.createToken(authentication, false);
         MockHttpServletRequest request = new MockHttpServletRequest();
         request.addHeader(JWTFilter.AUTHORIZATION_HEADER, "Bearer " + jwt);
@@ -62,6 +59,7 @@ class JWTFilterTest {
         jwtFilter.doFilter(request, response, filterChain);
         assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
         assertThat(SecurityContextHolder.getContext().getAuthentication().getName()).isEqualTo("test-user");
+        assertThat(((GiskardUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getId()).isEqualTo(1L);
         assertThat(SecurityContextHolder.getContext().getAuthentication().getCredentials()).hasToString(jwt);
     }
 
@@ -103,11 +101,7 @@ class JWTFilterTest {
 
     @Test
     void testJWTFilterWrongScheme() throws Exception {
-        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-            "test-user",
-            "test-password",
-            Collections.singletonList(new SimpleGrantedAuthority(AuthoritiesConstants.AICREATOR))
-        );
+        UsernamePasswordAuthenticationToken authentication = createAuthentication(AuthoritiesConstants.AICREATOR);
         String jwt = tokenProvider.createToken(authentication, false);
         MockHttpServletRequest request = new MockHttpServletRequest();
         request.addHeader(JWTFilter.AUTHORIZATION_HEADER, "Basic " + jwt);
@@ -117,5 +111,14 @@ class JWTFilterTest {
         jwtFilter.doFilter(request, response, filterChain);
         assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
         assertThat(SecurityContextHolder.getContext().getAuthentication()).isNull();
+    }
+
+    public static UsernamePasswordAuthenticationToken createAuthentication(String role) {
+        GiskardUser giskardUser = new GiskardUser(
+            1L, "test-user", "",
+            Collections.singletonList(new SimpleGrantedAuthority(role)));
+        return new UsernamePasswordAuthenticationToken(
+            giskardUser, "test-password", giskardUser.getAuthorities()
+        );
     }
 }

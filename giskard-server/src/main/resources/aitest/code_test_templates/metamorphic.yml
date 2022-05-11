@@ -1,0 +1,44 @@
+title: Metamorphic
+id: metamorphic
+order: 2
+items:
+  - id: metamorphic_invariance
+    title: Invariance
+    # language=Python
+    code: |-
+      perturbation = {
+          "<FEATURE NAME>": lambda x: x["<FEATURE NAME>"] * 2,
+      }
+
+      tests.metamorphic.test_metamorphic_invariance(
+          df=train_df,
+          model=model,
+          perturbation_dict=perturbation,
+          threshold=0.1
+      )
+  - id: metamorphic_increasing
+    title: Increasing
+    hint: Tests that the prediction probability increases with the increase of a feature
+      value
+    # language=Python
+    code: |-
+      tests.metamorphic.test_metamorphic_increasing(
+          df=train_df,
+          model=model,
+          column_name='<NUMERIC FEATURE NAME>',
+          perturbation_percent=0.1,
+          threshold=0.1
+      )
+  - id: metamorphic_decreasing
+    title: Decreasing
+    hint: Tests that the prediction probability decreases with the increase of a feature
+      value
+    # language=Python
+    code: |-
+      tests.metamorphic.test_metamorphic_decreasing(
+          df=train_df,
+          model=model,
+          column_name='<NUMERIC FEATURE NAME>',
+          perturbation_percent=0.1,
+          threshold=0.1
+      )
