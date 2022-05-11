@@ -42,7 +42,7 @@ public abstract class FileDTO {
     }
 
     public Long getProjectId() {
-        return project.getId();
+        return project == null ? null : project.getId();
     }
 
 }

@@ -28,20 +28,18 @@ jobs:
         DOMAIN=backend \
         SMTP_HOST="" \
         TRAEFIK_PUBLIC_NETWORK_IS_EXTERNAL=false \
-        INSTALL_DEV=true \
+        RUN_TESTS=true \
         GISKARD_PLAN=enterprise \
         docker-compose -f docker-compose.yml -f docker-compose.dev.yml config | sed 's/app-db-data/app-db-test-data/g;' > docker-stack.yml 
       
     - name: Build frontend image
       run: docker-compose -f docker-stack.yml build frontend
 
-    - name: Build backend image
+    - name: Build python backend image
       run: docker-compose -f docker-stack.yml build backend
 
-    - name: Run backend tests
-      run: |
-        docker-compose -f docker-stack.yml up -d backend db
-        docker-compose -f docker-stack.yml exec -T backend bash /app/tests-start.sh "$@"
+    - name: Build and test java backend image
+      run: docker-compose -f docker-stack.yml build backend-java
 
     - name: Remove containers and volumes
       run: docker-compose -f docker-stack.yml down -v --remove-orphans

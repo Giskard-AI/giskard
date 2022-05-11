@@ -30,7 +30,7 @@ def upgrade():
     sa.Column('object_value', sa.String(), nullable=True),
     sa.Column('feedback_type', sa.String(), nullable=True),
     sa.Column('feedback_message', sa.String(), nullable=True),
-    sa.Column('input_data', sa.JSON(), nullable=False),
+    sa.Column('input_data', sa.String(), nullable=False),
     sa.ForeignKeyConstraint(['dataset_id'], ['datasets.id'], ),
     sa.ForeignKeyConstraint(['model_id'], ['project_models.id'], ),
     sa.ForeignKeyConstraint(['project_id'], ['projects.id'], ),

@@ -29,7 +29,7 @@ public class TestSuiteService {
     public TestSuite updateTestSuite(UpdateTestSuiteDTO dto) {
         TestSuite testSuite = testSuiteRepository.findById(dto.getId()).orElseThrow(() -> new EntityNotFoundException(Entity.TEST_SUITE, dto.getId()));
         giskardMapper.updateTestSuiteFromDTO(dto, testSuite);
-        return testSuiteRepository.save(testSuite);
+        return testSuite;
     }
 
     public void deleteSuite(Long suiteId) {

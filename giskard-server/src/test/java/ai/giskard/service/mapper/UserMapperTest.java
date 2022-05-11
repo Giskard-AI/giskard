@@ -1,34 +1,40 @@
 package ai.giskard.service.mapper;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 import ai.giskard.domain.User;
-import ai.giskard.web.dto.mapper.UserMapper;
+import ai.giskard.web.dto.mapper.GiskardMapper;
+import ai.giskard.web.dto.mapper.GiskardMapperImpl;
 import ai.giskard.web.dto.user.AdminUserDTO;
 import ai.giskard.web.dto.user.UserDTO;
+import org.apache.commons.lang3.RandomStringUtils;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import org.apache.commons.lang3.RandomStringUtils;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 
-/**
- * Unit tests for {@link UserMapper}.
- */
+import static org.assertj.core.api.Assertions.assertThat;
+
+@SpringBootTest
 class UserMapperTest {
 
     private static final String DEFAULT_LOGIN = "johndoe";
     private static final Long DEFAULT_ID = 1L;
 
-    private UserMapper userMapper;
+    @Autowired
+    private GiskardMapper giskardMapper;
     private User user;
     private AdminUserDTO userDto;
 
     @BeforeEach
     public void init() {
-        userMapper = new UserMapper();
+        //giskardMapper = new GiskardMapperImpl();
         user = new User();
         user.setLogin(DEFAULT_LOGIN);
         user.setPassword(RandomStringUtils.random(60));
@@ -44,7 +50,7 @@ class UserMapperTest {
         users.add(user);
         users.add(null);
 
-        List<UserDTO> userDTOS = userMapper.usersToUserDTOs(users);
+        List<UserDTO> userDTOS = giskardMapper.usersToUserDTOs(users);
 
         assertThat(userDTOS).isNotEmpty().size().isEqualTo(1);
     }
@@ -55,7 +61,7 @@ class UserMapperTest {
         usersDto.add(userDto);
         usersDto.add(null);
 
-        List<User> users = userMapper.userDTOsToUsers(usersDto);
+        List<User> users = giskardMapper.adminUserDTOsToUsers(usersDto);
 
         assertThat(users).isNotEmpty().size().isEqualTo(1);
     }
@@ -69,7 +75,7 @@ class UserMapperTest {
         List<AdminUserDTO> usersDto = new ArrayList<>();
         usersDto.add(userDto);
 
-        List<User> users = userMapper.userDTOsToUsers(usersDto);
+        List<User> users = giskardMapper.adminUserDTOsToUsers(usersDto);
 
         assertThat(users).isNotEmpty().size().isEqualTo(1);
         assertThat(users.get(0).getRoles()).isNotNull();
@@ -84,7 +90,7 @@ class UserMapperTest {
         List<AdminUserDTO> usersDto = new ArrayList<>();
         usersDto.add(userDto);
 
-        List<User> users = userMapper.userDTOsToUsers(usersDto);
+        List<User> users = giskardMapper.adminUserDTOsToUsers(usersDto);
 
         assertThat(users).isNotEmpty().size().isEqualTo(1);
         assertThat(users.get(0).getRoles()).isNotNull();
@@ -97,7 +103,7 @@ class UserMapperTest {
         authoritiesAsString.add("ADMIN");
         userDto.setRoles(authoritiesAsString);
 
-        User user = userMapper.userDTOToUser(userDto);
+        User user = giskardMapper.adminUserDTOtoUser(userDto);
 
         assertThat(user).isNotNull();
         assertThat(user.getRoles()).isNotNull();
@@ -109,7 +115,7 @@ class UserMapperTest {
     void userDTOToUserMapWithNullAuthoritiesStringShouldReturnUserWithEmptyAuthorities() {
         userDto.setRoles(null);
 
-        User user = userMapper.userDTOToUser(userDto);
+        User user = giskardMapper.adminUserDTOtoUser(userDto);
 
         assertThat(user).isNotNull();
         assertThat(user.getRoles()).isNotNull();
@@ -118,12 +124,12 @@ class UserMapperTest {
 
     @Test
     void userDTOToUserMapWithNullUserShouldReturnNull() {
-        assertThat(userMapper.userDTOToUser(null)).isNull();
+        assertThat(giskardMapper.adminUserDTOtoUser(null)).isNull();
     }
 
     @Test
     void testUserFromId() {
-        assertThat(userMapper.userFromId(DEFAULT_ID).getId()).isEqualTo(DEFAULT_ID);
-        assertThat(userMapper.userFromId(null)).isNull();
+        assertThat(giskardMapper.userFromId(DEFAULT_ID).getId()).isEqualTo(DEFAULT_ID);
+        assertThat(giskardMapper.userFromId(null)).isNull();
     }
 }

@@ -80,11 +80,19 @@ import PredictionExplanations from './PredictionExplanations.vue';
 import TextExplanation from './TextExplanation.vue';
 import { api } from '@/api';
 import { readToken } from '@/store/main/getters';
-import { IFeedbackCreate } from '@/interfaces';
 import FeedbackPopover from '@/components/FeedbackPopover.vue';
 import Inspector from './Inspector.vue';
 import Mousetrap from 'mousetrap';
+import {CreateFeedbackDTO} from "@/generated-sources";
 
+type CreatedFeedbackCommonDTO = {
+  targetFeature: string;
+  userData: string;
+  modelId: number;
+  datasetId: number;
+  originalData: string;
+  projectId: number
+};
 @Component({
   components: { OverlayLoader, Inspector, PredictionResults, FeedbackPopover, PredictionExplanations, TextExplanation }
 })
@@ -180,23 +188,23 @@ export default class InspectorWrapper extends Vue {
     this.feedbackPopupToggle = false;
   }
 
-  get commonFeedbackData() {
+  get commonFeedbackData(): CreatedFeedbackCommonDTO {
     return {
-      project_id: parseInt(this.$router.currentRoute.params.id),
-      model_id: this.modelId,
-      dataset_id: this.datasetId,
-      target_feature: this.targetFeature,
-      user_data: this.inputData,
-      original_data: this.originalData
+      projectId: parseInt(this.$router.currentRoute.params.id),
+      modelId: this.modelId,
+      datasetId: this.datasetId,
+      targetFeature: this.targetFeature,
+      userData: JSON.stringify(this.inputData),
+      originalData: JSON.stringify(this.originalData)
     }
   }
 
   public async submitGeneralFeedback() {
-    const feedback: IFeedbackCreate = {
+    const feedback: CreateFeedbackDTO = {
       ...this.commonFeedbackData,
-      feedback_type: "general",
-      feedback_choice: this.feedbackChoice || undefined,
-      feedback_message: this.feedback
+      feedbackType: "general",
+      feedbackChoice: this.feedbackChoice,
+      feedbackMessage: this.feedback
     }
     try {
       await this.doSubmitFeedback(feedback)
@@ -207,25 +215,25 @@ export default class InspectorWrapper extends Vue {
   }
 
   public async submitValueFeedback(userData: object) {
-    const feedback: IFeedbackCreate = {
+    const feedback: CreateFeedbackDTO = {
       ...this.commonFeedbackData,
-      feedback_type: "value",
+      feedbackType: "value",
       ...userData
     }
     await this.doSubmitFeedback(feedback)
   }
 
   public async submitValueVariationFeedback(userData: object) {
-    const feedback: IFeedbackCreate = {
+    const feedback: CreateFeedbackDTO = {
       ...this.commonFeedbackData,
-      feedback_type: "value perturbation",
+      feedbackType: "value perturbation",
       ...userData
     }
     await this.doSubmitFeedback(feedback)
   }
 
-  private async doSubmitFeedback(payload: IFeedbackCreate) {
-    await api.submitFeedback(readToken(this.$store), payload, payload.project_id)
+  private async doSubmitFeedback(payload: CreateFeedbackDTO) {
+    await api.submitFeedback(readToken(this.$store), payload, payload.projectId)
   }
 
 }
