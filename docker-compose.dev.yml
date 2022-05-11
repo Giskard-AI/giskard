@@ -36,3 +36,5 @@ services:
     build:
       dockerfile: ./giskard-server/src/main/docker/app/app.dockerfile
       context: .
+      args:
+        RUN_TESTS: ${RUN_TESTS-false}

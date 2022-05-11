@@ -14,6 +14,7 @@ import java.time.LocalDateTime;
 @Table(indexes = @Index(columnList = "fileName"))
 public abstract class ProjectFile implements Serializable {
     @Getter
+    @Setter
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
