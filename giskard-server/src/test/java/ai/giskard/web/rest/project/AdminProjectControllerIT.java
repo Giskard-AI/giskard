@@ -36,7 +36,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @IntegrationTest
 @WithMockUser(username = "admin", authorities = AuthoritiesConstants.ADMIN)
-class AdminProjectResourceIT {
+class AdminProjectControllerIT {
 
     @Autowired
     private ProjectRepository projectRepository;

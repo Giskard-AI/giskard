@@ -2,6 +2,7 @@ package ai.giskard.domain;
 
 import ai.giskard.domain.ml.Dataset;
 import ai.giskard.domain.ml.ProjectModel;
+import ai.giskard.domain.ml.TestSuite;
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -65,6 +66,16 @@ public class Project {
     @Setter
     @OneToMany(mappedBy = "project", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private Set<Dataset> datasets = new HashSet<>();
+
+    @Getter
+    @Setter
+    @OneToMany(mappedBy = "project", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private Set<TestSuite> testSuites = new HashSet<>();
+
+    @Getter
+    @Setter
+    @OneToMany(mappedBy = "project", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private Set<Feedback> feedbacks = new HashSet<>();
 
 
     @Getter

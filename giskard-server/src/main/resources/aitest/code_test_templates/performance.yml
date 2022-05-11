@@ -5,7 +5,9 @@ items:
   - id: auc
     title: AUC
     hint: Test if the AUC is high enough for a sub-population
-    model_type : classification
+    modelTypes:
+      - MULTICLASS_CLASSIFICATION
+      - BINARY_CLASSIFICATION
     # language=Python
     code: |-
       """
