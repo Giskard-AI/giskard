@@ -1,12 +1,10 @@
 import logging
-from pathlib import Path
 import os
 import random
+from pathlib import Path
 
-import pandas
 from fastapi import APIRouter, Depends, HTTPException, status, File, UploadFile
 from fastapi.responses import FileResponse
-from pandas import DataFrame
 from sqlalchemy.orm import Session
 
 from app import crud, schemas, models
@@ -14,7 +12,6 @@ from app.api import deps
 from app.core import files, files_utils
 from app.core.config import settings
 from app.core.ml import run_predict
-from app.models.inspection import Inspection
 
 router = APIRouter()
 
@@ -214,15 +211,19 @@ def upload_inspect(model_id: str, dataset_id: str, target: str, db: Session = De
             model_inspector = files_utils.read_model_file(model_file.location)
             data_df = files_utils.read_dataset_file(data_file.location)
             data_df.to_csv(data_file.location.replace(".zst", ""))
-
-            # raw_prediction = model_inspector.prediction_function(input_df)[0]
             prediction_results = run_predict(data_df, model_inspector)
-            file_path = os.path.join(settings.BUCKET_PATH, f"{model_id}_{dataset_id}.csv")
-            results = prediction_results.all_predictions.add_prefix('predictions_')
-
-            results.to_csv(file_path, index=False)
-            # obj_in=schemas.InspectionCreateSchema(model_id=model_id, dataset_id=dataset_id, location=file_path)
-            # inspection = crud.inspection.create(db,  obj_in=obj_in )
+            #inspection_folder=os.path.join(settings.BUCKET_PATH, f"{model_id}_{dataset_id}")
+            inspection_folder=Path(settings.BUCKET_PATH, "inspections",f"{model_id}_{dataset_id}")
+            inspection_folder.mkdir(parents=True, exist_ok=True)
+            preds_path = Path(inspection_folder, "predictions.csv")
+            results = prediction_results.all_predictions#.add_prefix('predictions_')
+            results.to_csv(preds_path, index=False)
+            calculated_path = Path(inspection_folder, "calculated.csv")
+            calculated=prediction_results.all_predictions.idxmax(axis="columns")
+            calculated.to_csv(calculated_path, index=False)
+            # TODO understand why creation is not working
+            # obj_in=schemas.InspectionCreateSchema( location=str(inspection_folder.absolute()), target=target)
+            # inspection = crud.inspection.create(db,  obj_in=obj_in,model_id=model_id, dataset_id=dataset_id)
             # print(prediction_results)
 
         except Exception as e:

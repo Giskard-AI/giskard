@@ -2,7 +2,7 @@ package ai.giskard.service;
 
 import ai.giskard.config.ApplicationProperties;
 import ai.giskard.domain.ml.Dataset;
-import ai.giskard.domain.ml.RowFilter;
+import ai.giskard.domain.ml.table.Filter;
 import ai.giskard.repository.UserRepository;
 import ai.giskard.repository.ml.DatasetRepository;
 import ai.giskard.repository.ml.ModelRepository;
@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import tech.tablesaw.api.DoubleColumn;
 import tech.tablesaw.api.IntColumn;
+import tech.tablesaw.api.StringColumn;
 import tech.tablesaw.api.Table;
 import tech.tablesaw.selection.Selection;
 
@@ -23,6 +24,10 @@ import java.io.FileNotFoundException;
 import java.io.InputStreamReader;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Collections;
+import java.util.stream.Collectors;
+
+import static ai.giskard.domain.ml.table.TableConstants.BORDERLINE_THRESHOLD;
 
 @Service
 @Transactional
@@ -41,11 +46,20 @@ public class DatasetService {
         return Table.read().csv(filePathName);
     }
 
-    public Table getProbsTableFromModelId(@NotNull Long datasetId, @NotNull Long modelId) throws FileNotFoundException {
-        Path filePath = Paths.get(applicationProperties.getBucketPath(), "files-bucket", String.format("%s_%s.csv", modelId, datasetId));
+    public Table getTableFromBucketFile(String location) throws FileNotFoundException {
         InputStreamReader reader = new InputStreamReader(
-            new FileInputStream(filePath.toAbsolutePath().toString()));
+            new FileInputStream(location));
         return Table.read().csv(reader);
+    }
+
+    public Table getPredsTable(@NotNull Long datasetId, @NotNull Long modelId) throws FileNotFoundException {
+        Path filePath = Paths.get(applicationProperties.getBucketPath(), "files-bucket", "inspections", String.format("%s_%s", modelId, datasetId), "predictions.csv");
+        return getTableFromBucketFile(filePath.toAbsolutePath().toString());
+    }
+
+    public Table getCalculatedTable(@NotNull Long datasetId, @NotNull Long modelId) throws FileNotFoundException {
+        Path filePath = Paths.get(applicationProperties.getBucketPath(), "files-bucket", "inspections", String.format("%s_%s", modelId, datasetId), "calculated.csv");
+        return getTableFromBucketFile(filePath.toAbsolutePath().toString());
     }
 
     /**
@@ -76,26 +90,48 @@ public class DatasetService {
         return filteredTable;
     }
 
+    private Selection getSelection(Table table, Long datasetId, Long modelId, Filter filter) throws FileNotFoundException {
+        Table predsTable = getPredsTable(datasetId, modelId);
+        Table predsNoTargetTable= predsTable.rejectColumns(filter.getTarget());
+        Table calculatedTable = getCalculatedTable(datasetId, modelId);
+        StringColumn predictedClass=calculatedTable.stringColumn(0);
+        DoubleColumn probTarget = (DoubleColumn) predsTable.column( filter.getTarget());
+        Selection correctSelection=predictedClass.lowerCase().isEqualTo(filter.getTarget().toLowerCase());
+        Selection selection;
+        switch (filter.getRowFilter()) {
+            case CORRECT:
+                selection=correctSelection;
+                break;
+            case WRONG:
+                selection=predictedClass.lowerCase().isNotEqualTo(filter.getTarget().toLowerCase());
+                break;
+            case CUSTOM:
+                selection = correctSelection.and(probTarget.isLessThanOrEqualTo(filter.getMaxThreshold()));
+                break;
+            case BORDERLINE:
+                DoubleColumn _max = DoubleColumn.create("max", predsNoTargetTable.stream().mapToDouble(row -> Collections.max(row.columnNames().stream().map(name -> row.getDouble(name)).collect(Collectors.toList()))));
+                DoubleColumn absDiff=_max.subtract(probTarget).abs();
+                // TODO Check if correct filter needed
+                selection=predictedClass.lowerCase().isEqualTo(filter.getTarget().toLowerCase());
+                selection=selection.and(absDiff.isLessThanOrEqualTo(BORDERLINE_THRESHOLD));
+                break;
+            default:
+                selection = null;
+        }
+        return selection;
+    }
+
     /**
      * Get filtered rows
      *
      * @param datasetId dataset id
      * @return filtered table
      */
-    public Table getRowsFiltered(@NotNull Long datasetId, @NotNull Long modelId, @NotNull String target, @NotNull float threshold, @NotNull RowFilter rowFilter) throws FileNotFoundException {
+    public Table getRowsFiltered(@NotNull Long datasetId, @NotNull Long modelId, @NotNull Filter filter) throws FileNotFoundException {
         Table table = getTableFromDatasetId(datasetId);
-        Table probsTable = getProbsTableFromModelId(datasetId, modelId);
         table.addColumns(IntColumn.indexColumn("Index", table.rowCount(), 0));
-        DoubleColumn probTarget = (DoubleColumn) probsTable.column("predictions_" + target);
-        Selection selection = null;
-        IntColumn labelColumn= (IntColumn) table.column(target.toLowerCase());
-        DoubleColumn finalColumn= labelColumn.multiply(probTarget);
-        if (rowFilter == RowFilter.GREATER) {
-            selection = finalColumn.isGreaterThan(threshold);
-        } else if (rowFilter == RowFilter.LOWER) {
-            selection = finalColumn.isLessThan(threshold);
-        }
-        Table filteredTable = selection == null ?  table: table.where(selection);
+        Selection selection = getSelection(table, datasetId, modelId, filter);
+        Table filteredTable = selection == null ? table : table.where(selection);
         return filteredTable;
     }
 }

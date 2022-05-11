@@ -33,7 +33,7 @@ class ProjectFileMinimalSchema(BaseModel):
 class ProjectModelFileSchema(ProjectFileSchema):
     python_version: str
 
+
 class InspectionCreateSchema(BaseModel):
-    dataset_id: str
-    model_id: str
-    location:str
+    location: str
+    target: str
