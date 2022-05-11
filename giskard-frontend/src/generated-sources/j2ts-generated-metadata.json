@@ -28,6 +28,7 @@
     "ai.giskard.web.dto.ml.FileDTO": "FileDTO",
     "ai.giskard.web.rest.vm.ManagedUserVM": "ManagedUserVM",
     "ai.giskard.web.dto.ml.TestExecutionResultDTO": "TestExecutionResultDTO",
+    "ai.giskard.domain.ml.table.RegressionUnit": "RegressionUnit",
     "ai.giskard.web.dto.user.RoleDTO": "RoleDTO",
     "ai.giskard.web.dto.ml.NamedSingleTestResultDTO": "NamedSingleTestResultDTO",
     "ai.giskard.web.dto.ml.TestEditorConfigDTO": "TestEditorConfigDTO",

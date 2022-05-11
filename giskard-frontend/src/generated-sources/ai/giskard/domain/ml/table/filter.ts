@@ -7,6 +7,7 @@ export interface Filter {
     maxThreshold: number;
     minThreshold: number;
     predictedLabel: string;
+    regressionUnit: string;
     rowFilter: RowFilterType;
     targetLabel: string;
 }

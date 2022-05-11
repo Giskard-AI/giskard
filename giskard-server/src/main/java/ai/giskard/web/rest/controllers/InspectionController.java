@@ -1,29 +1,25 @@
 package ai.giskard.web.rest.controllers;
 
+import ai.giskard.domain.ml.Inspection;
 import ai.giskard.domain.ml.table.Filter;
 import ai.giskard.repository.InspectionRepository;
-import ai.giskard.repository.ml.DatasetRepository;
-import ai.giskard.service.DatasetService;
 import ai.giskard.service.InspectionService;
 import ai.giskard.web.dto.mapper.GiskardMapper;
-import ai.giskard.web.dto.ml.DatasetDTO;
-import ai.giskard.web.dto.ml.DatasetDetailsDTO;
+import ai.giskard.web.dto.ml.InspectionDTO;
+import ai.giskard.web.rest.errors.Entity;
+import ai.giskard.web.rest.errors.EntityNotFoundException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import tech.tablesaw.api.Row;
 import tech.tablesaw.api.Table;
-import tech.tablesaw.io.json.JsonWriter;
 
 import javax.validation.constraints.NotNull;
 import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 
 @RestController
@@ -32,16 +28,18 @@ import java.util.List;
 public class InspectionController {
 
     private final InspectionService inspectionService;
+    private final InspectionRepository inspectionRepository;
+    private final GiskardMapper giskardMapper;
 
     /**
      * Retrieve the row specified by the given range on the dataset
      * TODO Replace with spring pagination
      *
      * @param inspectionId id of the inspection
-     * @param filter filter parameters object
-     * @param rangeMin minimum range
-     * @param rangeMax maximum range
-     * @param isRandom is selection random
+     * @param filter       filter parameters object
+     * @param rangeMin     minimum range
+     * @param rangeMax     maximum range
+     * @param isRandom     is selection random
      * @return list of filtered rows
      * @throws Exception
      */
@@ -60,6 +58,13 @@ public class InspectionController {
         return result;
     }
 
+    @GetMapping("/inspection/{id}")
+    public InspectionDTO getInspection(@PathVariable @NotNull Long id) {
+        Inspection inspection = inspectionRepository.findById(id).orElseThrow(() -> new EntityNotFoundException(Entity.INSPECTION, id));
+        return giskardMapper.inspectionToInspectionDTO(inspection);
+    }
+
+
     /**
      * get the labels for the target column
      *
@@ -70,5 +75,6 @@ public class InspectionController {
     public List<String> getLabels(@PathVariable @NotNull Long inspectionId) throws FileNotFoundException {
         return inspectionService.getLabels(inspectionId);
     }
+
 
 }
