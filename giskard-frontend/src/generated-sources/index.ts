@@ -19,8 +19,8 @@ export const GENERATED_MAPPING = {
     'ai.giskard.web.dto.ml.TestEditorConfigDTO' : 'TestEditorConfigDTO',
     'ai.giskard.web.rest.vm.ManagedUserVM' : 'ManagedUserVM',
     'ai.giskard.web.dto.FeedbackMinimalDTO' : 'FeedbackMinimalDTO',
-    'ai.giskard.web.dto.CreateFeedbackReplyDTO' : 'CreateFeedbackReplyDTO',
     'ai.giskard.domain.ml.CodeTestTemplate' : 'CodeTestTemplate',
+    'ai.giskard.web.dto.CreateFeedbackReplyDTO' : 'CreateFeedbackReplyDTO',
     'ai.giskard.web.dto.ml.ProjectPostDTO' : 'ProjectPostDTO',
     'ai.giskard.web.dto.ml.TestExecutionStatusDTO' : 'TestExecutionStatusDTO',
     'ai.giskard.web.dto.user.RoleDTO' : 'RoleDTO',
@@ -61,8 +61,8 @@ export * from './ai/giskard/web/dto/ml/named-single-test-result-dto';
 export * from './ai/giskard/web/dto/ml/test-editor-config-dto';
 export * from './ai/giskard/web/rest/vm/managed-user-vm';
 export * from './ai/giskard/web/dto/feedback-minimal-dto';
-export * from './ai/giskard/web/dto/create-feedback-reply-dto';
 export * from './ai/giskard/domain/ml/code-test-template';
+export * from './ai/giskard/web/dto/create-feedback-reply-dto';
 export * from './ai/giskard/web/dto/ml/project-post-dto';
 export * from './ai/giskard/web/dto/ml/test-execution-status-dto';
 export * from './ai/giskard/web/dto/user/role-dto';
