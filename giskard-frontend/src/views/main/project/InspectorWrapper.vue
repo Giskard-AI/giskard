@@ -21,10 +21,7 @@
       </v-toolbar>
     </v-row>
 
-
-
-
-    <RowList ref='rowList'  :datasetId='datasetId' :model-id='modelId' 
+    <RowList ref='rowList'  :datasetId='datasetId' :model-id='modelId'
              :currentRowIdx='rowNb' :inspection-id='inspection' :shuffleMode='shuffleMode'
              @fetchedRow='getCurrentRow'
     />
