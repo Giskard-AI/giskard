@@ -10,8 +10,7 @@ import org.mapstruct.ReportingPolicy;
 
 import java.util.List;
 
-@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE,
-    uses = {RoleMapper.class, RoleDTOMapper.class})
+@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE, uses = {GiskardMapper.class})
 public interface FeedbackMapper {
     FeedbackDTO feedbackToFeedbackDTO(Feedback feedback);
 
