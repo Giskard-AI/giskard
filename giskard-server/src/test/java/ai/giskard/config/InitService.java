@@ -107,7 +107,7 @@ public class InitService {
         Role role = roleRepository.findByName(roleName).orElseThrow(() -> new EntityNotFoundException(Entity.ROLE, roleName));
         user.setRoles(Sets.newHashSet(role));
         user.setPassword(passwordEncoder.encode(key).toLowerCase());
-        userRepository.saveAndFlush(user);
+        userRepository.save(user);
     }
 
     /**
