@@ -7,6 +7,7 @@ import ai.giskard.repository.RoleRepository;
 import ai.giskard.repository.UserRepository;
 import ai.giskard.security.AuthoritiesConstants;
 import ai.giskard.security.SecurityUtils;
+import ai.giskard.web.dto.mapper.GiskardMapper;
 import ai.giskard.web.dto.user.AdminUserDTO;
 import ai.giskard.web.dto.user.UserDTO;
 
@@ -15,6 +16,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -30,6 +32,7 @@ import tech.jhipster.security.RandomUtil;
  */
 @Service
 @Transactional
+@RequiredArgsConstructor
 public class UserService {
 
     private final Logger log = LoggerFactory.getLogger(UserService.class);
@@ -40,11 +43,7 @@ public class UserService {
 
     private final RoleRepository roleRepository;
 
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, RoleRepository roleRepository) {
-        this.userRepository = userRepository;
-        this.passwordEncoder = passwordEncoder;
-        this.roleRepository = roleRepository;
-    }
+    private final GiskardMapper giskardMapper;
 
     public Optional<User> activateRegistration(String key) {
         log.debug("Activating user for activation key {}", key);
@@ -109,8 +108,9 @@ public class UserService {
             newUser.setEmail(userDTO.getEmail().toLowerCase());
         }
         newUser.setActivated(true);
+        newUser.setEnabled(true);
         // new user gets registration key
-        newUser.setActivationKey(RandomUtil.generateActivationKey());
+        //newUser.setActivationKey(RandomUtil.generateActivationKey());
         Set<Role> authorities = new HashSet<>();
         roleRepository.findByName(AuthoritiesConstants.AICREATOR).ifPresent(authorities::add);
         newUser.setRoles(authorities);
@@ -249,7 +249,7 @@ public class UserService {
 
     @Transactional(readOnly = true)
     public Page<UserDTO> getAllPublicUsers(Pageable pageable) {
-        return userRepository.findAllByIdNotNullAndActivatedIsTrue(pageable).map(UserDTO::new);
+        return userRepository.findAllByIdNotNullAndActivatedIsTrue(pageable).map(giskardMapper::userToUserDTO);
     }
 
     @Transactional(readOnly = true)

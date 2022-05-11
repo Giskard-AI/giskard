@@ -1,12 +1,8 @@
 package ai.giskard.service;
 
+import ai.giskard.domain.Feedback;
+import ai.giskard.domain.Project;
 import ai.giskard.domain.User;
-
-import java.nio.charset.StandardCharsets;
-import java.util.Locale;
-import javax.mail.MessagingException;
-import javax.mail.internet.MimeMessage;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.MessageSource;
@@ -19,6 +15,11 @@ import org.thymeleaf.context.Context;
 import org.thymeleaf.spring5.SpringTemplateEngine;
 import tech.jhipster.config.JHipsterProperties;
 
+import javax.mail.MessagingException;
+import javax.mail.internet.MimeMessage;
+import java.nio.charset.StandardCharsets;
+import java.util.Locale;
+
 /**
  * Service for sending emails.
  * <p>
@@ -26,6 +27,9 @@ import tech.jhipster.config.JHipsterProperties;
  */
 @Service
 public class MailService {
+    public enum FeedbackNotificationType {
+        CREATE, COMMENT, REPLY
+    }
 
     private final Logger log = LoggerFactory.getLogger(MailService.class);
 
@@ -53,7 +57,7 @@ public class MailService {
         this.templateEngine = templateEngine;
     }
 
-    @Async
+    //@Async
     public void sendEmail(String to, String subject, String content, boolean isMultipart, boolean isHtml) {
         log.debug(
             "Send email[multipart '{}' and html '{}'] to '{}' with subject '{}' and content={}",
@@ -93,18 +97,18 @@ public class MailService {
         sendEmail(user.getEmail(), subject, content, false, true);
     }
 
-    @Async
-    public void sendUserInvitationEmail(String currentEmail, String email, String inviteLink, String projectName) {
+    //@Async
+    public void sendUserSignupInvitationEmail(String currentEmail, String email, String inviteLink) {
         log.debug("Sending user invitation email to '{}'", email);
         Context context = new Context();
-        context.setVariable("projectName", projectName);
+        //context.setVariable("projectName", projectName);
         context.setVariable("email", email);
         context.setVariable("inviter", currentEmail);
         context.setVariable("inviteLink", inviteLink);
         context.setVariable(BASE_URL, jHipsterProperties.getMail().getBaseUrl());
 
         String content = templateEngine.process("mail/inviteUser", context);
-        sendEmail(email, "Giskard invitation: " + projectName, content, false, true);
+        sendEmail(email, "Giskard invitation", content, false, true);
     }
 
     @Async
@@ -123,5 +127,37 @@ public class MailService {
     public void sendPasswordResetMail(User user) {
         log.debug("Sending password reset email to '{}'", user.getEmail());
         sendEmailFromTemplate(user, "mail/passwordResetEmail", "email.reset.title");
+    }
+
+    public void sendFeedbackEmail(
+        User projectOwner, User commenter, Feedback feedback, Project project, String message, FeedbackNotificationType type
+    ) {
+        Context context = new Context();
+
+        context.setVariable("type", type);
+        context.setVariable("commenter", commenter.getDisplayNameOrLogin());
+        context.setVariable("projectName", project.getName());
+        context.setVariable("projectId", feedback.getProject().getId());
+        context.setVariable("feedbackId", feedback.getId());
+        context.setVariable("message", message);
+        context.setVariable(BASE_URL, jHipsterProperties.getMail().getBaseUrl());
+
+        String content = templateEngine.process("mail/feedbackEmail", context);
+
+        String subject;
+        switch (type) {
+            case CREATE:
+                subject = "You received a feedback";
+                break;
+            case REPLY:
+                subject = "You received a reply";
+                break;
+            case COMMENT:
+                subject = "New comment on feedback";
+                break;
+            default:
+                subject = "New feedback activity";
+        }
+        sendEmail(projectOwner.getEmail(), subject, content, false, true);
     }
 }

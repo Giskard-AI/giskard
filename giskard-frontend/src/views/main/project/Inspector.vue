@@ -72,7 +72,7 @@
                     :inputValue="inputData[c.feat_name]"
                     :originalValue="originalData[c.feat_name]"
                     :inputType="c.feat_type"
-                    @submit="$emit(dirty ? 'submitVariationFeedback' : 'submitValueFeedback', arguments[0])" 
+                    @submit="$emit(dirty ? 'submitValueVariationFeedback' : 'submitValueFeedback', arguments[0])"
                     />
                 </div>
                 </ValidationProvider>

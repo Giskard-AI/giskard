@@ -70,7 +70,7 @@
             </column>
             <column name="content" type="VARCHAR(255)"/>
             <column name="created_on" type="TIMESTAMP WITHOUT TIME ZONE"/>
-            <column name="reply_to_reply" type="INTEGER">
+            <column name="reply_to_reply" type="bigint">
                 <constraints nullable="false"/>
             </column>
             <column name="feedback_id" type="BIGINT"/>

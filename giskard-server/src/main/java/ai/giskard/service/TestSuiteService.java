@@ -7,7 +7,7 @@ import ai.giskard.repository.ml.ModelRepository;
 import ai.giskard.repository.ml.TestRepository;
 import ai.giskard.repository.ml.TestSuiteRepository;
 import ai.giskard.web.dto.mapper.GiskardMapper;
-import ai.giskard.web.dto.ml.TestSuiteDTO;
+import ai.giskard.web.dto.ml.UpdateTestSuiteDTO;
 import ai.giskard.web.rest.errors.Entity;
 import ai.giskard.web.rest.errors.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -26,10 +26,10 @@ public class TestSuiteService {
     private final GiskardMapper giskardMapper;
 
 
-    public TestSuite updateTestSuite(TestSuiteDTO dto) {
+    public TestSuite updateTestSuite(UpdateTestSuiteDTO dto) {
         TestSuite testSuite = testSuiteRepository.findById(dto.getId()).orElseThrow(() -> new EntityNotFoundException(Entity.TEST_SUITE, dto.getId()));
         giskardMapper.updateTestSuiteFromDTO(dto, testSuite);
-        return testSuiteRepository.save(testSuite);
+        return testSuite;
     }
 
     public void deleteSuite(Long suiteId) {

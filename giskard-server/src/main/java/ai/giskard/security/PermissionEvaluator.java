@@ -7,6 +7,7 @@ import ai.giskard.web.rest.errors.Entity;
 import ai.giskard.web.rest.errors.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.validation.constraints.NotNull;
 
@@ -19,8 +20,8 @@ public class PermissionEvaluator {
 
     final ProjectService projectService;
 
-    public boolean isCurrentUser(String login) throws Exception {
-        return login.equals(SecurityUtils.getCurrentUserLogin().orElseThrow(() -> new Exception(String.format("User %s not connected", login))));
+    public boolean isCurrentUser(String login) {
+        return login.equals(SecurityUtils.getCurrentAuthenticatedUserLogin());
     }
 
     /**
@@ -29,9 +30,9 @@ public class PermissionEvaluator {
      * @param id id of the project
      * @return true if the user can write
      */
-    public boolean canWriteProject(@NotNull Long id) throws Exception {
+    public boolean canWriteProject(@NotNull Long id) {
         Project project = this.projectRepository.findById(id).orElseThrow(() -> new EntityNotFoundException(Entity.PROJECT, id));
-        return (isCurrentUser(project.getOwner().getLogin()) || SecurityUtils.isAdmin());
+        return (isCurrentUser(project.getOwner().getLogin()) || SecurityUtils.isCurrentUserAdmin());
     }
 
     /**
@@ -48,9 +49,10 @@ public class PermissionEvaluator {
      * @param id project's id
      * @return true if user can read
      */
-    public boolean canReadProject(@NotNull Long id) throws Exception {
+    @Transactional
+    public boolean canReadProject(@NotNull Long id) {
         Project project = this.projectRepository.findOneWithGuestsById(id).orElseThrow(() -> new EntityNotFoundException(Entity.PROJECT, id));
-        return (projectService.isUserInGuestList(project.getGuests()) || isCurrentUser(project.getOwner().getLogin()) || SecurityUtils.isAdmin());
+        return (projectService.isUserInGuestList(project.getGuests()) || isCurrentUser(project.getOwner().getLogin()) || SecurityUtils.isCurrentUserAdmin());
     }
 
 }
