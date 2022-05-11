@@ -11,6 +11,7 @@ export const GENERATED_MAPPING = {
     'ai.giskard.web.rest.vm.TokenAndPasswordVM' : 'TokenAndPasswordVM',
     'ai.giskard.web.dto.JWTToken' : 'JWTToken',
     'ai.giskard.web.dto.CreateFeedbackDTO' : 'CreateFeedbackDTO',
+    'ai.giskard.domain.ml.PredictionType' : 'PredictionType',
     'ai.giskard.web.dto.ml.ModelDTO' : 'ModelDTO',
     'ai.giskard.web.dto.ml.UpdateTestSuiteDTO' : 'UpdateTestSuiteDTO',
     'ai.giskard.web.dto.PasswordResetRequest' : 'PasswordResetRequest',
@@ -36,9 +37,11 @@ export const GENERATED_MAPPING = {
     'ai.giskard.web.dto.ml.DatasetDTO' : 'DatasetDTO',
     'ai.giskard.web.dto.ml.SingleTestResultDTO' : 'SingleTestResultDTO',
     'ai.giskard.web.dto.FeedbackDTO' : 'FeedbackDTO',
+    'ai.giskard.domain.ml.table.RowFilterType' : 'RowFilterType',
     'ai.giskard.domain.ml.CodeLanguage' : 'CodeLanguage',
     'ai.giskard.web.dto.user.UpdateMeDTO' : 'UpdateMeDTO',
     'ai.giskard.web.dto.ml.TestSuiteDTO' : 'TestSuiteDTO',
+    'ai.giskard.domain.ml.table.Filter' : 'Filter',
     'ai.giskard.web.dto.ml.CodeBasedTestPresetDTO' : 'CodeBasedTestPresetDTO'
 
 };
@@ -53,6 +56,7 @@ export * from './ai/giskard/web/dto/user/user-dto';
 export * from './ai/giskard/web/rest/vm/token-and-password-vm';
 export * from './ai/giskard/web/dto/jwttoken';
 export * from './ai/giskard/web/dto/create-feedback-dto';
+export * from './ai/giskard/domain/ml/prediction-type';
 export * from './ai/giskard/web/dto/ml/model-dto';
 export * from './ai/giskard/web/dto/ml/update-test-suite-dto';
 export * from './ai/giskard/web/dto/password-reset-request';
@@ -77,7 +81,9 @@ export * from './ai/giskard/web/dto/user/admin-user-dto';
 export * from './ai/giskard/web/dto/ml/dataset-dto';
 export * from './ai/giskard/web/dto/ml/single-test-result-dto';
 export * from './ai/giskard/web/dto/feedback-dto';
+export * from './ai/giskard/domain/ml/table/row-filter-type';
 export * from './ai/giskard/domain/ml/code-language';
 export * from './ai/giskard/web/dto/user/update-me-dto';
 export * from './ai/giskard/web/dto/ml/test-suite-dto';
+export * from './ai/giskard/domain/ml/table/filter';
 export * from './ai/giskard/web/dto/ml/code-based-test-preset-dto';
