@@ -21,4 +21,6 @@ public class Filter {
     private Float minThreshold;
 
     private Float maxThreshold;
+
+    private String regressionUnit;
 }

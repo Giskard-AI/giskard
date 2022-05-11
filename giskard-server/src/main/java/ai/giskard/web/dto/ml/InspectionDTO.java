@@ -11,7 +11,8 @@ import lombok.Setter;
 @UIModel
 public class InspectionDTO {
     private Long id;
-    private DatasetDTO datasetDTO;
-    private ModelDTO modelDTO;
+    private DatasetDTO dataset;
+    private ModelDTO model;
     private String target;
+    private String predictionTask;
 }

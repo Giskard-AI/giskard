@@ -2,7 +2,6 @@ package ai.giskard.service;
 
 import ai.giskard.config.ApplicationProperties;
 import ai.giskard.domain.ml.Inspection;
-import ai.giskard.domain.ml.PredictionType;
 import ai.giskard.domain.ml.table.Filter;
 import ai.giskard.repository.InspectionRepository;
 import ai.giskard.repository.UserRepository;
@@ -101,7 +100,7 @@ public class InspectionService {
         Inspection inspection = inspectionRepository.findById(inspectionId).orElseThrow(() -> new EntityNotFoundException(INSPECTION, inspectionId));
         Table table = datasetService.getTableFromDatasetId(inspection.getDataset().getId());
         table.addColumns(IntColumn.indexColumn("Index", table.rowCount(), 0));
-        Selection selection = inspection.getPredictionTask().equals(CLASSIFICATION) ? getSelection(inspection, filter) : getSelectionRegression(inspection, filter);
+        Selection selection = inspection.getPredictionTask().equals(CLASSIFICATION.getName()) ? getSelection(inspection, filter) : getSelectionRegression(inspection, filter);
         Table filteredTable = selection == null ? table : table.where(selection);
         return filteredTable;
     }

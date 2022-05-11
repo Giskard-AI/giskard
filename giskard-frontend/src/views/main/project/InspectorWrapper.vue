@@ -21,24 +21,11 @@
       </v-toolbar>
     </v-row>
 
-    <v-row
-      no-gutters
-      style='height: 70px;margin-left:15px'
-    >
-      <v-col>
-        <v-select
-          style='width: 200px'
-          :items='filterTypes'
-          label='Filter'
-          v-model='selectedFilter'
-        ></v-select>
-      </v-col>
-
-    </v-row>
 
 
-    <RowList ref='rowList' class='px-0' :datasetId='datasetId' :model-id='modelId' :selectedFilter='selectedFilter'
-             :currentRowIdx='rowNb' :range='range' :inspection-id='inspection' :shuffleMode='shuffleMode'
+
+    <RowList ref='rowList'  :datasetId='datasetId' :model-id='modelId' 
+             :currentRowIdx='rowNb' :inspection-id='inspection' :shuffleMode='shuffleMode'
              @fetchedRow='getCurrentRow'
     />
 
@@ -135,9 +122,6 @@ export default class InspectorWrapper extends Vue {
   @Prop({ required: true }) datasetId!: number;
   @Prop() targetFeature!: string;
   @Prop() inspection!:any;
-  allFilterTypes = Object.values(RowFilterType)
-  filterTypes = this.inspection.predictionTask!="classification"? [RowFilterType.ALL, RowFilterType.CORRECT, RowFilterType.WRONG]:this.allFilterTypes
-  selectedFilter = this.filterTypes[0];
   mouseTrap = new Mousetrap();
   loadingData = false;
   inputData = {};

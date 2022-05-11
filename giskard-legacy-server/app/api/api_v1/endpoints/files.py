@@ -226,8 +226,9 @@ def upload_inspect(model_id: str, dataset_id: str, target: str, db: Session = De
                 results = pd.Series(prediction_results.prediction)
                 predsSerie = results
                 target_serie = data_df[target]
-                abs_diff = pd.Series(predsSerie - target_serie, name="absDiff")
-                calculated = pd.concat([predsSerie, target_serie, abs_diff], axis=1)
+                abs_diff = pd.Series((predsSerie - target_serie).abs(), name="absDiff")
+                abs_diff_percent = pd.Series(abs_diff/target_serie, name="absDiffPercent")
+                calculated = pd.concat([predsSerie, target_serie, abs_diff, abs_diff_percent], axis=1)
             else:
                 results = prediction_results.all_predictions
                 predsSerie = prediction_results.all_predictions.idxmax(axis="columns")

@@ -15,6 +15,7 @@ export const GENERATED_MAPPING = {
     'ai.giskard.web.dto.user.UpdateMeDTO' : 'UpdateMeDTO',
     'ai.giskard.web.dto.ml.NamedSingleTestResultDTO' : 'NamedSingleTestResultDTO',
     'ai.giskard.web.dto.user.UserDTO' : 'UserDTO',
+    'ai.giskard.domain.ml.table.RegressionUnit' : 'RegressionUnit',
     'ai.giskard.web.dto.JWTToken' : 'JWTToken',
     'ai.giskard.web.dto.ml.ModelDTO' : 'ModelDTO',
     'ai.giskard.web.dto.ml.ProjectPostDTO' : 'ProjectPostDTO',
@@ -49,6 +50,7 @@ export * from './ai/giskard/web/dto/ml/test-execution-status-dto';
 export * from './ai/giskard/web/dto/user/update-me-dto';
 export * from './ai/giskard/web/dto/ml/named-single-test-result-dto';
 export * from './ai/giskard/web/dto/user/user-dto';
+export * from './ai/giskard/domain/ml/table/regression-unit';
 export * from './ai/giskard/web/dto/jwttoken';
 export * from './ai/giskard/web/dto/ml/model-dto';
 export * from './ai/giskard/web/dto/ml/project-post-dto';

@@ -144,28 +144,17 @@ export const api = {
   async getFeaturesMetadata(token: string, modelId: number, datasetId: number) {
     return axios.get<IDataMetadata[]>(`${apiUrl}/api/v1/models/${modelId}/features/${datasetId}`, authHeaders(token));
   },
-  async getDataByRowId(token: string, datasetId: number, rowId: number) {
-    return axios.get(`${apiUrl}/api/v1/files/datasets/${datasetId}/row/${rowId}`, authHeaders(token));
-  },
-  async getDataRandom(token: string, datasetId: number) {
-    return axios.get(`${apiUrl}/api/v1/files/datasets/${datasetId}/row/random`, authHeaders(token));
-  },
-  async getDataByRange(token: string, datasetId: number, rangeMin: number, rangeMax:number) {
-        return axios.get(`${apiUrlJava}/api/v2/dataset/${datasetId}/rows`, { ...authHeaders(token),  params: {
-                "rangeMin": rangeMin, "rangeMax": rangeMax
-            }});
-    },
     async getDataFilteredByRange(token, inspectionId, props, filter) {
         return axios.post(`${apiUrlJava}/api/v2/inspection/${inspectionId}/rowsFiltered`,filter,{ ...authHeaders(token),  params:props});
             },
-    async getDatasetDetails(token: string, datasetId: number) {
-        return axios.get(`${apiUrlJava}/api/v2/dataset/${datasetId}/details`, authHeaders(token));
-    },
   async getLabelsForTarget(token: string, inspectionId: number) {
     return axios.get(`${apiUrlJava}/api/v2/inspection/${inspectionId}/labels`, authHeaders(token));
   },
     async getProjectDatasets(token: string, id: number) {
     return axiosProject.get<FileDTO[]>(`/${id}/datasets`, authHeaders(token));
+  },
+  async getInspection(token: string, inspectionId: number) {
+    return axios.get(`${apiUrlJava}/api/v2/inspection/${inspectionId}`, authHeaders(token));
   },
   async uploadDataFile(token: string, projectId: number, fileData: any) {
     const formData = new FormData();
