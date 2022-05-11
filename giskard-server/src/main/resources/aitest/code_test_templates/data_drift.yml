@@ -1,0 +1,44 @@
+title: Data drift
+id: data_drift
+order: 4
+items:
+  - id: drift_psi
+    title: Population Stability Index
+    # language=Python
+    code: |
+      tests.drift.test_drift_psi(
+          expected_series=train_df['<CATEGORICAL FEATURE NAME>'],
+          actual_series=test_df['<CATEGORICAL FEATURE NAME>'],
+          threshold=0.02,
+          max_categories=10
+      )
+  - id: drift_chi_square
+    title: Chi-squared
+    # language=Python
+    code: |
+      tests.drift.test_drift_chi_square(
+          expected_series=train_df['<FEATURE NAME>'],
+          actual_series=test_df['<FEATURE NAME>'],
+          threshold=0.02,
+          p_value_threshold=None,
+          max_categories=10
+      )
+  - id: drift_ks
+    title: Kolmogorov–Smirnov
+    # language=Python
+    code: |
+      tests.drift.test_drift_ks(
+          expected_series=train_df['<FEATURE NAME>'],
+          actual_series=test_df['<FEATURE NAME>'],
+          threshold=0.02,
+          p_value_threshold=None
+      )
+  - id: drift_earth_movers_distance
+    title: Earth mover's distance
+    # language=Python
+    code: |
+      tests.drift.test_drift_earth_movers_distance(
+          expected_series=train_df['<NUMERIC FEATURE NAME>'],
+          actual_series=test_df['<NUMERIC FEATURE NAME>'],
+          threshold=0.02
+      )

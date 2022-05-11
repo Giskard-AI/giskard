@@ -10,7 +10,7 @@ import ai.giskard.web.dto.mapper.GiskardMapper;
 import ai.giskard.web.dto.ml.ExecuteTestSuiteRequest;
 import ai.giskard.web.dto.ml.TestExecutionResultDTO;
 import ai.giskard.web.dto.ml.TestSuiteDTO;
-import ai.giskard.web.dto.ml.write.TestSuitePostDTO;
+import ai.giskard.web.dto.ml.UpdateTestSuiteDTO;
 import ai.giskard.web.rest.errors.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.transaction.annotation.Transactional;
@@ -36,7 +36,7 @@ public class TestSuiteController {
 
     @PutMapping("suites")
     @Transactional
-    public TestSuiteDTO saveCodeBasedTestPreset(@Valid @RequestBody TestSuitePostDTO dto) {
+    public TestSuiteDTO saveTestSuite(@Valid @RequestBody UpdateTestSuiteDTO dto) {
         TestSuite testSuite = testSuiteService.updateTestSuite(dto);
         return giskardMapper.testSuiteToTestSuiteDTO(testSuite);
     }

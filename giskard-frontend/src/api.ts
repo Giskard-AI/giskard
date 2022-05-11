@@ -21,6 +21,7 @@ import {
   TestExecutionResultDTO,
   TestSuiteDTO,
   TokenAndPasswordVM,
+  UpdateMeDTO, UserDTO, ManagedUserVM, CodeTestCollection, UpdateTestSuiteDTO,
   UpdateMeDTO,
   UserDTO
 } from '@/generated-sources';
@@ -214,11 +215,14 @@ export const api = {
       model: { id: modelId }
     });
   },
-  async saveTestSuite(testSuite: TestSuiteDTO) {
+  async saveTestSuite(testSuite: UpdateTestSuiteDTO) {
     return await axios.put(`${apiUrlJava}/api/v2/testing/suites`, testSuite);
   },
   async getTestDetails(testId: number) {
     return await axios.get(`${apiUrlJava}/api/v2/testing/tests/${testId}`);
+  },
+  async getCodeTestTemplates() {
+    return await axios.get<CodeTestCollection[]>(`${apiUrlJava}/api/v2/testing/tests/code-test-templates`);
   },
   async deleteTest(testId: number) {
     return await axios.delete<TestSuiteDTO>(`${apiUrlJava}/api/v2/testing/tests/${testId}`);

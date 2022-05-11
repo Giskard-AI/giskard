@@ -298,8 +298,8 @@ dependencies {
     compileOnly "org.mapstruct:mapstruct:${mapstructVersion}"
     annotationProcessor "org.mapstruct:mapstruct-processor:${mapstructVersion}"
 
-//    compile files("${projectDir.absolutePath}/src/main/resources/third-party/j2ts-api.jar")
     implementation files("$projectDir/src/main/resources/third-party/j2ts-api.jar")
+    implementation group: 'com.fasterxml.jackson.dataformat', name: 'jackson-dataformat-yaml', version: '2.13.2'
 }
 
 protobuf {

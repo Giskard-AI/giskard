@@ -1,0 +1,132 @@
+title: Performance
+id: performance
+order: 3
+items:
+  - id: auc
+    title: AUC
+    # language=Python
+    code: |-
+      tests.performance.test_auc(
+          test_df,
+          model,
+          threshold=0.1,
+          target='<TARGET COLUMN>'
+      )
+  - id: f1
+    title: F1
+    # language=Python
+    code: |-
+      tests.performance.test_f1(
+          test_df,
+          model,
+          threshold=0.1,
+          target='<TARGET COLUMN>'
+      )
+  - id: diff_f1
+    title: F1 difference
+    # language=Python
+    code: |-
+      tests.performance.test_diff_f1(
+          test_df,
+          model,
+          filter_1=test_df[:len(test_df)//2].index,
+          filter_2=test_df[len(test_df)//2:].index,
+          threshold=0.1,
+          target='<TARGET COLUMN>'
+      )
+  - id: accuracy
+    title: Accuracy
+    # language=Python
+    code: |-
+      tests.performance.test_accuracy(
+          test_df,
+          model,
+          threshold=0.1,
+          target='<TARGET COLUMN>'
+      )
+  - id: diff_accuracy
+    title: Accuracy difference
+    # language=Python
+    code: |-
+      tests.performance.test_diff_accuracy(
+          test_df,
+          model,
+          filter_1=test_df[:len(test_df)//2].index,
+          filter_2=test_df[len(test_df)//2:].index,
+          threshold=0.1,
+          target='<TARGET COLUMN>'
+      )
+  - id: precision
+    title: Precision
+    # language=Python
+    code: |-
+      tests.performance.test_precision(
+          test_df,
+          model,
+          threshold=0.1,
+          target='<TARGET COLUMN>'
+      )
+  - id: diff_precision
+    title: Precision difference
+    # language=Python
+    code: |-
+      tests.performance.test_diff_precision(
+          test_df,
+          model,
+          filter_1=test_df[:len(test_df)//2].index,
+          filter_2=test_df[len(test_df)//2:].index,
+          threshold=0.1,
+          target='<TARGET COLUMN>'
+      )
+  - id: recall
+    title: Recall
+    # language=Python
+    code: |-
+      tests.performance.test_recall(
+          test_df,
+          model,
+          threshold=0.1,
+          target='<TARGET COLUMN>'
+      )
+  - id: diff_recall
+    title: Recall difference
+    # language=Python
+    code: |-
+      tests.performance.test_diff_recall(
+          test_df,
+          model,
+          filter_1=test_df[:len(test_df)//2].index,
+          filter_2=test_df[len(test_df)//2:].index,
+          threshold=0.1,
+          target='<TARGET COLUMN>'
+      )
+  - id: neg_rmse
+    title: Negative RMSE
+    # language=Python
+    code: |-
+      tests.performance.test_neg_rmse(
+          test_df,
+          model,
+          threshold=0.1,
+          target='<TARGET COLUMN>'
+      )
+  - id: neg_mae
+    title: Negative MAE
+    # language=Python
+    code: |-
+      tests.performance.test_neg_mae(
+          test_df,
+          model,
+          threshold=0.1,
+          target='<TARGET COLUMN>'
+      )
+  - id: r2
+    title: R2
+    # language=Python
+    code: |-
+      tests.performance.test_r2(
+          test_df,
+          model,
+          threshold=0.1,
+          target='<TARGET COLUMN>'
+      )
