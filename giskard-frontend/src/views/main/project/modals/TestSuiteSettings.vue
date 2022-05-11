@@ -43,7 +43,7 @@ import ModelSelector from "@/views/main/utils/ModelSelector.vue";
 import {Prop} from "vue-property-decorator";
 import * as _ from "lodash";
 import {api} from "@/api";
-import { TestSuiteDTO } from '@/generated-sources';
+import {TestSuiteDTO} from '@/generated-sources';
 
 @Component({
   components:
@@ -62,7 +62,15 @@ export default class TestSuiteSettings extends Vue {
 
   async save() {
     if (this.testSuite && this.modifiedTestSuite) {
-      this.modifiedTestSuite = (await api.saveTestSuite(this.modifiedTestSuite)).data;
+      this.modifiedTestSuite = (await api.saveTestSuite(
+          {
+            testDatasetId: this.modifiedTestSuite.testDataset.id,
+            trainDatasetId: this.modifiedTestSuite.trainDataset.id,
+            id: this.modifiedTestSuite.id,
+            modelId: this.modifiedTestSuite.model.id,
+            name: this.modifiedTestSuite.name
+          }
+      )).data;
       this.$emit('submit', this.modifiedTestSuite)
     }
   }
