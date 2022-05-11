@@ -162,7 +162,7 @@ export default class RowList extends Vue {
         'predictedLabel': this.predictedLabel,
         'rowFilter': this.selectedFilter,
       };
-      const response = await api.getDataFilteredByRange(readToken(this.$store), this.datasetId, props, filter);
+      const response = await api.getDataFilteredByRange(readToken(this.$store), this.inspectionId, props, filter);
       this.rows = response.data.data;
       this.numberOfRows = response.data.rowNb;
     } catch (error) {

@@ -2,6 +2,7 @@ package ai.giskard.service;
 
 import ai.giskard.config.ApplicationProperties;
 import ai.giskard.domain.ml.Inspection;
+import ai.giskard.domain.ml.PredictionType;
 import ai.giskard.domain.ml.table.Filter;
 import ai.giskard.repository.InspectionRepository;
 import ai.giskard.repository.UserRepository;
@@ -23,6 +24,7 @@ import java.io.FileNotFoundException;
 import java.io.InputStreamReader;
 import java.util.List;
 
+import static ai.giskard.domain.ml.PredictionType.CLASSIFICATION;
 import static ai.giskard.web.rest.errors.Entity.INSPECTION;
 
 @Service
@@ -42,6 +44,22 @@ public class InspectionService {
         InputStreamReader reader = new InputStreamReader(
             new FileInputStream(location));
         return Table.read().csv(reader);
+    }
+
+    private Selection getSelectionRegression(Inspection inspection, Filter filter) throws FileNotFoundException {
+        Table calculatedTable = getTableFromBucketFile(inspection.getCalculatedPath().toAbsolutePath().toString());
+        Selection selection;
+        switch (filter.getRowFilter()) {
+            case CORRECT:
+                selection = calculatedTable.doubleColumn("absDiff").isLessThanOrEqualTo(filter.getMinThreshold());
+                break;
+            case WRONG:
+                selection =  calculatedTable.doubleColumn("absDiff").isGreaterThanOrEqualTo(filter.getMinThreshold());
+                break;
+            default:
+                selection = null;
+        }
+        return selection;
     }
 
     private Selection getSelection(Inspection inspection, Filter filter) throws FileNotFoundException {
@@ -83,7 +101,7 @@ public class InspectionService {
         Inspection inspection = inspectionRepository.findById(inspectionId).orElseThrow(() -> new EntityNotFoundException(INSPECTION, inspectionId));
         Table table = datasetService.getTableFromDatasetId(inspection.getDataset().getId());
         table.addColumns(IntColumn.indexColumn("Index", table.rowCount(), 0));
-        Selection selection = getSelection(inspection, filter);
+        Selection selection = inspection.getPredictionTask().equals(CLASSIFICATION) ? getSelection(inspection, filter) : getSelectionRegression(inspection, filter);
         Table filteredTable = selection == null ? table : table.where(selection);
         return filteredTable;
     }

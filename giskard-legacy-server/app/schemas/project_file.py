@@ -37,3 +37,4 @@ class ProjectModelFileSchema(ProjectFileSchema):
 class InspectionCreateSchema(BaseModel):
     location: str
     target: str
+    prediction_task: str

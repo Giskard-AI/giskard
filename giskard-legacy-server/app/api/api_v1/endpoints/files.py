@@ -209,32 +209,37 @@ def upload_inspect(model_id: str, dataset_id: str, target: str, db: Session = De
     project = crud.project.get(db, model_file.project_id)
     if files.has_read_access(current_user, project, model_file):
         try:
-            inspection_folder = Path(settings.BUCKET_PATH, "inspections", f"{model_id}_{dataset_id}")
-            obj_in = schemas.InspectionCreateSchema(location=str(inspection_folder.absolute()), target=target)
-            inspection = crud.inspection.create(db, obj_in=obj_in, model_id=model_id, dataset_id=dataset_id)
             data_file = crud.dataset.get(db, dataset_id)
             model_inspector = files_utils.read_model_file(model_file.location)
+            inspection_folder = Path(settings.BUCKET_PATH, "inspections", f"{model_id}_{dataset_id}")
+            obj_in = schemas.InspectionCreateSchema(location=str(inspection_folder.absolute()), target=target,
+                                                    prediction_task=model_inspector.prediction_task)
+            inspection = crud.inspection.create(db, obj_in=obj_in, model_id=model_id, dataset_id=dataset_id)
             data_df = files_utils.read_dataset_file(data_file.location)
             data_df.to_csv(data_file.location.replace(".zst", ""))
             prediction_results = run_predict(data_df, model_inspector)
             inspection_folder.mkdir(parents=True, exist_ok=True)
             preds_path = Path(inspection_folder, "predictions.csv")
-            results = prediction_results.all_predictions  # .add_prefix('predictions_')
-            results.to_csv(preds_path, index=False)
             calculated_path = Path(inspection_folder, "calculated.csv")
-            predsSerie = prediction_results.all_predictions.idxmax(axis="columns")
-            labels = {v: k for v, k in enumerate(model_inspector.classification_labels)}
-            labelSerie = data_df[target].map(labels);
-            predictions = np.sort(prediction_results.all_predictions.values)
-            absDiff=pd.Series(predictions[:,-1]-predictions[:,-2], name="absDiff")
-            calculated = pd.concat([predsSerie, labelSerie, absDiff], axis=1)
-            calculated.to_csv(calculated_path, index=False)
-
-
-
-            sortedProbs = prediction_results.all_predictions.sort_values(by=1, ascending=False, axis=1)
             sorted_path = Path(inspection_folder, "sorted_preds.csv")
-            sortedProbs.to_csv(sorted_path)
+            if model_inspector.prediction_task != "classification":
+                results = pd.Series(prediction_results.prediction)
+                predsSerie = results
+                target_serie = data_df[target]
+                abs_diff = pd.Series(predsSerie - target_serie, name="absDiff")
+                calculated = pd.concat([predsSerie, target_serie, abs_diff], axis=1)
+            else:
+                results = prediction_results.all_predictions
+                predsSerie = prediction_results.all_predictions.idxmax(axis="columns")
+                labels = {v: k for v, k in enumerate(model_inspector.classification_labels)}
+                label_serie = data_df[target].map(labels)
+                predictions = np.sort(prediction_results.all_predictions.values)
+                abs_diff = pd.Series(predictions[:, -1] - predictions[:, -2], name="absDiff")
+                calculated = pd.concat([predsSerie, label_serie, abs_diff], axis=1)
+                sorted_probs = prediction_results.all_predictions.sort_values(by=1, ascending=False, axis=1)
+                sorted_probs.to_csv(sorted_path)
+            results.to_csv(preds_path, index=False)
+            calculated.to_csv(calculated_path, index=False)
             return inspection
         except Exception as e:
             logger.exception(e)

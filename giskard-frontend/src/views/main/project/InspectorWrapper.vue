@@ -105,7 +105,7 @@
 </template>
 
 <script lang='ts'>
-import { Component, Vue, Prop, Watch } from 'vue-property-decorator';
+import { Component, Prop, Vue } from 'vue-property-decorator';
 import OverlayLoader from '@/components/OverlayLoader.vue';
 import PredictionResults from './PredictionResults.vue';
 import PredictionExplanations from './PredictionExplanations.vue';
@@ -135,7 +135,8 @@ export default class InspectorWrapper extends Vue {
   @Prop({ required: true }) datasetId!: number;
   @Prop() targetFeature!: string;
   @Prop() inspection!:any;
-  filterTypes = Object.keys(RowFilterType);
+  allFilterTypes = Object.values(RowFilterType)
+  filterTypes = this.inspection.predictionTask!="classification"? [RowFilterType.ALL, RowFilterType.CORRECT, RowFilterType.WRONG]:this.allFilterTypes
   selectedFilter = this.filterTypes[0];
   mouseTrap = new Mousetrap();
   loadingData = false;
