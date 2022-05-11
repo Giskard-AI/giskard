@@ -33,18 +33,18 @@ class PerformanceTests(AbstractTestCollection):
                 passed=metric >= threshold
             ))
 
-    def _test_classification_score(self, score_fn, df, model: ModelInspector, target, threshold=1):
+    def _test_classification_score(self, score_fn, df_slice, model: ModelInspector, target, threshold=1):
         is_binary_classification = len(model.classification_labels) == 2
-        prediction = run_predict(df, model).raw_prediction
+        prediction = run_predict(df_slice, model).raw_prediction
         labels_mapping = {model.classification_labels[i]: i for i in range(len(model.classification_labels))}
         if is_binary_classification:
-            metric = score_fn(df[target].map(labels_mapping), prediction)
+            metric = score_fn(df_slice[target].map(labels_mapping), prediction)
         else:
-            metric = score_fn(df[target].map(labels_mapping), prediction, average='macro', multi_class='ovr')
+            metric = score_fn(df_slice[target].map(labels_mapping), prediction, average='macro', multi_class='ovr')
 
         return self.save_results(
             SingleTestResult(
-                element_count=len(df),
+                element_count=len(df_slice),
                 metric=metric,
                 passed=metric >= threshold
             ))
@@ -62,37 +62,37 @@ class PerformanceTests(AbstractTestCollection):
                 passed=metric >= threshold
             ))
 
-    def test_f1(self, df, model: ModelInspector, target, threshold=1):
+    def test_f1(self, df_slice, model: ModelInspector, target, threshold=1):
         """
         Compute the F1 score
         """
 
         return self._test_classification_score(f1_score,
-                                               df, model, target, threshold)
+                                               df_slice, model, target, threshold)
 
-    def test_accuracy(self, df, model: ModelInspector, target, threshold=1):
+    def test_accuracy(self, df_slice, model: ModelInspector, target, threshold=1):
         """
         Compute Accuracy
         """
 
         return self._test_classification_score(accuracy_score,
-                                               df, model, target, threshold)
+                                               df_slice, model, target, threshold)
 
-    def test_precision(self, df, model: ModelInspector, target, threshold=1):
+    def test_precision(self, df_slice, model: ModelInspector, target, threshold=1):
         """
         Compute Precision
         """
 
         return self._test_classification_score(precision_score,
-                                               df, model, target, threshold)
+                                               df_slice, model, target, threshold)
 
-    def test_recall(self, df, model: ModelInspector, target, threshold=1):
+    def test_recall(self, df_slice, model: ModelInspector, target, threshold=1):
         """
         Compute Recall
         """
 
         return self._test_classification_score(recall_score,
-                                               df, model, target, threshold)
+                                               df_slice, model, target, threshold)
 
     def test_neg_rmse(self, df, model: ModelInspector, target, threshold=1):
         return self._test_regression_score(mean_squared_error, df, model, target, threshold, negative=True)

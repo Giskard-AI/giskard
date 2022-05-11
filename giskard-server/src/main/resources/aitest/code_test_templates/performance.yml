@@ -11,13 +11,18 @@ items:
     # language=Python
     code: |-
       """
-      Detailed description : Test if the model AUC performance is higher than a threshold for a given sub-population
+      Detailed description : Test if the model AUC performance is higher than a threshold
+      for a given sub-population.
+
       Examples : The test is passed when the AUC for women is higher than 0.7
+
       Inputs :
-              - df_slice(pd.Dataframe) : sub-population of the test dataset selected during Test Suite Creation
+              - df_slice(pandas.Dataframe): sub-population of the test dataset selected
+                during Test Suite Creation
               - model : model selected during Test Suite Creation
               - threshold : threshold value of AUC metrics
               - target : target column name
+
       Outputs :
               - total rows tested  : length of df_slice tested
               - metric :  the AUC performance metric
@@ -32,21 +37,29 @@ items:
 
   - id: f1
     title: F1
+    hint: Test if the F1 score is high enough for a sub-population
+    modelTypes:
+      - MULTICLASS_CLASSIFICATION
+      - BINARY_CLASSIFICATION
     # language=Python
     code: |-
       tests.performance.test_f1(
-          test_df,
-          model,
+          df_slice=test_df[:len(test_df) // 2],
+          model=model,
           threshold=0.1,
           target='<TARGET COLUMN>'
       )
   - id: diff_f1
     title: F1 difference
+    hint: Test if the F1 score is equal between two samples
+    modelTypes:
+      - MULTICLASS_CLASSIFICATION
+      - BINARY_CLASSIFICATION
     # language=Python
     code: |-
       tests.performance.test_diff_f1(
-          test_df,
-          model,
+          df=test_df,
+          model=model,
           filter_1=test_df[:len(test_df)//2].index,
           filter_2=test_df[len(test_df)//2:].index,
           threshold=0.1,
@@ -54,21 +67,29 @@ items:
       )
   - id: accuracy
     title: Accuracy
+    hint: Test if the Accuracy is high enough for a sub-population
+    modelTypes:
+      - MULTICLASS_CLASSIFICATION
+      - BINARY_CLASSIFICATION
     # language=Python
     code: |-
       tests.performance.test_accuracy(
-          test_df,
-          model,
+          df_slice=test_df[:len(test_df) // 2],
+          model=model,
           threshold=0.1,
           target='<TARGET COLUMN>'
       )
   - id: diff_accuracy
     title: Accuracy difference
+    hint: Test if the Accuracy is equal between the two samples
+    modelTypes:
+      - MULTICLASS_CLASSIFICATION
+      - BINARY_CLASSIFICATION
     # language=Python
     code: |-
       tests.performance.test_diff_accuracy(
-          test_df,
-          model,
+          df=test_df,
+          model=model,
           filter_1=test_df[:len(test_df)//2].index,
           filter_2=test_df[len(test_df)//2:].index,
           threshold=0.1,
@@ -76,21 +97,29 @@ items:
       )
   - id: precision
     title: Precision
+    hint: Test if the Precision is high enough for a sub-population
+    modelTypes:
+      - MULTICLASS_CLASSIFICATION
+      - BINARY_CLASSIFICATION
     # language=Python
     code: |-
       tests.performance.test_precision(
-          test_df,
-          model,
+          df_slice=test_df[:len(test_df) // 2],
+          model=model,
           threshold=0.1,
           target='<TARGET COLUMN>'
       )
   - id: diff_precision
     title: Precision difference
+    hint: Test if the Precision is equal between the two samples
+    modelTypes:
+      - MULTICLASS_CLASSIFICATION
+      - BINARY_CLASSIFICATION
     # language=Python
     code: |-
       tests.performance.test_diff_precision(
-          test_df,
-          model,
+          df=test_df,
+          model=model,
           filter_1=test_df[:len(test_df)//2].index,
           filter_2=test_df[len(test_df)//2:].index,
           threshold=0.1,
@@ -98,21 +127,29 @@ items:
       )
   - id: recall
     title: Recall
+    hint: Test if the Recall is high enough for a sub-population
+    modelTypes:
+      - MULTICLASS_CLASSIFICATION
+      - BINARY_CLASSIFICATION
     # language=Python
     code: |-
       tests.performance.test_recall(
-          test_df,
-          model,
+          df_slice=test_df[:len(test_df) // 2],
+          model=model,
           threshold=0.1,
           target='<TARGET COLUMN>'
       )
   - id: diff_recall
     title: Recall difference
+    hint: Test if the Recall is equal between the two samples
+    modelTypes:
+      - MULTICLASS_CLASSIFICATION
+      - BINARY_CLASSIFICATION
     # language=Python
     code: |-
       tests.performance.test_diff_recall(
-          test_df,
-          model,
+          df=test_df,
+          model=model,
           filter_1=test_df[:len(test_df)//2].index,
           filter_2=test_df[len(test_df)//2:].index,
           threshold=0.1,
@@ -120,31 +157,37 @@ items:
       )
   - id: neg_rmse
     title: Negative RMSE
+    hint: Test if  the negative Root Mean Square Error value is low enough for the dataset
+    modelTypes: REGRESSION
     # language=Python
     code: |-
       tests.performance.test_neg_rmse(
-          test_df,
-          model,
+          df=test_df,
+          model=model,
           threshold=0.1,
           target='<TARGET COLUMN>'
       )
   - id: neg_mae
     title: Negative MAE
+    hint: Test if  the negative Mean Absolute Error value is low enough for the dataset
+    modelTypes: REGRESSION
     # language=Python
     code: |-
       tests.performance.test_neg_mae(
-          test_df,
-          model,
+          df=test_df,
+          model=model,
           threshold=0.1,
           target='<TARGET COLUMN>'
       )
   - id: r2
     title: R2
+    hint: Test if  the R-Squared value is high enough for the dataset
+    modelTypes: REGRESSION
     # language=Python
     code: |-
       tests.performance.test_r2(
-          test_df,
-          model,
+          df=test_df,
+          model=model,
           threshold=0.1,
           target='<TARGET COLUMN>'
       )
