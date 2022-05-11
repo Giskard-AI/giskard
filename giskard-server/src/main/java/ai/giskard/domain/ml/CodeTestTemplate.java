@@ -3,6 +3,8 @@ package ai.giskard.domain.ml;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.Set;
+
 @Getter
 @Setter
 public class CodeTestTemplate {
@@ -10,4 +12,5 @@ public class CodeTestTemplate {
     private String title;
     private String hint;
     private String code;
+    private Set<ModelType> modelTypes;
 }

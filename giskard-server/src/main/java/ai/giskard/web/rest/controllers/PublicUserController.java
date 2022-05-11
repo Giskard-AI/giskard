@@ -6,14 +6,11 @@ import ai.giskard.security.AuthoritiesConstants;
 import ai.giskard.security.jwt.TokenProvider;
 import ai.giskard.service.MailService;
 import ai.giskard.service.UserService;
-
-import java.util.*;
-import java.util.Collections;
-import java.util.stream.Collectors;
-
+import ai.giskard.web.dto.mapper.GiskardMapper;
 import ai.giskard.web.dto.user.RoleDTO;
 import ai.giskard.web.dto.user.UserDTO;
 import ai.giskard.web.rest.errors.BadRequestAlertException;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Pageable;
@@ -25,10 +22,15 @@ import org.springframework.web.bind.annotation.*;
 import tech.jhipster.config.JHipsterProperties;
 
 import javax.validation.constraints.Email;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/v2")
 @Validated
+@RequiredArgsConstructor
 public class PublicUserController {
 
     private static final List<String> ALLOWED_ORDERED_PROPERTIES = Collections.unmodifiableList(
@@ -43,23 +45,13 @@ public class PublicUserController {
     private final TokenProvider tokenProvider;
     private final JHipsterProperties jHipsterProperties;
 
-
-
-
-    public PublicUserController(UserService userService, UserRepository userRepository, MailService mailService, TokenProvider tokenProvider, JHipsterProperties jHipsterProperties) {
-        this.userService = userService;
-        this.userRepository = userRepository;
-        this.mailService = mailService;
-        this.tokenProvider = tokenProvider;
-        this.jHipsterProperties = jHipsterProperties;
-    }
+    private final GiskardMapper giskardMapper;
 
     @GetMapping("/users/coworkers")
     public List<UserDTO> getCoworkers(@AuthenticationPrincipal UserDetails user) {
         log.debug("REST request to get coworkers of {}", user.getUsername());
-
         return userService.getAllCoworkers(user.getUsername()).stream()
-            .map(UserDTO::new).collect(Collectors.toList());
+            .map(giskardMapper::userToUserDTO).collect(Collectors.toList());
     }
 
     private boolean onlyContainsAllowedProperties(Pageable pageable) {

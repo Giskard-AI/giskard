@@ -144,11 +144,11 @@
             <column name="feature_value" type="VARCHAR"/>
             <column name="feedback_choice" type="VARCHAR"/>
             <column name="feedback_message" type="VARCHAR"/>
-            <column name="user_data" type="JSON">
+            <column name="user_data" type="VARCHAR">
                 <constraints nullable="false"/>
             </column>
             <column name="target_feature" type="VARCHAR"/>
-            <column name="original_data" type="JSON">
+            <column name="original_data" type="VARCHAR">
                 <constraints nullable="false"/>
             </column>
         </createTable>
@@ -166,7 +166,7 @@
             <column name="feedback_id" type="INTEGER">
                 <constraints nullable="false"/>
             </column>
-            <column name="reply_to_reply" type="INTEGER"/>
+            <column name="reply_to_reply" type="bigint"/>
             <column name="user_id" type="INTEGER">
                 <constraints nullable="false"/>
             </column>
