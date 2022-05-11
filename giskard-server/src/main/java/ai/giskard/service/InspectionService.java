@@ -1,5 +1,6 @@
 package ai.giskard.service;
 
+import ai.giskard.config.ApplicationProperties;
 import ai.giskard.domain.ml.Inspection;
 import ai.giskard.domain.ml.table.Filter;
 import ai.giskard.repository.InspectionRepository;
@@ -14,18 +15,14 @@ import tech.tablesaw.api.DoubleColumn;
 import tech.tablesaw.api.IntColumn;
 import tech.tablesaw.api.StringColumn;
 import tech.tablesaw.api.Table;
-import tech.tablesaw.columns.Column;
 import tech.tablesaw.selection.Selection;
 
 import javax.validation.constraints.NotNull;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStreamReader;
-import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
-import static ai.giskard.domain.ml.table.TableConstants.BORDERLINE_THRESHOLD;
 import static ai.giskard.web.rest.errors.Entity.INSPECTION;
 
 @Service
@@ -38,6 +35,8 @@ public class InspectionService {
     final ModelRepository modelRepository;
     final InspectionRepository inspectionRepository;
     final DatasetService datasetService;
+    final ApplicationProperties applicationProperties;
+
 
     public Table getTableFromBucketFile(String location) throws FileNotFoundException {
         InputStreamReader reader = new InputStreamReader(
@@ -47,28 +46,27 @@ public class InspectionService {
 
     private Selection getSelection(Inspection inspection, Filter filter) throws FileNotFoundException {
         Table predsTable = getTableFromBucketFile(inspection.getPredictionsPath().toAbsolutePath().toString());
-        Table predsNoTargetTable = predsTable.rejectColumns(filter.getTarget());
         Table calculatedTable = getTableFromBucketFile(inspection.getCalculatedPath().toAbsolutePath().toString());
         StringColumn predictedClass = calculatedTable.stringColumn(0);
-        DoubleColumn probPredicted = (DoubleColumn) predsTable.column(filter.getPredicted());
-        Selection correctSelection = predictedClass.lowerCase().isEqualTo(filter.getTarget().toLowerCase());
+        StringColumn targetClass = calculatedTable.stringColumn(1);
+        Selection correctSelection = predictedClass.isEqualTo(targetClass);
         Selection selection;
         switch (filter.getRowFilter()) {
             case CORRECT:
                 selection = correctSelection;
                 break;
             case WRONG:
-                selection = predictedClass.lowerCase().isNotEqualTo(filter.getTarget().toLowerCase());
+                selection = predictedClass.isNotEqualTo(targetClass);
                 break;
             case CUSTOM:
-                selection = correctSelection.and(probPredicted.isLessThanOrEqualTo(filter.getMaxThreshold())).and(probPredicted.isGreaterThanOrEqualTo(filter.getMinThreshold()));
+                DoubleColumn probPredicted = (DoubleColumn) predsTable.column(filter.getPredictedLabel());
+                Selection predictedSelection = predictedClass.isEqualTo(filter.getPredictedLabel());
+                Selection targetSelection = targetClass.isEqualTo(filter.getTargetLabel());
+                selection = predictedSelection.and(targetSelection).and(probPredicted.isLessThanOrEqualTo(filter.getMaxThreshold())).and(probPredicted.isGreaterThanOrEqualTo(filter.getMinThreshold()));
                 break;
             case BORDERLINE:
-                DoubleColumn _max = DoubleColumn.create("max", predsNoTargetTable.stream().mapToDouble(row -> Collections.max(row.columnNames().stream().map(name -> row.getDouble(name)).collect(Collectors.toList()))));
-                DoubleColumn absDiff = _max.subtract(probPredicted).abs();
-                // TODO Check if correct filter needed
-                selection = predictedClass.lowerCase().isEqualTo(filter.getTarget().toLowerCase());
-                selection = selection.and(absDiff.isLessThanOrEqualTo(BORDERLINE_THRESHOLD));
+                DoubleColumn absDiff = calculatedTable.doubleColumn("absDiff");
+                selection = correctSelection.and(absDiff.isLessThanOrEqualTo(applicationProperties.getBorderLineThreshold()));
                 break;
             default:
                 selection = null;

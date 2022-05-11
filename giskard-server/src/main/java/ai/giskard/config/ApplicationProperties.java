@@ -19,4 +19,5 @@ public class ApplicationProperties {
     private int apiTokenValidityInDays;
     private int invitationTokenValidityInDays;
     private String bucketPath;
+    private Double borderLineThreshold;
 }

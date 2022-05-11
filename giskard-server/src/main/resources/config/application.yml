@@ -212,3 +212,4 @@ application:
   api-token-validity-in-days: 90
   invitation-token-validity-in-days: 3
   bucketPath: giskard-legacy-server/app
+  borderLineThreshold = 0.1;

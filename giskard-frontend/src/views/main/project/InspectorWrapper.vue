@@ -38,7 +38,7 @@
 
 
     <RowList ref='rowList' class='px-0' :datasetId='datasetId' :model-id='modelId' :selectedFilter='selectedFilter'
-             :currentRowIdx='rowNb' :range='range' :inspection-id='inspection'
+             :currentRowIdx='rowNb' :range='range' :inspection-id='inspection' :shuffleMode='shuffleMode'
              @fetchedRow='getCurrentRow'
     />
 

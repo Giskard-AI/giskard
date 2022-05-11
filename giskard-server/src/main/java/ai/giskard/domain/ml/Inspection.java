@@ -27,6 +27,8 @@ public class Inspection {
 
     private String target;
 
+
+
     public Path getPredictionsPath() {
         return Paths.get(location, "predictions.csv");
     }
@@ -34,4 +36,9 @@ public class Inspection {
     public Path getCalculatedPath() {
         return Paths.get(location, "calculated.csv");
     }
+
+    public Path getSortedProbsPath() {
+        return Paths.get(location, "sorted_probs.csv");
+    }
+
 }

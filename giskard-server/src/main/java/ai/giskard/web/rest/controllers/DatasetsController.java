@@ -1,7 +1,5 @@
 package ai.giskard.web.rest.controllers;
 
-import ai.giskard.domain.ml.table.Filter;
-import ai.giskard.repository.InspectionRepository;
 import ai.giskard.repository.ml.DatasetRepository;
 import ai.giskard.service.DatasetService;
 import ai.giskard.web.dto.mapper.GiskardMapper;
@@ -13,7 +11,6 @@ import tech.tablesaw.api.Table;
 
 import javax.validation.constraints.NotNull;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.List;
 
 @RestController

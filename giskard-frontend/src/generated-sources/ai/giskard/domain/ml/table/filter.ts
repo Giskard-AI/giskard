@@ -6,6 +6,7 @@ import type {RowFilterType} from './row-filter-type';
 export interface Filter {
     maxThreshold: number;
     minThreshold: number;
+    predictedLabel: string;
+    targetLabel: string;
     rowFilter: RowFilterType;
-    target: string;
 }
