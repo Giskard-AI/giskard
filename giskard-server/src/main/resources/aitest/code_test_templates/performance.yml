@@ -4,14 +4,30 @@ order: 3
 items:
   - id: auc
     title: AUC
+    hint: Test if the AUC is high enough for a sub-population
+    model_type : classification
     # language=Python
     code: |-
+      """
+      Detailed description : Test if the model AUC performance is higher than a threshold for a given sub-population
+      Examples : The test is passed when the AUC for women is higher than 0.7
+      Inputs :
+              - df_slice(pd.Dataframe) : sub-population of the test dataset selected during Test Suite Creation
+              - model : model selected during Test Suite Creation
+              - threshold : threshold value of AUC metrics
+              - target : target column name
+      Outputs :
+              - total rows tested  : length of df_slice tested
+              - metric :  the AUC performance metric
+              - passed : TRUE if AUC metrics > threshold
+      """
       tests.performance.test_auc(
-          test_df,
-          model,
+          df_slice=test_df[:len(test_df) // 2],
+          model=model,
           threshold=0.1,
           target='<TARGET COLUMN>'
       )
+
   - id: f1
     title: F1
     # language=Python

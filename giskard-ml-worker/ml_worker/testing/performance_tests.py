@@ -9,11 +9,11 @@ from ml_worker.testing.abstract_test_collection import AbstractTestCollection
 
 
 class PerformanceTests(AbstractTestCollection):
-    def test_auc(self, df, model: ModelInspector, target, threshold=1):
+    def test_auc(self, df_slice, model: ModelInspector, target, threshold=1):
         """
         Compute Area Under the Receiver Operating Characteristic Curve (ROC AUC)
-        """
 
+        """
         def _calculate_auc(is_binary_classification, prediction, true_value):
             if is_binary_classification:
                 return roc_auc_score(true_value, prediction)
@@ -22,13 +22,13 @@ class PerformanceTests(AbstractTestCollection):
 
         metric = _calculate_auc(
             len(model.classification_labels) == 2,
-            run_predict(df, model).raw_prediction,
-            df[target]
+            run_predict(df_slice, model).raw_prediction,
+            df_slice[target]
         )
 
         return self.save_results(
             SingleTestResult(
-                element_count=len(df),
+                element_count=len(df_slice),
                 metric=metric,
                 passed=metric >= threshold
             ))
