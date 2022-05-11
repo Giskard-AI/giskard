@@ -3,7 +3,6 @@ package ai.giskard.security.jwt;
 import ai.giskard.config.ApplicationProperties;
 import ai.giskard.management.SecurityMetersService;
 import ai.giskard.security.AuthoritiesConstants;
-import ai.giskard.security.GiskardUser;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtParser;
 import io.jsonwebtoken.Jwts;
@@ -14,10 +13,7 @@ import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.assertj.core.data.Offset;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.test.util.ReflectionTestUtils;
 import tech.jhipster.config.JHipsterProperties;
 
@@ -25,11 +21,9 @@ import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.Date;
 
+import static ai.giskard.security.jwt.JWTFilterTest.createAuthentication;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class TokenProviderTest {
@@ -66,7 +60,7 @@ class TokenProviderTest {
 
     @Test
     void testReturnFalseWhenJWTisMalformed() {
-        Authentication authentication = createAuthentication();
+        Authentication authentication = createAuthentication(AuthoritiesConstants.AITESTER);
         String token = tokenProvider.createToken(authentication, false);
         String invalidToken = token.substring(1);
         boolean isTokenValid = tokenProvider.validateToken(invalidToken);
@@ -78,7 +72,7 @@ class TokenProviderTest {
     void testReturnFalseWhenJWTisExpired() {
         ReflectionTestUtils.setField(tokenProvider, "tokenValidityInMilliseconds", -ONE_MINUTE);
 
-        Authentication authentication = createAuthentication();
+        Authentication authentication = createAuthentication(AuthoritiesConstants.AITESTER);
         String token = tokenProvider.createToken(authentication, false);
 
         boolean isTokenValid = tokenProvider.validateToken(token);
@@ -143,18 +137,6 @@ class TokenProviderTest {
 
         Key key = (Key) ReflectionTestUtils.getField(tokenProvider, "key");
         assertThat(key).isNotNull().isEqualTo(Keys.hmacShaKeyFor(Decoders.BASE64.decode(base64Secret)));
-    }
-
-    private Authentication createAuthentication() {
-        Collection<GrantedAuthority> authorities = new ArrayList<>();
-        authorities.add(new SimpleGrantedAuthority(AuthoritiesConstants.AITESTER));
-        GiskardUser giskardUser = new GiskardUser(
-            1L, "anonymous", "",
-            Collections.singletonList(new SimpleGrantedAuthority(AuthoritiesConstants.AICREATOR)));
-        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-            giskardUser, "anonymous", giskardUser.getAuthorities()
-        );
-        return authentication;
     }
 
     private String createUnsupportedToken() {

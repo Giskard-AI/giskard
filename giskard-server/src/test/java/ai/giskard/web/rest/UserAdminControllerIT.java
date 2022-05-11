@@ -452,10 +452,8 @@ class UserAdminControllerIT {
         assertThat(user.getDisplayName()).isEqualTo(DEFAULT_DISPLAY_NAME);
         assertThat(user.getEmail()).isEqualTo(DEFAULT_EMAIL);
         assertThat(user.isActivated()).isTrue();
-        assertThat(user.getCreatedBy()).isNull();
-        assertThat(user.getCreatedDate()).isNotNull();
-        assertThat(user.getLastModifiedBy()).isNull();
-        assertThat(user.getLastModifiedDate()).isNotNull();
+        assertThat(user.getCreatedBy()).isEqualTo(DEFAULT_LOGIN);
+        assertThat(user.getLastModifiedBy()).isEqualTo(DEFAULT_LOGIN);
         assertThat(user.getRoles()).extracting("name").containsExactly(AuthoritiesConstants.AICREATOR);
     }
 

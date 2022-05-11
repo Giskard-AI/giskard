@@ -49,12 +49,7 @@ class JWTFilterTest {
 
     @Test
     void testJWTFilter() throws Exception {
-        GiskardUser giskardUser = new GiskardUser(
-            1L, "test-user", "",
-            Collections.singletonList(new SimpleGrantedAuthority(AuthoritiesConstants.AICREATOR)));
-        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-            giskardUser, "test-password", giskardUser.getAuthorities()
-        );
+        UsernamePasswordAuthenticationToken authentication = createAuthentication(AuthoritiesConstants.AICREATOR);
         String jwt = tokenProvider.createToken(authentication, false);
         MockHttpServletRequest request = new MockHttpServletRequest();
         request.addHeader(JWTFilter.AUTHORIZATION_HEADER, "Bearer " + jwt);
@@ -106,12 +101,7 @@ class JWTFilterTest {
 
     @Test
     void testJWTFilterWrongScheme() throws Exception {
-        GiskardUser giskardUser = new GiskardUser(
-            1L, "test-user", "",
-            Collections.singletonList(new SimpleGrantedAuthority(AuthoritiesConstants.AICREATOR)));
-        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-            giskardUser, "test-password", giskardUser.getAuthorities()
-        );
+        UsernamePasswordAuthenticationToken authentication = createAuthentication(AuthoritiesConstants.AICREATOR);
         String jwt = tokenProvider.createToken(authentication, false);
         MockHttpServletRequest request = new MockHttpServletRequest();
         request.addHeader(JWTFilter.AUTHORIZATION_HEADER, "Basic " + jwt);
@@ -121,5 +111,14 @@ class JWTFilterTest {
         jwtFilter.doFilter(request, response, filterChain);
         assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
         assertThat(SecurityContextHolder.getContext().getAuthentication()).isNull();
+    }
+
+    public static UsernamePasswordAuthenticationToken createAuthentication(String role) {
+        GiskardUser giskardUser = new GiskardUser(
+            1L, "test-user", "",
+            Collections.singletonList(new SimpleGrantedAuthority(role)));
+        return new UsernamePasswordAuthenticationToken(
+            giskardUser, "test-password", giskardUser.getAuthorities()
+        );
     }
 }
