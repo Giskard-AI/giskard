@@ -74,7 +74,7 @@ import { Component, Prop, Vue, Watch } from 'vue-property-decorator';
 import { api } from '@/api';
 import { readToken } from '@/store/main/getters';
 import { commitAddNotification } from '@/store/main/mutations';
-import { Filter, RegressionUnit, RowFilterType } from '@/generated-sources';
+import { Filter, InspectionDTO, RegressionUnit, RowFilterType } from '@/generated-sources';
 
 /**
  * TODO: This class should be on the wrapper, no template for the moment
@@ -103,7 +103,7 @@ export default class RowList extends Vue {
   predictedLabel: string = '';
   targetLabel: string = '';
   range: number[] = [0, 1];
-  inspection;
+  inspection= {} as InspectionDTO;
   allFilterTypes = Object.values(RowFilterType);
   filterTypes = this.allFilterTypes;
   selectedFilter = this.filterTypes[0];
