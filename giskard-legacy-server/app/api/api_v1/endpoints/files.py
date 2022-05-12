@@ -223,9 +223,9 @@ def upload_inspect(model_id: str, dataset_id: str, target: str, db: Session = De
             calculated_path = Path(inspection_folder, "calculated.csv")
             if model_inspector.prediction_task == "classification":
                 results = prediction_results.all_predictions
-                labels = {v: k for v, k in enumerate(model_inspector.classification_labels)}
-                label_serie = data_df[target].map(labels).rename("label")
-                if len(labels) > 2 or model_inspector.classification_threshold is None:
+                labels = {k:v for k,v in enumerate(model_inspector.classification_labels)}
+                label_serie = data_df[target]
+                if len(model_inspector.classification_labels) > 2 or model_inspector.classification_threshold is None:
                     preds_serie = prediction_results.all_predictions.idxmax(axis="columns")
                     sorted_predictions = np.sort(prediction_results.all_predictions.values)
                     abs_diff = pd.Series(sorted_predictions[:, -1] - sorted_predictions[:, -2], name="absDiff")
