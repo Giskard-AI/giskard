@@ -29,16 +29,4 @@ public class Inspection {
 
     private String predictionTask;
 
-    public Path getPredictionsPath() {
-        return Paths.get(location, "predictions.csv");
-    }
-
-    public Path getCalculatedPath() {
-        return Paths.get(location, "calculated.csv");
-    }
-
-    public Path getSortedProbsPath() {
-        return Paths.get(location, "sorted_probs.csv");
-    }
-
 }

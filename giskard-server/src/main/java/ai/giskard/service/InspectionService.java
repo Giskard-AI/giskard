@@ -21,6 +21,8 @@ import javax.validation.constraints.NotNull;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStreamReader;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 
 import static ai.giskard.domain.ml.PredictionType.CLASSIFICATION;
@@ -46,14 +48,14 @@ public class InspectionService {
     }
 
     private Selection getSelectionRegression(Inspection inspection, Filter filter) throws FileNotFoundException {
-        Table calculatedTable = getTableFromBucketFile(inspection.getCalculatedPath().toAbsolutePath().toString());
+        Table calculatedTable = getTableFromBucketFile(getCalculatedPath(inspection.getId()).toString());
         Selection selection;
         switch (filter.getRowFilter()) {
             case CORRECT:
                 selection = calculatedTable.doubleColumn("absDiff").isLessThanOrEqualTo(filter.getMinThreshold());
                 break;
             case WRONG:
-                selection =  calculatedTable.doubleColumn("absDiff").isGreaterThanOrEqualTo(filter.getMinThreshold());
+                selection = calculatedTable.doubleColumn("absDiff").isGreaterThanOrEqualTo(filter.getMinThreshold());
                 break;
             default:
                 selection = null;
@@ -61,9 +63,17 @@ public class InspectionService {
         return selection;
     }
 
+    Path getPredictionsPath(Long inspectionId) {
+        return Paths.get(applicationProperties.getBucketPath(), "files-bucket","inspections", inspectionId.toString(),"predictions.csv");
+    }
+
+    Path getCalculatedPath(Long inspectionId) {
+        return Paths.get(applicationProperties.getBucketPath(),"files-bucket", "inspections", inspectionId.toString(), "calculated.csv");
+    }
+
     private Selection getSelection(Inspection inspection, Filter filter) throws FileNotFoundException {
-        Table predsTable = getTableFromBucketFile(inspection.getPredictionsPath().toAbsolutePath().toString());
-        Table calculatedTable = getTableFromBucketFile(inspection.getCalculatedPath().toAbsolutePath().toString());
+        Table predsTable = getTableFromBucketFile(getPredictionsPath(inspection.getId()).toString());
+        Table calculatedTable = getTableFromBucketFile(getCalculatedPath(inspection.getId()).toString());
         StringColumn predictedClass = calculatedTable.stringColumn(0);
         StringColumn targetClass = calculatedTable.stringColumn(1);
         Selection correctSelection = predictedClass.isEqualTo(targetClass);
@@ -111,8 +121,7 @@ public class InspectionService {
      * @return filtered table
      */
     public List<String> getLabels(@NotNull Long inspectionId) throws FileNotFoundException {
-        Inspection inspection = inspectionRepository.findById(inspectionId).orElseThrow(() -> new EntityNotFoundException(INSPECTION, inspectionId));
-        Table predsTable = getTableFromBucketFile(inspection.getPredictionsPath().toAbsolutePath().toString());
+        Table predsTable = getTableFromBucketFile(Paths.get(applicationProperties.getBucketPath(), "inspections", inspectionId.toString(), inspectionId.toString()).toString());
         return predsTable.columnNames();
     }
 
