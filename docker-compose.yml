@@ -53,6 +53,8 @@ services:
       - SPRING_MAIL_PASSWORD
       - JHIPSTER_MAIL_BASEURL
     command: [ "/giskard/wait-for-python-app.sh", "backend", "java", "-jar","/giskard/lib/giskard.jar" ]
+    volumes:
+      - app-files-bucket:/giskard-legacy-server/app/files-bucket
 
 
   frontend:
