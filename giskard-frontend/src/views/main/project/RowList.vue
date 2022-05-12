@@ -119,9 +119,6 @@ export default class RowList extends Vue {
     this.predictedLabel = this.labels[0];
     this.targetLabel = this.labels[0];
     await this.fetchRowAndEmit(true);
-    console.log(this.regressionUnits[0]);
-    console.log(RegressionUnit.ABSDIFF);
-    console.log((<any>RegressionUnit)[this.regressionUnits[0]]);
   }
 
   @Watch('currentRowIdx')
