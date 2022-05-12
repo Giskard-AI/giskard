@@ -211,10 +211,12 @@ def upload_inspect(model_id: str, dataset_id: str, target: str, db: Session = De
         try:
             data_file = crud.dataset.get(db, dataset_id)
             model_inspector = files_utils.read_model_file(model_file.location)
-            inspection_folder = Path(settings.BUCKET_PATH, "inspections", f"{model_id}_{dataset_id}")
-            obj_in = schemas.InspectionCreateSchema(location=str(inspection_folder.absolute()), target=target,
+            obj_in = schemas.InspectionCreateSchema(location="", target=target,
                                                     prediction_task=model_inspector.prediction_task)
+
             inspection = crud.inspection.create(db, obj_in=obj_in, model_id=model_id, dataset_id=dataset_id)
+            inspection_folder = Path(settings.BUCKET_PATH, "inspections", f"{inspection.id}")
+
             data_df = files_utils.read_dataset_file(data_file.location)
             data_df.to_csv(data_file.location.replace(".zst", ""))
             prediction_results = run_predict(data_df, model_inspector)
@@ -223,7 +225,7 @@ def upload_inspect(model_id: str, dataset_id: str, target: str, db: Session = De
             calculated_path = Path(inspection_folder, "calculated.csv")
             if model_inspector.prediction_task == "classification":
                 results = prediction_results.all_predictions
-                labels = {k:v for k,v in enumerate(model_inspector.classification_labels)}
+                labels = {k: v for k, v in enumerate(model_inspector.classification_labels)}
                 label_serie = data_df[target]
                 if len(model_inspector.classification_labels) > 2 or model_inspector.classification_threshold is None:
                     preds_serie = prediction_results.all_predictions.idxmax(axis="columns")
