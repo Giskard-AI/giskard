@@ -5,6 +5,7 @@ import ai.giskard.domain.Role;
 import ai.giskard.web.dto.ml.ProjectDTO;
 import org.mapstruct.*;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collections;
 import java.util.Set;
@@ -35,5 +36,13 @@ public interface TestGiskardMapper {
     ProjectDTO projectToProjectDTO(Project project);
 
     TestProjectPostDTO projectToProjectPostDTO(Project project);
+
+    @Transactional
+    ProjectDTO projectToProjectDTO2(Project project);
+
+    @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
+    @Transactional
+    void updateProjectFromDto2(TestProjectPostDTO dto, @MappingTarget Project entity);
+
 
 }

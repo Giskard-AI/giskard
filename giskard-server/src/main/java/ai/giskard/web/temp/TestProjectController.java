@@ -51,6 +51,21 @@ public class TestProjectController {
         Project updatedProject= projectRepository.save(project);
         return testGiskardMapper.projectToProjectDTO(updatedProject);
     }
+
+    /**
+     * Update the project with the specified project
+     *
+     * @param projectDTO project updated to save
+     * @param id         id of the existing project
+     * @return updated project
+     */
+    @PutMapping(value = "/_project_tm/{id}")
+    public ProjectDTO updateProjectTransactionalMapper(@RequestBody TestProjectPostDTO projectDTO, @PathVariable("id") Long id) {
+        Project project = projectRepository.getById(id);
+        testGiskardMapper.updateProjectFromDto2(projectDTO, project);
+        Project updatedProject= projectRepository.save(project);
+        return testGiskardMapper.projectToProjectDTO2(updatedProject);
+    }
 //
 //    /**
 //     * Create new project

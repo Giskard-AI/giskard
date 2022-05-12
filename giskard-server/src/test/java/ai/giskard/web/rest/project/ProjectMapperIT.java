@@ -96,14 +96,14 @@ class ProjectMapperIT {
     void update() throws Exception {
         Project project = projectRepository.getOneByName(PROJECTKEY);
         assertThat(project.getOwner().getLogin()).isEqualTo("admin");
-        User aiTester=userRepository.findOneByLogin(initService.getUserName("aitester")).orElseThrow(()->new EntityNotFoundException(Entity.USER, "ai tester"));
+        User aiTester = userRepository.findOneByLogin(initService.getUserName("aitester")).orElseThrow(() -> new EntityNotFoundException(Entity.USER, "ai tester"));
         TestProjectPostDTO projectPostDTO = testGiskardMapper.projectToProjectPostDTO(project);
         projectPostDTO.setName("updateProject");
         projectPostDTO.setKey("updateKey");
         projectPostDTO.setOwner(aiTester);
         restUserMockMvc.perform(put("/api/v2/_project/" + project.getId())
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(new ObjectMapper().writeValueAsString(projectPostDTO))).andExpect(status().is5xxServerError());
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(new ObjectMapper().writeValueAsString(projectPostDTO))).andExpect(status().is5xxServerError());
 
     }
 
@@ -116,7 +116,7 @@ class ProjectMapperIT {
     void updateTransactional() throws Exception {
         Project project = projectRepository.getOneByName(PROJECTKEY);
         assertThat(project.getOwner().getLogin()).isEqualTo("admin");
-        User aiTester=userRepository.findOneByLogin(initService.getUserName("aitester")).orElseThrow(()->new EntityNotFoundException(Entity.USER, "ai tester"));
+        User aiTester = userRepository.findOneByLogin(initService.getUserName("aitester")).orElseThrow(() -> new EntityNotFoundException(Entity.USER, "ai tester"));
         TestProjectPostDTO projectPostDTO = testGiskardMapper.projectToProjectPostDTO(project);
         projectPostDTO.setName("updateProject");
         projectPostDTO.setKey("updateKey");
@@ -132,4 +132,30 @@ class ProjectMapperIT {
         assertThat(projectRepository.findOneByName("updateProject")).isPresent();
     }
 
+    TestProjectPostDTO updateProject(Project project, User owner) {
+        TestProjectPostDTO projectPostDTO = testGiskardMapper.projectToProjectPostDTO(project);
+        projectPostDTO.setName("updateProject");
+        projectPostDTO.setKey("updateKey");
+        projectPostDTO.setOwner(owner);
+        return projectPostDTO;
+    }
+
+    /**
+     * Update Project
+     *
+     * @throws Exception
+     */
+    @Test
+    void updateTransactionalMapper() throws Exception {
+        Project project = projectRepository.getOneByName(PROJECTKEY);
+        assertThat(project.getOwner().getLogin()).isEqualTo("admin");
+        User aiTester = userRepository.findOneByLogin(initService.getUserName("aitester")).orElseThrow(() -> new EntityNotFoundException(Entity.USER, "ai tester"));
+        TestProjectPostDTO projectPostDTO = updateProject(project, aiTester);
+        restUserMockMvc.perform(put("/api/v2/_project_tm/" + project.getId())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(new ObjectMapper().writeValueAsString(projectPostDTO)))
+            .andExpect(status().is5xxServerError());
+
+        assertThat(projectRepository.findOneByName("updateProject")).isEmpty();
+    }
 }
