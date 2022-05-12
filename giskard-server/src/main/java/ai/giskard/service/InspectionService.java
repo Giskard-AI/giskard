@@ -63,11 +63,11 @@ public class InspectionService {
         return selection;
     }
 
-    Path getPredictionsPath(Long inspectionId) {
+    public Path getPredictionsPath(Long inspectionId) {
         return Paths.get(applicationProperties.getBucketPath(), "files-bucket","inspections", inspectionId.toString(),"predictions.csv");
     }
 
-    Path getCalculatedPath(Long inspectionId) {
+    public Path getCalculatedPath(Long inspectionId) {
         return Paths.get(applicationProperties.getBucketPath(),"files-bucket", "inspections", inspectionId.toString(), "calculated.csv");
     }
 
@@ -121,7 +121,7 @@ public class InspectionService {
      * @return filtered table
      */
     public List<String> getLabels(@NotNull Long inspectionId) throws FileNotFoundException {
-        Table predsTable = getTableFromBucketFile(Paths.get(applicationProperties.getBucketPath(), "inspections", inspectionId.toString(), inspectionId.toString()).toString());
+        Table predsTable = getTableFromBucketFile(getPredictionsPath(inspectionId).toString());
         return predsTable.columnNames();
     }
 
