@@ -88,6 +88,11 @@ management:
             enabled: true
 
 spring:
+  servlet:
+    multipart:
+      max-file-size: 1GB
+      max-request-size: 10GB
+
   application:
     name: giskard
   profiles:
@@ -217,3 +222,4 @@ application:
   ml-worker-port: 50051
   api-token-validity-in-days: 90
   invitation-token-validity-in-days: 3
+  giskard-home: giskard-legacy-server/app/files-bucket

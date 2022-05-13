@@ -1,4 +1,4 @@
-package ai.giskard.config;
+package ai.giskard.service;
 
 import ai.giskard.domain.Project;
 import ai.giskard.domain.Role;
@@ -7,7 +7,6 @@ import ai.giskard.repository.RoleRepository;
 import ai.giskard.repository.ProjectRepository;
 import ai.giskard.repository.UserRepository;
 import ai.giskard.security.AuthoritiesConstants;
-import ai.giskard.service.UserService;
 import ai.giskard.web.rest.errors.Entity;
 import ai.giskard.web.rest.errors.EntityNotFoundException;
 import com.google.common.collect.Sets;
@@ -38,6 +37,7 @@ public class InitService {
     final UserService userService;
 
     final ProjectRepository projectRepository;
+    final ProjectService projectService;
 
     final PasswordEncoder passwordEncoder;
 
@@ -59,7 +59,7 @@ public class InitService {
     /**
      * Initializing first authorities, mock users, and mock projects
      */
-    //@EventListener(ApplicationReadyEvent.class)
+    @EventListener(ApplicationReadyEvent.class)
     public void init() {
         initAuthorities();
         initUsers();
@@ -105,12 +105,14 @@ public class InitService {
      */
     private void saveUser(String key, String roleName) {
         User user = new User();
-        user.setLogin(key);
+        user.setLogin(key.toLowerCase());
         user.setEmail(String.format("%s@example.com", key.toLowerCase()));
         user.setActivated(true);
         Role role = roleRepository.findByName(roleName).orElseThrow(() -> new EntityNotFoundException(Entity.ROLE, roleName));
         user.setRoles(Sets.newHashSet(role));
-        user.setPassword(passwordEncoder.encode(key).toLowerCase());
+        user.setPassword(passwordEncoder.encode(key.toLowerCase()));
+        user.setEnabled(true);
+        user.setActivated(true);
         userRepository.save(user);
     }
 
@@ -118,7 +120,7 @@ public class InitService {
      * Initialized with default projects
      */
     public void initProjects() {
-        Arrays.stream(mockKeys).forEach(key -> saveProject(key + "Project", key));
+        Arrays.stream(mockKeys).forEach(key -> saveProject(key + "Project", key.toLowerCase()));
     }
 
     /**
@@ -130,8 +132,9 @@ public class InitService {
     private void saveProject(String key, String ownerLogin) {
         User owner = userRepository.getOneByLogin(ownerLogin.toLowerCase());
         Assert.notNull(owner, "Owner does not exist in database");
-        Project project = new Project(key, key, key, owner);
+        Project project = new Project(null, key, key, owner);
         if (projectRepository.findOneByName(key).isEmpty()) {
+            projectService.create(project, ownerLogin);
             projectRepository.save(project);
         } else {
             logger.info(String.format("Project with name %s already exists", key));

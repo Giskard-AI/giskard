@@ -8,18 +8,18 @@ import ai.giskard.domain.ml.ProjectModel;
 import ai.giskard.domain.ml.TestSuite;
 import ai.giskard.repository.ml.DatasetRepository;
 import ai.giskard.repository.ml.ModelRepository;
+import ai.giskard.web.dto.ModelUploadParamsDTO;
 import ai.giskard.web.dto.ml.*;
 import ai.giskard.web.dto.user.AdminUserDTO;
 import ai.giskard.web.dto.user.UserDTO;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.mapstruct.*;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
-@Mapper(componentModel = "spring",unmappedTargetPolicy = ReportingPolicy.IGNORE,
+@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE,
     uses = {DatasetRepository.class, ModelRepository.class})
 public interface GiskardMapper {
     default Set<String> roleNames(Set<Role> value) {
@@ -58,6 +58,8 @@ public interface GiskardMapper {
 
     Dataset datasetDTOtoDataset(DatasetDTO dto);
 
+    DatasetDTO datasetToDatasetDTO(Dataset dataset);
+
     List<TestSuiteDTO> testSuitesToTestSuiteDTOs(List<TestSuite> testSuites);
 
     @Mappings({
@@ -83,4 +85,13 @@ public interface GiskardMapper {
 
     User userFromId(Long id);
 
+    ProjectModel modelUploadParamsDTOtoProjectModel(ModelUploadParamsDTO dto);
+
+    default String serializeListOfStrings(List<String> list) throws JsonProcessingException {
+        return new ObjectMapper().writeValueAsString(list);
+    }
+
+    default String serializeMapStringStringToString(Map<String, String> map) throws JsonProcessingException {
+        return new ObjectMapper().writeValueAsString(map);
+    }
 }

@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 
 @MappedSuperclass
 @Table(indexes = @Index(columnList = "fileName"))
-public abstract class ProjectFile implements Serializable {
+public abstract class ProjectFile extends AbstractAuditingEntity implements Serializable {
     @Getter
     @Setter
     @Id
@@ -20,19 +20,8 @@ public abstract class ProjectFile implements Serializable {
     private Long id;
 
     @Getter
-    private String fileName;
-
-    @NotNull
-    @Getter
-    private String location;
-
-    @Getter
-    private LocalDateTime createdOn;
-
-    @Getter
     @Setter
-    @ManyToOne
-    private User owner;
+    private String fileName;
 
     @Getter
     @Setter
