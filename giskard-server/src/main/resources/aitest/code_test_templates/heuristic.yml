@@ -1,6 +1,6 @@
 title: Heuristic
 id: heuristic
-order: 1
+order: 2
 items:
   - id: heuristic
     title: Heuristic
@@ -14,3 +14,17 @@ items:
         max_proba=1,
         threshold=1,
       )
+
+  - id: output_in_range
+  - title: Output_in_range
+  # language=Python
+  - code: |-
+    tests.heuristic.test_output_in_range(
+      df_slice=test_df[:len(test_df)//2],
+      model=model,
+      classification_label=model.classification_labels[0],
+      min_proba=0.3,
+      max_proba=0.7,
+      threshold=0.5,
+    )
+
