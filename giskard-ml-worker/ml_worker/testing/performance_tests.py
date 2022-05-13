@@ -11,7 +11,25 @@ from ml_worker.testing.abstract_test_collection import AbstractTestCollection
 class PerformanceTests(AbstractTestCollection):
     def test_auc(self, df_slice, model: ModelInspector, target, threshold=1):
         """
-        Compute Area Under the Receiver Operating Characteristic Curve (ROC AUC)
+        Test if the model AUC performance is higher than a threshold for a given sub-population
+
+        Args:
+            df_slice(pandas.core.frame.DataFrame):
+                sub-population of the test dataset selected during Test Suite Creation
+            model(ModelInspector):
+                model selected during Test Suite Creation
+            target(str):
+                target column name
+            threshold(int):
+                threshold value of AUC metrics
+
+        Returns:
+            total rows tested:
+                length of df_slice tested
+            metric:
+                the AUC performance metric
+            passed:
+                TRUE if AUC metrics > threshold
 
         """
         def _calculate_auc(is_binary_classification, prediction, true_value):
@@ -64,25 +82,68 @@ class PerformanceTests(AbstractTestCollection):
 
     def test_f1(self, df_slice, model: ModelInspector, target, threshold=1):
         """
-        Compute the F1 score
-        """
+        Test if the model F1 score is higher than a defined threshold for a given sub-population
 
+        Args:
+            df_slice(pandas.core.frame.DataFrame):
+                sub-population of the test dataset selected during Test Suite Creation
+            model(ModelInspector):
+                model selected during Test Suite Creation
+            target(str):
+                target column name
+            threshold(int):
+                threshold value for F1 Score
+
+        Returns:
+            total rows tested:
+                length of df_slice tested
+            metric:
+                the F1 score metric
+            passed:
+                TRUE if F1 Score metrics > threshold
+
+        """
         return self._test_classification_score(f1_score,
                                                df_slice, model, target, threshold)
 
     def test_accuracy(self, df_slice, model: ModelInspector, target, threshold=1):
         """
-        Compute Accuracy
-        """
+        Test if the model Accuracy is higher than a threshold for a given sub-population
 
+        Args:
+            df_slice(pandas.core.frame.DataFrame):
+                sub-population of the test dataset selected during Test Suite Creation
+            model(ModelInspector):
+                model selected during Test Suite Creation
+            target(str):
+                target column name
+            threshold(int):
+                threshold value for Accuracy
+
+        Returns:
+            total rows tested:
+                length of df_slice tested
+            metric:
+                the Accuracy metric
+            passed:
+                TRUE if Accuracy metrics > threshold
+
+        """
         return self._test_classification_score(accuracy_score,
                                                df_slice, model, target, threshold)
 
     def test_precision(self, df_slice, model: ModelInspector, target, threshold=1):
         """
-        Compute Precision
-        """
 
+        Args:
+            df_slice (pandas.core.frame.DataFrame):
+            model:
+            target:
+            threshold:
+
+        Returns:
+
+        """
         return self._test_classification_score(precision_score,
                                                df_slice, model, target, threshold)
 

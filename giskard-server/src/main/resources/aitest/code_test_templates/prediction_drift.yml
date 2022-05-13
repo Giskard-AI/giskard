@@ -4,11 +4,15 @@ order: 5
 items:
   - id: drift_prediction_psi
     title: Population Stability Index
+    hint: Test if classification labels prediction is drifting between train and test set with PSI score
+    modelTypes:
+      - MULTICLASS_CLASSIFICATION
+      - BINARY_CLASSIFICATION
     # language=Python
     code: |
       tests.drift.test_drift_prediction_psi(
-          train_df=train_df,
-          test_df=test_df,
+          train_df_slice=train_df[:len(train_df) // 2],
+          test_df_slice=test_df[:len(test_df) // 2],
           model=model,
           threshold=0.1,
           max_categories=10,
@@ -16,6 +20,7 @@ items:
       )
   - id: drift_prediction_chi_square
     title: Chi-squared
+    hint: Test if classification labels prediction is drifting between train and test set with chi square
     # language=Python
     code: |
       tests.drift.test_drift_prediction_chi_square(
@@ -28,6 +33,7 @@ items:
       )
   - id: drift_prediction_ks
     title: Kolmogorov–Smirnov
+    hint: Test if classification labels prediction is drifting between train and test set with KS score
     # language=Python
     code: |-
       tests.drift.test_drift_prediction_ks(
@@ -38,6 +44,7 @@ items:
       )
   - id: drift_prediction_earth_movers_distance
     title: Earth mover's distance
+    hint: Test if classification labels prediction is drifting between train and test set with Earth mover's distance
     # language=Python
     code: |-
       tests.drift.test_drift_prediction_earth_movers_distance(
