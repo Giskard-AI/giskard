@@ -1,4 +1,5 @@
 export const GENERATED_MAPPING = {
+    'ai.giskard.domain.ml.ModelType' : 'ModelType',
     'ai.giskard.web.dto.ml.write.TestSuitePostDTO' : 'TestSuitePostDTO',
     'ai.giskard.web.dto.user.UserMinimalDTO' : 'UserMinimalDTO',
     'ai.giskard.web.dto.FeedbackReplyDTO' : 'FeedbackReplyDTO',
@@ -11,8 +12,11 @@ export const GENERATED_MAPPING = {
     'ai.giskard.web.rest.vm.TokenAndPasswordVM' : 'TokenAndPasswordVM',
     'ai.giskard.web.dto.JWTToken' : 'JWTToken',
     'ai.giskard.web.dto.CreateFeedbackDTO' : 'CreateFeedbackDTO',
+    'ai.giskard.domain.ml.ModelLanguage' : 'ModelLanguage',
     'ai.giskard.web.dto.ml.ModelDTO' : 'ModelDTO',
+    'ai.giskard.web.dto.ModelUploadParamsDTO' : 'ModelUploadParamsDTO',
     'ai.giskard.web.dto.ml.UpdateTestSuiteDTO' : 'UpdateTestSuiteDTO',
+    'ai.giskard.web.dto.DataUploadParamsDTO' : 'DataUploadParamsDTO',
     'ai.giskard.web.dto.PasswordResetRequest' : 'PasswordResetRequest',
     'ai.giskard.domain.ml.CodeTestCollection' : 'CodeTestCollection',
     'ai.giskard.web.dto.ml.NamedSingleTestResultDTO' : 'NamedSingleTestResultDTO',
@@ -42,6 +46,7 @@ export const GENERATED_MAPPING = {
     'ai.giskard.web.dto.ml.CodeBasedTestPresetDTO' : 'CodeBasedTestPresetDTO'
 
 };
+export * from './ai/giskard/domain/ml/model-type';
 export * from './ai/giskard/web/dto/ml/write/test-suite-post-dto';
 export * from './ai/giskard/web/dto/user/user-minimal-dto';
 export * from './ai/giskard/web/dto/feedback-reply-dto';
@@ -53,8 +58,11 @@ export * from './ai/giskard/web/dto/user/user-dto';
 export * from './ai/giskard/web/rest/vm/token-and-password-vm';
 export * from './ai/giskard/web/dto/jwttoken';
 export * from './ai/giskard/web/dto/create-feedback-dto';
+export * from './ai/giskard/domain/ml/model-language';
 export * from './ai/giskard/web/dto/ml/model-dto';
+export * from './ai/giskard/web/dto/model-upload-params-dto';
 export * from './ai/giskard/web/dto/ml/update-test-suite-dto';
+export * from './ai/giskard/web/dto/data-upload-params-dto';
 export * from './ai/giskard/web/dto/password-reset-request';
 export * from './ai/giskard/domain/ml/code-test-collection';
 export * from './ai/giskard/web/dto/ml/named-single-test-result-dto';

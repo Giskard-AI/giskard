@@ -1,20 +1,21 @@
 package ai.giskard.ml;
 
+import ai.giskard.domain.ml.Dataset;
+import ai.giskard.domain.ml.ProjectModel;
 import ai.giskard.domain.ml.TestSuite;
 import ai.giskard.domain.ml.testing.Test;
+import ai.giskard.service.FileLocationService;
 import ai.giskard.worker.MLWorkerGrpc;
 import ai.giskard.worker.RunTestRequest;
 import ai.giskard.worker.TestResultMessage;
 import com.google.common.util.concurrent.ListenableFuture;
 import io.grpc.Channel;
 import io.grpc.ManagedChannel;
-import io.grpc.StatusRuntimeException;
 import io.grpc.stub.AbstractStub;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
@@ -41,17 +42,20 @@ public class MLWorkerClient {
     }
 
     public ListenableFuture<TestResultMessage> runTest(TestSuite testSuite, Test test) {
+        ProjectModel model = testSuite.getModel();
         RunTestRequest.Builder requestBuilder = RunTestRequest.newBuilder()
             .setCode(test.getCode())
-            .setModelPath(testSuite.getModel().getLocation());
-        if (testSuite.getTrainDataset() != null) {
-            requestBuilder.setTrainDatasetPath(testSuite.getTrainDataset().getLocation());
+            .setModelPath(FileLocationService.modelRelativePath(model).toString());
+        Dataset trainDS = testSuite.getTrainDataset();
+        if (trainDS != null) {
+            requestBuilder.setTrainDatasetPath(FileLocationService.datasetRelativePath(trainDS).toString());
         }
-        if (testSuite.getTestDataset() != null) {
-            requestBuilder.setTestDatasetPath(testSuite.getTestDataset().getLocation());
+        Dataset testDS = testSuite.getTestDataset();
+        if (testDS != null) {
+            requestBuilder.setTestDatasetPath(FileLocationService.datasetRelativePath(testDS).toString());
         }
-        RunTestRequest request = requestBuilder
-            .build();
+        RunTestRequest request = requestBuilder.build();
+        logger.debug("Sending requiest to ML Worker: {}", request);
         ListenableFuture<TestResultMessage> testResultMessage = null;
         testResultMessage = futureStub.runTest(request);
         return testResultMessage;
