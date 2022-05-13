@@ -11,23 +11,27 @@ items:
     # language=Python
     code: |-
       """
-      Detailed description : Test if the model AUC performance is higher than a threshold
-      for a given sub-population.
+        Test if the model AUC performance is higher than a threshold
 
-      Examples : The test is passed when the AUC for women is higher than 0.7
+        Args:
+            df_slice(pandas.core.frame.DataFrame):
+                sub-population of the test dataset selected during Test Suite Creation
+            model(class ModelInspector):
+                model selected during Test Suite Creation
+            target(str):
+                target column name
+            threshold(int):
+                threshold value of AUC metrics
 
-      Inputs :
-              - df_slice(pandas.Dataframe): sub-population of the test dataset selected
-                during Test Suite Creation
-              - model : model selected during Test Suite Creation
-              - threshold : threshold value of AUC metrics
-              - target : target column name
+        Returns:
+            total rows tested:
+                length of df_slice tested
+            metric:
+                the AUC performance metric
+            passed:
+                TRUE if AUC metrics > threshold
 
-      Outputs :
-              - total rows tested  : length of df_slice tested
-              - metric :  the AUC performance metric
-              - passed : TRUE if AUC metrics > threshold
-      """
+        """
       tests.performance.test_auc(
           df_slice=test_df[:len(test_df) // 2],
           model=model,
@@ -38,11 +42,29 @@ items:
   - id: f1
     title: F1
     hint: Test if the F1 score is high enough for a sub-population
-    modelTypes:
-      - MULTICLASS_CLASSIFICATION
-      - BINARY_CLASSIFICATION
     # language=Python
     code: |-
+      """
+        Test if the model F1 score is higher than a defined threshold for a given sub-population
+
+        Args:
+            df_slice(pandas.core.frame.DataFrame):
+                sub-population of the test dataset selected during Test Suite Creation
+            model(class ModelInspector):
+                model selected during Test Suite Creation
+            target(str):
+                target column name
+            threshold(int):
+                threshold value for F1 Score
+
+        Returns:
+            total rows tested:
+                length of df_slice tested
+            metric:
+                the F1 score metric
+            passed:
+                TRUE if F1 Score metrics > threshold
+      """
       tests.performance.test_f1(
           df_slice=test_df[:len(test_df) // 2],
           model=model,
@@ -87,6 +109,28 @@ items:
       - BINARY_CLASSIFICATION
     # language=Python
     code: |-
+      """
+        Test if the model Accuracy is higher than a threshold for a given sub-population
+
+        Args:
+            df_slice(pandas.core.frame.DataFrame):
+                sub-population of the test dataset selected during Test Suite Creation
+            model(ModelInspector):
+                model selected during Test Suite Creation
+            target(str):
+                target column name
+            threshold(int):
+                threshold value for Accuracy
+
+        Returns:
+            total rows tested:
+                length of df_slice tested
+            metric:
+                the Accuracy metric
+            passed:
+                TRUE if Accuracy metrics > threshold
+
+        """
       tests.performance.test_diff_accuracy(
           df=test_df,
           model=model,
@@ -158,7 +202,8 @@ items:
   - id: neg_rmse
     title: Negative RMSE
     hint: Test if  the negative Root Mean Square Error value is low enough for the dataset
-    modelTypes: REGRESSION
+    modelTypes:
+      - REGRESSION
     # language=Python
     code: |-
       tests.performance.test_neg_rmse(
@@ -170,7 +215,8 @@ items:
   - id: neg_mae
     title: Negative MAE
     hint: Test if  the negative Mean Absolute Error value is low enough for the dataset
-    modelTypes: REGRESSION
+    modelTypes:
+      - REGRESSION
     # language=Python
     code: |-
       tests.performance.test_neg_mae(
@@ -182,7 +228,8 @@ items:
   - id: r2
     title: R2
     hint: Test if  the R-Squared value is high enough for the dataset
-    modelTypes: REGRESSION
+    modelTypes:
+     - REGRESSION
     # language=Python
     code: |-
       tests.performance.test_r2(

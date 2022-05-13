@@ -238,11 +238,11 @@ class DriftTests(AbstractTestCollection):
             metric=metric
         ))
 
-    def test_drift_prediction_psi(self, train_df: pd.DataFrame, test_df: pd.DataFrame, model: ModelInspector,
+    def test_drift_prediction_psi(self, train_df_slice: pd.DataFrame, test_df_slice: pd.DataFrame, model: ModelInspector,
                                   max_categories: int = 10, threshold: float = 0.2,
                                   psi_contribution_percent: float = 0.2):
-        prediction_train = run_predict(train_df, model).prediction
-        prediction_test = run_predict(test_df, model).prediction
+        prediction_train = run_predict(train_df_slice, model).prediction
+        prediction_test = run_predict(test_df_slice, model).prediction
         total_psi, output_data = self._calculate_drift_psi(prediction_train, prediction_test, max_categories)
 
         passed = True if threshold is None else total_psi <= threshold
