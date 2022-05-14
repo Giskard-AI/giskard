@@ -11,6 +11,7 @@ import ai.giskard.web.rest.errors.Entity;
 import ai.giskard.web.rest.errors.EntityNotFoundException;
 import com.google.common.collect.Sets;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
@@ -120,24 +121,27 @@ public class InitService {
      * Initialized with default projects
      */
     public void initProjects() {
-        Arrays.stream(mockKeys).forEach(key -> saveProject(key + "Project", key.toLowerCase()));
+        Arrays.stream(mockKeys).forEach(key -> saveProject(
+            String.format("%s's project", StringUtils.capitalize(key.toLowerCase())),
+            key.toLowerCase())
+        );
     }
 
     /**
      * Save project
      *
-     * @param key        key used to easily identify the project
-     * @param ownerLogin login of the owner
+     * @param projectName projectName used to easily identify the project
+     * @param ownerLogin  login of the owner
      */
-    private void saveProject(String key, String ownerLogin) {
+    private void saveProject(String projectName, String ownerLogin) {
         User owner = userRepository.getOneByLogin(ownerLogin.toLowerCase());
         Assert.notNull(owner, "Owner does not exist in database");
-        Project project = new Project(null, key, key, owner);
-        if (projectRepository.findOneByName(key).isEmpty()) {
+        Project project = new Project(null, projectName, projectName, owner);
+        if (projectRepository.findOneByName(projectName).isEmpty()) {
             projectService.create(project, ownerLogin);
             projectRepository.save(project);
         } else {
-            logger.info(String.format("Project with name %s already exists", key));
+            logger.info(String.format("Project with name %s already exists", projectName));
         }
     }
 }

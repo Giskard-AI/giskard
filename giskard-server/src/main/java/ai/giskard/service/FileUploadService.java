@@ -10,15 +10,18 @@ import ai.giskard.web.dto.ModelUploadParamsDTO;
 import ai.giskard.web.dto.mapper.GiskardMapper;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.compress.compressors.CompressorException;
+import org.apache.commons.compress.compressors.CompressorOutputStream;
 import org.apache.commons.compress.compressors.CompressorStreamFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -36,7 +39,7 @@ public class FileUploadService {
     private final Logger log = LoggerFactory.getLogger(FileUploadService.class);
 
     @Transactional
-    public ProjectModel uploadModel(ModelUploadParamsDTO modelParams, InputStream modelStream, InputStream requirementsStream) {
+    public ProjectModel uploadModel(ModelUploadParamsDTO modelParams, InputStream modelStream, InputStream requirementsStream, MultipartFile modelFile) {
         Project project = projectRepository.getOneByKey(modelParams.getProjectKey());
         Path projectModelsPath = locationService.modelsDirectory(project.getKey());
         createOrEnsureOutputDirectory(projectModelsPath);
@@ -51,7 +54,7 @@ public class FileUploadService {
         streamToCompressedFile(modelStream, modelFilePath);
         model.setFileName(modelFilename);
 
-        String requirementsFilename = createZSTname("model_requirements_", savedModel.getId());
+        String requirementsFilename = createZSTname("model-requirements_", savedModel.getId());
         Path requirementsFilePath = projectModelsPath.resolve(requirementsFilename);
         streamToCompressedFile(requirementsStream, requirementsFilePath);
         model.setRequirementsFileName(requirementsFilename);
@@ -75,9 +78,11 @@ public class FileUploadService {
 
     private void streamToCompressedFile(InputStream inputStream, Path outputPath) {
         try {
-            inputStream.transferTo(
-                new CompressorStreamFactory().
-                    createCompressorOutputStream(CompressorStreamFactory.ZSTANDARD, Files.newOutputStream(outputPath)));
+            OutputStream outStream = Files.newOutputStream(outputPath);
+            CompressorOutputStream cos = new CompressorStreamFactory().
+                createCompressorOutputStream(CompressorStreamFactory.ZSTANDARD, outStream);
+            inputStream.transferTo(cos);
+            cos.close();
             log.info("Saved file: {}", outputPath);
 
         } catch (IOException e) {
