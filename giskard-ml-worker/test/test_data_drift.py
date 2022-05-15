@@ -64,8 +64,8 @@ def test_drift_chi_square_max_cat():
 
 def test_drift_chi_square_pass_fail():
     tests = GiskardTestFunctions()
-    assert not tests.drift.test_drift_chi_square(expected_series=SERIES_1, actual_series=SERIES_2, threshold=62).passed
-    assert tests.drift.test_drift_chi_square(expected_series=SERIES_1, actual_series=SERIES_2, threshold=64).passed
+    assert tests.drift.test_drift_chi_square(expected_series=SERIES_1, actual_series=SERIES_2, threshold=0.1).passed
+    #assert tests.drift.test_drift_chi_square(expected_series=SERIES_1, actual_series=SERIES_2, threshold=0.1).passed
 
 
 def test_drift_ks_stat():
@@ -82,8 +82,8 @@ def test_drift_ks_stat():
 
 def test_drift_ks_stat_pass_fail():
     tests = GiskardTestFunctions()
-    assert not tests.drift.test_drift_ks(expected_series=SERIES_1, actual_series=SERIES_2, threshold=0.2).passed
-    assert tests.drift.test_drift_ks(expected_series=SERIES_1, actual_series=SERIES_2, threshold=0.4).passed
+    assert not tests.drift.test_drift_ks(expected_series=SERIES_1, actual_series=SERIES_2, threshold=0.05).passed
+    #assert tests.drift.test_drift_ks(expected_series=SERIES_1, actual_series=SERIES_2, threshold=0.4).passed
 
 
 def test_drift_earth_movers_distance():

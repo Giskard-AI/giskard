@@ -120,59 +120,78 @@ class DriftTests(AbstractTestCollection):
     def test_drift_psi(self,
                        expected_series: pd.Series,
                        actual_series: pd.Series,
-                       threshold=None,
+                       threshold=0.2,
                        max_categories: int = 10) -> SingleTestResult:
         """
-              Compute the Population Stability Index (PSI) for a categorical variable between a train and test datasets
-              See https://www.mdpi.com/2227-9091/7/2/53/htm
-              Parameters
-              ----------
-              expected_series: pd.Series
-                  A categorical column in train dataset
-              actual_series: pd.Series
-                  A categorical column in test dataset that is compared to var_expected
-              max_categories: int = 10
-                  Maximum number of modalities
-              Returns
-              -------
-              total_psi
-                  The PSI score
-              output_data
-                  Pandas dataframe giving frequencies and total_psi for each category
-             """
+        Test if the PSI score between the actual and expected datasets is below the threshold for
+        a given categorical feature
+
+        Example : The test is passed when the  PSI score of gender between train and test sets is below 0.2
+
+
+        Args:
+            expected_series(pandas.core.frame.DataFrame):
+                a categorical column in train dataset
+            actual_series(pandas.core.frame.DataFrame):
+                categorical column in test dataset that is compared to var_expected
+            threshold:
+                threshold value for PSI
+            max_categories:
+                maxiumum number of modalities
+
+        Returns:
+            metric:
+                the total psi score between the actual and expected datasets
+            passed:
+                TRUE if total_psi <= threshold
+
+        """
         total_psi, _ = self._calculate_drift_psi(actual_series, expected_series, max_categories)
 
         return self.save_results(SingleTestResult(
-            passed=True if threshold is None else total_psi <= threshold,
+            passed=total_psi <= threshold,
             metric=total_psi
         ))
 
     def test_drift_chi_square(self,
                               expected_series: pd.Series,
                               actual_series: pd.Series,
-                              threshold=None,
-                              p_value_threshold=None,
+                              threshold=0.05,
                               max_categories: int = 10) -> SingleTestResult:
         """
-        Compute one-way chi square test (Goodness of fit test) for a categorical variable
-        between a train and test datasets.
-        The Null hypothesis is that the categorical variable in
-        the test dataset has the same distribution as in train dataset
-        See https://www.statisticshowto.com/goodness-of-fit-test/
+        Test if the p-value of the chi square test between the actual and expected datasets is
+        above the threshold for a given categorical feature
 
-        :param expected_series: A categorical column in train dataset
-        :param actual_series: A categorical column in test dataset that is compared to var_expected
-        :param threshold: A value that will be compared with the calculated chi square score
-        :param p_value_threshold: A value that will be compared with the calculated p-value
-        :param max_categories: Maximum number of modalities
-        :return:
+        Example : The test is passed when the pvalue of the chi square test of the categorical variable between
+         train and test sets is higher than 0.05. It means that chi square test cannot be rejected at 5% level
+         and that we cannot assume drift for this variable.
+
+        Args:
+            expected_series(pandas.core.frame.DataFrame):
+                a categorical column in train dataset
+            actual_series(pandas.core.frame.DataFrame):
+                categorical column in test dataset that is compared to var_expected
+            threshold:
+                threshold for p-value of chi-square
+            max_categories:
+                maxiumum number of modalities
+
+        Returns:
+            chi_square:
+            the chi_square statistics of the test. The higher the chi quare, the higher the drift
+
+            metric:
+                the pvalue of chi square test
+
+            passed:
+                TRUE if metric > threshold
+
         """
 
         chi_square, p_value, _ = self._calculate_chi_square(actual_series, expected_series, max_categories)
 
         return self.save_results(SingleTestResult(
-            passed=(threshold is None or chi_square <= threshold) and
-                   (p_value_threshold is None or p_value <= p_value_threshold),
+            passed=p_value <= threshold,
             metric=chi_square,
             props={"p_value": str(p_value)}
         ))
@@ -180,28 +199,40 @@ class DriftTests(AbstractTestCollection):
     def test_drift_ks(self,
                       expected_series: pd.Series,
                       actual_series: pd.Series,
-                      threshold=None,
-                      p_value_threshold=None) -> SingleTestResult:
+                      threshold=0.05) -> SingleTestResult:
         """
-         Compute the the two-sample Kolmogorov-Smirnov test (goodness of fit)
-         for a numerical variable between a train and test datasets
+         Test if the pvalue of the KS test between the actual and expected datasets is above
+          the threshold for a given numerical feature
 
-         References
-         ----------
-         .. [1] Hodges, J.L. Jr., “The Significance Probability of the Smirnov Two-Sample Test,” Arkiv fiur Matematik, 3, No. 43 (1958), 469-86.
+        Example : The test is passed when the pvalue of the KS test of the numerical variable
+        between the actual and expected datasets is higher than 0.05. It means that the KS test
+        cannot be rejected at 5% level and that we cannot assume drift for this variable.
 
-        :param expected_series: Union[np.ndarray, pd.Series] A numerical column in train dataset
-        :param actual_series: Union[np.ndarray, pd.Series]   A numerical column in test dataset that is compared to expected_series
-        :param threshold: A value that will be compared with the calculated ks score
-        :param p_value_threshold: A value that will be compared with the calculated p-value
-        :return:
+        Args:
+            expected_series(pandas.core.frame.DataFrame):
+                a categorical column in train dataset
+            actual_series(pandas.core.frame.DataFrame):
+                categorical column in test dataset that is compared to var_expected
+            threshold:
+                threshold for p-value of KS test
+            max_categories:
+                maxiumum number of modalities
+
+        Returns:
+            KS_statistics :
+            the KS statistics of the test. The higher the value, the higher the drift
+
+            metric:
+                the pvalue of KS test
+
+            passed:
+                TRUE if metric > threshold
         """
 
         result = self._calculate_ks(actual_series, expected_series)
 
         return self.save_results(SingleTestResult(
-            passed=(threshold is None or result.statistic <= threshold) and
-                   (p_value_threshold is None or result.pvalue <= p_value_threshold),
+            passed=result.pvalue >= threshold,
             metric=result.statistic,
             props={"p_value": str(result.pvalue)})
         )
@@ -211,26 +242,27 @@ class DriftTests(AbstractTestCollection):
                                          actual_series: Union[np.ndarray, pd.Series],
                                          threshold: float = None) -> SingleTestResult:
         """
-        Compute the Earth Mover's Distance (Wasserstein distance with moment equals to 1)
-        for a numerical variable between a train and test datasets
+        Test if the earth movers distance between the actual and expected datasets is
+        below the threshold for a given numerical feature
 
-        References
-        ----------
-        .. [1] "Wasserstein metric", https://en.wikipedia.org/wiki/Wasserstein_metric
-        .. [2] Ramdas, Garcia, Cuturi "On Wasserstein Two Sample Testing and Related
-               Families of Nonparametric Tests" (2015). :arXiv:`1509.02237`
+        Example : The test is passed when the earth movers distance of the numerical
+         variable between the actual and expected datasets is lower than 0.1.
+         It means that we cannot assume drift for this variable.
 
-        Parameters
-        ----------
-        expected_series : Union[np.ndarray, pd.Series]
-            A numerical column in train dataset
-        actual_series : Union[np.ndarray, pd.Series]
-            A numerical column in test dataset that is compared to var_train
+        Args:
+            expected_series(pandas.core.frame.DataFrame):
+                a categorical column in train dataset
+            actual_series(pandas.core.frame.DataFrame):
+                categorical column in test dataset that is compared to var_expected
+            threshold:
+                threshold for p-value of earth movers distance
 
-        Returns
-        -------
-        Any
-            The computed Wasserstein distance between the two distributions.
+        Returns:
+            metric:
+                the earth movers distance
+
+            passed:
+                TRUE if metric < threshold
         """
         metric = self._calculate_earth_movers_distance(actual_series, expected_series)
         return self.save_results(SingleTestResult(
