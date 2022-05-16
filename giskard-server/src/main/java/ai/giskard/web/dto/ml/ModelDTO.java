@@ -15,11 +15,4 @@ public class ModelDTO extends FileDTO {
 
     @JsonProperty("python_version")
     private String pythonVersion;
-
-    public ModelDTO(ProjectModel model) {
-        this.id = model.getId();
-        this.fileName = model.getFileName();
-        this.pythonVersion = model.getPythonVersion();
-    }
-
 }
