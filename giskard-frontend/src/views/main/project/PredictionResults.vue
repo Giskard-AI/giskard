@@ -85,6 +85,7 @@ import { BarChart } from "echarts/charts";
 import { CanvasRenderer } from "echarts/renderers";
 import { GridComponent } from "echarts/components";
 import {IModelMetadata} from "@/interfaces";
+import {ModelMetadataDTO} from "@/generated-sources";
 
 use([CanvasRenderer, BarChart, GridComponent]);
 Vue.component("v-chart", ECharts);
@@ -104,7 +105,7 @@ export default class PredictionResults extends Vue {
   resultProbabilities: object = {};
   loading: boolean = false;
   errorMsg: string = "";
-  respMetadata!: IModelMetadata;
+  respMetadata!: ModelMetadataDTO;
 
   async mounted() {
     this.respMetadata = (await api.getModelMetadata(readToken(this.$store), this.modelId)).data

@@ -1,86 +1,50 @@
 <template>
-  <v-stepper v-model='step'>
-    <v-stepper-header>
-      <v-stepper-step :complete='step > 1' step='1'>
-        Select dataset
-      </v-stepper-step>
-      <v-divider></v-divider>
-      <v-stepper-step :complete='step > 2' step='2'>
-        Select target feature (if any)
-      </v-stepper-step>
-    </v-stepper-header>
+  <v-card flat>
+    <v-card-title>
+      Select dataset
+    </v-card-title>
+    <OverlayLoader v-show="loading" />
+    <v-card-text class="scrollable-with-limits">
+      <div v-if="datasets.length > 0">
+        <v-radio-group v-model="datasetSelected">
+          <v-radio
+              v-for="n in datasets"
+              :key="n.id"
+              :label="n.name"
+              :value="n.id"
+          ></v-radio>
+        </v-radio-group>
+      </div>
+      <div v-else>No dataset uploaded yet on this project.</div>
+    </v-card-text>
+    <!--          <v-card-actions class="justify-end">-->
+    <!--            <v-btn text @click="reset()"> Cancel </v-btn>-->
+    <!--            <v-btn-->
+    <!--              color="primary"-->
+    <!--              @click="-->
+    <!--                step++;-->
+    <!--                loadDatasetFeatures();-->
+    <!--              "-->
+    <!--              :disabled="!datasetSelected"-->
+    <!--            >-->
+    <!--              Continue-->
+    <!--            </v-btn>-->
+    <!--          </v-card-actions>-->
+    <v-card-actions>
+      <!--            <v-btn text @click="step&#45;&#45;">Back</v-btn>-->
+      <v-btn text @click="reset()"> Cancel </v-btn>
+      <v-spacer></v-spacer>
+      <!--            <v-btn text @click="targetFeature = null">Clear</v-btn>-->
+      <v-btn
+          color="primary"
+          @click="launchInspector()"
+          :disabled="errorLoadingFeatures"
+      >
+        Inspect
+      </v-btn>
+    </v-card-actions>
+  </v-card>
 
-    <v-stepper-items>
-      <OverlayLoader v-show='loading' />
-      <v-stepper-content step='1'>
-        <v-card flat>
-          <v-card-text class='scrollable-with-limits'>
-            <div v-if='datasets.length > 0'>
-              <v-radio-group v-model='datasetSelected' class='ma-0 pa-0'>
-                <v-radio
-                  v-for='n in datasets'
-                  :key='n.id'
-                  :label='n.name'
-                  :value='n.id'
-                ></v-radio>
-              </v-radio-group>
-            </div>
-            <div v-else>No dataset uploaded yet on this project.</div>
-          </v-card-text>
-          <v-card-actions class='justify-end'>
-            <v-btn text @click='reset()'> Cancel</v-btn>
-            <v-btn
-              color='primary'
-              @click='
-                step++;
-                loadDatasetFeatures();
-              '
-              :disabled='!datasetSelected'
-            >
-              Continue
-            </v-btn>
-          </v-card-actions>
-        </v-card>
-      </v-stepper-content>
-
-      <v-stepper-content step='2'>
-        <v-card flat>
-          <v-card-text class='scrollable-with-limits'>
-            <div v-if='datasetFeatures.length > 0'>
-              <v-radio-group v-model='targetFeature' class='ma-0 pa-0'>
-                <v-radio
-                  v-for='f in datasetFeatures'
-                  :key='f'
-                  :label='f'
-                  :value='f'
-                ></v-radio>
-              </v-radio-group>
-            </div>
-            <div v-else>
-              <div v-if='errorLoadingFeatures'>
-                Could not load features:
-                <span class='error--text'>{{ errorLoadingFeatures }}</span>
-                <br />Please try another dataset.
-              </div>
-            </div>
-          </v-card-text>
-          <v-card-actions>
-            <v-btn text @click='step--'>Back</v-btn>
-            <v-spacer></v-spacer>
-            <v-btn text @click='reset()'> Cancel</v-btn>
-            <v-btn text @click='targetFeature = null'>Clear</v-btn>
-            <v-btn
-              color='primary'
-              @click='launchInspector()'
-              :disabled='errorLoadingFeatures'
-            >
-              Go
-            </v-btn>
-          </v-card-actions>
-        </v-card>
-      </v-stepper-content>
-    </v-stepper-items>
-  </v-stepper>
 </template>
 
 <script lang="ts">
@@ -89,19 +53,18 @@ import OverlayLoader from '@/components/OverlayLoader.vue';
 import { readToken } from '@/store/main/getters';
 import { commitAddNotification } from '@/store/main/mutations';
 import { api } from '@/api';
-import { FileDTO } from '@/generated-sources';
+import {FileDTO, ModelDTO, ModelMetadataDTO} from '@/generated-sources';
 
 @Component({
   components: { OverlayLoader }
 })
 export default class InspectorLauncher extends Vue {
   @Prop({ required: true }) projectId!: number;
-  @Prop({ required: true }) modelId!: number;
+  @Prop({ required: true }) model!: ModelDTO;
   loading = false;
   step = 1;
   datasets: FileDTO[] = [];
   datasetSelected: number | null = null;
-  targetFeature: string | null = null;
   datasetFeatures: string[] = [];
   errorLoadingFeatures: string | null = null;
 
@@ -114,7 +77,6 @@ export default class InspectorLauncher extends Vue {
     this.step = 1;
     this.datasetSelected = null;
     this.datasetFeatures = [];
-    this.targetFeature = null;
     this.errorLoadingFeatures = null;
   }
 
@@ -125,7 +87,7 @@ export default class InspectorLauncher extends Vue {
       this.projectId
     );
     this.datasets = response.data.sort((a, b) =>
-      new Date(a.creation_date) < new Date(b.creation_date) ? 1 : -1
+      new Date(a.createdDate) < new Date(b.createdDate) ? 1 : -1
     );
     this.loading = false;
   }
@@ -155,11 +117,11 @@ export default class InspectorLauncher extends Vue {
   }
 
   public async launchInspector() {
-    const inspection=await api.prepareInspection(readToken(this.$store), this.modelId.toString(), this.datasetSelected?.toString()!, this.targetFeature!);
+    const inspection=await api.prepareInspection(readToken(this.$store), this.model.id.toString(), this.datasetSelected?.toString()!, this.model.target!);
     const query = {
-      model: this.modelId.toString(),
+      model: this.model.id.toString(),
       dataset: this.datasetSelected?.toString(),
-      target: this.targetFeature || undefined,
+      target: this.model.target,
       inspection:inspection.data.id
     };
     this.$router.push({ name: 'project-inspector', query});

@@ -5,10 +5,9 @@ import ai.giskard.domain.ml.ProjectModel;
 import ai.giskard.domain.ml.TestSuite;
 import ai.giskard.domain.ml.testing.Test;
 import ai.giskard.service.FileLocationService;
-import ai.giskard.worker.MLWorkerGrpc;
-import ai.giskard.worker.RunTestRequest;
-import ai.giskard.worker.TestResultMessage;
+import ai.giskard.worker.*;
 import com.google.common.util.concurrent.ListenableFuture;
+import com.google.protobuf.ByteString;
 import io.grpc.Channel;
 import io.grpc.ManagedChannel;
 import io.grpc.stub.AbstractStub;
@@ -16,6 +15,9 @@ import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
@@ -59,6 +61,42 @@ public class MLWorkerClient {
         ListenableFuture<TestResultMessage> testResultMessage = null;
         testResultMessage = futureStub.runTest(request);
         return testResultMessage;
+    }
+
+    public ListenableFuture<RunModelResponse> runModel() throws IOException {
+        RunModelRequest request = RunModelRequest.newBuilder()
+            .setSerializedModel(ByteString.readFrom(Files.newInputStream(Paths.get("/Users/andreyavtomonov/projects/work/giskard/giskard-legacy-server/app/files-bucket/projects/admins-project/models/model_9.zst"))))
+            .setData(
+                DataFrame.newBuilder()
+                    .addRows(
+                        DataRow.newBuilder()
+                            .putFeatures("default", "0")
+                            .putFeatures("account_check_status", "< 0 DM")
+                            .putFeatures("duration_in_month", "6")
+                            .putFeatures("credit_history", "critical account/ other credits existing (not at this bank)")
+                            .putFeatures("purpose", "domestic appliances")
+                            .putFeatures("credit_amount", "1169")
+                            .putFeatures("savings", "unknown/ no savings account")
+                            .putFeatures("present_emp_since", ".. >= 7 years")
+                            .putFeatures("installment_as_income_perc", "4")
+                            .putFeatures("sex", "male")
+                            .putFeatures("personal_status", "single")
+                            .putFeatures("other_debtors", "none")
+                            .putFeatures("present_res_since", "4")
+                            .putFeatures("property", "real estate")
+                            .putFeatures("age", "67")
+                            .putFeatures("other_installment_plans", "none")
+                            .putFeatures("housing", "own")
+                            .putFeatures("credits_this_bank", "2")
+                            .putFeatures("job", "skilled employee / official")
+                            .putFeatures("people_under_maintenance", "1")
+                            .putFeatures("telephone", "yes, registered under the customers name")
+                            .putFeatures("foreign_worker", "yes")
+                    )
+            ).build();
+
+
+        return futureStub.runModel(request);
     }
 
     public void shutdown() {

@@ -164,7 +164,7 @@ liquibase {
             logLevel "info"
             classpath "$buildDir/classes/java/main"
 //            Andrey: removed foreignkeys because they blocked entity deletion
-            diffTypes "catalog,tables,functions,views,columns,indexes,primarykeys,uniqueconstraints,data,storedprocedure,triggers,sequences,databasePackage,databasePackageBody"
+//            diffTypes "catalog,tables,functions,views,columns,indexes,primarykeys,uniqueconstraints,data,storedprocedure,triggers,sequences,databasePackage,databasePackageBody"
 //            excludeObjects "sequence:hibernate_sequence,sequence_generator"
         }
     }

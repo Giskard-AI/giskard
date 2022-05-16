@@ -51,12 +51,22 @@ public class FileUploadService {
 
         String modelFilename = createZSTname("model_", savedModel.getId());
         Path modelFilePath = projectModelsPath.resolve(modelFilename);
-        streamToCompressedFile(modelStream, modelFilePath);
+        try {
+            modelStream.transferTo(Files.newOutputStream(modelFilePath));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        //streamToCompressedFile(modelStream, modelFilePath);
         model.setFileName(modelFilename);
 
         String requirementsFilename = createZSTname("model-requirements_", savedModel.getId());
         Path requirementsFilePath = projectModelsPath.resolve(requirementsFilename);
-        streamToCompressedFile(requirementsStream, requirementsFilePath);
+        try {
+            requirementsStream.transferTo(Files.newOutputStream(requirementsFilePath));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        //streamToCompressedFile(requirementsStream, requirementsFilePath);
         model.setRequirementsFileName(requirementsFilename);
         return modelRepository.save(model);
     }

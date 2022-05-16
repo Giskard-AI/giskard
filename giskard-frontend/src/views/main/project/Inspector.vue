@@ -142,6 +142,7 @@ import { api } from '@/api';
 import { readToken } from '@/store/main/getters';
 import { IDataMetadata } from '@/interfaces';
 import FeedbackPopover from '@/components/FeedbackPopover.vue';
+import {ModelMetadataDTO} from "@/generated-sources";
 
 @Component({
   components: { OverlayLoader, PredictionResults, FeedbackPopover, PredictionExplanations, TextExplanation }
@@ -182,9 +183,9 @@ export default class Inspector extends Vue {
       this.inputMetaData = resp.data
       this.featuresToView = this.inputMetaData.map(e => e.feat_name)
       
-      const respMetadata = await api.getModelMetadata(readToken(this.$store), this.modelId)
-      this.classificationLabels = respMetadata.data.classification_labels
-      this.predictionTask = respMetadata.data.prediction_task
+      const respMetadata: ModelMetadataDTO = (await api.getModelMetadata(readToken(this.$store), this.modelId)).data
+      this.classificationLabels = respMetadata.classificationLabels
+      this.predictionTask = respMetadata.modelType
       this.errorLoadingMetadata = ""
     } catch (e) {
       this.errorLoadingMetadata = e.response.data.detail

@@ -38,7 +38,7 @@ public class DatasetService {
      */
     public Table getTableFromDatasetId(@NotNull Long datasetId) {
         Dataset dataset = datasetRepository.findById(datasetId).orElseThrow(() -> new EntityNotFoundException(Entity.DATASET, datasetId));
-        Path filePath = Paths.get(applicationProperties.getBucketPath(), dataset.getLocation());
+        Path filePath = Paths.get(applicationProperties.getBucketPath(), dataset.getFileName());
         String filePathName = filePath.toAbsolutePath().toString().replace(".zst", "");
         return Table.read().csv(filePathName);
     }
