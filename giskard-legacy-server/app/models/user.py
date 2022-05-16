@@ -19,5 +19,5 @@ class User(Base):
     email = Column(String, unique=True, index=True, nullable=False)
     hashed_password = Column(String, nullable=False)
     is_active = Column(Boolean(), default=True)
-    role_id = Column(Integer, ForeignKey("role.id"), default=settings.UserRole.AI_TESTER.value)
-    role = relationship("Role")
+    # role_id = Column(Integer, ForeignKey("role.id"), default=settings.UserRole.AI_TESTER.value)
+    # role = relationship("Role")

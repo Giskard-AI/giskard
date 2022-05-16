@@ -8,7 +8,7 @@
       <v-row class="px-2 py-1 caption secondary--text text--lighten-3">
         <v-col cols="4">Name</v-col>
         <v-col cols="1">Python</v-col>
-        <v-col cols="1">Size</v-col>
+<!--        <v-col cols="1">Size</v-col>-->
         <v-col cols="3">Uploaded on</v-col>
         <v-col cols="3">Actions</v-col>
       </v-row>
@@ -21,18 +21,18 @@
           </div>
         </v-col>
         <v-col cols="1">
-          <div>{{ m.python_version }}</div>
+          <div>{{ m.languageVersion }}</div>
         </v-col>
-        <v-col cols="1">
-          <div>{{ formatSizeForDisplay(m.size) }}</div>
-        </v-col>
+<!--        <v-col cols="1">-->
+<!--          <div>{{ formatSizeForDisplay(m.size) }}</div>-->
+<!--        </v-col>-->
         <v-col cols="3">
-          <div>{{ new Date(m.creation_date).toLocaleString() }}</div>
+          <div>{{ m.createdDate | date }}</div>
         </v-col>
         <v-col cols="3">
           <div>
             <v-btn small tile color="primary" 
-            @click="showInspectDialog = true; modelToInspect = m.id">
+            @click="showInspectDialog = true; modelToInspect = m">
               <v-icon dense left>policy</v-icon>
               Inspect
             </v-btn>
@@ -60,7 +60,7 @@
 
     <!-- Dialog for launching model inspection -->
     <v-dialog persistent max-width="600" v-model="showInspectDialog" class="inspector-launcher-container">
-      <InspectorLauncher :projectId="projectId" :modelId="modelToInspect"
+      <InspectorLauncher :projectId="projectId" :model="modelToInspect"
         @cancel="cancelLaunchInspector()" />
     </v-dialog>
 
@@ -79,7 +79,7 @@ import { readToken } from '@/store/main/getters';
 import { formatSizeForDisplay } from '@/utils';
 import { commitAddNotification } from '@/store/main/mutations';
 import InspectorLauncher from './InspectorLauncher.vue';
-import { ModelDTO } from '@/generated-sources';
+import {ModelDTO, ModelMetadataDTO} from '@/generated-sources';
 
 @Component({
   components: { InspectorLauncher }
@@ -90,7 +90,7 @@ export default class Models extends Vue {
 
 	models: ModelDTO[] = [];
   showInspectDialog = false;
-  modelToInspect: number | null = null;
+  modelToInspect: ModelDTO | null = null;
 
 	activated() {
 		this.loadModelPickles()
@@ -98,7 +98,7 @@ export default class Models extends Vue {
 
 	private async loadModelPickles() {
 		const response = await api.getProjectModels(readToken(this.$store), this.projectId)
-    this.models = response.data.sort((a, b) => new Date(a.creation_date) < new Date(b.creation_date) ? 1 : -1);
+    this.models = response.data.sort((a, b) => new Date(a.createdDate) < new Date(b.createdDate) ? 1 : -1);
 	}
 
 	public formatSizeForDisplay = (size: number) => formatSizeForDisplay(size);

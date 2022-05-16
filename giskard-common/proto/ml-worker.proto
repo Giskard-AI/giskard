@@ -10,6 +10,23 @@ package worker;
 
 service MLWorker {
   rpc runTest (RunTestRequest) returns (TestResultMessage) {}
+  rpc runModel(RunModelRequest) returns (RunModelResponse) {}
+}
+
+message DataRow{
+  map<string, string> features = 1;
+}
+message DataFrame{
+  repeated DataRow rows = 1;
+}
+
+message RunModelRequest{
+  bytes serialized_model = 1;
+  DataFrame data = 2;
+}
+
+message RunModelResponse{
+  float prediction = 1;
 }
 
 message RunTestRequest {

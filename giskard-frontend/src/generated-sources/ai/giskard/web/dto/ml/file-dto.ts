@@ -6,8 +6,8 @@ import type {ProjectDTO} from './project-dto';
  * Generated from ai.giskard.web.dto.ml.FileDTO
  */
 export interface _FileDTO {
-    creation_date: any /* TODO: Missing translation of java.time.LocalDateTime */;
-    file_name: string;
+    createdDate: any /* TODO: Missing translation of java.time.Instant */;
+    fileName: string;
     id: number;
     location: string;
     name: string;

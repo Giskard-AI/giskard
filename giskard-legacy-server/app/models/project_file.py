@@ -9,7 +9,6 @@ class ProjectFile(Base):
     __abstract__ = True
     id = Column(Integer, primary_key=True, index=True)
     file_name = Column(String, index=True, nullable=False)
-    location = Column(String, nullable=False)
     created_on = Column(DateTime(timezone=True), default=datetime.datetime.now)
     @declared_attr
     def owner_id(cls):
@@ -27,4 +26,4 @@ class ProjectModel(ProjectFile):
     __tablename__ = "project_models"
 
     python_version = Column(String, nullable=False)
-    requirements_file_location = Column(String, nullable=False)
+    requirements_file_name = Column(String, nullable=False)

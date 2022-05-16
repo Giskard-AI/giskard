@@ -13,7 +13,7 @@ import {
   FileDTO,
   JWTToken,
   ManagedUserVM,
-  ModelDTO,
+  ModelDTO, ModelMetadataDTO,
   PasswordResetRequest,
   ProjectDTO,
   ProjectPostDTO,
@@ -172,7 +172,7 @@ export const api = {
     return axios.post(`${apiUrl}/api/v1/files/data/upload?projectId=${projectId}`, formData, config);
   },
   async getModelMetadata(token: string, modelId: number) {
-    return axios.get<IModelMetadata>(`${apiUrl}/api/v1/models/${modelId}/metadata`, authHeaders(token));
+    return axios.get<ModelMetadataDTO>(`${apiUrlJava}/api/v2/model/${modelId}/metadata`, authHeaders(token));
   },
   async predict(token: string, modelId: number, inputData: object) {
     return axios.post(`${apiUrl}/api/v1/models/${modelId}/predict`, { features: inputData }, authHeaders(token));

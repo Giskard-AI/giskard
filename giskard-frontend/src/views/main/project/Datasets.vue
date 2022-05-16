@@ -15,7 +15,7 @@
             :class="{'file-xl': f.name.indexOf('.xls') > 0, 'file-csv': f.name.indexOf('.csv') > 0}">
             <span class="font-weight-bold" >{{ f.name }}</span>
             <span style="position: absolute; left: 50%">{{ formatSizeForDisplay(f.size) }}</span>
-            <span style="position: absolute; left: 60%">{{ new Date(f.creation_date).toLocaleString() }}</span>
+            <span style="position: absolute; left: 60%">{{ new Date(f.createdDate).toLocaleString() }}</span>
             <span style="position: absolute; left: 85%">
               <v-tooltip bottom dense>
                 <template v-slot:activator="{ on, attrs }">
@@ -77,7 +77,7 @@ export default class Datasets extends Vue {
 
 	private async loadDatasets() {
 		const response = await api.getProjectDatasets(readToken(this.$store), this.projectId)
-    this.files = response.data.sort((a, b) => new Date(a.creation_date) < new Date(b.creation_date) ? 1 : -1);
+    this.files = response.data.sort((a, b) => new Date(a.createdDate) < new Date(b.createdDate) ? 1 : -1);
 	}
  
   public async upload_data() {
