@@ -35,7 +35,7 @@
             :items='labels'
             label='Threshold Label'
             v-model='thresholdLabel'
-            dense
+            hide-details
           ></v-select>
         </v-col>
         <v-col cols='12' md='1'>
@@ -44,7 +44,6 @@
             :value='minThreshold'
             step='0.001'
             hide-details
-            single-line
             type='number'
             @change='(val)=>{this.minThreshold=val;}'
           ></v-text-field>
@@ -53,8 +52,8 @@
           <v-text-field
             label='Max Threshold'
             :value='maxThreshold'
+            step='0.001'
             hide-details
-            single-line
             type='number'
             @change='(val)=>{this.maxThreshold=val;}'
           ></v-text-field>
