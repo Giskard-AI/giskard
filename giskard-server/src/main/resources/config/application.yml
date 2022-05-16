@@ -88,6 +88,11 @@ management:
             enabled: true
 
 spring:
+  servlet:
+    multipart:
+      max-file-size: 1GB
+      max-request-size: 10GB
+
   application:
     name: giskard
   profiles:
@@ -219,3 +224,4 @@ application:
   invitation-token-validity-in-days: 3
   bucketPath: giskard-legacy-server/app
   borderLineThreshold: 0.1
+  giskard-home: giskard-legacy-server/app/files-bucket

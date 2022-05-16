@@ -4,6 +4,9 @@ order: 3
 items:
   - id: auc
     title: AUC
+    modelTypes:
+      - MULTICLASS_CLASSIFICATION
+      - BINARY_CLASSIFICATION
     # language=Python
     code: |-
       tests.performance.test_auc(

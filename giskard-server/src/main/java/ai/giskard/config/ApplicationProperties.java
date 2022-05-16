@@ -4,6 +4,8 @@ import lombok.Getter;
 import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
+import java.nio.file.Path;
+
 /**
  * Properties specific to Giskard.
  * <p>
@@ -20,4 +22,5 @@ public class ApplicationProperties {
     private int invitationTokenValidityInDays;
     private String bucketPath;
     private Double borderLineThreshold;
+    private Path giskardHome;
 }

@@ -1,9 +1,11 @@
 package ai.giskard.web.rest.controllers;
 
 import ai.giskard.repository.ml.ModelRepository;
-import ai.giskard.web.dto.ml.ModelDTO;
 import ai.giskard.web.dto.mapper.GiskardMapper;
+import ai.giskard.web.dto.ml.ModelDTO;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -15,9 +17,10 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v2/")
-public class ModelsController {
-    final ModelRepository modelRepository;
-    final GiskardMapper giskardMapper;
+public class ModelController {
+    private final ModelRepository modelRepository;
+    private final GiskardMapper giskardMapper;
+    private final Logger log = LoggerFactory.getLogger(ModelController.class);
 
 
     /**
