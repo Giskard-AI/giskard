@@ -9,62 +9,56 @@
         ></v-select>
       </v-col>
     </v-row>
+
     <v-row v-if='inspection!=null && inspection.predictionTask!="classification" && selectedFilter!="ALL"'>
+
       <v-col cols='12' md='3'>
         <v-text-field v-model='regressionThreshold' label='Threshold'></v-text-field>
       </v-col>
       <v-col cols='12' md='1'>
         <v-checkbox
-          v-model="percentRegressionUnit"
-          :label="`%`"
+          v-model='percentRegressionUnit'
+          :label='`%`'
         ></v-checkbox>
       </v-col>
     </v-row>
     <v-row v-if='selectedFilter=="CUSTOM"'>
       <v-col cols='12' md='3'>
-        <v-select
-          :items='labels'
-          label='Target Label'
-          v-model='targetLabel'
-        ></v-select>
+        <MultiSelector label='Actual Labels' :options='labels' :selected-options='targetLabel'></MultiSelector>
       </v-col>
       <v-col cols='12' md='3'>
-        <v-select
-          :items='labels'
-          label='Predicted Label'
-          v-model='predictedLabel'
-        ></v-select>
+        <MultiSelector label='Predicted Labels' :options='labels' :selected-options='predictedLabel'></MultiSelector>
       </v-col>
-      <v-col cols='12' md='4'>
-        <v-range-slider
-          v-model='range'
-          :max='1'
-          :min='0'
-          step='0.001'
-          hide-details
-          style='align-items: flex-end'
-        >
-          <template v-slot:prepend>
-            <v-text-field
-              :value='range[0]'
-              step='0.001'
-              hide-details
-              single-line
-              type='number'
-              @change='$set(range, 1, $event)'
-            ></v-text-field>
-          </template>
-          <template v-slot:append>
-            <v-text-field
-              :value='range[1]'
-              hide-details
-              single-line
-              type='number'
-              @change='$set(range, 1, $event)'
-            ></v-text-field>
-          </template>
-        </v-range-slider>
-      </v-col>
+
+        <v-col cols='12' md='2'>
+          <v-select
+            :items='labels'
+            label='Threshold Label'
+            v-model='thresholdLabel'
+            dense
+          ></v-select>
+        </v-col>
+        <v-col cols='12' md='1'>
+          <v-text-field
+            label='Min Threshold'
+            :value='minThreshold'
+            step='0.001'
+            hide-details
+            single-line
+            type='number'
+            @change='(val)=>{this.minThreshold=val;}'
+          ></v-text-field>
+        </v-col>
+        <v-col cols='12' md='1'>
+          <v-text-field
+            label='Max Threshold'
+            :value='maxThreshold'
+            hide-details
+            single-line
+            type='number'
+            @change='(val)=>{this.maxThreshold=val;}'
+          ></v-text-field>
+        </v-col>
     </v-row>
   </v-container>
 </template>
@@ -75,12 +69,13 @@ import { api } from '@/api';
 import { readToken } from '@/store/main/getters';
 import { commitAddNotification } from '@/store/main/mutations';
 import { Filter, InspectionDTO, RegressionUnit, RowFilterType } from '@/generated-sources';
+import MultiSelector from '@/views/main/utils/MultiSelector.vue';
 
 /**
  * TODO: This class should be on the wrapper, no template for the moment
  */
 @Component({
-  components: {}
+  components: { MultiSelector }
 })
 export default class RowList extends Vue {
   //@Prop({ required: true }) selectedId!: number;
@@ -100,25 +95,28 @@ export default class RowList extends Vue {
   errorMsg: string = '';
   rowIdxInPage: number = 0;
   labels: string[] = [];
-  predictedLabel: string = '';
-  targetLabel: string = '';
-  range: number[] = [0, 1];
-  inspection= {} as InspectionDTO;
+  predictedLabel: string[] = [];
+  targetLabel: string[] = [];
+  minThreshold: number = 0;
+  maxThreshold: number = 1.;
+  inspection = {} as InspectionDTO;
   allFilterTypes = Object.values(RowFilterType);
   filterTypes = this.allFilterTypes;
   selectedFilter = this.filterTypes[0];
   regressionThreshold: number = 0.1;
   regressionUnits = Object.keys(RegressionUnit);
   percentRegressionUnit = true;
+  thresholdLabel: string = '';
 
   async mounted() {
     await this.fetchDetails();
     if (this.inspection.predictionTask != 'classification') {
       this.filterTypes = [RowFilterType.ALL, RowFilterType.CORRECT, RowFilterType.WRONG];
     }
-    this.predictedLabel = this.labels[0];
-    this.targetLabel = this.labels[0];
+    this.thresholdLabel = this.labels[0];
     await this.fetchRowAndEmit(true);
+    this.predictedLabel = this.labels;
+    this.targetLabel = this.labels;
   }
 
   @Watch('currentRowIdx')
@@ -129,7 +127,8 @@ export default class RowList extends Vue {
   @Watch('inspectionId')
   @Watch('regressionThreshold')
   @Watch('selectedFilter')
-  @Watch('range')
+  @Watch('minThreshold')
+  @Watch('maxThreshold')
   @Watch('targetLabel')
   @Watch('predictedLabel')
   @Watch('shuffleMode')
@@ -143,7 +142,7 @@ export default class RowList extends Vue {
   async fetchRowAndEmit(hasFilterChanged) {
     await this.fetchRows(this.currentRowIdx, hasFilterChanged);
     const row = await this.getRow(this.currentRowIdx);
-    this.$emit('fetchedRow', row, this.numberOfRows);
+    this.$emit('fetchedRow', row, this.numberOfRows, hasFilterChanged);
   }
 
   /**
@@ -168,6 +167,7 @@ export default class RowList extends Vue {
     return this.rows[this.rowIdxInPage];
   }
 
+
   /**
    * Requesting the filtered rows in a given range
    * @param minRange
@@ -182,12 +182,13 @@ export default class RowList extends Vue {
         'isRandom': this.shuffleMode
       };
       const filter: Filter = {
-        'minThreshold': this.inspection.predictionTask == 'classification' ? this.range[0] : this.regressionThreshold,
-        'maxThreshold': this.range[1],
+        'minThreshold': this.inspection.predictionTask == 'classification' ? this.minThreshold : this.regressionThreshold,
+        'maxThreshold': this.maxThreshold,
         'targetLabel': this.targetLabel,
         'predictedLabel': this.predictedLabel,
         'rowFilter': this.selectedFilter,
-        'regressionUnit': this.percentRegressionUnit? RegressionUnit.ABSDIFFPERCENT: RegressionUnit.ABSDIFF
+        'regressionUnit': this.percentRegressionUnit ? RegressionUnit.ABSDIFFPERCENT : RegressionUnit.ABSDIFF,
+        'thresholdLabel': this.thresholdLabel
       };
       const response = await api.getDataFilteredByRange(readToken(this.$store), this.inspectionId, props, filter);
       this.rows = response.data.data;
@@ -212,6 +213,6 @@ export default class RowList extends Vue {
 </script>
 <style scoped>
 .v-slider {
-  margin-top: 20px!important;
+  margin-top: 20px !important;
 }
 </style>
