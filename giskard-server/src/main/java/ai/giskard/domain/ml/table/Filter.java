@@ -14,9 +14,11 @@ public class Filter {
 
     private RowFilterType rowFilter;
 
-    private String targetLabel;
+    private String[] targetLabel;
 
-    private String predictedLabel;
+    private String[] predictedLabel;
+
+    private String thresholdLabel;
 
     private Float minThreshold;
 

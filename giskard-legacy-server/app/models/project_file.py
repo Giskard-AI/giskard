@@ -1,6 +1,6 @@
 import datetime
 from sqlalchemy import Column, ForeignKey, Integer, String, DateTime
-from sqlalchemy.orm import declared_attr
+from sqlalchemy.orm import declared_attr, relationship
 
 from app.db.base_class import Base
 
@@ -20,6 +20,7 @@ class ProjectFile(Base):
 
 class Dataset(ProjectFile):
     __tablename__ = "datasets"
+    inspections = relationship("Inspection", cascade="all,delete", backref="dataset")
 
 
 class ProjectModel(ProjectFile):
