@@ -6,8 +6,9 @@ import type {RowFilterType} from './row-filter-type';
 export interface Filter {
     maxThreshold: number;
     minThreshold: number;
-    predictedLabel: string;
+    predictedLabel: string[];
     regressionUnit: string;
     rowFilter: RowFilterType;
-    targetLabel: string;
+    targetLabel: string[];
+    thresholdLabel: string;
 }

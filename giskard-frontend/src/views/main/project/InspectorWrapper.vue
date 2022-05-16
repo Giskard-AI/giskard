@@ -13,15 +13,15 @@
         <v-btn icon @click='previous' :disabled='!canPrevious()'>
           <v-icon>mdi-skip-previous</v-icon>
         </v-btn>
-        <v-btn icon @click='next'>
+        <v-btn icon @click='next' :disabled='!canNext()'>
           <v-icon>mdi-skip-next</v-icon>
         </v-btn>
-        <span class='caption grey--text'>Entry #{{ rowNb }} / {{ totalRows }}</span>
+        <span class='caption grey--text'>Entry #{{ rowNb + 1 }} / {{ totalRows }}</span>
         <span style='margin-left: 15px' class='caption grey--text'>Row Index {{ originalData.Index }}</span>
       </v-toolbar>
     </v-row>
 
-    <RowList ref='rowList'  :datasetId='datasetId' :model-id='modelId'
+    <RowList ref='rowList' :datasetId='datasetId' :model-id='modelId'
              :currentRowIdx='rowNb' :inspection-id='inspection' :shuffleMode='shuffleMode'
              @fetchedRow='getCurrentRow'
     />
@@ -102,7 +102,7 @@ import Inspector from './Inspector.vue';
 import Mousetrap from 'mousetrap';
 import RowList from '@/views/main/project/RowList.vue';
 import { RowFilterType } from '@/generated-sources';
-import {CreateFeedbackDTO} from "@/generated-sources";
+import { CreateFeedbackDTO } from '@/generated-sources';
 
 type CreatedFeedbackCommonDTO = {
   targetFeature: string;
@@ -127,7 +127,7 @@ export default class InspectorWrapper extends Vue {
   @Prop({ required: true }) modelId!: number;
   @Prop({ required: true }) datasetId!: number;
   @Prop() targetFeature!: string;
-  @Prop() inspection!:any;
+  @Prop() inspection!: any;
   mouseTrap = new Mousetrap();
   loadingData = false;
   inputData = {};
@@ -147,13 +147,16 @@ export default class InspectorWrapper extends Vue {
   async mounted() {
   }
 
-  private getCurrentRow(rowDetails, totalRows: number) {
+  private getCurrentRow(rowDetails, totalRows: number, hasFilterChanged: boolean) {
     this.loadingData = true;
     this.inputData = rowDetails;
     this.originalData = { ...this.inputData }; // deep copy to avoid caching mechanisms
     this.dataErrorMsg = '';
     this.loadingData = false;
     this.totalRows = totalRows;
+    if (hasFilterChanged) {
+      this.rowNb = 0;
+    }
   }
 
   bindKeys() {
@@ -167,6 +170,10 @@ export default class InspectorWrapper extends Vue {
 
   public canPrevious() {
     return !this.shuffleMode && this.rowNb > 0;
+  }
+
+  public canNext() {
+    return !this.shuffleMode && this.rowNb < this.totalRows - 1;
   }
 
 
