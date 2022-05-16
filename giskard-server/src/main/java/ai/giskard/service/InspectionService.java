@@ -86,9 +86,9 @@ public class InspectionService {
                 selection = predictedClass.isNotEqualTo(targetClass);
                 break;
             case CUSTOM:
-                DoubleColumn probPredicted = (DoubleColumn) predsTable.column(filter.getPredictedLabel());
-                Selection predictedSelection = predictedClass.isEqualTo(filter.getPredictedLabel());
-                Selection targetSelection = targetClass.isEqualTo(filter.getTargetLabel());
+                DoubleColumn probPredicted = (DoubleColumn) predsTable.column(filter.getThresholdLabel());
+                Selection predictedSelection = predictedClass.isIn(filter.getPredictedLabel());
+                Selection targetSelection = targetClass.isIn(filter.getTargetLabel());
                 selection = predictedSelection.and(targetSelection).and(probPredicted.isLessThanOrEqualTo(filter.getMaxThreshold())).and(probPredicted.isGreaterThanOrEqualTo(filter.getMinThreshold()));
                 break;
             case BORDERLINE:
