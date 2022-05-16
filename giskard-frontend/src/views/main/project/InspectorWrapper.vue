@@ -16,8 +16,8 @@
         <v-btn icon @click='next' :disabled='!canNext()'>
           <v-icon>mdi-skip-next</v-icon>
         </v-btn>
-        <span class='caption grey--text'>Entry #{{ rowNb + 1 }} / {{ totalRows }}</span>
-        <span style='margin-left: 15px' class='caption grey--text'>Row Index {{ originalData.Index }}</span>
+        <span class='caption grey--text'>Entry #{{ totalRows == 0 ? 0 : rowNb+1 }} / {{ totalRows }}</span>
+        <span style='margin-left: 15px' class='caption grey--text'>Row Index {{ originalData.Index +1 }}</span>
       </v-toolbar>
     </v-row>
 
