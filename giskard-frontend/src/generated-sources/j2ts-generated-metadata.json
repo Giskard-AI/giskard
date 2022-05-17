@@ -1,6 +1,7 @@
 {
   "targetRoot": "src/generated-sources",
   "mapping": {
+    "ai.giskard.web.dto.InspectionCreateDTO": "InspectionCreateDTO",
     "ai.giskard.domain.ml.table.RowFilterType": "RowFilterType",
     "ai.giskard.web.dto.user.PasswordChangeDTO": "PasswordChangeDTO",
     "ai.giskard.web.dto.FeedbackReplyDTO": "FeedbackReplyDTO",

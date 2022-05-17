@@ -16,15 +16,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.io.InputStream;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
 /**
  * A java-python bridge for model execution
  */
-public class MLWorkerClient {
+public class MLWorkerClient implements AutoCloseable{
     private final Logger logger;
 
     private final MLWorkerGrpc.MLWorkerBlockingStub blockingStub;
@@ -63,40 +62,14 @@ public class MLWorkerClient {
         return testResultMessage;
     }
 
-    public ListenableFuture<RunModelResponse> runModel() throws IOException {
+    public RunModelResponse runModel(InputStream modelInputStream, InputStream datasetInputStream, String target) throws IOException {
         RunModelRequest request = RunModelRequest.newBuilder()
-            .setSerializedModel(ByteString.readFrom(Files.newInputStream(Paths.get("/Users/andreyavtomonov/projects/work/giskard/giskard-legacy-server/app/files-bucket/projects/admins-project/models/model_9.zst"))))
-            .setData(
-                DataFrame.newBuilder()
-                    .addRows(
-                        DataRow.newBuilder()
-                            .putFeatures("default", "0")
-                            .putFeatures("account_check_status", "< 0 DM")
-                            .putFeatures("duration_in_month", "6")
-                            .putFeatures("credit_history", "critical account/ other credits existing (not at this bank)")
-                            .putFeatures("purpose", "domestic appliances")
-                            .putFeatures("credit_amount", "1169")
-                            .putFeatures("savings", "unknown/ no savings account")
-                            .putFeatures("present_emp_since", ".. >= 7 years")
-                            .putFeatures("installment_as_income_perc", "4")
-                            .putFeatures("sex", "male")
-                            .putFeatures("personal_status", "single")
-                            .putFeatures("other_debtors", "none")
-                            .putFeatures("present_res_since", "4")
-                            .putFeatures("property", "real estate")
-                            .putFeatures("age", "67")
-                            .putFeatures("other_installment_plans", "none")
-                            .putFeatures("housing", "own")
-                            .putFeatures("credits_this_bank", "2")
-                            .putFeatures("job", "skilled employee / official")
-                            .putFeatures("people_under_maintenance", "1")
-                            .putFeatures("telephone", "yes, registered under the customers name")
-                            .putFeatures("foreign_worker", "yes")
-                    )
-            ).build();
+            .setSerializedModel(ByteString.readFrom(modelInputStream))
+            .setSerializedData(ByteString.readFrom(datasetInputStream))
+            .setTarget(target)
+            .build();
 
-
-        return futureStub.runModel(request);
+        return blockingStub.runModel(request);
     }
 
     public void shutdown() {
@@ -110,5 +83,10 @@ public class MLWorkerClient {
                 }
             }
         });
+    }
+
+    @Override
+    public void close() {
+        this.shutdown();
     }
 }
