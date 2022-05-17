@@ -39,12 +39,7 @@ public class ProjectModel extends ProjectFile implements Serializable {
 
 
     private String requirementsFileLocation;
-    @Getter
-    @Setter
-    private String name;
 
-    @Getter
-    @Setter
     @OneToMany(mappedBy = "model", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JsonIgnore
     private Set<Inspection> inspections = new HashSet<>();
