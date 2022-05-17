@@ -13,6 +13,9 @@
         @click="toggle"
       >
         <v-list-item-action>
+          <v-icon :color="selectOptions.length > 0 ? 'indigo darken-4' : ''">
+            {{icon()}}
+          </v-icon>
         </v-list-item-action>
         <v-list-item-content>
           <v-list-item-title>
@@ -51,7 +54,7 @@ export default class MultiSelector extends Vue {
   @Prop({required: true}) label!: string[];
   selectOptions=this.selectedOptions;
 
-  toggle () {
+  toggle() {
     this.$nextTick(():void=> {
       let options:string[]=[]
       if (this.selectOptions.length<this.options.length){
@@ -66,12 +69,10 @@ export default class MultiSelector extends Vue {
     this.$emit("update", options);
   }
 
-
-
-  icon () {
-    if (this.selectedOptions.length == this.options.length) return 'mdi-close-box'
-    if (this.selectedOptions.length < this.options.length) return 'mdi-minus-box'
-    return 'mdi-checkbox-blank-outline'
+  icon() {
+    if (this.selectedOptions.length == this.options.length) return "mdi-close-box"
+    if (this.selectedOptions.length < this.options.length) return "mdi-minus-box"
+    return "mdi-checkbox-blank-outline"
   }
 
   async mounted() {
