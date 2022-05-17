@@ -11,14 +11,14 @@ items:
     # language=Python
     code: |-
       """
-        Test if the model AUC performance is higher than a threshold
+        Test if the model AUC performance is higher than a threshold for a given sub-population
 
-        Example: The test is passed when the AUC for women is higher than 0.7
+        Example : The test is passed when the AUC for women is higher than 0.7
 
         Args:
             df_slice(pandas.core.frame.DataFrame):
                 sub-population of the test dataset selected during Test Suite Creation
-            model(class ModelInspector):
+            model(ModelInspector):
                 model selected during Test Suite Creation
             target(str):
                 target column name
@@ -54,7 +54,7 @@ items:
         Args:
             df_slice(pandas.core.frame.DataFrame):
                 sub-population of the test dataset selected during Test Suite Creation
-            model(class ModelInspector):
+            model(ModelInspector):
                 model selected during Test Suite Creation
             target(str):
                 target column name
@@ -87,8 +87,8 @@ items:
         Test if the absolute percentage change in model F1 Score between two samples is lower than a threshold
 
         Example : The test is passed when the F1 Score for females has a difference lower than 10% from the
-        F1 Score for males. For example, if the F1 Score for males is 0.8 (df_slice_1) and the F1 Score  for
-        females is 0.6 (df_slice_2) then the absolute percentage F1 Score  change is 0.2 / 0.8 = 0.25
+        F1 Score for males. For example, if the F1 Score for males is 0.8 (filter_1) and the F1 Score  for
+        females is 0.6 (filter_2) then the absolute percentage F1 Score  change is 0.2 / 0.8 = 0.25
         and the test will fail
 
         Args:
@@ -100,10 +100,10 @@ items:
                 target column name
             threshold(int):
                 threshold value for F1 Score difference
-            df_slice_1(pandas.core.frame.DataFrame):
-                sub-population of the dataset
-            df_slice_2(pandas.core.frame.DataFrame):
-                sub-population of the dataset
+            filter_1(int64Index):
+                index of the sub-population of the dataset
+            filter_2(int64Index):
+                index of the sub-population of the dataset
 
         Returns:
             total rows tested:
@@ -119,6 +119,50 @@ items:
           model=model,
           filter_1=test_df[:len(test_df)//2].index,
           filter_2=test_df[len(test_df)//2:].index,
+          threshold=0.1,
+          target='<TARGET COLUMN>'
+      )
+  - id: diff_traintest_f1
+    title: F1 Train Test difference
+    hint: Test if the F1 score is equal between train and test dataset
+    modelTypes:
+      - MULTICLASS_CLASSIFICATION
+      - BINARY_CLASSIFICATION
+    # language=Python
+    code: |-
+      """
+        Test if the absolute percentage change in model F1 Score between train and test data
+        is lower than a threshold
+
+        Example : The test is passed when the F1 Score for train dataset has a difference lower than 10% from the
+        F1 Score for test dataset. For example, if the F1 Score for train dataset is 0.8 (df_train) and the F1 Score  for
+        test dataset is 0.6 (df_test) then the absolute percentage F1 Score  change is 0.2 / 0.8 = 0.25
+        and the test will fail.
+
+        Args:
+            df_train(pandas.core.frame.DataFrame):
+                train dataset selected during Test Suite Creation
+            df_test(pandas.core.frame.DataFrame):
+                test dataset selected during Test Suite Creation
+            model(ModelInspector):
+                model selected during Test Suite Creation
+            target(str):
+                target column name
+            threshold(int):
+                threshold value for F1 Score difference
+
+
+        Returns:
+            metric:
+                the F1 Score difference  metric
+            passed:
+                TRUE if F1 Score difference < threshold
+
+      """
+      tests.performance.test_diff_traintest_f1(
+          df_train=train_df,
+          df_test=test_df,
+          model=model,
           threshold=0.1,
           target='<TARGET COLUMN>'
       )
@@ -153,7 +197,7 @@ items:
             passed:
                 TRUE if Accuracy metrics > threshold
 
-        """
+      """
       tests.performance.test_accuracy(
           df_slice=test_df[:len(test_df) // 2],
           model=model,
@@ -169,11 +213,11 @@ items:
     # language=Python
     code: |-
       """
-      Test if the absolute percentage change of model Accuracy between two samples is lower than a threshold
+        Test if the absolute percentage change of model Accuracy between two samples is lower than a threshold
 
         Example : The test is passed when the Accuracy for females has a difference lower than 10% from the
-        Accuracy for males. For example, if the Accuracy for males is 0.8 (df_slice_1) and the Accuracy  for
-        females is 0.6 (df_slice_2) then the absolute percentage Accuracy change is 0.2 / 0.8 = 0.25
+        Accuracy for males. For example, if the Accuracy for males is 0.8 (filter_1) and the Accuracy  for
+        females is 0.6 (filter_2) then the absolute percentage Accuracy change is 0.2 / 0.8 = 0.25
         and the test will fail
 
         Args:
@@ -184,11 +228,11 @@ items:
             target(str):
                 target column name
             threshold(int):
-                threshold value for F1 Score difference
-            df_slice_1(pandas.core.frame.DataFrame):
-                sub-population of the dataset
-            df_slice_2(pandas.core.frame.DataFrame):
-                sub-population of the dataset
+                threshold value for Accuracy Score difference
+            filter_1(int64Index):
+                index of the sub-population of the dataset
+            filter_2(int64Index):
+                index of the sub-population of the dataset
 
         Returns:
             total rows tested:
@@ -203,6 +247,49 @@ items:
           model=model,
           filter_1=test_df[:len(test_df)//2].index,
           filter_2=test_df[len(test_df)//2:].index,
+          threshold=0.1,
+          target='<TARGET COLUMN>'
+      )
+  - id: diff_traintest_accuracy
+    title: Accuracy Train Test difference
+    hint: Test if the Accuracy is equal between train and test dataset
+    modelTypes:
+      - MULTICLASS_CLASSIFICATION
+      - BINARY_CLASSIFICATION
+    # language=Python
+    code: |-
+      """
+        Test if the absolute percentage change in model Accuracy between train and test data
+        is lower than a threshold
+
+        Example : The test is passed when the Accuracy for train dataset has a difference lower than 10% from the
+        Accuracy for test dataset. For example, if the Accuracy for train dataset is 0.8 (df_train) and the Accuracy  for
+        test dataset is 0.6 (df_test) then the absolute percentage Accuracy  change is 0.2 / 0.8 = 0.25
+        and the test will fail.
+
+        Args:
+            df_train(pandas.core.frame.DataFrame):
+                train dataset selected during Test Suite Creation
+            df_test(pandas.core.frame.DataFrame):
+                test dataset selected during Test Suite Creation
+            model(ModelInspector):
+                model selected during Test Suite Creation
+            target(str):
+                target column name
+            threshold(int):
+                threshold value for Accuracy difference
+
+
+        Returns:
+            metric:
+                the Accuracy difference  metric
+            passed:
+                TRUE if Accuracy difference < threshold
+      """
+      tests.performance.test_diff_traintest_accuracy(
+          df_train=train_df,
+          df_test=test_df,
+          model=model,
           threshold=0.1,
           target='<TARGET COLUMN>'
       )
@@ -253,11 +340,11 @@ items:
     # language=Python
     code: |-
       """
-      Test if the absolute percentage change of model Precision between two samples is lower than a threshold
+        Test if the absolute percentage change of model Precision between two samples is lower than a threshold
 
         Example : The test is passed when the Precision for females has a difference lower than 10% from the
-        Accuracy for males. For example, if the Precision for males is 0.8 (df_slice_1) and the Precision  for
-        females is 0.6 (df_slice_2) then the absolute percentage Precision change is 0.2 / 0.8 = 0.25
+        Accuracy for males. For example, if the Precision for males is 0.8 (filter_1) and the Precision  for
+        females is 0.6 (filter_2) then the absolute percentage Precision change is 0.2 / 0.8 = 0.25
         and the test will fail
 
         Args:
@@ -269,10 +356,10 @@ items:
                 target column name
             threshold(int):
                 threshold value for Precision difference
-            df_slice_1(pandas.core.frame.DataFrame):
-                sub-population of the dataset
-            df_slice_2(pandas.core.frame.DataFrame):
-                sub-population of the dataset
+            filter_1(int64Index):
+                index of the sub-population of the dataset
+            filter_2(int64Index):
+                index of the sub-population of the dataset
 
         Returns:
             total rows tested:
@@ -337,11 +424,11 @@ items:
     # language=Python
     code: |-
       """
-      Test if the absolute percentage change of model Recall between two samples is lower than a threshold
+        Test if the absolute percentage change of model Recall between two samples is lower than a threshold
 
         Example : The test is passed when the Recall for females has a difference lower than 10% from the
-        Accuracy for males. For example, if the Recall for males is 0.8 (df_slice_1) and the Recall  for
-        females is 0.6 (df_slice_2) then the absolute percentage Recall change is 0.2 / 0.8 = 0.25
+        Accuracy for males. For example, if the Recall for males is 0.8 (df_filter_1) and the Recall  for
+        females is 0.6 (filter_2) then the absolute percentage Recall change is 0.2 / 0.8 = 0.25
         and the test will fail
 
         Args:
@@ -353,10 +440,10 @@ items:
                 target column name
             threshold(int):
                 threshold value for Recall difference
-            df_slice_1(pandas.core.frame.DataFrame):
-                sub-population of the dataset
-            df_slice_2(pandas.core.frame.DataFrame):
-                sub-population of the dataset
+            filter_1(int64Index):
+                index of the sub-population of the dataset
+            filter_2(int64Index):
+                index of the sub-population of the dataset
 
         Returns:
             total rows tested:
@@ -376,7 +463,7 @@ items:
       )
   - id: rmse
     title: RMSE
-    hint: Test if  the negative Root Mean Square Error value is low enough for the dataset
+    hint: Test if  the Root Mean Square Error value is low enough for the dataset
     modelTypes:
       - REGRESSION
     # language=Python
@@ -411,6 +498,94 @@ items:
           threshold=0.1,
           target='<TARGET COLUMN>'
       )
+  - id: diff_rmse
+    title: RMSE difference
+    hint: Test if the RMSE is equal between the two samples
+    modelTypes:
+      - REGRESSION
+    # language=Python
+    code: |-
+      """
+        Test if the absolute percentage change of model RMSE between two samples is lower than a threshold
+
+        Example : The test is passed when the RMSE for females has a difference lower than 10% from the
+        RMSE for males. For example, if the RMSE for males is 0.8 (filter_1) and the RMSE  for
+        females is 0.6 (filter_2) then the absolute percentage RMSE change is 0.2 / 0.8 = 0.25
+        and the test will fail
+
+        Args:
+            df(pandas.core.frame.DataFrame):
+                test dataset selected during Test Suite Creation
+            model(ModelInspector):
+                model selected during Test Suite Creation
+            target(str):
+                target column name
+            threshold(int):
+                threshold value for RMSE difference
+            filter_1(int64Index):
+                index of the sub-population of the dataset
+            filter_2(int64Index):
+                index of the sub-population of the dataset
+
+        Returns:
+            total rows tested:
+                length of test dataset
+            metric:
+                the RMSE difference  metric
+            passed:
+                TRUE if RMSE difference < threshold
+      """
+      tests.performance.test_diff_rmse(
+          df=test_df,
+          model=model,
+          filter_1=test_df[:len(test_df)//2].index,
+          filter_2=test_df[len(test_df)//2:].index,
+          threshold=0.1,
+          target='<TARGET COLUMN>'
+      )
+  - id: diff_traintest_rmse
+    title: RMSE Train Test difference
+    hint: Test if the RMSE is equal between train and test dataset
+    modelTypes:
+      - REGRESSION
+    # language=Python
+    code: |-
+      """
+        Test if the absolute percentage change in model RMSE between train and test data
+        is lower than a threshold
+
+        Example : The test is passed when the RMSE for train dataset has a difference lower than 10% from the
+        RMSE for test dataset. For example, if the RMSE for train dataset is 0.8 (df_train) and the RMSE  for
+        test dataset is 0.6 (df_test) then the absolute percentage RMSE  change is 0.2 / 0.8 = 0.25
+        and the test will fail.
+
+        Args:
+            df_train(pandas.core.frame.DataFrame):
+                train dataset selected during Test Suite Creation
+            df_test(pandas.core.frame.DataFrame):
+                test dataset selected during Test Suite Creation
+            model(ModelInspector):
+                model selected during Test Suite Creation
+            target(str):
+                target column name
+            threshold(int):
+                threshold value for RMSE difference
+
+
+        Returns:
+            metric:
+                the RMSE difference  metric
+            passed:
+                TRUE if RMSE difference < threshold
+
+      """
+      tests.performance.test_diff_traintest_rmse(
+          df_train=train_df,
+          df_test=test_df,
+          model=model,
+          threshold=0.1,
+          target='<TARGET COLUMN>'
+      )
   - id: mae
     title: MAE
     hint: Test if  the negative Mean Absolute Error value is low enough for the dataset
@@ -419,7 +594,7 @@ items:
     # language=Python
     code: |-
         """
-        Test if the model MAE is lower than a threshold
+        Test if the model Mean Absolute Error is lower than a threshold
 
         Example: The test is passed when the MAE is lower than 0.7
 
@@ -456,7 +631,7 @@ items:
     # language=Python
     code: |-
         """
-        Test if the model R-Squared is higher than a threshold
+        TTest if the model R-Squared is higher than a threshold
 
         Example: The test is passed when the R-Squared is higher than 0.7
 
@@ -476,7 +651,7 @@ items:
             metric:
                 the R-Squared metric
             passed:
-                TRUE if R-Squared metric < threshold
+                TRUE if R-Squared metric > threshold
 
         """
         tests.performance.test_r2(

@@ -170,8 +170,8 @@ def _test_diff_accuracy(german_credit_data, german_credit_model, threshold):
     tests.performance.test_diff_accuracy(
         german_credit_data,
         german_credit_model,
-        df_slice_1=german_credit_data[german_credit_data.sex == 'male'].index,
-        df_slice_2=german_credit_data[german_credit_data.sex == 'female'].index,
+        filter_1=german_credit_data[german_credit_data.sex == 'male'].index,
+        filter_2=german_credit_data[german_credit_data.sex == 'female'].index,
         threshold=threshold,
         target='default'
     )
@@ -193,8 +193,8 @@ def _test_diff_f1(german_credit_data, german_credit_model, threshold):
     result = tests.performance.test_diff_f1(
         german_credit_data,
         german_credit_model,
-        df_slice_1=german_credit_data[german_credit_data.sex == 'male'].index,
-        df_slice_2=german_credit_data[german_credit_data.sex == 'female'].index,
+        filter_1=german_credit_data[german_credit_data.sex == 'male'].index,
+        filter_2=german_credit_data[german_credit_data.sex == 'female'].index,
         threshold=threshold,
         target='default'
     )
@@ -212,8 +212,8 @@ def _test_diff_recall(german_credit_data, german_credit_model, threshold):
     result = tests.performance.test_diff_recall(
         german_credit_data,
         german_credit_model,
-        df_slice_1=german_credit_data[german_credit_data.sex == 'male'].index,
-        df_slice_2=german_credit_data[german_credit_data.sex == 'female'].index,
+        filter_1=german_credit_data[german_credit_data.sex == 'male'].index,
+        filter_2=german_credit_data[german_credit_data.sex == 'female'].index,
         threshold=threshold,
         target='default'
     )
@@ -231,8 +231,8 @@ def _test_diff_precision(german_credit_data, german_credit_model, threshold):
     result = tests.performance.test_diff_precision(
         german_credit_data,
         german_credit_model,
-        df_slice_1=german_credit_data[german_credit_data.sex == 'male'].index,
-        df_slice_2=german_credit_data[german_credit_data.sex == 'female'].index,
+        filter_1=german_credit_data[german_credit_data.sex == 'male'].index,
+        filter_2=german_credit_data[german_credit_data.sex == 'female'].index,
         threshold=threshold,
         target='default'
     )
@@ -242,4 +242,23 @@ def _test_diff_precision(german_credit_data, german_credit_model, threshold):
 
 def test_diff_precision(german_credit_data, german_credit_model):
     assert _test_diff_precision(german_credit_data, german_credit_model, 0.06)
-    assert not _test_diff_precision(german_credit_data, german_credit_model, 0.05   )
+    assert not _test_diff_precision(german_credit_data, german_credit_model, 0.05)
+
+
+def _test_diff_rmse(diabetes_dataset_with_target, linear_regression_diabetes, threshold):
+    tests = GiskardTestFunctions()
+    result = tests.performance.test_diff_rmse(
+        diabetes_dataset_with_target,
+        linear_regression_diabetes,
+        filter_1=diabetes_dataset_with_target[diabetes_dataset_with_target.sex > 0].index,
+        filter_2=diabetes_dataset_with_target[diabetes_dataset_with_target.sex < 0].index,
+        threshold=threshold,
+        target='target'
+    )
+    assert pytest.approx(result.metric, 0.001) == 0.08403938630638882
+    return result.passed
+
+
+def test_diff_rmse(diabetes_dataset_with_target, linear_regression_diabetes):
+    assert _test_diff_rmse(diabetes_dataset_with_target, linear_regression_diabetes, 1)
+    assert not _test_diff_rmse(diabetes_dataset_with_target, linear_regression_diabetes, 0.05)
