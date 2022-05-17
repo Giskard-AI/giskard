@@ -6,6 +6,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+/**
+ * TODO Inheritance for classif regression..
+ */
 @UIModel
 @Getter
 @Setter
@@ -23,6 +26,10 @@ public class Filter {
     private Float minThreshold;
 
     private Float maxThreshold;
+
+    private Float minLabelThreshold;
+
+    private Float maxLabelThreshold;
 
     private String regressionUnit;
 }
