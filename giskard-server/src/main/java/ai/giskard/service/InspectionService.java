@@ -58,16 +58,45 @@ public class InspectionService {
         return Table.read().csv(reader);
     }
 
+    private Double getThresholdForRegression(DoubleColumn _column) {
+        DoubleColumn column=_column.copy();
+        column.sortAscending();
+        int maxIndex = (int) Math.round(applicationProperties.getRegressionThreshold() * column.size());
+        return column.get(maxIndex);
+    }
+
     private Selection getSelectionRegression(Inspection inspection, Filter filter) throws FileNotFoundException {
         Table calculatedTable = getTableFromBucketFile(getCalculatedPath(inspection.getId()).toString());
+        calculatedTable.addColumns(IntColumn.indexColumn("Index", calculatedTable.rowCount(), 0));
         Selection selection;
+        Double threshold;
+        DoubleColumn column = calculatedTable.doubleColumn("absDiffPercent");
         switch (filter.getRowFilter()) {
             case CORRECT:
-                selection = calculatedTable.doubleColumn("absDiff").isLessThanOrEqualTo(filter.getMinThreshold());
+                threshold = getThresholdForRegression(column);
+                selection = calculatedTable.doubleColumn("absDiffPercent").isLessThanOrEqualTo(threshold);
                 break;
             case WRONG:
-                selection = calculatedTable.doubleColumn("absDiff").isGreaterThanOrEqualTo(filter.getMinThreshold());
+                threshold = getThresholdForRegression(column);
+                selection = calculatedTable.doubleColumn("absDiffPercent").isGreaterThanOrEqualTo(threshold);
                 break;
+            case CUSTOM:
+                DoubleColumn prediction = calculatedTable.doubleColumn(0);
+                DoubleColumn target = calculatedTable.numberColumn("target").asDoubleColumn();
+                selection=prediction.isNotMissing();
+                if (filter.getMinThreshold()!= null){
+                    selection=selection.and(prediction.isGreaterThanOrEqualTo(filter.getMinThreshold()));
+                }
+                if (filter.getMaxThreshold()!= null){
+                    selection=selection.and(prediction.isLessThanOrEqualTo(filter.getMaxThreshold()));
+                }
+                if (filter.getMinLabelThreshold()!= null){
+                    selection=selection.and(target.isGreaterThanOrEqualTo(filter.getMinLabelThreshold()));
+                }
+                if (filter.getMaxLabelThreshold()!= null){
+                    selection=selection.and(target.isLessThanOrEqualTo(filter.getMaxLabelThreshold()));
+                }
+                 break;
             default:
                 selection = null;
         }
@@ -98,9 +127,19 @@ public class InspectionService {
                 break;
             case CUSTOM:
                 DoubleColumn probPredicted = (DoubleColumn) predsTable.column(filter.getThresholdLabel());
-                Selection predictedSelection = predictedClass.isIn(filter.getPredictedLabel());
-                Selection targetSelection = targetClass.isIn(filter.getTargetLabel());
-                selection = predictedSelection.and(targetSelection).and(probPredicted.isLessThanOrEqualTo(filter.getMaxThreshold())).and(probPredicted.isGreaterThanOrEqualTo(filter.getMinThreshold()));
+                selection=targetClass.isNotMissing();
+                if (filter.getPredictedLabel().length>0) {
+                    selection.and(predictedClass.isIn(filter.getPredictedLabel()));
+                }
+                if (filter.getTargetLabel().length>0) {
+                    selection.and(targetClass.isIn(filter.getTargetLabel()));
+                }
+                if (filter.getMaxThreshold()!=null) {
+                    selection.and(probPredicted.isLessThanOrEqualTo(filter.getMaxThreshold()));
+                }
+                if (filter.getMinThreshold()!=null) {
+                    selection.and(probPredicted.isGreaterThanOrEqualTo(filter.getMinThreshold()));
+                }
                 break;
             case BORDERLINE:
                 DoubleColumn absDiff = calculatedTable.doubleColumn("absDiff");
