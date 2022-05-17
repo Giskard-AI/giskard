@@ -96,7 +96,7 @@ export default class InspectorLauncher extends Vue {
     if (this.datasetSelected) {
       try {
         this.loading = true;
-        const response = await api.peakDataFile(
+        const response = await api.peekDataFile(
           readToken(this.$store),
           this.datasetSelected
         );
@@ -117,7 +117,7 @@ export default class InspectorLauncher extends Vue {
   }
 
   public async launchInspector() {
-    const inspection=await api.prepareInspection(readToken(this.$store), this.model.id.toString(), this.datasetSelected?.toString()!, this.model.target!);
+    const inspection = await api.prepareInspection({datasetId: this.datasetSelected!, modelId: this.model.id});
     const query = {
       model: this.model.id.toString(),
       dataset: this.datasetSelected?.toString(),

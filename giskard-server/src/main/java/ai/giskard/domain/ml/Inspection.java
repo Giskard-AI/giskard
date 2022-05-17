@@ -1,7 +1,9 @@
 package ai.giskard.domain.ml;
 
 
+import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.persistence.*;

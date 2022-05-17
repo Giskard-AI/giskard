@@ -219,6 +219,7 @@ def upload_inspect(model_id: str, dataset_id: str, target: str, db: Session = De
 
             data_df = files_utils.read_dataset_file(data_file.location)
             data_df.to_csv(data_file.location.replace(".zst", ""))
+
             prediction_results = run_predict(data_df, model_inspector)
             inspection_folder.mkdir(parents=True, exist_ok=True)
             preds_path = Path(inspection_folder, "predictions.csv")

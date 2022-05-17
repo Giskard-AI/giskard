@@ -1,4 +1,3 @@
-import great_expectations as ge
 import pandas as pd
 from ai_inspector import ModelInspector
 from pandas import DataFrame
@@ -37,6 +36,8 @@ class MetamorphicTests(AbstractTestCollection):
                                     model,
                                     perturbation_percent: float,
                                     threshold: int) -> SingleTestResult:
+        import great_expectations as ge
+
         perturbation_dict = {column_name: lambda x: x[column_name] * (1 + perturbation_percent)}
         results_df = self._perturb_and_predict(df, model, perturbation_dict, output_proba=True)
 
@@ -55,6 +56,8 @@ class MetamorphicTests(AbstractTestCollection):
                                     model,
                                     perturbation_dict,
                                     threshold=1) -> SingleTestResult:
+        import great_expectations as ge
+
         results_df = self._perturb_and_predict(df, model, perturbation_dict, output_proba=False)
 
         ge_df = ge.from_pandas(results_df)

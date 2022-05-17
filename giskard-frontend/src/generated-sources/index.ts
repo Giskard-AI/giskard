@@ -2,6 +2,7 @@ export const GENERATED_MAPPING = {
     'ai.giskard.web.dto.user.UserMinimalDTO' : 'UserMinimalDTO',
     'ai.giskard.web.dto.ml.ProjectDTO' : 'ProjectDTO',
     'ai.giskard.web.dto.ml.write.ModelPostDTO' : 'ModelPostDTO',
+    'ai.giskard.web.dto.InspectionCreateDTO' : 'InspectionCreateDTO',
     'ai.giskard.domain.ml.PredictionType' : 'PredictionType',
     'ai.giskard.web.dto.ml.ModelDTO' : 'ModelDTO',
     'ai.giskard.web.dto.ModelUploadParamsDTO' : 'ModelUploadParamsDTO',
@@ -55,6 +56,7 @@ export const GENERATED_MAPPING = {
 export * from './ai/giskard/web/dto/user/user-minimal-dto';
 export * from './ai/giskard/web/dto/ml/project-dto';
 export * from './ai/giskard/web/dto/ml/write/model-post-dto';
+export * from './ai/giskard/web/dto/inspection-create-dto';
 export * from './ai/giskard/domain/ml/prediction-type';
 export * from './ai/giskard/web/dto/ml/model-dto';
 export * from './ai/giskard/web/dto/model-upload-params-dto';

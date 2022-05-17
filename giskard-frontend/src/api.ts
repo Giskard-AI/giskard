@@ -10,7 +10,7 @@ import {
   CreateFeedbackReplyDTO,
   FeedbackDTO,
   FeedbackMinimalDTO,
-  FileDTO,
+  FileDTO, InspectionCreateDTO,
   JWTToken,
   ManagedUserVM,
   ModelDTO, ModelMetadataDTO,
@@ -38,6 +38,14 @@ function authHeaders(token: string) {
 
 const axiosProject = axios.create({
   baseURL: `${apiUrlJava}/api/v2/project`
+});
+axiosProject.interceptors.request.use(function(config) {
+  // Do something before request is sent
+  let jwtToken = getLocalToken();
+  if (jwtToken && config && config.headers) {
+    config.headers.Authorization = `Bearer ${jwtToken}`;
+  }
+  return config;
 });
 axios.interceptors.request.use(function(config) {
   // Do something before request is sent
@@ -115,8 +123,8 @@ export const api = {
   async getProjects(token: string) {
     return axiosProject.get<ProjectDTO[]>(`/`, authHeaders(token));
   },
-  async getProject(token: string, id: number) {
-    return axiosProject.get<ProjectDTO>(`/${id}`, authHeaders(token));
+  async getProject(id: number) {
+    return axiosProject.get<ProjectDTO>(`/${id}`);
   },
   async createProject(token: string, data: ProjectPostDTO) {
     return axiosProject.post<ProjectDTO>(`/`, data, authHeaders(token));
@@ -146,8 +154,8 @@ export const api = {
   async downloadDataFile(token: string, id: number) {
     return axios.get(`${apiUrl}/api/v1/files/datasets/${id}`, { ...authHeaders(token), 'responseType': 'blob' });
   },
-  async peakDataFile(token: string, id: number) {
-    return axios.get(`${apiUrl}/api/v1/files/datasets/${id}/peak`, authHeaders(token));
+  async peekDataFile(token: string, id: number) {
+    return axios.get(`${apiUrlJava}/api/v2/files/datasets/${id}/peek`, authHeaders(token));
   },
   async getFeaturesMetadata(token: string, modelId: number, datasetId: number) {
     return axios.get<IDataMetadata[]>(`${apiUrl}/api/v1/models/${modelId}/features/${datasetId}`, authHeaders(token));
@@ -164,12 +172,16 @@ export const api = {
   async getInspection(token: string, inspectionId: number) {
     return axios.get(`${apiUrlJava}/api/v2/inspection/${inspectionId}`, authHeaders(token));
   },
-  async uploadDataFile(token: string, projectId: number, fileData: any) {
+  async uploadDataFile(token: string, projectKey: string, fileData: any) {
     const formData = new FormData();
+    formData.append('metadata',
+        new Blob([JSON.stringify({"projectKey": projectKey})], {
+          type: "application/json"
+        }));
     formData.append('file', fileData);
     const config = authHeaders(token);
     config.headers['content-type'] = 'multipart/form-data';
-    return axios.post(`${apiUrl}/api/v1/files/data/upload?projectId=${projectId}`, formData, config);
+    return axios.post(`${apiUrlJava}/api/v2/project/data/upload`, formData, config);
   },
   async getModelMetadata(token: string, modelId: number) {
     return axios.get<ModelMetadataDTO>(`${apiUrlJava}/api/v2/model/${modelId}/metadata`, authHeaders(token));
@@ -177,11 +189,8 @@ export const api = {
   async predict(token: string, modelId: number, inputData: object) {
     return axios.post(`${apiUrl}/api/v1/models/${modelId}/predict`, { features: inputData }, authHeaders(token));
     },
-    async predictDf(token: string, modelId: number, inputData: object) {
-        return axios.post(`${apiUrl}/api/v1/models/${modelId}/predicts`, { features: inputData }, authHeaders(token));
-    },
-    async prepareInspection(token: string, modelId: string, datasetId: string, target:string) {
-        return axios.get(`${apiUrl}/api/v1/files/inspect`,  {...authHeaders(token),params: { model_id: modelId,dataset_id:datasetId , target:target }});
+  async prepareInspection(payload: InspectionCreateDTO) {
+      return axios.post(`${apiUrlJava}/api/v2/inspection`,  payload);
   },
   async explain(token: string, modelId: number, datasetId: number, inputData: object) {
     return axios.post(`${apiUrl}/api/v1/models/${modelId}/${datasetId}/explain`, { features: inputData }, authHeaders(token));

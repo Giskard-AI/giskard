@@ -10,6 +10,7 @@ import ai.giskard.web.dto.ModelUploadParamsDTO;
 import ai.giskard.web.dto.mapper.GiskardMapper;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.compress.compressors.CompressorException;
+import org.apache.commons.compress.compressors.CompressorInputStream;
 import org.apache.commons.compress.compressors.CompressorOutputStream;
 import org.apache.commons.compress.compressors.CompressorStreamFactory;
 import org.slf4j.Logger;
@@ -24,6 +25,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+
+import static ai.giskard.service.FileLocationService.createZSTname;
 
 @Service
 @RequiredArgsConstructor
@@ -82,9 +85,7 @@ public class FileUploadService {
         }
     }
 
-    private String createZSTname(String prefix, Long id) {
-        return prefix + id.toString() + ".zst";
-    }
+
 
     private void streamToCompressedFile(InputStream inputStream, Path outputPath) {
         try {
@@ -96,9 +97,25 @@ public class FileUploadService {
             log.info("Saved file: {}", outputPath);
 
         } catch (IOException e) {
-            throw new RuntimeException(String.format("Failed to write model related file to %s", outputPath), e);
+            throw new RuntimeException(String.format("Failed to write file to %s", outputPath), e);
         } catch (CompressorException e) {
             throw new RuntimeException(String.format("Failed to compress output when writing %s", outputPath), e);
+        }
+    }
+    public InputStream decompressFileToStream(Path compressedInputPath) {
+        try {
+            final InputStream compressedInputStream = Files.newInputStream(compressedInputPath);
+            CompressorInputStream in = new CompressorStreamFactory()
+                .createCompressorInputStream(CompressorStreamFactory.ZSTANDARD, compressedInputStream);
+            return in;
+            //long transferredBytes = in.transferTo(outputStream);
+            //in.close();
+            //log.info("Read file: {} ({} bytes)", compressedInputPath, transferredBytes);
+
+        } catch (IOException e) {
+            throw new RuntimeException(String.format("Failed to read file to %s", compressedInputPath), e);
+        } catch (CompressorException e) {
+            throw new RuntimeException(String.format("Failed to decompress input when reading %s", compressedInputPath), e);
         }
     }
 
@@ -115,7 +132,12 @@ public class FileUploadService {
 
         String fileName = createZSTname("data_", dataset.getId());
         dataset.setFileName(fileName);
-        streamToCompressedFile(inputStream, datasetPath.resolve(fileName));
+        //streamToCompressedFile(inputStream, datasetPath.resolve(fileName));
+        try {
+            inputStream.transferTo(Files.newOutputStream(datasetPath.resolve(fileName)));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
 
         return datasetRepository.save(dataset);
     }

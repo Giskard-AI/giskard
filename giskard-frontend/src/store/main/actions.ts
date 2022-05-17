@@ -203,7 +203,7 @@ export const actions = {
         const loadingNotification = { content: 'Loading project', showProgress: true };
         try {
             commitAddNotification(context, loadingNotification);
-            const response = await api.getProject(context.state.token, payload.id);
+            const response = await api.getProject(payload.id);
             commitSetProject(context, response.data);
             commitRemoveNotification(context, loadingNotification);
         } catch (error) {

@@ -58,7 +58,7 @@ import { dialogDownloadFile, performApiActionWithNotif } from '@/api-commons';
 import { readToken } from "@/store/main/getters";
 import { formatSizeForDisplay } from '@/utils';
 import { commitAddNotification } from '@/store/main/mutations';
-import { FileDTO } from '@/generated-sources';
+import {FileDTO, ProjectDTO} from '@/generated-sources';
 
 @Component
 export default class Datasets extends Vue {
@@ -81,8 +81,9 @@ export default class Datasets extends Vue {
 	}
  
   public async upload_data() {
-    performApiActionWithNotif(this.$store, 
-      () => api.uploadDataFile(readToken(this.$store), this.projectId, this.fileData),
+    let project: ProjectDTO = (await api.getProject(this.projectId)).data;
+    await performApiActionWithNotif(this.$store,
+      () => api.uploadDataFile(readToken(this.$store), project.key, this.fileData),
       () => {
         this.loadDatasets()
         this.fileData = null;
@@ -115,7 +116,7 @@ export default class Datasets extends Vue {
     if (this.lastVisitedFileId != id) { 
       this.lastVisitedFileId = id; // this is a trick to avoid recalling the api every time one panel is opened/closed 
       try {
-        const response = await api.peakDataFile(readToken(this.$store), id)
+        const response = await api.peekDataFile(readToken(this.$store), id)
         const headers = JSON.parse(response.data)['schema']['fields']
         this.filePreviewHeader = headers.map(e => {
           return {text: e['name'].trim(), value: e['name'], sortable: false,}
