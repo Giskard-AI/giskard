@@ -26,13 +26,15 @@ import tech.tablesaw.api.Table;
 import tech.tablesaw.selection.Selection;
 
 import javax.validation.constraints.NotNull;
-import java.io.*;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 
-import static ai.giskard.domain.ml.PredictionType.CLASSIFICATION;
 import static ai.giskard.web.rest.errors.Entity.INSPECTION;
 
 @Service
@@ -156,11 +158,12 @@ public class InspectionService {
      *
      * @return filtered table
      */
+    @Transactional
     public Table getRowsFiltered(@NotNull Long inspectionId, @NotNull Filter filter) throws FileNotFoundException {
         Inspection inspection = inspectionRepository.findById(inspectionId).orElseThrow(() -> new EntityNotFoundException(INSPECTION, inspectionId));
         Table table = datasetService.getTableFromDatasetId(inspection.getDataset().getId());
         table.addColumns(IntColumn.indexColumn("Index", table.rowCount(), 0));
-        Selection selection = inspection.getPredictionTask().equals(CLASSIFICATION.getName()) ? getSelection(inspection, filter) : getSelectionRegression(inspection, filter);
+        Selection selection = inspection.getModel().getModelType().isClassification() ? getSelection(inspection, filter) : getSelectionRegression(inspection, filter);
         Table filteredTable = selection == null ? table : table.where(selection);
         return filteredTable;
     }
