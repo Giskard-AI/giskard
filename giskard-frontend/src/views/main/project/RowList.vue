@@ -115,8 +115,9 @@ import { Component, Prop, Vue, Watch } from 'vue-property-decorator';
 import { api } from '@/api';
 import { readToken } from '@/store/main/getters';
 import { commitAddNotification } from '@/store/main/mutations';
-import { Filter, InspectionDTO, RegressionUnit, RowFilterType } from '@/generated-sources';
+import { Filter, InspectionDTO, ModelType, RegressionUnit, RowFilterType } from '@/generated-sources';
 import MultiSelector from '@/views/main/utils/MultiSelector.vue';
+import { isClassification } from '@/ml-utils';
 
 /**
  * TODO: This class should be on the wrapper, no template for the moment
@@ -159,7 +160,7 @@ export default class RowList extends Vue {
 
   async mounted() {
     await this.fetchDetails();
-    if (this.inspection.predictionTask != 'classification') {
+    if (isClassification(this.inspection.model.modelType)) {
       this.filterTypes = [RowFilterType.ALL, RowFilterType.CORRECT, RowFilterType.WRONG, RowFilterType.CUSTOM];
     }
     this.thresholdLabel = this.labels[0];
