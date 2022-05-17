@@ -23,11 +23,6 @@ public class Inspection {
     @ManyToOne
     private ProjectModel model;
 
-    private String location;
-
-    private String target;
-
-    private String predictionTask;
 
 //    private String inputTypes;
 //
