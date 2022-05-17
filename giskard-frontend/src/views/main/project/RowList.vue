@@ -12,34 +12,7 @@
 
     <v-row v-if='inspection!=null && inspection.predictionTask!="classification" && selectedFilter=="CUSTOM"'>
       <v-col cols="12" md='3'>
-        <v-subheader>Predicted value is between</v-subheader>
-      </v-col>
-      <v-col cols='12' md='1'>
-        <v-text-field
-          :value='minThreshold'
-          step='0.001'
-          hide-details
-          type='number'
-          @change='(val)=>{this.minThreshold=val;}'
-        ></v-text-field>
-      </v-col>
-      <v-col cols="12" md='1'>
-        <v-subheader>and</v-subheader>
-      </v-col>
-      <v-col cols='12' md='1'>
-        <v-text-field
-          :value='maxThreshold'
-          step='0.001'
-          hide-details
-          type='number'
-          @change='(val)=>{this.maxThreshold=val;}'
-        ></v-text-field>
-      </v-col>
-    </v-row>
-
-    <v-row v-if='inspection!=null && inspection.predictionTask!="classification" && selectedFilter=="CUSTOM"'>
-      <v-col cols="12" md='3'>
-        <v-subheader>Actual value is between</v-subheader>
+        <v-subheader class='pt-5'>Actual value is between</v-subheader>
       </v-col>
       <v-col cols='12' md='1'>
         <v-text-field
@@ -52,7 +25,7 @@
         </v-text-field>
       </v-col>
       <v-col cols="12" md='1'>
-        <v-subheader>and</v-subheader>
+        <v-subheader class='pt-5'>and</v-subheader>
       </v-col>
       <v-col cols='12' md='1'>
         <v-text-field
@@ -64,17 +37,46 @@
         ></v-text-field>
       </v-col>
     </v-row>
+    <v-row v-if='inspection!=null && inspection.predictionTask!="classification" && selectedFilter=="CUSTOM"'>
+      <v-col cols="12" md='3'>
+        <v-subheader class='pt-5'>Predicted value is between</v-subheader>
+      </v-col>
+      <v-col cols='12' md='1'>
+        <v-text-field
+
+          :value='minThreshold'
+          step='0.001'
+          hide-details
+          type='number'
+          @change='(val)=>{this.minThreshold=val;}'
+        ></v-text-field>
+      </v-col>
+      <v-col cols="12" md='1'>
+        <v-subheader class='pt-5'>and</v-subheader>
+      </v-col>
+      <v-col cols='12' md='1'>
+        <v-text-field
+          :value='maxThreshold'
+          step='0.001'
+          hide-details
+          type='number'
+          @change='(val)=>{this.maxThreshold=val;}'
+        ></v-text-field>
+      </v-col>
+    </v-row>
+
+
     <v-row v-if='selectedFilter=="CUSTOM" && inspection.predictionTask=="classification" '>
       <v-col cols='12' md='3'>
-        <MultiSelector label='Actual Labels' :options='labels' :selected-options='targetLabel'></MultiSelector>
+        <MultiSelector label='Actual Labels' :options='labels' :selected-options='targetLabel' @update='(options)=>{this.targetLabel=options}'></MultiSelector>
       </v-col>
       <v-col cols='12' md='3'>
-        <MultiSelector label='Predicted Labels' :options='labels' :selected-options='predictedLabel'></MultiSelector>
+        <MultiSelector label='Predicted Labels' :options='labels' :selected-options='predictedLabel' @update='(options)=>{this.predictedLabel=options}'></MultiSelector>
       </v-col>
     </v-row>
     <v-row v-if='selectedFilter=="CUSTOM" && inspection.predictionTask=="classification" '>
-      <v-col cols="12" md='1'>
-        <v-subheader>With</v-subheader>
+      <v-col cols="12" md='2' class='pl-0 pt-5'>
+        <v-subheader>Probability of</v-subheader>
       </v-col>
       <v-col cols='12' md='3'>
         <v-select
@@ -84,7 +86,7 @@
         ></v-select>
       </v-col>
       <v-col cols="12" md='2'>
-        <v-subheader>probabilities in range : </v-subheader>
+        <v-subheader class='justify-center pt-5 '>is between : </v-subheader>
       </v-col>
       <v-col cols='12' md='2'>
         <v-text-field
@@ -95,6 +97,9 @@
           type='number'
           @change='(val)=>{this.minThreshold=val;}'
         ></v-text-field>
+      </v-col>
+      <v-col cols="12" md='1'>
+        <v-subheader class='justify-center pt-5'> and </v-subheader>
       </v-col>
       <v-col cols='12' md='2'>
         <v-text-field
@@ -184,8 +189,8 @@ export default class RowList extends Vue {
   @Watch('predictedLabel')
   @Watch('shuffleMode')
   @Watch('percentRegressionUnit')
+  @Watch('thresholdLabel')
   async reloadAlways() {
-    console.log("ee")
     await this.fetchRowAndEmit(true);
 
   }
