@@ -9,11 +9,13 @@ import ai.giskard.repository.ml.ModelRepository;
 import ai.giskard.web.dto.ml.DatasetDetailsDTO;
 import ai.giskard.web.rest.errors.Entity;
 import ai.giskard.web.rest.errors.EntityNotFoundException;
+import com.univocity.parsers.common.TextParsingException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import tech.tablesaw.api.IntColumn;
 import tech.tablesaw.api.Table;
+import tech.tablesaw.io.csv.CsvReadOptions;
 
 import javax.validation.constraints.NotNull;
 import java.nio.file.Path;
@@ -40,7 +42,16 @@ public class DatasetService {
         Dataset dataset = datasetRepository.findById(datasetId).orElseThrow(() -> new EntityNotFoundException(Entity.DATASET, datasetId));
         Path filePath = Paths.get(applicationProperties.getBucketPath(), dataset.getLocation());
         String filePathName = filePath.toAbsolutePath().toString().replace(".zst", "");
-        return Table.read().csv(filePathName);
+        Table table;
+        // TODO change this with parsing columns types from dataset metadata to csv options builder
+
+        try {
+            table = Table.read().csv(filePathName);
+        } catch (TextParsingException e) {
+            CsvReadOptions options = CsvReadOptions.builder(filePathName).maxCharsPerColumn(2000000).build();
+            table = Table.read().csv(options);
+        }
+        return table;
     }
 
     /**
