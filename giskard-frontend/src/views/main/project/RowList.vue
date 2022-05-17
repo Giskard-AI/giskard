@@ -10,54 +10,102 @@
       </v-col>
     </v-row>
 
-    <v-row v-if='inspection!=null && inspection.predictionTask!="classification" && selectedFilter!="ALL"'>
-
-      <v-col cols='12' md='3'>
-        <v-text-field v-model='regressionThreshold' label='Threshold'></v-text-field>
+    <v-row v-if='inspection!=null && inspection.predictionTask!="classification" && selectedFilter=="CUSTOM"'>
+      <v-col cols="12" md='3'>
+        <v-subheader>Predicted value is between</v-subheader>
       </v-col>
       <v-col cols='12' md='1'>
-        <v-checkbox
-          v-model='percentRegressionUnit'
-          :label='`%`'
-        ></v-checkbox>
+        <v-text-field
+          :value='minThreshold'
+          step='0.001'
+          hide-details
+          type='number'
+          @change='(val)=>{this.minThreshold=val;}'
+        ></v-text-field>
+      </v-col>
+      <v-col cols="12" md='1'>
+        <v-subheader>and</v-subheader>
+      </v-col>
+      <v-col cols='12' md='1'>
+        <v-text-field
+          :value='maxThreshold'
+          step='0.001'
+          hide-details
+          type='number'
+          @change='(val)=>{this.maxThreshold=val;}'
+        ></v-text-field>
       </v-col>
     </v-row>
-    <v-row v-if='selectedFilter=="CUSTOM"'>
+
+    <v-row v-if='inspection!=null && inspection.predictionTask!="classification" && selectedFilter=="CUSTOM"'>
+      <v-col cols="12" md='3'>
+        <v-subheader>Actual value is between</v-subheader>
+      </v-col>
+      <v-col cols='12' md='1'>
+        <v-text-field
+          :value='minActualThreshold'
+          step='0.001'
+          hide-details
+          type='number'
+          @change='(val)=>{this.minActualThreshold=val;}'
+        >
+        </v-text-field>
+      </v-col>
+      <v-col cols="12" md='1'>
+        <v-subheader>and</v-subheader>
+      </v-col>
+      <v-col cols='12' md='1'>
+        <v-text-field
+          :value='maxActualThreshold'
+          step='0.001'
+          hide-details
+          type='number'
+          @change='(val)=>{this.maxActualThreshold=val;}'
+        ></v-text-field>
+      </v-col>
+    </v-row>
+    <v-row v-if='selectedFilter=="CUSTOM" && inspection.predictionTask=="classification" '>
       <v-col cols='12' md='3'>
         <MultiSelector label='Actual Labels' :options='labels' :selected-options='targetLabel'></MultiSelector>
       </v-col>
       <v-col cols='12' md='3'>
         <MultiSelector label='Predicted Labels' :options='labels' :selected-options='predictedLabel'></MultiSelector>
       </v-col>
-
-        <v-col cols='12' md='2'>
-          <v-select
-            :items='labels'
-            label='Threshold Label'
-            v-model='thresholdLabel'
-            hide-details
-          ></v-select>
-        </v-col>
-        <v-col cols='12' md='1'>
-          <v-text-field
-            label='Min Threshold'
-            :value='minThreshold'
-            step='0.001'
-            hide-details
-            type='number'
-            @change='(val)=>{this.minThreshold=val;}'
-          ></v-text-field>
-        </v-col>
-        <v-col cols='12' md='1'>
-          <v-text-field
-            label='Max Threshold'
-            :value='maxThreshold'
-            step='0.001'
-            hide-details
-            type='number'
-            @change='(val)=>{this.maxThreshold=val;}'
-          ></v-text-field>
-        </v-col>
+    </v-row>
+    <v-row v-if='selectedFilter=="CUSTOM" && inspection.predictionTask=="classification" '>
+      <v-col cols="12" md='1'>
+        <v-subheader>With</v-subheader>
+      </v-col>
+      <v-col cols='12' md='3'>
+        <v-select
+          :items='labels'
+          v-model='thresholdLabel'
+          hide-details
+        ></v-select>
+      </v-col>
+      <v-col cols="12" md='2'>
+        <v-subheader>probabilities in range : </v-subheader>
+      </v-col>
+      <v-col cols='12' md='2'>
+        <v-text-field
+          label='Min Threshold'
+          :value='minThreshold'
+          step='0.001'
+          hide-details
+          type='number'
+          @change='(val)=>{this.minThreshold=val;}'
+        ></v-text-field>
+      </v-col>
+      <v-col cols='12' md='2'>
+        <v-text-field
+          label='Max Threshold'
+          :value='maxThreshold'
+          step='0.001'
+          hide-details
+          type='number'
+          @change='(val)=>{this.maxThreshold=val;}'
+        ></v-text-field>
+      </v-col>
     </v-row>
   </v-container>
 </template>
@@ -96,8 +144,8 @@ export default class RowList extends Vue {
   labels: string[] = [];
   predictedLabel: string[] = [];
   targetLabel: string[] = [];
-  minThreshold: number = 0;
-  maxThreshold: number = 1.;
+  minThreshold= null;
+  maxThreshold = null;
   inspection = {} as InspectionDTO;
   allFilterTypes = Object.values(RowFilterType);
   filterTypes = this.allFilterTypes;
@@ -106,16 +154,18 @@ export default class RowList extends Vue {
   regressionUnits = Object.keys(RegressionUnit);
   percentRegressionUnit = true;
   thresholdLabel: string = '';
+  minActualThreshold=null;
+  maxActualThreshold=null;
 
   async mounted() {
     await this.fetchDetails();
     if (this.inspection.predictionTask != 'classification') {
-      this.filterTypes = [RowFilterType.ALL, RowFilterType.CORRECT, RowFilterType.WRONG];
+      this.filterTypes = [RowFilterType.ALL, RowFilterType.CORRECT, RowFilterType.WRONG, RowFilterType.CUSTOM];
     }
     this.thresholdLabel = this.labels[0];
     await this.fetchRowAndEmit(true);
-    this.predictedLabel = this.labels;
-    this.targetLabel = this.labels;
+    this.predictedLabel = [];
+    this.targetLabel = [];
   }
 
   @Watch('currentRowIdx')
@@ -128,14 +178,16 @@ export default class RowList extends Vue {
   @Watch('selectedFilter')
   @Watch('minThreshold')
   @Watch('maxThreshold')
+  @Watch('minActualThreshold')
+  @Watch('maxActualThreshold')
   @Watch('targetLabel')
   @Watch('predictedLabel')
   @Watch('shuffleMode')
   @Watch('percentRegressionUnit')
   async reloadAlways() {
-    if (this.regressionThreshold != null) {
-      await this.fetchRowAndEmit(true);
-    }
+    console.log("ee")
+    await this.fetchRowAndEmit(true);
+
   }
 
   async fetchRowAndEmit(hasFilterChanged) {
@@ -181,13 +233,16 @@ export default class RowList extends Vue {
         'isRandom': this.shuffleMode
       };
       const filter: Filter = {
-        'minThreshold': this.inspection.predictionTask == 'classification' ? this.minThreshold : this.regressionThreshold,
-        'maxThreshold': this.maxThreshold,
+        maxLabelThreshold: this.maxActualThreshold!,
+        minLabelThreshold: this.minActualThreshold!,
+        'minThreshold': this.minThreshold!,
+        'maxThreshold': this.maxThreshold!,
         'targetLabel': this.targetLabel,
         'predictedLabel': this.predictedLabel,
         'rowFilter': this.selectedFilter,
         'regressionUnit': this.percentRegressionUnit ? RegressionUnit.ABSDIFFPERCENT : RegressionUnit.ABSDIFF,
         'thresholdLabel': this.thresholdLabel
+
       };
       const response = await api.getDataFilteredByRange(readToken(this.$store), this.inspectionId, props, filter);
       this.rows = response.data.data;

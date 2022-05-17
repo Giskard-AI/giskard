@@ -22,11 +22,11 @@
       <v-divider class="mt-2"></v-divider>
     </template>
     <template v-slot:selection="{ item, index }">
-      <v-chip v-if="index <= 1">
+      <v-chip v-if="index < 1">
         <span>{{ item }}</span>
       </v-chip>
       <span
-        v-if="index >= 2"
+        v-if="index == 1"
         class="grey--text text-caption"
       >
           (+{{ selectedOptions.length - 1 }} others)
@@ -58,9 +58,6 @@ export default class DatasetSelector extends Vue {
       }
     })
   }
-
-
-
   async mounted() {
   }
 }

@@ -219,3 +219,5 @@ application:
   invitation-token-validity-in-days: 3
   bucketPath: giskard-legacy-server/app
   borderLineThreshold: 0.1
+  regressionThreshold: 0.15
+

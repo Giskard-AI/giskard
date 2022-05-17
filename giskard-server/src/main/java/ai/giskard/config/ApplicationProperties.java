@@ -20,4 +20,6 @@ public class ApplicationProperties {
     private int invitationTokenValidityInDays;
     private String bucketPath;
     private Double borderLineThreshold;
+    private Double regressionThreshold;
+
 }
