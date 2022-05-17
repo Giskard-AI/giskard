@@ -5,8 +5,6 @@ import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 
 @Getter
 @Setter
@@ -28,5 +26,15 @@ public class Inspection {
     private String target;
 
     private String predictionTask;
+
+//    private String inputTypes;
+//
+//    public Map<String, Object> getInputTypes() throws JsonProcessingException {
+//        ObjectMapper objectMapper = new ObjectMapper();
+//        Map<String, Object> map = objectMapper.readValue(this.inputTypes, new TypeReference<Map<String, Object>>() {
+//        });
+//        return map;
+//    }
+
 
 }
