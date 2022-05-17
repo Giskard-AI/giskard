@@ -173,7 +173,7 @@ export default class InspectorWrapper extends Vue {
   }
 
   public canNext() {
-    return !this.shuffleMode && this.rowNb < this.totalRows - 1;
+    return this.rowNb < this.totalRows - 1;
   }
 
 
