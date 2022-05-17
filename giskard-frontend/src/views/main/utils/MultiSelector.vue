@@ -1,9 +1,10 @@
 <template>
   <v-select
-    v-model="selectedOptions"
+    v-model="selectOptions"
     :items="options"
     :label="label"
     multiple
+    @change="emit"
   >
     <template v-slot:prepend-item>
       <v-list-item
@@ -12,6 +13,9 @@
         @click="toggle"
       >
         <v-list-item-action>
+          <v-icon :color="selectOptions.length > 0 ? 'indigo darken-4' : ''">
+            {{icon()}}
+          </v-icon>
         </v-list-item-action>
         <v-list-item-content>
           <v-list-item-title>
@@ -29,7 +33,7 @@
         v-if="index == 1"
         class="grey--text text-caption"
       >
-          (+{{ selectedOptions.length - 1 }} others)
+          (+{{ selectOptions.length - 1 }} others)
         </span>
     </template>
   </v-select>
@@ -44,20 +48,33 @@ import {Prop} from "vue-property-decorator";
 import { DatasetDTO, ModelDTO } from '@/generated-sources';
 
 @Component
-export default class DatasetSelector extends Vue {
+export default class MultiSelector extends Vue {
   @Prop({required: true}) selectedOptions!: string[];
   @Prop({required: true}) options!: string[];
   @Prop({required: true}) label!: string[];
+  selectOptions=this.selectedOptions;
 
-  toggle () {
+  toggle() {
     this.$nextTick(():void=> {
-      if (this.selectedOptions.length>=this.options.length) {
-        this.selectedOptions = []
-      } else {
-        this.selectedOptions = this.options.slice()
+      let options:string[]=[]
+      if (this.selectOptions.length<this.options.length){
+        options=this.options.slice() ;
       }
+      this.selectOptions=options;
+      this.emit(options)
     })
   }
+
+  emit(options) {
+    this.$emit("update", options);
+  }
+
+  icon() {
+    if (this.selectedOptions.length == this.options.length) return "mdi-close-box"
+    if (this.selectedOptions.length < this.options.length) return "mdi-minus-box"
+    return "mdi-checkbox-blank-outline"
+  }
+
   async mounted() {
   }
 }
