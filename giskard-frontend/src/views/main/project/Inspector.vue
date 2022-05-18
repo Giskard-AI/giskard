@@ -182,8 +182,8 @@ export default class Inspector extends Vue {
   async loadMetaData() {
     this.loadingData = true;
     try {
-      // const resp = await api.getFeaturesMetadata(readToken(this.$store), this.modelId, this.datasetId)
-      // this.inputMetaData = resp.data
+      const resp = await api.getFeaturesMetadata(readToken(this.$store), this.modelId, this.datasetId)
+      this.inputMetaData = resp.data
       this.featuresToView = this.inputMetaData.map(e => e.feat_name)
       
       const respMetadata: ModelMetadataDTO = (await api.getModelMetadata(readToken(this.$store), this.modelId)).data
