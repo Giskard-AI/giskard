@@ -3,6 +3,41 @@ import re
 import pandas as pd
 import numpy as np
 from bs4 import BeautifulSoup
+from giskard_client import ModelInspector
+
+
+def explain(model_inspector: ModelInspector, df: pd.DataFrame, input_data: Dict):
+    from alibi.explainers import KernelShap
+
+    feature_columns = list(model_inspector.input_types.keys())
+    feature_names = list(model_inspector.input_types.keys())
+    kernel_shap = KernelShap(
+        predictor=lambda array: model_inspector.prediction_function(
+            pd.DataFrame(array, columns=feature_columns)
+        ),
+        feature_names=feature_names,
+        task=model_inspector.prediction_task,
+    )
+    kernel_shap.fit(background_example(df[feature_columns], model_inspector.input_types))
+    input_df = pd.DataFrame({k: [v] for k, v in input_data.items()})[
+        feature_columns
+    ]
+    explanations = kernel_shap.explain(input_df)
+    if model_inspector.prediction_task == "regression":
+        explanation_chart_data = summary_shap_regression(
+            shap_values=explanations.shap_values, feature_names=feature_names
+        )
+    elif model_inspector.prediction_task == "classification":
+        explanation_chart_data = summary_shap_classification(
+            shap_values=explanations.shap_values,
+            feature_names=feature_names,
+            class_names=model_inspector.classification_labels,
+        )
+    else:
+        raise ValueError(
+            f"Prediction task is not supported: {model_inspector.prediction_task}"
+        )
+    return explanation_chart_data
 
 
 def background_example(df: pd.DataFrame, input_types: Dict[str, str]) -> pd.DataFrame:
@@ -16,13 +51,13 @@ def background_example(df: pd.DataFrame, input_types: Dict[str, str]) -> pd.Data
 
 
 def summary_shap_classification(
-    shap_values: List[np.ndarray],
-    feature_names: List[str],
-    class_names: List[str],
-    max_display: int = 5,
+        shap_values: List[np.ndarray],
+        feature_names: List[str],
+        class_names: List[str],
+        max_display: int = 5,
 ) -> Dict[str, Dict[str, Dict[str, float]]]:
     feature_order = np.argsort(np.sum(np.mean(np.abs(shap_values), axis=1), axis=0))
-    feature_order = feature_order[-min(max_display, len(feature_order)) :]
+    feature_order = feature_order[-min(max_display, len(feature_order)):]
     feature_inds = feature_order[:max_display]
     chart_data = {"explanations": {}}
     for i in range(len(shap_values)):
@@ -35,10 +70,10 @@ def summary_shap_classification(
 
 
 def summary_shap_regression(
-    shap_values: List[np.ndarray], feature_names: List[str], max_display: int = 5
+        shap_values: List[np.ndarray], feature_names: List[str], max_display: int = 5
 ) -> Dict[str, Dict[str, float]]:
     feature_order = np.argsort(np.sum(np.mean(np.abs(shap_values), axis=1), axis=0))
-    feature_order = feature_order[-min(max_display, len(feature_order)) :]
+    feature_order = feature_order[-min(max_display, len(feature_order)):]
     feature_inds = feature_order[:max_display]
     global_shap_values = np.abs(shap_values[0]).mean(0)
     chart_data = {"explanations": {}}
@@ -49,7 +84,7 @@ def summary_shap_regression(
 
 
 def text_explanation_prediction_wrapper(
-    prediction_function: Callable, input_example: pd.DataFrame, text_column: str
+        prediction_function: Callable, input_example: pd.DataFrame, text_column: str
 ) -> Callable:
     def text_predict(text_documents: List[str]):
         num_documents = len(text_documents)

@@ -32,6 +32,7 @@
             </v-menu>
           </v-card-title>
           <v-card-text v-if="!errorLoadingMetadata && Object.keys(inputMetaData).length > 0" id="inputTextCard">
+            <pre>{{inputData}}</pre>
             <div class="caption error--text">{{ dataErrorMsg }}</div>
             <v-form lazy-validation>
               <div v-for="c in inputMetaData" :key="c.feat_name"

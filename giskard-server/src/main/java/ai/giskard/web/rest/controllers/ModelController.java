@@ -1,15 +1,15 @@
 package ai.giskard.web.rest.controllers;
 
+import ai.giskard.domain.ml.Dataset;
 import ai.giskard.domain.ml.ProjectModel;
 import ai.giskard.repository.ml.DatasetRepository;
 import ai.giskard.repository.ml.ModelRepository;
 import ai.giskard.security.PermissionEvaluator;
 import ai.giskard.service.ModelService;
-import ai.giskard.web.dto.ModelMetadataDTO;
-import ai.giskard.web.dto.PredictionDTO;
-import ai.giskard.web.dto.PredictionInputDTO;
+import ai.giskard.web.dto.*;
 import ai.giskard.web.dto.mapper.GiskardMapper;
 import ai.giskard.web.dto.ml.ModelDTO;
+import ai.giskard.worker.ExplainResponse;
 import ai.giskard.worker.RunModelForDataFrameResponse;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -54,9 +54,31 @@ public class ModelController {
         return giskardMapper.modelToModelMetadataDTO(model);
     }
 
+    @PostMapping("model/{modelId}/explain/{datasetId}")
+    @Transactional
+    public ExplainResponseDTO explain(@PathVariable @NotNull Long modelId, @PathVariable @NotNull Long datasetId, @RequestBody @NotNull PredictionInputDTO data) {
+        ProjectModel model = modelRepository.getById(modelId);
+        permissionEvaluator.validateCanReadProject(model.getProject().getId());
+        Dataset dataset = datasetRepository.getById(datasetId);
+        ExplainResponse explanations = modelService.explain(model, dataset, data.getFeatures());
+        ExplainResponseDTO result = new ExplainResponseDTO();
+        explanations.getExplanationsMap().forEach((label, perFeatureExplanations) -> {
+            result.getExplanations().put(label, perFeatureExplanations.getPerFeatureMap());
+        });
+        return result;
+    }
+
+    @PostMapping("model/{modelId}/explain-text/{featureName}")
+    @Transactional
+    public Map<String, String> explainText(@PathVariable @NotNull Long modelId, @PathVariable @NotNull String featureName, @RequestBody @NotNull PredictionInputDTO data) {
+        ProjectModel model = modelRepository.getById(modelId);
+        permissionEvaluator.validateCanReadProject(model.getProject().getId());
+        return modelService.explainText(model, featureName, data.getFeatures()).getExplanationsMap();
+    }
+
     @PostMapping("model/{modelId}/predict")
     @Transactional
-    public PredictionDTO getPredictions(@PathVariable @NotNull Long modelId, @RequestBody @NotNull PredictionInputDTO data) {
+    public PredictionDTO predict(@PathVariable @NotNull Long modelId, @RequestBody @NotNull PredictionInputDTO data) {
         ProjectModel model = modelRepository.getById(modelId);
         permissionEvaluator.validateCanReadProject(model.getProject().getId());
         RunModelForDataFrameResponse result = modelService.predict(model, data.getFeatures());

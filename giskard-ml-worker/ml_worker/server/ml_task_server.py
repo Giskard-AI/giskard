@@ -5,14 +5,17 @@ import cloudpickle
 import pandas as pd
 from ai_inspector import ModelInspector
 from ai_inspector.io_utils import decompress
+from eli5.lime import TextExplainer
 from zstandard import ZstdDecompressor
 
 from generated.ml_worker_pb2 import RunTestRequest, TestResultMessage, RunModelResponse, RunModelRequest, DataFrame, \
-    DataRow, RunModelForDataFrameResponse
+    DataRow, RunModelForDataFrameResponse, RunModelForDataFrameRequest, ExplainRequest, ExplainTextRequest
 from generated.ml_worker_pb2_grpc import MLWorkerServicer
 from ml_worker.core.files_utils import read_model_file, read_dataset_file
 from ml_worker.core.ml import run_predict
+from ml_worker.core.model_explanation import explain, text_explanation_prediction_wrapper, parse_text_explainer_response
 from ml_worker.testing.functions import GiskardTestFunctions
+from ml_worker_pb2 import ExplainResponse, ExplainTextResponse
 from mltask_server_runner import settings
 
 logger = logging.getLogger()
@@ -44,10 +47,37 @@ class MLTaskServer(MLWorkerServicer):
 
         return TestResultMessage(results=tests.tests_results)
 
-    def runModelForDataFrame(self, request: RunModelRequest, context):
-        dzst = ZstdDecompressor()
-        model_inspector: ModelInspector = cloudpickle.load(dzst.stream_reader(request.serialized_model))
-        df = pd.DataFrame([r.features for r in request.data.rows])
+    def explain(self, request: ExplainRequest, context) -> ExplainResponse:
+        model_inspector: ModelInspector = cloudpickle.load(ZstdDecompressor().stream_reader(request.serialized_model))
+        df = pd.read_csv(BytesIO(decompress(request.serialized_data)))
+        explanations = explain(model_inspector, df, request.features)
+
+        return ExplainResponse(explanations={k: ExplainResponse.Explanation(per_feature=v) for k, v in
+                                             explanations['explanations'].items()})
+
+    def explainText(self, request: ExplainTextRequest, context) -> ExplainTextResponse:
+        n_samples = 500 if request.n_samples <= 0 else request.n_samples
+        model_inspector: ModelInspector = cloudpickle.load(ZstdDecompressor().stream_reader(request.serialized_model))
+        feature_columns = list(model_inspector.input_types.keys())
+        text_column = request.feature_name
+
+        if model_inspector.input_types[text_column] != "text":
+            raise ValueError(f"Column {text_column} is not of type text")
+        text_document = request.features[text_column]
+        input_df = pd.DataFrame({k: [v] for k, v in request.features.items()})[
+            feature_columns
+        ]
+        text_explainer = TextExplainer(random_state=42, n_samples=n_samples)
+        prediction_function = text_explanation_prediction_wrapper(
+            model_inspector.prediction_function, input_df, text_column
+        )
+        text_explainer.fit(text_document, prediction_function)
+        html_response = text_explainer.show_prediction(target_names=model_inspector.classification_labels)._repr_html_()
+        return ExplainTextResponse(explanations=parse_text_explainer_response(html_response))
+
+    def runModelForDataFrame(self, request: RunModelForDataFrameRequest, context):
+        model_inspector: ModelInspector = cloudpickle.load(ZstdDecompressor().stream_reader(request.serialized_model))
+        df = pd.DataFrame([r.features for r in request.dataframe.rows])
         predictions = run_predict(df, model_inspector=model_inspector)
 
         return RunModelForDataFrameResponse(all_predictions=self.pandas_df_to_proto_df(predictions.all_predictions),
