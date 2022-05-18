@@ -42,8 +42,8 @@ public class DatasetsController {
      */
 
     @GetMapping("/dataset/{datasetId}/rows")
-    public String getRows(@PathVariable @NotNull Long datasetId, @RequestParam("rangeMin") @NotNull int rangeMin, @NotNull int rangeMax) throws IOException {
-        Table filteredTable = datasetService.getRows(datasetId, rangeMin, rangeMax);
+    public String getRows(@PathVariable @NotNull Long datasetId, @NotNull int offset, @NotNull int size) throws IOException {
+        Table filteredTable = datasetService.getRows(datasetId, offset, offset+size);
         return filteredTable.write().toString("json");
     }
 

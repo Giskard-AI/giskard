@@ -25,7 +25,6 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStreamReader;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 
 import static ai.giskard.web.rest.errors.Entity.INSPECTION;
@@ -42,6 +41,7 @@ public class InspectionService {
     final DatasetService datasetService;
     final ApplicationProperties applicationProperties;
     final PermissionEvaluator permissionEvaluator;
+    final FileLocationService fileLocationService;
 
     public Table getTableFromBucketFile(String location) throws FileNotFoundException {
         InputStreamReader reader = new InputStreamReader(
@@ -57,7 +57,7 @@ public class InspectionService {
     }
 
     private Selection getSelectionRegression(Inspection inspection, Filter filter) throws FileNotFoundException {
-        Table calculatedTable = getTableFromBucketFile(getCalculatedPath(inspection.getId()).toString());
+        Table calculatedTable = getTableFromBucketFile(getCalculatedPath(inspection).toString());
         calculatedTable.addColumns(IntColumn.indexColumn("Index", calculatedTable.rowCount(), 0));
         Selection selection;
         Double threshold;
@@ -94,17 +94,19 @@ public class InspectionService {
         return selection;
     }
 
-    public Path getPredictionsPath(Long inspectionId) {
-        return Paths.get(applicationProperties.getBucketPath(), "files-bucket", "inspections", inspectionId.toString(), "predictions.csv");
+    public Path getPredictionsPath(Inspection inspection) {
+        String projectKey = inspection.getModel().getProject().getKey();
+        return fileLocationService.resolvedInspectionPath(projectKey, inspection.getId()).resolve("predictions.csv");
     }
 
-    public Path getCalculatedPath(Long inspectionId) {
-        return Paths.get(applicationProperties.getBucketPath(), "files-bucket", "inspections", inspectionId.toString(), "calculated.csv");
+    public Path getCalculatedPath(Inspection inspection) {
+        String projectKey = inspection.getModel().getProject().getKey();
+        return fileLocationService.resolvedInspectionPath(projectKey, inspection.getId()).resolve("calculated.csv");
     }
 
     private Selection getSelection(Inspection inspection, Filter filter) throws FileNotFoundException {
-        Table predsTable = getTableFromBucketFile(getPredictionsPath(inspection.getId()).toString());
-        Table calculatedTable = getTableFromBucketFile(getCalculatedPath(inspection.getId()).toString());
+        Table predsTable = getTableFromBucketFile(getPredictionsPath(inspection).toString());
+        Table calculatedTable = getTableFromBucketFile(getCalculatedPath(inspection).toString());
         StringColumn predictedClass = calculatedTable.stringColumn(0);
         StringColumn targetClass = calculatedTable.stringColumn(1);
         Selection correctSelection = predictedClass.isEqualTo(targetClass);
@@ -150,7 +152,7 @@ public class InspectionService {
     @Transactional
     public Table getRowsFiltered(@NotNull Long inspectionId, @NotNull Filter filter) throws FileNotFoundException {
         Inspection inspection = inspectionRepository.findById(inspectionId).orElseThrow(() -> new EntityNotFoundException(INSPECTION, inspectionId));
-        Table table = datasetService.getTableFromDatasetId(inspection.getDataset().getId());
+        Table table = datasetService.readTableByDatasetId(inspection.getDataset().getId());
         table.addColumns(IntColumn.indexColumn("Index", table.rowCount(), 0));
         Selection selection = inspection.getModel().getModelType().isClassification() ? getSelection(inspection, filter) : getSelectionRegression(inspection, filter);
         Table filteredTable = selection == null ? table : table.where(selection);

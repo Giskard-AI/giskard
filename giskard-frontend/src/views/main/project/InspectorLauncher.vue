@@ -97,7 +97,6 @@ export default class InspectorLauncher extends Vue {
       try {
         this.loading = true;
         const response = await api.peekDataFile(
-          readToken(this.$store),
           this.datasetSelected
         );
         const headers = JSON.parse(response.data)['schema']['fields'];

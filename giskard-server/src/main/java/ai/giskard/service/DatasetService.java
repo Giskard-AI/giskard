@@ -19,7 +19,6 @@ import tech.tablesaw.io.csv.CsvReadOptions;
 
 import javax.validation.constraints.NotNull;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 
 @Service
 @Transactional
@@ -31,6 +30,8 @@ public class DatasetService {
     final ModelRepository modelRepository;
     final InspectionRepository inspectionRepository;
     private final ApplicationProperties applicationProperties;
+    private final FileLocationService locationService;
+    private final FileUploadService fileUploadService;
 
     /**
      * TODO Read zst file
@@ -38,15 +39,19 @@ public class DatasetService {
      * @param datasetId id of the dataset
      * @return the table
      */
-    public Table getTableFromDatasetId(@NotNull Long datasetId) {
+    public Table readTableByDatasetId(@NotNull Long datasetId) {
         Dataset dataset = datasetRepository.findById(datasetId).orElseThrow(() -> new EntityNotFoundException(Entity.DATASET, datasetId));
-        Path filePath = Paths.get(applicationProperties.getBucketPath(), dataset.getFileName());
+        Path filePath = locationService.datasetsDirectory(dataset.getProject().getKey()).resolve(dataset.getFileName());
+
         String filePathName = filePath.toAbsolutePath().toString().replace(".zst", "");
         Table table;
-        // TODO change this with parsing columns types from dataset metadata to csv options builder
-
         try {
-            table = Table.read().csv(filePathName);
+                //.maxCharsPerColumn(Integer.MAX_VALUE)
+            CsvReadOptions csvReadOptions = CsvReadOptions
+                .builder(fileUploadService.decompressFileToStream(filePath))
+                .maxCharsPerColumn(-1)
+                .build();
+            table = Table.read().csv(csvReadOptions);
         } catch (TextParsingException e) {
             CsvReadOptions options = CsvReadOptions.builder(filePathName).maxCharsPerColumn(2000000).build();
             table = Table.read().csv(options);
@@ -61,7 +66,7 @@ public class DatasetService {
      * @return details dto of the dataset
      */
     public DatasetDetailsDTO getDetails(@NotNull Long id) {
-        Table table = getTableFromDatasetId(id);
+        Table table = readTableByDatasetId(id);
         DatasetDetailsDTO details = new DatasetDetailsDTO();
         details.setNumberOfRows(table.rowCount());
         details.setColumns(table.columnNames());
@@ -77,9 +82,8 @@ public class DatasetService {
      * @return filtered table
      */
     public Table getRows(@NotNull Long id, @NotNull int rangeMin, @NotNull int rangeMax) {
-        Table table = getTableFromDatasetId(id);
+        Table table = readTableByDatasetId(id);
         table.addColumns(IntColumn.indexColumn("Index", table.rowCount(), 0));
-        Table filteredTable = table.inRange(rangeMin, rangeMax);
-        return filteredTable;
+        return table.inRange(rangeMin, rangeMax);
     }
 }
