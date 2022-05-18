@@ -40,7 +40,7 @@ public class UploadController {
         log.info("Loading model: {}.{}", params.getProjectKey(), params.getName());
 
         try {
-            ProjectModel savedModel = uploadService.uploadModel(params, modelFile.getInputStream(), requirementsFile.getInputStream(), modelFile);
+            ProjectModel savedModel = uploadService.uploadModel(params, modelFile.getInputStream(), requirementsFile.getInputStream());
             return giskardMapper.modelToModelDTO(savedModel);
         } catch (IOException e) {
             throw new RuntimeException("Failed to read uploaded model files", e);

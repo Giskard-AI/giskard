@@ -145,8 +145,11 @@ export const api = {
   async getProjectModels(token: string, id: number) {
     return axiosProject.get<ModelDTO[]>(`/${id}/models`, authHeaders(token));
   },
-  async deleteDatasetFile(token: string, id: number) {
-    return axios.delete(`${apiUrl}/api/v1/files/datasets/${id}`, authHeaders(token));
+  async deleteDatasetFile(datasetId: number) {
+    return axios.delete(`${apiUrlJava}/api/v2/dataset/${datasetId}`);
+  },
+  async deleteModelFiles(modelId: number) {
+    return axios.delete(`${apiUrlJava}/api/v2/models/${modelId}`);
   },
   async downloadModelFile(token: string, modelId: number) {
     return axios.get(`${apiUrl}/api/v1/files/models/${modelId}`, { ...authHeaders(token), 'responseType': 'blob' });

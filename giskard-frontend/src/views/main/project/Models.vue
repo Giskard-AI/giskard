@@ -108,8 +108,8 @@ export default class Models extends Vue {
       text: `Are you sure you want to delete model <strong>${fileName}</strong>?`,
       title: 'Delete model'
     })) {
-      performApiActionWithNotif(this.$store,
-          () => api.deleteDatasetFile(readToken(this.$store), id),
+      await performApiActionWithNotif(this.$store,
+          () => api.deleteModelFiles(id),
           this.loadModelPickles)
     }
   }

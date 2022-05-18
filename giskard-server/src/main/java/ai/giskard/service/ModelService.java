@@ -12,6 +12,8 @@ import ai.giskard.service.ml.MLWorkerService;
 import ai.giskard.worker.*;
 import com.google.protobuf.ByteString;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,6 +26,8 @@ import java.util.Map;
 @Transactional
 @RequiredArgsConstructor
 public class ModelService {
+    private final Logger log = LoggerFactory.getLogger(ModelService.class);
+
     final DatasetRepository datasetRepository;
     final ModelRepository modelRepository;
     final PermissionEvaluator permissionEvaluator;
@@ -119,40 +123,25 @@ public class ModelService {
         }
 
         return response;
-
-
-        //PipedInputStream pipedInputStream = new PipedInputStream();
-        //PipedOutputStream pipedOutputStream;
-
-        //
-        //try {
-        //    pipedOutputStream = new PipedOutputStream(pipedInputStream);
-        //    //new Thread(() -> {
-        //    //    uploadService.d@ecompressFileToStream(path);
-        //    //}).start();
-        //
-        //    //InputStream initialStream = new FileInputStream(
-        //    //    new File("src/main/resources/sample.txt"));
-        //    File targetFile = new File("/tmp/df.tmp");
-        //
-        //    //java.nio.file.Files.copy(
-        //    //    uploadService.decompressFileToStream(path),
-        //    //    targetFile.toPath(),
-        //    //    StandardCopyOption.REPLACE_EXISTING);
-        //
-        //    IOUtils.closeQuietly(pipedInputStream);
-        //
-        //
-        //    Table csv = Table.read().csv(new InputStreamReader(pipedInputStream));
-        //
-        //    System.out.println(1);
-        //} catch(
-        //IOException e)
-        //
-        //{
-        //    throw new RuntimeException(e);
-        //}
-
     }
 
+    public void deleteModel(Long modelId) {
+        ProjectModel model = modelRepository.getById(modelId);
+        permissionEvaluator.validateCanWriteProject(model.getProject().getId());
+
+        log.info("Deleting model from the database: {}", model.getId());
+        modelRepository.delete(model);
+
+        Path modelsDirectory = locationService.modelsDirectory(model.getProject().getKey());
+
+        try {
+            log.info("Removing model file: {}", model.getFileName());
+            Files.deleteIfExists(modelsDirectory.resolve(model.getFileName()));
+            log.info("Removing model requirements file: {}", modelsDirectory.getFileName());
+            Files.deleteIfExists(modelsDirectory.resolve(model.getRequirementsFileName()));
+        } catch (IOException e) {
+            throw new RuntimeException(String.format("Failed to remove model files %s", model.getFileName()), e);
+        }
+
+    }
 }
