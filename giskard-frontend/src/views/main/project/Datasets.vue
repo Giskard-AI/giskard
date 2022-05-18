@@ -68,7 +68,7 @@ export default class Datasets extends Vue {
   public files: FileDTO[] = [];
   public fileData = null;
   public lastVisitedFileId;
-  public filePreviewHeader: string[] = [];
+  public filePreviewHeader: {text: string, value: string}[] = [];
   public filePreviewData: any[] = [];
 
   activated() {
@@ -116,12 +116,12 @@ export default class Datasets extends Vue {
     if (this.lastVisitedFileId != id) { 
       this.lastVisitedFileId = id; // this is a trick to avoid recalling the api every time one panel is opened/closed 
       try {
-        const response = await api.peekDataFile(readToken(this.$store), id)
-        const headers = JSON.parse(response.data)['schema']['fields']
+        const response = await api.peekDataFile(id)
+        const headers = Object.keys(response.data[0])
         this.filePreviewHeader = headers.map(e => {
-          return {text: e['name'].trim(), value: e['name'], sortable: false,}
+          return {text: e.trim(), value: e, sortable: false,}
         });
-        this.filePreviewData = JSON.parse(response.data)['data']
+        this.filePreviewData = response.data
       } catch (error) {
         commitAddNotification(this.$store, { content: error.response.statusText, color: 'error' });
         this.filePreviewHeader = [];

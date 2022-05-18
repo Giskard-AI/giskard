@@ -154,9 +154,9 @@ export const api = {
   async downloadDataFile(token: string, id: number) {
     return axios.get(`${apiUrl}/api/v1/files/datasets/${id}`, { ...authHeaders(token), 'responseType': 'blob' });
   },
-  async peekDataFile(token: string, id: number) {
-    return axios.get(`${apiUrlJava}/api/v2/files/datasets/${id}/peek`, authHeaders(token));
-  },
+    async peekDataFile(datasetId: number) {
+        return axios.get(`${apiUrlJava}/api/v2/dataset/${datasetId}/rows`, {params: {offset: 0, size: 10}});
+    },
   async getFeaturesMetadata(token: string, modelId: number, datasetId: number) {
     return axios.get<IDataMetadata[]>(`${apiUrl}/api/v1/models/${modelId}/features/${datasetId}`, authHeaders(token));
   },
