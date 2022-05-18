@@ -141,10 +141,10 @@ export const api = {
     return axios.delete(`${apiUrl}/api/v1/files/datasets/${id}`, authHeaders(token));
   },
   async downloadModelFile(token: string, modelId: number) {
-    return axios.get(`${apiUrl}/api/v1/files/models/${modelId}`, { ...authHeaders(token), 'responseType': 'blob' });
+    return axios.get(`${apiUrlJava}/api/v2/files/models/${modelId}`, { ...authHeaders(token), 'responseType': 'blob' });
   },
   async downloadDataFile(token: string, id: number) {
-    return axios.get(`${apiUrl}/api/v1/files/datasets/${id}`, { ...authHeaders(token), 'responseType': 'blob' });
+    return axios.get(`${apiUrlJava}/api/v2/files/datasets/${id}`, { ...authHeaders(token), 'responseType': 'blob' });
   },
   async peakDataFile(token: string, id: number) {
     return axios.get(`${apiUrl}/api/v1/files/datasets/${id}/peak`, authHeaders(token));

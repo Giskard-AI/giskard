@@ -4,6 +4,8 @@ import lombok.Getter;
 import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
+import java.nio.file.Path;
+
 /**
  * Properties specific to Giskard.
  * <p>
@@ -22,4 +24,5 @@ public class ApplicationProperties {
     private Double borderLineThreshold;
     private Double regressionThreshold;
 
+    private Path giskardHome;
 }
