@@ -184,7 +184,7 @@ export const api = {
     return axios.post(`${apiUrlJava}/api/v2/project/data/upload`, formData, config);
   },
   async getModelMetadata(token: string, modelId: number) {
-    return axios.get<ModelMetadataDTO>(`${apiUrlJava}/api/v2/model/${modelId}/metadata`, authHeaders(token));
+    return axios.get<ModelMetadataDTO>(`${apiUrlJava}/api/v2/models/${modelId}/metadata`, authHeaders(token));
   },
   async predict(modelId: number, inputData: object) {
     return axios.post<PredictionDTO>(`${apiUrlJava}/api/v2/models/${modelId}/predict`, { features: inputData });

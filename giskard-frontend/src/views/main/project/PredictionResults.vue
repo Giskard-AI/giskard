@@ -3,7 +3,7 @@
     <OverlayLoader v-show="loading" />
     <v-card-title>Result</v-card-title>
     <v-card-text class="text-center">
-      <v-row v-if="prediction && predictionTask == 'classification'">
+      <v-row v-if="prediction && isClassification(predictionTask)">
         <v-col
           lg="8"
           md="12"
@@ -24,7 +24,7 @@
               :class="
                 !actual
                   ? 'info--text text--darken-2'
-                  : prediction == actualForDisplay
+                  : prediction === actualForDisplay
                   ? 'success--text'
                   : 'error--text'
               "
@@ -40,28 +40,30 @@
             </div>
             <div class="caption">
               <div v-if="targetFeature">target: {{ targetFeature }}</div>
-              <div v-if="respMetadata && respMetadata.classification_threshold">threshold: {{ respMetadata.classification_threshold }}</div>
+              <div v-if="respMetadata && respMetadata.threshold">threshold: {{ respMetadata.threshold }}</div>
               <div v-if="actual">{{ labelsAndValues }}</div>
             </div>
           </div>
         </v-col>
       </v-row>
-      <v-row v-if="prediction && predictionTask == 'regression'">
+      <v-row>
+      </v-row>
+      <v-row v-if="prediction && predictionTask === ModelType.REGRESSION">
         <v-col lg="4">
           <div>Prediction</div>
           <div class="text-h6 success--text">
-            {{ formatTwoDigits(prediction) }}
+            {{ prediction | formatTwoDigits }}
           </div>
         </v-col>
         <v-col lg="4">
           <div>Actual <span v-show="actual && modified">(before modification)</span></div>
-          <div v-if="actual" class="text-h6">{{ formatTwoDigits(actual) }}</div>
+          <div v-if="actual" class="text-h6">{{ actual | formatTwoDigits }}</div>
           <div v-else>-</div>
         </v-col>
         <v-col lg="4">
           <div>Difference</div>
           <div v-if="actual" class="font-weight-light center-center">
-            {{ formatTwoDigits(((prediction - actual) / actual) * 100) }} %
+            {{ ((prediction - actual) / actual) * 100 | formatTwoDigits }} %
           </div>
           <div v-else>-</div>
         </v-col>
@@ -75,27 +77,27 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue, Prop, Watch } from "vue-property-decorator";
+import {Component, Prop, Vue, Watch} from "vue-property-decorator";
 import OverlayLoader from "@/components/OverlayLoader.vue";
-import { api } from "@/api";
-import { readToken } from "@/store/main/getters";
+import {api} from "@/api";
+import {readToken} from "@/store/main/getters";
 import ECharts from "vue-echarts";
-import { use } from "echarts/core";
-import { BarChart } from "echarts/charts";
-import { CanvasRenderer } from "echarts/renderers";
-import { GridComponent } from "echarts/components";
-import {IModelMetadata} from "@/interfaces";
-import {ModelMetadataDTO, PredictionDTO} from "@/generated-sources";
+import {use} from "echarts/core";
+import {BarChart} from "echarts/charts";
+import {CanvasRenderer} from "echarts/renderers";
+import {GridComponent} from "echarts/components";
+import {ModelMetadataDTO, ModelType, PredictionDTO} from "@/generated-sources";
+import {isClassification} from "@/ml-utils";
 
 use([CanvasRenderer, BarChart, GridComponent]);
 Vue.component("v-chart", ECharts);
 
 @Component({
-  components: { OverlayLoader },
+  components: { OverlayLoader }
 })
 export default class PredictionResults extends Vue {
   @Prop({ required: true }) modelId!: number;
-  @Prop({ required: true }) predictionTask!: string;
+  @Prop({ required: true }) predictionTask!: ModelType;
   @Prop() targetFeature!: string;
   @Prop() classificationLabels!: string[];
   @Prop({ default: {} }) inputData!: object;
@@ -106,11 +108,12 @@ export default class PredictionResults extends Vue {
   loading: boolean = false;
   errorMsg: string = "";
   respMetadata!: ModelMetadataDTO;
+  isClassification = isClassification;
+  ModelType = ModelType;
 
   async mounted() {
     this.respMetadata = (await api.getModelMetadata(readToken(this.$store), this.modelId)).data
-
-    this.submitPrediction()
+    await this.submitPrediction()
   }
 
   @Watch("inputData", { deep: true })
@@ -202,15 +205,6 @@ export default class PredictionResults extends Vue {
     };
   }
 
-  private formatTwoDigits(n: any) {
-    try {
-      return parseFloat(n).toLocaleString(undefined, {
-        maximumFractionDigits: 2,
-      });
-    } catch (e) {
-      return n;
-    }
-  }
 }
 </script>
 

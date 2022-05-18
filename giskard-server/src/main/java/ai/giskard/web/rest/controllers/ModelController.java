@@ -6,7 +6,10 @@ import ai.giskard.repository.ml.DatasetRepository;
 import ai.giskard.repository.ml.ModelRepository;
 import ai.giskard.security.PermissionEvaluator;
 import ai.giskard.service.ModelService;
-import ai.giskard.web.dto.*;
+import ai.giskard.web.dto.ExplainResponseDTO;
+import ai.giskard.web.dto.ModelMetadataDTO;
+import ai.giskard.web.dto.PredictionDTO;
+import ai.giskard.web.dto.PredictionInputDTO;
 import ai.giskard.web.dto.mapper.GiskardMapper;
 import ai.giskard.web.dto.ml.ModelDTO;
 import ai.giskard.worker.ExplainResponse;
@@ -46,7 +49,7 @@ public class ModelController {
         return giskardMapper.modelsToModelDTOs(modelRepository.findAllByProjectId(projectId));
     }
 
-    @GetMapping("model/{modelId}/metadata")
+    @GetMapping("models/{modelId}/metadata")
     @Transactional
     public ModelMetadataDTO getModelMetadata(@PathVariable @NotNull Long modelId) {
         ProjectModel model = modelRepository.getById(modelId);
@@ -54,7 +57,7 @@ public class ModelController {
         return giskardMapper.modelToModelMetadataDTO(model);
     }
 
-    @PostMapping("model/{modelId}/explain/{datasetId}")
+    @PostMapping("models/{modelId}/explain/{datasetId}")
     @Transactional
     public ExplainResponseDTO explain(@PathVariable @NotNull Long modelId, @PathVariable @NotNull Long datasetId, @RequestBody @NotNull PredictionInputDTO data) {
         ProjectModel model = modelRepository.getById(modelId);
@@ -68,7 +71,7 @@ public class ModelController {
         return result;
     }
 
-    @PostMapping("model/{modelId}/explain-text/{featureName}")
+    @PostMapping("models/{modelId}/explain-text/{featureName}")
     @Transactional
     public Map<String, String> explainText(@PathVariable @NotNull Long modelId, @PathVariable @NotNull String featureName, @RequestBody @NotNull PredictionInputDTO data) {
         ProjectModel model = modelRepository.getById(modelId);
@@ -76,7 +79,7 @@ public class ModelController {
         return modelService.explainText(model, featureName, data.getFeatures()).getExplanationsMap();
     }
 
-    @PostMapping("model/{modelId}/predict")
+    @PostMapping("models/{modelId}/predict")
     @Transactional
     public PredictionDTO predict(@PathVariable @NotNull Long modelId, @RequestBody @NotNull PredictionInputDTO data) {
         ProjectModel model = modelRepository.getById(modelId);

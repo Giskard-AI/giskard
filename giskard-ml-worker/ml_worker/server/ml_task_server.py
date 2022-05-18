@@ -88,7 +88,7 @@ class MLTaskServer(MLWorkerServicer):
 
         dzst = ZstdDecompressor()
         model_inspector: ModelInspector = cloudpickle.load(dzst.stream_reader(request.serialized_model))
-        data_df = pd.read_csv(BytesIO(decompress(request.serialized_data)))
+        data_df = pd.read_csv(BytesIO(decompress(request.serialized_data)), keep_default_na=False)
         prediction_results = run_predict(data_df, model_inspector=model_inspector)
 
         if model_inspector.prediction_task == "classification":

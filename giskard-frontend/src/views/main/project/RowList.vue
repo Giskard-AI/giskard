@@ -3,22 +3,21 @@
     <v-row>
       <v-col cols='12' md='3'>
         <v-select
+          v-model='selectedFilter'
           :items='filterTypes'
           label='Filter'
-          v-model='selectedFilter'
         ></v-select>
       </v-col>
     </v-row>
-
-    <v-row v-if='inspection!=null && inspection.predictionTask!="classification" && selectedFilter=="CUSTOM"'>
+    <v-row v-if='inspection!=null && inspection.model && isClassification(inspection.model.modelType) && selectedFilter===RowFilterType.CUSTOM'>
       <v-col cols="12" md='3'>
         <v-subheader class='pt-5'>Actual value is between</v-subheader>
       </v-col>
       <v-col cols='12' md='1'>
         <v-text-field
           :value='minActualThreshold'
-          step='0.001'
           hide-details
+          step='0.001'
           type='number'
           @change='(val)=>{this.minActualThreshold=val;}'
         >
@@ -30,14 +29,14 @@
       <v-col cols='12' md='1'>
         <v-text-field
           :value='maxActualThreshold'
-          step='0.001'
           hide-details
+          step='0.001'
           type='number'
           @change='(val)=>{this.maxActualThreshold=val;}'
         ></v-text-field>
       </v-col>
     </v-row>
-    <v-row v-if='inspection!=null && inspection.predictionTask!="classification" && selectedFilter=="CUSTOM"'>
+    <v-row v-if='inspection!=null && inspection.model && isClassification(inspection.model.modelType) && selectedFilter===RowFilterType.CUSTOM'>
       <v-col cols="12" md='3'>
         <v-subheader class='pt-5'>Predicted value is between</v-subheader>
       </v-col>
@@ -45,8 +44,8 @@
         <v-text-field
 
           :value='minThreshold'
-          step='0.001'
           hide-details
+          step='0.001'
           type='number'
           @change='(val)=>{this.minThreshold=val;}'
         ></v-text-field>
@@ -57,8 +56,8 @@
       <v-col cols='12' md='1'>
         <v-text-field
           :value='maxThreshold'
-          step='0.001'
           hide-details
+          step='0.001'
           type='number'
           @change='(val)=>{this.maxThreshold=val;}'
         ></v-text-field>
@@ -66,22 +65,22 @@
     </v-row>
 
 
-    <v-row v-if='selectedFilter=="CUSTOM" && inspection.predictionTask=="classification" '>
+    <v-row v-if='selectedFilter===RowFilterType.CUSTOM && inspection.model && isClassification(inspection.model.modelType) '>
       <v-col cols='12' md='3'>
-        <MultiSelector label='Actual Labels' :options='labels' :selected-options='targetLabel' @update='(options)=>{this.targetLabel=options}'></MultiSelector>
+        <MultiSelector :options='labels' :selected-options='targetLabel' label='Actual Labels' @update='(options)=>{this.targetLabel=options}'></MultiSelector>
       </v-col>
       <v-col cols='12' md='3'>
-        <MultiSelector label='Predicted Labels' :options='labels' :selected-options='predictedLabel' @update='(options)=>{this.predictedLabel=options}'></MultiSelector>
+        <MultiSelector :options='labels' :selected-options='predictedLabel' label='Predicted Labels' @update='(options)=>{this.predictedLabel=options}'></MultiSelector>
       </v-col>
     </v-row>
-    <v-row v-if='selectedFilter=="CUSTOM" && inspection.predictionTask=="classification" '>
-      <v-col cols="12" md='2' class='pl-0 pt-5'>
+    <v-row v-if='selectedFilter===RowFilterType.CUSTOM && inspection.model && isClassification(inspection.model.modelType) '>
+      <v-col class='pl-0 pt-5' cols="12" md='2'>
         <v-subheader>Probability of</v-subheader>
       </v-col>
       <v-col cols='12' md='3'>
         <v-select
-          :items='labels'
           v-model='thresholdLabel'
+          :items='labels'
           hide-details
         ></v-select>
       </v-col>
@@ -90,10 +89,10 @@
       </v-col>
       <v-col cols='12' md='2'>
         <v-text-field
-          label='Min Threshold'
           :value='minThreshold'
-          step='0.001'
           hide-details
+          label='Min Threshold'
+          step='0.001'
           type='number'
           @change='(val)=>{this.minThreshold=val;}'
         ></v-text-field>
@@ -103,10 +102,10 @@
       </v-col>
       <v-col cols='12' md='2'>
         <v-text-field
-          label='Max Threshold'
           :value='maxThreshold'
-          step='0.001'
           hide-details
+          label='Max Threshold'
+          step='0.001'
           type='number'
           @change='(val)=>{this.maxThreshold=val;}'
         ></v-text-field>
@@ -162,6 +161,8 @@ export default class RowList extends Vue {
   thresholdLabel: string = '';
   minActualThreshold=null;
   maxActualThreshold=null;
+  isClassification = isClassification;
+  RowFilterType = RowFilterType;
 
   async mounted() {
     await this.fetchDetails();
