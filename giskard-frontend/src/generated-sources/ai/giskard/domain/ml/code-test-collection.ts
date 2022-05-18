@@ -6,6 +6,6 @@ import type {CodeTestTemplate} from './code-test-template';
 export interface CodeTestCollection {
     id: string;
     items: CodeTestTemplate[];
-    order: any /* TODO: Missing translation of short */;
+    order: number;
     title: string;
 }
