@@ -66,7 +66,7 @@ export default class MultiSelector extends Vue {
   }
 
   emit(options) {
-    this.$emit("update", options);
+    this.$emit("update:selectedOptions", options);
   }
 
   icon() {
