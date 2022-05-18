@@ -280,7 +280,7 @@ class PerformanceTests(AbstractTestCollection):
         """
         return self._test_regression_score(r2_score, df, model, target, threshold, r2=True)
 
-    def _test_diff_classification(self, test_fn, model, df, target, threshold=0.1, filter_1=None, filter_2=None):
+    def _test_diff_prediction(self, test_fn, model, df, target, threshold=0.1, filter_1=None, filter_2=None):
         self.do_save_results = False
         df_1 = df.loc[filter_1] if filter_1 is not None else df
         df_2 = df.loc[filter_2] if filter_2 is not None else df
@@ -329,7 +329,7 @@ class PerformanceTests(AbstractTestCollection):
                 TRUE if Accuracy difference < threshold
 
         """
-        return self._test_diff_classification(self.test_accuracy, model, df, target, threshold, filter_1, filter_2)
+        return self._test_diff_prediction(self.test_accuracy, model, df, target, threshold, filter_1, filter_2)
 
     def test_diff_f1(self, df, model, target, threshold=0.1, filter_1=None, filter_2=None):
         """
@@ -363,7 +363,7 @@ class PerformanceTests(AbstractTestCollection):
                 TRUE if F1 Score difference < threshold
 
         """
-        return self._test_diff_classification(self.test_f1, model, df, target, threshold, filter_1, filter_2)
+        return self._test_diff_prediction(self.test_f1, model, df, target, threshold, filter_1, filter_2)
 
     def test_diff_precision(self, df, model, target, threshold=0.1, filter_1=None, filter_2=None):
         """
@@ -396,7 +396,7 @@ class PerformanceTests(AbstractTestCollection):
             passed:
                 TRUE if Precision difference < threshold
         """
-        return self._test_diff_classification(self.test_precision, model, df, target, threshold, filter_1, filter_2)
+        return self._test_diff_prediction(self.test_precision, model, df, target, threshold, filter_1, filter_2)
 
     def test_diff_recall(self, df, model, target, threshold=0.1, filter_1=None, filter_2=None):
         """
@@ -429,7 +429,7 @@ class PerformanceTests(AbstractTestCollection):
             passed:
                 TRUE if Recall difference < threshold
         """
-        return self._test_diff_classification(self.test_recall, model, df, target, threshold, filter_1, filter_2)
+        return self._test_diff_prediction(self.test_recall, model, df, target, threshold, filter_1, filter_2)
 
     def _test_diff_traintest(self, test_fn, model, df_train, df_test, target, threshold=0.1):
         self.do_save_results = False
@@ -541,7 +541,7 @@ class PerformanceTests(AbstractTestCollection):
             passed:
                 TRUE if RMSE difference < threshold
         """
-        return self._test_diff_classification(self.test_rmse, model, df, target, threshold, filter_1, filter_2)
+        return self._test_diff_prediction(self.test_rmse, model, df, target, threshold, filter_1, filter_2)
 
     def test_diff_traintest_rmse(self, df_train, df_test, model, target, threshold=0.1):
         """

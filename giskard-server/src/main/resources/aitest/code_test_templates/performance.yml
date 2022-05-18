@@ -100,9 +100,9 @@ items:
                 target column name
             threshold(int):
                 threshold value for F1 Score difference
-            filter_1(int64Index):
+            filter_1(pandas.core.indexes.numeric.NumericIndex):
                 index of the sub-population of the dataset
-            filter_2(int64Index):
+            filter_2(pandas.core.indexes.numeric.NumericIndex):
                 index of the sub-population of the dataset
 
         Returns:
@@ -229,9 +229,9 @@ items:
                 target column name
             threshold(int):
                 threshold value for Accuracy Score difference
-            filter_1(int64Index):
+            filter_1(pandas.core.indexes.numeric.NumericIndex):
                 index of the sub-population of the dataset
-            filter_2(int64Index):
+            filter_2(pandas.core.indexes.numeric.NumericIndex):
                 index of the sub-population of the dataset
 
         Returns:
@@ -356,9 +356,9 @@ items:
                 target column name
             threshold(int):
                 threshold value for Precision difference
-            filter_1(int64Index):
+            filter_1(pandas.core.indexes.numeric.NumericIndex):
                 index of the sub-population of the dataset
-            filter_2(int64Index):
+            filter_2(pandas.core.indexes.numeric.NumericIndex):
                 index of the sub-population of the dataset
 
         Returns:
@@ -440,9 +440,9 @@ items:
                 target column name
             threshold(int):
                 threshold value for Recall difference
-            filter_1(int64Index):
+            filter_1(pandas.core.indexes.numeric.NumericIndex):
                 index of the sub-population of the dataset
-            filter_2(int64Index):
+            filter_2(pandas.core.indexes.numeric.NumericIndex):
                 index of the sub-population of the dataset
 
         Returns:
@@ -522,9 +522,9 @@ items:
                 target column name
             threshold(int):
                 threshold value for RMSE difference
-            filter_1(int64Index):
+            filter_1(pandas.core.indexes.numeric.NumericIndex):
                 index of the sub-population of the dataset
-            filter_2(int64Index):
+            filter_2(pandas.core.indexes.numeric.NumericIndex):
                 index of the sub-population of the dataset
 
         Returns:
