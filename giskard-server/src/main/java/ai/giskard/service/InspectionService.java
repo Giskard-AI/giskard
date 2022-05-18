@@ -56,22 +56,21 @@ public class InspectionService {
 
     private Selection getSelectionRegression(Inspection inspection, Filter filter) throws FileNotFoundException {
         Table calculatedTable = getTableFromBucketFile(getCalculatedPath(inspection.getId()).toString());
-        calculatedTable.addColumns(IntColumn.indexColumn("Index", calculatedTable.rowCount(), 0));
         Selection selection;
         Double threshold;
         DoubleColumn column = calculatedTable.doubleColumn("absDiffPercent");
         switch (filter.getRowFilter()) {
             case CORRECT:
                 threshold = getThresholdForRegression(column);
-                selection = calculatedTable.doubleColumn("absDiffPercent").isLessThanOrEqualTo(threshold);
+                selection = column.isLessThanOrEqualTo(threshold);
                 break;
             case WRONG:
                 threshold = getThresholdForRegression(column);
-                selection = calculatedTable.doubleColumn("absDiffPercent").isGreaterThanOrEqualTo(threshold);
+                selection = column.isGreaterThanOrEqualTo(threshold);
                 break;
             case CUSTOM:
                 DoubleColumn prediction = calculatedTable.doubleColumn(0);
-                DoubleColumn target = calculatedTable.numberColumn("target").asDoubleColumn();
+                DoubleColumn target = calculatedTable.numberColumn(1).asDoubleColumn();
                 selection=prediction.isNotMissing();
                 if (filter.getMinThreshold()!= null){
                     selection=selection.and(prediction.isGreaterThanOrEqualTo(filter.getMinThreshold()));

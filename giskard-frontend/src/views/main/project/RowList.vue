@@ -14,7 +14,7 @@
 
     <v-row v-if='inspection!=null && inspection.predictionTask!="classification" && selectedFilter=="CUSTOM"'>
       <v-col cols='12' md='3'>
-        <v-subheader class='pt-5'>Actual value is between</v-subheader>
+        <v-subheader class='pt-5 pl-0'>Actual value is between</v-subheader>
       </v-col>
       <v-col cols='12' md='1'>
         <v-text-field
@@ -41,11 +41,10 @@
     </v-row>
     <v-row v-if='inspection!=null && inspection.predictionTask!="classification" && selectedFilter=="CUSTOM"'>
       <v-col cols='12' md='3'>
-        <v-subheader class='pt-5'>Predicted value is between</v-subheader>
+        <v-subheader class='pt-5 pl-0'>Predicted value is between</v-subheader>
       </v-col>
       <v-col cols='12' md='1'>
         <v-text-field
-
           :value='minThreshold'
           step='0.001'
           hide-details
@@ -169,6 +168,7 @@ export default class RowList extends Vue {
   async mounted() {
     await this.fetchDetails();
     this.filterTypes=this.inspection.predictionTask == 'classification'?this.classifFiltersMap:this.regressionFiltersMap
+    this.selectedFilter=this.filterTypes[0].out;
     this.thresholdLabel = this.labels[0];
     await this.fetchRowAndEmit(true);
     this.predictedLabel = [];
