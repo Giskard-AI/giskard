@@ -4,6 +4,7 @@ import ai.giskard.domain.ml.Inspection;
 import ai.giskard.domain.ml.table.Filter;
 import ai.giskard.repository.InspectionRepository;
 import ai.giskard.service.InspectionService;
+import ai.giskard.service.ModelService;
 import ai.giskard.web.dto.InspectionCreateDTO;
 import ai.giskard.web.dto.mapper.GiskardMapper;
 import ai.giskard.web.dto.ml.InspectionDTO;
@@ -30,6 +31,7 @@ import java.util.List;
 public class InspectionController {
 
     private final InspectionService inspectionService;
+    private final ModelService modelService;
     private final InspectionRepository inspectionRepository;
     private final GiskardMapper giskardMapper;
 
@@ -80,7 +82,7 @@ public class InspectionController {
 
     @PostMapping("/inspection")
     public Inspection createInspection(@RequestBody @NotNull InspectionCreateDTO createDTO){
-        return inspectionService.createInspection(createDTO.getModelId(), createDTO.getDatasetId());
+        return modelService.createInspection(createDTO.getModelId(), createDTO.getDatasetId());
     }
 
 

@@ -43,6 +43,7 @@
     "ai.giskard.web.dto.FeedbackDTO": "FeedbackDTO",
     "ai.giskard.web.dto.ml.ProjectPostDTO": "ProjectPostDTO",
     "ai.giskard.domain.ml.ModelType": "ModelType",
+    "ai.giskard.web.dto.ExplainResponseDTO": "ExplainResponseDTO",
     "ai.giskard.domain.ml.CodeLanguage": "CodeLanguage",
     "ai.giskard.web.dto.ModelMetadataDTO": "ModelMetadataDTO",
     "ai.giskard.domain.ml.CodeTestCollection": "CodeTestCollection",

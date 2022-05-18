@@ -7,7 +7,7 @@ import {
   AppConfigDTO,
   CodeTestCollection,
   CreateFeedbackDTO,
-  CreateFeedbackReplyDTO,
+  CreateFeedbackReplyDTO, ExplainResponseDTO,
   FeedbackDTO,
   FeedbackMinimalDTO,
   FileDTO, InspectionCreateDTO,
@@ -193,10 +193,10 @@ export const api = {
       return axios.post(`${apiUrlJava}/api/v2/inspection`,  payload);
   },
   async explain(token: string, modelId: number, datasetId: number, inputData: object) {
-    return axios.post(`${apiUrl}/api/v1/models/${modelId}/${datasetId}/explain`, { features: inputData }, authHeaders(token));
+    return axios.post<ExplainResponseDTO>(`${apiUrlJava}/api/v2/models/${modelId}/explain/${datasetId}`, { features: inputData }, authHeaders(token));
   },
   async explainText(token: string, modelId: number, inputData: object, featureName: string) {
-    return axios.post(`${apiUrl}/api/v1/models/${modelId}/explain_text/${featureName}`, { features: inputData }, authHeaders(token));
+    return axios.post(`${apiUrlJava}/api/v2/models/${modelId}/explain-text/${featureName}`, { features: inputData }, authHeaders(token));
   },
   // feedbacks
   async submitFeedback(token: string, payload: CreateFeedbackDTO, projectId: number) {

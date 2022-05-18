@@ -11,12 +11,14 @@ import com.google.protobuf.ByteString;
 import io.grpc.Channel;
 import io.grpc.ManagedChannel;
 import io.grpc.stub.AbstractStub;
+import lombok.Getter;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
@@ -26,7 +28,9 @@ import java.util.stream.Stream;
 public class MLWorkerClient implements AutoCloseable {
     private final Logger logger;
 
+    @Getter
     private final MLWorkerGrpc.MLWorkerBlockingStub blockingStub;
+    @Getter
     private final MLWorkerGrpc.MLWorkerFutureStub futureStub;
 
     public MLWorkerClient(Channel channel) {
@@ -72,10 +76,30 @@ public class MLWorkerClient implements AutoCloseable {
         return blockingStub.runModel(request);
     }
 
-    public RunModelForDataFrameResponse runModelForDataframe(InputStream modelInputStream, DataFrame df) throws IOException {
-        RunModelRequest request = RunModelRequest.newBuilder()
+    public ExplainResponse explain(InputStream modelInputStream, InputStream datasetInputStream, Map<String, String> features) throws IOException {
+        ExplainRequest request = ExplainRequest.newBuilder()
             .setSerializedModel(ByteString.readFrom(modelInputStream))
-            .setData(df)
+            .setSerializedData(ByteString.readFrom(datasetInputStream))
+            .putAllFeatures(features)
+            .build();
+
+        return blockingStub.explain(request);
+    }
+
+    public ExplainResponse explainText(InputStream modelInputStream, InputStream datasetInputStream, Map<String, String> features) throws IOException {
+        ExplainRequest request = ExplainRequest.newBuilder()
+            .setSerializedModel(ByteString.readFrom(modelInputStream))
+            .setSerializedData(ByteString.readFrom(datasetInputStream))
+            .putAllFeatures(features)
+            .build();
+
+        return blockingStub.explain(request);
+    }
+
+    public RunModelForDataFrameResponse runModelForDataframe(InputStream modelInputStream, DataFrame df) throws IOException {
+        RunModelForDataFrameRequest request = RunModelForDataFrameRequest.newBuilder()
+            .setSerializedModel(ByteString.readFrom(modelInputStream))
+            .setDataframe(df)
             .build();
 
         return blockingStub.runModelForDataFrame(request);

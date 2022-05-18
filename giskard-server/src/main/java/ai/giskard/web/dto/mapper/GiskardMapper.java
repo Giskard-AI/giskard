@@ -9,11 +9,13 @@ import ai.giskard.domain.ml.ProjectModel;
 import ai.giskard.domain.ml.TestSuite;
 import ai.giskard.repository.ml.DatasetRepository;
 import ai.giskard.repository.ml.ModelRepository;
+import ai.giskard.web.dto.ExplainResponseDTO;
 import ai.giskard.web.dto.ModelMetadataDTO;
 import ai.giskard.web.dto.ModelUploadParamsDTO;
 import ai.giskard.web.dto.ml.*;
 import ai.giskard.web.dto.user.AdminUserDTO;
 import ai.giskard.web.dto.user.UserDTO;
+import ai.giskard.worker.ExplainResponse;
 import org.mapstruct.*;
 
 import java.util.Collections;

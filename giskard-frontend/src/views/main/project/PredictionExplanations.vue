@@ -53,6 +53,7 @@ import { BarChart } from "echarts/charts";
 import { CanvasRenderer } from "echarts/renderers";
 import { GridComponent } from "echarts/components";
 import "echarts/lib/component/legend";
+import {ExplainResponseDTO} from "@/generated-sources";
 
 use([CanvasRenderer, BarChart, GridComponent]);
 Vue.component("v-chart", ECharts);
@@ -82,13 +83,13 @@ export default class PredictionExplanations extends Vue {
       try {
         this.loading = true;
         this.errorMsg = "";
-        const explainResponse = await api.explain(
+        const explainResponse: ExplainResponseDTO = (await api.explain(
           readToken(this.$store),
           this.modelId,
           this.datasetId,
           this.inputData
-        );
-        this.fullExplanations = explainResponse.data.explanations;
+        )).data
+        this.fullExplanations = explainResponse.explanations;
       } catch (error) {
         this.errorMsg = error.response.data.detail;
       } finally {

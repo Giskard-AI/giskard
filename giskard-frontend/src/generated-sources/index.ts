@@ -38,6 +38,7 @@ export const GENERATED_MAPPING = {
     'ai.giskard.web.dto.JWTToken' : 'JWTToken',
     'ai.giskard.domain.ml.ModelLanguage' : 'ModelLanguage',
     'ai.giskard.web.dto.CreateFeedbackDTO' : 'CreateFeedbackDTO',
+    'ai.giskard.web.dto.ExplainResponseDTO' : 'ExplainResponseDTO',
     'ai.giskard.web.dto.FeedbackMinimalDTO' : 'FeedbackMinimalDTO',
     'ai.giskard.domain.ml.CodeTestTemplate' : 'CodeTestTemplate',
     'ai.giskard.domain.ml.TestType' : 'TestType',
@@ -92,6 +93,7 @@ export * from './ai/giskard/web/rest/vm/token-and-password-vm';
 export * from './ai/giskard/web/dto/jwttoken';
 export * from './ai/giskard/domain/ml/model-language';
 export * from './ai/giskard/web/dto/create-feedback-dto';
+export * from './ai/giskard/web/dto/explain-response-dto';
 export * from './ai/giskard/web/dto/feedback-minimal-dto';
 export * from './ai/giskard/domain/ml/code-test-template';
 export * from './ai/giskard/domain/ml/test-type';
