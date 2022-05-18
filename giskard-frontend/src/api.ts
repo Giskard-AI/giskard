@@ -14,7 +14,7 @@ import {
   JWTToken,
   ManagedUserVM,
   ModelDTO, ModelMetadataDTO,
-  PasswordResetRequest,
+  PasswordResetRequest, PredictionDTO,
   ProjectDTO,
   ProjectPostDTO,
   RoleDTO,
@@ -186,8 +186,8 @@ export const api = {
   async getModelMetadata(token: string, modelId: number) {
     return axios.get<ModelMetadataDTO>(`${apiUrlJava}/api/v2/model/${modelId}/metadata`, authHeaders(token));
   },
-  async predict(token: string, modelId: number, inputData: object) {
-    return axios.post(`${apiUrl}/api/v1/models/${modelId}/predict`, { features: inputData }, authHeaders(token));
+  async predict(modelId: number, inputData: object) {
+    return axios.post<PredictionDTO>(`${apiUrlJava}/api/v2/models/${modelId}/predict`, { features: inputData });
     },
   async prepareInspection(payload: InspectionCreateDTO) {
       return axios.post(`${apiUrlJava}/api/v2/inspection`,  payload);

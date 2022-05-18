@@ -85,7 +85,7 @@ import { BarChart } from "echarts/charts";
 import { CanvasRenderer } from "echarts/renderers";
 import { GridComponent } from "echarts/components";
 import {IModelMetadata} from "@/interfaces";
-import {ModelMetadataDTO} from "@/generated-sources";
+import {ModelMetadataDTO, PredictionDTO} from "@/generated-sources";
 
 use([CanvasRenderer, BarChart, GridComponent]);
 Vue.component("v-chart", ECharts);
@@ -112,20 +112,19 @@ export default class PredictionResults extends Vue {
 
     this.submitPrediction()
   }
-  
+
   @Watch("inputData", { deep: true })
   public async submitPrediction() {
     if (Object.keys(this.inputData).length) {
       try {
         this.loading = true;
-        const resp = await api.predict(
-          readToken(this.$store),
+        const predictionResult: PredictionDTO = (await api.predict(
           this.modelId,
           this.inputData
-        );
-        this.prediction = resp.data.prediction;
+        )).data
+        this.prediction = predictionResult.prediction;
         this.$emit("result", this.prediction);
-        this.resultProbabilities = resp.data.probabilities
+        this.resultProbabilities = predictionResult.probabilities
         // Sort the object by value - solution based on:
         // https://stackoverflow.com/questions/55319092/sort-a-javascript-object-by-key-or-value-es6
         this.resultProbabilities = Object.entries(this.resultProbabilities )

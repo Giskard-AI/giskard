@@ -11,8 +11,14 @@ package worker;
 service MLWorker {
   rpc runTest (RunTestRequest) returns (TestResultMessage) {}
   rpc runModel(RunModelRequest) returns (RunModelResponse) {}
+  rpc runModelForDataFrame(RunModelRequest) returns (RunModelForDataFrameResponse) {}
 }
-
+message RunModelForDataFrameResponse{
+  DataFrame all_predictions = 1;
+  repeated string prediction = 2;
+  repeated float probabilities = 3;
+  repeated uint32 raw_prediction = 4;
+}
 message DataRow{
   map<string, string> features = 1;
 }
@@ -24,19 +30,12 @@ message RunModelRequest{
   bytes serialized_model = 1;
   bytes serialized_data = 2;
   string target = 3;
-      
-//  DataFrame data = 3;
+  DataFrame data = 4;
 }
 
 message RunModelResponse{
   string results_csv = 1;
   string calculated_csv = 2;
-//  string all_predictions_csv = 1;
-//  string prediction_csv = 2;
-//  DataFrame all_predictions = 1;
-//  repeated string prediction = 2;
-//  repeated float probabilities = 3;
-//  repeated uint32 raw_prediction = 4;
 }
 
 message RunTestRequest {

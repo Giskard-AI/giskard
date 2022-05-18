@@ -61,7 +61,7 @@ public class InspectionService {
     }
 
     private Double getThresholdForRegression(DoubleColumn _column) {
-        DoubleColumn column=_column.copy();
+        DoubleColumn column = _column.copy();
         column.sortAscending();
         int maxIndex = (int) Math.round(applicationProperties.getRegressionThreshold() * column.size());
         return column.get(maxIndex);
@@ -85,20 +85,20 @@ public class InspectionService {
             case CUSTOM:
                 DoubleColumn prediction = calculatedTable.doubleColumn(0);
                 DoubleColumn target = calculatedTable.numberColumn("target").asDoubleColumn();
-                selection=prediction.isNotMissing();
-                if (filter.getMinThreshold()!= null){
-                    selection=selection.and(prediction.isGreaterThanOrEqualTo(filter.getMinThreshold()));
+                selection = prediction.isNotMissing();
+                if (filter.getMinThreshold() != null) {
+                    selection = selection.and(prediction.isGreaterThanOrEqualTo(filter.getMinThreshold()));
                 }
-                if (filter.getMaxThreshold()!= null){
-                    selection=selection.and(prediction.isLessThanOrEqualTo(filter.getMaxThreshold()));
+                if (filter.getMaxThreshold() != null) {
+                    selection = selection.and(prediction.isLessThanOrEqualTo(filter.getMaxThreshold()));
                 }
-                if (filter.getMinLabelThreshold()!= null){
-                    selection=selection.and(target.isGreaterThanOrEqualTo(filter.getMinLabelThreshold()));
+                if (filter.getMinLabelThreshold() != null) {
+                    selection = selection.and(target.isGreaterThanOrEqualTo(filter.getMinLabelThreshold()));
                 }
-                if (filter.getMaxLabelThreshold()!= null){
-                    selection=selection.and(target.isLessThanOrEqualTo(filter.getMaxLabelThreshold()));
+                if (filter.getMaxLabelThreshold() != null) {
+                    selection = selection.and(target.isLessThanOrEqualTo(filter.getMaxLabelThreshold()));
                 }
-                 break;
+                break;
             default:
                 selection = null;
         }
@@ -129,17 +129,17 @@ public class InspectionService {
                 break;
             case CUSTOM:
                 DoubleColumn probPredicted = (DoubleColumn) predsTable.column(filter.getThresholdLabel());
-                selection=targetClass.isNotMissing();
-                if (filter.getPredictedLabel().length>0) {
+                selection = targetClass.isNotMissing();
+                if (filter.getPredictedLabel().length > 0) {
                     selection.and(predictedClass.isIn(filter.getPredictedLabel()));
                 }
-                if (filter.getTargetLabel().length>0) {
+                if (filter.getTargetLabel().length > 0) {
                     selection.and(targetClass.isIn(filter.getTargetLabel()));
                 }
-                if (filter.getMaxThreshold()!=null) {
+                if (filter.getMaxThreshold() != null) {
                     selection.and(probPredicted.isLessThanOrEqualTo(filter.getMaxThreshold()));
                 }
-                if (filter.getMinThreshold()!=null) {
+                if (filter.getMinThreshold() != null) {
                     selection.and(probPredicted.isGreaterThanOrEqualTo(filter.getMinThreshold()));
                 }
                 break;
@@ -174,7 +174,7 @@ public class InspectionService {
      * @return filtered table
      */
     @Transactional
-    public List<String> getLabels(@NotNull Long inspectionId) throws FileNotFoundException, JsonProcessingException {
+    public List<String> getLabels(@NotNull Long inspectionId) throws JsonProcessingException {
         Inspection inspection = inspectionRepository.getById(inspectionId);
         return SimpleJSONMapper.toListOfStrings(inspection.getModel().getClassificationLabels());
     }
@@ -212,7 +212,7 @@ public class InspectionService {
 
         RunModelResponse response = null;
         try (MLWorkerClient client = mlWorkerService.createClient()) {
-            response = client.runModel(Files.newInputStream(modelPath), Files.newInputStream(datasetPath), model.getTarget());
+            response = client.runModelForDataStream(Files.newInputStream(modelPath), Files.newInputStream(datasetPath), model.getTarget());
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -227,7 +227,7 @@ public class InspectionService {
         //try {
         //    pipedOutputStream = new PipedOutputStream(pipedInputStream);
         //    //new Thread(() -> {
-        //    //    uploadService.decompressFileToStream(path);
+        //    //    uploadService.d@ecompressFileToStream(path);
         //    //}).start();
         //
         //    //InputStream initialStream = new FileInputStream(

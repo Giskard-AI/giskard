@@ -23,7 +23,7 @@ import java.util.stream.Stream;
 /**
  * A java-python bridge for model execution
  */
-public class MLWorkerClient implements AutoCloseable{
+public class MLWorkerClient implements AutoCloseable {
     private final Logger logger;
 
     private final MLWorkerGrpc.MLWorkerBlockingStub blockingStub;
@@ -62,7 +62,7 @@ public class MLWorkerClient implements AutoCloseable{
         return testResultMessage;
     }
 
-    public RunModelResponse runModel(InputStream modelInputStream, InputStream datasetInputStream, String target) throws IOException {
+    public RunModelResponse runModelForDataStream(InputStream modelInputStream, InputStream datasetInputStream, String target) throws IOException {
         RunModelRequest request = RunModelRequest.newBuilder()
             .setSerializedModel(ByteString.readFrom(modelInputStream))
             .setSerializedData(ByteString.readFrom(datasetInputStream))
@@ -70,6 +70,15 @@ public class MLWorkerClient implements AutoCloseable{
             .build();
 
         return blockingStub.runModel(request);
+    }
+
+    public RunModelForDataFrameResponse runModelForDataframe(InputStream modelInputStream, DataFrame df) throws IOException {
+        RunModelRequest request = RunModelRequest.newBuilder()
+            .setSerializedModel(ByteString.readFrom(modelInputStream))
+            .setData(df)
+            .build();
+
+        return blockingStub.runModelForDataFrame(request);
     }
 
     public void shutdown() {

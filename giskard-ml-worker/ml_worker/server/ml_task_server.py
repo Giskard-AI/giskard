@@ -8,7 +8,7 @@ from ai_inspector.io_utils import decompress
 from zstandard import ZstdDecompressor
 
 from generated.ml_worker_pb2 import RunTestRequest, TestResultMessage, RunModelResponse, RunModelRequest, DataFrame, \
-    DataRow
+    DataRow, RunModelForDataFrameResponse
 from generated.ml_worker_pb2_grpc import MLWorkerServicer
 from ml_worker.core.files_utils import read_model_file, read_dataset_file
 from ml_worker.core.ml import run_predict
@@ -44,13 +44,21 @@ class MLTaskServer(MLWorkerServicer):
 
         return TestResultMessage(results=tests.tests_results)
 
+    def runModelForDataFrame(self, request: RunModelRequest, context):
+        dzst = ZstdDecompressor()
+        model_inspector: ModelInspector = cloudpickle.load(dzst.stream_reader(request.serialized_model))
+        df = pd.DataFrame([r.features for r in request.data.rows])
+        predictions = run_predict(df, model_inspector=model_inspector)
+
+        return RunModelForDataFrameResponse(all_predictions=self.pandas_df_to_proto_df(predictions.all_predictions),
+                                            prediction=predictions.prediction.astype(str))
+
     def runModel(self, request: RunModelRequest, context) -> RunModelResponse:
         import numpy as np
 
         dzst = ZstdDecompressor()
         model_inspector: ModelInspector = cloudpickle.load(dzst.stream_reader(request.serialized_model))
         data_df = pd.read_csv(BytesIO(decompress(request.serialized_data)))
-        # df = pd.DataFrame([r.features for r in request.data.rows])
         prediction_results = run_predict(data_df, model_inspector=model_inspector)
 
         if model_inspector.prediction_task == "classification":
@@ -78,12 +86,6 @@ class MLTaskServer(MLWorkerServicer):
             results_csv=results.to_csv(index=False),
             calculated_csv=calculated.to_csv(index=False)
         )
-
-
-        # return RunModelResponse(all_predictions=self.pandas_df_to_proto_df(predictions.all_predictions),
-        #                         prediction=predictions.prediction.astype(str))
-        return RunModelResponse(all_predictions_csv=predictions.all_predictions.to_csv(index=False),
-                                prediction_csv=pd.Series(predictions.prediction).to_csv(index=False, header=False))
 
     @staticmethod
     def pandas_df_to_proto_df(df):
