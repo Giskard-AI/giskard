@@ -68,10 +68,10 @@
 
     <v-row v-if='selectedFilter=="CUSTOM" && inspection.predictionTask=="classification" '>
       <v-col cols='12' md='3'>
-        <MultiSelector label='Actual Labels' :options='labels' :selected-options='targetLabel' @update='(options)=>{this.targetLabel=options}'></MultiSelector>
+        <MultiSelector label='Actual Labels' :options='labels' :selected-options.sync='targetLabel'></MultiSelector>
       </v-col>
       <v-col cols='12' md='3'>
-        <MultiSelector label='Predicted Labels' :options='labels' :selected-options='predictedLabel' @update='(options)=>{this.predictedLabel=options}'></MultiSelector>
+        <MultiSelector label='Predicted Labels' :options='labels' :selected-options.sync='predictedLabel' ></MultiSelector>
       </v-col>
     </v-row>
     <v-row v-if='selectedFilter=="CUSTOM" && inspection.predictionTask=="classification" '>
