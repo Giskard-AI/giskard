@@ -6,10 +6,7 @@ import ai.giskard.repository.ml.DatasetRepository;
 import ai.giskard.repository.ml.ModelRepository;
 import ai.giskard.security.PermissionEvaluator;
 import ai.giskard.service.ModelService;
-import ai.giskard.web.dto.ExplainResponseDTO;
-import ai.giskard.web.dto.ModelMetadataDTO;
-import ai.giskard.web.dto.PredictionDTO;
-import ai.giskard.web.dto.PredictionInputDTO;
+import ai.giskard.web.dto.*;
 import ai.giskard.web.dto.mapper.GiskardMapper;
 import ai.giskard.web.dto.ml.ModelDTO;
 import ai.giskard.worker.ExplainResponse;
@@ -77,6 +74,12 @@ public class ModelController {
         ProjectModel model = modelRepository.getById(modelId);
         permissionEvaluator.validateCanReadProject(model.getProject().getId());
         return modelService.explainText(model, featureName, data.getFeatures()).getExplanationsMap();
+    }
+
+    @DeleteMapping("models/{modelId}")
+    public MessageDTO deleteModel(@PathVariable @NotNull Long modelId) {
+        modelService.deleteModel(modelId);
+        return new MessageDTO("Model {} has been deleted", modelId);
     }
 
     @PostMapping("models/{modelId}/predict")

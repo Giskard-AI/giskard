@@ -10,19 +10,15 @@ import ai.giskard.web.dto.ModelUploadParamsDTO;
 import ai.giskard.web.dto.mapper.GiskardMapper;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.compress.compressors.CompressorException;
-import org.apache.commons.compress.compressors.CompressorInputStream;
-import org.apache.commons.compress.compressors.CompressorOutputStream;
 import org.apache.commons.compress.compressors.CompressorStreamFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -42,7 +38,7 @@ public class FileUploadService {
     private final Logger log = LoggerFactory.getLogger(FileUploadService.class);
 
     @Transactional
-    public ProjectModel uploadModel(ModelUploadParamsDTO modelParams, InputStream modelStream, InputStream requirementsStream, MultipartFile modelFile) {
+    public ProjectModel uploadModel(ModelUploadParamsDTO modelParams, InputStream modelStream, InputStream requirementsStream) {
         Project project = projectRepository.getOneByKey(modelParams.getProjectKey());
         Path projectModelsPath = locationService.modelsDirectory(project.getKey());
         createOrEnsureOutputDirectory(projectModelsPath);
@@ -59,7 +55,6 @@ public class FileUploadService {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        //streamToCompressedFile(modelStream, modelFilePath);
         model.setFileName(modelFilename);
 
         String requirementsFilename = createZSTname("model-requirements_", savedModel.getId());
@@ -69,7 +64,6 @@ public class FileUploadService {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        //streamToCompressedFile(requirementsStream, requirementsFilePath);
         model.setRequirementsFileName(requirementsFilename);
         return modelRepository.save(model);
     }
@@ -85,33 +79,12 @@ public class FileUploadService {
         }
     }
 
-
-
-    private void streamToCompressedFile(InputStream inputStream, Path outputPath) {
-        try {
-            OutputStream outStream = Files.newOutputStream(outputPath);
-            CompressorOutputStream cos = new CompressorStreamFactory().
-                createCompressorOutputStream(CompressorStreamFactory.ZSTANDARD, outStream);
-            inputStream.transferTo(cos);
-            cos.close();
-            log.info("Saved file: {}", outputPath);
-
-        } catch (IOException e) {
-            throw new RuntimeException(String.format("Failed to write file to %s", outputPath), e);
-        } catch (CompressorException e) {
-            throw new RuntimeException(String.format("Failed to compress output when writing %s", outputPath), e);
-        }
-    }
     public InputStream decompressFileToStream(Path compressedInputPath) {
+        log.info("Decompressing file {}", compressedInputPath);
         try {
             final InputStream compressedInputStream = Files.newInputStream(compressedInputPath);
-            CompressorInputStream in = new CompressorStreamFactory()
+            return new CompressorStreamFactory()
                 .createCompressorInputStream(CompressorStreamFactory.ZSTANDARD, compressedInputStream);
-            return in;
-            //long transferredBytes = in.transferTo(outputStream);
-            //in.close();
-            //log.info("Read file: {} ({} bytes)", compressedInputPath, transferredBytes);
-
         } catch (IOException e) {
             throw new RuntimeException(String.format("Failed to read file to %s", compressedInputPath), e);
         } catch (CompressorException e) {
@@ -132,7 +105,6 @@ public class FileUploadService {
 
         String fileName = createZSTname("data_", dataset.getId());
         dataset.setFileName(fileName);
-        //streamToCompressedFile(inputStream, datasetPath.resolve(fileName));
         try {
             inputStream.transferTo(Files.newOutputStream(datasetPath.resolve(fileName)));
         } catch (IOException e) {

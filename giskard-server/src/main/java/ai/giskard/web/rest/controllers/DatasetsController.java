@@ -2,6 +2,7 @@ package ai.giskard.web.rest.controllers;
 
 import ai.giskard.repository.ml.DatasetRepository;
 import ai.giskard.service.DatasetService;
+import ai.giskard.web.dto.MessageDTO;
 import ai.giskard.web.dto.mapper.GiskardMapper;
 import ai.giskard.web.dto.ml.DatasetDTO;
 import ai.giskard.web.dto.ml.DatasetDetailsDTO;
@@ -43,7 +44,7 @@ public class DatasetsController {
 
     @GetMapping("/dataset/{datasetId}/rows")
     public String getRows(@PathVariable @NotNull Long datasetId, @NotNull int offset, @NotNull int size) throws IOException {
-        Table filteredTable = datasetService.getRows(datasetId, offset, offset+size);
+        Table filteredTable = datasetService.getRows(datasetId, offset, offset + size);
         return filteredTable.write().toString("json");
     }
 
@@ -58,5 +59,11 @@ public class DatasetsController {
     @GetMapping("/dataset/{datasetId}/details")
     public DatasetDetailsDTO datasetDetails(@PathVariable @NotNull Long datasetId) {
         return datasetService.getDetails(datasetId);
+    }
+
+    @DeleteMapping("/dataset/{datasetId}")
+    public MessageDTO deleteDataset(@PathVariable @NotNull Long datasetId) {
+        datasetService.deleteDataset(datasetId);
+        return new MessageDTO("Dataset {} has been deleted", datasetId);
     }
 }

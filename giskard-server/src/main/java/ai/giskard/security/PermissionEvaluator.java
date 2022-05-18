@@ -61,5 +61,10 @@ public class PermissionEvaluator {
             throw new AccessDeniedException("Access denied to project id " + id);
         }
     }
+    public void validateCanWriteProject(@NotNull Long id) {
+        if (!canWriteProject(id)) {
+            throw new AccessDeniedException("Access denied to project id " + id);
+        }
+    }
 
 }

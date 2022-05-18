@@ -97,8 +97,8 @@ export default class Datasets extends Vue {
       text: `Are you sure you want to delete dataset <strong>${fileName}</strong>?`,
       title: 'Delete dataset'
     })) {
-      performApiActionWithNotif(this.$store,
-          () => api.deleteDatasetFile(readToken(this.$store), id),
+      await performApiActionWithNotif(this.$store,
+          () => api.deleteDatasetFile(id),
           this.loadDatasets)
     }
 	}
