@@ -60,15 +60,16 @@ public class InspectionService {
         Table calculatedTable = getTableFromBucketFile(getCalculatedPath(inspection).toString());
         Selection selection;
         Double threshold;
-        DoubleColumn column = calculatedTable.doubleColumn("absDiffPercent");
+        DoubleColumn absDiffPercentColumn = calculatedTable.doubleColumn("absDiffPercent");
+        DoubleColumn diffPercent = calculatedTable.doubleColumn("diffPercent");
         switch (filter.getRowFilter()) {
             case CORRECT:
-                threshold = getThresholdForRegression(column);
-                selection = column.isLessThanOrEqualTo(threshold);
+                threshold = getThresholdForRegression(absDiffPercentColumn);
+                selection = absDiffPercentColumn.isLessThanOrEqualTo(threshold);
                 break;
             case WRONG:
-                threshold = getThresholdForRegression(column);
-                selection = column.isGreaterThanOrEqualTo(threshold);
+                threshold = getThresholdForRegression(absDiffPercentColumn);
+                selection = absDiffPercentColumn.isGreaterThanOrEqualTo(threshold);
                 break;
             case CUSTOM:
                 DoubleColumn prediction = calculatedTable.doubleColumn(0);
@@ -86,7 +87,13 @@ public class InspectionService {
                 if (filter.getMaxLabelThreshold() != null) {
                     selection = selection.and(target.isLessThanOrEqualTo(filter.getMaxLabelThreshold()));
                 }
-                break;
+                if (filter.getMaxDiffThreshold()!=null){
+                    selection=selection.and(diffPercent.isLessThanOrEqualTo(filter.getMaxDiffThreshold()));
+                }
+                if (filter.getMinDiffThreshold()!=null){
+                    selection=selection.and(diffPercent.isGreaterThanOrEqualTo(filter.getMinDiffThreshold()));
+                }
+                 break;
             default:
                 selection = null;
         }
