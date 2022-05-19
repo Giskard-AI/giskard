@@ -3,15 +3,17 @@
     <v-row>
       <v-col cols='12' md='3'>
         <v-select
-          v-model='selectedFilter'
           :items='filterTypes'
           label='Filter'
+          v-model='selectedFilter'
+          item-value="out"
+          item-text="in"
         ></v-select>
       </v-col>
     </v-row>
     <v-row v-if='inspection!=null && inspection.model && isClassification(inspection.model.modelType) && selectedFilter===RowFilterType.CUSTOM'>
-      <v-col cols="12" md='3'>
-        <v-subheader class='pt-5'>Actual value is between</v-subheader>
+      <v-col cols='12' md='3'>
+        <v-subheader class='pt-5 pl-0'>Actual value is between</v-subheader>
       </v-col>
       <v-col cols='12' md='1'>
         <v-text-field
@@ -23,7 +25,7 @@
         >
         </v-text-field>
       </v-col>
-      <v-col cols="12" md='1'>
+      <v-col cols='12' md='1'>
         <v-subheader class='pt-5'>and</v-subheader>
       </v-col>
       <v-col cols='12' md='1'>
@@ -37,12 +39,11 @@
       </v-col>
     </v-row>
     <v-row v-if='inspection!=null && inspection.model && isClassification(inspection.model.modelType) && selectedFilter===RowFilterType.CUSTOM'>
-      <v-col cols="12" md='3'>
-        <v-subheader class='pt-5'>Predicted value is between</v-subheader>
+      <v-col cols='12' md='3'>
+        <v-subheader class='pt-5 pl-0'>Predicted value is between</v-subheader>
       </v-col>
       <v-col cols='12' md='1'>
         <v-text-field
-
           :value='minThreshold'
           hide-details
           step='0.001'
@@ -50,7 +51,7 @@
           @change='(val)=>{this.minThreshold=val;}'
         ></v-text-field>
       </v-col>
-      <v-col cols="12" md='1'>
+      <v-col cols='12' md='1'>
         <v-subheader class='pt-5'>and</v-subheader>
       </v-col>
       <v-col cols='12' md='1'>
@@ -67,14 +68,15 @@
 
     <v-row v-if='selectedFilter===RowFilterType.CUSTOM && inspection.model && isClassification(inspection.model.modelType) '>
       <v-col cols='12' md='3'>
-        <MultiSelector :options='labels' :selected-options='targetLabel' label='Actual Labels' @update='(options)=>{this.targetLabel=options}'></MultiSelector>
+        <MultiSelector label='Actual Labels' :options='labels' :selected-options.sync='targetLabel'></MultiSelector>
       </v-col>
       <v-col cols='12' md='3'>
-        <MultiSelector :options='labels' :selected-options='predictedLabel' label='Predicted Labels' @update='(options)=>{this.predictedLabel=options}'></MultiSelector>
+        <MultiSelector label='Predicted Labels' :options='labels'
+                       :selected-options.sync='predictedLabel'></MultiSelector>
       </v-col>
     </v-row>
-    <v-row v-if='selectedFilter===RowFilterType.CUSTOM && inspection.model && isClassification(inspection.model.modelType) '>
-      <v-col class='pl-0 pt-5' cols="12" md='2'>
+    <v-row v-if='selectedFilter===RowFilterType.CUSTOM && isClassification(inspection.model.modelType) '>
+      <v-col cols='12' md='2' class='pl-0 pt-5'>
         <v-subheader>Probability of</v-subheader>
       </v-col>
       <v-col cols='12' md='3'>
@@ -84,8 +86,8 @@
           hide-details
         ></v-select>
       </v-col>
-      <v-col cols="12" md='2'>
-        <v-subheader class='justify-center pt-5 '>is between : </v-subheader>
+      <v-col cols='12' md='2'>
+        <v-subheader class='justify-center pt-5 '>is between :</v-subheader>
       </v-col>
       <v-col cols='12' md='2'>
         <v-text-field
@@ -97,8 +99,8 @@
           @change='(val)=>{this.minThreshold=val;}'
         ></v-text-field>
       </v-col>
-      <v-col cols="12" md='1'>
-        <v-subheader class='justify-center pt-5'> and </v-subheader>
+      <v-col cols='12' md='1'>
+        <v-subheader class='justify-center pt-5'> and</v-subheader>
       </v-col>
       <v-col cols='12' md='2'>
         <v-text-field
@@ -149,26 +151,25 @@ export default class RowList extends Vue {
   labels: string[] = [];
   predictedLabel: string[] = [];
   targetLabel: string[] = [];
-  minThreshold= null;
+  minThreshold = null;
   maxThreshold = null;
   inspection = {} as InspectionDTO;
-  allFilterTypes = Object.values(RowFilterType);
-  filterTypes = this.allFilterTypes;
-  selectedFilter = this.filterTypes[0];
+  filterTypes:any[]=[];
+  selectedFilter = null;
   regressionThreshold: number = 0.1;
-  regressionUnits = Object.keys(RegressionUnit);
   percentRegressionUnit = true;
   thresholdLabel: string = '';
-  minActualThreshold=null;
-  maxActualThreshold=null;
+  minActualThreshold = null;
+  maxActualThreshold = null;
+  classifFiltersMap = [ {out:RowFilterType.ALL, in:"All"},{out:RowFilterType.CORRECT,in:"Correct Predictions"},{out:RowFilterType.WRONG,in:"Incorrect Predictions"},{out:RowFilterType.BORDERLINE,in:"Borderline"},{out:RowFilterType.CUSTOM,in:"Custom"}];
+  regressionFiltersMap = [ {out:RowFilterType.ALL, in:"All"},{out:RowFilterType.CORRECT,in:"Closest predictions (top 15%)"},{out:RowFilterType.WRONG,in:"Most distant predictions (top 15%)"},{out:RowFilterType.CUSTOM,in:"Custom"}];
   isClassification = isClassification;
   RowFilterType = RowFilterType;
 
   async mounted() {
     await this.fetchDetails();
-    if (isClassification(this.inspection.model.modelType)) {
-      this.filterTypes = [RowFilterType.ALL, RowFilterType.CORRECT, RowFilterType.WRONG, RowFilterType.CUSTOM];
-    }
+    this.filterTypes = isClassification(this.inspection.model.modelType) ? this.classifFiltersMap : this.regressionFiltersMap
+    this.selectedFilter = this.filterTypes[0].out;
     this.thresholdLabel = this.labels[0];
     await this.fetchRowAndEmit(true);
     this.predictedLabel = [];
@@ -246,7 +247,7 @@ export default class RowList extends Vue {
         'maxThreshold': this.maxThreshold!,
         'targetLabel': this.targetLabel,
         'predictedLabel': this.predictedLabel,
-        'rowFilter': this.selectedFilter,
+        'rowFilter': this.selectedFilter!,
         'regressionUnit': this.percentRegressionUnit ? RegressionUnit.ABSDIFFPERCENT : RegressionUnit.ABSDIFF,
         'thresholdLabel': this.thresholdLabel
 
