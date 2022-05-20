@@ -4,6 +4,7 @@ import ai.giskard.domain.Project;
 import ai.giskard.domain.Role;
 import ai.giskard.domain.User;
 import ai.giskard.domain.ml.Dataset;
+import ai.giskard.domain.ml.Inspection;
 import ai.giskard.domain.ml.ProjectModel;
 import ai.giskard.domain.ml.TestSuite;
 import ai.giskard.repository.ml.DatasetRepository;
@@ -72,6 +73,8 @@ public interface GiskardMapper {
     default List<UserDTO> usersToUserDTOs(List<User> dtos) {
         return dtos.stream().filter(Objects::nonNull).map(this::userToUserDTO).collect(Collectors.toList());
     }
+
+    InspectionDTO inspectionToInspectionDTO(Inspection inspection);
 
     AdminUserDTO userToAdminUserDTO(User user);
 

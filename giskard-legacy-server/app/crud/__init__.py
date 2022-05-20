@@ -4,6 +4,7 @@ from .crud_project_model import project_model
 from .crud_datasets import dataset
 from .crud_feedback import feedback
 from .crud_reply import feedback_reply
+from .crud_inspection import inspection
 
 # For a new basic set of CRUD operations you could just do
 

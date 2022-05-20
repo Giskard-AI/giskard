@@ -15,3 +15,7 @@ export interface IModelMetadata {
   classification_labels: string[],
   classification_threshold: number
 }
+export interface RowDetails {
+  index: number;
+  item: any;
+}
