@@ -1,5 +1,5 @@
 <template>
-  <v-container fluid>
+  <v-container fluid v-if="inspection">
     <v-row
       no-gutters
       style='height: 60px;'
@@ -16,22 +16,24 @@
         <v-btn icon @click='next' :disabled='!canNext()'>
           <v-icon>mdi-skip-next</v-icon>
         </v-btn>
-        <span class='caption grey--text'>Entry #{{ totalRows == 0 ? 0 : rowNb+1 }} / {{ totalRows }}</span>
+        <span class='caption grey--text'>Entry #{{ totalRows === 0 ? 0 : rowNb+1 }} / {{ totalRows }}</span>
         <span style='margin-left: 15px' class='caption grey--text'>Row Index {{ originalData.Index +1 }}</span>
       </v-toolbar>
     </v-row>
 
-    <RowList ref='rowList' :datasetId='datasetId' :model-id='modelId'
-             :currentRowIdx='rowNb' :inspection-id='inspection' :shuffleMode='shuffleMode'
+    <RowList ref='rowList'
+             v-if="inspection"
+             :inspection='inspection'
+             :currentRowIdx='rowNb'
+             :shuffleMode='shuffleMode'
              @fetchedRow='getCurrentRow'
     />
 
     <Inspector class='px-0'
-               :modelId='modelId'
-               :datasetId='datasetId'
+               :model='inspection.model'
+               :dataset='inspection.dataset'
                :originalData='originalData'
                :inputData.sync='inputData'
-               :targetFeature='targetFeature'
                @reset='resetInput'
                @submitValueFeedback='submitValueFeedback'
                @submitVariationFeedback='submitValueVariationFeedback'
@@ -89,20 +91,18 @@
 </template>
 
 <script lang='ts'>
-import { Component, Prop, Vue } from 'vue-property-decorator';
+import {Component, Prop, Vue} from 'vue-property-decorator';
 import OverlayLoader from '@/components/OverlayLoader.vue';
 import PredictionResults from './PredictionResults.vue';
 import PredictionExplanations from './PredictionExplanations.vue';
 import TextExplanation from './TextExplanation.vue';
-import { api } from '@/api';
-import { readToken } from '@/store/main/getters';
-import { RowDetails } from '@/interfaces';
+import {api} from '@/api';
+import {readToken} from '@/store/main/getters';
 import FeedbackPopover from '@/components/FeedbackPopover.vue';
 import Inspector from './Inspector.vue';
 import Mousetrap from 'mousetrap';
 import RowList from '@/views/main/project/RowList.vue';
-import { RowFilterType } from '@/generated-sources';
-import { CreateFeedbackDTO } from '@/generated-sources';
+import {CreateFeedbackDTO, InspectionDTO} from '@/generated-sources';
 
 type CreatedFeedbackCommonDTO = {
   targetFeature: string;
@@ -124,10 +124,8 @@ type CreatedFeedbackCommonDTO = {
   }
 })
 export default class InspectorWrapper extends Vue {
-  @Prop({ required: true }) modelId!: number;
-  @Prop({ required: true }) datasetId!: number;
-  @Prop() targetFeature!: string;
-  @Prop() inspection!: any;
+  @Prop() inspectionId!: number;
+  inspection: InspectionDTO | null = null;
   mouseTrap = new Mousetrap();
   loadingData = false;
   inputData = {};
@@ -145,6 +143,7 @@ export default class InspectorWrapper extends Vue {
   totalRows = 0;
 
   async mounted() {
+    this.inspection = (await api.getInspection(this.inspectionId)).data;
   }
 
   private getCurrentRow(rowDetails, totalRows: number, hasFilterChanged: boolean) {
@@ -216,9 +215,9 @@ export default class InspectorWrapper extends Vue {
   get commonFeedbackData(): CreatedFeedbackCommonDTO {
     return {
       projectId: parseInt(this.$router.currentRoute.params.id),
-      modelId: this.modelId,
-      datasetId: this.datasetId,
-      targetFeature: this.targetFeature,
+      modelId: this.inspection!.model.id,
+      datasetId: this.inspection!.dataset.id,
+      targetFeature: this.inspection!.dataset.target,
       userData: JSON.stringify(this.inputData),
       originalData: JSON.stringify(this.originalData)
     };
@@ -281,7 +280,6 @@ export default class InspectorWrapper extends Vue {
 
 #feedback-card .v-card__title {
   font-size: 1.1rem;
-  padding: 0 12px;
-  padding-top: 8px;
+  padding: 8px 12px 0;
 }
 </style>

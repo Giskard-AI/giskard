@@ -2,8 +2,8 @@
 	<v-container fluid class="font-weight-light">
 		<p class="caption">
 			Project Unique Key: <strong>{{project.key}}</strong>
-			<br>Created by: <strong>{{ getUserFullDisplayName(project.owner_details) }}</strong>
-			<br>On: <strong>{{project.created_on.toLocaleDateString()}}</strong>
+			<br>Created by: <strong>{{ getUserFullDisplayName(project.owner) }}</strong>
+			<br>On: <strong>{{project.createdDate | date}}</strong>
 		</p>
 		<p v-show="project.description">{{project.description}}</p>
 		<v-divider class="my-4"></v-divider>
@@ -11,8 +11,8 @@
 			Guest Users
 		</div>
 		<div class="px-2">
-			<table v-if="project.guest_list.length">
-				<tr v-for="p in project.guest_list" :key="p.user_id">
+			<table v-if="project.guests.length">
+				<tr v-for="p in project.guests" :key="p.user_id">
 					<td class="caption pr-4">{{ getUserFullDisplayName(p) }}</td>
 					<td v-if="isProjectOwnerOrAdmin"><v-btn icon small color="accent" @click="cancelUserInvitation(p)"><v-icon small>person_remove</v-icon></v-btn></td>
 				</tr>

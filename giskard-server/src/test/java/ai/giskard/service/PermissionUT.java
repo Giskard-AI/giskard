@@ -1,6 +1,5 @@
 package ai.giskard.service;
 
-import ai.giskard.config.InitService;
 import ai.giskard.domain.Project;
 import ai.giskard.repository.ProjectRepository;
 import ai.giskard.security.AuthoritiesConstants;

@@ -23,7 +23,7 @@ export async function performApiActionWithNotif(store: Store<State>,
     const response = await apiAction();
     callbackFn();
     commitRemoveNotification(store, loadingNotification);
-    commitAddNotification(store, { content: response.data.msg, color: 'success'});
+    commitAddNotification(store, { content: response.data.message, color: 'success'});
   } catch (error) {
     commitRemoveNotification(store, loadingNotification);
     commitAddNotification(store, { content: error.response.data.detail, color: 'error' });

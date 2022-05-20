@@ -183,7 +183,7 @@ export default class Project extends Vue {
 	}
 
 	get isUserProjectOwner() {
-		return this.project && this.userProfile? this.project.owner_details.id == this.userProfile.id : false;
+		return this.project && this.userProfile? this.project.owner.id == this.userProfile.id : false;
 	}
 
 	private getUserFullDisplayName = getUserFullDisplayName
@@ -218,7 +218,7 @@ export default class Project extends Vue {
 		if (this.project) {
 			try {
 				await dispatchDeleteProject(this.$store, {id: this.project.id})
-				this.$router.push('/main/dashboard');
+        await this.$router.push('/main/dashboard');
 			} catch (e) {
 				console.error(e.message);
 			}
