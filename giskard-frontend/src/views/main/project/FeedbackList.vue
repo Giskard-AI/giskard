@@ -200,7 +200,7 @@ export default class FeedbackList extends Vue {
   }
 
   public async openFeedback(obj) {
-    this.$router.push({name: 'feedback-detail', params: {feedbackId: obj.id}})
+    await this.$router.push({name: 'feedback-detail', params: {feedbackId: obj.id}})
   }
 
 }

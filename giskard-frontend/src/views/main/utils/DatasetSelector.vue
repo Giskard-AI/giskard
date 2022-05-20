@@ -18,7 +18,7 @@ import Vue from "vue";
 import axios from "axios";
 import {apiUrlJava} from "@/env";
 import {Prop} from "vue-property-decorator";
-import { DatasetDTO, ModelDTO } from '@/generated-sources';
+import {DatasetDTO} from '@/generated-sources';
 
 @Component
 export default class DatasetSelector extends Vue {
@@ -36,7 +36,7 @@ export default class DatasetSelector extends Vue {
   }
 
   async mounted() {
-    this.projectDatasets = (await axios.get<Array<ModelDTO>>(`${apiUrlJava}/api/v2/project/${this.projectId}/datasets`)).data;
+    this.projectDatasets = (await axios.get<Array<DatasetDTO>>(`${apiUrlJava}/api/v2/project/${this.projectId}/datasets`)).data;
   }
 }
 </script>

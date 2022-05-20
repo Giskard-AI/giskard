@@ -1,27 +1,27 @@
 <template>
   <v-card class="mb-4">
-    <OverlayLoader v-show="loading" />
+    <OverlayLoader v-show="loading"/>
     <v-card-title>Result</v-card-title>
     <v-card-text class="text-center">
       <v-row v-if="prediction && isClassification(predictionTask)">
         <v-col
-          lg="8"
-          md="12"
-          sm="12"
-          xs="12"
-          v-if="
+            lg="8"
+            md="12"
+            sm="12"
+            xs="12"
+            v-if="
             resultProbabilities && Object.keys(resultProbabilities).length > 0
           "
         >
           <div>Probabilities</div>
-          <v-chart class="chart" :option="chartOptions" autoresize />
+          <v-chart class="chart" :option="chartOptions" autoresize/>
         </v-col>
         <v-col lg="4">
           <div class="mb-3">
             <div>Prediction</div>
             <div
-              class="text-h6"
-              :class="
+                class="text-h6"
+                :class="
                 !actual
                   ? 'info--text text--darken-2'
                   : prediction === actualForDisplay
@@ -40,7 +40,7 @@
             </div>
             <div class="caption">
               <div v-if="targetFeature">target: {{ targetFeature }}</div>
-              <div v-if="respMetadata && respMetadata.threshold">threshold: {{ respMetadata.threshold }}</div>
+              <div v-if="model && model.threshold">threshold: {{ model.threshold }}</div>
               <div v-if="actual">{{ labelsAndValues }}</div>
             </div>
           </div>
@@ -80,59 +80,56 @@
 import {Component, Prop, Vue, Watch} from "vue-property-decorator";
 import OverlayLoader from "@/components/OverlayLoader.vue";
 import {api} from "@/api";
-import {readToken} from "@/store/main/getters";
 import ECharts from "vue-echarts";
 import {use} from "echarts/core";
 import {BarChart} from "echarts/charts";
 import {CanvasRenderer} from "echarts/renderers";
 import {GridComponent} from "echarts/components";
-import {ModelMetadataDTO, ModelType, PredictionDTO} from "@/generated-sources";
+import {ModelDTO, ModelType, PredictionDTO} from "@/generated-sources";
 import {isClassification} from "@/ml-utils";
 
 use([CanvasRenderer, BarChart, GridComponent]);
 Vue.component("v-chart", ECharts);
 
 @Component({
-  components: { OverlayLoader }
+  components: {OverlayLoader}
 })
 export default class PredictionResults extends Vue {
-  @Prop({ required: true }) modelId!: number;
-  @Prop({ required: true }) predictionTask!: ModelType;
+  @Prop({required: true}) model!: ModelDTO;
+  @Prop({required: true}) predictionTask!: ModelType;
   @Prop() targetFeature!: string;
   @Prop() classificationLabels!: string[];
-  @Prop({ default: {} }) inputData!: object;
-  @Prop({ default: false }) modified!: boolean;
+  @Prop({default: {}}) inputData!: object;
+  @Prop({default: false}) modified!: boolean;
 
   prediction: string | number | undefined = "";
   resultProbabilities: object = {};
   loading: boolean = false;
   errorMsg: string = "";
-  respMetadata!: ModelMetadataDTO;
   isClassification = isClassification;
   ModelType = ModelType;
 
   async mounted() {
-    this.respMetadata = (await api.getModelMetadata(readToken(this.$store), this.modelId)).data
     await this.submitPrediction()
   }
 
-  @Watch("inputData", { deep: true })
+  @Watch("inputData", {deep: true})
   public async submitPrediction() {
     if (Object.keys(this.inputData).length) {
       try {
         this.loading = true;
         const predictionResult: PredictionDTO = (await api.predict(
-          this.modelId,
-          this.inputData
+            this.model.id,
+            this.inputData
         )).data
         this.prediction = predictionResult.prediction;
         this.$emit("result", this.prediction);
         this.resultProbabilities = predictionResult.probabilities
         // Sort the object by value - solution based on:
         // https://stackoverflow.com/questions/55319092/sort-a-javascript-object-by-key-or-value-es6
-        this.resultProbabilities = Object.entries(this.resultProbabilities )
-          .sort(([, v1], [, v2]) => +v1 - +v2)
-          .reduce((r, [k, v]) => ({ ...r, [k]: v }), {});
+        this.resultProbabilities = Object.entries(this.resultProbabilities)
+            .sort(([, v1], [, v2]) => +v1 - +v2)
+            .reduce((r, [k, v]) => ({...r, [k]: v}), {});
         this.errorMsg = "";
       } catch (error) {
         this.errorMsg = error.response.data.detail;
@@ -163,8 +160,8 @@ export default class PredictionResults extends Vue {
   get labelsAndValues() {
     if (this.classificationLabels)
       return this.classificationLabels
-        .map((e, idx) => `${idx}: ${e}`)
-        .join(", ");
+          .map((e, idx) => `${idx}: ${e}`)
+          .join(", ");
     else return "";
   }
 
@@ -186,9 +183,9 @@ export default class PredictionResults extends Vue {
             show: true,
             position: "right",
             formatter: (params) =>
-              params.value % 1 == 0
-                ? params.value
-                : params.value.toFixed(2).toLocaleString(),
+                params.value % 1 == 0
+                    ? params.value
+                    : params.value.toFixed(2).toLocaleString(),
           },
           data: Object.values(this.resultProbabilities!),
         },

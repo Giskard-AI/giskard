@@ -5,6 +5,8 @@ import ai.giskard.domain.ml.ModelType;
 import com.dataiku.j2ts.annotations.UIModel;
 import lombok.*;
 
+import java.util.List;
+
 @Getter
 @Setter
 @UIModel
@@ -14,8 +16,7 @@ public class ModelDTO extends FileDTO {
     private ModelLanguage language;
     private ModelType modelType;
     private Float threshold;
-    private String features;
-    private String target;
-    private String classificationLabels;
+    private List<String> featureNames;
+    private List<String> classificationLabels;
     private String requirementsFileName;
 }

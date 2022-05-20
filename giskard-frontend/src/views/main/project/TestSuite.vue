@@ -60,9 +60,6 @@ export default class TestSuite extends Vue {
   testSuite: TestSuiteDTO | null = null;
   savedTestSuite: TestSuiteDTO | null = null;
 
-  selectedModel: number | null = null;
-  selectedDataset: number | null = null;
-
   async activated() {
     await this.init();
   }

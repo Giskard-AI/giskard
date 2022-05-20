@@ -1,27 +1,28 @@
 <template>
-  <v-container style='margin-left:15px'>
+  <v-container style='margin-left:15px' v-if="inspection">
     <v-row>
       <v-col cols='12' md='3'>
         <v-select
-          :items='filterTypes'
-          label='Filter'
-          v-model='selectedFilter'
-          item-value="out"
-          item-text="in"
+            :items='filterTypes'
+            label='Filter'
+            v-model='selectedFilter'
+            item-value="out"
+            item-text="in"
         ></v-select>
       </v-col>
     </v-row>
-    <v-row v-if='inspection!=null && inspection.model && isClassification(inspection.model.modelType) && selectedFilter===RowFilterType.CUSTOM'>
+    <v-row
+        v-if='inspection.model && isClassification(inspection.model.modelType) && selectedFilter===RowFilterType.CUSTOM'>
       <v-col cols='12' md='3'>
         <v-subheader class='pt-5 pl-0'>Actual value is between</v-subheader>
       </v-col>
       <v-col cols='12' md='1'>
         <v-text-field
-          :value='minActualThreshold'
-          hide-details
-          step='0.001'
-          type='number'
-          @change='(val)=>{this.minActualThreshold=val;}'
+            :value='minActualThreshold'
+            hide-details
+            step='0.001'
+            type='number'
+            @change='(val)=>{this.minActualThreshold=val;}'
         >
         </v-text-field>
       </v-col>
@@ -30,25 +31,26 @@
       </v-col>
       <v-col cols='12' md='1'>
         <v-text-field
-          :value='maxActualThreshold'
-          hide-details
-          step='0.001'
-          type='number'
-          @change='(val)=>{this.maxActualThreshold=val;}'
+            :value='maxActualThreshold'
+            hide-details
+            step='0.001'
+            type='number'
+            @change='(val)=>{this.maxActualThreshold=val;}'
         ></v-text-field>
       </v-col>
     </v-row>
-    <v-row v-if='inspection!=null && inspection.model && isClassification(inspection.model.modelType) && selectedFilter===RowFilterType.CUSTOM'>
+    <v-row
+        v-if='inspection.model && isClassification(inspection.model.modelType) && selectedFilter===RowFilterType.CUSTOM'>
       <v-col cols='12' md='3'>
         <v-subheader class='pt-5 pl-0'>Predicted value is between</v-subheader>
       </v-col>
       <v-col cols='12' md='1'>
         <v-text-field
-          :value='minThreshold'
-          hide-details
-          step='0.001'
-          type='number'
-          @change='(val)=>{this.minThreshold=val;}'
+            :value='minThreshold'
+            hide-details
+            step='0.001'
+            type='number'
+            @change='(val)=>{this.minThreshold=val;}'
         ></v-text-field>
       </v-col>
       <v-col cols='12' md='1'>
@@ -56,22 +58,24 @@
       </v-col>
       <v-col cols='12' md='1'>
         <v-text-field
-          :value='maxThreshold'
-          hide-details
-          step='0.001'
-          type='number'
-          @change='(val)=>{this.maxThreshold=val;}'
+            :value='maxThreshold'
+            hide-details
+            step='0.001'
+            type='number'
+            @change='(val)=>{this.maxThreshold=val;}'
         ></v-text-field>
       </v-col>
     </v-row>
 
 
-    <v-row v-if='selectedFilter===RowFilterType.CUSTOM && inspection.model && isClassification(inspection.model.modelType) '>
+    <v-row
+        v-if='selectedFilter===RowFilterType.CUSTOM && inspection.model && isClassification(inspection.model.modelType) '>
       <v-col cols='12' md='3'>
-        <MultiSelector label='Actual Labels' :options='labels' :selected-options.sync='targetLabel'></MultiSelector>
+        <MultiSelector label='Actual Labels' :options='inspection.model.classificationLabels'
+                       :selected-options.sync='targetLabel'></MultiSelector>
       </v-col>
       <v-col cols='12' md='3'>
-        <MultiSelector label='Predicted Labels' :options='labels'
+        <MultiSelector label='Predicted Labels' :options='inspection.model.classificationLabels'
                        :selected-options.sync='predictedLabel'></MultiSelector>
       </v-col>
     </v-row>
@@ -81,9 +85,9 @@
       </v-col>
       <v-col cols='12' md='3'>
         <v-select
-          v-model='thresholdLabel'
-          :items='labels'
-          hide-details
+            v-model='thresholdLabel'
+            :items='inspection.model.classificationLabels'
+            hide-details
         ></v-select>
       </v-col>
       <v-col cols='12' md='2'>
@@ -91,12 +95,12 @@
       </v-col>
       <v-col cols='12' md='2'>
         <v-text-field
-          :value='minThreshold'
-          hide-details
-          label='Min Threshold'
-          step='0.001'
-          type='number'
-          @change='(val)=>{this.minThreshold=val;}'
+            :value='minThreshold'
+            hide-details
+            label='Min Threshold'
+            step='0.001'
+            type='number'
+            @change='(val)=>{this.minThreshold=val;}'
         ></v-text-field>
       </v-col>
       <v-col cols='12' md='1'>
@@ -104,12 +108,12 @@
       </v-col>
       <v-col cols='12' md='2'>
         <v-text-field
-          :value='maxThreshold'
-          hide-details
-          label='Max Threshold'
-          step='0.001'
-          type='number'
-          @change='(val)=>{this.maxThreshold=val;}'
+            :value='maxThreshold'
+            hide-details
+            label='Max Threshold'
+            step='0.001'
+            type='number'
+            @change='(val)=>{this.maxThreshold=val;}'
         ></v-text-field>
       </v-col>
     </v-row>
@@ -117,27 +121,24 @@
 </template>
 
 <script lang='ts'>
-import { Component, Prop, Vue, Watch } from 'vue-property-decorator';
-import { api } from '@/api';
-import { readToken } from '@/store/main/getters';
-import { commitAddNotification } from '@/store/main/mutations';
-import { Filter, InspectionDTO, ModelType, RegressionUnit, RowFilterType } from '@/generated-sources';
+import {Component, Prop, Vue, Watch} from 'vue-property-decorator';
+import {api} from '@/api';
+import {commitAddNotification} from '@/store/main/mutations';
+import {Filter, InspectionDTO, RegressionUnit, RowFilterType} from '@/generated-sources';
 import MultiSelector from '@/views/main/utils/MultiSelector.vue';
-import { isClassification } from '@/ml-utils';
+import {isClassification} from '@/ml-utils';
 
 /**
  * TODO: This class should be on the wrapper, no template for the moment
  */
 @Component({
-  components: { MultiSelector }
+  components: {MultiSelector}
 })
 export default class RowList extends Vue {
   //@Prop({ required: true }) selectedId!: number;
-  @Prop({ required: true }) datasetId!: number;
-  @Prop({ required: true }) modelId!: number;
-  @Prop({ required: true }) currentRowIdx!: number;
-  @Prop({ required: true }) inspectionId!: number;
-  @Prop({ required: true }) shuffleMode!: boolean;
+  @Prop({required: true}) inspection!: InspectionDTO;
+  @Prop({required: true}) currentRowIdx!: number;
+  @Prop({required: true}) shuffleMode!: boolean;
 
   rows: Record<string, any>[] = [];
   numberOfRows: number = 0;
@@ -148,32 +149,41 @@ export default class RowList extends Vue {
   loading = false;
   errorMsg: string = '';
   rowIdxInPage: number = 0;
-  labels: string[] = [];
   predictedLabel: string[] = [];
   targetLabel: string[] = [];
   minThreshold = null;
   maxThreshold = null;
-  inspection = {} as InspectionDTO;
-  filterTypes:any[]=[];
-  selectedFilter = null;
+  filterTypes: any[] = [];
+  selectedFilter = RowFilterType.ALL;
   regressionThreshold: number = 0.1;
   percentRegressionUnit = true;
-  thresholdLabel: string = '';
+  thresholdLabel?: string = undefined;
   minActualThreshold = null;
   maxActualThreshold = null;
-  classifFiltersMap = [ {out:RowFilterType.ALL, in:"All"},{out:RowFilterType.CORRECT,in:"Correct Predictions"},{out:RowFilterType.WRONG,in:"Incorrect Predictions"},{out:RowFilterType.BORDERLINE,in:"Borderline"},{out:RowFilterType.CUSTOM,in:"Custom"}];
-  regressionFiltersMap = [ {out:RowFilterType.ALL, in:"All"},{out:RowFilterType.CORRECT,in:"Closest predictions (top 15%)"},{out:RowFilterType.WRONG,in:"Most distant predictions (top 15%)"},{out:RowFilterType.CUSTOM,in:"Custom"}];
+  classificationFiltersMap = [
+    {out: RowFilterType.ALL, in: "All"},
+    {out: RowFilterType.CORRECT, in: "Correct Predictions"},
+    {out: RowFilterType.WRONG, in: "Incorrect Predictions"},
+    {out: RowFilterType.BORDERLINE, in: "Borderline"},
+    {out: RowFilterType.CUSTOM, in: "Custom"}
+  ];
+  regressionFiltersMap = [
+    {out: RowFilterType.ALL, in: "All"},
+    {out: RowFilterType.CORRECT, in: "Closest predictions (top 15%)"},
+    {out: RowFilterType.WRONG, in: "Most distant predictions (top 15%)"},
+    {out: RowFilterType.CUSTOM, in: "Custom"}
+  ];
   isClassification = isClassification;
   RowFilterType = RowFilterType;
 
   async mounted() {
-    await this.fetchDetails();
-    this.filterTypes = isClassification(this.inspection.model.modelType) ? this.classifFiltersMap : this.regressionFiltersMap
+    this.filterTypes = isClassification(this.inspection.model.modelType) ? this.classificationFiltersMap : this.regressionFiltersMap
     this.selectedFilter = this.filterTypes[0].out;
-    this.thresholdLabel = this.labels[0];
+    this.thresholdLabel = this.inspection.model.classificationLabels[0];
     await this.fetchRowAndEmit(true);
     this.predictedLabel = [];
     this.targetLabel = [];
+    // this.loaded = true;
   }
 
   @Watch('currentRowIdx')
@@ -181,19 +191,22 @@ export default class RowList extends Vue {
     await this.fetchRowAndEmit(false);
   }
 
-  @Watch('inspectionId')
+  @Watch('inspection.id')
   @Watch('regressionThreshold')
   @Watch('selectedFilter')
   @Watch('minThreshold')
   @Watch('maxThreshold')
   @Watch('minActualThreshold')
   @Watch('maxActualThreshold')
-  @Watch('targetLabel')
-  @Watch('predictedLabel')
   @Watch('shuffleMode')
   @Watch('percentRegressionUnit')
-  @Watch('thresholdLabel')
-  async reloadAlways() {
+  @Watch('targetLabel', {deep: true})
+  @Watch('predictedLabel', {deep: true})
+  @Watch('thresholdLabel' )
+  async reloadAlways(nv, ov) {
+    if (JSON.stringify(nv) === JSON.stringify(ov)) {
+      return;
+    }
     await this.fetchRowAndEmit(true);
 
   }
@@ -207,6 +220,7 @@ export default class RowList extends Vue {
   /**
    * Calling fetch rows if necessary, i.e. when start or end of the page
    * @param rowIdxInResults index of the row in the results
+   * @param hasFilterChanged
    */
   public async fetchRows(rowIdxInResults: number, hasFilterChanged: boolean) {
     const remainder = rowIdxInResults % this.itemsPerPage;
@@ -221,8 +235,7 @@ export default class RowList extends Vue {
    * @param rowIdxInResults row's index in
    */
   public async getRow(rowIdxInResults) {
-    const remainder = rowIdxInResults % this.itemsPerPage;
-    this.rowIdxInPage = remainder;
+    this.rowIdxInPage = rowIdxInResults % this.itemsPerPage;
     return this.rows[this.rowIdxInPage];
   }
 
@@ -235,7 +248,6 @@ export default class RowList extends Vue {
   public async fetchRowsByRange(minRange: number, maxRange: number) {
     try {
       const props = {
-        'modelId': this.modelId,
         'minRange': minRange,
         'maxRange': maxRange,
         'isRandom': this.shuffleMode
@@ -249,32 +261,15 @@ export default class RowList extends Vue {
         'predictedLabel': this.predictedLabel,
         'rowFilter': this.selectedFilter!,
         'regressionUnit': this.percentRegressionUnit ? RegressionUnit.ABSDIFFPERCENT : RegressionUnit.ABSDIFF,
-        'thresholdLabel': this.thresholdLabel
+        'thresholdLabel': this.thresholdLabel!
 
       };
-      const response = await api.getDataFilteredByRange(readToken(this.$store), this.inspectionId, props, filter);
+      const response = await api.getDataFilteredByRange(this.inspection.id, props, filter);
       this.rows = response.data.data;
       this.numberOfRows = response.data.rowNb;
     } catch (error) {
-      commitAddNotification(this.$store, { content: error.response.data.detail, color: 'error' });
-    }
-  }
-
-  public async fetchDetails() {
-    try {
-      const response = await api.getLabelsForTarget(readToken(this.$store), this.inspectionId);
-      const responseInspection = await api.getInspection(readToken(this.$store), this.inspectionId);
-      this.labels = response.data;
-      this.inspection = responseInspection.data;
-
-    } catch (error) {
-      commitAddNotification(this.$store, { content: error.response.data.detail, color: 'error' });
+      commitAddNotification(this.$store, {content: error.response.data.detail, color: 'error'});
     }
   }
 }
 </script>
-<style scoped>
-.v-slider {
-  margin-top: 20px !important;
-}
-</style>

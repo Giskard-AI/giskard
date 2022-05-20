@@ -117,7 +117,7 @@ public class ModelService {
 
         RunModelResponse response;
         try (MLWorkerClient client = mlWorkerService.createClient()) {
-            response = client.runModelForDataStream(Files.newInputStream(modelPath), Files.newInputStream(datasetPath), model.getTarget());
+            response = client.runModelForDataStream(Files.newInputStream(modelPath), Files.newInputStream(datasetPath), dataset.getTarget());
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

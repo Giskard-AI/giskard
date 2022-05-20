@@ -15,8 +15,6 @@ public class ModelMetadataDTO {
     private Long id;
     private ModelType modelType;
     private Float threshold;
-    private Map<String, String> features;
-    private String target;
+    private List<String> featureNames;
     private List<String> classificationLabels;
-
 }

@@ -32,11 +32,10 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue } from 'vue-property-decorator';
-import { dispatchSignupUser } from '@/store/main/actions';
-import { commitAddNotification } from '@/store/main/mutations';
-import { AdminUserDTO, ManagedUserVM } from '@/generated-sources';
-import AdminUserDTOWithPassword = AdminUserDTO.AdminUserDTOWithPassword;
+import {Component, Vue} from 'vue-property-decorator';
+import {dispatchSignupUser} from '@/store/main/actions';
+import {commitAddNotification} from '@/store/main/mutations';
+import {AdminUserDTO, ManagedUserVM} from '@/generated-sources';
 
 @Component
 export default class Login extends Vue {
@@ -89,7 +88,7 @@ export default class Login extends Vue {
         }
         try {
           await dispatchSignupUser(this.$store, {userData: profileCreate});
-          this.$router.push('/');
+          await this.$router.push('/');
         } catch (e) {
           this.errorMsg = e.message;
         }

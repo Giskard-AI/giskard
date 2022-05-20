@@ -10,4 +10,6 @@ import lombok.Setter;
 @NoArgsConstructor
 @UIModel
 public class DatasetDTO extends FileDTO {
+    private String target;
+    private String featureTypes;
 }

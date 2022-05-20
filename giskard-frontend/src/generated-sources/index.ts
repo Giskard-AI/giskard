@@ -19,6 +19,7 @@ export const GENERATED_MAPPING = {
     'ai.giskard.web.dto.user.RoleDTO' : 'RoleDTO',
     'ai.giskard.web.dto.ml.TestExecutionResultDTO' : 'TestExecutionResultDTO',
     'ai.giskard.web.dto.ml.TestDTO' : 'TestDTO',
+    'ai.giskard.web.dto.MessageDTO' : 'MessageDTO',
     'ai.giskard.web.dto.PredictionInputDTO' : 'PredictionInputDTO',
     'ai.giskard.web.dto.FeedbackDTO' : 'FeedbackDTO',
     'ai.giskard.domain.ml.table.RowFilterType' : 'RowFilterType',
@@ -75,6 +76,7 @@ export * from './ai/giskard/web/dto/ml/test-execution-status-dto';
 export * from './ai/giskard/web/dto/user/role-dto';
 export * from './ai/giskard/web/dto/ml/test-execution-result-dto';
 export * from './ai/giskard/web/dto/ml/test-dto';
+export * from './ai/giskard/web/dto/message-dto';
 export * from './ai/giskard/web/dto/prediction-input-dto';
 export * from './ai/giskard/web/dto/feedback-dto';
 export * from './ai/giskard/domain/ml/table/row-filter-type';

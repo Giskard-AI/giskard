@@ -9,9 +9,9 @@ export interface _FileDTO {
     createdDate: any /* TODO: Missing translation of java.time.Instant */;
     fileName: string;
     id: number;
-    location: string;
     name: string;
     project: ProjectDTO;
+    size: number;
 }
 
 export type FileDTO = DatasetDTO | ModelDTO;
