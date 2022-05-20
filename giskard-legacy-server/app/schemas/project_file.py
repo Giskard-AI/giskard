@@ -32,3 +32,9 @@ class ProjectFileMinimalSchema(BaseModel):
 
 class ProjectModelFileSchema(ProjectFileSchema):
     python_version: str
+
+
+class InspectionCreateSchema(BaseModel):
+    location: str
+    target: str
+    prediction_task: str

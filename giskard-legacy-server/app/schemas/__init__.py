@@ -8,7 +8,8 @@ from .project_file import (
     ProjectModelCreateSchema,
     ProjectFileSchema,
     ProjectModelFileSchema,
-    ProjectFileMinimalSchema
+    ProjectFileMinimalSchema,
+    InspectionCreateSchema
 )
 from .prediction_model import (
     ModelPredictionInput,
@@ -17,3 +18,4 @@ from .prediction_model import (
 )
 from .feedback import FeedbackCreateSchema, FeedbackSchemaForList, FeedbackSchemaSingle
 from .feedback_reply import FeedbackReplySchema, FeedbackReplyCreateSchema
+from .project import ProjectSchema, ProjectCreate, ProjectUpdate

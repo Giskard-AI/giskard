@@ -152,14 +152,17 @@ export const api = {
   async getFeaturesMetadata(token: string, modelId: number, datasetId: number) {
     return axios.get<IDataMetadata[]>(`${apiUrl}/api/v1/models/${modelId}/features/${datasetId}`, authHeaders(token));
   },
-  async getDataByRowId(token: string, datasetId: number, rowId: number) {
-    return axios.get(`${apiUrl}/api/v1/files/datasets/${datasetId}/row/${rowId}`, authHeaders(token));
+    async getDataFilteredByRange(token, inspectionId, props, filter) {
+        return axios.post(`${apiUrlJava}/api/v2/inspection/${inspectionId}/rowsFiltered`,filter,{ ...authHeaders(token),  params:props});
+            },
+  async getLabelsForTarget(token: string, inspectionId: number) {
+    return axios.get(`${apiUrlJava}/api/v2/inspection/${inspectionId}/labels`, authHeaders(token));
   },
-  async getDataRandom(token: string, datasetId: number) {
-    return axios.get(`${apiUrl}/api/v1/files/datasets/${datasetId}/row/random`, authHeaders(token));
-  },
-  async getProjectDatasets(token: string, id: number) {
+    async getProjectDatasets(token: string, id: number) {
     return axiosProject.get<FileDTO[]>(`/${id}/datasets`, authHeaders(token));
+  },
+  async getInspection(token: string, inspectionId: number) {
+    return axios.get(`${apiUrlJava}/api/v2/inspection/${inspectionId}`, authHeaders(token));
   },
   async uploadDataFile(token: string, projectId: number, fileData: any) {
     const formData = new FormData();
@@ -173,6 +176,12 @@ export const api = {
   },
   async predict(token: string, modelId: number, inputData: object) {
     return axios.post(`${apiUrl}/api/v1/models/${modelId}/predict`, { features: inputData }, authHeaders(token));
+    },
+    async predictDf(token: string, modelId: number, inputData: object) {
+        return axios.post(`${apiUrl}/api/v1/models/${modelId}/predicts`, { features: inputData }, authHeaders(token));
+    },
+    async prepareInspection(token: string, modelId: string, datasetId: string, target:string) {
+        return axios.get(`${apiUrl}/api/v1/files/inspect`,  {...authHeaders(token),params: { model_id: modelId,dataset_id:datasetId , target:target }});
   },
   async explain(token: string, modelId: number, datasetId: number, inputData: object) {
     return axios.post(`${apiUrl}/api/v1/models/${modelId}/${datasetId}/explain`, { features: inputData }, authHeaders(token));
