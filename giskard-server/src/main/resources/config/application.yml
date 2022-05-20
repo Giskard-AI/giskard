@@ -88,6 +88,11 @@ management:
             enabled: true
 
 spring:
+  servlet:
+    multipart:
+      max-file-size: 1GB
+      max-request-size: 10GB
+
   application:
     name: giskard
   profiles:
@@ -131,7 +136,7 @@ spring:
       hibernate.query.in_clause_parameter_padding: true
       hibernate.types.print.banner: false
     hibernate:
-      ddl-auto: none
+      ddl-auto: create
       naming:
         physical-strategy: org.springframework.boot.orm.jpa.hibernate.SpringPhysicalNamingStrategy
         implicit-strategy: org.springframework.boot.orm.jpa.hibernate.SpringImplicitNamingStrategy
@@ -217,7 +222,7 @@ application:
   ml-worker-port: 50051
   api-token-validity-in-days: 90
   invitation-token-validity-in-days: 3
-  bucketPath: giskard-legacy-server/app
   borderLineThreshold: 0.1
+  giskard-home: giskard-legacy-server/app/files-bucket
   regressionThreshold: 0.15
 

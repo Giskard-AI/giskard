@@ -164,7 +164,7 @@ liquibase {
             logLevel "info"
             classpath "$buildDir/classes/java/main"
 //            Andrey: removed foreignkeys because they blocked entity deletion
-            diffTypes "catalog,tables,functions,views,columns,indexes,primarykeys,uniqueconstraints,data,storedprocedure,triggers,sequences,databasePackage,databasePackageBody"
+//            diffTypes "catalog,tables,functions,views,columns,indexes,primarykeys,uniqueconstraints,data,storedprocedure,triggers,sequences,databasePackage,databasePackageBody"
 //            excludeObjects "sequence:hibernate_sequence,sequence_generator"
         }
     }
@@ -303,6 +303,9 @@ dependencies {
 
     implementation files("$projectDir/src/main/resources/third-party/j2ts-api.jar")
     implementation group: 'com.fasterxml.jackson.dataformat', name: 'jackson-dataformat-yaml', version: '2.13.2'
+    implementation group: 'com.github.luben', name: 'zstd-jni', version: '1.5.2-2'
+    implementation 'org.apache.commons:commons-compress:1.21'
+
 }
 
 protobuf {

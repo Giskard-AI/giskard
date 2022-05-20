@@ -2,7 +2,7 @@
 <div>
   <div>
     <span class="subtitle-2">{{isCurrentUser? 'me' : (author.displayName || author.user_id)}}</span>
-    <span class="caption font-weight-light mx-2">{{new Date(createdOn).toLocaleString()}}</span>
+    <span class="caption font-weight-light mx-2">{{createdOn | date}}</span>
   </div>
   <div style="white-space: break-spaces">{{content}}</div>
   <div v-if="replies">

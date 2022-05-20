@@ -8,6 +8,4 @@ export interface InspectionDTO {
     dataset: DatasetDTO;
     id: number;
     model: ModelDTO;
-    predictionTask: string;
-    target: string;
 }
