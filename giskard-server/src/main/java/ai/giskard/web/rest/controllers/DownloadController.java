@@ -7,6 +7,7 @@ import ai.giskard.domain.ml.ProjectModel;
 import ai.giskard.repository.ml.DatasetRepository;
 import ai.giskard.repository.ml.ModelRepository;
 import ai.giskard.service.DownloadService;
+import ai.giskard.service.FileLocationService;
 import ai.giskard.service.FileUploadService;
 import ai.giskard.web.dto.mapper.GiskardMapper;
 import ai.giskard.web.rest.errors.Entity;
@@ -30,29 +31,25 @@ public class DownloadController {
     final ModelRepository modelRepository;
     final DatasetRepository datasetRepository;
     final GiskardMapper giskardMapper;
-    final ApplicationProperties applicationProperties;
     final DownloadService downloadService;
     final FileUploadService fileUploadService;
+    final FileLocationService fileLocationService;
 
     @GetMapping("models/{id}")
     @Transactional
     public void downloadModel(@PathVariable @NotNull Long id,
                                                   HttpServletResponse response) throws IOException {
         ProjectModel model = modelRepository.findById(id).orElseThrow(()->new EntityNotFoundException(Entity.PROJECT_MODEL, id));
-        //TODO adapt with LocationService
-        String path = applicationProperties.getBucketPath() + "/files-bucket" + "/" + model.getProject().getKey() + "/" + model.getFileName() + ".zst";
-
-        downloadService.download(Path.of(path),response);
-
+        Path path = fileLocationService.resolvedModelPath(model.getProject().getKey(), model.getId());
+        downloadService.download(path,response);
     }
 
     @GetMapping("datasets/{id}")
     @Transactional
     public void downloadDataset(@PathVariable @NotNull Long id,HttpServletResponse response) throws IOException {
         Dataset dataset = datasetRepository.findById(id).orElseThrow(()->new EntityNotFoundException(Entity.DATASET, id));
-        //TODO adapt with LocationService
-        String path = applicationProperties.getBucketPath() + "/files-bucket" + "/" + dataset.getProject().getKey() + "/" + dataset.getFileName() + ".zst";
-        downloadService.download(Path.of(path),response);
+        Path path = fileLocationService.resolvedDatasetPath(dataset.getProject().getKey(), dataset.getId());
+        downloadService.download(path,response);
     }
 
 
