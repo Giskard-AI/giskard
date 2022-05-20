@@ -138,7 +138,7 @@ export default class EditUser extends Vue {
       }
       try {
         await dispatchUpdateUser(this.$store, { user: updatedProfile });
-        this.$router.push('/main/admin/users');
+        await this.$router.push('/main/admin/users');
       } catch (e) {
         console.error(e.message);
       }

@@ -77,7 +77,7 @@ export default class UserProfileEdit extends Vue {
       const token = this.checkToken();
       if (token) {
         await dispatchResetPassword(this.$store, { token, password: this.password1 });
-        this.$router.push('/');
+        await this.$router.push('/');
       }
     });
   }

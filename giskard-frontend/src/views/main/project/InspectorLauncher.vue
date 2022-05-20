@@ -11,30 +11,15 @@
               v-for="n in datasets"
               :key="n.id"
               :label="n.name"
-              :value="n.id"
+              :value="n"
           ></v-radio>
         </v-radio-group>
       </div>
       <div v-else>No dataset uploaded yet on this project.</div>
     </v-card-text>
-    <!--          <v-card-actions class="justify-end">-->
-    <!--            <v-btn text @click="reset()"> Cancel </v-btn>-->
-    <!--            <v-btn-->
-    <!--              color="primary"-->
-    <!--              @click="-->
-    <!--                step++;-->
-    <!--                loadDatasetFeatures();-->
-    <!--              "-->
-    <!--              :disabled="!datasetSelected"-->
-    <!--            >-->
-    <!--              Continue-->
-    <!--            </v-btn>-->
-    <!--          </v-card-actions>-->
     <v-card-actions>
-      <!--            <v-btn text @click="step&#45;&#45;">Back</v-btn>-->
       <v-btn text @click="reset()"> Cancel </v-btn>
       <v-spacer></v-spacer>
-      <!--            <v-btn text @click="targetFeature = null">Clear</v-btn>-->
       <v-btn
           color="primary"
           @click="launchInspector()"
@@ -48,12 +33,12 @@
 </template>
 
 <script lang="ts">
-import { Component, Emit, Prop, Vue } from 'vue-property-decorator';
+import {Component, Emit, Prop, Vue} from 'vue-property-decorator';
 import OverlayLoader from '@/components/OverlayLoader.vue';
-import { readToken } from '@/store/main/getters';
-import { commitAddNotification } from '@/store/main/mutations';
-import { api } from '@/api';
-import {FileDTO, ModelDTO, ModelMetadataDTO} from '@/generated-sources';
+import {readToken} from '@/store/main/getters';
+import {commitAddNotification} from '@/store/main/mutations';
+import {api} from '@/api';
+import {DatasetDTO, ModelDTO} from '@/generated-sources';
 
 @Component({
   components: { OverlayLoader }
@@ -63,13 +48,13 @@ export default class InspectorLauncher extends Vue {
   @Prop({ required: true }) model!: ModelDTO;
   loading = false;
   step = 1;
-  datasets: FileDTO[] = [];
-  datasetSelected: number | null = null;
+  datasets: DatasetDTO[] = [];
+  datasetSelected: DatasetDTO | null = null;
   datasetFeatures: string[] = [];
   errorLoadingFeatures: string | null = null;
 
   public async mounted() {
-    this.loadDatasets();
+    await this.loadDatasets();
   }
 
   @Emit('cancel')
@@ -92,38 +77,9 @@ export default class InspectorLauncher extends Vue {
     this.loading = false;
   }
 
-  public async loadDatasetFeatures() {
-    if (this.datasetSelected) {
-      try {
-        this.loading = true;
-        const response = await api.peekDataFile(
-          this.datasetSelected
-        );
-        const headers = JSON.parse(response.data)['schema']['fields'];
-        this.datasetFeatures = headers
-          .map((e) => e['name'].trim())
-          .filter((e) => e != 'index');
-      } catch (error) {
-        commitAddNotification(this.$store, {
-          content: error.response.data.detail,
-          color: 'error'
-        });
-        this.errorLoadingFeatures = error.response.data.detail;
-      } finally {
-        this.loading = false;
-      }
-    }
-  }
-
   public async launchInspector() {
-    const inspection = await api.prepareInspection({datasetId: this.datasetSelected!, modelId: this.model.id});
-    const query = {
-      model: this.model.id.toString(),
-      dataset: this.datasetSelected?.toString(),
-      target: this.model.target,
-      inspection:inspection.data.id
-    };
-    this.$router.push({ name: 'project-inspector', query});
+    const inspection = await api.prepareInspection({datasetId: this.datasetSelected!.id, modelId: this.model.id});
+    await this.$router.push({ name: 'project-inspector', params: {inspectionId: inspection.data.id}});
     this.reset();
   }
 }

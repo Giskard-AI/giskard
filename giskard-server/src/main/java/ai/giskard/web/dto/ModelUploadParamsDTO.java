@@ -9,6 +9,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.List;
+
 @UIModel
 @Getter
 @Setter
@@ -17,17 +19,9 @@ public class ModelUploadParamsDTO {
     private String name;
     private String projectKey;
     private String languageVersion;
-    private ModelType modelType;
+    private String modelType;
     private Float threshold;
-    private String features;
-    private String target;
+    private List<String> featureNames;
     private ModelLanguage language;
-    private String classificationLabels;
-
-    public void setClassificationLabels(Object obj) throws JsonProcessingException {
-        this.classificationLabels = new ObjectMapper().writeValueAsString(obj);
-    }
-    public void setFeatures(Object obj) throws JsonProcessingException {
-        this.features = new ObjectMapper().writeValueAsString(obj);
-    }
+    private List<String> classificationLabels;
 }

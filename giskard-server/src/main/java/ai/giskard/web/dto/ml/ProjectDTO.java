@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.validation.constraints.NotNull;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -16,21 +17,13 @@ import java.util.List;
 @NoArgsConstructor
 @UIModel
 public class ProjectDTO {
-    @Getter
     @NotNull
     private Long id;
-    @Getter
     @NotNull
     private String name;
-    @Getter
-    @JsonProperty("owner_details")
     private UserDTO owner;
-    @Getter
     private String key;
-    @Getter
-    @JsonProperty("guest_list")
+    private String description;
     private List<UserDTO> guests;
-    @Getter
-    @JsonProperty("created_on")
-    private LocalDateTime createdOn;
+    private Instant createdDate;
 }
