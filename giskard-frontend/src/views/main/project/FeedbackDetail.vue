@@ -16,9 +16,9 @@
                       <div class="caption font-weight-light">Sent On</div>
                       <div class="subtitle-2">{{ data.createdOn | date }}</div>
                       <div class="caption font-weight-light">Model</div>
-                      <div class="subtitle-2">{{ data.model.file_name }}</div>
+                      <div class="subtitle-2">{{ data.model.fileName }}</div>
                       <div class="caption font-weight-light">Dataset File</div>
-                      <div class="subtitle-2">{{ data.dataset.file_name }}</div>
+                      <div class="subtitle-2">{{ data.dataset.fileName }}</div>
                     </v-col>
                     <v-col>
                       <div class="caption font-weight-light">Feedback Type</div>
@@ -66,11 +66,10 @@
     </v-tab-item>
     <v-tab-item class="height85vh scrollable">
       <Inspector
-          :modelId="data.model.id"
-          :datasetId="data.dataset.id"
+          :model="data.model"
+          :dataset="data.dataset"
           :originalData="JSON.parse(data.originalData)"
           :inputData="JSON.parse(data.userData)"
-          :targetFeature="data.targetFeature"
           :isMiniMode="true"
           @reset="resetInput"
       />

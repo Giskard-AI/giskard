@@ -7,25 +7,23 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import javax.persistence.CascadeType;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.OneToMany;
+import javax.persistence.*;
 import java.util.HashSet;
 import java.util.Set;
 
 @Entity(name = "datasets")
 @NoArgsConstructor
+@Getter
 public class Dataset extends ProjectFile {
-    @Getter
     @Setter
     private String name;
 
-//    @Getter
-//    @Setter
-//    private String inputTypes;
+    @Column(columnDefinition = "VARCHAR")
+    @Setter
+    private String featureTypes;
+    @Setter
+    private String target;
 
-    @Getter
     @Setter
     @OneToMany(mappedBy = "dataset", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JsonIgnore

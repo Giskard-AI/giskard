@@ -10,12 +10,10 @@ import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
-import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -23,7 +21,7 @@ import java.util.Set;
 @NoArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
 @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
-public class Project {
+public class Project extends AbstractAuditingEntity {
     @Getter
     @Setter
     @Id
@@ -43,12 +41,6 @@ public class Project {
     @Getter
     @Setter
     private String description;
-
-    @Getter
-    @Setter
-    @CreatedDate
-    @Column(name = "created_on", updatable = false)
-    private LocalDateTime createdOn;
 
     @Getter
     @Setter

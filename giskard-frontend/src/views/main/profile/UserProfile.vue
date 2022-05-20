@@ -83,13 +83,13 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue } from 'vue-property-decorator';
-import { readUserProfile, readToken } from '@/store/main/getters';
-import { api } from '@/api';
-import { commitAddNotification, commitRemoveNotification } from '@/store/main/mutations';
-import { dispatchUpdateUserProfile } from '@/store/main/actions';
+import {Component, Vue} from 'vue-property-decorator';
+import {readToken, readUserProfile} from '@/store/main/getters';
+import {api} from '@/api';
+import {commitAddNotification, commitRemoveNotification} from '@/store/main/mutations';
+import {dispatchUpdateUserProfile} from '@/store/main/actions';
 import ButtonModalConfirmation from '@/components/ButtonModalConfirmation.vue';
-import { AdminUserDTO, UpdateMeDTO, UserDTO } from '@/generated-sources';
+import {UpdateMeDTO} from '@/generated-sources';
 
 @Component({
   components: {

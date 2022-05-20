@@ -2,10 +2,13 @@ package ai.giskard.service;
 
 import ai.giskard.domain.Project;
 import ai.giskard.domain.ml.Dataset;
+import ai.giskard.domain.ml.ModelType;
 import ai.giskard.domain.ml.ProjectModel;
 import ai.giskard.repository.ProjectRepository;
+import ai.giskard.repository.UserRepository;
 import ai.giskard.repository.ml.DatasetRepository;
 import ai.giskard.repository.ml.ModelRepository;
+import ai.giskard.security.JSON;
 import ai.giskard.web.dto.ModelUploadParamsDTO;
 import ai.giskard.web.dto.mapper.GiskardMapper;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +24,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.util.Map;
 
 import static ai.giskard.service.FileLocationService.createZSTname;
 
@@ -28,6 +35,7 @@ import static ai.giskard.service.FileLocationService.createZSTname;
 @RequiredArgsConstructor
 public class FileUploadService {
     final ModelRepository modelRepository;
+    final UserRepository userRepository;
     final GiskardMapper giskardMapper;
 
     final ProjectService projectService;
@@ -43,15 +51,16 @@ public class FileUploadService {
         Path projectModelsPath = locationService.modelsDirectory(project.getKey());
         createOrEnsureOutputDirectory(projectModelsPath);
 
-        ProjectModel model = giskardMapper.modelUploadParamsDTOtoProjectModel(modelParams);
-        model.setProject(project);
+        ProjectModel model = createProjectModel(modelParams);
+
         // first save to get ID that will be used in the filenames
         ProjectModel savedModel = modelRepository.save(model);
 
         String modelFilename = createZSTname("model_", savedModel.getId());
         Path modelFilePath = projectModelsPath.resolve(modelFilename);
         try {
-            modelStream.transferTo(Files.newOutputStream(modelFilePath));
+            long size = modelStream.transferTo(Files.newOutputStream(modelFilePath));
+            model.setSize(size);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -66,6 +75,46 @@ public class FileUploadService {
         }
         model.setRequirementsFileName(requirementsFilename);
         return modelRepository.save(model);
+    }
+
+    private ProjectModel createProjectModel(ModelUploadParamsDTO modelParams) {
+        ProjectModel model = new ProjectModel();
+        model.setName(nameOrDefault(modelParams.getName(), "Model"));
+        model.setProject(projectRepository.getOneByKey(modelParams.getProjectKey()));
+        model.setLanguageVersion(modelParams.getLanguageVersion());
+        model.setLanguage(modelParams.getLanguage());
+        model.setModelType(getModelType(modelParams));
+        model.setThreshold(modelParams.getThreshold());
+        model.setFeatureNames(JSON.toJSON(modelParams.getFeatureNames()));
+        model.setClassificationLabels(JSON.toJSON(modelParams.getClassificationLabels()));
+        return model;
+    }
+
+    private String nameOrDefault(String name, String entity) {
+        if (name != null) {
+            return name;
+        }
+        DateTimeFormatter dateTimeFormat = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm.ss").withZone(ZoneId.systemDefault());
+        return String.format("%s - %s", entity, dateTimeFormat.format(Instant.now()));
+    }
+
+    private ModelType getModelType(ModelUploadParamsDTO modelParams) {
+        ModelType modelType;
+        switch (modelParams.getModelType().toLowerCase().trim()) {
+            case "classification":
+                if (modelParams.getClassificationLabels().size() > 2) {
+                    modelType = ModelType.MULTICLASS_CLASSIFICATION;
+                } else {
+                    modelType = ModelType.BINARY_CLASSIFICATION;
+                }
+                break;
+            case "regression":
+                modelType = ModelType.REGRESSION;
+                break;
+            default:
+                throw new IllegalArgumentException("Invalid model type: %s, supported values are \"classification\" or \"regression\"");
+        }
+        return modelType;
     }
 
     private void createOrEnsureOutputDirectory(Path outputPath) {
@@ -94,19 +143,22 @@ public class FileUploadService {
 
     @PreAuthorize("@permissionEvaluator.canWriteProject( #project.id)")
     @Transactional
-    public Dataset uploadDataset(Project project, String datasetName, InputStream inputStream) {
+    public Dataset uploadDataset(Project project, String datasetName, Map<String, String> featureTypes, String target, InputStream inputStream) {
         Path datasetPath = locationService.datasetsDirectory(project.getKey());
         createOrEnsureOutputDirectory(datasetPath);
 
         Dataset dataset = new Dataset();
-        dataset.setName(datasetName);
+        dataset.setName(nameOrDefault(datasetName, "Dataset"));
         dataset.setProject(project);
+        dataset.setFeatureTypes(JSON.toJSON(featureTypes));
+        dataset.setTarget(target);
         dataset = datasetRepository.save(dataset);
 
         String fileName = createZSTname("data_", dataset.getId());
         dataset.setFileName(fileName);
         try {
-            inputStream.transferTo(Files.newOutputStream(datasetPath.resolve(fileName)));
+            long size = inputStream.transferTo(Files.newOutputStream(datasetPath.resolve(fileName)));
+            dataset.setSize(size);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

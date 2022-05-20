@@ -1,20 +1,25 @@
 import axios from 'axios';
 import {apiUrl, apiUrlJava} from '@/env';
-import {IDataMetadata, IModelMetadata} from './interfaces';
+import {IDataMetadata} from './interfaces';
 import {getLocalToken} from '@/utils';
 import {
   AdminUserDTO,
   AppConfigDTO,
   CodeTestCollection,
   CreateFeedbackDTO,
-  CreateFeedbackReplyDTO, ExplainResponseDTO,
+  CreateFeedbackReplyDTO,
+  DatasetDTO,
+  ExplainResponseDTO,
   FeedbackDTO,
   FeedbackMinimalDTO,
-  FileDTO, InspectionCreateDTO,
+  InspectionCreateDTO,
+  InspectionDTO,
   JWTToken,
   ManagedUserVM,
-  ModelDTO, ModelMetadataDTO,
-  PasswordResetRequest, PredictionDTO,
+  ModelDTO,
+  ModelMetadataDTO,
+  PasswordResetRequest,
+  PredictionDTO,
   ProjectDTO,
   ProjectPostDTO,
   RoleDTO,
@@ -160,20 +165,20 @@ export const api = {
     async peekDataFile(datasetId: number) {
         return axios.get(`${apiUrlJava}/api/v2/dataset/${datasetId}/rows`, {params: {offset: 0, size: 10}});
     },
-  async getFeaturesMetadata(token: string, modelId: number, datasetId: number) {
-    return axios.get<IDataMetadata[]>(`${apiUrl}/api/v1/models/${modelId}/features/${datasetId}`, authHeaders(token));
+  async getFeaturesMetadata(modelId: number, datasetId: number) {
+    return axios.get<IDataMetadata[]>(`${apiUrl}/api/v1/models/${modelId}/features/${datasetId}`);
   },
-    async getDataFilteredByRange(token, inspectionId, props, filter) {
-        return axios.post(`${apiUrlJava}/api/v2/inspection/${inspectionId}/rowsFiltered`,filter,{ ...authHeaders(token),  params:props});
+    async getDataFilteredByRange(inspectionId, props, filter) {
+        return axios.post(`${apiUrlJava}/api/v2/inspection/${inspectionId}/rowsFiltered`,filter,{params:props});
             },
   async getLabelsForTarget(token: string, inspectionId: number) {
     return axios.get(`${apiUrlJava}/api/v2/inspection/${inspectionId}/labels`, authHeaders(token));
   },
     async getProjectDatasets(token: string, id: number) {
-    return axiosProject.get<FileDTO[]>(`/${id}/datasets`, authHeaders(token));
+    return axiosProject.get<DatasetDTO[]>(`/${id}/datasets`, authHeaders(token));
   },
-  async getInspection(token: string, inspectionId: number) {
-    return axios.get(`${apiUrlJava}/api/v2/inspection/${inspectionId}`, authHeaders(token));
+  async getInspection(inspectionId: number) {
+    return axios.get<InspectionDTO>(`${apiUrlJava}/api/v2/inspection/${inspectionId}`);
   },
   async uploadDataFile(token: string, projectKey: string, fileData: any) {
     const formData = new FormData();
