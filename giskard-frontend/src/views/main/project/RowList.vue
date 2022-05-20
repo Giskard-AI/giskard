@@ -11,7 +11,7 @@
         ></v-select>
       </v-col>
     </v-row>
-    <v-container v-if='inspection!=null && inspection.predictionTask!="classification" && selectedFilter=="CUSTOM"'>
+    <v-container v-if='inspection!=null && isClassification(inspection.model.modelType) && selectedFilter===RowFilterType.CUSTOM'>
       <v-row>
         <v-col cols='12' md='3'>
           <v-subheader class='pt-5 pl-0'>Actual value is between</v-subheader>
@@ -95,7 +95,7 @@
       </v-row>
     </v-container>
 
-    <v-container v-if='selectedFilter=="CUSTOM" && inspection.predictionTask=="classification" '>
+    <v-container v-if='selectedFilter===RowFilterType.CUSTOM && isClassification(inspection.model.modelType) '>
       <v-row>
         <v-col cols='12' md='3'>
           <MultiSelector label='Actual Labels' :options='labels' :selected-options.sync='targetLabel'></MultiSelector>
@@ -157,7 +157,7 @@ import { Component, Prop, Vue, Watch } from 'vue-property-decorator';
 import { api } from '@/api';
 import { readToken } from '@/store/main/getters';
 import { commitAddNotification } from '@/store/main/mutations';
-import { Filter, InspectionDTO, ModelType, RegressionUnit, RowFilterType } from '@/generated-sources';
+import { Filter, InspectionDTO, RegressionUnit, RowFilterType } from '@/generated-sources';
 import MultiSelector from '@/views/main/utils/MultiSelector.vue';
 import { isClassification } from '@/ml-utils';
 
