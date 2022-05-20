@@ -222,7 +222,6 @@ application:
   ml-worker-port: 50051
   api-token-validity-in-days: 90
   invitation-token-validity-in-days: 3
-  bucketPath: giskard-legacy-server/app
   borderLineThreshold: 0.1
   giskard-home: giskard-legacy-server/app/files-bucket
   regressionThreshold: 0.15

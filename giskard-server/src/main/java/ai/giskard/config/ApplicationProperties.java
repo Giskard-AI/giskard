@@ -20,7 +20,6 @@ public class ApplicationProperties {
     private int mlWorkerPort;
     private int apiTokenValidityInDays;
     private int invitationTokenValidityInDays;
-    private String bucketPath;
     private Double borderLineThreshold;
     private Double regressionThreshold;
 

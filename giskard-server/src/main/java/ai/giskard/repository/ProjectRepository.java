@@ -20,6 +20,7 @@ public interface ProjectRepository extends JpaRepository<Project, Long> {
     Project getOneByOwner_Login(String login);
 
     Project getOneByName(String name);
+    Project getOneByKey(String key);
 
     Optional<Project> findOneByName(String name);
 

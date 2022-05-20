@@ -9,9 +9,13 @@ import ai.giskard.domain.ml.ProjectModel;
 import ai.giskard.domain.ml.TestSuite;
 import ai.giskard.repository.ml.DatasetRepository;
 import ai.giskard.repository.ml.ModelRepository;
+import ai.giskard.web.dto.ExplainResponseDTO;
+import ai.giskard.web.dto.ModelMetadataDTO;
+import ai.giskard.web.dto.ModelUploadParamsDTO;
 import ai.giskard.web.dto.ml.*;
 import ai.giskard.web.dto.user.AdminUserDTO;
 import ai.giskard.web.dto.user.UserDTO;
+import ai.giskard.worker.ExplainResponse;
 import org.mapstruct.*;
 
 import java.util.Collections;
@@ -20,8 +24,8 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-@Mapper(componentModel = "spring",unmappedTargetPolicy = ReportingPolicy.IGNORE,
-    uses = {DatasetRepository.class, ModelRepository.class})
+@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE,
+    uses = {DatasetRepository.class, ModelRepository.class, SimpleJSONMapper.class})
 public interface GiskardMapper {
     default Set<String> roleNames(Set<Role> value) {
         return value.stream().map(Role::getName).collect(Collectors.toSet());
@@ -59,6 +63,8 @@ public interface GiskardMapper {
 
     Dataset datasetDTOtoDataset(DatasetDTO dto);
 
+    DatasetDTO datasetToDatasetDTO(Dataset dataset);
+
     List<TestSuiteDTO> testSuitesToTestSuiteDTOs(List<TestSuite> testSuites);
 
     @Mappings({
@@ -86,4 +92,20 @@ public interface GiskardMapper {
 
     User userFromId(Long id);
 
+    ProjectModel modelUploadParamsDTOtoProjectModel(ModelUploadParamsDTO dto);
+
+    //
+    //default String serializeListOfStrings(List<String> list) throws JsonProcessingException {
+    //    return new ObjectMapper().writeValueAsString(list);
+    //}
+    //
+    //default String serializeMapStringStringToString(Map<String, String> map) throws JsonProcessingException {
+    //    return new ObjectMapper().writeValueAsString(map);
+    //}
+    //
+    @Mappings({
+        @Mapping(source = "classificationLabels", target = "classificationLabels", qualifiedByName = "SimpleJSON"),
+        @Mapping(source = "features", target = "features", qualifiedByName = "SimpleJSON"),
+    })
+    ModelMetadataDTO modelToModelMetadataDTO(ProjectModel model);
 }

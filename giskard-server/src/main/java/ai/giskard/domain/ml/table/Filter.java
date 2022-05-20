@@ -32,4 +32,8 @@ public class Filter {
     private Float maxLabelThreshold;
 
     private String regressionUnit;
+
+    private Float minDiffThreshold;
+
+    private Float maxDiffThreshold;
 }

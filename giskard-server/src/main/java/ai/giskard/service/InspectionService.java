@@ -7,7 +7,10 @@ import ai.giskard.repository.InspectionRepository;
 import ai.giskard.repository.UserRepository;
 import ai.giskard.repository.ml.DatasetRepository;
 import ai.giskard.repository.ml.ModelRepository;
+import ai.giskard.security.PermissionEvaluator;
+import ai.giskard.web.dto.mapper.SimpleJSONMapper;
 import ai.giskard.web.rest.errors.EntityNotFoundException;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,10 +25,8 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStreamReader;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 
-import static ai.giskard.domain.ml.PredictionType.CLASSIFICATION;
 import static ai.giskard.web.rest.errors.Entity.INSPECTION;
 
 @Service
@@ -39,7 +40,8 @@ public class InspectionService {
     final InspectionRepository inspectionRepository;
     final DatasetService datasetService;
     final ApplicationProperties applicationProperties;
-
+    final PermissionEvaluator permissionEvaluator;
+    final FileLocationService fileLocationService;
 
     public Table getTableFromBucketFile(String location) throws FileNotFoundException {
         InputStreamReader reader = new InputStreamReader(
@@ -48,42 +50,48 @@ public class InspectionService {
     }
 
     private Double getThresholdForRegression(DoubleColumn _column) {
-        DoubleColumn column=_column.copy();
+        DoubleColumn column = _column.copy();
         column.sortAscending();
         int maxIndex = (int) Math.round(applicationProperties.getRegressionThreshold() * column.size());
         return column.get(maxIndex);
     }
 
     private Selection getSelectionRegression(Inspection inspection, Filter filter) throws FileNotFoundException {
-        Table calculatedTable = getTableFromBucketFile(getCalculatedPath(inspection.getId()).toString());
-        calculatedTable.addColumns(IntColumn.indexColumn("Index", calculatedTable.rowCount(), 0));
+        Table calculatedTable = getTableFromBucketFile(getCalculatedPath(inspection).toString());
         Selection selection;
         Double threshold;
-        DoubleColumn column = calculatedTable.doubleColumn("absDiffPercent");
+        DoubleColumn absDiffPercentColumn = calculatedTable.doubleColumn("absDiffPercent");
+        DoubleColumn diffPercent = calculatedTable.doubleColumn("diffPercent");
         switch (filter.getRowFilter()) {
             case CORRECT:
-                threshold = getThresholdForRegression(column);
-                selection = calculatedTable.doubleColumn("absDiffPercent").isLessThanOrEqualTo(threshold);
+                threshold = getThresholdForRegression(absDiffPercentColumn);
+                selection = absDiffPercentColumn.isLessThanOrEqualTo(threshold);
                 break;
             case WRONG:
-                threshold = getThresholdForRegression(column);
-                selection = calculatedTable.doubleColumn("absDiffPercent").isGreaterThanOrEqualTo(threshold);
+                threshold = getThresholdForRegression(absDiffPercentColumn);
+                selection = absDiffPercentColumn.isGreaterThanOrEqualTo(threshold);
                 break;
             case CUSTOM:
                 DoubleColumn prediction = calculatedTable.doubleColumn(0);
-                DoubleColumn target = calculatedTable.numberColumn("target").asDoubleColumn();
-                selection=prediction.isNotMissing();
-                if (filter.getMinThreshold()!= null){
-                    selection=selection.and(prediction.isGreaterThanOrEqualTo(filter.getMinThreshold()));
+                DoubleColumn target = calculatedTable.numberColumn(1).asDoubleColumn();
+                selection = prediction.isNotMissing();
+                if (filter.getMinThreshold() != null) {
+                    selection = selection.and(prediction.isGreaterThanOrEqualTo(filter.getMinThreshold()));
                 }
-                if (filter.getMaxThreshold()!= null){
-                    selection=selection.and(prediction.isLessThanOrEqualTo(filter.getMaxThreshold()));
+                if (filter.getMaxThreshold() != null) {
+                    selection = selection.and(prediction.isLessThanOrEqualTo(filter.getMaxThreshold()));
                 }
-                if (filter.getMinLabelThreshold()!= null){
-                    selection=selection.and(target.isGreaterThanOrEqualTo(filter.getMinLabelThreshold()));
+                if (filter.getMinLabelThreshold() != null) {
+                    selection = selection.and(target.isGreaterThanOrEqualTo(filter.getMinLabelThreshold()));
                 }
-                if (filter.getMaxLabelThreshold()!= null){
-                    selection=selection.and(target.isLessThanOrEqualTo(filter.getMaxLabelThreshold()));
+                if (filter.getMaxLabelThreshold() != null) {
+                    selection = selection.and(target.isLessThanOrEqualTo(filter.getMaxLabelThreshold()));
+                }
+                if (filter.getMaxDiffThreshold()!=null){
+                    selection=selection.and(diffPercent.isLessThanOrEqualTo(filter.getMaxDiffThreshold()));
+                }
+                if (filter.getMinDiffThreshold()!=null){
+                    selection=selection.and(diffPercent.isGreaterThanOrEqualTo(filter.getMinDiffThreshold()));
                 }
                  break;
             default:
@@ -92,17 +100,19 @@ public class InspectionService {
         return selection;
     }
 
-    public Path getPredictionsPath(Long inspectionId) {
-        return Paths.get(applicationProperties.getBucketPath(), "files-bucket", "inspections", inspectionId.toString(), "predictions.csv");
+    public Path getPredictionsPath(Inspection inspection) {
+        String projectKey = inspection.getModel().getProject().getKey();
+        return fileLocationService.resolvedInspectionPath(projectKey, inspection.getId()).resolve("predictions.csv");
     }
 
-    public Path getCalculatedPath(Long inspectionId) {
-        return Paths.get(applicationProperties.getBucketPath(), "files-bucket", "inspections", inspectionId.toString(), "calculated.csv");
+    public Path getCalculatedPath(Inspection inspection) {
+        String projectKey = inspection.getModel().getProject().getKey();
+        return fileLocationService.resolvedInspectionPath(projectKey, inspection.getId()).resolve("calculated.csv");
     }
 
     private Selection getSelection(Inspection inspection, Filter filter) throws FileNotFoundException {
-        Table predsTable = getTableFromBucketFile(getPredictionsPath(inspection.getId()).toString());
-        Table calculatedTable = getTableFromBucketFile(getCalculatedPath(inspection.getId()).toString());
+        Table predsTable = getTableFromBucketFile(getPredictionsPath(inspection).toString());
+        Table calculatedTable = getTableFromBucketFile(getCalculatedPath(inspection).toString());
         StringColumn predictedClass = calculatedTable.stringColumn(0);
         StringColumn targetClass = calculatedTable.stringColumn(1);
         Selection correctSelection = predictedClass.isEqualTo(targetClass);
@@ -116,17 +126,17 @@ public class InspectionService {
                 break;
             case CUSTOM:
                 DoubleColumn probPredicted = (DoubleColumn) predsTable.column(filter.getThresholdLabel());
-                selection=targetClass.isNotMissing();
-                if (filter.getPredictedLabel().length>0) {
+                selection = targetClass.isNotMissing();
+                if (filter.getPredictedLabel().length > 0) {
                     selection.and(predictedClass.isIn(filter.getPredictedLabel()));
                 }
-                if (filter.getTargetLabel().length>0) {
+                if (filter.getTargetLabel().length > 0) {
                     selection.and(targetClass.isIn(filter.getTargetLabel()));
                 }
-                if (filter.getMaxThreshold()!=null) {
+                if (filter.getMaxThreshold() != null) {
                     selection.and(probPredicted.isLessThanOrEqualTo(filter.getMaxThreshold()));
                 }
-                if (filter.getMinThreshold()!=null) {
+                if (filter.getMinThreshold() != null) {
                     selection.and(probPredicted.isGreaterThanOrEqualTo(filter.getMinThreshold()));
                 }
                 break;
@@ -145,11 +155,12 @@ public class InspectionService {
      *
      * @return filtered table
      */
+    @Transactional
     public Table getRowsFiltered(@NotNull Long inspectionId, @NotNull Filter filter) throws FileNotFoundException {
         Inspection inspection = inspectionRepository.findById(inspectionId).orElseThrow(() -> new EntityNotFoundException(INSPECTION, inspectionId));
-        Table table = datasetService.getTableFromDatasetId(inspection.getDataset().getId());
+        Table table = datasetService.readTableByDatasetId(inspection.getDataset().getId());
         table.addColumns(IntColumn.indexColumn("Index", table.rowCount(), 0));
-        Selection selection = inspection.getPredictionTask().equals(CLASSIFICATION.getName()) ? getSelection(inspection, filter) : getSelectionRegression(inspection, filter);
+        Selection selection = inspection.getModel().getModelType().isClassification() ? getSelection(inspection, filter) : getSelectionRegression(inspection, filter);
         Table filteredTable = selection == null ? table : table.where(selection);
         return filteredTable;
     }
@@ -159,9 +170,11 @@ public class InspectionService {
      *
      * @return filtered table
      */
-    public List<String> getLabels(@NotNull Long inspectionId) throws FileNotFoundException {
-        Table predsTable = getTableFromBucketFile(getPredictionsPath(inspectionId).toString());
-        return predsTable.columnNames();
+    @Transactional
+    public List<String> getLabels(@NotNull Long inspectionId) throws JsonProcessingException {
+        Inspection inspection = inspectionRepository.getById(inspectionId);
+        return SimpleJSONMapper.toListOfStrings(inspection.getModel().getClassificationLabels());
     }
+
 
 }

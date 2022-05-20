@@ -32,6 +32,7 @@
             </v-menu>
           </v-card-title>
           <v-card-text v-if="!errorLoadingMetadata && Object.keys(inputMetaData).length > 0" id="inputTextCard">
+            <pre>{{inputData}}</pre>
             <div class="caption error--text">{{ dataErrorMsg }}</div>
             <v-form lazy-validation>
               <div v-for="c in inputMetaData" :key="c.feat_name"
@@ -43,25 +44,25 @@
                 <div class="py-1 d-flex">
                   <label class="info--text">{{c.feat_name}}
                   </label>
-                  <input type="number" v-if="c.feat_type == 'numeric'"
+                  <input type="number" v-if="c.feat_type === 'numeric'"
                     v-model="inputData[c.feat_name]"
                     class="common-style-input"
-                    :class="{'is-dirty': dirty || inputData[c.feat_name] != originalData[c.feat_name]}"
+                    :class="{'is-dirty': dirty || inputData[c.feat_name] !== originalData[c.feat_name]}"
                     @change="$emit('update:inputData', inputData)"
                     required
                   />
-                  <textarea v-if="c.feat_type == 'text'"
+                  <textarea v-if="c.feat_type === 'text'"
                     v-model="inputData[c.feat_name]"
                     :rows="!inputData[c.feat_name] ? 1 : Math.min(15, parseInt(inputData[c.feat_name].length / 40) + 1)"
                     class="common-style-input"
-                    :class="{'is-dirty': dirty || inputData[c.feat_name] != originalData[c.feat_name]}"
+                    :class="{'is-dirty': dirty || inputData[c.feat_name] !== originalData[c.feat_name]}"
                     @change="$emit('update:inputData', inputData)"
                     required
                   ></textarea>
-                  <select v-if="c.feat_type == 'category'"
+                  <select v-if="c.feat_type === 'category'"
                     v-model="inputData[c.feat_name]"
                     class="common-style-input"
-                    :class="{'is-dirty': dirty || inputData[c.feat_name] != originalData[c.feat_name]}"
+                    :class="{'is-dirty': dirty || inputData[c.feat_name] !== originalData[c.feat_name]}"
                     @change="$emit('update:inputData', inputData)"
                     required
                   ><option v-for="k in c.feat_cat_values" :key="k" :value="k">{{k}}</option>
@@ -101,7 +102,7 @@
             Explanation
           </v-card-title>
           <v-card-text>
-          <v-tabs :class="{'no-tab-header': predictionTask != 'classification' || textFeatureNames.length == 0}">
+          <v-tabs :class="{'no-tab-header':  !isClassification(predictionTask) || textFeatureNames.length === 0}">
             <v-tab><v-icon left>mdi-align-horizontal-left</v-icon>Global</v-tab>
             <v-tab><v-icon left>text_snippet</v-icon>Text</v-tab>
             <v-tab-item>
@@ -142,6 +143,8 @@ import { api } from '@/api';
 import { readToken } from '@/store/main/getters';
 import { IDataMetadata } from '@/interfaces';
 import FeedbackPopover from '@/components/FeedbackPopover.vue';
+import {ModelMetadataDTO, ModelType} from "@/generated-sources";
+import {isClassification} from "@/ml-utils";
 
 @Component({
   components: { OverlayLoader, PredictionResults, FeedbackPopover, PredictionExplanations, TextExplanation }
@@ -157,11 +160,12 @@ export default class Inspector extends Vue {
   loadingData = false;
   inputMetaData: IDataMetadata[] = [];
   classificationLabels: string[] = []
-  predictionTask = ""
+  predictionTask: ModelType | null = null;
   featuresToView: string[] = []
   errorLoadingMetadata = "" 
   dataErrorMsg = ""
   classificationResult = null
+  isClassification = isClassification
 
   async mounted() {
     await this.loadMetaData();
@@ -178,13 +182,12 @@ export default class Inspector extends Vue {
   async loadMetaData() {
     this.loadingData = true;
     try {
-      const resp = await api.getFeaturesMetadata(readToken(this.$store), this.modelId, this.datasetId)
-      this.inputMetaData = resp.data
+      this.inputMetaData = (await api.getFeaturesMetadata(readToken(this.$store), this.modelId, this.datasetId)).data
       this.featuresToView = this.inputMetaData.map(e => e.feat_name)
       
-      const respMetadata = await api.getModelMetadata(readToken(this.$store), this.modelId)
-      this.classificationLabels = respMetadata.data.classification_labels
-      this.predictionTask = respMetadata.data.prediction_task
+      const respMetadata: ModelMetadataDTO = (await api.getModelMetadata(readToken(this.$store), this.modelId)).data
+      this.classificationLabels = respMetadata.classificationLabels
+      this.predictionTask = respMetadata.modelType
       this.errorLoadingMetadata = ""
     } catch (e) {
       this.errorLoadingMetadata = e.response.data.detail
@@ -202,7 +205,7 @@ export default class Inspector extends Vue {
   }
 
   public setResult(r) {
-    if (this.predictionTask == "classification") this.classificationResult = r
+    if ( isClassification(this.predictionTask!)) this.classificationResult = r
   }
 
 }

@@ -10,7 +10,7 @@ import org.springframework.stereotype.Service;
 public class MLWorkerService {
     private final ApplicationProperties applicationProperties;
 
-    public MLWorkerClient createClient() throws InterruptedException {
+    public MLWorkerClient createClient() {
         ManagedChannel channel = ManagedChannelBuilder.forAddress(
                 applicationProperties.getMlWorkerHost(),
                 applicationProperties.getMlWorkerPort()

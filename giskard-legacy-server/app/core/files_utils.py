@@ -12,7 +12,7 @@ def read_dataset_file(file_path: str) -> pd.DataFrame:
         with open(file_path, "rb") as f:
             bytes_io = BytesIO(dzst.decompress(f.read()))
         if ".csv" in file_path:
-            df = pd.read_csv(bytes_io)
+            df = pd.read_csv(bytes_io, keep_default_na=False)
         elif ".xls" in file_path:
             df = pd.read_excel(bytes_io)
         return df

@@ -119,11 +119,16 @@ public class TokenProvider {
 
     public Authentication getAuthentication(String token) {
         Claims claims = jwtParser.parseClaimsJws(token).getBody();
-        Collection<? extends GrantedAuthority> authorities = Arrays
-            .stream(claims.get(AUTHORITIES_KEY).toString().split(","))
-            .filter(auth -> !auth.trim().isEmpty())
-            .map(SimpleGrantedAuthority::new)
-            .collect(Collectors.toList());
+        Collection<? extends GrantedAuthority> authorities;
+        if (claims.get(AUTHORITIES_KEY) != null) {
+            authorities = Arrays
+                .stream(claims.get(AUTHORITIES_KEY).toString().split(","))
+                .filter(auth -> !auth.trim().isEmpty())
+                .map(SimpleGrantedAuthority::new)
+                .collect(Collectors.toList());
+        } else {
+            authorities = Collections.emptyList();
+        }
 
         GiskardUser principal = new GiskardUser(claims.get(ID, Long.class), claims.getSubject(), "", authorities);
 

@@ -219,6 +219,7 @@ def upload_inspect(model_id: str, dataset_id: str, target: str, db: Session = De
 
             data_df = files_utils.read_dataset_file(data_file.location)
             data_df.to_csv(data_file.location.replace(".zst", ""))
+
             prediction_results = run_predict(data_df, model_inspector)
             inspection_folder.mkdir(parents=True, exist_ok=True)
             preds_path = Path(inspection_folder, "predictions.csv")
@@ -230,7 +231,8 @@ def upload_inspect(model_id: str, dataset_id: str, target: str, db: Session = De
                 if len(model_inspector.classification_labels) > 2 or model_inspector.classification_threshold is None:
                     preds_serie = prediction_results.all_predictions.idxmax(axis="columns")
                     sorted_predictions = np.sort(prediction_results.all_predictions.values)
-                    abs_diff = pd.Series(sorted_predictions[:, -1] - sorted_predictions[:, -2], name="absDiff")
+                    diff = pd.Series(sorted_predictions[:, -1] - sorted_predictions[:, -2], name="diff")
+                    abs_diff = pd.Series(diff.abs(), name="absDiff")
                 else:
                     diff = prediction_results.all_predictions.iloc[:, 1] - model_inspector.classification_threshold
                     preds_serie = (diff >= 0).astype(int).map(labels).rename("predictions")
@@ -240,9 +242,11 @@ def upload_inspect(model_id: str, dataset_id: str, target: str, db: Session = De
                 results = pd.Series(prediction_results.prediction)
                 predsSerie = results
                 target_serie = data_df[target]
-                abs_diff = pd.Series((predsSerie - target_serie).abs(), name="absDiff")
+                diff = pd.Series(predsSerie - target_serie, name="diff")
+                diffPercent = pd.Series((predsSerie - target_serie)/target_serie, name="diffPercent")
+                abs_diff = pd.Series(diff.abs(), name="absDiff")
                 abs_diff_percent = pd.Series(abs_diff / target_serie, name="absDiffPercent")
-                calculated = pd.concat([predsSerie, target_serie, abs_diff, abs_diff_percent], axis=1)
+                calculated = pd.concat([predsSerie, target_serie, abs_diff, abs_diff_percent, diffPercent], axis=1)
             results.to_csv(preds_path, index=False)
             calculated.to_csv(calculated_path, index=False)
             return inspection

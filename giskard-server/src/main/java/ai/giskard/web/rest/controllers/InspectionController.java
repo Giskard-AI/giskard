@@ -4,10 +4,13 @@ import ai.giskard.domain.ml.Inspection;
 import ai.giskard.domain.ml.table.Filter;
 import ai.giskard.repository.InspectionRepository;
 import ai.giskard.service.InspectionService;
+import ai.giskard.service.ModelService;
+import ai.giskard.web.dto.InspectionCreateDTO;
 import ai.giskard.web.dto.mapper.GiskardMapper;
 import ai.giskard.web.dto.ml.InspectionDTO;
 import ai.giskard.web.rest.errors.Entity;
 import ai.giskard.web.rest.errors.EntityNotFoundException;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -28,6 +31,7 @@ import java.util.List;
 public class InspectionController {
 
     private final InspectionService inspectionService;
+    private final ModelService modelService;
     private final InspectionRepository inspectionRepository;
     private final GiskardMapper giskardMapper;
 
@@ -72,8 +76,13 @@ public class InspectionController {
      * @return List of labels
      */
     @GetMapping("/inspection/{inspectionId}/labels")
-    public List<String> getLabels(@PathVariable @NotNull Long inspectionId) throws FileNotFoundException {
+    public List<String> getLabels(@PathVariable @NotNull Long inspectionId) throws FileNotFoundException, JsonProcessingException {
         return inspectionService.getLabels(inspectionId);
+    }
+
+    @PostMapping("/inspection")
+    public Inspection createInspection(@RequestBody @NotNull InspectionCreateDTO createDTO){
+        return modelService.createInspection(createDTO.getModelId(), createDTO.getDatasetId());
     }
 
 

@@ -1,7 +1,9 @@
 package ai.giskard.domain.ml;
 
 
+import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.persistence.*;
@@ -21,11 +23,6 @@ public class Inspection {
     @ManyToOne
     private ProjectModel model;
 
-    private String location;
-
-    private String target;
-
-    private String predictionTask;
 
 //    private String inputTypes;
 //

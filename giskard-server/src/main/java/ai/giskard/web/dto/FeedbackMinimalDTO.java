@@ -17,8 +17,8 @@ public class FeedbackMinimalDTO {
     private String userLogin;
     private String modelName;
     private String datasetName;
-    private String modelFilename;
-    private String datasetFilename;
+    private Long modelId;
+    private Long datasetId;
     private Instant createdOn;
     private String feedbackType;
     private String featureName;

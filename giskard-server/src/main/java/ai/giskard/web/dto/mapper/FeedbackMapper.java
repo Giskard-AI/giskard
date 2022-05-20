@@ -18,8 +18,8 @@ public interface FeedbackMapper {
         @Mapping(source = "user.login", target = "userLogin"),
         @Mapping(source = "model.name", target = "modelName"),
         @Mapping(source = "dataset.name", target = "datasetName"),
-        @Mapping(source = "model.fileName", target = "modelFilename"),
-        @Mapping(source = "dataset.fileName", target = "datasetFilename")
+        @Mapping(source = "model.id", target = "modelId"),
+        @Mapping(source = "dataset.id", target = "datasetId")
     })
     FeedbackMinimalDTO feedbackToFeedbackMinimalDTO(Feedback feedback);
 

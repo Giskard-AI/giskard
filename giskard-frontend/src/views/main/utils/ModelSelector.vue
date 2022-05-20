@@ -27,7 +27,7 @@ export default class ModelSelector extends Vue {
   @Prop() value?: ModelDTO;
 
   extractModelName(model: ModelDTO) {
-    return model.name || model.file_name;
+    return model.name || model.fileName;
   }
 
   onInput(value) {
