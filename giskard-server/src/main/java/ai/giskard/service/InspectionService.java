@@ -47,9 +47,13 @@ public class InspectionService {
         return Table.read().csv(reader);
     }
 
-    private Double getThresholdForRegression(DoubleColumn _column) {
-        DoubleColumn column=_column.copy();
-        column.sortAscending();
+    private Double getThresholdForRegression(DoubleColumn _column, boolean isCorrect) {
+        DoubleColumn column = _column.copy();
+        if (isCorrect) {
+            column.sortAscending();
+        } else {
+            column.sortDescending();
+        }
         int maxIndex = (int) Math.round(applicationProperties.getRegressionThreshold() * column.size());
         return column.get(maxIndex);
     }
@@ -62,36 +66,36 @@ public class InspectionService {
         DoubleColumn diffPercent = calculatedTable.doubleColumn("diffPercent");
         switch (filter.getRowFilter()) {
             case CORRECT:
-                threshold = getThresholdForRegression(absDiffPercentColumn);
+                threshold = getThresholdForRegression(absDiffPercentColumn,true );
                 selection = absDiffPercentColumn.isLessThanOrEqualTo(threshold);
                 break;
             case WRONG:
-                threshold = getThresholdForRegression(absDiffPercentColumn);
+                threshold = getThresholdForRegression(absDiffPercentColumn, false);
                 selection = absDiffPercentColumn.isGreaterThanOrEqualTo(threshold);
                 break;
             case CUSTOM:
                 DoubleColumn prediction = calculatedTable.doubleColumn(0);
                 DoubleColumn target = calculatedTable.numberColumn(1).asDoubleColumn();
-                selection=prediction.isNotMissing();
-                if (filter.getMinThreshold()!= null){
-                    selection=selection.and(prediction.isGreaterThanOrEqualTo(filter.getMinThreshold()));
+                selection = prediction.isNotMissing();
+                if (filter.getMinThreshold() != null) {
+                    selection = selection.and(prediction.isGreaterThanOrEqualTo(filter.getMinThreshold()));
                 }
-                if (filter.getMaxThreshold()!= null){
-                    selection=selection.and(prediction.isLessThanOrEqualTo(filter.getMaxThreshold()));
+                if (filter.getMaxThreshold() != null) {
+                    selection = selection.and(prediction.isLessThanOrEqualTo(filter.getMaxThreshold()));
                 }
-                if (filter.getMinLabelThreshold()!= null){
-                    selection=selection.and(target.isGreaterThanOrEqualTo(filter.getMinLabelThreshold()));
+                if (filter.getMinLabelThreshold() != null) {
+                    selection = selection.and(target.isGreaterThanOrEqualTo(filter.getMinLabelThreshold()));
                 }
-                if (filter.getMaxLabelThreshold()!= null){
-                    selection=selection.and(target.isLessThanOrEqualTo(filter.getMaxLabelThreshold()));
+                if (filter.getMaxLabelThreshold() != null) {
+                    selection = selection.and(target.isLessThanOrEqualTo(filter.getMaxLabelThreshold()));
                 }
-                if (filter.getMaxDiffThreshold()!=null){
-                    selection=selection.and(diffPercent.isLessThanOrEqualTo(filter.getMaxDiffThreshold()));
+                if (filter.getMaxDiffThreshold() != null) {
+                    selection = selection.and(diffPercent.isLessThanOrEqualTo(filter.getMaxDiffThreshold()));
                 }
-                if (filter.getMinDiffThreshold()!=null){
-                    selection=selection.and(diffPercent.isGreaterThanOrEqualTo(filter.getMinDiffThreshold()));
+                if (filter.getMinDiffThreshold() != null) {
+                    selection = selection.and(diffPercent.isGreaterThanOrEqualTo(filter.getMinDiffThreshold()));
                 }
-                 break;
+                break;
             default:
                 selection = null;
         }
@@ -122,17 +126,17 @@ public class InspectionService {
                 break;
             case CUSTOM:
                 DoubleColumn probPredicted = (DoubleColumn) predsTable.column(filter.getThresholdLabel());
-                selection=targetClass.isNotMissing();
-                if (filter.getPredictedLabel().length>0) {
+                selection = targetClass.isNotMissing();
+                if (filter.getPredictedLabel().length > 0) {
                     selection.and(predictedClass.isIn(filter.getPredictedLabel()));
                 }
-                if (filter.getTargetLabel().length>0) {
+                if (filter.getTargetLabel().length > 0) {
                     selection.and(targetClass.isIn(filter.getTargetLabel()));
                 }
-                if (filter.getMaxThreshold()!=null) {
+                if (filter.getMaxThreshold() != null) {
                     selection.and(probPredicted.isLessThanOrEqualTo(filter.getMaxThreshold()));
                 }
-                if (filter.getMinThreshold()!=null) {
+                if (filter.getMinThreshold() != null) {
                     selection.and(probPredicted.isGreaterThanOrEqualTo(filter.getMinThreshold()));
                 }
                 break;
