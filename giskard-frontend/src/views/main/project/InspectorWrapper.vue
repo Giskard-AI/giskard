@@ -1,5 +1,5 @@
 <template>
-  <v-container fluid>
+  <v-container fluid v-if="inspection">
     <v-row
       no-gutters
       style='height: 60px;'
