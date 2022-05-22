@@ -13,6 +13,7 @@ from generated.ml_worker_pb2_grpc import add_MLWorkerServicer_to_server
 
 class Settings(BaseSettings):
     port: int = 50051
+    host: str = '0.0.0.0'
     max_workers: int = 10
 
     storage_root: Path
@@ -53,9 +54,9 @@ def serve():
         thread_name_prefix="MLTaskServerExecutor"
     ))
     add_MLWorkerServicer_to_server(MLTaskServer(1000), server)
-    server.add_insecure_port(f'[::]:{settings.port}')
+    server.add_insecure_port(f'{settings.host}:{settings.port}')
     server.start()
-    logging.info(f"Started GRPC server: {settings}")
+    logging.info(f"Started ML Worker server: {settings}")
     server.wait_for_termination()
 
 
