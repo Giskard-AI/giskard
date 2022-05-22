@@ -5,9 +5,8 @@ import type {ModelType} from './../../domain/ml/model-type';
  */
 export interface ModelMetadataDTO {
     classificationLabels: string[];
-    features: {[key: string]: string};
+    featureNames: string[];
     id: number;
     modelType: ModelType;
-    target: string;
     threshold: number;
 }

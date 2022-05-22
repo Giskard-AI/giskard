@@ -8,11 +8,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.validation.constraints.NotNull;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.time.Instant;
-import java.time.LocalDateTime;
 
 @Getter
 @Setter
@@ -32,14 +28,10 @@ public abstract class FileDTO {
 
     protected Instant createdDate;
 
-    protected String location;
+    private long size;
 
     public String getName() {
         return name != null ? name : fileName;
-    }
-
-    public Long getSize() throws IOException {
-        return (location != null && Files.exists(Paths.get(location))) ? Files.size(Paths.get(location)) : 0L;
     }
 
     public Long getProjectId() {

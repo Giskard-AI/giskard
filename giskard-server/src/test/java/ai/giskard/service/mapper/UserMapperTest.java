@@ -126,10 +126,4 @@ class UserMapperTest {
     void userDTOToUserMapWithNullUserShouldReturnNull() {
         assertThat(giskardMapper.adminUserDTOtoUser(null)).isNull();
     }
-
-    @Test
-    void testUserFromId() {
-        assertThat(giskardMapper.userFromId(DEFAULT_ID).getId()).isEqualTo(DEFAULT_ID);
-        assertThat(giskardMapper.userFromId(null)).isNull();
-    }
 }

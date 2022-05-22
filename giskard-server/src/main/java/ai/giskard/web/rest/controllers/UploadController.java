@@ -56,7 +56,10 @@ public class UploadController {
 
         Project project = projectRepository.getOneByKey(params.getProjectKey());
         try {
-            Dataset savedDataset = uploadService.uploadDataset(project, params.getName(), file.getInputStream());
+            Dataset savedDataset = uploadService.uploadDataset(
+                project, params.getName(), params.getFeatureTypes(),
+                params.getTarget(), file.getInputStream()
+            );
             return giskardMapper.datasetToDatasetDTO(savedDataset);
         } catch (IOException e) {
             throw new RuntimeException("Failed to read uploaded dataset file", e);

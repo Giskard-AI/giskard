@@ -65,7 +65,7 @@ public class InspectionController {
     @GetMapping("/inspection/{id}")
     public InspectionDTO getInspection(@PathVariable @NotNull Long id) {
         Inspection inspection = inspectionRepository.findById(id).orElseThrow(() -> new EntityNotFoundException(Entity.INSPECTION, id));
-        return giskardMapper.inspectionToInspectionDTO(inspection);
+        return giskardMapper.toDTO(inspection);
     }
 
 
@@ -81,8 +81,8 @@ public class InspectionController {
     }
 
     @PostMapping("/inspection")
-    public Inspection createInspection(@RequestBody @NotNull InspectionCreateDTO createDTO){
-        return modelService.createInspection(createDTO.getModelId(), createDTO.getDatasetId());
+    public InspectionDTO createInspection(@RequestBody @NotNull InspectionCreateDTO createDTO){
+        return giskardMapper.toDTO(modelService.createInspection(createDTO.getModelId(), createDTO.getDatasetId()));
     }
 
 
