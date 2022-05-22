@@ -10,20 +10,6 @@ services:
     environment:
       - PGDATA=/var/lib/postgresql/data/pgdata
 
-  backend:
-    image: '${DOCKER_REGISTRY}/giskard-backend:${TAG-latest}'
-    volumes:
-      - app-files-bucket:/app/files-bucket
-    depends_on:
-      - db
-    env_file:
-      - .env
-    environment:
-      - SERVER_NAME=${DOMAIN?Variable not set}
-      - SERVER_HOST=https://${DOMAIN?Variable not set}
-      # Allow explicit env var override for tests
-      - SMTP_HOST=${SMTP_HOST}
-
   ml-worker:
     image: '${DOCKER_REGISTRY}/ml-worker:${TAG-latest}'
     environment:
@@ -33,8 +19,8 @@ services:
     volumes:
       - app-files-bucket:/app/files-bucket
 
-  backend-java:
-    image: '${DOCKER_REGISTRY}/backend-java:${TAG-latest}'
+  backend:
+    image: '${DOCKER_REGISTRY}/backend:${TAG-latest}'
     env_file:
       - .env
     environment:
@@ -52,7 +38,6 @@ services:
       - SPRING_MAIL_USERNAME
       - SPRING_MAIL_PASSWORD
       - JHIPSTER_MAIL_BASEURL
-    command: [ "/giskard/wait-for-python-app.sh", "backend", "java", "-jar","/giskard/lib/giskard.jar" ]
     volumes:
       - app-files-bucket:/giskard-legacy-server/app/files-bucket
 
@@ -66,7 +51,6 @@ services:
     depends_on:
       - jupyter
       - backend
-      - backend-java
     env_file:
       - .env
 

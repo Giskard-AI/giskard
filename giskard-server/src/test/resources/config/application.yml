@@ -34,7 +34,7 @@ spring:
     database-platform: tech.jhipster.domain.util.FixedH2Dialect
     open-in-view: false
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: validate
       naming:
         physical-strategy: org.springframework.boot.orm.jpa.hibernate.SpringPhysicalNamingStrategy
         implicit-strategy: org.springframework.boot.orm.jpa.hibernate.SpringImplicitNamingStrategy
@@ -44,7 +44,8 @@ spring:
       hibernate.cache.use_second_level_cache: false
       hibernate.cache.use_query_cache: false
       hibernate.generate_statistics: false
-      hibernate.hbm2ddl.auto: validate
+#     overrides hibernate.ddl-auto
+#      hibernate.hbm2ddl.auto: validate
       hibernate.jdbc.time_zone: UTC
       hibernate.query.fail_on_pagination_over_collection_fetch: true
       hibernate.types.print.banner: false

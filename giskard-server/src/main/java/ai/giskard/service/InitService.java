@@ -45,7 +45,7 @@ public class InitService {
 
     String[] mockKeys = Arrays.stream(AuthoritiesConstants.AUTHORITIES).map(key -> key.replace("ROLE_", "")).toArray(String[]::new);
     public Map<String, String> users = Arrays.stream(mockKeys).collect(Collectors.toMap(String::toLowerCase, String::toLowerCase));
-    public Map<String, String> projects = Arrays.stream(mockKeys).collect(Collectors.toMap(String::toLowerCase, name -> name + "Project"));
+    public Map<String, String> projects = Arrays.stream(mockKeys).collect(Collectors.toMap(String::toLowerCase, name -> String.format("%s's project", StringUtils.capitalize(name.toLowerCase()))));
 
 
     public String getUserName(String key) {
@@ -122,7 +122,7 @@ public class InitService {
      */
     public void initProjects() {
         Arrays.stream(mockKeys).forEach(key -> saveProject(
-            String.format("%s's project", StringUtils.capitalize(key.toLowerCase())),
+            projects.get(key.toLowerCase()),
             key.toLowerCase())
         );
     }

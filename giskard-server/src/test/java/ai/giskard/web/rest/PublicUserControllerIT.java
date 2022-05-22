@@ -1,16 +1,9 @@
 package ai.giskard.web.rest;
 
-import static org.hamcrest.Matchers.hasItem;
-import static org.hamcrest.Matchers.hasItems;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-
 import ai.giskard.IntegrationTest;
 import ai.giskard.domain.User;
 import ai.giskard.repository.UserRepository;
 import ai.giskard.security.AuthoritiesConstants;
-import javax.persistence.EntityManager;
-
 import ai.giskard.web.rest.controllers.UserAdminController;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
@@ -21,6 +14,12 @@ import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
+
+import javax.persistence.EntityManager;
+
+import static org.hamcrest.Matchers.hasItems;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 /**
  * Integration tests for the {@link UserAdminController} REST controller.
