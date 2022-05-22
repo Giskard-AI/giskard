@@ -38,9 +38,6 @@ jobs:
     - name: Build python backend image
       run: docker-compose -f docker-stack.yml build backend
 
-    - name: Build and test java backend image
-      run: docker-compose -f docker-stack.yml build backend-java
-
     - name: Remove containers and volumes
       run: docker-compose -f docker-stack.yml down -v --remove-orphans
       

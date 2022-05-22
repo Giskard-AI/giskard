@@ -16,12 +16,14 @@ cloudpickle = "^1.6.0"
 zstandard = "^0.15.2"
 ai-inspector = "^0.1.2"
 great-expectations = "^0.14.11"
+giskard-client = { git = "https://github.com/Giskard-AI/giskard-client.git", branch = "feature/v2-api" }
 # ------------ Required for great-expectations that doesn't work with other versions
 Jinja2 = "<3.0.0"
 MarkupSafe = "2.0.1"
 # ------------
 shap = "^0.40.0"
 eli5 = "^0.11.0"
+beautifulsoup4 = "^4.11.1"
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.2.5"

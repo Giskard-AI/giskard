@@ -18,21 +18,12 @@ services:
       args:
         FRONTEND_ENV: ${FRONTEND_ENV-production}
 
-  backend:
-    volumes:
-      - ./giskard-legacy-server:/app
-    build:
-      context: ./giskard-legacy-server
-      dockerfile: app.dockerfile
-      args:
-        INSTALL_DEV: ${INSTALL_DEV-false}
-
   ml-worker:
     build:
       context: .
       dockerfile: ./giskard-ml-worker/ml-worker.dockerfile
 
-  backend-java:
+  backend:
     build:
       dockerfile: ./giskard-server/src/main/docker/app/app.dockerfile
       context: .
