@@ -40,7 +40,7 @@
               </v-btn>
               <v-tooltip bottom>
                 <template v-slot:activator="{ on, attrs }">
-                  <v-btn icon color="info" @click="downloadModelPickle(m.id, m.name)" v-bind="attrs" v-on="on">
+                  <v-btn icon color="info" @click="downloadModelPickle(m.id)" v-bind="attrs" v-on="on">
                     <v-icon>download</v-icon>
                   </v-btn>
                 </template>
@@ -77,7 +77,7 @@
 <script lang="ts">
 import {Component, Prop, Vue} from 'vue-property-decorator';
 import {api} from '@/api';
-import {dialogDownloadFile, performApiActionWithNotif} from '@/api-commons';
+import {performApiActionWithNotif} from '@/api-commons';
 import {readToken} from '@/store/main/getters';
 import {commitAddNotification} from '@/store/main/mutations';
 import InspectorLauncher from './InspectorLauncher.vue';
@@ -114,10 +114,9 @@ export default class Models extends Vue {
     }
   }
 
-  public async downloadModelPickle(id: number, fileName: string) {
+  public downloadModelPickle(id: number) {
     try {
-      const response = await api.downloadModelFile(readToken(this.$store), id)
-      dialogDownloadFile(response, fileName);
+      api.downloadModelFile(id)
     } catch (error) {
       commitAddNotification(this.$store, {content: error.response.statusText, color: 'error'});
     }

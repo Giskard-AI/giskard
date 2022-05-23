@@ -16,7 +16,7 @@
 import Component from "vue-class-component";
 import Vue from "vue";
 import axios from "axios";
-import {apiUrlJava} from "@/env";
+import {apiURL} from "@/env";
 import {Prop} from "vue-property-decorator";
 import { ModelDTO } from '@/generated-sources';
 
@@ -35,7 +35,7 @@ export default class ModelSelector extends Vue {
   }
 
   async mounted() {
-    this.projectModels = (await axios.get<Array<ModelDTO>>(`${apiUrlJava}/api/v2/project/${this.projectId}/models`)).data;
+    this.projectModels = (await axios.get<Array<ModelDTO>>(`${apiURL}/api/v2/project/${this.projectId}/models`)).data;
   }
 }
 </script>
