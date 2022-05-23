@@ -8,46 +8,104 @@ from ml_worker.testing.abstract_test_collection import AbstractTestCollection
 
 
 class HeuristicTests(AbstractTestCollection):
-    def test_heuristic(self,
-                       df: DataFrame, #changer en slice
-                       model: ModelInspector,
-                       classification_label: str,
-                       min_proba: float = 0,
-                       max_proba: float = 1,
-                       threshold=1) -> SingleTestResult:
-        results_df = pd.DataFrame()
+    def test_right_label(self,
+                    slice_df: DataFrame,
+                    model: ModelInspector,
+                    classification_label: str,
+                    threshold=0.5) -> SingleTestResult:
+        """
+        Summary: Test if the model returns the right classification label for a slice
 
-        prediction_results = run_predict(df, model)
-        results_df["prediction_proba"] = prediction_results.probabilities
-        results_df["prediction"] = prediction_results.raw_prediction
+        Description: The test is passed when the percentage of rows returning the right
+        classification label is higher than the threshold in a given slice
 
+        Example: For a credit scoring model, the test is passed when more than 50%
+        of people with high-salaries are classified as “non default”
+
+        Args:
+            slice_df:
+                slice of the  test dataset
+            model:
+                uploaded model
+            classification_label:
+                classification label you want to test
+            threshold:
+                threshold for the percentage of passed rows
+
+        Returns:
+            slice_nb_rows:
+                length of slice_df tested
+            metrics:
+                the ratio of raws with the right classification label over the total of raws in the slice
+            passed:
+                TRUE if passed_ratio > threshold
+
+        """
+
+        prediction_results = run_predict(slice_df, model).prediction
         assert classification_label in model.classification_labels, \
             f'"{classification_label}" is not part of model labels: {",".join(model.classification_labels)}'
 
-        matching_prediction_mask = \
-            (results_df["prediction"] == model.classification_labels.index(classification_label)) & \
-            (results_df["prediction_proba"] <= max_proba) & \
-            (results_df["prediction_proba"] >= min_proba)
+        passed_slice = slice_df.loc[prediction_results == classification_label]
+        failed_slice = slice_df.loc[prediction_results != classification_label]
 
-        unexpected = df[~matching_prediction_mask]
-        failed_ratio = len(unexpected) / len(df)
+        passed_ratio = len(passed_slice) / len(slice_df)
         return self.save_results(SingleTestResult(
-            element_count=len(df),
-            unexpected_count=len(unexpected),
-            unexpected_percent=failed_ratio * 100,
-            passed=failed_ratio <= threshold
+            slice_nb_rows=len(slice_df),
+            metric=passed_ratio,
+            passed=passed_ratio > threshold
         ))
 
     def test_output_in_range(self,
-                             df_slice: DataFrame,
+                             slice_df: DataFrame,
                              model: ModelInspector,
                              classification_label=None,
-                             min_proba: float = 0.3,
-                             max_proba: float = 0.7,
+                             min_range: float = 0.3,
+                             max_range: float = 0.7,
                              threshold=0.5) -> SingleTestResult:
+        """
+        Summary: Test if the model output belongs to the right range for a slice
+
+        Description: - The test is passed when the ratio of rows in the right range inside the
+        slice is higher than the threshold.
+
+         For classification: Test if the predicted probability for a given classification label
+         belongs to the right range for a dataset slice
+
+        For regression : Test if the predicted output belongs to the right range for a dataset slice
+
+        Example :
+        For Classification: For a credit scoring model, the test is passed when more than 50% of
+        people with high wage have a probability of defaulting between 0 and 0.1
+
+        For Regression : The predicted Sale Price of a house in the city falls in a particular range
+        Args:
+            slice_df:
+                slice of the test dataset
+            model:
+                uploaded model
+            classification_label:
+                classification label you want to test
+            min_range:
+                minimum probability of occurrence of classification label
+            max_range:
+                maximum probability of occurrence of classification label
+            threshold:
+                threshold for the percentage of passed rows
+
+        Returns:
+            slice_nb_rows:
+                length of slice_df tested
+
+            metrics:
+                the proportion of rows in the right range inside the slice
+            passed:
+                TRUE if metric > threshold
+
+        """
         results_df = pd.DataFrame()
 
-        prediction_results = run_predict(df_slice, model)
+        prediction_results = run_predict(slice_df, model)
 
         if model.prediction_task == "regression":
             results_df["output"] = prediction_results.raw_prediction
@@ -63,16 +121,13 @@ class HeuristicTests(AbstractTestCollection):
             )
 
         matching_prediction_mask = \
-            (results_df["output"] <= max_proba) & \
-            (results_df["output"] >= min_proba)
+            (results_df["output"] <= max_range) & \
+            (results_df["output"] >= min_range)
 
-        expected = df_slice[matching_prediction_mask]
-        passed_ratio = len(expected) / len(df_slice)
+        expected = slice_df[matching_prediction_mask]
+        passed_ratio = len(expected) / len(slice_df)
         return self.save_results(SingleTestResult(
-            slice_nb_rows=len(df_slice),
+            slice_nb_rows=len(slice_df),
             metric=passed_ratio,
             passed=passed_ratio >= threshold
         ))
-
-
-
