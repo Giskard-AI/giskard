@@ -10,17 +10,17 @@ from ml_worker.testing.abstract_test_collection import AbstractTestCollection
 
 
 class PerformanceTests(AbstractTestCollection):
-    def test_auc(self, df_slice, model: ModelInspector, target, threshold=1):
+    def test_auc(self, slice_df, model: ModelInspector, target, threshold=1):
         """
-        Test if the model AUC performance is higher than a threshold for a given sub-population
+        Test if the model AUC performance is higher than a threshold for a given slice
 
-        Example : The test is passed when the AUC for women is higher than 0.7
+        Example : The test is passed when the AUC for females is higher than 0.7
 
         Args:
-            df_slice(pandas.core.frame.DataFrame):
-                sub-population of the test dataset selected during Test Suite Creation
+            slice_df(pandas.core.frame.DataFrame):
+                slice of the test dataset 
             model(ModelInspector):
-                model selected during Test Suite Creation
+                uploaded model
             target(str):
                 target column name
             threshold(int):
@@ -28,7 +28,7 @@ class PerformanceTests(AbstractTestCollection):
 
         Returns:
             total rows tested:
-                length of df_slice tested
+                length of slice_df tested
             metric:
                 the AUC performance metric
             passed:
@@ -43,29 +43,29 @@ class PerformanceTests(AbstractTestCollection):
 
         metric = _calculate_auc(
             len(model.classification_labels) == 2,
-            run_predict(df_slice, model).raw_prediction,
-            df_slice[target]
+            run_predict(slice_df, model).raw_prediction,
+            slice_df[target]
         )
 
         return self.save_results(
             SingleTestResult(
-                element_count=len(df_slice),
+                element_count=len(slice_df),
                 metric=metric,
                 passed=metric >= threshold
             ))
 
-    def _test_classification_score(self, score_fn, df_slice, model: ModelInspector, target, threshold=1):
+    def _test_classification_score(self, score_fn, slice_df, model: ModelInspector, target, threshold=1):
         is_binary_classification = len(model.classification_labels) == 2
-        prediction = run_predict(df_slice, model).raw_prediction
+        prediction = run_predict(slice_df, model).raw_prediction
         labels_mapping = {model.classification_labels[i]: i for i in range(len(model.classification_labels))}
         if is_binary_classification:
-            metric = score_fn(df_slice[target].map(labels_mapping), prediction)
+            metric = score_fn(slice_df[target].map(labels_mapping), prediction)
         else:
-            metric = score_fn(df_slice[target].map(labels_mapping), prediction, average='macro', multi_class='ovr')
+            metric = score_fn(slice_df[target].map(labels_mapping), prediction, average='macro', multi_class='ovr')
 
         return self.save_results(
             SingleTestResult(
-                element_count=len(df_slice),
+                element_count=len(slice_df),
                 metric=metric,
                 passed=metric >= threshold
             ))
@@ -83,17 +83,17 @@ class PerformanceTests(AbstractTestCollection):
                 passed=metric >= threshold if r2 else metric <= threshold
             ))
 
-    def test_f1(self, df_slice, model: ModelInspector, target, threshold=1):
+    def test_f1(self, slice_df, model: ModelInspector, target, threshold=1):
         """
-        Test if the model F1 score is higher than a defined threshold for a given sub-population
+        Test if the model F1 score is higher than a defined threshold for a given slice
 
-        Example: The test is passed when F1 score for women is higher than 0.7
+        Example: The test is passed when F1 score for females is higher than 0.7
 
         Args:
-            df_slice(pandas.core.frame.DataFrame):
-                sub-population of the test dataset selected during Test Suite Creation
+            slice_df(pandas.core.frame.DataFrame):
+                slice of the test dataset 
             model(ModelInspector):
-                model selected during Test Suite Creation
+                uploaded model
             target(str):
                 target column name
             threshold(int):
@@ -101,7 +101,7 @@ class PerformanceTests(AbstractTestCollection):
 
         Returns:
             total rows tested:
-                length of df_slice tested
+                length of slice_df tested
             metric:
                 the F1 score metric
             passed:
@@ -109,19 +109,19 @@ class PerformanceTests(AbstractTestCollection):
 
         """
         return self._test_classification_score(f1_score,
-                                               df_slice, model, target, threshold)
+                                               slice_df, model, target, threshold)
 
-    def test_accuracy(self, df_slice, model: ModelInspector, target, threshold=1):
+    def test_accuracy(self, slice_df, model: ModelInspector, target, threshold=1):
         """
-        Test if the model Accuracy is higher than a threshold for a given sub-population
+        Test if the model Accuracy is higher than a threshold for a given slice
 
-        Example: The test is passed when the Accuracy for women is higher than 0.7
+        Example: The test is passed when the Accuracy for females is higher than 0.7
 
         Args:
-            df_slice(pandas.core.frame.DataFrame):
-                sub-population of the test dataset selected during Test Suite Creation
+            slice_df(pandas.core.frame.DataFrame):
+                slice of the test dataset 
             model(ModelInspector):
-                model selected during Test Suite Creation
+                uploaded model
             target(str):
                 target column name
             threshold(int):
@@ -129,7 +129,7 @@ class PerformanceTests(AbstractTestCollection):
 
         Returns:
             total rows tested:
-                length of df_slice tested
+                length of slice_df tested
             metric:
                 the Accuracy metric
             passed:
@@ -137,19 +137,19 @@ class PerformanceTests(AbstractTestCollection):
 
         """
         return self._test_classification_score(accuracy_score,
-                                               df_slice, model, target, threshold)
+                                               slice_df, model, target, threshold)
 
-    def test_precision(self, df_slice, model: ModelInspector, target, threshold=1):
+    def test_precision(self, slice_df, model: ModelInspector, target, threshold=1):
         """
-        Test if the model Precision is higher than a threshold for a given sub-population
+        Test if the model Precision is higher than a threshold for a given slice
 
-        Example: The test is passed when the Precision for women is higher than 0.7
+        Example: The test is passed when the Precision for females is higher than 0.7
 
         Args:
-            df_slice(pandas.core.frame.DataFrame):
-                sub-population of the test dataset selected during Test Suite Creation
+            slice_df(pandas.core.frame.DataFrame):
+                slice of the test dataset 
             model(ModelInspector):
-                model selected during Test Suite Creation
+                uploaded model
             target(str):
                 target column name
             threshold(int):
@@ -157,7 +157,7 @@ class PerformanceTests(AbstractTestCollection):
 
         Returns:
             total rows tested:
-                length of df_slice tested
+                length of slice_df tested
             metric:
                 the Precision metric
             passed:
@@ -165,19 +165,19 @@ class PerformanceTests(AbstractTestCollection):
 
         """
         return self._test_classification_score(precision_score,
-                                               df_slice, model, target, threshold)
+                                               slice_df, model, target, threshold)
 
-    def test_recall(self, df_slice, model: ModelInspector, target, threshold=1):
+    def test_recall(self, slice_df, model: ModelInspector, target, threshold=1):
         """
-        Test if the model Recall is higher than a threshold for a given sub-population
+        Test if the model Recall is higher than a threshold for a given slice
 
-        Example: The test is passed when the Recall for women is higher than 0.7
+        Example: The test is passed when the Recall for females is higher than 0.7
 
         Args:
-            df_slice(pandas.core.frame.DataFrame):
-                sub-population of the test dataset selected during Test Suite Creation
+            slice_df(pandas.core.frame.DataFrame):
+                slice of the test dataset 
             model(ModelInspector):
-                model selected during Test Suite Creation
+                uploaded model
             target(str):
                 target column name
             threshold(int):
@@ -185,7 +185,7 @@ class PerformanceTests(AbstractTestCollection):
 
         Returns:
             total rows tested:
-                length of df_slice tested
+                length of slice_df tested
             metric:
                 the Recall metric
             passed:
@@ -193,7 +193,7 @@ class PerformanceTests(AbstractTestCollection):
 
         """
         return self._test_classification_score(recall_score,
-                                               df_slice, model, target, threshold)
+                                               slice_df, model, target, threshold)
 
     def _get_rmse(self, y_actual, y_predicted):
         return np.sqrt(mean_squared_error(y_actual, y_predicted))
@@ -206,9 +206,9 @@ class PerformanceTests(AbstractTestCollection):
 
         Args:
             df(pandas.core.frame.DataFrame):
-                test dataset selected during Test Suite Creation
+                test dataset 
             model(ModelInspector):
-                model selected during Test Suite Creation
+                uploaded model
             target(str):
                 target column name
             threshold(int):
@@ -216,7 +216,7 @@ class PerformanceTests(AbstractTestCollection):
 
         Returns:
             total rows tested:
-                length of df_slice tested
+                length of slice_df tested
             metric:
                 the RMSE metric
             passed:
@@ -233,9 +233,9 @@ class PerformanceTests(AbstractTestCollection):
 
         Args:
             df(pandas.core.frame.DataFrame):
-                test dataset selected during Test Suite Creation
+                test dataset 
             model(ModelInspector):
-                model selected during Test Suite Creation
+                uploaded model
             target(str):
                 target column name
             threshold(int):
@@ -243,7 +243,7 @@ class PerformanceTests(AbstractTestCollection):
 
         Returns:
             total rows tested:
-                length of df_slice tested
+                length of slice_df tested
             metric:
                 the MAE metric
             passed:
@@ -261,9 +261,9 @@ class PerformanceTests(AbstractTestCollection):
 
         Args:
             df(pandas.core.frame.DataFrame):
-                test dataset selected during Test Suite Creation
+                test dataset 
             model(ModelInspector):
-                model selected during Test Suite Creation
+                uploaded model
             target(str):
                 target column name
             threshold(int):
@@ -271,7 +271,7 @@ class PerformanceTests(AbstractTestCollection):
 
         Returns:
             total rows tested:
-                length of df_slice tested
+                length of slice_df tested
             metric:
                 the R-Squared metric
             passed:
@@ -308,17 +308,17 @@ class PerformanceTests(AbstractTestCollection):
 
         Args:
             df(pandas.core.frame.DataFrame):
-                test dataset selected during Test Suite Creation
+                test dataset 
             model(ModelInspector):
-                model selected during Test Suite Creation
+                uploaded model
             target(str):
                 target column name
             threshold(int):
                 threshold value for Accuracy Score difference
             filter_1(int64Index):
-                index of the sub-population of the dataset
+                index of the slice of the dataset
             filter_2(int64Index):
-                index of the sub-population of the dataset
+                index of the slice of the dataset
 
         Returns:
             total rows tested:
@@ -342,17 +342,17 @@ class PerformanceTests(AbstractTestCollection):
 
         Args:
             df(pandas.core.frame.DataFrame):
-                test dataset selected during Test Suite Creation
+                test dataset 
             model(ModelInspector):
-                model selected during Test Suite Creation
+                uploaded model
             target(str):
                 target column name
             threshold(int):
                 threshold value for F1 Score difference
             filter_1(int64Index):
-                index of the sub-population of the dataset
+                index of the slice of the dataset
             filter_2(int64Index):
-                index of the sub-population of the dataset
+                index of the slice of the dataset
 
         Returns:
             total rows tested:
@@ -376,17 +376,17 @@ class PerformanceTests(AbstractTestCollection):
 
         Args:
             df(pandas.core.frame.DataFrame):
-                test dataset selected during Test Suite Creation
+                test dataset 
             model(ModelInspector):
-                model selected during Test Suite Creation
+                uploaded model
             target(str):
                 target column name
             threshold(int):
                 threshold value for Precision difference
             filter_1(int64Index):
-                index of the sub-population of the dataset
+                index of the slice of the dataset
             filter_2(int64Index):
-                index of the sub-population of the dataset
+                index of the slice of the dataset
 
         Returns:
             total rows tested:
@@ -409,17 +409,17 @@ class PerformanceTests(AbstractTestCollection):
 
         Args:
             df(pandas.core.frame.DataFrame):
-                test dataset selected during Test Suite Creation
+                test dataset 
             model(ModelInspector):
-                model selected during Test Suite Creation
+                uploaded model
             target(str):
                 target column name
             threshold(int):
                 threshold value for Recall difference
             filter_1(int64Index):
-                index of the sub-population of the dataset
+                index of the slice of the dataset
             filter_2(int64Index):
-                index of the sub-population of the dataset
+                index of the slice of the dataset
 
         Returns:
             total rows tested:
@@ -431,12 +431,10 @@ class PerformanceTests(AbstractTestCollection):
         """
         return self._test_diff_prediction(self.test_recall, model, df, target, threshold, filter_1, filter_2)
 
-    def _test_diff_traintest(self, test_fn, model, df_train, df_test, target, threshold=0.1):
+    def _test_diff_traintest(self, test_fn, model, train_df, test_df, target, threshold=0.1):
         self.do_save_results = False
-        metric_1 = test_fn(df_train, model, target).metric
-        metric_2 = test_fn(df_test, model, target).metric
-        metric_1 = np.sqrt(metric_1) if test_fn == mean_squared_error else metric_1
-        metric_2 = np.sqrt(metric_2) if test_fn == mean_squared_error else metric_2
+        metric_1 = test_fn(train_df, model, target).metric
+        metric_2 = test_fn(test_df, model, target).metric
         self.do_save_results = True
         change_pct = abs(metric_1 - metric_2) / metric_1
 
@@ -446,23 +444,23 @@ class PerformanceTests(AbstractTestCollection):
                 passed=change_pct < threshold
             ))
 
-    def test_diff_traintest_f1(self, df_train, df_test, model, target, threshold=0.1):
+    def test_diff_traintest_f1(self, train_df, test_df, model, target, threshold=0.1):
         """
         Test if the absolute percentage change in model F1 Score between train and test data
         is lower than a threshold
 
         Example : The test is passed when the F1 Score for train dataset has a difference lower than 10% from the
-        F1 Score for test dataset. For example, if the F1 Score for train dataset is 0.8 (df_train) and the F1 Score  for
-        test dataset is 0.6 (df_test) then the absolute percentage F1 Score  change is 0.2 / 0.8 = 0.25
+        F1 Score for test dataset. For example, if the F1 Score for train dataset is 0.8 (train_df) and the F1 Score  for
+        test dataset is 0.6 (test_df) then the absolute percentage F1 Score  change is 0.2 / 0.8 = 0.25
         and the test will fail.
 
         Args:
-            df_train(pandas.core.frame.DataFrame):
-                train dataset selected during Test Suite Creation
-            df_test(pandas.core.frame.DataFrame):
-                test dataset selected during Test Suite Creation
+            train_df(pandas.core.frame.DataFrame):
+                train dataset 
+            test_df(pandas.core.frame.DataFrame):
+                test dataset 
             model(ModelInspector):
-                model selected during Test Suite Creation
+                uploaded model
             target(str):
                 target column name
             threshold(int):
@@ -476,25 +474,25 @@ class PerformanceTests(AbstractTestCollection):
                 TRUE if F1 Score difference < threshold
 
         """
-        return self._test_diff_traintest(self.test_f1, model, df_train, df_test, target, threshold)
+        return self._test_diff_traintest(self.test_f1, model, train_df, test_df, target, threshold)
 
-    def test_diff_traintest_accuracy(self, df_train, df_test, model, target, threshold=0.1):
+    def test_diff_traintest_accuracy(self, train_df, test_df, model, target, threshold=0.1):
         """
         Test if the absolute percentage change in model Accuracy between train and test data
         is lower than a threshold
 
         Example : The test is passed when the Accuracy for train dataset has a difference lower than 10% from the
-        Accuracy for test dataset. For example, if the Accuracy for train dataset is 0.8 (df_train) and the Accuracy  for
-        test dataset is 0.6 (df_test) then the absolute percentage Accuracy  change is 0.2 / 0.8 = 0.25
+        Accuracy for test dataset. For example, if the Accuracy for train dataset is 0.8 (train_df) and the Accuracy  for
+        test dataset is 0.6 (test_df) then the absolute percentage Accuracy  change is 0.2 / 0.8 = 0.25
         and the test will fail.
 
         Args:
-            df_train(pandas.core.frame.DataFrame):
-                train dataset selected during Test Suite Creation
-            df_test(pandas.core.frame.DataFrame):
-                test dataset selected during Test Suite Creation
+            train_df(pandas.core.frame.DataFrame):
+                train dataset 
+            test_df(pandas.core.frame.DataFrame):
+                test dataset 
             model(ModelInspector):
-                model selected during Test Suite Creation
+                uploaded model
             target(str):
                 target column name
             threshold(int):
@@ -508,7 +506,7 @@ class PerformanceTests(AbstractTestCollection):
                 TRUE if Accuracy difference < threshold
 
         """
-        return self._test_diff_traintest(self.test_accuracy, model, df_train, df_test, target, threshold)
+        return self._test_diff_traintest(self.test_accuracy, model, train_df, test_df, target, threshold)
 
     def test_diff_rmse(self, df, model, target, threshold=0.1, filter_1=None, filter_2=None):
         """
@@ -521,17 +519,17 @@ class PerformanceTests(AbstractTestCollection):
 
         Args:
             df(pandas.core.frame.DataFrame):
-                test dataset selected during Test Suite Creation
+                test dataset 
             model(ModelInspector):
-                model selected during Test Suite Creation
+                uploaded model
             target(str):
                 target column name
             threshold(int):
                 threshold value for RMSE difference
             filter_1(int64Index):
-                index of the sub-population of the dataset
+                index of the slice of the dataset
             filter_2(int64Index):
-                index of the sub-population of the dataset
+                index of the slice of the dataset
 
         Returns:
             total rows tested:
@@ -543,28 +541,27 @@ class PerformanceTests(AbstractTestCollection):
         """
         return self._test_diff_prediction(self.test_rmse, model, df, target, threshold, filter_1, filter_2)
 
-    def test_diff_traintest_rmse(self, df_train, df_test, model, target, threshold=0.1):
+    def test_diff_traintest_rmse(self, train_slice, test_slice, model, target, threshold=0.1):
         """
         Test if the absolute percentage change in model RMSE between train and test data
         is lower than a threshold
 
         Example : The test is passed when the RMSE for train dataset has a difference lower than 10% from the
-        RMSE for test dataset. For example, if the RMSE for train dataset is 0.8 (df_train) and the RMSE  for
-        test dataset is 0.6 (df_test) then the absolute percentage RMSE  change is 0.2 / 0.8 = 0.25
+        RMSE for test dataset. For example, if the RMSE for train dataset is 0.8 (train_df) and the RMSE  for
+        test dataset is 0.6 (test_df) then the absolute percentage RMSE  change is 0.2 / 0.8 = 0.25
         and the test will fail.
 
         Args:
-            df_train(pandas.core.frame.DataFrame):
-                train dataset selected during Test Suite Creation
-            df_test(pandas.core.frame.DataFrame):
-                test dataset selected during Test Suite Creation
+            train_slice(pandas.core.frame.DataFrame):
+                slice of train dataset
+            test_slice(pandas.core.frame.DataFrame):
+                slice of test dataset
             model(ModelInspector):
-                model selected during Test Suite Creation
+                uploaded model
             target(str):
                 target column name
             threshold(int):
                 threshold value for RMSE difference
-
 
         Returns:
             metric:
@@ -573,4 +570,4 @@ class PerformanceTests(AbstractTestCollection):
                 TRUE if RMSE difference < threshold
 
         """
-        return self._test_diff_traintest(self.test_rmse, model, df_train, df_test, target, threshold)
+        return self._test_diff_traintest(self.test_rmse, model, train_slice, test_slice, target, threshold)
