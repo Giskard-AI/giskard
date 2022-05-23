@@ -6,17 +6,15 @@ import pandas as pd
 from ai_inspector import ModelInspector
 from ai_inspector.io_utils import decompress
 from eli5.lime import TextExplainer
+from ml_worker_pb2 import ExplainResponse, ExplainTextResponse
 from zstandard import ZstdDecompressor
 
 from generated.ml_worker_pb2 import RunTestRequest, TestResultMessage, RunModelResponse, RunModelRequest, DataFrame, \
     DataRow, RunModelForDataFrameResponse, RunModelForDataFrameRequest, ExplainRequest, ExplainTextRequest
 from generated.ml_worker_pb2_grpc import MLWorkerServicer
-from ml_worker.core.files_utils import read_model_file, read_dataset_file
 from ml_worker.core.ml import run_predict
 from ml_worker.core.model_explanation import explain, text_explanation_prediction_wrapper, parse_text_explainer_response
 from ml_worker.testing.functions import GiskardTestFunctions
-from ml_worker_pb2 import ExplainResponse, ExplainTextResponse
-from mltask_server_runner import settings
 
 logger = logging.getLogger()
 
@@ -30,18 +28,17 @@ class MLTaskServer(MLWorkerServicer):
         self.counter = start_counter
 
     def runTest(self, request: RunTestRequest, context) -> TestResultMessage:
-        root = settings.storage_root
-        model_path = root / request.model_path
+        model_inspector: ModelInspector = cloudpickle.load(ZstdDecompressor().stream_reader(request.serialized_model))
 
         tests = GiskardTestFunctions()
         _globals = {
-            'model': read_model_file(str(model_path.absolute())),
+            'model': model_inspector,
             'tests': tests
         }
-        if request.train_dataset_path:
-            _globals['train_df'] = read_dataset_file(str((root / request.train_dataset_path).absolute()))
-        if request.test_dataset_path:
-            _globals['test_df'] = read_dataset_file(str((root / request.test_dataset_path).absolute()))
+        if request.serialized_train_df:
+            _globals['train_df'] = pd.read_csv(BytesIO(decompress(request.serialized_train_df)))
+        if request.serialized_test_df:
+            _globals['test_df'] = pd.read_csv(BytesIO(decompress(request.serialized_test_df)))
 
         exec(request.code, _globals)
 
