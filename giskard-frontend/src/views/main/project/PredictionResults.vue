@@ -2,7 +2,7 @@
   <v-card class="mb-4">
     <OverlayLoader v-show="loading"/>
     <v-card-title>Result</v-card-title>
-    <v-card-text class="text-center">
+    <v-card-text class="text-center" v-if="inputData">
       <v-row v-if="prediction && isClassification(predictionTask)">
         <v-col
             lg="8"
@@ -99,7 +99,7 @@ export default class PredictionResults extends Vue {
   @Prop({required: true}) predictionTask!: ModelType;
   @Prop() targetFeature!: string;
   @Prop() classificationLabels!: string[];
-  @Prop({default: {}}) inputData!: object;
+  @Prop() inputData!: object;
   @Prop({default: false}) modified!: boolean;
 
   prediction: string | number | undefined = "";

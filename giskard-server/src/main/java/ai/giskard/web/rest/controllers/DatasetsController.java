@@ -2,6 +2,7 @@ package ai.giskard.web.rest.controllers;
 
 import ai.giskard.repository.ml.DatasetRepository;
 import ai.giskard.service.DatasetService;
+import ai.giskard.web.dto.FeatureMetadataDTO;
 import ai.giskard.web.dto.MessageDTO;
 import ai.giskard.web.dto.mapper.GiskardMapper;
 import ai.giskard.web.dto.ml.DatasetDTO;
@@ -65,5 +66,10 @@ public class DatasetsController {
     public MessageDTO deleteDataset(@PathVariable @NotNull Long datasetId) {
         datasetService.deleteDataset(datasetId);
         return new MessageDTO("Dataset {} has been deleted", datasetId);
+    }
+
+    @GetMapping("/dataset/{datasetId}/features")
+    public List<FeatureMetadataDTO> datasetFeaturesMetadata(@PathVariable @NotNull Long datasetId) {
+        return datasetService.getFeaturesWithDistinctValues(datasetId);
     }
 }

@@ -1,5 +1,6 @@
 package ai.giskard.service;
 
+import ai.giskard.domain.FeatureType;
 import ai.giskard.domain.Project;
 import ai.giskard.domain.ml.Dataset;
 import ai.giskard.domain.ml.ModelType;
@@ -8,7 +9,6 @@ import ai.giskard.repository.ProjectRepository;
 import ai.giskard.repository.UserRepository;
 import ai.giskard.repository.ml.DatasetRepository;
 import ai.giskard.repository.ml.ModelRepository;
-import ai.giskard.security.JSON;
 import ai.giskard.web.dto.ModelUploadParamsDTO;
 import ai.giskard.web.dto.mapper.GiskardMapper;
 import lombok.RequiredArgsConstructor;
@@ -85,8 +85,8 @@ public class FileUploadService {
         model.setLanguage(modelParams.getLanguage());
         model.setModelType(getModelType(modelParams));
         model.setThreshold(modelParams.getThreshold());
-        model.setFeatureNames(JSON.toJSON(modelParams.getFeatureNames()));
-        model.setClassificationLabels(JSON.toJSON(modelParams.getClassificationLabels()));
+        model.setFeatureNames(modelParams.getFeatureNames());
+        model.setClassificationLabels(modelParams.getClassificationLabels());
         return model;
     }
 
@@ -143,14 +143,14 @@ public class FileUploadService {
 
     @PreAuthorize("@permissionEvaluator.canWriteProject( #project.id)")
     @Transactional
-    public Dataset uploadDataset(Project project, String datasetName, Map<String, String> featureTypes, String target, InputStream inputStream) {
+    public Dataset uploadDataset(Project project, String datasetName, Map<String, FeatureType> featureTypes, String target, InputStream inputStream) {
         Path datasetPath = locationService.datasetsDirectory(project.getKey());
         createOrEnsureOutputDirectory(datasetPath);
 
         Dataset dataset = new Dataset();
         dataset.setName(nameOrDefault(datasetName, "Dataset"));
         dataset.setProject(project);
-        dataset.setFeatureTypes(JSON.toJSON(featureTypes));
+        dataset.setFeatureTypes(featureTypes);
         dataset.setTarget(target);
         dataset = datasetRepository.save(dataset);
 

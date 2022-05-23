@@ -80,14 +80,6 @@ export default new Router({
                   props: route => ({
                     inspectionId: Number(route.params.inspectionId)
                   })
-                  // beforeEnter(to, from, next) {
-                  //   if (!to.query.dataset || !to.query.model
-                  //       || isNaN(parseInt(to.query.model.toString()))
-                  //       || isNaN(parseInt(to.query.dataset.toString()))) {
-                  //     // query is not valid, redirect back to basic project view
-                  //     next({name: 'project-models', params: {id: to.params.id}})
-                  //   } else next()
-                  // }
                 },
                 {
                   path: 'feedbacks',
