@@ -4,22 +4,24 @@ order: 3
 items:
   - id: auc
     title: AUC
-    hint: Test if the AUC is high enough for a sub-population
+    hint: Test if the AUC is high enough for a slice
     modelTypes:
       - MULTICLASS_CLASSIFICATION
       - BINARY_CLASSIFICATION
     # language=Python
     code: |-
       """
-        Test if the model AUC performance is higher than a threshold for a given sub-population
+        Summary: Test if the AUC is high enough for a slice
 
-        Example : The test is passed when the AUC for women is higher than 0.7
+        Description: Test if the model AUC performance is higher than a threshold for a given slice
+
+        Example: The test is passed when the AUC for women is higher than 0.7
 
         Args:
-            df_slice(pandas.core.frame.DataFrame):
-                sub-population of the test dataset selected during Test Suite Creation
+            slice_df(pandas.core.frame.DataFrame):
+                slice of the test dataset
             model(ModelInspector):
-                model selected during Test Suite Creation
+                uploaded model
             target(str):
                 target column name
             threshold(int):
@@ -27,7 +29,7 @@ items:
 
         Returns:
             total rows tested:
-                length of df_slice tested
+                length of slice_df tested
             metric:
                 the AUC performance metric
             passed:
@@ -35,7 +37,7 @@ items:
 
         """
         tests.performance.test_auc(
-            df_slice=test_df[:len(test_df) // 2],
+            slice_df=test_df[:len(test_df) // 2],
             model=model,
             threshold=0.1,
             target='<TARGET COLUMN>'
@@ -43,19 +45,21 @@ items:
 
   - id: f1
     title: F1
-    hint: Test if the F1 score is high enough for a sub-population
+    hint: Test if the F1 score is high enough for a slice
     # language=Python
     code: |-
       """
-        Test if the model F1 score is higher than a defined threshold for a given sub-population
+        Summary: Test if the F1 score is high enough for a slice
+
+        Description: Test if the model F1 score is higher than a defined threshold for a given slice
 
         Example: The test is passed when F1 score for women is higher than 0.7
 
         Args:
-            df_slice(pandas.core.frame.DataFrame):
-                sub-population of the test dataset selected during Test Suite Creation
+            slice_df(pandas.core.frame.DataFrame):
+                slice of the test dataset
             model(ModelInspector):
-                model selected during Test Suite Creation
+                uploaded model
             target(str):
                 target column name
             threshold(int):
@@ -63,14 +67,14 @@ items:
 
         Returns:
             total rows tested:
-                length of df_slice tested
+                length of slice_df tested
             metric:
                 the F1 score metric
             passed:
                 TRUE if F1 Score metrics > threshold
       """
       tests.performance.test_f1(
-          df_slice=test_df[:len(test_df) // 2],
+          slice_df=test_df[:len(test_df) // 2],
           model=model,
           threshold=0.1,
           target='<TARGET COLUMN>'
@@ -84,7 +88,10 @@ items:
     # language=Python
     code: |-
       """
-        Test if the absolute percentage change in model F1 Score between two samples is lower than a threshold
+        Summary : Test if the F1 score is equal between two samples
+
+        Description: Test if the absolute percentage change in model F1 Score between two samples
+        is lower than a threshold
 
         Example : The test is passed when the F1 Score for females has a difference lower than 10% from the
         F1 Score for males. For example, if the F1 Score for males is 0.8 (filter_1) and the F1 Score  for
@@ -93,17 +100,17 @@ items:
 
         Args:
             df(pandas.core.frame.DataFrame):
-                test dataset selected during Test Suite Creation
+                test dataset
             model(ModelInspector):
-                model selected during Test Suite Creation
+                uploaded model
             target(str):
                 target column name
             threshold(int):
                 threshold value for F1 Score difference
             filter_1(pandas.core.indexes.numeric.NumericIndex):
-                index of the sub-population of the dataset
+                index of the slice of the dataset
             filter_2(pandas.core.indexes.numeric.NumericIndex):
-                index of the sub-population of the dataset
+                index of the slice of the dataset
 
         Returns:
             total rows tested:
@@ -131,21 +138,23 @@ items:
     # language=Python
     code: |-
       """
-        Test if the absolute percentage change in model F1 Score between train and test data
+        Summary : Test if the F1 score is equal between train and test dataset
+
+        Description: Test if the absolute percentage change in model F1 Score between train and test data
         is lower than a threshold
 
-        Example : The test is passed when the F1 Score for train dataset has a difference lower than 10% from the
-        F1 Score for test dataset. For example, if the F1 Score for train dataset is 0.8 (df_train) and the F1 Score  for
-        test dataset is 0.6 (df_test) then the absolute percentage F1 Score  change is 0.2 / 0.8 = 0.25
-        and the test will fail.
+        Example: The test is passed when the F1 Score for train dataset for females has a difference lower
+        than 10% from the F1 Score for test dataset for females . For example, if the F1 Score for train
+        dataset for females is 0.8 (train_df) and the F1 Score  for test dataset is 0.6 (test_df) then
+        the absolute percentage F1 Score  change is 0.2 / 0.8 = 0.25 and the test will fail.
 
         Args:
-            df_train(pandas.core.frame.DataFrame):
-                train dataset selected during Test Suite Creation
-            df_test(pandas.core.frame.DataFrame):
-                test dataset selected during Test Suite Creation
+            train_df(pandas.core.frame.DataFrame):
+                train dataset
+            test_df(pandas.core.frame.DataFrame):
+                test dataset
             model(ModelInspector):
-                model selected during Test Suite Creation
+                uploaded model
             target(str):
                 target column name
             threshold(int):
@@ -160,30 +169,32 @@ items:
 
       """
       tests.performance.test_diff_traintest_f1(
-          df_train=train_df,
-          df_test=test_df,
+          train_df=train_df,
+          test_df=test_df,
           model=model,
           threshold=0.1,
           target='<TARGET COLUMN>'
       )
   - id: accuracy
     title: Accuracy
-    hint: Test if the Accuracy is high enough for a sub-population
+    hint: Test if the Accuracy is high enough for a slice
     modelTypes:
       - MULTICLASS_CLASSIFICATION
       - BINARY_CLASSIFICATION
     # language=Python
     code: |-
       """
-        Test if the model Accuracy is higher than a threshold for a given sub-population
+        Summary: Test if the Accuracy is high enough for a slice
+
+        Description: Test if the model Accuracy is higher than a threshold for a given slice
 
         Example: The test is passed when the Accuracy for women is higher than 0.7
 
         Args:
-            df_slice(pandas.core.frame.DataFrame):
-                sub-population of the test dataset selected during Test Suite Creation
+            slice_df(pandas.core.frame.DataFrame):
+                slice of the test dataset
             model(ModelInspector):
-                model selected during Test Suite Creation
+                uploaded model
             target(str):
                 target column name
             threshold(int):
@@ -191,7 +202,7 @@ items:
 
         Returns:
             total rows tested:
-                length of df_slice tested
+                length of slice_df tested
             metric:
                 the Accuracy metric
             passed:
@@ -199,7 +210,7 @@ items:
 
       """
       tests.performance.test_accuracy(
-          df_slice=test_df[:len(test_df) // 2],
+          slice_df=test_df[:len(test_df) // 2],
           model=model,
           threshold=0.1,
           target='<TARGET COLUMN>'
@@ -213,7 +224,9 @@ items:
     # language=Python
     code: |-
       """
-        Test if the absolute percentage change of model Accuracy between two samples is lower than a threshold
+        Summary : Test if the Accuracy is equal between the two samples
+
+        Description: Test if the absolute percentage change of model Accuracy between two samples is lower than a threshold
 
         Example : The test is passed when the Accuracy for females has a difference lower than 10% from the
         Accuracy for males. For example, if the Accuracy for males is 0.8 (filter_1) and the Accuracy  for
@@ -222,17 +235,17 @@ items:
 
         Args:
             df(pandas.core.frame.DataFrame):
-                test dataset selected during Test Suite Creation
+                test dataset
             model(ModelInspector):
-                model selected during Test Suite Creation
+                uploaded model
             target(str):
                 target column name
             threshold(int):
                 threshold value for Accuracy Score difference
             filter_1(pandas.core.indexes.numeric.NumericIndex):
-                index of the sub-population of the dataset
+                index of the slice of the dataset
             filter_2(pandas.core.indexes.numeric.NumericIndex):
-                index of the sub-population of the dataset
+                index of the slice of the dataset
 
         Returns:
             total rows tested:
@@ -259,21 +272,23 @@ items:
     # language=Python
     code: |-
       """
-        Test if the absolute percentage change in model Accuracy between train and test data
+        Summary: Test if the Accuracy is equal between train and test dataset
+
+        Description: Test if the absolute percentage change in model Accuracy between train and test data
         is lower than a threshold
 
-        Example : The test is passed when the Accuracy for train dataset has a difference lower than 10% from the
-        Accuracy for test dataset. For example, if the Accuracy for train dataset is 0.8 (df_train) and the Accuracy  for
-        test dataset is 0.6 (df_test) then the absolute percentage Accuracy  change is 0.2 / 0.8 = 0.25
-        and the test will fail.
+        Example : The test is passed when the Accuracy for train dataset for females has a difference lower
+        than 10% from the Accuracy for test dataset for females. For example, if the Accuracy for train
+        dataset for females is 0.8 (train_df) and the Accuracy  for test dataset for females is 0.6 (test_df)
+        then the absolute percentage Accuracy  change is 0.2 / 0.8 = 0.25 and the test will fail.
 
         Args:
-            df_train(pandas.core.frame.DataFrame):
-                train dataset selected during Test Suite Creation
-            df_test(pandas.core.frame.DataFrame):
-                test dataset selected during Test Suite Creation
+            train_df(pandas.core.frame.DataFrame):
+                train dataset
+            test_df(pandas.core.frame.DataFrame):
+                test dataset
             model(ModelInspector):
-                model selected during Test Suite Creation
+                uploaded model
             target(str):
                 target column name
             threshold(int):
@@ -287,30 +302,32 @@ items:
                 TRUE if Accuracy difference < threshold
       """
       tests.performance.test_diff_traintest_accuracy(
-          df_train=train_df,
-          df_test=test_df,
+          train_df=train_df,
+          test_df=test_df,
           model=model,
           threshold=0.1,
           target='<TARGET COLUMN>'
       )
   - id: precision
     title: Precision
-    hint: Test if the Precision is high enough for a sub-population
+    hint: Test if the Precision is high enough for a slice
     modelTypes:
       - MULTICLASS_CLASSIFICATION
       - BINARY_CLASSIFICATION
     # language=Python
     code: |-
       """
-        Test if the model Precision is higher than a threshold for a given sub-population
+       Summary: Test if the Precision is high enough for a slice
+
+        Description: Test if the model Precision is higher than a threshold for a given slice
 
         Example: The test is passed when the Precision for women is higher than 0.7
 
         Args:
-            df_slice(pandas.core.frame.DataFrame):
-                sub-population of the test dataset selected during Test Suite Creation
+            slice_df(pandas.core.frame.DataFrame):
+                slice of the test dataset
             model(ModelInspector):
-                model selected during Test Suite Creation
+                uploaded model
             target(str):
                 target column name
             threshold(int):
@@ -318,7 +335,7 @@ items:
 
         Returns:
             total rows tested:
-                length of df_slice tested
+                length of slice_df tested
             metric:
                 the Precision metric
             passed:
@@ -326,7 +343,7 @@ items:
 
         """
       tests.performance.test_precision(
-          df_slice=test_df[:len(test_df) // 2],
+          slice_df=test_df[:len(test_df) // 2],
           model=model,
           threshold=0.1,
           target='<TARGET COLUMN>'
@@ -340,7 +357,9 @@ items:
     # language=Python
     code: |-
       """
-        Test if the absolute percentage change of model Precision between two samples is lower than a threshold
+        Summary: Test if the Precision is equal between the two samples
+
+        Description: Test if the absolute percentage change of model Precision between two samples is lower than a threshold
 
         Example : The test is passed when the Precision for females has a difference lower than 10% from the
         Accuracy for males. For example, if the Precision for males is 0.8 (filter_1) and the Precision  for
@@ -349,17 +368,17 @@ items:
 
         Args:
             df(pandas.core.frame.DataFrame):
-                test dataset selected during Test Suite Creation
+                test dataset
             model(ModelInspector):
-                model selected during Test Suite Creation
+                uploaded model
             target(str):
                 target column name
             threshold(int):
                 threshold value for Precision difference
             filter_1(pandas.core.indexes.numeric.NumericIndex):
-                index of the sub-population of the dataset
+                index of the slice of the dataset
             filter_2(pandas.core.indexes.numeric.NumericIndex):
-                index of the sub-population of the dataset
+                index of the slice of the dataset
 
         Returns:
             total rows tested:
@@ -379,22 +398,24 @@ items:
       )
   - id: recall
     title: Recall
-    hint: Test if the Recall is high enough for a sub-population
+    hint: Test if the Recall is high enough for a slice
     modelTypes:
       - MULTICLASS_CLASSIFICATION
       - BINARY_CLASSIFICATION
     # language=Python
     code: |-
       """
-        Test if the model Recall is higher than a threshold for a given sub-population
+        Summary: Test if the Recall is high enough for a slice
+
+        Description: Test if the model Recall is higher than a threshold for a given slice
 
         Example: The test is passed when the Recall for women is higher than 0.7
 
         Args:
-            df_slice(pandas.core.frame.DataFrame):
-                sub-population of the test dataset selected during Test Suite Creation
+            slice_df(pandas.core.frame.DataFrame):
+                slice of the test dataset
             model(ModelInspector):
-                model selected during Test Suite Creation
+                uploaded model
             target(str):
                 target column name
             threshold(int):
@@ -402,7 +423,7 @@ items:
 
         Returns:
             total rows tested:
-                length of df_slice tested
+                length of slice_df tested
             metric:
                 the Recall metric
             passed:
@@ -410,7 +431,7 @@ items:
 
         """
       tests.performance.test_recall(
-          df_slice=test_df[:len(test_df) // 2],
+          slice_df=test_df[:len(test_df) // 2],
           model=model,
           threshold=0.1,
           target='<TARGET COLUMN>'
@@ -424,26 +445,28 @@ items:
     # language=Python
     code: |-
       """
-        Test if the absolute percentage change of model Recall between two samples is lower than a threshold
+        Summary: Test if the Recall is equal between the two samples
+
+        Description: Test if the absolute percentage change of model Recall between two samples is lower than a threshold
 
         Example : The test is passed when the Recall for females has a difference lower than 10% from the
-        Accuracy for males. For example, if the Recall for males is 0.8 (df_filter_1) and the Recall  for
+        Accuracy for males. For example, if the Recall for males is 0.8 (filter_1) and the Recall  for
         females is 0.6 (filter_2) then the absolute percentage Recall change is 0.2 / 0.8 = 0.25
         and the test will fail
 
         Args:
             df(pandas.core.frame.DataFrame):
-                test dataset selected during Test Suite Creation
+                test dataset
             model(ModelInspector):
-                model selected during Test Suite Creation
+                uploaded model
             target(str):
                 target column name
             threshold(int):
                 threshold value for Recall difference
             filter_1(pandas.core.indexes.numeric.NumericIndex):
-                index of the sub-population of the dataset
+                index of the slice of the dataset
             filter_2(pandas.core.indexes.numeric.NumericIndex):
-                index of the sub-population of the dataset
+                index of the slice of the dataset
 
         Returns:
             total rows tested:
@@ -469,15 +492,17 @@ items:
     # language=Python
     code: |-
       """
-        Test if the model RMSE is lower than a threshold
+        Summary: Test if  the Root Mean Square Error value is low enough for the dataset
+
+        Description: Test if the model RMSE is lower than a threshold
 
         Example: The test is passed when the RMSE is lower than 0.7
 
         Args:
             df(pandas.core.frame.DataFrame):
-                test dataset selected during Test Suite Creation
+                test dataset
             model(ModelInspector):
-                model selected during Test Suite Creation
+                uploaded model
             target(str):
                 target column name
             threshold(int):
@@ -485,7 +510,7 @@ items:
 
         Returns:
             total rows tested:
-                length of df_slice tested
+                length of slice_df tested
             metric:
                 the RMSE metric
             passed:
@@ -506,7 +531,9 @@ items:
     # language=Python
     code: |-
       """
-        Test if the absolute percentage change of model RMSE between two samples is lower than a threshold
+        Summary: Test if the RMSE is equal between the two samples
+
+        Description: Test if the absolute percentage change of model RMSE between two samples is lower than a threshold
 
         Example : The test is passed when the RMSE for females has a difference lower than 10% from the
         RMSE for males. For example, if the RMSE for males is 0.8 (filter_1) and the RMSE  for
@@ -515,17 +542,17 @@ items:
 
         Args:
             df(pandas.core.frame.DataFrame):
-                test dataset selected during Test Suite Creation
+                test dataset
             model(ModelInspector):
-                model selected during Test Suite Creation
+                uploaded model
             target(str):
                 target column name
             threshold(int):
                 threshold value for RMSE difference
             filter_1(pandas.core.indexes.numeric.NumericIndex):
-                index of the sub-population of the dataset
+                index of the slice of the dataset
             filter_2(pandas.core.indexes.numeric.NumericIndex):
-                index of the sub-population of the dataset
+                index of the slice of the dataset
 
         Returns:
             total rows tested:
@@ -545,32 +572,33 @@ items:
       )
   - id: diff_traintest_rmse
     title: RMSE Train Test difference
-    hint: Test if the RMSE is equal between train and test dataset
+    hint: Test if the RMSE is equal between two slices of train and test dataset
     modelTypes:
       - REGRESSION
     # language=Python
     code: |-
       """
-        Test if the absolute percentage change in model RMSE between train and test data
+        Summary: Test if the RMSE is equal between two slices of train and test dataset
+
+        Description: Test if the absolute percentage change in model RMSE between slices of  train and test data
         is lower than a threshold
 
-        Example : The test is passed when the RMSE for train dataset has a difference lower than 10% from the
-        RMSE for test dataset. For example, if the RMSE for train dataset is 0.8 (df_train) and the RMSE  for
-        test dataset is 0.6 (df_test) then the absolute percentage RMSE  change is 0.2 / 0.8 = 0.25
-        and the test will fail.
+        Example : The test is passed when the RMSE for train dataset for females  has a difference lower
+       than 10% from the RMSE for females in test dataset. For example, if the RMSE for train dataset
+       for females is 0.8 (train_df) and the RMSE  for test dataset for females is 0.6 (test_df) then
+       the absolute percentage RMSE  change is 0.2 / 0.8 = 0.25 and the test will fail.
 
         Args:
-            df_train(pandas.core.frame.DataFrame):
-                train dataset selected during Test Suite Creation
-            df_test(pandas.core.frame.DataFrame):
-                test dataset selected during Test Suite Creation
+            train_df(pandas.core.frame.DataFrame):
+                train dataset
+            test_df(pandas.core.frame.DataFrame):
+                test dataset
             model(ModelInspector):
-                model selected during Test Suite Creation
+                uploaded model
             target(str):
                 target column name
             threshold(int):
                 threshold value for RMSE difference
-
 
         Returns:
             metric:
@@ -580,8 +608,8 @@ items:
 
       """
       tests.performance.test_diff_traintest_rmse(
-          df_train=train_df,
-          df_test=test_df,
+          train_slice=train_df[:len(test_df)//2],
+          test_slice=test_df[len(test_df)//2:],
           model=model,
           threshold=0.1,
           target='<TARGET COLUMN>'
@@ -594,15 +622,17 @@ items:
     # language=Python
     code: |-
         """
-        Test if the model Mean Absolute Error is lower than a threshold
+        Summary: Test if  the negative Mean Absolute Error value is low enough for the dataset
+
+        Description: Test if the model Mean Absolute Error is lower than a threshold
 
         Example: The test is passed when the MAE is lower than 0.7
 
         Args:
             df(pandas.core.frame.DataFrame):
-                test dataset selected during Test Suite Creation
+                test dataset
             model(ModelInspector):
-                model selected during Test Suite Creation
+                uploaded model
             target(str):
                 target column name
             threshold(int):
@@ -610,7 +640,7 @@ items:
 
         Returns:
             total rows tested:
-                length of df_slice tested
+                length of slice_df tested
             metric:
                 the MAE metric
             passed:
@@ -631,15 +661,17 @@ items:
     # language=Python
     code: |-
         """
-        TTest if the model R-Squared is higher than a threshold
+        Summary: Test if  the R-Squared value is high enough for the dataset
+
+        Description: Test if the model R-Squared is higher than a threshold
 
         Example: The test is passed when the R-Squared is higher than 0.7
 
         Args:
             df(pandas.core.frame.DataFrame):
-                test dataset selected during Test Suite Creation
+                test dataset
             model(ModelInspector):
-                model selected during Test Suite Creation
+                uploaded model
             target(str):
                 target column name
             threshold(int):
@@ -647,7 +679,7 @@ items:
 
         Returns:
             total rows tested:
-                length of df_slice tested
+                length of slice_df tested
             metric:
                 the R-Squared metric
             passed:
