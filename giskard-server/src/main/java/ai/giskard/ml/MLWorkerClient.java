@@ -46,18 +46,20 @@ public class MLWorkerClient implements AutoCloseable {
         futureStub = MLWorkerGrpc.newFutureStub(channel);
     }
 
-    public ListenableFuture<TestResultMessage> runTest(TestSuite testSuite, Test test) {
-        ProjectModel model = testSuite.getModel();
+    public ListenableFuture<TestResultMessage> runTest(
+        InputStream modelInputStream,
+        InputStream trainDFStream,
+        InputStream testDFStream,
+        Test test
+    ) throws IOException {
         RunTestRequest.Builder requestBuilder = RunTestRequest.newBuilder()
             .setCode(test.getCode())
-            .setModelPath(FileLocationService.modelRelativePath(model).toString());
-        Dataset trainDS = testSuite.getTrainDataset();
-        if (trainDS != null) {
-            requestBuilder.setTrainDatasetPath(FileLocationService.datasetRelativePath(trainDS).toString());
+            .setSerializedModel(ByteString.readFrom(modelInputStream));
+        if (trainDFStream != null) {
+            requestBuilder.setSerializedTrainDf(ByteString.readFrom(trainDFStream));
         }
-        Dataset testDS = testSuite.getTestDataset();
-        if (testDS != null) {
-            requestBuilder.setTestDatasetPath(FileLocationService.datasetRelativePath(testDS).toString());
+        if (testDFStream != null) {
+            requestBuilder.setSerializedTestDf(ByteString.readFrom(testDFStream));
         }
         RunTestRequest request = requestBuilder.build();
         logger.debug("Sending requiest to ML Worker: {}", request);

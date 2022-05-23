@@ -71,9 +71,9 @@ message RunModelResponse{
 
 message RunTestRequest {
   string code = 1;
-  string model_path = 2;
-  string train_dataset_path = 3;
-  string test_dataset_path = 4;
+  bytes serialized_model = 2;
+  bytes serialized_test_df = 3;
+  bytes serialized_train_df = 4;
 }
 
 message RunTestResponse {
