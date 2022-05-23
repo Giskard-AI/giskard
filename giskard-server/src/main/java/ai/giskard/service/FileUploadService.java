@@ -66,7 +66,7 @@ public class FileUploadService {
         }
         model.setFileName(modelFilename);
 
-        String requirementsFilename = createZSTname("model-requirements_", savedModel.getId());
+        String requirementsFilename = String.format("model-requirements_%s.txt", savedModel.getId());
         Path requirementsFilePath = projectModelsPath.resolve(requirementsFilename);
         try {
             requirementsStream.transferTo(Files.newOutputStream(requirementsFilePath));
