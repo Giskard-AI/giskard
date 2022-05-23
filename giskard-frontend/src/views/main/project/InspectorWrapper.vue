@@ -28,7 +28,6 @@
              :shuffleMode='shuffleMode'
              @fetchedRow='getCurrentRow'
     />
-
     <Inspector class='px-0'
                :model='inspection.model'
                :dataset='inspection.dataset'
@@ -142,8 +141,12 @@ export default class InspectorWrapper extends Vue {
 
   totalRows = 0;
 
-  async mounted() {
+  async init(){
     this.inspection = (await api.getInspection(this.inspectionId)).data;
+  }
+
+  async mounted() {
+    await this.init();
   }
 
   private getCurrentRow(rowDetails, totalRows: number, hasFilterChanged: boolean) {
@@ -179,8 +182,9 @@ export default class InspectorWrapper extends Vue {
   /**
    * Call on active tab
    */
-  activated() {
+  async activated() {
     this.bindKeys();
+    await this.init();
   }
 
   deactivated() {
