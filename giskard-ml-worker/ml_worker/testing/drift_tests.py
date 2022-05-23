@@ -328,7 +328,7 @@ class DriftTests(AbstractTestCollection):
                                          chi_square_contribution_percent: float = 0.2):
         """
         Test if the Chi Square value between the train and test datasets is below the threshold
-        for the classification labels predictions
+        for the classification labels predictions for a given slice
 
         Example : The test is passed when the  Chi Square value of classification labels prediction
         for females between train and test sets is below 0.2
@@ -343,7 +343,7 @@ class DriftTests(AbstractTestCollection):
             max_categories:
                 the maximum categories to compute the PSI score
             threshold:
-                threshold value for Chi-Square
+                threshold value for p-value
             chi_square_contribution_percent:
                 the ratio between the Chi-Square value of a given category over the total Chi-Square
                 value of the categorical variable. If there is a drift, the test provides all the
@@ -351,11 +351,11 @@ class DriftTests(AbstractTestCollection):
 
         Returns:
             passed:
-                TRUE if chi-square value <= threshold
+                TRUE if p_value > threshold
             metric:
-                chi_square value
+                p-value of chi_square test
             messages:
-                message describing if data is drifting or not
+                message describing if prediction is drifting or not
 
         """
         prediction_train = run_predict(slice_train, model).prediction
@@ -463,11 +463,11 @@ class DriftTests(AbstractTestCollection):
             classification_label:
                 one specific label value from the target column for classification model
             threshold:
-                threshold for p-value Kolmogorov-Smirnov test
+                threshold for earth mover's distance
 
         Returns:
             passed:
-                TRUE if metric >= threshold
+                TRUE if metric <= threshold
             metric:
                 Earth Mover's Distance value
 
