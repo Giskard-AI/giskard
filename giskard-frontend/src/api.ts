@@ -1,6 +1,5 @@
 import axios from 'axios';
 import {apiUrl, apiUrlJava} from '@/env';
-import {IDataMetadata} from './interfaces';
 import {getLocalToken} from '@/utils';
 import {
   AdminUserDTO,
@@ -10,6 +9,7 @@ import {
   CreateFeedbackReplyDTO,
   DatasetDTO,
   ExplainResponseDTO,
+  FeatureMetadataDTO,
   FeedbackDTO,
   FeedbackMinimalDTO,
   InspectionCreateDTO,
@@ -165,8 +165,8 @@ export const api = {
     async peekDataFile(datasetId: number) {
         return axios.get(`${apiUrlJava}/api/v2/dataset/${datasetId}/rows`, {params: {offset: 0, size: 10}});
     },
-  async getFeaturesMetadata(modelId: number, datasetId: number) {
-    return axios.get<IDataMetadata[]>(`${apiUrl}/api/v1/models/${modelId}/features/${datasetId}`);
+  async getFeaturesMetadata(datasetId: number) {
+    return axios.get<FeatureMetadataDTO[]>(`${apiUrlJava}/api/v2/dataset/${datasetId}/features`);
   },
     async getDataFilteredByRange(inspectionId, props, filter) {
         return axios.post(`${apiUrlJava}/api/v2/inspection/${inspectionId}/rowsFiltered`,filter,{params:props});
@@ -213,8 +213,8 @@ export const api = {
   async getProjectFeedbacks(token: string, projectId: number) {
     return axios.get<FeedbackMinimalDTO[]>(`${apiUrlJava}/api/v2/feedbacks/all/${projectId}`, authHeaders(token));
   },
-  async getFeedback(token: string, id: number) {
-    return axios.get<FeedbackDTO>(`${apiUrlJava}/api/v2/feedbacks/${id}`, authHeaders(token));
+  async getFeedback(id: number) {
+    return axios.get<FeedbackDTO>(`${apiUrlJava}/api/v2/feedbacks/${id}`);
   },
   async replyToFeedback(token: string, feedbackId: number, content: string, replyToId: number | null = null) {
     return axios.post(`${apiUrlJava}/api/v2/feedbacks/${feedbackId}/reply`,

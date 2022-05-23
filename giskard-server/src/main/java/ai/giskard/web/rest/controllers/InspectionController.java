@@ -3,6 +3,7 @@ package ai.giskard.web.rest.controllers;
 import ai.giskard.domain.ml.Inspection;
 import ai.giskard.domain.ml.table.Filter;
 import ai.giskard.repository.InspectionRepository;
+import ai.giskard.service.DatasetService;
 import ai.giskard.service.InspectionService;
 import ai.giskard.service.ModelService;
 import ai.giskard.web.dto.InspectionCreateDTO;
@@ -33,6 +34,7 @@ public class InspectionController {
     private final InspectionService inspectionService;
     private final ModelService modelService;
     private final InspectionRepository inspectionRepository;
+    private final DatasetService datasetService;
     private final GiskardMapper giskardMapper;
 
     /**
@@ -76,7 +78,7 @@ public class InspectionController {
      * @return List of labels
      */
     @GetMapping("/inspection/{inspectionId}/labels")
-    public List<String> getLabels(@PathVariable @NotNull Long inspectionId) throws FileNotFoundException, JsonProcessingException {
+    public List<String> getLabels(@PathVariable @NotNull Long inspectionId) throws JsonProcessingException {
         return inspectionService.getLabels(inspectionId);
     }
 

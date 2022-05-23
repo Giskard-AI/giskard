@@ -3,9 +3,13 @@ package ai.giskard.web.dto.mapper;
 import ai.giskard.domain.Project;
 import ai.giskard.domain.Role;
 import ai.giskard.domain.User;
-import ai.giskard.domain.ml.*;
+import ai.giskard.domain.ml.Dataset;
+import ai.giskard.domain.ml.Inspection;
+import ai.giskard.domain.ml.ProjectModel;
+import ai.giskard.domain.ml.TestSuite;
 import ai.giskard.repository.ml.DatasetRepository;
 import ai.giskard.repository.ml.ModelRepository;
+import ai.giskard.utils.JSON;
 import ai.giskard.web.dto.ModelMetadataDTO;
 import ai.giskard.web.dto.ml.*;
 import ai.giskard.web.dto.user.AdminUserDTO;
@@ -21,7 +25,7 @@ import java.util.stream.Collectors;
 @Mapper(
     componentModel = "spring",
     unmappedTargetPolicy = ReportingPolicy.ERROR,
-    uses = {DatasetRepository.class, ModelRepository.class, SimpleJSONMapper.class}
+    uses = {DatasetRepository.class, ModelRepository.class, JSON.class}
 )
 public interface GiskardMapper {
     default Set<String> roleNames(Set<Role> value) {
@@ -79,13 +83,14 @@ public interface GiskardMapper {
     List<ModelDTO> modelsToModelDTOs(List<ProjectModel> models);
 
     @Mappings({
-        @Mapping(source = "classificationLabels", target = "classificationLabels", qualifiedByName = "SimpleJSON"),
-        @Mapping(source = "featureNames", target = "featureNames", qualifiedByName = "SimpleJSON"),
+        @Mapping(source = "classificationLabels", target = "classificationLabels"),
+        @Mapping(source = "featureNames", target = "featureNames"),
     })
     ModelDTO modelToModelDTO(ProjectModel model);
 
     List<DatasetDTO> datasetsToDatasetDTOs(List<Dataset> datasets);
 
+    @Mapping(source = "featureTypes", target = "featureTypes")
     DatasetDTO datasetToDatasetDTO(Dataset dataset);
 
     List<TestSuiteDTO> testSuitesToTestSuiteDTOs(List<TestSuite> testSuites);
@@ -127,8 +132,8 @@ public interface GiskardMapper {
     }
 
     @Mappings({
-        @Mapping(source = "classificationLabels", target = "classificationLabels", qualifiedByName = "SimpleJSON"),
-        @Mapping(source = "featureNames", target = "featureNames", qualifiedByName = "SimpleJSON"),
+        @Mapping(source = "classificationLabels", target = "classificationLabels"),
+        @Mapping(source = "featureNames", target = "featureNames"),
     })
     ModelMetadataDTO modelToModelMetadataDTO(ProjectModel model);
 }

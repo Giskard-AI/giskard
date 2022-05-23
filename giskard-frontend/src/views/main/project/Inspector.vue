@@ -21,13 +21,13 @@
                 <v-list dense tile>
                   <v-list-item>
                     <v-btn tile small text color="primary"
-                           @click="featuresToView = inputMetaData.map(e => e.feat_name)">All
+                           @click="featuresToView = inputMetaData.map(e => e.name)">All
                     </v-btn>
                     <v-btn tile small text color="secondary" @click="featuresToView = []">None</v-btn>
                   </v-list-item>
-                  <v-list-item v-for="f in inputMetaData" :key="f.feat_name">
+                  <v-list-item v-for="f in inputMetaData" :key="f.name">
                     <v-checkbox
-                        :label="f.feat_name" :value="f.feat_name"
+                        :label="f.name" :value="f.name"
                         v-model="featuresToView"
                         hide-details class="mt-1"
                     ></v-checkbox>
@@ -36,48 +36,47 @@
               </v-menu>
             </v-card-title>
             <v-card-text v-if="!errorLoadingMetadata && Object.keys(inputMetaData).length > 0" id="inputTextCard">
-              <pre>{{ inputData }}</pre>
               <div class="caption error--text">{{ dataErrorMsg }}</div>
               <v-form lazy-validation>
-                <div v-for="c in inputMetaData" :key="c.feat_name"
-                     v-show="featuresToView.includes(c.feat_name)">
+                <div v-for="c in inputMetaData" :key="c.name"
+                     v-show="featuresToView.includes(c.name)">
                   <ValidationProvider
-                      :name="c.feat_name"
+                      :name="c.name"
                       v-slot="{ dirty }"
                   >
                     <div class="py-1 d-flex">
-                      <label class="info--text">{{ c.feat_name }}
+                      <label class="info--text">{{ c.name }}
                       </label>
-                      <input type="number" v-if="c.feat_type === 'numeric'"
-                             v-model="inputData[c.feat_name]"
+                      <input type="number" v-if="c.type === 'numeric'"
+                             v-model="inputData[c.name]"
                              class="common-style-input"
-                             :class="{'is-dirty': dirty || inputData[c.feat_name] !== originalData[c.feat_name]}"
+                             :class="{'is-dirty': dirty || inputData[c.name] !== originalData[c.name]}"
                              @change="$emit('update:inputData', inputData)"
                              required
                       />
-                      <textarea v-if="c.feat_type === 'text'"
-                                v-model="inputData[c.feat_name]"
-                                :rows="!inputData[c.feat_name] ? 1 : Math.min(15, parseInt(inputData[c.feat_name].length / 40) + 1)"
+                      <textarea v-if="c.type === 'text'"
+                                v-model="inputData[c.name]"
+                                :rows="!inputData[c.name] ? 1 : Math.min(15, parseInt(inputData[c.name].length / 40) + 1)"
                                 class="common-style-input"
-                                :class="{'is-dirty': dirty || inputData[c.feat_name] !== originalData[c.feat_name]}"
+                                :class="{'is-dirty': dirty || inputData[c.name] !== originalData[c.name]}"
                                 @change="$emit('update:inputData', inputData)"
                                 required
                       ></textarea>
-                      <select v-if="c.feat_type === 'category'"
-                              v-model="inputData[c.feat_name]"
+                      <select v-if="c.type === 'category'"
+                              v-model="inputData[c.name]"
                               class="common-style-input"
-                              :class="{'is-dirty': dirty || inputData[c.feat_name] !== originalData[c.feat_name]}"
+                              :class="{'is-dirty': dirty || inputData[c.name] !== originalData[c.name]}"
                               @change="$emit('update:inputData', inputData)"
                               required
                       >
-                        <option v-for="k in c.feat_cat_values" :key="k" :value="k">{{ k }}</option>
+                        <option v-for="k in c.values" :key="k" :value="k">{{ k }}</option>
                       </select>
                       <FeedbackPopover
                           v-if="!isMiniMode"
-                          :inputLabel="c.feat_name"
-                          :inputValue="inputData[c.feat_name]"
-                          :originalValue="originalData[c.feat_name]"
-                          :inputType="c.feat_type"
+                          :inputLabel="c.name"
+                          :inputValue="inputData[c.name]"
+                          :originalValue="originalData[c.name]"
+                          :inputType="c.type"
                           @submit="$emit(dirty ? 'submitValueVariationFeedback' : 'submitValueFeedback', arguments[0])"
                       />
                     </div>
@@ -153,9 +152,8 @@ import PredictionResults from './PredictionResults.vue';
 import PredictionExplanations from './PredictionExplanations.vue';
 import TextExplanation from './TextExplanation.vue';
 import {api} from '@/api';
-import {IDataMetadata} from '@/interfaces';
 import FeedbackPopover from '@/components/FeedbackPopover.vue';
-import {DatasetDTO, ModelDTO} from "@/generated-sources";
+import {DatasetDTO, FeatureMetadataDTO, ModelDTO} from "@/generated-sources";
 import {isClassification} from "@/ml-utils";
 
 @Component({
@@ -168,7 +166,7 @@ export default class Inspector extends Vue {
   @Prop({required: true}) inputData!: object
   @Prop({default: false}) isMiniMode!: boolean;
   loadingData = false;
-  inputMetaData: IDataMetadata[] = [];
+  inputMetaData: FeatureMetadataDTO[] = [];
   featuresToView: string[] = []
   errorLoadingMetadata = ""
   dataErrorMsg = ""
@@ -190,8 +188,8 @@ export default class Inspector extends Vue {
   async loadMetaData() {
     this.loadingData = true;
     try {
-      this.inputMetaData = (await api.getFeaturesMetadata(this.model.id, this.dataset.id)).data
-      this.featuresToView = this.inputMetaData.map(e => e.feat_name)
+      this.inputMetaData = (await api.getFeaturesMetadata(this.dataset.id)).data
+      this.featuresToView = this.inputMetaData.map(e => e.name)
 
       this.errorLoadingMetadata = ""
     } catch (e) {
@@ -206,11 +204,13 @@ export default class Inspector extends Vue {
   }
 
   get textFeatureNames() {
-    return this.inputMetaData.filter(e => e.feat_type == 'text').map(e => e.feat_name)
+    return this.inputMetaData.filter(e => e.type == 'text').map(e => e.name)
   }
 
   public setResult(r) {
-    if (isClassification(this.model.modelType)) this.classificationResult = r
+    if (isClassification(this.model.modelType)) {
+      this.classificationResult = r
+    }
   }
 
 }

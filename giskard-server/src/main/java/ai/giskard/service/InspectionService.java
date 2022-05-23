@@ -8,7 +8,6 @@ import ai.giskard.repository.UserRepository;
 import ai.giskard.repository.ml.DatasetRepository;
 import ai.giskard.repository.ml.ModelRepository;
 import ai.giskard.security.PermissionEvaluator;
-import ai.giskard.web.dto.mapper.SimpleJSONMapper;
 import ai.giskard.web.rest.errors.EntityNotFoundException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.RequiredArgsConstructor;
@@ -173,7 +172,7 @@ public class InspectionService {
     @Transactional
     public List<String> getLabels(@NotNull Long inspectionId) throws JsonProcessingException {
         Inspection inspection = inspectionRepository.getById(inspectionId);
-        return SimpleJSONMapper.toListOfStrings(inspection.getModel().getClassificationLabels());
+        return inspection.getModel().getClassificationLabels();
     }
 
 

@@ -68,8 +68,8 @@
       <Inspector
           :model="data.model"
           :dataset="data.dataset"
-          :originalData="JSON.parse(data.originalData)"
-          :inputData="JSON.parse(data.userData)"
+          :originalData="originalData"
+          :inputData="userData"
           :isMiniMode="true"
           @reset="resetInput"
       />
@@ -94,6 +94,8 @@ export default class FeedbackDetail extends Vue {
   @Prop({required: true}) id!: number;
 
   data: FeedbackDTO | null = null;
+  userData: object | null = null;
+  originalData: object | null = null;
 
   async mounted() {
     await this.reloadFeedback()
@@ -101,16 +103,18 @@ export default class FeedbackDetail extends Vue {
 
   async reloadFeedback() {
     try {
-      const response = await api.getFeedback(readToken(this.$store), this.id);
-      this.data = response.data
+      this.data = (await api.getFeedback(this.id)).data;
+      this.userData = JSON.parse(this.data.userData);
+      this.originalData = JSON.parse(this.data.originalData);
     } catch (error) {
       commitAddNotification(this.$store, {content: error.response.data.detail, color: 'error'});
     }
   }
 
   resetInput() {
-    if (this.data) this.data.userData = {...JSON.parse(this.data?.originalData)}
-    debugger
+    if (this.data) {
+      this.userData = {...this.originalData}
+    }
   }
 
   get firstLevelReplies() {

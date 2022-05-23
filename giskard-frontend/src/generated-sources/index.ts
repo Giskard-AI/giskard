@@ -1,4 +1,5 @@
 export const GENERATED_MAPPING = {
+    'ai.giskard.domain.FeatureType' : 'FeatureType',
     'ai.giskard.domain.ml.CodeLanguage' : 'CodeLanguage',
     'ai.giskard.domain.ml.CodeTestCollection' : 'CodeTestCollection',
     'ai.giskard.domain.ml.CodeTestTemplate' : 'CodeTestTemplate',
@@ -15,6 +16,7 @@ export const GENERATED_MAPPING = {
     'ai.giskard.web.dto.CreateFeedbackReplyDTO' : 'CreateFeedbackReplyDTO',
     'ai.giskard.web.dto.DataUploadParamsDTO' : 'DataUploadParamsDTO',
     'ai.giskard.web.dto.ExplainResponseDTO' : 'ExplainResponseDTO',
+    'ai.giskard.web.dto.FeatureMetadataDTO' : 'FeatureMetadataDTO',
     'ai.giskard.web.dto.FeedbackDTO' : 'FeedbackDTO',
     'ai.giskard.web.dto.FeedbackMinimalDTO' : 'FeedbackMinimalDTO',
     'ai.giskard.web.dto.FeedbackReplyDTO' : 'FeedbackReplyDTO',
@@ -56,6 +58,7 @@ export const GENERATED_MAPPING = {
     'ai.giskard.web.rest.vm.TokenAndPasswordVM' : 'TokenAndPasswordVM'
 
 };
+export * from './ai/giskard/domain/feature-type';
 export * from './ai/giskard/domain/ml/code-language';
 export * from './ai/giskard/domain/ml/code-test-collection';
 export * from './ai/giskard/domain/ml/code-test-template';
@@ -71,6 +74,7 @@ export * from './ai/giskard/web/dto/create-feedback-dto';
 export * from './ai/giskard/web/dto/create-feedback-reply-dto';
 export * from './ai/giskard/web/dto/data-upload-params-dto';
 export * from './ai/giskard/web/dto/explain-response-dto';
+export * from './ai/giskard/web/dto/feature-metadata-dto';
 export * from './ai/giskard/web/dto/feedback-dto';
 export * from './ai/giskard/web/dto/feedback-minimal-dto';
 export * from './ai/giskard/web/dto/feedback-reply-dto';

@@ -1,6 +1,8 @@
 package ai.giskard.service;
 
 import ai.giskard.config.ApplicationProperties;
+import ai.giskard.web.dto.FeatureMetadataDTO;
+import ai.giskard.domain.FeatureType;
 import ai.giskard.domain.ml.Dataset;
 import ai.giskard.repository.InspectionRepository;
 import ai.giskard.repository.UserRepository;
@@ -24,6 +26,8 @@ import javax.validation.constraints.NotNull;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -109,5 +113,26 @@ public class DatasetService {
             throw new RuntimeException(String.format("Failed to remove dataset file %s", datasetPath.getFileName()), e);
         }
 
+    }
+
+    @Transactional
+    public List<FeatureMetadataDTO> getFeaturesWithDistinctValues(Long datasetId) {
+        Dataset dataset = datasetRepository.getById(datasetId);
+        permissionEvaluator.validateCanReadProject(dataset.getProject().getId());
+
+        Table data = readTableByDatasetId(datasetId);
+
+        return dataset.getFeatureTypes().entrySet().stream().map(featureAndType -> {
+            String featureName = featureAndType.getKey();
+            FeatureType type = featureAndType.getValue();
+            FeatureMetadataDTO meta = new FeatureMetadataDTO();
+            meta.setType(type);
+            meta.setName(featureName);
+            if (type == FeatureType.CATEGORY) {
+                meta.setValues(data.column(featureName).unique().asStringColumn().asSet());
+            }
+            return meta;
+
+        }).collect(Collectors.toList());
     }
 }

@@ -120,14 +120,14 @@ export default class FeedbackList extends Vue {
       {
         text: "Model",
         sortable: true,
-        value: "modelFilename",
+        value: "modelName",
         align: "left",
         filter: (value) => !this.modelFilter ? true : value == this.modelFilter,
       },
       {
         text: "Dataset",
         sortable: true,
-        value: "datasetFilename",
+        value: "datasetName",
         align: "left",
         filter: (value) => !this.datasetFilter ? true : value == this.datasetFilter,
       },
