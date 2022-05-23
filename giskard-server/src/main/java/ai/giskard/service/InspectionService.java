@@ -48,9 +48,13 @@ public class InspectionService {
         return Table.read().csv(reader);
     }
 
-    private Double getThresholdForRegression(DoubleColumn _column) {
+    private Double getThresholdForRegression(DoubleColumn _column, boolean isCorrect) {
         DoubleColumn column = _column.copy();
-        column.sortAscending();
+        if (isCorrect) {
+            column.sortAscending();
+        } else {
+            column.sortDescending();
+        }
         int maxIndex = (int) Math.round(applicationProperties.getRegressionThreshold() * column.size());
         return column.get(maxIndex);
     }
@@ -63,11 +67,11 @@ public class InspectionService {
         DoubleColumn diffPercent = calculatedTable.doubleColumn("diffPercent");
         switch (filter.getRowFilter()) {
             case CORRECT:
-                threshold = getThresholdForRegression(absDiffPercentColumn);
+                threshold = getThresholdForRegression(absDiffPercentColumn,true );
                 selection = absDiffPercentColumn.isLessThanOrEqualTo(threshold);
                 break;
             case WRONG:
-                threshold = getThresholdForRegression(absDiffPercentColumn);
+                threshold = getThresholdForRegression(absDiffPercentColumn, false);
                 selection = absDiffPercentColumn.isGreaterThanOrEqualTo(threshold);
                 break;
             case CUSTOM:
@@ -86,13 +90,13 @@ public class InspectionService {
                 if (filter.getMaxLabelThreshold() != null) {
                     selection = selection.and(target.isLessThanOrEqualTo(filter.getMaxLabelThreshold()));
                 }
-                if (filter.getMaxDiffThreshold()!=null){
-                    selection=selection.and(diffPercent.isLessThanOrEqualTo(filter.getMaxDiffThreshold()));
+                if (filter.getMaxDiffThreshold() != null) {
+                    selection = selection.and(diffPercent.isLessThanOrEqualTo(filter.getMaxDiffThreshold()));
                 }
-                if (filter.getMinDiffThreshold()!=null){
-                    selection=selection.and(diffPercent.isGreaterThanOrEqualTo(filter.getMinDiffThreshold()));
+                if (filter.getMinDiffThreshold() != null) {
+                    selection = selection.and(diffPercent.isGreaterThanOrEqualTo(filter.getMinDiffThreshold()));
                 }
-                 break;
+                break;
             default:
                 selection = null;
         }
