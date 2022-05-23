@@ -22,7 +22,7 @@
             <span style="position: absolute; left: 85%">
               <v-tooltip bottom dense>
                 <template v-slot:activator="{ on, attrs }">
-                  <v-btn icon color="info" @click.stop="downloadDataFile(f.id, f.name)" v-bind="attrs" v-on="on">
+                  <v-btn icon color="info" @click.stop="downloadDataFile(f.id)" v-bind="attrs" v-on="on">
                     <v-icon>download</v-icon>
                   </v-btn>
                   </template>
@@ -104,10 +104,9 @@ export default class Datasets extends Vue {
     }
   }
 
-  public async downloadDataFile(id: number, fileName: string) {
+  public downloadDataFile(id: number) {
     try {
-      const response = await api.downloadDataFile(readToken(this.$store), id)
-      dialogDownloadFile(response, fileName);
+      api.downloadDataFile(id)
     } catch (error) {
       commitAddNotification(this.$store, {content: error.response.statusText, color: 'error'});
     }

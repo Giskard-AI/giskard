@@ -19,18 +19,8 @@ class JSONStringAttributeConvertersTest {
         Dataset.FeatureTypesConverter converter = new Dataset.FeatureTypesConverter();
         Map<String, FeatureType> map = Map.of("category_key", CATEGORY, "numeric_key", NUMERIC);
         String serialized = converter.convertToDatabaseColumn(map);
-        assertEquals("{\"numeric_key\":\"numeric\",\"category_key\":\"category\"}", serialized);
-    }
 
-    @Test
-    void FeatureTypesConverterSerializeTest() {
-        Dataset.FeatureTypesConverter converter = new Dataset.FeatureTypesConverter();
-        Map<String, FeatureType> stringFeatureTypeMap = converter.convertToEntityAttribute("{\n" +
-            "  \"category_key\": \"CATEGORY\",\n" +
-            "  \"numeric_key\": \"NUMERIC\"\n" +
-            "}");
-        assertEquals(CATEGORY, stringFeatureTypeMap.get("category_key"));
-        assertEquals(NUMERIC, stringFeatureTypeMap.get("numeric_key"));
+        assertEquals(map, converter.convertToEntityAttribute(serialized));
     }
 
     @Test

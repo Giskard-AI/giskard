@@ -1,5 +1,5 @@
 import axios from 'axios';
-import {apiUrl, apiUrlJava} from '@/env';
+import {apiURL} from '@/env';
 import {getLocalToken} from '@/utils';
 import {
   AdminUserDTO,
@@ -42,7 +42,7 @@ function authHeaders(token: string) {
 }
 
 const axiosProject = axios.create({
-  baseURL: `${apiUrlJava}/api/v2/project`
+  baseURL: `${apiURL}/api/v2/project`
 });
 axiosProject.interceptors.request.use(function(config) {
   // Do something before request is sent
@@ -71,57 +71,75 @@ axiosProject.interceptors.response.use(resp => {
   return resp;
 });
 
+function downloadURL(urlString) {
+  let url = new URL(urlString);
+  let token = getLocalToken();
+  if (token) {
+    url.searchParams.append('token', token);
+  }
+  let hiddenIFrameID = '_hidden_download_frame_',
+      iframe: HTMLIFrameElement = <HTMLIFrameElement>document.getElementById(hiddenIFrameID);
+  if (iframe == null) {
+    iframe = document.createElement('iframe');
+    iframe.id = hiddenIFrameID;
+    iframe.style.display = 'none';
+    document.body.appendChild(iframe);
+  }
+  console.log(url.toString());
+  iframe.src = url.toString();
+}
+
 export const api = {
   async logInGetToken(username: string, password: string) {
-    return axios.post(`${apiUrlJava}/api/v2/authenticate`, { username, password });
+    return axios.post(`${apiURL}/api/v2/authenticate`, { username, password });
   },
   async getMe(token: string) {
-    return axios.get<AppConfigDTO>(`${apiUrlJava}/api/v2/account`, authHeaders(token));
+    return axios.get<AppConfigDTO>(`${apiURL}/api/v2/account`, authHeaders(token));
   },
   async updateMe(token: string, data: UpdateMeDTO) {
-    return axios.put<AdminUserDTO>(`${apiUrlJava}/api/v2/account`, data, authHeaders(token));
+    return axios.put<AdminUserDTO>(`${apiURL}/api/v2/account`, data, authHeaders(token));
   },
   async getUsers(token: string) {
-    return axios.get<AdminUserDTO[]>(`${apiUrlJava}/api/v2/admin/users`, authHeaders(token));
+    return axios.get<AdminUserDTO[]>(`${apiURL}/api/v2/admin/users`, authHeaders(token));
   },
   async getRoles() {
-    return axios.get<RoleDTO[]>(`${apiUrlJava}/api/v2/roles`);
+    return axios.get<RoleDTO[]>(`${apiURL}/api/v2/roles`);
   },
   async updateUser(token: string, data: Partial<AdminUserDTOWithPassword>) {
-    return axios.put(`${apiUrlJava}/api/v2/admin/users`, data, authHeaders(token));
+    return axios.put(`${apiURL}/api/v2/admin/users`, data, authHeaders(token));
   },
   async createUser(token: string, data: AdminUserDTOWithPassword) {
-    return axios.post(`${apiUrlJava}/api/v2/admin/users/`, data, authHeaders(token));
+    return axios.post(`${apiURL}/api/v2/admin/users/`, data, authHeaders(token));
   },
   async signupUser(userData: ManagedUserVM) {
-    return axios.post(`${apiUrlJava}/api/v2/register`, userData);
+    return axios.post(`${apiURL}/api/v2/register`, userData);
   },
   async deleteUser(token: string, userId: number) {
-    return axios.delete(`${apiUrlJava}/api/v2/admin/users/${userId}`, authHeaders(token));
+    return axios.delete(`${apiURL}/api/v2/admin/users/${userId}`, authHeaders(token));
   },
   async passwordRecovery(email: string) {
-    return axios.post(`${apiUrlJava}/api/v2/account/password-recovery`, <PasswordResetRequest>{ email });
+    return axios.post(`${apiURL}/api/v2/account/password-recovery`, <PasswordResetRequest>{ email });
   },
   async resetPassword(password: string, token: string) {
-    return axios.post(`${apiUrlJava}/api/v2/account/reset-password`, <TokenAndPasswordVM>{
+    return axios.post(`${apiURL}/api/v2/account/reset-password`, <TokenAndPasswordVM>{
       newPassword: password,
       token
     });
   },
   async getSignupLink(token: string) {
-    return axios.get(`${apiUrlJava}/api/v2/signuplink`, authHeaders(token));
+    return axios.get(`${apiURL}/api/v2/signuplink`, authHeaders(token));
   },
   async inviteToSignup(token: string, email: string) {
     const params = new URLSearchParams();
     params.append('email', email);
 
-    return axios.post(`${apiUrlJava}/api/v2/users/invite`, params, authHeaders(token));
+    return axios.post(`${apiURL}/api/v2/users/invite`, params, authHeaders(token));
   },
   async getCoworkersMinimal(token: string) {
-    return axios.get<UserDTO[]>(`${apiUrlJava}/api/v2/users/coworkers`, authHeaders(token));
+    return axios.get<UserDTO[]>(`${apiURL}/api/v2/users/coworkers`, authHeaders(token));
   },
   async getApiAccessToken(token: string) {
-    return axios.get<JWTToken>(`${apiUrlJava}/api/v2/api-access-token`, authHeaders(token));
+    return axios.get<JWTToken>(`${apiURL}/api/v2/api-access-token`, authHeaders(token));
   },
 
   // Projects
@@ -151,34 +169,34 @@ export const api = {
     return axiosProject.get<ModelDTO[]>(`/${id}/models`, authHeaders(token));
   },
   async deleteDatasetFile(datasetId: number) {
-    return axios.delete(`${apiUrlJava}/api/v2/dataset/${datasetId}`);
+    return axios.delete(`${apiURL}/api/v2/dataset/${datasetId}`);
   },
   async deleteModelFiles(modelId: number) {
-    return axios.delete(`${apiUrlJava}/api/v2/models/${modelId}`);
+    return axios.delete(`${apiURL}/api/v2/models/${modelId}`);
   },
-  async downloadModelFile(token: string, modelId: number) {
-    return axios.get(`${apiUrl}/api/v1/files/models/${modelId}`, { ...authHeaders(token), 'responseType': 'blob' });
+  downloadModelFile(id: number) {
+    downloadURL(`${apiURL}/api/v2/download/model/${id}`);
   },
-  async downloadDataFile(token: string, id: number) {
-    return axios.get(`${apiUrl}/api/v1/files/datasets/${id}`, { ...authHeaders(token), 'responseType': 'blob' });
+  downloadDataFile(id: number) {
+    downloadURL(`${apiURL}/api/v2/download/dataset/${id}`);
   },
-    async peekDataFile(datasetId: number) {
-        return axios.get(`${apiUrlJava}/api/v2/dataset/${datasetId}/rows`, {params: {offset: 0, size: 10}});
-    },
+  async peekDataFile(datasetId: number) {
+      return axios.get(`${apiURL}/api/v2/dataset/${datasetId}/rows`, {params: {offset: 0, size: 10}});
+  },
   async getFeaturesMetadata(datasetId: number) {
-    return axios.get<FeatureMetadataDTO[]>(`${apiUrlJava}/api/v2/dataset/${datasetId}/features`);
+    return axios.get<FeatureMetadataDTO[]>(`${apiURL}/api/v2/dataset/${datasetId}/features`);
   },
     async getDataFilteredByRange(inspectionId, props, filter) {
-        return axios.post(`${apiUrlJava}/api/v2/inspection/${inspectionId}/rowsFiltered`,filter,{params:props});
+        return axios.post(`${apiURL}/api/v2/inspection/${inspectionId}/rowsFiltered`,filter,{params:props});
             },
   async getLabelsForTarget(token: string, inspectionId: number) {
-    return axios.get(`${apiUrlJava}/api/v2/inspection/${inspectionId}/labels`, authHeaders(token));
+    return axios.get(`${apiURL}/api/v2/inspection/${inspectionId}/labels`, authHeaders(token));
   },
     async getProjectDatasets(token: string, id: number) {
     return axiosProject.get<DatasetDTO[]>(`/${id}/datasets`, authHeaders(token));
   },
   async getInspection(inspectionId: number) {
-    return axios.get<InspectionDTO>(`${apiUrlJava}/api/v2/inspection/${inspectionId}`);
+    return axios.get<InspectionDTO>(`${apiURL}/api/v2/inspection/${inspectionId}`);
   },
   async uploadDataFile(token: string, projectKey: string, fileData: any) {
     const formData = new FormData();
@@ -189,84 +207,84 @@ export const api = {
     formData.append('file', fileData);
     const config = authHeaders(token);
     config.headers['content-type'] = 'multipart/form-data';
-    return axios.post(`${apiUrlJava}/api/v2/project/data/upload`, formData, config);
+    return axios.post(`${apiURL}/api/v2/project/data/upload`, formData, config);
   },
   async getModelMetadata(token: string, modelId: number) {
-    return axios.get<ModelMetadataDTO>(`${apiUrlJava}/api/v2/models/${modelId}/metadata`, authHeaders(token));
+    return axios.get<ModelMetadataDTO>(`${apiURL}/api/v2/models/${modelId}/metadata`, authHeaders(token));
   },
   async predict(modelId: number, inputData: object) {
-    return axios.post<PredictionDTO>(`${apiUrlJava}/api/v2/models/${modelId}/predict`, { features: inputData });
+    return axios.post<PredictionDTO>(`${apiURL}/api/v2/models/${modelId}/predict`, { features: inputData });
     },
   async prepareInspection(payload: InspectionCreateDTO) {
-      return axios.post(`${apiUrlJava}/api/v2/inspection`,  payload);
+      return axios.post(`${apiURL}/api/v2/inspection`,  payload);
   },
   async explain(token: string, modelId: number, datasetId: number, inputData: object) {
-    return axios.post<ExplainResponseDTO>(`${apiUrlJava}/api/v2/models/${modelId}/explain/${datasetId}`, { features: inputData }, authHeaders(token));
+    return axios.post<ExplainResponseDTO>(`${apiURL}/api/v2/models/${modelId}/explain/${datasetId}`, { features: inputData }, authHeaders(token));
   },
   async explainText(token: string, modelId: number, inputData: object, featureName: string) {
-    return axios.post(`${apiUrlJava}/api/v2/models/${modelId}/explain-text/${featureName}`, { features: inputData }, authHeaders(token));
+    return axios.post(`${apiURL}/api/v2/models/${modelId}/explain-text/${featureName}`, { features: inputData }, authHeaders(token));
   },
   // feedbacks
   async submitFeedback(token: string, payload: CreateFeedbackDTO, projectId: number) {
-    return axios.post(`${apiUrlJava}/api/v2/feedbacks/${projectId}`, payload, authHeaders(token));
+    return axios.post(`${apiURL}/api/v2/feedbacks/${projectId}`, payload, authHeaders(token));
   },
   async getProjectFeedbacks(token: string, projectId: number) {
-    return axios.get<FeedbackMinimalDTO[]>(`${apiUrlJava}/api/v2/feedbacks/all/${projectId}`, authHeaders(token));
+    return axios.get<FeedbackMinimalDTO[]>(`${apiURL}/api/v2/feedbacks/all/${projectId}`, authHeaders(token));
   },
   async getFeedback(id: number) {
-    return axios.get<FeedbackDTO>(`${apiUrlJava}/api/v2/feedbacks/${id}`);
+    return axios.get<FeedbackDTO>(`${apiURL}/api/v2/feedbacks/${id}`);
   },
   async replyToFeedback(token: string, feedbackId: number, content: string, replyToId: number | null = null) {
-    return axios.post(`${apiUrlJava}/api/v2/feedbacks/${feedbackId}/reply`,
+    return axios.post(`${apiURL}/api/v2/feedbacks/${feedbackId}/reply`,
         <CreateFeedbackReplyDTO>{
           content,
           replyToReply: replyToId
         }, authHeaders(token));
   },
   async getTestSuites(projectId: number) {
-    return await axios.get<Array<TestSuiteDTO>>(`${apiUrlJava}/api/v2/testing/suites/${projectId}`);
+    return await axios.get<Array<TestSuiteDTO>>(`${apiURL}/api/v2/testing/suites/${projectId}`);
   },
   async getTests(suiteId: number) {
-    return await axios.get<Array<TestDTO>>(`${apiUrlJava}/api/v2/testing/tests`, { params: { suiteId } });
+    return await axios.get<Array<TestDTO>>(`${apiURL}/api/v2/testing/tests`, { params: { suiteId } });
   },
   async getTestSuite(suiteId: number) {
-    return await axios.get<TestSuiteDTO>(`${apiUrlJava}/api/v2/testing/suite/${suiteId}`);
+    return await axios.get<TestSuiteDTO>(`${apiURL}/api/v2/testing/suite/${suiteId}`);
   },
   async deleteTestSuite(suiteId: number) {
-    return await axios.delete<TestSuiteDTO>(`${apiUrlJava}/api/v2/testing/suite/${suiteId}`);
+    return await axios.delete<TestSuiteDTO>(`${apiURL}/api/v2/testing/suite/${suiteId}`);
   },
   async createTestSuite(projectId: number, name: string, modelId: number) {
-    return await axios.post(`${apiUrlJava}/api/v2/testing/suites`, {
+    return await axios.post(`${apiURL}/api/v2/testing/suites`, {
       name: name,
       project: { id: projectId },
       model: { id: modelId }
     });
   },
   async saveTestSuite(testSuite: UpdateTestSuiteDTO) {
-    return await axios.put(`${apiUrlJava}/api/v2/testing/suites`, testSuite);
+    return await axios.put(`${apiURL}/api/v2/testing/suites`, testSuite);
   },
   async getTestDetails(testId: number) {
-    return await axios.get(`${apiUrlJava}/api/v2/testing/tests/${testId}`);
+    return await axios.get(`${apiURL}/api/v2/testing/tests/${testId}`);
   },
   async getCodeTestTemplates() {
-    return await axios.get<CodeTestCollection[]>(`${apiUrlJava}/api/v2/testing/tests/code-test-templates`);
+    return await axios.get<CodeTestCollection[]>(`${apiURL}/api/v2/testing/tests/code-test-templates`);
   },
   async deleteTest(testId: number) {
-    return await axios.delete<TestSuiteDTO>(`${apiUrlJava}/api/v2/testing/tests/${testId}`);
+    return await axios.delete<TestSuiteDTO>(`${apiURL}/api/v2/testing/tests/${testId}`);
   },
   async saveTest(testDetails: TestDTO) {
-    return await axios.put(`${apiUrlJava}/api/v2/testing/tests`, testDetails);
+    return await axios.put(`${apiURL}/api/v2/testing/tests`, testDetails);
   },
   async runTest(testId: number) {
-    return await axios.post<TestExecutionResultDTO>(`${apiUrlJava}/api/v2/testing/tests/${testId}/run`);
+    return await axios.post<TestExecutionResultDTO>(`${apiURL}/api/v2/testing/tests/${testId}/run`);
   },
   async createTest(suiteId: number, name: string) {
-    return await axios.post(`${apiUrlJava}/api/v2/testing/tests`, {
+    return await axios.post(`${apiURL}/api/v2/testing/tests`, {
       name: name,
       suiteId: suiteId
     });
   },
   async executeTestSuite(suiteId: number) {
-    return await axios.post<Array<TestExecutionResultDTO>>(`${apiUrlJava}/api/v2/testing/suites/execute`, { suiteId });
+    return await axios.post<Array<TestExecutionResultDTO>>(`${apiURL}/api/v2/testing/suites/execute`, { suiteId });
   }
 };
