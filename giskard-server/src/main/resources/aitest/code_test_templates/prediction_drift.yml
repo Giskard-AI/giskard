@@ -3,53 +3,256 @@ id: prediction_drift
 order: 5
 items:
   - id: drift_prediction_psi
-    title: Population Stability Index
+    title: Label drift (PSI)
     hint: Test if classification labels prediction is drifting between train and test set with PSI score
     modelTypes:
       - MULTICLASS_CLASSIFICATION
       - BINARY_CLASSIFICATION
     # language=Python
     code: |
+      """
+        Summary: Test if classification labels prediction is drifting between train and test set with PSI score
+
+        Description: Test if the PSI score between the train and test datasets is below the threshold
+        for the classification labels predictions
+
+        Example : The test is passed when the  PSI score of classification labels prediction
+        for females  between train and test sets is below 0.2
+
+        Args:
+            slice_train(pandas.core.frame.DataFrame):
+                slice of the train dataset
+            slice_test(pandas.core.frame.DataFrame):
+                slice of the test dataset
+            model(ModelInspector):
+                uploaded model
+            threshold:
+                threshold value for PSI
+
+        Returns:
+            passed:
+                TRUE if total psi <= threshold
+            metric:
+                total PSI value
+            messages:
+                psi result message
+      """
       tests.drift.test_drift_prediction_psi(
-          train_df_slice=train_df[:len(train_df) // 2],
-          test_df_slice=test_df[:len(test_df) // 2],
-          model=model,
-          threshold=0.1,
-          max_categories=10,
-          psi_contribution_percent=0.2
-      )
-  - id: drift_prediction_chi_square
-    title: Chi-squared
-    hint: Test if classification labels prediction is drifting between train and test set with chi square
-    # language=Python
-    code: |
-      tests.drift.test_drift_prediction_chi_square(
-          train_df=train_df,
-          test_df=test_df,
-          model=model,
-          threshold=0.1,
-          max_categories=10,
-          chi_square_contribution_percent=0.2
-      )
-  - id: drift_prediction_ks
-    title: Kolmogorov–Smirnov
-    hint: Test if classification labels prediction is drifting between train and test set with KS score
-    # language=Python
-    code: |-
-      tests.drift.test_drift_prediction_ks(
-          train_df=train_df,
-          test_df=test_df,
+          slice_train=train_df[:len(train_df) // 2],
+          slice_test=test_df[:len(test_df) // 2],
           model=model,
           threshold=0.1
       )
-  - id: drift_prediction_earth_movers_distance
-    title: Earth mover's distance
-    hint: Test if classification labels prediction is drifting between train and test set with Earth mover's distance
+  - id: drift_prediction_chi_square
+    title: Label drift (Chi square)
+    hint: Test if classification labels prediction is drifting between train and test set with chi square
+    modelTypes:
+      - MULTICLASS_CLASSIFICATION
+      - BINARY_CLASSIFICATION
+    # language=Python
+    code: |
+      """
+        Summary: Test if classification labels prediction is drifting between train and test set with chi square
+
+        Description: Test if the Chi Square value between the train and test datasets is below the threshold
+        for the classification labels predictions
+
+        Example : The test is passed when the  Chi Square value of classification labels prediction
+        for females between train and test sets is below 0.2
+
+        Args:
+            slice_train(pandas.core.frame.DataFrame):
+                slice of the train dataset
+            slice_test(pandas.core.frame.DataFrame):
+                slice of the test dataset
+            model(ModelInspector):
+                uploaded model
+            threshold:
+                threshold value for Chi-Square
+
+        Returns:
+            passed:
+                TRUE if chi-square value <= threshold
+            metric:
+                chi_square value
+            messages:
+                chi_square result message
+      """
+      tests.drift.test_drift_prediction_chi_square(
+          slice_train=train_df[:len(train_df) // 2],
+          slice_test=test_df[:len(test_df) // 2],
+          model=model,
+          threshold=0.1
+      )
+  - id: drift_reg_output_ks
+    title: Regression Output drift (Kolmogorov–Smirnov)
+    hint: Test if regression prediction is drifting between train and test set with KS score
+    modelTypes:
+      - REGRESSION
     # language=Python
     code: |-
-      tests.drift.test_drift_prediction_earth_movers_distance(
-          train_df=train_df,
-          test_df=test_df,
+      """
+         Summary: Test if regression prediction is drifting between train and test set with KS score
+
+         Description: Test if the pvalue of the KS test for prediction between the train and test datasets for
+         a given slice is above the threshold
+
+        Example : The test is passed when the pvalue of the KS test for the prediction for females
+         between train and test dataset is higher than 0.05. It means that the KS test cannot be
+         rejected at 5% level and that we cannot assume drift for this variable.
+
+        Args:
+            slice_train(pandas.core.frame.DataFrame):
+                slice of the train dataset
+            slice_test(pandas.core.frame.DataFrame):
+                slice of the test dataset
+            model(ModelInspector):
+                uploaded model
+            threshold:
+                threshold for p-value Kolmogorov-Smirnov test
+
+        Returns:
+            passed:
+                TRUE if p-value >= threshold
+            metric:
+                Kolmogorov-Smirnov value
+            props:
+                the calculated p-value Kolmogorov-Smirnov test
+            messages:
+                Kolmogorov-Smirnov result message
+      """
+      tests.drift.test_drift_prediction_ks(
+          slice_train=train_df[:len(train_df) // 2],
+          slice_test=test_df[:len(test_df) // 2],
           model=model,
+          threshold=0.1
+      )
+  - id: drift_clf_prob_ks
+    title: Classification Probability drift (Kolmogorov–Smirnov)
+    hint: Test if classification labels probability is drifting between train and test set with KS score
+    modelTypes:
+      - MULTICLASS_CLASSIFICATION
+      - BINARY_CLASSIFICATION
+    # language=Python
+    code: |-
+      """
+        Summary: Test if classification labels probability is drifting between train and test set with KS score
+
+        Description: Test if the pvalue of the KS test for prediction between the train and test datasets for
+        a given slice is above the threshold
+
+        Example : The test is passed when the pvalue of the KS test for the prediction for females
+        between train and test dataset is higher than 0.05. It means that the KS test cannot be
+        rejected at 5% level and that we cannot assume drift for this variable.
+
+        Args:
+            slice_train(pandas.core.frame.DataFrame):
+                slice of the train dataset
+            slice_test(pandas.core.frame.DataFrame):
+                slice of the test dataset
+            model(ModelInspector):
+                uploaded model
+            threshold:
+                threshold for p-value Kolmogorov-Smirnov test
+            classification_label:
+                one specific label value from the target column for classification model
+
+        Returns:
+            passed:
+                TRUE if p-value >= threshold
+            metric:
+                Kolmogorov-Smirnov value
+            props:
+                the calculated p-value Kolmogorov-Smirnov test
+            messages:
+                Kolmogorov-Smirnov result message
+      """
+      tests.drift.test_drift_prediction_ks(
+          slice_train=train_df[:len(train_df) // 2],
+          slice_test=test_df[:len(test_df) // 2],
+          model=model,
+          classification_label= model.classification_labels[0],
+          threshold=0.1
+      )
+  - id: drift_reg_output_earth_movers_distance
+    title: Regression Output drift (Earth mover's distance)
+    hint: Test if classification labels prediction is drifting between train and test set with Earth mover's distance
+    modelTypes:
+      - REGRESSION
+    # language=Python
+    code: |-
+      """
+       Summary: Test if classification labels prediction is drifting between train and
+       test set with Earth mover's distance
+
+        Description: Test if the Earth Mover’s Distance value between the train and test datasets is
+        below the threshold for the prediction for regression models
+
+        Example: The test is passed when the  Earth Mover’s Distance value of prediction
+        for females between train and test sets is below 0.2
+
+        Args:
+            slice_train(pandas.core.frame.DataFrame):
+                slice of the train dataset
+            slice_test(pandas.core.frame.DataFrame):
+                slice of the test dataset
+            model(ModelInspector):
+                uploaded model
+            threshold:
+                threshold for p-value Kolmogorov-Smirnov test
+
+        Returns:
+            passed:
+                TRUE if metric >= threshold
+            metric:
+                Earth Mover's Distance value
+      """
+      tests.drift.test_drift_prediction_earth_movers_distance(
+          slice_train=train_df[:len(train_df) // 2],
+          slice_test=test_df[:len(test_df) // 2],
+          model=model,
+          threshold=0.1
+      )
+  - id: drift_clf_prob_earth_movers_distance
+    title: Classification Probability drift (Earth mover's distance)
+    hint: Test if classification labels probability is drifting between train and test set with Earth mover's distance
+    modelTypes:
+      - MULTICLASS_CLASSIFICATION
+      - BINARY_CLASSIFICATION
+    # language=Python
+    code: |-
+      """
+        Summary: Test if classification labels probability is drifting between train and
+        test set with Earth mover's distance
+
+        Description: Test if the Earth Mover’s Distance value between the train and test datasets is
+        below the threshold for the classification labels predictions
+
+        Example: The test is passed when the  Earth Mover’s Distance value of classification
+        labels probabilities for females between train and test sets is below 0.2
+
+        Args:
+            slice_train(pandas.core.frame.DataFrame):
+                slice of the train dataset
+            slice_test(pandas.core.frame.DataFrame):
+                slice of the test dataset
+            model(ModelInspector):
+                uploaded model
+            classification_label:
+                one specific label value from the target column for classification model
+            threshold:
+                threshold for p-value Kolmogorov-Smirnov test
+
+        Returns:
+            passed:
+                TRUE if metric >= threshold
+            metric:
+                Earth Mover's Distance value
+      """
+      tests.drift.test_drift_prediction_earth_movers_distance(
+          slice_train=train_df[:len(train_df) // 2],
+          slice_test=test_df[:len(test_df) // 2],
+          model=model,
+          classification_label= model.classification_labels[0],
           threshold=0.1
       )
