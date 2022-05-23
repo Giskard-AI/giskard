@@ -137,7 +137,7 @@ class DriftTests(AbstractTestCollection):
             threshold:
                 threshold value for PSI
             max_categories:
-                maxiumum number of modalities
+                the maximum categories to compute the PSI score
 
         Returns:
             metric:
@@ -174,12 +174,9 @@ class DriftTests(AbstractTestCollection):
             threshold:
                 threshold for p-value of chi-square
             max_categories:
-                maxiumum number of modalities
+                the maximum categories to compute the chi square
 
         Returns:
-            chi_square:
-            the chi_square statistics of the test. The higher the chi quare, the higher the drift
-
             metric:
                 the pvalue of chi square test
 
@@ -192,8 +189,7 @@ class DriftTests(AbstractTestCollection):
 
         return self.save_results(SingleTestResult(
             passed=p_value <= threshold,
-            metric=chi_square,
-            props={"p_value": str(p_value)}
+            metric=p_value,
         ))
 
     def test_drift_ks(self,
@@ -270,11 +266,44 @@ class DriftTests(AbstractTestCollection):
             metric=metric
         ))
 
-    def test_drift_prediction_psi(self, train_df_slice: pd.DataFrame, test_df_slice: pd.DataFrame, model: ModelInspector,
+    def test_drift_prediction_psi(self, slice_train: pd.DataFrame, slice_test: pd.DataFrame,
+                                  model: ModelInspector,
                                   max_categories: int = 10, threshold: float = 0.2,
                                   psi_contribution_percent: float = 0.2):
-        prediction_train = run_predict(train_df_slice, model).prediction
-        prediction_test = run_predict(test_df_slice, model).prediction
+        """
+        Test if the PSI score between the train and test datasets is below the threshold
+        for the classification labels predictions
+
+        Example : The test is passed when the  PSI score of classification labels prediction
+        for females between train and test sets is below 0.2
+
+        Args:
+            slice_train(pandas.core.frame.DataFrame):
+                slice of the train dataset 
+            slice_test(pandas.core.frame.DataFrame):
+                slice of the test dataset 
+            model(ModelInspector):
+                uploaded model
+            max_categories:
+                the maximum categories to compute the PSI score
+            threshold:
+                threshold value for PSI
+            psi_contribution_percent:
+                the ratio between the PSI score of a given category over the total PSI score
+                of the categorical variable. If there is a drift, the test provides all the
+                categories that have a PSI contribution over than this ratio.
+
+        Returns:
+            passed:
+                TRUE if total psi <= threshold
+            metric:
+                total PSI value
+            messages:
+                psi result message
+
+        """
+        prediction_train = run_predict(slice_train, model).prediction
+        prediction_test = run_predict(slice_test, model).prediction
         total_psi, output_data = self._calculate_drift_psi(prediction_train, prediction_test, max_categories)
 
         passed = True if threshold is None else total_psi <= threshold
@@ -293,15 +322,47 @@ class DriftTests(AbstractTestCollection):
             messages=messages
         ))
 
-    def test_drift_prediction_chi_square(self, train_df, test_df, model,
+    def test_drift_prediction_chi_square(self, slice_train, slice_test, model,
                                          max_categories: int = 10,
                                          threshold: float = None,
                                          chi_square_contribution_percent: float = 0.2):
-        prediction_train = run_predict(train_df, model).prediction
-        prediction_test = run_predict(test_df, model).prediction
+        """
+        Test if the Chi Square value between the train and test datasets is below the threshold
+        for the classification labels predictions
+
+        Example : The test is passed when the  Chi Square value of classification labels prediction
+        for females between train and test sets is below 0.2
+
+        Args:
+            slice_train(pandas.core.frame.DataFrame):
+                slice of the train dataset 
+            slice_test(pandas.core.frame.DataFrame):
+                slice of the test dataset 
+            model(ModelInspector):
+                uploaded model
+            max_categories:
+                the maximum categories to compute the PSI score
+            threshold:
+                threshold value for Chi-Square
+            chi_square_contribution_percent:
+                the ratio between the Chi-Square value of a given category over the total Chi-Square
+                value of the categorical variable. If there is a drift, the test provides all the
+                categories that have a PSI contribution over than this ratio.
+
+        Returns:
+            passed:
+                TRUE if chi-square value <= threshold
+            metric:
+                chi_square value
+            messages:
+                message describing if data is drifting or not
+
+        """
+        prediction_train = run_predict(slice_train, model).prediction
+        prediction_test = run_predict(slice_test, model).prediction
         chi_square, p_value, output_data = self._calculate_chi_square(prediction_train, prediction_test, max_categories)
 
-        passed = True if threshold is None else chi_square <= threshold
+        passed = p_value > threshold
         messages: Union[typing.List[TestMessage], None] = None
         if not passed:
             main_drifting_modalities_bool = output_data["Chi_square"] > chi_square_contribution_percent * chi_square
@@ -313,40 +374,110 @@ class DriftTests(AbstractTestCollection):
 
         return self.save_results(SingleTestResult(
             passed=passed,
-            metric=chi_square,
+            metric=p_value,
             messages=messages
         ))
 
     def test_drift_prediction_ks(self,
-                                 train_df: pd.DataFrame,
-                                 test_df: pd.DataFrame,
+                                 slice_train: pd.DataFrame,
+                                 slice_test: pd.DataFrame,
                                  model: ModelInspector,
+                                 classification_label=None,
                                  threshold=None) -> SingleTestResult:
-        prediction_train = run_predict(train_df, model).prediction
-        prediction_test = run_predict(test_df, model).prediction
+        """
+        Test if the pvalue of the KS test for prediction between the train and test datasets for
+         a given subpopulation is above the threshold
+
+        Example : The test is passed when the pvalue of the KS test for the prediction for females
+         between train and test dataset is higher than 0.05. It means that the KS test cannot be
+         rejected at 5% level and that we cannot assume drift for this variable.
+
+        Args:
+            slice_train(pandas.core.frame.DataFrame):
+                slice of the train dataset 
+            slice_test(pandas.core.frame.DataFrame):
+                slice of the test dataset 
+            model(ModelInspector):
+                uploaded model
+            threshold:
+                threshold for p-value Kolmogorov-Smirnov test
+            classification_label:
+                one specific label value from the target column for classification model
+
+        Returns:
+            passed:
+                TRUE if p-value >= threshold
+            metric:
+                calculated p-value Kolmogorov-Smirnov test
+            messages:
+                Kolmogorov-Smirnov result message
+        """
+        if model.prediction_task == "classification" and classification_label not in model.classification_labels:
+            raise Exception(f'"{classification_label}" is not part of model labels: {",".join(model.classification_labels)}')
+
+        prediction_train = run_predict(slice_train, model).all_predictions[classification_label].values if \
+            model.prediction_task == "classification" else run_predict(slice_train, model).prediction
+        prediction_test = run_predict(slice_test, model).all_predictions[classification_label].values if \
+            model.prediction_task == "classification" else run_predict(slice_test, model).prediction
+
         result: Ks_2sampResult = self._calculate_ks(prediction_train, prediction_test)
-        passed = True if threshold is None else result.statistic <= threshold
+        passed = True if threshold is None else result.pvalue >= threshold
         messages: Union[typing.List[TestMessage], None] = None
         if not passed:
             messages = [TestMessage(
                 type=TestMessageType.ERROR,
-                text=f"The prediction is drifting (pvalue is equal to {result.pvalue} and is below the test risk level {threshold})"
+                text=f"The prediction is drifting (pvalue is equal to {result.pvalue} and is below the test risk level {threshold}) "
             )]
 
         return self.save_results(SingleTestResult(
             passed=passed,
-            metric=result.statistic,
-            props={"p_value": str(result.pvalue)},
+            metric=result.pvalue,
             messages=messages
         ))
 
     def test_drift_prediction_earth_movers_distance(self,
-                                                    train_df: pd.DataFrame,
-                                                    test_df: pd.DataFrame,
+                                                    slice_train: pd.DataFrame,
+                                                    slice_test: pd.DataFrame,
                                                     model: ModelInspector,
+                                                    classification_label=None,
                                                     threshold=None) -> SingleTestResult:
-        prediction_train = run_predict(train_df, model).prediction
-        prediction_test = run_predict(test_df, model).prediction
+        """
+        Test if the Earth Mover’s Distance value between the train and test datasets is
+        below the threshold for the classification labels predictions for classification
+        model and prediction for regression models
+
+        Example :
+        Classification : The test is passed when the  Earth Mover’s Distance value of classification
+        labels probabilities for females between train and test sets is below 0.2
+
+        Regression : The test is passed when the  Earth Mover’s Distance value of prediction
+        for females between train and test sets is below 0.2
+
+        Args:
+            slice_train(pandas.core.frame.DataFrame):
+                slice of the train dataset 
+            slice_test(pandas.core.frame.DataFrame):
+                slice of the test dataset 
+            model(ModelInspector):
+                uploaded model
+            classification_label:
+                one specific label value from the target column for classification model
+            threshold:
+                threshold for p-value Kolmogorov-Smirnov test
+
+        Returns:
+            passed:
+                TRUE if metric >= threshold
+            metric:
+                Earth Mover's Distance value
+
+        """
+
+        prediction_train = run_predict(slice_train, model).all_predictions[classification_label].values if \
+            model.prediction_task == "classification" else run_predict(slice_train, model).prediction
+        prediction_test = run_predict(slice_test, model).all_predictions[classification_label].values if \
+            model.prediction_task == "classification" else run_predict(slice_test, model).prediction
+
         metric = self._calculate_earth_movers_distance(prediction_train, prediction_test)
 
         return self.save_results(SingleTestResult(
