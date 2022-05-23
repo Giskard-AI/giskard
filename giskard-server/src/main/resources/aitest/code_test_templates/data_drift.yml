@@ -8,11 +8,12 @@ items:
     # language=Python
     code: |
       """
-      Test if the PSI score between the actual and expected datasets is below the threshold for
+        Summary: Test if a categorical variable is drifting between two datasets with PSI score
+
+        Description: Test if the PSI score between the actual and expected datasets is below the threshold for
         a given categorical feature
 
         Example : The test is passed when the  PSI score of gender between train and test sets is below 0.2
-
 
         Args:
             expected_series(pandas.core.frame.DataFrame):
@@ -21,8 +22,6 @@ items:
                 categorical column in test dataset that is compared to var_expected
             threshold:
                 threshold value for PSI
-            max_categories:
-                maxiumum number of modalities
 
         Returns:
             metric:
@@ -33,8 +32,7 @@ items:
       tests.drift.test_drift_psi(
           expected_series=train_df['<CATEGORICAL FEATURE NAME>'],
           actual_series=test_df['<CATEGORICAL FEATURE NAME>'],
-          threshold=0.2,
-          max_categories=10
+          threshold=0.2
       )
   - id: drift_chi_square
     title: Categorical drift (Chi-squared)
@@ -42,12 +40,14 @@ items:
     # language=Python
     code: |
       """
-      Test if the p-value of the chi square test between the actual and expected datasets is
+        Summary: Test if a categorical variable is drifting between two datasets with the chi square
+
+        Description: Test if the p-value of the chi square test between the actual and expected datasets is
         above the threshold for a given categorical feature
 
         Example : The test is passed when the pvalue of the chi square test of the categorical variable between
-         train and test sets is higher than 0.05. It means that chi square test cannot be rejected at 5% level
-         and that we cannot assume drift for this variable.
+        train and test sets is higher than 0.05. It means that chi square test cannot be rejected at 5% level
+        and that we cannot assume drift for this variable.
 
         Args:
             expected_series(pandas.core.frame.DataFrame):
@@ -56,8 +56,6 @@ items:
                 categorical column in test dataset that is compared to var_expected
             threshold:
                 threshold for p-value of chi-square
-            max_categories:
-                maxiumum number of modalities
 
         Returns:
             chi_square:
@@ -71,8 +69,7 @@ items:
       tests.drift.test_drift_chi_square(
           expected_series=train_df['<CATEGORICAL FEATURE NAME>'],
           actual_series=test_df['<CATEGORICAL FEATURE NAME>'],
-          threshold=0.05,
-          max_categories=10
+          threshold=0.05
       )
   - id: drift_ks
     title: Numerical drift (Kolmogorov-Smirnov)
@@ -80,8 +77,10 @@ items:
     # language=Python
     code: |
       """
-      Test if the pvalue of the KS test between the actual and expected datasets is above
-          the threshold for a given numerical feature
+        Summary: Test if a numerical variable is drifting between two datasets with the Komogorov-Smirnov test
+
+        Description:Test if the pvalue of the KS test between the actual and expected datasets is above
+        the threshold for a given numerical feature
 
         Example : The test is passed when the pvalue of the KS test of the numerical variable
         between the actual and expected datasets is higher than 0.05. It means that the KS test
@@ -118,7 +117,9 @@ items:
     # language=Python
     code: |
       """
-      Test if the earth movers distance between the actual and expected datasets is
+        Summary: Test if a numerical variable is drifting between two datasets with the Earth Movers Distance test
+
+        Description: Test if the earth movers distance between the actual and expected datasets is
         below the threshold for a given numerical feature
 
         Example : The test is passed when the earth movers distance of the numerical
