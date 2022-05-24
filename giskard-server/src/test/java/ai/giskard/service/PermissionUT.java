@@ -1,6 +1,5 @@
 package ai.giskard.service;
 
-import ai.giskard.config.InitService;
 import ai.giskard.domain.Project;
 import ai.giskard.repository.ProjectRepository;
 import ai.giskard.security.AuthoritiesConstants;
@@ -24,7 +23,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @ExtendWith(SpringExtension.class)
 @SpringBootTest
 @Transactional
-class PermissionUT {
+class PermissionTest {
 
     @Autowired
     private ProjectRepository projectRepository;
@@ -48,31 +47,25 @@ class PermissionUT {
 
     /**
      * Check if user is the current user
-     *
-     * @throws Exception
      */
     @Test
 
     @WithMockUser(username = ADMIN_KEY, authorities = AuthoritiesConstants.ADMIN)
-    void isCurrentUser() throws Exception {
+    void isCurrentUser() {
         assertThat(permissionEvaluator.isCurrentUser(ADMIN_KEY)).isTrue();
     }
 
     /**
      * Check if user is the current user with aitester account
-     *
-     * @throws Exception
      */
     @Test
     @WithMockUser(username = AI_TESTER_KEY, authorities = AuthoritiesConstants.AITESTER)
-    void isCurrentUserAITESTER() throws Exception {
+    void isCurrentUserAITESTER() {
         assertThat(permissionEvaluator.isCurrentUser(AI_TESTER_KEY)).isTrue();
     }
 
     /**
      * Check if user can write with admin account
-     *
-     * @throws Exception
      */
     @Test
     @WithMockUser(username = ADMIN_KEY, authorities = AuthoritiesConstants.ADMIN)
@@ -82,8 +75,6 @@ class PermissionUT {
 
     /**
      * Check if user can write with ai creator account
-     *
-     * @throws Exception
      */
     @Test
     @WithMockUser(username = AI_CREATOR_KEY, authorities = AuthoritiesConstants.AICREATOR)
@@ -93,8 +84,6 @@ class PermissionUT {
 
     /**
      * Check if user can write with aitester account
-     *
-     * @throws Exception
      */
     @Test
     @WithMockUser(username = AI_TESTER_KEY, authorities = AuthoritiesConstants.AITESTER)
@@ -105,147 +94,123 @@ class PermissionUT {
 
     /**
      * Check if user can write project with admin account
-     *
-     * @throws Exception
      */
     @Test
     @WithMockUser(username = ADMIN_KEY, authorities = AuthoritiesConstants.ADMIN)
-    void canWriteProjectADMIN() throws Exception {
-        Project project = projectRepository.getOneByName(initService.getProjectName(ADMIN_KEY));
+    void canWriteProjectADMIN() {
+        Project project = projectRepository.getOneByName(initService.getProjectByCreatorLogin(ADMIN_KEY));
         assertThat(permissionEvaluator.canWriteProject(project.getId())).isTrue();
     }
 
     /**
      * Check if user can write project with admin account
-     *
-     * @throws Exception
      */
     @Test
     @WithMockUser(username = AI_TESTER_KEY, authorities = AuthoritiesConstants.AITESTER)
-    void canWriteProjectAITESTER() throws Exception {
-        Project project = projectRepository.getOneByName(initService.getProjectName(AI_TESTER_KEY));
+    void canWriteProjectAITESTER() {
+        Project project = projectRepository.getOneByName(initService.getProjectByCreatorLogin(AI_TESTER_KEY));
         assertThat(permissionEvaluator.canWriteProject(project.getId())).isTrue();
     }
 
     /**
      * Check if user can write project with aicreator account
-     *
-     * @throws Exception
      */
     @Test
     @WithMockUser(username = AI_CREATOR_KEY, authorities = AuthoritiesConstants.AICREATOR)
-    void canWriteProjectAICREATOR() throws Exception {
-        Project project = projectRepository.getOneByName(initService.getProjectName(AI_CREATOR_KEY));
+    void canWriteProjectAICREATOR() {
+        Project project = projectRepository.getOneByName(initService.getProjectByCreatorLogin(AI_CREATOR_KEY));
         assertThat(permissionEvaluator.canWriteProject(project.getId())).isTrue();
     }
 
 
     /**
      * Check if user can write project from another owner with admin account
-     *
-     * @throws Exception
      */
     @Test
     @WithMockUser(username = ADMIN_KEY, authorities = AuthoritiesConstants.ADMIN)
-    void canWriteOtherProjectADMIN() throws Exception {
-        Project project = projectRepository.getOneByName(initService.getProjectName(AI_TESTER_KEY));
+    void canWriteOtherProjectADMIN() {
+        Project project = projectRepository.getOneByName(initService.getProjectByCreatorLogin(AI_TESTER_KEY));
         assertThat(permissionEvaluator.canWriteProject(project.getId())).isTrue();
     }
 
     /**
      * Check if user can write project from another owner with admin account
-     *
-     * @throws Exception
      */
     @Test
     @WithMockUser(username = AI_TESTER_KEY, authorities = AuthoritiesConstants.AITESTER)
-    void canWriteOtherProjectAITESTER() throws Exception {
-        Project project = projectRepository.getOneByName(initService.getProjectName(AI_CREATOR_KEY));
+    void canWriteOtherProjectAITESTER() {
+        Project project = projectRepository.getOneByName(initService.getProjectByCreatorLogin(AI_CREATOR_KEY));
         assertThat(permissionEvaluator.canWriteProject(project.getId())).isFalse();
     }
 
     /**
      * Check if user can write project from another owner with aicreator account
-     *
-     * @throws Exception
      */
     @Test
     @WithMockUser(username = AI_CREATOR_KEY, authorities = AuthoritiesConstants.AICREATOR)
-    void canWriteOtherProjectAICREATOR() throws Exception {
-        Project project = projectRepository.getOneByName(initService.getProjectName(AI_TESTER_KEY));
+    void canWriteOtherProjectAICREATOR() {
+        Project project = projectRepository.getOneByName(initService.getProjectByCreatorLogin(AI_TESTER_KEY));
         assertThat(permissionEvaluator.canWriteProject(project.getId())).isFalse();
     }
 
 
     /**
      * Check if user can read project with aicreator account
-     *
-     * @throws Exception
      */
     @Test
     @WithMockUser(username = ADMIN_KEY, authorities = AuthoritiesConstants.ADMIN)
-    void canReadProjectADMIN() throws Exception {
-        Project project = projectRepository.getOneByName(initService.getProjectName(ADMIN_KEY));
+    void canReadProjectADMIN() {
+        Project project = projectRepository.getOneByName(initService.getProjectByCreatorLogin(ADMIN_KEY));
         assertThat(permissionEvaluator.canReadProject(project.getId())).isTrue();
     }
 
     /**
      * Check if user can read project with aicreator account
-     *
-     * @throws Exception
      */
     @Test
     @WithMockUser(username = AI_CREATOR_KEY, authorities = AuthoritiesConstants.AICREATOR)
-    void canReadProjectAICREATOR() throws Exception {
-        Project project = projectRepository.getOneByName(initService.getProjectName(AI_CREATOR_KEY));
+    void canReadProjectAICREATOR() {
+        Project project = projectRepository.getOneByName(initService.getProjectByCreatorLogin(AI_CREATOR_KEY));
         assertThat(permissionEvaluator.canWriteProject(project.getId())).isTrue();
     }
 
     /**
      * Check if user can read project with aitester account
-     *
-     * @throws Exception
      */
     @Test
     @WithMockUser(username = AI_TESTER_KEY, authorities = AuthoritiesConstants.AITESTER)
-    void canReadProjectAITESTER() throws Exception {
-        Project project = projectRepository.getOneByName(initService.getProjectName(AI_TESTER_KEY));
+    void canReadProjectAITESTER() {
+        Project project = projectRepository.getOneByName(initService.getProjectByCreatorLogin(AI_TESTER_KEY));
         assertThat(permissionEvaluator.canWriteProject(project.getId())).isTrue();
     }
 
     /**
      * Check if user can read another project with admin account
-     *
-     * @throws Exception
      */
     @Test
     @WithMockUser(username = ADMIN_KEY, authorities = AuthoritiesConstants.ADMIN)
-    void canReadAnotherProjectADMIN() throws Exception {
-        Project project = projectRepository.getOneByName(initService.getProjectName(AI_TESTER_KEY));
+    void canReadAnotherProjectADMIN() {
+        Project project = projectRepository.getOneByName(initService.getProjectByCreatorLogin(AI_TESTER_KEY));
         assertThat(permissionEvaluator.canReadProject(project.getId())).isTrue();
     }
 
     /**
      * Check if user can read another project with aicreator account
-     *
-     * @throws Exception
      */
     @Test
     @WithMockUser(username = AI_CREATOR_KEY, authorities = AuthoritiesConstants.AICREATOR)
-    void canReadAnotherProjectAICREATOR() throws Exception {
-        Project project = projectRepository.getOneByName(initService.getProjectName(AI_CREATOR_KEY));
+    void canReadAnotherProjectAICREATOR() {
+        Project project = projectRepository.getOneByName(initService.getProjectByCreatorLogin(AI_CREATOR_KEY));
         assertThat(permissionEvaluator.canWriteProject(project.getId())).isTrue();
     }
 
     /**
      * Check if user can read another project with aicreator account
-     *
-     * @throws Exception
      */
     @Test
     @WithMockUser(username = AI_TESTER_KEY, authorities = AuthoritiesConstants.AITESTER)
-    void canReadAnotherProjectAITESTER() throws Exception {
-        Project project = projectRepository.getOneByName(initService.getProjectName(ADMIN_KEY));
+    void canReadAnotherProjectAITESTER() {
+        Project project = projectRepository.getOneByName(initService.getProjectByCreatorLogin(ADMIN_KEY));
         assertThat(permissionEvaluator.canWriteProject(project.getId())).isFalse();
     }
 

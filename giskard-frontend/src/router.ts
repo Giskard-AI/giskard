@@ -74,22 +74,12 @@ export default new Router({
                   props: (route) => { return {projectId: Number(route.params.id)} }
                 },
                 {
-                  path: 'inspect',
+                  path: 'inspection/:inspectionId',
                   name: 'project-inspector',
                   component: () => import('./views/main/project/InspectorWrapper.vue'),
                   props: route => ({
-                    modelId: parseInt(route.query.model.toString()),
-                    datasetId: parseInt(route.query.dataset.toString()),
-                    targetFeature: route.query.target,
-                  }),
-                  beforeEnter(to, from, next) {
-                    if (!to.query.dataset || !to.query.model
-                      || isNaN(parseInt(to.query.model.toString()))
-                      || isNaN(parseInt(to.query.dataset.toString()))) {
-                        // query is not valid, redirect back to basic project view
-                        next({name: 'project-models', params: {id: to.params.id}})
-                    } else next()
-                  }
+                    inspectionId: Number(route.params.inspectionId)
+                  })
                 },
                 {
                   path: 'feedbacks',

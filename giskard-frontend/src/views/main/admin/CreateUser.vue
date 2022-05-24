@@ -122,7 +122,7 @@ export default class CreateUser extends Vue {
       }
       try {
         await dispatchCreateUser(this.$store, profileCreate);
-        this.$router.push('/main/admin/users');
+        await this.$router.push('/main/admin/users');
       } catch (e) {
         console.error(e.message);
       }

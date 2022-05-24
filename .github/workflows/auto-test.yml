@@ -27,7 +27,6 @@ jobs:
         sudo sysctl -w kernel.unprivileged_userns_clone=1
         DOMAIN=backend \
         SMTP_HOST="" \
-        TRAEFIK_PUBLIC_NETWORK_IS_EXTERNAL=false \
         RUN_TESTS=true \
         GISKARD_PLAN=enterprise \
         docker-compose -f docker-compose.yml -f docker-compose.dev.yml config | sed 's/app-db-data/app-db-test-data/g;' > docker-stack.yml 
@@ -35,11 +34,8 @@ jobs:
     - name: Build frontend image
       run: docker-compose -f docker-stack.yml build frontend
 
-    - name: Build python backend image
+    - name: Build backend image
       run: docker-compose -f docker-stack.yml build backend
-
-    - name: Build and test java backend image
-      run: docker-compose -f docker-stack.yml build backend-java
 
     - name: Remove containers and volumes
       run: docker-compose -f docker-stack.yml down -v --remove-orphans

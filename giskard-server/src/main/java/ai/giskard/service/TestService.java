@@ -1,5 +1,7 @@
 package ai.giskard.service;
 
+import ai.giskard.domain.ml.Dataset;
+import ai.giskard.domain.ml.ProjectModel;
 import ai.giskard.domain.ml.TestResult;
 import ai.giskard.domain.ml.TestSuite;
 import ai.giskard.domain.ml.testing.Test;
@@ -16,11 +18,15 @@ import ai.giskard.worker.TestResultMessage;
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.ListenableFuture;
 import io.grpc.StatusRuntimeException;
+import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -29,6 +35,7 @@ import java.util.concurrent.ExecutionException;
 
 @Service
 @Transactional
+@RequiredArgsConstructor
 public class TestService {
     private static final org.slf4j.Logger logger = LoggerFactory.getLogger(TestService.class);
 
@@ -38,13 +45,7 @@ public class TestService {
     private final TestExecutionRepository testExecutionRepository;
 
     private final TestRepository testRepository;
-
-    public TestService(TestRepository testRepository, MLWorkerService mlWorkerService, TestExecutionRepository testExecutionRepository) {
-        this.testRepository = testRepository;
-        this.mlWorkerService = mlWorkerService;
-        this.testExecutionRepository = testExecutionRepository;
-    }
-
+    private final FileLocationService fileLocationService;
 
     public Optional<TestDTO> saveTest(TestDTO dto) {
         return Optional.of(testRepository.findById(dto.getId())).filter(Optional::isPresent).map(Optional::get).map(test -> {
@@ -56,6 +57,7 @@ public class TestService {
         }).map(TestDTO::new);
     }
 
+    @Transactional
     public TestExecutionResultDTO runTest(Long testId) {
         TestExecutionResultDTO res = new TestExecutionResultDTO(testId);
         Test test = testRepository.findById(testId).orElseThrow(() -> new EntityNotFoundException(Entity.TEST, testId));
@@ -64,10 +66,19 @@ public class TestService {
         testExecutionRepository.save(testExecution);
         res.setExecutionDate(testExecution.getExecutionDate());
 
-        MLWorkerClient client = null;
-        try {
-            client = mlWorkerService.createClient();
-            ListenableFuture<TestResultMessage> runTestFuture = client.runTest(test.getTestSuite(), test);
+        try(MLWorkerClient client = mlWorkerService.createClient()) {
+            ProjectModel model = test.getTestSuite().getModel();
+            Dataset trainDS = test.getTestSuite().getTrainDataset();
+            Dataset testDS = test.getTestSuite().getTestDataset();
+            Path modelPath = fileLocationService.resolvedModelPath(model.getProject().getKey(), model.getId());
+            Path trainDSPath = fileLocationService.resolvedDatasetPath(trainDS.getProject().getKey(), trainDS.getId());
+            Path testDSPath = fileLocationService.resolvedDatasetPath(testDS.getProject().getKey(), testDS.getId());
+
+            ListenableFuture<TestResultMessage> runTestFuture = client.runTest(
+                Files.newInputStream(modelPath),
+                Files.newInputStream(trainDSPath),
+                Files.newInputStream(testDSPath),
+                test);
 
             TestResultMessage testResult = runTestFuture.get();
             res.setResult(testResult);
@@ -88,10 +99,8 @@ public class TestService {
             if (res.getMessage() == null) {
                 res.setMessage(ExceptionUtils.getMessage(e));
             }
-        } finally {
-            if (client != null) {
-                client.shutdown();
-            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
         testExecution.setResult(res.getStatus());
         testExecutionRepository.save(testExecution);

@@ -6,9 +6,9 @@ import ai.giskard.domain.User;
 import ai.giskard.repository.ProjectRepository;
 import ai.giskard.repository.UserRepository;
 import ai.giskard.security.AuthoritiesConstants;
-import ai.giskard.web.dto.ml.ProjectPostDTO;
-import ai.giskard.config.InitService;
+import ai.giskard.service.InitService;
 import ai.giskard.web.dto.mapper.GiskardMapper;
+import ai.giskard.web.dto.ml.ProjectPostDTO;
 import ai.giskard.web.rest.controllers.ProjectController;
 import ai.giskard.web.rest.errors.Entity;
 import ai.giskard.web.rest.errors.EntityNotFoundException;
@@ -62,9 +62,9 @@ class AdminProjectControllerIT {
 
     protected void initKeys() {
         this.USERKEY = initService.getUserName("admin");
-        this.PROJECTKEY = initService.getProjectName("admin");
+        this.PROJECTKEY = initService.getProjectByCreatorLogin("admin");
         this.OTHERUSERKEY = initService.getUserName("aicreator");
-        this.OTHERPROJECTKEY = initService.getProjectName("aicreator");
+        this.OTHERPROJECTKEY = initService.getProjectByCreatorLogin("aicreator");
     }
 
     @BeforeEach
@@ -206,8 +206,7 @@ class AdminProjectControllerIT {
         User user = userRepository.getOneByLogin(USERKEY);
         String url = String.format("/api/v2/project/%d/guests/%d", project.getId(), user.getId());
         assertThat(project.getGuests()).isNullOrEmpty();
-        restUserMockMvc.perform(put(url).accept(MediaType.APPLICATION_JSON))
-            .andExpect(status().isOk());
+        restUserMockMvc.perform(put(url).accept(MediaType.APPLICATION_JSON)).andExpect(status().isOk());
         Project updatedProject = projectRepository.getOneByName(PROJECTKEY);
         assertThat(updatedProject.getGuests()).contains(user);
     }

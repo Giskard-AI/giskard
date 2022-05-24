@@ -47,12 +47,11 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue } from 'vue-property-decorator';
-import { readUserProfile } from '@/store/main/getters';
-import { dispatchUpdateUserProfile } from '@/store/main/actions';
+import {Component, Vue} from 'vue-property-decorator';
+import {readUserProfile} from '@/store/main/getters';
+import {dispatchUpdateUserProfile} from '@/store/main/actions';
 import ButtonModalConfirmation from '@/components/ButtonModalConfirmation.vue';
-import { AdminUserDTO, UpdateMeDTO } from '@/generated-sources';
-import AdminUserDTOWithPassword = AdminUserDTO.AdminUserDTOWithPassword;
+import {AdminUserDTO, UpdateMeDTO} from '@/generated-sources';
 
 @Component({
   components: {
@@ -84,7 +83,7 @@ export default class UserProfileEdit extends Vue {
         password : this.password1
       };
       await dispatchUpdateUserProfile(this.$store, updatedProfile);
-      this.$router.push('/main/profile');
+      await this.$router.push('/main/profile');
     })
   }
 }

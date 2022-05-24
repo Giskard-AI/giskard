@@ -36,8 +36,8 @@ export default class TestSuites extends Vue {
 
   testSuites: Array<TestSuiteDTO> = []
 
-  private getProjectFileName(obj: ModelDTO | DatasetDTO) {
-    return obj ? (obj.name || obj.file_name) : "";
+  private static getProjectFileName(obj: ModelDTO | DatasetDTO) {
+    return obj ? (obj.name || obj.fileName) : "";
   }
 
   get tableHeaders() {
@@ -93,12 +93,12 @@ export default class TestSuites extends Vue {
 
   private async init() {
     this.testSuites = (await api.getTestSuites(this.projectId)).data.map((ts: TestSuiteDTO) => {
-      ts.model.name = this.getProjectFileName(ts.model);
+      ts.model.name = TestSuites.getProjectFileName(ts.model);
       if (ts.trainDataset) {
-        ts.trainDataset.name = this.getProjectFileName(ts.trainDataset);
+        ts.trainDataset.name = TestSuites.getProjectFileName(ts.trainDataset);
       }
       if (ts.testDataset) {
-        ts.testDataset.name = this.getProjectFileName(ts.testDataset);
+        ts.testDataset.name = TestSuites.getProjectFileName(ts.testDataset);
       }
       return ts;
     });

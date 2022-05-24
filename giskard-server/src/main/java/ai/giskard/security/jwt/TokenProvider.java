@@ -13,19 +13,23 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ObjectUtils;
 import tech.jhipster.config.JHipsterProperties;
 
 import java.nio.charset.StandardCharsets;
 import java.security.Key;
-import java.util.*;
+import java.security.SecureRandom;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
 import java.util.stream.Collectors;
 
 @Component
 public class TokenProvider {
 
+    public static final int GENERATED_KEY_BITS = 512;
     private final Logger log = LoggerFactory.getLogger(TokenProvider.class);
 
     private static final String AUTHORITIES_KEY = "auth";
@@ -48,17 +52,22 @@ public class TokenProvider {
 
     public TokenProvider(JHipsterProperties jHipsterProperties, ApplicationProperties applicationProperties, SecurityMetersService securityMetersService) {
         byte[] keyBytes;
-        String secret = jHipsterProperties.getSecurity().getAuthentication().getJwt().getBase64Secret();
-        if (!ObjectUtils.isEmpty(secret)) {
+        String base64SecretProperty = jHipsterProperties.getSecurity().getAuthentication().getJwt().getBase64Secret();
+        String secretProperty = jHipsterProperties.getSecurity().getAuthentication().getJwt().getSecret();
+        if (!ObjectUtils.isEmpty(base64SecretProperty)) {
             log.debug("Using a Base64-encoded JWT secret key");
-            keyBytes = Decoders.BASE64.decode(secret);
-        } else {
+            keyBytes = Decoders.BASE64.decode(base64SecretProperty);
+        } else if (secretProperty!=null){
             log.warn(
                 "Warning: the JWT key used is not Base64-encoded. " +
                     "We recommend using the `jhipster.security.authentication.jwt.base64-secret` key for optimum security."
             );
-            secret = jHipsterProperties.getSecurity().getAuthentication().getJwt().getSecret();
-            keyBytes = secret.getBytes(StandardCharsets.UTF_8);
+            base64SecretProperty = secretProperty;
+            keyBytes = base64SecretProperty.getBytes(StandardCharsets.UTF_8);
+        } else {
+            log.info("No secret key was specified in the configuration, generating a new on of {} bits", GENERATED_KEY_BITS);
+            keyBytes = new byte[GENERATED_KEY_BITS/8];
+            new SecureRandom().nextBytes(keyBytes);
         }
         key = Keys.hmacShaKeyFor(keyBytes);
         jwtParser = Jwts.parserBuilder().setSigningKey(key).build();
@@ -119,11 +128,16 @@ public class TokenProvider {
 
     public Authentication getAuthentication(String token) {
         Claims claims = jwtParser.parseClaimsJws(token).getBody();
-        Collection<? extends GrantedAuthority> authorities = Arrays
-            .stream(claims.get(AUTHORITIES_KEY).toString().split(","))
-            .filter(auth -> !auth.trim().isEmpty())
-            .map(SimpleGrantedAuthority::new)
-            .collect(Collectors.toList());
+        Collection<? extends GrantedAuthority> authorities;
+        if (claims.get(AUTHORITIES_KEY) != null) {
+            authorities = Arrays
+                .stream(claims.get(AUTHORITIES_KEY).toString().split(","))
+                .filter(auth -> !auth.trim().isEmpty())
+                .map(SimpleGrantedAuthority::new)
+                .collect(Collectors.toList());
+        } else {
+            authorities = Collections.emptyList();
+        }
 
         GiskardUser principal = new GiskardUser(claims.get(ID, Long.class), claims.getSubject(), "", authorities);
 

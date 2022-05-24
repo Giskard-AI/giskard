@@ -42,6 +42,8 @@ public class JWTFilter extends GenericFilterBean {
         if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")) {
             return bearerToken.substring(7);
         }
-        return null;
+        // fallback to request parameter token which is a hacky way to enable JWT authentication for
+        // iFrame downloads that don't allow headers
+        return request.getParameter("token");
     }
 }

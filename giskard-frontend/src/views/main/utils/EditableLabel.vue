@@ -20,7 +20,7 @@ export default class EditableLabel extends Vue {
 </script>
 
 <style scoped lang="scss">
-@import "/src/styles/colors.scss";
+@import "src/styles/colors";
 
 .mode-switch {
   &:hover {

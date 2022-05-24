@@ -1,9 +1,7 @@
 name: Build
 on:
+  pull_request:
   push:
-    branches:
-      - '*'
-      # - master # or the name of your main branch
 
 jobs:
   build:

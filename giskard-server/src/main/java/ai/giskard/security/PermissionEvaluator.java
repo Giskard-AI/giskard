@@ -6,6 +6,7 @@ import ai.giskard.service.ProjectService;
 import ai.giskard.web.rest.errors.Entity;
 import ai.giskard.web.rest.errors.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -53,6 +54,19 @@ public class PermissionEvaluator {
     public boolean canReadProject(@NotNull Long id) {
         Project project = this.projectRepository.findOneWithGuestsById(id).orElseThrow(() -> new EntityNotFoundException(Entity.PROJECT, id));
         return (projectService.isUserInGuestList(project.getGuests()) || isCurrentUser(project.getOwner().getLogin()) || SecurityUtils.isCurrentUserAdmin());
+    }
+
+    @Transactional
+    public void validateCanReadProject(@NotNull Long id) {
+        if (!canReadProject(id)) {
+            throw new AccessDeniedException("Access denied to project id " + id);
+        }
+    }
+    @Transactional
+    public void validateCanWriteProject(@NotNull Long id) {
+        if (!canWriteProject(id)) {
+            throw new AccessDeniedException("Access denied to project id " + id);
+        }
     }
 
 }

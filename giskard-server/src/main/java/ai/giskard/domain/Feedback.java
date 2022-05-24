@@ -51,18 +51,30 @@ public class Feedback {
     @Setter
     @NotNull
     private String feedbackType;
+
     @Setter
+    @Column(columnDefinition = "VARCHAR")
     private String featureName;
+
     @Setter
+    @Column(columnDefinition = "VARCHAR")
     private String featureValue;
+
     @Setter
     private String feedbackChoice;
+
     @Setter
+    @Column(columnDefinition = "VARCHAR")
     private String feedbackMessage;
+
     @Setter
     @NotNull
+    @Column(columnDefinition = "VARCHAR")
     private String userData;
+
     @Setter
     @NotNull
+    @Column(columnDefinition = "VARCHAR")
     private String originalData;
+
 }

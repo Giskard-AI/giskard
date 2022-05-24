@@ -24,8 +24,4 @@ new Vue({
   render: (h) => h(App)
 }).$mount('#app');
 
-Vue.filter('date', function (value) {
-  if (value) {
-    return moment(String(value)).format('DD/MM/YYYY hh:mm')
-  }
-});
+import './filters'

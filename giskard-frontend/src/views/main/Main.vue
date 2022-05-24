@@ -1,3 +1,4 @@
+
 <template>
   <v-main>
     <v-navigation-drawer
@@ -10,11 +11,11 @@
       width="72"
     >
       <v-layout column fill-height>
-        <v-list subheader align="center">
+        <v-list subheader class="align-center">
           <v-list-item to="/">
             <v-list-item-content>
               <div>
-                <img src="@/assets/favicon.png" width="46px" alt="Giskard icon"/>
+                <img src="@/assets/favicon-small.png" alt="Giskard icon"/>
               </div>
             </v-list-item-content>
           </v-list-item>
@@ -27,7 +28,7 @@
           </v-list-item>
         </v-list>
         <v-spacer></v-spacer>
-        <v-list align="center">
+        <v-list class="align-center">
           <v-divider></v-divider>
           <v-list-item v-show="hasAdminAccess" to="/main/admin/">
             <v-list-item-content>
