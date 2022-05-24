@@ -29,8 +29,8 @@ services:
       - SPRING_DATASOURCE_PASSWORD=y1QYbF2BtFUC
       - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/app
       - SPRING_LIQUIBASE_URL=jdbc:postgresql://db:5432/app
-      - APPLICATION_ML_WORKER_HOST=ml-worker
-      - APPLICATION_ML_WORKER_PORT=50000
+      - GISKARD_ML_WORKER_HOST=ml-worker
+      - GISKARD_ML_WORKER_PORT=50051
       - SPRING_MAIL_HOST
       - SPRING_MAIL_PORT
       - SPRING_MAIL_USERNAME

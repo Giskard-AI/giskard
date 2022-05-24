@@ -2,25 +2,11 @@ import logging
 import os.path
 from concurrent import futures
 from logging.config import fileConfig
-from pathlib import Path
 
 import grpc
-from pydantic import BaseSettings
-from pydantic.class_validators import validator
 
+from settings import Settings
 from generated.ml_worker_pb2_grpc import add_MLWorkerServicer_to_server
-
-
-class Settings(BaseSettings):
-    port: int = 50051
-    host: str = '0.0.0.0'
-    max_workers: int = 10
-
-    environment: str = ""
-
-    class Config:
-        env_prefix = "GSK_"
-
 
 settings = Settings()
 
