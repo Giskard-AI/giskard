@@ -56,11 +56,13 @@ public class PermissionEvaluator {
         return (projectService.isUserInGuestList(project.getGuests()) || isCurrentUser(project.getOwner().getLogin()) || SecurityUtils.isCurrentUserAdmin());
     }
 
+    @Transactional
     public void validateCanReadProject(@NotNull Long id) {
         if (!canReadProject(id)) {
             throw new AccessDeniedException("Access denied to project id " + id);
         }
     }
+    @Transactional
     public void validateCanWriteProject(@NotNull Long id) {
         if (!canWriteProject(id)) {
             throw new AccessDeniedException("Access denied to project id " + id);

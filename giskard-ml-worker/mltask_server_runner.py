@@ -16,13 +16,7 @@ class Settings(BaseSettings):
     host: str = '0.0.0.0'
     max_workers: int = 10
 
-    storage_root: Path
     environment: str = ""
-
-    @validator("storage_root", pre=True)
-    def __storage_root_setter(cls, v: str) -> Path:
-        """Root path used for reading datasets and models"""
-        return Path(v)
 
     class Config:
         env_prefix = "GSK_"
