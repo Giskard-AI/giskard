@@ -8,7 +8,7 @@ import java.util.regex.Pattern;
 public class GiskardStringUtils {
     private static final Pattern NONLATIN = Pattern.compile("[^\\w-]");
     private static final Pattern WHITESPACE = Pattern.compile("[\\s]");
-    private static final Pattern EDGESDHASHES = Pattern.compile("(^-|-$)");
+    private static final Pattern EDGESDHASHES = Pattern.compile("(^-|-$)"); //NOSONAR
     public static final Pattern MULTIDASH = Pattern.compile("-{2,}");
 
     public static String toSlug(String input) {

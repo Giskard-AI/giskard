@@ -187,6 +187,7 @@ public class InitService {
      * Initializing first authorities, mock users, and mock projects
      */
     @EventListener(ApplicationReadyEvent.class)
+    @Transactional
     public void init() {
         initAuthorities();
         initUsers();
@@ -197,7 +198,6 @@ public class InitService {
     /**
      * Initialising users with different authorities
      */
-    @Transactional
     public void initUsers() {
         Arrays.stream(mockKeys).forEach(key -> {
             if (userRepository.findOneByLogin(key.toLowerCase()).isEmpty()) {
@@ -246,7 +246,6 @@ public class InitService {
     /**
      * Initialized with default projects
      */
-    @Transactional
     public void initProjects() {
         projects.forEach((key, config) -> saveProject(key, config.creator));
     }

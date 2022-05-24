@@ -18,6 +18,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.security.SecureRandom;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
@@ -38,7 +39,7 @@ public class MLWorkerClient implements AutoCloseable {
         // shut it down.
 
         // Passing Channels to code makes code easier to test and makes it easier to reuse Channels.
-        String id = RandomStringUtils.randomAlphanumeric(8);
+        String id = RandomStringUtils.randomAlphanumeric(8); // NOSONAR: no security risk here
         logger = LoggerFactory.getLogger("MLWorkerClient [" + id + "]");
 
         logger.debug("Creating MLWorkerClient");
@@ -115,6 +116,7 @@ public class MLWorkerClient implements AutoCloseable {
                     ((ManagedChannel) channel).shutdownNow().awaitTermination(5, TimeUnit.SECONDS);
                 } catch (InterruptedException e) {
                     logger.error("Failed to shutdown worker", e);
+                    Thread.currentThread().interrupt();
                 }
             }
         });
