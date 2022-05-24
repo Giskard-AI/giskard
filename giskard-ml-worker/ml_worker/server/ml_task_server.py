@@ -105,9 +105,11 @@ class MLTaskServer(MLWorkerServicer):
             results = pd.Series(prediction_results.prediction)
             predsSerie = results
             target_serie = data_df[request.target]
-            abs_diff = pd.Series((predsSerie - target_serie).abs(), name="absDiff")
+            diff = predsSerie - target_serie
+            diffPercent = pd.Series(diff / target_serie, name="diffPercent")
+            abs_diff = pd.Series(diff.abs(), name="absDiff")
             abs_diff_percent = pd.Series(abs_diff / target_serie, name="absDiffPercent")
-            calculated = pd.concat([predsSerie, target_serie, abs_diff, abs_diff_percent], axis=1)
+            calculated = pd.concat([predsSerie, target_serie, abs_diff, abs_diff_percent, diffPercent], axis=1)
 
         return RunModelResponse(
             results_csv=results.to_csv(index=False),
