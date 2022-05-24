@@ -68,7 +68,7 @@ idea {
 
 sonarqube {
     properties {
-        property "sonar.projectKey", "Giskard-AI_giskard"
+        property "sonar.projectKey", "Giskard-backend"
     }
 }
 
