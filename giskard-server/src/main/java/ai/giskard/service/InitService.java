@@ -1,5 +1,6 @@
 package ai.giskard.service;
 
+import ai.giskard.domain.FeatureType;
 import ai.giskard.domain.Project;
 import ai.giskard.domain.Role;
 import ai.giskard.domain.User;
@@ -28,6 +29,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -57,6 +59,33 @@ public class InitService {
 
     String[] mockKeys = Arrays.stream(AuthoritiesConstants.AUTHORITIES).map(key -> key.replace("ROLE_", "")).toArray(String[]::new);
     public Map<String, String> users = Arrays.stream(mockKeys).collect(Collectors.toMap(String::toLowerCase, String::toLowerCase));
+
+    private final static Map<String, FeatureType> germanCreditFeatureTypes = new HashMap<>();
+
+    static {
+        germanCreditFeatureTypes.put("account_check_status", FeatureType.CATEGORY);
+        germanCreditFeatureTypes.put("duration_in_month", FeatureType.NUMERIC);
+        germanCreditFeatureTypes.put("credit_history", FeatureType.CATEGORY);
+        germanCreditFeatureTypes.put("purpose", FeatureType.CATEGORY);
+        germanCreditFeatureTypes.put("credit_amount", FeatureType.NUMERIC);
+        germanCreditFeatureTypes.put("savings", FeatureType.CATEGORY);
+        germanCreditFeatureTypes.put("present_emp_since", FeatureType.CATEGORY);
+        germanCreditFeatureTypes.put("installment_as_income_perc", FeatureType.NUMERIC);
+        germanCreditFeatureTypes.put("sex", FeatureType.CATEGORY);
+        germanCreditFeatureTypes.put("personal_status", FeatureType.CATEGORY);
+        germanCreditFeatureTypes.put("other_debtors", FeatureType.CATEGORY);
+        germanCreditFeatureTypes.put("present_res_since", FeatureType.NUMERIC);
+        germanCreditFeatureTypes.put("property", FeatureType.CATEGORY);
+        germanCreditFeatureTypes.put("age", FeatureType.NUMERIC);
+        germanCreditFeatureTypes.put("other_installment_plans", FeatureType.CATEGORY);
+        germanCreditFeatureTypes.put("housing", FeatureType.CATEGORY);
+        germanCreditFeatureTypes.put("credits_this_bank", FeatureType.NUMERIC);
+        germanCreditFeatureTypes.put("job", FeatureType.CATEGORY);
+        germanCreditFeatureTypes.put("people_under_maintenance", FeatureType.NUMERIC);
+        germanCreditFeatureTypes.put("telephone", FeatureType.CATEGORY);
+        germanCreditFeatureTypes.put("foreign_worker", FeatureType.CATEGORY);
+    }
+
     private Map<String, ProjectConfig> projects = Map.of(
         "zillow",
         new ProjectConfig("Zillow price prediction", "AICREATOR",
@@ -65,7 +94,7 @@ public class InitService {
                 .name("Zillow regression")
                 .build(),
             DataUploadParamsDTO.builder()
-                .projectKey("enron")
+                .projectKey("zillow")
                 .target("Target")
                 .build()
         ),
@@ -87,8 +116,9 @@ public class InitService {
                 .name("German credit score")
                 .build(),
             DataUploadParamsDTO.builder()
-                .projectKey("enron")
-                .target("Target")
+                .projectKey("credit")
+                .target("default")
+                .featureTypes(germanCreditFeatureTypes)
                 .build()
         )
     );
