@@ -62,9 +62,9 @@ class AdminProjectControllerIT {
 
     protected void initKeys() {
         this.USERKEY = initService.getUserName("admin");
-        this.PROJECTKEY = initService.getProjectName("admin");
+        this.PROJECTKEY = initService.getProjectByCreatorLogin("admin");
         this.OTHERUSERKEY = initService.getUserName("aicreator");
-        this.OTHERPROJECTKEY = initService.getProjectName("aicreator");
+        this.OTHERPROJECTKEY = initService.getProjectByCreatorLogin("aicreator");
     }
 
     @BeforeEach
@@ -206,8 +206,7 @@ class AdminProjectControllerIT {
         User user = userRepository.getOneByLogin(USERKEY);
         String url = String.format("/api/v2/project/%d/guests/%d", project.getId(), user.getId());
         assertThat(project.getGuests()).isNullOrEmpty();
-        restUserMockMvc.perform(put(url).accept(MediaType.APPLICATION_JSON))
-            .andExpect(status().isOk());
+        restUserMockMvc.perform(put(url).accept(MediaType.APPLICATION_JSON)).andExpect(status().isOk());
         Project updatedProject = projectRepository.getOneByName(PROJECTKEY);
         assertThat(updatedProject.getGuests()).contains(user);
     }

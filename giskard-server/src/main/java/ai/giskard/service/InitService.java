@@ -122,7 +122,7 @@ public class InitService {
     }
 
     private final Map<String, ProjectConfig> projects = Map.of(
-        "zillow", new ProjectConfig("Zillow price prediction", "AICREATOR",
+        "zillow", new ProjectConfig("Zillow price prediction", "aicreator",
             ModelUploadParamsDTO.builder().modelType("regression")
                 .projectKey("zillow")
                 .name("Zillow regression")
@@ -135,7 +135,7 @@ public class InitService {
                 .target("SalePrice")
                 .build()
         ),
-        "enron", new ProjectConfig("Enron", "AITESTER",
+        "enron", new ProjectConfig("Enron", "aitester",
             ModelUploadParamsDTO.builder().modelType("classification")
                 .classificationLabels(List.of("CALIFORNIA CRISIS", "INFLUENCE", "INTERNAL", "REGULATION"))
                 .projectKey("enron")
@@ -150,7 +150,7 @@ public class InitService {
                 .target("Target")
                 .build()
         ),
-        "credit", new ProjectConfig("German credit scoring", "ADMIN",
+        "credit", new ProjectConfig("German credit scoring", "admin",
             ModelUploadParamsDTO.builder().modelType("classification")
                 .classificationLabels(List.of("Default", "Not Default"))
                 .projectKey("credit")
@@ -166,6 +166,7 @@ public class InitService {
                 .build()
         )
     );
+
     //public Map<String, String> projects = Arrays.stream(mockKeys).collect(Collectors.toMap(String::toLowerCase, name -> String.format("%s's project", StringUtils.capitalize(name.toLowerCase()))));
 
 
@@ -175,6 +176,10 @@ public class InitService {
 
     public String getProjectName(String key) {
         return projects.get(key).name;
+    }
+
+    public String getProjectByCreatorLogin(String login) {
+        return projects.entrySet().stream().filter(e -> e.getValue().creator.equals(login)).findFirst().orElseThrow().getValue().name;
     }
 
 

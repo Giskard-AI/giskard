@@ -55,9 +55,9 @@ class AICreatorProjectControllerIT extends AdminProjectControllerIT {
     @Override
     protected void initKeys() {
         this.USERKEY = initService.getUserName("aicreator");
-        this.PROJECTKEY = initService.getProjectName("aicreator");
+        this.PROJECTKEY = initService.getProjectByCreatorLogin("aicreator");
         this.OTHERUSERKEY = initService.getUserName("admin");
-        this.OTHERPROJECTKEY = initService.getProjectName("admin");
+        this.OTHERPROJECTKEY = initService.getProjectByCreatorLogin("admin");
     }
 
     /**

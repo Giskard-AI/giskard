@@ -43,9 +43,9 @@ class AITesterProjectControllerIT extends AICreatorProjectControllerIT {
     @Override
     public void initKeys() {
         this.USERKEY = initService.getUserName("aitester");
-        this.PROJECTKEY = initService.getProjectName("aitester");
+        this.PROJECTKEY = initService.getProjectByCreatorLogin("aitester");
         this.OTHERUSERKEY = initService.getUserName("admin");
-        this.OTHERPROJECTKEY = initService.getProjectName("admin");
+        this.OTHERPROJECTKEY = initService.getProjectByCreatorLogin("admin");
     }
 
     /**
@@ -61,7 +61,7 @@ class AITesterProjectControllerIT extends AICreatorProjectControllerIT {
             .andExpect(status().isOk())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(content().string(containsString(PROJECTKEY)))
-            .andExpect(content().string(CoreMatchers.not(containsString(initService.getProjectName("aicreator")))))
+            .andExpect(content().string(CoreMatchers.not(containsString(initService.getProjectByCreatorLogin("aicreator")))))
             .andExpect(content().string(CoreMatchers.not(containsString(OTHERPROJECTKEY))));
     }
 
