@@ -14,7 +14,7 @@ import java.nio.file.Path;
  */
 @Setter
 @Getter
-@ConfigurationProperties(prefix = "application", ignoreUnknownFields = false)
+@ConfigurationProperties(prefix = "giskard", ignoreUnknownFields = false)
 public class ApplicationProperties {
     private String mlWorkerHost;
     private int mlWorkerPort;
@@ -23,5 +23,5 @@ public class ApplicationProperties {
     private Double borderLineThreshold;
     private Double regressionThreshold;
 
-    private Path giskardHome;
+    private Path home;
 }

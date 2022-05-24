@@ -5,16 +5,15 @@ import ai.giskard.domain.ml.ModelType;
 import com.dataiku.j2ts.annotations.UIModel;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.util.List;
 
 @UIModel
 @Getter
 @Setter
-@NoArgsConstructor
+@Builder
+@AllArgsConstructor
 public class ModelUploadParamsDTO {
     private String name;
     private String projectKey;
@@ -24,4 +23,7 @@ public class ModelUploadParamsDTO {
     private List<String> featureNames;
     private ModelLanguage language;
     private List<String> classificationLabels;
+
+    public ModelUploadParamsDTO() {
+    }
 }

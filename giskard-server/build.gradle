@@ -26,8 +26,8 @@ version = "0.0.1-SNAPSHOT"
 
 description = ""
 
-sourceCompatibility=11
-targetCompatibility=11
+sourceCompatibility=17
+targetCompatibility=17
 assert System.properties["java.specification.version"] == "11" || "12" || "13" || "14" || "15" || "16" || "17"
 
 apply from: "gradle/docker.gradle"

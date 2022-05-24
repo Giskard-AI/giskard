@@ -3,25 +3,32 @@ package ai.giskard.service;
 import ai.giskard.domain.Project;
 import ai.giskard.domain.Role;
 import ai.giskard.domain.User;
-import ai.giskard.repository.RoleRepository;
 import ai.giskard.repository.ProjectRepository;
+import ai.giskard.repository.RoleRepository;
 import ai.giskard.repository.UserRepository;
 import ai.giskard.security.AuthoritiesConstants;
+import ai.giskard.web.dto.DataUploadParamsDTO;
+import ai.giskard.web.dto.ModelUploadParamsDTO;
 import ai.giskard.web.rest.errors.Entity;
 import ai.giskard.web.rest.errors.EntityNotFoundException;
 import com.google.common.collect.Sets;
 import lombok.RequiredArgsConstructor;
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.ResourceLoader;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -41,11 +48,51 @@ public class InitService {
     final ProjectService projectService;
 
     final PasswordEncoder passwordEncoder;
+    private final ResourceLoader resourceLoader;
+    private final FileUploadService fileUploadService;
 
+    private record ProjectConfig(String name, String creator, ModelUploadParamsDTO modelParams,
+                                 DataUploadParamsDTO datasetParams) {
+    }
 
     String[] mockKeys = Arrays.stream(AuthoritiesConstants.AUTHORITIES).map(key -> key.replace("ROLE_", "")).toArray(String[]::new);
     public Map<String, String> users = Arrays.stream(mockKeys).collect(Collectors.toMap(String::toLowerCase, String::toLowerCase));
-    public Map<String, String> projects = Arrays.stream(mockKeys).collect(Collectors.toMap(String::toLowerCase, name -> String.format("%s's project", StringUtils.capitalize(name.toLowerCase()))));
+    private Map<String, ProjectConfig> projects = Map.of(
+        "zillow",
+        new ProjectConfig("Zillow price prediction", "AICREATOR",
+            ModelUploadParamsDTO.builder().modelType("regression")
+                .projectKey("zillow")
+                .name("Zillow regression")
+                .build(),
+            DataUploadParamsDTO.builder()
+                .projectKey("enron")
+                .target("Target")
+                .build()
+        ),
+        "enron", new ProjectConfig("Enron", "AITESTER",
+            ModelUploadParamsDTO.builder().modelType("classification")
+                .classificationLabels(List.of("a", "b", "c")) // TODO andreyavtomonov (24/05/2022): add real labels
+                .projectKey("enron")
+                .name("Enron model")
+                .build(),
+            DataUploadParamsDTO.builder()
+                .projectKey("enron")
+                .target("Target")
+                .build()
+        ),
+        "credit", new ProjectConfig("German credit scoring", "ADMIN",
+            ModelUploadParamsDTO.builder().modelType("classification")
+                .classificationLabels(List.of("Default", "Not Default"))
+                .projectKey("credit")
+                .name("German credit score")
+                .build(),
+            DataUploadParamsDTO.builder()
+                .projectKey("enron")
+                .target("Target")
+                .build()
+        )
+    );
+    //public Map<String, String> projects = Arrays.stream(mockKeys).collect(Collectors.toMap(String::toLowerCase, name -> String.format("%s's project", StringUtils.capitalize(name.toLowerCase()))));
 
 
     public String getUserName(String key) {
@@ -53,7 +100,7 @@ public class InitService {
     }
 
     public String getProjectName(String key) {
-        return projects.get(key);
+        return projects.get(key).name;
     }
 
 
@@ -120,28 +167,62 @@ public class InitService {
     /**
      * Initialized with default projects
      */
+    @Transactional
     public void initProjects() {
-        Arrays.stream(mockKeys).forEach(key -> saveProject(
-            projects.get(key.toLowerCase()),
-            key.toLowerCase())
-        );
+        projects.forEach((key, config) -> saveProject(key, config.creator));
     }
 
     /**
      * Save project
      *
-     * @param projectName projectName used to easily identify the project
-     * @param ownerLogin  login of the owner
+     * @param projectKey    project key used to easily identify the project
+     * @param ownerUserName login of the owner
      */
-    private void saveProject(String projectName, String ownerLogin) {
-        User owner = userRepository.getOneByLogin(ownerLogin.toLowerCase());
+    private void saveProject(String projectKey, String ownerUserName) {
+        String projectName = projects.get(projectKey).name;
+        String ownerLogin = ownerUserName.toLowerCase();
+        User owner = userRepository.getOneByLogin(ownerLogin);
         Assert.notNull(owner, "Owner does not exist in database");
-        Project project = new Project(null, projectName, projectName, owner);
+        Project project = new Project(projectKey, projectName, projectName, owner);
         if (projectRepository.findOneByName(projectName).isEmpty()) {
             projectService.create(project, ownerLogin);
             projectRepository.save(project);
+            uploadModel(projectKey);
+            uploadDataframe(projectKey);
         } else {
             logger.info(String.format("Project with name %s already exists", projectName));
+        }
+    }
+
+    private void uploadDataframe(String projectKey) {
+        ProjectConfig config = projects.get(projectKey);
+        Project project = projectRepository.getOneByKey(projectKey);
+        Resource dsResource = resourceLoader.getResource("classpath:demo_projects/" + projectKey + "/dataset.csv.zst");
+        try (InputStream dsStream = Files.newInputStream(dsResource.getFile().toPath())) {
+            DataUploadParamsDTO dsParams = config.datasetParams;
+            fileUploadService.uploadDataset(
+                project,
+                dsParams.getName(),
+                dsParams.getFeatureTypes(),
+                dsParams.getTarget(),
+                dsStream
+            );
+        } catch (IOException e) {
+            logger.warn("Failed to upload dataset for demo project {}", projectKey);
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void uploadModel(String projectKey) {
+        Resource modelResource = resourceLoader.getResource("classpath:demo_projects/" + projectKey + "/model.pkl.zst");
+        Resource requirementsResource = resourceLoader.getResource("classpath:demo_projects/" + projectKey + "/requirements.txt");
+        try (InputStream modelStream = Files.newInputStream(modelResource.getFile().toPath())) {
+            try (InputStream requirementsStream = Files.newInputStream(requirementsResource.getFile().toPath())) {
+                fileUploadService.uploadModel(projects.get(projectKey).modelParams, modelStream, requirementsStream);
+            }
+        } catch (IOException e) {
+            logger.warn("Failed to upload model for demo project {}", projectKey);
+            throw new RuntimeException(e);
         }
     }
 }
