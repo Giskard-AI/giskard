@@ -1,9 +1,9 @@
-from typing import Optional, Any
+from typing import Optional, Union, Dict, Any
 
 import numpy
-import pandas as pd
 from ai_inspector import ModelInspector
 from pydantic import BaseModel
+import pandas as pd
 
 
 def select_single_prediction(probabilities, labels, threshold=None):

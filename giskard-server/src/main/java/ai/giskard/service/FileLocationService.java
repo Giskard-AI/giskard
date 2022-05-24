@@ -52,7 +52,7 @@ public class FileLocationService {
     }
 
     private Path giskardHome() {
-        return applicationProperties.getGiskardHome();
+        return applicationProperties.getHome();
     }
 
     public static String createZSTname(String prefix, Long id) {

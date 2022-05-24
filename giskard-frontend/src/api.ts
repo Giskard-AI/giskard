@@ -85,7 +85,6 @@ function downloadURL(urlString) {
     iframe.style.display = 'none';
     document.body.appendChild(iframe);
   }
-  console.log(url.toString());
   iframe.src = url.toString();
 }
 

@@ -115,7 +115,7 @@ jhipster:
 # https://www.jhipster.tech/common-application-properties/
 # ===================================================================
 
-application:
+giskard:
   api-token-validity-in-days: 90
   invitation-token-validity-in-days: 3
   ml-worker-host: localhost

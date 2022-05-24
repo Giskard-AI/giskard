@@ -71,7 +71,7 @@ public class FileUploadService {
         try {
             requirementsStream.transferTo(Files.newOutputStream(requirementsFilePath));
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("Error writing requirements file: " + requirementsFilePath, e);
         }
         model.setRequirementsFileName(requirementsFilename);
         return modelRepository.save(model);
@@ -141,7 +141,6 @@ public class FileUploadService {
         }
     }
 
-    @PreAuthorize("@permissionEvaluator.canWriteProject( #project.id)")
     @Transactional
     public Dataset uploadDataset(Project project, String datasetName, Map<String, FeatureType> featureTypes, String target, InputStream inputStream) {
         Path datasetPath = locationService.datasetsDirectory(project.getKey());

@@ -4,6 +4,7 @@ import ai.giskard.domain.Project;
 import ai.giskard.domain.ml.Dataset;
 import ai.giskard.domain.ml.ProjectModel;
 import ai.giskard.repository.ProjectRepository;
+import ai.giskard.security.PermissionEvaluator;
 import ai.giskard.service.FileUploadService;
 import ai.giskard.web.dto.DataUploadParamsDTO;
 import ai.giskard.web.dto.ModelUploadParamsDTO;
@@ -29,6 +30,7 @@ public class UploadController {
     private final GiskardMapper giskardMapper;
     private final FileUploadService uploadService;
     private final ProjectRepository projectRepository;
+    private final PermissionEvaluator permissionEvaluator;
     private final Logger log = LoggerFactory.getLogger(UploadController.class);
 
     @PostMapping("project/models/upload")
@@ -55,6 +57,8 @@ public class UploadController {
         log.info("Loading dataset: {}.{}", params.getProjectKey(), params.getName());
 
         Project project = projectRepository.getOneByKey(params.getProjectKey());
+        permissionEvaluator.validateCanWriteProject(project.getId());
+
         try {
             Dataset savedDataset = uploadService.uploadDataset(
                 project, params.getName(), params.getFeatureTypes(),
