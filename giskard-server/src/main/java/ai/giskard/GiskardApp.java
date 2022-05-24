@@ -8,6 +8,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.liquibase.LiquibaseProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.core.env.Environment;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import tech.jhipster.config.DefaultProfileUtil;
@@ -69,8 +70,8 @@ public class GiskardApp {
     public static void main(String[] args) {
         SpringApplication app = new SpringApplication(GiskardApp.class);
         DefaultProfileUtil.addDefaultProfile(app);
-        Environment env = app.run(args).getEnvironment();
-        logApplicationStartup(env);
+        ConfigurableApplicationContext ctx = app.run(args);
+        logApplicationStartup(ctx.getEnvironment());
     }
 
     private static void logApplicationStartup(Environment env) {
@@ -88,6 +89,7 @@ public class GiskardApp {
         }
         String[] profiles = env.getActiveProfiles().length == 0 ? env.getDefaultProfiles() : env.getActiveProfiles();
         boolean hasApiDocsProfile = Arrays.asList(profiles).contains("api-docs");
+        String giskardHome = env.getProperty("giskard.home");
         String swaggerURL = hasApiDocsProfile ? String.format("Swagger UI: %s://localhost:%s%sswagger-ui/index.html\t\n\t", protocol, serverPort, contextPath) : "";
         log.info(
             "\n----------------------------------------------------------\n\t" +
@@ -95,6 +97,7 @@ public class GiskardApp {
                 "Local: \t\t{}://localhost:{}{}\n\t" +
                 "External: \t{}://{}:{}{}\n\t" +
                 swaggerURL +
+                "Giskard Home: " + giskardHome + "\n\t" +
                 "Profile(s): \t{}\n----------------------------------------------------------",
             env.getProperty("spring.application.name"),
             protocol,

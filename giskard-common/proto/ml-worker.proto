@@ -10,13 +10,70 @@ package worker;
 
 service MLWorker {
   rpc runTest (RunTestRequest) returns (TestResultMessage) {}
+  rpc runModel(RunModelRequest) returns (RunModelResponse) {}
+  rpc runModelForDataFrame(RunModelForDataFrameRequest) returns (RunModelForDataFrameResponse) {}
+  rpc explain(ExplainRequest) returns (ExplainResponse) {}
+  rpc explainText(ExplainTextRequest) returns (ExplainTextResponse) {}
+}
+
+message ExplainRequest{
+  bytes serialized_model = 1;
+  bytes serialized_data = 2;
+  map<string, string> features = 3;
+}
+
+message ExplainTextRequest{
+  bytes serialized_model = 1;
+  string feature_name = 2;
+  map<string, string> features = 3;
+  uint32 n_samples = 4;
+}
+
+message ExplainResponse{
+  message Explanation{
+    map<string, float> per_feature = 1;
+  }
+  map<string, Explanation> explanations = 1;
+}
+
+
+message ExplainTextResponse{
+  map<string, string> explanations = 1;
+}
+
+message RunModelForDataFrameResponse{
+  DataFrame all_predictions = 1;
+  repeated string prediction = 2;
+  repeated float probabilities = 3;
+  repeated uint32 raw_prediction = 4;
+}
+message DataRow{
+  map<string, string> features = 1;
+}
+message DataFrame{
+  repeated DataRow rows = 1;
+}
+
+message RunModelForDataFrameRequest{
+  bytes serialized_model = 1;
+  DataFrame dataframe = 2;
+}
+message RunModelRequest{
+  bytes serialized_model = 1;
+  bytes serialized_data = 2;
+  string target = 3;
+}
+
+message RunModelResponse{
+  string results_csv = 1;
+  string calculated_csv = 2;
 }
 
 message RunTestRequest {
   string code = 1;
-  string model_path = 2;
-  string train_dataset_path = 3;
-  string test_dataset_path = 4;
+  bytes serialized_model = 2;
+  bytes serialized_test_df = 3;
+  bytes serialized_train_df = 4;
 }
 
 message RunTestResponse {

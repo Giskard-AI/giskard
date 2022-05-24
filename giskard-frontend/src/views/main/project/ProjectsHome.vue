@@ -28,7 +28,7 @@
         <v-card outlined tile class="grey lighten-5 project" 
           :class="[{'info': hover}]"
           :to="{name: 'project-overview', params: {id: p.id}}" 
-          v-show="creatorFilter == 0 || creatorFilter == 1 && p.owner_details.id == userProfile.id || creatorFilter == 2 && p.owner_details.id != userProfile.id">
+          v-show="creatorFilter === 0 || creatorFilter === 1 && p.owner.id === userProfile.id || creatorFilter === 2 && p.owner.id !== userProfile.id">
           <v-row class="pa-2">
             <v-col cols=3>
               <div class="subtitle-2 primary--text text--darken-1">{{ p.name }}</div>
@@ -37,12 +37,12 @@
               <div>{{ p.description || "-"}}</div>
             </v-col>
             <v-col cols=2>
-              <div :class="{'font-weight-bold': p.owner_details.id == userProfile.id}">
-                {{ p.owner_details.user_id == userProfile.user_id ? "me" : (p.owner_details.displayName || p.owner_details.user_id) }}
+              <div :class="{'font-weight-bold': p.owner.id === userProfile.id}">
+                {{ p.owner.user_id === userProfile.user_id ? "me" : (p.owner.displayName || p.owner.user_id) }}
               </div>
             </v-col>
             <v-col cols=2>
-              <div>{{ formatDateForDisplay(p.created_on) }}</div>
+              <div>{{ p.createdDate | date }}</div>
             </v-col>
           </v-row>
           <v-divider></v-divider>
@@ -88,6 +88,7 @@ import { readUserProfile, readAllProjects, readHasAdminAccess } from '@/store/ma
 import { Role } from '@/enums';
 import { dispatchGetProjects, dispatchCreateProject } from '@/store/main/actions';
 import { ProjectPostDTO } from '@/generated-sources';
+import moment from "moment";
 
 @Component
 export default class ProjectsHome extends Vue {
@@ -105,7 +106,7 @@ export default class ProjectsHome extends Vue {
   public async mounted() {
     const f = this.$route.query.f ? this.$route.query.f[0] || "" : ""
     this.creatorFilter = parseInt(f) || 0;
-    this.loadProjects();
+    await this.loadProjects();
   }
 
   private async loadProjects() {
@@ -126,15 +127,7 @@ export default class ProjectsHome extends Vue {
 
   get projects() {
     return readAllProjects(this.$store)
-      .sort((a, b) => b.created_on.getTime() - a.created_on.getTime());
-  }
-
-  private formatDateForDisplay(date: Date): string {
-    // if same day than today, show only time 
-    if (date.toLocaleDateString() == new Date().toLocaleDateString()) {
-      return date.toLocaleTimeString();
-    }
-    return date.toLocaleDateString();
+      .sort((a, b) => moment(b.createdDate).diff(moment(a.createdDate)));
   }
 
   public clearAndCloseDialog() {

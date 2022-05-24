@@ -2,30 +2,11 @@ import logging
 import os.path
 from concurrent import futures
 from logging.config import fileConfig
-from pathlib import Path
 
 import grpc
-from pydantic import BaseSettings
-from pydantic.class_validators import validator
 
+from settings import Settings
 from generated.ml_worker_pb2_grpc import add_MLWorkerServicer_to_server
-
-
-class Settings(BaseSettings):
-    port: int = 50051
-    max_workers: int = 10
-
-    storage_root: Path
-    environment: str = ""
-
-    @validator("storage_root", pre=True)
-    def __storage_root_setter(cls, v: str) -> Path:
-        """Root path used for reading datasets and models"""
-        return Path(v)
-
-    class Config:
-        env_prefix = "GSK_"
-
 
 settings = Settings()
 
@@ -53,9 +34,9 @@ def serve():
         thread_name_prefix="MLTaskServerExecutor"
     ))
     add_MLWorkerServicer_to_server(MLTaskServer(1000), server)
-    server.add_insecure_port(f'[::]:{settings.port}')
+    server.add_insecure_port(f'{settings.host}:{settings.port}')
     server.start()
-    logging.info(f"Started GRPC server: {settings}")
+    logging.info(f"Started ML Worker server: {settings}")
     server.wait_for_termination()
 
 

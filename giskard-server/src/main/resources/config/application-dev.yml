@@ -32,14 +32,15 @@ spring:
       indent-output: true
   datasource:
     type: com.zaxxer.hikari.HikariDataSource
-    url: jdbc:postgresql://localhost:5432/app
-    username: postgres
-    password: y1QYbF2BtFUC
+    url: "jdbc:h2:file:${giskard.home}/database/giskard;AUTO_SERVER=TRUE"
+#    url: jdbc:postgresql://localhost:5432/app
+#    username: postgres
+#    password: y1QYbF2BtFUC
     hikari:
       poolName: Hikari
       auto-commit: false
   jpa:
-    database-platform: tech.jhipster.domain.util.FixedPostgreSQL10Dialect
+    database-platform: tech.jhipster.domain.util.FixedH2Dialect
     show-sql: true
   liquibase:
     # Remove 'faker' if you do not want the sample data to be loaded automatically
@@ -108,4 +109,5 @@ jhipster:
 # https://www.jhipster.tech/common-application-properties/
 # ===================================================================
 
-# application:
+giskard:
+  home: ${HOME}/giskard-home

@@ -16,9 +16,9 @@
                       <div class="caption font-weight-light">Sent On</div>
                       <div class="subtitle-2">{{ data.createdOn | date }}</div>
                       <div class="caption font-weight-light">Model</div>
-                      <div class="subtitle-2">{{ data.model.file_name }}</div>
+                      <div class="subtitle-2">{{ data.model.fileName }}</div>
                       <div class="caption font-weight-light">Dataset File</div>
-                      <div class="subtitle-2">{{ data.dataset.file_name }}</div>
+                      <div class="subtitle-2">{{ data.dataset.fileName }}</div>
                     </v-col>
                     <v-col>
                       <div class="caption font-weight-light">Feedback Type</div>
@@ -66,11 +66,10 @@
     </v-tab-item>
     <v-tab-item class="height85vh scrollable">
       <Inspector
-          :modelId="data.model.id"
-          :datasetId="data.dataset.id"
-          :originalData="JSON.parse(data.originalData)"
-          :inputData="JSON.parse(data.userData)"
-          :targetFeature="data.targetFeature"
+          :model="data.model"
+          :dataset="data.dataset"
+          :originalData="originalData"
+          :inputData="userData"
           :isMiniMode="true"
           @reset="resetInput"
       />
@@ -95,6 +94,8 @@ export default class FeedbackDetail extends Vue {
   @Prop({required: true}) id!: number;
 
   data: FeedbackDTO | null = null;
+  userData: object | null = null;
+  originalData: object | null = null;
 
   async mounted() {
     await this.reloadFeedback()
@@ -102,16 +103,18 @@ export default class FeedbackDetail extends Vue {
 
   async reloadFeedback() {
     try {
-      const response = await api.getFeedback(readToken(this.$store), this.id);
-      this.data = response.data
+      this.data = (await api.getFeedback(this.id)).data;
+      this.userData = JSON.parse(this.data.userData);
+      this.originalData = JSON.parse(this.data.originalData);
     } catch (error) {
       commitAddNotification(this.$store, {content: error.response.data.detail, color: 'error'});
     }
   }
 
   resetInput() {
-    if (this.data) this.data.userData = {...JSON.parse(this.data?.originalData)}
-    debugger
+    if (this.data) {
+      this.userData = {...this.originalData}
+    }
   }
 
   get firstLevelReplies() {

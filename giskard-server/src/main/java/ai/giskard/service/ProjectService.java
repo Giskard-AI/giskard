@@ -11,7 +11,6 @@ import ai.giskard.web.rest.errors.Entity;
 import ai.giskard.web.rest.errors.EntityNotFoundException;
 import ai.giskard.web.rest.errors.NotInDatabaseException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,6 +18,8 @@ import javax.validation.constraints.NotNull;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+
+import static ai.giskard.utils.GiskardStringUtils.toSlug;
 
 @Service
 @Transactional
@@ -45,15 +46,15 @@ public class ProjectService {
     /**
      * Create project
      *
-     * @param projectDTO projectDTO to save
      * @return project saved
+     * @param project
+     * @param ownerLogin
      */
-    public Project create(ProjectPostDTO projectDTO, UserDetails userDetails) {
-        Project project = giskardMapper.projectPostDTOToProject(projectDTO);
+    public Project create(Project project, String ownerLogin) {
         if (Objects.isNull(project.getKey())) {
-            project.setKey(project.getName());
+            project.setKey(toSlug(project.getName()));
         }
-        User owner = userRepository.getOneByLogin(userDetails.getUsername());
+        User owner = userRepository.getOneByLogin(ownerLogin);
         project.setOwner(owner);
         return projectRepository.save(project);
     }

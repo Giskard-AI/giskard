@@ -1,7 +1,7 @@
 version: '3.8'
 services:
-  backend-java:
-    image: backend-java
+  backend:
+    image: backend
     build:
       dockerfile: ./src/main/docker/app/app.dockerfile
       context: ../../../
