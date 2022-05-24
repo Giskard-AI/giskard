@@ -4,6 +4,7 @@ import ai.giskard.domain.FeatureType;
 import ai.giskard.domain.Project;
 import ai.giskard.domain.Role;
 import ai.giskard.domain.User;
+import ai.giskard.domain.ml.ModelLanguage;
 import ai.giskard.repository.ProjectRepository;
 import ai.giskard.repository.RoleRepository;
 import ai.giskard.repository.UserRepository;
@@ -61,6 +62,8 @@ public class InitService {
     public Map<String, String> users = Arrays.stream(mockKeys).collect(Collectors.toMap(String::toLowerCase, String::toLowerCase));
 
     private final static Map<String, FeatureType> germanCreditFeatureTypes = new HashMap<>();
+    private final static Map<String, FeatureType> enronFeatureTypes = new HashMap<>();
+    private final static Map<String, FeatureType> zillowFeatureTypes = new HashMap<>();
 
     static {
         germanCreditFeatureTypes.put("account_check_status", FeatureType.CATEGORY);
@@ -84,27 +87,65 @@ public class InitService {
         germanCreditFeatureTypes.put("people_under_maintenance", FeatureType.NUMERIC);
         germanCreditFeatureTypes.put("telephone", FeatureType.CATEGORY);
         germanCreditFeatureTypes.put("foreign_worker", FeatureType.CATEGORY);
+
+        enronFeatureTypes.put("Subject", FeatureType.TEXT);
+        enronFeatureTypes.put("Content", FeatureType.TEXT);
+        enronFeatureTypes.put("Week_day", FeatureType.CATEGORY);
+        enronFeatureTypes.put("Month", FeatureType.CATEGORY);
+        enronFeatureTypes.put("Hour", FeatureType.NUMERIC);
+        enronFeatureTypes.put("Nb_of_forwarded_msg", FeatureType.NUMERIC);
+        enronFeatureTypes.put("Year", FeatureType.NUMERIC);
+
+        zillowFeatureTypes.put("TypeOfDewelling", FeatureType.CATEGORY);
+        zillowFeatureTypes.put("BldgType", FeatureType.CATEGORY);
+        zillowFeatureTypes.put("AbvGrndLivArea", FeatureType.NUMERIC);
+        zillowFeatureTypes.put("Neighborhood", FeatureType.CATEGORY);
+        zillowFeatureTypes.put("KitchenQual", FeatureType.CATEGORY);
+        zillowFeatureTypes.put("NumGarageCars", FeatureType.NUMERIC);
+        zillowFeatureTypes.put("YearBuilt", FeatureType.NUMERIC);
+        zillowFeatureTypes.put("YearRemodAdd", FeatureType.NUMERIC);
+        zillowFeatureTypes.put("ExterQual", FeatureType.CATEGORY);
+        zillowFeatureTypes.put("LotArea", FeatureType.NUMERIC);
+        zillowFeatureTypes.put("LotShape", FeatureType.CATEGORY);
+        zillowFeatureTypes.put("Fireplaces", FeatureType.NUMERIC);
+        zillowFeatureTypes.put("NumBathroom", FeatureType.NUMERIC);
+        zillowFeatureTypes.put("Basement1Type", FeatureType.CATEGORY);
+        zillowFeatureTypes.put("Basement1SurfaceArea", FeatureType.NUMERIC);
+        zillowFeatureTypes.put("Basement2Type", FeatureType.CATEGORY);
+        zillowFeatureTypes.put("Basement2SurfaceArea", FeatureType.NUMERIC);
+        zillowFeatureTypes.put("TotalBasementArea", FeatureType.NUMERIC);
+        zillowFeatureTypes.put("GarageArea", FeatureType.NUMERIC);
+        zillowFeatureTypes.put("1stFlrArea", FeatureType.NUMERIC);
+        zillowFeatureTypes.put("2ndFlrArea", FeatureType.NUMERIC);
+        zillowFeatureTypes.put("Utilities", FeatureType.CATEGORY);
+        zillowFeatureTypes.put("OverallQual", FeatureType.CATEGORY);
     }
 
-    private Map<String, ProjectConfig> projects = Map.of(
-        "zillow",
-        new ProjectConfig("Zillow price prediction", "AICREATOR",
+    private final Map<String, ProjectConfig> projects = Map.of(
+        "zillow", new ProjectConfig("Zillow price prediction", "AICREATOR",
             ModelUploadParamsDTO.builder().modelType("regression")
                 .projectKey("zillow")
                 .name("Zillow regression")
+                .language(ModelLanguage.PYTHON)
+                .languageVersion("3.7")
                 .build(),
             DataUploadParamsDTO.builder()
                 .projectKey("zillow")
-                .target("Target")
+                .name("Zillow data")
+                .target("SalePrice")
                 .build()
         ),
         "enron", new ProjectConfig("Enron", "AITESTER",
             ModelUploadParamsDTO.builder().modelType("classification")
-                .classificationLabels(List.of("a", "b", "c")) // TODO andreyavtomonov (24/05/2022): add real labels
+                .classificationLabels(List.of("CALIFORNIA CRISIS", "INFLUENCE", "INTERNAL", "REGULATION"))
                 .projectKey("enron")
                 .name("Enron model")
+                .language(ModelLanguage.PYTHON)
+                .languageVersion("3.7")
                 .build(),
             DataUploadParamsDTO.builder()
+                .name("Enron data")
+                .featureTypes(enronFeatureTypes)
                 .projectKey("enron")
                 .target("Target")
                 .build()
@@ -114,8 +155,11 @@ public class InitService {
                 .classificationLabels(List.of("Default", "Not Default"))
                 .projectKey("credit")
                 .name("German credit score")
+                .language(ModelLanguage.PYTHON)
+                .languageVersion("3.7")
                 .build(),
             DataUploadParamsDTO.builder()
+                .name("German Credit data")
                 .projectKey("credit")
                 .target("default")
                 .featureTypes(germanCreditFeatureTypes)
