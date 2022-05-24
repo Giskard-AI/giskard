@@ -36,7 +36,4 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-          INSTALL_DEV: true
-        # GSK-71 TODO: Restore sonarqube
-        # run: ./gradlew build sonarqube --info
-        run: ./gradlew build
+        run: ./gradlew build sonarqube --info
