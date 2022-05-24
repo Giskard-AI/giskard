@@ -223,6 +223,6 @@ giskard:
   api-token-validity-in-days: 90
   invitation-token-validity-in-days: 3
   borderLineThreshold: 0.1
-  home: giskard-legacy-server/app/files-bucket
+  home: giskard-home
   regressionThreshold: 0.15
 

@@ -70,9 +70,8 @@ public class GiskardApp {
     public static void main(String[] args) {
         SpringApplication app = new SpringApplication(GiskardApp.class);
         DefaultProfileUtil.addDefaultProfile(app);
-        try (ConfigurableApplicationContext ctx = app.run(args)) {
-            logApplicationStartup(ctx.getEnvironment());
-        }
+        ConfigurableApplicationContext ctx = app.run(args);
+        logApplicationStartup(ctx.getEnvironment());
     }
 
     private static void logApplicationStartup(Environment env) {
