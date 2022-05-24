@@ -16,8 +16,6 @@ services:
       - GSK_ENVIRONMENT=prod
       - GSK_STORAGE_ROOT=/app
       - GSK_PORT=50000
-    volumes:
-      - app-files-bucket:/app/files-bucket
 
   backend:
     image: '${DOCKER_REGISTRY}/backend:${TAG-latest}'
@@ -39,7 +37,7 @@ services:
       - SPRING_MAIL_PASSWORD
       - JHIPSTER_MAIL_BASEURL
     volumes:
-      - app-files-bucket:/giskard-legacy-server/app/files-bucket
+      - giskard-home:/giskard-home
 
 
   frontend:
@@ -69,4 +67,4 @@ services:
 
 volumes:
   app-db-data:
-  app-files-bucket:
+  giskard-home:

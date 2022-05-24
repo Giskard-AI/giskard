@@ -18,6 +18,5 @@ rootProject.name = "giskard"
 include(
         "giskard-server",
         "giskard-frontend",
-        "giskard-legacy-server",
         "giskard-ml-worker",
 )
