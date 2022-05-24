@@ -57,6 +57,5 @@ idea {
     }
 }
 
-build.dependsOn check, generateProto
+build.dependsOn install, generateProto, test
 clean.dependsOn cleanup
-check.dependsOn install, test
