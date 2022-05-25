@@ -1,17 +1,11 @@
 plugins {
     id "base"
-    id "org.sonarqube" version "3.3"
+    id "org.sonarqube"
     id "com.github.node-gradle.node" version "3.2.1"
 }
 
 sonarqube {
     properties {
-        property "sonar.organization", "giskard"
-        property "sonar.host.url", "https://sonarcloud.io"
-
-        property "sonar.projectKey", "giskard-frontend"
-        property "sonar.projectName", "Giskard Frontend"
-        property "sonar.projectVersion", "1.0"
         property "sonar.sources", "src"
         property "sonar.exclusions", ["src/generated-sources/**", "src/plugins/**"]
         property "sonar.tests", "tests"

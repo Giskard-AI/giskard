@@ -1,5 +1,8 @@
 name: Build
 on:
+  push:
+    branches:
+      - main
   pull_request:
 
 jobs:
@@ -30,9 +33,21 @@ jobs:
           path: ~/.gradle/caches
           key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle') }}
           restore-keys: ${{ runner.os }}-gradle
+      - name: Cache ML Worker dependencies
+        uses: actions/cache@v3
+        with:
+          path: giskard-ml-worker/.venv
+          key: ${{ runner.os }}-ml-worker-${{ hashFiles('giskard-ml-worker/poetry.lock')}}
+          restore-keys: ${{ runner.os }}-ml-worker
+      - name: Cache Frontend dependencies
+        uses: actions/cache@v3
+        with:
+          path: giskard-frontend/node_modules
+          key: ${{ runner.os }}-frontend-${{ hashFiles('giskard-frontend/package-lock.json')}}
+          restore-keys: ${{ runner.os }}-frontend
       - name: Build and analyze
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-        run: ./gradlew build sonarqube --info
+        run: ./gradlew build jacocoTestReport sonarqube --info
