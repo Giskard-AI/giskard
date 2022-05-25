@@ -9,14 +9,11 @@ import ai.giskard.repository.ml.DatasetRepository;
 import ai.giskard.repository.ml.ModelRepository;
 import ai.giskard.security.PermissionEvaluator;
 import ai.giskard.web.rest.errors.EntityNotFoundException;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import tech.tablesaw.api.DoubleColumn;
-import tech.tablesaw.api.IntColumn;
-import tech.tablesaw.api.StringColumn;
-import tech.tablesaw.api.Table;
+import tech.tablesaw.api.*;
+import tech.tablesaw.io.csv.CsvReadOptions;
 import tech.tablesaw.selection.Selection;
 
 import javax.validation.constraints.NotNull;
@@ -48,8 +45,18 @@ public class InspectionService {
         return Table.read().csv(reader);
     }
 
-    private Double getThresholdForRegression(DoubleColumn _column, boolean isCorrect) {
-        DoubleColumn column = _column.copy();
+    public Table getTableFromBucketFile(String location, ColumnType[] columnTypes) throws FileNotFoundException {
+        InputStreamReader reader = new InputStreamReader(
+            new FileInputStream(location));
+        CsvReadOptions csvReadOptions = CsvReadOptions
+            .builder(reader)
+            .columnTypes(columnTypes)
+            .build();
+        return Table.read().csv(csvReadOptions);
+    }
+
+    private Double getThresholdForRegression(DoubleColumn predColumn, boolean isCorrect) {
+        DoubleColumn column = predColumn.copy();
         if (isCorrect) {
             column.sortAscending();
         } else {
@@ -67,7 +74,7 @@ public class InspectionService {
         DoubleColumn diffPercent = calculatedTable.doubleColumn("diffPercent");
         switch (filter.getRowFilter()) {
             case CORRECT:
-                threshold = getThresholdForRegression(absDiffPercentColumn,true );
+                threshold = getThresholdForRegression(absDiffPercentColumn, true);
                 selection = absDiffPercentColumn.isLessThanOrEqualTo(threshold);
                 break;
             case WRONG:
@@ -115,7 +122,8 @@ public class InspectionService {
 
     private Selection getSelection(Inspection inspection, Filter filter) throws FileNotFoundException {
         Table predsTable = getTableFromBucketFile(getPredictionsPath(inspection).toString());
-        Table calculatedTable = getTableFromBucketFile(getCalculatedPath(inspection).toString());
+        ColumnType[] columnTypes = {ColumnType.STRING, ColumnType.STRING, ColumnType.DOUBLE};
+        Table calculatedTable = getTableFromBucketFile(getCalculatedPath(inspection).toString(), columnTypes);
         StringColumn predictedClass = calculatedTable.stringColumn(0);
         StringColumn targetClass = calculatedTable.stringColumn(1);
         Selection correctSelection = predictedClass.isEqualTo(targetClass);
@@ -164,8 +172,7 @@ public class InspectionService {
         Table table = datasetService.readTableByDatasetId(inspection.getDataset().getId());
         table.addColumns(IntColumn.indexColumn("Index", table.rowCount(), 0));
         Selection selection = inspection.getModel().getModelType().isClassification() ? getSelection(inspection, filter) : getSelectionRegression(inspection, filter);
-        Table filteredTable = selection == null ? table : table.where(selection);
-        return filteredTable;
+        return selection == null ? table : table.where(selection);
     }
 
     /**
@@ -174,7 +181,7 @@ public class InspectionService {
      * @return filtered table
      */
     @Transactional
-    public List<String> getLabels(@NotNull Long inspectionId) throws JsonProcessingException {
+    public List<String> getLabels(@NotNull Long inspectionId) {
         Inspection inspection = inspectionRepository.getById(inspectionId);
         return inspection.getModel().getClassificationLabels();
     }
