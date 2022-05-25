@@ -173,7 +173,7 @@ export default class PredictionResults extends Vue {
    * @param n number of entries to keep
    * @private
    */
-  private firstN(obj, n) {
+  private firstNSortedByKey(obj, n) {
     return Object.keys(obj)
       .sort()
       .slice(0, n)
@@ -184,7 +184,7 @@ export default class PredictionResults extends Vue {
   }
 
   get chartOptions() {
-    const results=this.firstN(this.resultProbabilities, this.predCategoriesN)
+    const results=this.firstNSortedByKey(this.resultProbabilities, this.predCategoriesN)
     return {
       xAxis: {
         type: "value",
