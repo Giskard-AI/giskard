@@ -167,7 +167,7 @@ export default class PredictionResults extends Vue {
   }
 
   /**
-   * Getting first n entries of objects
+   * Getting first n entries of objects and sort alphabetically
    *
    * @param obj object
    * @param n number of entries to keep
@@ -175,8 +175,8 @@ export default class PredictionResults extends Vue {
    */
   private firstNSortedByKey(obj, n) {
     return Object.keys(obj)
-      .sort()
       .slice(0, n)
+      .sort()
       .reduce(function(m, current) {
         m[current] = obj[current]
         return m;
