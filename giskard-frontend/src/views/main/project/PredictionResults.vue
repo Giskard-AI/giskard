@@ -87,6 +87,7 @@ import {CanvasRenderer} from "echarts/renderers";
 import {GridComponent} from "echarts/components";
 import {ModelDTO, ModelType, PredictionDTO} from "@/generated-sources";
 import {isClassification} from "@/ml-utils";
+import 'echarts/lib/component/dataZoom';
 
 use([CanvasRenderer, BarChart, GridComponent]);
 Vue.component("v-chart", ECharts);
@@ -166,25 +167,9 @@ export default class PredictionResults extends Vue {
     else return "";
   }
 
-  /**
-   * Getting first n entries of objects and sort alphabetically
-   *
-   * @param obj object
-   * @param n number of entries to keep
-   * @private
-   */
-  private firstNSortedByKey(obj, n) {
-    return Object.keys(obj)
-      .slice(0, n)
-      .sort()
-      .reduce(function(m, current) {
-        m[current] = obj[current]
-        return m;
-      }, {})
-  }
-
   get chartOptions() {
-    const results=this.firstNSortedByKey(this.resultProbabilities, this.predCategoriesN)
+    const numberCategories = Object.keys(this.resultProbabilities).length;
+    const startCategoriesPercent = 100-this.predCategoriesN*100/numberCategories;
     return {
       xAxis: {
         type: "value",
@@ -193,7 +178,7 @@ export default class PredictionResults extends Vue {
       },
       yAxis: {
         type: "category",
-        data: Object.keys(results),
+        data: Object.keys(this.resultProbabilities),
         axisLabel: {
           interval: 0,
         }
@@ -209,7 +194,7 @@ export default class PredictionResults extends Vue {
                     ? params.value
                     : params.value.toFixed(2).toLocaleString(),
           },
-          data: Object.values(results),
+          data: Object.values(this.resultProbabilities),
         },
       ],
       color: ["#0091EA"],
@@ -221,6 +206,18 @@ export default class PredictionResults extends Vue {
         right: "10%",
         containLabel: true,
       },
+      dataZoom: [
+        {
+          type: 'slider',
+          show: this.predCategoriesN<numberCategories? true: false,
+          start: startCategoriesPercent,
+          end: 100,
+          yAxisIndex: 0,
+          filterMode: 'empty',
+          rangeMode:["value","value"],
+        },
+
+      ],
     };
   }
 
