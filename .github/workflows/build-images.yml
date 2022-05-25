@@ -24,7 +24,7 @@ jobs:
 
     - name: Generate docker config file
       run: |
-        sudo sysctl -w kernel.unprivileged_userns_clone=1 \
+        sudo sysctl -w kernel.unprivileged_userns_clone=1
         docker-compose -f docker-compose.yml -f docker-compose.dev.yml config > docker-stack.yml 
       
     - name: Build Frontend image
