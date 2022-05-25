@@ -16,6 +16,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.RandomUtils;
 import org.springframework.web.bind.annotation.*;
 import tech.tablesaw.api.Row;
 import tech.tablesaw.api.Table;
@@ -24,6 +25,7 @@ import javax.validation.constraints.NotNull;
 import java.io.FileNotFoundException;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 @RestController
@@ -52,9 +54,15 @@ public class InspectionController {
     @PostMapping("/inspection/{inspectionId}/rowsFiltered")
     public JsonNode getRowsFiltered(@PathVariable @NotNull Long inspectionId, @RequestBody Filter filter, @RequestParam("minRange") @NotNull int rangeMin, @RequestParam("maxRange") @NotNull int rangeMax, @RequestParam("isRandom") @NotNull boolean isRandom) throws Exception {
         Table filteredTable = inspectionService.getRowsFiltered(inspectionId, filter);
-        List<Integer> ranges = Arrays.asList(rangeMin, rangeMax, filteredTable.rowCount());
-        Collections.sort(ranges);
-        Table filteredMTable = isRandom ? filteredTable.sampleN(ranges.get(1) - ranges.get(0) - 1).sortOn((Row o1, Row o2) -> Math.random() > 0.5 ? -1 : 1) : filteredTable.inRange(ranges.get(0), ranges.get(1));
+        if (rangeMax > filteredTable.rowCount()) {
+            rangeMax = filteredTable.rowCount();
+        }
+        if (rangeMin > rangeMax) {
+            throw new IllegalArgumentException("minumum range shoud be less than maximum range");
+        }
+
+        Table filteredMTable = isRandom ? filteredTable.sampleN(rangeMax - rangeMin - 1)
+            .sortOn(RandomUtils.nextInt(0, 3) - 1) : filteredTable.inRange(rangeMin, rangeMax); //NOSONAR
         ObjectMapper objectMapper = new ObjectMapper();
         String jsonTable = filteredMTable.write().toString("json");
         JsonNode jsonNode = objectMapper.readTree(jsonTable);
@@ -83,7 +91,7 @@ public class InspectionController {
     }
 
     @PostMapping("/inspection")
-    public InspectionDTO createInspection(@RequestBody @NotNull InspectionCreateDTO createDTO){
+    public InspectionDTO createInspection(@RequestBody @NotNull InspectionCreateDTO createDTO) {
         return giskardMapper.toDTO(modelService.createInspection(createDTO.getModelId(), createDTO.getDatasetId()));
     }
 

@@ -19,5 +19,4 @@ RUN bash -c "if [ "$RUN_TESTS" = true ] ; then  ../gradlew -Pprod clean test boo
 
 FROM openjdk:17-buster
 COPY --from=build /workspace/giskard-server/build/libs/giskard*.jar /giskard/lib/giskard.jar
-COPY giskard-server/src/main/docker/app/wait-for-python-app.sh /giskard/
 ENTRYPOINT ["java","-jar","/giskard/lib/giskard.jar"]

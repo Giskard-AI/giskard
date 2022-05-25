@@ -50,7 +50,7 @@
   </tr>
   <tr>
     <td>
-      <b>[[${commenter}]]</b>
+      <strong>[[${commenter}]]</strong>
       <th:block th:switch="${type}">
         <span th:case="${T(ai.giskard.service.MailService.FeedbackNotificationType).CREATE}">
           has just submitted a feedback on your project
@@ -62,7 +62,7 @@
           has replied to your comment on project
         </span>
       </th:block>
-      <b>[[${projectName}]]</b>
+      <strong>[[${projectName}]]</strong>
     </td>
   </tr>
   <tr>

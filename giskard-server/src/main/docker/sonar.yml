@@ -2,7 +2,7 @@
 version: '3.8'
 services:
   giskard-sonar:
-    image: sonarqube:9.1.0-community
+    image: sonarqube-arm
     # Authentication is turned off for out of the box experience while trying out SonarQube
     # For real use cases delete sonar.forceAuthentication variable or set sonar.forceAuthentication=true
     environment:
@@ -10,4 +10,4 @@ services:
     # If you want to expose these ports outside your dev PC,
     # remove the "127.0.0.1:" prefix
     ports:
-      - 127.0.0.1:9001:9000
+      - "127.0.0.1:9001:9000"
