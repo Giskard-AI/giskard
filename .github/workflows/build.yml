@@ -43,7 +43,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: giskard-frontend/node_modules
-          key: ${{ runner.os }}-ml-worker-${{ hashFiles('giskard-frontend/package-lock.json')}}
+          key: ${{ runner.os }}-frontend-${{ hashFiles('giskard-frontend/package-lock.json')}}
           restore-keys: ${{ runner.os }}-frontend
       - name: Build and analyze
         env:
