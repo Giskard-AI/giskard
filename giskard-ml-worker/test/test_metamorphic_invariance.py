@@ -45,7 +45,25 @@ def test_metamorphic_invariance_some_rows(german_credit_test_data, german_credit
         "sex": lambda x: 'female' if x.sex == 'male' else x.sex
     }
     tests = GiskardTestFunctions()
-    results = tests.metamorphic.test_metamorphic_invariance(german_credit_test_data, german_credit_model, perturbation)
-    assert results.element_count == 690
-    assert results.missing_count == 0
-    assert results.unexpected_count == 24
+    results = tests.metamorphic.test_metamorphic_invariance(
+          df=german_credit_test_data,
+          model=german_credit_model,
+          perturbation_dict=perturbation,
+          threshold=0.1)
+
+    assert results.number_of_perturbed_rows == 690
+    assert round(results.metric, 2) == 0.67
+
+
+def test_metamorphic_invariance_regression(diabetes_dataset_with_target, linear_regression_diabetes):
+    perturbation = {
+        "sex": lambda x: 1 if x.sex < 0 else 0}
+    tests = GiskardTestFunctions()
+    results = tests.metamorphic.test_metamorphic_invariance(
+          df=diabetes_dataset_with_target,
+          model=linear_regression_diabetes,
+          perturbation_dict=perturbation,
+          threshold=0.1)
+    assert results.total_nb_rows == len(diabetes_dataset_with_target)
+    assert round(results.metric, 2) == 0.35
+    assert results.number_of_perturbed_rows == 442

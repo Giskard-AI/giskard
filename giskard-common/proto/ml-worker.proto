@@ -113,11 +113,13 @@ message SingleTestResult{
   double unexpected_percent = 5;
   double unexpected_percent_total = 6;
   double unexpected_percent_nonmissing = 7;
-  //    repeated google.protobuf.Any partial_unexpected_list = 8;
+  uint32 slice_nb_rows = 8;
   repeated uint32 partial_unexpected_index_list = 9;
   repeated Partial_unexpected_counts partial_unexpected_counts = 10;
-  //    repeated google.protobuf.Any unexpected_list = 11;
   repeated uint32 unexpected_index_list = 12;
+  bytes output_df = 18;
+  uint32 total_nb_rows= 19;
+  uint32 number_of_perturbed_rows= 20;
 }
 
 message TestResultMessage {

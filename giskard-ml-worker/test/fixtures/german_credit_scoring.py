@@ -88,5 +88,5 @@ def german_credit_model(german_credit_data) -> ModelInspector:
         prediction_task='classification',
         input_types=input_types,
         classification_threshold=0.5,
-        classification_labels=["Not default", "Default"]
+        classification_labels=clf.classes_
     )

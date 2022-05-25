@@ -6,14 +6,63 @@ items:
     title: Invariance
     # language=Python
     code: |-
+      """
+      Summary: Tests if the model prediction is invariant when the feature values are perturbed
+
+      Description: -
+      For classification: Test if the predicted classification label remains the same after
+      feature values perturbation.
+
+      For regression: Check whether the predicted output remains the same at the output_sensibility
+      level after feature values perturbation.
+
+      The test is passed when the percentage of unchanged rows is higher than the threshold
+
+      Example : The test is passed when, after switching gender from male to female,
+      more than 50%(threshold 0.5) of males have unchanged outputs
+
+      Args:
+          df(pandas.core.frame.DataFrame):
+              test dataset
+          model(ModelInspector):
+              uploaded model
+          perturbation_dict(dict):
+              dictionary of the perturbations'
+          threshold(float):
+              threshold for the ratio of passed rows
+          output_sensitivity(float):
+              the threshold for ratio between the difference between perturbed prediction and actual prediction over
+              the actual prediction for a regression model. We consider there is a prediction difference for
+              regression if the ratio is above the output_sensitivity
+
+      Returns:
+          total_nb_rows:
+              total number of rows of dataframe
+          number_of_perturbed_rows:
+              number of perturbed rows
+          metric:
+              the ratio of unchanged rows over the perturbed rows
+          passed:
+              TRUE if passed_ratio > threshold
+          output_df:
+              dataframe of rows where the prediction changes due to perturbation
+      """
+      # You can choose all_perturbation to perturb categorical, text and numerical feature at the same time
+      all_perturbation = {"<NUMERIC FEATURE NAME>": lambda x: x["<NUMERIC FEATURE NAME>"] * 2,
+                "<CATEGORICAL FEATURE NAME>": lambda x: x["<CATEGORICAL FEATURE NAME>"].apply(
+                    lambda value: "<CATEGORY 1>" if value == "<CATEGORY 2>" else value),
+                "<TEXTUAL FEATURE NAME>": lambda x: x["<TEXTUAL FEATURE NAME>"].apply(lambda value: aug.augment(value))}
+
+      # Or you can choose one feature at a time eg. Numerical feature
       perturbation = {
-          "<FEATURE NAME>": lambda x: x["<FEATURE NAME>"] * 2,
+          "<NUMERICAL FEATURE>": lambda x: x["<NUMERICAL FEATURE>"] * 2,
       }
 
       tests.metamorphic.test_metamorphic_invariance(
-          df=train_df,
+          df=test_df,
           model=model,
-          perturbation_dict=perturbation,
+          perturbation_dict=perturbation, # Update your perturbation choice here
+          output_sensitivity=0.1,
           threshold=0.1
       )
   - id: metamorphic_increasing
