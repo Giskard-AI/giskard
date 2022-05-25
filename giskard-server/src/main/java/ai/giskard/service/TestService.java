@@ -9,14 +9,13 @@ import ai.giskard.domain.ml.testing.TestExecution;
 import ai.giskard.ml.MLWorkerClient;
 import ai.giskard.repository.ml.TestExecutionRepository;
 import ai.giskard.repository.ml.TestRepository;
+import ai.giskard.service.ml.MLWorkerService;
 import ai.giskard.web.dto.ml.TestDTO;
 import ai.giskard.web.dto.ml.TestExecutionResultDTO;
-import ai.giskard.service.ml.MLWorkerService;
 import ai.giskard.web.rest.errors.Entity;
 import ai.giskard.web.rest.errors.EntityNotFoundException;
 import ai.giskard.worker.TestResultMessage;
 import com.google.common.collect.Lists;
-import com.google.common.util.concurrent.ListenableFuture;
 import io.grpc.StatusRuntimeException;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -25,6 +24,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -66,21 +66,21 @@ public class TestService {
         testExecutionRepository.save(testExecution);
         res.setExecutionDate(testExecution.getExecutionDate());
 
-        try(MLWorkerClient client = mlWorkerService.createClient()) {
-            ProjectModel model = test.getTestSuite().getModel();
-            Dataset trainDS = test.getTestSuite().getTrainDataset();
-            Dataset testDS = test.getTestSuite().getTestDataset();
-            Path modelPath = fileLocationService.resolvedModelPath(model.getProject().getKey(), model.getId());
-            Path trainDSPath = fileLocationService.resolvedDatasetPath(trainDS.getProject().getKey(), trainDS.getId());
-            Path testDSPath = fileLocationService.resolvedDatasetPath(testDS.getProject().getKey(), testDS.getId());
+        ProjectModel model = test.getTestSuite().getModel();
+        Dataset trainDS = test.getTestSuite().getTrainDataset();
+        Dataset testDS = test.getTestSuite().getTestDataset();
+        Path modelPath = fileLocationService.resolvedModelPath(model.getProject().getKey(), model.getId());
+        try (
+            MLWorkerClient client = mlWorkerService.createClient();
+            InputStream trainDSStream = Files.newInputStream(fileLocationService.resolvedDatasetPath(trainDS.getProject().getKey(), trainDS.getId()));
+            InputStream testDSStream = Files.newInputStream(fileLocationService.resolvedDatasetPath(testDS.getProject().getKey(), testDS.getId()))) {
 
-            ListenableFuture<TestResultMessage> runTestFuture = client.runTest(
+            TestResultMessage testResult = client.runTest(
                 Files.newInputStream(modelPath),
-                Files.newInputStream(trainDSPath),
-                Files.newInputStream(testDSPath),
-                test);
+                trainDSStream,
+                testDSStream,
+                test).get();
 
-            TestResultMessage testResult = runTestFuture.get();
             res.setResult(testResult);
             if (testResult.getResultsList().stream().anyMatch(r -> !r.getResult().getPassed())) {
                 res.setStatus(TestResult.FAILED);
@@ -88,6 +88,7 @@ public class TestService {
                 res.setStatus(TestResult.PASSED);
             }
         } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
             logger.error("Failed to create MLWorkerClient", e);
         } catch (ExecutionException e) {
             logger.warn("Test execution failed. Project: {}, Suite: {}, Test: {} ",
@@ -100,25 +101,18 @@ public class TestService {
                 res.setMessage(ExceptionUtils.getMessage(e));
             }
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            logger.warn("Failed to execute test due to IO error", e);
+            res.setStatus(TestResult.ERROR);
+            res.setMessage(ExceptionUtils.getMessage(e));
         }
         testExecution.setResult(res.getStatus());
         testExecutionRepository.save(testExecution);
         return res;
     }
 
-    private void applyTestExecutionResults(TestExecutionResultDTO res, TestResultMessage testResult) {
-        res.setResult(testResult);
-        if (testResult.getResultsList().stream().anyMatch(r -> !r.getResult().getPassed())) {
-            res.setStatus(TestResult.FAILED);
-        } else {
-            res.setStatus(TestResult.PASSED);
-        }
-    }
-
     private void interpretTestExecutionError(TestSuite testSuite, Throwable e, TestExecutionResultDTO res) {
-        if (e instanceof StatusRuntimeException) {
-            String description = Objects.requireNonNull(((StatusRuntimeException) e).getStatus().getDescription());
+        if (e instanceof StatusRuntimeException statusRuntimeException) {
+            String description = Objects.requireNonNull(statusRuntimeException.getStatus().getDescription());
             if (description.contains("name 'train_df' is not defined") && testSuite.getTrainDataset() == null) {
                 res.setMessage("Failed to execute test: Train dataset is not specified");
             } else if (description.contains("name 'test_df' is not defined") && testSuite.getTestDataset() == null) {
@@ -138,11 +132,8 @@ public class TestService {
 
     public List<TestExecutionResultDTO> executeTestSuite(Long suiteId) {
         List<TestExecutionResultDTO> result = new ArrayList<>();
-        Lists.partition(testRepository.findAllByTestSuiteId(suiteId), TEST_EXECUTION_CONCURRENCY).forEach(tests -> {
-            tests.forEach(test -> {
-                result.add(runTest(test.getId()));
-            });
-        });
+        Lists.partition(testRepository.findAllByTestSuiteId(suiteId), TEST_EXECUTION_CONCURRENCY)
+            .parallelStream().forEach(tests -> tests.forEach(test -> result.add(runTest(test.getId()))));
         return result;
     }
 }
