@@ -131,6 +131,7 @@ public class InitService {
             DataUploadParamsDTO.builder()
                 .projectKey("zillow")
                 .name("Zillow data")
+                .featureTypes(zillowFeatureTypes)
                 .target("SalePrice")
                 .build()
         ),
