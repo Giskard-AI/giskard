@@ -14,8 +14,6 @@ services:
     image: '${DOCKER_REGISTRY}/ml-worker:${TAG-latest}'
     environment:
       - GSK_ENVIRONMENT=prod
-      - GSK_STORAGE_ROOT=/app
-      - GSK_PORT=50000
 
   backend:
     image: '${DOCKER_REGISTRY}/backend:${TAG-latest}'
