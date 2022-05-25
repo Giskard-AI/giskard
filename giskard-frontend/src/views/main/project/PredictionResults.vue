@@ -108,6 +108,7 @@ export default class PredictionResults extends Vue {
   errorMsg: string = "";
   isClassification = isClassification;
   ModelType = ModelType;
+  predCategoriesN = 10;
 
   async mounted() {
     await this.submitPrediction()
@@ -165,7 +166,25 @@ export default class PredictionResults extends Vue {
     else return "";
   }
 
+  /**
+   * Getting first n entries of objects
+   *
+   * @param obj object
+   * @param n number of entries to keep
+   * @private
+   */
+  private firstN(obj, n) {
+    return Object.keys(obj)
+      .sort()
+      .slice(0, n)
+      .reduce(function(m, current) {
+        m[current] = obj[current]
+        return m;
+      }, {})
+  }
+
   get chartOptions() {
+    const results=this.firstN(this.resultProbabilities, this.predCategoriesN)
     return {
       xAxis: {
         type: "value",
@@ -174,7 +193,10 @@ export default class PredictionResults extends Vue {
       },
       yAxis: {
         type: "category",
-        data: Object.keys(this.resultProbabilities!),
+        data: Object.keys(results),
+        axisLabel: {
+          interval: 0,
+        }
       },
       series: [
         {
@@ -187,7 +209,7 @@ export default class PredictionResults extends Vue {
                     ? params.value
                     : params.value.toFixed(2).toLocaleString(),
           },
-          data: Object.values(this.resultProbabilities!),
+          data: Object.values(results),
         },
       ],
       color: ["#0091EA"],
