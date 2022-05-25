@@ -1,6 +1,6 @@
 # This is a test workflow that is triggered on each push and PR
 
-name: Test frontend and backend
+name: Build Docker images
 
 # Controls when the action will run. Workflow runs when manually triggered using the UI
 # or API.
@@ -13,7 +13,7 @@ on:
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  build:
+  build-images:
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
 
@@ -25,17 +25,16 @@ jobs:
     - name: Generate docker config file
       run: |
         sudo sysctl -w kernel.unprivileged_userns_clone=1
-        DOMAIN=backend \
-        SMTP_HOST="" \
-        RUN_TESTS=true \
-        GISKARD_PLAN=enterprise \
-        docker-compose -f docker-compose.yml -f docker-compose.dev.yml config | sed 's/app-db-data/app-db-test-data/g;' > docker-stack.yml 
+        docker-compose -f docker-compose.yml -f docker-compose.dev.yml config > docker-stack.yml 
       
-    - name: Build frontend image
+    - name: Build Frontend image
       run: docker-compose -f docker-stack.yml build frontend
 
-    - name: Build backend image
+    - name: Build Backend image
       run: docker-compose -f docker-stack.yml build backend
+
+    - name: Build ML Worker image
+      run: docker-compose -f docker-stack.yml build ml-worker
 
     - name: Remove containers and volumes
       run: docker-compose -f docker-stack.yml down -v --remove-orphans
