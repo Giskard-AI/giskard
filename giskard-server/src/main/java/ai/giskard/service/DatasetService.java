@@ -1,7 +1,6 @@
 package ai.giskard.service;
 
 import ai.giskard.config.ApplicationProperties;
-import ai.giskard.web.dto.FeatureMetadataDTO;
 import ai.giskard.domain.FeatureType;
 import ai.giskard.domain.ml.Dataset;
 import ai.giskard.repository.InspectionRepository;
@@ -9,6 +8,7 @@ import ai.giskard.repository.UserRepository;
 import ai.giskard.repository.ml.DatasetRepository;
 import ai.giskard.repository.ml.ModelRepository;
 import ai.giskard.security.PermissionEvaluator;
+import ai.giskard.web.dto.FeatureMetadataDTO;
 import ai.giskard.web.dto.ml.DatasetDetailsDTO;
 import ai.giskard.web.rest.errors.Entity;
 import ai.giskard.web.rest.errors.EntityNotFoundException;
@@ -18,6 +18,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import tech.tablesaw.api.ColumnType;
 import tech.tablesaw.api.IntColumn;
 import tech.tablesaw.api.Table;
 import tech.tablesaw.io.csv.CsvReadOptions;
@@ -27,6 +28,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -45,21 +47,22 @@ public class DatasetService {
     private final PermissionEvaluator permissionEvaluator;
 
     /**
-     * TODO Read zst file
+     *  Read table from file
      *
      * @param datasetId id of the dataset
      * @return the table
      */
     public Table readTableByDatasetId(@NotNull Long datasetId) {
         Dataset dataset = datasetRepository.findById(datasetId).orElseThrow(() -> new EntityNotFoundException(Entity.DATASET, datasetId));
+        Map<String, ColumnType> columnTypes = dataset.getFeatureTypes().entrySet().stream()
+            .collect(Collectors.toMap(Map.Entry::getKey, e -> FeatureType.featureToColumn.get(e.getValue())));
         Path filePath = locationService.datasetsDirectory(dataset.getProject().getKey()).resolve(dataset.getFileName());
-
         String filePathName = filePath.toAbsolutePath().toString().replace(".zst", "");
         Table table;
         try {
-            //.maxCharsPerColumn(Integer.MAX_VALUE)
             CsvReadOptions csvReadOptions = CsvReadOptions
                 .builder(fileUploadService.decompressFileToStream(filePath))
+                .columnTypesPartial(columnTypes)
                 .maxCharsPerColumn(-1)
                 .build();
             table = Table.read().csv(csvReadOptions);
@@ -133,6 +136,6 @@ public class DatasetService {
             }
             return meta;
 
-        }).collect(Collectors.toList());
+        }).toList();
     }
 }
