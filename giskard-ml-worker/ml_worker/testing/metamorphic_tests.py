@@ -83,20 +83,21 @@ class MetamorphicTests(AbstractTestCollection):
         feature values perturbation.
         For regression: Check whether the predicted output remains the same at the output_sensibility
         level after feature values perturbation.
-        The test is passed when the percentage of unchanged rows is higher than the threshold
+        
+        The test is passed when the ratio of invariant rows is higher than the threshold
 
         Example : The test is passed when, after switching gender from male to female,
         more than 50%(threshold 0.5) of males have unchanged outputs
 
         Args:
             df(pandas.core.frame.DataFrame):
-                test dataset
+                Dataset used to compute the test
             model(ModelInspector):
-                uploaded model
+                Model used to compute the test
             perturbation_dict(dict):
-                dictionary of the perturbations'
+                dictionary of the perturbations. It provides the perturbed features as key and a perturbation lambda function as value
             threshold(float):
-                threshold for the ratio of passed rows
+                threshold of the ratio of invariant rows
             output_sensitivity(float):
                 the threshold for ratio between the difference between perturbed prediction and actual prediction over
                 the actual prediction for a regression model. We consider there is a prediction difference for
@@ -108,11 +109,11 @@ class MetamorphicTests(AbstractTestCollection):
             number_of_perturbed_rows:
                 number of perturbed rows
             metric:
-                the ratio of unchanged rows over the perturbed rows
+                the ratio of invariant rows over the perturbed rows
             passed:
                 TRUE if passed_ratio > threshold
             output_df:
-                dataframe of rows where the prediction changes due to perturbation
+                dataframe containing the non invariant raws
 
         """
         results_df, modified_rows_count = self._perturb_and_predict(df, model, perturbation_dict, output_proba=False)
