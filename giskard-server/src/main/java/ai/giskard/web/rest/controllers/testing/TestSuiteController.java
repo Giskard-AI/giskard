@@ -6,6 +6,7 @@ import ai.giskard.repository.ml.ModelRepository;
 import ai.giskard.repository.ml.TestSuiteRepository;
 import ai.giskard.service.TestService;
 import ai.giskard.service.TestSuiteService;
+import ai.giskard.web.dto.TestSuiteCreateDTO;
 import ai.giskard.web.dto.mapper.GiskardMapper;
 import ai.giskard.web.dto.ml.ExecuteTestSuiteRequest;
 import ai.giskard.web.dto.ml.TestExecutionResultDTO;
@@ -13,6 +14,7 @@ import ai.giskard.web.dto.ml.TestSuiteDTO;
 import ai.giskard.web.dto.ml.UpdateTestSuiteDTO;
 import ai.giskard.web.rest.errors.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
@@ -47,17 +49,10 @@ public class TestSuiteController {
     }
 
     @PostMapping("suites")
-    public TestSuiteDTO createTestSuite(@Valid @RequestBody TestSuiteDTO dto) {
-        TestSuite testSuite = new TestSuite();
-        testSuite.setName(dto.getName());
-        projectRepository.findById(dto.getProject().getId()).ifPresentOrElse(testSuite::setProject, () -> {
-            throw new EntityNotFoundException(PROJECT, dto.getProject().getId());
-        });
-        modelRepository.findById(dto.getModel().getId()).ifPresentOrElse(testSuite::setModel, () -> {
-            throw new EntityNotFoundException(PROJECT_MODEL, dto.getModel().getId());
-        });
-        TestSuite savedTestSuite = testSuiteRepository.save(testSuite);
-        return giskardMapper.testSuiteToTestSuiteDTO(savedTestSuite);
+    @PreAuthorize("@permissionEvaluator.canWriteProject(#dto.projectId)")
+    public TestSuiteDTO createTestSuite(@Valid @RequestBody TestSuiteCreateDTO dto) {
+        TestSuite testSuite = giskardMapper.fromDTO(dto);
+        return testSuiteService.createTestSuite(testSuite, dto.isShouldGenerateTests());
     }
 
     @GetMapping("suites/{projectId}")

@@ -24,7 +24,7 @@ import {
   ProjectPostDTO,
   RoleDTO,
   TestDTO,
-  TestExecutionResultDTO,
+  TestExecutionResultDTO, TestSuiteCreateDTO,
   TestSuiteDTO,
   TokenAndPasswordVM,
   UpdateMeDTO,
@@ -252,12 +252,8 @@ export const api = {
   async deleteTestSuite(suiteId: number) {
     return await axios.delete<TestSuiteDTO>(`${apiURL}/api/v2/testing/suite/${suiteId}`);
   },
-  async createTestSuite(projectId: number, name: string, modelId: number) {
-    return await axios.post(`${apiURL}/api/v2/testing/suites`, {
-      name: name,
-      project: { id: projectId },
-      model: { id: modelId }
-    });
+  async createTestSuite(data: TestSuiteCreateDTO) {
+    return await axios.post(`${apiURL}/api/v2/testing/suites`, data );
   },
   async saveTestSuite(testSuite: UpdateTestSuiteDTO) {
     return await axios.put(`${apiURL}/api/v2/testing/suites`, testSuite);

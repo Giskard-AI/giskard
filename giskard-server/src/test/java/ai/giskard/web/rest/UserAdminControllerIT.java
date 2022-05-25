@@ -17,11 +17,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.persistence.EntityManager;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.HashSet;
@@ -63,9 +63,6 @@ class UserAdminControllerIT {
     private GiskardMapper giskardMapper;
 
     @Autowired
-    private EntityManager em;
-
-    @Autowired
     private MockMvc restUserMockMvc;
 
     private User user;
@@ -76,7 +73,7 @@ class UserAdminControllerIT {
      * This is a static method, as tests for other entities might also need it,
      * if they test an entity which has a required relationship to the User entity.
      */
-    public static User createEntity(EntityManager em) {
+    public static User createEntity() {
         User user = new User();
         user.setLogin(DEFAULT_LOGIN + RandomStringUtils.randomAlphabetic(5));
         user.setPassword(RandomStringUtils.random(60));
@@ -89,8 +86,8 @@ class UserAdminControllerIT {
     /**
      * Setups the database with one user.
      */
-    public static User initTestUser(UserRepository userRepository, EntityManager em) {
-        User user = createEntity(em);
+    public static User initTestUser() {
+        User user = createEntity();
         user.setLogin(DEFAULT_LOGIN);
         user.setEmail(DEFAULT_EMAIL);
         return user;
@@ -98,7 +95,7 @@ class UserAdminControllerIT {
 
     @BeforeEach
     public void initTest() {
-        user = initTestUser(userRepository, em);
+        user = initTestUser();
     }
 
     @Test
@@ -264,7 +261,7 @@ class UserAdminControllerIT {
         int databaseSizeBeforeUpdate = userRepository.findAll().size();
 
         // Update the user
-        User updatedUser = userRepository.findById(user.getId()).get();
+        User updatedUser = userRepository.findById(user.getId()).orElseThrow();
 
         ManagedUserVM managedUserVM = new ManagedUserVM();
         managedUserVM.setId(updatedUser.getId());
@@ -288,7 +285,7 @@ class UserAdminControllerIT {
         // Validate the User in the database
         assertPersistedUsers(users -> {
             assertThat(users).hasSize(databaseSizeBeforeUpdate);
-            User testUser = users.stream().filter(usr -> usr.getId().equals(updatedUser.getId())).findFirst().get();
+            User testUser = users.stream().filter(usr -> usr.getId().equals(updatedUser.getId())).findFirst().orElseThrow();
             assertThat(testUser.getDisplayName()).isEqualTo(UPDATED_DISPLAY_NAME);
             assertThat(testUser.getEmail()).isEqualTo(UPDATED_EMAIL);
         });
@@ -302,7 +299,7 @@ class UserAdminControllerIT {
         int databaseSizeBeforeUpdate = userRepository.findAll().size();
 
         // Update the user
-        User updatedUser = userRepository.findById(user.getId()).get();
+        User updatedUser = userRepository.findById(user.getId()).orElseThrow();
 
         ManagedUserVM managedUserVM = new ManagedUserVM();
         managedUserVM.setId(updatedUser.getId());
@@ -326,7 +323,7 @@ class UserAdminControllerIT {
         // Validate the User in the database
         assertPersistedUsers(users -> {
             assertThat(users).hasSize(databaseSizeBeforeUpdate);
-            User testUser = users.stream().filter(usr -> usr.getId().equals(updatedUser.getId())).findFirst().get();
+            User testUser = users.stream().filter(usr -> usr.getId().equals(updatedUser.getId())).findFirst().orElseThrow();
             assertThat(testUser.getLogin()).isEqualTo(UPDATED_LOGIN);
             assertThat(testUser.getDisplayName()).isEqualTo(UPDATED_DISPLAY_NAME);
             assertThat(testUser.getEmail()).isEqualTo(UPDATED_EMAIL);
@@ -347,7 +344,7 @@ class UserAdminControllerIT {
         userRepository.saveAndFlush(anotherUser);
 
         // Update the user
-        User updatedUser = userRepository.findById(user.getId()).get();
+        User updatedUser = userRepository.findById(user.getId()).orElseThrow();
 
         ManagedUserVM managedUserVM = new ManagedUserVM();
         managedUserVM.setId(updatedUser.getId());
@@ -382,7 +379,7 @@ class UserAdminControllerIT {
         userRepository.saveAndFlush(anotherUser);
 
         // Update the user
-        User updatedUser = userRepository.findById(user.getId()).get();
+        User updatedUser = userRepository.findById(user.getId()).orElseThrow();
 
         ManagedUserVM managedUserVM = new ManagedUserVM();
         managedUserVM.setId(updatedUser.getId());
@@ -423,20 +420,19 @@ class UserAdminControllerIT {
     void testUserEquals() throws Exception {
         TestUtil.equalsVerifier(User.class);
         User user1 = new User();
-        user1.setId(DEFAULT_ID);
+        ReflectionTestUtils.setField(user1, "id", DEFAULT_ID);
         User user2 = new User();
-        user2.setId(user1.getId());
+        ReflectionTestUtils.setField(user2, "id", user1.getId());
         assertThat(user1).isEqualTo(user2);
-        user2.setId(2L);
+        ReflectionTestUtils.setField(user2, "id", 2L);
         assertThat(user1).isNotEqualTo(user2);
-        user1.setId(null);
+        ReflectionTestUtils.setField(user1, "id", null);
         assertThat(user1).isNotEqualTo(user2);
     }
 
     @Test
     void testUserDTOtoUser() {
         AdminUserDTO userDTO = new AdminUserDTO();
-        userDTO.setId(DEFAULT_ID);
         userDTO.setLogin(DEFAULT_LOGIN);
         userDTO.setEmail(DEFAULT_EMAIL);
         userDTO.setDisplayName(DEFAULT_DISPLAY_NAME);
@@ -447,7 +443,6 @@ class UserAdminControllerIT {
 
         User user = giskardMapper.adminUserDTOtoUser(userDTO);
 
-        assertThat(user.getId()).isEqualTo(DEFAULT_ID);
         assertThat(user.getLogin()).isEqualTo(DEFAULT_LOGIN);
         assertThat(user.getDisplayName()).isEqualTo(DEFAULT_DISPLAY_NAME);
         assertThat(user.getEmail()).isEqualTo(DEFAULT_EMAIL);
@@ -459,7 +454,7 @@ class UserAdminControllerIT {
 
     @Test
     void testUserToUserDTO() {
-        user.setId(DEFAULT_ID);
+        ReflectionTestUtils.setField(user, "id", DEFAULT_ID);
         user.setCreatedBy(DEFAULT_LOGIN);
         user.setCreatedDate(Instant.now());
         user.setLastModifiedBy(DEFAULT_LOGIN);

@@ -15,11 +15,7 @@ import java.util.Set;
 
 @Getter
 @Entity(name = "feedbacks")
-public class Feedback {
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private Long id;
-
+public class Feedback extends BaseEntity{
     @Setter
     @ManyToOne
     private Project project;
