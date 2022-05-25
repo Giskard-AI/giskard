@@ -11,13 +11,15 @@
             v-model="modifiedTestSuite.name"
             label="Name"
         ></v-text-field>
-        <ModelSelector :value.sync="modifiedTestSuite.model" :project-id="testSuite.project.id"/>
+        <ModelSelector :value.sync="modifiedTestSuite.modelId" :return-object="false"
+                       :project-id="testSuite.project.id"/>
         <DatasetSelector
-            :value.sync="modifiedTestSuite.trainDataset" :project-id="testSuite.project.id"
+            :value.sync="modifiedTestSuite.trainDatasetId"
+            :return-object="false" :project-id="testSuite.project.id"
             label="Train dataset"
         />
         <DatasetSelector
-            :value.sync="modifiedTestSuite.testDataset" :project-id="testSuite.project.id"
+            :value.sync="modifiedTestSuite.testDatasetId" :return-object="false" :project-id="testSuite.project.id"
             label="Test dataset"
         />
       </v-form>
@@ -43,7 +45,7 @@ import ModelSelector from "@/views/main/utils/ModelSelector.vue";
 import {Prop} from "vue-property-decorator";
 import * as _ from "lodash";
 import {api} from "@/api";
-import {TestSuiteDTO} from '@/generated-sources';
+import {TestSuiteDTO, UpdateTestSuiteDTO} from '@/generated-sources';
 
 @Component({
   components:
@@ -54,7 +56,7 @@ import {TestSuiteDTO} from '@/generated-sources';
 
 export default class TestSuiteSettings extends Vue {
   @Prop({required: true}) testSuite!: TestSuiteDTO;
-  modifiedTestSuite: TestSuiteDTO | null = null;
+  modifiedTestSuite: UpdateTestSuiteDTO | null = null;
 
   isDirty() {
     return !_.isEqual(this.modifiedTestSuite, this.testSuite);
@@ -62,21 +64,19 @@ export default class TestSuiteSettings extends Vue {
 
   async save() {
     if (this.testSuite && this.modifiedTestSuite) {
-      this.modifiedTestSuite = (await api.saveTestSuite(
-          {
-            testDatasetId: this.modifiedTestSuite.testDataset.id,
-            trainDatasetId: this.modifiedTestSuite.trainDataset.id,
-            id: this.modifiedTestSuite.id,
-            modelId: this.modifiedTestSuite.model.id,
-            name: this.modifiedTestSuite.name
-          }
-      )).data;
+      this.modifiedTestSuite = (await api.saveTestSuite(this.modifiedTestSuite)).data;
       this.$emit('submit', this.modifiedTestSuite)
     }
   }
 
   mounted() {
-    this.modifiedTestSuite = _.cloneDeep(this.testSuite);
+    this.modifiedTestSuite = {
+      id: this.testSuite.id,
+      modelId: this.testSuite.model.id,
+      name: this.testSuite.name,
+      testDatasetId: this.testSuite.testDataset?.id,
+      trainDatasetId: this.testSuite.trainDataset?.id
+    };
   }
 }
 </script>

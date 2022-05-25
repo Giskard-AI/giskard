@@ -5,6 +5,6 @@ export interface UpdateTestSuiteDTO {
     id: number;
     modelId: number;
     name: string;
-    testDatasetId: number;
-    trainDatasetId: number;
+    testDatasetId?: number | null;
+    trainDatasetId?: number | null;
 }

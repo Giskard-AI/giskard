@@ -1,22 +1,20 @@
-package ai.giskard.web.dto.ml;
+package ai.giskard.web.dto;
 
 import com.dataiku.j2ts.annotations.UIModel;
 import com.dataiku.j2ts.annotations.UINullable;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
-import javax.validation.constraints.NotNull;
-
 @Getter
-@UIModel
 @AllArgsConstructor
-public class UpdateTestSuiteDTO {
-    private Long id;
-    @NotNull
-    private String name;
+@UIModel
+public class TestSuiteCreateDTO {
+    private Long projectId;
     @UINullable
     private Long trainDatasetId;
     @UINullable
     private Long testDatasetId;
     private Long modelId;
+    private String name;
+    private boolean shouldGenerateTests;
 }

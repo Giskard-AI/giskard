@@ -9,11 +9,7 @@ import java.time.Instant;
 
 @Getter
 @Entity(name = "feedback_replies")
-public class FeedbackReply {
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private Long id;
-
+public class FeedbackReply extends BaseEntity{
     @Setter
     @ManyToOne
     private Feedback feedback;

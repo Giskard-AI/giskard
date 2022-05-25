@@ -8,6 +8,7 @@
     "ai.giskard.web.dto.ml.write.FilePostDTO": "FilePostDTO",
     "ai.giskard.web.dto.ml.ExecuteTestSuiteRequest": "ExecuteTestSuiteRequest",
     "ai.giskard.web.rest.vm.TokenAndPasswordVM": "TokenAndPasswordVM",
+    "ai.giskard.web.dto.TestSuiteCreateDTO": "TestSuiteCreateDTO",
     "ai.giskard.web.dto.ml.ProjectDTO": "ProjectDTO",
     "ai.giskard.web.dto.CreateFeedbackReplyDTO": "CreateFeedbackReplyDTO",
     "ai.giskard.web.dto.ml.UpdateTestSuiteDTO": "UpdateTestSuiteDTO",
