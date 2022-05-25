@@ -39,7 +39,7 @@ class TokenProviderTest {
         JHipsterProperties jHipsterProperties = new JHipsterProperties();
         ApplicationProperties applicationProperties = new ApplicationProperties();
 
-        String base64Secret = "fd54a45s65fds737b9aafcb3412e07ed99b267f33413274720ddbb7f6c5e64e9f14075f2d7ed041592f0b7657baf8";
+        String base64Secret = "fd54a45s65fds737b9aafcb3412e07ed99b267f33413274720ddbb7f6c5e64e9f14075f2d7ed041592f0b7657baf8"; //ggignore
         jHipsterProperties.getSecurity().getAuthentication().getJwt().setBase64Secret(base64Secret);
         SecurityMetersService securityMetersService = new SecurityMetersService(new SimpleMeterRegistry());
 
@@ -111,7 +111,7 @@ class TokenProviderTest {
 
     @Test
     void testKeyIsSetFromSecretWhenSecretIsNotEmpty() {
-        final String secret = "NwskoUmKHZtzGRKJKVjsJF7BtQMMxNWi";
+        final String secret = "NwskoUmKHZtzGRKJKVjsJF7BtQMMxNWi"; //ggignore
         JHipsterProperties jHipsterProperties = new JHipsterProperties();
         ApplicationProperties applicationProperties = new ApplicationProperties();
         jHipsterProperties.getSecurity().getAuthentication().getJwt().setSecret(secret);
@@ -126,7 +126,7 @@ class TokenProviderTest {
 
     @Test
     void testKeyIsSetFromBase64SecretWhenSecretIsEmpty() {
-        final String base64Secret = "fd54a45s65fds737b9aafcb3412e07ed99b267f33413274720ddbb7f6c5e64e9f14075f2d7ed041592f0b7657baf8";
+        final String base64Secret = "fd54a45s65fds737b9aafcb3412e07ed99b267f33413274720ddbb7f6c5e64e9f14075f2d7ed041592f0b7657baf8"; //ggignore
         JHipsterProperties jHipsterProperties = new JHipsterProperties();
         ApplicationProperties applicationProperties = new ApplicationProperties();
         jHipsterProperties.getSecurity().getAuthentication().getJwt().setBase64Secret(base64Secret);
@@ -145,7 +145,7 @@ class TokenProviderTest {
 
     private String createTokenWithDifferentSignature() {
         Key otherKey = Keys.hmacShaKeyFor(
-            Decoders.BASE64.decode("Xfd54a45s65fds737b9aafcb3412e07ed99b267f33413274720ddbb7f6c5e64e9f14075f2d7ed041592f0b7657baf8")
+            Decoders.BASE64.decode("Xfd54a45s65fds737b9aafcb3412e07ed99b267f33413274720ddbb7f6c5e64e9f14075f2d7ed041592f0b7657baf8") //ggignore
         );
 
         return Jwts

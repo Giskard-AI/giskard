@@ -169,7 +169,7 @@ public class AccountController {
             userDTO.getDisplayName(),
             userDTO.getPassword()
         );
-        return new AdminUserDTO(updatedUser.get());
+        return new AdminUserDTO(updatedUser.orElseThrow());
     }
 
     /**

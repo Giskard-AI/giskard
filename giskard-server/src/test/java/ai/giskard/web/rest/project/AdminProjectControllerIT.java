@@ -100,7 +100,7 @@ class AdminProjectControllerIT {
     @Transactional
     @WithMockUser(username = "notInDatabaseUser", authorities = AuthoritiesConstants.ADMIN)
     void getAllProjectsWithUnknownUser() throws Exception {
-        restUserMockMvc.perform(get("/api/v2/project").accept(MediaType.APPLICATION_JSON)).andExpect(status().is5xxServerError());
+        restUserMockMvc.perform(get("/api/v2/project").accept(MediaType.APPLICATION_JSON)).andExpect(status().isBadRequest());
     }
 
     /**
