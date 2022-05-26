@@ -4,10 +4,14 @@ from ml_worker.testing.functions import GiskardTestFunctions
 def test_metamorphic_invariance_no_change(german_credit_test_data, german_credit_model):
     perturbation = {}
     tests = GiskardTestFunctions()
-    results = tests.metamorphic.test_metamorphic_invariance(german_credit_test_data, german_credit_model, perturbation)
-    assert results.element_count == 0
-    assert results.missing_count == 0
-    assert results.unexpected_count == 0
+    results = tests.metamorphic.test_metamorphic_invariance(
+          df=german_credit_test_data,
+          model=german_credit_model,
+          perturbation_dict=perturbation,
+          threshold=0.1)
+    assert results.total_nb_rows == 1000
+    assert results.number_of_perturbed_rows == 0
+    assert results.passed
 
 
 def _test_metamorphic_invariance_male_female(german_credit_test_data, german_credit_model, threshold):
@@ -15,17 +19,20 @@ def _test_metamorphic_invariance_male_female(german_credit_test_data, german_cre
         "sex": lambda x: 'female' if x.sex == 'male' else 'male'
     }
     tests = GiskardTestFunctions()
-    results = tests.metamorphic.test_metamorphic_invariance(german_credit_test_data, german_credit_model, perturbation,
-                                                            threshold=threshold)
-    assert results.element_count == len(german_credit_test_data)
-    assert results.missing_count == 0
-    assert results.unexpected_count == 33
+    results = tests.metamorphic.test_metamorphic_invariance(
+          df=german_credit_test_data,
+          model=german_credit_model,
+          perturbation_dict=perturbation,
+          threshold=threshold)
+    assert results.total_nb_rows == len(german_credit_test_data)
+    assert round(results.metric, 2) == 0.97
+    assert results.number_of_perturbed_rows == 1000
     return results.passed
 
 
 def test_metamorphic_invariance_male_female(german_credit_test_data, german_credit_model):
-    assert _test_metamorphic_invariance_male_female(german_credit_test_data, german_credit_model, 0.04)
-    assert not _test_metamorphic_invariance_male_female(german_credit_test_data, german_credit_model, 0.03)
+    assert _test_metamorphic_invariance_male_female(german_credit_test_data, german_credit_model, 0.5)
+    assert not _test_metamorphic_invariance_male_female(german_credit_test_data, german_credit_model, 1)
 
 
 def test_metamorphic_invariance_2_perturbations(german_credit_test_data, german_credit_model):
@@ -34,10 +41,14 @@ def test_metamorphic_invariance_2_perturbations(german_credit_test_data, german_
         "sex": lambda x: 'female' if x.sex == 'male' else 'male'
     }
     tests = GiskardTestFunctions()
-    results = tests.metamorphic.test_metamorphic_invariance(german_credit_test_data, german_credit_model, perturbation)
-    assert results.element_count == len(german_credit_test_data)
-    assert results.missing_count == 0
-    assert results.unexpected_count == 142
+    results = tests.metamorphic.test_metamorphic_invariance(
+          df=german_credit_test_data,
+          model=german_credit_model,
+          perturbation_dict=perturbation,
+          threshold=0.1)
+    assert results.total_nb_rows == len(german_credit_test_data)
+    assert round(results.metric, 2) == 0.86
+    assert results.number_of_perturbed_rows == 1000
 
 
 def test_metamorphic_invariance_some_rows(german_credit_test_data, german_credit_model):
@@ -52,7 +63,7 @@ def test_metamorphic_invariance_some_rows(german_credit_test_data, german_credit
           threshold=0.1)
 
     assert results.number_of_perturbed_rows == 690
-    assert round(results.metric, 2) == 0.67
+    assert round(results.metric, 2) == 0.97
 
 
 def test_metamorphic_invariance_regression(diabetes_dataset_with_target, linear_regression_diabetes):
