@@ -15,16 +15,15 @@ plugins {
     id "com.gorylenko.gradle-git-properties" version "2.4.0"
     id "io.freefair.lombok" version "6.4.1"
     id "org.liquibase.gradle" version "2.1.1"
-    id "org.sonarqube" version "3.3"
+    id "org.sonarqube"
     id "io.spring.nohttp" version "0.0.10"
     id "com.github.andygoossens.gradle-modernizer-plugin" version "1.6.2"
     id 'com.google.protobuf' version '0.8.18'
 }
 
 group = "ai.giskard"
-version = "0.0.1-SNAPSHOT"
 
-description = ""
+description = "Giskard main java backend"
 
 sourceCompatibility=17
 targetCompatibility=17
@@ -66,12 +65,6 @@ idea {
     }
 }
 
-sonarqube {
-    properties {
-        property "sonar.projectKey", "Giskard-AI_giskard"
-    }
-}
-
 eclipse {
     sourceSets {
         main {
@@ -98,7 +91,7 @@ test {
     // uncomment if the tests reports are not generated
     // see https://github.com/jhipster/generator-jhipster/pull/2771 and https://github.com/jhipster/generator-jhipster/pull/4484
     // ignoreFailures true
-    reports.html.enabled = false
+    reports.html.getRequired().set(false)
 }
 
 modernizer {
@@ -122,7 +115,7 @@ task integrationTest(type: Test) {
     // uncomment if the tests reports are not generated
     // see https://github.com/jhipster/generator-jhipster/pull/2771 and https://github.com/jhipster/generator-jhipster/pull/4484
     // ignoreFailures true
-    reports.html.enabled = false
+    reports.html.getRequired().set(false)
 }
 check.dependsOn integrationTest
 task testReport(type: TestReport) {
@@ -270,7 +263,7 @@ dependencies {
     implementation "io.jsonwebtoken:jjwt-api"
     implementation group: 'tech.tablesaw', name: 'tablesaw-core', version: '0.43.1'
     implementation group: 'tech.tablesaw', name: 'tablesaw-json', version: '0.34.2'
-    implementation group: 'org.apache.commons', name: 'commons-compress', version: '1.3'
+    implementation group: 'org.apache.commons', name: 'commons-compress', version: '1.21'
     if (!project.hasProperty("gae")) {
         runtimeOnly "io.jsonwebtoken:jjwt-impl"
         runtimeOnly "io.jsonwebtoken:jjwt-jackson"

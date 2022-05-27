@@ -1,7 +1,21 @@
 plugins {
     id "base"
     id "idea"
+    id "org.sonarqube"
     id "ru.vyarus.use-python" version "2.3.0"
+}
+
+sonarqube {
+    properties {
+        property "sonar.python.version", "3"
+        property "sonar.sources", "ml_worker"
+        property "sonar.tests", "test"
+        property "sonar.language", "python"
+        property "sonar.sourceEncoding", "UTF-8"
+        property "sonar.dynamicAnalysis", "reuseReports"
+        property "sonar.core.codeCoveragePlugin", "cobertura"
+        property "sonar.python.coverage.reportPaths", "coverage.xml"
+    }
 }
 
 python {
@@ -21,7 +35,7 @@ task install(type: PythonTask) {
 }
 
 task cleanup(type: Delete) {
-    delete 'generated', '.venv'
+    delete 'generated', '.venv', 'coverage.xml', '.coverage'
 }
 
 task generateProto(type: PythonTask) {
@@ -48,15 +62,19 @@ task generateProto(type: PythonTask) {
 
 task test(type: PythonTask) {
     module = "pytest"
-    command("test")
+    command("--cov=ml_worker test --cov-report=xml")
 }
 
 idea {
     module {
         excludeDirs += file('.venv')
+
+//        "generated" directory should be marked as both source and generatedSource,
+//        otherwise intellij doesn't recognize it as a generated source 🤷‍
+        sourceDirs += file('generated')
+        generatedSourceDirs += file('generated')
     }
 }
 
-build.dependsOn install, generateProto
+build.dependsOn install, generateProto, test
 clean.dependsOn cleanup
-check.dependsOn test
