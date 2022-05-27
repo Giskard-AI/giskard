@@ -5,6 +5,8 @@ items:
   - id: auc
     title: AUC
     hint: Test if the AUC is high enough for a slice
+    isMultipleDatasets: False
+    isGroundTruthRequired: True
     modelTypes:
       - MULTICLASS_CLASSIFICATION
       - BINARY_CLASSIFICATION
@@ -46,6 +48,8 @@ items:
   - id: f1
     title: F1
     hint: Test if the F1 score is high enough for a slice
+    isMultipleDatasets: False
+    isGroundTruthRequired: True
     # language=Python
     code: |-
       """
@@ -82,6 +86,8 @@ items:
   - id: diff_f1
     title: F1 difference
     hint: Test if the F1 score is equal between two samples
+    isMultipleDatasets: False
+    isGroundTruthRequired: True
     modelTypes:
       - MULTICLASS_CLASSIFICATION
       - BINARY_CLASSIFICATION
@@ -132,6 +138,8 @@ items:
   - id: diff_traintest_f1
     title: F1 Train Test difference
     hint: Test if the F1 score is equal between train and test dataset
+    isMultipleDatasets: True
+    isGroundTruthRequired: True
     modelTypes:
       - MULTICLASS_CLASSIFICATION
       - BINARY_CLASSIFICATION
@@ -178,6 +186,8 @@ items:
   - id: accuracy
     title: Accuracy
     hint: Test if the Accuracy is high enough for a slice
+    isMultipleDatasets: False
+    isGroundTruthRequired: True
     modelTypes:
       - MULTICLASS_CLASSIFICATION
       - BINARY_CLASSIFICATION
@@ -218,6 +228,8 @@ items:
   - id: diff_accuracy
     title: Accuracy difference
     hint: Test if the Accuracy is equal between the two samples
+    isMultipleDatasets: False
+    isGroundTruthRequired: True
     modelTypes:
       - MULTICLASS_CLASSIFICATION
       - BINARY_CLASSIFICATION
@@ -266,6 +278,8 @@ items:
   - id: diff_traintest_accuracy
     title: Accuracy Train Test difference
     hint: Test if the Accuracy is equal between train and test dataset
+    isMultipleDatasets: True
+    isGroundTruthRequired: True
     modelTypes:
       - MULTICLASS_CLASSIFICATION
       - BINARY_CLASSIFICATION
@@ -310,6 +324,8 @@ items:
   - id: precision
     title: Precision
     hint: Test if the Precision is high enough for a slice
+    isMultipleDatasets: False
+    isGroundTruthRequired: True
     modelTypes:
       - MULTICLASS_CLASSIFICATION
       - BINARY_CLASSIFICATION
@@ -350,6 +366,8 @@ items:
   - id: diff_precision
     title: Precision difference
     hint: Test if the Precision is equal between the two samples
+    isMultipleDatasets: False
+    isGroundTruthRequired: True
     modelTypes:
       - MULTICLASS_CLASSIFICATION
       - BINARY_CLASSIFICATION
@@ -398,6 +416,8 @@ items:
   - id: recall
     title: Recall
     hint: Test if the Recall is high enough for a slice
+    isMultipleDatasets: False
+    isGroundTruthRequired: True
     modelTypes:
       - MULTICLASS_CLASSIFICATION
       - BINARY_CLASSIFICATION
@@ -438,6 +458,8 @@ items:
   - id: diff_recall
     title: Recall difference
     hint: Test if the Recall is equal between the two samples
+    isMultipleDatasets: False
+    isGroundTruthRequired: True
     modelTypes:
       - MULTICLASS_CLASSIFICATION
       - BINARY_CLASSIFICATION
@@ -486,6 +508,8 @@ items:
   - id: rmse
     title: RMSE
     hint: Test if  the Root Mean Square Error value is low enough for the dataset
+    isMultipleDatasets: False
+    isGroundTruthRequired: True
     modelTypes:
       - REGRESSION
     # language=Python
@@ -525,6 +549,8 @@ items:
   - id: diff_rmse
     title: RMSE difference
     hint: Test if the RMSE is equal between the two samples
+    isMultipleDatasets: False
+    isGroundTruthRequired: True
     modelTypes:
       - REGRESSION
     # language=Python
@@ -572,6 +598,8 @@ items:
   - id: diff_traintest_rmse
     title: RMSE Train Test difference
     hint: Test if the RMSE is equal between two slices of train and test dataset
+    isMultipleDatasets: True
+    isGroundTruthRequired: True
     modelTypes:
       - REGRESSION
     # language=Python
@@ -616,6 +644,8 @@ items:
   - id: mae
     title: MAE
     hint: Test if  the negative Mean Absolute Error value is low enough for the dataset
+    isMultipleDatasets: False
+    isGroundTruthRequired: True
     modelTypes:
       - REGRESSION
     # language=Python
@@ -654,6 +684,8 @@ items:
   - id: r2
     title: R2
     hint: Test if  the R-Squared value is high enough for the dataset
+    isMultipleDatasets: False
+    isGroundTruthRequired: True
     modelTypes:
      - REGRESSION
     # language=Python

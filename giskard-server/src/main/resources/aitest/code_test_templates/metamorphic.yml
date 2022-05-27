@@ -5,6 +5,8 @@ items:
   - id: metamorphic_invariance_classification
     title: Invariance for Classification
     hint: Tests if the Classification model prediction is invariant when the feature values are perturbed
+    isMultipleDatasets: False
+    isGroundTruthRequired: False
     modelTypes:
       - MULTICLASS_CLASSIFICATION
       - BINARY_CLASSIFICATION
@@ -66,6 +68,8 @@ items:
   - id: metamorphic_invariance_regression
     title: Invariance for Regression
     hint: Tests if the Regression model prediction is invariant when the feature values are perturbed
+    isMultipleDatasets: False
+    isGroundTruthRequired: False
     modelTypes:
       - REGRESSION
     # language=Python
@@ -131,6 +135,8 @@ items:
   - id: metamorphic_increasing_classification
     title: Increasing for Classification
     hint: Tests if the Model prediction probability is increasing when the feature values are perturbed
+    isMultipleDatasets: False
+    isGroundTruthRequired: False
     modelTypes:
       - MULTICLASS_CLASSIFICATION
       - BINARY_CLASSIFICATION
@@ -196,6 +202,8 @@ items:
   - id: metamorphic_increasing_regression
     title: Increasing for Regression
     hint: Tests if the Model prediction  is increasing when the feature values are perturbed
+    isMultipleDatasets: False
+    isGroundTruthRequired: False
     modelTypes:
       - REGRESSION
     # language=Python
@@ -256,6 +264,8 @@ items:
   - id: metamorphic_decreasing_classification
     title: Decreasing for Classification
     hint: Tests if the Model prediction probability is decreasing when the feature values are perturbed
+    isMultipleDatasets: False
+    isGroundTruthRequired: False
     modelTypes:
       - MULTICLASS_CLASSIFICATION
       - BINARY_CLASSIFICATION
@@ -321,6 +331,8 @@ items:
   - id: metamorphic_decreasing_regression
     title: Decreasing for Regression
     hint: Tests if the Model prediction  is decreasing when the feature values are perturbed
+    isMultipleDatasets: False
+    isGroundTruthRequired: False
     modelTypes:
       - REGRESSION
     # language=Python
