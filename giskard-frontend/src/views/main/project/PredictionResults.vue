@@ -147,6 +147,15 @@ export default class PredictionResults extends Vue {
     }
   }
 
+  sortByKey(obj){
+    return Object.keys(obj)
+      .sort()
+      .reduce(function(m, current) {
+        m[current] = obj[current]
+        return m;
+      }, {})
+  }
+
   get actual() {
     if (this.targetFeature && !this.errorMsg) return this.inputData[this.targetFeature]
     else return undefined
@@ -170,6 +179,7 @@ export default class PredictionResults extends Vue {
   get chartOptions() {
     const numberCategories = Object.keys(this.resultProbabilities).length;
     const startCategoriesPercent = 100-this.predCategoriesN*100/numberCategories;
+    const probs = this.predCategoriesN < numberCategories ?  this.resultProbabilities :this.sortByKey(this.resultProbabilities) ;
     return {
       xAxis: {
         type: "value",
@@ -178,10 +188,7 @@ export default class PredictionResults extends Vue {
       },
       yAxis: {
         type: "category",
-        data: Object.keys(this.resultProbabilities),
-        axisLabel: {
-          interval: 0,
-        }
+        data: Object.keys(probs),
       },
       series: [
         {
@@ -194,7 +201,7 @@ export default class PredictionResults extends Vue {
                     ? params.value
                     : params.value.toFixed(2).toLocaleString(),
           },
-          data: Object.values(this.resultProbabilities),
+          data: Object.values(probs),
         },
       ],
       color: ["#0091EA"],
@@ -209,14 +216,12 @@ export default class PredictionResults extends Vue {
       dataZoom: [
         {
           type: 'slider',
-          show: this.predCategoriesN<numberCategories? true: false,
+          show: this.predCategoriesN < numberCategories? true: false,
           start: startCategoriesPercent,
           end: 100,
           yAxisIndex: 0,
           filterMode: 'empty',
-          rangeMode:["value","value"],
         },
-
       ],
     };
   }
