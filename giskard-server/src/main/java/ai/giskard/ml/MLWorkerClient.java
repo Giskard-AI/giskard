@@ -1,10 +1,6 @@
 package ai.giskard.ml;
 
-import ai.giskard.domain.ml.Dataset;
-import ai.giskard.domain.ml.ProjectModel;
-import ai.giskard.domain.ml.TestSuite;
 import ai.giskard.domain.ml.testing.Test;
-import ai.giskard.service.FileLocationService;
 import ai.giskard.worker.*;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.protobuf.ByteString;
@@ -18,7 +14,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.security.SecureRandom;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
@@ -64,9 +59,7 @@ public class MLWorkerClient implements AutoCloseable {
         }
         RunTestRequest request = requestBuilder.build();
         logger.debug("Sending requiest to ML Worker: {}", request);
-        ListenableFuture<TestResultMessage> testResultMessage = null;
-        testResultMessage = futureStub.runTest(request);
-        return testResultMessage;
+        return futureStub.runTest(request);
     }
 
     public RunModelResponse runModelForDataStream(InputStream modelInputStream, InputStream datasetInputStream, String target) throws IOException {
@@ -89,16 +82,6 @@ public class MLWorkerClient implements AutoCloseable {
         return blockingStub.explain(request);
     }
 
-    public ExplainResponse explainText(InputStream modelInputStream, InputStream datasetInputStream, Map<String, String> features) throws IOException {
-        ExplainRequest request = ExplainRequest.newBuilder()
-            .setSerializedModel(ByteString.readFrom(modelInputStream))
-            .setSerializedData(ByteString.readFrom(datasetInputStream))
-            .putAllFeatures(features)
-            .build();
-
-        return blockingStub.explain(request);
-    }
-
     public RunModelForDataFrameResponse runModelForDataframe(InputStream modelInputStream, DataFrame df) throws IOException {
         RunModelForDataFrameRequest request = RunModelForDataFrameRequest.newBuilder()
             .setSerializedModel(ByteString.readFrom(modelInputStream))
@@ -111,12 +94,12 @@ public class MLWorkerClient implements AutoCloseable {
     public void shutdown() {
         logger.debug("Shutting down MLWorkerClient");
         Stream.of(this.blockingStub, this.futureStub).map(AbstractStub::getChannel).forEach(channel -> {
-            if (channel instanceof ManagedChannel) {
+            if (channel instanceof ManagedChannel managedChannel) {
                 try {
-                    ((ManagedChannel) channel).shutdownNow().awaitTermination(5, TimeUnit.SECONDS);
+                    managedChannel.shutdownNow().awaitTermination(5, TimeUnit.SECONDS);
                 } catch (InterruptedException e) {
-                    logger.error("Failed to shutdown worker", e);
                     Thread.currentThread().interrupt();
+                    logger.error("Failed to shutdown worker", e);
                 }
             }
         });
