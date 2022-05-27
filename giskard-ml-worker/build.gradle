@@ -68,6 +68,11 @@ task test(type: PythonTask) {
 idea {
     module {
         excludeDirs += file('.venv')
+
+//        "generated" directory should be marked as both source and generatedSource,
+//        otherwise intellij doesn't recognize it as a generated source 🤷‍
+        sourceDirs += file('generated')
+        generatedSourceDirs += file('generated')
     }
 }
 
