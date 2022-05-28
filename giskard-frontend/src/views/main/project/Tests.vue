@@ -133,7 +133,7 @@ export default class Tests extends Vue {
     this.$forceUpdate();
     console.log('After added', this.runningTestIds);
     try {
-      let runResult = (await api.runTest(test.id)).data;
+      let runResult = await api.runTest(test.id);
       Tests.applyTestExecutionResults(test, runResult);
     } finally {
       this.runningTestIds.delete(test.id);
