@@ -1,38 +1,50 @@
 import axios from 'axios';
 import {apiURL} from '@/env';
 import {getLocalToken} from '@/utils';
+import Vue from "vue";
+
 import {
-  AdminUserDTO,
-  AppConfigDTO,
-  CodeTestCollection,
-  CreateFeedbackDTO,
-  CreateFeedbackReplyDTO,
-  DatasetDTO,
-  ExplainResponseDTO,
-  FeatureMetadataDTO,
-  FeedbackDTO,
-  FeedbackMinimalDTO,
-  InspectionCreateDTO,
-  InspectionDTO,
-  JWTToken,
-  ManagedUserVM,
-  ModelDTO,
-  ModelMetadataDTO,
-  PasswordResetRequest,
-  PredictionDTO,
-  ProjectDTO,
-  ProjectPostDTO,
-  RoleDTO,
-  TestDTO,
-  TestExecutionResultDTO, TestSuiteCreateDTO,
-  TestSuiteDTO,
-  TokenAndPasswordVM,
-  UpdateMeDTO,
-  UpdateTestSuiteDTO,
-  UserDTO
+    AdminUserDTO,
+    AppConfigDTO,
+    CodeTestCollection,
+    CreateFeedbackDTO,
+    CreateFeedbackReplyDTO,
+    DatasetDTO,
+    ExplainResponseDTO,
+    FeatureMetadataDTO,
+    FeedbackDTO,
+    FeedbackMinimalDTO,
+    InspectionCreateDTO,
+    InspectionDTO,
+    JWTToken,
+    ManagedUserVM,
+    ModelDTO,
+    ModelMetadataDTO,
+    PasswordResetRequest,
+    PredictionDTO,
+    ProjectDTO,
+    ProjectPostDTO,
+    RoleDTO,
+    TestDTO,
+    TestExecutionResultDTO,
+    TestSuiteCreateDTO,
+    TestSuiteDTO,
+    TokenAndPasswordVM,
+    UpdateMeDTO,
+    UpdateTestSuiteDTO,
+    UserDTO
 } from '@/generated-sources';
+import {POSITION, TYPE} from "vue-toastification";
 import AdminUserDTOWithPassword = AdminUserDTO.AdminUserDTOWithPassword;
 
+function jwtRequestInterceptor(config) {
+    // Do something before request is sent
+    let jwtToken = getLocalToken();
+    if (jwtToken && config && config.headers) {
+        config.headers.Authorization = `Bearer ${jwtToken}`;
+    }
+    return config;
+}
 function authHeaders(token: string) {
   return {
     headers: {
@@ -44,22 +56,26 @@ function authHeaders(token: string) {
 const axiosProject = axios.create({
   baseURL: `${apiURL}/api/v2/project`
 });
-axiosProject.interceptors.request.use(function(config) {
-  // Do something before request is sent
-  let jwtToken = getLocalToken();
-  if (jwtToken && config && config.headers) {
-    config.headers.Authorization = `Bearer ${jwtToken}`;
-  }
-  return config;
+const apiV2 = axios.create({
+    baseURL: `${apiURL}/api/v2`
 });
-axios.interceptors.request.use(function(config) {
-  // Do something before request is sent
-  let jwtToken = getLocalToken();
-  if (jwtToken && config && config.headers) {
-    config.headers.Authorization = `Bearer ${jwtToken}`;
-  }
-  return config;
+apiV2.interceptors.response.use(response => {
+    return response.data;
+}, error => {
+    let errorResponseData = error.response.data;
+    Vue.$toast(errorResponseData.detail, {
+        type: TYPE.ERROR,
+        timeout: 5000,
+        closeOnClick: false,
+        hideProgressBar: true,
+        position: POSITION.BOTTOM_CENTER,
+    });
+    return Promise.reject(error);
 });
+
+axiosProject.interceptors.request.use(jwtRequestInterceptor);
+apiV2.interceptors.request.use(jwtRequestInterceptor);
+axios.interceptors.request.use(jwtRequestInterceptor);
 
 // this is to automatically parse responses from the projects API, be it array or single objects
 axiosProject.interceptors.response.use(resp => {
@@ -70,6 +86,8 @@ axiosProject.interceptors.response.use(resp => {
   }
   return resp;
 });
+
+
 
 function downloadURL(urlString) {
   let url = new URL(urlString);
@@ -271,7 +289,7 @@ export const api = {
     return await axios.put(`${apiURL}/api/v2/testing/tests`, testDetails);
   },
   async runTest(testId: number) {
-    return await axios.post<TestExecutionResultDTO>(`${apiURL}/api/v2/testing/tests/${testId}/run`);
+    return await apiV2.post<unknown,TestExecutionResultDTO>(`/testing/tests/${testId}/run`);
   },
   async createTest(suiteId: number, name: string) {
     return await axios.post(`${apiURL}/api/v2/testing/tests`, {

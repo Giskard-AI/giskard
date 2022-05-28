@@ -253,7 +253,7 @@ export default class TestEditor extends Vue {
       if (this.isDirty()) {
         await this.save();
       }
-      this.runResult = (await api.runTest(this.testId)).data;
+      this.runResult = await api.runTest(this.testId);
     } finally {
       this.executingTest = false;
     }

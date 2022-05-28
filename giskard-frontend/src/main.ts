@@ -13,7 +13,11 @@ import 'vuetify/dist/vuetify.min.css';
 import 'vuetify-dialog/dist/vuetify-dialog.css';
 import './styles/global.scss';
 import './styles/colors.scss';
-import moment from 'moment'
+import './filters'
+
+import Toast from "vue-toastification";
+// Import the CSS or use your own!
+import "vue-toastification/dist/index.css";
 
 Vue.config.productionTip = false;
 
@@ -24,4 +28,6 @@ new Vue({
   render: (h) => h(App)
 }).$mount('#app');
 
-import './filters'
+
+
+Vue.use(Toast, {});

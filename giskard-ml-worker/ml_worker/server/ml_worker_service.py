@@ -1,12 +1,13 @@
 import logging
+import re
 from io import BytesIO
 
 import cloudpickle
+import grpc
 import pandas as pd
 from ai_inspector import ModelInspector
 from ai_inspector.io_utils import decompress
 from eli5.lime import TextExplainer
-from ml_worker_pb2 import ExplainResponse, ExplainTextResponse
 from zstandard import ZstdDecompressor
 
 from generated.ml_worker_pb2 import RunTestRequest, TestResultMessage, RunModelResponse, RunModelRequest, DataFrame, \
@@ -14,20 +15,18 @@ from generated.ml_worker_pb2 import RunTestRequest, TestResultMessage, RunModelR
 from generated.ml_worker_pb2_grpc import MLWorkerServicer
 from ml_worker.core.ml import run_predict
 from ml_worker.core.model_explanation import explain, text_explanation_prediction_wrapper, parse_text_explainer_response
+from ml_worker.exceptions.IllegalArgumentError import IllegalArgumentError
 from ml_worker.testing.functions import GiskardTestFunctions
+from ml_worker_pb2 import ExplainResponse, ExplainTextResponse
 
 logger = logging.getLogger()
 
 
-class MLTaskServer(MLWorkerServicer):
-    models_store = {}
-    counter = 0
-
-    def __init__(self, start_counter=0) -> None:
+class MLWorkerServiceImpl(MLWorkerServicer):
+    def __init__(self) -> None:
         super().__init__()
-        self.counter = start_counter
 
-    def runTest(self, request: RunTestRequest, context) -> TestResultMessage:
+    def runTest(self, request: RunTestRequest, context: grpc.ServicerContext) -> TestResultMessage:
         model_inspector: ModelInspector = cloudpickle.load(ZstdDecompressor().stream_reader(request.serialized_model))
 
         tests = GiskardTestFunctions()
@@ -39,8 +38,15 @@ class MLTaskServer(MLWorkerServicer):
             _globals['train_df'] = pd.read_csv(BytesIO(decompress(request.serialized_train_df)))
         if request.serialized_test_df:
             _globals['test_df'] = pd.read_csv(BytesIO(decompress(request.serialized_test_df)))
-
-        exec(request.code, _globals)
+        try:
+            exec(request.code, _globals)
+        except NameError as e:
+            missing_name = re.findall(r"name '(\w+)' is not defined", str(e))[0]
+            if missing_name == 'train_df':
+                raise IllegalArgumentError("Train Dataset is not specified")
+            if missing_name == 'test_df':
+                raise IllegalArgumentError("Test Dataset is not specified")
+            raise e
 
         return TestResultMessage(results=tests.tests_results)
 
@@ -103,13 +109,13 @@ class MLTaskServer(MLWorkerServicer):
             calculated = pd.concat([preds_serie, label_serie, abs_diff], axis=1)
         else:
             results = pd.Series(prediction_results.prediction)
-            predsSerie = results
+            preds_serie = results
             target_serie = data_df[request.target]
-            diff = predsSerie - target_serie
-            diffPercent = pd.Series(diff / target_serie, name="diffPercent")
+            diff = preds_serie - target_serie
+            diff_percent = pd.Series(diff / target_serie, name="diffPercent")
             abs_diff = pd.Series(diff.abs(), name="absDiff")
             abs_diff_percent = pd.Series(abs_diff / target_serie, name="absDiffPercent")
-            calculated = pd.concat([predsSerie, target_serie, abs_diff, abs_diff_percent, diffPercent], axis=1)
+            calculated = pd.concat([preds_serie, target_serie, abs_diff, abs_diff_percent, diff_percent], axis=1)
 
         return RunModelResponse(
             results_csv=results.to_csv(index=False),
