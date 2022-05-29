@@ -5,59 +5,59 @@ from ml_worker.testing.functions import GiskardTestFunctions
 
 def _test_heuristic(german_credit_test_data, german_credit_model, threshold):
     tests = GiskardTestFunctions()
-    results = tests.heuristic.test_heuristic(
-        german_credit_test_data,
-        german_credit_model,
-        classification_label='Default',
-        threshold=threshold)
+    results = tests.heuristic.test_right_label(
+        slice_df=german_credit_test_data[:len(german_credit_test_data) // 2],
+        model=german_credit_model,
+        classification_label=german_credit_model.classification_labels[1],
+        threshold=threshold
+    )
 
-    assert results.element_count == 1000
-    assert results.missing_count == 0
-    assert results.unexpected_count == 233
-    assert results.unexpected_percent == 23.3
+    assert results.slice_nb_rows == 500
+    assert round(results.metric, 2) == 0.80
     return results.passed
 
 
 def test_heuristic_opposite(german_credit_test_data, german_credit_model):
     tests = GiskardTestFunctions()
-    results = tests.heuristic.test_heuristic(
-        german_credit_test_data,
-        german_credit_model,
-        'Not default')
+    results = tests.heuristic.test_right_label(
+        slice_df=german_credit_test_data[:len(german_credit_test_data) // 2],
+        model=german_credit_model,
+        classification_label=german_credit_model.classification_labels[0],
+        threshold=0.5
+    )
 
-    assert results.element_count == 1000
-    assert results.missing_count == 0
-    assert results.unexpected_count == 1000 - 233
-    assert pytest.approx(results.unexpected_percent, 0.1) == 100 - 23.3
+    assert results.slice_nb_rows == 500
+    assert round(results.metric, 2) == round(1 - 0.80, 2)
 
 
-def test_heuristic_proba_limits(german_credit_test_data, german_credit_model):
+def test_right_label(german_credit_test_data, german_credit_model):
     tests = GiskardTestFunctions()
-    results = tests.heuristic.test_heuristic(german_credit_test_data, german_credit_model,
-                                             'Not default', min_proba=0.4, max_proba=0.6)
+    results = tests.heuristic.test_right_label(
+        slice_df=german_credit_test_data[:len(german_credit_test_data) // 2],
+        model=german_credit_model,
+        classification_label=german_credit_model.classification_labels[1],
+        threshold=0.5
+    )
 
-    assert results.element_count == 1000
-    assert results.missing_count == 0
-    assert results.unexpected_count == 927
-    assert pytest.approx(results.unexpected_percent, 0.1) == 92.7
+    assert results.slice_nb_rows == 500
+    assert round(results.metric, 2) == 0.80
+    assert results.passed
 
 
 def test_heuristic_pass_fail(german_credit_test_data, german_credit_model):
-    assert _test_heuristic(german_credit_test_data, german_credit_model, 0.3)
-    assert not _test_heuristic(german_credit_test_data, german_credit_model, 0.2)
-
-
+    assert _test_heuristic(german_credit_test_data, german_credit_model, 0.7)
+    assert not _test_heuristic(german_credit_test_data, german_credit_model, 0.9)
 
 
 def test_heuristic_filtered(german_credit_test_data, german_credit_model):
     tests = GiskardTestFunctions()
-    results = tests.heuristic.test_heuristic(
-        german_credit_test_data.head(10),
-        german_credit_model,
-        classification_label='Default'
-    )
+    results = tests.heuristic.test_right_label(
+        slice_df=german_credit_test_data.head(10),
+        model=german_credit_model,
+        classification_label=german_credit_model.classification_labels[0],
+        threshold=0.5
+      )
 
-    assert results.element_count == 10
-    assert results.missing_count == 0
-    assert results.unexpected_count == 4
-    assert results.unexpected_percent == 40
+    assert results.slice_nb_rows == 10
+    assert round(results.metric, 2) == 0.40
+
