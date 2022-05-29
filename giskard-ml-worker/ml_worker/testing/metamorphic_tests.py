@@ -68,10 +68,15 @@ class MetamorphicTests(AbstractTestCollection):
                           perturbation_dict,
                           threshold: float,
                           classification_label=None,
-                          output_sensitivity=None
+                          output_sensitivity=None,
+                          output_proba=True
                           ) -> SingleTestResult:
-        results_df, modified_rows_count = self._perturb_and_predict(df, model, perturbation_dict,
-                                                                    classification_label=classification_label)
+        results_df, modified_rows_count = self._perturb_and_predict(df,
+                                                                    model,
+                                                                    perturbation_dict,
+                                                                    classification_label=classification_label,
+                                                                    output_proba=output_proba)
+
         passed_idx, failed_idx = self._compare_prediction(results_df,
                                                           model.prediction_task,
                                                           output_sensitivity,
@@ -141,7 +146,8 @@ class MetamorphicTests(AbstractTestCollection):
                                       model=model,
                                       perturbation_dict=perturbation_dict,
                                       threshold=threshold,
-                                      output_sensitivity=output_sensitivity
+                                      output_sensitivity=output_sensitivity,
+                                      output_proba=False
                                       )
 
     def test_metamorphic_increasing(self,
