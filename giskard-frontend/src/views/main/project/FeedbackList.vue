@@ -192,8 +192,7 @@ export default class FeedbackList extends Vue {
 
   public async fetchFeedbacks() {
     try {
-      const response = await api.getProjectFeedbacks(readToken(this.$store), this.projectId);
-      this.feedbacks = response.data;
+      this.feedbacks = await api.getProjectFeedbacks(this.projectId);
     } catch (error) {
       commitAddNotification(this.$store, {content: error.response.data.detail, color: 'error'});
     }

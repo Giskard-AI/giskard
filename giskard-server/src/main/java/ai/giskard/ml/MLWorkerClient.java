@@ -2,11 +2,9 @@ package ai.giskard.ml;
 
 import ai.giskard.domain.ml.testing.Test;
 import ai.giskard.worker.*;
-import com.google.common.util.concurrent.ListenableFuture;
 import com.google.protobuf.ByteString;
 import io.grpc.Channel;
 import io.grpc.ManagedChannel;
-import io.grpc.stub.AbstractStub;
 import lombok.Getter;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
@@ -16,7 +14,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Stream;
 
 /**
  * A java-python bridge for model execution
@@ -26,8 +23,6 @@ public class MLWorkerClient implements AutoCloseable {
 
     @Getter
     private final MLWorkerGrpc.MLWorkerBlockingStub blockingStub;
-    @Getter
-    private final MLWorkerGrpc.MLWorkerFutureStub futureStub;
 
     public MLWorkerClient(Channel channel) {
         // 'channel' here is a Channel, not a ManagedChannel, so it is not this code's responsibility to
@@ -39,27 +34,26 @@ public class MLWorkerClient implements AutoCloseable {
 
         logger.debug("Creating MLWorkerClient");
         blockingStub = MLWorkerGrpc.newBlockingStub(channel);
-        futureStub = MLWorkerGrpc.newFutureStub(channel);
     }
 
-    public ListenableFuture<TestResultMessage> runTest(
-        InputStream modelInputStream,
-        InputStream trainDFStream,
-        InputStream testDFStream,
+    public TestResultMessage runTest(
+        ByteString modelInputStream,
+        ByteString trainDFStream,
+        ByteString testDFStream,
         Test test
-    ) throws IOException {
+    ) {
         RunTestRequest.Builder requestBuilder = RunTestRequest.newBuilder()
             .setCode(test.getCode())
-            .setSerializedModel(ByteString.readFrom(modelInputStream));
+            .setSerializedModel(modelInputStream);
         if (trainDFStream != null) {
-            requestBuilder.setSerializedTrainDf(ByteString.readFrom(trainDFStream));
+            requestBuilder.setSerializedTrainDf(trainDFStream);
         }
         if (testDFStream != null) {
-            requestBuilder.setSerializedTestDf(ByteString.readFrom(testDFStream));
+            requestBuilder.setSerializedTestDf(testDFStream);
         }
         RunTestRequest request = requestBuilder.build();
         logger.debug("Sending requiest to ML Worker: {}", request);
-        return futureStub.runTest(request);
+        return blockingStub.runTest(request);
     }
 
     public RunModelResponse runModelForDataStream(InputStream modelInputStream, InputStream datasetInputStream, String target) throws IOException {
@@ -93,16 +87,14 @@ public class MLWorkerClient implements AutoCloseable {
 
     public void shutdown() {
         logger.debug("Shutting down MLWorkerClient");
-        Stream.of(this.blockingStub, this.futureStub).map(AbstractStub::getChannel).forEach(channel -> {
-            if (channel instanceof ManagedChannel managedChannel) {
-                try {
-                    managedChannel.shutdownNow().awaitTermination(5, TimeUnit.SECONDS);
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                    logger.error("Failed to shutdown worker", e);
-                }
+        if (this.blockingStub.getChannel() instanceof ManagedChannel managedChannel) {
+            try {
+                managedChannel.shutdownNow().awaitTermination(15, TimeUnit.SECONDS);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                logger.error("Failed to shutdown worker", e);
             }
-        });
+        }
     }
 
     @Override

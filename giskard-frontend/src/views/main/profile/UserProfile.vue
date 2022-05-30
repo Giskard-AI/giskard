@@ -147,9 +147,8 @@ export default class UserProfile extends Vue {
     const loadingNotification = { content: 'Generating...', showProgress: true };
     try {
         commitAddNotification(this.$store, loadingNotification);
-        const response = await api.getApiAccessToken(readToken(this.$store));
         commitRemoveNotification(this.$store, loadingNotification);
-        this.apiAccessToken = response.data.id_token;
+        this.apiAccessToken = (await api.getApiAccessToken()).id_token;
     } catch (error) {
         commitRemoveNotification(this.$store, loadingNotification);
         commitAddNotification(this.$store, { content: 'Could not reach server', color: 'error' });

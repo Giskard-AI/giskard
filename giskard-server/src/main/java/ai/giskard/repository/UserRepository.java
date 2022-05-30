@@ -38,6 +38,9 @@ public interface UserRepository extends JpaRepository<User, Long> {
     @EntityGraph(attributePaths = "roles")
     Optional<User> findOneWithRolesByLogin(String login);
 
+    @EntityGraph(attributePaths = "roles")
+    Optional<User> findOneWithRolesById(Long id);
+
     @EntityGraph(attributePaths = "projects")
     User getOneWithProjectsByLogin(String login);
 

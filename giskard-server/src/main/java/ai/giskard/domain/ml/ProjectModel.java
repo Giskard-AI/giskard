@@ -9,7 +9,6 @@ import lombok.NonNull;
 import lombok.Setter;
 
 import javax.persistence.*;
-import java.io.Serializable;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -19,7 +18,7 @@ import java.util.Set;
 @Getter
 @Setter
 @NoArgsConstructor
-public class ProjectModel extends ProjectFile implements Serializable {
+public class ProjectModel extends ProjectFile {
     private String name;
 
     private String languageVersion;
