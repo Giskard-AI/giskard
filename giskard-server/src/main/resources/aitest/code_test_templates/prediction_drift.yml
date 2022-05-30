@@ -1,0 +1,48 @@
+title: Prediction drift
+id: prediction_drift
+order: 5
+items:
+  - id: drift_prediction_psi
+    title: Population Stability Index
+    # language=Python
+    code: |
+      tests.drift.test_drift_prediction_psi(
+          train_df=train_df,
+          test_df=test_df,
+          model=model,
+          threshold=0.1,
+          max_categories=10,
+          psi_contribution_percent=0.2
+      )
+  - id: drift_prediction_chi_square
+    title: Chi-squared
+    # language=Python
+    code: |
+      tests.drift.test_drift_prediction_chi_square(
+          train_df=train_df,
+          test_df=test_df,
+          model=model,
+          threshold=0.1,
+          max_categories=10,
+          chi_square_contribution_percent=0.2
+      )
+  - id: drift_prediction_ks
+    title: Kolmogorov–Smirnov
+    # language=Python
+    code: |-
+      tests.drift.test_drift_prediction_ks(
+          train_df=train_df,
+          test_df=test_df,
+          model=model,
+          threshold=0.1
+      )
+  - id: drift_prediction_earth_movers_distance
+    title: Earth mover's distance
+    # language=Python
+    code: |-
+      tests.drift.test_drift_prediction_earth_movers_distance(
+          train_df=train_df,
+          test_df=test_df,
+          model=model,
+          threshold=0.1
+      )

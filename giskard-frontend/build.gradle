@@ -1,0 +1,39 @@
+plugins {
+    id "base"
+    id "org.sonarqube"
+    id "com.github.node-gradle.node" version "3.2.1"
+}
+
+sonarqube {
+    properties {
+        property "sonar.sources", "src"
+        property "sonar.exclusions", ["src/generated-sources/**", "src/plugins/**"]
+        property "sonar.tests", "tests"
+        property "sonar.sourceEncoding", "UTF-8"
+    }
+}
+
+
+node {
+    version = "16.14.0"
+    npmVersion = "8.3.1"
+    npmInstallCommand = "ci"
+    distBaseUrl = "https://nodejs.org/dist"
+    download = true
+}
+
+npm_run_build {
+    inputs.files fileTree('public')
+    inputs.files fileTree('src')
+    inputs.file 'package.json'
+    inputs.file 'package-lock.json'
+
+    outputs.dir project.buildDir
+}
+
+task cleanup(type: Delete) {
+    delete 'build', 'node_modules', 'dist'
+}
+
+build.dependsOn npm_run_build
+clean.dependsOn cleanup

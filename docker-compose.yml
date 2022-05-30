@@ -10,20 +10,33 @@ services:
     environment:
       - PGDATA=/var/lib/postgresql/data/pgdata
 
+  ml-worker:
+    image: '${DOCKER_REGISTRY}/ml-worker:${TAG-latest}'
+    environment:
+      - GSK_ENVIRONMENT=prod
+
   backend:
-    image: '${DOCKER_REGISTRY}/giskard-backend:${TAG-latest}'
-    volumes:
-      - app-files-bucket:/app/files-bucket
-    depends_on:
-      - db
+    image: '${DOCKER_REGISTRY}/backend:${TAG-latest}'
     env_file:
       - .env
     environment:
-      - SERVER_NAME=${DOMAIN?Variable not set}
-      - SERVER_HOST=https://${DOMAIN?Variable not set}
-      # Allow explicit env var override for tests
-      - SMTP_HOST=${SMTP_HOST}
-      - GISKARD_PLAN
+      - _JAVA_OPTIONS=-Xmx2048m -Xms256m
+      - SPRING_PROFILES_ACTIVE=prod
+      - MANAGEMENT_METRICS_EXPORT_PROMETHEUS_ENABLED=true
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=y1QYbF2BtFUC
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/app
+      - SPRING_LIQUIBASE_URL=jdbc:postgresql://db:5432/app
+      - GISKARD_ML_WORKER_HOST=ml-worker
+      - GISKARD_ML_WORKER_PORT=50051
+      - SPRING_MAIL_HOST
+      - SPRING_MAIL_PORT
+      - SPRING_MAIL_USERNAME
+      - SPRING_MAIL_PASSWORD
+      - JHIPSTER_MAIL_BASEURL
+    volumes:
+      - giskard-home:/giskard-home
+
 
   frontend:
     image: '${DOCKER_REGISTRY}/giskard-frontend:${TAG-latest}'
@@ -32,6 +45,7 @@ services:
     expose:
       - 19000
     depends_on:
+      - jupyter
       - backend
     env_file:
       - .env
@@ -43,11 +57,12 @@ services:
       - jupyter
       - notebook
       - --NotebookApp.token=''
+      - --NotebookApp.allow_origin='*'
+      - --NotebookApp.base_url='/jupyter'
     volumes:
-      - ./backend/demo-notebook/notebook:/home/jovyan
-    ports:
-      - '18888:8888'
+      - ./giskard-demo-notebook/notebook/German_credit_scoring_giskard.ipynb:/home/jovyan/German_credit_scoring_giskard.ipynb
+      - ./giskard-demo-notebook/notebook/german_credit_prepared.csv:/home/jovyan/german_credit_prepared.csv
 
 volumes:
   app-db-data:
-  app-files-bucket:
+  giskard-home:
