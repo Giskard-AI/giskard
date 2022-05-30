@@ -24,12 +24,6 @@ import java.util.Set;
 public class Project extends AbstractAuditingEntity {
     @Getter
     @Setter
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private Long id;
-
-    @Getter
-    @Setter
     @NotNull
     private String key;
 
@@ -65,10 +59,8 @@ public class Project extends AbstractAuditingEntity {
     private Set<TestSuite> testSuites = new HashSet<>();
 
     @Getter
-    @Setter
     @OneToMany(mappedBy = "project", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    private Set<Feedback> feedbacks = new HashSet<>();
-
+    private final Set<Feedback> feedbacks = new HashSet<>();
 
     @Getter
     @Setter

@@ -1,5 +1,5 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="ML Task runner" type="PythonConfigurationType" factoryName="Python">
+  <configuration default="false" name="ML Worker" type="PythonConfigurationType" factoryName="Python">
     <module name="giskard.giskard-ml-worker" />
     <option name="INTERPRETER_OPTIONS" value="" />
     <option name="PARENT_ENVS" value="true" />
@@ -22,7 +22,7 @@
         <ENTRY IS_ENABLED="true" PARSER="runconfig" />
       </ENTRIES>
     </EXTENSION>
-    <option name="SCRIPT_NAME" value="$PROJECT_DIR$/giskard-ml-worker/mltask_server_runner.py" />
+    <option name="SCRIPT_NAME" value="$PROJECT_DIR$/giskard-ml-worker/main.py" />
     <option name="PARAMETERS" value="" />
     <option name="SHOW_COMMAND_LINE" value="false" />
     <option name="EMULATE_TERMINAL" value="false" />

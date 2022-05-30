@@ -1,23 +1,35 @@
 package ai.giskard.repository;
 
+import lombok.NonNull;
 import org.mapstruct.Named;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.repository.NoRepositoryBean;
-import org.springframework.lang.NonNullApi;
 
 /**
  * A standard JpaRepository interface that helps Mapstruct to find an ID-to-T
  * mapper method
  */
 @NoRepositoryBean
-public interface MappableJpaRepository<T, ID> extends JpaRepository<T, ID> {
+public interface MappableJpaRepository<T, I> extends JpaRepository<T, I> {
     /**
      * The only goal of overriding getOne method is to mark it by @org.mapstruct.Named
      * this will allow to solve Mapstruct ambiguity between getById and getOne
-     * methods when Mapstruct is looking for a ID->T mapping
+     * methods when Mapstruct is looking for a I->T mapping
      */
     @Override
-    @Named("_deprecated_noop_")
+    @Named("_noop_")
     @SuppressWarnings("all")
-    T getOne(ID id);
+    T getOne(I id);
+
+    @Override
+    @Named("_noop_")
+    @NonNull
+    T getById(@NonNull I id);
+
+    default T findOneByNullableId(I id) {
+        if (id == null) {
+            return null;
+        }
+        return getById(id);
+    }
 }
