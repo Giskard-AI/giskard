@@ -43,26 +43,28 @@ items:
           output_df:
               dataframe of rows where the prediction changes due to perturbation
       """
-      #import nlpaug.augmenter.word as naw  # uncomment for text perturbation
-      #aug = naw.SpellingAug(dict_path='./spelling_en.txt') # uncomment for text perturbation
+      # import nlpaug.augmenter.word as naw  # uncomment for text perturbation
+      # aug = naw.SpellingAug(dict_path='./spelling_en.txt') # uncomment for text perturbation
 
       # You can choose all_perturbation to perturb categorical, text and numerical feature at the same time
-      all_perturbation = {"<NUMERIC FEATURE NAME>": lambda x: x["<NUMERIC FEATURE NAME>"] * 2,
-                "<CATEGORICAL FEATURE NAME>": lambda x: x["<CATEGORICAL FEATURE NAME>"].apply(
-                    lambda value: "<CATEGORY 1>" if value == "<CATEGORY 2>" else value),
-                "<TEXTUAL FEATURE NAME>": lambda x: x["<TEXTUAL FEATURE NAME>"].apply(lambda value: aug.augment(value))}
+      all_perturbation = {
+          "{{NUMERIC FEATURE NAME}}": lambda x: x["{{NUMERIC FEATURE NAME}}"] * 2,
+          "{{CATEGORICAL FEATURE NAME}}": lambda x: x["{{CATEGORICAL FEATURE NAME}}"].apply(lambda value: "{{CATEGORY 1}}" if value == "{{CATEGORY 2}}" else value),
+          "{{TEXTUAL FEATURE NAME}}": lambda x: x["{{TEXTUAL FEATURE NAME}}"].apply(lambda value: aug.augment(value))
+      }
 
       # Or you can choose one feature at a time eg. Numerical feature
       perturbation = {
-          "<NUMERICAL FEATURE>": lambda x: x["<NUMERICAL FEATURE>"] * 2,
+          "{{NUMERIC FEATURE NAME}}": lambda x: x["{{NUMERIC FEATURE NAME}}"] * 2,
       }
 
       tests.metamorphic.test_metamorphic_invariance(
           df=test_df,
           model=model,
-          perturbation_dict=perturbation, # Update your perturbation choice here
+          perturbation_dict=perturbation,  # Update your perturbation choice here
           threshold=0.1
       )
+
   - id: metamorphic_invariance_regression
     title: Invariance for Regression
     hint: Tests if the Regression model prediction is invariant when the feature values are perturbed
@@ -111,14 +113,14 @@ items:
       #aug = naw.SpellingAug(dict_path='./spelling_en.txt') # uncomment for text perturbation
 
       # You can choose all_perturbation to perturb categorical, text and numerical feature at the same time
-      all_perturbation = {"<NUMERIC FEATURE NAME>": lambda x: x["<NUMERIC FEATURE NAME>"] * 2,
-                "<CATEGORICAL FEATURE NAME>": lambda x: x["<CATEGORICAL FEATURE NAME>"].apply(
-                    lambda value: "<CATEGORY 1>" if value == "<CATEGORY 2>" else value),
-                "<TEXTUAL FEATURE NAME>": lambda x: x["<TEXTUAL FEATURE NAME>"].apply(lambda value: aug.augment(value))}
+      all_perturbation = {"{{NUMERIC FEATURE NAME}}": lambda x: x["{{NUMERIC FEATURE NAME}}"] * 2,
+                "{{CATEGORICAL FEATURE NAME}}": lambda x: x["{{CATEGORICAL FEATURE NAME}}"].apply(
+                    lambda value: "{{CATEGORY 1}}" if value == "{{CATEGORY 2}}" else value),
+                "{{TEXTUAL FEATURE NAME}}": lambda x: x["{{TEXTUAL FEATURE NAME}}"].apply(lambda value: aug.augment(value))}
 
       # Or you can choose one feature at a time eg. Numerical feature
       perturbation = {
-          "<NUMERICAL FEATURE>": lambda x: x["<NUMERICAL FEATURE>"] * 2,
+          "{{NUMERIC FEATURE NAME}}": lambda x: x["{{NUMERIC FEATURE NAME}}"] * 2,
       }
 
       tests.metamorphic.test_metamorphic_invariance(
@@ -176,14 +178,14 @@ items:
       #aug = naw.SpellingAug(dict_path='./spelling_en.txt') # uncomment for text perturbation
 
       # You can choose all_perturbation to perturb categorical, text and numerical feature at the same time
-      all_perturbation = {"<NUMERIC FEATURE NAME>": lambda x: x["<NUMERIC FEATURE NAME>"] * 2,
-                "<CATEGORICAL FEATURE NAME>": lambda x: x["<CATEGORICAL FEATURE NAME>"].apply(
-                    lambda value: "<CATEGORY 1>" if value == "<CATEGORY 2>" else value),
-                "<TEXTUAL FEATURE NAME>": lambda x: x["<TEXTUAL FEATURE NAME>"].apply(lambda value: aug.augment(value))}
+      all_perturbation = {"{{NUMERIC FEATURE NAME}}": lambda x: x["{{NUMERIC FEATURE NAME}}"] * 2,
+                "{{CATEGORICAL FEATURE NAME}}": lambda x: x["{{CATEGORICAL FEATURE NAME}}"].apply(
+                    lambda value: "{{CATEGORY 1}}" if value == "{{CATEGORY 2}}" else value),
+                "{{TEXTUAL FEATURE NAME}}": lambda x: x["{{TEXTUAL FEATURE NAME}}"].apply(lambda value: aug.augment(value))}
 
       # Or you can choose one feature at a time eg. Numerical feature
       perturbation = {
-          "<NUMERICAL FEATURE>": lambda x: x["<NUMERICAL FEATURE>"] * 2,
+          "{{NUMERIC FEATURE NAME}}": lambda x: x["{{NUMERIC FEATURE NAME}}"] * 2,
       }
 
       tests.metamorphic.test_metamorphic_increasing(
@@ -237,14 +239,14 @@ items:
       #aug = naw.SpellingAug(dict_path='./spelling_en.txt') # uncomment for text perturbation
 
       # You can choose all_perturbation to perturb categorical, text and numerical feature at the same time
-      all_perturbation = {"<NUMERIC FEATURE NAME>": lambda x: x["<NUMERIC FEATURE NAME>"] * 2,
-                "<CATEGORICAL FEATURE NAME>": lambda x: x["<CATEGORICAL FEATURE NAME>"].apply(
-                    lambda value: "<CATEGORY 1>" if value == "<CATEGORY 2>" else value),
-                "<TEXTUAL FEATURE NAME>": lambda x: x["<TEXTUAL FEATURE NAME>"].apply(lambda value: aug.augment(value))}
+      all_perturbation = {"{{NUMERIC FEATURE NAME}}": lambda x: x["{{NUMERIC FEATURE NAME}}"] * 2,
+                "{{CATEGORICAL FEATURE NAME}}": lambda x: x["{{CATEGORICAL FEATURE NAME}}"].apply(
+                    lambda value: "{{CATEGORY 1}}" if value == "{{CATEGORY 2}}" else value),
+                "{{TEXTUAL FEATURE NAME}}": lambda x: x["{{TEXTUAL FEATURE NAME}}"].apply(lambda value: aug.augment(value))}
 
       # Or you can choose one feature at a time eg. Numerical feature
       perturbation = {
-          "<NUMERICAL FEATURE>": lambda x: x["<NUMERICAL FEATURE>"] * 2,
+          "{{NUMERIC FEATURE NAME}}": lambda x: x["{{NUMERIC FEATURE NAME}}"] * 2,
       }
 
       tests.metamorphic.test_metamorphic_increasing(
@@ -301,14 +303,14 @@ items:
       #aug = naw.SpellingAug(dict_path='./spelling_en.txt') # uncomment for text perturbation
 
       # You can choose all_perturbation to perturb categorical, text and numerical feature at the same time
-      all_perturbation = {"<NUMERIC FEATURE NAME>": lambda x: x["<NUMERIC FEATURE NAME>"] * 2,
-                "<CATEGORICAL FEATURE NAME>": lambda x: x["<CATEGORICAL FEATURE NAME>"].apply(
-                    lambda value: "<CATEGORY 1>" if value == "<CATEGORY 2>" else value),
-                "<TEXTUAL FEATURE NAME>": lambda x: x["<TEXTUAL FEATURE NAME>"].apply(lambda value: aug.augment(value))}
+      all_perturbation = {"{{NUMERIC FEATURE NAME}}": lambda x: x["{{NUMERIC FEATURE NAME}}"] * 2,
+                "{{CATEGORICAL FEATURE NAME}}": lambda x: x["{{CATEGORICAL FEATURE NAME}}"].apply(
+                    lambda value: "{{CATEGORY 1}}" if value == "{{CATEGORY 2}}" else value),
+                "{{TEXTUAL FEATURE NAME}}": lambda x: x["{{TEXTUAL FEATURE NAME}}"].apply(lambda value: aug.augment(value))}
 
       # Or you can choose one feature at a time eg. Numerical feature
       perturbation = {
-          "<NUMERICAL FEATURE>": lambda x: x["<NUMERICAL FEATURE>"] * 2,
+          "{{NUMERIC FEATURE NAME}}": lambda x: x["{{NUMERIC FEATURE NAME}}"] * 2,
       }
 
       tests.metamorphic.test_metamorphic_decreasing(
@@ -362,14 +364,14 @@ items:
       #aug = naw.SpellingAug(dict_path='./spelling_en.txt') # uncomment for text perturbation
 
       # You can choose all_perturbation to perturb categorical, text and numerical feature at the same time
-      all_perturbation = {"<NUMERIC FEATURE NAME>": lambda x: x["<NUMERIC FEATURE NAME>"] * 2,
-                "<CATEGORICAL FEATURE NAME>": lambda x: x["<CATEGORICAL FEATURE NAME>"].apply(
-                    lambda value: "<CATEGORY 1>" if value == "<CATEGORY 2>" else value),
-                "<TEXTUAL FEATURE NAME>": lambda x: x["<TEXTUAL FEATURE NAME>"].apply(lambda value: aug.augment(value))}
+      all_perturbation = {"{{NUMERIC FEATURE NAME}}": lambda x: x["{{NUMERIC FEATURE NAME}}"] * 2,
+                "{{CATEGORICAL FEATURE NAME}}": lambda x: x["{{CATEGORICAL FEATURE NAME}}"].apply(
+                    lambda value: "{{CATEGORY 1}}" if value == "{{CATEGORY 2}}" else value),
+                "{{TEXTUAL FEATURE NAME}}": lambda x: x["{{TEXTUAL FEATURE NAME}}"].apply(lambda value: aug.augment(value))}
 
       # Or you can choose one feature at a time eg. Numerical feature
       perturbation = {
-          "<NUMERICAL FEATURE>": lambda x: x["<NUMERICAL FEATURE>"] * 2,
+          "{{NUMERIC FEATURE NAME}}": lambda x: x["{{NUMERIC FEATURE NAME}}"] * 2,
       }
 
       tests.metamorphic.test_metamorphic_decreasing(

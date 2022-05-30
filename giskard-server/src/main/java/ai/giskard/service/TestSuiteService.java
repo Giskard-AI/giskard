@@ -1,8 +1,7 @@
 package ai.giskard.service;
 
-import ai.giskard.domain.ml.CodeTestTemplate;
-import ai.giskard.domain.ml.ModelType;
-import ai.giskard.domain.ml.TestSuite;
+import ai.giskard.domain.FeatureType;
+import ai.giskard.domain.ml.*;
 import ai.giskard.domain.ml.testing.Test;
 import ai.giskard.repository.ml.TestRepository;
 import ai.giskard.repository.ml.TestSuiteRepository;
@@ -12,14 +11,13 @@ import ai.giskard.web.dto.ml.UpdateTestSuiteDTO;
 import ai.giskard.web.rest.errors.Entity;
 import ai.giskard.web.rest.errors.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.text.StringSubstitutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @Service
 @Transactional
@@ -61,7 +59,7 @@ public class TestSuiteService {
                 Test test = Test.builder()
                     .testSuite(suite)
                     .name(template.getTitle())
-                    .code(template.getCode())
+                    .code(replacePlaceholders(template.getCode(), suite))
                     .build();
                 generatedTests.add(test);
                 suite.getTests().add(test);
@@ -69,5 +67,36 @@ public class TestSuiteService {
         }
         log.info("Generated {} tests for test suite {}", generatedTests.size(), suite.getId());
         testRepository.saveAll(generatedTests);
+    }
+
+    private String replacePlaceholders(String code, TestSuite suite) {
+        Map<String, String> substitutions = new HashMap<>();
+
+        ProjectModel model = suite.getModel();
+
+        if (model.getModelType().isClassification()) {
+            List<String> labels = model.getClassificationLabels();
+            for (int i = 0; i < labels.size(); i++) {
+                substitutions.putIfAbsent("CATEGORY " + (i + 1), labels.get(i));
+            }
+        }
+        Dataset ds = suite.getTrainDataset() != null ? suite.getTrainDataset() : suite.getTestDataset();
+        if (ds != null) {
+            ds.getFeatureTypes().forEach((fName, fType) -> {
+                substitutions.putIfAbsent("FEATURE NAME", fName);
+                if (fType == FeatureType.CATEGORY) {
+                    substitutions.putIfAbsent("CATEGORICAL FEATURE NAME", fName);
+                }
+                if (fType == FeatureType.NUMERIC) {
+                    substitutions.putIfAbsent("NUMERIC FEATURE NAME", fName);
+                }
+                if (fType == FeatureType.TEXT) {
+                    substitutions.putIfAbsent("TEXTUAL FEATURE NAME", fName);
+                }
+            });
+        }
+
+        StringSubstitutor sub = new StringSubstitutor(substitutions, "{{", "}}");
+        return sub.replace(code);
     }
 }

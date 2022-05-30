@@ -6,6 +6,7 @@ import ai.giskard.domain.ml.TestResult;
 import ai.giskard.domain.ml.TestSuite;
 import ai.giskard.domain.ml.testing.Test;
 import ai.giskard.domain.ml.testing.TestExecution;
+import ai.giskard.exception.MLWorkerRuntimeException;
 import ai.giskard.ml.MLWorkerClient;
 import ai.giskard.repository.ml.TestExecutionRepository;
 import ai.giskard.repository.ml.TestRepository;
@@ -68,10 +69,13 @@ public class TestService {
         Path modelPath = fileLocationService.resolvedModelPath(model.getProject().getKey(), model.getId());
         try (MLWorkerClient client = mlWorkerService.createClient()) {
 
+
             TestResultMessage testResult = client.runTest(
                 ByteString.readFrom(Files.newInputStream(modelPath)),
                 createDSStream(trainDS),
+                trainDS,
                 createDSStream(testDS),
+                testDS,
                 test);
 
             res.setResult(testResult);
@@ -106,7 +110,7 @@ public class TestService {
             .parallelStream().forEach(tests -> tests.forEach(test -> {
                 try {
                     result.add(runTest(test.getId()));
-                } catch (IOException e) {
+                } catch (IOException | MLWorkerRuntimeException e) {
                     logger.error("Failed to run test {} in suite {}", test.getId(), test.getTestSuite().getId(), e);
                 }
             }));

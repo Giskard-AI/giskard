@@ -1,10 +1,15 @@
 package ai.giskard.ml;
 
+import ai.giskard.domain.FeatureType;
+import ai.giskard.domain.ml.Dataset;
 import ai.giskard.domain.ml.testing.Test;
+import ai.giskard.exception.MLWorkerRuntimeException;
 import ai.giskard.worker.*;
+import com.google.common.collect.Maps;
 import com.google.protobuf.ByteString;
 import io.grpc.Channel;
 import io.grpc.ManagedChannel;
+import io.grpc.StatusRuntimeException;
 import lombok.Getter;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
@@ -39,21 +44,47 @@ public class MLWorkerClient implements AutoCloseable {
     public TestResultMessage runTest(
         ByteString modelInputStream,
         ByteString trainDFStream,
+        Dataset trainDS,
         ByteString testDFStream,
+        Dataset testDS,
         Test test
     ) {
         RunTestRequest.Builder requestBuilder = RunTestRequest.newBuilder()
             .setCode(test.getCode())
             .setSerializedModel(modelInputStream);
         if (trainDFStream != null) {
-            requestBuilder.setSerializedTrainDf(trainDFStream);
+            requestBuilder.setTrainDf(
+                SerializedDataWithMeta.newBuilder()
+                    .setSerializedDf(trainDFStream)
+                    .setMeta(
+                        DataFrameMeta.newBuilder()
+                            .setTarget(trainDS.getTarget())
+                            .putAllFeatureTypes(Maps.transformValues(trainDS.getFeatureTypes(), FeatureType::getName))
+                            .build())
+                    .build());
         }
         if (testDFStream != null) {
-            requestBuilder.setSerializedTestDf(testDFStream);
+            requestBuilder.setTestDf(
+                SerializedDataWithMeta.newBuilder()
+                    .setSerializedDf(testDFStream)
+                    .setMeta(
+                        DataFrameMeta.newBuilder()
+                            .setTarget(testDS.getTarget())
+                            .putAllFeatureTypes(Maps.transformValues(testDS.getFeatureTypes(), FeatureType::getName))
+                            .build())
+                    .build());
         }
         RunTestRequest request = requestBuilder.build();
         logger.debug("Sending requiest to ML Worker: {}", request);
-        return blockingStub.runTest(request);
+        try {
+            return blockingStub.runTest(request);
+        } catch (StatusRuntimeException e) {
+            if (e.getCause() instanceof MLWorkerRuntimeException mlWorkerRE) {
+                mlWorkerRE.setMessage(String.format("Failed to execute test: %s", test.getName()));
+                throw mlWorkerRE;
+            }
+            throw e;
+        }
     }
 
     public RunModelResponse runModelForDataStream(InputStream modelInputStream, InputStream datasetInputStream, String target) throws IOException {

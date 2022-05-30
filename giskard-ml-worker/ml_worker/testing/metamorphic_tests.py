@@ -1,12 +1,12 @@
 import pandas as pd
 from ai_inspector import ModelInspector
-from pandas import DataFrame
-from ml_worker.testing.utils import save_df, compress
 
 from generated.ml_worker_pb2 import SingleTestResult
+from ml_worker.core.giskard_dataset import GiskardDataset
 from ml_worker.core.ml import run_predict
 from ml_worker.testing.abstract_test_collection import AbstractTestCollection
-from ml_worker.testing.utils import apply_perturbation_inplace, ge_result_to_test_result
+from ml_worker.testing.utils import apply_perturbation_inplace
+from ml_worker.testing.utils import save_df, compress
 
 
 class MetamorphicTests(AbstractTestCollection):
@@ -63,7 +63,7 @@ class MetamorphicTests(AbstractTestCollection):
 
     def _test_metamorphic(self,
                           flag,
-                          df: DataFrame,
+                          df: GiskardDataset,
                           model,
                           perturbation_dict,
                           threshold: float,
@@ -71,7 +71,7 @@ class MetamorphicTests(AbstractTestCollection):
                           output_sensitivity=None,
                           output_proba=True
                           ) -> SingleTestResult:
-        results_df, modified_rows_count = self._perturb_and_predict(df,
+        results_df, modified_rows_count = self._perturb_and_predict(df.df,
                                                                     model,
                                                                     perturbation_dict,
                                                                     classification_label=classification_label,
@@ -81,7 +81,7 @@ class MetamorphicTests(AbstractTestCollection):
                                                           model.prediction_task,
                                                           output_sensitivity,
                                                           flag)
-        failed_df = df.loc[failed_idx]
+        failed_df = df.df.loc[failed_idx]
         passed_ratio = len(passed_idx) / modified_rows_count if modified_rows_count != 0 else 1
 
         output_df_sample = compress(save_df(failed_df))
@@ -94,7 +94,7 @@ class MetamorphicTests(AbstractTestCollection):
             output_df=output_df_sample))
 
     def test_metamorphic_invariance(self,
-                                    df: DataFrame,
+                                    df: GiskardDataset,
                                     model,
                                     perturbation_dict,
                                     threshold=1,
@@ -107,14 +107,14 @@ class MetamorphicTests(AbstractTestCollection):
         feature values perturbation.
         For regression: Check whether the predicted output remains the same at the output_sensibility
         level after feature values perturbation.
-        
+
         The test is passed when the ratio of invariant rows is higher than the threshold
 
         Example : The test is passed when, after switching gender from male to female,
         more than 50%(threshold 0.5) of males have unchanged outputs
 
         Args:
-            df(pandas.core.frame.DataFrame):
+            df(GiskardDataset):
                 Dataset used to compute the test
             model(ModelInspector):
                 Model used to compute the test
@@ -151,7 +151,7 @@ class MetamorphicTests(AbstractTestCollection):
                                       )
 
     def test_metamorphic_increasing(self,
-                                    df: DataFrame,
+                                    df: GiskardDataset,
                                     model,
                                     perturbation_dict,
                                     threshold=1,
@@ -171,7 +171,7 @@ class MetamorphicTests(AbstractTestCollection):
          default probability is increasing for more than 50% of people in the dataset
 
         Args:
-            df(pandas.core.frame.DataFrame):
+            df(GiskardDataset):
                 Dataset used to compute the test
             model(ModelInspector):
                 Model used to compute the test
@@ -208,7 +208,7 @@ class MetamorphicTests(AbstractTestCollection):
                                       threshold=threshold)
 
     def test_metamorphic_decreasing(self,
-                                    df: DataFrame,
+                                    df: GiskardDataset,
                                     model,
                                     perturbation_dict,
                                     threshold=1,
@@ -229,7 +229,7 @@ class MetamorphicTests(AbstractTestCollection):
          default probability is decreasing for more than 50% of people in the dataset
 
         Args:
-            df(pandas.core.frame.DataFrame):
+            df(GiskardDataset):
                 Dataset used to compute the test
             model(ModelInspector):
                 Model used to compute the test
