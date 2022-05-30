@@ -92,7 +92,7 @@ export default class TestSuites extends Vue {
   }
 
   private async init() {
-    this.testSuites = (await api.getTestSuites(this.projectId)).data.map((ts: TestSuiteDTO) => {
+    this.testSuites = (await api.getTestSuites(this.projectId)).map((ts: TestSuiteDTO) => {
       ts.model.name = TestSuites.getProjectFileName(ts.model);
       if (ts.trainDataset) {
         ts.trainDataset.name = TestSuites.getProjectFileName(ts.trainDataset);

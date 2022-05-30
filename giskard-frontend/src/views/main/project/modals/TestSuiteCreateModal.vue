@@ -56,14 +56,14 @@ export default class TestSuiteCreateModal extends Vue {
   shouldCreateAutoTests: boolean = true;
 
   public async submit() {
-    let createdTestSuite = (await api.createTestSuite({
+    let createdTestSuite = await api.createTestSuite({
       name: this.name,
       projectId: this.projectId,
       trainDatasetId: this.trainDS && this.trainDS.id,
       testDatasetId: this.testDS && this.testDS.id,
       modelId: this.model!.id,
       shouldGenerateTests: this.shouldCreateAutoTests
-    })).data;
+    });
     this.$emit('submit', createdTestSuite)
   }
 }

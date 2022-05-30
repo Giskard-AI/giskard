@@ -1,12 +1,22 @@
 $color-pack: false;
 
 @import '~vuetify/src/styles/main.sass';
+@import "./font-awesome/scss/fontawesome.scss";
+@import "./font-awesome/scss/solid.scss";
+@import "./font-awesome/scss/brands.scss";
 
 
 .v-data-table.row-pointer tr {
   cursor: pointer;
 }
 
-.v-dialog-wrapper{
+.v-dialog-wrapper {
   background-color: white;
+}
+
+$notification-spinner-size: 20px;
+.notification-spinner {
+  width: $notification-spinner-size !important;
+  height: $notification-spinner-size !important;
+  font-size: $notification-spinner-size !important;
 }

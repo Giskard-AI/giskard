@@ -118,10 +118,10 @@ export default class PredictionResults extends Vue {
     if (Object.keys(this.inputData).length) {
       try {
         this.loading = true;
-        const predictionResult: PredictionDTO = (await api.predict(
+        const predictionResult = (await api.predict(
             this.model.id,
             this.inputData
-        )).data
+        ))
         this.prediction = predictionResult.prediction;
         this.$emit("result", this.prediction);
         this.resultProbabilities = predictionResult.probabilities
