@@ -1,14 +1,8 @@
 package ai.giskard.web.rest.errors;
 
-import java.net.URI;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import javax.servlet.http.HttpServletRequest;
+import ai.giskard.exception.MLWorkerRuntimeException;
+import io.grpc.StatusRuntimeException;
+import lombok.NonNull;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.env.Environment;
@@ -21,16 +15,23 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.NativeWebRequest;
-import org.zalando.problem.DefaultProblem;
-import org.zalando.problem.Problem;
-import org.zalando.problem.ProblemBuilder;
-import org.zalando.problem.Status;
-import org.zalando.problem.StatusType;
+import org.zalando.problem.*;
 import org.zalando.problem.spring.web.advice.ProblemHandling;
 import org.zalando.problem.spring.web.advice.security.SecurityAdviceTrait;
 import org.zalando.problem.violations.ConstraintViolationProblem;
 import tech.jhipster.config.JHipsterConstants;
 import tech.jhipster.web.util.HeaderUtil;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import javax.servlet.http.HttpServletRequest;
+import java.net.URI;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+
+import static ai.giskard.web.rest.errors.ErrorConstants.DEFAULT_TYPE;
 
 /**
  * Controller advice to translate the server side exceptions to client-friendly json structures.
@@ -57,7 +58,7 @@ public class ExceptionTranslator implements ProblemHandling, SecurityAdviceTrait
      * Post-process the Problem payload to add the message key for the front-end if needed.
      */
     @Override
-    public ResponseEntity<Problem> process(@Nullable ResponseEntity<Problem> entity, NativeWebRequest request) {
+    public ResponseEntity<Problem> process(@Nullable ResponseEntity<Problem> entity, @NonNull NativeWebRequest request) {
         if (entity == null) {
             return null;
         }
@@ -70,14 +71,14 @@ public class ExceptionTranslator implements ProblemHandling, SecurityAdviceTrait
         String requestUri = nativeRequest != null ? nativeRequest.getRequestURI() : StringUtils.EMPTY;
         ProblemBuilder builder = Problem
             .builder()
-            .withType(Problem.DEFAULT_TYPE.equals(problem.getType()) ? ErrorConstants.DEFAULT_TYPE : problem.getType())
+            .withType(Problem.DEFAULT_TYPE.equals(problem.getType()) ? DEFAULT_TYPE : problem.getType())
             .withStatus(problem.getStatus())
             .withTitle(problem.getTitle())
             .with(PATH_KEY, requestUri);
 
-        if (problem instanceof ConstraintViolationProblem) {
+        if (problem instanceof ConstraintViolationProblem constraintViolationProblem) {
             builder
-                .with(VIOLATIONS_KEY, ((ConstraintViolationProblem) problem).getViolations())
+                .with(VIOLATIONS_KEY, constraintViolationProblem.getViolations())
                 .with(MESSAGE_KEY, ErrorConstants.ERR_VALIDATION);
         } else {
             builder.withCause(((DefaultProblem) problem).getCause()).withDetail(problem.getDetail()).withInstance(problem.getInstance());
@@ -101,8 +102,7 @@ public class ExceptionTranslator implements ProblemHandling, SecurityAdviceTrait
                     f.getField(),
                     StringUtils.isNotBlank(f.getDefaultMessage()) ? f.getDefaultMessage() : f.getCode()
                 )
-            )
-            .collect(Collectors.toList());
+            ).toList();
 
         Problem problem = Problem
             .builder()
@@ -113,6 +113,24 @@ public class ExceptionTranslator implements ProblemHandling, SecurityAdviceTrait
             .with(FIELD_ERRORS_KEY, fieldErrors)
             .build();
         return create(ex, problem, request);
+    }
+
+
+    @ExceptionHandler
+    public ResponseEntity<Problem> handleGRPCError(
+        StatusRuntimeException ex,
+        NativeWebRequest request
+    ) {
+        String details = null;
+        if (ex.getStatus().getCause() instanceof MLWorkerRuntimeException mlWorkerException) {
+            details = mlWorkerException.getDetails();
+        }
+        MLWorkerError problem = new MLWorkerError(DEFAULT_TYPE, ex.getStatus(), details);
+
+        return create(
+            problem,
+            request
+        );
     }
 
     @ExceptionHandler
@@ -165,7 +183,7 @@ public class ExceptionTranslator implements ProblemHandling, SecurityAdviceTrait
     }
 
     @Override
-    public ProblemBuilder prepare(final Throwable throwable, final StatusType status, final URI type) {
+    public ProblemBuilder prepare(final @NonNull Throwable throwable, final @NonNull StatusType status, final @NonNull URI type) {
         Collection<String> activeProfiles = Arrays.asList(env.getActiveProfiles());
 
         if (activeProfiles.contains(JHipsterConstants.SPRING_PROFILE_PRODUCTION)) {

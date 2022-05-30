@@ -15,10 +15,7 @@ import org.springframework.stereotype.Service;
 import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -28,8 +25,8 @@ public class CodeTestTemplateService {
     private final Logger log = LoggerFactory.getLogger(CodeTestTemplateService.class);
     ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
 
-    private List<CodeTestCollection> CODE_TEST_TEMPLATES;
-    private Map<String, CodeTestTemplate> TESTS_BY_ID;
+    private static final List<CodeTestCollection> CODE_TEST_TEMPLATES = new ArrayList<>();
+    private static final Map<String, CodeTestTemplate> TESTS_BY_ID = new HashMap<>();
 
     @PostConstruct
     public void init() {
@@ -37,24 +34,24 @@ public class CodeTestTemplateService {
     }
 
     private void readTemplates() {
-        CODE_TEST_TEMPLATES = new ArrayList<>();
-        TESTS_BY_ID = new HashMap<>();
         try {
             for (Resource resource : ResourcePatternUtils.getResourcePatternResolver(resourceLoader).getResources(TEMPLATES_LOCATION)) {
-                try {
-                    InputStream inputStream = resource.getInputStream();
-                    CodeTestCollection collection = mapper.readValue(inputStream, CodeTestCollection.class);
-                    CODE_TEST_TEMPLATES.add(collection);
-                    collection.items.forEach(test -> {
-                        TESTS_BY_ID.put(test.getId(), test);
-                    });
-                    log.debug("Laded {}", resource.getFilename());
-                } catch (IOException e) {
-                    log.error("Failed to read test template: {}", resource.getFilename(), e);
-                }
+                readTestResource(resource);
             }
         } catch (IOException e) {
             log.error("Failed to read code based test templates", e);
+        }
+    }
+
+    private void readTestResource(Resource resource) {
+        try {
+            InputStream inputStream = resource.getInputStream();
+            CodeTestCollection collection = mapper.readValue(inputStream, CodeTestCollection.class);
+            CODE_TEST_TEMPLATES.add(collection);
+            collection.items.forEach(test -> TESTS_BY_ID.put(test.getId(), test));
+            log.debug("Laded {}", resource.getFilename());
+        } catch (IOException e) {
+            log.error("Failed to read test template: {}", resource.getFilename(), e);
         }
     }
 
@@ -62,4 +59,9 @@ public class CodeTestTemplateService {
     public List<CodeTestCollection> getTemplates() {
         return CODE_TEST_TEMPLATES;
     }
+
+    public Collection<CodeTestTemplate> getAllTemplates() {
+        return TESTS_BY_ID.values();
+    }
+
 }

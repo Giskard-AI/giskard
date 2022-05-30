@@ -27,7 +27,9 @@
             outlined
             color="primary"
             @click="remove()"
-        ><v-icon>delete</v-icon></v-btn>
+        >
+          <v-icon>delete</v-icon>
+        </v-btn>
       </v-col>
     </v-row>
     <router-view></router-view>
@@ -44,7 +46,7 @@ import DatasetSelector from "@/views/main/utils/DatasetSelector.vue";
 import * as _ from "lodash";
 import Tests from "@/views/main/project/Tests.vue";
 import TestSuiteSettings from "@/views/main/project/modals/TestSuiteSettings.vue";
-import { TestSuiteDTO } from '@/generated-sources';
+import {TestSuiteDTO} from '@/generated-sources';
 
 
 @Component({
@@ -70,7 +72,7 @@ export default class TestSuite extends Vue {
 
 
   private async init() {
-    this.savedTestSuite = (await api.getTestSuite(this.suiteId)).data;
+    this.savedTestSuite = await api.getTestSuite(this.suiteId);
     this.testSuite = _.cloneDeep(this.savedTestSuite);
   }
 
@@ -83,11 +85,12 @@ export default class TestSuite extends Vue {
         false: 'Cancel',
         true: 'Delete'
       }
-    })){
+    })) {
       await api.deleteTestSuite(this.testSuite!.id);
       await this.$router.push({name: 'project-test-suites', params: {projectId: this.projectId!.toString()}})
     }
   }
+
   async openSettings() {
     let modifiedSuite = await this.$dialog.showAndWait(TestSuiteSettings, {width: 800, testSuite: this.testSuite});
     if (modifiedSuite) {

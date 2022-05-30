@@ -164,7 +164,7 @@ public class UserService {
      */
     public Optional<AdminUserDTO> updateUser(AdminUserDTO.AdminUserDTOWithPassword userDTO) {
         return Optional
-            .of(userRepository.findById(userDTO.getId()))
+            .of(userRepository.findOneWithRolesById(userDTO.getId()))
             .filter(Optional::isPresent)
             .map(Optional::get)
             .map(user -> {
@@ -186,8 +186,9 @@ public class UserService {
                     .filter(Optional::isPresent)
                     .map(Optional::get)
                     .forEach(managedAuthorities::add);
-                log.debug("Changed Information for User: {}", user);
-                return user;
+                User savedUser = userRepository.save(user);
+                log.debug("Changed Information for User: {}", savedUser);
+                return savedUser;
             })
             .map(AdminUserDTO::new);
     }

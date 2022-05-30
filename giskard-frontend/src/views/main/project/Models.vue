@@ -99,8 +99,8 @@ export default class Models extends Vue {
   }
 
   private async loadModelPickles() {
-    const response = await api.getProjectModels(readToken(this.$store), this.projectId)
-    this.models = response.data.sort((a, b) => new Date(a.createdDate) < new Date(b.createdDate) ? 1 : -1);
+    const response = await api.getProjectModels(this.projectId)
+    this.models = response.sort((a, b) => new Date(a.createdDate) < new Date(b.createdDate) ? 1 : -1);
   }
 
   public async deleteModelPickle(id: number, fileName: string) {

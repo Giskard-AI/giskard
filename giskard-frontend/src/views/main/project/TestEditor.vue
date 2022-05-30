@@ -206,7 +206,7 @@ export default class TestEditor extends Vue {
   async save() {
     const t = this.testDetails;
     if (t) {
-      this.testDetailsOriginal = (await api.saveTest(t)).data;
+      this.testDetailsOriginal = await api.saveTest(t);
     }
   }
 
@@ -220,7 +220,7 @@ export default class TestEditor extends Vue {
         true: 'Delete'
       }
     })) {
-      let testSuite = (await api.deleteTest(this.testId)).data;
+      let testSuite = await api.deleteTest(this.testId);
       await this.$router.push({
         name: 'suite-details', params: {
           suiteId: testSuite.id.toString(),
@@ -253,7 +253,7 @@ export default class TestEditor extends Vue {
       if (this.isDirty()) {
         await this.save();
       }
-      this.runResult = (await api.runTest(this.testId)).data;
+      this.runResult = await api.runTest(this.testId);
     } finally {
       this.executingTest = false;
     }
@@ -268,7 +268,7 @@ export default class TestEditor extends Vue {
   codeSnippets: CodeTestCollection[] = [];
 
   private async init() {
-    this.testDetails = (await api.getTestDetails(this.testId)).data;
+    this.testDetails = await api.getTestDetails(this.testId);
     if (this.testDetails) {
       if (this.testDetails.type == null) {
         this.testDetails.type = TestType.CODE;
@@ -280,7 +280,7 @@ export default class TestEditor extends Vue {
 
     this.testDetailsOriginal = _.cloneDeep(this.testDetails);
 
-    this.codeSnippets = ((await api.getCodeTestTemplates()).data as CodeTestCollection[]).sort((a, b) => {
+    this.codeSnippets = (await api.getCodeTestTemplates()).sort((a, b) => {
       return a.order - b.order;
     });
   }
