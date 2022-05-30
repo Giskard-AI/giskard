@@ -1,0 +1,126 @@
+syntax = "proto3";
+import "google/protobuf/any.proto";
+
+option java_multiple_files = true;
+option java_package = "ai.giskard.worker";
+option java_outer_classname = "WorkerProto";
+option objc_class_prefix = "WRK";
+
+package worker;
+
+service MLWorker {
+  rpc runTest (RunTestRequest) returns (TestResultMessage) {}
+  rpc runModel(RunModelRequest) returns (RunModelResponse) {}
+  rpc runModelForDataFrame(RunModelForDataFrameRequest) returns (RunModelForDataFrameResponse) {}
+  rpc explain(ExplainRequest) returns (ExplainResponse) {}
+  rpc explainText(ExplainTextRequest) returns (ExplainTextResponse) {}
+}
+
+message ExplainRequest{
+  bytes serialized_model = 1;
+  bytes serialized_data = 2;
+  map<string, string> features = 3;
+}
+
+message ExplainTextRequest{
+  bytes serialized_model = 1;
+  string feature_name = 2;
+  map<string, string> features = 3;
+  uint32 n_samples = 4;
+}
+
+message ExplainResponse{
+  message Explanation{
+    map<string, float> per_feature = 1;
+  }
+  map<string, Explanation> explanations = 1;
+}
+
+
+message ExplainTextResponse{
+  map<string, string> explanations = 1;
+}
+
+message RunModelForDataFrameResponse{
+  DataFrame all_predictions = 1;
+  repeated string prediction = 2;
+  repeated float probabilities = 3;
+  repeated uint32 raw_prediction = 4;
+}
+message DataRow{
+  map<string, string> features = 1;
+}
+message DataFrame{
+  repeated DataRow rows = 1;
+}
+
+message RunModelForDataFrameRequest{
+  bytes serialized_model = 1;
+  DataFrame dataframe = 2;
+}
+message RunModelRequest{
+  bytes serialized_model = 1;
+  bytes serialized_data = 2;
+  string target = 3;
+}
+
+message RunModelResponse{
+  string results_csv = 1;
+  string calculated_csv = 2;
+}
+
+message RunTestRequest {
+  string code = 1;
+  bytes serialized_model = 2;
+  bytes serialized_test_df = 3;
+  bytes serialized_train_df = 4;
+}
+
+message RunTestResponse {
+  string name = 1;
+}
+
+message Partial_unexpected_counts {
+  repeated uint32 value = 1;
+  uint32 count = 2;
+}
+
+message NamedSingleTestResult{
+  string name = 1;
+  SingleTestResult result = 2;
+
+}
+
+
+enum TestMessageType{
+  ERROR = 0;
+  INFO = 1;
+}
+message TestMessage{
+  TestMessageType type = 1;
+  string text = 2;
+}
+
+message SingleTestResult{
+  bool passed = 13;
+  repeated TestMessage messages = 16;
+  map<string, string> props = 14;
+  float metric = 15;
+  uint32 element_count = 1;
+  uint32 missing_count = 2;
+  double missing_percent = 3;
+  uint32 unexpected_count = 4;
+  double unexpected_percent = 5;
+  double unexpected_percent_total = 6;
+  double unexpected_percent_nonmissing = 7;
+  //    repeated google.protobuf.Any partial_unexpected_list = 8;
+  repeated uint32 partial_unexpected_index_list = 9;
+  repeated Partial_unexpected_counts partial_unexpected_counts = 10;
+  //    repeated google.protobuf.Any unexpected_list = 11;
+  repeated uint32 unexpected_index_list = 12;
+}
+
+message TestResultMessage {
+  repeated NamedSingleTestResult results = 1;
+}
+

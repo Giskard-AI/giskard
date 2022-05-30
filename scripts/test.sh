@@ -5,7 +5,6 @@ set -e
 
 DOMAIN=backend \
 SMTP_HOST="" \
-TRAEFIK_PUBLIC_NETWORK_IS_EXTERNAL=false \
 INSTALL_DEV=true \
 GISKARD_PLAN=enterprise \
 docker-compose -f docker-compose.yml -f docker-compose.dev.yml config \

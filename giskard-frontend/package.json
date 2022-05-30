@@ -1,0 +1,112 @@
+{
+  "name": "frontend",
+  "version": "0.2.0",
+  "private": true,
+  "scripts": {
+    "serve": "vue-cli-service serve",
+    "build": "NODE_OPTIONS=--max_old_space_size=4096 vue-cli-service build",
+    "test:unit": "vue-cli-service test:unit",
+    "lint": "vue-cli-service lint"
+  },
+  "dependencies": {
+    "@babel/polyfill": "^7.2.5",
+    "@fortawesome/fontawesome-svg-core": "^6.1.1",
+    "@fortawesome/free-regular-svg-icons": "^6.1.1",
+    "@fortawesome/free-solid-svg-icons": "^6.1.1",
+    "@fortawesome/vue-fontawesome": "^2.0.6",
+    "@sentry/types": "^6.13.3",
+    "@types/mousetrap": "^1.6.9",
+    "@types/numeral": "^2.0.2",
+    "axios": "^0.24.0",
+    "core-js": "^3.19.0",
+    "date-fns": "^2.28.0",
+    "echarts": "^5.1.1",
+    "lodash": "^4.17.21",
+    "mousetrap": "^1.6.5",
+    "numeral": "^2.0.6",
+    "posthog-js": "^1.11.3",
+    "register-service-worker": "^1.0.0",
+    "rrweb-snapshot": "^1.1.9",
+    "typesafe-vuex": "^3.1.1",
+    "vee-validate": "~3.4.13",
+    "vue": "^2.6.14",
+    "vue-class-component": "^6.0.0",
+    "vue-echarts": "^6.0.0",
+    "vue-moment": "^4.1.0",
+    "vue-monaco": "^1.2.2",
+    "vue-property-decorator": "^7.3.0",
+    "vue-router": "^3.5.3",
+    "vue-toastification": "^1.7.14",
+    "vuetify": "^2.5.10",
+    "vuetify-dialog": "^2.0.17",
+    "vuex": "^3.6.2"
+  },
+  "devDependencies": {
+    "@types/jest": "^23.3.13",
+    "@types/lodash": "^4.14.180",
+    "@types/node": "^16.11.11",
+    "@types/vue-moment": "^4.0.3",
+    "@typescript-eslint/eslint-plugin": "^4.33.0",
+    "@typescript-eslint/parser": "^4.33.0",
+    "@vue/cli-plugin-babel": "^4.1.1",
+    "@vue/cli-plugin-pwa": "^4.1.1",
+    "@vue/cli-plugin-typescript": "^4.1.1",
+    "@vue/cli-plugin-unit-jest": "^4.5.15",
+    "@vue/cli-service": "^4.5.15",
+    "@vue/composition-api": "^1.2.4",
+    "@vue/eslint-config-typescript": "^7.0.0",
+    "@vue/test-utils": "^1.2.2",
+    "babel-core": "7.0.0-bridge.0",
+    "babel-jest": "^27.3.1",
+    "eslint": "^8.5.0",
+    "eslint-plugin-vue": "^7.5.0",
+    "jest": "^27.4.3",
+    "monaco-editor-webpack-plugin": "~1.9.0",
+    "sass": "~1.32.12",
+    "sass-loader": "^10.2.0",
+    "ts-jest": "^26.5.0",
+    "typescript": "^3.2.4",
+    "vue-cli-plugin-vuetify": "^2.4.3",
+    "vue-template-compiler": "^2.6.14",
+    "vuetify-loader": "^1.7.0"
+  },
+  "postcss": {
+    "plugins": {
+      "autoprefixer": {}
+    }
+  },
+  "browserslist": [
+    "> 1%",
+    "last 2 versions",
+    "not ie <= 10"
+  ],
+  "jest": {
+    "moduleFileExtensions": [
+      "js",
+      "jsx",
+      "json",
+      "vue",
+      "ts",
+      "tsx"
+    ],
+    "transform": {
+      "^.+\\.vue$": "vue-jest",
+      ".+\\.(css|styl|less|sass|scss|svg|png|jpg|ttf|woff|woff2)$": "jest-transform-stub",
+      "^.+\\.tsx?$": "ts-jest",
+      "^.+\\.js?$": "babel-jest"
+    },
+    "transformIgnorePatterns": [
+      "<rootDir>/node_modules/(?!vuetify)"
+    ],
+    "moduleNameMapper": {
+      "^@/(.*)$": "<rootDir>/src/$1"
+    },
+    "snapshotSerializers": [
+      "jest-serializer-vue"
+    ],
+    "testMatch": [
+      "**/tests/unit/**/*.spec.(js|jsx|ts|tsx)|**/__tests__/*.(js|jsx|ts|tsx)"
+    ],
+    "testURL": "http://localhost/"
+  }
+}
