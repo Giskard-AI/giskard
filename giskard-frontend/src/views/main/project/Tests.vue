@@ -94,7 +94,7 @@ export default class Tests extends Vue {
     this.isTestSuiteRunning = true;
     try {
 
-      let res = (await api.executeTestSuite(this.suiteId)).data;
+      let res = await api.executeTestSuite(this.suiteId);
       res.forEach((testResult: TestExecutionResultDTO) => {
         Tests.applyTestExecutionResults(this.tests[testResult.testId], testResult);
       });
@@ -118,7 +118,7 @@ export default class Tests extends Vue {
   }
 
   private async init() {
-    let testsList = (await api.getTests(this.suiteId)).data;
+    let testsList = await api.getTests(this.suiteId);
     this.tests = Object.assign({}, ...testsList.map((x) => ({ [x.id]: x })));
 
   }

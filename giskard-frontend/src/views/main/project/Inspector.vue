@@ -188,7 +188,7 @@ export default class Inspector extends Vue {
   async loadMetaData() {
     this.loadingData = true;
     try {
-      this.inputMetaData = (await api.getFeaturesMetadata(this.dataset.id)).data
+      this.inputMetaData = await api.getFeaturesMetadata(this.dataset.id)
       this.featuresToView = this.inputMetaData.map(e => e.name)
 
       this.errorLoadingMetadata = ""

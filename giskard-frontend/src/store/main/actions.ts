@@ -27,7 +27,7 @@ export const actions = {
     async actionLogIn(context: MainContext, payload: { username: string; password: string }) {
         try {
             const response = await api.logInGetToken(payload.username, payload.password);
-            const token = response.data.id_token;
+            const token = response.id_token;
             if (token) {
                 saveLocalToken(token);
                 commitSetToken(context, token);
@@ -46,10 +46,10 @@ export const actions = {
     },
     async actionGetUserProfile(context: MainContext) {
         try {
-            const response = await api.getMe(context.state.token);
-            if (response.data) {
-                commitSetUserProfile(context, response.data.user);
-                commitSetAppSettings(context, response.data.app);
+            const response = await api.getMe();
+            if (response) {
+                commitSetUserProfile(context, response.user);
+                commitSetAppSettings(context, response.app);
             }
         } catch (error) {
             await dispatchCheckApiError(context, error);
@@ -57,9 +57,9 @@ export const actions = {
     },
     async actionGetCoworkers(context: MainContext) {
         try {
-            const response = await api.getCoworkersMinimal(context.state.token);
-            if (response.data) {
-                commitSetCoworkers(context, response.data);
+            const response = await api.getCoworkersMinimal();
+            if (response) {
+                commitSetCoworkers(context, response);
             }
         } catch (error) {
             await dispatchCheckApiError(context, error);
@@ -69,13 +69,10 @@ export const actions = {
         const loadingNotification = { content: 'saving', showProgress: true };
         try {
             commitAddNotification(context, loadingNotification);
-            const response = await api.updateMe(context.state.token, payload);
-            commitSetUserProfile(context, response.data);
+            commitSetUserProfile(context, await api.updateMe( payload));
             commitRemoveNotification(context, loadingNotification);
             commitAddNotification(context, { content: 'Profile successfully updated', color: 'success' });
         } catch (error) {
-            commitRemoveNotification(context, loadingNotification);
-            commitAddNotification(context, { content: error.response.status + ' ' + error.response.data.detail , color: 'error' });
             await dispatchCheckApiError(context, error);
             throw new Error(error.response.data.detail);
         }
@@ -92,10 +89,10 @@ export const actions = {
             }
             if (token) {
                 try {
-                    const response = await api.getMe(token);
+                    const response = await api.getMe();
                     commitSetLoggedIn(context, true);
-                    commitSetUserProfile(context, response.data.user);
-                    commitSetAppSettings(context, response.data.app);
+                    commitSetUserProfile(context, response.user);
+                    commitSetAppSettings(context, response.app);
                 } catch (error) {
                     await dispatchRemoveLogIn(context);
                 }
@@ -164,12 +161,11 @@ export const actions = {
         const loadingNotification = { content: 'Resetting password', showProgress: true };
         try {
             commitAddNotification(context, loadingNotification);
-            const response = await api.resetPassword(payload.password, payload.token);
+            const response = await api.resetPassword(payload.password);
             commitRemoveNotification(context, loadingNotification);
             commitAddNotification(context, { color: 'success', content: 'Password successfully changed' });
             await dispatchLogOut(context);
         } catch (error) {
-            commitRemoveNotification(context, loadingNotification);
             commitAddNotification(context, { color: 'error', content: error.response.data.detail });
         }
     },
@@ -182,7 +178,6 @@ export const actions = {
             commitAddNotification(context, { content: 'Success! Please proceed to login', color: 'success' });
             await dispatchLogOut(context);
         } catch (error) {
-            commitRemoveNotification(context, loadingNotification);
             throw new Error(error.response.data.detail);
         }
     },
@@ -190,12 +185,11 @@ export const actions = {
         const loadingNotification = { content: 'Loading projects', showProgress: true };
         try {
             commitAddNotification(context, loadingNotification);
-            const response = await api.getProjects(context.state.token);
-            commitSetProjects(context, response.data)
+            const response = await api.getProjects();
+            commitSetProjects(context, response)
+
             commitRemoveNotification(context, loadingNotification);
         } catch (error) {
-            commitRemoveNotification(context, loadingNotification);
-            commitAddNotification(context, { content: error.response.status + ' ' + error.response.data.detail , color: 'error' });
             await dispatchCheckApiError(context, error);
         }
     },
@@ -204,11 +198,9 @@ export const actions = {
         try {
             commitAddNotification(context, loadingNotification);
             const response = await api.getProject(payload.id);
-            commitSetProject(context, response.data);
+            commitSetProject(context, response);
             commitRemoveNotification(context, loadingNotification);
         } catch (error) {
-            commitRemoveNotification(context, loadingNotification);
-            commitAddNotification(context, { content: error.response.status + ' ' + error.response.data.detail , color: 'error' });
             await dispatchCheckApiError(context, error);
         }
     },
@@ -216,12 +208,11 @@ export const actions = {
         const loadingNotification = { content: 'Saving...', showProgress: true };
         try {
             commitAddNotification(context, loadingNotification);
-            await api.createProject(context.state.token, payload);
+            await api.createProject( payload);
             commitRemoveNotification(context, loadingNotification);
             commitAddNotification(context, { content: 'Success' , color: 'success' });
             dispatchGetProjects(context);
         } catch (error) {
-            commitRemoveNotification(context, loadingNotification);
             await dispatchCheckApiError(context, error);
             throw new Error(error.response.data.detail);
         }
@@ -230,12 +221,10 @@ export const actions = {
         const loadingNotification = { content: 'Deleting...', showProgress: true };
         try {
             commitAddNotification(context, loadingNotification);
-            await api.deleteProject(context.state.token, payload.id);
+            await api.deleteProject( payload.id);
             commitRemoveNotification(context, loadingNotification);
             commitAddNotification(context, { content: 'Success' , color: 'success' });
         } catch (error) {
-            commitRemoveNotification(context, loadingNotification);
-            commitAddNotification(context, { content: error.response.status + ' ' + error.response.data.detail , color: 'error' });
             await dispatchCheckApiError(context, error);
         }
     },
@@ -243,13 +232,13 @@ export const actions = {
         const loadingNotification = { content: 'Deleting...', showProgress: true };
         try {
             commitAddNotification(context, loadingNotification);
-            const response = await api.editProject(context.state.token, payload.id, payload.data);
+            const response = await api.editProject( payload.id, payload.data);
             commitRemoveNotification(context, loadingNotification);
             commitAddNotification(context, { content: 'Success' , color: 'success' });
-            commitSetProject(context, response.data);
+            commitSetProject(context, response);
         } catch (error) {
             commitRemoveNotification(context, loadingNotification);
-            commitAddNotification(context, { content: error.response.status + ' ' + error.response.data.detail , color: 'error' });
+
             await dispatchCheckApiError(context, error);
         }
     },
@@ -257,13 +246,11 @@ export const actions = {
         const loadingNotification = { content: 'Sending...', showProgress: true };
         try {
             commitAddNotification(context, loadingNotification);
-            const response = await api.inviteUserToProject(context.state.token, payload.projectId, payload.userId);
+            const response = await api.inviteUserToProject( payload.projectId, payload.userId);
             commitRemoveNotification(context, loadingNotification);
             commitAddNotification(context, { content: 'Done' , color: 'success' });
-            commitSetProject(context, response.data);
+            commitSetProject(context, response);
         } catch (error) {
-            commitRemoveNotification(context, loadingNotification);
-            commitAddNotification(context, { content: error.response.status + ' ' + error.response.data.detail , color: 'error' });
             await dispatchCheckApiError(context, error);
             throw new Error(error.response.data.detail);
         }
@@ -272,13 +259,13 @@ export const actions = {
 		const loadingNotification = { content: 'Sending...', showProgress: true };
         try {
 			commitAddNotification(context, loadingNotification);
-            const response = await api.uninviteUserFromProject(context.state.token, payload.projectId, payload.userId);
-            commitSetProject(context, response.data);
+            const response = await api.uninviteUserFromProject( payload.projectId, payload.userId);
+            commitSetProject(context, response);
 			commitRemoveNotification(context, loadingNotification);
             commitAddNotification(context, { content: 'Done' , color: 'success' });
         } catch (error) {
 			commitRemoveNotification(context, loadingNotification);
-			commitAddNotification(context, { content: error.response.status + ' ' + error.response.data.detail , color: 'error' });
+
             await dispatchCheckApiError(context, error);
             throw new Error(error.response.data.detail);
         }

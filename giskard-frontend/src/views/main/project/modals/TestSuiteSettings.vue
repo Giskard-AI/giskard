@@ -64,18 +64,23 @@ export default class TestSuiteSettings extends Vue {
 
   async save() {
     if (this.testSuite && this.modifiedTestSuite) {
-      this.modifiedTestSuite = (await api.saveTestSuite(this.modifiedTestSuite)).data;
+      let savedTestSuite = await api.saveTestSuite(this.modifiedTestSuite);
+      this.modifiedTestSuite = TestSuiteSettings.testSuiteDTOtoUpdateDTO(savedTestSuite);
       this.$emit('submit', this.modifiedTestSuite)
     }
   }
 
   mounted() {
-    this.modifiedTestSuite = {
-      id: this.testSuite.id,
-      modelId: this.testSuite.model.id,
-      name: this.testSuite.name,
-      testDatasetId: this.testSuite.testDataset?.id,
-      trainDatasetId: this.testSuite.trainDataset?.id
+    this.modifiedTestSuite = TestSuiteSettings.testSuiteDTOtoUpdateDTO(this.testSuite);
+  }
+
+  private static testSuiteDTOtoUpdateDTO(testSuiteDTO: TestSuiteDTO): UpdateTestSuiteDTO {
+    return {
+      id: testSuiteDTO.id,
+      modelId: testSuiteDTO.model.id,
+      name: testSuiteDTO.name,
+      testDatasetId: testSuiteDTO.testDataset?.id,
+      trainDatasetId: testSuiteDTO.trainDataset?.id
     };
   }
 }

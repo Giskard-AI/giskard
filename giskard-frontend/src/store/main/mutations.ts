@@ -1,9 +1,10 @@
-import { IUserProfileMinimal } from '@/interfaces';
-import { MainState, AppNotification } from './state';
-import { getStoreAccessors } from 'typesafe-vuex';
-import { State } from '../state';
-import { AdminUserDTO, AppConfigDTO, ProjectDTO } from '@/generated-sources';
+import {IUserProfileMinimal} from '@/interfaces';
+import {MainState, AppNotification} from './state';
+import {getStoreAccessors} from 'typesafe-vuex';
+import {State} from '../state';
+import {AdminUserDTO, AppConfigDTO, ProjectDTO} from '@/generated-sources';
 import AppInfoDTO = AppConfigDTO.AppInfoDTO;
+import Vue from "vue";
 
 
 export const mutations = {
@@ -34,10 +35,13 @@ export const mutations = {
         state.projects = projects;
     },
     addNotification(state: MainState, payload: AppNotification) {
-        state.notifications.push(payload);
+        Vue.$toast(payload.content, {
+            closeButton: false,
+            icon: payload.showProgress ? 'notification-spinner fas fa-spinner fa-spin' : true
+        });
     },
     removeNotification(state: MainState, payload: AppNotification) {
-        state.notifications = state.notifications.filter((notification) => notification !== payload);
+        Vue.$toast.clear();
     },
 };
 
