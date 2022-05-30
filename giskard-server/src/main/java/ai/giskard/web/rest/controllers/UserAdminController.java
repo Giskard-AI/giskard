@@ -10,6 +10,13 @@ import ai.giskard.web.dto.user.AdminUserDTO;
 import ai.giskard.web.rest.errors.BadRequestAlertException;
 import ai.giskard.web.rest.errors.EmailAlreadyUsedException;
 import ai.giskard.web.rest.errors.LoginAlreadyUsedException;
+
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.*;
+import javax.validation.Valid;
+import javax.validation.constraints.Pattern;
+
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,13 +30,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+import tech.jhipster.web.util.HeaderUtil;
 import tech.jhipster.web.util.PaginationUtil;
 import tech.jhipster.web.util.ResponseUtil;
-
-import javax.validation.Valid;
-import javax.validation.constraints.Pattern;
-import java.util.List;
-import java.util.Optional;
 
 import static ai.giskard.security.AuthoritiesConstants.ADMIN;
 
@@ -99,7 +102,7 @@ public class UserAdminController {
      */
     @PostMapping("")
     @PreAuthorize("hasAuthority(\"" + ADMIN + "\")")
-    public AdminUserDTO createUser(@Valid @RequestBody AdminUserDTO.AdminUserDTOWithPassword userDTO) {
+    public ResponseEntity<AdminUserDTO> createUser(@Valid @RequestBody AdminUserDTO.AdminUserDTOWithPassword userDTO) {
         log.debug("REST request to save User : {}", userDTO);
 
         if (userDTO.getId() != null) {
@@ -112,7 +115,7 @@ public class UserAdminController {
         } else {
             User newUser = userService.createUser(userDTO);
             mailService.sendCreationEmail(newUser);
-            return giskardMapper.userToAdminUserDTO(newUser);
+            return new ResponseEntity<>(giskardMapper.userToAdminUserDTO(newUser), HttpStatus.CREATED);
         }
     }
 
@@ -132,8 +135,7 @@ public class UserAdminController {
             throw new LoginAlreadyUsedException();
         }
 
-        Optional<AdminUserDTO> maybeResponse = userService.updateUser(userDTO);
-        return ResponseUtil.wrapOrNotFound(maybeResponse);
+        return ResponseUtil.wrapOrNotFound(userService.updateUser(userDTO));
     }
 
     /**
@@ -179,8 +181,9 @@ public class UserAdminController {
      */
     @DeleteMapping("/{login}")
     @PreAuthorize("hasAuthority(\"" + ADMIN + "\")")
-    public void deleteUser(@PathVariable @Pattern(regexp = Constants.LOGIN_REGEX) String login) {
+    public ResponseEntity<Void> deleteUser(@PathVariable @Pattern(regexp = Constants.LOGIN_REGEX) String login) {
         log.debug("REST request to delete User: {}", login);
         userService.deleteUser(login);
+        return ResponseEntity.noContent().build();
     }
 }
