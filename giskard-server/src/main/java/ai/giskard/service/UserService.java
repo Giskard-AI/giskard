@@ -164,7 +164,7 @@ public class UserService {
      */
     public Optional<AdminUserDTO> updateUser(AdminUserDTO.AdminUserDTOWithPassword userDTO) {
         return Optional
-            .of(userRepository.findOneWithRolesByLogin(userDTO.getLogin()))
+            .of(userRepository.findOneWithRolesById(userDTO.getId()))
             .filter(Optional::isPresent)
             .map(Optional::get)
             .map(user -> {
