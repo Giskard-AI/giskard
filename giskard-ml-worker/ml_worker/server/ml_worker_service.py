@@ -13,6 +13,7 @@ from zstandard import ZstdDecompressor
 from generated.ml_worker_pb2 import RunTestRequest, TestResultMessage, RunModelResponse, RunModelRequest, DataFrame, \
     DataRow, RunModelForDataFrameResponse, RunModelForDataFrameRequest, ExplainRequest, ExplainTextRequest
 from generated.ml_worker_pb2_grpc import MLWorkerServicer
+from ml_worker.core.giskard_dataset import GiskardDataset
 from ml_worker.core.ml import run_predict
 from ml_worker.core.model_explanation import explain, text_explanation_prediction_wrapper, parse_text_explainer_response
 from ml_worker.exceptions.IllegalArgumentError import IllegalArgumentError
@@ -34,10 +35,10 @@ class MLWorkerServiceImpl(MLWorkerServicer):
             'model': model_inspector,
             'tests': tests
         }
-        if request.serialized_train_df:
-            _globals['train_df'] = pd.read_csv(BytesIO(decompress(request.serialized_train_df)))
-        if request.serialized_test_df:
-            _globals['test_df'] = pd.read_csv(BytesIO(decompress(request.serialized_test_df)))
+        if request.train_df.serialized_df:
+            _globals['train_df'] = GiskardDataset.from_serialized_with_meta(request.train_df)
+        if request.test_df.serialized_df:
+            _globals['test_df'] = GiskardDataset.from_serialized_with_meta(request.test_df)
         try:
             exec(request.code, _globals)
         except NameError as e:

@@ -125,12 +125,21 @@ public class ExceptionTranslator implements ProblemHandling, SecurityAdviceTrait
         if (ex.getStatus().getCause() instanceof MLWorkerRuntimeException mlWorkerException) {
             details = mlWorkerException.getDetails();
         }
-        MLWorkerError problem = new MLWorkerError(DEFAULT_TYPE, ex.getStatus(), details);
+        MLWorkerError problem = new MLWorkerError(DEFAULT_TYPE, ex.getStatus().getCode(), ex.getStatus().getDescription(), details);
 
         return create(
             problem,
             request
         );
+    }
+
+    @ExceptionHandler
+    public ResponseEntity<Problem> handleGRPCError(
+        MLWorkerRuntimeException ex,
+        NativeWebRequest request
+    ) {
+        MLWorkerError problem = new MLWorkerError(DEFAULT_TYPE, ex.getStatus().getCode(), ex.getMessage(), ex.getDetails());
+        return create(problem, request);
     }
 
     @ExceptionHandler

@@ -38,7 +38,7 @@ items:
               TRUE if passed_ratio > threshold
       """
       tests.heuristic.test_right_label(
-        slice_df=test_df[:len(test_df)//2],
+        slice_df=test_df.slice(lambda df: df['{{FEATURE NAME}}'].notnull()),
         model=model,
         classification_label=model.classification_labels[0],
         threshold=0.5
@@ -84,7 +84,7 @@ items:
               TRUE if metric > threshold
       """
       tests.heuristic.test_output_in_range(
-        slice_df=test_df[:len(test_df)//2],
+        slice_df=test_df.slice(lambda df: df['{{FEATURE NAME}}'].notnull()),
         model=model,
         classification_label=model.classification_labels[0],
         min_range=0.3,
@@ -128,7 +128,7 @@ items:
               TRUE if metric > threshold
       """
       tests.heuristic.test_output_in_range(
-        slice_df=test_df[:len(test_df)//2],
+        slice_df=test_df.slice(lambda df: df['{{FEATURE NAME}}'].notnull()),
         model=model,
         min_range=100,
         max_range=1000,

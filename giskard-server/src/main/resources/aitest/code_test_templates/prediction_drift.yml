@@ -38,8 +38,8 @@ items:
                 psi result message
       """
       tests.drift.test_drift_prediction_psi(
-          slice_train=train_df[:len(train_df) // 2],
-          slice_test=test_df[:len(test_df) // 2],
+          slice_train=train_df.slice(lambda df: df['{{FEATURE NAME}}'].notnull()),
+          slice_test=test_df.slice(lambda df: df['{{FEATURE NAME}}'].notnull()),
           model=model,
           threshold=0.1
       )
@@ -79,8 +79,8 @@ items:
                 chi_square result message
       """
       tests.drift.test_drift_prediction_chi_square(
-          slice_train=train_df[:len(train_df) // 2],
-          slice_test=test_df[:len(test_df) // 2],
+          slice_train=train_df.slice(lambda df: df['{{FEATURE NAME}}'].notnull()),
+          slice_test=test_df.slice(lambda df: df['{{FEATURE NAME}}'].notnull()),
           model=model,
           threshold=0.1
       )
@@ -122,8 +122,8 @@ items:
                 Kolmogorov-Smirnov result message
       """
       tests.drift.test_drift_prediction_ks(
-          slice_train=train_df[:len(train_df) // 2],
-          slice_test=test_df[:len(test_df) // 2],
+          slice_train=train_df.slice(lambda df: df['{{FEATURE NAME}}'].notnull()),
+          slice_test=test_df.slice(lambda df: df['{{FEATURE NAME}}'].notnull()),
           model=model,
           threshold=0.1
       )
@@ -168,8 +168,8 @@ items:
                 Kolmogorov-Smirnov result message
       """
       tests.drift.test_drift_prediction_ks(
-          slice_train=train_df[:len(train_df) // 2],
-          slice_test=test_df[:len(test_df) // 2],
+          slice_train=train_df.slice(lambda df: df['{{FEATURE NAME}}'].notnull()),
+          slice_test=test_df.slice(lambda df: df['{{FEATURE NAME}}'].notnull()),
           model=model,
           classification_label= model.classification_labels[0],
           threshold=0.1
@@ -208,8 +208,8 @@ items:
                 Earth Mover's Distance value
       """
       tests.drift.test_drift_prediction_earth_movers_distance(
-          slice_train=train_df[:len(train_df) // 2],
-          slice_test=test_df[:len(test_df) // 2],
+          slice_train=train_df.slice(lambda df: df['{{FEATURE NAME}}'].notnull()),
+          slice_test=test_df.slice(lambda df: df['{{FEATURE NAME}}'].notnull()),
           model=model,
           threshold=0.1
       )
@@ -250,8 +250,8 @@ items:
                 Earth Mover's Distance value
       """
       tests.drift.test_drift_prediction_earth_movers_distance(
-          slice_train=train_df[:len(train_df) // 2],
-          slice_test=test_df[:len(test_df) // 2],
+          slice_train=train_df.slice(lambda df: df['{{FEATURE NAME}}'].notnull()),
+          slice_test=test_df.slice(lambda df: df['{{FEATURE NAME}}'].notnull()),
           model=model,
           classification_label= model.classification_labels[0],
           threshold=0.1

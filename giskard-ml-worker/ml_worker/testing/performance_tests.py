@@ -1,28 +1,27 @@
+import numpy as np
 from ai_inspector import ModelInspector
 from sklearn.metrics import accuracy_score, recall_score
 from sklearn.metrics import roc_auc_score, f1_score, precision_score, mean_squared_error, \
     mean_absolute_error, r2_score
-import numpy as np
 
 from generated.ml_worker_pb2 import SingleTestResult
 from ml_worker.core.ml import run_predict
+from ml_worker.server.ml_worker_service import GiskardDataset
 from ml_worker.testing.abstract_test_collection import AbstractTestCollection
 
 
 class PerformanceTests(AbstractTestCollection):
-    def test_auc(self, slice_df, model: ModelInspector, target, threshold=1):
+    def test_auc(self, slice_df: GiskardDataset, model: ModelInspector, threshold=1):
         """
         Test if the model AUC performance is higher than a threshold for a given slice
 
         Example : The test is passed when the AUC for females is higher than 0.7
 
         Args:
-            slice_df(pandas.core.frame.DataFrame):
+            slice_df(GiskardDataset):
                 slice of the test dataset 
             model(ModelInspector):
                 uploaded model
-            target(str):
-                target column name
             threshold(int):
                 threshold value of AUC metrics
 
@@ -35,6 +34,7 @@ class PerformanceTests(AbstractTestCollection):
                 TRUE if AUC metrics > threshold
 
         """
+
         def _calculate_auc(is_binary_classification, prediction, true_value):
             if is_binary_classification:
                 return roc_auc_score(true_value, prediction)
@@ -43,8 +43,8 @@ class PerformanceTests(AbstractTestCollection):
 
         metric = _calculate_auc(
             len(model.classification_labels) == 2,
-            run_predict(slice_df, model).raw_prediction,
-            slice_df[target]
+            run_predict(slice_df.df, model).raw_prediction,
+            slice_df.df[slice_df.target]
         )
 
         return self.save_results(
@@ -54,48 +54,48 @@ class PerformanceTests(AbstractTestCollection):
                 passed=metric >= threshold
             ))
 
-    def _test_classification_score(self, score_fn, slice_df, model: ModelInspector, target, threshold=1):
+    def _test_classification_score(self, score_fn, gsk_dataset: GiskardDataset, model: ModelInspector, threshold=1):
         is_binary_classification = len(model.classification_labels) == 2
-        prediction = run_predict(slice_df, model).raw_prediction
+        dataframe = gsk_dataset.df
+        prediction = run_predict(dataframe, model).raw_prediction
         labels_mapping = {model.classification_labels[i]: i for i in range(len(model.classification_labels))}
         if is_binary_classification:
-            metric = score_fn(slice_df[target].map(labels_mapping), prediction)
+            metric = score_fn(dataframe[gsk_dataset.target].map(labels_mapping), prediction)
         else:
-            metric = score_fn(slice_df[target].map(labels_mapping), prediction, average='macro', multi_class='ovr')
+            metric = score_fn(dataframe[gsk_dataset.target].map(labels_mapping), prediction, average='macro',
+                              multi_class='ovr')
 
         return self.save_results(
             SingleTestResult(
-                element_count=len(slice_df),
+                element_count=len(gsk_dataset),
                 metric=metric,
                 passed=metric >= threshold
             ))
 
-    def _test_regression_score(self, score_fn, df, model: ModelInspector, target, threshold=1, negative=False,
+    def _test_regression_score(self, score_fn, giskard_ds, model: ModelInspector, threshold=1, negative=False,
                                r2=False):
         metric = (-1 if negative else 1) * score_fn(
-            run_predict(df, model).raw_prediction,
-            df[target]
+            run_predict(giskard_ds, model).raw_prediction,
+            giskard_ds.df[giskard_ds.target]
         )
         return self.save_results(
             SingleTestResult(
-                element_count=len(df),
+                element_count=len(giskard_ds),
                 metric=metric,
                 passed=metric >= threshold if r2 else metric <= threshold
             ))
 
-    def test_f1(self, slice_df, model: ModelInspector, target, threshold=1):
+    def test_f1(self, slice_df: GiskardDataset, model: ModelInspector, threshold=1):
         """
         Test if the model F1 score is higher than a defined threshold for a given slice
 
         Example: The test is passed when F1 score for females is higher than 0.7
 
         Args:
-            slice_df(pandas.core.frame.DataFrame):
+            slice_df(GiskardDataset):
                 slice of the test dataset 
             model(ModelInspector):
                 uploaded model
-            target(str):
-                target column name
             threshold(int):
                 threshold value for F1 Score
 
@@ -108,22 +108,19 @@ class PerformanceTests(AbstractTestCollection):
                 TRUE if F1 Score metrics > threshold
 
         """
-        return self._test_classification_score(f1_score,
-                                               slice_df, model, target, threshold)
+        return self._test_classification_score(f1_score, slice_df, model, threshold)
 
-    def test_accuracy(self, slice_df, model: ModelInspector, target, threshold=1):
+    def test_accuracy(self, slice_df: GiskardDataset, model: ModelInspector, threshold=1):
         """
         Test if the model Accuracy is higher than a threshold for a given slice
 
         Example: The test is passed when the Accuracy for females is higher than 0.7
 
         Args:
-            slice_df(pandas.core.frame.DataFrame):
+            slice_df(GiskardDataset):
                 slice of the test dataset 
             model(ModelInspector):
                 uploaded model
-            target(str):
-                target column name
             threshold(int):
                 threshold value for Accuracy
 
@@ -136,22 +133,19 @@ class PerformanceTests(AbstractTestCollection):
                 TRUE if Accuracy metrics > threshold
 
         """
-        return self._test_classification_score(accuracy_score,
-                                               slice_df, model, target, threshold)
+        return self._test_classification_score(accuracy_score, slice_df, model, threshold)
 
-    def test_precision(self, slice_df, model: ModelInspector, target, threshold=1):
+    def test_precision(self, slice_df, model: ModelInspector, threshold=1):
         """
         Test if the model Precision is higher than a threshold for a given slice
 
         Example: The test is passed when the Precision for females is higher than 0.7
 
         Args:
-            slice_df(pandas.core.frame.DataFrame):
+            slice_df(GiskardDataset):
                 slice of the test dataset 
             model(ModelInspector):
                 uploaded model
-            target(str):
-                target column name
             threshold(int):
                 threshold value for Precision
 
@@ -165,21 +159,19 @@ class PerformanceTests(AbstractTestCollection):
 
         """
         return self._test_classification_score(precision_score,
-                                               slice_df, model, target, threshold)
+                                               slice_df, model, threshold)
 
-    def test_recall(self, slice_df, model: ModelInspector, target, threshold=1):
+    def test_recall(self, slice_df, model: ModelInspector, threshold=1):
         """
         Test if the model Recall is higher than a threshold for a given slice
 
         Example: The test is passed when the Recall for females is higher than 0.7
 
         Args:
-            slice_df(pandas.core.frame.DataFrame):
+            slice_df(GiskardDataset):
                 slice of the test dataset 
             model(ModelInspector):
                 uploaded model
-            target(str):
-                target column name
             threshold(int):
                 threshold value for Recall
 
@@ -193,24 +185,23 @@ class PerformanceTests(AbstractTestCollection):
 
         """
         return self._test_classification_score(recall_score,
-                                               slice_df, model, target, threshold)
+                                               slice_df, model, threshold)
 
-    def _get_rmse(self, y_actual, y_predicted):
+    @staticmethod
+    def _get_rmse(y_actual, y_predicted):
         return np.sqrt(mean_squared_error(y_actual, y_predicted))
 
-    def test_rmse(self, df, model: ModelInspector, target, threshold=1):
+    def test_rmse(self, df, model: ModelInspector, threshold=1):
         """
         Test if the model RMSE is lower than a threshold
 
         Example: The test is passed when the RMSE is lower than 0.7
 
         Args:
-            df(pandas.core.frame.DataFrame):
+            df(GiskardDataset):
                 test dataset 
             model(ModelInspector):
                 uploaded model
-            target(str):
-                target column name
             threshold(int):
                 threshold value for RMSE
 
@@ -223,21 +214,19 @@ class PerformanceTests(AbstractTestCollection):
                 TRUE if RMSE metric < threshold
 
         """
-        return self._test_regression_score(self._get_rmse, df, model, target, threshold, negative=False)
+        return self._test_regression_score(self._get_rmse, df, model, threshold, negative=False)
 
-    def test_mae(self, df, model: ModelInspector, target, threshold=1):
+    def test_mae(self, df, model: ModelInspector, threshold=1):
         """
         Test if the model Mean Absolute Error is lower than a threshold
 
         Example: The test is passed when the MAE is lower than 0.7
 
         Args:
-            df(pandas.core.frame.DataFrame):
+            df(GiskardDataset):
                 test dataset 
             model(ModelInspector):
                 uploaded model
-            target(str):
-                target column name
             threshold(int):
                 threshold value for MAE
 
@@ -250,22 +239,20 @@ class PerformanceTests(AbstractTestCollection):
                 TRUE if MAE metric < threshold
 
         """
-        return self._test_regression_score(mean_absolute_error, df, model, target, threshold,
+        return self._test_regression_score(mean_absolute_error, df, model, threshold,
                                            negative=False)
 
-    def test_r2(self, df, model: ModelInspector, target, threshold=1):
+    def test_r2(self, df, model: ModelInspector, threshold=1):
         """
         Test if the model R-Squared is higher than a threshold
 
         Example: The test is passed when the R-Squared is higher than 0.7
 
         Args:
-            df(pandas.core.frame.DataFrame):
+            df(GiskardDataset):
                 test dataset 
             model(ModelInspector):
                 uploaded model
-            target(str):
-                target column name
             threshold(int):
                 threshold value for R-Squared
 
@@ -278,25 +265,25 @@ class PerformanceTests(AbstractTestCollection):
                 TRUE if R-Squared metric > threshold
 
         """
-        return self._test_regression_score(r2_score, df, model, target, threshold, r2=True)
+        return self._test_regression_score(r2_score, df, model, threshold, r2=True)
 
-    def _test_diff_prediction(self, test_fn, model, df, target, threshold=0.1, filter_1=None, filter_2=None):
+    def _test_diff_prediction(self, test_fn, model, giskard_ds, threshold=0.1, filter_1=None, filter_2=None):
         self.do_save_results = False
-        df_1 = df.loc[filter_1] if filter_1 is not None else df
-        df_2 = df.loc[filter_2] if filter_2 is not None else df
-        metric_1 = test_fn(df_1, model, target).metric
-        metric_2 = test_fn(df_2, model, target).metric
+        slice_1 = giskard_ds.slice(filter_1) if filter_1 is not None else giskard_ds
+        slice_2 = giskard_ds.slice(filter_2) if filter_2 is not None else giskard_ds
+        metric_1 = test_fn(slice_1, model).metric
+        metric_2 = test_fn(slice_2, model).metric
         self.do_save_results = True
         change_pct = abs(metric_1 - metric_2) / metric_1
 
         return self.save_results(
             SingleTestResult(
-                element_count=len(df),
+                element_count=len(giskard_ds),
                 metric=change_pct,
                 passed=change_pct < threshold
             ))
 
-    def test_diff_accuracy(self, df, model, target, threshold=0.1, filter_1=None, filter_2=None):
+    def test_diff_accuracy(self, df, model, threshold=0.1, filter_1=None, filter_2=None):
         """
 
         Test if the absolute percentage change of model Accuracy between two samples is lower than a threshold
@@ -307,12 +294,10 @@ class PerformanceTests(AbstractTestCollection):
         and the test will fail
 
         Args:
-            df(pandas.core.frame.DataFrame):
+            df(GiskardDataset):
                 test dataset 
             model(ModelInspector):
                 uploaded model
-            target(str):
-                target column name
             threshold(int):
                 threshold value for Accuracy Score difference
             filter_1(int64Index):
@@ -329,9 +314,9 @@ class PerformanceTests(AbstractTestCollection):
                 TRUE if Accuracy difference < threshold
 
         """
-        return self._test_diff_prediction(self.test_accuracy, model, df, target, threshold, filter_1, filter_2)
+        return self._test_diff_prediction(self.test_accuracy, model, df, threshold, filter_1, filter_2)
 
-    def test_diff_f1(self, df, model, target, threshold=0.1, filter_1=None, filter_2=None):
+    def test_diff_f1(self, df, model, threshold=0.1, filter_1=None, filter_2=None):
         """
         Test if the absolute percentage change in model F1 Score between two samples is lower than a threshold
 
@@ -341,12 +326,10 @@ class PerformanceTests(AbstractTestCollection):
         and the test will fail
 
         Args:
-            df(pandas.core.frame.DataFrame):
+            df(GiskardDataset):
                 test dataset 
             model(ModelInspector):
                 uploaded model
-            target(str):
-                target column name
             threshold(int):
                 threshold value for F1 Score difference
             filter_1(int64Index):
@@ -363,9 +346,9 @@ class PerformanceTests(AbstractTestCollection):
                 TRUE if F1 Score difference < threshold
 
         """
-        return self._test_diff_prediction(self.test_f1, model, df, target, threshold, filter_1, filter_2)
+        return self._test_diff_prediction(self.test_f1, model, df, threshold, filter_1, filter_2)
 
-    def test_diff_precision(self, df, model, target, threshold=0.1, filter_1=None, filter_2=None):
+    def test_diff_precision(self, df, model, threshold=0.1, filter_1=None, filter_2=None):
         """
         Test if the absolute percentage change of model Precision between two samples is lower than a threshold
 
@@ -375,12 +358,10 @@ class PerformanceTests(AbstractTestCollection):
         and the test will fail
 
         Args:
-            df(pandas.core.frame.DataFrame):
+            df(GiskardDataset):
                 test dataset 
             model(ModelInspector):
                 uploaded model
-            target(str):
-                target column name
             threshold(int):
                 threshold value for Precision difference
             filter_1(int64Index):
@@ -396,9 +377,9 @@ class PerformanceTests(AbstractTestCollection):
             passed:
                 TRUE if Precision difference < threshold
         """
-        return self._test_diff_prediction(self.test_precision, model, df, target, threshold, filter_1, filter_2)
+        return self._test_diff_prediction(self.test_precision, model, df, threshold, filter_1, filter_2)
 
-    def test_diff_recall(self, df, model, target, threshold=0.1, filter_1=None, filter_2=None):
+    def test_diff_recall(self, df, model, threshold=0.1, filter_1=None, filter_2=None):
         """
         Test if the absolute percentage change of model Recall between two samples is lower than a threshold
 
@@ -408,12 +389,10 @@ class PerformanceTests(AbstractTestCollection):
         and the test will fail
 
         Args:
-            df(pandas.core.frame.DataFrame):
+            df(GiskardDataset):
                 test dataset 
             model(ModelInspector):
                 uploaded model
-            target(str):
-                target column name
             threshold(int):
                 threshold value for Recall difference
             filter_1(int64Index):
@@ -429,12 +408,12 @@ class PerformanceTests(AbstractTestCollection):
             passed:
                 TRUE if Recall difference < threshold
         """
-        return self._test_diff_prediction(self.test_recall, model, df, target, threshold, filter_1, filter_2)
+        return self._test_diff_prediction(self.test_recall, model, df, threshold, filter_1, filter_2)
 
-    def _test_diff_traintest(self, test_fn, model, train_df, test_df, target, threshold=0.1):
+    def _test_diff_traintest(self, test_fn, model, train_df, test_df, threshold=0.1):
         self.do_save_results = False
-        metric_1 = test_fn(train_df, model, target).metric
-        metric_2 = test_fn(test_df, model, target).metric
+        metric_1 = test_fn(train_df, model).metric
+        metric_2 = test_fn(test_df, model).metric
         self.do_save_results = True
         change_pct = abs(metric_1 - metric_2) / metric_1
 
@@ -444,7 +423,7 @@ class PerformanceTests(AbstractTestCollection):
                 passed=change_pct < threshold
             ))
 
-    def test_diff_traintest_f1(self, train_df, test_df, model, target, threshold=0.1):
+    def test_diff_traintest_f1(self, train_df, test_df, model, threshold=0.1):
         """
         Test if the absolute percentage change in model F1 Score between train and test data
         is lower than a threshold
@@ -455,14 +434,12 @@ class PerformanceTests(AbstractTestCollection):
         and the test will fail.
 
         Args:
-            train_df(pandas.core.frame.DataFrame):
+            train_df(GiskardDataset):
                 train dataset 
-            test_df(pandas.core.frame.DataFrame):
+            test_df(GiskardDataset):
                 test dataset 
             model(ModelInspector):
                 uploaded model
-            target(str):
-                target column name
             threshold(int):
                 threshold value for F1 Score difference
 
@@ -474,9 +451,9 @@ class PerformanceTests(AbstractTestCollection):
                 TRUE if F1 Score difference < threshold
 
         """
-        return self._test_diff_traintest(self.test_f1, model, train_df, test_df, target, threshold)
+        return self._test_diff_traintest(self.test_f1, model, train_df, test_df, threshold)
 
-    def test_diff_traintest_accuracy(self, train_df, test_df, model, target, threshold=0.1):
+    def test_diff_traintest_accuracy(self, train_df, test_df, model, threshold=0.1):
         """
         Test if the absolute percentage change in model Accuracy between train and test data
         is lower than a threshold
@@ -487,14 +464,12 @@ class PerformanceTests(AbstractTestCollection):
         and the test will fail.
 
         Args:
-            train_df(pandas.core.frame.DataFrame):
+            train_df(GiskardDataset):
                 train dataset 
-            test_df(pandas.core.frame.DataFrame):
+            test_df(GiskardDataset):
                 test dataset 
             model(ModelInspector):
                 uploaded model
-            target(str):
-                target column name
             threshold(int):
                 threshold value for Accuracy difference
 
@@ -506,9 +481,9 @@ class PerformanceTests(AbstractTestCollection):
                 TRUE if Accuracy difference < threshold
 
         """
-        return self._test_diff_traintest(self.test_accuracy, model, train_df, test_df, target, threshold)
+        return self._test_diff_traintest(self.test_accuracy, model, train_df, test_df, threshold)
 
-    def test_diff_rmse(self, df, model, target, threshold=0.1, filter_1=None, filter_2=None):
+    def test_diff_rmse(self, df, model, threshold=0.1, filter_1=None, filter_2=None):
         """
         Test if the absolute percentage change of model RMSE between two samples is lower than a threshold
 
@@ -518,12 +493,10 @@ class PerformanceTests(AbstractTestCollection):
         and the test will fail
 
         Args:
-            df(pandas.core.frame.DataFrame):
+            df(GiskardDataset):
                 test dataset 
             model(ModelInspector):
                 uploaded model
-            target(str):
-                target column name
             threshold(int):
                 threshold value for RMSE difference
             filter_1(int64Index):
@@ -539,9 +512,9 @@ class PerformanceTests(AbstractTestCollection):
             passed:
                 TRUE if RMSE difference < threshold
         """
-        return self._test_diff_prediction(self.test_rmse, model, df, target, threshold, filter_1, filter_2)
+        return self._test_diff_prediction(self.test_rmse, model, df, threshold, filter_1, filter_2)
 
-    def test_diff_traintest_rmse(self, train_slice, test_slice, model, target, threshold=0.1):
+    def test_diff_traintest_rmse(self, train_slice, test_slice, model, threshold=0.1):
         """
         Test if the absolute percentage change in model RMSE between train and test data
         is lower than a threshold
@@ -552,14 +525,12 @@ class PerformanceTests(AbstractTestCollection):
         and the test will fail.
 
         Args:
-            train_slice(pandas.core.frame.DataFrame):
+            train_slice(GiskardDataset):
                 slice of train dataset
-            test_slice(pandas.core.frame.DataFrame):
+            test_slice(GiskardDataset):
                 slice of test dataset
             model(ModelInspector):
                 uploaded model
-            target(str):
-                target column name
             threshold(int):
                 threshold value for RMSE difference
 
@@ -570,4 +541,4 @@ class PerformanceTests(AbstractTestCollection):
                 TRUE if RMSE difference < threshold
 
         """
-        return self._test_diff_traintest(self.test_rmse, model, train_slice, test_slice, target, threshold)
+        return self._test_diff_traintest(self.test_rmse, model, train_slice, test_slice, threshold)

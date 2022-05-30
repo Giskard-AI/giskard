@@ -30,8 +30,8 @@ items:
                 TRUE if total_psi <= threshold
       """
       tests.drift.test_drift_psi(
-          expected_series=train_df['<CATEGORICAL FEATURE NAME>'],
-          actual_series=test_df['<CATEGORICAL FEATURE NAME>'],
+          expected_series=train_df.df['{{CATEGORICAL FEATURE NAME}}'],
+          actual_series=test_df.df['{{CATEGORICAL FEATURE NAME}}'],
           threshold=0.2
       )
   - id: drift_chi_square
@@ -67,8 +67,8 @@ items:
                 TRUE if metric > threshold
       """
       tests.drift.test_drift_chi_square(
-          expected_series=train_df['<CATEGORICAL FEATURE NAME>'],
-          actual_series=test_df['<CATEGORICAL FEATURE NAME>'],
+          expected_series=train_df.df['{{CATEGORICAL FEATURE NAME}}'],
+          actual_series=test_df.df['{{CATEGORICAL FEATURE NAME}}'],
           threshold=0.05
       )
   - id: drift_ks
@@ -107,8 +107,8 @@ items:
                 TRUE if metric > threshold
       """
       tests.drift.test_drift_ks(
-          expected_series=train_df['<NUMERIC FEATURE NAME>'],
-          actual_series=test_df['<NUMERIC FEATURE NAME>'],
+          expected_series=train_df.df['{{NUMERIC FEATURE NAME}}'],
+          actual_series=test_df.df['{{NUMERIC FEATURE NAME}}'],
           threshold=0.05
       )
   - id: drift_earth_movers_distance
@@ -142,7 +142,7 @@ items:
                 TRUE if metric < threshold
       """
       tests.drift.test_drift_earth_movers_distance(
-          expected_series=train_df['<NUMERIC FEATURE NAME>'],
-          actual_series=test_df['<NUMERIC FEATURE NAME>'],
+          expected_series=train_df.df['{{NUMERIC FEATURE NAME}}'],
+          actual_series=test_df.df['{{NUMERIC FEATURE NAME}}'],
           threshold=0.02
       )

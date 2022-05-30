@@ -1,18 +1,18 @@
 import pandas as pd
 from ai_inspector import ModelInspector
-from pandas import DataFrame
 
 from generated.ml_worker_pb2 import SingleTestResult
+from ml_worker.core.giskard_dataset import GiskardDataset
 from ml_worker.core.ml import run_predict
 from ml_worker.testing.abstract_test_collection import AbstractTestCollection
 
 
 class HeuristicTests(AbstractTestCollection):
     def test_right_label(self,
-                    slice_df: DataFrame,
-                    model: ModelInspector,
-                    classification_label: str,
-                    threshold=0.5) -> SingleTestResult:
+                         slice_df: GiskardDataset,
+                         model: ModelInspector,
+                         classification_label: str,
+                         threshold=0.5) -> SingleTestResult:
         """
         Summary: Test if the model returns the right classification label for a slice
 
@@ -42,12 +42,11 @@ class HeuristicTests(AbstractTestCollection):
 
         """
 
-        prediction_results = run_predict(slice_df, model).prediction
+        prediction_results = run_predict(slice_df.df, model).prediction
         assert classification_label in model.classification_labels, \
             f'"{classification_label}" is not part of model labels: {",".join(model.classification_labels)}'
 
-        passed_slice = slice_df.loc[prediction_results == classification_label]
-        failed_slice = slice_df.loc[prediction_results != classification_label]
+        passed_slice = slice_df.df.loc[prediction_results == classification_label]
 
         passed_ratio = len(passed_slice) / len(slice_df)
         return self.save_results(SingleTestResult(
@@ -57,7 +56,7 @@ class HeuristicTests(AbstractTestCollection):
         ))
 
     def test_output_in_range(self,
-                             slice_df: DataFrame,
+                             slice_df: GiskardDataset,
                              model: ModelInspector,
                              classification_label=None,
                              min_range: float = 0.3,
@@ -105,13 +104,13 @@ class HeuristicTests(AbstractTestCollection):
         """
         results_df = pd.DataFrame()
 
-        prediction_results = run_predict(slice_df, model)
+        prediction_results = run_predict(slice_df.df, model)
 
         if model.prediction_task == "regression":
             results_df["output"] = prediction_results.raw_prediction
 
         elif model.prediction_task == "classification":
-            results_df["output"] == prediction_results.all_predictions[classification_label]
+            results_df["output"] = prediction_results.all_predictions[classification_label]
             assert classification_label in model.classification_labels, \
                 f'"{classification_label}" is not part of model labels: {",".join(model.classification_labels)}'
 
@@ -124,7 +123,7 @@ class HeuristicTests(AbstractTestCollection):
             (results_df["output"] <= max_range) & \
             (results_df["output"] >= min_range)
 
-        expected = slice_df[matching_prediction_mask]
+        expected = slice_df.df[matching_prediction_mask]
         passed_ratio = len(expected) / len(slice_df)
         return self.save_results(SingleTestResult(
             slice_nb_rows=len(slice_df),

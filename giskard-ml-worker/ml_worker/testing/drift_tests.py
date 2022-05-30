@@ -10,6 +10,7 @@ from scipy.stats import chi2, ks_2samp
 from scipy.stats.stats import Ks_2sampResult, wasserstein_distance
 
 from generated.ml_worker_pb2 import SingleTestResult, TestMessage, TestMessageType
+from ml_worker.core.giskard_dataset import GiskardDataset
 from ml_worker.core.ml import run_predict
 from ml_worker.testing.abstract_test_collection import AbstractTestCollection
 
@@ -130,9 +131,9 @@ class DriftTests(AbstractTestCollection):
 
 
         Args:
-            expected_series(pandas.core.frame.DataFrame):
+            expected_series(GiskardDataset):
                 a categorical column in train dataset
-            actual_series(pandas.core.frame.DataFrame):
+            actual_series(GiskardDataset):
                 categorical column in test dataset that is compared to var_expected
             threshold:
                 threshold value for PSI
@@ -167,9 +168,9 @@ class DriftTests(AbstractTestCollection):
          and that we cannot assume drift for this variable.
 
         Args:
-            expected_series(pandas.core.frame.DataFrame):
+            expected_series(GiskardDataset):
                 a categorical column in train dataset
-            actual_series(pandas.core.frame.DataFrame):
+            actual_series(GiskardDataset):
                 categorical column in test dataset that is compared to var_expected
             threshold:
                 threshold for p-value of chi-square
@@ -205,9 +206,9 @@ class DriftTests(AbstractTestCollection):
         cannot be rejected at 5% level and that we cannot assume drift for this variable.
 
         Args:
-            expected_series(pandas.core.frame.DataFrame):
+            expected_series(GiskardDataset):
                 a categorical column in train dataset
-            actual_series(pandas.core.frame.DataFrame):
+            actual_series(GiskardDataset):
                 categorical column in test dataset that is compared to var_expected
             threshold:
                 threshold for p-value of KS test
@@ -246,9 +247,9 @@ class DriftTests(AbstractTestCollection):
          It means that we cannot assume drift for this variable.
 
         Args:
-            expected_series(pandas.core.frame.DataFrame):
+            expected_series(GiskardDataset):
                 a categorical column in train dataset
-            actual_series(pandas.core.frame.DataFrame):
+            actual_series(GiskardDataset):
                 categorical column in test dataset that is compared to var_expected
             threshold:
                 threshold for p-value of earth movers distance
@@ -266,7 +267,7 @@ class DriftTests(AbstractTestCollection):
             metric=metric
         ))
 
-    def test_drift_prediction_psi(self, slice_train: pd.DataFrame, slice_test: pd.DataFrame,
+    def test_drift_prediction_psi(self, slice_train: GiskardDataset, slice_test: GiskardDataset,
                                   model: ModelInspector,
                                   max_categories: int = 10, threshold: float = 0.2,
                                   psi_contribution_percent: float = 0.2):
@@ -278,9 +279,9 @@ class DriftTests(AbstractTestCollection):
         for females between train and test sets is below 0.2
 
         Args:
-            slice_train(pandas.core.frame.DataFrame):
+            slice_train(GiskardDataset):
                 slice of the train dataset 
-            slice_test(pandas.core.frame.DataFrame):
+            slice_test(GiskardDataset):
                 slice of the test dataset 
             model(ModelInspector):
                 uploaded model
@@ -302,8 +303,8 @@ class DriftTests(AbstractTestCollection):
                 psi result message
 
         """
-        prediction_train = run_predict(slice_train, model).prediction
-        prediction_test = run_predict(slice_test, model).prediction
+        prediction_train = run_predict(slice_train.df, model).prediction
+        prediction_test = run_predict(slice_test.df, model).prediction
         total_psi, output_data = self._calculate_drift_psi(prediction_train, prediction_test, max_categories)
 
         passed = True if threshold is None else total_psi <= threshold
@@ -334,9 +335,9 @@ class DriftTests(AbstractTestCollection):
         for females between train and test sets is below 0.2
 
         Args:
-            slice_train(pandas.core.frame.DataFrame):
+            slice_train(GiskardDataset):
                 slice of the train dataset 
-            slice_test(pandas.core.frame.DataFrame):
+            slice_test(GiskardDataset):
                 slice of the test dataset 
             model(ModelInspector):
                 uploaded model
@@ -358,8 +359,8 @@ class DriftTests(AbstractTestCollection):
                 message describing if prediction is drifting or not
 
         """
-        prediction_train = run_predict(slice_train, model).prediction
-        prediction_test = run_predict(slice_test, model).prediction
+        prediction_train = run_predict(slice_train.df, model).prediction
+        prediction_test = run_predict(slice_test.df, model).prediction
         chi_square, p_value, output_data = self._calculate_chi_square(prediction_train, prediction_test, max_categories)
 
         passed = p_value > threshold
@@ -379,8 +380,8 @@ class DriftTests(AbstractTestCollection):
         ))
 
     def test_drift_prediction_ks(self,
-                                 slice_train: pd.DataFrame,
-                                 slice_test: pd.DataFrame,
+                                 slice_train: GiskardDataset,
+                                 slice_test: GiskardDataset,
                                  model: ModelInspector,
                                  classification_label=None,
                                  threshold=None) -> SingleTestResult:
@@ -393,9 +394,9 @@ class DriftTests(AbstractTestCollection):
          rejected at 5% level and that we cannot assume drift for this variable.
 
         Args:
-            slice_train(pandas.core.frame.DataFrame):
+            slice_train(GiskardDataset):
                 slice of the train dataset 
-            slice_test(pandas.core.frame.DataFrame):
+            slice_test(GiskardDataset):
                 slice of the test dataset 
             model(ModelInspector):
                 uploaded model
@@ -415,10 +416,10 @@ class DriftTests(AbstractTestCollection):
         if model.prediction_task == "classification" and classification_label not in model.classification_labels:
             raise Exception(f'"{classification_label}" is not part of model labels: {",".join(model.classification_labels)}')
 
-        prediction_train = run_predict(slice_train, model).all_predictions[classification_label].values if \
-            model.prediction_task == "classification" else run_predict(slice_train, model).prediction
-        prediction_test = run_predict(slice_test, model).all_predictions[classification_label].values if \
-            model.prediction_task == "classification" else run_predict(slice_test, model).prediction
+        prediction_train = run_predict(slice_train.df, model).all_predictions[classification_label].values if \
+            model.prediction_task == "classification" else run_predict(slice_train.df, model).prediction
+        prediction_test = run_predict(slice_test.df, model).all_predictions[classification_label].values if \
+            model.prediction_task == "classification" else run_predict(slice_test.df, model).prediction
 
         result: Ks_2sampResult = self._calculate_ks(prediction_train, prediction_test)
         passed = True if threshold is None else result.pvalue >= threshold
@@ -436,8 +437,8 @@ class DriftTests(AbstractTestCollection):
         ))
 
     def test_drift_prediction_earth_movers_distance(self,
-                                                    slice_train: pd.DataFrame,
-                                                    slice_test: pd.DataFrame,
+                                                    slice_train: GiskardDataset,
+                                                    slice_test: GiskardDataset,
                                                     model: ModelInspector,
                                                     classification_label=None,
                                                     threshold=None) -> SingleTestResult:
@@ -454,9 +455,9 @@ class DriftTests(AbstractTestCollection):
         for females between train and test sets is below 0.2
 
         Args:
-            slice_train(pandas.core.frame.DataFrame):
+            slice_train(GiskardDataset):
                 slice of the train dataset 
-            slice_test(pandas.core.frame.DataFrame):
+            slice_test(GiskardDataset):
                 slice of the test dataset 
             model(ModelInspector):
                 uploaded model
@@ -473,10 +474,10 @@ class DriftTests(AbstractTestCollection):
 
         """
 
-        prediction_train = run_predict(slice_train, model).all_predictions[classification_label].values if \
-            model.prediction_task == "classification" else run_predict(slice_train, model).prediction
-        prediction_test = run_predict(slice_test, model).all_predictions[classification_label].values if \
-            model.prediction_task == "classification" else run_predict(slice_test, model).prediction
+        prediction_train = run_predict(slice_train.df, model).all_predictions[classification_label].values if \
+            model.prediction_task == "classification" else run_predict(slice_train.df, model).prediction
+        prediction_test = run_predict(slice_test.df, model).all_predictions[classification_label].values if \
+            model.prediction_task == "classification" else run_predict(slice_test.df, model).prediction
 
         metric = self._calculate_earth_movers_distance(prediction_train, prediction_test)
 

@@ -37,10 +37,9 @@ items:
 
       """
       tests.performance.test_auc(
-            slice_df=test_df[:len(test_df) // 2],
+            slice_df=test_df.slice(lambda df: df['{{FEATURE NAME}}'].notnull()),
             model=model,
-            threshold=0.1,
-            target='<TARGET COLUMN>'
+            threshold=0.1
         )
 
   - id: f1
@@ -74,10 +73,9 @@ items:
               TRUE if F1 Score metrics > threshold
       """
       tests.performance.test_f1(
-          slice_df=test_df[:len(test_df) // 2],
+          slice_df=test_df.slice(lambda df: df['{{FEATURE NAME}}'].notnull()),
           model=model,
-          threshold=0.1,
-          target='<TARGET COLUMN>'
+          threshold=0.1
       )
   - id: diff_f1
     title: F1 difference
@@ -124,10 +122,9 @@ items:
       tests.performance.test_diff_f1(
           df=test_df,
           model=model,
-          filter_1=test_df[:len(test_df)//2].index,
-          filter_2=test_df[len(test_df)//2:].index,
-          threshold=0.1,
-          target='<TARGET COLUMN>'
+          filter_1=lambda df: df['{{FEATURE NAME}}'].notnull(),
+          filter_2=lambda df: df['{{FEATURE NAME}}'].notnull(),
+          threshold=0.1
       )
   - id: diff_traintest_f1
     title: F1 Train Test difference
@@ -172,8 +169,7 @@ items:
           train_df=train_df,
           test_df=test_df,
           model=model,
-          threshold=0.1,
-          target='<TARGET COLUMN>'
+          threshold=0.1
       )
   - id: accuracy
     title: Accuracy
@@ -210,10 +206,9 @@ items:
 
       """
       tests.performance.test_accuracy(
-          slice_df=test_df[:len(test_df) // 2],
+          slice_df=test_df.slice(lambda df: df['{{FEATURE NAME}}'].notnull()),
           model=model,
-          threshold=0.1,
-          target='<TARGET COLUMN>'
+          threshold=0.1
       )
   - id: diff_accuracy
     title: Accuracy difference
@@ -258,10 +253,9 @@ items:
       tests.performance.test_diff_accuracy(
           df=test_df,
           model=model,
-          filter_1=test_df[:len(test_df)//2].index,
-          filter_2=test_df[len(test_df)//2:].index,
-          threshold=0.1,
-          target='<TARGET COLUMN>'
+          filter_1=lambda df: df['{{FEATURE NAME}}'].notnull(),
+          filter_2=lambda df: df['{{FEATURE NAME}}'].notnull(),
+          threshold=0.1
       )
   - id: diff_traintest_accuracy
     title: Accuracy Train Test difference
@@ -304,8 +298,7 @@ items:
           train_df=train_df,
           test_df=test_df,
           model=model,
-          threshold=0.1,
-          target='<TARGET COLUMN>'
+          threshold=0.1
       )
   - id: precision
     title: Precision
@@ -342,10 +335,9 @@ items:
 
       """
       tests.performance.test_precision(
-          slice_df=test_df[:len(test_df) // 2],
+          slice_df=test_df.slice(lambda df: df['{{FEATURE NAME}}'].notnull()),
           model=model,
-          threshold=0.1,
-          target='<TARGET COLUMN>'
+          threshold=0.1
       )
   - id: diff_precision
     title: Precision difference
@@ -390,10 +382,9 @@ items:
       tests.performance.test_diff_precision(
           df=test_df,
           model=model,
-          filter_1=test_df[:len(test_df)//2].index,
-          filter_2=test_df[len(test_df)//2:].index,
-          threshold=0.1,
-          target='<TARGET COLUMN>'
+          filter_1=lambda df: df['{{FEATURE NAME}}'].notnull(),
+          filter_2=lambda df: df['{{FEATURE NAME}}'].notnull(),
+          threshold=0.1
       )
   - id: recall
     title: Recall
@@ -430,10 +421,9 @@ items:
 
       """
       tests.performance.test_recall(
-          slice_df=test_df[:len(test_df) // 2],
+          slice_df=test_df.slice(lambda df: df['{{FEATURE NAME}}'].notnull()),
           model=model,
-          threshold=0.1,
-          target='<TARGET COLUMN>'
+          threshold=0.1
       )
   - id: diff_recall
     title: Recall difference
@@ -478,10 +468,9 @@ items:
       tests.performance.test_diff_recall(
           df=test_df,
           model=model,
-          filter_1=test_df[:len(test_df)//2].index,
-          filter_2=test_df[len(test_df)//2:].index,
-          threshold=0.1,
-          target='<TARGET COLUMN>'
+          filter_1=lambda df: df['{{FEATURE NAME}}'].notnull(),
+          filter_2=lambda df: df['{{FEATURE NAME}}'].notnull(),
+          threshold=0.1
       )
   - id: rmse
     title: RMSE
@@ -519,8 +508,7 @@ items:
       tests.performance.test_rmse(
           df=test_df,
           model=model,
-          threshold=0.1,
-          target='<TARGET COLUMN>'
+          threshold=0.1
       )
   - id: diff_rmse
     title: RMSE difference
@@ -564,10 +552,9 @@ items:
       tests.performance.test_diff_rmse(
           df=test_df,
           model=model,
-          filter_1=test_df[:len(test_df)//2].index,
-          filter_2=test_df[len(test_df)//2:].index,
-          threshold=0.1,
-          target='<TARGET COLUMN>'
+          filter_1=lambda df: df['{{FEATURE NAME}}'].notnull(),
+          filter_2=lambda df: df['{{FEATURE NAME}}'].notnull(),
+          threshold=0.1
       )
   - id: diff_traintest_rmse
     title: RMSE Train Test difference
@@ -610,8 +597,7 @@ items:
           train_slice=train_df[:len(test_df)//2],
           test_slice=test_df[len(test_df)//2:],
           model=model,
-          threshold=0.1,
-          target='<TARGET COLUMN>'
+          threshold=0.1
       )
   - id: mae
     title: MAE
@@ -649,7 +635,7 @@ items:
             df=test_df,
             model=model,
             threshold=0.1,
-            target='<TARGET COLUMN>'
+            target='{{TARGET COLUMN}}'
         )
   - id: r2
     title: R2
@@ -687,6 +673,5 @@ items:
       tests.performance.test_r2(
           df=test_df,
           model=model,
-          threshold=0.1,
-          target='<TARGET COLUMN>'
+          threshold=0.1
       )
