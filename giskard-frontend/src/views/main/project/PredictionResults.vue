@@ -129,7 +129,7 @@ export default class PredictionResults extends Vue {
         // Sort the object by value - solution based on:
         // https://stackoverflow.com/questions/55319092/sort-a-javascript-object-by-key-or-value-es6
         this.resultProbabilities = Object.entries(this.resultProbabilities)
-            .sort(([, v1], [, v2]) => +v1 - +v2)
+            .sort(([, v1], [, v2]) => +v2 - +v1)
             .reduce((r, [k, v]) => ({...r, [k]: v}), {});
         this.errorMsg = "";
       } catch (error) {
@@ -167,24 +167,30 @@ export default class PredictionResults extends Vue {
   }
 
   /**
-   * Getting first n entries of objects and sort alphabetically
+   * Getting first n entries of sorted objects and sort alphabetically, aggregating for "Others" options
    *
    * @param obj object
    * @param n number of entries to keep
    * @private
    */
   private firstNSortedByKey(obj, n) {
-    return Object.keys(obj)
-      .slice(0, n)
+    const numberExtraCategories=Object.keys(obj).length-n;
+    let filteredObject=Object.keys(obj)
+      .slice(0,n)
       .sort()
-      .reduce(function(m, current) {
-        m[current] = obj[current]
-        return m;
-      }, {})
+      .reduce(function(acc, current) {
+        acc[current] = obj[current]
+        return acc;
+      }, {});
+    if (numberExtraCategories > 0) {
+      const sumOthers = Object.values(obj).slice(n, -1).reduce((acc: any, val: any) => acc + val, 0);
+      filteredObject={[`Others (${numberExtraCategories})`] : sumOthers,...filteredObject };
+    }
+    return filteredObject;
   }
 
   get chartOptions() {
-    const results=this.firstNSortedByKey(this.resultProbabilities, this.predCategoriesN)
+    const results = this.firstNSortedByKey(this.resultProbabilities, this.predCategoriesN)
     return {
       xAxis: {
         type: "value",
