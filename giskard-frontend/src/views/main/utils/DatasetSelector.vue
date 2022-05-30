@@ -1,5 +1,6 @@
 <template>
   <v-select
+      clearable
       outlined
       class="dataset-selector"
       :label="label"
@@ -7,7 +8,7 @@
       :items="projectDatasets"
       :item-text="extractDatasetName"
       item-value="id"
-      return-object
+      :return-object="returnObject"
       @input="onInput"
   ></v-select>
 </template>
@@ -24,7 +25,8 @@ import {DatasetDTO} from '@/generated-sources';
 export default class DatasetSelector extends Vue {
   @Prop({required: true}) projectId!: number;
   @Prop({default: 'Dataset', required: true}) label!: string;
-  @Prop() value?: DatasetDTO;
+  @Prop({default: true}) returnObject!: boolean;
+  @Prop() value?: DatasetDTO | number;
   projectDatasets: Array<DatasetDTO> = [];
 
   extractDatasetName(dataset: DatasetDTO) {

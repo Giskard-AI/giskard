@@ -5,15 +5,19 @@ import ai.giskard.domain.User;
 import ai.giskard.repository.UserRepository;
 import ai.giskard.service.MailService;
 import ai.giskard.service.UserService;
+import ai.giskard.web.dto.mapper.GiskardMapper;
 import ai.giskard.web.dto.user.AdminUserDTO;
 import ai.giskard.web.rest.errors.BadRequestAlertException;
 import ai.giskard.web.rest.errors.EmailAlreadyUsedException;
 import ai.giskard.web.rest.errors.LoginAlreadyUsedException;
+
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.*;
 import javax.validation.Valid;
 import javax.validation.constraints.Pattern;
+
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -58,8 +62,8 @@ import static ai.giskard.security.AuthoritiesConstants.ADMIN;
  */
 @RestController
 @RequestMapping("/api/v2/admin/users")
+@RequiredArgsConstructor
 public class UserAdminController {
-
     private static final List<String> ALLOWED_ORDERED_PROPERTIES = List.of(
         "id",
         "login",
@@ -83,12 +87,8 @@ public class UserAdminController {
     private final UserRepository userRepository;
 
     private final MailService mailService;
+    private final GiskardMapper giskardMapper;
 
-    public UserAdminController(UserService userService, UserRepository userRepository, MailService mailService) {
-        this.userService = userService;
-        this.userRepository = userRepository;
-        this.mailService = mailService;
-    }
 
     /**
      * {@code POST  /admin/users}  : Creates a new user.
@@ -99,12 +99,10 @@ public class UserAdminController {
      *
      * @param userDTO the user to create.
      * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new user, or with status {@code 400 (Bad Request)} if the login or email is already in use.
-     * @throws URISyntaxException if the Location URI syntax is incorrect.
-     * @throws BadRequestAlertException {@code 400 (Bad Request)} if the login or email is already in use.
      */
     @PostMapping("")
     @PreAuthorize("hasAuthority(\"" + ADMIN + "\")")
-    public ResponseEntity<User> createUser(@Valid @RequestBody AdminUserDTO.AdminUserDTOWithPassword userDTO) throws URISyntaxException {
+    public ResponseEntity<AdminUserDTO> createUser(@Valid @RequestBody AdminUserDTO.AdminUserDTOWithPassword userDTO) {
         log.debug("REST request to save User : {}", userDTO);
 
         if (userDTO.getId() != null) {
@@ -117,22 +115,12 @@ public class UserAdminController {
         } else {
             User newUser = userService.createUser(userDTO);
             mailService.sendCreationEmail(newUser);
-            return ResponseEntity
-                .created(new URI("/api/admin/users/" + newUser.getLogin()))
-                .headers(
-                    HeaderUtil.createAlert(applicationName, "A user is created with identifier " + newUser.getLogin(), newUser.getLogin())
-                )
-                .body(newUser);
+            return new ResponseEntity<>(giskardMapper.userToAdminUserDTO(newUser), HttpStatus.CREATED);
         }
     }
 
     /**
      * {@code PUT /admin/users} : Updates an existing User.
-     *
-     * @param userDTO the user to update.
-     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated user.
-     * @throws EmailAlreadyUsedException {@code 400 (Bad Request)} if the email is already in use.
-     * @throws LoginAlreadyUsedException {@code 400 (Bad Request)} if the login is already in use.
      */
     @PutMapping("")
     @PreAuthorize("hasAuthority(\"" + ADMIN + "\")")
@@ -146,12 +134,8 @@ public class UserAdminController {
         if (existingUser.isPresent() && (!existingUser.get().getId().equals(userDTO.getId()))) {
             throw new LoginAlreadyUsedException();
         }
-        Optional<AdminUserDTO> updatedUser = userService.updateUser(userDTO);
 
-        return ResponseUtil.wrapOrNotFound(
-            updatedUser,
-            HeaderUtil.createAlert(applicationName, "A user is updated with identifier " + userDTO.getLogin(), userDTO.getLogin())
-        );
+        return ResponseUtil.wrapOrNotFound(userService.updateUser(userDTO));
     }
 
     /**
@@ -194,16 +178,12 @@ public class UserAdminController {
      * {@code DELETE /admin/users/:login} : delete the "login" User.
      *
      * @param login the login of the user to delete.
-     * @return the {@link ResponseEntity} with status {@code 204 (NO_CONTENT)}.
      */
     @DeleteMapping("/{login}")
     @PreAuthorize("hasAuthority(\"" + ADMIN + "\")")
     public ResponseEntity<Void> deleteUser(@PathVariable @Pattern(regexp = Constants.LOGIN_REGEX) String login) {
         log.debug("REST request to delete User: {}", login);
         userService.deleteUser(login);
-        return ResponseEntity
-            .noContent()
-            .headers(HeaderUtil.createAlert(applicationName, "A user is deleted with identifier " + login, login))
-            .build();
+        return ResponseEntity.noContent().build();
     }
 }

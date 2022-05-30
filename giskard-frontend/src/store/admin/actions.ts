@@ -1,12 +1,12 @@
-import { api } from '@/api';
-import { ActionContext } from 'vuex';
-import { State } from '../state';
-import { AdminState } from './state';
-import { getStoreAccessors } from 'typesafe-vuex';
-import { commitSetUsers, commitSetUser, mutations, commitSetRoles } from './mutations';
-import { dispatchCheckApiError } from '../main/actions';
-import { commitAddNotification, commitRemoveNotification } from '../main/mutations';
-import { AdminUserDTO } from '@/generated-sources';
+import {api} from '@/api';
+import {ActionContext} from 'vuex';
+import {State} from '../state';
+import {AdminState} from './state';
+import {getStoreAccessors} from 'typesafe-vuex';
+import {commitSetRoles, commitSetUser, commitSetUsers} from './mutations';
+import {dispatchCheckApiError} from '../main/actions';
+import {commitAddNotification, commitRemoveNotification} from '../main/mutations';
+import {AdminUserDTO} from '@/generated-sources';
 import AdminUserDTOWithPassword = AdminUserDTO.AdminUserDTOWithPassword;
 
 type MainContext = ActionContext<AdminState, State>;
@@ -14,20 +14,14 @@ type MainContext = ActionContext<AdminState, State>;
 export const actions = {
     async actionGetRoles(context: MainContext) {
         try {
-            const response = await api.getRoles();
-            if (response) {
-                commitSetRoles(context, response.data);
-            }
+            commitSetRoles(context, await api.getRoles());
         } catch (error) {
             await dispatchCheckApiError(context, error);
         }
     },
     async actionGetUsers(context: MainContext) {
         try {
-            const response = await api.getUsers(context.rootState.main.token);
-            if (response) {
-                commitSetUsers(context, response.data);
-            }
+            commitSetUsers(context, await api.getUsers());
         } catch (error) {
             await dispatchCheckApiError(context, error);
         }
@@ -36,13 +30,11 @@ export const actions = {
         const loadingNotification = { content: 'saving', showProgress: true };
         try {
             commitAddNotification(context, loadingNotification);
-            const response = await api.updateUser(context.rootState.main.token, payload.user);
-            commitSetUser(context, response.data);
+            const response = await api.updateUser( payload.user);
+            commitSetUser(context, response);
             commitRemoveNotification(context, loadingNotification);
             commitAddNotification(context, { content: 'User successfully updated', color: 'success' });
         } catch (error) {
-            commitRemoveNotification(context, loadingNotification);
-            commitAddNotification(context, { content: error.response.status + ' ' + error.response.data.detail, color: 'error' });
             await dispatchCheckApiError(context, error);
             throw new Error(error.response.data.detail);
         }
@@ -51,13 +43,11 @@ export const actions = {
         const loadingNotification = { content: 'saving', showProgress: true };
         try {
             commitAddNotification(context, loadingNotification);
-            const response = await api.createUser(context.rootState.main.token, payload);
-            commitSetUser(context, response.data);
+            const response = await api.createUser( payload);
+            commitSetUser(context, response);
             commitRemoveNotification(context, loadingNotification);
             commitAddNotification(context, { content: 'User successfully created', color: 'success' });
         } catch (error) {
-            commitRemoveNotification(context, loadingNotification);
-            commitAddNotification(context, { content: error.response.status + ' ' + error.response.data.detail, color: 'error' });
             await dispatchCheckApiError(context, error);
             throw new Error(error.response.data.detail);
         }
@@ -66,13 +56,11 @@ export const actions = {
         const loadingNotification = { content: 'saving', showProgress: true };
         try {
             commitAddNotification(context, loadingNotification);
-            const response = await api.deleteUser(context.rootState.main.token, payload.id);
-            commitSetUser(context, response.data);
+            const response = await api.deleteUser( payload.id);
+            await this.actionGetUsers(context)
             commitRemoveNotification(context, loadingNotification);
             commitAddNotification(context, { content: 'Successfully deleted', color: 'success' });
         } catch (error) {
-            commitRemoveNotification(context, loadingNotification);
-            commitAddNotification(context, { content: error.response.status + ' ' + error.response.data.detail, color: 'error' });
             await dispatchCheckApiError(context, error);
             throw new Error(error.response.data.detail);
         }

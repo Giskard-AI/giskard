@@ -1,12 +1,9 @@
 <?xml version="1.1" encoding="UTF-8" standalone="no"?>
 <databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext" xmlns:pro="http://www.liquibase.org/xml/ns/pro" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-4.1.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.1.xsd">
-    <changeSet author="andreyavtomonov (generated)" id="1653262787909-1">
+    <changeSet author="andreyavtomonov (generated)" id="1653499400340-1">
         <createSequence incrementBy="1" sequenceName="hibernate_sequence" startValue="1"/>
     </changeSet>
-    <changeSet author="andreyavtomonov (generated)" id="1653262787909-2">
-        <createSequence incrementBy="50" sequenceName="sequence_generator" startValue="1"/>
-    </changeSet>
-    <changeSet author="andreyavtomonov (generated)" id="1653262787909-3">
+    <changeSet author="andreyavtomonov (generated)" id="1653499400340-2">
         <createTable tableName="datasets">
             <column autoIncrement="true" name="id" type="BIGINT">
                 <constraints nullable="false" primaryKey="true" primaryKeyName="datasetsPK"/>
@@ -27,7 +24,7 @@
             <column name="project_id" type="BIGINT"/>
         </createTable>
     </changeSet>
-    <changeSet author="andreyavtomonov (generated)" id="1653262787909-4">
+    <changeSet author="andreyavtomonov (generated)" id="1653499400340-3">
         <createTable tableName="feedback_replies">
             <column autoIncrement="true" name="id" type="BIGINT">
                 <constraints nullable="false" primaryKey="true" primaryKeyName="feedback_repliesPK"/>
@@ -39,7 +36,7 @@
             <column name="user_id" type="BIGINT"/>
         </createTable>
     </changeSet>
-    <changeSet author="andreyavtomonov (generated)" id="1653262787909-5">
+    <changeSet author="andreyavtomonov (generated)" id="1653499400340-4">
         <createTable tableName="feedbacks">
             <column autoIncrement="true" name="id" type="BIGINT">
                 <constraints nullable="false" primaryKey="true" primaryKeyName="feedbacksPK"/>
@@ -65,7 +62,7 @@
             <column name="user_id" type="BIGINT"/>
         </createTable>
     </changeSet>
-    <changeSet author="andreyavtomonov (generated)" id="1653262787909-6">
+    <changeSet author="andreyavtomonov (generated)" id="1653499400340-5">
         <createTable tableName="giskard_user_role">
             <column name="user_id" type="BIGINT">
                 <constraints nullable="false" primaryKey="true"/>
@@ -75,7 +72,7 @@
             </column>
         </createTable>
     </changeSet>
-    <changeSet author="andreyavtomonov (generated)" id="1653262787909-7">
+    <changeSet author="andreyavtomonov (generated)" id="1653499400340-6">
         <createTable tableName="giskard_users">
             <column autoIncrement="true" name="id" type="BIGINT">
                 <constraints nullable="false" primaryKey="true" primaryKeyName="giskard_usersPK"/>
@@ -105,7 +102,7 @@
             <column name="reset_key" type="VARCHAR(20)"/>
         </createTable>
     </changeSet>
-    <changeSet author="andreyavtomonov (generated)" id="1653262787909-8">
+    <changeSet author="andreyavtomonov (generated)" id="1653499400340-7">
         <createTable tableName="inspections">
             <column autoIncrement="true" name="id" type="BIGINT">
                 <constraints nullable="false" primaryKey="true" primaryKeyName="inspectionsPK"/>
@@ -114,7 +111,7 @@
             <column name="model_id" type="BIGINT"/>
         </createTable>
     </changeSet>
-    <changeSet author="andreyavtomonov (generated)" id="1653262787909-9">
+    <changeSet author="andreyavtomonov (generated)" id="1653499400340-8">
         <createTable tableName="project_models">
             <column autoIncrement="true" name="id" type="BIGINT">
                 <constraints nullable="false" primaryKey="true" primaryKeyName="project_modelsPK"/>
@@ -140,7 +137,7 @@
             <column name="project_id" type="BIGINT"/>
         </createTable>
     </changeSet>
-    <changeSet author="andreyavtomonov (generated)" id="1653262787909-10">
+    <changeSet author="andreyavtomonov (generated)" id="1653499400340-9">
         <createTable tableName="projects">
             <column autoIncrement="true" name="id" type="BIGINT">
                 <constraints nullable="false" primaryKey="true" primaryKeyName="projectsPK"/>
@@ -161,7 +158,7 @@
             <column name="owner_id" type="BIGINT"/>
         </createTable>
     </changeSet>
-    <changeSet author="andreyavtomonov (generated)" id="1653262787909-11">
+    <changeSet author="andreyavtomonov (generated)" id="1653499400340-10">
         <createTable tableName="projects_guests">
             <column name="project_id" type="BIGINT">
                 <constraints nullable="false" primaryKey="true"/>
@@ -171,9 +168,9 @@
             </column>
         </createTable>
     </changeSet>
-    <changeSet author="andreyavtomonov (generated)" id="1653262787909-12">
+    <changeSet author="andreyavtomonov (generated)" id="1653499400340-11">
         <createTable tableName="role">
-            <column autoIncrement="true" name="id" type="INTEGER">
+            <column autoIncrement="true" name="id" type="BIGINT">
                 <constraints nullable="false" primaryKey="true" primaryKeyName="rolePK"/>
             </column>
             <column name="name" type="VARCHAR(50)">
@@ -181,7 +178,7 @@
             </column>
         </createTable>
     </changeSet>
-    <changeSet author="andreyavtomonov (generated)" id="1653262787909-13">
+    <changeSet author="andreyavtomonov (generated)" id="1653499400340-12">
         <createTable tableName="test">
             <column autoIncrement="true" name="id" type="BIGINT">
                 <constraints nullable="false" primaryKey="true" primaryKeyName="testPK"/>
@@ -199,7 +196,7 @@
             <column name="test_suite_id" type="BIGINT"/>
         </createTable>
     </changeSet>
-    <changeSet author="andreyavtomonov (generated)" id="1653262787909-14">
+    <changeSet author="andreyavtomonov (generated)" id="1653499400340-13">
         <createTable tableName="test_execution">
             <column autoIncrement="true" name="id" type="BIGINT">
                 <constraints nullable="false" primaryKey="true" primaryKeyName="test_executionPK"/>
@@ -209,7 +206,7 @@
             <column name="test_id" type="BIGINT"/>
         </createTable>
     </changeSet>
-    <changeSet author="andreyavtomonov (generated)" id="1653262787909-15">
+    <changeSet author="andreyavtomonov (generated)" id="1653499400340-14">
         <createTable tableName="test_suite">
             <column autoIncrement="true" name="id" type="BIGINT">
                 <constraints nullable="false" primaryKey="true" primaryKeyName="test_suitePK"/>
@@ -231,73 +228,73 @@
             <column name="train_dataset_id" type="BIGINT"/>
         </createTable>
     </changeSet>
-    <changeSet author="andreyavtomonov (generated)" id="1653262787909-16">
+    <changeSet author="andreyavtomonov (generated)" id="1653499400340-15">
         <addUniqueConstraint columnNames="email" constraintName="UC_GISKARD_USERSEMAIL_COL" tableName="giskard_users"/>
     </changeSet>
-    <changeSet author="andreyavtomonov (generated)" id="1653262787909-17">
+    <changeSet author="andreyavtomonov (generated)" id="1653499400340-16">
         <addUniqueConstraint columnNames="user_id" constraintName="UC_GISKARD_USERSUSER_ID_COL" tableName="giskard_users"/>
     </changeSet>
-    <changeSet author="andreyavtomonov (generated)" id="1653262787909-18">
+    <changeSet author="andreyavtomonov (generated)" id="1653499400340-17">
         <addUniqueConstraint columnNames="name" constraintName="UK_8sewwnpamngi6b1dwaa88askk" tableName="role"/>
     </changeSet>
-    <changeSet author="andreyavtomonov (generated)" id="1653262787909-19">
+    <changeSet author="andreyavtomonov (generated)" id="1653499400340-18">
         <addForeignKeyConstraint baseColumnNames="test_id" baseTableName="test_execution" constraintName="FK1d9g3pqkl379jc19kd3xcxf99" deferrable="false" initiallyDeferred="false" referencedColumnNames="id" referencedTableName="test" validate="true"/>
     </changeSet>
-    <changeSet author="andreyavtomonov (generated)" id="1653262787909-20">
+    <changeSet author="andreyavtomonov (generated)" id="1653499400340-19">
         <addForeignKeyConstraint baseColumnNames="project_id" baseTableName="datasets" constraintName="FK25dg6rrolv9vwid5yvnsspgo6" deferrable="false" initiallyDeferred="false" referencedColumnNames="id" referencedTableName="projects" validate="true"/>
     </changeSet>
-    <changeSet author="andreyavtomonov (generated)" id="1653262787909-21">
+    <changeSet author="andreyavtomonov (generated)" id="1653499400340-20">
         <addForeignKeyConstraint baseColumnNames="project_id" baseTableName="project_models" constraintName="FK5s5u25id8g08naq0u7lv18x8f" deferrable="false" initiallyDeferred="false" referencedColumnNames="id" referencedTableName="projects" validate="true"/>
     </changeSet>
-    <changeSet author="andreyavtomonov (generated)" id="1653262787909-22">
+    <changeSet author="andreyavtomonov (generated)" id="1653499400340-21">
         <addForeignKeyConstraint baseColumnNames="dataset_id" baseTableName="feedbacks" constraintName="FK6h9unhwkbwjyrb7yhhx3v4t6h" deferrable="false" initiallyDeferred="false" referencedColumnNames="id" referencedTableName="datasets" validate="true"/>
     </changeSet>
-    <changeSet author="andreyavtomonov (generated)" id="1653262787909-23">
+    <changeSet author="andreyavtomonov (generated)" id="1653499400340-22">
         <addForeignKeyConstraint baseColumnNames="user_id" baseTableName="projects_guests" constraintName="FK7p55gh12l0rojcuucv1plebu2" deferrable="false" initiallyDeferred="false" referencedColumnNames="id" referencedTableName="giskard_users" validate="true"/>
     </changeSet>
-    <changeSet author="andreyavtomonov (generated)" id="1653262787909-24">
+    <changeSet author="andreyavtomonov (generated)" id="1653499400340-23">
         <addForeignKeyConstraint baseColumnNames="user_id" baseTableName="feedbacks" constraintName="FKarlcap69fexfavfx24knuyk4q" deferrable="false" initiallyDeferred="false" referencedColumnNames="id" referencedTableName="giskard_users" validate="true"/>
     </changeSet>
-    <changeSet author="andreyavtomonov (generated)" id="1653262787909-25">
+    <changeSet author="andreyavtomonov (generated)" id="1653499400340-24">
         <addForeignKeyConstraint baseColumnNames="model_id" baseTableName="feedbacks" constraintName="FKehxmei0g8a4k9niqk9jrts3ku" deferrable="false" initiallyDeferred="false" referencedColumnNames="id" referencedTableName="project_models" validate="true"/>
     </changeSet>
-    <changeSet author="andreyavtomonov (generated)" id="1653262787909-26">
+    <changeSet author="andreyavtomonov (generated)" id="1653499400340-25">
         <addForeignKeyConstraint baseColumnNames="owner_id" baseTableName="projects" constraintName="FKfstb1k24yc0xk923orfsa7t2q" deferrable="false" initiallyDeferred="false" referencedColumnNames="id" referencedTableName="giskard_users" validate="true"/>
     </changeSet>
-    <changeSet author="andreyavtomonov (generated)" id="1653262787909-27">
+    <changeSet author="andreyavtomonov (generated)" id="1653499400340-26">
         <addForeignKeyConstraint baseColumnNames="project_id" baseTableName="test_suite" constraintName="FKh4vcclx0xbhy3dcy7ynvnyso9" deferrable="false" initiallyDeferred="false" referencedColumnNames="id" referencedTableName="projects" validate="true"/>
     </changeSet>
-    <changeSet author="andreyavtomonov (generated)" id="1653262787909-28">
+    <changeSet author="andreyavtomonov (generated)" id="1653499400340-27">
         <addForeignKeyConstraint baseColumnNames="train_dataset_id" baseTableName="test_suite" constraintName="FKh6vq8p6egn0rppye946cugw73" deferrable="false" initiallyDeferred="false" referencedColumnNames="id" referencedTableName="datasets" validate="true"/>
     </changeSet>
-    <changeSet author="andreyavtomonov (generated)" id="1653262787909-29">
+    <changeSet author="andreyavtomonov (generated)" id="1653499400340-28">
         <addForeignKeyConstraint baseColumnNames="user_id" baseTableName="giskard_user_role" constraintName="FKhsrhs22278tkle6ky3rthjlhk" deferrable="false" initiallyDeferred="false" referencedColumnNames="id" referencedTableName="giskard_users" validate="true"/>
     </changeSet>
-    <changeSet author="andreyavtomonov (generated)" id="1653262787909-30">
+    <changeSet author="andreyavtomonov (generated)" id="1653499400340-29">
         <addForeignKeyConstraint baseColumnNames="dataset_id" baseTableName="inspections" constraintName="FKhuemucufporpds7hxvcsir8u4" deferrable="false" initiallyDeferred="false" referencedColumnNames="id" referencedTableName="datasets" validate="true"/>
     </changeSet>
-    <changeSet author="andreyavtomonov (generated)" id="1653262787909-31">
+    <changeSet author="andreyavtomonov (generated)" id="1653499400340-30">
         <addForeignKeyConstraint baseColumnNames="test_suite_id" baseTableName="test" constraintName="FKm67rmf2x1wa80068isib8pm8e" deferrable="false" initiallyDeferred="false" referencedColumnNames="id" referencedTableName="test_suite" validate="true"/>
     </changeSet>
-    <changeSet author="andreyavtomonov (generated)" id="1653262787909-32">
+    <changeSet author="andreyavtomonov (generated)" id="1653499400340-31">
         <addForeignKeyConstraint baseColumnNames="user_id" baseTableName="feedback_replies" constraintName="FKmcljimu0jmk9yrf0tuoggr0hd" deferrable="false" initiallyDeferred="false" referencedColumnNames="id" referencedTableName="giskard_users" validate="true"/>
     </changeSet>
-    <changeSet author="andreyavtomonov (generated)" id="1653262787909-33">
+    <changeSet author="andreyavtomonov (generated)" id="1653499400340-32">
         <addForeignKeyConstraint baseColumnNames="model_id" baseTableName="test_suite" constraintName="FKnwiqw82vbn8cxvxyrtrlveabn" deferrable="false" initiallyDeferred="false" referencedColumnNames="id" referencedTableName="project_models" validate="true"/>
     </changeSet>
-    <changeSet author="andreyavtomonov (generated)" id="1653262787909-34">
+    <changeSet author="andreyavtomonov (generated)" id="1653499400340-33">
         <addForeignKeyConstraint baseColumnNames="model_id" baseTableName="inspections" constraintName="FKs6m8jthpe1rrn4m8i0wkb6rn7" deferrable="false" initiallyDeferred="false" referencedColumnNames="id" referencedTableName="project_models" validate="true"/>
     </changeSet>
-    <changeSet author="andreyavtomonov (generated)" id="1653262787909-35">
+    <changeSet author="andreyavtomonov (generated)" id="1653499400340-34">
         <addForeignKeyConstraint baseColumnNames="project_id" baseTableName="projects_guests" constraintName="FKs8vs2owfsrem3tyfxau177hni" deferrable="false" initiallyDeferred="false" referencedColumnNames="id" referencedTableName="projects" validate="true"/>
     </changeSet>
-    <changeSet author="andreyavtomonov (generated)" id="1653262787909-36">
+    <changeSet author="andreyavtomonov (generated)" id="1653499400340-35">
         <addForeignKeyConstraint baseColumnNames="feedback_id" baseTableName="feedback_replies" constraintName="FKsdu6irhjj761gqal0am2ttr3s" deferrable="false" initiallyDeferred="false" referencedColumnNames="id" referencedTableName="feedbacks" validate="true"/>
     </changeSet>
-    <changeSet author="andreyavtomonov (generated)" id="1653262787909-37">
+    <changeSet author="andreyavtomonov (generated)" id="1653499400340-36">
         <addForeignKeyConstraint baseColumnNames="test_dataset_id" baseTableName="test_suite" constraintName="FKse03kmjjgnhtf1hg7760jack2" deferrable="false" initiallyDeferred="false" referencedColumnNames="id" referencedTableName="datasets" validate="true"/>
     </changeSet>
-    <changeSet author="andreyavtomonov (generated)" id="1653262787909-38">
+    <changeSet author="andreyavtomonov (generated)" id="1653499400340-37">
         <addForeignKeyConstraint baseColumnNames="project_id" baseTableName="feedbacks" constraintName="FKtgbjqii3k78ywifjqyp2t4fqs" deferrable="false" initiallyDeferred="false" referencedColumnNames="id" referencedTableName="projects" validate="true"/>
     </changeSet>
 </databaseChangeLog>

@@ -1,11 +1,10 @@
 package ai.giskard.domain;
 
-import org.checkerframework.common.aliasing.qual.Unique;
-
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
-import java.io.Serializable;
 import java.util.Objects;
 
 /**
@@ -13,17 +12,7 @@ import java.util.Objects;
  */
 @Entity
 @Table(name = "role")
-public class Role implements Serializable {
-
-    private static final long serialVersionUID = 1L;
-
-    @lombok.Setter
-    @lombok.Getter
-    @NotNull
-    @Id
-    @GeneratedValue
-    private int id;
-
+public class Role extends BaseEntity {
     @lombok.Setter
     @lombok.Getter
     @NotNull
@@ -36,11 +25,11 @@ public class Role implements Serializable {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Role role = (Role) o;
-        return id == role.id && name.equals(role.name);
+        return getId().equals(role.getId()) && name.equals(role.name);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, name);
+        return Objects.hash(getId(), name);
     }
 }

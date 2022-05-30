@@ -8,7 +8,7 @@ export const mutations = {
     setUsers(state: AdminState, payload: AdminUserDTO[]) {
         state.users = payload;
     },
-    setUser(state: AdminState, payload: AdminUserDTOWithPassword) {
+    setUser(state: AdminState, payload: AdminUserDTO) {
         const users = state.users.filter((user: AdminUserDTO) => user.id !== payload.id);
         users.push(payload);
         state.users = users;

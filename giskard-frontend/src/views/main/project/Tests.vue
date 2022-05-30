@@ -94,7 +94,7 @@ export default class Tests extends Vue {
     this.isTestSuiteRunning = true;
     try {
 
-      let res = (await api.executeTestSuite(this.suiteId)).data;
+      let res = await api.executeTestSuite(this.suiteId);
       res.forEach((testResult: TestExecutionResultDTO) => {
         Tests.applyTestExecutionResults(this.tests[testResult.testId], testResult);
       });
@@ -118,7 +118,7 @@ export default class Tests extends Vue {
   }
 
   private async init() {
-    let testsList = (await api.getTests(this.suiteId)).data;
+    let testsList = await api.getTests(this.suiteId);
     this.tests = Object.assign({}, ...testsList.map((x) => ({ [x.id]: x })));
 
   }
@@ -133,7 +133,7 @@ export default class Tests extends Vue {
     this.$forceUpdate();
     console.log('After added', this.runningTestIds);
     try {
-      let runResult = (await api.runTest(test.id)).data;
+      let runResult = await api.runTest(test.id);
       Tests.applyTestExecutionResults(test, runResult);
     } finally {
       this.runningTestIds.delete(test.id);

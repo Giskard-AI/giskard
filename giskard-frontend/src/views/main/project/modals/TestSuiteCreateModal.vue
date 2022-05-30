@@ -15,6 +15,13 @@
               <ValidationProvider name="Model" mode="eager" rules="required" v-slot="{errors}">
                 <ModelSelector :project-id="projectId" :value.sync="model"/>
               </ValidationProvider>
+              <ValidationProvider name="Train dataset" v-slot="{errors}">
+                <DatasetSelector :project-id="projectId" :value.sync="trainDS" :label="'Train dataset'"/>
+              </ValidationProvider>
+              <ValidationProvider name="Test dataset" v-slot="{errors}">
+                <DatasetSelector :project-id="projectId" :value.sync="testDS" :label="'Test dataset'"/>
+              </ValidationProvider>
+              <v-switch v-model="shouldCreateAutoTests" :label="'Create tests automatically'"></v-switch>
             </v-col>
           </v-row>
         </v-card-text>
@@ -34,18 +41,29 @@ import Vue from "vue";
 import {Prop} from "vue-property-decorator";
 import {api} from "@/api";
 import ModelSelector from "@/views/main/utils/ModelSelector.vue";
-import { ModelDTO } from '@/generated-sources';
+import {ModelDTO} from '@/generated-sources';
+import DatasetSelector from "@/views/main/utils/DatasetSelector.vue";
 
 @Component({
-  components: {ModelSelector}
+  components: {DatasetSelector, ModelSelector}
 })
 export default class TestSuiteCreateModal extends Vue {
   @Prop({required: true}) projectId!: number;
   public name: string = "";
   model: ModelDTO | null = null;
+  trainDS: ModelDTO | null = null;
+  testDS: ModelDTO | null = null;
+  shouldCreateAutoTests: boolean = true;
 
   public async submit() {
-    let createdTestSuite = (await api.createTestSuite(this.projectId, this.name, this.model!.id)).data;
+    let createdTestSuite = await api.createTestSuite({
+      name: this.name,
+      projectId: this.projectId,
+      trainDatasetId: this.trainDS && this.trainDS.id,
+      testDatasetId: this.testDS && this.testDS.id,
+      modelId: this.model!.id,
+      shouldGenerateTests: this.shouldCreateAutoTests
+    });
     this.$emit('submit', createdTestSuite)
   }
 }

@@ -6,8 +6,8 @@
       :value="value"
       :items="projectModels"
       :item-text="extractModelName"
-      item-value="id"
-      return-object
+      :item-value="'id'"
+      :return-object="returnObject"
       @input="onInput"
   ></v-select>
 </template>
@@ -18,13 +18,14 @@ import Vue from "vue";
 import axios from "axios";
 import {apiURL} from "@/env";
 import {Prop} from "vue-property-decorator";
-import { ModelDTO } from '@/generated-sources';
+import {ModelDTO} from '@/generated-sources';
 
 @Component
 export default class ModelSelector extends Vue {
   @Prop({required: true}) projectId!: number;
+  @Prop({default: true}) returnObject!: boolean;
   projectModels: Array<ModelDTO> = [];
-  @Prop() value?: ModelDTO;
+  @Prop() value?: ModelDTO | number;
 
   extractModelName(model: ModelDTO) {
     return model.name || model.fileName;

@@ -67,11 +67,8 @@ export default class InspectorLauncher extends Vue {
 
   public async loadDatasets() {
     this.loading = true;
-    const response = await api.getProjectDatasets(
-      readToken(this.$store),
-      this.projectId
-    );
-    this.datasets = response.data.sort((a, b) =>
+    const response = await api.getProjectDatasets(this.projectId);
+    this.datasets = response.sort((a, b) =>
       new Date(a.createdDate) < new Date(b.createdDate) ? 1 : -1
     );
     this.loading = false;
@@ -79,7 +76,7 @@ export default class InspectorLauncher extends Vue {
 
   public async launchInspector() {
     const inspection = await api.prepareInspection({datasetId: this.datasetSelected!.id, modelId: this.model.id});
-    await this.$router.push({ name: 'project-inspector', params: {inspectionId: inspection.data.id}});
+    await this.$router.push({ name: 'project-inspector', params: {inspectionId: inspection.id.toString()}});
     this.reset();
   }
 }
