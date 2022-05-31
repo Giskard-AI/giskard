@@ -140,7 +140,7 @@ export default class PredictionExplanations extends Vue {
   }
 
   get chartOptionsRegression() {
-    return this.createSimpleExplanationChart(this.fullExplanations!);
+    return this.createSimpleExplanationChart(this.fullExplanations!["default"]);
   }
 
   get chartOptionsBinaryClassification() {
