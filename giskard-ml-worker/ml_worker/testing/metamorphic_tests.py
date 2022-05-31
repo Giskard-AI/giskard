@@ -21,7 +21,7 @@ class MetamorphicTests(AbstractTestCollection):
 
     @staticmethod
     def _prediction_ratio(prediction, perturbed_prediction):
-        return abs(perturbed_prediction - prediction) / prediction if prediction else 0  # to be handled
+        return abs(perturbed_prediction - prediction) / prediction if prediction != 0 else abs(perturbed_prediction)
 
     @staticmethod
     def _perturb_and_predict(df, model: ModelInspector, perturbation_dict, output_proba=True,
@@ -40,7 +40,7 @@ class MetamorphicTests(AbstractTestCollection):
         return results_df, len(modified_rows)
 
     def _compare_prediction(self, results_df, prediction_task, output_sensitivity=None, flag=None):
-        if flag == 'INV':
+        if flag == 'Invariance':
             if prediction_task == 'classification':
                 passed_idx = results_df.loc[
                     results_df['prediction'] == results_df['perturbed_prediction']].index.values
@@ -50,11 +50,11 @@ class MetamorphicTests(AbstractTestCollection):
                     lambda x: self._prediction_ratio(x["prediction"], x["perturbed_prediction"]), axis=1)
                 passed_idx = results_df.loc[results_df['predict_difference_ratio'] < output_sensitivity].index.values
 
-        elif flag == 'INC':
+        elif flag == 'Increasing':
             passed_idx = results_df.loc[
                 results_df['prediction'] < results_df['perturbed_prediction']].index.values
 
-        elif flag == 'DEC':
+        elif flag == 'Decreasing':
             passed_idx = results_df.loc[
                 results_df['prediction'] > results_df['perturbed_prediction']].index.values
 
@@ -141,7 +141,7 @@ class MetamorphicTests(AbstractTestCollection):
 
         """
 
-        return self._test_metamorphic(flag='INV',
+        return self._test_metamorphic(flag='Invariance',
                                       df=df,
                                       model=model,
                                       perturbation_dict=perturbation_dict,
@@ -200,7 +200,7 @@ class MetamorphicTests(AbstractTestCollection):
             raise Exception(
                 f'"{classification_label}" is not part of model labels: {",".join(model.classification_labels)}')
 
-        return self._test_metamorphic(flag='INC',
+        return self._test_metamorphic(flag='Increasing',
                                       df=df,
                                       model=model,
                                       perturbation_dict=perturbation_dict,
@@ -258,7 +258,7 @@ class MetamorphicTests(AbstractTestCollection):
         if model.prediction_task == "classification" and classification_label not in model.classification_labels:
             raise Exception(
                 f'"{classification_label}" is not part of model labels: {",".join(model.classification_labels)}')
-        return self._test_metamorphic(flag='DEC',
+        return self._test_metamorphic(flag='Decreasing',
                                       df=df,
                                       model=model,
                                       perturbation_dict=perturbation_dict,
