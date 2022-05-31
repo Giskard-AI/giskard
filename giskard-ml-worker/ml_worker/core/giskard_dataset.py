@@ -12,7 +12,7 @@ class GiskardDataset:
     feature_types: Mapping[str, str]
     df: pd.DataFrame
 
-    def __init__(self, df: pd.DataFrame, target: str, feature_types: Mapping[str, str]) -> None:
+    def __init__(self, df: pd.DataFrame, feature_types: Mapping[str, str], target: str = None) -> None:
         self.df = df
         self.target = target
         self.feature_types = feature_types
@@ -25,7 +25,9 @@ class GiskardDataset:
         return cls(df, target, feature_types)
 
     def slice(self, slice_fn: Callable):
-        return GiskardDataset(self.df[slice_fn(self.df)], self.target, self.feature_types)
+        if slice_fn is None:
+            return self
+        return GiskardDataset(slice_fn(self.df), self.target, self.feature_types)
 
     def __len__(self):
         return len(self.df)
