@@ -55,6 +55,7 @@ jobs:
       run: docker-compose -f docker-stack.yml build ml-worker
 
     - name: Push images to ECR
+      if: ${{ steps.extract_branch.outputs.branch == 'main' }}
       env:
         TAG: latest
       run: |
