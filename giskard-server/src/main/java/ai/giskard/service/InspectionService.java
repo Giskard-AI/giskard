@@ -9,7 +9,6 @@ import ai.giskard.repository.ml.DatasetRepository;
 import ai.giskard.repository.ml.ModelRepository;
 import ai.giskard.security.PermissionEvaluator;
 import ai.giskard.web.rest.errors.EntityNotFoundException;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -128,7 +127,6 @@ public class InspectionService {
                 selection = predictedClass.isNotEqualTo(targetClass);
                 break;
             case CUSTOM:
-                DoubleColumn probPredicted = (DoubleColumn) predsTable.column(filter.getThresholdLabel());
                 selection = targetClass.isNotMissing();
                 if (filter.getPredictedLabel().length > 0) {
                     selection.and(predictedClass.isIn(filter.getPredictedLabel()));
@@ -136,11 +134,14 @@ public class InspectionService {
                 if (filter.getTargetLabel().length > 0) {
                     selection.and(targetClass.isIn(filter.getTargetLabel()));
                 }
-                if (filter.getMaxThreshold() != null) {
-                    selection.and(probPredicted.isLessThanOrEqualTo(filter.getMaxThreshold()));
-                }
-                if (filter.getMinThreshold() != null) {
-                    selection.and(probPredicted.isGreaterThanOrEqualTo(filter.getMinThreshold()));
+                if (filter.getThresholdLabel() !=  null) {
+                    DoubleColumn probPredicted = (DoubleColumn) predsTable.column(filter.getThresholdLabel());
+                    if (filter.getMaxThreshold() != null) {
+                        selection.and(probPredicted.isLessThanOrEqualTo(filter.getMaxThreshold()));
+                    }
+                    if (filter.getMinThreshold() != null) {
+                        selection.and(probPredicted.isGreaterThanOrEqualTo(filter.getMinThreshold()));
+                    }
                 }
                 break;
             case BORDERLINE:
@@ -164,17 +165,16 @@ public class InspectionService {
         Table table = datasetService.readTableByDatasetId(inspection.getDataset().getId());
         table.addColumns(IntColumn.indexColumn("Index", table.rowCount(), 0));
         Selection selection = inspection.getModel().getModelType().isClassification() ? getSelection(inspection, filter) : getSelectionRegression(inspection, filter);
-        Table filteredTable = selection == null ? table : table.where(selection);
-        return filteredTable;
+        return selection == null ? table : table.where(selection);
     }
 
     /**
-     * Get
+     * Get labels
      *
      * @return filtered table
      */
     @Transactional
-    public List<String> getLabels(@NotNull Long inspectionId) throws JsonProcessingException {
+    public List<String> getLabels(@NotNull Long inspectionId) {
         Inspection inspection = inspectionRepository.getById(inspectionId);
         return inspection.getModel().getClassificationLabels();
     }
