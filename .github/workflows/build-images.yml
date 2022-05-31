@@ -42,6 +42,9 @@ jobs:
         sudo sysctl -w kernel.unprivileged_userns_clone=1
         docker-compose -f docker-compose.yml -f docker-compose.dev.yml config > docker-stack.yml 
       
+    - name: Build Jupyter image
+      run: docker-compose -f docker-stack.yml build jupyter
+
     - name: Build Frontend image
       run: docker-compose -f docker-stack.yml build frontend
 
