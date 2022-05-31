@@ -39,7 +39,7 @@ services:
 
 
   frontend:
-    image: '${DOCKER_REGISTRY}/giskard-frontend:${TAG-latest}'
+    image: '${DOCKER_REGISTRY}/frontend:${TAG-latest}'
     ports:
       - "19000:80"
     expose:
@@ -51,7 +51,7 @@ services:
       - .env
 
   jupyter:
-    image: '${DOCKER_REGISTRY}/giskard-jupyter:${TAG-latest}'
+    image: '${DOCKER_REGISTRY}/jupyter:${TAG-latest}'
     entrypoint:
       - /usr/local/bin/start.sh
       - jupyter
