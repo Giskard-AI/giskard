@@ -1,6 +1,7 @@
 package ai.giskard.web.rest.controllers;
 
 import ai.giskard.domain.ml.Dataset;
+import ai.giskard.domain.ml.ModelType;
 import ai.giskard.domain.ml.ProjectModel;
 import ai.giskard.repository.ml.DatasetRepository;
 import ai.giskard.repository.ml.ModelRepository;
@@ -89,9 +90,11 @@ public class ModelController {
         permissionEvaluator.validateCanReadProject(model.getProject().getId());
         RunModelForDataFrameResponse result = modelService.predict(model, data.getFeatures());
         Map<String, Float> allPredictions = new HashMap<>();
-        result.getAllPredictions().getRows(0).getFeaturesMap().forEach((label, proba) -> {
-            allPredictions.put(label, Float.parseFloat(proba));
-        });
+        if (ModelType.isClassification(model.getModelType())) {
+            result.getAllPredictions().getRows(0).getFeaturesMap().forEach((label, proba) ->
+                allPredictions.put(label, Float.parseFloat(proba))
+            );
+        }
         return new PredictionDTO(result.getPrediction(0), allPredictions);
     }
 
