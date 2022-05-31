@@ -20,13 +20,13 @@ items:
         for females  between train and test sets is below 0.2
 
         Args:
-            slice_train(pandas.core.frame.DataFrame):
+            slice_train(GiskardDataset):
                 slice of the train dataset
-            slice_test(pandas.core.frame.DataFrame):
+            slice_test(GiskardDataset):
                 slice of the test dataset
             model(ModelInspector):
-                uploaded model
-            threshold:
+                model used to compute the test
+            threshold(float):
                 threshold value for PSI
 
         Returns:
@@ -61,13 +61,13 @@ items:
         for females between train and test sets is below 0.2
 
         Args:
-            slice_train(pandas.core.frame.DataFrame):
+            slice_train(GiskardDataset):
                 slice of the train dataset
-            slice_test(pandas.core.frame.DataFrame):
+            slice_test(GiskardDataset):
                 slice of the test dataset
             model(ModelInspector):
-                uploaded model
-            threshold:
+                model used to compute the test
+            threshold(float):
                 threshold value for Chi-Square
 
         Returns:
@@ -102,13 +102,13 @@ items:
          rejected at 5% level and that we cannot assume drift for this variable.
 
         Args:
-            slice_train(pandas.core.frame.DataFrame):
+            slice_train(GiskardDataset):
                 slice of the train dataset
-            slice_test(pandas.core.frame.DataFrame):
+            slice_test(GiskardDataset):
                 slice of the test dataset
             model(ModelInspector):
-                uploaded model
-            threshold:
+                model used to compute the test
+            threshold(float):
                 threshold for p-value Kolmogorov-Smirnov test
 
         Returns:
@@ -146,13 +146,13 @@ items:
         rejected at 5% level and that we cannot assume drift for this variable.
 
         Args:
-            slice_train(pandas.core.frame.DataFrame):
+            slice_train(GiskardDataset):
                 slice of the train dataset
-            slice_test(pandas.core.frame.DataFrame):
+            slice_test(GiskardDataset):
                 slice of the test dataset
             model(ModelInspector):
-                uploaded model
-            threshold:
+                model used to compute the test
+            threshold(float):
                 threshold for p-value Kolmogorov-Smirnov test
             classification_label:
                 one specific label value from the target column for classification model
@@ -192,13 +192,13 @@ items:
         for females between train and test sets is below 0.2
 
         Args:
-            slice_train(pandas.core.frame.DataFrame):
+            slice_train(GiskardDataset):
                 slice of the train dataset
-            slice_test(pandas.core.frame.DataFrame):
+            slice_test(GiskardDataset):
                 slice of the test dataset
             model(ModelInspector):
-                uploaded model
-            threshold:
+                model used to compute the test
+            threshold(float):
                 threshold for p-value Kolmogorov-Smirnov test
 
         Returns:
@@ -232,15 +232,15 @@ items:
         labels probabilities for females between train and test sets is below 0.2
 
         Args:
-            slice_train(pandas.core.frame.DataFrame):
+            slice_train(GiskardDataset):
                 slice of the train dataset
-            slice_test(pandas.core.frame.DataFrame):
+            slice_test(GiskardDataset):
                 slice of the test dataset
             model(ModelInspector):
-                uploaded model
+                model used to compute the test
             classification_label:
                 one specific label value from the target column for classification model
-            threshold:
+            threshold(float):
                 threshold for p-value Kolmogorov-Smirnov test
 
         Returns:
