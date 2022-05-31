@@ -18,13 +18,11 @@ items:
       Example: The test is passed when the AUC for women is higher than 0.7
 
       Args:
-          slice_df(pandas.core.frame.DataFrame):
+          slice_df(GiskardDataset):
               slice of the test dataset
           model(ModelInspector):
-              uploaded model
-          target(str):
-              target column name
-          threshold(int):
+              model used to compute the test
+          threshold(float):
               threshold value of AUC metrics
 
       Returns:
@@ -37,7 +35,7 @@ items:
 
       """
       tests.performance.test_auc(
-            slice_df=test_df.slice(lambda df: df['{{FEATURE NAME}}'].notnull()),
+            slice_df=test_df.slice(lambda df: df.head(len(df) // 2)),
             model=model,
             threshold=0.1
         )
@@ -45,6 +43,9 @@ items:
   - id: f1
     title: F1
     hint: Test if the F1 score is high enough for a slice
+    modelTypes:
+      - MULTICLASS_CLASSIFICATION
+      - BINARY_CLASSIFICATION
     # language=Python
     code: |-
       """
@@ -55,13 +56,11 @@ items:
       Example: The test is passed when F1 score for women is higher than 0.7
 
       Args:
-          slice_df(pandas.core.frame.DataFrame):
+          slice_df(GiskardDataset):
               slice of the test dataset
           model(ModelInspector):
-              uploaded model
-          target(str):
-              target column name
-          threshold(int):
+              model used to compute the test
+          threshold(float):
               threshold value for F1 Score
 
       Returns:
@@ -73,7 +72,7 @@ items:
               TRUE if F1 Score metrics > threshold
       """
       tests.performance.test_f1(
-          slice_df=test_df.slice(lambda df: df['{{FEATURE NAME}}'].notnull()),
+          slice_df=test_df.slice(lambda df: df.head(len(df) // 2)),
           model=model,
           threshold=0.1
       )
@@ -92,23 +91,19 @@ items:
       is lower than a threshold
 
       Example : The test is passed when the F1 Score for females has a difference lower than 10% from the
-      F1 Score for males. For example, if the F1 Score for males is 0.8 (filter_1) and the F1 Score  for
-      females is 0.6 (filter_2) then the absolute percentage F1 Score  change is 0.2 / 0.8 = 0.25
+      F1 Score for males. For example, if the F1 Score for males is 0.8 (slice_1) and the F1 Score  for
+      females is 0.6 (slice_2) then the absolute percentage F1 Score  change is 0.2 / 0.8 = 0.25
       and the test will fail
 
       Args:
-          df(pandas.core.frame.DataFrame):
-              test dataset
+          slice_1(GiskardDataset):
+              slice of the test dataset
+          slice_2(GiskardDataset):
+              slice of the test dataset
           model(ModelInspector):
-              uploaded model
-          target(str):
-              target column name
-          threshold(int):
+              model used to compute the test
+          threshold(float):
               threshold value for F1 Score difference
-          filter_1(pandas.core.indexes.numeric.NumericIndex):
-              index of the slice of the dataset
-          filter_2(pandas.core.indexes.numeric.NumericIndex):
-              index of the slice of the dataset
 
       Returns:
           total rows tested:
@@ -120,10 +115,9 @@ items:
 
       """
       tests.performance.test_diff_f1(
-          df=test_df,
+          slice_1=test_df.slice(lambda df: df.head(len(df) // 2)),
+          slice_2=test_df.slice(lambda df: df.head(len(df) // 2)),
           model=model,
-          filter_1=lambda df: df['{{FEATURE NAME}}'].notnull(),
-          filter_2=lambda df: df['{{FEATURE NAME}}'].notnull(),
           threshold=0.1
       )
   - id: diff_traintest_f1
@@ -142,19 +136,17 @@ items:
 
       Example: The test is passed when the F1 Score for train dataset for females has a difference lower
       than 10% from the F1 Score for test dataset for females . For example, if the F1 Score for train
-      dataset for females is 0.8 (train_df) and the F1 Score  for test dataset is 0.6 (test_df) then
+      dataset for females is 0.8 (slice_train) and the F1 Score  for test dataset is 0.6 (slice_test) then
       the absolute percentage F1 Score  change is 0.2 / 0.8 = 0.25 and the test will fail.
 
       Args:
-          train_df(pandas.core.frame.DataFrame):
-              train dataset
-          test_df(pandas.core.frame.DataFrame):
-              test dataset
+          slice_train(GiskardDataset):
+              slice of train dataset
+          slice_test(GiskardDataset):
+              slice of test dataset
           model(ModelInspector):
-              uploaded model
-          target(str):
-              target column name
-          threshold(int):
+              model used to compute the test
+          threshold(float):
               threshold value for F1 Score difference
 
 
@@ -166,8 +158,8 @@ items:
 
       """
       tests.performance.test_diff_traintest_f1(
-          train_df=train_df,
-          test_df=test_df,
+          slice_train=train_df.slice(lambda df: df.head(len(df) // 2)),
+          slice_test=test_df.slice(lambda df: df.head(len(df) // 2)),
           model=model,
           threshold=0.1
       )
@@ -187,13 +179,11 @@ items:
       Example: The test is passed when the Accuracy for women is higher than 0.7
 
       Args:
-          slice_df(pandas.core.frame.DataFrame):
+          slice_df(GiskardDataset):
               slice of the test dataset
           model(ModelInspector):
-              uploaded model
-          target(str):
-              target column name
-          threshold(int):
+              model used to compute the test
+          threshold(float):
               threshold value for Accuracy
 
       Returns:
@@ -206,7 +196,7 @@ items:
 
       """
       tests.performance.test_accuracy(
-          slice_df=test_df.slice(lambda df: df['{{FEATURE NAME}}'].notnull()),
+          slice_df=test_df.slice(lambda df: df.head(len(df) // 2)),
           model=model,
           threshold=0.1
       )
@@ -224,23 +214,19 @@ items:
       Description: Test if the absolute percentage change of model Accuracy between two samples is lower than a threshold
 
       Example : The test is passed when the Accuracy for females has a difference lower than 10% from the
-      Accuracy for males. For example, if the Accuracy for males is 0.8 (filter_1) and the Accuracy  for
-      females is 0.6 (filter_2) then the absolute percentage Accuracy change is 0.2 / 0.8 = 0.25
+      Accuracy for males. For example, if the Accuracy for males is 0.8 (slice_1) and the Accuracy  for
+      females is 0.6 (slice_2) then the absolute percentage Accuracy change is 0.2 / 0.8 = 0.25
       and the test will fail
 
       Args:
-          df(pandas.core.frame.DataFrame):
-              test dataset
+          slice_1(GiskardDataset):
+              slice of the test dataset
+          slice_2(GiskardDataset):
+              slice of the test dataset
           model(ModelInspector):
-              uploaded model
-          target(str):
-              target column name
-          threshold(int):
+              model used to compute the test
+          threshold(float):
               threshold value for Accuracy Score difference
-          filter_1(pandas.core.indexes.numeric.NumericIndex):
-              index of the slice of the dataset
-          filter_2(pandas.core.indexes.numeric.NumericIndex):
-              index of the slice of the dataset
 
       Returns:
           total rows tested:
@@ -251,10 +237,9 @@ items:
               TRUE if Accuracy difference < threshold
       """
       tests.performance.test_diff_accuracy(
-          df=test_df,
+          slice_1=test_df.slice(lambda df: df.head(len(df) // 2)),
+          slice_2=test_df.slice(lambda df: df.head(len(df) // 2)),
           model=model,
-          filter_1=lambda df: df['{{FEATURE NAME}}'].notnull(),
-          filter_2=lambda df: df['{{FEATURE NAME}}'].notnull(),
           threshold=0.1
       )
   - id: diff_traintest_accuracy
@@ -273,19 +258,17 @@ items:
 
       Example : The test is passed when the Accuracy for train dataset for females has a difference lower
       than 10% from the Accuracy for test dataset for females. For example, if the Accuracy for train
-      dataset for females is 0.8 (train_df) and the Accuracy  for test dataset for females is 0.6 (test_df)
+      dataset for females is 0.8 (slice_train) and the Accuracy  for test dataset for females is 0.6 (slice_test)
       then the absolute percentage Accuracy  change is 0.2 / 0.8 = 0.25 and the test will fail.
 
       Args:
-          train_df(pandas.core.frame.DataFrame):
-              train dataset
-          test_df(pandas.core.frame.DataFrame):
-              test dataset
+          slice_train(GiskardDataset):
+              slice of train dataset
+          slice_test(GiskardDataset):
+              slice of test dataset
           model(ModelInspector):
-              uploaded model
-          target(str):
-              target column name
-          threshold(int):
+              model used to compute the test
+          threshold(float):
               threshold value for Accuracy difference
 
       Returns:
@@ -295,8 +278,8 @@ items:
               TRUE if Accuracy difference < threshold
       """
       tests.performance.test_diff_traintest_accuracy(
-          train_df=train_df,
-          test_df=test_df,
+          slice_train=train_df.slice(lambda df: df.head(len(df) // 2)),
+          slice_test=test_df.slice(lambda df: df.head(len(df) // 2)),
           model=model,
           threshold=0.1
       )
@@ -316,13 +299,11 @@ items:
       Example: The test is passed when the Precision for women is higher than 0.7
 
       Args:
-          slice_df(pandas.core.frame.DataFrame):
+          slice_df(GiskardDataset):
               slice of the test dataset
           model(ModelInspector):
-              uploaded model
-          target(str):
-              target column name
-          threshold(int):
+              model used to compute the test
+          threshold(float):
               threshold value for Precision
 
       Returns:
@@ -335,7 +316,7 @@ items:
 
       """
       tests.performance.test_precision(
-          slice_df=test_df.slice(lambda df: df['{{FEATURE NAME}}'].notnull()),
+          slice_df=test_df.slice(lambda df: df.head(len(df) // 2)),
           model=model,
           threshold=0.1
       )
@@ -353,23 +334,19 @@ items:
       Description: Test if the absolute percentage change of model Precision between two samples is lower than a threshold
 
       Example : The test is passed when the Precision for females has a difference lower than 10% from the
-      Accuracy for males. For example, if the Precision for males is 0.8 (filter_1) and the Precision  for
-      females is 0.6 (filter_2) then the absolute percentage Precision change is 0.2 / 0.8 = 0.25
+      Accuracy for males. For example, if the Precision for males is 0.8 (slice_1) and the Precision  for
+      females is 0.6 (slice_2) then the absolute percentage Precision change is 0.2 / 0.8 = 0.25
       and the test will fail
 
       Args:
-          df(pandas.core.frame.DataFrame):
-              test dataset
+          slice_1(GiskardDataset):
+              slice of the test dataset
+          slice_2(GiskardDataset):
+              slice of the test dataset
           model(ModelInspector):
-              uploaded model
-          target(str):
-              target column name
-          threshold(int):
+              model used to compute the test
+          threshold(float):
               threshold value for Precision difference
-          filter_1(pandas.core.indexes.numeric.NumericIndex):
-              index of the slice of the dataset
-          filter_2(pandas.core.indexes.numeric.NumericIndex):
-              index of the slice of the dataset
 
       Returns:
           total rows tested:
@@ -380,10 +357,9 @@ items:
               TRUE if Precision difference < threshold
       """
       tests.performance.test_diff_precision(
-          df=test_df,
+          slice_1=test_df.slice(lambda df: df.head(len(df) // 2)),
+          slice_2=test_df.slice(lambda df: df.head(len(df) // 2)),
           model=model,
-          filter_1=lambda df: df['{{FEATURE NAME}}'].notnull(),
-          filter_2=lambda df: df['{{FEATURE NAME}}'].notnull(),
           threshold=0.1
       )
   - id: recall
@@ -402,13 +378,11 @@ items:
       Example: The test is passed when the Recall for women is higher than 0.7
 
       Args:
-          slice_df(pandas.core.frame.DataFrame):
+          slice_df(GiskardDataset):
               slice of the test dataset
           model(ModelInspector):
-              uploaded model
-          target(str):
-              target column name
-          threshold(int):
+              model used to compute the test
+          threshold(float):
               threshold value for Recall
 
       Returns:
@@ -421,7 +395,7 @@ items:
 
       """
       tests.performance.test_recall(
-          slice_df=test_df.slice(lambda df: df['{{FEATURE NAME}}'].notnull()),
+          slice_df=test_df.slice(lambda df: df.head(len(df) // 2)),
           model=model,
           threshold=0.1
       )
@@ -439,23 +413,19 @@ items:
       Description: Test if the absolute percentage change of model Recall between two samples is lower than a threshold
 
       Example : The test is passed when the Recall for females has a difference lower than 10% from the
-      Accuracy for males. For example, if the Recall for males is 0.8 (filter_1) and the Recall  for
-      females is 0.6 (filter_2) then the absolute percentage Recall change is 0.2 / 0.8 = 0.25
+      Accuracy for males. For example, if the Recall for males is 0.8 (slice_1) and the Recall  for
+      females is 0.6 (slice_2) then the absolute percentage Recall change is 0.2 / 0.8 = 0.25
       and the test will fail
 
       Args:
-          df(pandas.core.frame.DataFrame):
-              test dataset
+          slice_1(GiskardDataset):
+              slice of the test dataset
+          slice_2(GiskardDataset):
+              slice of the test dataset
           model(ModelInspector):
-              uploaded model
-          target(str):
-              target column name
-          threshold(int):
+              model used to compute the test
+          threshold(float):
               threshold value for Recall difference
-          filter_1(pandas.core.indexes.numeric.NumericIndex):
-              index of the slice of the dataset
-          filter_2(pandas.core.indexes.numeric.NumericIndex):
-              index of the slice of the dataset
 
       Returns:
           total rows tested:
@@ -466,10 +436,9 @@ items:
               TRUE if Recall difference < threshold
       """
       tests.performance.test_diff_recall(
-          df=test_df,
+          slice_1=test_df.slice(lambda df: df.head(len(df) // 2)),
+          slice_2=test_df.slice(lambda df: df.head(len(df) // 2)),
           model=model,
-          filter_1=lambda df: df['{{FEATURE NAME}}'].notnull(),
-          filter_2=lambda df: df['{{FEATURE NAME}}'].notnull(),
           threshold=0.1
       )
   - id: rmse
@@ -487,13 +456,11 @@ items:
       Example: The test is passed when the RMSE is lower than 0.7
 
       Args:
-          df(pandas.core.frame.DataFrame):
-              test dataset
+          slice_df(GiskardDataset):
+              slice of test dataset
           model(ModelInspector):
-              uploaded model
-          target(str):
-              target column name
-          threshold(int):
+              model used to compute the test
+          threshold(float):
               threshold value for RMSE
 
       Returns:
@@ -506,7 +473,7 @@ items:
 
       """
       tests.performance.test_rmse(
-          df=test_df,
+          slice_df=test_df.slice(lambda df: df.head(len(df) // 2)),
           model=model,
           threshold=0.1
       )
@@ -523,23 +490,19 @@ items:
       Description: Test if the absolute percentage change of model RMSE between two samples is lower than a threshold
 
       Example : The test is passed when the RMSE for females has a difference lower than 10% from the
-      RMSE for males. For example, if the RMSE for males is 0.8 (filter_1) and the RMSE  for
-      females is 0.6 (filter_2) then the absolute percentage RMSE change is 0.2 / 0.8 = 0.25
+      RMSE for males. For example, if the RMSE for males is 0.8 (slice_1) and the RMSE  for
+      females is 0.6 (slice_2) then the absolute percentage RMSE change is 0.2 / 0.8 = 0.25
       and the test will fail
 
       Args:
-          df(pandas.core.frame.DataFrame):
-              test dataset
+          slice_1(GiskardDataset):
+              slice of the test dataset
+          slice_2(GiskardDataset):
+              slice of the test dataset
           model(ModelInspector):
-              uploaded model
-          target(str):
-              target column name
-          threshold(int):
+              model used to compute the test
+          threshold(float):
               threshold value for RMSE difference
-          filter_1(pandas.core.indexes.numeric.NumericIndex):
-              index of the slice of the dataset
-          filter_2(pandas.core.indexes.numeric.NumericIndex):
-              index of the slice of the dataset
 
       Returns:
           total rows tested:
@@ -550,10 +513,9 @@ items:
               TRUE if RMSE difference < threshold
       """
       tests.performance.test_diff_rmse(
-          df=test_df,
+          slice_1=test_df.slice(lambda df: df.head(len(df) // 2)),
+          slice_2=test_df.slice(lambda df: df.head(len(df) // 2)),
           model=model,
-          filter_1=lambda df: df['{{FEATURE NAME}}'].notnull(),
-          filter_2=lambda df: df['{{FEATURE NAME}}'].notnull(),
           threshold=0.1
       )
   - id: diff_traintest_rmse
@@ -571,19 +533,17 @@ items:
 
       Example: The test is passed when the RMSE for train dataset for females  has a difference lower
       than 10% from the RMSE for females in test dataset. For example, if the RMSE for train dataset
-      for females is 0.8 (train_df) and the RMSE  for test dataset for females is 0.6 (test_df) then
+      for females is 0.8 (slice_train) and the RMSE  for test dataset for females is 0.6 (slice_test) then
       the absolute percentage RMSE  change is 0.2 / 0.8 = 0.25 and the test will fail.
 
       Args:
-          train_df(pandas.core.frame.DataFrame):
-              train dataset
-          test_df(pandas.core.frame.DataFrame):
-              test dataset
+          slice_train(GiskardDataset):
+              slice of train dataset
+          slice_test(GiskardDataset):
+              slice of test dataset
           model(ModelInspector):
-              uploaded model
-          target(str):
-              target column name
-          threshold(int):
+              model used to compute the test
+          threshold(float):
               threshold value for RMSE difference
 
       Returns:
@@ -594,8 +554,8 @@ items:
 
       """
       tests.performance.test_diff_traintest_rmse(
-          train_slice=train_df[:len(test_df)//2],
-          test_slice=test_df[len(test_df)//2:],
+          slice_train=train.slice(lambda df: df.head(len(df) // 2)),
+          slice_test=test_df.slice(lambda df: df.head(len(df) // 2)),
           model=model,
           threshold=0.1
       )
@@ -614,13 +574,11 @@ items:
       Example: The test is passed when the MAE is lower than 0.7
 
       Args:
-          df(pandas.core.frame.DataFrame):
-              test dataset
+          slice_df(GiskardDataset):
+              slice of test dataset
           model(ModelInspector):
-              uploaded model
-          target(str):
-              target column name
-          threshold(int):
+              model used to compute the test
+          threshold(float):
               threshold value for MAE
 
       Returns:
@@ -632,10 +590,9 @@ items:
               TRUE if MAE metric < threshold
       """
       tests.performance.test_mae(
-            df=test_df,
+            slice_df=test_df.slice(lambda df: df.head(len(df) // 2)),
             model=model,
             threshold=0.1,
-            target='{{TARGET COLUMN}}'
         )
   - id: r2
     title: R2
@@ -652,13 +609,11 @@ items:
       Example: The test is passed when the R-Squared is higher than 0.7
 
       Args:
-          df(pandas.core.frame.DataFrame):
+          slice_df(GiskardDataset):
               test dataset
           model(ModelInspector):
-              uploaded model
-          target(str):
-              target column name
-          threshold(int):
+              model used to compute the test
+          threshold(float):
               threshold value for R-Squared
 
       Returns:
@@ -671,7 +626,7 @@ items:
 
       """
       tests.performance.test_r2(
-          df=test_df,
+          slice_df=test_df.slice(lambda df: df.head(len(df) // 2)),
           model=model,
           threshold=0.1
       )

@@ -191,14 +191,14 @@ class PerformanceTests(AbstractTestCollection):
     def _get_rmse(y_actual, y_predicted):
         return np.sqrt(mean_squared_error(y_actual, y_predicted))
 
-    def test_rmse(self, df, model: ModelInspector, threshold=1):
+    def test_rmse(self, slice_df, model: ModelInspector, threshold=1):
         """
         Test if the model RMSE is lower than a threshold
 
         Example: The test is passed when the RMSE is lower than 0.7
 
         Args:
-            df(GiskardDataset):
+            slice_df(GiskardDataset):
                 test dataset 
             model(ModelInspector):
                 uploaded model
@@ -214,16 +214,16 @@ class PerformanceTests(AbstractTestCollection):
                 TRUE if RMSE metric < threshold
 
         """
-        return self._test_regression_score(self._get_rmse, df, model, threshold, negative=False)
+        return self._test_regression_score(self._get_rmse, slice_df, model, threshold, negative=False)
 
-    def test_mae(self, df, model: ModelInspector, threshold=1):
+    def test_mae(self, slice_df, model: ModelInspector, threshold=1):
         """
         Test if the model Mean Absolute Error is lower than a threshold
 
         Example: The test is passed when the MAE is lower than 0.7
 
         Args:
-            df(GiskardDataset):
+            slice_df(GiskardDataset):
                 test dataset 
             model(ModelInspector):
                 uploaded model
@@ -239,17 +239,17 @@ class PerformanceTests(AbstractTestCollection):
                 TRUE if MAE metric < threshold
 
         """
-        return self._test_regression_score(mean_absolute_error, df, model, threshold,
+        return self._test_regression_score(mean_absolute_error, slice_df, model, threshold,
                                            negative=False)
 
-    def test_r2(self, df, model: ModelInspector, threshold=1):
+    def test_r2(self, slice_df, model: ModelInspector, threshold=1):
         """
         Test if the model R-Squared is higher than a threshold
 
         Example: The test is passed when the R-Squared is higher than 0.7
 
         Args:
-            df(GiskardDataset):
+            slice_df(GiskardDataset):
                 test dataset 
             model(ModelInspector):
                 uploaded model
@@ -265,12 +265,10 @@ class PerformanceTests(AbstractTestCollection):
                 TRUE if R-Squared metric > threshold
 
         """
-        return self._test_regression_score(r2_score, df, model, threshold, r2=True)
+        return self._test_regression_score(r2_score, slice_df, model, threshold, r2=True)
 
-    def _test_diff_prediction(self, test_fn, model, giskard_ds, threshold=0.1, filter_1=None, filter_2=None):
+    def _test_diff_prediction(self, test_fn, model, slice_1, slice_2, threshold):
         self.do_save_results = False
-        slice_1 = giskard_ds.slice(filter_1) if filter_1 is not None else giskard_ds
-        slice_2 = giskard_ds.slice(filter_2) if filter_2 is not None else giskard_ds
         metric_1 = test_fn(slice_1, model).metric
         metric_2 = test_fn(slice_2, model).metric
         self.do_save_results = True
@@ -283,27 +281,25 @@ class PerformanceTests(AbstractTestCollection):
                 passed=change_pct < threshold
             ))
 
-    def test_diff_accuracy(self, df, model, threshold=0.1, filter_1=None, filter_2=None):
+    def test_diff_accuracy(self,  slice_1, slice_2, model, threshold=0.1):
         """
 
         Test if the absolute percentage change of model Accuracy between two samples is lower than a threshold
 
         Example : The test is passed when the Accuracy for females has a difference lower than 10% from the
-        Accuracy for males. For example, if the Accuracy for males is 0.8 (filter_1) and the Accuracy  for
-        females is 0.6 (filter_2) then the absolute percentage Accuracy change is 0.2 / 0.8 = 0.25
+        Accuracy for males. For example, if the Accuracy for males is 0.8 (slice_1) and the Accuracy  for
+        females is 0.6 (slice_2) then the absolute percentage Accuracy change is 0.2 / 0.8 = 0.25
         and the test will fail
 
         Args:
-            df(GiskardDataset):
-                test dataset 
+          slice_1(GiskardDataset):
+              slice of the test dataset
+          slice_2(GiskardDataset):
+              slice of the test dataset
             model(ModelInspector):
                 uploaded model
             threshold(int):
                 threshold value for Accuracy Score difference
-            filter_1(int64Index):
-                index of the slice of the dataset
-            filter_2(int64Index):
-                index of the slice of the dataset
 
         Returns:
             total rows tested:
@@ -314,28 +310,26 @@ class PerformanceTests(AbstractTestCollection):
                 TRUE if Accuracy difference < threshold
 
         """
-        return self._test_diff_prediction(self.test_accuracy, model, df, threshold, filter_1, filter_2)
+        return self._test_diff_prediction(self.test_accuracy, model, slice_1, slice_2, threshold)
 
-    def test_diff_f1(self, df, model, threshold=0.1, filter_1=None, filter_2=None):
+    def test_diff_f1(self, slice_1, slice_2, model, threshold=0.1):
         """
         Test if the absolute percentage change in model F1 Score between two samples is lower than a threshold
 
         Example : The test is passed when the F1 Score for females has a difference lower than 10% from the
-        F1 Score for males. For example, if the F1 Score for males is 0.8 (filter_1) and the F1 Score  for
-        females is 0.6 (filter_2) then the absolute percentage F1 Score  change is 0.2 / 0.8 = 0.25
+        F1 Score for males. For example, if the F1 Score for males is 0.8 (slice_1) and the F1 Score  for
+        females is 0.6 (slice_2) then the absolute percentage F1 Score  change is 0.2 / 0.8 = 0.25
         and the test will fail
 
         Args:
-            df(GiskardDataset):
-                test dataset 
+            slice_1(GiskardDataset):
+                slice of the test dataset
+            slice_2(GiskardDataset):
+                slice of the test dataset
             model(ModelInspector):
                 uploaded model
             threshold(int):
                 threshold value for F1 Score difference
-            filter_1(int64Index):
-                index of the slice of the dataset
-            filter_2(int64Index):
-                index of the slice of the dataset
 
         Returns:
             total rows tested:
@@ -346,28 +340,26 @@ class PerformanceTests(AbstractTestCollection):
                 TRUE if F1 Score difference < threshold
 
         """
-        return self._test_diff_prediction(self.test_f1, model, df, threshold, filter_1, filter_2)
+        return self._test_diff_prediction(self.test_f1, model, slice_1, slice_2, threshold)
 
-    def test_diff_precision(self, df, model, threshold=0.1, filter_1=None, filter_2=None):
+    def test_diff_precision(self, slice_1, slice_2, model, threshold=0.1):
         """
         Test if the absolute percentage change of model Precision between two samples is lower than a threshold
 
         Example : The test is passed when the Precision for females has a difference lower than 10% from the
-        Accuracy for males. For example, if the Precision for males is 0.8 (filter_1) and the Precision  for
-        females is 0.6 (filter_2) then the absolute percentage Precision change is 0.2 / 0.8 = 0.25
+        Accuracy for males. For example, if the Precision for males is 0.8 (slice_1) and the Precision  for
+        females is 0.6 (slice_2) then the absolute percentage Precision change is 0.2 / 0.8 = 0.25
         and the test will fail
 
         Args:
-            df(GiskardDataset):
-                test dataset 
+            slice_1(GiskardDataset):
+                slice of the test dataset
+            slice_2(GiskardDataset):
+                slice of the test dataset
             model(ModelInspector):
                 uploaded model
             threshold(int):
                 threshold value for Precision difference
-            filter_1(int64Index):
-                index of the slice of the dataset
-            filter_2(int64Index):
-                index of the slice of the dataset
 
         Returns:
             total rows tested:
@@ -377,28 +369,26 @@ class PerformanceTests(AbstractTestCollection):
             passed:
                 TRUE if Precision difference < threshold
         """
-        return self._test_diff_prediction(self.test_precision, model, df, threshold, filter_1, filter_2)
+        return self._test_diff_prediction(self.test_precision, model, slice_1, slice_2, threshold)
 
-    def test_diff_recall(self, df, model, threshold=0.1, filter_1=None, filter_2=None):
+    def test_diff_recall(self, slice_1, slice_2, model, threshold=0.1):
         """
         Test if the absolute percentage change of model Recall between two samples is lower than a threshold
 
         Example : The test is passed when the Recall for females has a difference lower than 10% from the
         Accuracy for males. For example, if the Recall for males is 0.8 (df_filter_1) and the Recall  for
-        females is 0.6 (filter_2) then the absolute percentage Recall change is 0.2 / 0.8 = 0.25
+        females is 0.6 (slice_2) then the absolute percentage Recall change is 0.2 / 0.8 = 0.25
         and the test will fail
 
         Args:
-            df(GiskardDataset):
-                test dataset 
+            slice_1(GiskardDataset):
+                slice of the test dataset
+            slice_2(GiskardDataset):
+                slice of the test dataset
             model(ModelInspector):
                 uploaded model
             threshold(int):
                 threshold value for Recall difference
-            filter_1(int64Index):
-                index of the slice of the dataset
-            filter_2(int64Index):
-                index of the slice of the dataset
 
         Returns:
             total rows tested:
@@ -408,12 +398,12 @@ class PerformanceTests(AbstractTestCollection):
             passed:
                 TRUE if Recall difference < threshold
         """
-        return self._test_diff_prediction(self.test_recall, model, df, threshold, filter_1, filter_2)
+        return self._test_diff_prediction(self.test_recall, model, slice_1, slice_2, threshold)
 
-    def _test_diff_traintest(self, test_fn, model, train_df, test_df, threshold=0.1):
+    def _test_diff_traintest(self, test_fn, model, slice_train, slice_test, threshold=0.1):
         self.do_save_results = False
-        metric_1 = test_fn(train_df, model).metric
-        metric_2 = test_fn(test_df, model).metric
+        metric_1 = test_fn(slice_train, model).metric
+        metric_2 = test_fn(slice_test, model).metric
         self.do_save_results = True
         change_pct = abs(metric_1 - metric_2) / metric_1
 
@@ -423,20 +413,20 @@ class PerformanceTests(AbstractTestCollection):
                 passed=change_pct < threshold
             ))
 
-    def test_diff_traintest_f1(self, train_df, test_df, model, threshold=0.1):
+    def test_diff_traintest_f1(self, slice_train, slice_test, model, threshold=0.1):
         """
         Test if the absolute percentage change in model F1 Score between train and test data
         is lower than a threshold
 
         Example : The test is passed when the F1 Score for train dataset has a difference lower than 10% from the
-        F1 Score for test dataset. For example, if the F1 Score for train dataset is 0.8 (train_df) and the F1 Score  for
-        test dataset is 0.6 (test_df) then the absolute percentage F1 Score  change is 0.2 / 0.8 = 0.25
+        F1 Score for test dataset. For example, if the F1 Score for train dataset is 0.8 (slice_train) and the F1 Score  for
+        test dataset is 0.6 (slice_test) then the absolute percentage F1 Score  change is 0.2 / 0.8 = 0.25
         and the test will fail.
 
         Args:
-            train_df(GiskardDataset):
+            slice_train(GiskardDataset):
                 train dataset 
-            test_df(GiskardDataset):
+            slice_test(GiskardDataset):
                 test dataset 
             model(ModelInspector):
                 uploaded model
@@ -451,22 +441,22 @@ class PerformanceTests(AbstractTestCollection):
                 TRUE if F1 Score difference < threshold
 
         """
-        return self._test_diff_traintest(self.test_f1, model, train_df, test_df, threshold)
+        return self._test_diff_traintest(self.test_f1, model, slice_train, slice_test, threshold)
 
-    def test_diff_traintest_accuracy(self, train_df, test_df, model, threshold=0.1):
+    def test_diff_traintest_accuracy(self, slice_train, slice_test, model, threshold=0.1):
         """
         Test if the absolute percentage change in model Accuracy between train and test data
         is lower than a threshold
 
         Example : The test is passed when the Accuracy for train dataset has a difference lower than 10% from the
-        Accuracy for test dataset. For example, if the Accuracy for train dataset is 0.8 (train_df) and the Accuracy  for
-        test dataset is 0.6 (test_df) then the absolute percentage Accuracy  change is 0.2 / 0.8 = 0.25
+        Accuracy for test dataset. For example, if the Accuracy for train dataset is 0.8 (slice_train) and the Accuracy  for
+        test dataset is 0.6 (slice_test) then the absolute percentage Accuracy  change is 0.2 / 0.8 = 0.25
         and the test will fail.
 
         Args:
-            train_df(GiskardDataset):
+            slice_train(GiskardDataset):
                 train dataset 
-            test_df(GiskardDataset):
+            slice_test(GiskardDataset):
                 test dataset 
             model(ModelInspector):
                 uploaded model
@@ -481,28 +471,26 @@ class PerformanceTests(AbstractTestCollection):
                 TRUE if Accuracy difference < threshold
 
         """
-        return self._test_diff_traintest(self.test_accuracy, model, train_df, test_df, threshold)
+        return self._test_diff_traintest(self.test_accuracy, model, slice_train, slice_test, threshold)
 
-    def test_diff_rmse(self, df, model, threshold=0.1, filter_1=None, filter_2=None):
+    def test_diff_rmse(self, slice_1, slice_2, model, threshold=0.1):
         """
         Test if the absolute percentage change of model RMSE between two samples is lower than a threshold
 
         Example : The test is passed when the RMSE for females has a difference lower than 10% from the
-        RMSE for males. For example, if the RMSE for males is 0.8 (filter_1) and the RMSE  for
-        females is 0.6 (filter_2) then the absolute percentage RMSE change is 0.2 / 0.8 = 0.25
+        RMSE for males. For example, if the RMSE for males is 0.8 (slice_1) and the RMSE  for
+        females is 0.6 (slice_2) then the absolute percentage RMSE change is 0.2 / 0.8 = 0.25
         and the test will fail
 
         Args:
-            df(GiskardDataset):
-                test dataset 
+            slice_1(GiskardDataset):
+                slice of the test dataset
+            slice_2(GiskardDataset):
+                slice of the test dataset
             model(ModelInspector):
                 uploaded model
             threshold(int):
                 threshold value for RMSE difference
-            filter_1(int64Index):
-                index of the slice of the dataset
-            filter_2(int64Index):
-                index of the slice of the dataset
 
         Returns:
             total rows tested:
@@ -512,22 +500,22 @@ class PerformanceTests(AbstractTestCollection):
             passed:
                 TRUE if RMSE difference < threshold
         """
-        return self._test_diff_prediction(self.test_rmse, model, df, threshold, filter_1, filter_2)
+        return self._test_diff_prediction(self.test_rmse, model, slice_1, slice_2, threshold)
 
-    def test_diff_traintest_rmse(self, train_slice, test_slice, model, threshold=0.1):
+    def test_diff_traintest_rmse(self, slice_train, slice_test, model, threshold=0.1):
         """
         Test if the absolute percentage change in model RMSE between train and test data
         is lower than a threshold
 
         Example : The test is passed when the RMSE for train dataset has a difference lower than 10% from the
-        RMSE for test dataset. For example, if the RMSE for train dataset is 0.8 (train_df) and the RMSE  for
-        test dataset is 0.6 (test_df) then the absolute percentage RMSE  change is 0.2 / 0.8 = 0.25
+        RMSE for test dataset. For example, if the RMSE for train dataset is 0.8 (slice_train) and the RMSE  for
+        test dataset is 0.6 (slice_test) then the absolute percentage RMSE  change is 0.2 / 0.8 = 0.25
         and the test will fail.
 
         Args:
-            train_slice(GiskardDataset):
+            slice_train(GiskardDataset):
                 slice of train dataset
-            test_slice(GiskardDataset):
+            slice_test(GiskardDataset):
                 slice of test dataset
             model(ModelInspector):
                 uploaded model
@@ -541,4 +529,4 @@ class PerformanceTests(AbstractTestCollection):
                 TRUE if RMSE difference < threshold
 
         """
-        return self._test_diff_traintest(self.test_rmse, model, train_slice, test_slice, threshold)
+        return self._test_diff_traintest(self.test_rmse, model, slice_train, slice_test, threshold)
