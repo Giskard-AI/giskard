@@ -131,6 +131,7 @@ public class InitService {
             DataUploadParamsDTO.builder()
                 .projectKey("zillow")
                 .name("Zillow data")
+                .featureTypes(zillowFeatureTypes)
                 .target("SalePrice")
                 .build()
         ),
@@ -165,9 +166,6 @@ public class InitService {
                 .build()
         )
     );
-
-    //public Map<String, String> projects = Arrays.stream(mockKeys).collect(Collectors.toMap(String::toLowerCase, name -> String.format("%s's project", StringUtils.capitalize(name.toLowerCase()))));
-
 
     public String getUserName(String key) {
         return users.get(key);
