@@ -88,4 +88,4 @@ RUN rm -rf ./ml_worker/core
 COPY ./giskard-ml-worker/ml_worker/core ./ml_worker/core
 ENV PYTHONPATH "/app/generated"
 
-CMD ["python", "mltask_server_runner.py"]
+CMD ["python", "main.py"]
