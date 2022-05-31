@@ -73,15 +73,15 @@ public class InspectionService {
         DoubleColumn absDiffPercentColumn = calculatedTable.doubleColumn("absDiffPercent");
         DoubleColumn diffPercent = calculatedTable.doubleColumn("diffPercent");
         switch (filter.getRowFilter()) {
-            case CORRECT:
+            case CORRECT -> {
                 threshold = getThresholdForRegression(absDiffPercentColumn, true);
                 selection = absDiffPercentColumn.isLessThanOrEqualTo(threshold);
-                break;
-            case WRONG:
+            }
+            case WRONG -> {
                 threshold = getThresholdForRegression(absDiffPercentColumn, false);
                 selection = absDiffPercentColumn.isGreaterThanOrEqualTo(threshold);
-                break;
-            case CUSTOM:
+            }
+            case CUSTOM -> {
                 DoubleColumn prediction = calculatedTable.doubleColumn(0);
                 DoubleColumn target = calculatedTable.numberColumn(1).asDoubleColumn();
                 selection = prediction.isNotMissing();
@@ -103,9 +103,8 @@ public class InspectionService {
                 if (filter.getMinDiffThreshold() != null) {
                     selection = selection.and(diffPercent.isGreaterThanOrEqualTo(filter.getMinDiffThreshold()));
                 }
-                break;
-            default:
-                selection = null;
+            }
+            default -> selection = null;
         }
         return selection;
     }
@@ -129,13 +128,9 @@ public class InspectionService {
         Selection correctSelection = predictedClass.isEqualTo(targetClass);
         Selection selection;
         switch (filter.getRowFilter()) {
-            case CORRECT:
-                selection = correctSelection;
-                break;
-            case WRONG:
-                selection = predictedClass.isNotEqualTo(targetClass);
-                break;
-            case CUSTOM:
+            case CORRECT -> selection = correctSelection;
+            case WRONG -> selection = predictedClass.isNotEqualTo(targetClass);
+            case CUSTOM -> {
                 DoubleColumn probPredicted = (DoubleColumn) predsTable.column(filter.getThresholdLabel());
                 selection = targetClass.isNotMissing();
                 if (filter.getPredictedLabel().length > 0) {
@@ -150,13 +145,12 @@ public class InspectionService {
                 if (filter.getMinThreshold() != null) {
                     selection.and(probPredicted.isGreaterThanOrEqualTo(filter.getMinThreshold()));
                 }
-                break;
-            case BORDERLINE:
+            }
+            case BORDERLINE -> {
                 DoubleColumn absDiff = calculatedTable.doubleColumn("absDiff");
                 selection = correctSelection.and(absDiff.isLessThanOrEqualTo(applicationProperties.getBorderLineThreshold()));
-                break;
-            default:
-                selection = null;
+            }
+            default -> selection = null;
         }
         return selection;
     }
