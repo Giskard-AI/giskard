@@ -82,9 +82,12 @@ class MLWorkerServiceImpl(MLWorkerServicer):
         model_inspector: ModelInspector = cloudpickle.load(ZstdDecompressor().stream_reader(request.serialized_model))
         df = pd.DataFrame([r.features for r in request.dataframe.rows])
         predictions = run_predict(df, model_inspector=model_inspector)
-
-        return RunModelForDataFrameResponse(all_predictions=self.pandas_df_to_proto_df(predictions.all_predictions),
-                                            prediction=predictions.prediction.astype(str))
+        if model_inspector.prediction_task == "classification":
+            return RunModelForDataFrameResponse(all_predictions=self.pandas_df_to_proto_df(predictions.all_predictions),
+                                                prediction=predictions.prediction.astype(str))
+        else:
+            return RunModelForDataFrameResponse(prediction=predictions.prediction.astype(str),
+                                                raw_prediction=predictions.prediction)
 
     def runModel(self, request: RunModelRequest, context) -> RunModelResponse:
         import numpy as np
