@@ -45,7 +45,7 @@ message RunModelForDataFrameResponse{
   DataFrame all_predictions = 1;
   repeated string prediction = 2;
   repeated float probabilities = 3;
-  repeated uint32 raw_prediction = 4;
+  repeated float raw_prediction = 4;
 }
 message DataRow{
   map<string, string> features = 1;
