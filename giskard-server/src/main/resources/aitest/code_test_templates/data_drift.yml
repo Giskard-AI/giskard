@@ -16,9 +16,9 @@ items:
         Example : The test is passed when the  PSI score of gender between train and test sets is below 0.2
 
         Args:
-            expected_series(pandas.core.frame.DataFrame):
+            expected_series(GiskardDataset):
                 a categorical column in train dataset
-            actual_series(pandas.core.frame.DataFrame):
+            actual_series(GiskardDataset):
                 categorical column in test dataset that is compared to var_expected
             threshold:
                 threshold value for PSI
@@ -50,9 +50,9 @@ items:
         and that we cannot assume drift for this variable.
 
         Args:
-            expected_series(pandas.core.frame.DataFrame):
+            expected_series(GiskardDataset):
                 a categorical column in train dataset
-            actual_series(pandas.core.frame.DataFrame):
+            actual_series(GiskardDataset):
                 categorical column in test dataset that is compared to var_expected
             threshold:
                 threshold for p-value of chi-square
@@ -87,9 +87,9 @@ items:
         cannot be rejected at 5% level and that we cannot assume drift for this variable.
 
         Args:
-            expected_series(pandas.core.frame.DataFrame):
+            expected_series(GiskardDataset):
                 a categorical column in train dataset
-            actual_series(pandas.core.frame.DataFrame):
+            actual_series(GiskardDataset):
                 categorical column in test dataset that is compared to var_expected
             threshold:
                 threshold for p-value of KS test
@@ -127,9 +127,9 @@ items:
          It means that we cannot assume drift for this variable.
 
         Args:
-            expected_series(pandas.core.frame.DataFrame):
+            expected_series(GiskardDataset):
                 a categorical column in train dataset
-            actual_series(pandas.core.frame.DataFrame):
+            actual_series(GiskardDataset):
                 categorical column in test dataset that is compared to var_expected
             threshold:
                 threshold for p-value of earth movers distance
