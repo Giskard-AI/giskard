@@ -17,6 +17,8 @@ services:
 
   backend:
     image: '${DOCKER_REGISTRY}/backend:${TAG-latest}'
+    depends_on:
+      - db
     env_file:
       - .env
     environment:
