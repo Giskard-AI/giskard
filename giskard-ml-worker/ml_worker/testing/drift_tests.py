@@ -115,7 +115,8 @@ class DriftTests(AbstractTestCollection):
 
             output_data = output_data.append(pd.Series(row), ignore_index=True)
         # if expected_series and actual_series has only one modality it turns nan (len(all_modalities)=1)
-        p_value = 1 - chi2.cdf(chi_square, len(all_modalities) - 1)
+        chi_cdf = chi2.cdf(chi_square, len(all_modalities) - 1)
+        p_value = 1 - chi_cdf if chi_cdf != 0 else 0
         return chi_square, p_value, output_data
 
     def test_drift_psi(self,
