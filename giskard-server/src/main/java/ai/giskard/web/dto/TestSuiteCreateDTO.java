@@ -11,9 +11,9 @@ import lombok.Getter;
 public class TestSuiteCreateDTO {
     private Long projectId;
     @UINullable
-    private Long trainDatasetId;
+    private Long referenceDatasetId;
     @UINullable
-    private Long testDatasetId;
+    private Long actualDatasetId;
     private Long modelId;
     private String name;
     private boolean shouldGenerateTests;

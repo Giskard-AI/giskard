@@ -59,7 +59,7 @@ items:
       }
 
       tests.metamorphic.test_metamorphic_invariance(
-          df=test_df,
+          df=actual_ds,
           model=model,
           perturbation_dict=perturbation,  # Update your perturbation choice here
           threshold=0.1
@@ -124,7 +124,7 @@ items:
       }
 
       tests.metamorphic.test_metamorphic_invariance(
-          df=test_df,
+          df=actual_ds,
           model=model,
           perturbation_dict=perturbation, # Update your perturbation choice here
           output_sensitivity=0.1,
@@ -189,10 +189,10 @@ items:
       }
 
       tests.metamorphic.test_metamorphic_increasing(
-          df=test_df,
+          df=actual_ds,
           model=model,
           perturbation_dict=perturbation, # Update your perturbation choice here
-          classification_label=model.classification_labels[0],
+          classification_label='{{CLASSIFICATION LABEL}}',
           threshold=0.1
       )
   - id: metamorphic_increasing_regression
@@ -250,7 +250,7 @@ items:
       }
 
       tests.metamorphic.test_metamorphic_increasing(
-          df=test_df,
+          df=actual_ds,
           model=model,
           perturbation_dict=perturbation, # Update your perturbation choice here
           threshold=0.1
@@ -314,10 +314,10 @@ items:
       }
 
       tests.metamorphic.test_metamorphic_decreasing(
-          df=test_df,
+          df=actual_ds,
           model=model,
           perturbation_dict=perturbation, # Update your perturbation choice here
-          classification_label=model.classification_labels[0],
+          classification_label='{{CLASSIFICATION LABEL}}',
           threshold=0.1
       )
   - id: metamorphic_decreasing_regression
@@ -375,7 +375,7 @@ items:
       }
 
       tests.metamorphic.test_metamorphic_decreasing(
-          df=test_df,
+          df=actual_ds,
           model=model,
           perturbation_dict=perturbation, # Update your perturbation choice here
           threshold=0.1

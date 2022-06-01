@@ -21,7 +21,7 @@ items:
 
       Args:
            slice_df(GiskardDataset):
-              slice of the  test dataset
+              slice of the  actual dataset
           model(ModelInspector):
               model used to compute the test
           classification_label(str):
@@ -38,9 +38,9 @@ items:
               TRUE if passed_ratio > threshold
       """
       tests.heuristic.test_right_label(
-        slice_df=test_df.slice(lambda df: df['{{FEATURE NAME}}'].notnull()),
+        actual_ds.slice(lambda df: df.head(len(df)//2)),
         model=model,
-        classification_label=model.classification_labels[0],
+        classification_label='{{CLASSIFICATION LABEL}}',
         threshold=0.5
       )
 
@@ -63,7 +63,7 @@ items:
 
       Args:
            slice_df(GiskardDataset):
-              slice of the test dataset
+              slice of the actual dataset
           model(ModelInspector):
               model used to compute the test
           classification_label:
@@ -84,9 +84,9 @@ items:
               TRUE if metric > threshold
       """
       tests.heuristic.test_output_in_range(
-        slice_df=test_df.slice(lambda df: df['{{FEATURE NAME}}'].notnull()),
+        actual_ds.slice(lambda df: df.head(len(df)//2)),
         model=model,
-        classification_label=model.classification_labels[0],
+        classification_label='{{CLASSIFICATION LABEL}}',
         min_range=0.3,
         max_range=0.7,
         threshold=0.5,
@@ -109,7 +109,7 @@ items:
 
       Args:
            slice_df(GiskardDataset):
-              slice of the test dataset
+              slice of the actual dataset
           model(ModelInspector):
               model used to compute the test
           min_range(float):
@@ -128,7 +128,7 @@ items:
               TRUE if metric > threshold
       """
       tests.heuristic.test_output_in_range(
-        slice_df=test_df.slice(lambda df: df['{{FEATURE NAME}}'].notnull()),
+        actual_ds.slice(lambda df: df.head(len(df)//2)),
         model=model,
         min_range=100,
         max_range=1000,

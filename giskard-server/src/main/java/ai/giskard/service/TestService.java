@@ -64,18 +64,18 @@ public class TestService {
         res.setExecutionDate(testExecution.getExecutionDate());
 
         ProjectModel model = test.getTestSuite().getModel();
-        Dataset trainDS = test.getTestSuite().getTrainDataset();
-        Dataset testDS = test.getTestSuite().getTestDataset();
+        Dataset referenceDS = test.getTestSuite().getReferenceDataset();
+        Dataset actualDS = test.getTestSuite().getActualDataset();
         Path modelPath = fileLocationService.resolvedModelPath(model.getProject().getKey(), model.getId());
         try (MLWorkerClient client = mlWorkerService.createClient()) {
 
 
             TestResultMessage testResult = client.runTest(
                 ByteString.readFrom(Files.newInputStream(modelPath)),
-                createDSStream(trainDS),
-                trainDS,
-                createDSStream(testDS),
-                testDS,
+                createDSStream(referenceDS),
+                referenceDS,
+                createDSStream(actualDS),
+                actualDS,
                 test);
 
             res.setResult(testResult);
@@ -90,11 +90,11 @@ public class TestService {
         return res;
     }
 
-    private ByteString createDSStream(Dataset testDS) throws IOException {
-        if (testDS == null) {
+    private ByteString createDSStream(Dataset actualDS) throws IOException {
+        if (actualDS == null) {
             return null;
         }
-        return ByteString.readFrom(Files.newInputStream(fileLocationService.resolvedDatasetPath(testDS.getProject().getKey(), testDS.getId())));
+        return ByteString.readFrom(Files.newInputStream(fileLocationService.resolvedDatasetPath(actualDS.getProject().getKey(), actualDS.getId())));
     }
 
     public TestSuite deleteTest(Long testId) {

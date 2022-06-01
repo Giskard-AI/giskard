@@ -72,18 +72,14 @@ message RunModelResponse{
 message RunTestRequest {
   string code = 1;
   bytes serialized_model = 2;
-  SerializedDataWithMeta test_df = 3;
-  SerializedDataWithMeta train_df = 4;
+  SerializedGiskardDataset actual_ds = 3;
+  SerializedGiskardDataset reference_ds = 4;
 }
 
-message SerializedDataWithMeta{
-    bytes serialized_df = 1;
-    DataFrameMeta meta = 2;
-}
-
-message DataFrameMeta{
-  string target = 1;
-  map<string, string> feature_types = 2;
+message SerializedGiskardDataset{
+  string target = 2;
+  map<string, string> feature_types = 3;
+  bytes serialized_df = 4;
 }
 
 message RunTestResponse {
@@ -116,20 +112,22 @@ message SingleTestResult{
   repeated TestMessage messages = 16;
   map<string, string> props = 14;
   float metric = 15;
-  uint32 element_count = 1;
+//  uint32 element_count = 1;
   uint32 missing_count = 2;
   double missing_percent = 3;
   uint32 unexpected_count = 4;
   double unexpected_percent = 5;
   double unexpected_percent_total = 6;
   double unexpected_percent_nonmissing = 7;
-  uint32 slice_nb_rows = 8;
   repeated uint32 partial_unexpected_index_list = 9;
   repeated Partial_unexpected_counts partial_unexpected_counts = 10;
   repeated uint32 unexpected_index_list = 12;
   bytes output_df = 18;
-  uint32 total_nb_rows= 19;
-  uint32 number_of_perturbed_rows= 20;
+//  uint32 total_nb_rows = 19;
+  uint32 number_of_perturbed_rows = 20;
+
+  repeated uint32 actual_slices_size = 21;
+  repeated uint32 reference_slices_size = 22;
 }
 
 message TestResultMessage {

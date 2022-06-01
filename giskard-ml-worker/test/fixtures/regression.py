@@ -10,7 +10,6 @@ from sklearn.metrics import mean_squared_error
 
 from test.test_utils import timing
 
-
 @pytest.fixture()
 def diabetes_dataset():
     diabetes = datasets.load_diabetes()
@@ -21,13 +20,16 @@ def diabetes_dataset():
     )
 
 
-
 @pytest.fixture()
 def diabetes_dataset_with_target():
     loaded = datasets.load_diabetes(as_frame=True)
     data = loaded['data']
     data['target'] = loaded['target']
-    return data
+    return GiskardDataset(
+        df=data,
+        feature_types={feature: 'numeric' for feature in list(data.columns)},
+        target='target'
+    )
 
 
 @pytest.fixture()

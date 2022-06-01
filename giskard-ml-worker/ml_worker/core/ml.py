@@ -1,7 +1,7 @@
 from typing import Optional, Union, Dict, Any
 
 import numpy
-from ai_inspector import ModelInspector
+from giskard_client import ModelInspector
 from pydantic import BaseModel
 import pandas as pd
 

@@ -29,11 +29,11 @@ public class TestSuitePostDTO  {
 
     @Getter
     @Setter
-    private DatasetDTO trainDataset;
+    private DatasetDTO referenceDataset;
 
     @Getter
     @Setter
-    private DatasetDTO testDataset;
+    private DatasetDTO actualDataset;
 
     @Getter
     @Setter

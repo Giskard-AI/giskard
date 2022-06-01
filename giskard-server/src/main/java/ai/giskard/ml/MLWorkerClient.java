@@ -43,35 +43,29 @@ public class MLWorkerClient implements AutoCloseable {
 
     public TestResultMessage runTest(
         ByteString modelInputStream,
-        ByteString trainDFStream,
-        Dataset trainDS,
-        ByteString testDFStream,
-        Dataset testDS,
+        ByteString referenceDFStream,
+        Dataset referenceDS,
+        ByteString actualDFStream,
+        Dataset actualDS,
         Test test
     ) {
         RunTestRequest.Builder requestBuilder = RunTestRequest.newBuilder()
             .setCode(test.getCode())
             .setSerializedModel(modelInputStream);
-        if (trainDFStream != null) {
-            requestBuilder.setTrainDf(
-                SerializedDataWithMeta.newBuilder()
-                    .setSerializedDf(trainDFStream)
-                    .setMeta(
-                        DataFrameMeta.newBuilder()
-                            .setTarget(trainDS.getTarget())
-                            .putAllFeatureTypes(Maps.transformValues(trainDS.getFeatureTypes(), FeatureType::getName))
-                            .build())
+        if (referenceDFStream != null) {
+            requestBuilder.setReferenceDs(
+                SerializedGiskardDataset.newBuilder()
+                    .setSerializedDf(referenceDFStream)
+                    .setTarget(referenceDS.getTarget())
+                    .putAllFeatureTypes(Maps.transformValues(referenceDS.getFeatureTypes(), FeatureType::getName))
                     .build());
         }
-        if (testDFStream != null) {
-            requestBuilder.setTestDf(
-                SerializedDataWithMeta.newBuilder()
-                    .setSerializedDf(testDFStream)
-                    .setMeta(
-                        DataFrameMeta.newBuilder()
-                            .setTarget(testDS.getTarget())
-                            .putAllFeatureTypes(Maps.transformValues(testDS.getFeatureTypes(), FeatureType::getName))
-                            .build())
+        if (actualDFStream != null) {
+            requestBuilder.setActualDs(
+                SerializedGiskardDataset.newBuilder()
+                    .setSerializedDf(actualDFStream)
+                    .setTarget(actualDS.getTarget())
+                    .putAllFeatureTypes(Maps.transformValues(actualDS.getFeatureTypes(), FeatureType::getName))
                     .build());
         }
         RunTestRequest request = requestBuilder.build();

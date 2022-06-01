@@ -96,8 +96,8 @@ public interface GiskardMapper {
 
     List<TestSuiteDTO> testSuitesToTestSuiteDTOs(List<TestSuite> testSuites);
 
-    @Mapping(source = "testDatasetId", target = "testDataset")
-    @Mapping(source = "trainDatasetId", target = "trainDataset")
+    @Mapping(source = "actualDatasetId", target = "actualDataset")
+    @Mapping(source = "referenceDatasetId", target = "referenceDataset")
     @Mapping(source = "modelId", target = "model")
     @Mapping(target = "project", ignore = true)
     @Mapping(target = "tests", ignore = true)
@@ -133,8 +133,8 @@ public interface GiskardMapper {
     ModelMetadataDTO modelToModelMetadataDTO(ProjectModel model);
 
     @Mapping(source = "modelId", target = "model")
-    @Mapping(source = "trainDatasetId", target = "trainDataset")
-    @Mapping(source = "testDatasetId", target = "testDataset")
+    @Mapping(source = "referenceDatasetId", target = "referenceDataset")
+    @Mapping(source = "actualDatasetId", target = "actualDataset")
     @Mapping(source = "projectId", target = "project")
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "tests", ignore = true)

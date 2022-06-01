@@ -1,5 +1,5 @@
 import pandas as pd
-from ai_inspector import ModelInspector
+from giskard_client import ModelInspector
 
 from generated.ml_worker_pb2 import SingleTestResult
 from ml_worker.core.giskard_dataset import GiskardDataset
@@ -63,7 +63,7 @@ class MetamorphicTests(AbstractTestCollection):
 
     def _test_metamorphic(self,
                           flag,
-                          df: GiskardDataset,
+                          actual_slice: GiskardDataset,
                           model,
                           perturbation_dict,
                           threshold: float,
@@ -71,7 +71,7 @@ class MetamorphicTests(AbstractTestCollection):
                           output_sensitivity=None,
                           output_proba=True
                           ) -> SingleTestResult:
-        results_df, modified_rows_count = self._perturb_and_predict(df.df,
+        results_df, modified_rows_count = self._perturb_and_predict(actual_slice.df,
                                                                     model,
                                                                     perturbation_dict,
                                                                     classification_label=classification_label,
@@ -81,20 +81,20 @@ class MetamorphicTests(AbstractTestCollection):
                                                           model.prediction_task,
                                                           output_sensitivity,
                                                           flag)
-        failed_df = df.df.loc[failed_idx]
+        failed_df = actual_slice.df.loc[failed_idx]
         passed_ratio = len(passed_idx) / modified_rows_count if modified_rows_count != 0 else 1
 
         output_df_sample = compress(save_df(failed_df))
 
         return self.save_results(SingleTestResult(
-            total_nb_rows=len(df),
+            actual_slices_size=[len(actual_slice)],
             number_of_perturbed_rows=modified_rows_count,
             metric=passed_ratio,
             passed=passed_ratio > threshold,
             output_df=output_df_sample))
 
     def test_metamorphic_invariance(self,
-                                    df: GiskardDataset,
+                                    actual_slice: GiskardDataset,
                                     model,
                                     perturbation_dict,
                                     threshold=1,
@@ -114,7 +114,7 @@ class MetamorphicTests(AbstractTestCollection):
         more than 50%(threshold 0.5) of males have unchanged outputs
 
         Args:
-            df(GiskardDataset):
+            actual_slice(GiskardDataset):
                 Dataset used to compute the test
             model(ModelInspector):
                 Model used to compute the test
@@ -128,7 +128,7 @@ class MetamorphicTests(AbstractTestCollection):
                 regression if the ratio is above the output_sensitivity of 0.1
 
         Returns:
-            total_nb_rows:
+            actual_slices_size:
                 total number of rows of dataframe
             number_of_perturbed_rows:
                 number of perturbed rows
@@ -142,7 +142,7 @@ class MetamorphicTests(AbstractTestCollection):
         """
 
         return self._test_metamorphic(flag='Invariance',
-                                      df=df,
+                                      actual_slice=actual_slice,
                                       model=model,
                                       perturbation_dict=perturbation_dict,
                                       threshold=threshold,
@@ -184,7 +184,7 @@ class MetamorphicTests(AbstractTestCollection):
                 one specific label value from the target column
 
         Returns:
-            total_nb_rows:
+            actual_slices_size:
                 total number of rows of dataframe
             number_of_perturbed_rows:
                 number of perturbed rows
@@ -201,7 +201,7 @@ class MetamorphicTests(AbstractTestCollection):
                 f'"{classification_label}" is not part of model labels: {",".join(model.classification_labels)}')
 
         return self._test_metamorphic(flag='Increasing',
-                                      df=df,
+                                      actual_slice=df,
                                       model=model,
                                       perturbation_dict=perturbation_dict,
                                       classification_label=classification_label,
@@ -242,7 +242,7 @@ class MetamorphicTests(AbstractTestCollection):
                 one specific label value from the target column
 
         Returns:
-            total_nb_rows:
+            actual_slices_size:
                 total number of rows of dataframe
             number_of_perturbed_rows:
                 number of perturbed rows
@@ -259,7 +259,7 @@ class MetamorphicTests(AbstractTestCollection):
             raise Exception(
                 f'"{classification_label}" is not part of model labels: {",".join(model.classification_labels)}')
         return self._test_metamorphic(flag='Decreasing',
-                                      df=df,
+                                      actual_slice=df,
                                       model=model,
                                       perturbation_dict=perturbation_dict,
                                       classification_label=classification_label,

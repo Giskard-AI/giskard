@@ -75,12 +75,11 @@ public class TestSuiteService {
         ProjectModel model = suite.getModel();
 
         if (model.getModelType().isClassification()) {
-            List<String> labels = model.getClassificationLabels();
-            for (int i = 0; i < labels.size(); i++) {
-                substitutions.putIfAbsent("CATEGORY " + (i + 1), labels.get(i));
-            }
+            model.getClassificationLabels().stream().findFirst().ifPresent(label ->{
+                substitutions.putIfAbsent("CLASSIFICATION LABEL", label);
+            });
         }
-        Dataset ds = suite.getTrainDataset() != null ? suite.getTrainDataset() : suite.getTestDataset();
+        Dataset ds = suite.getReferenceDataset() != null ? suite.getReferenceDataset() : suite.getActualDataset();
         if (ds != null) {
             ds.getFeatureTypes().forEach((fName, fType) -> {
                 substitutions.putIfAbsent("FEATURE NAME", fName);

@@ -16,7 +16,7 @@ def ge_result_to_test_result(result, passed=True) -> SingleTestResult:
 
     return SingleTestResult(
         passed=passed,
-        element_count=result['element_count'],
+        actual_slices_size=[result['element_count']],
         missing_count=result['missing_count'],
         missing_percent=result['missing_percent'],
         unexpected_count=result['unexpected_count'],

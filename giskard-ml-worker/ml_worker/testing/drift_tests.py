@@ -5,7 +5,7 @@ from typing import Union
 
 import numpy as np
 import pandas as pd
-from ai_inspector import ModelInspector
+from giskard_client import ModelInspector
 from scipy.stats import chi2, ks_2samp
 from scipy.stats.stats import Ks_2sampResult, wasserstein_distance
 
@@ -29,12 +29,12 @@ class DriftTests(AbstractTestCollection):
         return modality_psi
 
     @staticmethod
-    def _calculate_frequencies(actual_series, expected_series, max_categories):
-        all_modalities = list(set(expected_series).union(set(actual_series)))
+    def _calculate_frequencies(actual_series, reference_series, max_categories):
+        all_modalities = list(set(reference_series).union(set(actual_series)))
         if max_categories is not None and len(all_modalities) > max_categories:
-            var_count_expected = dict(Counter(expected_series).most_common(max_categories))
+            var_count_expected = dict(Counter(reference_series).most_common(max_categories))
             other_modalities_key = 'other_modalities_' + uuid.uuid1().hex
-            var_count_expected[other_modalities_key] = len(expected_series) - sum(var_count_expected.values())
+            var_count_expected[other_modalities_key] = len(reference_series) - sum(var_count_expected.values())
             categories_list = list(var_count_expected.keys())
 
             var_count_actual = Counter(actual_series)
@@ -44,28 +44,28 @@ class DriftTests(AbstractTestCollection):
 
             all_modalities = categories_list
         else:
-            var_count_expected = Counter(expected_series)
+            var_count_expected = Counter(reference_series)
             var_count_actual = Counter(actual_series)
         expected_frequencies = np.array([var_count_expected[i] for i in all_modalities])
         actual_frequencies = np.array([var_count_actual[i] for i in all_modalities])
         return all_modalities, actual_frequencies, expected_frequencies
 
     @staticmethod
-    def _calculate_drift_psi(actual_series, expected_series, max_categories):
+    def _calculate_drift_psi(actual_series, reference_series, max_categories):
         all_modalities, actual_frequencies, expected_frequencies = DriftTests._calculate_frequencies(
-            actual_series, expected_series, max_categories)
-        expected_distribution = expected_frequencies / len(expected_series)
+            actual_series, reference_series, max_categories)
+        expected_distribution = expected_frequencies / len(reference_series)
         actual_distribution = actual_frequencies / len(actual_series)
         total_psi = 0
-        output_data = pd.DataFrame(columns=["Modality", "Train_distribution", "Test_distribution", "Psi"])
+        output_data = pd.DataFrame(columns=["Modality", "Reference_distribution", "Actual_distribution", "Psi"])
         for category in range(len(all_modalities)):
             modality_psi = DriftTests._calculate_psi(category, actual_distribution, expected_distribution)
 
             total_psi += modality_psi
             row = {
                 "Modality": all_modalities[category],
-                "Train_distribution": expected_distribution[category],
-                "Test_distribution": expected_distribution[category],
+                "Reference_distribution": expected_distribution[category],
+                "Actual_distribution": expected_distribution[category],
                 "Psi": modality_psi
             }
 
@@ -73,54 +73,57 @@ class DriftTests(AbstractTestCollection):
         return total_psi, output_data
 
     @staticmethod
-    def _calculate_ks(actual_series, expected_series) -> Ks_2sampResult:
-        return ks_2samp(expected_series, actual_series)
+    def _calculate_ks(actual_series, reference_series) -> Ks_2sampResult:
+        return ks_2samp(reference_series, actual_series)
 
     @staticmethod
-    def _calculate_earth_movers_distance(actual_series, expected_series):
-        unique_train = np.unique(expected_series)
-        unique_test = np.unique(actual_series)
-        sample_space = list(set(unique_train).union(set(unique_test)))
+    def _calculate_earth_movers_distance(actual_series, reference_series):
+        unique_reference = np.unique(reference_series)
+        unique_actual = np.unique(actual_series)
+        sample_space = list(set(unique_reference).union(set(unique_actual)))
         val_max = max(sample_space)
         val_min = min(sample_space)
         if val_max == val_min:
             metric = 0
         else:
-            # Normalizing expected_series and actual_series for comparison purposes
-            expected_series = (expected_series - val_min) / (val_max - val_min)
+            # Normalizing reference_series and actual_series for comparison purposes
+            reference_series = (reference_series - val_min) / (val_max - val_min)
             actual_series = (actual_series - val_min) / (val_max - val_min)
 
-            metric = wasserstein_distance(expected_series, actual_series)
+            metric = wasserstein_distance(reference_series, actual_series)
         return metric
 
     @staticmethod
-    def _calculate_chi_square(actual_series, expected_series, max_categories):
+    def _calculate_chi_square(actual_series, reference_series, max_categories):
         all_modalities, actual_frequencies, expected_frequencies = DriftTests._calculate_frequencies(
-            actual_series, expected_series, max_categories)
+            actual_series, reference_series, max_categories)
         chi_square = 0
         # it's necessary for comparison purposes to normalize expected_frequencies
-        # so that train and test has the same size
+        # so that reference and actual has the same size
         # See https://github.com/scipy/scipy/blob/v1.8.0/scipy/stats/_stats_py.py#L6787
-        k_norm = actual_series.shape[0] / expected_series.shape[0]
-        output_data = pd.DataFrame(columns=["Modality", "Train_frequencies", "Test_frequencies", "Chi_square"])
+        k_norm = actual_series.shape[0] / reference_series.shape[0]
+        output_data = pd.DataFrame(columns=["Modality", "Reference_frequencies", "Actual_frequencies", "Chi_square"])
         for i in range(len(all_modalities)):
             chi_square_value = (actual_frequencies[i] - expected_frequencies[i] * k_norm) ** 2 / (
                     expected_frequencies[i] * k_norm)
             chi_square += chi_square_value
 
             row = {"Modality": all_modalities[i],
-                   "Train_frequencies": expected_frequencies[i],
-                   "Test_frequencies": actual_frequencies[i],
+                   "Reference_frequencies": expected_frequencies[i],
+                   "Actual_frequencies": actual_frequencies[i],
                    "Chi_square": chi_square_value}
 
             output_data = output_data.append(pd.Series(row), ignore_index=True)
-        # if expected_series and actual_series has only one modality it turns nan (len(all_modalities)=1)
-        chi_cdf = chi2.cdf(chi_square, len(all_modalities) - 1)
-        p_value = 1 - chi_cdf if chi_cdf != 0 else 0
+        # if reference_series and actual_series has only one modality it turns nan (len(all_modalities)=1)
+        if len(all_modalities) > 1:
+            chi_cdf = chi2.cdf(chi_square, len(all_modalities) - 1)
+            p_value = 1 - chi_cdf if chi_cdf != 0 else 0
+        else:
+            p_value = 0
         return chi_square, p_value, output_data
 
     def test_drift_psi(self,
-                       expected_series: pd.Series,
+                       reference_series: pd.Series,
                        actual_series: pd.Series,
                        threshold=0.2,
                        max_categories: int = 10) -> SingleTestResult:
@@ -128,14 +131,14 @@ class DriftTests(AbstractTestCollection):
         Test if the PSI score between the actual and expected datasets is below the threshold for
         a given categorical feature
 
-        Example : The test is passed when the  PSI score of gender between train and test sets is below 0.2
+        Example : The test is passed when the  PSI score of gender between reference and actual sets is below 0.2
 
 
         Args:
-            expected_series(GiskardDataset):
-                a categorical column in train dataset
+            reference_series(GiskardDataset):
+                a categorical column in reference dataset
             actual_series(GiskardDataset):
-                categorical column in test dataset that is compared to var_expected
+                categorical column in actual dataset that is compared to var_expected
             threshold:
                 threshold value for PSI
             max_categories:
@@ -148,7 +151,7 @@ class DriftTests(AbstractTestCollection):
                 TRUE if total_psi <= threshold
 
         """
-        total_psi, _ = self._calculate_drift_psi(actual_series, expected_series, max_categories)
+        total_psi, _ = self._calculate_drift_psi(actual_series, reference_series, max_categories)
 
         return self.save_results(SingleTestResult(
             passed=total_psi <= threshold,
@@ -156,7 +159,7 @@ class DriftTests(AbstractTestCollection):
         ))
 
     def test_drift_chi_square(self,
-                              expected_series: pd.Series,
+                              reference_series: pd.Series,
                               actual_series: pd.Series,
                               threshold=0.05,
                               max_categories: int = 10) -> SingleTestResult:
@@ -165,14 +168,14 @@ class DriftTests(AbstractTestCollection):
         above the threshold for a given categorical feature
 
         Example : The test is passed when the pvalue of the chi square test of the categorical variable between
-         train and test sets is higher than 0.05. It means that chi square test cannot be rejected at 5% level
+         reference and actual sets is higher than 0.05. It means that chi square test cannot be rejected at 5% level
          and that we cannot assume drift for this variable.
 
         Args:
-            expected_series(GiskardDataset):
-                a categorical column in train dataset
+            reference_series(GiskardDataset):
+                a categorical column in reference dataset
             actual_series(GiskardDataset):
-                categorical column in test dataset that is compared to var_expected
+                categorical column in actual dataset that is compared to var_expected
             threshold:
                 threshold for p-value of chi-square
             max_categories:
@@ -187,7 +190,7 @@ class DriftTests(AbstractTestCollection):
 
         """
 
-        chi_square, p_value, _ = self._calculate_chi_square(actual_series, expected_series, max_categories)
+        chi_square, p_value, _ = self._calculate_chi_square(actual_series, reference_series, max_categories)
 
         return self.save_results(SingleTestResult(
             passed=p_value <= threshold,
@@ -195,7 +198,7 @@ class DriftTests(AbstractTestCollection):
         ))
 
     def test_drift_ks(self,
-                      expected_series: pd.Series,
+                      reference_series: pd.Series,
                       actual_series: pd.Series,
                       threshold=0.05) -> SingleTestResult:
         """
@@ -207,10 +210,10 @@ class DriftTests(AbstractTestCollection):
         cannot be rejected at 5% level and that we cannot assume drift for this variable.
 
         Args:
-            expected_series(GiskardDataset):
-                a categorical column in train dataset
+            reference_series(GiskardDataset):
+                a categorical column in reference dataset
             actual_series(GiskardDataset):
-                categorical column in test dataset that is compared to var_expected
+                categorical column in actual dataset that is compared to var_expected
             threshold:
                 threshold for p-value of KS test
             max_categories:
@@ -227,7 +230,7 @@ class DriftTests(AbstractTestCollection):
                 TRUE if metric > threshold
         """
 
-        result = self._calculate_ks(actual_series, expected_series)
+        result = self._calculate_ks(actual_series, reference_series)
 
         return self.save_results(SingleTestResult(
             passed=result.pvalue >= threshold,
@@ -236,7 +239,7 @@ class DriftTests(AbstractTestCollection):
         )
 
     def test_drift_earth_movers_distance(self,
-                                         expected_series: Union[np.ndarray, pd.Series],
+                                         reference_series: Union[np.ndarray, pd.Series],
                                          actual_series: Union[np.ndarray, pd.Series],
                                          threshold: float = None) -> SingleTestResult:
         """
@@ -248,10 +251,10 @@ class DriftTests(AbstractTestCollection):
          It means that we cannot assume drift for this variable.
 
         Args:
-            expected_series(GiskardDataset):
-                a categorical column in train dataset
+            reference_series(GiskardDataset):
+                a categorical column in reference dataset
             actual_series(GiskardDataset):
-                categorical column in test dataset that is compared to var_expected
+                categorical column in actual dataset that is compared to var_expected
             threshold:
                 threshold for p-value of earth movers distance
 
@@ -262,28 +265,28 @@ class DriftTests(AbstractTestCollection):
             passed:
                 TRUE if metric < threshold
         """
-        metric = self._calculate_earth_movers_distance(actual_series, expected_series)
+        metric = self._calculate_earth_movers_distance(actual_series, reference_series)
         return self.save_results(SingleTestResult(
             passed=True if threshold is None else metric <= threshold,
             metric=metric
         ))
 
-    def test_drift_prediction_psi(self, slice_train: GiskardDataset, slice_test: GiskardDataset,
+    def test_drift_prediction_psi(self, reference_slice: GiskardDataset, actual_slice: GiskardDataset,
                                   model: ModelInspector,
                                   max_categories: int = 10, threshold: float = 0.2,
                                   psi_contribution_percent: float = 0.2):
         """
-        Test if the PSI score between the train and test datasets is below the threshold
+        Test if the PSI score between the reference and actual datasets is below the threshold
         for the classification labels predictions
 
         Example : The test is passed when the  PSI score of classification labels prediction
-        for females between train and test sets is below 0.2
+        for females between reference and actual sets is below 0.2
 
         Args:
-            slice_train(GiskardDataset):
-                slice of the train dataset 
-            slice_test(GiskardDataset):
-                slice of the test dataset 
+            reference_slice(GiskardDataset):
+                slice of the reference dataset 
+            actual_slice(GiskardDataset):
+                slice of the actual dataset 
             model(ModelInspector):
                 uploaded model
             max_categories:
@@ -304,9 +307,9 @@ class DriftTests(AbstractTestCollection):
                 psi result message
 
         """
-        prediction_train = run_predict(slice_train.df, model).prediction
-        prediction_test = run_predict(slice_test.df, model).prediction
-        total_psi, output_data = self._calculate_drift_psi(prediction_train, prediction_test, max_categories)
+        prediction_reference = run_predict(reference_slice.df, model).prediction
+        prediction_actual = run_predict(actual_slice.df, model).prediction
+        total_psi, output_data = self._calculate_drift_psi(prediction_reference, prediction_actual, max_categories)
 
         passed = True if threshold is None else total_psi <= threshold
         messages: Union[typing.List[TestMessage], None] = None
@@ -324,22 +327,22 @@ class DriftTests(AbstractTestCollection):
             messages=messages
         ))
 
-    def test_drift_prediction_chi_square(self, slice_train, slice_test, model,
+    def test_drift_prediction_chi_square(self, reference_slice, actual_slice, model,
                                          max_categories: int = 10,
                                          threshold: float = None,
                                          chi_square_contribution_percent: float = 0.2):
         """
-        Test if the Chi Square value between the train and test datasets is below the threshold
+        Test if the Chi Square value between the reference and actual datasets is below the threshold
         for the classification labels predictions for a given slice
 
         Example : The test is passed when the  Chi Square value of classification labels prediction
-        for females between train and test sets is below 0.2
+        for females between reference and actual sets is below 0.2
 
         Args:
-            slice_train(GiskardDataset):
-                slice of the train dataset 
-            slice_test(GiskardDataset):
-                slice of the test dataset 
+            reference_slice(GiskardDataset):
+                slice of the reference dataset 
+            actual_slice(GiskardDataset):
+                slice of the actual dataset 
             model(ModelInspector):
                 uploaded model
             max_categories:
@@ -360,9 +363,9 @@ class DriftTests(AbstractTestCollection):
                 message describing if prediction is drifting or not
 
         """
-        prediction_train = run_predict(slice_train.df, model).prediction
-        prediction_test = run_predict(slice_test.df, model).prediction
-        chi_square, p_value, output_data = self._calculate_chi_square(prediction_train, prediction_test, max_categories)
+        prediction_reference = run_predict(reference_slice.df, model).prediction
+        prediction_actual = run_predict(actual_slice.df, model).prediction
+        chi_square, p_value, output_data = self._calculate_chi_square(prediction_reference, prediction_actual, max_categories)
 
         passed = p_value > threshold
         messages: Union[typing.List[TestMessage], None] = None
@@ -381,24 +384,24 @@ class DriftTests(AbstractTestCollection):
         ))
 
     def test_drift_prediction_ks(self,
-                                 slice_train: GiskardDataset,
-                                 slice_test: GiskardDataset,
+                                 reference_slice: GiskardDataset,
+                                 actual_slice: GiskardDataset,
                                  model: ModelInspector,
                                  classification_label=None,
                                  threshold=None) -> SingleTestResult:
         """
-        Test if the pvalue of the KS test for prediction between the train and test datasets for
+        Test if the pvalue of the KS test for prediction between the reference and actual datasets for
          a given subpopulation is above the threshold
 
         Example : The test is passed when the pvalue of the KS test for the prediction for females
-         between train and test dataset is higher than 0.05. It means that the KS test cannot be
+         between reference and actual dataset is higher than 0.05. It means that the KS test cannot be
          rejected at 5% level and that we cannot assume drift for this variable.
 
         Args:
-            slice_train(GiskardDataset):
-                slice of the train dataset 
-            slice_test(GiskardDataset):
-                slice of the test dataset 
+            reference_slice(GiskardDataset):
+                slice of the reference dataset 
+            actual_slice(GiskardDataset):
+                slice of the actual dataset 
             model(ModelInspector):
                 uploaded model
             threshold:
@@ -417,12 +420,12 @@ class DriftTests(AbstractTestCollection):
         if model.prediction_task == "classification" and classification_label not in model.classification_labels:
             raise Exception(f'"{classification_label}" is not part of model labels: {",".join(model.classification_labels)}')
 
-        prediction_train = run_predict(slice_train.df, model).all_predictions[classification_label].values if \
-            model.prediction_task == "classification" else run_predict(slice_train.df, model).prediction
-        prediction_test = run_predict(slice_test.df, model).all_predictions[classification_label].values if \
-            model.prediction_task == "classification" else run_predict(slice_test.df, model).prediction
+        prediction_reference = run_predict(reference_slice.df, model).all_predictions[classification_label].values if \
+            model.prediction_task == "classification" else run_predict(reference_slice.df, model).prediction
+        prediction_actual = run_predict(actual_slice.df, model).all_predictions[classification_label].values if \
+            model.prediction_task == "classification" else run_predict(actual_slice.df, model).prediction
 
-        result: Ks_2sampResult = self._calculate_ks(prediction_train, prediction_test)
+        result: Ks_2sampResult = self._calculate_ks(prediction_reference, prediction_actual)
         passed = True if threshold is None else result.pvalue >= threshold
         messages: Union[typing.List[TestMessage], None] = None
         if not passed:
@@ -438,28 +441,28 @@ class DriftTests(AbstractTestCollection):
         ))
 
     def test_drift_prediction_earth_movers_distance(self,
-                                                    slice_train: GiskardDataset,
-                                                    slice_test: GiskardDataset,
+                                                    reference_slice: GiskardDataset,
+                                                    actual_slice: GiskardDataset,
                                                     model: ModelInspector,
                                                     classification_label=None,
                                                     threshold=None) -> SingleTestResult:
         """
-        Test if the Earth Mover’s Distance value between the train and test datasets is
+        Test if the Earth Mover’s Distance value between the reference and actual datasets is
         below the threshold for the classification labels predictions for classification
         model and prediction for regression models
 
         Example :
         Classification : The test is passed when the  Earth Mover’s Distance value of classification
-        labels probabilities for females between train and test sets is below 0.2
+        labels probabilities for females between reference and actual sets is below 0.2
 
         Regression : The test is passed when the  Earth Mover’s Distance value of prediction
-        for females between train and test sets is below 0.2
+        for females between reference and actual sets is below 0.2
 
         Args:
-            slice_train(GiskardDataset):
-                slice of the train dataset 
-            slice_test(GiskardDataset):
-                slice of the test dataset 
+            reference_slice(GiskardDataset):
+                slice of the reference dataset 
+            actual_slice(GiskardDataset):
+                slice of the actual dataset 
             model(ModelInspector):
                 uploaded model
             classification_label:
@@ -475,12 +478,12 @@ class DriftTests(AbstractTestCollection):
 
         """
 
-        prediction_train = run_predict(slice_train.df, model).all_predictions[classification_label].values if \
-            model.prediction_task == "classification" else run_predict(slice_train.df, model).prediction
-        prediction_test = run_predict(slice_test.df, model).all_predictions[classification_label].values if \
-            model.prediction_task == "classification" else run_predict(slice_test.df, model).prediction
+        prediction_reference = run_predict(reference_slice.df, model).all_predictions[classification_label].values if \
+            model.prediction_task == "classification" else run_predict(reference_slice.df, model).prediction
+        prediction_actual = run_predict(actual_slice.df, model).all_predictions[classification_label].values if \
+            model.prediction_task == "classification" else run_predict(actual_slice.df, model).prediction
 
-        metric = self._calculate_earth_movers_distance(prediction_train, prediction_test)
+        metric = self._calculate_earth_movers_distance(prediction_reference, prediction_actual)
 
         return self.save_results(SingleTestResult(
             passed=True if threshold is None else metric <= threshold,

@@ -8,11 +8,10 @@ def _test_auc(german_credit_data, german_credit_model, threshold):
     results = tests.performance.test_auc(
         german_credit_data,
         german_credit_model,
-        threshold=threshold,
-        target='default'
+        threshold=threshold
     )
 
-    assert results.element_count == 1000
+    assert results.actual_slices_size[0] == 1000
     assert results.missing_count == 0
     assert pytest.approx(results.metric, 0.001) == 0.709761917591095
     return results.passed
@@ -28,11 +27,10 @@ def _test_f1(german_credit_data, german_credit_model, threshold):
     results = tests.performance.test_f1(
         german_credit_data,
         german_credit_model,
-        threshold=threshold,
-        target='default'
+        threshold=threshold
     )
 
-    assert results.element_count == 1000
+    assert results.actual_slices_size[0] == 1000
     assert results.missing_count == 0
     assert pytest.approx(results.metric, 0.001) == 0.2661668360233307
     return results.passed
@@ -48,11 +46,10 @@ def _test_precision(german_credit_data, german_credit_model, threshold):
     results = tests.performance.test_precision(
         german_credit_data,
         german_credit_model,
-        threshold=threshold,
-        target='default'
+        threshold=threshold
     )
 
-    assert results.element_count == 1000
+    assert results.actual_slices_size[0] == 1000
     assert results.missing_count == 0
     assert pytest.approx(results.metric, 0.001) == 0.18513689935207367
     return results.passed
@@ -68,11 +65,10 @@ def _test_recall(german_credit_data, german_credit_model, threshold):
     results = tests.performance.test_recall(
         german_credit_data,
         german_credit_model,
-        threshold=threshold,
-        target='default'
+        threshold=threshold
     )
 
-    assert results.element_count == 1000
+    assert results.actual_slices_size[0] == 1000
     assert results.missing_count == 0
     assert pytest.approx(results.metric, 0.001) == 0.47333332896232605
     return results.passed
@@ -88,11 +84,10 @@ def _test_accuracy(german_credit_data, german_credit_model, threshold):
     results = tests.performance.test_accuracy(
         german_credit_data,
         german_credit_model,
-        threshold=threshold,
-        target='default'
+        threshold=threshold
     )
 
-    assert results.element_count == 1000
+    assert results.actual_slices_size[0] == 1000
     assert results.missing_count == 0
     assert pytest.approx(results.metric, 0.001) == 0.21699999272823334
     return results.passed
@@ -108,11 +103,10 @@ def _test_rmse(diabetes_dataset_with_target, linear_regression_diabetes, thresho
     results = tests.performance.test_rmse(
         diabetes_dataset_with_target,
         linear_regression_diabetes,
-        threshold=threshold,
-        target='target'
+        threshold=threshold
     )
 
-    assert results.element_count == 442
+    assert results.actual_slices_size[0] == 442
     assert results.missing_count == 0
     assert pytest.approx(results.metric, 0.001) == 53.488
     return results.passed
@@ -128,11 +122,10 @@ def _test_mae(diabetes_dataset_with_target, linear_regression_diabetes, threshol
     results = tests.performance.test_mae(
         diabetes_dataset_with_target,
         linear_regression_diabetes,
-        threshold=threshold,
-        target='target'
+        threshold=threshold
     )
 
-    assert results.element_count == 442
+    assert results.actual_slices_size[0] == 442
     assert results.missing_count == 0
     assert pytest.approx(results.metric, 0.001) == 43.302
     return results.passed
@@ -148,8 +141,7 @@ def _test_r2(diabetes_dataset_with_target, linear_regression_diabetes, threshold
     tests.performance.test_r2(
         diabetes_dataset_with_target,
         linear_regression_diabetes,
-        threshold=threshold,
-        target='target'
+        threshold=threshold
     )
 
     assert len(tests.tests_results) == 1
@@ -168,12 +160,10 @@ def test_r2(diabetes_dataset_with_target, linear_regression_diabetes):
 def _test_diff_accuracy(german_credit_data, german_credit_model, threshold):
     tests = GiskardTestFunctions()
     tests.performance.test_diff_accuracy(
-        german_credit_data,
+        german_credit_data.slice(lambda df: df[df.sex == 'male']),
+        german_credit_data.slice(lambda df: df[df.sex == 'female']),
         german_credit_model,
-        filter_1=german_credit_data[german_credit_data.sex == 'male'].index,
-        filter_2=german_credit_data[german_credit_data.sex == 'female'].index,
-        threshold=threshold,
-        target='default'
+        threshold=threshold
     )
     assert len(tests.tests_results) == 1
     test_execution = tests.tests_results[0]
@@ -191,12 +181,10 @@ def test_diff_accuracy(german_credit_data, german_credit_model):
 def _test_diff_f1(german_credit_data, german_credit_model, threshold):
     tests = GiskardTestFunctions()
     result = tests.performance.test_diff_f1(
-        german_credit_data,
+        german_credit_data.slice(lambda df: df[df.sex == 'male']),
+        german_credit_data.slice(lambda df: df[df.sex == 'female']),
         german_credit_model,
-        filter_1=german_credit_data[german_credit_data.sex == 'male'].index,
-        filter_2=german_credit_data[german_credit_data.sex == 'female'].index,
-        threshold=threshold,
-        target='default'
+        threshold=threshold
     )
     assert pytest.approx(result.metric, 0.001) == 0.07218418270349503
     return result.passed
@@ -210,12 +198,10 @@ def test_diff_f1(german_credit_data, german_credit_model):
 def _test_diff_recall(german_credit_data, german_credit_model, threshold):
     tests = GiskardTestFunctions()
     result = tests.performance.test_diff_recall(
-        german_credit_data,
+        german_credit_data.slice(lambda df: df[df.sex == 'male']),
+        german_credit_data.slice(lambda df: df[df.sex == 'female']),
         german_credit_model,
-        filter_1=german_credit_data[german_credit_data.sex == 'male'].index,
-        filter_2=german_credit_data[german_credit_data.sex == 'female'].index,
-        threshold=threshold,
-        target='default'
+        threshold=threshold
     )
     assert pytest.approx(result.metric, 0.001) == 0.312826007604599
     return result.passed
@@ -229,12 +215,10 @@ def test_diff_recall(german_credit_data, german_credit_model):
 def _test_diff_precision(german_credit_data, german_credit_model, threshold):
     tests = GiskardTestFunctions()
     result = tests.performance.test_diff_precision(
-        german_credit_data,
+        german_credit_data.slice(lambda df: df[df.sex == 'male']),
+        german_credit_data.slice(lambda df: df[df.sex == 'female']),
         german_credit_model,
-        filter_1=german_credit_data[german_credit_data.sex == 'male'].index,
-        filter_2=german_credit_data[german_credit_data.sex == 'female'].index,
-        threshold=threshold,
-        target='default'
+        threshold=threshold
     )
     assert pytest.approx(result.metric, 0.001) == 0.053921569138765335
     return result.passed
@@ -248,12 +232,10 @@ def test_diff_precision(german_credit_data, german_credit_model):
 def _test_diff_rmse(diabetes_dataset_with_target, linear_regression_diabetes, threshold):
     tests = GiskardTestFunctions()
     result = tests.performance.test_diff_rmse(
-        diabetes_dataset_with_target,
+        diabetes_dataset_with_target.slice(lambda df: df[df.sex > 0]),
+        diabetes_dataset_with_target.slice(lambda df: df[df.sex < 0]),
         linear_regression_diabetes,
-        filter_1=diabetes_dataset_with_target[diabetes_dataset_with_target.sex > 0].index,
-        filter_2=diabetes_dataset_with_target[diabetes_dataset_with_target.sex < 0].index,
-        threshold=threshold,
-        target='target'
+        threshold=threshold
     )
     assert pytest.approx(result.metric, 0.001) == 0.08403938630638882
     return result.passed
