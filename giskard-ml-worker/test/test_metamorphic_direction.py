@@ -12,7 +12,7 @@ def _test_metamorphic_increasing_regression(df, model, threshold):
         threshold=threshold
     )
 
-    assert results.total_nb_rows == 442
+    assert results.actual_slices_size[0] == 442
     assert results.number_of_perturbed_rows == 442
     assert round(results.metric, 2) == 0.44
     return results.passed
@@ -28,7 +28,7 @@ def _test_metamorphic_decreasing_regression(df, model, threshold):
         perturbation_dict=perturbation,
         threshold=threshold
     )
-    assert results.total_nb_rows == 442
+    assert results.actual_slices_size[0] == 442
     assert results.number_of_perturbed_rows == 442
     assert round(results.metric, 2) == 0.54
     return results.passed
@@ -46,7 +46,7 @@ def _test_metamorphic_increasing_classification(df, model, threshold):
         threshold=threshold
     )
 
-    assert results.total_nb_rows == 1000
+    assert results.actual_slices_size[0] == 1000
     assert results.number_of_perturbed_rows == 1000
     assert results.metric == 1
     return results.passed
@@ -64,7 +64,7 @@ def _test_metamorphic_decreasing_classification(df, model, threshold):
         threshold=threshold
     )
 
-    assert results.total_nb_rows == 1000
+    assert results.actual_slices_size[0] == 1000
     assert results.number_of_perturbed_rows == 1000
     assert results.metric == 1
     return results.passed
