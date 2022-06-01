@@ -24,11 +24,27 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v2
 
+    - name: Extract branch name
+      shell: bash
+      run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
+      id: extract_branch
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      if: ${{ steps.extract_branch.outputs.branch == 'main' }}
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: us-east-1
+
     - name: Generate docker config file
       run: |
         sudo sysctl -w kernel.unprivileged_userns_clone=1
         docker-compose -f docker-compose.yml -f docker-compose.dev.yml config > docker-stack.yml 
       
+    - name: Build Jupyter image
+      run: docker-compose -f docker-stack.yml build jupyter
+
     - name: Build Frontend image
       run: docker-compose -f docker-stack.yml build frontend
 
@@ -38,6 +54,14 @@ jobs:
     - name: Build ML Worker image
       run: docker-compose -f docker-stack.yml build ml-worker
 
+    - name: Push images to ECR
+      if: ${{ steps.extract_branch.outputs.branch == 'main' }}
+      env:
+        TAG: latest
+      run: |
+        aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin public.ecr.aws/giskard
+        docker-compose -f docker-compose.yml -f docker-compose.dev.yml push
+
     - name: Remove containers and volumes
       run: docker-compose -f docker-stack.yml down -v --remove-orphans
-      
+
