@@ -44,12 +44,12 @@
               <td>Model Inspector</td>
             </tr>
             <tr>
-              <td><code>test_df</code></td>
-              <td>Test dataframe</td>
+              <td><code>actual_ds</code></td>
+              <td>Actual dataset</td>
             </tr>
             <tr>
-              <td><code>train_df</code></td>
-              <td>Train dataframe</td>
+              <td><code>reference_ds</code></td>
+              <td>Reference dataset</td>
             </tr>
           </table>
           <div class='mt-4 mb-0'>

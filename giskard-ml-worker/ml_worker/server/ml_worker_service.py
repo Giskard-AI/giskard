@@ -5,7 +5,7 @@ from io import BytesIO
 import cloudpickle
 import grpc
 import pandas as pd
-from ai_inspector import ModelInspector
+from giskard_client import ModelInspector
 from ai_inspector.io_utils import decompress
 from eli5.lime import TextExplainer
 from zstandard import ZstdDecompressor
@@ -17,7 +17,6 @@ from ml_worker.core.giskard_dataset import GiskardDataset
 from ml_worker.core.ml import run_predict
 from ml_worker.core.model_explanation import explain, text_explanation_prediction_wrapper, parse_text_explainer_response
 from ml_worker.exceptions.IllegalArgumentError import IllegalArgumentError
-from ml_worker.testing.functions import GiskardTestFunctions
 from ml_worker_pb2 import ExplainResponse, ExplainTextResponse
 
 logger = logging.getLogger()
@@ -28,6 +27,8 @@ class MLWorkerServiceImpl(MLWorkerServicer):
         super().__init__()
 
     def runTest(self, request: RunTestRequest, context: grpc.ServicerContext) -> TestResultMessage:
+        from ml_worker.testing.functions import GiskardTestFunctions
+
         model_inspector: ModelInspector = cloudpickle.load(ZstdDecompressor().stream_reader(request.serialized_model))
 
         tests = GiskardTestFunctions()
@@ -35,18 +36,18 @@ class MLWorkerServiceImpl(MLWorkerServicer):
             'model': model_inspector,
             'tests': tests
         }
-        if request.train_df.serialized_df:
-            _globals['train_df'] = GiskardDataset.from_serialized_with_meta(request.train_df)
-        if request.test_df.serialized_df:
-            _globals['test_df'] = GiskardDataset.from_serialized_with_meta(request.test_df)
+        if request.reference_ds.serialized_df:
+            _globals['reference_ds'] = GiskardDataset.from_serialized(request.reference_ds)
+        if request.actual_ds.serialized_df:
+            _globals['actual_ds'] = GiskardDataset.from_serialized(request.actual_ds)
         try:
             exec(request.code, _globals)
         except NameError as e:
             missing_name = re.findall(r"name '(\w+)' is not defined", str(e))[0]
-            if missing_name == 'train_df':
-                raise IllegalArgumentError("Train Dataset is not specified")
-            if missing_name == 'test_df':
-                raise IllegalArgumentError("Test Dataset is not specified")
+            if missing_name == 'reference_ds':
+                raise IllegalArgumentError("Reference Dataset is not specified")
+            if missing_name == 'actual_ds':
+                raise IllegalArgumentError("Actual Dataset is not specified")
             raise e
 
         return TestResultMessage(results=tests.tests_results)

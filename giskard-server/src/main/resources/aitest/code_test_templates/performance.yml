@@ -19,7 +19,7 @@ items:
 
       Args:
           slice_df(GiskardDataset):
-              slice of the test dataset
+              slice of the actual dataset
           model(ModelInspector):
               model used to compute the test
           threshold(float):
@@ -35,7 +35,7 @@ items:
 
       """
       tests.performance.test_auc(
-            slice_df=test_df.slice(lambda df: df.head(len(df) // 2)),
+            actual_ds.slice(lambda df: df.head(len(df) // 2)),
             model=model,
             threshold=0.1
         )
@@ -57,7 +57,7 @@ items:
 
       Args:
           slice_df(GiskardDataset):
-              slice of the test dataset
+              slice of the actual dataset
           model(ModelInspector):
               model used to compute the test
           threshold(float):
@@ -72,7 +72,7 @@ items:
               TRUE if F1 Score metrics > threshold
       """
       tests.performance.test_f1(
-          slice_df=test_df.slice(lambda df: df.head(len(df) // 2)),
+          actual_ds.slice(lambda df: df.head(len(df) // 2)),
           model=model,
           threshold=0.1
       )
@@ -91,15 +91,15 @@ items:
       is lower than a threshold
 
       Example : The test is passed when the F1 Score for females has a difference lower than 10% from the
-      F1 Score for males. For example, if the F1 Score for males is 0.8 (slice_1) and the F1 Score  for
-      females is 0.6 (slice_2) then the absolute percentage F1 Score  change is 0.2 / 0.8 = 0.25
+      F1 Score for males. For example, if the F1 Score for males is 0.8 (actual_slice) and the F1 Score  for
+      females is 0.6 (reference_slice) then the absolute percentage F1 Score  change is 0.2 / 0.8 = 0.25
       and the test will fail
 
       Args:
-          slice_1(GiskardDataset):
-              slice of the test dataset
-          slice_2(GiskardDataset):
-              slice of the test dataset
+          actual_slice(GiskardDataset):
+              slice of the actual dataset
+          reference_slice(GiskardDataset):
+              slice of the actual dataset
           model(ModelInspector):
               model used to compute the test
           threshold(float):
@@ -107,7 +107,7 @@ items:
 
       Returns:
           total rows tested:
-              length of test dataset
+              length of actual dataset
           metric:
               the F1 Score difference  metric
           passed:
@@ -115,35 +115,35 @@ items:
 
       """
       tests.performance.test_diff_f1(
-          slice_1=test_df.slice(lambda df: df.head(len(df) // 2)),
-          slice_2=test_df.slice(lambda df: df.head(len(df) // 2)),
+          actual_slice=actual_ds.slice(lambda df: df.head(len(df) // 2)),
+          reference_slice=actual_ds.slice(lambda df: df.head(len(df) // 2)),
           model=model,
           threshold=0.1
       )
-  - id: diff_traintest_f1
-    title: F1 Train Test difference
-    hint: Test if the F1 score is equal between train and test dataset
+  - id: diff_reference_actual_f1
+    title: F1 Reference Actual difference
+    hint: Test if the F1 score is equal between reference and actual dataset
     modelTypes:
       - MULTICLASS_CLASSIFICATION
       - BINARY_CLASSIFICATION
     # language=Python
     code: |-
       """
-      Summary : Test if the F1 score is equal between train and test dataset
+      Summary : Test if the F1 score is equal between reference and actual dataset
 
-      Description: Test if the absolute percentage change in model F1 Score between train and test data
+      Description: Test if the absolute percentage change in model F1 Score between reference and actual data
       is lower than a threshold
 
-      Example: The test is passed when the F1 Score for train dataset for females has a difference lower
-      than 10% from the F1 Score for test dataset for females . For example, if the F1 Score for train
-      dataset for females is 0.8 (slice_train) and the F1 Score  for test dataset is 0.6 (slice_test) then
+      Example: The test is passed when the F1 Score for reference dataset for females has a difference lower
+      than 10% from the F1 Score for actual dataset for females . For example, if the F1 Score for reference
+      dataset for females is 0.8 (reference_slice) and the F1 Score  for actual dataset is 0.6 (actual_slice) then
       the absolute percentage F1 Score  change is 0.2 / 0.8 = 0.25 and the test will fail.
 
       Args:
-          slice_train(GiskardDataset):
-              slice of train dataset
-          slice_test(GiskardDataset):
-              slice of test dataset
+          reference_slice(GiskardDataset):
+              slice of reference dataset
+          actual_slice(GiskardDataset):
+              slice of actual dataset
           model(ModelInspector):
               model used to compute the test
           threshold(float):
@@ -157,12 +157,13 @@ items:
               TRUE if F1 Score difference < threshold
 
       """
-      tests.performance.test_diff_traintest_f1(
-          slice_train=train_df.slice(lambda df: df.head(len(df) // 2)),
-          slice_test=test_df.slice(lambda df: df.head(len(df) // 2)),
+      tests.performance.test_diff_reference_actual_f1(
+          reference_slice=reference_ds.slice(lambda df: df.head(len(df) // 2)),
+          actual_slice=actual_ds.slice(lambda df: df.tail(len(df) // 2)),
           model=model,
           threshold=0.1
       )
+
   - id: accuracy
     title: Accuracy
     hint: Test if the Accuracy is high enough for a slice
@@ -180,7 +181,7 @@ items:
 
       Args:
           slice_df(GiskardDataset):
-              slice of the test dataset
+              slice of the actual dataset
           model(ModelInspector):
               model used to compute the test
           threshold(float):
@@ -196,7 +197,7 @@ items:
 
       """
       tests.performance.test_accuracy(
-          slice_df=test_df.slice(lambda df: df.head(len(df) // 2)),
+          actual_ds.slice(lambda df: df.head(len(df) // 2)),
           model=model,
           threshold=0.1
       )
@@ -214,15 +215,15 @@ items:
       Description: Test if the absolute percentage change of model Accuracy between two samples is lower than a threshold
 
       Example : The test is passed when the Accuracy for females has a difference lower than 10% from the
-      Accuracy for males. For example, if the Accuracy for males is 0.8 (slice_1) and the Accuracy  for
-      females is 0.6 (slice_2) then the absolute percentage Accuracy change is 0.2 / 0.8 = 0.25
+      Accuracy for males. For example, if the Accuracy for males is 0.8 (actual_slice) and the Accuracy  for
+      females is 0.6 (reference_slice) then the absolute percentage Accuracy change is 0.2 / 0.8 = 0.25
       and the test will fail
 
       Args:
-          slice_1(GiskardDataset):
-              slice of the test dataset
-          slice_2(GiskardDataset):
-              slice of the test dataset
+          actual_slice(GiskardDataset):
+              slice of the actual dataset
+          reference_slice(GiskardDataset):
+              slice of the actual dataset
           model(ModelInspector):
               model used to compute the test
           threshold(float):
@@ -230,42 +231,42 @@ items:
 
       Returns:
           total rows tested:
-              length of test dataset
+              length of actual dataset
           metric:
               the Accuracy difference  metric
           passed:
               TRUE if Accuracy difference < threshold
       """
       tests.performance.test_diff_accuracy(
-          slice_1=test_df.slice(lambda df: df.head(len(df) // 2)),
-          slice_2=test_df.slice(lambda df: df.head(len(df) // 2)),
+          actual_slice=actual_ds.slice(lambda df: df.head(len(df) // 2)),
+          reference_slice=actual_ds.slice(lambda df: df.head(len(df) // 2)),
           model=model,
           threshold=0.1
       )
-  - id: diff_traintest_accuracy
-    title: Accuracy Train Test difference
-    hint: Test if the Accuracy is equal between train and test dataset
+  - id: diff_reference_actual_accuracy
+    title: Accuracy Reference Actual difference
+    hint: Test if the Accuracy is equal between reference and actual dataset
     modelTypes:
       - MULTICLASS_CLASSIFICATION
       - BINARY_CLASSIFICATION
     # language=Python
     code: |-
       """
-      Summary: Test if the Accuracy is equal between train and test dataset
+      Summary: Test if the Accuracy is equal between reference and actual dataset
 
-      Description: Test if the absolute percentage change in model Accuracy between train and test data
+      Description: Test if the absolute percentage change in model Accuracy between reference and actual data
       is lower than a threshold
 
-      Example : The test is passed when the Accuracy for train dataset for females has a difference lower
-      than 10% from the Accuracy for test dataset for females. For example, if the Accuracy for train
-      dataset for females is 0.8 (slice_train) and the Accuracy  for test dataset for females is 0.6 (slice_test)
+      Example : The test is passed when the Accuracy for reference dataset for females has a difference lower
+      than 10% from the Accuracy for actual dataset for females. For example, if the Accuracy for reference
+      dataset for females is 0.8 (reference_slice) and the Accuracy  for actual dataset for females is 0.6 (actual_slice)
       then the absolute percentage Accuracy  change is 0.2 / 0.8 = 0.25 and the test will fail.
 
       Args:
-          slice_train(GiskardDataset):
-              slice of train dataset
-          slice_test(GiskardDataset):
-              slice of test dataset
+          reference_slice(GiskardDataset):
+              slice of reference dataset
+          actual_slice(GiskardDataset):
+              slice of actual dataset
           model(ModelInspector):
               model used to compute the test
           threshold(float):
@@ -277,9 +278,9 @@ items:
           passed:
               TRUE if Accuracy difference < threshold
       """
-      tests.performance.test_diff_traintest_accuracy(
-          slice_train=train_df.slice(lambda df: df.head(len(df) // 2)),
-          slice_test=test_df.slice(lambda df: df.head(len(df) // 2)),
+      tests.performance.test_diff_reference_actual_accuracy(
+          reference_slice=reference_ds.slice(lambda df: df.head(len(df) // 2)),
+          actual_slice=actual_ds.slice(lambda df: df.head(len(df) // 2)),
           model=model,
           threshold=0.1
       )
@@ -300,7 +301,7 @@ items:
 
       Args:
           slice_df(GiskardDataset):
-              slice of the test dataset
+              slice of the actual dataset
           model(ModelInspector):
               model used to compute the test
           threshold(float):
@@ -316,7 +317,7 @@ items:
 
       """
       tests.performance.test_precision(
-          slice_df=test_df.slice(lambda df: df.head(len(df) // 2)),
+          actual_ds.slice(lambda df: df.head(len(df) // 2)),
           model=model,
           threshold=0.1
       )
@@ -334,15 +335,15 @@ items:
       Description: Test if the absolute percentage change of model Precision between two samples is lower than a threshold
 
       Example : The test is passed when the Precision for females has a difference lower than 10% from the
-      Accuracy for males. For example, if the Precision for males is 0.8 (slice_1) and the Precision  for
-      females is 0.6 (slice_2) then the absolute percentage Precision change is 0.2 / 0.8 = 0.25
+      Accuracy for males. For example, if the Precision for males is 0.8 (actual_slice) and the Precision  for
+      females is 0.6 (reference_slice) then the absolute percentage Precision change is 0.2 / 0.8 = 0.25
       and the test will fail
 
       Args:
-          slice_1(GiskardDataset):
-              slice of the test dataset
-          slice_2(GiskardDataset):
-              slice of the test dataset
+          actual_slice(GiskardDataset):
+              slice of the actual dataset
+          reference_slice(GiskardDataset):
+              slice of the actual dataset
           model(ModelInspector):
               model used to compute the test
           threshold(float):
@@ -350,15 +351,15 @@ items:
 
       Returns:
           total rows tested:
-              length of test dataset
+              length of actual dataset
           metric:
               the Precision difference  metric
           passed:
               TRUE if Precision difference < threshold
       """
       tests.performance.test_diff_precision(
-          slice_1=test_df.slice(lambda df: df.head(len(df) // 2)),
-          slice_2=test_df.slice(lambda df: df.head(len(df) // 2)),
+          actual_slice=actual_ds.slice(lambda df: df.head(len(df) // 2)),
+          reference_slice=actual_ds.slice(lambda df: df.head(len(df) // 2)),
           model=model,
           threshold=0.1
       )
@@ -379,7 +380,7 @@ items:
 
       Args:
           slice_df(GiskardDataset):
-              slice of the test dataset
+              slice of the actual dataset
           model(ModelInspector):
               model used to compute the test
           threshold(float):
@@ -395,7 +396,7 @@ items:
 
       """
       tests.performance.test_recall(
-          slice_df=test_df.slice(lambda df: df.head(len(df) // 2)),
+          actual_ds.slice(lambda df: df.head(len(df) // 2)),
           model=model,
           threshold=0.1
       )
@@ -413,15 +414,15 @@ items:
       Description: Test if the absolute percentage change of model Recall between two samples is lower than a threshold
 
       Example : The test is passed when the Recall for females has a difference lower than 10% from the
-      Accuracy for males. For example, if the Recall for males is 0.8 (slice_1) and the Recall  for
-      females is 0.6 (slice_2) then the absolute percentage Recall change is 0.2 / 0.8 = 0.25
+      Accuracy for males. For example, if the Recall for males is 0.8 (actual_slice) and the Recall  for
+      females is 0.6 (reference_slice) then the absolute percentage Recall change is 0.2 / 0.8 = 0.25
       and the test will fail
 
       Args:
-          slice_1(GiskardDataset):
-              slice of the test dataset
-          slice_2(GiskardDataset):
-              slice of the test dataset
+          actual_slice(GiskardDataset):
+              slice of the actual dataset
+          reference_slice(GiskardDataset):
+              slice of the actual dataset
           model(ModelInspector):
               model used to compute the test
           threshold(float):
@@ -429,15 +430,15 @@ items:
 
       Returns:
           total rows tested:
-              length of test dataset
+              length of actual dataset
           metric:
               the Recall difference  metric
           passed:
               TRUE if Recall difference < threshold
       """
       tests.performance.test_diff_recall(
-          slice_1=test_df.slice(lambda df: df.head(len(df) // 2)),
-          slice_2=test_df.slice(lambda df: df.head(len(df) // 2)),
+          actual_slice=actual_ds.slice(lambda df: df.head(len(df) // 2)),
+          reference_slice=actual_ds.slice(lambda df: df.head(len(df) // 2)),
           model=model,
           threshold=0.1
       )
@@ -457,7 +458,7 @@ items:
 
       Args:
           slice_df(GiskardDataset):
-              slice of test dataset
+              slice of actual dataset
           model(ModelInspector):
               model used to compute the test
           threshold(float):
@@ -473,7 +474,7 @@ items:
 
       """
       tests.performance.test_rmse(
-          slice_df=test_df.slice(lambda df: df.head(len(df) // 2)),
+          actual_ds.slice(lambda df: df.head(len(df) // 2)),
           model=model,
           threshold=0.1
       )
@@ -490,15 +491,15 @@ items:
       Description: Test if the absolute percentage change of model RMSE between two samples is lower than a threshold
 
       Example : The test is passed when the RMSE for females has a difference lower than 10% from the
-      RMSE for males. For example, if the RMSE for males is 0.8 (slice_1) and the RMSE  for
-      females is 0.6 (slice_2) then the absolute percentage RMSE change is 0.2 / 0.8 = 0.25
+      RMSE for males. For example, if the RMSE for males is 0.8 (actual_slice) and the RMSE  for
+      females is 0.6 (reference_slice) then the absolute percentage RMSE change is 0.2 / 0.8 = 0.25
       and the test will fail
 
       Args:
-          slice_1(GiskardDataset):
-              slice of the test dataset
-          slice_2(GiskardDataset):
-              slice of the test dataset
+          actual_slice(GiskardDataset):
+              slice of the actual dataset
+          reference_slice(GiskardDataset):
+              slice of the actual dataset
           model(ModelInspector):
               model used to compute the test
           threshold(float):
@@ -506,41 +507,41 @@ items:
 
       Returns:
           total rows tested:
-              length of test dataset
+              length of actual dataset
           metric:
               the RMSE difference  metric
           passed:
               TRUE if RMSE difference < threshold
       """
       tests.performance.test_diff_rmse(
-          slice_1=test_df.slice(lambda df: df.head(len(df) // 2)),
-          slice_2=test_df.slice(lambda df: df.head(len(df) // 2)),
+          actual_slice=actual_ds.slice(lambda df: df.head(len(df) // 2)),
+          reference_slice=actual_ds.slice(lambda df: df.head(len(df) // 2)),
           model=model,
           threshold=0.1
       )
-  - id: diff_traintest_rmse
-    title: RMSE Train Test difference
-    hint: Test if the RMSE is equal between two slices of train and test dataset
+  - id: diff_reference_actual_rmse
+    title: RMSE Reference Actual difference
+    hint: Test if the RMSE is equal between two slices of reference and actual dataset
     modelTypes:
       - REGRESSION
     # language=Python
     code: |-
       """
-      Summary: Test if the RMSE is equal between two slices of train and test dataset
+      Summary: Test if the RMSE is equal between two slices of reference and actual dataset
 
-      Description: Test if the absolute percentage change in model RMSE between slices of  train and test data
+      Description: Test if the absolute percentage change in model RMSE between slices of  reference and actual data
       is lower than a threshold
 
-      Example: The test is passed when the RMSE for train dataset for females  has a difference lower
-      than 10% from the RMSE for females in test dataset. For example, if the RMSE for train dataset
-      for females is 0.8 (slice_train) and the RMSE  for test dataset for females is 0.6 (slice_test) then
+      Example: The test is passed when the RMSE for reference dataset for females  has a difference lower
+      than 10% from the RMSE for females in actual dataset. For example, if the RMSE for reference dataset
+      for females is 0.8 (reference_slice) and the RMSE  for actual dataset for females is 0.6 (actual_slice) then
       the absolute percentage RMSE  change is 0.2 / 0.8 = 0.25 and the test will fail.
 
       Args:
-          slice_train(GiskardDataset):
-              slice of train dataset
-          slice_test(GiskardDataset):
-              slice of test dataset
+          reference_slice(GiskardDataset):
+              slice of reference dataset
+          actual_slice(GiskardDataset):
+              slice of actual dataset
           model(ModelInspector):
               model used to compute the test
           threshold(float):
@@ -553,9 +554,9 @@ items:
               TRUE if RMSE difference < threshold
 
       """
-      tests.performance.test_diff_traintest_rmse(
-          slice_train=train.slice(lambda df: df.head(len(df) // 2)),
-          slice_test=test_df.slice(lambda df: df.head(len(df) // 2)),
+      tests.performance.test_diff_reference_actual_rmse(
+          reference_slice=reference_ds.slice(lambda df: df.head(len(df) // 2)),
+          actual_slice=actual_ds.slice(lambda df: df.head(len(df) // 2)),
           model=model,
           threshold=0.1
       )
@@ -575,7 +576,7 @@ items:
 
       Args:
           slice_df(GiskardDataset):
-              slice of test dataset
+              slice of actual dataset
           model(ModelInspector):
               model used to compute the test
           threshold(float):
@@ -590,7 +591,7 @@ items:
               TRUE if MAE metric < threshold
       """
       tests.performance.test_mae(
-            slice_df=test_df.slice(lambda df: df.head(len(df) // 2)),
+            actual_ds.slice(lambda df: df.head(len(df) // 2)),
             model=model,
             threshold=0.1,
         )
@@ -610,7 +611,7 @@ items:
 
       Args:
           slice_df(GiskardDataset):
-              test dataset
+              actual dataset
           model(ModelInspector):
               model used to compute the test
           threshold(float):
@@ -626,7 +627,7 @@ items:
 
       """
       tests.performance.test_r2(
-          slice_df=test_df.slice(lambda df: df.head(len(df) // 2)),
+          actual_ds.slice(lambda df: df.head(len(df) // 2)),
           model=model,
           threshold=0.1
       )

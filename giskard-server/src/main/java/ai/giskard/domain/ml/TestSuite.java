@@ -24,10 +24,10 @@ public class TestSuite extends AbstractAuditingEntity {
     private Project project;
 
     @ManyToOne
-    private Dataset trainDataset;
+    private Dataset referenceDataset;
 
     @ManyToOne
-    private Dataset testDataset;
+    private Dataset actualDataset;
 
     @ManyToOne
     private ProjectModel model;

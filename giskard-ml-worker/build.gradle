@@ -73,6 +73,8 @@ idea {
 //        otherwise intellij doesn't recognize it as a generated source 🤷‍
         sourceDirs += file('generated')
         generatedSourceDirs += file('generated')
+
+        testSourceDirs += file('test')
     }
 }
 

@@ -15,11 +15,11 @@
               <ValidationProvider name="Model" mode="eager" rules="required" v-slot="{errors}">
                 <ModelSelector :project-id="projectId" :value.sync="model"/>
               </ValidationProvider>
-              <ValidationProvider name="Train dataset" v-slot="{errors}">
-                <DatasetSelector :project-id="projectId" :value.sync="trainDS" :label="'Train dataset'"/>
+              <ValidationProvider name="Reference dataset" v-slot="{errors}">
+                <DatasetSelector :project-id="projectId" :value.sync="referenceDS" :label="'Reference dataset'"/>
               </ValidationProvider>
-              <ValidationProvider name="Test dataset" v-slot="{errors}">
-                <DatasetSelector :project-id="projectId" :value.sync="testDS" :label="'Test dataset'"/>
+              <ValidationProvider name="Actual dataset" v-slot="{errors}">
+                <DatasetSelector :project-id="projectId" :value.sync="actualDS" :label="'Actual dataset'"/>
               </ValidationProvider>
               <v-switch v-model="shouldCreateAutoTests" :label="'Create tests automatically'"></v-switch>
             </v-col>
@@ -51,16 +51,16 @@ export default class TestSuiteCreateModal extends Vue {
   @Prop({required: true}) projectId!: number;
   public name: string = "";
   model: ModelDTO | null = null;
-  trainDS: ModelDTO | null = null;
-  testDS: ModelDTO | null = null;
+  referenceDS: ModelDTO | null = null;
+  actualDS: ModelDTO | null = null;
   shouldCreateAutoTests: boolean = true;
 
   public async submit() {
     let createdTestSuite = await api.createTestSuite({
       name: this.name,
       projectId: this.projectId,
-      trainDatasetId: this.trainDS && this.trainDS.id,
-      testDatasetId: this.testDS && this.testDS.id,
+      referenceDatasetId: this.referenceDS && this.referenceDS.id,
+      actualDatasetId: this.actualDS && this.actualDS.id,
       modelId: this.model!.id,
       shouldGenerateTests: this.shouldCreateAutoTests
     });

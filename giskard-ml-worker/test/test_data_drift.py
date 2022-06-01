@@ -21,29 +21,29 @@ def test_drift_psi():
     tests = GiskardTestFunctions()
 
     assert tests.drift.test_drift_psi(
-        expected_series=SERIES_100_A,
+        reference_series=SERIES_100_A,
         actual_series=SERIES_100_A).metric == 0
 
     assert pytest.approx(tests.drift.test_drift_psi(
-        expected_series=SERIES_100_A,
+        reference_series=SERIES_100_A,
         actual_series=SERIES_100_B).metric, 0.1) == 18.4
 
     assert pytest.approx(tests.drift.test_drift_psi(
-        expected_series=SERIES_1,
+        reference_series=SERIES_1,
         actual_series=SERIES_2).metric, 0.1) == 0.5
 
 
 def test_drift_psi_pass_fail():
     tests = GiskardTestFunctions()
 
-    assert not tests.drift.test_drift_psi(expected_series=SERIES_1, actual_series=SERIES_2, threshold=0.4).passed
-    assert tests.drift.test_drift_psi(expected_series=SERIES_1, actual_series=SERIES_2, threshold=0.6).passed
+    assert not tests.drift.test_drift_psi(reference_series=SERIES_1, actual_series=SERIES_2, threshold=0.4).passed
+    assert tests.drift.test_drift_psi(reference_series=SERIES_1, actual_series=SERIES_2, threshold=0.6).passed
 
 
 def test_drift_psi_max_cat():
     tests = GiskardTestFunctions()
     assert pytest.approx(tests.drift.test_drift_psi(
-        expected_series=SERIES_1,
+        reference_series=SERIES_1,
         actual_series=SERIES_3,
         max_categories=2).metric, 0.1) == 3.5
 
@@ -51,16 +51,17 @@ def test_drift_psi_max_cat():
 def test_drift_chi_square():
     tests = GiskardTestFunctions()
 
-    assert tests.drift.test_drift_chi_square(expected_series=SERIES_100_A,
-                                             actual_series=SERIES_100_A).metric == 0
+    assert tests.drift.test_drift_chi_square(
+        reference_series=SERIES_100_A,
+        actual_series=SERIES_100_A).metric == 0
 
     assert pytest.approx(tests.drift.test_drift_chi_square(
-        expected_series=SERIES_100_A,
-        actual_series=SERIES_100_B).metric, 0.1) == math.inf
+        reference_series=SERIES_100_A,
+        actual_series=SERIES_100_B).metric, 0.1) == 0
 
     assert pytest.approx(tests.drift.test_drift_chi_square(
-        expected_series=SERIES_1,
-        actual_series=SERIES_2).metric, 0.1) == 63.0
+        reference_series=SERIES_1,
+        actual_series=SERIES_2).metric, 0.1) == 2.0872192862952943e-14
 
 
 def test_drift_chi_square_max_cat():
@@ -68,64 +69,64 @@ def test_drift_chi_square_max_cat():
 
     assert pytest.approx(
         tests.drift.test_drift_chi_square(
-            expected_series=SERIES_1,
+            reference_series=SERIES_1,
             actual_series=SERIES_3,
             max_categories=2).metric, 0.1) == 228.0
 
 
 def test_drift_chi_square_pass_fail():
     tests = GiskardTestFunctions()
-    assert tests.drift.test_drift_chi_square(expected_series=SERIES_1,
+    assert tests.drift.test_drift_chi_square(reference_series=SERIES_1,
                                              actual_series=SERIES_2,
                                              threshold=0.1).passed
-    # assert tests.drift.test_drift_chi_square(expected_series=SERIES_1, actual_series=SERIES_2, threshold=0.1).passed
+    # assert tests.drift.test_drift_chi_square(reference_series=SERIES_1, actual_series=SERIES_2, threshold=0.1).passed
 
 
 def test_drift_ks_stat():
     tests = GiskardTestFunctions()
 
-    assert tests.drift.test_drift_ks(expected_series=SERIES_100_A,
+    assert tests.drift.test_drift_ks(reference_series=SERIES_100_A,
                                      actual_series=SERIES_100_A).metric == 0
 
     assert pytest.approx(tests.drift.test_drift_ks(
-        expected_series=SERIES_100_A,
+        reference_series=SERIES_100_A,
         actual_series=SERIES_100_B).metric, 0.1) == 1
 
     assert pytest.approx(tests.drift.test_drift_ks(
-        expected_series=SERIES_1,
+        reference_series=SERIES_1,
         actual_series=SERIES_2).metric, 0.1) == 0.3
 
 
 def test_drift_ks_stat_pass_fail():
     tests = GiskardTestFunctions()
-    assert not tests.drift.test_drift_ks(expected_series=SERIES_1,
+    assert not tests.drift.test_drift_ks(reference_series=SERIES_1,
                                          actual_series=SERIES_2,
                                          threshold=0.05).passed
-    # assert tests.drift.test_drift_ks(expected_series=SERIES_1, actual_series=SERIES_2, threshold=0.4).passed
+    # assert tests.drift.test_drift_ks(reference_series=SERIES_1, actual_series=SERIES_2, threshold=0.4).passed
 
 
 def test_drift_earth_movers_distance():
     tests = GiskardTestFunctions()
 
-    assert tests.drift.test_drift_earth_movers_distance(expected_series=SERIES_100_1,
+    assert tests.drift.test_drift_earth_movers_distance(reference_series=SERIES_100_1,
                                                         actual_series=SERIES_100_1).metric == 0
 
     assert pytest.approx(tests.drift.test_drift_earth_movers_distance(
-        expected_series=SERIES_100_1,
+        reference_series=SERIES_100_1,
         actual_series=SERIES_100_2).metric, 0.1) == 1
 
     assert pytest.approx(tests.drift.test_drift_earth_movers_distance(
-        expected_series=SERIES_1_NUM,
+        reference_series=SERIES_1_NUM,
         actual_series=SERIES_2_NUM).metric, 0.1) == 0.3
 
 
 def test_drift_earth_movers_distance_pass_fail():
     tests = GiskardTestFunctions()
-    assert not tests.drift.test_drift_earth_movers_distance(expected_series=SERIES_1_NUM,
+    assert not tests.drift.test_drift_earth_movers_distance(reference_series=SERIES_1_NUM,
                                                             actual_series=SERIES_2_NUM,
                                                             threshold=0.2).passed
 
-    assert tests.drift.test_drift_earth_movers_distance(expected_series=SERIES_1_NUM,
+    assert tests.drift.test_drift_earth_movers_distance(reference_series=SERIES_1_NUM,
                                                         actual_series=SERIES_2_NUM,
                                                         threshold=0.4).passed
 
@@ -133,8 +134,8 @@ def test_drift_earth_movers_distance_pass_fail():
 def _test_drift_prediction_psi(german_credit_test_data, german_credit_model, threshold=0.02):
     tests = GiskardTestFunctions()
     results = tests.drift.test_drift_prediction_psi(
-        slice_train=german_credit_test_data[:len(german_credit_test_data) // 2],
-        slice_test=german_credit_test_data[len(german_credit_test_data) // 2:],
+        reference_slice=german_credit_test_data.slice(lambda df: df.head(len(df) // 2)),
+        actual_slice=german_credit_test_data.slice(lambda df: df.tail(len(df) // 2)),
         model=german_credit_model,
         threshold=threshold)
 
@@ -150,8 +151,8 @@ def test_drift_prediction_psi_pass_fail(german_credit_test_data, german_credit_m
 def _test_drift_prediction_chi_square(german_credit_test_data, german_credit_model, threshold=0.02):
     tests = GiskardTestFunctions()
     results = tests.drift.test_drift_prediction_chi_square(
-        slice_train=german_credit_test_data[:len(german_credit_test_data) // 2],
-        slice_test=german_credit_test_data[len(german_credit_test_data) // 2:],
+        reference_slice=german_credit_test_data.slice(lambda df: df.head(len(df) // 2)),
+        actual_slice=german_credit_test_data.slice(lambda df: df.tail(len(df) // 2)),
         model=german_credit_model,
         threshold=threshold)
 
@@ -166,10 +167,10 @@ def test_drift_prediction_chi_square_pass_fail(german_credit_test_data, german_c
 
 def _test_drift_reg_output_ks(diabetes_dataset_with_target, linear_regression_diabetes, threshold=0.02):
     tests = GiskardTestFunctions()
-    df = diabetes_dataset_with_target
+    ds = diabetes_dataset_with_target
     results = tests.drift.test_drift_prediction_ks(
-        slice_train=df[:len(df) // 2],
-        slice_test=df[len(df) // 2:],
+        reference_slice=ds.slice(lambda df: df.head(len(df) // 2)),
+        actual_slice=ds.slice(lambda df: df.tail(len(df) // 2)),
         model=linear_regression_diabetes,
         threshold=threshold)
 
@@ -183,10 +184,10 @@ def test_drift_reg_output_ks_pass_fail(diabetes_dataset_with_target, linear_regr
 
 def _test_drift_clf_prob_ks(german_credit_data, german_credit_model, threshold=0.02):
     tests = GiskardTestFunctions()
-    df = german_credit_data
+    ds = german_credit_data
     results = tests.drift.test_drift_prediction_ks(
-        slice_train=df[:len(df) // 2],
-        slice_test=df[len(df) // 2:],
+        reference_slice=ds.slice(lambda df: df.head(len(df) // 2)),
+        actual_slice=ds.slice(lambda df: df.tail(len(df) // 2)),
         model=german_credit_model,
         threshold=threshold,
         classification_label='Default')
@@ -203,10 +204,10 @@ def test_drift_clf_prob_ks_pass_fail(german_credit_data, german_credit_model):
 def _test_drift_reg_output_earth_movers_distance(diabetes_dataset_with_target, linear_regression_diabetes,
                                                  threshold=0.02):
     tests = GiskardTestFunctions()
-    df = diabetes_dataset_with_target
+    ds = diabetes_dataset_with_target
     results = tests.drift.test_drift_prediction_earth_movers_distance(
-        slice_train=df[:len(df) // 2],
-        slice_test=df[len(df) // 2:],
+        reference_slice=ds.slice(lambda df: df.head(len(df) // 2)),
+        actual_slice=ds.slice(lambda df: df.tail(len(df) // 2)),
         model=linear_regression_diabetes,
         threshold=threshold)
 
@@ -224,10 +225,10 @@ def test_drift_reg_output_earth_movers_distance_pass_fail(diabetes_dataset_with_
 def _test_drift_clf_prob_earth_movers_distance(german_credit_data, german_credit_model,
                                                threshold=0.02):
     tests = GiskardTestFunctions()
-    df = german_credit_data
+    ds = german_credit_data
     results = tests.drift.test_drift_prediction_earth_movers_distance(
-        slice_train=df[:len(df) // 2],
-        slice_test=df[len(df) // 2:],
+        reference_slice=ds.slice(lambda df: df.head(len(df) // 2)),
+        actual_slice=ds.slice(lambda df: df.tail(len(df) // 2)),
         model=german_credit_model,
         classification_label='Default',
         threshold=threshold)
@@ -237,7 +238,5 @@ def _test_drift_clf_prob_earth_movers_distance(german_credit_data, german_credit
 
 
 def test_drift_clf_prob_earth_movers_distance_pass_fail(german_credit_data, german_credit_model):
-    assert not _test_drift_clf_prob_earth_movers_distance(
-        german_credit_data, german_credit_model, 0.01)
-    assert _test_drift_clf_prob_earth_movers_distance(
-        german_credit_data , german_credit_model, 0.04)
+    assert not _test_drift_clf_prob_earth_movers_distance(german_credit_data, german_credit_model, 0.01)
+    assert _test_drift_clf_prob_earth_movers_distance(german_credit_data, german_credit_model, 0.04)
