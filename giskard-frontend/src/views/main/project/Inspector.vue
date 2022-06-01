@@ -109,7 +109,7 @@
             <v-card-text>
               <v-tabs
                   :class="{'no-tab-header':  !isClassification(model.modelType) || textFeatureNames.length === 0}">
-                <v-tab>
+                <v-tab v-if='textFeatureNames.length > 1'>
                   <v-icon left>mdi-align-horizontal-left</v-icon>
                   Global
                 </v-tab>
@@ -117,7 +117,7 @@
                   <v-icon left>text_snippet</v-icon>
                   Text
                 </v-tab>
-                <v-tab-item>
+                <v-tab-item v-if='textFeatureNames.length>1' >
                   <PredictionExplanations :modelId="model.id"
                                           :datasetId="dataset.id"
                                           :targetFeature="dataset.target"
@@ -173,8 +173,12 @@ export default class Inspector extends Vue {
   classificationResult = null
   isClassification = isClassification
 
+
   async mounted() {
     await this.loadMetaData();
+    console.log(this.textFeatureNames)
+    console.log(this.classificationResult)
+    console.log(this.model.classificationLabels)
   }
 
   @Watch('originalData')
@@ -199,7 +203,7 @@ export default class Inspector extends Vue {
     }
   }
 
-  get isInputNotOriginal() { // used in case of opening a feedback where original data and input data passed are different 
+  get isInputNotOriginal() { // used in case of opening a feedback where original data and input data passed are different
     return JSON.stringify(this.inputData) !== JSON.stringify(this.originalData)
   }
 
