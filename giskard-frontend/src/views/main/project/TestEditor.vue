@@ -150,13 +150,15 @@
             <div class='text-h6'>Test results: {{ testResult.name }}</div>
             <table style='width: 100%; text-align: center'>
               <tr>
-                <th>Total rows tested</th>
+                <th v-if="testResult.result.actualSlicesSize.length">Actual data rows</th>
+                <th v-if="testResult.result.referenceSlicesSize.length">Reference data rows</th>
                 <th>Failed rows</th>
                 <th>Failed rows (%)</th>
                 <th>Metric</th>
               </tr>
               <tr>
-                <td>{{ testResult.result.elementCount }}</td>
+                <td v-if="testResult.result.actualSlicesSize.length">{{ testResult.result.actualSlicesSize[0] }}</td>
+                <td v-if="testResult.result.referenceSlicesSize.length">{{ testResult.result.referenceSlicesSize[0] }}</td>
                 <td>{{ testResult.result.unexpectedCount }}</td>
                 <td>{{ testResult.result.unexpectedPercent | formatNumber }}</td>
                 <td>{{ testResult.result.metric | formatNumber('0.00000') }}</td>

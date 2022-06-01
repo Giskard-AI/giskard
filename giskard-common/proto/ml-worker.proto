@@ -1,5 +1,6 @@
 syntax = "proto3";
 import "google/protobuf/any.proto";
+import "google/protobuf/wrappers.proto";
 
 option java_multiple_files = true;
 option java_package = "ai.giskard.worker";
@@ -112,18 +113,16 @@ message SingleTestResult{
   repeated TestMessage messages = 16;
   map<string, string> props = 14;
   float metric = 15;
-//  uint32 element_count = 1;
-  uint32 missing_count = 2;
-  double missing_percent = 3;
-  uint32 unexpected_count = 4;
-  double unexpected_percent = 5;
-  double unexpected_percent_total = 6;
-  double unexpected_percent_nonmissing = 7;
+  google.protobuf.Int32Value missing_count = 2;
+  google.protobuf.DoubleValue missing_percent = 3;
+  google.protobuf.Int32Value unexpected_count = 4;
+  google.protobuf.DoubleValue unexpected_percent = 5;
+  google.protobuf.DoubleValue unexpected_percent_total = 6;
+  google.protobuf.DoubleValue unexpected_percent_nonmissing = 7;
   repeated uint32 partial_unexpected_index_list = 9;
   repeated Partial_unexpected_counts partial_unexpected_counts = 10;
   repeated uint32 unexpected_index_list = 12;
   bytes output_df = 18;
-//  uint32 total_nb_rows = 19;
   uint32 number_of_perturbed_rows = 20;
 
   repeated uint32 actual_slices_size = 21;
