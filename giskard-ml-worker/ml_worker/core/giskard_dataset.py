@@ -4,7 +4,7 @@ from typing import Mapping, Callable, Optional
 import pandas as pd
 from ai_inspector.io_utils import decompress
 
-from ml_worker_pb2 import SerializedGiskardDataset
+from generated.ml_worker_pb2 import SerializedGiskardDataset
 
 
 class GiskardDataset:
