@@ -1,3 +1,5 @@
+import pytest
+
 from ml_worker.testing.functions import GiskardTestFunctions
 
 
@@ -86,3 +88,31 @@ def test_metamorphic_increasing_regression(diabetes_dataset, linear_regression_d
 def test_metamorphic_decreasing_regression(diabetes_dataset, linear_regression_diabetes):
     assert _test_metamorphic_decreasing_regression(diabetes_dataset, linear_regression_diabetes, 0.5)
     assert not _test_metamorphic_decreasing_regression(diabetes_dataset, linear_regression_diabetes, 0.6)
+
+
+def test_metamorphic_decreasing_exception(german_credit_test_data, german_credit_model):
+    with pytest.raises(Exception):
+        tests = GiskardTestFunctions()
+        perturbation = {
+            "duration_in_month": lambda x: x.duration_in_month - x.duration_in_month * 0.5}
+        results = tests.metamorphic.test_metamorphic_decreasing(
+            df=german_credit_test_data,
+            model=german_credit_model,
+            classification_label='random_value',
+            perturbation_dict=perturbation,
+            threshold=0.5
+        )
+
+
+def test_metamorphic_increasing_exception(german_credit_test_data, german_credit_model):
+    with pytest.raises(Exception):
+        tests = GiskardTestFunctions()
+        perturbation = {
+            "duration_in_month": lambda x: x.duration_in_month - x.duration_in_month * 0.5}
+        results = tests.metamorphic.test_metamorphic_increasing(
+            df=german_credit_test_data,
+            model=german_credit_model,
+            classification_label='random_value',
+            perturbation_dict=perturbation,
+            threshold=0.5
+        )
