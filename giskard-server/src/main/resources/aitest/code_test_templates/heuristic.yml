@@ -20,7 +20,7 @@ items:
       of people with high-salaries are classified as “non default”
 
       Args:
-           slice_df(GiskardDataset):
+           actual_slice(GiskardDataset):
               slice of the  actual dataset
           model(ModelInspector):
               model used to compute the test
@@ -38,7 +38,7 @@ items:
               TRUE if passed_ratio > threshold
       """
       tests.heuristic.test_right_label(
-        actual_ds.slice(lambda df: df.head(len(df)//2)),
+        actual_slice=actual_ds.slice(lambda df: df.head(len(df)//2)),
         model=model,
         classification_label='{{CLASSIFICATION LABEL}}',
         threshold=0.5
@@ -62,7 +62,7 @@ items:
       people with high wage have a probability of defaulting between 0 and 0.1
 
       Args:
-           slice_df(GiskardDataset):
+           actual_slice(GiskardDataset):
               slice of the actual dataset
           model(ModelInspector):
               model used to compute the test
@@ -84,7 +84,7 @@ items:
               TRUE if metric > threshold
       """
       tests.heuristic.test_output_in_range(
-        actual_ds.slice(lambda df: df.head(len(df)//2)),
+        actual_slice=actual_ds.slice(lambda df: df.head(len(df)//2)),
         model=model,
         classification_label='{{CLASSIFICATION LABEL}}',
         min_range=0.3,
@@ -108,7 +108,7 @@ items:
       Example : The predicted Sale Price of a studio in the city falls in a range between 300000 and 350000
 
       Args:
-           slice_df(GiskardDataset):
+           actual_slice(GiskardDataset):
               slice of the actual dataset
           model(ModelInspector):
               model used to compute the test
@@ -128,7 +128,7 @@ items:
               TRUE if metric > threshold
       """
       tests.heuristic.test_output_in_range(
-        actual_ds.slice(lambda df: df.head(len(df)//2)),
+        actual_slice=actual_ds.slice(lambda df: df.head(len(df)//2)),
         model=model,
         min_range=100,
         max_range=1000,
