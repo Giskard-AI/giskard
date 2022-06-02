@@ -24,6 +24,7 @@ python {
     scope = 'VIRTUALENV'
     installVirtualenv = true
     pip 'poetry:1.1.13'
+    environment "PYTHONPATH", file('generated')
 }
 
 task install(type: PythonTask) {
