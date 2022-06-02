@@ -239,3 +239,15 @@ def _test_drift_clf_prob_earth_movers_distance(german_credit_data, german_credit
 def test_drift_clf_prob_earth_movers_distance_pass_fail(german_credit_data, german_credit_model):
     assert not _test_drift_clf_prob_earth_movers_distance(german_credit_data, german_credit_model, 0.01)
     assert _test_drift_clf_prob_earth_movers_distance(german_credit_data, german_credit_model, 0.04)
+
+
+def test_drift_clf_prob_ks_exception(german_credit_data, german_credit_model, threshold=0.02):
+    with pytest.raises(Exception):
+        tests = GiskardTestFunctions()
+        ds = german_credit_data
+        results = tests.drift.test_drift_prediction_ks(
+            reference_slice=ds.slice(lambda df: df.head(len(df) // 2)),
+            actual_slice=ds.slice(lambda df: df.tail(len(df) // 2)),
+            model=german_credit_model,
+            threshold=threshold,
+            classification_label='random_value')
