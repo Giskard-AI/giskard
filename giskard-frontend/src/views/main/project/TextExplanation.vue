@@ -50,10 +50,9 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue, Prop, Watch } from "vue-property-decorator";
-import OverlayLoader from "@/components/OverlayLoader.vue";
-import { api } from "@/api";
-import { readToken } from "@/store/main/getters";
+import { Component, Prop, Vue, Watch } from 'vue-property-decorator';
+import OverlayLoader from '@/components/OverlayLoader.vue';
+import { api } from '@/api';
 
 @Component({
   components: { OverlayLoader },
@@ -71,7 +70,7 @@ export default class TextExplanation extends Vue {
   selectedFeature = this.textFeatureNames[0];
   selectedLabel = this.classificationResult || this.classificationLabels[0];
   errorMsg: string = "";
-  result: string = "";
+  result: { [key: string]: string } ={};
   submitted = false;
 
   @Watch("classificationResult")
@@ -94,10 +93,10 @@ export default class TextExplanation extends Vue {
           this.inputData,
           this.selectedFeature
         );
-        this.result = response.data;
+        this.result = response;
         this.submitted = true;
       } catch (error) {
-        this.result = "";
+        this.result = {};
         this.errorMsg = error.response.data.detail;
       } finally {
         this.loading = false;
@@ -105,14 +104,14 @@ export default class TextExplanation extends Vue {
     } else {
       // reset
       this.errorMsg = "";
-      this.result = "";
+      this.result = {};
     }
   }
   @Watch("selectedFeature")
   @Watch("inputData", { deep: true })
   reset() {
     this.submitted = false;
-    this.result = "";
+    this.result = {};
     this.errorMsg = "";
   }
 }
