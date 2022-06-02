@@ -71,27 +71,36 @@ function unpackInterceptor(response) {
     return response.data;
 }
 
-function errorInterceptor(error) {
-    let errorResponseData = error.response.data;
-    Vue.$toast(
-        {
-            component: ErrorToast,
-            props: {
-                title: errorResponseData.title,
-                detail: errorResponseData.detail
-            }
-
-        },
-        {
-            type: TYPE.ERROR,
-        });
+async function errorInterceptor(error) {
     if (error.response.status === 401) {
         removeLocalToken();
         commitSetToken(store, '');
         commitSetLoggedIn(store, false);
         if (router.currentRoute.path !== '/auth/login') {
-            router.push('/auth/login');
+            await router.push('/auth/login');
         }
+    } else {
+        let title: string;
+        let detail: string;
+        if (error.response.status === 502) {
+            title = error.response.statusText;
+            detail = "Error while connecting to Giskard server, check that it's running";
+        } else {
+            title = error.response.data.title;
+            detail = error.response.data.detail;
+        }
+
+        Vue.$toast(
+            {
+                component: ErrorToast,
+                props: {
+                    title: title || error.response.statusText,
+                    detail: detail
+                }
+            },
+            {
+                type: TYPE.ERROR,
+            });
     }
     return Promise.reject(error);
 }
