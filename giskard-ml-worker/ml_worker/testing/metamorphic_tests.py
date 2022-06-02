@@ -94,7 +94,7 @@ class MetamorphicTests(AbstractTestCollection):
             output_df=output_df_sample))
 
     def test_metamorphic_invariance(self,
-                                    actual_slice: GiskardDataset,
+                                    df: GiskardDataset,
                                     model,
                                     perturbation_dict,
                                     threshold=1,
@@ -114,7 +114,7 @@ class MetamorphicTests(AbstractTestCollection):
         more than 50%(threshold 0.5) of males have unchanged outputs
 
         Args:
-            actual_slice(GiskardDataset):
+            df(GiskardDataset):
                 Dataset used to compute the test
             model(ModelInspector):
                 Model used to compute the test
@@ -142,7 +142,7 @@ class MetamorphicTests(AbstractTestCollection):
         """
 
         return self._test_metamorphic(flag='Invariance',
-                                      actual_slice=actual_slice,
+                                      actual_slice=df,
                                       model=model,
                                       perturbation_dict=perturbation_dict,
                                       threshold=threshold,
