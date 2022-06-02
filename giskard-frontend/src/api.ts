@@ -94,7 +94,7 @@ async function errorInterceptor(error) {
             {
                 component: ErrorToast,
                 props: {
-                    title: title || error.response.statusText,
+                    title: title || 'Error',
                     detail: detail
                 }
             },
