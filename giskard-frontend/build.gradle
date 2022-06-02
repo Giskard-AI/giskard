@@ -7,7 +7,7 @@ plugins {
 sonarqube {
     properties {
         property "sonar.sources", "src"
-        property "sonar.exclusions", ["src/generated-sources/**", "src/plugins/**"]
+        property "sonar.exclusions", ["src/generated-sources/**", "src/plugins/**", "src/styles/font-awesome/**"]
         property "sonar.tests", "tests"
         property "sonar.sourceEncoding", "UTF-8"
     }
