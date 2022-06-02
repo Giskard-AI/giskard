@@ -5,7 +5,7 @@ def test_metamorphic_invariance_no_change(german_credit_test_data, german_credit
     perturbation = {}
     tests = GiskardTestFunctions()
     results = tests.metamorphic.test_metamorphic_invariance(
-          actual_slice=german_credit_test_data,
+          df=german_credit_test_data,
           model=german_credit_model,
           perturbation_dict=perturbation,
           threshold=0.1)
@@ -20,7 +20,7 @@ def _test_metamorphic_invariance_male_female(german_credit_test_data, german_cre
     }
     tests = GiskardTestFunctions()
     results = tests.metamorphic.test_metamorphic_invariance(
-          actual_slice=german_credit_test_data,
+          df=german_credit_test_data,
           model=german_credit_model,
           perturbation_dict=perturbation,
           threshold=threshold)
@@ -42,7 +42,7 @@ def test_metamorphic_invariance_2_perturbations(german_credit_test_data, german_
     }
     tests = GiskardTestFunctions()
     results = tests.metamorphic.test_metamorphic_invariance(
-          actual_slice=german_credit_test_data,
+          df=german_credit_test_data,
           model=german_credit_model,
           perturbation_dict=perturbation,
           threshold=0.1)
@@ -57,7 +57,7 @@ def test_metamorphic_invariance_some_rows(german_credit_test_data, german_credit
     }
     tests = GiskardTestFunctions()
     results = tests.metamorphic.test_metamorphic_invariance(
-          actual_slice=german_credit_test_data,
+          df=german_credit_test_data,
           model=german_credit_model,
           perturbation_dict=perturbation,
           threshold=0.1)
@@ -71,7 +71,7 @@ def test_metamorphic_invariance_regression(diabetes_dataset_with_target, linear_
         "sex": lambda x: -0.044641636506989 if x.sex == 0.0506801187398187 else x.sex}
     tests = GiskardTestFunctions()
     results = tests.metamorphic.test_metamorphic_invariance(
-          actual_slice=diabetes_dataset_with_target,
+          df=diabetes_dataset_with_target,
           model=linear_regression_diabetes,
           perturbation_dict=perturbation,
           output_sensitivity=0.1,
