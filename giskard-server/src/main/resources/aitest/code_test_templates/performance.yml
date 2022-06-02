@@ -18,7 +18,7 @@ items:
       Example: The test is passed when the AUC for women is higher than 0.7
 
       Args:
-          slice_df(GiskardDataset):
+          actual_slice(GiskardDataset):
               slice of the actual dataset
           model(ModelInspector):
               model used to compute the test
@@ -35,7 +35,7 @@ items:
 
       """
       tests.performance.test_auc(
-            actual_ds.slice(lambda df: df.head(len(df) // 2)),
+            actual_slice=actual_ds.slice(lambda df: df.head(len(df) // 2)),
             model=model,
             threshold=0.1
         )
@@ -56,7 +56,7 @@ items:
       Example: The test is passed when F1 score for women is higher than 0.7
 
       Args:
-          slice_df(GiskardDataset):
+          actual_slice(GiskardDataset):
               slice of the actual dataset
           model(ModelInspector):
               model used to compute the test
@@ -72,7 +72,7 @@ items:
               TRUE if F1 Score metrics > threshold
       """
       tests.performance.test_f1(
-          actual_ds.slice(lambda df: df.head(len(df) // 2)),
+          actual_slice=actual_ds.slice(lambda df: df.head(len(df) // 2)),
           model=model,
           threshold=0.1
       )
@@ -180,7 +180,7 @@ items:
       Example: The test is passed when the Accuracy for women is higher than 0.7
 
       Args:
-          slice_df(GiskardDataset):
+          actual_slice(GiskardDataset):
               slice of the actual dataset
           model(ModelInspector):
               model used to compute the test
@@ -197,7 +197,7 @@ items:
 
       """
       tests.performance.test_accuracy(
-          actual_ds.slice(lambda df: df.head(len(df) // 2)),
+          actual_slice=actual_ds.slice(lambda df: df.head(len(df) // 2)),
           model=model,
           threshold=0.1
       )
@@ -300,7 +300,7 @@ items:
       Example: The test is passed when the Precision for women is higher than 0.7
 
       Args:
-          slice_df(GiskardDataset):
+          actual_slice(GiskardDataset):
               slice of the actual dataset
           model(ModelInspector):
               model used to compute the test
@@ -317,7 +317,7 @@ items:
 
       """
       tests.performance.test_precision(
-          actual_ds.slice(lambda df: df.head(len(df) // 2)),
+          actual_slice=actual_ds.slice(lambda df: df.head(len(df) // 2)),
           model=model,
           threshold=0.1
       )
@@ -379,7 +379,7 @@ items:
       Example: The test is passed when the Recall for women is higher than 0.7
 
       Args:
-          slice_df(GiskardDataset):
+          actual_slice(GiskardDataset):
               slice of the actual dataset
           model(ModelInspector):
               model used to compute the test
@@ -396,7 +396,7 @@ items:
 
       """
       tests.performance.test_recall(
-          actual_ds.slice(lambda df: df.head(len(df) // 2)),
+          actual_slice=actual_ds.slice(lambda df: df.head(len(df) // 2)),
           model=model,
           threshold=0.1
       )
@@ -457,7 +457,7 @@ items:
       Example: The test is passed when the RMSE is lower than 0.7
 
       Args:
-          slice_df(GiskardDataset):
+          actual_slice(GiskardDataset):
               slice of actual dataset
           model(ModelInspector):
               model used to compute the test
@@ -474,7 +474,7 @@ items:
 
       """
       tests.performance.test_rmse(
-          actual_ds.slice(lambda df: df.head(len(df) // 2)),
+          actual_slice=actual_ds.slice(lambda df: df.head(len(df) // 2)),
           model=model,
           threshold=0.1
       )
@@ -575,7 +575,7 @@ items:
       Example: The test is passed when the MAE is lower than 0.7
 
       Args:
-          slice_df(GiskardDataset):
+          actual_slice(GiskardDataset):
               slice of actual dataset
           model(ModelInspector):
               model used to compute the test
@@ -591,7 +591,7 @@ items:
               TRUE if MAE metric < threshold
       """
       tests.performance.test_mae(
-            actual_ds.slice(lambda df: df.head(len(df) // 2)),
+            actual_slice=actual_ds.slice(lambda df: df.head(len(df) // 2)),
             model=model,
             threshold=0.1,
         )
@@ -610,7 +610,7 @@ items:
       Example: The test is passed when the R-Squared is higher than 0.7
 
       Args:
-          slice_df(GiskardDataset):
+          actual_slice(GiskardDataset):
               actual dataset
           model(ModelInspector):
               model used to compute the test
@@ -627,7 +627,7 @@ items:
 
       """
       tests.performance.test_r2(
-          actual_ds.slice(lambda df: df.head(len(df) // 2)),
+          actual_slice=actual_ds.slice(lambda df: df.head(len(df) // 2)),
           model=model,
           threshold=0.1
       )
