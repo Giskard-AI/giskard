@@ -17,7 +17,7 @@ from ml_worker.core.giskard_dataset import GiskardDataset
 from ml_worker.core.ml import run_predict
 from ml_worker.core.model_explanation import explain, text_explanation_prediction_wrapper, parse_text_explainer_response
 from ml_worker.exceptions.IllegalArgumentError import IllegalArgumentError
-from ml_worker_pb2 import ExplainResponse, ExplainTextResponse
+from generated.ml_worker_pb2 import ExplainResponse, ExplainTextResponse
 
 logger = logging.getLogger()
 
