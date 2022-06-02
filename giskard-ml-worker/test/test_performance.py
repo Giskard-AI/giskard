@@ -238,3 +238,54 @@ def _test_diff_rmse(diabetes_dataset_with_target, linear_regression_diabetes, th
 def test_diff_rmse(diabetes_dataset_with_target, linear_regression_diabetes):
     assert _test_diff_rmse(diabetes_dataset_with_target, linear_regression_diabetes, 1)
     assert not _test_diff_rmse(diabetes_dataset_with_target, linear_regression_diabetes, 0.05)
+
+
+def _test_diff_reference_actual_f1(german_credit_data, german_credit_model, threshold):
+    tests = GiskardTestFunctions()
+    result = tests.performance.test_diff_reference_actual_f1(
+        reference_slice=german_credit_data.slice(lambda df: df.head(len(df) // 2)),
+        actual_slice=german_credit_data.slice(lambda df: df.tail(len(df) // 2)),
+        model=german_credit_model,
+        threshold=threshold
+    )
+    assert round(result.metric, 2) == 0.03
+    return result.passed
+
+
+def test_diff_reference_actual_f1(german_credit_data, german_credit_model):
+    assert _test_diff_reference_actual_f1(german_credit_data, german_credit_model, 0.4)
+    assert not _test_diff_reference_actual_f1(german_credit_data, german_credit_model, 0.01)
+
+
+def _test_diff_reference_actual_accuracy(german_credit_data, german_credit_model, threshold):
+    tests = GiskardTestFunctions()
+    result = tests.performance.test_diff_reference_actual_accuracy(
+        reference_slice=german_credit_data.slice(lambda df: df.head(len(df) // 2)),
+        actual_slice=german_credit_data.slice(lambda df: df.tail(len(df) // 2)),
+        model=german_credit_model,
+        threshold=threshold
+    )
+    assert round(result.metric, 2) == 0.03
+    return result.passed
+
+
+def test_diff_reference_actual_accuracy(german_credit_data, german_credit_model):
+    assert _test_diff_reference_actual_accuracy(german_credit_data, german_credit_model, 0.4)
+    assert not _test_diff_reference_actual_accuracy(german_credit_data, german_credit_model, 0.01)
+
+
+def _test_diff_reference_actual_rmse(diabetes_dataset_with_target, linear_regression_diabetes, threshold):
+    tests = GiskardTestFunctions()
+    result = tests.performance.test_diff_reference_actual_rmse(
+        reference_slice=diabetes_dataset_with_target.slice(lambda df: df.head(len(df) // 2)),
+        actual_slice=diabetes_dataset_with_target.slice(lambda df: df.tail(len(df) // 2)),
+        model=linear_regression_diabetes,
+        threshold=threshold
+    )
+    assert round(result.metric, 2) == 0.02
+    return result.passed
+
+
+def test_diff_reference_actual_rmse(diabetes_dataset_with_target, linear_regression_diabetes):
+    assert _test_diff_reference_actual_rmse(diabetes_dataset_with_target, linear_regression_diabetes, 0.4)
+    assert not _test_diff_reference_actual_rmse(diabetes_dataset_with_target, linear_regression_diabetes, 0.01)
