@@ -100,6 +100,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
         if model_inspector.prediction_task == "classification":
             results = prediction_results.all_predictions
             labels = {k: v for k, v in enumerate(model_inspector.classification_labels)}
+            assert request.target in data_df, f"Target column '{request.target}' is not present in the dataset"
             label_serie = data_df[request.target]
             if len(model_inspector.classification_labels) > 2 or model_inspector.classification_threshold is None:
                 preds_serie = prediction_results.all_predictions.idxmax(axis="columns")
