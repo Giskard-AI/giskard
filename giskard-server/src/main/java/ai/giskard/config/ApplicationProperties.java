@@ -20,6 +20,7 @@ public class ApplicationProperties {
     private int mlWorkerPort;
     private int apiTokenValidityInDays;
     private int invitationTokenValidityInDays;
+    private int maxInboundMLWorkerMessageMB = 1024;
     private Double borderLineThreshold;
     private Double regressionThreshold;
 

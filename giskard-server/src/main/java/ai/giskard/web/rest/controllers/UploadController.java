@@ -38,36 +38,28 @@ public class UploadController {
     public ModelDTO uploadModel(
         @RequestPart("metadata") ModelUploadParamsDTO params,
         @RequestPart("modelFile") MultipartFile modelFile,
-        @RequestPart("requirementsFile") MultipartFile requirementsFile) {
-        log.info("Loading model: {}.{}", params.getProjectKey(), params.getName());
+        @RequestPart("requirementsFile") MultipartFile requirementsFile) throws IOException {
+        log.info("Loading model: {}.{} into project {}", params.getProjectKey(), params.getName(), params.getProjectKey());
 
-        try {
-            ProjectModel savedModel = uploadService.uploadModel(params, modelFile.getInputStream(), requirementsFile.getInputStream());
-            return giskardMapper.modelToModelDTO(savedModel);
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to read uploaded model files", e);
-        }
+        ProjectModel savedModel = uploadService.uploadModel(params, modelFile.getInputStream(), requirementsFile.getInputStream());
+        return giskardMapper.modelToModelDTO(savedModel);
     }
 
     @PostMapping("project/data/upload")
     @Transactional
     public DatasetDTO dataUpload(
         @RequestPart("metadata") DataUploadParamsDTO params,
-        @RequestPart("file") MultipartFile file) {
-        log.info("Loading dataset: {}.{}", params.getProjectKey(), params.getName());
+        @RequestPart("file") MultipartFile file) throws IOException {
+        log.info("Loading dataset: {}.{} into project {}", params.getProjectKey(), params.getName(), params.getProjectKey());
 
         Project project = projectRepository.getOneByKey(params.getProjectKey());
         permissionEvaluator.validateCanWriteProject(project.getId());
 
-        try {
-            Dataset savedDataset = uploadService.uploadDataset(
-                project, params.getName(), params.getFeatureTypes(),
-                params.getTarget(), file.getInputStream()
-            );
-            return giskardMapper.datasetToDatasetDTO(savedDataset);
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to read uploaded dataset file", e);
-        }
+        Dataset savedDataset = uploadService.uploadDataset(
+            project, params.getName(), params.getFeatureTypes(),
+            params.getTarget(), file.getInputStream()
+        );
+        return giskardMapper.datasetToDatasetDTO(savedDataset);
     }
 
 }
