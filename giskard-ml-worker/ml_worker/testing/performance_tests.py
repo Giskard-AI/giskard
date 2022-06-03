@@ -12,6 +12,7 @@ from ml_worker.testing.abstract_test_collection import AbstractTestCollection
 
 class PerformanceTests(AbstractTestCollection):
     def test_auc(self, actual_slice: GiskardDataset, model: ModelInspector, threshold=1):
+
         """
         Test if the model AUC performance is higher than a threshold for a given slice
 
@@ -34,18 +35,10 @@ class PerformanceTests(AbstractTestCollection):
                 TRUE if AUC metrics > threshold
 
         """
-
-        def _calculate_auc(is_binary_classification, prediction, true_value):
-            if is_binary_classification:
-                return roc_auc_score(true_value, prediction)
-            else:
-                return roc_auc_score(true_value, prediction, average='macro', multi_class='ovr')
-
-        metric = _calculate_auc(
-            len(model.classification_labels) == 2,
-            run_predict(actual_slice.df, model).raw_prediction,
-            actual_slice.df[actual_slice.target]
-        )
+        if len(model.classification_labels) == 2:
+            metric = roc_auc_score(actual_slice.df[actual_slice.target], run_predict(actual_slice.df, model).raw_prediction)
+        else:
+            metric = roc_auc_score(actual_slice.df[actual_slice.target], run_predict(actual_slice.df, model).all_predictions, multi_class='ovr')
 
         return self.save_results(
             SingleTestResult(
@@ -62,8 +55,20 @@ class PerformanceTests(AbstractTestCollection):
         if is_binary_classification:
             metric = score_fn(dataframe[gsk_dataset.target].map(labels_mapping), prediction)
         else:
-            metric = score_fn(dataframe[gsk_dataset.target].map(labels_mapping), prediction, average='macro',
-                              multi_class='ovr')
+            metric = score_fn(dataframe[gsk_dataset.target].map(labels_mapping), prediction, average='macro')
+
+        return self.save_results(
+            SingleTestResult(
+                actual_slices_size=[len(gsk_dataset)],
+                metric=metric,
+                passed=metric >= threshold
+            ))
+
+    def _test_accuracy_score(self, score_fn, gsk_dataset: GiskardDataset, model: ModelInspector, threshold=1):
+        dataframe = gsk_dataset.df
+        prediction = run_predict(dataframe, model).raw_prediction
+        labels_mapping = {model.classification_labels[i]: i for i in range(len(model.classification_labels))}
+        metric = score_fn(dataframe[gsk_dataset.target].map(labels_mapping), prediction)
 
         return self.save_results(
             SingleTestResult(
@@ -133,7 +138,7 @@ class PerformanceTests(AbstractTestCollection):
                 TRUE if Accuracy metrics > threshold
 
         """
-        return self._test_classification_score(accuracy_score, actual_slice, model, threshold)
+        return self._test_accuracy_score(accuracy_score, actual_slice, model, threshold)
 
     def test_precision(self, actual_slice, model: ModelInspector, threshold=1):
         """
@@ -282,7 +287,7 @@ class PerformanceTests(AbstractTestCollection):
                 passed=change_pct < threshold
             ))
 
-    def test_diff_accuracy(self,  actual_slice, reference_slice, model, threshold=0.1):
+    def test_diff_accuracy(self, actual_slice, reference_slice, model, threshold=0.1):
         """
 
         Test if the absolute percentage change of model Accuracy between two samples is lower than a threshold
