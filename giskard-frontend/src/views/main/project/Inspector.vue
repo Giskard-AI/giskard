@@ -109,7 +109,7 @@
             <v-card-text>
               <v-tabs
                   :class="{'no-tab-header':  !isClassification(model.modelType) || textFeatureNames.length === 0}">
-                <v-tab v-if='model.featureNames.length > 1'>
+                <v-tab v-if='model.featureNames.length>1'>
                   <v-icon left>mdi-align-horizontal-left</v-icon>
                   Global
                 </v-tab>
@@ -117,7 +117,7 @@
                   <v-icon left>text_snippet</v-icon>
                   Text
                 </v-tab>
-                <v-tab-item v-if='model.featureNames.length >1' >
+                <v-tab-item v-if='model.featureNames.length>1'>
                   <PredictionExplanations :modelId="model.id"
                                           :datasetId="dataset.id"
                                           :targetFeature="dataset.target"
@@ -126,7 +126,7 @@
                                           :inputData="inputData"
                   />
                 </v-tab-item>
-                <v-tab-item>
+                <v-tab-item v-if='textFeatureNames.length'>
                   <TextExplanation :modelId="model.id"
                                    :datasetId="dataset.id"
                                    :textFeatureNames="textFeatureNames"
@@ -172,7 +172,6 @@ export default class Inspector extends Vue {
   dataErrorMsg = ""
   classificationResult = null
   isClassification = isClassification
-
 
   async mounted() {
     await this.loadMetaData();
