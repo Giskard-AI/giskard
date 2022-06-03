@@ -21,19 +21,19 @@ items:
 
       Args:
            actual_slice(GiskardDataset):
-              slice of the  actual dataset
+              Slice of the  actual dataset
           model(ModelInspector):
-              model used to compute the test
+              Model used to compute the test
           classification_label(str):
-              classification label you want to test
+              Classification label you want to test
           threshold(float):
-              threshold for the percentage of passed rows
+              Threshold for the percentage of passed rows
 
       Returns:
           slice_nb_rows:
-              length of slice_df tested
+              Length of slice_df tested
           metrics:
-              the ratio of rows with the right classification label over the total of rows in the slice
+              The ratio of rows with the right classification label over the total of rows in the slice
           passed:
               TRUE if passed_ratio > threshold
       """
@@ -63,23 +63,23 @@ items:
 
       Args:
            actual_slice(GiskardDataset):
-              slice of the actual dataset
+              Slice of the actual dataset
           model(ModelInspector):
-              model used to compute the test
+              Model used to compute the test
           classification_label:
-              classification label you want to test
+              Classification label you want to test
           min_range(float):
-              minimum probability of occurrence of classification label
+              Minimum probability of occurrence of classification label
           max_range(float):
-              maximum probability of occurrence of classification label
+              Maximum probability of occurrence of classification label
           threshold(float):
-              threshold for the percentage of passed rows
+              Threshold for the percentage of passed rows
 
       Returns:
           slice_nb_rows:
-              length of slice_df tested
+              Length of slice_df tested
           metrics:
-              the proportion of rows in the right range inside the slice
+              The proportion of rows in the right range inside the slice
           passed:
               TRUE if metric > threshold
       """
@@ -87,8 +87,8 @@ items:
         actual_slice=actual_ds.slice(lambda df: df.head(len(df)//2)),
         model=model,
         classification_label='{{CLASSIFICATION LABEL}}',
-        min_range=0.3,
-        max_range=0.7,
+        min_range=0,
+        max_range=0.1,
         threshold=0.5,
       )
 
@@ -105,25 +105,25 @@ items:
       Description: The test is passed when the ratio of rows in the right range inside the
       slice is higher than the threshold.
 
-      Example : The predicted Sale Price of a studio in the city falls in a range between 300000 and 350000
+      Example : The predicted Sale Price of an item falls in a range between 100 and 1000
 
       Args:
            actual_slice(GiskardDataset):
-              slice of the actual dataset
+              Slice of the actual dataset
           model(ModelInspector):
-              model used to compute the test
+              Model used to compute the test
           min_range(float):
-              minimum value of prediction
+              Minimum value of prediction
           max_range(float):
-              maximum value of prediction
+              Maximum value of prediction
           threshold(float):
-              threshold for the percentage of passed rows
+              Threshold for the percentage of passed rows
 
       Returns:
           slice_nb_rows:
-              length of slice_df tested
+              Length of slice_df tested
           metrics:
-              the proportion of rows in the right range inside the slice
+              The proportion of rows in the right range inside the slice
           passed:
               TRUE if metric > threshold
       """
