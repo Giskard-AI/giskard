@@ -19,7 +19,7 @@ def serve():
     server = grpc.server(
         futures.ThreadPoolExecutor(
             max_workers=settings.max_workers,
-            thread_name_prefix="MLTaskServerExecutor",
+            thread_name_prefix="MLWorkerExecutor",
         ),
         interceptors=[ErrorInterceptor()],
         options=[
