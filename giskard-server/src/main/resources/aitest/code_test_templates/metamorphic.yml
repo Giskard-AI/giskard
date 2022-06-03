@@ -22,7 +22,7 @@ items:
 
       Args:
           df(GiskardDataset):
-                Dataset used to compute the test
+              Dataset used to compute the test
           model(ModelInspector):
               Model used to compute the test
           perturbation_dict(dict):
@@ -32,16 +32,16 @@ items:
               Threshold of the ratio of invariant rows
 
       Returns:
-          total_nb_rows:
-              total number of rows of dataframe
+          actual_slices_size:
+              total number of rows of actual dataset
           number_of_perturbed_rows:
-              number of perturbed rows
+              Number of perturbed rows
           metric:
-              the ratio of unchanged rows over the perturbed rows
+              The ratio of unchanged rows over the perturbed rows
           passed:
               TRUE if metric > threshold
           output_df:
-              dataframe of rows where the prediction changes due to perturbation
+              Dataframe of rows where the prediction changes due to perturbation
       """
       # import nlpaug.augmenter.word as naw  # uncomment for text perturbation
       # aug = naw.SpellingAug(dict_path='./spelling_en.txt') # uncomment for text perturbation
@@ -98,16 +98,16 @@ items:
               regression if the ratio is above the output_sensitivity of 0.1
 
       Returns:
-          total_nb_rows:
-              total number of rows of dataframe
+          actual_slices_size:
+              Total number of rows of actual dataset
           number_of_perturbed_rows:
-              number of perturbed rows
+              Number of perturbed rows
           metric:
-              the ratio of unchanged rows over the perturbed rows
+              The ratio of unchanged rows over the perturbed rows
           passed:
               TRUE if metric > threshold
           output_df:
-              dataframe of rows where the prediction changes due to perturbation
+              Dataframe of rows where the prediction changes due to perturbation
       """
       #import nlpaug.augmenter.word as naw  # uncomment for text perturbation
       #aug = naw.SpellingAug(dict_path='./spelling_en.txt') # uncomment for text perturbation
@@ -159,19 +159,19 @@ items:
           threshold(float):
               Threshold of the ratio of increasing rows
           classification_label(float):
-              one specific label value from the target column
+              One specific label value from the target column
 
       Returns:
-          total_nb_rows:
-              total number of rows of dataframe
+          actual_slices_size:
+              Total number of rows of actual dataset
           number_of_perturbed_rows:
-              number of perturbed rows
+              Number of perturbed rows
           metric:
-              the ratio of increasing rows over the perturbed rows
+              The ratio of increasing rows over the perturbed rows
           passed:
               TRUE if metric > threshold
           output_df:
-              dataframe containing the rows whose probability doesn't increase after perturbation
+              Dataframe containing the rows whose probability doesn't increase after perturbation
 
       """
       #import nlpaug.augmenter.word as naw  # uncomment for text perturbation
@@ -223,16 +223,16 @@ items:
               Threshold of the ratio of increasing rows
 
       Returns:
-          total_nb_rows:
-              total number of rows of dataframe
+          actual_slices_size:
+              Total number of rows of actual dataset
           number_of_perturbed_rows:
-              number of perturbed rows
+              Number of perturbed rows
           metric:
-              the ratio of increasing rows over the perturbed rows
+              The ratio of increasing rows over the perturbed rows
           passed:
               TRUE if metric > threshold
           output_df:
-              dataframe containing the rows whose probability doesn't increase after perturbation
+              Dataframe containing the rows whose probability doesn't increase after perturbation
 
       """
       #import nlpaug.augmenter.word as naw  # uncomment for text perturbation
@@ -282,21 +282,21 @@ items:
               Dictionary of the perturbations. It provides the perturbed features as key
               and a perturbation lambda function as value
           threshold(float):
-              Threshold of the ratio of increasing rows
+              Threshold of the ratio of decreasing rows
           classification_label(float):
-              one specific label value from the target column
+              One specific label value from the target column
 
       Returns:
-          total_nb_rows:
-              total number of rows of dataframe
+          actual_slices_size:
+              Total number of rows of actual dataset
           number_of_perturbed_rows:
-              number of perturbed rows
+              Number of perturbed rows
           metric:
-              the ratio of decreasing rows over the perturbed rows
+              The ratio of decreasing rows over the perturbed rows
           passed:
               TRUE if metric > threshold
           output_df:
-              dataframe containing the rows whose probability doesn't decrease after perturbation
+              Dataframe containing the rows whose probability doesn't decrease after perturbation
 
       """
       #import nlpaug.augmenter.word as naw  # uncomment for text perturbation
@@ -348,16 +348,16 @@ items:
               Threshold of the ratio of decreasing rows
 
       Returns:
-          total_nb_rows:
-              total number of rows of dataframe
+          actual_slices_size:
+              Total number of rows of actual dataset
           number_of_perturbed_rows:
-              number of perturbed rows
+              Number of perturbed rows
           metric:
-              the ratio of decreasing rows over the perturbed rows
+              The ratio of decreasing rows over the perturbed rows
           passed:
               TRUE if metric > threshold
           output_df:
-              dataframe containing the rows whose probability doesn't decrease after perturbation
+              Dataframe containing the rows whose probability doesn't decrease after perturbation
 
       """
       #import nlpaug.augmenter.word as naw  # uncomment for text perturbation
