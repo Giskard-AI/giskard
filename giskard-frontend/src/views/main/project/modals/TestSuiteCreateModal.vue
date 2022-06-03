@@ -15,11 +15,11 @@
               <ValidationProvider name="Model" mode="eager" rules="required" v-slot="{errors}">
                 <ModelSelector :project-id="projectId" :value.sync="model"/>
               </ValidationProvider>
-              <ValidationProvider name="Reference dataset" v-slot="{errors}">
-                <DatasetSelector :project-id="projectId" :value.sync="referenceDS" :label="'Reference dataset'"/>
-              </ValidationProvider>
               <ValidationProvider name="Actual dataset" v-slot="{errors}">
                 <DatasetSelector :project-id="projectId" :value.sync="actualDS" :label="'Actual dataset'"/>
+              </ValidationProvider>
+              <ValidationProvider name="Reference dataset" v-slot="{errors}">
+                <DatasetSelector :project-id="projectId" :value.sync="referenceDS" :label="'Reference dataset'"/>
               </ValidationProvider>
               <v-switch v-model="shouldCreateAutoTests" :label="'Create tests automatically'"></v-switch>
             </v-col>
