@@ -46,7 +46,7 @@ public class FileUploadService {
     private final Logger log = LoggerFactory.getLogger(FileUploadService.class);
 
     @Transactional
-    public ProjectModel uploadModel(ModelUploadParamsDTO modelParams, InputStream modelStream, InputStream requirementsStream) {
+    public ProjectModel uploadModel(ModelUploadParamsDTO modelParams, InputStream modelStream, InputStream requirementsStream) throws IOException {
         Project project = projectRepository.getOneByKey(modelParams.getProjectKey());
         Path projectModelsPath = locationService.modelsDirectory(project.getKey());
         createOrEnsureOutputDirectory(projectModelsPath);
@@ -58,12 +58,8 @@ public class FileUploadService {
 
         String modelFilename = createZSTname("model_", savedModel.getId());
         Path modelFilePath = projectModelsPath.resolve(modelFilename);
-        try {
-            long size = modelStream.transferTo(Files.newOutputStream(modelFilePath));
-            model.setSize(size);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        long size = modelStream.transferTo(Files.newOutputStream(modelFilePath));
+        model.setSize(size);
         model.setFileName(modelFilename);
 
         String requirementsFilename = String.format("model-requirements_%s.txt", savedModel.getId());
@@ -142,7 +138,7 @@ public class FileUploadService {
     }
 
     @Transactional
-    public Dataset uploadDataset(Project project, String datasetName, Map<String, FeatureType> featureTypes, String target, InputStream inputStream) {
+    public Dataset uploadDataset(Project project, String datasetName, Map<String, FeatureType> featureTypes, String target, InputStream inputStream) throws IOException {
         Path datasetPath = locationService.datasetsDirectory(project.getKey());
         createOrEnsureOutputDirectory(datasetPath);
 
@@ -155,12 +151,8 @@ public class FileUploadService {
 
         String fileName = createZSTname("data_", dataset.getId());
         dataset.setFileName(fileName);
-        try {
-            long size = inputStream.transferTo(Files.newOutputStream(datasetPath.resolve(fileName)));
-            dataset.setSize(size);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        long size = inputStream.transferTo(Files.newOutputStream(datasetPath.resolve(fileName)));
+        dataset.setSize(size);
 
         return datasetRepository.save(dataset);
     }
