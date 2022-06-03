@@ -211,9 +211,9 @@ class DriftTests(AbstractTestCollection):
 
         Args:
             reference_series(GiskardDataset):
-                a categorical column in reference dataset
+                a numerical column in reference dataset
             actual_series(GiskardDataset):
-                categorical column in actual dataset that is compared to var_expected
+                numerical column in actual dataset that is compared to var_expected
             threshold:
                 threshold for p-value of KS test
             max_categories:
@@ -252,9 +252,9 @@ class DriftTests(AbstractTestCollection):
 
         Args:
             reference_series(GiskardDataset):
-                a categorical column in reference dataset
+                a numerical column in reference dataset
             actual_series(GiskardDataset):
-                categorical column in actual dataset that is compared to var_expected
+                numerical column in actual dataset that is compared to var_expected
             threshold:
                 threshold for p-value of earth movers distance
 
