@@ -71,7 +71,7 @@ public class TestService {
 
 
             TestResultMessage testResult = client.runTest(
-                ByteString.readFrom(Files.newInputStream(modelPath)),
+                model,
                 createDSStream(referenceDS),
                 referenceDS,
                 createDSStream(actualDS),

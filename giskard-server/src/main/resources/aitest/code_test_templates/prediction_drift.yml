@@ -24,7 +24,7 @@ items:
                 Slice of the actual dataset
             reference_slice(GiskardDataset):
                 Slice of the reference dataset
-            model(ModelInspector):
+            model(GiskardModel):
                 Model used to compute the test
             threshold(float):
                 Threshold value for PSI
@@ -65,7 +65,7 @@ items:
                 Slice of the actual dataset
             reference_slice(GiskardDataset):
                 Slice of the reference dataset
-            model(ModelInspector):
+            model(GiskardModel):
                 Model used to compute the test
             threshold(float):
                 Threshold value for Chi-Square
@@ -106,7 +106,7 @@ items:
                 Slice of the actual dataset
             reference_slice(GiskardDataset):
                 Slice of the reference dataset
-            model(ModelInspector):
+            model(GiskardModel):
                 Model used to compute the test
             threshold(float):
                 Threshold for p-value Kolmogorov-Smirnov test
@@ -148,7 +148,7 @@ items:
                 Slice of the actual dataset
             reference_slice(GiskardDataset):
                 Slice of the reference dataset
-            model(ModelInspector):
+            model(GiskardModel):
                 Model used to compute the test
             threshold(float):
                 Threshold for p-value Kolmogorov-Smirnov test
@@ -192,7 +192,7 @@ items:
                 Slice of the actual dataset
             reference_slice(GiskardDataset):
                 Slice of the reference dataset
-            model(ModelInspector):
+            model(GiskardModel):
                 Model used to compute the test
             threshold(float):
                 Threshold for p-value Earth Mover’s Distance test
@@ -232,7 +232,7 @@ items:
                 Slice of the actual dataset
             reference_slice(GiskardDataset):
                 Slice of the reference dataset
-            model(ModelInspector):
+            model(GiskardModel):
                 Model used to compute the test
             classification_label:
                 One specific label value from the target column for classification model

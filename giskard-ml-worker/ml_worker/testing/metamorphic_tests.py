@@ -1,9 +1,8 @@
 import pandas as pd
-from giskard_client import ModelInspector
 
 from generated.ml_worker_pb2 import SingleTestResult
 from ml_worker.core.giskard_dataset import GiskardDataset
-from ml_worker.core.ml import run_predict
+from ml_worker.core.model import GiskardModel
 from ml_worker.testing.abstract_test_collection import AbstractTestCollection
 from ml_worker.testing.utils import apply_perturbation_inplace
 from ml_worker.testing.utils import save_df, compress
@@ -11,20 +10,20 @@ from ml_worker.testing.utils import save_df, compress
 
 class MetamorphicTests(AbstractTestCollection):
     @staticmethod
-    def _predict_numeric_result(df, model: ModelInspector, output_proba=True, classification_label=None):
-        if model.prediction_task == 'regression' or not output_proba:
-            return run_predict(df, model).raw_prediction
-        elif model.prediction_task == 'classification' and classification_label is not None:
-            return run_predict(df, model).all_predictions[classification_label].values
-        elif model.prediction_task == 'classification':
-            return run_predict(df, model).probabilities
+    def _predict_numeric_result(df, model: GiskardModel, output_proba=True, classification_label=None):
+        if model.model_type == 'regression' or not output_proba:
+            return model.run_predict(df).raw_prediction
+        elif model.model_type == 'classification' and classification_label is not None:
+            return model.run_predict(df).all_predictions[classification_label].values
+        elif model.model_type == 'classification':
+            return model.run_predict(df).probabilities
 
     @staticmethod
     def _prediction_ratio(prediction, perturbed_prediction):
         return abs(perturbed_prediction - prediction) / prediction if prediction != 0 else abs(perturbed_prediction)
 
     @staticmethod
-    def _perturb_and_predict(df, model: ModelInspector, perturbation_dict, output_proba=True,
+    def _perturb_and_predict(df, model: GiskardModel, perturbation_dict, output_proba=True,
                              classification_label=None):
         results_df = pd.DataFrame()
         results_df["prediction"] = MetamorphicTests._predict_numeric_result(df, model, output_proba,
@@ -78,7 +77,7 @@ class MetamorphicTests(AbstractTestCollection):
                                                                     output_proba=output_proba)
 
         passed_idx, failed_idx = self._compare_prediction(results_df,
-                                                          model.prediction_task,
+                                                          model.model_type,
                                                           output_sensitivity,
                                                           flag)
         failed_df = actual_slice.df.loc[failed_idx]
@@ -116,7 +115,7 @@ class MetamorphicTests(AbstractTestCollection):
         Args:
             df(GiskardDataset):
                 Dataset used to compute the test
-            model(ModelInspector):
+            model(GiskardModel):
                 Model used to compute the test
             perturbation_dict(dict):
                 Dictionary of the perturbations. It provides the perturbed features as key and a perturbation lambda function as value
@@ -173,14 +172,14 @@ class MetamorphicTests(AbstractTestCollection):
         Args:
             df(GiskardDataset):
                 Dataset used to compute the test
-            model(ModelInspector):
+            model(GiskardModel):
                 Model used to compute the test
             perturbation_dict(dict):
                 Dictionary of the perturbations. It provides the perturbed features as key
                 and a perturbation lambda function as value
             threshold(float):
                 Threshold of the ratio of increasing rows
-            classification_label(float):
+            classification_label(str):
                 one specific label value from the target column
 
         Returns:
@@ -196,7 +195,7 @@ class MetamorphicTests(AbstractTestCollection):
                 dataframe containing the rows whose probability doesn't increase after perturbation
 
         """
-        if model.prediction_task == "classification" and classification_label not in model.classification_labels:
+        if model.model_type == "classification" and classification_label not in model.classification_labels:
             raise Exception(
                 f'"{classification_label}" is not part of model labels: {",".join(model.classification_labels)}')
 
@@ -231,14 +230,14 @@ class MetamorphicTests(AbstractTestCollection):
         Args:
             df(GiskardDataset):
                 Dataset used to compute the test
-            model(ModelInspector):
+            model(GiskardModel):
                 Model used to compute the test
             perturbation_dict(dict):
                 Dictionary of the perturbations. It provides the perturbed features as key
                 and a perturbation lambda function as value
             threshold(float):
                 Threshold of the ratio of decreasing rows
-            classification_label(float):
+            classification_label(str):
                 one specific label value from the target column
 
         Returns:
@@ -255,7 +254,7 @@ class MetamorphicTests(AbstractTestCollection):
 
         """
 
-        if model.prediction_task == "classification" and classification_label not in model.classification_labels:
+        if model.model_type == "classification" and classification_label not in model.classification_labels:
             raise Exception(
                 f'"{classification_label}" is not part of model labels: {",".join(model.classification_labels)}')
         return self._test_metamorphic(flag='Decreasing',

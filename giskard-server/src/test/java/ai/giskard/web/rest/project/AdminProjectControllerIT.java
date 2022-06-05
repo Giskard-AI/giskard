@@ -83,7 +83,7 @@ class AdminProjectControllerIT {
     @Test
     @Transactional
     void getAllProjects() throws Exception {
-        restUserMockMvc.perform(get("/api/v2/project").accept(MediaType.APPLICATION_JSON))
+        restUserMockMvc.perform(get("/api/v2/projects").accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(content().string(containsString(PROJECTKEY)))
@@ -100,7 +100,7 @@ class AdminProjectControllerIT {
     @Transactional
     @WithMockUser(username = "notInDatabaseUser", authorities = AuthoritiesConstants.ADMIN)
     void getAllProjectsWithUnknownUser() throws Exception {
-        restUserMockMvc.perform(get("/api/v2/project").accept(MediaType.APPLICATION_JSON)).andExpect(status().isBadRequest());
+        restUserMockMvc.perform(get("/api/v2/projects").accept(MediaType.APPLICATION_JSON)).andExpect(status().isBadRequest());
     }
 
     /**
@@ -112,7 +112,7 @@ class AdminProjectControllerIT {
     @Transactional
     void show() throws Exception {
         Project project = projectRepository.getOneByName(PROJECTKEY);
-        restUserMockMvc.perform(get(String.format("/api/v2/project/%d", project.getId())).accept(MediaType.APPLICATION_JSON))
+        restUserMockMvc.perform(get(String.format("/api/v2/project?id=%d", project.getId())).accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(content().string(containsString(PROJECTKEY)));

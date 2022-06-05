@@ -20,7 +20,7 @@ items:
       Args:
           actual_slice(GiskardDataset):
               Slice of the actual dataset
-          model(ModelInspector):
+          model(GiskardModel):
               Model used to compute the test
           threshold(float):
               Threshold value of AUC metrics
@@ -31,7 +31,7 @@ items:
           metric:
               The AUC performance metric
           passed:
-              TRUE if AUC metrics > threshold
+              tRUE if AUC metrics > threshold
 
       """
       tests.performance.test_auc(
@@ -58,7 +58,7 @@ items:
       Args:
           actual_slice(GiskardDataset):
               Slice of the actual dataset
-          model(ModelInspector):
+          model(GiskardModel):
               Model used to compute the test
           threshold(float):
               Threshold value for F1 Score
@@ -100,7 +100,7 @@ items:
               Slice of the actual dataset
           reference_slice(GiskardDataset):
               Slice of the actual dataset
-          model(ModelInspector):
+          model(GiskardModel):
               Model used to compute the test
           threshold(float):
               Threshold value for F1 Score difference
@@ -144,7 +144,7 @@ items:
               Slice of actual dataset
           reference_slice(GiskardDataset):
               Slice of reference dataset
-          model(ModelInspector):
+          model(GiskardModel):
               Model used to compute the test
           threshold(float):
               Threshold value for F1 Score difference
@@ -182,7 +182,7 @@ items:
       Args:
           actual_slice(GiskardDataset):
               Slice of the actual dataset
-          model(ModelInspector):
+          model(GiskardModel):
               Model used to compute the test
           threshold(float):
               Threshold value for Accuracy
@@ -224,7 +224,7 @@ items:
               Slice of the actual dataset
           reference_slice(GiskardDataset):
               Slice of the actual dataset
-          model(ModelInspector):
+          model(GiskardModel):
               Model used to compute the test
           threshold(float):
               Threshold value for Accuracy Score difference
@@ -267,7 +267,7 @@ items:
               Slice of actual dataset
           reference_slice(GiskardDataset):
               Slice of reference dataset
-          model(ModelInspector):
+          model(GiskardModel):
               Model used to compute the test
           threshold(float):
               Threshold value for Accuracy difference
@@ -302,7 +302,7 @@ items:
       Args:
           actual_slice(GiskardDataset):
               Slice of the actual dataset
-          model(ModelInspector):
+          model(GiskardModel):
               Model used to compute the test
           threshold(float):
               Threshold value for Precision
@@ -344,7 +344,7 @@ items:
               Slice of the actual dataset
           reference_slice(GiskardDataset):
               Slice of the actual dataset
-          model(ModelInspector):
+          model(GiskardModel):
               Model used to compute the test
           threshold(float):
               Threshold value for Precision difference
@@ -381,7 +381,7 @@ items:
       Args:
           actual_slice(GiskardDataset):
               Slice of the actual dataset
-          model(ModelInspector):
+          model(GiskardModel):
               Model used to compute the test
           threshold(float):
               Threshold value for Recall
@@ -423,7 +423,7 @@ items:
               Slice of the actual dataset
           reference_slice(GiskardDataset):
               Slice of the actual dataset
-          model(ModelInspector):
+          model(GiskardModel):
               Model used to compute the test
           threshold(float):
               Threshold value for Recall difference
@@ -459,7 +459,7 @@ items:
       Args:
           actual_slice(GiskardDataset):
               Slice of actual dataset
-          model(ModelInspector):
+          model(GiskardModel):
               Model used to compute the test
           threshold(float):
               Threshold value for RMSE
@@ -500,7 +500,7 @@ items:
               Slice of the actual dataset
           reference_slice(GiskardDataset):
               Slice of the actual dataset
-          model(ModelInspector):
+          model(GiskardModel):
               Model used to compute the test
           threshold(float):
               Threshold value for RMSE difference
@@ -542,7 +542,7 @@ items:
               Slice of actual dataset
           reference_slice(GiskardDataset):
               Slice of reference dataset
-          model(ModelInspector):
+          model(GiskardModel):
               Model used to compute the test
           threshold(float):
               Threshold value for RMSE difference
@@ -577,7 +577,7 @@ items:
       Args:
           actual_slice(GiskardDataset):
               Slice of actual dataset
-          model(ModelInspector):
+          model(GiskardModel):
               Model used to compute the test
           threshold(float):
               Threshold value for MAE
@@ -612,7 +612,7 @@ items:
       Args:
           actual_slice(GiskardDataset):
               Slice of actual dataset
-          model(ModelInspector):
+          model(GiskardModel):
               Model used to compute the test
           threshold(float):
               Threshold value for R-Squared
