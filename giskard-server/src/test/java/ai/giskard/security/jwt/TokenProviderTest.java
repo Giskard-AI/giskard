@@ -99,11 +99,11 @@ class TokenProviderTest {
     @Test
     void testAPIauthToken() {
         Instant tokenAcquiryDate = (new Date()).toInstant();
-        String token = tokenProvider.createAPIaccessToken("valery");
+        String token = tokenProvider.createAPIaccessToken(createAuthentication(AuthoritiesConstants.AITESTER));
 
         JwtParser jwtParser = Jwts.parserBuilder().setSigningKey(key).build();
         Claims claims = jwtParser.parseClaimsJws(token).getBody();
-        assertThat(claims.getSubject()).isEqualTo("valery");
+        assertThat(claims.getSubject()).isEqualTo("test-user");
         long tokenValidityDays = Duration.between(tokenAcquiryDate, claims.getExpiration().toInstant()).toMillis();
 
         assertThat(tokenValidityDays).isCloseTo(DAYS_90, Offset.offset((long) 1000));

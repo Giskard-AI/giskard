@@ -5,13 +5,12 @@ from typing import Union
 
 import numpy as np
 import pandas as pd
-from giskard_client import ModelInspector
 from scipy.stats import chi2, ks_2samp
 from scipy.stats.stats import Ks_2sampResult, wasserstein_distance
 
 from generated.ml_worker_pb2 import SingleTestResult, TestMessage, TestMessageType
 from ml_worker.core.giskard_dataset import GiskardDataset
-from ml_worker.core.ml import run_predict
+from ml_worker.core.model import GiskardModel
 from ml_worker.testing.abstract_test_collection import AbstractTestCollection
 
 
@@ -272,7 +271,7 @@ class DriftTests(AbstractTestCollection):
         ))
 
     def test_drift_prediction_psi(self, reference_slice: GiskardDataset, actual_slice: GiskardDataset,
-                                  model: ModelInspector,
+                                  model: GiskardModel,
                                   max_categories: int = 10, threshold: float = 0.2,
                                   psi_contribution_percent: float = 0.2):
         """
@@ -287,7 +286,7 @@ class DriftTests(AbstractTestCollection):
                 slice of the reference dataset 
             actual_slice(GiskardDataset):
                 slice of the actual dataset 
-            model(ModelInspector):
+            model(GiskardModel):
                 uploaded model
             max_categories:
                 the maximum categories to compute the PSI score
@@ -307,8 +306,8 @@ class DriftTests(AbstractTestCollection):
                 psi result message
 
         """
-        prediction_reference = run_predict(reference_slice.df, model).prediction
-        prediction_actual = run_predict(actual_slice.df, model).prediction
+        prediction_reference = model.run_predict(reference_slice.df).prediction
+        prediction_actual = model.run_predict(actual_slice.df).prediction
         total_psi, output_data = self._calculate_drift_psi(prediction_reference, prediction_actual, max_categories)
 
         passed = True if threshold is None else total_psi <= threshold
@@ -343,7 +342,7 @@ class DriftTests(AbstractTestCollection):
                 slice of the reference dataset 
             actual_slice(GiskardDataset):
                 slice of the actual dataset 
-            model(ModelInspector):
+            model(GiskardModel):
                 uploaded model
             max_categories:
                 the maximum categories to compute the PSI score
@@ -363,9 +362,10 @@ class DriftTests(AbstractTestCollection):
                 message describing if prediction is drifting or not
 
         """
-        prediction_reference = run_predict(reference_slice.df, model).prediction
-        prediction_actual = run_predict(actual_slice.df, model).prediction
-        chi_square, p_value, output_data = self._calculate_chi_square(prediction_reference, prediction_actual, max_categories)
+        prediction_reference = model.run_predict(reference_slice.df).prediction
+        prediction_actual = model.run_predict(actual_slice.df).prediction
+        chi_square, p_value, output_data = self._calculate_chi_square(prediction_reference, prediction_actual,
+                                                                      max_categories)
 
         passed = p_value > threshold
         messages: Union[typing.List[TestMessage], None] = None
@@ -386,7 +386,7 @@ class DriftTests(AbstractTestCollection):
     def test_drift_prediction_ks(self,
                                  reference_slice: GiskardDataset,
                                  actual_slice: GiskardDataset,
-                                 model: ModelInspector,
+                                 model: GiskardModel,
                                  classification_label=None,
                                  threshold=None) -> SingleTestResult:
         """
@@ -402,7 +402,7 @@ class DriftTests(AbstractTestCollection):
                 slice of the reference dataset 
             actual_slice(GiskardDataset):
                 slice of the actual dataset 
-            model(ModelInspector):
+            model(GiskardModel):
                 uploaded model
             threshold:
                 threshold for p-value Kolmogorov-Smirnov test
@@ -417,13 +417,14 @@ class DriftTests(AbstractTestCollection):
             messages:
                 Kolmogorov-Smirnov result message
         """
-        if model.prediction_task == "classification" and classification_label not in model.classification_labels:
-            raise Exception(f'"{classification_label}" is not part of model labels: {",".join(model.classification_labels)}')
+        if model.model_type == "classification" and classification_label not in model.classification_labels:
+            raise Exception(
+                f'"{classification_label}" is not part of model labels: {",".join(model.classification_labels)}')
 
-        prediction_reference = run_predict(reference_slice.df, model).all_predictions[classification_label].values if \
-            model.prediction_task == "classification" else run_predict(reference_slice.df, model).prediction
-        prediction_actual = run_predict(actual_slice.df, model).all_predictions[classification_label].values if \
-            model.prediction_task == "classification" else run_predict(actual_slice.df, model).prediction
+        prediction_reference = model.run_predict(reference_slice.df).all_predictions[classification_label].values if \
+            model.model_type == "classification" else model.run_predict(reference_slice.df).prediction
+        prediction_actual = model.run_predict(actual_slice.df).all_predictions[classification_label].values if \
+            model.model_type == "classification" else model.run_predict(actual_slice.df).prediction
 
         result: Ks_2sampResult = self._calculate_ks(prediction_reference, prediction_actual)
         passed = True if threshold is None else result.pvalue >= threshold
@@ -443,7 +444,7 @@ class DriftTests(AbstractTestCollection):
     def test_drift_prediction_earth_movers_distance(self,
                                                     reference_slice: GiskardDataset,
                                                     actual_slice: GiskardDataset,
-                                                    model: ModelInspector,
+                                                    model: GiskardModel,
                                                     classification_label=None,
                                                     threshold=None) -> SingleTestResult:
         """
@@ -463,7 +464,7 @@ class DriftTests(AbstractTestCollection):
                 slice of the reference dataset 
             actual_slice(GiskardDataset):
                 slice of the actual dataset 
-            model(ModelInspector):
+            model(GiskardModel):
                 uploaded model
             classification_label:
                 one specific label value from the target column for classification model
@@ -478,10 +479,10 @@ class DriftTests(AbstractTestCollection):
 
         """
 
-        prediction_reference = run_predict(reference_slice.df, model).all_predictions[classification_label].values if \
-            model.prediction_task == "classification" else run_predict(reference_slice.df, model).prediction
-        prediction_actual = run_predict(actual_slice.df, model).all_predictions[classification_label].values if \
-            model.prediction_task == "classification" else run_predict(actual_slice.df, model).prediction
+        prediction_reference = model.run_predict(reference_slice.df).all_predictions[classification_label].values if \
+            model.model_type == "classification" else model.run_predict(reference_slice.df).prediction
+        prediction_actual = model.run_predict(actual_slice.df).all_predictions[classification_label].values if \
+            model.model_type == "classification" else model.run_predict(actual_slice.df).prediction
 
         metric = self._calculate_earth_movers_distance(prediction_reference, prediction_actual)
 

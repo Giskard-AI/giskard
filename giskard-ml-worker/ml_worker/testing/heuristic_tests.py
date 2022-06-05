@@ -1,16 +1,15 @@
 import pandas as pd
-from giskard_client import ModelInspector
 
 from generated.ml_worker_pb2 import SingleTestResult
 from ml_worker.core.giskard_dataset import GiskardDataset
-from ml_worker.core.ml import run_predict
+from ml_worker.core.model import GiskardModel
 from ml_worker.testing.abstract_test_collection import AbstractTestCollection
 
 
 class HeuristicTests(AbstractTestCollection):
     def test_right_label(self,
                          actual_slice: GiskardDataset,
-                         model: ModelInspector,
+                         model: GiskardModel,
                          classification_label: str,
                          threshold=0.5) -> SingleTestResult:
         """
@@ -42,7 +41,7 @@ class HeuristicTests(AbstractTestCollection):
 
         """
 
-        prediction_results = run_predict(actual_slice.df, model).prediction
+        prediction_results = model.run_predict(actual_slice.df).prediction
         assert classification_label in model.classification_labels, \
             f'"{classification_label}" is not part of model labels: {",".join(model.classification_labels)}'
 
@@ -57,7 +56,7 @@ class HeuristicTests(AbstractTestCollection):
 
     def test_output_in_range(self,
                              actual_slice: GiskardDataset,
-                             model: ModelInspector,
+                             model: GiskardModel,
                              classification_label=None,
                              min_range: float = 0.3,
                              max_range: float = 0.7,
@@ -104,19 +103,19 @@ class HeuristicTests(AbstractTestCollection):
         """
         results_df = pd.DataFrame()
 
-        prediction_results = run_predict(actual_slice.df, model)
+        prediction_results = model.run_predict(actual_slice.df)
 
-        if model.prediction_task == "regression":
+        if model.model_type == "regression":
             results_df["output"] = prediction_results.raw_prediction
 
-        elif model.prediction_task == "classification":
+        elif model.model_type == "classification":
             results_df["output"] = prediction_results.all_predictions[classification_label]
             assert classification_label in model.classification_labels, \
                 f'"{classification_label}" is not part of model labels: {",".join(model.classification_labels)}'
 
         else:
             raise ValueError(
-                f"Prediction task is not supported: {model.prediction_task}"
+                f"Prediction task is not supported: {model.model_type}"
             )
 
         matching_prediction_mask = \
