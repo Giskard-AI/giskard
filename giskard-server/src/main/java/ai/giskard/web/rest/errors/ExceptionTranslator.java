@@ -2,6 +2,7 @@ package ai.giskard.web.rest.errors;
 
 import ai.giskard.exception.MLWorkerRuntimeException;
 import io.grpc.StatusRuntimeException;
+import io.jsonwebtoken.ExpiredJwtException;
 import lombok.NonNull;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
@@ -166,6 +167,15 @@ public class ExceptionTranslator implements ProblemHandling, SecurityAdviceTrait
             request,
             HeaderUtil.createFailureAlert(applicationName, false, problem.getEntityName(), problem.getErrorKey(), problem.getMessage())
         );
+    }
+
+    @ExceptionHandler
+    public ResponseEntity<Problem> expiredTokenHandler(
+        ExpiredJwtException ex,
+        NativeWebRequest request
+    ) {
+        ExpiredTokenException problem = new ExpiredTokenException();
+        return create(problem, request);
     }
 
     @ExceptionHandler

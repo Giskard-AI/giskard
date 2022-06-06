@@ -3,14 +3,12 @@ package ai.giskard.security.jwt;
 import ai.giskard.config.ApplicationProperties;
 import ai.giskard.management.SecurityMetersService;
 import ai.giskard.security.AuthoritiesConstants;
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.JwtParser;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.assertj.core.data.Offset;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.core.Authentication;
@@ -74,10 +72,9 @@ class TokenProviderTest {
 
         Authentication authentication = createAuthentication(AuthoritiesConstants.AITESTER);
         String token = tokenProvider.createToken(authentication, false);
-
-        boolean isTokenValid = tokenProvider.validateToken(token);
-
-        assertThat(isTokenValid).isFalse();
+        Assertions.assertThrows(ExpiredJwtException.class, () -> {
+            tokenProvider.validateToken(token);
+        });
     }
 
     @Test
