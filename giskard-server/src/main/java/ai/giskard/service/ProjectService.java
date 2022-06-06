@@ -54,6 +54,7 @@ public class ProjectService {
         if (Objects.isNull(project.getKey())) {
             project.setKey(toSlug(project.getName()));
         }
+        project.setKey(toSlug(project.getKey()));
         User owner = userRepository.getOneByLogin(ownerLogin);
         project.setOwner(owner);
         return projectRepository.save(project);
