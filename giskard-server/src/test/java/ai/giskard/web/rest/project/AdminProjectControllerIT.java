@@ -133,7 +133,7 @@ class AdminProjectControllerIT {
                 .content(new ObjectMapper().writeValueAsString(projectDTO)))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.name").value("createdProject"))
-            .andExpect(jsonPath("$.key").value("keyProject"));
+            .andExpect(jsonPath("$.key").value("keyproject")); // Slug version
         assertThat(projectRepository.findOneByName("createdProject")).isPresent();
     }
 
