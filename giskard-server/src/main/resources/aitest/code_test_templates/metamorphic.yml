@@ -25,7 +25,7 @@ items:
       Args:
           df(GiskardDataset):
               Dataset used to compute the test
-          model(ModelInspector):
+          model(GiskardModel):
               Model used to compute the test
           perturbation_dict(dict):
               Dictionary of the perturbations. It provides the perturbed features as key
@@ -90,7 +90,7 @@ items:
       Args:
           df(GiskardDataset):
                 Dataset used to compute the test
-          model(ModelInspector):
+          model(GiskardModel):
               Model used to compute the test
           perturbation_dict(dict):
               Dictionary of the perturbations. It provides the perturbed features as key and a perturbation lambda function as value
@@ -157,14 +157,14 @@ items:
       Args:
           df(GiskardDataset):
               Dataset used to compute the test
-          model(ModelInspector):
+          model(GiskardModel):
               Model used to compute the test
           perturbation_dict(dict):
               Dictionary of the perturbations. It provides the perturbed features as key
               and a perturbation lambda function as value
           threshold(float):
               Threshold of the ratio of increasing rows
-          classification_label(float):
+          classification_label(str):
               One specific label value from the target column
 
       Returns:
@@ -222,7 +222,7 @@ items:
       Args:
           df(GiskardDataset):
               Dataset used to compute the test
-          model(ModelInspector):
+          model(GiskardModel):
               Model used to compute the test
           perturbation_dict(dict):
               Dictionary of the perturbations. It provides the perturbed features as key
@@ -286,14 +286,14 @@ items:
       Args:
           df(GiskardDataset):
               Dataset used to compute the test
-          model(ModelInspector):
+          model(GiskardModel):
               Model used to compute the test
           perturbation_dict(dict):
               Dictionary of the perturbations. It provides the perturbed features as key
               and a perturbation lambda function as value
           threshold(float):
               Threshold of the ratio of decreasing rows
-          classification_label(float):
+          classification_label(str):
               One specific label value from the target column
 
       Returns:
@@ -351,7 +351,7 @@ items:
       Args:
           df(GiskardDataset):
               Dataset used to compute the test
-          model(ModelInspector):
+          model(GiskardModel):
               Model used to compute the test
           perturbation_dict(dict):
               Dictionary of the perturbations. It provides the perturbed features as key

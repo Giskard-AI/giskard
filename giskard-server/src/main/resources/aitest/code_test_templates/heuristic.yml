@@ -24,7 +24,7 @@ items:
       Args:
            actual_slice(GiskardDataset):
               Slice of the  actual dataset
-          model(ModelInspector):
+          model(GiskardModel):
               Model used to compute the test
           classification_label(str):
               Classification label you want to test
@@ -68,7 +68,7 @@ items:
       Args:
            actual_slice(GiskardDataset):
               Slice of the actual dataset
-          model(ModelInspector):
+          model(GiskardModel):
               Model used to compute the test
           classification_label:
               Classification label you want to test
@@ -116,7 +116,7 @@ items:
       Args:
            actual_slice(GiskardDataset):
               Slice of the actual dataset
-          model(ModelInspector):
+          model(GiskardModel):
               Model used to compute the test
           min_range(float):
               Minimum value of prediction

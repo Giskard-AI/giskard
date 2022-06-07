@@ -1,14 +1,13 @@
 import logging
 
 import pytest
-
-from giskard_client import ModelInspector
-from ml_worker.core.giskard_dataset import GiskardDataset
-
 from sklearn import datasets, linear_model
 from sklearn.metrics import mean_squared_error
 
+from ml_worker.core.giskard_dataset import GiskardDataset
+from ml_worker.core.model import GiskardModel
 from test.test_utils import timing
+
 
 @pytest.fixture()
 def diabetes_dataset():
@@ -34,7 +33,7 @@ def diabetes_dataset_with_target():
 
 @pytest.fixture()
 @timing
-def linear_regression_diabetes() -> ModelInspector:
+def linear_regression_diabetes() -> GiskardModel:
     diabetes = datasets.load_diabetes()
 
     diabetes_x = diabetes['data']
@@ -59,8 +58,8 @@ def linear_regression_diabetes() -> ModelInspector:
 
     logging.info(f"Model MSE: {mean_squared_error(diabetes_y_test, diabetes_y_pred)}")
 
-    return ModelInspector(
+    return GiskardModel(
         prediction_function=regressor.predict,
-        prediction_task='regression',
-        input_types={feature: 'numeric' for feature in diabetes['feature_names']},
+        model_type='regression',
+        feature_names=diabetes['feature_names'],
     )

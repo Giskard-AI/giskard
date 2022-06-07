@@ -3,7 +3,6 @@ import time
 
 import pandas as pd
 import pytest
-from giskard_client import ModelInspector
 from sklearn import model_selection
 from sklearn.compose import ColumnTransformer
 from sklearn.impute import SimpleImputer
@@ -13,6 +12,7 @@ from sklearn.preprocessing import OneHotEncoder
 from sklearn.preprocessing import StandardScaler
 
 from ml_worker.core.giskard_dataset import GiskardDataset
+from ml_worker.core.model import GiskardModel
 from test import path
 
 input_types = {'account_check_status': "category",
@@ -58,7 +58,7 @@ def german_credit_test_data(german_credit_data):
 
 
 @pytest.fixture()
-def german_credit_model(german_credit_data) -> ModelInspector:
+def german_credit_model(german_credit_data) -> GiskardModel:
     start = time.time()
 
     columns_to_scale = [key for key in input_types.keys() if input_types[key] == "numeric"]
@@ -93,10 +93,10 @@ def german_credit_model(german_credit_data) -> ModelInspector:
     model_score = clf.score(X_test, Y_test)
     logging.info(f"Trained model with score: {model_score} in {round(train_time * 1000)} ms")
 
-    return ModelInspector(
+    return GiskardModel(
         prediction_function=clf.predict_proba,
-        prediction_task='classification',
-        input_types=input_types,
+        model_type='classification',
+        feature_names=list(input_types),
         classification_threshold=0.5,
         classification_labels=clf.classes_
     )
