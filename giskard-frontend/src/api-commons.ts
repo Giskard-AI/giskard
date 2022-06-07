@@ -13,8 +13,8 @@ export function dialogDownloadFile(response: AxiosResponse, fileName: string) {
   fileLink.click();
 }
 
-export async function performApiActionWithNotif(store: Store<State>, 
-  apiAction: () => Promise<AxiosResponse>, 
+export async function performApiActionWithNotif(store: Store<State>,
+  apiAction: () => any,
   callbackFn: () => any,
 ) {
   const loadingNotification = { content: 'Please wait...', showProgress: true };
@@ -23,9 +23,9 @@ export async function performApiActionWithNotif(store: Store<State>,
     const response = await apiAction();
     callbackFn();
     commitRemoveNotification(store, loadingNotification);
-    commitAddNotification(store, { content: response.data.message, color: 'success'});
+    commitAddNotification(store, { content: response.message, color: 'success'});
   } catch (error) {
     commitRemoveNotification(store, loadingNotification);
-    commitAddNotification(store, { content: error.response.data.detail, color: 'error' });
+    commitAddNotification(store, { content: error.response.detail, color: 'error' });
   }
 }

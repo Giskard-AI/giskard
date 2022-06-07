@@ -1,0 +1,19 @@
+plugins {
+    id "base"
+    id "org.sonarqube"
+}
+
+allprojects{
+    version = "0.0.1-SNAPSHOT"
+}
+
+sonarqube {
+    properties {
+        property "sonar.organization", "giskard"
+        property "sonar.host.url", "https://sonarcloud.io"
+
+        property "sonar.projectKey", "giskard"
+        property "sonar.projectName", "Giskard"
+        property "sonar.projectVersion", version.toString()
+    }
+}

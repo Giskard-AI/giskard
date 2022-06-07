@@ -79,14 +79,14 @@ export default class Datasets extends Vue {
   }
 
   private async loadDatasets() {
-    const response = await api.getProjectDatasets(readToken(this.$store), this.projectId)
-    this.files = response.data.sort((a, b) => new Date(a.createdDate) < new Date(b.createdDate) ? 1 : -1);
+    const response = await api.getProjectDatasets(this.projectId)
+    this.files = response.sort((a, b) => new Date(a.createdDate) < new Date(b.createdDate) ? 1 : -1);
   }
 
   public async upload_data() {
-    let project: ProjectDTO = (await api.getProject(this.projectId)).data;
+    let project: ProjectDTO = await api.getProject(this.projectId);
     await performApiActionWithNotif(this.$store,
-        () => api.uploadDataFile(readToken(this.$store), project.key, this.fileData),
+        () => api.uploadDataFile(project.key, this.fileData),
         () => {
           this.loadDatasets()
           this.fileData = null;
@@ -117,11 +117,11 @@ export default class Datasets extends Vue {
       this.lastVisitedFileId = id; // this is a trick to avoid recalling the api every time one panel is opened/closed 
       try {
         const response = await api.peekDataFile(id)
-        const headers = Object.keys(response.data[0])
+        const headers = Object.keys(response[0])
         this.filePreviewHeader = headers.map(e => {
           return {text: e.trim(), value: e, sortable: false,}
         });
-        this.filePreviewData = response.data
+        this.filePreviewData = response
       } catch (error) {
         commitAddNotification(this.$store, {content: error.response.statusText, color: 'error'});
         this.filePreviewHeader = [];

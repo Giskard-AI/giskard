@@ -23,8 +23,8 @@ items:
       more than 50%(threshold 0.5) of males have unchanged outputs
 
       Args:
-          df(pandas.core.frame.DataFrame):
-                Dataset used to compute the test
+          df(GiskardDataset):
+              Dataset used to compute the test
           model(ModelInspector):
               Model used to compute the test
           perturbation_dict(dict):
@@ -34,37 +34,39 @@ items:
               Threshold of the ratio of invariant rows
 
       Returns:
-          total_nb_rows:
-              total number of rows of dataframe
+          actual_slices_size:
+              total number of rows of actual dataset
           number_of_perturbed_rows:
-              number of perturbed rows
+              Number of perturbed rows
           metric:
-              the ratio of unchanged rows over the perturbed rows
+              The ratio of unchanged rows over the perturbed rows
           passed:
               TRUE if metric > threshold
           output_df:
-              dataframe of rows where the prediction changes due to perturbation
+              Dataframe of rows where the prediction changes due to perturbation
       """
-      #import nlpaug.augmenter.word as naw  # uncomment for text perturbation
-      #aug = naw.SpellingAug(dict_path='./spelling_en.txt') # uncomment for text perturbation
+      # import nlpaug.augmenter.word as naw  # uncomment for text perturbation
+      # aug = naw.SpellingAug(dict_path='./spelling_en.txt') # uncomment for text perturbation
 
       # You can choose all_perturbation to perturb categorical, text and numerical feature at the same time
-      all_perturbation = {"<NUMERIC FEATURE NAME>": lambda x: x["<NUMERIC FEATURE NAME>"] * 2,
-                "<CATEGORICAL FEATURE NAME>": lambda x: x["<CATEGORICAL FEATURE NAME>"].apply(
-                    lambda value: "<CATEGORY 1>" if value == "<CATEGORY 2>" else value),
-                "<TEXTUAL FEATURE NAME>": lambda x: x["<TEXTUAL FEATURE NAME>"].apply(lambda value: aug.augment(value))}
+      all_perturbation = {
+          "{{NUMERIC FEATURE NAME}}": lambda x: x["{{NUMERIC FEATURE NAME}}"] * 2,
+          "{{CATEGORICAL FEATURE NAME}}": lambda x: x["{{CATEGORICAL FEATURE NAME}}"].apply(lambda value: "{{CATEGORY 1}}" if value == "{{CATEGORY 2}}" else value),
+          "{{TEXTUAL FEATURE NAME}}": lambda x: x["{{TEXTUAL FEATURE NAME}}"].apply(lambda value: aug.augment(value))
+      }
 
       # Or you can choose one feature at a time eg. Numerical feature
       perturbation = {
-          "<NUMERICAL FEATURE>": lambda x: x["<NUMERICAL FEATURE>"] * 2,
+          "{{NUMERIC FEATURE NAME}}": lambda x: x["{{NUMERIC FEATURE NAME}}"] * 2,
       }
 
       tests.metamorphic.test_metamorphic_invariance(
-          df=test_df,
+          df=actual_ds,
           model=model,
-          perturbation_dict=perturbation, # Update your perturbation choice here
+          perturbation_dict=perturbation,  # Update your perturbation choice here
           threshold=0.1
       )
+
   - id: metamorphic_invariance_regression
     title: Invariance for Regression
     hint: Tests if the Regression model prediction is invariant when the feature values are perturbed
@@ -86,7 +88,7 @@ items:
       more than 50%(threshold 0.5) of males have unchanged outputs
 
       Args:
-          df(pandas.core.frame.DataFrame):
+          df(GiskardDataset):
                 Dataset used to compute the test
           model(ModelInspector):
               Model used to compute the test
@@ -100,33 +102,33 @@ items:
               regression if the ratio is above the output_sensitivity of 0.1
 
       Returns:
-          total_nb_rows:
-              total number of rows of dataframe
+          actual_slices_size:
+              Total number of rows of actual dataset
           number_of_perturbed_rows:
-              number of perturbed rows
+              Number of perturbed rows
           metric:
-              the ratio of unchanged rows over the perturbed rows
+              The ratio of unchanged rows over the perturbed rows
           passed:
               TRUE if metric > threshold
           output_df:
-              dataframe of rows where the prediction changes due to perturbation
+              Dataframe of rows where the prediction changes due to perturbation
       """
       #import nlpaug.augmenter.word as naw  # uncomment for text perturbation
       #aug = naw.SpellingAug(dict_path='./spelling_en.txt') # uncomment for text perturbation
 
       # You can choose all_perturbation to perturb categorical, text and numerical feature at the same time
-      all_perturbation = {"<NUMERIC FEATURE NAME>": lambda x: x["<NUMERIC FEATURE NAME>"] * 2,
-                "<CATEGORICAL FEATURE NAME>": lambda x: x["<CATEGORICAL FEATURE NAME>"].apply(
-                    lambda value: "<CATEGORY 1>" if value == "<CATEGORY 2>" else value),
-                "<TEXTUAL FEATURE NAME>": lambda x: x["<TEXTUAL FEATURE NAME>"].apply(lambda value: aug.augment(value))}
+      all_perturbation = {"{{NUMERIC FEATURE NAME}}": lambda x: x["{{NUMERIC FEATURE NAME}}"] * 2,
+                "{{CATEGORICAL FEATURE NAME}}": lambda x: x["{{CATEGORICAL FEATURE NAME}}"].apply(
+                    lambda value: "{{CATEGORY 1}}" if value == "{{CATEGORY 2}}" else value),
+                "{{TEXTUAL FEATURE NAME}}": lambda x: x["{{TEXTUAL FEATURE NAME}}"].apply(lambda value: aug.augment(value))}
 
       # Or you can choose one feature at a time eg. Numerical feature
       perturbation = {
-          "<NUMERICAL FEATURE>": lambda x: x["<NUMERICAL FEATURE>"] * 2,
+          "{{NUMERIC FEATURE NAME}}": lambda x: x["{{NUMERIC FEATURE NAME}}"] * 2,
       }
 
       tests.metamorphic.test_metamorphic_invariance(
-          df=test_df,
+          df=actual_ds,
           model=model,
           perturbation_dict=perturbation, # Update your perturbation choice here
           output_sensitivity=0.1,
@@ -153,7 +155,7 @@ items:
       default probability is increasing for more than 50% of people in the dataset
 
       Args:
-          df(pandas.core.frame.DataFrame):
+          df(GiskardDataset):
               Dataset used to compute the test
           model(ModelInspector):
               Model used to compute the test
@@ -163,40 +165,40 @@ items:
           threshold(float):
               Threshold of the ratio of increasing rows
           classification_label(float):
-              one specific label value from the target column
+              One specific label value from the target column
 
       Returns:
-          total_nb_rows:
-              total number of rows of dataframe
+          actual_slices_size:
+              Total number of rows of actual dataset
           number_of_perturbed_rows:
-              number of perturbed rows
+              Number of perturbed rows
           metric:
-              the ratio of increasing rows over the perturbed rows
+              The ratio of increasing rows over the perturbed rows
           passed:
               TRUE if metric > threshold
           output_df:
-              dataframe containing the rows whose probability doesn't increase after perturbation
+              Dataframe containing the rows whose probability doesn't increase after perturbation
 
       """
       #import nlpaug.augmenter.word as naw  # uncomment for text perturbation
       #aug = naw.SpellingAug(dict_path='./spelling_en.txt') # uncomment for text perturbation
 
       # You can choose all_perturbation to perturb categorical, text and numerical feature at the same time
-      all_perturbation = {"<NUMERIC FEATURE NAME>": lambda x: x["<NUMERIC FEATURE NAME>"] * 2,
-                "<CATEGORICAL FEATURE NAME>": lambda x: x["<CATEGORICAL FEATURE NAME>"].apply(
-                    lambda value: "<CATEGORY 1>" if value == "<CATEGORY 2>" else value),
-                "<TEXTUAL FEATURE NAME>": lambda x: x["<TEXTUAL FEATURE NAME>"].apply(lambda value: aug.augment(value))}
+      all_perturbation = {"{{NUMERIC FEATURE NAME}}": lambda x: x["{{NUMERIC FEATURE NAME}}"] * 2,
+                "{{CATEGORICAL FEATURE NAME}}": lambda x: x["{{CATEGORICAL FEATURE NAME}}"].apply(
+                    lambda value: "{{CATEGORY 1}}" if value == "{{CATEGORY 2}}" else value),
+                "{{TEXTUAL FEATURE NAME}}": lambda x: x["{{TEXTUAL FEATURE NAME}}"].apply(lambda value: aug.augment(value))}
 
       # Or you can choose one feature at a time eg. Numerical feature
       perturbation = {
-          "<NUMERICAL FEATURE>": lambda x: x["<NUMERICAL FEATURE>"] * 2,
+          "{{NUMERIC FEATURE NAME}}": lambda x: x["{{NUMERIC FEATURE NAME}}"] * 2,
       }
 
       tests.metamorphic.test_metamorphic_increasing(
-          df=test_df,
+          df=actual_ds,
           model=model,
           perturbation_dict=perturbation, # Update your perturbation choice here
-          classification_label=model.classification_labels[0],
+          classification_label='{{CLASSIFICATION LABEL}}',
           threshold=0.1
       )
   - id: metamorphic_increasing_regression
@@ -218,7 +220,7 @@ items:
       in increasing the Sale Price for more than 50% of houses in the dataset
 
       Args:
-          df(pandas.core.frame.DataFrame):
+          df(GiskardDataset):
               Dataset used to compute the test
           model(ModelInspector):
               Model used to compute the test
@@ -229,34 +231,34 @@ items:
               Threshold of the ratio of increasing rows
 
       Returns:
-          total_nb_rows:
-              total number of rows of dataframe
+          actual_slices_size:
+              Total number of rows of actual dataset
           number_of_perturbed_rows:
-              number of perturbed rows
+              Number of perturbed rows
           metric:
-              the ratio of increasing rows over the perturbed rows
+              The ratio of increasing rows over the perturbed rows
           passed:
               TRUE if metric > threshold
           output_df:
-              dataframe containing the rows whose probability doesn't increase after perturbation
+              Dataframe containing the rows whose probability doesn't increase after perturbation
 
       """
       #import nlpaug.augmenter.word as naw  # uncomment for text perturbation
       #aug = naw.SpellingAug(dict_path='./spelling_en.txt') # uncomment for text perturbation
 
       # You can choose all_perturbation to perturb categorical, text and numerical feature at the same time
-      all_perturbation = {"<NUMERIC FEATURE NAME>": lambda x: x["<NUMERIC FEATURE NAME>"] * 2,
-                "<CATEGORICAL FEATURE NAME>": lambda x: x["<CATEGORICAL FEATURE NAME>"].apply(
-                    lambda value: "<CATEGORY 1>" if value == "<CATEGORY 2>" else value),
-                "<TEXTUAL FEATURE NAME>": lambda x: x["<TEXTUAL FEATURE NAME>"].apply(lambda value: aug.augment(value))}
+      all_perturbation = {"{{NUMERIC FEATURE NAME}}": lambda x: x["{{NUMERIC FEATURE NAME}}"] * 2,
+                "{{CATEGORICAL FEATURE NAME}}": lambda x: x["{{CATEGORICAL FEATURE NAME}}"].apply(
+                    lambda value: "{{CATEGORY 1}}" if value == "{{CATEGORY 2}}" else value),
+                "{{TEXTUAL FEATURE NAME}}": lambda x: x["{{TEXTUAL FEATURE NAME}}"].apply(lambda value: aug.augment(value))}
 
       # Or you can choose one feature at a time eg. Numerical feature
       perturbation = {
-          "<NUMERICAL FEATURE>": lambda x: x["<NUMERICAL FEATURE>"] * 2,
+          "{{NUMERIC FEATURE NAME}}": lambda x: x["{{NUMERIC FEATURE NAME}}"] * 2,
       }
 
       tests.metamorphic.test_metamorphic_increasing(
-          df=test_df,
+          df=actual_ds,
           model=model,
           perturbation_dict=perturbation, # Update your perturbation choice here
           threshold=0.1
@@ -282,7 +284,7 @@ items:
       default probability is decreasing for more than 50% of people in the dataset
 
       Args:
-          df(pandas.core.frame.DataFrame):
+          df(GiskardDataset):
               Dataset used to compute the test
           model(ModelInspector):
               Model used to compute the test
@@ -290,42 +292,42 @@ items:
               Dictionary of the perturbations. It provides the perturbed features as key
               and a perturbation lambda function as value
           threshold(float):
-              Threshold of the ratio of increasing rows
+              Threshold of the ratio of decreasing rows
           classification_label(float):
-              one specific label value from the target column
+              One specific label value from the target column
 
       Returns:
-          total_nb_rows:
-              total number of rows of dataframe
+          actual_slices_size:
+              Total number of rows of actual dataset
           number_of_perturbed_rows:
-              number of perturbed rows
+              Number of perturbed rows
           metric:
-              the ratio of decreasing rows over the perturbed rows
+              The ratio of decreasing rows over the perturbed rows
           passed:
               TRUE if metric > threshold
           output_df:
-              dataframe containing the rows whose probability doesn't decrease after perturbation
+              Dataframe containing the rows whose probability doesn't decrease after perturbation
 
       """
       #import nlpaug.augmenter.word as naw  # uncomment for text perturbation
       #aug = naw.SpellingAug(dict_path='./spelling_en.txt') # uncomment for text perturbation
 
       # You can choose all_perturbation to perturb categorical, text and numerical feature at the same time
-      all_perturbation = {"<NUMERIC FEATURE NAME>": lambda x: x["<NUMERIC FEATURE NAME>"] * 2,
-                "<CATEGORICAL FEATURE NAME>": lambda x: x["<CATEGORICAL FEATURE NAME>"].apply(
-                    lambda value: "<CATEGORY 1>" if value == "<CATEGORY 2>" else value),
-                "<TEXTUAL FEATURE NAME>": lambda x: x["<TEXTUAL FEATURE NAME>"].apply(lambda value: aug.augment(value))}
+      all_perturbation = {"{{NUMERIC FEATURE NAME}}": lambda x: x["{{NUMERIC FEATURE NAME}}"] * 2,
+                "{{CATEGORICAL FEATURE NAME}}": lambda x: x["{{CATEGORICAL FEATURE NAME}}"].apply(
+                    lambda value: "{{CATEGORY 1}}" if value == "{{CATEGORY 2}}" else value),
+                "{{TEXTUAL FEATURE NAME}}": lambda x: x["{{TEXTUAL FEATURE NAME}}"].apply(lambda value: aug.augment(value))}
 
       # Or you can choose one feature at a time eg. Numerical feature
       perturbation = {
-          "<NUMERICAL FEATURE>": lambda x: x["<NUMERICAL FEATURE>"] * 2,
+          "{{NUMERIC FEATURE NAME}}": lambda x: x["{{NUMERIC FEATURE NAME}}"] * 2,
       }
 
       tests.metamorphic.test_metamorphic_decreasing(
-          df=test_df,
+          df=actual_ds,
           model=model,
           perturbation_dict=perturbation, # Update your perturbation choice here
-          classification_label=model.classification_labels[0],
+          classification_label='{{CLASSIFICATION LABEL}}',
           threshold=0.1
       )
   - id: metamorphic_decreasing_regression
@@ -347,7 +349,7 @@ items:
       in decreasing the Sale Price for more than 50% of houses in the dataset
 
       Args:
-          df(pandas.core.frame.DataFrame):
+          df(GiskardDataset):
               Dataset used to compute the test
           model(ModelInspector):
               Model used to compute the test
@@ -358,34 +360,34 @@ items:
               Threshold of the ratio of decreasing rows
 
       Returns:
-          total_nb_rows:
-              total number of rows of dataframe
+          actual_slices_size:
+              Total number of rows of actual dataset
           number_of_perturbed_rows:
-              number of perturbed rows
+              Number of perturbed rows
           metric:
-              the ratio of decreasing rows over the perturbed rows
+              The ratio of decreasing rows over the perturbed rows
           passed:
               TRUE if metric > threshold
           output_df:
-              dataframe containing the rows whose probability doesn't decrease after perturbation
+              Dataframe containing the rows whose probability doesn't decrease after perturbation
 
       """
       #import nlpaug.augmenter.word as naw  # uncomment for text perturbation
       #aug = naw.SpellingAug(dict_path='./spelling_en.txt') # uncomment for text perturbation
 
       # You can choose all_perturbation to perturb categorical, text and numerical feature at the same time
-      all_perturbation = {"<NUMERIC FEATURE NAME>": lambda x: x["<NUMERIC FEATURE NAME>"] * 2,
-                "<CATEGORICAL FEATURE NAME>": lambda x: x["<CATEGORICAL FEATURE NAME>"].apply(
-                    lambda value: "<CATEGORY 1>" if value == "<CATEGORY 2>" else value),
-                "<TEXTUAL FEATURE NAME>": lambda x: x["<TEXTUAL FEATURE NAME>"].apply(lambda value: aug.augment(value))}
+      all_perturbation = {"{{NUMERIC FEATURE NAME}}": lambda x: x["{{NUMERIC FEATURE NAME}}"] * 2,
+                "{{CATEGORICAL FEATURE NAME}}": lambda x: x["{{CATEGORICAL FEATURE NAME}}"].apply(
+                    lambda value: "{{CATEGORY 1}}" if value == "{{CATEGORY 2}}" else value),
+                "{{TEXTUAL FEATURE NAME}}": lambda x: x["{{TEXTUAL FEATURE NAME}}"].apply(lambda value: aug.augment(value))}
 
       # Or you can choose one feature at a time eg. Numerical feature
       perturbation = {
-          "<NUMERICAL FEATURE>": lambda x: x["<NUMERICAL FEATURE>"] * 2,
+          "{{NUMERIC FEATURE NAME}}": lambda x: x["{{NUMERIC FEATURE NAME}}"] * 2,
       }
 
       tests.metamorphic.test_metamorphic_decreasing(
-          df=test_df,
+          df=actual_ds,
           model=model,
           perturbation_dict=perturbation, # Update your perturbation choice here
           threshold=0.1

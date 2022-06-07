@@ -78,12 +78,11 @@ export default class PredictionExplanations extends Vue {
       try {
         this.loading = true;
         this.errorMsg = "";
-        const explainResponse: ExplainResponseDTO = (await api.explain(
-          readToken(this.$store),
-          this.modelId,
-          this.datasetId,
-          this.inputData
-        )).data
+        const explainResponse = await api.explain(
+            this.modelId,
+            this.datasetId,
+            this.inputData
+        )
         this.fullExplanations = explainResponse.explanations;
       } catch (error) {
         this.errorMsg = error.response.data.detail;
@@ -141,7 +140,7 @@ export default class PredictionExplanations extends Vue {
   }
 
   get chartOptionsRegression() {
-    return this.createSimpleExplanationChart(this.fullExplanations!);
+    return this.createSimpleExplanationChart(this.fullExplanations!["default"]);
   }
 
   get chartOptionsBinaryClassification() {

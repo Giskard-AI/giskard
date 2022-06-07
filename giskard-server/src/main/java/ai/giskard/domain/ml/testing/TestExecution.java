@@ -1,33 +1,27 @@
 package ai.giskard.domain.ml.testing;
 
+import ai.giskard.domain.BaseEntity;
 import ai.giskard.domain.ml.TestResult;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import javax.persistence.*;
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.ManyToOne;
 import java.util.Date;
 
 @Entity
 @NoArgsConstructor
-public class TestExecution {
-    @Setter
-    @Getter
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private Long id;
-
-    @Getter
-    @Setter
+@Getter
+@Setter
+public class TestExecution extends BaseEntity {
     @ManyToOne
     Test test;
 
-    @Getter
-    @Setter
     Date executionDate = new Date();
 
-    @Getter
-    @Setter
     @Enumerated(EnumType.STRING)
     TestResult result;
 

@@ -44,12 +44,12 @@
               <td>Model Inspector</td>
             </tr>
             <tr>
-              <td><code>test_df</code></td>
-              <td>Test dataframe</td>
+              <td><code>actual_ds</code></td>
+              <td>Actual dataset</td>
             </tr>
             <tr>
-              <td><code>train_df</code></td>
-              <td>Train dataframe</td>
+              <td><code>reference_ds</code></td>
+              <td>Reference dataset</td>
             </tr>
           </table>
           <div class='mt-4 mb-0'>
@@ -150,13 +150,15 @@
             <div class='text-h6'>Test results: {{ testResult.name }}</div>
             <table style='width: 100%; text-align: center'>
               <tr>
-                <th>Total rows tested</th>
+                <th v-if="testResult.result.actualSlicesSize.length">Actual data rows</th>
+                <th v-if="testResult.result.referenceSlicesSize.length">Reference data rows</th>
                 <th>Failed rows</th>
                 <th>Failed rows (%)</th>
                 <th>Metric</th>
               </tr>
               <tr>
-                <td>{{ testResult.result.elementCount }}</td>
+                <td v-if="testResult.result.actualSlicesSize.length">{{ testResult.result.actualSlicesSize[0] }}</td>
+                <td v-if="testResult.result.referenceSlicesSize.length">{{ testResult.result.referenceSlicesSize[0] }}</td>
                 <td>{{ testResult.result.unexpectedCount }}</td>
                 <td>{{ testResult.result.unexpectedPercent | formatNumber }}</td>
                 <td>{{ testResult.result.metric | formatNumber('0.00000') }}</td>
@@ -206,7 +208,7 @@ export default class TestEditor extends Vue {
   async save() {
     const t = this.testDetails;
     if (t) {
-      this.testDetailsOriginal = (await api.saveTest(t)).data;
+      this.testDetailsOriginal = await api.saveTest(t);
     }
   }
 
@@ -220,7 +222,7 @@ export default class TestEditor extends Vue {
         true: 'Delete'
       }
     })) {
-      let testSuite = (await api.deleteTest(this.testId)).data;
+      let testSuite = await api.deleteTest(this.testId);
       await this.$router.push({
         name: 'suite-details', params: {
           suiteId: testSuite.id.toString(),
@@ -253,7 +255,7 @@ export default class TestEditor extends Vue {
       if (this.isDirty()) {
         await this.save();
       }
-      this.runResult = (await api.runTest(this.testId)).data;
+      this.runResult = await api.runTest(this.testId);
     } finally {
       this.executingTest = false;
     }
@@ -268,7 +270,7 @@ export default class TestEditor extends Vue {
   codeSnippets: CodeTestCollection[] = [];
 
   private async init() {
-    this.testDetails = (await api.getTestDetails(this.testId)).data;
+    this.testDetails = await api.getTestDetails(this.testId);
     if (this.testDetails) {
       if (this.testDetails.type == null) {
         this.testDetails.type = TestType.CODE;
@@ -280,7 +282,7 @@ export default class TestEditor extends Vue {
 
     this.testDetailsOriginal = _.cloneDeep(this.testDetails);
 
-    this.codeSnippets = ((await api.getCodeTestTemplates()).data as CodeTestCollection[]).sort((a, b) => {
+    this.codeSnippets = (await api.getCodeTestTemplates()).sort((a, b) => {
       return a.order - b.order;
     });
   }

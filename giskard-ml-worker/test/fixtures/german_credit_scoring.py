@@ -3,7 +3,7 @@ import time
 
 import pandas as pd
 import pytest
-from ai_inspector import ModelInspector
+from giskard_client import ModelInspector
 from sklearn import model_selection
 from sklearn.compose import ColumnTransformer
 from sklearn.impute import SimpleImputer
@@ -12,45 +12,55 @@ from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder
 from sklearn.preprocessing import StandardScaler
 
+from ml_worker.core.giskard_dataset import GiskardDataset
 from test import path
+
+input_types = {'account_check_status': "category",
+               'duration_in_month': "numeric",
+               'credit_history': "category",
+               'purpose': "category",
+               'credit_amount': "numeric",
+               'savings': "category",
+               'present_emp_since': "category",
+               'installment_as_income_perc': "numeric",
+               'sex': "category",
+               'personal_status': "category",
+               'other_debtors': "category",
+               'present_res_since': "numeric",
+               'property': "category",
+               'age': "numeric",
+               'other_installment_plans': "category",
+               'housing': "category",
+               'credits_this_bank': "numeric",
+               'job': "category",
+               'people_under_maintenance': "numeric",
+               'telephone': "category",
+               'foreign_worker': "category"}
 
 
 @pytest.fixture()
-def german_credit_data():
+def german_credit_data() -> GiskardDataset:
     logging.info("Reading german_credit_prepared.csv")
-    return pd.read_csv(path('test_data/german_credit_prepared.csv'))
+    return GiskardDataset(
+        df=pd.read_csv(path('test_data/german_credit_prepared.csv')),
+        target='default',
+        feature_types=input_types
+    )
 
 
 @pytest.fixture()
 def german_credit_test_data(german_credit_data):
-    return pd.DataFrame(german_credit_data).drop(columns=['default'])
+    return GiskardDataset(
+        df=pd.DataFrame(german_credit_data.df).drop(columns=['default']),
+        feature_types=input_types,
+        target=None
+    )
 
 
 @pytest.fixture()
 def german_credit_model(german_credit_data) -> ModelInspector:
     start = time.time()
 
-    input_types = {'account_check_status': "category",
-                   'duration_in_month': "numeric",
-                   'credit_history': "category",
-                   'purpose': "category",
-                   'credit_amount': "numeric",
-                   'savings': "category",
-                   'present_emp_since': "category",
-                   'installment_as_income_perc': "numeric",
-                   'sex': "category",
-                   'personal_status': "category",
-                   'other_debtors': "category",
-                   'present_res_since': "numeric",
-                   'property': "category",
-                   'age': "numeric",
-                   'other_installment_plans': "category",
-                   'housing': "category",
-                   'credits_this_bank': "numeric",
-                   'job': "category",
-                   'people_under_maintenance': "numeric",
-                   'telephone': "category",
-                   'foreign_worker': "category"}
     columns_to_scale = [key for key in input_types.keys() if input_types[key] == "numeric"]
 
     numeric_transformer = Pipeline([('imputer', SimpleImputer(strategy='median')),
@@ -71,9 +81,9 @@ def german_credit_model(german_credit_data) -> ModelInspector:
     clf = Pipeline(steps=[('preprocessor', preprocessor),
                           ('classifier', LogisticRegression(max_iter=100))])
 
-    Y = german_credit_data['default']
-    X = german_credit_data.drop(columns="default")
-    X_train, X_test, Y_train, Y_test = model_selection.train_test_split(X, Y,
+    Y = german_credit_data.df['default']
+    X = german_credit_data.df.drop(columns="default")
+    X_train, X_test, Y_train, Y_test = model_selection.train_test_split(X, Y,  # NOSONAR
                                                                         test_size=0.20,
                                                                         random_state=30,
                                                                         stratify=Y)

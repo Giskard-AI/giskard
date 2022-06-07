@@ -18,9 +18,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import static ai.giskard.web.rest.errors.Entity.TEST_SUITE;
 
@@ -48,7 +48,7 @@ public class TestController {
                 res.setLastExecutionDate(testExecution.getExecutionDate());
             });
             return res;
-        }).collect(Collectors.toList());
+        }).toList();
     }
 
     @GetMapping("/{testId}")
@@ -84,9 +84,7 @@ public class TestController {
 
 
     @PostMapping("/{testId}/run")
-    public TestExecutionResultDTO runTest(
-        @PathVariable() Long testId
-    ) {
+    public TestExecutionResultDTO runTest(@PathVariable() Long testId) throws IOException {
         return testService.runTest(testId);
     }
 

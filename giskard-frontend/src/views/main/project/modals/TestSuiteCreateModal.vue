@@ -15,6 +15,13 @@
               <ValidationProvider name="Model" mode="eager" rules="required" v-slot="{errors}">
                 <ModelSelector :project-id="projectId" :value.sync="model"/>
               </ValidationProvider>
+              <ValidationProvider name="Actual dataset" v-slot="{errors}">
+                <DatasetSelector :project-id="projectId" :value.sync="actualDS" :label="'Actual dataset'"/>
+              </ValidationProvider>
+              <ValidationProvider name="Reference dataset" v-slot="{errors}">
+                <DatasetSelector :project-id="projectId" :value.sync="referenceDS" :label="'Reference dataset'"/>
+              </ValidationProvider>
+              <v-switch v-model="shouldCreateAutoTests" :label="'Create tests automatically'"></v-switch>
             </v-col>
           </v-row>
         </v-card-text>
@@ -34,18 +41,29 @@ import Vue from "vue";
 import {Prop} from "vue-property-decorator";
 import {api} from "@/api";
 import ModelSelector from "@/views/main/utils/ModelSelector.vue";
-import { ModelDTO } from '@/generated-sources';
+import {ModelDTO} from '@/generated-sources';
+import DatasetSelector from "@/views/main/utils/DatasetSelector.vue";
 
 @Component({
-  components: {ModelSelector}
+  components: {DatasetSelector, ModelSelector}
 })
 export default class TestSuiteCreateModal extends Vue {
   @Prop({required: true}) projectId!: number;
   public name: string = "";
   model: ModelDTO | null = null;
+  referenceDS: ModelDTO | null = null;
+  actualDS: ModelDTO | null = null;
+  shouldCreateAutoTests: boolean = true;
 
   public async submit() {
-    let createdTestSuite = (await api.createTestSuite(this.projectId, this.name, this.model!.id)).data;
+    let createdTestSuite = await api.createTestSuite({
+      name: this.name,
+      projectId: this.projectId,
+      referenceDatasetId: this.referenceDS && this.referenceDS.id,
+      actualDatasetId: this.actualDS && this.actualDS.id,
+      modelId: this.model!.id,
+      shouldGenerateTests: this.shouldCreateAutoTests
+    });
     this.$emit('submit', createdTestSuite)
   }
 }

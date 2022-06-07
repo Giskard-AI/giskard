@@ -1,12 +1,12 @@
 import pandas as pd
-from ai_inspector import ModelInspector
-from pandas import DataFrame
-from ml_worker.testing.utils import save_df, compress
+from giskard_client import ModelInspector
 
 from generated.ml_worker_pb2 import SingleTestResult
+from ml_worker.core.giskard_dataset import GiskardDataset
 from ml_worker.core.ml import run_predict
 from ml_worker.testing.abstract_test_collection import AbstractTestCollection
-from ml_worker.testing.utils import apply_perturbation_inplace, ge_result_to_test_result
+from ml_worker.testing.utils import apply_perturbation_inplace
+from ml_worker.testing.utils import save_df, compress
 
 
 class MetamorphicTests(AbstractTestCollection):
@@ -21,7 +21,7 @@ class MetamorphicTests(AbstractTestCollection):
 
     @staticmethod
     def _prediction_ratio(prediction, perturbed_prediction):
-        return abs(perturbed_prediction - prediction) / prediction if prediction else 0  # to be handled
+        return abs(perturbed_prediction - prediction) / prediction if prediction != 0 else abs(perturbed_prediction)
 
     @staticmethod
     def _perturb_and_predict(df, model: ModelInspector, perturbation_dict, output_proba=True,
@@ -40,7 +40,7 @@ class MetamorphicTests(AbstractTestCollection):
         return results_df, len(modified_rows)
 
     def _compare_prediction(self, results_df, prediction_task, output_sensitivity=None, flag=None):
-        if flag == 'INV':
+        if flag == 'Invariance':
             if prediction_task == 'classification':
                 passed_idx = results_df.loc[
                     results_df['prediction'] == results_df['perturbed_prediction']].index.values
@@ -50,11 +50,11 @@ class MetamorphicTests(AbstractTestCollection):
                     lambda x: self._prediction_ratio(x["prediction"], x["perturbed_prediction"]), axis=1)
                 passed_idx = results_df.loc[results_df['predict_difference_ratio'] < output_sensitivity].index.values
 
-        elif flag == 'INC':
+        elif flag == 'Increasing':
             passed_idx = results_df.loc[
                 results_df['prediction'] < results_df['perturbed_prediction']].index.values
 
-        elif flag == 'DEC':
+        elif flag == 'Decreasing':
             passed_idx = results_df.loc[
                 results_df['prediction'] > results_df['perturbed_prediction']].index.values
 
@@ -63,33 +63,38 @@ class MetamorphicTests(AbstractTestCollection):
 
     def _test_metamorphic(self,
                           flag,
-                          df: DataFrame,
+                          actual_slice: GiskardDataset,
                           model,
                           perturbation_dict,
                           threshold: float,
                           classification_label=None,
-                          output_sensitivity=None
+                          output_sensitivity=None,
+                          output_proba=True
                           ) -> SingleTestResult:
-        results_df, modified_rows_count = self._perturb_and_predict(df, model, perturbation_dict,
-                                                                    classification_label=classification_label)
+        results_df, modified_rows_count = self._perturb_and_predict(actual_slice.df,
+                                                                    model,
+                                                                    perturbation_dict,
+                                                                    classification_label=classification_label,
+                                                                    output_proba=output_proba)
+
         passed_idx, failed_idx = self._compare_prediction(results_df,
                                                           model.prediction_task,
                                                           output_sensitivity,
                                                           flag)
-        failed_df = df.loc[failed_idx]
+        failed_df = actual_slice.df.loc[failed_idx]
         passed_ratio = len(passed_idx) / modified_rows_count if modified_rows_count != 0 else 1
 
         output_df_sample = compress(save_df(failed_df))
 
         return self.save_results(SingleTestResult(
-            total_nb_rows=len(df),
+            actual_slices_size=[len(actual_slice)],
             number_of_perturbed_rows=modified_rows_count,
             metric=passed_ratio,
             passed=passed_ratio > threshold,
             output_df=output_df_sample))
 
     def test_metamorphic_invariance(self,
-                                    df: DataFrame,
+                                    df: GiskardDataset,
                                     model,
                                     perturbation_dict,
                                     threshold=1,
@@ -102,14 +107,14 @@ class MetamorphicTests(AbstractTestCollection):
         feature values perturbation.
         For regression: Check whether the predicted output remains the same at the output_sensibility
         level after feature values perturbation.
-        
+
         The test is passed when the ratio of invariant rows is higher than the threshold
 
         Example : The test is passed when, after switching gender from male to female,
         more than 50%(threshold 0.5) of males have unchanged outputs
 
         Args:
-            df(pandas.core.frame.DataFrame):
+            df(GiskardDataset):
                 Dataset used to compute the test
             model(ModelInspector):
                 Model used to compute the test
@@ -123,7 +128,7 @@ class MetamorphicTests(AbstractTestCollection):
                 regression if the ratio is above the output_sensitivity of 0.1
 
         Returns:
-            total_nb_rows:
+            actual_slices_size:
                 total number of rows of dataframe
             number_of_perturbed_rows:
                 number of perturbed rows
@@ -136,16 +141,17 @@ class MetamorphicTests(AbstractTestCollection):
 
         """
 
-        return self._test_metamorphic(flag='INV',
-                                      df=df,
+        return self._test_metamorphic(flag='Invariance',
+                                      actual_slice=df,
                                       model=model,
                                       perturbation_dict=perturbation_dict,
                                       threshold=threshold,
-                                      output_sensitivity=output_sensitivity
+                                      output_sensitivity=output_sensitivity,
+                                      output_proba=False
                                       )
 
     def test_metamorphic_increasing(self,
-                                    df: DataFrame,
+                                    df: GiskardDataset,
                                     model,
                                     perturbation_dict,
                                     threshold=1,
@@ -165,7 +171,7 @@ class MetamorphicTests(AbstractTestCollection):
          default probability is increasing for more than 50% of people in the dataset
 
         Args:
-            df(pandas.core.frame.DataFrame):
+            df(GiskardDataset):
                 Dataset used to compute the test
             model(ModelInspector):
                 Model used to compute the test
@@ -178,7 +184,7 @@ class MetamorphicTests(AbstractTestCollection):
                 one specific label value from the target column
 
         Returns:
-            total_nb_rows:
+            actual_slices_size:
                 total number of rows of dataframe
             number_of_perturbed_rows:
                 number of perturbed rows
@@ -194,15 +200,15 @@ class MetamorphicTests(AbstractTestCollection):
             raise Exception(
                 f'"{classification_label}" is not part of model labels: {",".join(model.classification_labels)}')
 
-        return self._test_metamorphic(flag='INC',
-                                      df=df,
+        return self._test_metamorphic(flag='Increasing',
+                                      actual_slice=df,
                                       model=model,
                                       perturbation_dict=perturbation_dict,
                                       classification_label=classification_label,
                                       threshold=threshold)
 
     def test_metamorphic_decreasing(self,
-                                    df: DataFrame,
+                                    df: GiskardDataset,
                                     model,
                                     perturbation_dict,
                                     threshold=1,
@@ -223,7 +229,7 @@ class MetamorphicTests(AbstractTestCollection):
          default probability is decreasing for more than 50% of people in the dataset
 
         Args:
-            df(pandas.core.frame.DataFrame):
+            df(GiskardDataset):
                 Dataset used to compute the test
             model(ModelInspector):
                 Model used to compute the test
@@ -236,7 +242,7 @@ class MetamorphicTests(AbstractTestCollection):
                 one specific label value from the target column
 
         Returns:
-            total_nb_rows:
+            actual_slices_size:
                 total number of rows of dataframe
             number_of_perturbed_rows:
                 number of perturbed rows
@@ -252,8 +258,8 @@ class MetamorphicTests(AbstractTestCollection):
         if model.prediction_task == "classification" and classification_label not in model.classification_labels:
             raise Exception(
                 f'"{classification_label}" is not part of model labels: {",".join(model.classification_labels)}')
-        return self._test_metamorphic(flag='DEC',
-                                      df=df,
+        return self._test_metamorphic(flag='Decreasing',
+                                      actual_slice=df,
                                       model=model,
                                       perturbation_dict=perturbation_dict,
                                       classification_label=classification_label,

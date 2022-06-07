@@ -1,16 +1,23 @@
 import logging
 
 import pytest
-from ai_inspector import ModelInspector
+
+from giskard_client import ModelInspector
+from ml_worker.core.giskard_dataset import GiskardDataset
+
 from sklearn import datasets, linear_model
 from sklearn.metrics import mean_squared_error
 
 from test.test_utils import timing
 
-
 @pytest.fixture()
 def diabetes_dataset():
-    return datasets.load_diabetes(as_frame=True)['data']
+    diabetes = datasets.load_diabetes()
+    return GiskardDataset(
+        df=datasets.load_diabetes(as_frame=True)['data'],
+        feature_types={feature: 'numeric' for feature in diabetes['feature_names']},
+        target='target'
+    )
 
 
 @pytest.fixture()
@@ -18,7 +25,11 @@ def diabetes_dataset_with_target():
     loaded = datasets.load_diabetes(as_frame=True)
     data = loaded['data']
     data['target'] = loaded['target']
-    return data
+    return GiskardDataset(
+        df=data,
+        feature_types={feature: 'numeric' for feature in list(data.columns)},
+        target='target'
+    )
 
 
 @pytest.fixture()

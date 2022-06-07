@@ -19,7 +19,7 @@
       <v-row>
         <v-col>
           <v-list two-line class='tests-list'>
-            <template v-for='(test, index) in tests'>
+            <template v-for='(test) in tests'>
               <v-divider :inset='false'></v-divider>
 
               <v-list-item :key='test.id' v-ripple class='test-list-item' @click='openTest(test.id)'>
@@ -27,7 +27,7 @@
                   <v-icon :color='testStatusToColor(test.status)'>circle</v-icon>
                 </v-list-item-avatar>
                 <v-list-item-content>
-                  <v-list-item-title v-html='test.name'></v-list-item-title>
+                  <v-list-item-title v-text='test.name'></v-list-item-title>
                   <v-list-item-subtitle v-if='test.lastExecutionDate'>
                     <span class='font-weight-regular'>Last executed</span>:
                     <span :title="test.lastExecutionDate | moment('dddd, MMMM Do YYYY, h:mm:ss a')">{{
@@ -47,18 +47,9 @@
 
             </template>
             <v-divider :inset='false'></v-divider>
-
-            <!--          </v-list-item-group>-->
           </v-list>
         </v-col>
-
-      </v-row><!--      <v-data-table-->
-      <!--          class="row-pointer"-->
-      <!--          :items="testSuites"-->
-      <!--          :headers="tableHeaders"-->
-      <!--          @click:row="openTestSuite"-->
-      <!--      >-->
-      <!--      </v-data-table>-->
+      </v-row>
     </v-container>
   </div>
 </template>
@@ -103,7 +94,7 @@ export default class Tests extends Vue {
     this.isTestSuiteRunning = true;
     try {
 
-      let res = (await api.executeTestSuite(this.suiteId)).data;
+      let res = await api.executeTestSuite(this.suiteId);
       res.forEach((testResult: TestExecutionResultDTO) => {
         Tests.applyTestExecutionResults(this.tests[testResult.testId], testResult);
       });
@@ -127,7 +118,7 @@ export default class Tests extends Vue {
   }
 
   private async init() {
-    let testsList = (await api.getTests(this.suiteId)).data;
+    let testsList = await api.getTests(this.suiteId);
     this.tests = Object.assign({}, ...testsList.map((x) => ({ [x.id]: x })));
 
   }
@@ -140,12 +131,12 @@ export default class Tests extends Vue {
     event.stopPropagation();
     this.runningTestIds.add(test.id);
     this.$forceUpdate();
-    console.log('After added', this.runningTestIds);
     try {
-      let runResult = (await api.runTest(test.id)).data;
+      let runResult = await api.runTest(test.id);
       Tests.applyTestExecutionResults(test, runResult);
     } finally {
       this.runningTestIds.delete(test.id);
+      this.$forceUpdate();
     }
   }
 

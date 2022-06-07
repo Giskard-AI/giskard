@@ -22,27 +22,27 @@ items:
       of people with high-salaries are classified as “non default”
 
       Args:
-          slice_df:
-              slice of the  test dataset
-          model:
-              uploaded model
-          classification_label:
-              classification label you want to test
-          threshold:
-              threshold for the percentage of passed rows
+           actual_slice(GiskardDataset):
+              Slice of the  actual dataset
+          model(ModelInspector):
+              Model used to compute the test
+          classification_label(str):
+              Classification label you want to test
+          threshold(float):
+              Threshold for the percentage of passed rows
 
       Returns:
           slice_nb_rows:
-              length of slice_df tested
+              Length of slice_df tested
           metrics:
-              the ratio of rows with the right classification label over the total of rows in the slice
+              The ratio of rows with the right classification label over the total of rows in the slice
           passed:
               TRUE if passed_ratio > threshold
       """
       tests.heuristic.test_right_label(
-        slice_df=test_df[:len(test_df)//2],
+        actual_slice=actual_ds.slice(lambda df: df.head(len(df)//2)),
         model=model,
-        classification_label=model.classification_labels[0],
+        classification_label='{{CLASSIFICATION LABEL}}',
         threshold=0.5
       )
 
@@ -66,33 +66,33 @@ items:
       people with high wage have a probability of defaulting between 0 and 0.1
 
       Args:
-          slice_df:
-              slice of the test dataset
-          model:
-              uploaded model
+           actual_slice(GiskardDataset):
+              Slice of the actual dataset
+          model(ModelInspector):
+              Model used to compute the test
           classification_label:
-              classification label you want to test
-          min_range:
-              minimum probability of occurrence of classification label
-          max_range:
-              maximum probability of occurrence of classification label
-          threshold:
-              threshold for the percentage of passed rows
+              Classification label you want to test
+          min_range(float):
+              Minimum probability of occurrence of classification label
+          max_range(float):
+              Maximum probability of occurrence of classification label
+          threshold(float):
+              Threshold for the percentage of passed rows
 
       Returns:
           slice_nb_rows:
-              length of slice_df tested
+              Length of slice_df tested
           metrics:
-              the proportion of rows in the right range inside the slice
+              The proportion of rows in the right range inside the slice
           passed:
               TRUE if metric > threshold
       """
       tests.heuristic.test_output_in_range(
-        slice_df=test_df[:len(test_df)//2],
+        actual_slice=actual_ds.slice(lambda df: df.head(len(df)//2)),
         model=model,
-        classification_label=model.classification_labels[0],
-        min_range=0.3,
-        max_range=0.7,
+        classification_label='{{CLASSIFICATION LABEL}}',
+        min_range=0,
+        max_range=0.1,
         threshold=0.5,
       )
 
@@ -111,30 +111,30 @@ items:
       Description: The test is passed when the ratio of rows in the right range inside the
       slice is higher than the threshold.
 
-      Example : The predicted Sale Price of a studio in the city falls in a range between 300000 and 350000
+      Example : The predicted Sale Price of an item falls in a range between 100 and 1000
 
       Args:
-          slice_df:
-              slice of the test dataset
-          model:
-              uploaded model
-          min_range:
-              minimum value of prediction
-          max_range:
-              maximum value of prediction
-          threshold:
-              threshold for the percentage of passed rows
+           actual_slice(GiskardDataset):
+              Slice of the actual dataset
+          model(ModelInspector):
+              Model used to compute the test
+          min_range(float):
+              Minimum value of prediction
+          max_range(float):
+              Maximum value of prediction
+          threshold(float):
+              Threshold for the percentage of passed rows
 
       Returns:
           slice_nb_rows:
-              length of slice_df tested
+              Length of slice_df tested
           metrics:
-              the proportion of rows in the right range inside the slice
+              The proportion of rows in the right range inside the slice
           passed:
               TRUE if metric > threshold
       """
       tests.heuristic.test_output_in_range(
-        slice_df=test_df[:len(test_df)//2],
+        actual_slice=actual_ds.slice(lambda df: df.head(len(df)//2)),
         model=model,
         min_range=100,
         max_range=1000,

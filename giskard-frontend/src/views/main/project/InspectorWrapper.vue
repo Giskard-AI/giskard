@@ -142,7 +142,7 @@ export default class InspectorWrapper extends Vue {
   totalRows = 0;
 
   async init(){
-    this.inspection = (await api.getInspection(this.inspectionId)).data;
+    this.inspection = await api.getInspection(this.inspectionId);
   }
 
   async mounted() {
@@ -261,7 +261,7 @@ export default class InspectorWrapper extends Vue {
   }
 
   private async doSubmitFeedback(payload: CreateFeedbackDTO) {
-    await api.submitFeedback(readToken(this.$store), payload, payload.projectId);
+    await api.submitFeedback(payload, payload.projectId);
   }
 
 }

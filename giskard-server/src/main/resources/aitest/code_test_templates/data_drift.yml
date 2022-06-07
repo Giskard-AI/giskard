@@ -4,75 +4,73 @@ order: 4
 items:
   - id: drift_psi
     title: Categorical Drift (Population Stability Index)
-    hint : Test if a categorical variable is drifting between two datasets with PSI score
+    hint : Test if Categorical variable is drifting between two datasets with PSI score
     isMultipleDatasets: True
     isGroundTruthRequired: False
     # language=Python
     code: |
       """
-        Summary: Test if a categorical variable is drifting between two datasets with PSI score
+        Summary: Test if Categorical variable is drifting between two datasets with PSI score
 
         Description: Test if the PSI score between the actual and expected datasets is below the threshold for
         a given categorical feature
 
-        Example : The test is passed when the  PSI score of gender between train and test sets is below 0.2
+        Example : The test is passed when the  PSI score of gender between reference and actual sets is below 0.2
 
         Args:
-            expected_series(pandas.core.frame.DataFrame):
-                a categorical column in train dataset
-            actual_series(pandas.core.frame.DataFrame):
-                categorical column in test dataset that is compared to var_expected
+            actual_series(GiskardDataset):
+                Categorical column in actual dataset
+            reference_series(GiskardDataset):
+                Categorical column in reference dataset
             threshold:
-                threshold value for PSI
+                Threshold value for PSI
 
         Returns:
             metric:
-                the total psi score between the actual and expected datasets
+                The total psi score between the actual and expected datasets
             passed:
                 TRUE if total_psi <= threshold
       """
       tests.drift.test_drift_psi(
-          expected_series=train_df['<CATEGORICAL FEATURE NAME>'],
-          actual_series=test_df['<CATEGORICAL FEATURE NAME>'],
+          actual_series=actual_ds.df['{{CATEGORICAL FEATURE NAME}}'],
+          reference_series=reference_ds.df['{{CATEGORICAL FEATURE NAME}}'],
           threshold=0.2
       )
   - id: drift_chi_square
     title: Categorical drift (Chi-squared)
-    hint : Test if a categorical variable is drifting between two datasets with the chi square
+    hint : Test if Categorical variable is drifting between two datasets with the chi square
     isMultipleDatasets: True
     isGroundTruthRequired: False
     # language=Python
     code: |
       """
-        Summary: Test if a categorical variable is drifting between two datasets with the chi square
+        Summary: Test if Categorical variable is drifting between two datasets with the chi square
 
         Description: Test if the p-value of the chi square test between the actual and expected datasets is
         above the threshold for a given categorical feature
 
         Example : The test is passed when the pvalue of the chi square test of the categorical variable between
-        train and test sets is higher than 0.05. It means that chi square test cannot be rejected at 5% level
+        reference and actual sets is higher than 0.05. It means that chi square test cannot be rejected at 5% level
         and that we cannot assume drift for this variable.
 
         Args:
-            expected_series(pandas.core.frame.DataFrame):
-                a categorical column in train dataset
-            actual_series(pandas.core.frame.DataFrame):
-                categorical column in test dataset that is compared to var_expected
+            actual_series(GiskardDataset):
+                Categorical column in actual dataset
+            reference_series(GiskardDataset):
+                Categorical column in reference dataset
             threshold:
-                threshold for p-value of chi-square
+                Threshold for p-value of chi-square
 
         Returns:
-            chi_square:
-            the chi_square statistics of the test. The higher the chi quare, the higher the drift
-
-            metric: the pvalue of chi square test
+            metric:
+                The pvalue of chi square test
 
             passed:
                 TRUE if metric > threshold
       """
       tests.drift.test_drift_chi_square(
-          expected_series=train_df['<CATEGORICAL FEATURE NAME>'],
-          actual_series=test_df['<CATEGORICAL FEATURE NAME>'],
+          actual_series=actual_ds.df['{{CATEGORICAL FEATURE NAME}}'],
+          reference_series=reference_ds.df['{{CATEGORICAL FEATURE NAME}}'],
           threshold=0.05
       )
   - id: drift_ks
@@ -93,28 +91,22 @@ items:
         cannot be rejected at 5% level and that we cannot assume drift for this variable.
 
         Args:
-            expected_series(pandas.core.frame.DataFrame):
-                a categorical column in train dataset
-            actual_series(pandas.core.frame.DataFrame):
-                categorical column in test dataset that is compared to var_expected
+            actual_series(GiskardDataset):
+               Numerical column in actual dataset
+            reference_series(GiskardDataset):
+                Numerical column in reference dataset
             threshold:
-                threshold for p-value of KS test
-            max_categories:
-                maxiumum number of modalities
+                Threshold for p-value of KS test
 
         Returns:
-            KS_statistics :
-            the KS statistics of the test. The higher the value, the higher the drift
-
             metric:
-                the pvalue of KS test
-
+                The pvalue of KS test
             passed:
                 TRUE if metric > threshold
       """
       tests.drift.test_drift_ks(
-          expected_series=train_df['<NUMERIC FEATURE NAME>'],
-          actual_series=test_df['<NUMERIC FEATURE NAME>'],
+          actual_series=actual_ds.df['{{NUMERIC FEATURE NAME}}'],
+          reference_series=reference_ds.df['{{NUMERIC FEATURE NAME}}'],
           threshold=0.05
       )
   - id: drift_earth_movers_distance
@@ -135,22 +127,22 @@ items:
          It means that we cannot assume drift for this variable.
 
         Args:
-            expected_series(pandas.core.frame.DataFrame):
-                a categorical column in train dataset
-            actual_series(pandas.core.frame.DataFrame):
-                categorical column in test dataset that is compared to var_expected
+            actual_series(GiskardDataset):
+                Numerical column in actual dataset
+            reference_series(GiskardDataset):
+                Numerical column in reference dataset
             threshold:
-                threshold for p-value of earth movers distance
+                Threshold for p-value of earth movers distance
 
         Returns:
             metric:
-                the earth movers distance
+                The earth movers distance
 
             passed:
                 TRUE if metric < threshold
       """
       tests.drift.test_drift_earth_movers_distance(
-          expected_series=train_df['<NUMERIC FEATURE NAME>'],
-          actual_series=test_df['<NUMERIC FEATURE NAME>'],
-          threshold=0.02
+          actual_series=actual_ds.df['{{NUMERIC FEATURE NAME}}'],
+          reference_series=reference_ds.df['{{NUMERIC FEATURE NAME}}'],
+          threshold=0.1
       )
