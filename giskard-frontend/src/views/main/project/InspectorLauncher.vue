@@ -76,7 +76,7 @@ export default class InspectorLauncher extends Vue {
 
   public async launchInspector() {
     const inspection = await api.prepareInspection({datasetId: this.datasetSelected!.id, modelId: this.model.id});
-    await this.$router.push({ name: 'project-inspector', params: {inspectionId: inspection.id.toString()}});
+    await this.$router.push({ name: 'project-inspector', query: {inspectionId: inspection.id.toString()}});
     this.reset();
   }
 }
