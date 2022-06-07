@@ -9,7 +9,6 @@
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
-    "@babel/polyfill": "^7.2.5",
     "@fortawesome/fontawesome-svg-core": "^6.1.1",
     "@fortawesome/free-regular-svg-icons": "^6.1.1",
     "@fortawesome/free-solid-svg-icons": "^6.1.1",
@@ -42,29 +41,22 @@
     "vuex": "^3.6.2"
   },
   "devDependencies": {
-    "@types/jest": "^28.1.1",
     "@types/lodash": "^4.14.182",
     "@types/node": "^17.0.41",
     "@types/vue-moment": "^4.0.3",
     "@typescript-eslint/eslint-plugin": "^5.27.1",
     "@typescript-eslint/parser": "^5.27.1",
-    "@vue/cli-plugin-babel": "^5.0.4",
     "@vue/cli-plugin-pwa": "^5.0.4",
     "@vue/cli-plugin-typescript": "^5.0.4",
-    "@vue/cli-plugin-unit-jest": "^4.5.15",
     "@vue/cli-service": "^5.0.4",
     "@vue/composition-api": "^1.6.2",
     "@vue/eslint-config-typescript": "^10.0.0",
     "@vue/test-utils": "^1.2.2",
-    "babel-core": "7.0.0-bridge.0",
-    "babel-jest": "^28.1.1",
     "eslint": "^8.17.0",
-    "eslint-plugin-vue": "^9.1.0",
-    "jest": "^28.1.1",
+    "eslint-plugin-vue": "^8.0.1",
     "monaco-editor-webpack-plugin": "~7.0.1",
     "sass": "~1.52.2",
     "sass-loader": "^13.0.0",
-    "ts-jest": "^28.0.4",
     "typescript": "^4.7.3",
     "vue-cli-plugin-vuetify": "^2.5.1",
     "vue-template-compiler": "^2.6.14",
@@ -79,34 +71,5 @@
     "> 1%",
     "last 2 versions",
     "not ie <= 10"
-  ],
-  "jest": {
-    "moduleFileExtensions": [
-      "js",
-      "jsx",
-      "json",
-      "vue",
-      "ts",
-      "tsx"
-    ],
-    "transform": {
-      "^.+\\.vue$": "vue-jest",
-      ".+\\.(css|styl|less|sass|scss|svg|png|jpg|ttf|woff|woff2)$": "jest-transform-stub",
-      "^.+\\.tsx?$": "ts-jest",
-      "^.+\\.js?$": "babel-jest"
-    },
-    "transformIgnorePatterns": [
-      "<rootDir>/node_modules/(?!vuetify)"
-    ],
-    "moduleNameMapper": {
-      "^@/(.*)$": "<rootDir>/src/$1"
-    },
-    "snapshotSerializers": [
-      "jest-serializer-vue"
-    ],
-    "testMatch": [
-      "**/tests/unit/**/*.spec.(js|jsx|ts|tsx)|**/__tests__/*.(js|jsx|ts|tsx)"
-    ],
-    "testURL": "http://localhost/"
-  }
+  ]
 }
