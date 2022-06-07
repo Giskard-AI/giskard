@@ -13,4 +13,6 @@ public class CodeTestTemplate {
     private String hint;
     private String code;
     private Set<ModelType> modelTypes;
+    boolean isMultipleDatasets;
+    boolean isGroundTruthRequired;
 }
