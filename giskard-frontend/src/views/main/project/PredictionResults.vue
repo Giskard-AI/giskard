@@ -41,7 +41,7 @@
             <div class="caption">
               <div v-if="targetFeature">target: {{ targetFeature }}</div>
               <div v-if="model && model.threshold">threshold: {{ model.threshold }}</div>
-              <div v-if="actual">{{ labelsAndValues }}</div>
+<!--              <div v-if="actual">{{ labelsAndValues }}</div>-->
             </div>
           </div>
         </v-col>
@@ -242,7 +242,7 @@ div.center-center {
 }
 
 .chart {
-  height: 90%;
+  height: 200%;
   min-height: 100px;
   width: 90%;
 }
