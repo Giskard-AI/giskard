@@ -5,6 +5,8 @@ items:
   - id: right_label
     title: Right Label
     hint: Test if the model returns the right classification label for a slice
+    isMultipleDatasets: False
+    isGroundTruthRequired: False
     modelTypes:
       - MULTICLASS_CLASSIFICATION
       - BINARY_CLASSIFICATION
@@ -47,6 +49,8 @@ items:
   - id: output_in_range_clf
     title: Classification Probability in Range
     hint: Test if the model classification probability belongs to the right range for a slice
+    isMultipleDatasets: False
+    isGroundTruthRequired: False
     modelTypes:
       - MULTICLASS_CLASSIFICATION
       - BINARY_CLASSIFICATION
@@ -95,6 +99,8 @@ items:
   - id: output_in_range_reg
     title: Regression Output in Range
     hint: Test if the predicted output belongs to the right range for a slice
+    isMultipleDatasets: False
+    isGroundTruthRequired: False
     modelTypes:
       - REGRESSION
     # language=Python
