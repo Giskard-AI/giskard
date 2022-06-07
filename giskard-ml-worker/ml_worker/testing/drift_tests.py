@@ -417,9 +417,8 @@ class DriftTests(AbstractTestCollection):
             messages:
                 Kolmogorov-Smirnov result message
         """
-        if model.model_type == "classification" and classification_label not in model.classification_labels:
-            raise Exception(
-                f'"{classification_label}" is not part of model labels: {",".join(model.classification_labels)}')
+        assert model.model_type != "classification" or classification_label in model.classification_labels, \
+            f'"{classification_label}" is not part of model labels: {",".join(model.classification_labels)}'
 
         prediction_reference = model.run_predict(reference_slice.df).all_predictions[classification_label].values if \
             model.model_type == "classification" else model.run_predict(reference_slice.df).prediction
