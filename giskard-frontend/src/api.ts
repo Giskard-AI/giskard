@@ -28,7 +28,7 @@ import {
     TestDTO,
     TestExecutionResultDTO,
     TestSuiteCreateDTO,
-    TestSuiteDTO,
+    TestSuiteDTO, TestTemplatesResponse,
     TokenAndPasswordVM,
     UpdateMeDTO,
     UpdateTestSuiteDTO,
@@ -114,7 +114,7 @@ axios.interceptors.request.use(jwtRequestInterceptor);
 // this is to automatically parse responses from the projects API, be it array or single objects
 axiosProject.interceptors.response.use(resp => {
     if (Array.isArray(resp.data)) {
-        resp.data.map(p => p.created_on = new Date(p.created_on));
+        resp.data.forEach(p => p.created_on = new Date(p.created_on));
     } else if (resp.data.hasOwnProperty('created_on')) {
         resp.data.created_on = new Date(resp.data.created_on);
     }
@@ -312,8 +312,8 @@ export const api = {
     async getTestDetails(testId: number) {
         return apiV2.get<unknown, TestDTO>(`/testing/tests/${testId}`);
     },
-    async getCodeTestTemplates() {
-        return apiV2.get<unknown, CodeTestCollection[]>(`/testing/tests/code-test-templates`);
+    async getCodeTestTemplates(suiteId: number) {
+        return apiV2.get<unknown, TestTemplatesResponse>(`/testing/tests/code-test-templates`, {params: {suiteId}});
     },
 
     async deleteTest(testId: number) {

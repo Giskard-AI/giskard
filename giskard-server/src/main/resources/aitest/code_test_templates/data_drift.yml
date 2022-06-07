@@ -5,8 +5,8 @@ items:
   - id: drift_psi
     title: Categorical Drift (Population Stability Index)
     hint : Test if Categorical variable is drifting between two datasets with PSI score
-    isMultipleDatasets: True
-    isGroundTruthRequired: False
+    isMultipleDatasets: true
+    isGroundTruthRequired: false
     # language=Python
     code: |
       """
@@ -39,8 +39,8 @@ items:
   - id: drift_chi_square
     title: Categorical drift (Chi-squared)
     hint : Test if Categorical variable is drifting between two datasets with the chi square
-    isMultipleDatasets: True
-    isGroundTruthRequired: False
+    isMultipleDatasets: true
+    isGroundTruthRequired: false
     # language=Python
     code: |
       """
@@ -76,8 +76,8 @@ items:
   - id: drift_ks
     title: Numerical drift (Kolmogorov-Smirnov)
     hint : Test if a numerical variable is drifting between two datasets with the Komogorov-Smirnov test
-    isMultipleDatasets: True
-    isGroundTruthRequired: False
+    isMultipleDatasets: true
+    isGroundTruthRequired: false
     # language=Python
     code: |
       """
@@ -112,8 +112,8 @@ items:
   - id: drift_earth_movers_distance
     title: Numerical drift (Earth mover’s distance)
     hint : Test if a numerical variable is drifting between two datasets with the Earth Movers Distance test
-    isMultipleDatasets: True
-    isGroundTruthRequired: False
+    isMultipleDatasets: true
+    isGroundTruthRequired: false
     # language=Python
     code: |
       """
