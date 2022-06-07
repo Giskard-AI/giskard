@@ -51,19 +51,18 @@ public class TestSuiteService {
     }
 
     private void generateTests(TestSuite suite) {
-        ModelType modelType = suite.getModel().getModelType();
         List<Test> generatedTests = new ArrayList<>();
         for (CodeTestTemplate template : testTemplateService.getAllTemplates()) {
-            Set<ModelType> templateModelTypes = template.getModelTypes();
-            if (templateModelTypes == null || templateModelTypes.contains(modelType)) {
-                Test test = Test.builder()
-                    .testSuite(suite)
-                    .name(template.getTitle())
-                    .code(replacePlaceholders(template.getCode(), suite))
-                    .build();
-                generatedTests.add(test);
-                suite.getTests().add(test);
+            if (!testTemplateService.doesTestTemplateSuiteTestSuite(suite, template)) {
+                continue;
             }
+            Test test = Test.builder()
+                .testSuite(suite)
+                .name(template.title)
+                .code(replacePlaceholders(template.code, suite))
+                .build();
+            generatedTests.add(test);
+            suite.getTests().add(test);
         }
         log.info("Generated {} tests for test suite {}", generatedTests.size(), suite.getId());
         testRepository.saveAll(generatedTests);
@@ -75,7 +74,7 @@ public class TestSuiteService {
         ProjectModel model = suite.getModel();
 
         if (model.getModelType().isClassification()) {
-            model.getClassificationLabels().stream().findFirst().ifPresent(label ->{
+            model.getClassificationLabels().stream().findFirst().ifPresent(label -> {
                 substitutions.putIfAbsent("CLASSIFICATION LABEL", label);
             });
         }
