@@ -1,7 +1,7 @@
 from typing import Optional, Union, Dict, Any
 
 import numpy
-from ai_inspector import ModelInspector
+from giskard_client import ModelInspector
 from pydantic import BaseModel
 import pandas as pd
 
@@ -13,7 +13,7 @@ def select_single_prediction(probabilities, labels, threshold=None):
         return max(probabilities, key=lambda key: probabilities[key])
 
 
-def run_predict(input_df, model_inspector: ModelInspector):
+def run_predict(input_df: pd.DataFrame, model_inspector: ModelInspector):
     raw_prediction = model_inspector.prediction_function(input_df[model_inspector.input_types.keys()])
     if model_inspector.prediction_task == "regression":
         result = ModelPredictionResults(

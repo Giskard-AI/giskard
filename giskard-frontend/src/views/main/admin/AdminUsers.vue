@@ -138,11 +138,7 @@ export default class AdminUsers extends Vue {
       text: `Are you sure you want to delete user <strong>${user.user_id}</strong>?`,
       title: 'Delete user'
     })) {
-      try {
-        await dispatchDeleteUser(this.$store, {id: user.user_id});
-      } catch (e) {
-        console.error(e.message);
-      }
+      await dispatchDeleteUser(this.$store, {id: user.user_id});
     }
   }
 }

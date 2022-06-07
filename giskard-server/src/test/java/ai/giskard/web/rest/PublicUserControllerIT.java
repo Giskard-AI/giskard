@@ -15,8 +15,6 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.persistence.EntityManager;
-
 import static org.hamcrest.Matchers.hasItems;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -29,13 +27,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @IntegrationTest
 class PublicUserControllerIT {
 
-    private static final String DEFAULT_LOGIN = "johndoe";
-
     @Autowired
     private UserRepository userRepository;
-
-    @Autowired
-    private EntityManager em;
 
     @Autowired
     private MockMvc restUserMockMvc;
@@ -44,7 +37,7 @@ class PublicUserControllerIT {
 
     @BeforeEach
     public void initTest() {
-        user = UserAdminControllerIT.initTestUser(userRepository, em);
+        user = UserAdminControllerIT.initTestUser();
     }
 
     @Test

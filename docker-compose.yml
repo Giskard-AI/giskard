@@ -14,11 +14,11 @@ services:
     image: '${DOCKER_REGISTRY}/ml-worker:${TAG-latest}'
     environment:
       - GSK_ENVIRONMENT=prod
-      - GSK_STORAGE_ROOT=/app
-      - GSK_PORT=50000
 
   backend:
     image: '${DOCKER_REGISTRY}/backend:${TAG-latest}'
+    depends_on:
+      - db
     env_file:
       - .env
     environment:
@@ -41,7 +41,7 @@ services:
 
 
   frontend:
-    image: '${DOCKER_REGISTRY}/giskard-frontend:${TAG-latest}'
+    image: '${DOCKER_REGISTRY}/frontend:${TAG-latest}'
     ports:
       - "19000:80"
     expose:
@@ -53,7 +53,7 @@ services:
       - .env
 
   jupyter:
-    image: '${DOCKER_REGISTRY}/giskard-jupyter:${TAG-latest}'
+    image: '${DOCKER_REGISTRY}/jupyter:${TAG-latest}'
     entrypoint:
       - /usr/local/bin/start.sh
       - jupyter

@@ -5,7 +5,7 @@
       <p v-if="textFeatureNames.length == 0" class="text-center">None</p>
       <div v-else>
         <v-row>
-          <v-col cols="5">
+          <v-col cols="5" v-if='textFeatureNames.length>1'>
             <p class="caption secondary--text text--lighten-2 my-1">Feature</p>
             <v-select
               dense
@@ -68,11 +68,15 @@ export default class TextExplanation extends Vue {
 
   loading: boolean = false;
   originalInputData = {}; // used for the watcher to trigger the explanation call
-  selectedFeature = this.textFeatureNames[0];
+  selectedFeature = "";
   selectedLabel = this.classificationResult || this.classificationLabels[0];
   errorMsg: string = "";
   result: string = "";
   submitted = false;
+
+   mounted(){
+    this.selectedFeature= this.textFeatureNames[0];
+  }
 
   @Watch("classificationResult")
   setSelectedLabel() {
@@ -90,7 +94,6 @@ export default class TextExplanation extends Vue {
         this.loading = true;
         this.errorMsg = "";
         const response = await api.explainText(
-          readToken(this.$store),
           this.modelId,
           this.inputData,
           this.selectedFeature

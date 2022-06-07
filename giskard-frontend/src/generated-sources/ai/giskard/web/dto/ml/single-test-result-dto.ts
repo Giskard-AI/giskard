@@ -2,12 +2,13 @@
  * Generated from ai.giskard.web.dto.ml.SingleTestResultDTO
  */
 export interface SingleTestResultDTO {
-    elementCount: number;
+    actualSlicesSize: number[];
     metric: number;
     missingCount: number;
     missingPercent: number;
     partialUnexpectedIndexList: number[];
     passed: boolean;
+    referenceSlicesSize: number[];
     unexpectedCount: number;
     unexpectedIndexList: number[];
     unexpectedPercent: number;

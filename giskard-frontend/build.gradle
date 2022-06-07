@@ -1,7 +1,18 @@
 plugins {
     id "base"
+    id "org.sonarqube"
     id "com.github.node-gradle.node" version "3.2.1"
 }
+
+sonarqube {
+    properties {
+        property "sonar.sources", "src"
+        property "sonar.exclusions", ["src/generated-sources/**", "src/plugins/**", "src/styles/font-awesome/**"]
+        property "sonar.tests", "tests"
+        property "sonar.sourceEncoding", "UTF-8"
+    }
+}
+
 
 node {
     version = "16.14.0"

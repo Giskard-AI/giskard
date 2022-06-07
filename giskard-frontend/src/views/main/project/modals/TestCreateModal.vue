@@ -43,7 +43,7 @@ export default class TestCreateModal extends Vue {
   model: ModelDTO | null = null;
 
   public async submit() {
-    let createdTestSuite = (await api.createTest(this.suiteId, this.name)).data;
+    let createdTestSuite = await api.createTest(this.suiteId, this.name);
     this.$emit('submit', createdTestSuite)
   }
 }

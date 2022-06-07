@@ -305,8 +305,8 @@ export default class RowList extends Vue {
 
       };
       const response = await api.getDataFilteredByRange(this.inspection.id, props, filter);
-      this.rows = response.data.data;
-      this.numberOfRows = response.data.rowNb;
+      this.rows = response.data;
+      this.numberOfRows = response.rowNb;
     } catch (error) {
       commitAddNotification(this.$store, {content: error.response.data.detail, color: 'error'});
     }

@@ -1,33 +1,34 @@
 import logging
+import re
 from io import BytesIO
 
 import cloudpickle
+import grpc
 import pandas as pd
-from ai_inspector import ModelInspector
+from giskard_client import ModelInspector
 from ai_inspector.io_utils import decompress
 from eli5.lime import TextExplainer
-from ml_worker_pb2 import ExplainResponse, ExplainTextResponse
 from zstandard import ZstdDecompressor
 
 from generated.ml_worker_pb2 import RunTestRequest, TestResultMessage, RunModelResponse, RunModelRequest, DataFrame, \
     DataRow, RunModelForDataFrameResponse, RunModelForDataFrameRequest, ExplainRequest, ExplainTextRequest
 from generated.ml_worker_pb2_grpc import MLWorkerServicer
+from ml_worker.core.giskard_dataset import GiskardDataset
 from ml_worker.core.ml import run_predict
 from ml_worker.core.model_explanation import explain, text_explanation_prediction_wrapper, parse_text_explainer_response
-from ml_worker.testing.functions import GiskardTestFunctions
+from ml_worker.exceptions.IllegalArgumentError import IllegalArgumentError
+from generated.ml_worker_pb2 import ExplainResponse, ExplainTextResponse
 
 logger = logging.getLogger()
 
 
-class MLTaskServer(MLWorkerServicer):
-    models_store = {}
-    counter = 0
-
-    def __init__(self, start_counter=0) -> None:
+class MLWorkerServiceImpl(MLWorkerServicer):
+    def __init__(self) -> None:
         super().__init__()
-        self.counter = start_counter
 
-    def runTest(self, request: RunTestRequest, context) -> TestResultMessage:
+    def runTest(self, request: RunTestRequest, context: grpc.ServicerContext) -> TestResultMessage:
+        from ml_worker.testing.functions import GiskardTestFunctions
+
         model_inspector: ModelInspector = cloudpickle.load(ZstdDecompressor().stream_reader(request.serialized_model))
 
         tests = GiskardTestFunctions()
@@ -35,12 +36,19 @@ class MLTaskServer(MLWorkerServicer):
             'model': model_inspector,
             'tests': tests
         }
-        if request.serialized_train_df:
-            _globals['train_df'] = pd.read_csv(BytesIO(decompress(request.serialized_train_df)))
-        if request.serialized_test_df:
-            _globals['test_df'] = pd.read_csv(BytesIO(decompress(request.serialized_test_df)))
-
-        exec(request.code, _globals)
+        if request.reference_ds.serialized_df:
+            _globals['reference_ds'] = GiskardDataset.from_serialized(request.reference_ds)
+        if request.actual_ds.serialized_df:
+            _globals['actual_ds'] = GiskardDataset.from_serialized(request.actual_ds)
+        try:
+            exec(request.code, _globals)
+        except NameError as e:
+            missing_name = re.findall(r"name '(\w+)' is not defined", str(e))[0]
+            if missing_name == 'reference_ds':
+                raise IllegalArgumentError("Reference Dataset is not specified")
+            if missing_name == 'actual_ds':
+                raise IllegalArgumentError("Actual Dataset is not specified")
+            raise e
 
         return TestResultMessage(results=tests.tests_results)
 
@@ -76,9 +84,12 @@ class MLTaskServer(MLWorkerServicer):
         model_inspector: ModelInspector = cloudpickle.load(ZstdDecompressor().stream_reader(request.serialized_model))
         df = pd.DataFrame([r.features for r in request.dataframe.rows])
         predictions = run_predict(df, model_inspector=model_inspector)
-
-        return RunModelForDataFrameResponse(all_predictions=self.pandas_df_to_proto_df(predictions.all_predictions),
-                                            prediction=predictions.prediction.astype(str))
+        if model_inspector.prediction_task == "classification":
+            return RunModelForDataFrameResponse(all_predictions=self.pandas_df_to_proto_df(predictions.all_predictions),
+                                                prediction=predictions.prediction.astype(str))
+        else:
+            return RunModelForDataFrameResponse(prediction=predictions.prediction.astype(str),
+                                                raw_prediction=predictions.prediction)
 
     def runModel(self, request: RunModelRequest, context) -> RunModelResponse:
         import numpy as np
@@ -91,6 +102,7 @@ class MLTaskServer(MLWorkerServicer):
         if model_inspector.prediction_task == "classification":
             results = prediction_results.all_predictions
             labels = {k: v for k, v in enumerate(model_inspector.classification_labels)}
+            assert request.target in data_df, f"Target column '{request.target}' is not present in the dataset"
             label_serie = data_df[request.target]
             if len(model_inspector.classification_labels) > 2 or model_inspector.classification_threshold is None:
                 preds_serie = prediction_results.all_predictions.idxmax(axis="columns")
@@ -103,13 +115,13 @@ class MLTaskServer(MLWorkerServicer):
             calculated = pd.concat([preds_serie, label_serie, abs_diff], axis=1)
         else:
             results = pd.Series(prediction_results.prediction)
-            predsSerie = results
+            preds_serie = results
             target_serie = data_df[request.target]
-            diff = predsSerie - target_serie
-            diffPercent = pd.Series(diff / target_serie, name="diffPercent")
+            diff = preds_serie - target_serie
+            diff_percent = pd.Series(diff / target_serie, name="diffPercent")
             abs_diff = pd.Series(diff.abs(), name="absDiff")
             abs_diff_percent = pd.Series(abs_diff / target_serie, name="absDiffPercent")
-            calculated = pd.concat([predsSerie, target_serie, abs_diff, abs_diff_percent, diffPercent], axis=1)
+            calculated = pd.concat([preds_serie, target_serie, abs_diff, abs_diff_percent, diff_percent], axis=1)
 
         return RunModelResponse(
             results_csv=results.to_csv(index=False),
