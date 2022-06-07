@@ -69,7 +69,7 @@ class AICreatorProjectControllerIT extends AdminProjectControllerIT {
     @Test
     @Transactional
     void getAllProjects() throws Exception {
-        restUserMockMvc.perform(get("/api/v2/project").accept(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
+        restUserMockMvc.perform(get("/api/v2/projects").accept(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(content().string(containsString(PROJECTKEY)))
             .andExpect(content().string(CoreMatchers.not(containsString(OTHERPROJECTKEY))));

@@ -1,5 +1,6 @@
 package ai.giskard.service;
 
+import ai.giskard.domain.FeatureType;
 import ai.giskard.domain.ml.Dataset;
 import ai.giskard.domain.ml.Inspection;
 import ai.giskard.domain.ml.ProjectModel;
@@ -10,7 +11,7 @@ import ai.giskard.repository.ml.ModelRepository;
 import ai.giskard.security.PermissionEvaluator;
 import ai.giskard.service.ml.MLWorkerService;
 import ai.giskard.worker.*;
-import com.google.protobuf.ByteString;
+import com.google.common.collect.Maps;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,57 +36,49 @@ public class ModelService {
     private final MLWorkerService mlWorkerService;
     private final FileLocationService locationService;
     private final FileLocationService fileLocationService;
+    private final GRPCMapper grpcMapper;
 
-    public RunModelForDataFrameResponse predict(ProjectModel model, Map<String, String> features) {
-        Path modelPath = locationService.resolvedModelPath(model.getProject().getKey(), model.getId());
+    public RunModelForDataFrameResponse predict(ProjectModel model, Map<String, String> features) throws IOException {
         RunModelForDataFrameResponse response;
         try (MLWorkerClient client = mlWorkerService.createClient()) {
             response = client.runModelForDataframe(
-                Files.newInputStream(modelPath),
-                DataFrame.newBuilder().addRows(DataRow.newBuilder().putAllFeatures(features)).build());
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+                model,
+                DataFrame.newBuilder().addRows(DataRow.newBuilder().putAllColumns(features)).build());
         }
         return response;
     }
 
-    public ExplainResponse explain(ProjectModel model, Dataset dataset, Map<String, String> features) {
-        Path datasetPath = locationService.resolvedDatasetPath(dataset.getProject().getKey(), dataset.getId());
-        Path modelPath = locationService.resolvedModelPath(model.getProject().getKey(), model.getId());
-
+    public ExplainResponse explain(ProjectModel model, Dataset dataset, Map<String, String> features) throws IOException {
 
         ExplainResponse response;
         try (MLWorkerClient client = mlWorkerService.createClient()) {
             response = client.explain(
-                Files.newInputStream(modelPath),
-                Files.newInputStream(datasetPath),
+                model,
+                dataset,
                 features);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
         }
         return response;
     }
 
 
-    public ExplainTextResponse explainText(ProjectModel model, String featureName, Map<String, String> features) {
-        Path modelPath = locationService.resolvedModelPath(model.getProject().getKey(), model.getId());
+    public ExplainTextResponse explainText(ProjectModel model, Dataset dataset, String featureName, Map<String, String> features) throws IOException {
         ExplainTextResponse response;
         try (MLWorkerClient client = mlWorkerService.createClient()) {
             response = client.getBlockingStub().explainText(
                 ExplainTextRequest.newBuilder()
-                    .setSerializedModel(ByteString.readFrom(Files.newInputStream(modelPath)))
+                    .setModel(grpcMapper.serialize(model))
                     .setFeatureName(featureName)
-                    .putAllFeatures(features)
+                    .putAllColumns(features)
+                    .putAllFeatureTypes(Maps.transformValues(dataset.getFeatureTypes(), FeatureType::getName))
+                    .setNSamples(500)
                     .build()
             );
-        } catch (IOException e) {
-            throw new RuntimeException(e);
         }
         return response;
     }
 
 
-    public Inspection createInspection(Long modelId, Long datasetId) {
+    public Inspection createInspection(Long modelId, Long datasetId) throws IOException {
         ProjectModel model = modelRepository.getById(modelId);
         Dataset dataset = datasetRepository.getById(datasetId);
         permissionEvaluator.validateCanReadProject(model.getProject().getId());
@@ -100,26 +93,16 @@ public class ModelService {
             return inspection;
         }
         Path inspectionPath = fileLocationService.resolvedInspectionPath(model.getProject().getKey(), inspection.getId());
-        try {
-            Files.createDirectories(inspectionPath);
-            Files.write(inspectionPath.resolve("predictions.csv"), predictions.getResultsCsvBytes().toByteArray());
-            Files.write(inspectionPath.resolve("calculated.csv"), predictions.getCalculatedCsvBytes().toByteArray());
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        Files.createDirectories(inspectionPath);
+        Files.write(inspectionPath.resolve("predictions.csv"), predictions.getResultsCsvBytes().toByteArray());
+        Files.write(inspectionPath.resolve("calculated.csv"), predictions.getCalculatedCsvBytes().toByteArray());
         return inspection;
     }
 
-    private RunModelResponse predictSerializedDataset(ProjectModel model, Dataset dataset) {
-        Path datasetPath = locationService.resolvedDatasetPath(dataset.getProject().getKey(), dataset.getId());
-        Path modelPath = locationService.resolvedModelPath(model.getProject().getKey(), model.getId());
-
-
+    private RunModelResponse predictSerializedDataset(ProjectModel model, Dataset dataset) throws IOException {
         RunModelResponse response;
         try (MLWorkerClient client = mlWorkerService.createClient()) {
-            response = client.runModelForDataStream(Files.newInputStream(modelPath), Files.newInputStream(datasetPath), dataset.getTarget());
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+            response = client.runModelForDataStream(model, dataset);
         }
 
         return response;

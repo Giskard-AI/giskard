@@ -2,6 +2,7 @@ package ai.giskard.web.rest.controllers;
 
 import ai.giskard.domain.Project;
 import ai.giskard.repository.ProjectRepository;
+import ai.giskard.security.PermissionEvaluator;
 import ai.giskard.service.ProjectService;
 import ai.giskard.web.dto.ml.ProjectDTO;
 import ai.giskard.web.dto.ml.ProjectPostDTO;
@@ -26,13 +27,14 @@ public class ProjectController {
     private final ProjectRepository projectRepository;
     private final ProjectService projectService;
     private final GiskardMapper giskardMapper;
+    private final PermissionEvaluator permissionEvaluator;
 
     /**
      * Retrieve the list of projects accessible by the authenticated user
      *
      * @return List of projects
      */
-    @GetMapping("project")
+    @GetMapping("projects")
     public List<ProjectDTO> list() throws NotInDatabaseException {
         List<Project> projects = projectService.list();
         return giskardMapper.projectsToProjectDTOs(projects);
@@ -72,11 +74,18 @@ public class ProjectController {
      * @param id id of the project
      * @return created project
      */
-    @PreAuthorize("@permissionEvaluator.canReadProject(#id)")
-    @GetMapping(value = "/project/{id}")
+    @GetMapping(value = "project")
     @Transactional
-    public ProjectDTO show(@PathVariable("id") Long id) {
-        Project project = this.projectRepository.getById(id);
+    public ProjectDTO getProject(@RequestParam(value = "id", required = false) Long id, @RequestParam(value = "key", required = false) String key) {
+        Project project;
+        if (id != null) {
+            project = this.projectRepository.getById(id);
+        } else if (key != null) {
+            project = this.projectRepository.getOneByKey(key);
+        } else {
+            throw new IllegalArgumentException("Either project id or project key should be specified");
+        }
+        permissionEvaluator.validateCanReadProject(project.getId());
         return giskardMapper.projectToProjectDTO(project);
     }
 

@@ -196,10 +196,10 @@ export const api = {
 
     // Projects
     async getProjects() {
-        return axiosProject.get<unknown, ProjectDTO[]>(`/`);
+        return apiV2.get<unknown, ProjectDTO[]>(`projects`);
     },
     async getProject(id: number) {
-        return axiosProject.get<unknown, ProjectDTO>(`/${id}`);
+        return axiosProject.get<unknown, ProjectDTO>(`/`, {params: {id}});
     },
     async createProject(data: ProjectPostDTO) {
         return axiosProject.post<unknown, ProjectDTO>(`/`, data);
@@ -269,7 +269,10 @@ export const api = {
         return apiV2.post<unknown, ExplainResponseDTO>(`/models/${modelId}/explain/${datasetId}`, {features: inputData});
     },
     async explainText(modelId: number, inputData: object, featureName: string) {
-        return apiV2.post<unknown, { [key: string]: string }>(`/models/${modelId}/explain-text/${featureName}`, {features: inputData});
+        return apiV2.post<unknown, { [key: string]: string }>(`/models/explain-text/${featureName}`,
+            {
+                features: inputData
+            }, {params: {modelId}});
     },
     // feedbacks
     async submitFeedback(payload: CreateFeedbackDTO, projectId: number) {

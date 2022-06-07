@@ -50,7 +50,8 @@ public class UserJWTController {
 
     @GetMapping(path = "/api-access-token")
     public ResponseEntity<JWTToken> getAPIaccessToken(@AuthenticationPrincipal final UserDetails user) {
-        JWTToken token = new JWTToken(tokenProvider.createAPIaccessToken(user.getUsername()));
+
+        JWTToken token = new JWTToken(tokenProvider.createAPIaccessToken(SecurityContextHolder.getContext().getAuthentication()));
         return new ResponseEntity<>(token, HttpStatus.OK);
     }
 }
