@@ -158,7 +158,7 @@ export default class Project extends Vue {
 
 	@Watch("$route", { deep: true})
 	setInspector(to) {
-		if (to.path.endsWith('inspect')) {
+		if (to.path.match('/inspection')) {
 			this.showInspector = true
 			this.tempInspectorQuery = to.query
 		}
