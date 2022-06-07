@@ -2,6 +2,7 @@ package ai.giskard.service;
 
 import ai.giskard.domain.ml.CodeTestCollection;
 import ai.giskard.domain.ml.CodeTestTemplate;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import lombok.RequiredArgsConstructor;
@@ -23,7 +24,8 @@ public class CodeTestTemplateService {
     public static final String TEMPLATES_LOCATION = "classpath*:aitest/code_test_templates/**yml";
     private final ResourceLoader resourceLoader;
     private final Logger log = LoggerFactory.getLogger(CodeTestTemplateService.class);
-    ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
+    ObjectMapper mapper = new ObjectMapper(new YAMLFactory())
+        .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
     private static final List<CodeTestCollection> CODE_TEST_TEMPLATES = new ArrayList<>();
     private static final Map<String, CodeTestTemplate> TESTS_BY_ID = new HashMap<>();

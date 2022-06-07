@@ -5,6 +5,8 @@ items:
   - id: drift_prediction_psi
     title: Label drift (PSI)
     hint: Test if classification labels prediction is drifting between reference and actual set with PSI score
+    isMultipleDatasets: True
+    isGroundTruthRequired: False
     modelTypes:
       - MULTICLASS_CLASSIFICATION
       - BINARY_CLASSIFICATION
@@ -46,6 +48,8 @@ items:
   - id: drift_prediction_chi_square
     title: Label drift (Chi square)
     hint: Test if classification labels prediction is drifting between actual and reference set with chi square
+    isMultipleDatasets: True
+    isGroundTruthRequired: False
     modelTypes:
       - MULTICLASS_CLASSIFICATION
       - BINARY_CLASSIFICATION
@@ -87,6 +91,8 @@ items:
   - id: drift_reg_output_ks
     title: Regression Output drift (Kolmogorov–Smirnov)
     hint: Test if regression prediction is drifting between actual and reference set with KS score
+    isMultipleDatasets: True
+    isGroundTruthRequired: False
     modelTypes:
       - REGRESSION
     # language=Python
@@ -128,6 +134,8 @@ items:
   - id: drift_clf_prob_ks
     title: Classification Probability drift (Kolmogorov–Smirnov)
     hint: Test if classification labels probability is drifting between actual and reference set with KS score
+    isMultipleDatasets: True
+    isGroundTruthRequired: False
     modelTypes:
       - MULTICLASS_CLASSIFICATION
       - BINARY_CLASSIFICATION
@@ -173,6 +181,8 @@ items:
   - id: drift_reg_output_earth_movers_distance
     title: Regression Output drift (Earth mover's distance)
     hint: Test if Regression Output is drifting between actual and reference set with Earth mover's distance
+    isMultipleDatasets: True
+    isGroundTruthRequired: False
     modelTypes:
       - REGRESSION
     # language=Python
@@ -212,6 +222,8 @@ items:
   - id: drift_clf_prob_earth_movers_distance
     title: Classification Probability drift (Earth mover's distance)
     hint: Test if classification labels probability is drifting between actual and reference set with Earth mover's distance
+    isMultipleDatasets: True
+    isGroundTruthRequired: False
     modelTypes:
       - MULTICLASS_CLASSIFICATION
       - BINARY_CLASSIFICATION
