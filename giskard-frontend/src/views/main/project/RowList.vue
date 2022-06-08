@@ -314,11 +314,7 @@ export default class RowList extends Vue {
   }
 
   public async fetchDetails() {
-    try {
-      this.labels = await api.getLabelsForTarget( this.inspection.id);
-    } catch (error) {
-      commitAddNotification(this.$store, { content: error.response.data.detail, color: 'error' });
-    }
+    this.labels = await api.getLabelsForTarget( this.inspection.id);
   }
 
 }
