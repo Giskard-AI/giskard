@@ -136,7 +136,7 @@ spring:
       hibernate.query.in_clause_parameter_padding: true
       hibernate.types.print.banner: false
     hibernate:
-      ddl-auto: update
+      ddl-auto: validate
       naming:
         physical-strategy: org.springframework.boot.orm.jpa.hibernate.SpringPhysicalNamingStrategy
         implicit-strategy: org.springframework.boot.orm.jpa.hibernate.SpringImplicitNamingStrategy
