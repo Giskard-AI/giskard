@@ -14,7 +14,7 @@ public class TestSuiteDTO {
     @NotNull
     private String name;
     private ProjectDTO project;
-    private DatasetDTO trainDataset;
-    private DatasetDTO testDataset;
+    private DatasetDTO referenceDataset;
+    private DatasetDTO actualDataset;
     private ModelDTO model;
 }

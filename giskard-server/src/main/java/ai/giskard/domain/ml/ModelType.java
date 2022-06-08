@@ -12,4 +12,8 @@ public enum ModelType {
     public static boolean isClassification(ModelType type) {
         return type == BINARY_CLASSIFICATION || type == MULTICLASS_CLASSIFICATION;
     }
+
+    public String getSimplifiedName() {
+        return isClassification() ? "classification" : "regression";
+    }
 }

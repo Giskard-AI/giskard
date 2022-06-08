@@ -3,42 +3,146 @@ id: data_drift
 order: 4
 items:
   - id: drift_psi
-    title: Population Stability Index
+    title: Categorical Drift (Population Stability Index)
+    hint : Test if Categorical variable is drifting between two datasets with PSI score
+    isMultipleDatasets: true
+    isGroundTruthRequired: false
     # language=Python
     code: |
+      """
+        Summary: Test if Categorical variable is drifting between two datasets with PSI score
+
+        Description: Test if the PSI score between the actual and expected datasets is below the threshold for
+        a given categorical feature
+
+        Example : The test is passed when the  PSI score of gender between reference and actual sets is below 0.2
+
+        Args:
+            actual_series(GiskardDataset):
+                Categorical column in actual dataset
+            reference_series(GiskardDataset):
+                Categorical column in reference dataset
+            threshold:
+                Threshold value for PSI
+
+        Returns:
+            metric:
+                The total psi score between the actual and expected datasets
+            passed:
+                TRUE if total_psi <= threshold
+      """
       tests.drift.test_drift_psi(
-          expected_series=train_df['<CATEGORICAL FEATURE NAME>'],
-          actual_series=test_df['<CATEGORICAL FEATURE NAME>'],
-          threshold=0.02,
-          max_categories=10
+          actual_series=actual_ds.df['{{CATEGORICAL FEATURE NAME}}'],
+          reference_series=reference_ds.df['{{CATEGORICAL FEATURE NAME}}'],
+          threshold=0.2
       )
   - id: drift_chi_square
-    title: Chi-squared
+    title: Categorical drift (Chi-squared)
+    hint : Test if Categorical variable is drifting between two datasets with the chi square
+    isMultipleDatasets: true
+    isGroundTruthRequired: false
     # language=Python
     code: |
+      """
+        Summary: Test if Categorical variable is drifting between two datasets with the chi square
+
+        Description: Test if the p-value of the chi square test between the actual and expected datasets is
+        above the threshold for a given categorical feature
+
+        Example : The test is passed when the pvalue of the chi square test of the categorical variable between
+        reference and actual sets is higher than 0.05. It means that chi square test cannot be rejected at 5% level
+        and that we cannot assume drift for this variable.
+
+        Args:
+            actual_series(GiskardDataset):
+                Categorical column in actual dataset
+            reference_series(GiskardDataset):
+                Categorical column in reference dataset
+            threshold:
+                Threshold for p-value of chi-square
+
+        Returns:
+            metric:
+                The pvalue of chi square test
+
+            passed:
+                TRUE if metric > threshold
+      """
       tests.drift.test_drift_chi_square(
-          expected_series=train_df['<FEATURE NAME>'],
-          actual_series=test_df['<FEATURE NAME>'],
-          threshold=0.02,
-          p_value_threshold=None,
-          max_categories=10
+          actual_series=actual_ds.df['{{CATEGORICAL FEATURE NAME}}'],
+          reference_series=reference_ds.df['{{CATEGORICAL FEATURE NAME}}'],
+          threshold=0.05
       )
   - id: drift_ks
-    title: Kolmogorov–Smirnov
+    title: Numerical drift (Kolmogorov-Smirnov)
+    hint : Test if a numerical variable is drifting between two datasets with the Komogorov-Smirnov test
+    isMultipleDatasets: true
+    isGroundTruthRequired: false
     # language=Python
     code: |
+      """
+        Summary: Test if a numerical variable is drifting between two datasets with the Komogorov-Smirnov test
+
+        Description:Test if the pvalue of the KS test between the actual and expected datasets is above
+        the threshold for a given numerical feature
+
+        Example : The test is passed when the pvalue of the KS test of the numerical variable
+        between the actual and expected datasets is higher than 0.05. It means that the KS test
+        cannot be rejected at 5% level and that we cannot assume drift for this variable.
+
+        Args:
+            actual_series(GiskardDataset):
+               Numerical column in actual dataset
+            reference_series(GiskardDataset):
+                Numerical column in reference dataset
+            threshold:
+                Threshold for p-value of KS test
+
+        Returns:
+            metric:
+                The pvalue of KS test
+            passed:
+                TRUE if metric > threshold
+      """
       tests.drift.test_drift_ks(
-          expected_series=train_df['<FEATURE NAME>'],
-          actual_series=test_df['<FEATURE NAME>'],
-          threshold=0.02,
-          p_value_threshold=None
+          actual_series=actual_ds.df['{{NUMERIC FEATURE NAME}}'],
+          reference_series=reference_ds.df['{{NUMERIC FEATURE NAME}}'],
+          threshold=0.05
       )
   - id: drift_earth_movers_distance
-    title: Earth mover's distance
+    title: Numerical drift (Earth mover’s distance)
+    hint : Test if a numerical variable is drifting between two datasets with the Earth Movers Distance test
+    isMultipleDatasets: true
+    isGroundTruthRequired: false
     # language=Python
     code: |
+      """
+        Summary: Test if a numerical variable is drifting between two datasets with the Earth Movers Distance test
+
+        Description: Test if the earth movers distance between the actual and expected datasets is
+        below the threshold for a given numerical feature
+
+        Example : The test is passed when the earth movers distance of the numerical
+         variable between the actual and expected datasets is lower than 0.1.
+         It means that we cannot assume drift for this variable.
+
+        Args:
+            actual_series(GiskardDataset):
+                Numerical column in actual dataset
+            reference_series(GiskardDataset):
+                Numerical column in reference dataset
+            threshold:
+                Threshold for p-value of earth movers distance
+
+        Returns:
+            metric:
+                The earth movers distance
+
+            passed:
+                TRUE if metric < threshold
+      """
       tests.drift.test_drift_earth_movers_distance(
-          expected_series=train_df['<NUMERIC FEATURE NAME>'],
-          actual_series=test_df['<NUMERIC FEATURE NAME>'],
-          threshold=0.02
+          actual_series=actual_ds.df['{{NUMERIC FEATURE NAME}}'],
+          reference_series=reference_ds.df['{{NUMERIC FEATURE NAME}}'],
+          threshold=0.1
       )

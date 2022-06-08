@@ -78,8 +78,6 @@
 import {Component, Prop, Vue} from 'vue-property-decorator';
 import {api} from '@/api';
 import {performApiActionWithNotif} from '@/api-commons';
-import {readToken} from '@/store/main/getters';
-import {commitAddNotification} from '@/store/main/mutations';
 import InspectorLauncher from './InspectorLauncher.vue';
 import {ModelDTO} from '@/generated-sources';
 
@@ -99,8 +97,8 @@ export default class Models extends Vue {
   }
 
   private async loadModelPickles() {
-    const response = await api.getProjectModels(this.projectId)
-    this.models = response.sort((a, b) => new Date(a.createdDate) < new Date(b.createdDate) ? 1 : -1);
+    this.models = await api.getProjectModels(this.projectId)
+    this.models.sort((a, b) => new Date(a.createdDate) < new Date(b.createdDate) ? 1 : -1);
   }
 
   public async deleteModelPickle(id: number, fileName: string) {
@@ -115,11 +113,7 @@ export default class Models extends Vue {
   }
 
   public downloadModelPickle(id: number) {
-    try {
-      api.downloadModelFile(id)
-    } catch (error) {
-      commitAddNotification(this.$store, {content: error.response.statusText, color: 'error'});
-    }
+    api.downloadModelFile(id)
   }
 
   public cancelLaunchInspector() {

@@ -14,13 +14,13 @@
         <ModelSelector :value.sync="modifiedTestSuite.modelId" :return-object="false"
                        :project-id="testSuite.project.id"/>
         <DatasetSelector
-            :value.sync="modifiedTestSuite.trainDatasetId"
+            :value.sync="modifiedTestSuite.referenceDatasetId"
             :return-object="false" :project-id="testSuite.project.id"
-            label="Train dataset"
+            label="Reference dataset"
         />
         <DatasetSelector
-            :value.sync="modifiedTestSuite.testDatasetId" :return-object="false" :project-id="testSuite.project.id"
-            label="Test dataset"
+            :value.sync="modifiedTestSuite.actualDatasetId" :return-object="false" :project-id="testSuite.project.id"
+            label="Actual dataset"
         />
       </v-form>
     </v-card-text>
@@ -79,8 +79,8 @@ export default class TestSuiteSettings extends Vue {
       id: testSuiteDTO.id,
       modelId: testSuiteDTO.model.id,
       name: testSuiteDTO.name,
-      testDatasetId: testSuiteDTO.testDataset?.id,
-      trainDatasetId: testSuiteDTO.trainDataset?.id
+      actualDatasetId: testSuiteDTO.actualDataset?.id,
+      referenceDatasetId: testSuiteDTO.referenceDataset?.id
     };
   }
 }

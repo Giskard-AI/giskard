@@ -1,4 +1,9 @@
 from generated.ml_worker_pb2 import SingleTestResult
+from zstandard import ZstdCompressor
+from typing import Optional
+from io import BytesIO
+import re
+import pandas as pd
 
 
 def ge_result_to_test_result(result, passed=True) -> SingleTestResult:
@@ -11,7 +16,7 @@ def ge_result_to_test_result(result, passed=True) -> SingleTestResult:
 
     return SingleTestResult(
         passed=passed,
-        element_count=result['element_count'],
+        actual_slices_size=[result['element_count']],
         missing_count=result['missing_count'],
         missing_percent=result['missing_percent'],
         unexpected_count=result['unexpected_count'],
@@ -38,3 +43,29 @@ def apply_perturbation_inplace(df, perturbation_dict):
                 df.loc[idx, pert_col] = new_value
         i += 1
     return modified_rows
+
+
+def save_df(df: pd.DataFrame, format: str = "csv") -> bytes:
+    pandas_version: int = int(re.sub("[^0-9]", "", pd.__version__))
+    if format == "csv":
+        csv_buffer = BytesIO()
+        if pandas_version >= 120:
+            df.to_csv(csv_buffer, index=False)
+        else:
+            csv_buffer.write(df.to_csv(index=False).encode("utf-8"))
+            csv_buffer.seek(0)
+        return csv_buffer.getvalue()
+    else:
+        raise ValueError("Invalid method: {method}. Choose 'csv'.")
+
+
+def compress(data: bytes, method: Optional[str] = "zstd") -> bytes:
+    if method == "zstd":
+        compressor = ZstdCompressor(level=3, write_checksum=True)
+        compressed_data = compressor.compress(data)
+    elif method is None:
+        compressed_data = data
+    else:
+        raise ValueError("Invalid compression method: {method}. Choose 'zstd' or None.")
+
+    return compressed_data
