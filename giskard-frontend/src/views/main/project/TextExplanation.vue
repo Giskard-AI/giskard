@@ -94,6 +94,7 @@ export default class TextExplanation extends Vue {
         this.errorMsg = "";
         const response = await api.explainText(
           this.modelId,
+          this.datasetId,
           this.inputData,
           this.selectedFeature
         );

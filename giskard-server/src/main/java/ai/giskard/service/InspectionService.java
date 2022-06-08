@@ -147,8 +147,6 @@ public class InspectionService {
                         selection.and(probPredicted.isGreaterThanOrEqualTo(filter.getMinThreshold()));
                     }
                 }
-
-                }
             }
             case BORDERLINE -> {
                 DoubleColumn absDiff = calculatedTable.doubleColumn("absDiff");

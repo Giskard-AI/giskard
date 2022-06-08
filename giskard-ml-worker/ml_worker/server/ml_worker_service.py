@@ -61,8 +61,8 @@ class MLWorkerServiceImpl(MLWorkerServicer):
 
         if request.feature_types[text_column] != "text":
             raise ValueError(f"Column {text_column} is not of type text")
-        text_document = request.features[text_column]
-        input_df = pd.DataFrame({k: [v] for k, v in request.features.items()})[model.feature_names]
+        text_document = request.columns[text_column]
+        input_df = pd.DataFrame({k: [v] for k, v in request.columns.items()})[model.feature_names]
         text_explainer = TextExplainer(random_state=42, n_samples=n_samples)
         prediction_function = text_explanation_prediction_wrapper(
             model.prediction_function, input_df, text_column
