@@ -1,6 +1,5 @@
 package ai.giskard.web.rest.controllers.testing;
 
-import ai.giskard.domain.ml.CodeTestCollection;
 import ai.giskard.domain.ml.testing.Test;
 import ai.giskard.domain.ml.testing.TestExecution;
 import ai.giskard.repository.ml.TestExecutionRepository;
@@ -8,6 +7,7 @@ import ai.giskard.repository.ml.TestRepository;
 import ai.giskard.repository.ml.TestSuiteRepository;
 import ai.giskard.service.CodeTestTemplateService;
 import ai.giskard.service.TestService;
+import ai.giskard.web.dto.TestTemplatesResponse;
 import ai.giskard.web.dto.mapper.GiskardMapper;
 import ai.giskard.web.dto.ml.TestDTO;
 import ai.giskard.web.dto.ml.TestExecutionResultDTO;
@@ -15,6 +15,7 @@ import ai.giskard.web.dto.ml.TestSuiteDTO;
 import ai.giskard.web.rest.errors.Entity;
 import ai.giskard.web.rest.errors.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -96,8 +97,9 @@ public class TestController {
     }
 
     @GetMapping("/code-test-templates")
-    public List<CodeTestCollection> getCodeTestTemplates() {
-        return codeTestTemplateService.getTemplates();
+    @Transactional
+    public TestTemplatesResponse getCodeTestTemplates(@RequestParam(value = "suiteId", required = true) Long suiteId) {
+        return codeTestTemplateService.getTemplates(suiteId);
     }
 
 }

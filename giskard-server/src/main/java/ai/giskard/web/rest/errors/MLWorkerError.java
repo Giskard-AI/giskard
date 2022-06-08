@@ -6,8 +6,8 @@ import org.zalando.problem.Status;
 import java.net.URI;
 
 public class MLWorkerError extends AbstractThrowableProblem { //NOSONAR: ok to have deep inheritance
-    public MLWorkerError(URI errorConstantURI, io.grpc.Status status, String detail) {
-        super(errorConstantURI, status.getDescription(), translateGRPCStatusCode(status.getCode()), detail);
+    public MLWorkerError(URI errorConstantURI, io.grpc.Status.Code code, String message, String detail) {
+        super(errorConstantURI, message, translateGRPCStatusCode(code), detail);
     }
 
     public static Status translateGRPCStatusCode(io.grpc.Status.Code code) {

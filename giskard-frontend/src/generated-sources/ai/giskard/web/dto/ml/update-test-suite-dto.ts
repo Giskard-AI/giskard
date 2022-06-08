@@ -2,9 +2,9 @@
  * Generated from ai.giskard.web.dto.ml.UpdateTestSuiteDTO
  */
 export interface UpdateTestSuiteDTO {
+    actualDatasetId?: number | null;
     id: number;
     modelId: number;
     name: string;
-    testDatasetId?: number | null;
-    trainDatasetId?: number | null;
+    referenceDatasetId?: number | null;
 }

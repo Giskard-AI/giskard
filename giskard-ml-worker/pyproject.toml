@@ -5,32 +5,28 @@ description = ""
 authors = ["Andrey Avtomonov <andrey@giskard.ai>"]
 
 [tool.poetry.dependencies]
-python = ">=3.7.1,<3.8.0"
-grpcio = "^1.45.0"
-protobuf = "^3.19.4"
-pandas = "^1.3.4"
-alibi = {git = "https://github.com/alexcombessie/alibi.git"}
-scikit-learn = "^0.24.2"
-pydantic = ">=1.7.1,<1.9.0"
-cloudpickle = "^1.6.0"
+python = ">=3.7.1,<3.11"
+alibi = { extras = ["shap"], version = "^0.7.0" }
+beautifulsoup4 = ">=4.11.1"
+cloudpickle = ">=2.1.0"
+eli5 = ">=0.13.0"
+giskard = "^1.0.0a1"
+great-expectations = ">=0.15.8"
+grpcio = ">=1.46.3"
+grpcio-status = ">=1.46.3"
+pandas = ">=1.3.5"
+protobuf = ">=3.20.1"
+pydantic = ">=1.9.1"
+scikit-learn = ">=1.0.2"
+shap = ">=0.40.0"
 zstandard = "^0.15.2"
-ai-inspector = "^0.1.2"
-great-expectations = "^0.14.11"
-giskard-client = { git = "https://github.com/Giskard-AI/giskard-client.git", branch = "feature/v2-api" }
-# ------------ Required for great-expectations that doesn't work with other versions
-Jinja2 = "<3.0.0"
-MarkupSafe = "2.0.1"
-# ------------
-shap = "^0.40.0"
-eli5 = "^0.11.0"
-beautifulsoup4 = "^4.11.1"
-grpcio-status = "^1.46.3"
+numpy = "^1.21.6"
 
 [tool.poetry.dev-dependencies]
-pytest = "^6.2.5"
-pytest-cov = "^3.0.0"
-grpcio-tools = "^1.45.0"
-mypy-protobuf = "^3.2.0"
+grpcio-tools = ">=1.46.3"
+mypy-protobuf = ">=3.2.0"
+pytest = ">=7.1.2"
+pytest-cov = ">=3.0.0"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

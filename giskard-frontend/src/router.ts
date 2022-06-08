@@ -6,188 +6,213 @@ import RouterComponent from './components/RouterComponent.vue';
 Vue.use(Router);
 
 export default new Router({
-  mode: 'history',
-  base: process.env.BASE_URL,
-  routes: [
-    {
-      path: '/',
-      component: () => import(/* webpackChunkName: "start" */ './views/main/Start.vue'),
-      children: [
+    mode: 'history',
+    base: process.env.BASE_URL,
+    routes: [
         {
-          path: 'auth',
-          component: () => import(/* webpackChunkName: "login" */ './views/auth/AuthPortal.vue'),
-          redirect: '/auth/login',
-          children: [
-            {
-              path: 'login',
-              component: () => import(/* webpackChunkName: "login" */ './views/auth/Login.vue'),
-            },
-            {
-              path: 'signup',
-              component: () => import(/* webpackChunkName: "login" */ './views/auth/Signup.vue'),
-            },
-          ]
-        },
-        {
-          path: 'recover-password',
-          component: () => import(/* webpackChunkName: "recover-password" */ './views/auth/PasswordRecovery.vue'),
-        },
-        {
-          path: 'reset-password',
-          component: () => import(/* webpackChunkName: "reset-password" */ './views/auth/ResetPassword.vue'),
-        },
-        {
-          path: 'main',
-          component: () => import(/* webpackChunkName: "main" */ './views/main/Main.vue'),
-          redirect: '/main/dashboard',
-          children: [
-            {
-              path: 'dashboard',
-              component: () => import(/* webpackChunkName: "main-dashboard" */ './views/main/Dashboard.vue'),
-            },
-            {
-              path: 'projects',
-              name: 'projects-home',
-              component: () => import(/* webpackChunkName: "main-dashboard" */ './views/main/project/ProjectsHome.vue'),
-            },
-            {
-              path: 'projects/:id',
-              component: () => import('./views/main/project/Project.vue'),
-              props: (route) => { return {id: Number(route.params.id)} },
-              children: [
+            path: '/',
+            component: () => import(/* webpackChunkName: "start" */ './views/main/Start.vue'),
+            children: [
                 {
-                  path: '',
-                  name: 'project-overview',
-                  component: () => import('./views/main/project/ProjectOverview.vue'),
-                  props: (route) => { return {projectId: Number(route.params.id)} }
+                    path: 'auth',
+                    component: () => import(/* webpackChunkName: "login" */ './views/auth/AuthPortal.vue'),
+                    redirect: '/auth/login',
+                    children: [
+                        {
+                            path: 'login',
+                            component: () => import(/* webpackChunkName: "login" */ './views/auth/Login.vue'),
+                        },
+                        {
+                            path: 'signup',
+                            component: () => import(/* webpackChunkName: "login" */ './views/auth/Signup.vue'),
+                        },
+                    ]
                 },
                 {
-                  path: 'datasets',
-                  name: 'project-datasets',
-                  component: () => import('./views/main/project/Datasets.vue'),
-                  props: (route) => { return {projectId: Number(route.params.id)} }
+                    path: 'recover-password',
+                    component: () => import(/* webpackChunkName: "recover-password" */ './views/auth/PasswordRecovery.vue'),
                 },
                 {
-                  path: 'models',
-                  name: 'project-models',
-                  component: () => import('./views/main/project/Models.vue'),
-                  props: (route) => { return {projectId: Number(route.params.id)} }
+                    path: 'reset-password',
+                    component: () => import(/* webpackChunkName: "reset-password" */ './views/auth/ResetPassword.vue'),
                 },
                 {
-                  path: 'inspection/:inspectionId',
-                  name: 'project-inspector',
-                  component: () => import('./views/main/project/InspectorWrapper.vue'),
-                  props: route => ({
-                    inspectionId: Number(route.params.inspectionId)
-                  })
-                },
-                {
-                  path: 'feedbacks',
-                  name: 'project-feedbacks',
-                  component: () => import('./views/main/project/FeedbackList.vue'),
-                  props: (route) => { return {projectId: Number(route.params.id)} },
-                  children: [
-                    {
-                      path: ':feedbackId',
-                      name: 'feedback-detail',
-                      component: () => import('./views/main/project/FeedbackDetail.vue'),
-                      props: (route) => { return {id: Number(route.params.feedbackId)} },
-                      meta: {openFeedbackDetail: true}
-                    }
-                  ]
-                },
-                {
-                  path: 'test-suites',
-                  name: 'project-test-suites',
-                  component: () => import('./views/main/project/TestSuites.vue'),
-                  props: (route) => { return {projectId: Number(route.params.id)} },
-                  children: []
-                },
-                {
-                  path: 'test-suites/:suiteId',
-                  name: 'suite-details',
-                  component: () => import('./views/main/project/TestSuite.vue'),
-                  redirect: { name: 'suite-test-list' },
-                  props: (route) => {
-                    return {suiteId: Number(route.params.suiteId), projectId: Number(route.params.id)}
-                  },
-                  children: [
-                    {
-                      path: '',
-                      name: 'suite-test-list',
-                      component: () => import('./views/main/project/Tests.vue'),
-                      props: (route) => {
-                        return {suiteId: Number(route.params.suiteId), projectId: Number(route.params.id)}
-                      }                    },
-                    {
-                      path: 'test/:testId',
-                      name: 'test-editor',
-                      component: () => import('./views/main/project/TestEditor.vue'),
-                      props: (route) => {
-                        return {testId: Number(route.params.testId)}
-                      }
-                    }
-                  ]
-                }
+                    path: 'main',
+                    component: () => import(/* webpackChunkName: "main" */ './views/main/Main.vue'),
+                    redirect: '/main/dashboard',
+                    children: [
+                        {
+                            path: 'dashboard',
+                            component: () => import(/* webpackChunkName: "main-dashboard" */ './views/main/Dashboard.vue'),
+                        },
+                        {
+                            path: 'projects',
+                            name: 'projects-home',
+                            component: () => import(/* webpackChunkName: "main-dashboard" */ './views/main/project/ProjectsHome.vue'),
+                        },
+                        {
+                            path: 'projects/:id',
+                            component: () => import('./views/main/project/Project.vue'),
+                            props: (route) => {
+                                return {id: Number(route.params.id)}
+                            },
+                            children: [
+                                {
+                                    path: '',
+                                    name: 'project-overview',
+                                    component: () => import('./views/main/project/ProjectOverview.vue'),
+                                    props: (route) => {
+                                        return {projectId: Number(route.params.id)}
+                                    }
+                                },
+                                {
+                                    path: 'datasets',
+                                    name: 'project-datasets',
+                                    component: () => import('./views/main/project/Datasets.vue'),
+                                    props: (route) => {
+                                        return {projectId: Number(route.params.id)}
+                                    }
+                                },
+                                {
+                                    path: 'models',
+                                    name: 'project-models',
+                                    component: () => import('./views/main/project/Models.vue'),
+                                    props: (route) => {
+                                        return {projectId: Number(route.params.id)}
+                                    }
+                                },
+                                {
+                                    path: 'inspection/:inspectionId',
+                                    name: 'project-inspector',
+                                    component: () => import('./views/main/project/InspectorWrapper.vue'),
+                                    props: route => ({
+                                        inspectionId: Number(route.params.inspectionId)
+                                    })
+                                },
+                                {
+                                    path: 'feedbacks',
+                                    name: 'project-feedbacks',
+                                    component: () => import('./views/main/project/FeedbackList.vue'),
+                                    props: (route) => {
+                                        return {projectId: Number(route.params.id)}
+                                    },
+                                    children: [
+                                        {
+                                            path: ':feedbackId',
+                                            name: 'feedback-detail',
+                                            component: () => import('./views/main/project/FeedbackDetail.vue'),
+                                            props: (route) => {
+                                                return {id: Number(route.params.feedbackId)}
+                                            },
+                                            meta: {openFeedbackDetail: true}
+                                        }
+                                    ]
+                                },
+                                {
+                                    path: 'test-suites',
+                                    name: 'project-test-suites',
+                                    component: () => import('./views/main/project/TestSuites.vue'),
+                                    props: (route) => {
+                                        return {projectId: Number(route.params.id)}
+                                    },
+                                    children: []
+                                },
+                                {
+                                    path: 'test-suites/:suiteId',
+                                    name: 'suite-details',
+                                    component: () => import('./views/main/project/TestSuite.vue'),
+                                    redirect: {name: 'suite-test-list'},
+                                    props: (route) => {
+                                        return {
+                                            suiteId: Number(route.params.suiteId),
+                                            projectId: Number(route.params.id)
+                                        }
+                                    },
+                                    children: [
+                                        {
+                                            path: '',
+                                            name: 'suite-test-list',
+                                            component: () => import('./views/main/project/Tests.vue'),
+                                            props: (route) => {
+                                                return {
+                                                    suiteId: Number(route.params.suiteId),
+                                                    projectId: Number(route.params.id)
+                                                }
+                                            }
+                                        },
+                                        {
+                                            path: 'test/:testId',
+                                            name: 'test-editor',
+                                            component: () => import('./views/main/project/TestEditor.vue'),
+                                            props: (route) => {
+                                                return {
+                                                    testId: Number(route.params.testId),
+                                                    suiteId: Number(route.params.suiteId),
 
-              ]
-            },
-            {
-              path: 'profile',
-              component: RouterComponent,
-              redirect: 'profile/view',
-              children: [
-                {
-                  path: 'view',
-                  component: () => import(
-                    /* webpackChunkName: "main-profile" */ './views/main/profile/UserProfile.vue'),
+                                                }
+                                            }
+                                        }
+                                    ]
+                                }
+
+                            ]
+                        },
+                        {
+                            path: 'profile',
+                            component: RouterComponent,
+                            redirect: 'profile/view',
+                            children: [
+                                {
+                                    path: 'view',
+                                    component: () => import(
+                                        /* webpackChunkName: "main-profile" */ './views/main/profile/UserProfile.vue'),
+                                },
+                                {
+                                    path: 'password',
+                                    component: () => import(
+                                        /* webpackChunkName: "main-profile-password" */ './views/main/profile/UserProfileEditPassword.vue'),
+                                },
+                            ],
+                        },
+                        {
+                            path: 'admin',
+                            component: () => import(/* webpackChunkName: "main-admin" */ './views/main/admin/Admin.vue'),
+                            redirect: 'admin/users/all',
+                            children: [
+                                {
+                                    path: 'users',
+                                    redirect: 'users/all',
+                                },
+                                {
+                                    path: 'users/all',
+                                    component: () => import(
+                                        /* webpackChunkName: "main-admin-users" */ './views/main/admin/AdminUsers.vue'),
+                                },
+                                {
+                                    path: 'users/invite',
+                                    component: () => import(
+                                        /* webpackChunkName: "main-admin-users" */ './views/main/admin/InviteUsers.vue'),
+                                },
+                                {
+                                    path: 'users/edit/:id',
+                                    name: 'main-admin-users-edit',
+                                    component: () => import(
+                                        /* webpackChunkName: "main-admin-users-edit" */ './views/main/admin/EditUser.vue'),
+                                },
+                                {
+                                    path: 'users/create',
+                                    name: 'main-admin-users-create',
+                                    component: () => import(
+                                        /* webpackChunkName: "main-admin-users-create" */ './views/main/admin/CreateUser.vue'),
+                                },
+                            ],
+                        },
+                    ],
                 },
-                {
-                  path: 'password',
-                  component: () => import(
-                    /* webpackChunkName: "main-profile-password" */ './views/main/profile/UserProfileEditPassword.vue'),
-                },
-              ],
-            },
-            {
-              path: 'admin',
-              component: () => import(/* webpackChunkName: "main-admin" */ './views/main/admin/Admin.vue'),
-              redirect: 'admin/users/all',
-              children: [
-                {
-                  path: 'users',
-                  redirect: 'users/all',
-                },
-                {
-                  path: 'users/all',
-                  component: () => import(
-                    /* webpackChunkName: "main-admin-users" */ './views/main/admin/AdminUsers.vue'),
-                },
-                {
-                  path: 'users/invite',
-                  component: () => import(
-                    /* webpackChunkName: "main-admin-users" */ './views/main/admin/InviteUsers.vue'),
-                },
-                {
-                  path: 'users/edit/:id',
-                  name: 'main-admin-users-edit',
-                  component: () => import(
-                    /* webpackChunkName: "main-admin-users-edit" */ './views/main/admin/EditUser.vue'),
-                },
-                {
-                  path: 'users/create',
-                  name: 'main-admin-users-create',
-                  component: () => import(
-                    /* webpackChunkName: "main-admin-users-create" */ './views/main/admin/CreateUser.vue'),
-                },
-              ],
-            },
-          ],
+            ],
         },
-      ],
-    },
-    {
-      path: '/*', redirect: '/',
-    },
-  ],
+        {
+            path: '/*', redirect: '/',
+        },
+    ],
 });
