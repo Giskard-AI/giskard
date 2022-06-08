@@ -7,9 +7,9 @@
 
       <template v-slot:action='{ attrs }'>
         <v-btn
-          text
-          v-bind='attrs'
-          @click.native='close'
+            text
+            v-bind='attrs'
+            @click.native='close'
         >
           <v-icon>close</v-icon>
         </v-btn>
@@ -18,11 +18,11 @@
   </div>
 </template>
 <script lang='ts'>
-import { Vue, Component, Prop, Watch } from 'vue-property-decorator';
-import { AppNotification } from '@/store/main/state';
-import { commitRemoveNotification } from '@/store/main/mutations';
-import { readFirstNotification } from '@/store/main/getters';
-import { dispatchRemoveNotification } from '@/store/main/actions';
+import {Component, Vue, Watch} from 'vue-property-decorator';
+import {AppNotification} from '@/store/main/state';
+import {commitRemoveNotification} from '@/store/main/mutations';
+import {readFirstNotification} from '@/store/main/getters';
+import {dispatchRemoveNotification} from '@/store/main/actions';
 
 @Component
 export default class NotificationsManager extends Vue {
@@ -33,7 +33,7 @@ export default class NotificationsManager extends Vue {
 
   public async hide() {
     this.show = false;
-    await new Promise((resolve, reject) => setTimeout(() => resolve(), 500));
+    await new Promise((resolve) => setTimeout(() => resolve(undefined), 500));
   }
 
   public async close() {
@@ -66,13 +66,12 @@ export default class NotificationsManager extends Vue {
 
   @Watch('firstNotification')
   public async onNotificationChange(
-    newNotification: AppNotification | false,
-    oldNotification: AppNotification | false
+      newNotification: AppNotification | false,
   ) {
     if (newNotification !== this.currentNotification) {
       await this.setNotification(newNotification);
       if (newNotification) {
-        dispatchRemoveNotification(this.$store, { notification: newNotification, timeout: 2500 });
+        dispatchRemoveNotification(this.$store, {notification: newNotification, timeout: 2500});
       }
     }
   }

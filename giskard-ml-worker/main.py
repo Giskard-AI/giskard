@@ -19,9 +19,13 @@ def serve():
     server = grpc.server(
         futures.ThreadPoolExecutor(
             max_workers=settings.max_workers,
-            thread_name_prefix="MLTaskServerExecutor",
+            thread_name_prefix="MLWorkerExecutor",
         ),
-        interceptors=[ErrorInterceptor()]
+        interceptors=[ErrorInterceptor()],
+        options=[
+            ('grpc.max_send_message_length', settings.max_send_message_length_mb * 1024 ** 2),
+            ('grpc.max_receive_message_length', settings.max_receive_message_length_mb * 1024 ** 2),
+        ]
     )
 
     add_MLWorkerServicer_to_server(MLWorkerServiceImpl(), server)

@@ -25,13 +25,13 @@ class ErrorInterceptor(grpc.ServerInterceptor):
         detail.Pack(
             DebugInfo(
                 stack_entries=traceback.format_stack(),
-                detail=repr(e),
+                detail=str(e),
             )
         )
-        code, message = error_code.value
+        code, _ = error_code.value
         rich_status = Status(
             code=code,
-            message=message,
+            message=e.__class__.__name__,
             details=[detail]
         )
         context.abort_with_status(rpc_status.to_status(rich_status))
@@ -45,10 +45,10 @@ class ErrorInterceptor(grpc.ServerInterceptor):
             try:
                 return behavior(request, context)
             except CodedError as e:
-                logging.error(e)
+                logging.exception(e)
                 ErrorInterceptor.terminate_with_exception(e.code, e, context)
             except Exception as e:
-                logging.error(e)
+                logging.exception(e)
                 ErrorInterceptor.terminate_with_exception(StatusCode.INTERNAL, e, context)
 
         return wrapper
