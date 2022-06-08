@@ -9,8 +9,8 @@ import ai.giskard.security.jwt.TokenProvider;
 import ai.giskard.service.UserService;
 import ai.giskard.utils.TestUtil;
 import ai.giskard.utils.TestUtilService;
-import ai.giskard.web.dto.user.AdminUserDTO;
 import ai.giskard.web.dto.PasswordResetRequest;
+import ai.giskard.web.dto.user.AdminUserDTO;
 import ai.giskard.web.rest.controllers.AccountController;
 import ai.giskard.web.rest.vm.ManagedUserVM;
 import ai.giskard.web.rest.vm.TokenAndPasswordVM;
@@ -33,9 +33,7 @@ import java.util.Set;
 
 import static ai.giskard.web.rest.AccountControllerIT.TEST_USER_LOGIN;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 /**
@@ -473,18 +471,21 @@ class AccountControllerIT {
         user.setActivated(true);
         userRepository.saveAndFlush(user);
 
-        AdminUserDTO userDTO = new AdminUserDTO();
+        AdminUserDTO.AdminUserDTOWithPassword userDTO = new AdminUserDTO.AdminUserDTOWithPassword();
         userDTO.setLogin("not-used");
         userDTO.setEmail("save-existing-email-and-login@example.com");
         userDTO.setActivated(false);
         userDTO.setRoles(Collections.singleton(AuthoritiesConstants.ADMIN));
+        userDTO.setPassword("new-passw0rd");
 
         restAccountMockMvc
             .perform(put("/api/v2/account").contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(userDTO)))
             .andExpect(status().isOk());
 
         User updatedUser = userRepository.findOneByLogin("save-existing-email-and-login").orElse(null);
+        assertThat(updatedUser).isNotNull();
         assertThat(updatedUser.getEmail()).isEqualTo("save-existing-email-and-login@example.com");
+        assertThat(passwordEncoder.matches(userDTO.getPassword(), updatedUser.getPassword())).isTrue();
     }
 
     @Test
