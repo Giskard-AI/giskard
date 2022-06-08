@@ -1,7 +1,7 @@
 package ai.giskard.web.dto.ml;
 
+import ai.giskard.utils.GRPCUtils;
 import ai.giskard.worker.SingleTestResult;
-import ai.giskard.worker.TestResultMessage;
 import com.dataiku.j2ts.annotations.UIModel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -14,31 +14,31 @@ import java.util.List;
 @NoArgsConstructor
 @UIModel
 public class SingleTestResultDTO {
+    private List<Integer> actualSlicesSize;
+    private List<Integer> referenceSlicesSize;
     private boolean passed;
     private List<Integer> partialUnexpectedIndexList;
-    //private List<TestResultMessage.Partial_unexpected_counts> partialUnexpectedCounts;
     private List<Integer> unexpectedIndexList;
-    private int missingCount;
-    private double missingPercent;
-    private int unexpectedCount;
-    private double unexpectedPercent;
-    private double unexpectedPercentTotal;
-    private double unexpectedPercentNonmissing;
-    private int elementCount;
+    private Integer missingCount;
+    private Double missingPercent;
+    private Integer unexpectedCount;
+    private Double unexpectedPercent;
+    private Double unexpectedPercentTotal;
+    private Double unexpectedPercentNonmissing;
     private float metric;
 
     public SingleTestResultDTO(SingleTestResult message) {
-        this.elementCount = message.getElementCount();
-        this.missingCount = message.getMissingCount();
-        this.missingPercent = message.getMissingPercent();
-        this.unexpectedCount = message.getUnexpectedCount();
-        this.unexpectedPercent = message.getUnexpectedPercent();
-        this.unexpectedPercentTotal = message.getUnexpectedPercentTotal();
-        this.unexpectedPercentNonmissing = message.getUnexpectedPercentNonmissing();
+        this.missingCount = GRPCUtils.convertType(message.getMissingCount());
+        this.missingPercent = GRPCUtils.convertType(message.getMissingPercent());
+        this.unexpectedCount = GRPCUtils.convertType(message.getUnexpectedCount());
+        this.unexpectedPercent = GRPCUtils.convertType(message.getUnexpectedPercent());
+        this.unexpectedPercentTotal = GRPCUtils.convertType(message.getUnexpectedPercentTotal());
+        this.unexpectedPercentNonmissing = GRPCUtils.convertType(message.getUnexpectedPercentNonmissing());
         this.partialUnexpectedIndexList = message.getPartialUnexpectedIndexListList();
-        //this.partialUnexpectedCounts = message.getPartialUnexpectedCountsList();
         this.unexpectedIndexList = message.getUnexpectedIndexListList();
         this.passed = message.getPassed();
         this.metric = message.getMetric();
+        this.actualSlicesSize = message.getActualSlicesSizeList();
+        this.referenceSlicesSize = message.getReferenceSlicesSizeList();
     }
 }

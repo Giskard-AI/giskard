@@ -1,16 +1,14 @@
 package ai.giskard.domain.ml;
 
-import lombok.Getter;
-import lombok.Setter;
-
 import java.util.Set;
 
-@Getter
-@Setter
 public class CodeTestTemplate {
-    private String id;
-    private String title;
-    private String hint;
-    private String code;
-    private Set<ModelType> modelTypes;
+    public String id;
+    public String title;
+    public String hint;
+    public String code;
+    public Set<ModelType> modelTypes;
+    public boolean isMultipleDatasets;
+    public boolean isGroundTruthRequired;
+    public boolean enabled = true;
 }

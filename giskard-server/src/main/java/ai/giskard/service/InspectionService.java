@@ -132,11 +132,11 @@ public class InspectionService {
             case WRONG -> selection = predictedClass.isNotEqualTo(targetClass);
             case CUSTOM -> {
                 selection = targetClass.isNotMissing();
-                if (filter.getPredictedLabel().length > 0) {
-                    selection.and(predictedClass.isIn(filter.getPredictedLabel()));
-                }
                 if (filter.getTargetLabel().length > 0) {
                     selection.and(targetClass.isIn(filter.getTargetLabel()));
+                }
+                if (filter.getPredictedLabel().length > 0) {
+                    selection.and(predictedClass.isIn(filter.getPredictedLabel()));
                 }
                 if (filter.getThresholdLabel() != null) {
                     DoubleColumn probPredicted = (DoubleColumn) predsTable.column(filter.getThresholdLabel());

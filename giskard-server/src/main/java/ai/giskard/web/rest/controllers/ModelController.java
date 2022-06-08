@@ -19,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.constraints.NotNull;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -57,7 +58,7 @@ public class ModelController {
 
     @PostMapping("models/{modelId}/explain/{datasetId}")
     @Transactional
-    public ExplainResponseDTO explain(@PathVariable @NotNull Long modelId, @PathVariable @NotNull Long datasetId, @RequestBody @NotNull PredictionInputDTO data) {
+    public ExplainResponseDTO explain(@PathVariable @NotNull Long modelId, @PathVariable @NotNull Long datasetId, @RequestBody @NotNull PredictionInputDTO data) throws IOException {
         ProjectModel model = modelRepository.getById(modelId);
         permissionEvaluator.validateCanReadProject(model.getProject().getId());
         Dataset dataset = datasetRepository.getById(datasetId);
@@ -69,12 +70,13 @@ public class ModelController {
         return result;
     }
 
-    @PostMapping("models/{modelId}/explain-text/{featureName}")
+    @PostMapping("models/explain-text/{featureName}")
     @Transactional
-    public Map<String, String> explainText(@PathVariable @NotNull Long modelId, @PathVariable @NotNull String featureName, @RequestBody @NotNull PredictionInputDTO data) {
+    public Map<String, String> explainText(@RequestParam @NotNull Long modelId, @RequestParam @NotNull Long datasetId, @PathVariable @NotNull String featureName, @RequestBody @NotNull PredictionInputDTO data) throws IOException {
         ProjectModel model = modelRepository.getById(modelId);
+        Dataset dataset = datasetRepository.getById(datasetId);
         permissionEvaluator.validateCanReadProject(model.getProject().getId());
-        return modelService.explainText(model, featureName, data.getFeatures()).getExplanationsMap();
+        return modelService.explainText(model, dataset, featureName, data.getFeatures()).getExplanationsMap();
     }
 
     @DeleteMapping("models/{modelId}")
@@ -85,13 +87,13 @@ public class ModelController {
 
     @PostMapping("models/{modelId}/predict")
     @Transactional
-    public PredictionDTO predict(@PathVariable @NotNull Long modelId, @RequestBody @NotNull PredictionInputDTO data) {
+    public PredictionDTO predict(@PathVariable @NotNull Long modelId, @RequestBody @NotNull PredictionInputDTO data) throws IOException {
         ProjectModel model = modelRepository.getById(modelId);
         permissionEvaluator.validateCanReadProject(model.getProject().getId());
         RunModelForDataFrameResponse result = modelService.predict(model, data.getFeatures());
         Map<String, Float> allPredictions = new HashMap<>();
         if (ModelType.isClassification(model.getModelType())) {
-            result.getAllPredictions().getRows(0).getFeaturesMap().forEach((label, proba) ->
+            result.getAllPredictions().getRows(0).getColumnsMap().forEach((label, proba) ->
                 allPredictions.put(label, Float.parseFloat(proba))
             );
         }

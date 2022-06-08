@@ -34,6 +34,7 @@ public class Test extends AbstractAuditingEntity {
 
     @OneToMany(mappedBy = "test", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JsonIgnore
+    @Builder.Default
     private Set<TestExecution> testExecutions = new HashSet<>();
 
 }

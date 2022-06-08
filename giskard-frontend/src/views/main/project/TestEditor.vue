@@ -44,12 +44,12 @@
               <td>Model Inspector</td>
             </tr>
             <tr>
-              <td><code>test_df</code></td>
-              <td>Test dataframe</td>
+              <td><code>actual_ds</code></td>
+              <td>Actual dataset</td>
             </tr>
             <tr>
-              <td><code>train_df</code></td>
-              <td>Train dataframe</td>
+              <td><code>reference_ds</code></td>
+              <td>Reference dataset</td>
             </tr>
           </table>
           <div class='mt-4 mb-0'>
@@ -69,7 +69,7 @@
         />
       </v-col>
       <v-col :cols='3'>
-        <v-list>
+        <v-list class="templates-list">
           <v-subheader>Code presets</v-subheader>
           <v-list-group
               v-for='snippet in codeSnippets'
@@ -84,7 +84,8 @@
             </template>
             <template v-for='child in snippet.items'>
               <v-hover v-slot='{ hover }' class='snippet pl-3'>
-                <v-list-item :key='child.title' @click='copyCodeFromSnippet(child.code)'>
+                <v-list-item :key='child.title' @click='copyCodeFromSnippet(child.code)'
+                             :disabled="!testAvailability[child['id']]">
                   <v-list-item-icon>
                     <v-icon class='mirror code-snippet-icon' v-show='hover' dense>exit_to_app</v-icon>
                   </v-list-item-icon>
@@ -150,13 +151,18 @@
             <div class='text-h6'>Test results: {{ testResult.name }}</div>
             <table style='width: 100%; text-align: center'>
               <tr>
-                <th>Total rows tested</th>
+                <th v-if="testResult.result.actualSlicesSize.length">Actual data rows</th>
+                <th v-if="testResult.result.referenceSlicesSize.length">Reference data rows</th>
                 <th>Failed rows</th>
                 <th>Failed rows (%)</th>
                 <th>Metric</th>
               </tr>
               <tr>
-                <td>{{ testResult.result.elementCount }}</td>
+                <td v-if="testResult.result.actualSlicesSize.length">{{ testResult.result.actualSlicesSize[0] }}</td>
+                <td v-if="testResult.result.referenceSlicesSize.length">{{
+                    testResult.result.referenceSlicesSize[0]
+                  }}
+                </td>
                 <td>{{ testResult.result.unexpectedCount }}</td>
                 <td>{{ testResult.result.unexpectedPercent | formatNumber }}</td>
                 <td>{{ testResult.result.metric | formatNumber('0.00000') }}</td>
@@ -188,11 +194,13 @@ Vue.filter('formatNumber', function (value, fmt) {
 @Component({components: {MonacoEditor}})
 export default class TestEditor extends Vue {
   @Prop({required: true}) testId!: number;
+  @Prop({required: true}) suiteId!: number;
   testDetails: TestDTO | null = null;
   testDetailsOriginal: TestDTO | null = null;
   showRunResult: boolean = false;
   runResult: TestExecutionResultDTO | null = null;
   executingTest = false;
+  testAvailability: { [p: string]: boolean } = {};
 
 
   async mounted() {
@@ -279,9 +287,24 @@ export default class TestEditor extends Vue {
     }
 
     this.testDetailsOriginal = _.cloneDeep(this.testDetails);
+    await this.loadTestTemplates();
 
-    this.codeSnippets = (await api.getCodeTestTemplates()).sort((a, b) => {
+  }
+
+  private async loadTestTemplates() {
+    let response = await api.getCodeTestTemplates(this.suiteId);
+    this.testAvailability = response.testAvailability;
+    this.codeSnippets = response.collections;
+    this.codeSnippets.sort((a, b) => {
+      if (!this.testAvailability[a.id]) {
+        return a.order - b.order
+      }
       return a.order - b.order;
+    });
+    this.codeSnippets.forEach(collection => {
+      collection.items.sort((a, b) => {
+        return (this.testAvailability[b.id] ? 1 : 0) - (this.testAvailability[a.id] ? 1 : 0);
+      });
     });
   }
 }
@@ -293,6 +316,11 @@ export default class TestEditor extends Vue {
 .mirror {
   transform: rotate(180deg);
 
+}
+
+.templates-list {
+  max-height: 500px;
+  overflow: scroll;
 }
 
 .editor {
