@@ -102,13 +102,9 @@ export default class FeedbackDetail extends Vue {
   }
 
   async reloadFeedback() {
-    try {
-      this.data = (await api.getFeedback(this.id));
-      this.userData = JSON.parse(this.data.userData);
-      this.originalData = JSON.parse(this.data.originalData);
-    } catch (error) {
-      commitAddNotification(this.$store, {content: error.response.data.detail, color: 'error'});
-    }
+    this.data = (await api.getFeedback(this.id));
+    this.userData = JSON.parse(this.data.userData);
+    this.originalData = JSON.parse(this.data.originalData);
   }
 
   resetInput() {
@@ -126,12 +122,8 @@ export default class FeedbackDetail extends Vue {
   }
 
   async doSendReply(content: string, replyToId: number | null = null) {
-    try {
-      await api.replyToFeedback(this.id, content, replyToId)
-      await this.reloadFeedback()
-    } catch (error) {
-      commitAddNotification(this.$store, {content: error.response.statusText, color: 'error'});
-    }
+    await api.replyToFeedback(this.id, content, replyToId)
+    await this.reloadFeedback()
   }
 }
 </script>

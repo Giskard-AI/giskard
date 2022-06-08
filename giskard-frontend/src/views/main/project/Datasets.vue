@@ -13,13 +13,24 @@
     </v-container>
     <v-container v-if="files.length > 0">
       <v-expansion-panels>
+        <v-row dense no-gutters class="mr-12 ml-2 caption secondary--text text--lighten-3 pb-2">
+          <v-col cols="4">Name</v-col>
+          <v-col cols="1">Size</v-col>
+          <v-col cols="3">Uploaded on</v-col>
+          <v-col cols="2">Target</v-col>
+          <v-col>Actions</v-col>
+        </v-row>
+
         <v-expansion-panel v-for="f in files" :key="f.id">
-          <v-expansion-panel-header @click="peakDataFile(f.id)" class="py-1"
+          <v-expansion-panel-header @click="peakDataFile(f.id)" class="py-1 pl-2"
                                     :class="{'file-xl': f.name.indexOf('.xls') > 0, 'file-csv': f.name.indexOf('.csv') > 0}">
-            <span class="font-weight-bold">{{ f.name }}</span>
-            <span style="position: absolute; left: 50%">{{ f.size | fileSize }}</span>
-            <span style="position: absolute; left: 60%">{{ f.createdDate | date }}</span>
-            <span style="position: absolute; left: 85%">
+            <v-row dense no-gutters align="center">
+              <v-col cols="4" class="font-weight-bold">{{ f.name }}</v-col>
+              <v-col cols="1">{{ f.size | fileSize }}</v-col>
+              <v-col cols="3">{{ f.createdDate | date }}</v-col>
+              <v-col cols="2">{{ f.target }}</v-col>
+              <v-col>
+                <span>
               <v-tooltip bottom dense>
                 <template v-slot:activator="{ on, attrs }">
                   <v-btn icon color="info" @click.stop="downloadDataFile(f.id)" v-bind="attrs" v-on="on">
@@ -38,6 +49,9 @@
                 <span>Delete</span>
               </v-tooltip>
             </span>
+              </v-col>
+            </v-row>
+
           </v-expansion-panel-header>
           <v-expansion-panel-content>
             <v-data-table :headers="filePreviewHeader" :items="filePreviewData"
@@ -58,8 +72,7 @@
 <script lang="ts">
 import {Component, Prop, Vue} from "vue-property-decorator";
 import {api} from '@/api';
-import {dialogDownloadFile, performApiActionWithNotif} from '@/api-commons';
-import {readToken} from "@/store/main/getters";
+import {performApiActionWithNotif} from '@/api-commons';
 import {commitAddNotification} from '@/store/main/mutations';
 import {FileDTO, ProjectDTO} from '@/generated-sources';
 
@@ -79,8 +92,8 @@ export default class Datasets extends Vue {
   }
 
   private async loadDatasets() {
-    const response = await api.getProjectDatasets(this.projectId)
-    this.files = response.sort((a, b) => new Date(a.createdDate) < new Date(b.createdDate) ? 1 : -1);
+    this.files = await api.getProjectDatasets(this.projectId)
+    this.files.sort((a, b) => new Date(a.createdDate) < new Date(b.createdDate) ? 1 : -1);
   }
 
   public async upload_data() {
@@ -105,11 +118,7 @@ export default class Datasets extends Vue {
   }
 
   public downloadDataFile(id: number) {
-    try {
-      api.downloadDataFile(id)
-    } catch (error) {
-      commitAddNotification(this.$store, {content: error.response.statusText, color: 'error'});
-    }
+    api.downloadDataFile(id)
   }
 
   public async peakDataFile(id: number) {
@@ -132,7 +141,11 @@ export default class Datasets extends Vue {
 }
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
+::v-deep .v-data-table__wrapper .v-data-table-header [role='columnheader'] {
+  user-select: auto;
+}
+
 .file-xl {
   border-left: 4px solid #4CAF50
 }
