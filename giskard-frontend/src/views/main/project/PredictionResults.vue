@@ -46,7 +46,7 @@
                   <template v-slot:default>
                     <thead>
                     <tr>
-                      <th class="text-center">
+                      <th scope='col' class="text-center">
                         Labels
                       </th>
                     </tr></thead>
