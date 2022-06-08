@@ -271,11 +271,11 @@ export const api = {
     async explain(modelId: number, datasetId: number, inputData: object) {
         return apiV2.post<unknown, ExplainResponseDTO>(`/models/${modelId}/explain/${datasetId}`, {features: inputData});
     },
-    async explainText(modelId: number, inputData: object, featureName: string) {
+    async explainText(modelId: number, datasetId: number, inputData: object, featureName: string) {
         return apiV2.post<unknown, { [key: string]: string }>(`/models/explain-text/${featureName}`,
             {
                 features: inputData
-            }, {params: {modelId}});
+            }, {params: {modelId, datasetId}});
     },
     // feedbacks
     async submitFeedback(payload: CreateFeedbackDTO, projectId: number) {
