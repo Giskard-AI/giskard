@@ -231,7 +231,7 @@ public class UserService {
                     user.setEmail(email.toLowerCase());
                 }
                 if (password!=null) {
-                    user.setPassword(password);
+                    user.setPassword(passwordEncoder.encode(password));
                 }
                 log.debug("Changed Information for User: {}", user);
                 return user;

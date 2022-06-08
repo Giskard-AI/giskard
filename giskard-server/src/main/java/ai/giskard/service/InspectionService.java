@@ -12,10 +12,8 @@ import ai.giskard.web.rest.errors.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import tech.tablesaw.api.DoubleColumn;
-import tech.tablesaw.api.IntColumn;
-import tech.tablesaw.api.StringColumn;
-import tech.tablesaw.api.Table;
+import tech.tablesaw.api.*;
+import tech.tablesaw.io.csv.CsvReadOptions;
 import tech.tablesaw.selection.Selection;
 
 import javax.validation.constraints.NotNull;
@@ -47,8 +45,18 @@ public class InspectionService {
         return Table.read().csv(reader);
     }
 
-    private Double getThresholdForRegression(DoubleColumn _column, boolean isCorrect) {
-        DoubleColumn column = _column.copy();
+    public Table getTableFromBucketFile(String location, ColumnType[] columnTypes) throws FileNotFoundException {
+        InputStreamReader reader = new InputStreamReader(
+            new FileInputStream(location));
+        CsvReadOptions csvReadOptions = CsvReadOptions
+            .builder(reader)
+            .columnTypes(columnTypes)
+            .build();
+        return Table.read().csv(csvReadOptions);
+    }
+
+    private Double getThresholdForRegression(DoubleColumn predColumn, boolean isCorrect) {
+        DoubleColumn column = predColumn.copy();
         if (isCorrect) {
             column.sortAscending();
         } else {
@@ -65,15 +73,15 @@ public class InspectionService {
         DoubleColumn absDiffPercentColumn = calculatedTable.doubleColumn("absDiffPercent");
         DoubleColumn diffPercent = calculatedTable.doubleColumn("diffPercent");
         switch (filter.getRowFilter()) {
-            case CORRECT:
-                threshold = getThresholdForRegression(absDiffPercentColumn,true );
+            case CORRECT -> {
+                threshold = getThresholdForRegression(absDiffPercentColumn, true);
                 selection = absDiffPercentColumn.isLessThanOrEqualTo(threshold);
-                break;
-            case WRONG:
+            }
+            case WRONG -> {
                 threshold = getThresholdForRegression(absDiffPercentColumn, false);
                 selection = absDiffPercentColumn.isGreaterThanOrEqualTo(threshold);
-                break;
-            case CUSTOM:
+            }
+            case CUSTOM -> {
                 DoubleColumn prediction = calculatedTable.doubleColumn(0);
                 DoubleColumn target = calculatedTable.numberColumn(1).asDoubleColumn();
                 selection = prediction.isNotMissing();
@@ -95,9 +103,8 @@ public class InspectionService {
                 if (filter.getMinDiffThreshold() != null) {
                     selection = selection.and(diffPercent.isGreaterThanOrEqualTo(filter.getMinDiffThreshold()));
                 }
-                break;
-            default:
-                selection = null;
+            }
+            default -> selection = null;
         }
         return selection;
     }
@@ -114,19 +121,17 @@ public class InspectionService {
 
     private Selection getSelection(Inspection inspection, Filter filter) throws FileNotFoundException {
         Table predsTable = getTableFromBucketFile(getPredictionsPath(inspection).toString());
-        Table calculatedTable = getTableFromBucketFile(getCalculatedPath(inspection).toString());
+        ColumnType[] columnTypes = {ColumnType.STRING, ColumnType.STRING, ColumnType.DOUBLE};
+        Table calculatedTable = getTableFromBucketFile(getCalculatedPath(inspection).toString(), columnTypes);
         StringColumn predictedClass = calculatedTable.stringColumn(0);
         StringColumn targetClass = calculatedTable.stringColumn(1);
         Selection correctSelection = predictedClass.isEqualTo(targetClass);
         Selection selection;
         switch (filter.getRowFilter()) {
-            case CORRECT:
-                selection = correctSelection;
-                break;
-            case WRONG:
-                selection = predictedClass.isNotEqualTo(targetClass);
-                break;
-            case CUSTOM:
+            case CORRECT -> selection = correctSelection;
+            case WRONG -> selection = predictedClass.isNotEqualTo(targetClass);
+            case CUSTOM -> {
+                DoubleColumn probPredicted = (DoubleColumn) predsTable.column(filter.getThresholdLabel());
                 selection = targetClass.isNotMissing();
                 if (filter.getPredictedLabel().length > 0) {
                     selection.and(predictedClass.isIn(filter.getPredictedLabel()));
@@ -142,14 +147,12 @@ public class InspectionService {
                     if (filter.getMinThreshold() != null) {
                         selection.and(probPredicted.isGreaterThanOrEqualTo(filter.getMinThreshold()));
                     }
-                }
-                break;
-            case BORDERLINE:
+            }
+            case BORDERLINE -> {
                 DoubleColumn absDiff = calculatedTable.doubleColumn("absDiff");
                 selection = correctSelection.and(absDiff.isLessThanOrEqualTo(applicationProperties.getBorderLineThreshold()));
-                break;
-            default:
-                selection = null;
+            }
+            default -> selection = null;
         }
         return selection;
     }

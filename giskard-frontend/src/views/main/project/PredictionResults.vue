@@ -108,6 +108,7 @@ export default class PredictionResults extends Vue {
   errorMsg: string = "";
   isClassification = isClassification;
   ModelType = ModelType;
+  predCategoriesN = 10;
 
   async mounted() {
     await this.submitPrediction()
@@ -128,7 +129,7 @@ export default class PredictionResults extends Vue {
         // Sort the object by value - solution based on:
         // https://stackoverflow.com/questions/55319092/sort-a-javascript-object-by-key-or-value-es6
         this.resultProbabilities = Object.entries(this.resultProbabilities)
-            .sort(([, v1], [, v2]) => +v1 - +v2)
+            .sort(([, v1], [, v2]) => +v2 - +v1)
             .reduce((r, [k, v]) => ({...r, [k]: v}), {});
         this.errorMsg = "";
       } catch (error) {
@@ -165,7 +166,31 @@ export default class PredictionResults extends Vue {
     else return "";
   }
 
+  /**
+   * Getting first n entries of sorted objects and sort alphabetically, aggregating for "Others" options
+   *
+   * @param obj object
+   * @param n number of entries to keep
+   * @private
+   */
+  private firstNSortedByKey(obj, n) {
+    const numberExtraCategories=Object.keys(obj).length-n;
+    let filteredObject=Object.keys(obj)
+      .slice(0,n)
+      .sort()
+      .reduce(function(acc, current) {
+        acc[current] = obj[current]
+        return acc;
+      }, {});
+    if (numberExtraCategories > 0) {
+      const sumOthers = Object.values(obj).slice(n, -1).reduce((acc: any, val: any) => acc + val, 0);
+      filteredObject={[`Others (${numberExtraCategories})`] : sumOthers,...filteredObject };
+    }
+    return filteredObject;
+  }
+
   get chartOptions() {
+    const results = this.firstNSortedByKey(this.resultProbabilities, this.predCategoriesN)
     return {
       xAxis: {
         type: "value",
@@ -174,7 +199,10 @@ export default class PredictionResults extends Vue {
       },
       yAxis: {
         type: "category",
-        data: Object.keys(this.resultProbabilities!),
+        data: Object.keys(results),
+        axisLabel: {
+          interval: 0,
+        }
       },
       series: [
         {
@@ -187,7 +215,7 @@ export default class PredictionResults extends Vue {
                     ? params.value
                     : params.value.toFixed(2).toLocaleString(),
           },
-          data: Object.values(this.resultProbabilities!),
+          data: Object.values(results),
         },
       ],
       color: ["#0091EA"],

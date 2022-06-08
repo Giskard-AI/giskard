@@ -2,6 +2,7 @@ package ai.giskard.domain;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
+import tech.tablesaw.api.ColumnType;
 
 import java.util.Arrays;
 import java.util.Map;
@@ -13,6 +14,7 @@ public enum FeatureType {
     TEXT("text");
 
     private static final Map<String, FeatureType> BY_NAME = Arrays.stream(FeatureType.values()).collect(Collectors.toMap(FeatureType::getName, featureType -> featureType));
+    public static final Map<FeatureType, ColumnType> featureToColumn= Map.of(NUMERIC, ColumnType.DOUBLE, CATEGORY, ColumnType.STRING, TEXT, ColumnType.TEXT);
 
     private final String name;
 
