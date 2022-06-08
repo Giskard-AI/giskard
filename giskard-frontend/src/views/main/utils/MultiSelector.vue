@@ -1,20 +1,22 @@
 <template>
   <v-select
-    v-model="selectOptions"
-    :items="options"
-    :label="label"
-    multiple
-    @change="emit"
+      hide-details="auto"
+      dense
+      v-model="selectOptions"
+      :items="options"
+      :label="label"
+      multiple
+      @change="emit"
   >
     <template v-slot:prepend-item>
       <v-list-item
-        ripple
-        @mousedown.prevent
-        @click="toggle"
+          ripple
+          @mousedown.prevent
+          @click="toggle"
       >
         <v-list-item-action>
           <v-icon :color="selectOptions.length > 0 ? 'indigo darken-4' : ''">
-            {{icon()}}
+            {{ icon() }}
           </v-icon>
         </v-list-item-action>
         <v-list-item-content>
@@ -30,8 +32,8 @@
         <span>{{ item }}</span>
       </v-chip>
       <span
-        v-if="index == 1"
-        class="grey--text text-caption"
+          v-if="index == 1"
+          class="grey--text text-caption"
       >
           (+{{ selectOptions.length - 1 }} others)
         </span>
@@ -49,15 +51,15 @@ export default class MultiSelector extends Vue {
   @Prop({required: true}) selectedOptions!: string[];
   @Prop({required: true}) options!: string[];
   @Prop({required: true}) label!: string[];
-  selectOptions=this.selectedOptions;
+  selectOptions = this.selectedOptions;
 
   toggle() {
-    this.$nextTick(():void=> {
-      let options:string[]=[]
-      if (this.selectOptions.length<this.options.length){
-        options=this.options.slice() ;
+    this.$nextTick((): void => {
+      let options: string[] = []
+      if (this.selectOptions.length < this.options.length) {
+        options = this.options.slice();
       }
-      this.selectOptions=options;
+      this.selectOptions = options;
       this.emit(options)
     })
   }
@@ -70,9 +72,6 @@ export default class MultiSelector extends Vue {
     if (this.selectedOptions.length == this.options.length) return "mdi-close-box"
     if (this.selectedOptions.length < this.options.length) return "mdi-minus-box"
     return "mdi-checkbox-blank-outline"
-  }
-
-  async mounted() {
   }
 }
 </script>

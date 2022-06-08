@@ -1,19 +1,23 @@
 <template>
   <v-container style='margin-left:15px'>
     <v-row>
-      <v-col cols='12' md='3'>
+      <v-col cols='12' md='3' v-if="filterTypes">
         <v-select
+            dense
+            hide-details
             :items='filterTypes'
             label='Filter'
             v-model='selectedFilter'
             item-value='out'
-            item-text='in'
+            item-text="in"
+            :item-disabled='isFilterDisabled'
         ></v-select>
       </v-col>
     </v-row>
     <v-container
+
         v-if='inspection!=null && isClassification(inspection.model.modelType) && selectedFilter===RowFilterType.CUSTOM'>
-      <v-row>
+      <v-row v-show="!isTargetUndefined">
         <v-col cols='12' md='3'>
           <v-subheader class='pt-5 pl-0'>Actual value is between</v-subheader>
         </v-col>
@@ -66,7 +70,7 @@
           ></v-text-field>
         </v-col>
       </v-row>
-      <v-row>
+      <v-row v-show="!isTargetUndefined">
         <v-col cols='12' md='3'>
           <v-subheader class='pt-5 pl-0'>Diff percentage value is between</v-subheader>
         </v-col>
@@ -98,7 +102,7 @@
 
     <v-container v-if='selectedFilter===RowFilterType.CUSTOM && isClassification(inspection.model.modelType) '>
       <v-row>
-        <v-col cols='12' md='3'>
+        <v-col cols='12' md='3' v-show="!isTargetUndefined">
           <MultiSelector label='Actual Labels' :options='labels' :selected-options.sync='targetLabel'></MultiSelector>
         </v-col>
         <v-col cols='12' md='3'>
@@ -112,6 +116,7 @@
         </v-col>
         <v-col cols='12' md='3'>
           <v-select
+              dense
               :items='labels'
               v-model='thresholdLabel'
               hide-details
@@ -156,7 +161,6 @@
 <script lang='ts'>
 import {Component, Prop, Vue, Watch} from 'vue-property-decorator';
 import {api} from '@/api';
-import {commitAddNotification} from '@/store/main/mutations';
 import {Filter, InspectionDTO, RegressionUnit, RowFilterType} from '@/generated-sources';
 import MultiSelector from '@/views/main/utils/MultiSelector.vue';
 import {isClassification} from '@/ml-utils';
@@ -186,8 +190,8 @@ export default class RowList extends Vue {
   targetLabel: string[] = [];
   minThreshold = null;
   maxThreshold = null;
-  minDiffThreshold = null;
-  maxDiffThreshold?: number = undefined;
+  minDiffThreshold = 0;
+  maxDiffThreshold?: number = 100;
   filterTypes: any[] = [];
   selectedFilter = RowFilterType.ALL;
   regressionThreshold: number = 0.1;
@@ -197,29 +201,32 @@ export default class RowList extends Vue {
   maxActualThreshold = null;
   isClassification = isClassification;
   RowFilterType = RowFilterType;
+  isTargetUndefined = true;
 
-  classificationFiltersMap = [
-    {out: RowFilterType.ALL, in: 'All'},
-    {out: RowFilterType.CORRECT, in: 'Correct Predictions'},
-    {out: RowFilterType.WRONG, in: 'Incorrect Predictions'},
-    {out: RowFilterType.BORDERLINE, in: 'Borderline'},
-    {out: RowFilterType.CUSTOM, in: 'Custom'}
-  ];
-  regressionFiltersMap = [
-    {out: RowFilterType.ALL, in: 'All'},
-    {out: RowFilterType.CORRECT, in: 'Closest predictions (top 15%)'},
-    {out: RowFilterType.WRONG, in: 'Most distant predictions (top 15%)'},
-    {out: RowFilterType.CUSTOM, in: 'Custom'}
-  ];
-
+  public isFilterDisabled(filter) {
+    return filter.disabled
+  }
 
   async mounted() {
-    this.filterTypes = isClassification(this.inspection.model.modelType) ? this.classificationFiltersMap : this.regressionFiltersMap;
+    this.isTargetUndefined = !this.inspection.dataset.target;
+    this.filterTypes = isClassification(this.inspection.model.modelType) ? [
+      {out: RowFilterType.ALL, in: 'All'},
+      {out: RowFilterType.CORRECT, in: 'Correct Predictions', disabled: this.isTargetUndefined},
+      {out: RowFilterType.WRONG, in: 'Incorrect Predictions', disabled: this.isTargetUndefined},
+      {out: RowFilterType.BORDERLINE, in: 'Borderline', disabled: this.isTargetUndefined},
+      {out: RowFilterType.CUSTOM, in: 'Custom'}
+    ] : [
+      {out: RowFilterType.ALL, in: 'All'},
+      {out: RowFilterType.CORRECT, in: 'Closest predictions (top 15%)', disabled: this.isTargetUndefined},
+      {out: RowFilterType.WRONG, in: 'Most distant predictions (top 15%)', disabled: this.isTargetUndefined},
+      {out: RowFilterType.CUSTOM, in: 'Custom'}
+    ];
     this.selectedFilter = this.filterTypes[0].out;
     this.thresholdLabel = this.labels[0];
     await this.fetchRowAndEmit(true);
     this.predictedLabel = [];
     this.targetLabel = [];
+
   }
 
   @Watch('currentRowIdx')
@@ -283,33 +290,29 @@ export default class RowList extends Vue {
    * @param maxRange
    */
   public async fetchRowsByRange(minRange: number, maxRange: number) {
-    try {
-      const props = {
-        'modelId': this.inspection.model.id,
-        'minRange': minRange,
-        'maxRange': maxRange,
-        'isRandom': this.shuffleMode
-      };
-      const filter: Filter = {
-        'maxDiffThreshold': this.maxDiffThreshold == null ? this.maxDiffThreshold! : this.maxDiffThreshold! / 100,
-        'minDiffThreshold': this.minDiffThreshold == null ? this.minDiffThreshold! : this.minDiffThreshold! / 100,
-        'maxLabelThreshold': this.maxActualThreshold!,
-        'minLabelThreshold': this.minActualThreshold!,
-        'minThreshold': this.minThreshold!,
-        'maxThreshold': this.maxThreshold!,
-        'targetLabel': this.targetLabel,
-        'predictedLabel': this.predictedLabel,
-        'rowFilter': this.selectedFilter!,
-        'regressionUnit': this.percentRegressionUnit ? RegressionUnit.ABSDIFFPERCENT : RegressionUnit.ABSDIFF,
-        'thresholdLabel': this.thresholdLabel!
+    const props = {
+      'modelId': this.inspection.model.id,
+      'minRange': minRange,
+      'maxRange': maxRange,
+      'isRandom': this.shuffleMode
+    };
+    const filter: Filter = {
+      'maxDiffThreshold': this.maxDiffThreshold == null ? this.maxDiffThreshold! : this.maxDiffThreshold! / 100,
+      'minDiffThreshold': this.minDiffThreshold == null ? this.minDiffThreshold! : this.minDiffThreshold! / 100,
+      'maxLabelThreshold': this.maxActualThreshold!,
+      'minLabelThreshold': this.minActualThreshold!,
+      'minThreshold': this.minThreshold!,
+      'maxThreshold': this.maxThreshold!,
+      'targetLabel': this.targetLabel,
+      'predictedLabel': this.predictedLabel,
+      'rowFilter': this.selectedFilter!,
+      'regressionUnit': this.percentRegressionUnit ? RegressionUnit.ABSDIFFPERCENT : RegressionUnit.ABSDIFF,
+      'thresholdLabel': this.thresholdLabel!
 
-      };
-      const response = await api.getDataFilteredByRange(this.inspection.id, props, filter);
-      this.rows = response.data;
-      this.numberOfRows = response.rowNb;
-    } catch (error) {
-      commitAddNotification(this.$store, {content: error.response.data.detail, color: 'error'});
-    }
+    };
+    const response = await api.getDataFilteredByRange(this.inspection.id, props, filter);
+    this.rows = response.data;
+    this.numberOfRows = response.rowNb;
   }
 }
 </script>

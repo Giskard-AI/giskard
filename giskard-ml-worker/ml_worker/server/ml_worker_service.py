@@ -91,8 +91,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
         if model.model_type == "classification":
             results = prediction_results.all_predictions
             labels = {k: v for k, v in enumerate(model.classification_labels)}
-            assert dataset.target in dataset.df, f"Target column '{dataset.target}' is not present in the dataset"
-            label_serie = dataset.df[dataset.target]
+            label_serie = dataset.df[dataset.target] if dataset.target else None
             if len(model.classification_labels) > 2 or model.classification_threshold is None:
                 preds_serie = prediction_results.all_predictions.idxmax(axis="columns")
                 sorted_predictions = np.sort(prediction_results.all_predictions.values)

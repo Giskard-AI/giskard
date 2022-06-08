@@ -131,20 +131,24 @@ public class InspectionService {
             case CORRECT -> selection = correctSelection;
             case WRONG -> selection = predictedClass.isNotEqualTo(targetClass);
             case CUSTOM -> {
-                DoubleColumn probPredicted = (DoubleColumn) predsTable.column(filter.getThresholdLabel());
                 selection = targetClass.isNotMissing();
-                if (filter.getPredictedLabel().length > 0) {
-                    selection.and(predictedClass.isIn(filter.getPredictedLabel()));
-                }
                 if (filter.getTargetLabel().length > 0) {
                     selection.and(targetClass.isIn(filter.getTargetLabel()));
                 }
-                if (filter.getMaxThreshold() != null) {
-                    selection.and(probPredicted.isLessThanOrEqualTo(filter.getMaxThreshold()));
+                String thresholdLabel = filter.getThresholdLabel();
+                if (inspection.getDataset().getTarget() != null && thresholdLabel != null) {
+                    DoubleColumn probPredicted = (DoubleColumn) predsTable.column(thresholdLabel);
+                    if (filter.getMaxThreshold() != null) {
+                        selection.and(probPredicted.isLessThanOrEqualTo(filter.getMaxThreshold()));
+                    }
+                    if (filter.getMinThreshold() != null) {
+                        selection.and(probPredicted.isGreaterThanOrEqualTo(filter.getMinThreshold()));
+                    }
                 }
-                if (filter.getMinThreshold() != null) {
-                    selection.and(probPredicted.isGreaterThanOrEqualTo(filter.getMinThreshold()));
+                if (filter.getPredictedLabel().length > 0) {
+                    selection.and(predictedClass.isIn(filter.getPredictedLabel()));
                 }
+
             }
             case BORDERLINE -> {
                 DoubleColumn absDiff = calculatedTable.doubleColumn("absDiff");
