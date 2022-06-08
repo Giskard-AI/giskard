@@ -41,7 +41,26 @@
             <div class="caption">
               <div v-if="targetFeature">target: {{ targetFeature }}</div>
               <div v-if="model && model.threshold">threshold: {{ model.threshold }}</div>
-<!--              <div v-if="actual">{{ labelsAndValues }}</div>-->
+              <div id='labels-container' v-if='actual'>
+                <v-simple-table dense height="200px" fixed-header>
+                  <template v-slot:default>
+                    <thead>
+                    <tr>
+                      <th class="text-center">
+                        Labels
+                      </th>
+                    </tr></thead>
+                    <tbody>
+                    <tr
+                      v-for="label in labels"
+                      :key="label"
+                    >
+                      <td>{{ label }}</td>
+                    </tr>
+                    </tbody>
+                  </template>
+                </v-simple-table>
+              </div>
             </div>
           </div>
         </v-col>
@@ -158,12 +177,10 @@ export default class PredictionResults extends Vue {
     } else return "";
   }
 
-  get labelsAndValues() {
+  get labels() {
     if (this.classificationLabels)
-      return this.classificationLabels
-          .map((e, idx) => `${idx}: ${e}`)
-          .join(", ");
-    else return "";
+      return this.classificationLabels.values();
+    else return '';
   }
 
   /**
@@ -242,7 +259,7 @@ div.center-center {
 }
 
 .chart {
-  height: 200%;
+  height: 90%;
   min-height: 100px;
   width: 90%;
 }
@@ -250,5 +267,15 @@ div.center-center {
 div.caption {
   font-size: 11px !important;
   line-height: 1rem !important;
+}
+
+#labels-container {
+  font-size: 10px;
+  margin-top: 20px;
+}
+
+.v-data-table tbody td {
+  font-size: 10px !important;
+
 }
 </style>
