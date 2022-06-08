@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "useUnknownInCatchVariables": false,
     "noImplicitAny": false,
     "target": "es2018",
     "module": "esnext",
