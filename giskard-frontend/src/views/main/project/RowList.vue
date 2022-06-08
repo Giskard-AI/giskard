@@ -162,7 +162,7 @@ import MultiSelector from '@/views/main/utils/MultiSelector.vue';
 import {isClassification} from '@/ml-utils';
 
 /**
- * TODO: This class should be on the wrapper, no template for the moment
+ * Filter selector
  */
 @Component({
   components: {MultiSelector}
@@ -214,6 +214,7 @@ export default class RowList extends Vue {
 
 
   async mounted() {
+    await this.fetchDetails();
     this.filterTypes = isClassification(this.inspection.model.modelType) ? this.classificationFiltersMap : this.regressionFiltersMap;
     this.selectedFilter = this.filterTypes[0].out;
     this.thresholdLabel = this.labels[0];
@@ -291,7 +292,7 @@ export default class RowList extends Vue {
         'isRandom': this.shuffleMode
       };
       const filter: Filter = {
-        'maxDiffThreshold': this.maxDiffThreshold == null ? this.maxDiffThreshold! : this.maxDiffThreshold! / 100,
+        'maxDiffThreshold': this.maxDiffThreshold == null ? this.maxDiffThreshold! : this.maxDiffThreshold / 100,
         'minDiffThreshold': this.minDiffThreshold == null ? this.minDiffThreshold! : this.minDiffThreshold! / 100,
         'maxLabelThreshold': this.maxActualThreshold!,
         'minLabelThreshold': this.minActualThreshold!,
@@ -299,7 +300,7 @@ export default class RowList extends Vue {
         'maxThreshold': this.maxThreshold!,
         'targetLabel': this.targetLabel,
         'predictedLabel': this.predictedLabel,
-        'rowFilter': this.selectedFilter!,
+        'rowFilter': this.selectedFilter,
         'regressionUnit': this.percentRegressionUnit ? RegressionUnit.ABSDIFFPERCENT : RegressionUnit.ABSDIFF,
         'thresholdLabel': this.thresholdLabel!
 
@@ -311,6 +312,11 @@ export default class RowList extends Vue {
       commitAddNotification(this.$store, {content: error.response.data.detail, color: 'error'});
     }
   }
+
+  public async fetchDetails() {
+    this.labels = await api.getLabelsForTarget( this.inspection.id);
+  }
+
 }
 </script>
 <style scoped>
