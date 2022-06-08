@@ -16,6 +16,7 @@
     "ai.giskard.web.dto.user.UserMinimalDTO": "UserMinimalDTO",
     "ai.giskard.web.dto.ml.ModelDTO": "ModelDTO",
     "ai.giskard.web.dto.ml.SingleTestResultDTO": "SingleTestResultDTO",
+    "ai.giskard.web.dto.TestTemplatesResponse": "TestTemplatesResponse",
     "ai.giskard.domain.ml.TestType": "TestType",
     "ai.giskard.web.dto.ml.TestSuiteDTO": "TestSuiteDTO",
     "ai.giskard.web.dto.config.AppConfigDTO$AppInfoDTO": "AppConfigDTO.AppInfoDTO",

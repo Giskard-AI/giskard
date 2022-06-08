@@ -28,7 +28,7 @@ import {
     TestDTO,
     TestExecutionResultDTO,
     TestSuiteCreateDTO,
-    TestSuiteDTO,
+    TestSuiteDTO, TestTemplatesResponse,
     TokenAndPasswordVM,
     UpdateMeDTO,
     UpdateTestSuiteDTO,
@@ -114,7 +114,7 @@ axios.interceptors.request.use(jwtRequestInterceptor);
 // this is to automatically parse responses from the projects API, be it array or single objects
 axiosProject.interceptors.response.use(resp => {
     if (Array.isArray(resp.data)) {
-        resp.data.map(p => p.created_on = new Date(p.created_on));
+        resp.data.forEach(p => p.created_on = new Date(p.created_on));
     } else if (resp.data.hasOwnProperty('created_on')) {
         resp.data.created_on = new Date(resp.data.created_on);
     }
@@ -196,10 +196,10 @@ export const api = {
 
     // Projects
     async getProjects() {
-        return axiosProject.get<unknown, ProjectDTO[]>(`/`);
+        return apiV2.get<unknown, ProjectDTO[]>(`projects`);
     },
     async getProject(id: number) {
-        return axiosProject.get<unknown, ProjectDTO>(`/${id}`);
+        return axiosProject.get<unknown, ProjectDTO>(`/`, {params: {id}});
     },
     async createProject(data: ProjectPostDTO) {
         return axiosProject.post<unknown, ProjectDTO>(`/`, data);
@@ -241,6 +241,9 @@ export const api = {
     async getDataFilteredByRange(inspectionId, props, filter) {
         return apiV2.post<unknown, any>(`/inspection/${inspectionId}/rowsFiltered`, filter, {params: props});
     },
+    async getLabelsForTarget(inspectionId: number) {
+        return await apiV2.get<unknown, string[]>(`/inspection/${inspectionId}/labels`);
+    },
     async getProjectDatasets(id: number) {
         return axiosProject.get<unknown, DatasetDTO[]>(`/${id}/datasets`);
     },
@@ -268,8 +271,11 @@ export const api = {
     async explain(modelId: number, datasetId: number, inputData: object) {
         return apiV2.post<unknown, ExplainResponseDTO>(`/models/${modelId}/explain/${datasetId}`, {features: inputData});
     },
-    async explainText(modelId: number, inputData: object, featureName: string) {
-        return apiV2.post<unknown, { [key: string]: string }>(`/models/${modelId}/explain-text/${featureName}`, {features: inputData});
+    async explainText(modelId: number, datasetId: number, inputData: object, featureName: string) {
+        return apiV2.post<unknown, { [key: string]: string }>(`/models/explain-text/${featureName}`,
+            {
+                features: inputData
+            }, {params: {modelId, datasetId}});
     },
     // feedbacks
     async submitFeedback(payload: CreateFeedbackDTO, projectId: number) {
@@ -309,8 +315,8 @@ export const api = {
     async getTestDetails(testId: number) {
         return apiV2.get<unknown, TestDTO>(`/testing/tests/${testId}`);
     },
-    async getCodeTestTemplates() {
-        return apiV2.get<unknown, CodeTestCollection[]>(`/testing/tests/code-test-templates`);
+    async getCodeTestTemplates(suiteId: number) {
+        return apiV2.get<unknown, TestTemplatesResponse>(`/testing/tests/code-test-templates`, {params: {suiteId}});
     },
 
     async deleteTest(testId: number) {
