@@ -57,7 +57,7 @@ public class TokenProvider {
         if (!ObjectUtils.isEmpty(base64SecretProperty)) {
             log.debug("Using a Base64-encoded JWT secret key");
             keyBytes = Decoders.BASE64.decode(base64SecretProperty);
-        } else if (secretProperty!=null){
+        } else if (secretProperty != null) {
             log.warn(
                 "Warning: the JWT key used is not Base64-encoded. " +
                     "We recommend using the `jhipster.security.authentication.jwt.base64-secret` key for optimum security."
@@ -66,7 +66,7 @@ public class TokenProvider {
             keyBytes = base64SecretProperty.getBytes(StandardCharsets.UTF_8);
         } else {
             log.info("No secret key was specified in the configuration, generating a new on of {} bits", GENERATED_KEY_BITS);
-            keyBytes = new byte[GENERATED_KEY_BITS/8];
+            keyBytes = new byte[GENERATED_KEY_BITS / 8];
             new SecureRandom().nextBytes(keyBytes);
         }
         key = Keys.hmacShaKeyFor(keyBytes);
@@ -102,12 +102,15 @@ public class TokenProvider {
             .compact();
     }
 
-    public String createAPIaccessToken(String username) {
+    public String createAPIaccessToken(Authentication authentication) {
+        String authorities = authentication.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.joining(","));
+
         long now = (new Date()).getTime();
         return Jwts
             .builder()
-            .setSubject(username)
+            .setSubject(authentication.getName())
             .claim(TOKEN_TYPE_KEY, JWTTokenType.API)
+            .claim(AUTHORITIES_KEY, authorities)
             .signWith(key, SignatureAlgorithm.HS512)
             .setExpiration(new Date(now + this.apiTokenValidityInMilliseconds))
             .compact();
@@ -159,10 +162,10 @@ public class TokenProvider {
                 }
             }
             return true;
-        } catch (ExpiredJwtException e) {
+        } catch (ExpiredJwtException e) { // NOSONAR
             this.securityMetersService.trackTokenExpired();
-
             log.trace(INVALID_JWT_TOKEN, e);
+            throw e;
         } catch (UnsupportedJwtException e) {
             this.securityMetersService.trackTokenUnsupported();
 
@@ -175,8 +178,7 @@ public class TokenProvider {
             this.securityMetersService.trackTokenInvalidSignature();
 
             log.trace(INVALID_JWT_TOKEN, e);
-        } catch (
-            IllegalArgumentException e) { // TODO: should we let it bubble (no catch), to avoid defensive programming and follow the fail-fast principle?
+        } catch (IllegalArgumentException e) {
             log.error("Token validation error {}", e.getMessage());
         }
 

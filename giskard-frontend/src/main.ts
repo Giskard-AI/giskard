@@ -41,6 +41,7 @@ Vue.use(Toast, {
     timeout: 5000,
     closeOnClick: false,
     hideProgressBar: true,
+    draggable: false,
     position: POSITION.BOTTOM_CENTER,
     filterBeforeCreate: (toast, toasts) => {
 

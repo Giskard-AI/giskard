@@ -20,3 +20,14 @@ $notification-spinner-size: 20px;
   height: $notification-spinner-size !important;
   font-size: $notification-spinner-size !important;
 }
+
+.Vue-Toastification__container.bottom-center {
+  width: 900px !important;
+  transform: translateX(-50%);
+  margin-left: 0 !important;
+
+  .Vue-Toastification__toast.Vue-Toastification__toast--error.bottom-center {
+    max-width: 100% !important;
+    margin: 0;
+  }
+}

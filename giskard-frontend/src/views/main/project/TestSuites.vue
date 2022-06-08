@@ -55,15 +55,15 @@ export default class TestSuites extends Vue {
         align: "left"
       },
       {
-        text: "Train dataset",
+        text: "Reference dataset",
         sortable: true,
-        value: "trainDataset.name",
+        value: "referenceDataset.name",
         align: "left"
       },
       {
-        text: "Test dataset",
+        text: "Actual dataset",
         sortable: true,
-        value: "testDataset.name",
+        value: "actualDataset.name",
         align: "left"
       }
     ];
@@ -94,11 +94,11 @@ export default class TestSuites extends Vue {
   private async init() {
     this.testSuites = (await api.getTestSuites(this.projectId)).map((ts: TestSuiteDTO) => {
       ts.model.name = TestSuites.getProjectFileName(ts.model);
-      if (ts.trainDataset) {
-        ts.trainDataset.name = TestSuites.getProjectFileName(ts.trainDataset);
+      if (ts.referenceDataset) {
+        ts.referenceDataset.name = TestSuites.getProjectFileName(ts.referenceDataset);
       }
-      if (ts.testDataset) {
-        ts.testDataset.name = TestSuites.getProjectFileName(ts.testDataset);
+      if (ts.actualDataset) {
+        ts.actualDataset.name = TestSuites.getProjectFileName(ts.actualDataset);
       }
       return ts;
     });

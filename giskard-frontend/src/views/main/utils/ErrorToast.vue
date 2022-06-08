@@ -19,14 +19,15 @@ export default class ErrorToast extends Vue {
 </script>
 
 <style scoped lang="scss">
-.detail{
+.detail {
   font-size: 15px;
   background-color: rgba(211, 211, 211, 0.52);
   display: block;
   padding: 10px;
   margin-top: 10px;
-  color: rgba(0,0,0,.87);
-  max-width: 490px;
+  color: rgba(0, 0, 0, .87);
   overflow: auto;
+  white-space: break-spaces;
+  max-height: 70px;
 }
 </style>

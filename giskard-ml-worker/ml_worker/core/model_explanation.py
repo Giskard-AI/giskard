@@ -4,39 +4,41 @@ from typing import Dict, List, Callable
 import numpy as np
 import pandas as pd
 from bs4 import BeautifulSoup
-from giskard_client import ModelInspector
+
+from ml_worker.core.giskard_dataset import GiskardDataset
+from ml_worker.core.model import GiskardModel
 
 
-def explain(model_inspector: ModelInspector, df: pd.DataFrame, input_data: Dict):
+def explain(model: GiskardModel, dataset: GiskardDataset, input_data: Dict):
     from alibi.explainers import KernelShap
 
-    feature_columns = list(model_inspector.input_types.keys())
-    feature_names = list(model_inspector.input_types.keys())
+    feature_columns = list(model.feature_names)
+    feature_names = list(model.feature_names)
     kernel_shap = KernelShap(
-        predictor=lambda array: model_inspector.prediction_function(
+        predictor=lambda array: model.prediction_function(
             pd.DataFrame(array, columns=feature_columns)
         ),
         feature_names=feature_names,
-        task=model_inspector.prediction_task,
+        task=model.model_type,
     )
-    kernel_shap.fit(background_example(df[feature_columns], model_inspector.input_types))
+    kernel_shap.fit(background_example(dataset.df[feature_columns], dataset.feature_types))
     input_df = pd.DataFrame({k: [v] for k, v in input_data.items()})[
         feature_columns
     ]
     explanations = kernel_shap.explain(input_df)
-    if model_inspector.prediction_task == "regression":
+    if model.model_type == "regression":
         explanation_chart_data = summary_shap_regression(
             shap_values=explanations.shap_values, feature_names=feature_names
         )
-    elif model_inspector.prediction_task == "classification":
+    elif model.model_type == "classification":
         explanation_chart_data = summary_shap_classification(
             shap_values=explanations.shap_values,
             feature_names=feature_names,
-            class_names=model_inspector.classification_labels,
+            class_names=model.classification_labels,
         )
     else:
         raise ValueError(
-            f"Prediction task is not supported: {model_inspector.prediction_task}"
+            f"Prediction task is not supported: {model.model_type}"
         )
     return explanation_chart_data
 
@@ -78,7 +80,7 @@ def summary_shap_regression(
     feature_inds = feature_order[:max_display]
     global_shap_values = np.abs(shap_values[0]).mean(0)
     chart_data = {"explanations": {}}
-    chart_data["explanations"] = {"default" : {
+    chart_data["explanations"] = {"default": {
         feature_names[feature_ind]: global_shap_values[feature_ind] for feature_ind in feature_inds}
     }
     return chart_data
