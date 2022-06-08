@@ -41,7 +41,7 @@
             <div class="caption">
               <div v-if="targetFeature">target: {{ targetFeature }}</div>
               <div v-if="model && model.threshold">threshold: {{ model.threshold }}</div>
-              <div id='labels-container' v-if='actual'>
+              <div id='labels-container' v-if='actual && isClassification(predictionTask)'>
                 <v-simple-table dense height="200px" fixed-header>
                   <template v-slot:default>
                     <thead>
@@ -52,7 +52,7 @@
                     </tr></thead>
                     <tbody>
                     <tr
-                      v-for="label in labels"
+                      v-for="label in classificationLabels.values()"
                       :key="label"
                     >
                       <td>{{ label }}</td>
@@ -104,7 +104,7 @@ import {use} from "echarts/core";
 import {BarChart} from "echarts/charts";
 import {CanvasRenderer} from "echarts/renderers";
 import {GridComponent} from "echarts/components";
-import {ModelDTO, ModelType, PredictionDTO} from "@/generated-sources";
+import {ModelDTO, ModelType} from "@/generated-sources";
 import {isClassification} from "@/ml-utils";
 
 use([CanvasRenderer, BarChart, GridComponent]);
@@ -175,12 +175,6 @@ export default class PredictionResults extends Vue {
       if (isNaN(parseInt(this.actual.toString()))) return this.actual;
       else return this.classificationLabels[parseInt(this.actual.toString())];
     } else return "";
-  }
-
-  get labels() {
-    if (this.classificationLabels)
-      return this.classificationLabels.values();
-    else return '';
   }
 
   /**
