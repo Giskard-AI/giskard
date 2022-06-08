@@ -241,6 +241,9 @@ export const api = {
     async getDataFilteredByRange(inspectionId, props, filter) {
         return apiV2.post<unknown, any>(`/inspection/${inspectionId}/rowsFiltered`, filter, {params: props});
     },
+    async getLabelsForTarget(inspectionId: number) {
+        return await apiV2.get<unknown, string[]>(`/inspection/${inspectionId}/labels`);
+    },
     async getProjectDatasets(id: number) {
         return axiosProject.get<unknown, DatasetDTO[]>(`/${id}/datasets`);
     },
