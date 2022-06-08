@@ -198,13 +198,15 @@ export default class PredictionExplanations extends Vue {
         textStyle: {
           fontSize: "10",
         },
+        type: this.classificationLabels.length > 5 ? 'scroll' : 'plain',
+        top: 0,
       },
       series: chartSeries,
       grid: {
         width: "85%",
         height: "65%",
         left: "10%",
-        top: "15%",
+        top: "25%",
         containLabel: true,
       },
     };
@@ -226,8 +228,8 @@ div.center-center {
 }
 
 .chart {
-  height: 90%;
-  min-height: 180px;
+  height: 100%;
+  min-height: 220px;
   width: 90%;
 }
 </style>
