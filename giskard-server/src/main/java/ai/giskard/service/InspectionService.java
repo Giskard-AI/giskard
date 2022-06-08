@@ -131,7 +131,6 @@ public class InspectionService {
             case CORRECT -> selection = correctSelection;
             case WRONG -> selection = predictedClass.isNotEqualTo(targetClass);
             case CUSTOM -> {
-                DoubleColumn probPredicted = (DoubleColumn) predsTable.column(filter.getThresholdLabel());
                 selection = targetClass.isNotMissing();
                 if (filter.getPredictedLabel().length > 0) {
                     selection.and(predictedClass.isIn(filter.getPredictedLabel()));
@@ -139,7 +138,7 @@ public class InspectionService {
                 if (filter.getTargetLabel().length > 0) {
                     selection.and(targetClass.isIn(filter.getTargetLabel()));
                 }
-                if (filter.getThresholdLabel() !=  null) {
+                if (filter.getThresholdLabel() != null) {
                     DoubleColumn probPredicted = (DoubleColumn) predsTable.column(filter.getThresholdLabel());
                     if (filter.getMaxThreshold() != null) {
                         selection.and(probPredicted.isLessThanOrEqualTo(filter.getMaxThreshold()));
@@ -147,6 +146,7 @@ public class InspectionService {
                     if (filter.getMinThreshold() != null) {
                         selection.and(probPredicted.isGreaterThanOrEqualTo(filter.getMinThreshold()));
                     }
+                }
             }
             case BORDERLINE -> {
                 DoubleColumn absDiff = calculatedTable.doubleColumn("absDiff");
