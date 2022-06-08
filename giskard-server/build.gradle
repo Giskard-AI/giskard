@@ -25,8 +25,8 @@ group = "ai.giskard"
 
 description = "Giskard main java backend"
 
-sourceCompatibility=17
-targetCompatibility=17
+sourceCompatibility = 17
+targetCompatibility = 17
 assert System.properties["java.specification.version"] == "11" || "12" || "13" || "14" || "15" || "16" || "17"
 
 apply from: "gradle/docker.gradle"
@@ -139,8 +139,8 @@ liquibase {
         main {
             driver "org.postgresql.Driver"
             url System.getenv().getOrDefault("SPRING_LIQUIBASE_URL", "jdbc:postgresql://localhost:5432/app")
-            username System.getenv().getOrDefault("POSTGRES_USER","postgres")
-            password System.getenv().getOrDefault("POSTGRES_PASSWORD","y1QYbF2BtFUC")
+            username System.getenv().getOrDefault("POSTGRES_USER", "postgres")
+            password System.getenv().getOrDefault("POSTGRES_PASSWORD", "y1QYbF2BtFUC")
             changeLogFile "src/main/resources/config/liquibase/master.xml"
             defaultSchemaName ""
             logLevel "info"
@@ -149,8 +149,8 @@ liquibase {
         diffLog {
             driver "org.postgresql.Driver"
             url System.getenv().getOrDefault("SPRING_LIQUIBASE_URL", "jdbc:postgresql://localhost:5432/app")
-            username System.getenv().getOrDefault("POSTGRES_USER","postgres")
-            password System.getenv().getOrDefault("POSTGRES_PASSWORD","y1QYbF2BtFUC")
+            username System.getenv().getOrDefault("POSTGRES_USER", "postgres")
+            password System.getenv().getOrDefault("POSTGRES_PASSWORD", "y1QYbF2BtFUC")
             changeLogFile project.ext.diffChangelogFile
             referenceUrl "hibernate:spring:ai.giskard.domain?dialect=tech.jhipster.domain.util.FixedPostgreSQL10Dialect&hibernate.physical_naming_strategy=org.springframework.boot.orm.jpa.hibernate.SpringPhysicalNamingStrategy&hibernate.implicit_naming_strategy=org.springframework.boot.orm.jpa.hibernate.SpringImplicitNamingStrategy"
             defaultSchemaName ""
@@ -166,10 +166,10 @@ liquibase {
 }
 
 task liquibaseJavaDBdiff(type: GradleBuild) {
-    doFirst{
+    doFirst {
         test.enabled = false
     }
-    doLast{
+    doLast {
         test.enabled = true
     }
 
@@ -250,7 +250,7 @@ dependencies {
     implementation "org.springframework.boot:spring-boot-starter-data-jpa"
     testImplementation "org.testcontainers:postgresql"
     implementation "org.springframework.boot:spring-boot-starter-security"
-    implementation ("org.springframework.boot:spring-boot-starter-web") {
+    implementation("org.springframework.boot:spring-boot-starter-web") {
         exclude module: "spring-boot-starter-tomcat"
     }
     implementation "org.springframework.boot:spring-boot-starter-undertow"
@@ -271,7 +271,7 @@ dependencies {
         implementation "io.jsonwebtoken:jjwt-impl"
         implementation "io.jsonwebtoken:jjwt-jackson"
     }
-    implementation ("org.springdoc:springdoc-openapi-webmvc-core")
+    implementation("org.springdoc:springdoc-openapi-webmvc-core")
     implementation group: 'org.springdoc', name: 'springdoc-openapi-ui', version: '1.6.7'
     implementation "org.postgresql:postgresql"
     implementation "com.h2database:h2"
@@ -334,6 +334,10 @@ if (project.hasProperty("gae")) {
         }
     }
     bootJar.dependsOn = [createPom]
+}
+
+task cleanGenerated(type: Delete) {
+    delete "$buildDir/extracted-include-protos", "$buildDir/extracted-protos", "$buildDir/proto", "$buildDir/generated/source/proto"
 }
 
 task cleanResources(type: Delete) {

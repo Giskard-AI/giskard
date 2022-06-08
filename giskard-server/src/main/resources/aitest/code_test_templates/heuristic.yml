@@ -1,16 +1,142 @@
 title: Heuristic
 id: heuristic
-order: 1
+order: 2
 items:
-  - id: heuristic
-    title: Heuristic
+  - id: right_label
+    title: Right Label
+    hint: Test if the model returns the right classification label for a slice
+    isMultipleDatasets: false
+    isGroundTruthRequired: false
+    modelTypes:
+      - MULTICLASS_CLASSIFICATION
+      - BINARY_CLASSIFICATION
     # language=Python
     code: |-
-      tests.heuristic.test_heuristic(
-        df=test_df,
+      """
+      Summary: Test if the model returns the right classification label for a slice
+
+      Description: The test is passed when the percentage of rows returning the right
+      classification label is higher than the threshold in a given slice
+
+      Example: For a credit scoring model, the test is passed when more than 50%
+      of people with high-salaries are classified as “non default”
+
+      Args:
+           actual_slice(GiskardDataset):
+              Slice of the  actual dataset
+          model(GiskardModel):
+              Model used to compute the test
+          classification_label(str):
+              Classification label you want to test
+          threshold(float):
+              Threshold for the percentage of passed rows
+
+      Returns:
+          slice_nb_rows:
+              Length of slice_df tested
+          metrics:
+              The ratio of rows with the right classification label over the total of rows in the slice
+          passed:
+              TRUE if passed_ratio > threshold
+      """
+      tests.heuristic.test_right_label(
+        actual_slice=actual_ds.slice(lambda df: df.head(len(df)//2)),
         model=model,
-        classification_label=model.classification_labels[0],
-        min_proba=0,
-        max_proba=1,
-        threshold=1,
+        classification_label='{{CLASSIFICATION LABEL}}',
+        threshold=0.5
+      )
+
+  - id: output_in_range_clf
+    title: Classification Probability in Range
+    hint: Test if the model classification probability belongs to the right range for a slice
+    isMultipleDatasets: false
+    isGroundTruthRequired: false
+    modelTypes:
+      - MULTICLASS_CLASSIFICATION
+      - BINARY_CLASSIFICATION
+    # language=Python
+    code: |-
+      """
+      Summary: Test if the model classification probability belongs to the right range for a slice
+
+      Description: The test is passed when the ratio of rows in the right range inside the
+      slice is higher than the threshold.
+
+      Example: For a credit scoring model, the test is passed when more than 50% of
+      people with high wage have a probability of defaulting between 0 and 0.1
+
+      Args:
+           actual_slice(GiskardDataset):
+              Slice of the actual dataset
+          model(GiskardModel):
+              Model used to compute the test
+          classification_label:
+              Classification label you want to test
+          min_range(float):
+              Minimum probability of occurrence of classification label
+          max_range(float):
+              Maximum probability of occurrence of classification label
+          threshold(float):
+              Threshold for the percentage of passed rows
+
+      Returns:
+          slice_nb_rows:
+              Length of slice_df tested
+          metrics:
+              The proportion of rows in the right range inside the slice
+          passed:
+              TRUE if metric > threshold
+      """
+      tests.heuristic.test_output_in_range(
+        actual_slice=actual_ds.slice(lambda df: df.head(len(df)//2)),
+        model=model,
+        classification_label='{{CLASSIFICATION LABEL}}',
+        min_range=0,
+        max_range=0.1,
+        threshold=0.5,
+      )
+
+  - id: output_in_range_reg
+    title: Regression Output in Range
+    hint: Test if the predicted output belongs to the right range for a slice
+    isMultipleDatasets: false
+    isGroundTruthRequired: false
+    modelTypes:
+      - REGRESSION
+    # language=Python
+    code: |-
+      """
+      Summary: Test if the predicted output belongs to the right range for a slice
+
+      Description: The test is passed when the ratio of rows in the right range inside the
+      slice is higher than the threshold.
+
+      Example : The predicted Sale Price of an item falls in a range between 100 and 1000
+
+      Args:
+           actual_slice(GiskardDataset):
+              Slice of the actual dataset
+          model(GiskardModel):
+              Model used to compute the test
+          min_range(float):
+              Minimum value of prediction
+          max_range(float):
+              Maximum value of prediction
+          threshold(float):
+              Threshold for the percentage of passed rows
+
+      Returns:
+          slice_nb_rows:
+              Length of slice_df tested
+          metrics:
+              The proportion of rows in the right range inside the slice
+          passed:
+              TRUE if metric > threshold
+      """
+      tests.heuristic.test_output_in_range(
+        actual_slice=actual_ds.slice(lambda df: df.head(len(df)//2)),
+        model=model,
+        min_range=100,
+        max_range=1000,
+        threshold=0.5,
       )

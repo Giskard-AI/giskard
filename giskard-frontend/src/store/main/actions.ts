@@ -1,24 +1,24 @@
-import { api } from '@/api';
+import {api} from '@/api';
 import router from '@/router';
-import { getLocalToken, removeLocalToken, saveLocalToken } from '@/utils';
-import { AxiosError } from 'axios';
-import { getStoreAccessors } from 'typesafe-vuex';
-import { ActionContext } from 'vuex';
-import { State } from '../state';
+import {getLocalToken, removeLocalToken, saveLocalToken} from '@/utils';
+import {AxiosError} from 'axios';
+import {getStoreAccessors} from 'typesafe-vuex';
+import {ActionContext} from 'vuex';
+import {State} from '../state';
 import {
     commitAddNotification,
     commitRemoveNotification,
+    commitSetAppSettings,
+    commitSetCoworkers,
     commitSetLoggedIn,
     commitSetLogInError,
-    commitSetToken,
-    commitSetUserProfile,
+    commitSetProject,
     commitSetProjects,
-    commitSetCoworkers,
-    commitSetProject, commitSetAppSettings
+    commitSetToken,
+    commitSetUserProfile
 } from './mutations';
-import { AppNotification, MainState } from './state';
-import { AdminUserDTO, ManagedUserVM, ProjectPostDTO, UpdateMeDTO } from '@/generated-sources';
-import AdminUserDTOWithPassword = AdminUserDTO.AdminUserDTOWithPassword;
+import {AppNotification, MainState} from './state';
+import {AdminUserDTO, ManagedUserVM, ProjectPostDTO, UpdateMeDTO} from '@/generated-sources';
 
 type MainContext = ActionContext<MainState, State>;
 
@@ -35,7 +35,7 @@ export const actions = {
                 commitSetLogInError(context, null);
                 await dispatchGetUserProfile(context);
                 await dispatchRouteLoggedIn(context);
-                commitAddNotification(context, { content: 'Logged in', color: 'success' });
+                commitAddNotification(context, {content: 'Logged in', color: 'success'});
             } else {
                 await dispatchLogOut(context);
             }
@@ -66,12 +66,12 @@ export const actions = {
         }
     },
     async actionUpdateUserProfile(context: MainContext, payload: UpdateMeDTO) {
-        const loadingNotification = { content: 'saving', showProgress: true };
+        const loadingNotification = {content: 'saving', showProgress: true};
         try {
             commitAddNotification(context, loadingNotification);
-            commitSetUserProfile(context, await api.updateMe( payload));
+            commitSetUserProfile(context, await api.updateMe(payload));
             commitRemoveNotification(context, loadingNotification);
-            commitAddNotification(context, { content: 'Profile successfully updated', color: 'success' });
+            commitAddNotification(context, {content: 'Profile successfully updated', color: 'success'});
         } catch (error) {
             await dispatchCheckApiError(context, error);
             throw new Error(error.response.data.detail);
@@ -112,9 +112,9 @@ export const actions = {
     },
     async actionUserLogOut(context: MainContext) {
         await dispatchLogOut(context);
-        commitAddNotification(context, { content: 'Logged out', color: 'success' });
+        commitAddNotification(context, {content: 'Logged out', color: 'success'});
     },
-    actionRouteLogOut(context: MainContext) {
+    actionRouteLogOut() {
         if (router.currentRoute.path !== '/auth/login') {
             router.push('/auth/login');
         }
@@ -124,13 +124,13 @@ export const actions = {
             await dispatchLogOut(context);
         }
     },
-    actionRouteLoggedIn(context: MainContext) {
+    actionRouteLoggedIn() {
         if (router.currentRoute.path === '/auth/login' || router.currentRoute.path === '/') {
             router.push('/main');
         }
     },
     async removeNotification(context: MainContext, payload: { notification: AppNotification, timeout: number }) {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             setTimeout(() => {
                 commitRemoveNotification(context, payload.notification);
                 resolve(true);
@@ -138,12 +138,12 @@ export const actions = {
         });
     },
     async passwordRecovery(context: MainContext, payload: { userId: string }) {
-        const loadingNotification = { content: 'Sending password recovery email', showProgress: true };
+        const loadingNotification = {content: 'Sending password recovery email', showProgress: true};
         try {
             commitAddNotification(context, loadingNotification);
             await api.passwordRecovery(payload.userId);
             commitRemoveNotification(context, loadingNotification);
-            commitAddNotification(context, { color: 'success', content: 'Password recovery link has been sent' });
+            commitAddNotification(context, {color: 'success', content: 'Password recovery link has been sent'});
             await dispatchLogOut(context);
         } catch (error) {
             commitRemoveNotification(context, loadingNotification);
@@ -154,35 +154,31 @@ export const actions = {
             } else {
                 errMessage = data.detail;
             }
-            commitAddNotification(context, { color: 'error', content: errMessage });
+            commitAddNotification(context, {color: 'error', content: errMessage});
         }
     },
     async resetPassword(context: MainContext, payload: { password: string, token: string }) {
-        const loadingNotification = { content: 'Resetting password', showProgress: true };
-        try {
-            commitAddNotification(context, loadingNotification);
-            const response = await api.resetPassword(payload.password);
-            commitRemoveNotification(context, loadingNotification);
-            commitAddNotification(context, { color: 'success', content: 'Password successfully changed' });
-            await dispatchLogOut(context);
-        } catch (error) {
-            commitAddNotification(context, { color: 'error', content: error.response.data.detail });
-        }
+        const loadingNotification = {content: 'Resetting password', showProgress: true};
+        commitAddNotification(context, loadingNotification);
+        await api.resetPassword(payload.password);
+        commitRemoveNotification(context, loadingNotification);
+        commitAddNotification(context, {color: 'success', content: 'Password successfully changed'});
+        await dispatchLogOut(context);
     },
-    async actionSignupUser(context: MainContext, payload: {userData: ManagedUserVM}) {
-        const loadingNotification = { content: 'saving', showProgress: true };
+    async actionSignupUser(context: MainContext, payload: { userData: ManagedUserVM }) {
+        const loadingNotification = {content: 'saving', showProgress: true};
         try {
             commitAddNotification(context, loadingNotification);
             await api.signupUser(payload.userData);
             commitRemoveNotification(context, loadingNotification);
-            commitAddNotification(context, { content: 'Success! Please proceed to login', color: 'success' });
+            commitAddNotification(context, {content: 'Success! Please proceed to login', color: 'success'});
             await dispatchLogOut(context);
         } catch (error) {
             throw new Error(error.response.data.detail);
         }
     },
     async actionGetProjects(context: MainContext) {
-        const loadingNotification = { content: 'Loading projects', showProgress: true };
+        const loadingNotification = {content: 'Loading projects', showProgress: true};
         try {
             commitAddNotification(context, loadingNotification);
             const response = await api.getProjects();
@@ -193,8 +189,8 @@ export const actions = {
             await dispatchCheckApiError(context, error);
         }
     },
-    async actionGetProject(context: MainContext, payload: {id: number}) {
-        const loadingNotification = { content: 'Loading project', showProgress: true };
+    async actionGetProject(context: MainContext, payload: { id: number }) {
+        const loadingNotification = {content: 'Loading project', showProgress: true};
         try {
             commitAddNotification(context, loadingNotification);
             const response = await api.getProject(payload.id);
@@ -205,36 +201,36 @@ export const actions = {
         }
     },
     async actionCreateProject(context: MainContext, payload: ProjectPostDTO) {
-        const loadingNotification = { content: 'Saving...', showProgress: true };
+        const loadingNotification = {content: 'Saving...', showProgress: true};
         try {
             commitAddNotification(context, loadingNotification);
-            await api.createProject( payload);
+            await api.createProject(payload);
             commitRemoveNotification(context, loadingNotification);
-            commitAddNotification(context, { content: 'Success' , color: 'success' });
+            commitAddNotification(context, {content: 'Success', color: 'success'});
             dispatchGetProjects(context);
         } catch (error) {
             await dispatchCheckApiError(context, error);
             throw new Error(error.response.data.detail);
         }
     },
-    async actionDeleteProject(context: MainContext, payload: {id: number}) {
-        const loadingNotification = { content: 'Deleting...', showProgress: true };
+    async actionDeleteProject(context: MainContext, payload: { id: number }) {
+        const loadingNotification = {content: 'Deleting...', showProgress: true};
         try {
             commitAddNotification(context, loadingNotification);
-            await api.deleteProject( payload.id);
+            await api.deleteProject(payload.id);
             commitRemoveNotification(context, loadingNotification);
-            commitAddNotification(context, { content: 'Success' , color: 'success' });
+            commitAddNotification(context, {content: 'Success', color: 'success'});
         } catch (error) {
             await dispatchCheckApiError(context, error);
         }
     },
-    async actionEditProject(context: MainContext, payload: {id: number, data: ProjectPostDTO}) {
-        const loadingNotification = { content: 'Deleting...', showProgress: true };
+    async actionEditProject(context: MainContext, payload: { id: number, data: ProjectPostDTO }) {
+        const loadingNotification = {content: 'Deleting...', showProgress: true};
         try {
             commitAddNotification(context, loadingNotification);
-            const response = await api.editProject( payload.id, payload.data);
+            const response = await api.editProject(payload.id, payload.data);
             commitRemoveNotification(context, loadingNotification);
-            commitAddNotification(context, { content: 'Success' , color: 'success' });
+            commitAddNotification(context, {content: 'Success', color: 'success'});
             commitSetProject(context, response);
         } catch (error) {
             commitRemoveNotification(context, loadingNotification);
@@ -242,29 +238,29 @@ export const actions = {
             await dispatchCheckApiError(context, error);
         }
     },
-    async actionInviteUserToProject(context: MainContext, payload: {projectId: number, userId: number}) {
-        const loadingNotification = { content: 'Sending...', showProgress: true };
+    async actionInviteUserToProject(context: MainContext, payload: { projectId: number, userId: number }) {
+        const loadingNotification = {content: 'Sending...', showProgress: true};
         try {
             commitAddNotification(context, loadingNotification);
-            const response = await api.inviteUserToProject( payload.projectId, payload.userId);
+            const response = await api.inviteUserToProject(payload.projectId, payload.userId);
             commitRemoveNotification(context, loadingNotification);
-            commitAddNotification(context, { content: 'Done' , color: 'success' });
+            commitAddNotification(context, {content: 'Done', color: 'success'});
             commitSetProject(context, response);
         } catch (error) {
             await dispatchCheckApiError(context, error);
             throw new Error(error.response.data.detail);
         }
     },
-    async actionUninviteUserFromProject(context: MainContext, payload: {projectId: number, userId: number}) {
-		const loadingNotification = { content: 'Sending...', showProgress: true };
+    async actionUninviteUserFromProject(context: MainContext, payload: { projectId: number, userId: number }) {
+        const loadingNotification = {content: 'Sending...', showProgress: true};
         try {
-			commitAddNotification(context, loadingNotification);
-            const response = await api.uninviteUserFromProject( payload.projectId, payload.userId);
+            commitAddNotification(context, loadingNotification);
+            const response = await api.uninviteUserFromProject(payload.projectId, payload.userId);
             commitSetProject(context, response);
-			commitRemoveNotification(context, loadingNotification);
-            commitAddNotification(context, { content: 'Done' , color: 'success' });
+            commitRemoveNotification(context, loadingNotification);
+            commitAddNotification(context, {content: 'Done', color: 'success'});
         } catch (error) {
-			commitRemoveNotification(context, loadingNotification);
+            commitRemoveNotification(context, loadingNotification);
 
             await dispatchCheckApiError(context, error);
             throw new Error(error.response.data.detail);
@@ -272,7 +268,7 @@ export const actions = {
     },
 };
 
-const { dispatch } = getStoreAccessors<MainState | any, State>('');
+const {dispatch} = getStoreAccessors<MainState | any, State>('');
 
 export const dispatchCheckApiError = dispatch(actions.actionCheckApiError);
 export const dispatchCheckLoggedIn = dispatch(actions.actionCheckLoggedIn);
