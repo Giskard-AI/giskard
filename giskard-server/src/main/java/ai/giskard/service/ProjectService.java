@@ -51,15 +51,15 @@ public class ProjectService {
      * @return project saved
      */
     public Project create(Project project, String ownerLogin) {
-        String projectKey = toSlug(project.getKey());
-        projectRepository.findOneByKey(projectKey).ifPresent(project1 -> {
+        String projectKey;
+        if (project.getKey() != null) {
+            projectKey = toSlug(project.getKey());
+        } else {
+            projectKey = toSlug(project.getName());
+        }
+        projectRepository.findOneByKey(projectKey).ifPresent(p -> {
             throw new IllegalArgumentException(String.format("Project with key %s already exists", projectKey));
         });
-
-
-        if (Objects.isNull(project.getKey())) {
-            project.setKey(toSlug(project.getName()));
-        }
         project.setKey(projectKey);
         User owner = userRepository.getOneByLogin(ownerLogin);
         project.setOwner(owner);
