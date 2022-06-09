@@ -1,5 +1,6 @@
 package ai.giskard.web.rest.errors;
 
+import ai.giskard.exception.EntityAlreadyExistsException;
 import ai.giskard.exception.MLWorkerRuntimeException;
 import io.grpc.StatusRuntimeException;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -257,5 +258,13 @@ public class ExceptionTranslator implements ProblemHandling, SecurityAdviceTrait
     private boolean containsPackageName(String message) {
         // This list is for sure not complete
         return StringUtils.containsAny(message, "org.", "java.", "net.", "javax.", "com.", "io.", "de.", "ai.giskard");
+    }
+
+    @ExceptionHandler
+    public ResponseEntity<Problem> handleEntityAlreadyExistsException(
+        EntityAlreadyExistsException ex,
+        NativeWebRequest request
+    ) {
+        return create(Status.CONFLICT, ex, request);
     }
 }
