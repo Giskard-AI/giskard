@@ -1,8 +1,7 @@
-from typing import List, Any, Optional
+from typing import List, Any, Optional, Callable, Iterable, Union
 
 import numpy
 import pandas as pd
-from giskard.model import PredictionFunction
 from pydantic import BaseModel
 
 
@@ -15,7 +14,7 @@ class ModelPredictionResults(BaseModel):
 
 class GiskardModel:
     def __init__(self,
-                 prediction_function: PredictionFunction,
+                 prediction_function: Callable[[pd.DataFrame], Iterable[Union[str, float, int]]],
                  model_type: str,
                  feature_names: List[str],
                  classification_threshold: float = None,
