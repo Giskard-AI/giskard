@@ -149,7 +149,7 @@ export default class ProjectsHome extends Vue {
     if (this.newProjectName) {
       const proj: ProjectPostDTO = {
         name: this.newProjectName.trim(),
-        key: this.newProjectName.trim(),
+        key: this.newProjectKey.trim(),
         description: this.newProjectDesc.trim(),
       }
       try {
