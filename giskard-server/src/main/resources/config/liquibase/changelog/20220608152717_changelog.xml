@@ -28,7 +28,4 @@
     <changeSet author="andreyavtomonov (generated)" id="1654694840062-9">
         <dropColumn columnName="train_dataset_id" tableName="test_suite"/>
     </changeSet>
-    <changeSet author="andreyavtomonov (generated)" id="1654694840062-1">
-        <alterSequence sequenceName="hibernate_sequence"/>
-    </changeSet>
 </databaseChangeLog>

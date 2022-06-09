@@ -10,6 +10,7 @@ export const GENERATED_MAPPING = {
     'ai.giskard.domain.ml.table.RowFilterType' : 'RowFilterType',
     'ai.giskard.domain.ml.TestResult' : 'TestResult',
     'ai.giskard.domain.ml.TestType' : 'TestType',
+    'ai.giskard.web.dto.ApplicationConfigDTO' : 'ApplicationConfigDTO',
     'ai.giskard.web.dto.config.AppConfigDTO$AppInfoDTO' : 'AppConfigDTO.AppInfoDTO',
     'ai.giskard.web.dto.config.AppConfigDTO' : 'AppConfigDTO',
     'ai.giskard.web.dto.CreateFeedbackDTO' : 'CreateFeedbackDTO',
@@ -71,6 +72,7 @@ export * from './ai/giskard/domain/ml/table/regression-unit';
 export * from './ai/giskard/domain/ml/table/row-filter-type';
 export * from './ai/giskard/domain/ml/test-result';
 export * from './ai/giskard/domain/ml/test-type';
+export * from './ai/giskard/web/dto/application-config-dto';
 export * from './ai/giskard/web/dto/config/app-config-dto';
 export * from './ai/giskard/web/dto/create-feedback-dto';
 export * from './ai/giskard/web/dto/create-feedback-reply-dto';
