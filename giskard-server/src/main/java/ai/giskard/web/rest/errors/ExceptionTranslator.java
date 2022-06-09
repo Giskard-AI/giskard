@@ -31,6 +31,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static ai.giskard.web.rest.errors.ErrorConstants.DEFAULT_TYPE;
 
@@ -108,6 +109,7 @@ public class ExceptionTranslator implements ProblemHandling, SecurityAdviceTrait
         Problem problem = Problem
             .builder()
             .withType(ErrorConstants.CONSTRAINT_VIOLATION_TYPE)
+            .withDetail(fieldErrors.stream().map(f -> f.getField() + " " + f.getMessage()).collect(Collectors.joining("\n")))
             .withTitle("Method argument not valid")
             .withStatus(defaultConstraintViolationStatus())
             .with(MESSAGE_KEY, ErrorConstants.ERR_VALIDATION)
