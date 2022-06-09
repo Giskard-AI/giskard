@@ -1,14 +1,13 @@
-
 <template>
   <v-main>
     <v-navigation-drawer
-      dark
-      fixed
-      app
-      persistent
-      class="background"
-      mobile-breakpoint="sm"
-      width="72"
+        dark
+        fixed
+        app
+        persistent
+        class="background"
+        mobile-breakpoint="sm"
+        width="72"
     >
       <v-layout column fill-height>
         <v-list subheader class="align-center">
@@ -19,7 +18,7 @@
               </div>
             </v-list-item-content>
           </v-list-item>
-          <v-divider></v-divider>
+          <v-divider/>
           <v-list-item to="/main/projects">
             <v-list-item-content>
               <v-icon>web</v-icon>
@@ -28,15 +27,15 @@
           </v-list-item>
         </v-list>
         <v-spacer></v-spacer>
-        <v-list class="align-center">
-          <v-divider></v-divider>
+        <v-list>
+          <v-divider/>
           <v-list-item v-show="hasAdminAccess" to="/main/admin/">
             <v-list-item-content>
               <v-icon>mdi-cog</v-icon>
               <div class="caption">Settings</div>
             </v-list-item-content>
           </v-list-item>
-          <v-divider></v-divider>
+          <v-divider/>
           <v-list-item to="/main/profile/view">
             <v-list-item-content>
               <v-icon>person</v-icon>
@@ -60,14 +59,13 @@
 </template>
 
 <script lang="ts">
-import { Vue, Component } from "vue-property-decorator";
+import {Component, Vue} from "vue-property-decorator";
 
-import { appName } from "@/env";
-import { readHasAdminAccess } from "@/store/main/getters";
-import { readUserProfile } from "@/store/main/getters";
-import { dispatchUserLogOut } from "@/store/main/actions";
+import {appName} from "@/env";
+import {readHasAdminAccess, readUserProfile} from "@/store/main/getters";
+import {dispatchUserLogOut} from "@/store/main/actions";
 
-const routeGuardMain = async (to, from, next) => {
+const routeGuardMain = async (to, _from, next) => {
   if (to.path === "/main") {
     next("/main/dashboard");
   } else {
@@ -117,7 +115,9 @@ export default class Main extends Vue {
 div.caption {
   font-size: 11px !important;
   align-self: center;
+  text-align: center;
 }
+
 .v-list-item {
   padding: 0 10px;
 }
