@@ -82,11 +82,11 @@ export default new Router({
                                     }
                                 },
                                 {
-                  path: 'inspection',
+                                    path: 'inspection/:inspectionId',
                                     name: 'project-inspector',
                                     component: () => import('./views/main/project/InspectorWrapper.vue'),
                                     props: route => ({
-                    inspectionId: Number(route.query.inspectionId)
+                                        inspectionId: Number(route.params.inspectionId)
                                     })
                                 },
                                 {

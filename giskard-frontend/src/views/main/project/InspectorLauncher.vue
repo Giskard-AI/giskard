@@ -35,8 +35,6 @@
 <script lang="ts">
 import {Component, Emit, Prop, Vue} from 'vue-property-decorator';
 import OverlayLoader from '@/components/OverlayLoader.vue';
-import {readToken} from '@/store/main/getters';
-import {commitAddNotification} from '@/store/main/mutations';
 import {api} from '@/api';
 import {DatasetDTO, ModelDTO} from '@/generated-sources';
 
@@ -76,7 +74,7 @@ export default class InspectorLauncher extends Vue {
 
   public async launchInspector() {
     const inspection = await api.prepareInspection({datasetId: this.datasetSelected!.id, modelId: this.model.id});
-    await this.$router.push({ name: 'project-inspector', query: {inspectionId: inspection.id.toString()}});
+    await this.$router.push({ name: 'project-inspector', params: {inspectionId: inspection.id.toString()}});
     this.reset();
   }
 }
