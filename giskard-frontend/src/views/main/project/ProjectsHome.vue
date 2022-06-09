@@ -65,6 +65,10 @@
                 <v-text-field label="Project Name*" type="text" v-model="newProjectName" 
                   :error-messages="errors"></v-text-field>
               </ValidationProvider>
+              <ValidationProvider name="Key" mode="eager" rules="required" v-slot="{errors}">
+                <v-text-field label="Project Key*" type="text" v-model="newProjectKey"
+                              :error-messages="errors"></v-text-field>
+              </ValidationProvider>
               <v-text-field label="Project Description" type="text" v-model="newProjectDesc"></v-text-field>
               <div v-if="projectCreateError" class="caption error--text">{{projectCreateError}}</div>
             </v-card-text>
@@ -82,19 +86,21 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue } from 'vue-property-decorator';
+import { Component, Vue, Watch } from 'vue-property-decorator';
 import { ValidationObserver } from 'vee-validate'
 import { readUserProfile, readAllProjects, readHasAdminAccess } from '@/store/main/getters';
 import { Role } from '@/enums';
 import { dispatchGetProjects, dispatchCreateProject } from '@/store/main/actions';
 import { ProjectPostDTO } from '@/generated-sources';
 import moment from "moment";
+import { toSlug } from '@/utils';
 
 @Component
 export default class ProjectsHome extends Vue {
 
   private openCreateDialog = false; // toggle for edit or create dialog
   private newProjectName = "";
+  private newProjectKey = "";
   private newProjectDesc = "";
   private creatorFilter = 0;
   private projectCreateError = "";
@@ -134,6 +140,7 @@ export default class ProjectsHome extends Vue {
     this.$refs.dialogForm.reset();
     this.openCreateDialog = false;
     this.newProjectName = "";
+    this.newProjectKey = "";
     this.newProjectDesc = "";
     this.projectCreateError = "";
   }
@@ -153,6 +160,11 @@ export default class ProjectsHome extends Vue {
         this.projectCreateError = e.message;
       }
     }
+  }
+
+  @Watch("newProjectName", { deep: true })
+  public syncProjectKeyWithName() {
+    this.newProjectKey= toSlug(this.newProjectName);
   }
 
 }
