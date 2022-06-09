@@ -103,7 +103,7 @@
 				<v-tab :to="{name: 'project-overview'}"><v-icon left>notes</v-icon>Overview</v-tab>
 				<v-tab :to="{name: 'project-datasets'}"><v-icon left>stacked_bar_chart</v-icon>Datasets</v-tab>
 				<v-tab :to="{name: 'project-models'}"><v-icon left>settings_suggest</v-icon>Models</v-tab>
-				<v-tab :to="{name: 'project-inspector', query: tempInspectorQuery}" v-show="showInspector"><v-icon left>model_training</v-icon>Inspector</v-tab>
+				<v-tab :to="{name: 'project-inspector', params: tempInspectorParams}" v-if="showInspector"><v-icon left>model_training</v-icon>Inspector</v-tab>
 				<v-tab :to="{name: 'project-feedbacks'}"><v-icon left small>mdi-comment-multiple-outline</v-icon>Feedback</v-tab>
 				<v-tab :to="{name: 'project-test-suites'}"><v-icon left small>mdi-list-status</v-icon>Test suites</v-tab>
 			</v-tabs>
@@ -146,7 +146,7 @@ export default class Project extends Vue {
 	newDescription = "";
 
 	showInspector = false;
-	tempInspectorQuery = {}
+	tempInspectorParams = {}
 
 	public async mounted() {
 		// make sure project is loaded first
@@ -158,9 +158,9 @@ export default class Project extends Vue {
 
 	@Watch("$route", { deep: true})
 	setInspector(to) {
-		if (to.path.endsWith('inspect')) {
+    if (to.name === 'project-inspector') {
 			this.showInspector = true
-			this.tempInspectorQuery = to.query
+			this.tempInspectorParams = to.params
 		}
 	}
 
