@@ -13,7 +13,6 @@ import javax.validation.constraints.NotNull;
 @NoArgsConstructor
 @UIModel
 public class ProjectPostDTO {
-    @NotNull
     @UINullable
     private Long id;
 
