@@ -10,7 +10,6 @@ alibi = { extras = ["shap"], version = "^0.7.0" }
 beautifulsoup4 = ">=4.11.1"
 cloudpickle = ">=2.1.0"
 eli5 = ">=0.13.0"
-giskard = "^1.0.0a1"
 great-expectations = ">=0.15.8"
 grpcio = ">=1.46.3"
 grpcio-status = ">=1.46.3"
