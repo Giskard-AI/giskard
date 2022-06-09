@@ -41,7 +41,30 @@
             <div class="caption">
               <div v-if="targetFeature">target: {{ targetFeature }}</div>
               <div v-if="model && model.threshold">threshold: {{ model.threshold }}</div>
-              <div v-if="actual">{{ labelsAndValues }}</div>
+              <div id='labels-container' v-if='actual && isClassification(predictionTask)'>
+                <v-simple-table dense height="200px" fixed-header>
+                  <template v-slot:default>
+                    <thead>
+                    <tr>
+                      <th scope='col' class="text-center">
+                        Index
+                      </th>
+                      <th scope='col' class="text-center">
+                        Label
+                      </th>
+                    </tr></thead>
+                    <tbody>
+                    <tr
+                      v-for="(label, key) in classificationLabels"
+                      :key="label"
+                    >
+                      <td>{{ key }}</td>
+                      <td>{{ label }}</td>
+                    </tr>
+                    </tbody>
+                  </template>
+                </v-simple-table>
+              </div>
             </div>
           </div>
         </v-col>
@@ -85,7 +108,7 @@ import {use} from "echarts/core";
 import {BarChart} from "echarts/charts";
 import {CanvasRenderer} from "echarts/renderers";
 import {GridComponent} from "echarts/components";
-import {ModelDTO, ModelType, PredictionDTO} from "@/generated-sources";
+import {ModelDTO, ModelType} from "@/generated-sources";
 import {isClassification} from "@/ml-utils";
 
 use([CanvasRenderer, BarChart, GridComponent]);
@@ -156,14 +179,6 @@ export default class PredictionResults extends Vue {
       if (isNaN(parseInt(this.actual.toString()))) return this.actual;
       else return this.classificationLabels[parseInt(this.actual.toString())];
     } else return "";
-  }
-
-  get labelsAndValues() {
-    if (this.classificationLabels)
-      return this.classificationLabels
-          .map((e, idx) => `${idx}: ${e}`)
-          .join(", ");
-    else return "";
   }
 
   /**
@@ -250,5 +265,14 @@ div.center-center {
 div.caption {
   font-size: 11px !important;
   line-height: 1rem !important;
+}
+
+#labels-container {
+  font-size: 10px;
+  margin-top: 20px;
+}
+
+.v-data-table tbody td {
+  font-size: 10px !important;
 }
 </style>
