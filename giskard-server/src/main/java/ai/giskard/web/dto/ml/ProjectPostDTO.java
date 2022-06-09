@@ -22,6 +22,5 @@ public class ProjectPostDTO {
     @NotNull
     @UINullable
     private String key;
-    @NotNull
     private String description;
 }
