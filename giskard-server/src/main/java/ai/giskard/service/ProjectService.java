@@ -2,11 +2,12 @@ package ai.giskard.service;
 
 import ai.giskard.domain.Project;
 import ai.giskard.domain.User;
+import ai.giskard.exception.EntityAlreadyExistsException;
 import ai.giskard.repository.ProjectRepository;
 import ai.giskard.repository.UserRepository;
 import ai.giskard.security.SecurityUtils;
-import ai.giskard.web.dto.ml.ProjectPostDTO;
 import ai.giskard.web.dto.mapper.GiskardMapper;
+import ai.giskard.web.dto.ml.ProjectPostDTO;
 import ai.giskard.web.rest.errors.Entity;
 import ai.giskard.web.rest.errors.EntityNotFoundException;
 import ai.giskard.web.rest.errors.NotInDatabaseException;
@@ -16,7 +17,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.validation.constraints.NotNull;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 
 import static ai.giskard.utils.GiskardStringUtils.toSlug;
@@ -58,7 +58,7 @@ public class ProjectService {
             projectKey = toSlug(project.getName());
         }
         projectRepository.findOneByKey(projectKey).ifPresent(p -> {
-            throw new IllegalArgumentException(String.format("Project with key %s already exists", projectKey));
+            throw new EntityAlreadyExistsException(String.format("Project with key %s already exists", projectKey));
         });
         project.setKey(projectKey);
         User owner = userRepository.getOneByLogin(ownerLogin);
