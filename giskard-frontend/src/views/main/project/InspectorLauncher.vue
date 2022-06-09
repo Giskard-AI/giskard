@@ -35,8 +35,6 @@
 <script lang="ts">
 import {Component, Emit, Prop, Vue} from 'vue-property-decorator';
 import OverlayLoader from '@/components/OverlayLoader.vue';
-import {readToken} from '@/store/main/getters';
-import {commitAddNotification} from '@/store/main/mutations';
 import {api} from '@/api';
 import {DatasetDTO, ModelDTO} from '@/generated-sources';
 
