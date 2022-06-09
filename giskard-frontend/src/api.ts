@@ -6,7 +6,7 @@ import Vue from "vue";
 import {
     AdminUserDTO,
     AppConfigDTO,
-    CodeTestCollection,
+    ApplicationConfigDTO,
     CreateFeedbackDTO,
     CreateFeedbackReplyDTO,
     DatasetDTO,
@@ -28,7 +28,8 @@ import {
     TestDTO,
     TestExecutionResultDTO,
     TestSuiteCreateDTO,
-    TestSuiteDTO, TestTemplatesResponse,
+    TestSuiteDTO,
+    TestTemplatesResponse,
     TokenAndPasswordVM,
     UpdateMeDTO,
     UpdateTestSuiteDTO,
@@ -336,5 +337,8 @@ export const api = {
     },
     async executeTestSuite(suiteId: number) {
         return apiV2.post<unknown, Array<TestExecutionResultDTO>>(`/testing/suites/execute`, {suiteId});
+    },
+    async getConfig() {
+        return apiV2.get<unknown, ApplicationConfigDTO>(`/config`);
     }
 };

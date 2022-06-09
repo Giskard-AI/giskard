@@ -24,11 +24,11 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue } from 'vue-property-decorator';
+import {Component, Vue} from 'vue-property-decorator';
 import NotificationsManager from '@/components/NotificationsManager.vue';
-import { readAppSettings, readIsLoggedIn } from '@/store/main/getters';
-import { dispatchCheckLoggedIn } from '@/store/main/actions';
-import { editor } from 'monaco-editor';
+import {readAppSettings, readIsLoggedIn} from '@/store/main/getters';
+import {dispatchCheckLoggedIn} from '@/store/main/actions';
+import {editor} from 'monaco-editor';
 import IEditorOptions = editor.IEditorOptions;
 
 @Component({
@@ -46,7 +46,7 @@ export default class App extends Vue {
     const appSettings = await readAppSettings(this.$store);
 
     let roles = Object.assign({}, ...appSettings!.roles.map((x) => ({[x.id]: x.name})));
-    Vue.filter('roleName', function(value) {
+    Vue.filter('roleName', function (value) {
       if (value in roles) {
         return roles[value];
       } else {
