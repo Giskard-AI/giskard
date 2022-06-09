@@ -47,14 +47,18 @@
                     <thead>
                     <tr>
                       <th scope='col' class="text-center">
+                        Index
+                      </th>
+                      <th scope='col' class="text-center">
                         Labels
                       </th>
                     </tr></thead>
                     <tbody>
                     <tr
-                      v-for="label in classificationLabels.values()"
+                      v-for="(label, key) in classificationLabels"
                       :key="label"
                     >
+                      <td>{{ key }}</td>
                       <td>{{ label }}</td>
                     </tr>
                     </tbody>
@@ -270,6 +274,5 @@ div.caption {
 
 .v-data-table tbody td {
   font-size: 10px !important;
-
 }
 </style>
