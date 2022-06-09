@@ -7,7 +7,7 @@
             <v-row align-content="center" justify="center">
               <div>
                 <div class="d-flex justify-center mb-6">
-                  <img src="@/assets/logo_full.svg" alt="logo" width="240">
+                  <img src="@/assets/logo_v2_full.png" alt="logo" width="240">
                 </div>
                 <router-view></router-view>
               </div>

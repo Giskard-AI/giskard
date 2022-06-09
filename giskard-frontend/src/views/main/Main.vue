@@ -13,8 +13,8 @@
         <v-list subheader class="align-center">
           <v-list-item to="/">
             <v-list-item-content>
-              <div>
-                <img src="@/assets/favicon-small.png" alt="Giskard icon"/>
+              <div class="align-center text-center">
+                <img src="@/assets/logo_v2_white.png" alt="Giskard icon" width="45px"/>
               </div>
             </v-list-item-content>
           </v-list-item>
