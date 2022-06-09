@@ -50,7 +50,7 @@
                         Index
                       </th>
                       <th scope='col' class="text-center">
-                        Labels
+                        Label
                       </th>
                     </tr></thead>
                     <tbody>
