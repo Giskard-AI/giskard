@@ -13,7 +13,8 @@ export const getUserFullDisplayName = (user: UserDTO): string => {
 export const toSlug = (str: string): string =>{
    return str.toLowerCase()
         .trim()
-        .replace(/\s+/g, '-')           // Replace spaces with -
-        .replace(/[^\w\-]+/g, '')       // Remove all non-word chars
-        .replace(/\-\-+/g, '-');        // Replace multiple - with single -
+        .replace(/[^\w-]+/g, '-')           // Replace spaces with -
+        .replace(/[\s]+/g, '')       // Remove all non-word chars
+        .replace(/(^-|-$)+/g, '')       // Remove pipe
+        .replace(/(-{2,})+/g, '-');        // Replace multiple - with single -
 }
