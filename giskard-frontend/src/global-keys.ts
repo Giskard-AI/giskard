@@ -3,7 +3,7 @@ import {getLocalToken} from '@/utils';
 import {commitAddNotification} from '@/store/main/mutations';
 import store from '@/store';
 
-function copyToClipboard(textToCopy) {
+export function copyToClipboard(textToCopy) {
     // navigator clipboard api needs a secure context (https)
     if (navigator.clipboard && window.isSecureContext) {
         // navigator clipboard api method'
