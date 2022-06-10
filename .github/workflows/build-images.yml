@@ -62,6 +62,6 @@ jobs:
         aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin public.ecr.aws/giskard
         docker-compose -f docker-compose.yml -f docker-compose.dev.yml push
 
-    - name: Remove containers and volumes
-      run: docker-compose -f docker-stack.yml down -v --remove-orphans
+#    - name: Remove containers and volumes
+#      run: docker-compose -f docker-stack.yml down -v --remove-orphans
 
