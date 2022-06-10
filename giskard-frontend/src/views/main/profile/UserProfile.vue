@@ -96,7 +96,7 @@
             </v-card-title>
             <v-card-text>
               <v-simple-table>
-                <table width="100%">
+                <table class="w100">
                   <tr>
                     <td>Giskard version</td>
                     <td>{{ appConfig.giskardVersion }}</td>
