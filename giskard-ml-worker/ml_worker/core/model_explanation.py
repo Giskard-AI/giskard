@@ -47,7 +47,7 @@ def background_example(df: pd.DataFrame, input_types: Dict[str, str]) -> pd.Data
     example = df.mode(dropna=False).iloc[[0]]  # si plusieurs modes, on prend le premier
     example.fillna("", inplace=True)
     median = df.median()
-    num_columns = [key for key in input_types.keys() if (input_types[key] == "numeric" and key in list(df.columns))]
+    num_columns = [key for key in list(df.columns) if input_types[key] == "numeric"]
     for column in num_columns:
         example[column] = median[column]
     return example
