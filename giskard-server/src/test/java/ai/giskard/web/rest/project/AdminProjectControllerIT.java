@@ -128,12 +128,12 @@ class AdminProjectControllerIT {
     void create() throws Exception {
         ProjectPostDTO projectDTO = new ProjectPostDTO();
         projectDTO.setName("createdProject");
-        projectDTO.setKey("keyProject");
+        projectDTO.setKey("key_project");
         restUserMockMvc.perform(post("/api/v2/project").contentType(MediaType.APPLICATION_JSON)
                 .content(new ObjectMapper().writeValueAsString(projectDTO)))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.name").value("createdProject"))
-            .andExpect(jsonPath("$.key").value("keyproject")); // Slug version
+            .andExpect(jsonPath("$.key").value("key_project")); // Slug version
         assertThat(projectRepository.findOneByName("createdProject")).isPresent();
     }
 

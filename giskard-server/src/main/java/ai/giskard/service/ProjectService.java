@@ -18,8 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.validation.constraints.NotNull;
 import java.util.List;
 import java.util.Set;
-
-import static ai.giskard.utils.GiskardStringUtils.toSlug;
+import java.util.regex.Pattern;
 
 @Service
 @Transactional
@@ -29,6 +28,8 @@ public class ProjectService {
     final UserRepository userRepository;
     final ProjectRepository projectRepository;
     final GiskardMapper giskardMapper;
+
+    public static final Pattern PROJECT_KEY_PATTERN = Pattern.compile("^[a-z\\d_]+$");
 
     /**
      * Update project
@@ -43,6 +44,16 @@ public class ProjectService {
         return projectRepository.save(project);
     }
 
+    private static boolean isProjectKeyValid(String projectKey) {
+        return PROJECT_KEY_PATTERN.matcher(projectKey).matches();
+    }
+
+    private void validateProjectKey(String projectKey) {
+        if (!isProjectKeyValid(projectKey)) {
+            throw new IllegalArgumentException(String.format("Project key %s is not valid. Project keys can contain lower case latin characters, digits and underscores", projectKey));
+        }
+    }
+
     /**
      * Create project
      *
@@ -51,16 +62,11 @@ public class ProjectService {
      * @return project saved
      */
     public Project create(Project project, String ownerLogin) {
-        String projectKey;
-        if (project.getKey() != null) {
-            projectKey = toSlug(project.getKey());
-        } else {
-            projectKey = toSlug(project.getName());
-        }
+        String projectKey = project.getKey();
+        validateProjectKey(projectKey);
         projectRepository.findOneByKey(projectKey).ifPresent(p -> {
             throw new EntityAlreadyExistsException(String.format("Project with key %s already exists", projectKey));
         });
-        project.setKey(projectKey);
         User owner = userRepository.getOneByLogin(ownerLogin);
         project.setOwner(owner);
         return projectRepository.save(project);
