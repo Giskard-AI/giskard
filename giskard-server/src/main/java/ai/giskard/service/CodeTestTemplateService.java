@@ -6,7 +6,6 @@ import ai.giskard.web.dto.TestTemplatesResponse;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
-import com.google.common.collect.Maps;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,7 +13,6 @@ import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.io.support.ResourcePatternUtils;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.PostConstruct;
 import java.io.IOException;
@@ -62,18 +60,17 @@ public class CodeTestTemplateService {
         }
     }
 
-    @Transactional
     public TestTemplatesResponse getTemplates(Long suiteId) {
         TestSuite suite = suiteRepository.getById(suiteId);
-        return new TestTemplatesResponse(CODE_TEST_TEMPLATES,
-            Maps.transformValues(TESTS_BY_ID, template -> doesTestTemplateSuiteTestSuite(suite, template)));
+        Map<String, Boolean> testAvailability = new HashMap<>();
+        TESTS_BY_ID.forEach((name, template) -> testAvailability.put(name, doesTestTemplateSuiteTestSuite(suite, template)));
+        return new TestTemplatesResponse(CODE_TEST_TEMPLATES, testAvailability);
     }
 
     public Collection<CodeTestTemplate> getAllTemplates() {
         return TESTS_BY_ID.values();
     }
 
-    @Transactional
     public boolean doesTestTemplateSuiteTestSuite(TestSuite suite, CodeTestTemplate template) {
         ModelType modelType = suite.getModel().getModelType();
         Dataset actualDS = suite.getActualDataset();
