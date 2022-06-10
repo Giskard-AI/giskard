@@ -261,10 +261,12 @@ public class ExceptionTranslator implements ProblemHandling, SecurityAdviceTrait
     }
 
     @ExceptionHandler
-    public ResponseEntity<Problem> handleEntityAlreadyExistsException(
-        EntityAlreadyExistsException ex,
-        NativeWebRequest request
-    ) {
+    public ResponseEntity<Problem> handleEntityAlreadyExistsException(EntityAlreadyExistsException ex, NativeWebRequest request) {
         return create(Status.CONFLICT, ex, request);
+    }
+
+    @ExceptionHandler
+    public ResponseEntity<Problem> handleIllegalArgumentException(IllegalArgumentException ex, NativeWebRequest request) {
+        return create(Status.BAD_REQUEST, ex, request);
     }
 }

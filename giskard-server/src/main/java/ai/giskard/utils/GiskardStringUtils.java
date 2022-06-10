@@ -12,11 +12,11 @@ public class GiskardStringUtils {
     public static final Pattern MULTIDASH = Pattern.compile("-{2,}");
 
     public static String toSlug(String input) {
-        String nowhitespace = WHITESPACE.matcher(input).replaceAll("-");
+        String nowhitespace = WHITESPACE.matcher(input).replaceAll("_");
         String normalized = Normalizer.normalize(nowhitespace, Normalizer.Form.NFD);
         String slug = NONLATIN.matcher(normalized).replaceAll("");
         slug = EDGESDHASHES.matcher(slug).replaceAll("");
-        slug = MULTIDASH.matcher(slug).replaceAll("-");
+        slug = MULTIDASH.matcher(slug).replaceAll("_");
         return slug.toLowerCase(Locale.ENGLISH);
     }
 }
