@@ -136,7 +136,7 @@ class UserServiceIT {
 
         userRepository.delete(user);
     }
-    
+
     @Test
     @Transactional
     void assertThatNotActivatedUsersWithNullActivationKeyCreatedBefore3DaysAreNotDeleted() {

@@ -5,6 +5,10 @@ $color-pack: false;
 @import "./font-awesome/scss/solid.scss";
 @import "./font-awesome/scss/brands.scss";
 
+.w100 {
+  width: 100%;
+  max-width: 100%;
+}
 
 .v-data-table.row-pointer tr {
   cursor: pointer;
