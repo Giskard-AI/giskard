@@ -81,8 +81,6 @@
 <script lang="ts">
 import {Component, Prop, Vue} from "vue-property-decorator";
 import {api} from "@/api";
-import {readToken} from "@/store/main/getters";
-import {commitAddNotification} from '@/store/main/mutations';
 import Inspector from "./Inspector.vue";
 import MessageReply from "@/components/MessageReply.vue";
 import {FeedbackDTO} from "@/generated-sources";
@@ -129,11 +127,6 @@ export default class FeedbackDetail extends Vue {
 </script>
 
 <style lang="scss" scoped>
-.w100 {
-  width: 100%;
-  max-width: 100%;
-}
-
 .metadata {
   .caption {
     margin-bottom: 0;

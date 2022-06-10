@@ -1,8 +1,7 @@
-import { AxiosResponse } from 'axios';
-import { State } from './store/state';
-import { Store } from 'vuex';
-import { commitAddNotification, commitRemoveNotification } from '@/store/main/mutations';
-import { readToken } from "@/store/main/getters";
+import {AxiosResponse} from 'axios';
+import {State} from './store/state';
+import {Store} from 'vuex';
+import {commitAddNotification, commitRemoveNotification} from '@/store/main/mutations';
 
 export function dialogDownloadFile(response: AxiosResponse, fileName: string) {
   const fileURL = window.URL.createObjectURL(new Blob([response.data]));

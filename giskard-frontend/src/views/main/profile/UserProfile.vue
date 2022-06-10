@@ -96,7 +96,7 @@
             </v-card-title>
             <v-card-text>
               <v-simple-table>
-                <table width="100%">
+                <table class="w100">
                   <tr>
                     <td>Giskard version</td>
                     <td>{{ appConfig.giskardVersion }}</td>
@@ -169,8 +169,7 @@ export default class UserProfile extends Vue {
         dispatchUpdateUserProfile(this.$store, updatedProfile).then(() => {
           this.editModeToggle = false;
           this.resetFormData();
-        }).catch(() => {
-        })
+        });
       } else {
         this.editModeToggle = false;
         this.resetFormData();
