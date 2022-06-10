@@ -60,9 +60,9 @@ public class InitService {
     String[] mockKeys = Arrays.stream(AuthoritiesConstants.AUTHORITIES).map(key -> key.replace("ROLE_", "")).toArray(String[]::new);
     public Map<String, String> users = Arrays.stream(mockKeys).collect(Collectors.toMap(String::toLowerCase, String::toLowerCase));
 
-    private final static Map<String, FeatureType> germanCreditFeatureTypes = new HashMap<>();
-    private final static Map<String, FeatureType> enronFeatureTypes = new HashMap<>();
-    private final static Map<String, FeatureType> zillowFeatureTypes = new HashMap<>();
+    private static final Map<String, FeatureType> germanCreditFeatureTypes = new HashMap<>();
+    private static final Map<String, FeatureType> enronFeatureTypes = new HashMap<>();
+    private static final Map<String, FeatureType> zillowFeatureTypes = new HashMap<>();
 
     static {
         germanCreditFeatureTypes.put("account_check_status", FeatureType.CATEGORY);
@@ -120,59 +120,63 @@ public class InitService {
         zillowFeatureTypes.put("OverallQual", FeatureType.CATEGORY);
     }
 
-    private final Map<String, ProjectConfig> projects = Map.of(
-        "zillow", new ProjectConfig("Zillow price prediction", "aicreator",
-            ModelUploadParamsDTO.builder().modelType("regression")
-                .projectKey("zillow")
-                .name("Zillow regression")
-                .language(ModelLanguage.PYTHON)
-                .languageVersion("3.7")
-                .build(),
-            DataUploadParamsDTO.builder()
-                .projectKey("zillow")
-                .name("Zillow data")
-                .featureTypes(zillowFeatureTypes)
-                .target("SalePrice")
-                .build()
-        ),
-        "enron", new ProjectConfig("Enron", "aitester",
-            ModelUploadParamsDTO.builder().modelType("classification")
-                .classificationLabels(List.of("CALIFORNIA CRISIS", "INFLUENCE", "INTERNAL", "REGULATION"))
-                .projectKey("enron")
-                .name("Enron model")
-                .language(ModelLanguage.PYTHON)
-                .languageVersion("3.7")
-                .build(),
-            DataUploadParamsDTO.builder()
-                .name("Enron data")
-                .featureTypes(enronFeatureTypes)
-                .projectKey("enron")
-                .target("Target")
-                .build()
-        ),
-        "credit", new ProjectConfig("German credit scoring", "admin",
-            ModelUploadParamsDTO.builder().modelType("classification")
-                .classificationLabels(List.of("Default", "Not Default"))
-                .projectKey("credit")
-                .name("German credit score")
-                .language(ModelLanguage.PYTHON)
-                .languageVersion("3.7")
-                .build(),
-            DataUploadParamsDTO.builder()
-                .name("German Credit data")
-                .projectKey("credit")
-                .target("default")
-                .featureTypes(germanCreditFeatureTypes)
-                .build()
-        )
-    );
+    private final Map<String, ProjectConfig> projects = createProjectConfigMap();
+
+    private Map<String, ProjectConfig> createProjectConfigMap() {
+        String zillowProjectKey = "zillow";
+        String enronProjectKey = "enron";
+        String germanCreditProjectKey = "credit";
+
+        return Map.of(
+            zillowProjectKey, new ProjectConfig("Zillow price prediction", "aicreator",
+                ModelUploadParamsDTO.builder().modelType("regression")
+                    .projectKey(zillowProjectKey)
+                    .name("Zillow regression")
+                    .language(ModelLanguage.PYTHON)
+                    .languageVersion("3.7")
+                    .build(),
+                DataUploadParamsDTO.builder()
+                    .projectKey(zillowProjectKey)
+                    .name("Zillow data")
+                    .featureTypes(zillowFeatureTypes)
+                    .target("SalePrice")
+                    .build()
+            ),
+            enronProjectKey, new ProjectConfig("Enron", "aitester",
+                ModelUploadParamsDTO.builder().modelType("classification")
+                    .classificationLabels(List.of("CALIFORNIA CRISIS", "INFLUENCE", "INTERNAL", "REGULATION"))
+                    .projectKey(enronProjectKey)
+                    .name("Enron model")
+                    .language(ModelLanguage.PYTHON)
+                    .languageVersion("3.7")
+                    .build(),
+                DataUploadParamsDTO.builder()
+                    .name("Enron data")
+                    .featureTypes(enronFeatureTypes)
+                    .projectKey(enronProjectKey)
+                    .target("Target")
+                    .build()
+            ),
+            germanCreditProjectKey, new ProjectConfig("German credit scoring", "admin",
+                ModelUploadParamsDTO.builder().modelType("classification")
+                    .classificationLabels(List.of("Default", "Not Default"))
+                    .projectKey(germanCreditProjectKey)
+                    .name("German credit score")
+                    .language(ModelLanguage.PYTHON)
+                    .languageVersion("3.7")
+                    .build(),
+                DataUploadParamsDTO.builder()
+                    .name("German Credit data")
+                    .projectKey(germanCreditProjectKey)
+                    .target("default")
+                    .featureTypes(germanCreditFeatureTypes)
+                    .build()
+            )
+        );
+    }
 
     public String getUserName(String key) {
         return users.get(key);
-    }
-
-    public String getProjectName(String key) {
-        return projects.get(key).name;
     }
 
     public String getProjectByCreatorLogin(String login) {
