@@ -169,8 +169,7 @@ export default class UserProfile extends Vue {
         dispatchUpdateUserProfile(this.$store, updatedProfile).then(() => {
           this.editModeToggle = false;
           this.resetFormData();
-        }).catch(() => {
-        })
+        });
       } else {
         this.editModeToggle = false;
         this.resetFormData();
