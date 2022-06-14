@@ -134,6 +134,7 @@ public class InitService {
                     .name("Zillow regression")
                     .language(ModelLanguage.PYTHON)
                     .languageVersion("3.7")
+                    .featureNames(zillowFeatureTypes.keySet().stream().toList())
                     .build(),
                 DataUploadParamsDTO.builder()
                     .projectKey(zillowProjectKey)
@@ -149,6 +150,7 @@ public class InitService {
                     .name("Enron model")
                     .language(ModelLanguage.PYTHON)
                     .languageVersion("3.7")
+                    .featureNames(enronFeatureTypes.keySet().stream().toList())
                     .build(),
                 DataUploadParamsDTO.builder()
                     .name("Enron data")
@@ -163,6 +165,7 @@ public class InitService {
                     .projectKey(germanCreditProjectKey)
                     .name("German credit score")
                     .language(ModelLanguage.PYTHON)
+                    .featureNames(germanCreditFeatureTypes.keySet().stream().toList())
                     .languageVersion("3.7")
                     .build(),
                 DataUploadParamsDTO.builder()
