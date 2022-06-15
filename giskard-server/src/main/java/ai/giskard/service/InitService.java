@@ -26,6 +26,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
@@ -33,6 +34,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+
+import static java.util.Arrays.*;
 
 @Service
 @RequiredArgsConstructor
@@ -57,12 +60,13 @@ public class InitService {
                                  DataUploadParamsDTO datasetParams) {
     }
 
-    String[] mockKeys = Arrays.stream(AuthoritiesConstants.AUTHORITIES).map(key -> key.replace("ROLE_", "")).toArray(String[]::new);
-    public Map<String, String> users = Arrays.stream(mockKeys).collect(Collectors.toMap(String::toLowerCase, String::toLowerCase));
+    String[] mockKeys = stream(AuthoritiesConstants.AUTHORITIES).map(key -> key.replace("ROLE_", "")).toArray(String[]::new);
+    public Map<String, String> users = stream(mockKeys).collect(Collectors.toMap(String::toLowerCase, String::toLowerCase));
 
     private static final Map<String, FeatureType> germanCreditFeatureTypes = new HashMap<>();
     private static final Map<String, FeatureType> enronFeatureTypes = new HashMap<>();
     private static final Map<String, FeatureType> zillowFeatureTypes = new HashMap<>();
+    private String projectDir= "classpath:demo_projects/";
 
     static {
         germanCreditFeatureTypes.put("account_check_status", FeatureType.CATEGORY);
@@ -165,8 +169,8 @@ public class InitService {
                     .projectKey(germanCreditProjectKey)
                     .name("German credit score")
                     .language(ModelLanguage.PYTHON)
-                    .featureNames(germanCreditFeatureTypes.keySet().stream().toList())
                     .languageVersion("3.7")
+                    .featureNames(germanCreditFeatureTypes.keySet().stream().toList())
                     .build(),
                 DataUploadParamsDTO.builder()
                     .name("German Credit data")
@@ -186,7 +190,6 @@ public class InitService {
         return projects.entrySet().stream().filter(e -> e.getValue().creator.equals(login)).findFirst().orElseThrow().getValue().name;
     }
 
-
     /**
      * Initializing first authorities, mock users, and mock projects
      */
@@ -203,7 +206,7 @@ public class InitService {
      * Initialising users with different authorities
      */
     public void initUsers() {
-        Arrays.stream(mockKeys).forEach(key -> {
+        stream(mockKeys).forEach(key -> {
             if (userRepository.findOneByLogin(key.toLowerCase()).isEmpty()) {
                 saveUser(key, "ROLE_" + key);
             }
@@ -214,7 +217,7 @@ public class InitService {
      * Initiating authorities with AuthoritiesConstants values
      */
     public void initAuthorities() {
-        Arrays.stream(AuthoritiesConstants.AUTHORITIES).forEach(authName -> {
+        stream(AuthoritiesConstants.AUTHORITIES).forEach(authName -> {
             if (roleRepository.findByName(authName).isPresent()) {
                 logger.info("Authority {} already exists", authName);
                 return;
@@ -251,7 +254,13 @@ public class InitService {
      * Initialized with default projects
      */
     public void initProjects() {
-        projects.forEach((key, config) -> saveProject(key, config.creator));
+        projects.forEach((key, config) -> {
+            try {
+                saveProject(key, config.creator);
+            } catch (IOException e) {
+                logger.error("Project with key %s not saved".formatted(key));
+            }
+        });
     }
 
     /**
@@ -260,7 +269,7 @@ public class InitService {
      * @param projectKey    project key used to easily identify the project
      * @param ownerUserName login of the owner
      */
-    private void saveProject(String projectKey, String ownerUserName) {
+    private void saveProject(String projectKey, String ownerUserName) throws IOException {
         String projectName = projects.get(projectKey).name;
         String ownerLogin = ownerUserName.toLowerCase();
         User owner = userRepository.getOneByLogin(ownerLogin);
@@ -269,24 +278,32 @@ public class InitService {
         if (projectRepository.findOneByName(projectName).isEmpty()) {
             projectService.create(project, ownerLogin);
             projectRepository.save(project);
-            uploadModel(projectKey);
-            uploadDataframe(projectKey);
+            File[] models = getFileNames(projectKey, "models");
+            stream(models).forEach(e -> uploadModel(projectKey, e.getName()));
+            File[] datasets = getFileNames(projectKey, "datasets");
+            stream(datasets).forEach(e -> uploadDataframe(projectKey, e.getName()));
         } else {
             logger.info(String.format("Project with name %s already exists", projectName));
         }
     }
 
-    private void uploadDataframe(String projectKey) {
+    private File[] getFileNames(String projectKey, String type) throws IOException {
+        Resource directory = resourceLoader.getResource(this.projectDir + projectKey + "/" + type);
+        return directory.getFile().listFiles();
+    }
+
+    private void uploadDataframe(String projectKey, String fileName) {
         ProjectConfig config = projects.get(projectKey);
         Project project = projectRepository.getOneByKey(projectKey);
-        Resource dsResource = resourceLoader.getResource("classpath:demo_projects/" + projectKey + "/dataset.csv.zst");
+        Resource dsResource = resourceLoader.getResource( this.projectDir+ projectKey + "/datasets/" + fileName);
         try (InputStream dsStream = dsResource.getInputStream()) {
             DataUploadParamsDTO dsParams = config.datasetParams;
+            String target=fileName.contains("prod")?null:dsParams.getTarget();
             fileUploadService.uploadDataset(
                 project,
-                dsParams.getName(),
+                dsParams.getName()+ " "+fileName.substring(0,fileName.length()-4),
                 dsParams.getFeatureTypes(),
-                dsParams.getTarget(),
+                target,
                 dsStream
             );
         } catch (IOException e) {
@@ -295,9 +312,10 @@ public class InitService {
         }
     }
 
-    private void uploadModel(String projectKey) {
-        Resource modelResource = resourceLoader.getResource("classpath:demo_projects/" + projectKey + "/model.pkl.zst");
-        Resource requirementsResource = resourceLoader.getResource("classpath:demo_projects/" + projectKey + "/requirements.txt");
+    private void uploadModel(String projectKey, String directory) {
+        String pathToDir = this.projectDir + projectKey + "/models/" + directory;
+        Resource modelResource = resourceLoader.getResource(pathToDir + "/model.pkl.zst");
+        Resource requirementsResource = resourceLoader.getResource(pathToDir + "/requirements.txt");
         try (InputStream modelStream = modelResource.getInputStream()) {
             try (InputStream requirementsStream = requirementsResource.getInputStream()) {
                 fileUploadService.uploadModel(projects.get(projectKey).modelParams, modelStream, requirementsStream);
