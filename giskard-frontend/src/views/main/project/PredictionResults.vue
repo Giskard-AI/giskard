@@ -41,30 +41,6 @@
             <div class="caption">
               <div v-if="targetFeature">target: {{ targetFeature }}</div>
               <div v-if="model && model.threshold">threshold: {{ model.threshold }}</div>
-              <div id='labels-container' v-if='actual && isClassification(predictionTask)'>
-                <v-simple-table dense height="200px" fixed-header>
-                  <template v-slot:default>
-                    <thead>
-                    <tr>
-                      <th scope='col' class="text-center">
-                        Index
-                      </th>
-                      <th scope='col' class="text-center">
-                        Label
-                      </th>
-                    </tr></thead>
-                    <tbody>
-                    <tr
-                      v-for="(label, key) in classificationLabels"
-                      :key="label"
-                    >
-                      <td>{{ key }}</td>
-                      <td>{{ label }}</td>
-                    </tr>
-                    </tbody>
-                  </template>
-                </v-simple-table>
-              </div>
             </div>
           </div>
         </v-col>
