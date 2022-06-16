@@ -21,6 +21,7 @@ git clone https://github.com/Giskard-AI/giskard.git
 cd giskard
 docker-compose up -d
 ```
+<div style="position: relative; padding-bottom: calc(56.25% + 41px); height: 0;"><iframe src="https://demo.arcade.software/zPfpXFt8lRm5XDkaWM85?embed" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"></iframe></div>
 
 After the application is started you can access at:
 
