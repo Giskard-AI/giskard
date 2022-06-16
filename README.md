@@ -1,3 +1,8 @@
+<iframe
+  src="https://codepen.io/team/codepen/embed/preview/PNaGbb"
+  style="width:100%; height:300px;"
+></iframe>
+
 <p align="center">
   <img width="300" alt="giskardlogo" src="giskard-frontend/src/assets/logo_full.svg">
 </p>
