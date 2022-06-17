@@ -4,6 +4,7 @@ from generated.ml_worker_pb2 import SingleTestResult
 from ml_worker.core.giskard_dataset import GiskardDataset
 from ml_worker.core.model import GiskardModel
 from ml_worker.testing.abstract_test_collection import AbstractTestCollection
+from ml_worker.testing.utils import save_df, compress
 
 
 class HeuristicTests(AbstractTestCollection):
@@ -45,13 +46,18 @@ class HeuristicTests(AbstractTestCollection):
         assert classification_label in model.classification_labels, \
             f'"{classification_label}" is not part of model labels: {",".join(model.classification_labels)}'
 
-        passed_slice = actual_slice.df.loc[prediction_results == classification_label]
+        passed_idx = actual_slice.df.loc[prediction_results == classification_label].index.values
+        failed_idx = actual_slice.loc[~actual_slice.index.isin(passed_idx)].index.values
 
-        passed_ratio = len(passed_slice) / len(actual_slice)
+        failed_df = actual_slice.df.loc[failed_idx]
+
+        passed_ratio = len(passed_idx) / len(actual_slice)
+        output_df_sample = compress(save_df(failed_df))
         return self.save_results(SingleTestResult(
             actual_slices_size=[len(actual_slice)],
             metric=passed_ratio,
-            passed=passed_ratio > threshold
+            passed=passed_ratio > threshold,
+            output_df=output_df_sample
         ))
 
     def test_output_in_range(self,
@@ -109,23 +115,29 @@ class HeuristicTests(AbstractTestCollection):
             results_df["output"] = prediction_results.raw_prediction
 
         elif model.model_type == "classification":
-            results_df["output"] = prediction_results.all_predictions[classification_label]
             assert classification_label in model.classification_labels, \
                 f'"{classification_label}" is not part of model labels: {",".join(model.classification_labels)}'
+            results_df["output"] = prediction_results.all_predictions[classification_label]
 
         else:
             raise ValueError(
                 f"Prediction task is not supported: {model.model_type}"
             )
 
-        matching_prediction_mask = \
-            (results_df["output"] <= max_range) & \
+        # matching_prediction_mask = \
+        #     (results_df["output"] <= max_range) & \
             (results_df["output"] >= min_range)
+        passed_idx = actual_slice.df.loc[(results_df["output"] <= max_range) & (results_df["output"] >= min_range)].index.values
+        #expected = actual_slice.df[matching_prediction_mask]
+        failed_idx = actual_slice.loc[~actual_slice.index.isin(passed_idx)].index.values
+        failed_df = actual_slice.df.loc[failed_idx]
 
-        expected = actual_slice.df[matching_prediction_mask]
         passed_ratio = len(expected) / len(actual_slice)
+        output_df_sample = compress(save_df(failed_df))
+
         return self.save_results(SingleTestResult(
             actual_slices_size=[len(actual_slice)],
             metric=passed_ratio,
-            passed=passed_ratio >= threshold
+            passed=passed_ratio >= threshold,
+            output_df=output_df_sample
         ))
