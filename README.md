@@ -27,19 +27,30 @@ http://localhost:19000
 
 > login / password: **admin** / **admin**
 
-<h3>Collect feedback on your model<h3>
+<h3>Collect feedback on your model</h3>
   
   <a align='center' href="https://app.arcade.software/share/zPfpXFt8lRm5XDkaWM85">
          <img width='600' alt="Interactive demo" src="frontend/src/assets/feedback.png">
       </a>
 <br/>
+  <br/>
+  <br/>
   
- <h3>Create Tests from the feedback<h3>
+  * Collaborate with instant feedback.<br/>
+  * Improve ML models with business stakeholders in no time.
+  
+ <h3>Create Tests from the feedback</h3>
   
   <a href="https://app.arcade.software/share/zPfpXFt8lRm5XDkaWM85">
          <img width='600' alt="Interactive demo" src="frontend/src/assets/test.png">
       </a>
 <br/>
+   <br/>
+   <br/>
+  
+
+  * Get automated test suites in seconds.</br>
+  * Exhaustive test suites, backed by  State-of-the-Art ML research.
   
   
  
