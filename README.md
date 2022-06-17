@@ -53,8 +53,21 @@ http://localhost:19000
   * Exhaustive test suites, backed by  State-of-the-Art ML research.
   
   
- 
+ <h3>Workflow</h3>
+  
+  <a align='center' href="https://giskard.ai/product">
+         <img width='600' alt="Interactive demo" src="frontend/src/assets/workflow.png">
+      </a>
+<br/>
+  <br/>
+  <br/>
+  
+  * **Upload** - Easy upload for any Python model: PyTorch, TensorFlow, Transformers, sklearn, etc.
+  * **Validate** - Collaborate with business stakeholders with direct feedback & discussion
+  * **Test** - Exhaustive test suites, backed by  State-of-the-Art ML research.
+  * **Automate** - Protect your ML models against the risk of regressions, drift and bias.
 
+<br/>
 <h3>Requirements</h3>
 
 - [docker](https://docs.docker.com/get-docker/) 
