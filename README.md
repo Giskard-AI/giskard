@@ -1,18 +1,18 @@
 <p align="center">
   <img width="300" alt="giskardlogo" src="frontend/src/assets/Logo_full_darkgreen.png">
 </p>
-<h3 align="center">Quality Assurance for AI</h3>
+<h1 align="center" weight='300'>Open-Source CI/CD platform for ML teams. Deliver ML products, better & faster. </h1>
 <br />
 
-#### Giskard is an open-source quality assurance platform for AI models.
+**Collaborate faster** with **feedback** from business stakeholders.<br/>
+**Deploy automated tests** to eliminate regressions, errors & biases.
 
-- **Inspect** ML models visually from your Python notebook 📗
-- **Review** ML models collaboratively to get feedback on potential errors 🧐
-- **Test** ML models automatically for a safe deployment to production ⛑
 <br />
-<p align="center">
-    <img src="readme/inspect.png" alt="Administration panel" />
-</p>
+
+<a align='center' href="https://app.arcade.software/share/zPfpXFt8lRm5XDkaWM85">
+         <img alt="Interactive demo" src="readme/demo.png"
+         width=150" height="70">
+      </a>
 <br/>
 <h3 align="center">Installation</h3>
 
