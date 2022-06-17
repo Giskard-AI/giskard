@@ -10,8 +10,7 @@
 <br />
 
 <a align='center' href="https://app.arcade.software/share/zPfpXFt8lRm5XDkaWM85">
-         <img alt="Interactive demo" src="readme/demo.png"
-         width=150" height="70">
+         <img alt="Interactive demo" src="frontend/src/assets/demo.png">
       </a>
 <br/>
 <h3 align="center">Installation</h3>
@@ -21,13 +20,29 @@ git clone https://github.com/Giskard-AI/giskard.git
 cd giskard
 docker-compose up -d
 ```
-<div style="position: relative; padding-bottom: calc(56.25% + 41px); height: 0;"><iframe src="https://demo.arcade.software/zPfpXFt8lRm5XDkaWM85?embed" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"></iframe></div>
 
 After the application is started you can access at:
 
 http://localhost:19000
 
 > login / password: **admin** / **admin**
+
+<h3 align='center'>Collect feedback on your model<h3>
+  
+  <a align='center' href="https://app.arcade.software/share/zPfpXFt8lRm5XDkaWM85">
+         <img alt="Interactive demo" src="frontend/src/assets/feedback.png">
+      </a>
+<br/>
+  
+ <h3 align='center'>Create Tests from the feedback<h3>
+  
+  <a align='center' href="https://app.arcade.software/share/zPfpXFt8lRm5XDkaWM85">
+         <img alt="Interactive demo" src="frontend/src/assets/test.png">
+      </a>
+<br/>
+  
+  
+ 
 
 <h3 align="center">Requirements</h3>
 
@@ -48,3 +63,7 @@ Find out more about Giskard by reading [our docs](https://docs.giskard.ai/)
 <h3 align="center">Community</h3>
 
 Join [our community](https://discord.com/invite/ABvfpbu69R) on Discord to get support and leave feedback
+<a align='center' href="https://discord.com/invite/ABvfpbu69R">
+         <img alt="Interactive demo" src="frontend/src/assets/discord.png">
+      </a>
+<br/>
