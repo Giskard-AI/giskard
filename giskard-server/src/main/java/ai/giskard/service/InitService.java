@@ -21,21 +21,18 @@ import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
+import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
-import static java.util.Arrays.*;
+import static java.util.Arrays.stream;
 
 @Service
 @RequiredArgsConstructor
@@ -66,7 +63,8 @@ public class InitService {
     private static final Map<String, FeatureType> germanCreditFeatureTypes = new HashMap<>();
     private static final Map<String, FeatureType> enronFeatureTypes = new HashMap<>();
     private static final Map<String, FeatureType> zillowFeatureTypes = new HashMap<>();
-    private String projectDir= "classpath:demo_projects/";
+    private String classPath = "classpath:";
+    private String projectDir = "demo_projects/";
 
     static {
         germanCreditFeatureTypes.put("account_check_status", FeatureType.CATEGORY);
@@ -258,7 +256,8 @@ public class InitService {
             try {
                 saveProject(key, config.creator);
             } catch (IOException e) {
-                logger.error("Project with key %s not saved".formatted(key));
+                logger.error(e.getMessage());
+                logger.error("Project with key %s not saved".formatted(key), e);
             }
         });
     }
@@ -275,33 +274,48 @@ public class InitService {
         User owner = userRepository.getOneByLogin(ownerLogin);
         Assert.notNull(owner, "Owner does not exist in database");
         Project project = new Project(projectKey, projectName, projectName, owner);
+        Optional<Project> existingProject = projectRepository.findOneByName(projectName);
+        if (!existingProject.isEmpty()) {
+            projectService.delete(existingProject.get().getId());
+        }
         if (projectRepository.findOneByName(projectName).isEmpty()) {
             projectService.create(project, ownerLogin);
             projectRepository.save(project);
-            File[] models = getFileNames(projectKey, "models");
-            stream(models).forEach(e -> uploadModel(projectKey, e.getName()));
-            File[] datasets = getFileNames(projectKey, "datasets");
-            stream(datasets).forEach(e -> uploadDataframe(projectKey, e.getName()));
+            List<String> models = getFileNames(projectKey, "models");
+            models.stream().forEach(e -> uploadModel(projectKey, e));
+            List<String> datasets = getFileNames(projectKey, "datasets");
+            datasets.stream().forEach(e -> uploadDataframe(projectKey, e));
         } else {
             logger.info(String.format("Project with name %s already exists", projectName));
         }
     }
 
-    private File[] getFileNames(String projectKey, String type) throws IOException {
-        Resource directory = resourceLoader.getResource(this.projectDir + projectKey + "/" + type);
-        return directory.getFile().listFiles();
+    /**
+     * Get the list of file keys
+     * This necessary when calling from jar
+     *
+     * @param projectKey key of the project
+     * @param type       type (models/datasets)
+     * @return List of names
+     * @throws IOException
+     */
+    private List<String> getFileNames(String projectKey, String type) throws IOException {
+        String path = this.projectDir + projectKey + "/" + type + "/*";
+        PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
+        return Arrays.stream(resolver.getResources(path)).map(e -> e.getFilename().substring(0, e.getFilename().indexOf("."))).toList();
     }
 
     private void uploadDataframe(String projectKey, String fileName) {
         ProjectConfig config = projects.get(projectKey);
         Project project = projectRepository.getOneByKey(projectKey);
-        Resource dsResource = resourceLoader.getResource( this.projectDir+ projectKey + "/datasets/" + fileName);
+        String path = this.classPath + this.projectDir + projectKey + "/datasets/" + fileName + ".csv.zst";
+        Resource dsResource = resourceLoader.getResource(path);
         try (InputStream dsStream = dsResource.getInputStream()) {
             DataUploadParamsDTO dsParams = config.datasetParams;
-            String target=fileName.contains("prod")?null:dsParams.getTarget();
+            String target = fileName.contains("prod") ? null : dsParams.getTarget();
             fileUploadService.uploadDataset(
                 project,
-                dsParams.getName()+ " "+fileName.substring(0,fileName.length()-4),
+                dsParams.getName() + " " + fileName,
                 dsParams.getFeatureTypes(),
                 target,
                 dsStream
@@ -312,13 +326,17 @@ public class InitService {
         }
     }
 
-    private void uploadModel(String projectKey, String directory) {
-        String pathToDir = this.projectDir + projectKey + "/models/" + directory;
-        Resource modelResource = resourceLoader.getResource(pathToDir + "/model.pkl.zst");
-        Resource requirementsResource = resourceLoader.getResource(pathToDir + "/requirements.txt");
+    private void uploadModel(String projectKey, String filename) {
+        String pathToModel = this.classPath + this.projectDir + projectKey + "/models/" + filename + ".model.pkl.zst";
+        String pathToRequirements = this.classPath + this.projectDir + projectKey + "/requirements/" + filename + ".requirements.txt";
+        Resource modelResource = resourceLoader.getResource(pathToModel);
+        Resource requirementsResource = resourceLoader.getResource(pathToRequirements);
+        ModelUploadParamsDTO modelDTO = projects.get(projectKey).modelParams;
+        modelDTO.setName(modelDTO.getName() + " " + filename);
         try (InputStream modelStream = modelResource.getInputStream()) {
             try (InputStream requirementsStream = requirementsResource.getInputStream()) {
-                fileUploadService.uploadModel(projects.get(projectKey).modelParams, modelStream, requirementsStream);
+
+                fileUploadService.uploadModel(modelDTO, modelStream, requirementsStream);
             }
         } catch (IOException e) {
             logger.warn("Failed to upload model for demo project {}", projectKey);
