@@ -274,10 +274,6 @@ public class InitService {
         User owner = userRepository.getOneByLogin(ownerLogin);
         Assert.notNull(owner, "Owner does not exist in database");
         Project project = new Project(projectKey, projectName, projectName, owner);
-        Optional<Project> existingProject = projectRepository.findOneByName(projectName);
-        if (!existingProject.isEmpty()) {
-            projectService.delete(existingProject.get().getId());
-        }
         if (projectRepository.findOneByName(projectName).isEmpty()) {
             projectService.create(project, ownerLogin);
             projectRepository.save(project);
