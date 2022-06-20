@@ -1,10 +1,11 @@
 from generated.ml_worker_pb2 import SingleTestResult
-from zstandard import ZstdCompressor
+from zstandard import ZstdCompressor, ZstdDecompressor
 from typing import Optional
 from io import BytesIO
 import re
 import pandas as pd
 
+COMPRESSION_MAX_OUTPUT_SIZE = 10 ** 9  # 1GB
 
 def ge_result_to_test_result(result, passed=True) -> SingleTestResult:
     """
@@ -69,3 +70,15 @@ def compress(data: bytes, method: Optional[str] = "zstd") -> bytes:
         raise ValueError("Invalid compression method: {method}. Choose 'zstd' or None.")
 
     return compressed_data
+
+def decompress(
+        data: bytes, method: Optional[str] = "zstd", max_output_size: int = COMPRESSION_MAX_OUTPUT_SIZE
+) -> bytes:
+    if method == "zstd":
+        decompressor = ZstdDecompressor()
+        decompressed_data = decompressor.decompress(data, max_output_size=max_output_size)
+    elif method is None:
+        decompressed_data = data
+    else:
+        raise ValueError("Invalid compression method: {method}. Choose 'zstd' or None.")
+    return decompressed_data
