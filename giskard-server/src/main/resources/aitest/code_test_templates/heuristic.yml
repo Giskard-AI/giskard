@@ -38,6 +38,8 @@ items:
               The ratio of rows with the right classification label over the total of rows in the slice
           passed:
               TRUE if passed_ratio > threshold
+          output_df:
+              Dataframe containing the rows that do not return the right classification label
       """
       tests.heuristic.test_right_label(
         actual_slice=actual_ds.slice(lambda df: df.head(len(df)//2)),
@@ -86,6 +88,8 @@ items:
               The proportion of rows in the right range inside the slice
           passed:
               TRUE if metric > threshold
+          output_df:
+              Dataframe containing the rows with model classification probability that do not  belong to the right range
       """
       tests.heuristic.test_output_in_range(
         actual_slice=actual_ds.slice(lambda df: df.head(len(df)//2)),
@@ -132,6 +136,9 @@ items:
               The proportion of rows in the right range inside the slice
           passed:
               TRUE if metric > threshold
+          output_df:
+              Dataframe containing the rows with predicted output that do not belong to the right range
+
       """
       tests.heuristic.test_output_in_range(
         actual_slice=actual_ds.slice(lambda df: df.head(len(df)//2)),

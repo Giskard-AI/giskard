@@ -39,6 +39,9 @@ class HeuristicTests(AbstractTestCollection):
                 the ratio of raws with the right classification label over the total of raws in the slice
             passed:
                 TRUE if passed_ratio > threshold
+          output_df:
+              Dataframe containing the rows that do not return the right classification label
+
 
         """
 
@@ -47,9 +50,7 @@ class HeuristicTests(AbstractTestCollection):
             f'"{classification_label}" is not part of model labels: {",".join(model.classification_labels)}'
 
         passed_idx = actual_slice.df.loc[prediction_results == classification_label].index.values
-        failed_idx = actual_slice.loc[~actual_slice.index.isin(passed_idx)].index.values
-
-        failed_df = actual_slice.df.loc[failed_idx]
+        failed_df = actual_slice.df.loc[~actual_slice.df.index.isin(passed_idx)]
 
         passed_ratio = len(passed_idx) / len(actual_slice)
         output_df_sample = compress(save_df(failed_df))
@@ -105,6 +106,11 @@ class HeuristicTests(AbstractTestCollection):
                 the proportion of rows in the right range inside the slice
             passed:
                 TRUE if metric > threshold
+          output_df:
+              For classification : Dataframe containing the rows with model classification probability that do not
+              belong to the right range
+              For Regression: Dataframe containing the rows with predicted output that do not belong to the right range
+
 
         """
         results_df = pd.DataFrame()
@@ -124,15 +130,10 @@ class HeuristicTests(AbstractTestCollection):
                 f"Prediction task is not supported: {model.model_type}"
             )
 
-        # matching_prediction_mask = \
-        #     (results_df["output"] <= max_range) & \
-            (results_df["output"] >= min_range)
         passed_idx = actual_slice.df.loc[(results_df["output"] <= max_range) & (results_df["output"] >= min_range)].index.values
-        #expected = actual_slice.df[matching_prediction_mask]
-        failed_idx = actual_slice.loc[~actual_slice.index.isin(passed_idx)].index.values
-        failed_df = actual_slice.df.loc[failed_idx]
+        failed_df = actual_slice.df.loc[~actual_slice.df.index.isin(passed_idx)]
 
-        passed_ratio = len(expected) / len(actual_slice)
+        passed_ratio = len(passed_idx) / len(actual_slice)
         output_df_sample = compress(save_df(failed_df))
 
         return self.save_results(SingleTestResult(
