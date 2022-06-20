@@ -104,7 +104,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
         else:
             results = pd.Series(prediction_results.prediction)
             preds_serie = results
-            if dataset.target and dataset.target != "" and dataset.target in dataset.df.columns:
+            if dataset.target and dataset.target in dataset.df.columns:
                 target_serie = dataset.df[dataset.target]
                 diff = preds_serie - target_serie
                 diff_percent = pd.Series(diff / target_serie, name="diffPercent")
