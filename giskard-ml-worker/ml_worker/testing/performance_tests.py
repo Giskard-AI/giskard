@@ -1,4 +1,6 @@
 import numpy as np
+from io import BytesIO
+import pandas as pd
 from sklearn.metrics import accuracy_score, recall_score
 from sklearn.metrics import roc_auc_score, f1_score, precision_score, mean_squared_error, \
     mean_absolute_error, r2_score
@@ -7,6 +9,7 @@ from generated.ml_worker_pb2 import SingleTestResult
 from ml_worker.core.giskard_dataset import GiskardDataset
 from ml_worker.core.model import GiskardModel
 from ml_worker.testing.abstract_test_collection import AbstractTestCollection
+from ml_worker.testing.utils import save_df, compress, decompress
 
 
 class PerformanceTests(AbstractTestCollection):
@@ -53,37 +56,42 @@ class PerformanceTests(AbstractTestCollection):
         dataframe = gsk_dataset.df
         prediction = model.run_predict(dataframe).raw_prediction
         labels_mapping = {model.classification_labels[i]: i for i in range(len(model.classification_labels))}
+        actual_target = dataframe[gsk_dataset.target].map(labels_mapping)
         if is_binary_classification:
-            metric = score_fn(dataframe[gsk_dataset.target].map(labels_mapping), prediction)
+            metric = score_fn(actual_target, prediction)
         else:
-            metric = score_fn(dataframe[gsk_dataset.target].map(labels_mapping), prediction, average='macro')
-
+            metric = score_fn(actual_target, prediction, average='macro')
+        failed_df = dataframe.loc[actual_target != prediction]
+        output_df_sample = compress(save_df(failed_df))
         return self.save_results(
             SingleTestResult(
                 actual_slices_size=[len(gsk_dataset)],
                 metric=metric,
-                passed=metric >= threshold
+                passed=metric >= threshold,
+                output_df=output_df_sample
             ))
 
     def _test_accuracy_score(self, score_fn, gsk_dataset: GiskardDataset, model: GiskardModel, threshold=1):
         dataframe = gsk_dataset.df
         prediction = model.run_predict(dataframe).raw_prediction
         labels_mapping = {model.classification_labels[i]: i for i in range(len(model.classification_labels))}
-        metric = score_fn(dataframe[gsk_dataset.target].map(labels_mapping), prediction)
+        actual_target = dataframe[gsk_dataset.target].map(labels_mapping)
 
+        metric = score_fn(actual_target, prediction)
+
+        failed_df = dataframe.loc[actual_target != prediction]
+        output_df_sample = compress(save_df(failed_df))
         return self.save_results(
             SingleTestResult(
                 actual_slices_size=[len(gsk_dataset)],
                 metric=metric,
-                passed=metric >= threshold
+                passed=metric >= threshold,
+                output_df=output_df_sample
             ))
 
-    def _test_regression_score(self, score_fn, giskard_ds, model: GiskardModel, threshold=1, negative=False,
-                               r2=False):
-        metric = (-1 if negative else 1) * score_fn(
-            model.run_predict(giskard_ds.df).raw_prediction,
-            giskard_ds.df[giskard_ds.target]
-        )
+    def _test_regression_score(self, score_fn, giskard_ds, model: GiskardModel, threshold=1, r2=False):
+        metric = score_fn(
+            giskard_ds.df[giskard_ds.target], model.run_predict(giskard_ds.df).raw_prediction)
         return self.save_results(
             SingleTestResult(
                 actual_slices_size=[len(giskard_ds)],
@@ -220,7 +228,7 @@ class PerformanceTests(AbstractTestCollection):
                 TRUE if RMSE metric < threshold
 
         """
-        return self._test_regression_score(self._get_rmse, actual_slice, model, threshold, negative=False)
+        return self._test_regression_score(self._get_rmse, actual_slice, model, threshold)
 
     def test_mae(self, actual_slice, model: GiskardModel, threshold=1):
         """
@@ -245,8 +253,7 @@ class PerformanceTests(AbstractTestCollection):
                 TRUE if MAE metric < threshold
 
         """
-        return self._test_regression_score(mean_absolute_error, actual_slice, model, threshold,
-                                           negative=False)
+        return self._test_regression_score(mean_absolute_error, actual_slice, model, threshold)
 
     def test_r2(self, actual_slice, model: GiskardModel, threshold=1):
         """
@@ -275,17 +282,25 @@ class PerformanceTests(AbstractTestCollection):
 
     def _test_diff_prediction(self, test_fn, model, actual_slice, reference_slice, threshold):
         self.do_save_results = False
-        metric_1 = test_fn(actual_slice, model).metric
-        metric_2 = test_fn(reference_slice, model).metric
+        result_1 = test_fn(reference_slice, model)
+        metric_1 = result_1.metric
+        output_df_1 = pd.read_csv(BytesIO(decompress(result_1.output_df)))
+
+        result_2 = test_fn(actual_slice, model)
+        metric_2 = result_2.metric
+        output_df_2 = pd.read_csv(BytesIO(decompress(result_2.output_df)))
+
         self.do_save_results = True
         change_pct = abs(metric_1 - metric_2) / metric_1
+        output_df_sample = compress(save_df(pd.concat([output_df_1, output_df_2])))
 
         return self.save_results(
             SingleTestResult(
                 actual_slices_size=[len(actual_slice)],
                 reference_slices_size=[len(reference_slice)],
                 metric=change_pct,
-                passed=change_pct < threshold
+                passed=change_pct < threshold,
+                output_df=output_df_sample
             ))
 
     def test_diff_accuracy(self, actual_slice, reference_slice, model, threshold=0.1):
@@ -409,15 +424,24 @@ class PerformanceTests(AbstractTestCollection):
 
     def _test_diff_reference_actual(self, test_fn, model, reference_slice, actual_slice, threshold=0.1):
         self.do_save_results = False
-        metric_1 = test_fn(reference_slice, model).metric
-        metric_2 = test_fn(actual_slice, model).metric
+        result_1 = test_fn(reference_slice, model)
+        metric_1 = result_1.metric
+        output_df_1 = pd.read_csv(BytesIO(decompress(result_1.output_df)))
+
+        result_2 = test_fn(actual_slice, model)
+        metric_2 = result_2.metric
+        output_df_2 = pd.read_csv(BytesIO(decompress(result_2.output_df)))
+
         self.do_save_results = True
         change_pct = abs(metric_1 - metric_2) / metric_1
+        output_df_sample = compress(save_df(pd.concat([output_df_1, output_df_2])))
 
         return self.save_results(
             SingleTestResult(
                 metric=change_pct,
-                passed=change_pct < threshold
+                passed=change_pct < threshold,
+                output_df=output_df_sample
+
             ))
 
     def test_diff_reference_actual_f1(self, reference_slice, actual_slice, model, threshold=0.1):
