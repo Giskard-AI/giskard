@@ -88,6 +88,7 @@ public class InitService {
         germanCreditFeatureTypes.put("people_under_maintenance", FeatureType.NUMERIC);
         germanCreditFeatureTypes.put("telephone", FeatureType.CATEGORY);
         germanCreditFeatureTypes.put("foreign_worker", FeatureType.CATEGORY);
+        germanCreditFeatureTypes.put("default", FeatureType.CATEGORY);
 
         enronFeatureTypes.put("Subject", FeatureType.TEXT);
         enronFeatureTypes.put("Content", FeatureType.TEXT);
@@ -96,6 +97,7 @@ public class InitService {
         enronFeatureTypes.put("Hour", FeatureType.NUMERIC);
         enronFeatureTypes.put("Nb_of_forwarded_msg", FeatureType.NUMERIC);
         enronFeatureTypes.put("Year", FeatureType.NUMERIC);
+        enronFeatureTypes.put("Target", FeatureType.CATEGORY);
 
         zillowFeatureTypes.put("TypeOfDewelling", FeatureType.CATEGORY);
         zillowFeatureTypes.put("BldgType", FeatureType.CATEGORY);
@@ -120,6 +122,7 @@ public class InitService {
         zillowFeatureTypes.put("2ndFlrArea", FeatureType.NUMERIC);
         zillowFeatureTypes.put("Utilities", FeatureType.CATEGORY);
         zillowFeatureTypes.put("OverallQual", FeatureType.CATEGORY);
+        zillowFeatureTypes.put("SalePrice", FeatureType.NUMERIC);
     }
 
     private final Map<String, ProjectConfig> projects = createProjectConfigMap();

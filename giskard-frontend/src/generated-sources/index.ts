@@ -1,5 +1,6 @@
 export const GENERATED_MAPPING = {
     'ai.giskard.domain.FeatureType' : 'FeatureType',
+    'ai.giskard.domain.FeedbackType' : 'FeedbackType',
     'ai.giskard.domain.ml.CodeLanguage' : 'CodeLanguage',
     'ai.giskard.domain.ml.CodeTestCollection' : 'CodeTestCollection',
     'ai.giskard.domain.ml.CodeTestTemplate' : 'CodeTestTemplate',
@@ -62,6 +63,7 @@ export const GENERATED_MAPPING = {
 
 };
 export * from './ai/giskard/domain/feature-type';
+export * from './ai/giskard/domain/feedback-type';
 export * from './ai/giskard/domain/ml/code-language';
 export * from './ai/giskard/domain/ml/code-test-collection';
 export * from './ai/giskard/domain/ml/code-test-template';
