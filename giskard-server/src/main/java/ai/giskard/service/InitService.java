@@ -63,8 +63,8 @@ public class InitService {
     private static final Map<String, FeatureType> germanCreditFeatureTypes = new HashMap<>();
     private static final Map<String, FeatureType> enronFeatureTypes = new HashMap<>();
     private static final Map<String, FeatureType> zillowFeatureTypes = new HashMap<>();
-    private String classPath = "classpath:";
-    private String projectDir = "demo_projects/";
+    private static final String CLASSPATH = "classpath:";
+    private static final String PROJECTDIR = "demo_projects/";
 
     static {
         germanCreditFeatureTypes.put("account_check_status", FeatureType.CATEGORY);
@@ -256,7 +256,6 @@ public class InitService {
             try {
                 saveProject(key, config.creator);
             } catch (IOException e) {
-                logger.error(e.getMessage());
                 logger.error("Project with key %s not saved".formatted(key), e);
             }
         });
@@ -296,7 +295,7 @@ public class InitService {
      * @throws IOException
      */
     private List<String> getFileNames(String projectKey, String type) throws IOException {
-        String path = this.projectDir + projectKey + "/" + type + "/*";
+        String path = PROJECTDIR + projectKey + "/" + type + "/*";
         PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
         return Arrays.stream(resolver.getResources(path)).map(e -> e.getFilename().substring(0, e.getFilename().indexOf("."))).toList();
     }
@@ -304,7 +303,7 @@ public class InitService {
     private void uploadDataframe(String projectKey, String fileName) {
         ProjectConfig config = projects.get(projectKey);
         Project project = projectRepository.getOneByKey(projectKey);
-        String path = this.classPath + this.projectDir + projectKey + "/datasets/" + fileName + ".csv.zst";
+        String path = CLASSPATH + PROJECTDIR + projectKey + "/datasets/" + fileName + ".csv.zst";
         Resource dsResource = resourceLoader.getResource(path);
         try (InputStream dsStream = dsResource.getInputStream()) {
             DataUploadParamsDTO dsParams = config.datasetParams;
@@ -323,8 +322,8 @@ public class InitService {
     }
 
     private void uploadModel(String projectKey, String filename) {
-        String pathToModel = this.classPath + this.projectDir + projectKey + "/models/" + filename + ".model.pkl.zst";
-        String pathToRequirements = this.classPath + this.projectDir + projectKey + "/requirements/" + filename + ".requirements.txt";
+        String pathToModel = CLASSPATH + PROJECTDIR + projectKey + "/models/" + filename + ".model.pkl.zst";
+        String pathToRequirements = CLASSPATH + PROJECTDIR + projectKey + "/requirements/" + filename + ".requirements.txt";
         Resource modelResource = resourceLoader.getResource(pathToModel);
         Resource requirementsResource = resourceLoader.getResource(pathToRequirements);
         ModelUploadParamsDTO modelDTO = projects.get(projectKey).modelParams;
