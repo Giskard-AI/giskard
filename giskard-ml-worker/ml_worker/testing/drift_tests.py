@@ -2,6 +2,7 @@ import typing
 import uuid
 from collections import Counter
 from typing import Union
+import re
 
 import numpy as np
 import pandas as pd
@@ -12,6 +13,7 @@ from generated.ml_worker_pb2 import SingleTestResult, TestMessage, TestMessageTy
 from ml_worker.core.giskard_dataset import GiskardDataset
 from ml_worker.core.model import GiskardModel
 from ml_worker.testing.abstract_test_collection import AbstractTestCollection
+from ml_worker.testing.utils import save_df, compress
 
 
 class DriftTests(AbstractTestCollection):
@@ -122,10 +124,12 @@ class DriftTests(AbstractTestCollection):
         return chi_square, p_value, output_data
 
     def test_drift_psi(self,
-                       reference_series: pd.Series,
-                       actual_series: pd.Series,
+                       reference_ds: pd.DataFrame,
+                       actual_ds: pd.DataFrame,
+                       column_name: str,
                        threshold=0.2,
-                       max_categories: int = 10) -> SingleTestResult:
+                       max_categories: int = 20,
+                       psi_contribution_percent: float = 0.2) -> SingleTestResult:
         """
         Test if the PSI score between the actual and expected datasets is below the threshold for
         a given categorical feature
@@ -134,14 +138,20 @@ class DriftTests(AbstractTestCollection):
 
 
         Args:
-            reference_series(GiskardDataset):
-                a categorical column in reference dataset
-            actual_series(GiskardDataset):
-                categorical column in actual dataset that is compared to var_expected
+            actual_ds(GiskardDataset):
+                Actual dataset to compute the test
+            reference_ds(GiskardDataset):
+                Reference dataset to compute the test
+            column_name(str):
+                Name of column with numerical feature
             threshold:
                 threshold value for PSI
             max_categories:
                 the maximum categories to compute the PSI score
+            psi_contribution_percent:
+                the ratio between the PSI score of a given category over the total PSI score
+                of the categorical variable. If there is a drift, the test provides all the
+                categories that have a PSI contribution over than this ratio.
 
         Returns:
             metric:
@@ -150,18 +160,43 @@ class DriftTests(AbstractTestCollection):
                 TRUE if total_psi <= threshold
 
         """
-        total_psi, _ = self._calculate_drift_psi(actual_series, reference_series, max_categories)
+        assert column_name in actual_ds.columns, \
+            f'"{column_name}" is not a column of Actual Dataset Columns: {", ".join(actual_ds.columns)}'
+        actual_series = actual_ds[column_name]
+        assert column_name in reference_ds.columns, \
+            f'"{column_name}" is not a column of Reference Dataset Columns: {", ".join(reference_ds.columns)}'
+        reference_series = reference_ds[column_name]
+        total_psi, output_data = self._calculate_drift_psi(actual_series, reference_series, max_categories)
+
+        passed = True if threshold is None else total_psi <= threshold
+        messages: Union[typing.List[TestMessage], None] = None
+        output_df_sample = None
+        if not passed:
+            main_drifting_modalities_bool = output_data["Psi"] > psi_contribution_percent * total_psi
+            modalities_list = output_data[main_drifting_modalities_bool]["Modality"].tolist()
+            filtered_modalities = [w for w in modalities_list if not re.match('^other_modalities_[a-z0-9]{32}$', w)]
+            failed_df = actual_ds.loc[actual_series.isin(filtered_modalities)]
+            output_df_sample = compress(save_df(failed_df))
+
+            messages = [TestMessage(
+                type=TestMessageType.ERROR,
+                text=f"The data is drifting for the following modalities {*filtered_modalities,}"
+            )]
 
         return self.save_results(SingleTestResult(
-            passed=total_psi <= threshold,
-            metric=total_psi
+            passed=passed,
+            metric=total_psi,
+            messages=messages,
+            output_df=output_df_sample
         ))
 
     def test_drift_chi_square(self,
-                              reference_series: pd.Series,
-                              actual_series: pd.Series,
+                              reference_ds: pd.DataFrame,
+                              actual_ds: pd.DataFrame,
+                              column_name: str,
                               threshold=0.05,
-                              max_categories: int = 10) -> SingleTestResult:
+                              max_categories: int = 20,
+                              chi_square_contribution_percent: float = 0.2) -> SingleTestResult:
         """
         Test if the p-value of the chi square test between the actual and expected datasets is
         above the threshold for a given categorical feature
@@ -171,14 +206,20 @@ class DriftTests(AbstractTestCollection):
          and that we cannot assume drift for this variable.
 
         Args:
-            reference_series(GiskardDataset):
-                a categorical column in reference dataset
-            actual_series(GiskardDataset):
-                categorical column in actual dataset that is compared to var_expected
+            actual_ds(GiskardDataset):
+                Actual dataset to compute the test
+            reference_ds(GiskardDataset):
+                Reference dataset to compute the test
+            column_name(str):
+                Name of column with numerical feature
             threshold:
                 threshold for p-value of chi-square
             max_categories:
                 the maximum categories to compute the chi square
+            chi_square_contribution_percent:
+                the ratio between the Chi-Square value of a given category over the total Chi-Square
+                value of the categorical variable. If there is a drift, the test provides all the
+                categories that have a PSI contribution over than this ratio.
 
         Returns:
             metric:
@@ -188,17 +229,40 @@ class DriftTests(AbstractTestCollection):
                 TRUE if metric > threshold
 
         """
+        assert column_name in actual_ds.columns, \
+            f'"{column_name}" is not a column of Actual Dataset Columns: {",".join(actual_ds.columns)}'
+        actual_series = actual_ds[column_name]
+        assert column_name in reference_ds.columns, \
+            f'"{column_name}" is not a column of Reference Dataset Columns: {",".join(reference_ds.columns)}'
+        reference_series = reference_ds[column_name]
 
-        chi_square, p_value, _ = self._calculate_chi_square(actual_series, reference_series, max_categories)
+        chi_square, p_value, output_data = self._calculate_chi_square(actual_series, reference_series, max_categories)
+        passed = p_value > threshold
+        messages: Union[typing.List[TestMessage], None] = None
+        output_df_sample = None
+        if not passed:
+            main_drifting_modalities_bool = output_data["Chi_square"] > chi_square_contribution_percent * chi_square
+            modalities_list = output_data[main_drifting_modalities_bool]["Modality"].tolist()
+            filtered_modalities = [w for w in modalities_list if not re.match('^other_modalities_[a-z0-9]{32}$', w)]
+            failed_df = actual_ds.loc[actual_series.isin(filtered_modalities)]
+
+            output_df_sample = compress(save_df(failed_df))
+            messages = [TestMessage(
+                type=TestMessageType.ERROR,
+                text=f"The prediction is drifting for the following modalities {*filtered_modalities,}"
+            )]
 
         return self.save_results(SingleTestResult(
-            passed=p_value <= threshold,
+            passed=passed,
             metric=p_value,
+            messages=messages,
+            output_df=output_df_sample
         ))
 
     def test_drift_ks(self,
-                      reference_series: pd.Series,
-                      actual_series: pd.Series,
+                      reference_ds: pd.DataFrame,
+                      actual_ds: pd.DataFrame,
+                      column_name: str,
                       threshold=0.05) -> SingleTestResult:
         """
          Test if the pvalue of the KS test between the actual and expected datasets is above
@@ -209,10 +273,12 @@ class DriftTests(AbstractTestCollection):
         cannot be rejected at 5% level and that we cannot assume drift for this variable.
 
         Args:
-            reference_series(GiskardDataset):
-                a numerical column in reference dataset
-            actual_series(GiskardDataset):
-                numerical column in actual dataset that is compared to var_expected
+            actual_ds(GiskardDataset):
+                Actual dataset to compute the test
+            reference_ds(GiskardDataset):
+                Reference dataset to compute the test
+            column_name(str):
+                Name of column with numerical feature
             threshold:
                 threshold for p-value of KS test
             max_categories:
@@ -228,6 +294,12 @@ class DriftTests(AbstractTestCollection):
             passed:
                 TRUE if metric > threshold
         """
+        assert column_name in actual_ds.columns, \
+            f'"{column_name}" is not a column of Actual Dataset Columns: {",".join(actual_ds.columns)}'
+        actual_series = actual_ds[column_name]
+        assert column_name in reference_ds.columns, \
+            f'"{column_name}" is not a column of Reference Dataset Columns: {",".join(reference_ds.columns)}'
+        reference_series = reference_ds[column_name]
 
         result = self._calculate_ks(actual_series, reference_series)
 
@@ -238,8 +310,9 @@ class DriftTests(AbstractTestCollection):
         )
 
     def test_drift_earth_movers_distance(self,
-                                         reference_series: Union[np.ndarray, pd.Series],
-                                         actual_series: Union[np.ndarray, pd.Series],
+                                         reference_ds: pd.DataFrame,
+                                         actual_ds: pd.DataFrame,
+                                         column_name: str,
                                          threshold: float = None) -> SingleTestResult:
         """
         Test if the earth movers distance between the actual and expected datasets is
@@ -250,10 +323,12 @@ class DriftTests(AbstractTestCollection):
          It means that we cannot assume drift for this variable.
 
         Args:
-            reference_series(GiskardDataset):
-                a numerical column in reference dataset
-            actual_series(GiskardDataset):
-                numerical column in actual dataset that is compared to var_expected
+            actual_ds(GiskardDataset):
+                Actual dataset to compute the test
+            reference_ds(GiskardDataset):
+                Reference dataset to compute the test
+            column_name(str):
+                Name of column with numerical feature
             threshold:
                 threshold for p-value of earth movers distance
 
@@ -264,6 +339,13 @@ class DriftTests(AbstractTestCollection):
             passed:
                 TRUE if metric < threshold
         """
+        assert column_name in actual_ds.columns, \
+            f'"{column_name}" is not a column of Actual Dataset Columns: {",".join(actual_ds.columns)}'
+        actual_series = actual_ds[column_name]
+        assert column_name in reference_ds.columns, \
+            f'"{column_name}" is not a column of Reference Dataset Columns: {",".join(reference_ds.columns)}'
+        reference_series = reference_ds[column_name]
+
         metric = self._calculate_earth_movers_distance(actual_series, reference_series)
         return self.save_results(SingleTestResult(
             passed=True if threshold is None else metric <= threshold,
