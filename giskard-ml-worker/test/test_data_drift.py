@@ -15,71 +15,6 @@ SERIES_3 = pd.Series(['a'] * 20 + ['c'] * 50 + ['d'] * 30)
 SERIES_3_NUM = pd.Series([1] * 20 + [3] * 50 + [4] * 30)
 
 
-def test_drift_psi():
-    tests = GiskardTestFunctions()
-
-    assert tests.drift.test_drift_psi(
-        reference_series=SERIES_100_A,
-        actual_series=SERIES_100_A).metric == 0
-
-    assert pytest.approx(tests.drift.test_drift_psi(
-        reference_series=SERIES_100_A,
-        actual_series=SERIES_100_B).metric, 0.1) == 18.4
-
-    assert pytest.approx(tests.drift.test_drift_psi(
-        reference_series=SERIES_1,
-        actual_series=SERIES_2).metric, 0.1) == 0.5
-
-
-def test_drift_psi_pass_fail():
-    tests = GiskardTestFunctions()
-
-    assert not tests.drift.test_drift_psi(reference_series=SERIES_1, actual_series=SERIES_2, threshold=0.4).passed
-    assert tests.drift.test_drift_psi(reference_series=SERIES_1, actual_series=SERIES_2, threshold=0.6).passed
-
-
-def test_drift_psi_max_cat():
-    tests = GiskardTestFunctions()
-    assert pytest.approx(tests.drift.test_drift_psi(
-        reference_series=SERIES_1,
-        actual_series=SERIES_3,
-        max_categories=2).metric, 0.1) == 3.5
-
-
-def test_drift_chi_square():
-    tests = GiskardTestFunctions()
-
-    assert tests.drift.test_drift_chi_square(
-        reference_series=SERIES_100_A,
-        actual_series=SERIES_100_A).metric == 0
-
-    assert pytest.approx(tests.drift.test_drift_chi_square(
-        reference_series=SERIES_100_A,
-        actual_series=SERIES_100_B).metric, 0.1) == 0
-
-    assert pytest.approx(tests.drift.test_drift_chi_square(
-        reference_series=SERIES_1,
-        actual_series=SERIES_2).metric, 0.1) == 2.0872192862952943e-14
-
-
-def test_drift_chi_square_max_cat():
-    tests = GiskardTestFunctions()
-
-    assert round(
-        tests.drift.test_drift_chi_square(
-            reference_series=SERIES_1,
-            actual_series=SERIES_3,
-            max_categories=2).metric, 2) == 0
-
-
-def test_drift_chi_square_pass_fail():
-    tests = GiskardTestFunctions()
-    assert tests.drift.test_drift_chi_square(reference_series=SERIES_1,
-                                             actual_series=SERIES_2,
-                                             threshold=0.1).passed
-    # assert tests.drift.test_drift_chi_square(reference_series=SERIES_1, actual_series=SERIES_2, threshold=0.1).passed
-
-
 def test_drift_ks_stat():
     tests = GiskardTestFunctions()
 
@@ -127,6 +62,76 @@ def test_drift_earth_movers_distance_pass_fail():
     assert tests.drift.test_drift_earth_movers_distance(reference_series=SERIES_1_NUM,
                                                         actual_series=SERIES_2_NUM,
                                                         threshold=0.4).passed
+
+
+def _test_drift_data_psi(german_credit_test_data, threshold=0.05):
+    tests = GiskardTestFunctions()
+    results = tests.drift.test_drift_psi(
+        reference_ds=german_credit_test_data.df[:len(german_credit_test_data.df) // 2],
+        actual_ds=german_credit_test_data.df[len(german_credit_test_data.df) // 2:],
+        column_name='personal_status',
+        threshold=threshold)
+
+    assert round(results.metric, 2) == 0.00
+    return results.passed
+
+
+def test_drift_data_psi_pass_fail(german_credit_test_data):
+    assert not _test_drift_data_psi(german_credit_test_data, 0)
+    assert _test_drift_data_psi(german_credit_test_data, 0.1)
+
+
+def _test_drift_data_psi_max_categories(german_credit_test_data, threshold=0.05):
+    tests = GiskardTestFunctions()
+    results = tests.drift.test_drift_psi(
+        reference_ds=german_credit_test_data.df[:len(german_credit_test_data.df) // 2],
+        actual_ds=german_credit_test_data.df[len(german_credit_test_data.df) // 2:],
+        column_name='personal_status',
+        max_categories=2,
+        threshold=threshold)
+
+    assert round(results.metric, 2) == 0.00
+    return results.passed
+
+
+def test_drift_data_psi_max_categories_pass_fail(german_credit_test_data):
+    assert not _test_drift_data_psi_max_categories(german_credit_test_data, 0)
+    assert _test_drift_data_psi_max_categories(german_credit_test_data, 0.1)
+
+
+def _test_drift_data_chi_square(german_credit_test_data, threshold=0.05):
+    tests = GiskardTestFunctions()
+    results = tests.drift.test_drift_chi_square(
+        reference_ds=german_credit_test_data.df[:len(german_credit_test_data.df) // 2],
+        actual_ds=german_credit_test_data.df[len(german_credit_test_data.df) // 2:],
+        column_name='personal_status',
+        threshold=threshold)
+
+    assert round(results.metric, 2) == 0.76
+    return results.passed
+
+
+def test_drift_data_chi_squared_pass_fail(german_credit_test_data):
+    assert not _test_drift_data_chi_square(german_credit_test_data, 0.8)
+    assert _test_drift_data_chi_square(german_credit_test_data, 0.1)
+
+
+def _test_drift_data_chi_square_max_categories(german_credit_test_data, threshold=0.05):
+    tests = GiskardTestFunctions()
+    results = tests.drift.test_drift_chi_square(
+        reference_ds=german_credit_test_data.df[:len(german_credit_test_data.df) // 2],
+        actual_ds=german_credit_test_data.df[len(german_credit_test_data.df) // 2:],
+        column_name='personal_status',
+        max_categories=2,
+        threshold=threshold)
+
+    assert round(results.metric, 2) == 0.76
+    return results.passed
+
+
+def test_drift_data_chi_square_max_categories_pass_fail(german_credit_test_data):
+    assert not _test_drift_data_chi_square_max_categories(german_credit_test_data, 0.8)
+    assert _test_drift_data_chi_square_max_categories(german_credit_test_data, 0.1)
 
 
 def _test_drift_prediction_psi(german_credit_test_data, german_credit_model, threshold=0.02):
