@@ -29,7 +29,10 @@ import org.springframework.util.Assert;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import static java.util.Arrays.stream;
@@ -236,7 +239,6 @@ public class InitService {
      *
      * @param key      key string used for identifying the user
      * @param roleName role given to the user
-     * @return
      */
     private void saveUser(String key, String roleName) {
         User user = new User();
@@ -330,11 +332,18 @@ public class InitService {
         Resource modelResource = resourceLoader.getResource(pathToModel);
         Resource requirementsResource = resourceLoader.getResource(pathToRequirements);
         ModelUploadParamsDTO modelDTO = projects.get(projectKey).modelParams;
-        modelDTO.setName(modelDTO.getName() + " " + filename);
+        ModelUploadParamsDTO modelDTOCopy = ModelUploadParamsDTO.builder().modelType(modelDTO.getModelType())
+            .projectKey(modelDTO.getProjectKey())
+            .name(modelDTO.getProjectKey() + " model " + filename)
+            .language(modelDTO.getLanguage())
+            .languageVersion(modelDTO.getLanguageVersion())
+            .featureNames(modelDTO.getFeatureNames())
+            .classificationLabels(modelDTO.getClassificationLabels())
+            .build();
         try (InputStream modelStream = modelResource.getInputStream()) {
             try (InputStream requirementsStream = requirementsResource.getInputStream()) {
 
-                fileUploadService.uploadModel(modelDTO, modelStream, requirementsStream);
+                fileUploadService.uploadModel(modelDTOCopy, modelStream, requirementsStream);
             }
         } catch (IOException e) {
             logger.warn("Failed to upload model for demo project {}", projectKey);
