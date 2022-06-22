@@ -17,13 +17,12 @@
 
     <v-card dark color="primary">
       <v-card-title>
-        <div v-if='feedbackType==FeedbackType.TARGET'>Do you want to relabel this record ?</div>
-        <div v-else-if="originalValue == inputValue">Does the impact of <v-chip>{{inputLabel}}</v-chip> on the prediction make sense?</div>
+        <div v-if="originalValue == inputValue">Does the impact of <v-chip>{{inputLabel}}</v-chip> on the prediction make sense?</div>
         <div v-else>Does the impact of changing <v-chip>{{inputLabel}}</v-chip> 
           <span v-show="inputType != 'text'"> from <v-chip color="blue darken-2">{{originalValue}}</v-chip> to <v-chip color="accent">{{inputValue}}</v-chip></span>
           on the prediction make sense?</div>
       </v-card-title>
-      <v-card-text v-if='feedbackType!=FeedbackType.TARGET'>
+      <v-card-text>
         <v-radio-group v-model="selected" dark row hide-details>
           <v-radio label="Yes" value="yes"></v-radio>
           <v-radio label="No" value="no"></v-radio>
@@ -37,7 +36,7 @@
       </v-card-text>
       <v-card-actions>
         <v-btn small text light @click="resetAndClose" :disabled="submitted">Cancel</v-btn>
-        <v-btn small color="white" light @click="submitFeedback" :disabled="(!(selected && message) && feedbackType!=FeedbackType.TARGET)">Send</v-btn>
+        <v-btn small color="white" light @click="submitFeedback" :disabled="!(selected && message)">Send</v-btn>
         <span v-show="submitted"><v-icon>mdi-check</v-icon></span>
       </v-card-actions>
     </v-card>
@@ -46,16 +45,13 @@
 
 <script lang="ts">
 import { Component, Vue, Prop, Watch } from 'vue-property-decorator';
-import { FeedbackType } from '@/generated-sources';
 
 @Component
 export default class FeedbackPopover extends Vue {
-  FeedbackType= FeedbackType;
   @Prop() inputLabel!: any
   @Prop() inputValue!: any
   @Prop() originalValue!: any
-  @Prop() inputType!: any;
-  @Prop() feedbackType!: FeedbackType;
+  @Prop() inputType!: any
 
   opened = false
   selected: string | null = null
@@ -88,7 +84,7 @@ export default class FeedbackPopover extends Vue {
       featureName: this.inputLabel,
       featureValue: (this.inputValue !== this.originalValue) ? this.originalValue + " -> " + this.inputValue : this.inputValue,
     }
-    this.$emit('submitFeedback', feedback, this.feedbackType)
+    this.$emit('submit', feedback)
     this.submitted = true;
     this.submittedOnce = true;
   }

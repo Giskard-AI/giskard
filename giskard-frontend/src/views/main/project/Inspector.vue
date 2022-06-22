@@ -77,8 +77,7 @@
                           :inputValue="inputData[c.name]"
                           :originalValue="originalData[c.name]"
                           :inputType="c.type"
-                          :feedback-type='dirty ? FeedbackType.VALUE_PERTURBATION: FeedbackType.VALUE'
-                          v-on="$listeners"
+                          @submit="$emit(dirty ? 'submitValueVariationFeedback' : 'submitValueFeedback', arguments[0])"
                       />
                     </div>
                   </ValidationProvider>
@@ -94,20 +93,14 @@
         </v-col>
 
         <v-col cols="12" md="6">
-          <PredictionResults v-if='Object.keys(inputMetaData).length > 0'
+          <PredictionResults
               :model="model"
               :targetFeature="dataset.target"
               :classificationLabels="model.classificationLabels"
               :predictionTask="model.modelType"
               :inputData="inputData"
-              :originalData="originalData"
               :modified="dirty || isInputNotOriginal"
-              :dataset='dataset'
               @result="setResult"
-              :inputMetaData="inputMetaData"
-              v-on="$listeners"
-
-
           />
           <v-card class="mb-4">
             <v-card-title>
@@ -161,8 +154,7 @@ import PredictionExplanations from './PredictionExplanations.vue';
 import TextExplanation from './TextExplanation.vue';
 import {api} from '@/api';
 import FeedbackPopover from '@/components/FeedbackPopover.vue';
-import {DatasetDTO, FeatureMetadataDTO, ModelDTO, FeedbackType} from "@/generated-sources";
-
+import {DatasetDTO, FeatureMetadataDTO, ModelDTO} from "@/generated-sources";
 import {isClassification} from "@/ml-utils";
 
 @Component({
@@ -180,8 +172,7 @@ export default class Inspector extends Vue {
   errorLoadingMetadata = ""
   dataErrorMsg = ""
   classificationResult = null
-  isClassification = isClassification;
-  FeedbackType=FeedbackType;
+  isClassification = isClassification
 
   async mounted() {
     await this.loadMetaData();
@@ -199,7 +190,7 @@ export default class Inspector extends Vue {
     this.loadingData = true;
     try {
       this.inputMetaData = await api.getFeaturesMetadata(this.dataset.id)
-      this.featuresToView = this.inputMetaData.filter(e=>e.name!=this.dataset.target).map(e => e.name)
+      this.featuresToView = this.inputMetaData.map(e => e.name)
 
       this.errorLoadingMetadata = ""
     } catch (e) {
