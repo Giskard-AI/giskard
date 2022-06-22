@@ -86,6 +86,8 @@ Get started with Giskard by reading [our documentation](https://docs.giskard.ai/
 
 <h3 >Installation</h3>
 
+**Requirements:** `docker` and `docker-compose`
+
 ```shell
 git clone https://github.com/Giskard-AI/giskard.git
 cd giskard
