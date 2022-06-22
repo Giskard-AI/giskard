@@ -2,7 +2,7 @@
   <img width="500" alt="giskardlogo" src="readme/Logo_full_darkgreen.png">
 </p>
 <h1 align="center" weight='300' >Open-Source CI/CD platform for ML teams</h1>
-<h2 align="center" weight='300' >Deliver ML products, better & faster. </h2>
+<h3 align="center" weight='300' >Deliver ML products, better & faster</h3>
 <br />
 
 ⚡ **Collaborate faster** with **feedback** from business stakeholders.<br/>
@@ -56,7 +56,7 @@ http://localhost:19000
   
   Improve ML models with business stakeholders in no time.
   
- <h3>Get automated test suites in seconds.</h3>
+ <h3>Get automated test suites in seconds</h3>
   
   <a href="https://app.arcade.software/share/zPfpXFt8lRm5XDkaWM85">
          <img width='600' alt="Interactive demo" src="readme/test.png">
