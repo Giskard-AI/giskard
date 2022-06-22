@@ -36,7 +36,7 @@ http://localhost:19000
 <h3>Upload your model</h3>
 
   <a align='center' href="https://app.arcade.software/share/zPfpXFt8lRm5XDkaWM85">
-         <img width='600' alt="Interactive demo" src="readme/upload.png">
+         <img width='500' alt="Interactive demo" src="readme/upload.png">
       </a>
 <br/>
   <br/>
