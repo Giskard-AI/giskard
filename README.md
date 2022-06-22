@@ -28,24 +28,7 @@
          <img width='600' align='center' alt="Interactive demo" src="readme/demo.png">
       </a>
 <br/>
-<h3 >Installation</h3>
 
-<h4>Requirements</h4>
-
-- [docker](https://docs.docker.com/get-docker/) 
-- [docker-compose](https://docs.docker.com/compose/install/) 
-
-```shell
-git clone https://github.com/Giskard-AI/giskard.git
-cd giskard
-docker-compose up -d
-```
-
-After the application is started you can access at:
-
-http://localhost:19000
-
-> login / password: **admin** / **admin**
 
 <h3>Upload your model</h3>
 
@@ -83,10 +66,37 @@ http://localhost:19000
 
   Exhaustive test suites, backed by  State-of-the-Art ML research.</br>
   [👉 Documentation](https://docs.giskard.ai/start/guides/create-tests-from-your-review)
+  
+   <h3>Deploy tests in your CI/CD Pipeline</h3>
+  
+  <a href="https://app.arcade.software/share/zPfpXFt8lRm5XDkaWM85">
+         <img width='600' alt="Deploy tests in CI/CD Pipeline" src="readme/pipeline.png">
+      </a>
+<br/>
+   <br/>
+   <br/>
+  
+
+  Protect your ML models against the risk of regressions, drift and bias.</br>
+  [👉 Documentation](https://docs.giskard.ai/start/)
 
 <h3>Get Started</h3>
 
 Get started with Giskard by reading [our documentation](https://docs.giskard.ai/)
+
+<h3 >Installation</h3>
+
+```shell
+git clone https://github.com/Giskard-AI/giskard.git
+cd giskard
+docker-compose up -d
+```
+
+After the application is started you can access at:
+
+http://localhost:19000
+
+> login / password: **admin** / **admin**
 
 <h3>Community</h3>
 
