@@ -42,8 +42,8 @@ http://localhost:19000
   <br/>
   <br/>
   
-  Easy upload for any Python model: PyTorch, TensorFlow, Transformers, Scikit-learn, etc.
-
+  Easy upload for any Python model: PyTorch, TensorFlow, Transformers, Scikit-learn, etc. </br>
+[👉 Documentation](https://docs.giskard.ai/start/guides/upload-your-model)
 
 <h3>Collect feedback on your model</h3>
   
@@ -54,7 +54,8 @@ http://localhost:19000
   <br/>
   <br/>
   
-  Improve ML models with business stakeholders in no time.
+  Improve ML models with business stakeholders in no time. </br>
+[👉 Documentation](https://docs.giskard.ai/start/guides/review-your-model)
   
  <h3>Get automated test suites in seconds</h3>
   
@@ -66,7 +67,8 @@ http://localhost:19000
    <br/>
   
 
-  Exhaustive test suites, backed by  State-of-the-Art ML research.
+  Exhaustive test suites, backed by  State-of-the-Art ML research.</br>
+  [👉 Documentation](https://docs.giskard.ai/start/guides/create-tests-from-your-review)
 
 <h3>Get Started</h3>
 
