@@ -388,24 +388,33 @@ class DriftTests(AbstractTestCollection):
                 psi result message
 
         """
-        prediction_reference = model.run_predict(reference_slice.df).prediction
-        prediction_actual = model.run_predict(actual_slice.df).prediction
-        total_psi, output_data = self._calculate_drift_psi(prediction_reference, prediction_actual, max_categories)
+        reference_slice = reference_slice.df.reset_index(drop=True)
+        actual_slice = actual_slice.df.reset_index(drop=True)
+        prediction_reference = pd.Series(model.run_predict(reference_slice).prediction)
+        prediction_actual = pd.Series(model.run_predict(actual_slice).prediction)
+        total_psi, output_data = self._calculate_drift_psi(prediction_actual, prediction_reference, max_categories)
 
         passed = True if threshold is None else total_psi <= threshold
         messages: Union[typing.List[TestMessage], None] = None
+        output_df_sample = None
+
         if not passed:
             main_drifting_modalities_bool = output_data["Psi"] > psi_contribution_percent * total_psi
             modalities_list = output_data[main_drifting_modalities_bool]["Modality"].tolist()
+            filtered_modalities = [w for w in modalities_list if not re.match('^other_modalities_[a-z0-9]{32}$', w)]
+            failed_df = actual_slice.loc[prediction_actual.isin(filtered_modalities)]
+            output_df_sample = compress(save_df(failed_df))
+
             messages = [TestMessage(
                 type=TestMessageType.ERROR,
-                text=f"The prediction is drifting for the following modalities {*modalities_list,}"
+                text=f"The prediction is drifting for the following modalities {*filtered_modalities,}"
             )]
 
         return self.save_results(SingleTestResult(
             passed=passed,
             metric=total_psi,
-            messages=messages
+            messages=messages,
+            output_df=output_df_sample
         ))
 
     def test_drift_prediction_chi_square(self, reference_slice, actual_slice, model,
@@ -444,25 +453,37 @@ class DriftTests(AbstractTestCollection):
                 message describing if prediction is drifting or not
 
         """
-        prediction_reference = model.run_predict(reference_slice.df).prediction
-        prediction_actual = model.run_predict(actual_slice.df).prediction
-        chi_square, p_value, output_data = self._calculate_chi_square(prediction_reference, prediction_actual,
+        reference_slice = reference_slice.df.reset_index(drop=True)
+        actual_slice = actual_slice.df.reset_index(drop=True)
+        prediction_reference = pd.Series(model.run_predict(reference_slice).prediction)
+        prediction_actual = pd.Series(model.run_predict(actual_slice).prediction)
+
+        chi_square, p_value, output_data = self._calculate_chi_square(prediction_actual, prediction_reference,
                                                                       max_categories)
 
         passed = p_value > threshold
         messages: Union[typing.List[TestMessage], None] = None
+        output_df_sample = None
+
         if not passed:
             main_drifting_modalities_bool = output_data["Chi_square"] > chi_square_contribution_percent * chi_square
             modalities_list = output_data[main_drifting_modalities_bool]["Modality"].tolist()
+
+            filtered_modalities = [w for w in modalities_list if not re.match('^other_modalities_[a-z0-9]{32}$', w)]
+            failed_df = actual_slice.loc[prediction_actual.isin(filtered_modalities)]
+
+            output_df_sample = compress(save_df(failed_df))
             messages = [TestMessage(
                 type=TestMessageType.ERROR,
-                text=f"The prediction is drifting for the following modalities {*modalities_list,}"
+                text=f"The prediction is drifting for the following modalities {*filtered_modalities,}"
             )]
 
         return self.save_results(SingleTestResult(
             passed=passed,
             metric=p_value,
-            messages=messages
+            messages=messages,
+            output_df=output_df_sample
+
         ))
 
     def test_drift_prediction_ks(self,
