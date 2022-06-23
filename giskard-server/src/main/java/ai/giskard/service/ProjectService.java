@@ -29,7 +29,7 @@ public class ProjectService {
     final ProjectRepository projectRepository;
     final GiskardMapper giskardMapper;
 
-    public static final Pattern PROJECT_KEY_PATTERN = Pattern.compile("^[a-z\\d_]+$");
+    public static final Pattern PROJECT_KEY_PATTERN = Pattern.compile("^[a-z\\d-]+$");
 
     /**
      * Update project
@@ -50,7 +50,9 @@ public class ProjectService {
 
     private void validateProjectKey(String projectKey) {
         if (!isProjectKeyValid(projectKey)) {
-            throw new IllegalArgumentException(String.format("Project key %s is not valid. Project keys can contain lower case latin characters, digits and underscores", projectKey));
+            throw new IllegalArgumentException(String.format(
+                    "Project key %s is not valid. Project keys can contain lower case latin characters, digits and underscores",
+                    projectKey));
         }
     }
 
@@ -79,7 +81,8 @@ public class ProjectService {
      * @return boolean
      */
     public boolean isUserInGuestList(Set<User> userList) {
-        return userList.stream().anyMatch(guest -> guest.getLogin().equals(SecurityUtils.getCurrentAuthenticatedUserLogin()));
+        return userList.stream()
+                .anyMatch(guest -> guest.getLogin().equals(SecurityUtils.getCurrentAuthenticatedUserLogin()));
     }
 
     /**
@@ -101,7 +104,8 @@ public class ProjectService {
      */
     public Project uninvite(Long id, Long userId) {
         User user = userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException(Entity.USER, userId));
-        Project project = projectRepository.findOneWithGuestsById(id).orElseThrow(() -> new EntityNotFoundException(Entity.PROJECT, id));
+        Project project = projectRepository.findOneWithGuestsById(id)
+                .orElseThrow(() -> new EntityNotFoundException(Entity.PROJECT, id));
         project.removeGuest(user);
         projectRepository.save(project);
         return project;
@@ -116,7 +120,8 @@ public class ProjectService {
      */
     public Project invite(Long id, Long userId) {
         User user = userRepository.getById(userId);
-        Project project = projectRepository.findOneWithGuestsById(id).orElseThrow(() -> new EntityNotFoundException(Entity.PROJECT, id));
+        Project project = projectRepository.findOneWithGuestsById(id)
+                .orElseThrow(() -> new EntityNotFoundException(Entity.PROJECT, id));
         project.addGuest(user);
         projectRepository.save(project);
         return project;
@@ -130,7 +135,8 @@ public class ProjectService {
      */
     public List<Project> list() {
         String username = SecurityUtils.getCurrentAuthenticatedUserLogin().toLowerCase();
-        User user = userRepository.findOneByLogin(username).orElseThrow(() -> new NotInDatabaseException(Entity.USER, username));
+        User user = userRepository.findOneByLogin(username)
+                .orElseThrow(() -> new NotInDatabaseException(Entity.USER, username));
         List<Project> projects;
         if (SecurityUtils.isCurrentUserAdmin()) {
             projects = projectRepository.findAll();
