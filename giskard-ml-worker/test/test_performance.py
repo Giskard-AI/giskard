@@ -108,8 +108,8 @@ def _test_rmse(diabetes_dataset_with_target, linear_regression_diabetes, thresho
 
 
 def test_rmse(diabetes_dataset_with_target, linear_regression_diabetes):
-    assert _test_rmse(diabetes_dataset_with_target, linear_regression_diabetes, 54)
-    assert not _test_rmse(diabetes_dataset_with_target, linear_regression_diabetes, 53)
+    assert _test_rmse(diabetes_dataset_with_target, linear_regression_diabetes, 52)
+    assert not _test_rmse(diabetes_dataset_with_target, linear_regression_diabetes, 54)
 
 
 def _test_mae(diabetes_dataset_with_target, linear_regression_diabetes, threshold=44):
@@ -126,8 +126,8 @@ def _test_mae(diabetes_dataset_with_target, linear_regression_diabetes, threshol
 
 
 def test_mae(diabetes_dataset_with_target, linear_regression_diabetes):
-    assert _test_mae(diabetes_dataset_with_target, linear_regression_diabetes, 44)
-    assert not _test_mae(diabetes_dataset_with_target, linear_regression_diabetes, 43)
+    assert _test_mae(diabetes_dataset_with_target, linear_regression_diabetes, 43)
+    assert not _test_mae(diabetes_dataset_with_target, linear_regression_diabetes, 44)
 
 
 def _test_r2(diabetes_dataset_with_target, linear_regression_diabetes, threshold):
@@ -142,13 +142,13 @@ def _test_r2(diabetes_dataset_with_target, linear_regression_diabetes, threshold
     test_execution = tests.tests_results[0]
     result = test_execution.result
     assert test_execution.name == 'test_r2'
-    assert round(result.metric, 2) == 0.06
+    assert round(result.metric, 2) == 0.52
     return result.passed
 
 
 def test_r2(diabetes_dataset_with_target, linear_regression_diabetes):
     assert _test_r2(diabetes_dataset_with_target, linear_regression_diabetes, 0.062)
-    assert not _test_r2(diabetes_dataset_with_target, linear_regression_diabetes, 0.064)
+    assert not _test_r2(diabetes_dataset_with_target, linear_regression_diabetes, 0.6)
 
 
 def _test_diff_accuracy(german_credit_data, german_credit_model, threshold):
@@ -163,7 +163,7 @@ def _test_diff_accuracy(german_credit_data, german_credit_model, threshold):
     test_execution = tests.tests_results[0]
     result = test_execution.result
     assert test_execution.name == 'test_diff_accuracy'
-    assert round(result.metric, 2) == 0.03
+    assert round(result.metric, 2) == 0.04
     return result.passed
 
 
