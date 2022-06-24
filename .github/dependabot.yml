@@ -6,12 +6,17 @@
 version: 2
 updates:
   - package-ecosystem: "pip"
-    directory: "/backend/app"
+    directory: "/giskard-ml-worker"
+    schedule:
+      interval: "weekly"
+
+  - package-ecosystem: "gradle"
+    directory: "/giskard-server"
     schedule:
       interval: "weekly"
 
   - package-ecosystem: "npm"
-    directory: "/frontend"
+    directory: "/giskard-frontend"
     schedule:
       interval: "weekly"
 
