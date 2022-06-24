@@ -62,7 +62,7 @@ services:
       - --NotebookApp.allow_origin='*'
       - --NotebookApp.base_url='/jupyter'
     volumes:
-      - ./giskard-demo-notebook/notebook/German_credit_scoring_giskard.ipynb:/home/jovyan/German_credit_scoring_giskard.ipynb
+      - ./giskard-demo-notebook/notebook/german_credit.ipynb:/home/jovyan/german_credit.ipynb
       - ./giskard-demo-notebook/notebook/german_credit_prepared.csv:/home/jovyan/german_credit_prepared.csv
 
 volumes:

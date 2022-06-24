@@ -20,6 +20,9 @@ scikit-learn = ">=1.0.2"
 shap = ">=0.40.0"
 zstandard = "^0.15.2"
 numpy = "^1.21.6"
+#torch = ">=1.10.0"
+#tensorflow = ">=2.0.0"
+#catboost = ">=1.0.6"
 
 [tool.poetry.dev-dependencies]
 grpcio-tools = ">=1.46.3"
