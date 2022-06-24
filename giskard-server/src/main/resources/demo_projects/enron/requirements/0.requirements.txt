@@ -96,7 +96,7 @@ networkx==2.6.3
 nltk==3.7
 notebook==6.4.11
 numba==0.55.2
-numpy==1.21.6
+numpy==1.22.0
 oauthlib==3.2.0
 opt-einsum==3.3.0
 packaging==21.3
