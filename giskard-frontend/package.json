@@ -48,7 +48,7 @@
     "@vue/cli-plugin-pwa": "^5.0.4",
     "@vue/cli-plugin-typescript": "^5.0.4",
     "@vue/cli-service": "^5.0.4",
-    "@vue/composition-api": "^1.6.2",
+    "@vue/composition-api": "^1.6.3",
     "@vue/eslint-config-typescript": "^10.0.0",
     "@vue/test-utils": "^1.2.2",
     "eslint": "^8.17.0",
