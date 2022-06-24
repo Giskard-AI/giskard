@@ -27,7 +27,7 @@
     "rrweb-snapshot": "^1.1.14",
     "typesafe-vuex": "^3.2.2",
     "vee-validate": "^3.4.13",
-    "vue": "^2.0.0",
+    "vue": "^3.2.37",
     "vue-class-component": "^7.2.6",
     "vue-echarts": "^6.0.3",
     "vue-moment": "^4.1.0",
