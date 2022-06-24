@@ -79,6 +79,7 @@ public class ModelService {
 
 
     public Inspection createInspection(Long modelId, Long datasetId) throws IOException {
+        log.info("Creating inspection for model {} and dataset {}", modelId, datasetId);
         ProjectModel model = modelRepository.getById(modelId);
         Dataset dataset = datasetRepository.getById(datasetId);
         permissionEvaluator.validateCanReadProject(model.getProject().getId());
