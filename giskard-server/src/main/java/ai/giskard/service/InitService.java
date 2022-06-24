@@ -254,6 +254,7 @@ public class InitService {
      * Initialized with default projects
      */
     public void initProjects() {
+        logger.info("Creating demo projects");
         projects.forEach((key, config) -> {
             try {
                 saveProject(key, config.creator);
@@ -270,20 +271,21 @@ public class InitService {
      * @param ownerUserName login of the owner
      */
     private void saveProject(String projectKey, String ownerUserName) throws IOException {
-        String projectName = projects.get(projectKey).name;
-        String ownerLogin = ownerUserName.toLowerCase();
-        User owner = userRepository.getOneByLogin(ownerLogin);
-        Assert.notNull(owner, "Owner does not exist in database");
-        Project project = new Project(projectKey, projectName, projectName, owner);
-        if (projectRepository.findOneByName(projectName).isEmpty()) {
+        if (projectRepository.findOneByKey(projectKey).isEmpty()) {
+            String projectName = projects.get(projectKey).name;
+            String ownerLogin = ownerUserName.toLowerCase();
+            User owner = userRepository.getOneByLogin(ownerLogin);
+            Assert.notNull(owner, "Owner does not exist in database");
+            Project project = new Project(projectKey, projectName, projectName, owner);
             projectService.create(project, ownerLogin);
             projectRepository.save(project);
             List<String> models = getFileNames(projectKey, "models");
-            models.stream().forEach(e -> uploadModel(projectKey, e));
+            models.forEach(e -> uploadModel(projectKey, e));
             List<String> datasets = getFileNames(projectKey, "datasets");
-            datasets.stream().forEach(e -> uploadDataframe(projectKey, e));
+            datasets.forEach(e -> uploadDataframe(projectKey, e));
+            logger.info("Created project: {}", projectName);
         } else {
-            logger.info(String.format("Project with name %s already exists", projectName));
+            logger.info(String.format("Project with key %s already exists", projectKey));
         }
     }
 
