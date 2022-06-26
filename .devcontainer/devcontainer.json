@@ -18,19 +18,31 @@
 	"workspaceFolder": "/workspace",
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
 	"forwardPorts": [
-		19000
+		19000,
+		8080
 	],
+	// Use 'portsAttributes' to set default properties for specific forwarded ports. More info: https://code.visualstudio.com/docs/remote/devcontainerjson-reference.
+	"portsAttributes": {
+		"19000": {
+			"label": "Preview environment - PROD",
+			"onAutoForward": "openBrowser"
+		},
+		"8080": {
+			"label": "Preview environment - DEV",
+			"onAutoForward": "notify"
+		}
+	},
 	"hostRequirements": {
 		"cpus": 4,
 		"memory": "8gb",
 		"storage": "32gb"
-	}
+	},
 	// Uncomment the next line if you want start specific services in your Docker Compose config.
 	// "runServices": [],
 	// Uncomment the next line if you want to keep your containers running after VS Code shuts down.
 	// "shutdownAction": "none",
-	// Uncomment the next line to run commands after the container is created - for example installing curl.
-	// "postCreateCommand": "apt-get update && apt-get install -y curl",
+	// Uncomment the next line to run commands after the container is created - for example running the frontend dev mode.
+	"postCreateCommand": "cd giskard-frontend && npm install && npm run serve"
 	// Uncomment to connect as a non-root user if you've added one. See https://aka.ms/vscode-remote/containers/non-root.
 	// "remoteUser": "vscode"
 }
