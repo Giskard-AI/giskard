@@ -32,12 +32,14 @@
 		"memory": "8gb",
 		"storage": "32gb"
 	},
-	"features": {
-		"docker-from-docker": {
-			"version": "latest",
-			"moby": true
-		}
-	}
+	// Uncomment the lines below to activate Docker-from-Docker feature. More info: https://github.com/microsoft/vscode-dev-containers/blob/main/script-library/docs/docker.md
+	// Warning: not working at the moment. Will need debugging when we have time for this.
+	// "features": {
+	// 	"docker-from-docker": {
+	// 		"version": "latest",
+	// 		"moby": true
+	// 	}
+	// }
 	// Uncomment the next line if you want start specific services in your Docker Compose config.
 	// "runServices": [],
 	// Uncomment the next line if you want to keep your containers running after VS Code shuts down.
