@@ -34,8 +34,7 @@
                :originalData='originalData'
                :inputData.sync='inputData'
                @reset='resetInput'
-               @submitValueFeedback='submitValueFeedback'
-               @submitVariationFeedback='submitValueVariationFeedback'
+               @submitFeedback='submitFeedback'
     />
 
     <!-- For general feedback -->
@@ -96,12 +95,11 @@ import PredictionResults from './PredictionResults.vue';
 import PredictionExplanations from './PredictionExplanations.vue';
 import TextExplanation from './TextExplanation.vue';
 import {api} from '@/api';
-import {readToken} from '@/store/main/getters';
 import FeedbackPopover from '@/components/FeedbackPopover.vue';
 import Inspector from './Inspector.vue';
 import Mousetrap from 'mousetrap';
 import RowList from '@/views/main/project/RowList.vue';
-import {CreateFeedbackDTO, InspectionDTO} from '@/generated-sources';
+import {CreateFeedbackDTO, FeedbackType, InspectionDTO} from '@/generated-sources';
 
 type CreatedFeedbackCommonDTO = {
   targetFeature: string;
@@ -230,7 +228,7 @@ export default class InspectorWrapper extends Vue {
   public async submitGeneralFeedback() {
     const feedback: CreateFeedbackDTO = {
       ...this.commonFeedbackData,
-      feedbackType: 'general',
+      feedbackType: FeedbackType.GENERAL,
       feedbackChoice: this.feedbackChoice,
       feedbackMessage: this.feedback
     };
@@ -242,19 +240,10 @@ export default class InspectorWrapper extends Vue {
     }
   }
 
-  public async submitValueFeedback(userData: object) {
+  public async submitFeedback(userData: object,feedbackType:FeedbackType ) {
     const feedback: CreateFeedbackDTO = {
       ...this.commonFeedbackData,
-      feedbackType: 'value',
-      ...userData
-    };
-    await this.doSubmitFeedback(feedback);
-  }
-
-  public async submitValueVariationFeedback(userData: object) {
-    const feedback: CreateFeedbackDTO = {
-      ...this.commonFeedbackData,
-      feedbackType: 'value perturbation',
+      feedbackType: feedbackType,
       ...userData
     };
     await this.doSubmitFeedback(feedback);

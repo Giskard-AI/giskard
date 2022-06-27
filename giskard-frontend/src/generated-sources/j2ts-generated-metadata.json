@@ -38,6 +38,7 @@
     "ai.giskard.web.dto.ml.NamedSingleTestResultDTO": "NamedSingleTestResultDTO",
     "ai.giskard.web.dto.user.RoleDTO": "RoleDTO",
     "ai.giskard.web.dto.ApplicationConfigDTO": "ApplicationConfigDTO",
+    "ai.giskard.domain.FeedbackType": "FeedbackType",
     "ai.giskard.web.dto.FeedbackMinimalDTO": "FeedbackMinimalDTO",
     "ai.giskard.web.dto.ml.DatasetDTO": "DatasetDTO",
     "ai.giskard.web.dto.PredictionDTO": "PredictionDTO",
