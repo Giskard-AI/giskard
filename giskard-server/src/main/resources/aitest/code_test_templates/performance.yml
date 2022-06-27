@@ -34,6 +34,8 @@ items:
               The AUC performance metric
           passed:
               tRUE if AUC metrics > threshold
+          output_df:
+              Dataframe containing all the incorrect rows of the given data slice
 
       """
       tests.performance.test_auc(
@@ -74,6 +76,8 @@ items:
               The F1 score metric
           passed:
               TRUE if F1 Score metrics > threshold
+          output_df:
+              Dataframe containing all the incorrect rows of the given data slice
       """
       tests.performance.test_f1(
           actual_slice=actual_ds.slice(lambda df: df.head(len(df) // 2)),
@@ -118,6 +122,8 @@ items:
               The F1 Score difference  metric
           passed:
               TRUE if F1 Score difference < threshold
+          output_df:
+              Dataframe containing all the incorrect rows of the two data slices
 
       """
       tests.performance.test_diff_f1(
@@ -163,6 +169,8 @@ items:
               The F1 Score difference  metric
           passed:
               TRUE if F1 Score difference < threshold
+          output_df:
+              Dataframe containing all the incorrect rows of the actual dataset
 
       """
       tests.performance.test_diff_reference_actual_f1(
@@ -204,6 +212,8 @@ items:
               The Accuracy metric
           passed:
               TRUE if Accuracy metrics > threshold
+          output_df:
+              Dataframe containing all the incorrect rows of the given data slice
 
       """
       tests.performance.test_accuracy(
@@ -248,6 +258,8 @@ items:
               The Accuracy difference  metric
           passed:
               TRUE if Accuracy difference < threshold
+          output_df:
+              Dataframe containing all the incorrect rows of the two data slices
       """
       tests.performance.test_diff_accuracy(
           actual_slice=actual_ds.slice(lambda df: df.head(len(df) // 2)),
@@ -291,6 +303,8 @@ items:
               The Accuracy difference  metric
           passed:
               TRUE if Accuracy difference < threshold
+          output_df:
+              Dataframe containing all the incorrect rows of the given actual dataset
       """
       tests.performance.test_diff_reference_actual_accuracy(
           actual_slice=actual_ds.slice(lambda df: df.head(len(df) // 2)),
@@ -330,6 +344,8 @@ items:
               The Precision metric
           passed:
               TRUE if Precision metrics > threshold
+          output_df:
+              Dataframe containing all the incorrect rows of the given data slice
 
       """
       tests.performance.test_precision(
@@ -374,6 +390,8 @@ items:
               The Precision difference  metric
           passed:
               TRUE if Precision difference < threshold
+          output_df:
+              Dataframe containing all the incorrect rows of the two data slices
       """
       tests.performance.test_diff_precision(
           actual_slice=actual_ds.slice(lambda df: df.head(len(df) // 2)),
@@ -413,6 +431,8 @@ items:
               The Recall metric
           passed:
               TRUE if Recall metric > threshold
+          output_df:
+              Dataframe containing all the incorrect rows of the given data slice
 
       """
       tests.performance.test_recall(
@@ -457,6 +477,8 @@ items:
               The Recall difference  metric
           passed:
               TRUE if Recall difference < threshold
+          output_df:
+              Dataframe containing all the incorrect rows of the two data slices
       """
       tests.performance.test_diff_recall(
           actual_slice=actual_ds.slice(lambda df: df.head(len(df) // 2)),
@@ -495,6 +517,8 @@ items:
               The RMSE metric
           passed:
               TRUE if RMSE metric < threshold
+          output_df:
+              Dataframe containing the rows with the top 30% the highest absolute error sorted with descending order
 
       """
       tests.performance.test_rmse(
@@ -538,6 +562,10 @@ items:
               The RMSE difference  metric
           passed:
               TRUE if RMSE difference < threshold
+          output_df:
+              Dataframe containing the rows with the top 15% the highest absolute error sorted with descending order
+              for both slices
+
       """
       tests.performance.test_diff_rmse(
           actual_slice=actual_ds.slice(lambda df: df.head(len(df) // 2)),
@@ -619,6 +647,8 @@ items:
               The MAE metric
           passed:
               TRUE if MAE metric < threshold
+          output_df:
+              Dataframe containing the rows with the top 30% the highest absolute error sorted with descending order
       """
       tests.performance.test_mae(
             actual_slice=actual_ds.slice(lambda df: df.head(len(df) // 2)),
@@ -656,6 +686,8 @@ items:
               The R-Squared metric
           passed:
               TRUE if R-Squared metric > threshold
+          output_df:
+              Dataframe containing the rows with the top 30% the highest absolute error sorted with descending order
 
       """
       tests.performance.test_r2(

@@ -249,7 +249,7 @@ class PerformanceTests(AbstractTestCollection):
                 TRUE if RMSE metric < threshold
 
         """
-        return self._test_regression_score(self._get_rmse, actual_slice, model, threshold, percent_rows,
+        return self._test_regression_score(self._get_rmse, actual_slice, model, threshold, percent_rows=percent_rows,
                                            compress_df=compress_df)
 
     def test_mae(self, actual_slice, model: GiskardModel, threshold=1, percent_rows=0.3, compress_df=True):
@@ -275,7 +275,7 @@ class PerformanceTests(AbstractTestCollection):
                 TRUE if MAE metric < threshold
 
         """
-        return self._test_regression_score(mean_absolute_error, actual_slice, model, threshold, percent_rows,
+        return self._test_regression_score(mean_absolute_error, actual_slice, model, threshold, percent_rows=percent_rows,
                                            compress_df=compress_df)
 
     def test_r2(self, actual_slice, model: GiskardModel, threshold=1):
@@ -303,14 +303,17 @@ class PerformanceTests(AbstractTestCollection):
         """
         return self._test_regression_score(r2_score, actual_slice, model, threshold, r2=True)
 
-    def _test_diff_prediction(self, test_fn, model, actual_slice, reference_slice, threshold, compress_df=False):
+    def _test_diff_prediction(self, test_fn, model, actual_slice, reference_slice, threshold, compress_df=False,
+                              percent_rows=None):
         self.do_save_results = False
-        result_1 = test_fn(reference_slice, model, compress_df=compress_df)
+        result_1 = test_fn(reference_slice, model, compress_df=compress_df, percent_rows=percent_rows) if percent_rows is not None \
+            else test_fn(reference_slice, model, compress_df=compress_df)
         metric_1 = result_1.metric
         # output_df_1 = pd.read_csv(BytesIO(decompress(result_1.output_df)))
         output_df_1 = result_1.output_df
 
-        result_2 = test_fn(actual_slice, model, compress_df=compress_df)
+        result_2 = test_fn(actual_slice, model, compress_df=compress_df, percent_rows=percent_rows) if percent_rows is not None \
+            else test_fn(actual_slice, model, compress_df=compress_df)
         metric_2 = result_2.metric
         # output_df_2 = pd.read_csv(BytesIO(decompress(result_2.output_df)))
         output_df_2 = result_2.output_df
@@ -447,25 +450,18 @@ class PerformanceTests(AbstractTestCollection):
         """
         return self._test_diff_prediction(self.test_recall, model, actual_slice, reference_slice, threshold)
 
-    def _test_diff_reference_actual(self, test_fn, model, reference_slice, actual_slice, threshold=0.1,
-                                    compress_df=False):
+    def _test_diff_reference_actual(self, test_fn, model, reference_slice, actual_slice, threshold=0.1):
         self.do_save_results = False
         result_1 = test_fn(reference_slice, model)
-        # result_1 = test_fn(reference_slice, model, compress_df=compress_df)
         metric_1 = result_1.metric
-        # output_df_1 = pd.read_csv(BytesIO(decompress(result_1.output_df)))
-        # output_df_1 = result_1.output_df
 
-        result_2 = test_fn(actual_slice, model)  # need to verify
-        # result_2 = test_fn(actual_slice, model, compress_df=compress_df)
+        result_2 = test_fn(actual_slice, model)
         metric_2 = result_2.metric
-        # output_df_2 = pd.read_csv(BytesIO(decompress(result_2.output_df)))
         output_df_2 = result_2.output_df
 
         self.do_save_results = True
         change_pct = abs(metric_1 - metric_2) / metric_1
         output_df_sample = compress(save_df(output_df_2))
-        # output_df_sample = compress(save_df(pd.concat([output_df_1, output_df_2])))
 
         return self.save_results(
             SingleTestResult(
@@ -535,7 +531,7 @@ class PerformanceTests(AbstractTestCollection):
         """
         return self._test_diff_reference_actual(self.test_accuracy, model, reference_slice, actual_slice, threshold)
 
-    def test_diff_rmse(self, actual_slice, reference_slice, model, threshold=0.1, compress_df=False):
+    def test_diff_rmse(self, actual_slice, reference_slice, model, threshold=0.1, percent_rows=0.15):
         """
         Test if the absolute percentage change of model RMSE between two samples is lower than a threshold
 
@@ -562,7 +558,7 @@ class PerformanceTests(AbstractTestCollection):
             passed:
                 TRUE if RMSE difference < threshold
         """
-        return self._test_diff_prediction(self.test_rmse, model, actual_slice, reference_slice, threshold)
+        return self._test_diff_prediction(self.test_rmse, model, actual_slice, reference_slice, threshold, percent_rows=percent_rows)
 
     def test_diff_reference_actual_rmse(self, reference_slice, actual_slice, model, threshold=0.1):
         """
