@@ -11,7 +11,7 @@ plugins {
     id "eclipse"
     id "jacoco"
     id "org.springframework.boot" version "${springBootVersion}"
-    id "com.google.cloud.tools.jib" version "3.2.0"
+    id "com.google.cloud.tools.jib" version "3.2.1"
     id "com.gorylenko.gradle-git-properties" version "2.4.0"
     id "io.freefair.lombok" version "6.4.1"
     id "org.liquibase.gradle" version "2.1.1"
@@ -262,7 +262,7 @@ dependencies {
     implementation "org.springframework.security:spring-security-web"
     implementation "io.jsonwebtoken:jjwt-api"
     implementation group: 'tech.tablesaw', name: 'tablesaw-core', version: '0.43.1'
-    implementation group: 'tech.tablesaw', name: 'tablesaw-json', version: '0.34.2'
+    implementation group: 'tech.tablesaw', name: 'tablesaw-json', version: '0.43.1'
     implementation group: 'org.apache.commons', name: 'commons-compress', version: '1.21'
     if (!project.hasProperty("gae")) {
         runtimeOnly "io.jsonwebtoken:jjwt-impl"
@@ -272,7 +272,7 @@ dependencies {
         implementation "io.jsonwebtoken:jjwt-jackson"
     }
     implementation("org.springdoc:springdoc-openapi-webmvc-core")
-    implementation group: 'org.springdoc', name: 'springdoc-openapi-ui', version: '1.6.7'
+    implementation group: 'org.springdoc', name: 'springdoc-openapi-ui', version: '1.6.9'
     implementation "org.postgresql:postgresql"
     implementation "com.h2database:h2"
     liquibaseRuntime "org.postgresql:postgresql"
