@@ -32,6 +32,7 @@ def _test_f1(german_credit_data, german_credit_model, threshold):
     assert results.actual_slices_size[0] == 1000
 
     assert round(results.metric, 2) == 0.85
+    assert type(results.output_df) is bytes
     return results.passed
 
 
@@ -50,6 +51,8 @@ def _test_precision(german_credit_data, german_credit_model, threshold):
 
     assert results.actual_slices_size[0] == 1000
     assert round(results.metric, 2) == 0.81
+    assert type(results.output_df) is bytes
+
     return results.passed
 
 
@@ -68,6 +71,7 @@ def _test_recall(german_credit_data, german_credit_model, threshold):
 
     assert results.actual_slices_size[0] == 1000
     assert round(results.metric, 2) == 0.89
+    assert type(results.output_df) is bytes
     return results.passed
 
 
@@ -86,6 +90,7 @@ def _test_accuracy(german_credit_data, german_credit_model, threshold):
 
     assert results.actual_slices_size[0] == 1000
     assert round(results.metric, 2) == 0.78
+    assert type(results.output_df) is bytes
     return results.passed
 
 
@@ -104,12 +109,13 @@ def _test_rmse(diabetes_dataset_with_target, linear_regression_diabetes, thresho
 
     assert results.actual_slices_size[0] == 442
     assert round(results.metric, 2) == 53.49
+    assert type(results.output_df) is bytes
     return results.passed
 
 
 def test_rmse(diabetes_dataset_with_target, linear_regression_diabetes):
-    assert _test_rmse(diabetes_dataset_with_target, linear_regression_diabetes, 52)
-    assert not _test_rmse(diabetes_dataset_with_target, linear_regression_diabetes, 54)
+    assert not _test_rmse(diabetes_dataset_with_target, linear_regression_diabetes, 52)
+    assert  _test_rmse(diabetes_dataset_with_target, linear_regression_diabetes, 54)
 
 
 def _test_mae(diabetes_dataset_with_target, linear_regression_diabetes, threshold=44):
@@ -122,12 +128,13 @@ def _test_mae(diabetes_dataset_with_target, linear_regression_diabetes, threshol
 
     assert results.actual_slices_size[0] == 442
     assert round(results.metric, 2) == 43.3
+    assert type(results.output_df) is bytes
     return results.passed
 
 
 def test_mae(diabetes_dataset_with_target, linear_regression_diabetes):
-    assert _test_mae(diabetes_dataset_with_target, linear_regression_diabetes, 43)
-    assert not _test_mae(diabetes_dataset_with_target, linear_regression_diabetes, 44)
+    assert not _test_mae(diabetes_dataset_with_target, linear_regression_diabetes, 43)
+    assert  _test_mae(diabetes_dataset_with_target, linear_regression_diabetes, 44)
 
 
 def _test_r2(diabetes_dataset_with_target, linear_regression_diabetes, threshold):
@@ -143,6 +150,7 @@ def _test_r2(diabetes_dataset_with_target, linear_regression_diabetes, threshold
     result = test_execution.result
     assert test_execution.name == 'test_r2'
     assert round(result.metric, 2) == 0.52
+    assert type(result.output_df) is bytes
     return result.passed
 
 
@@ -164,6 +172,7 @@ def _test_diff_accuracy(german_credit_data, german_credit_model, threshold):
     result = test_execution.result
     assert test_execution.name == 'test_diff_accuracy'
     assert round(result.metric, 2) == 0.04
+    assert type(result.output_df) is bytes
     return result.passed
 
 
@@ -181,6 +190,7 @@ def _test_diff_f1(german_credit_data, german_credit_model, threshold):
         threshold=threshold
     )
     assert round(result.metric, 2) == 0.05
+    assert type(result.output_df) is bytes
     return result.passed
 
 
@@ -198,6 +208,7 @@ def _test_diff_recall(german_credit_data, german_credit_model, threshold):
         threshold=threshold
     )
     assert round(result.metric, 2) == 0.09
+    assert type(result.output_df) is bytes
     return result.passed
 
 
@@ -215,6 +226,7 @@ def _test_diff_precision(german_credit_data, german_credit_model, threshold):
         threshold=threshold
     )
     assert round(result.metric, 2) == 0.01
+    assert type(result.output_df) is bytes
     return result.passed
 
 
@@ -232,6 +244,7 @@ def _test_diff_rmse(diabetes_dataset_with_target, linear_regression_diabetes, th
         threshold=threshold
     )
     assert round(result.metric, 2) == 0.08
+    assert type(result.output_df) is bytes
     return result.passed
 
 
@@ -249,6 +262,7 @@ def _test_diff_reference_actual_f1(german_credit_data, german_credit_model, thre
         threshold=threshold
     )
     assert round(result.metric, 2) == 0.03
+    assert type(result.output_df) is bytes
     return result.passed
 
 
@@ -266,6 +280,7 @@ def _test_diff_reference_actual_accuracy(german_credit_data, german_credit_model
         threshold=threshold
     )
     assert round(result.metric, 2) == 0.03
+    assert type(result.output_df) is bytes
     return result.passed
 
 
@@ -283,6 +298,7 @@ def _test_diff_reference_actual_rmse(diabetes_dataset_with_target, linear_regres
         threshold=threshold
     )
     assert round(result.metric, 2) == 0.02
+    assert type(result.output_df) is bytes
     return result.passed
 
 
