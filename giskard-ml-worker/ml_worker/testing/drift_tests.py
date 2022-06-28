@@ -13,24 +13,24 @@ from generated.ml_worker_pb2 import SingleTestResult, TestMessage, TestMessageTy
 from ml_worker.core.giskard_dataset import GiskardDataset
 from ml_worker.core.model import GiskardModel
 from ml_worker.testing.abstract_test_collection import AbstractTestCollection
-from ml_worker.testing.utils import save_df, compress
+from ml_worker.testing.utils import save_df, compress, bin_numerical_values
 
 
 class DriftTests(AbstractTestCollection):
     @staticmethod
-    def _calculate_psi(category, actual_distribution, expected_distribution):
+    def _calculate_modality_drift(category, actual_distribution, expected_distribution):
         # To use log and avoid zero distribution probability,
         # we bound distribution probability by min_distribution_probability
         min_distribution_probability = 0.0001
 
         expected_distribution_bounded = max(expected_distribution[category], min_distribution_probability)
         actual_distribution_bounded = max(actual_distribution[category], min_distribution_probability)
-        modality_psi = (expected_distribution_bounded - actual_distribution_bounded) * \
-                       np.log(expected_distribution_bounded / actual_distribution_bounded)
-        return modality_psi
+        modality_drift = (expected_distribution_bounded - actual_distribution_bounded) * \
+                        np.log(expected_distribution_bounded / actual_distribution_bounded)
+        return modality_drift
 
     @staticmethod
-    def _calculate_frequencies(actual_series, reference_series, max_categories):
+    def _calculate_frequencies(actual_series, reference_series, max_categories=None):
         all_modalities = list(set(reference_series).union(set(actual_series)))
         if max_categories is not None and len(all_modalities) > max_categories:
             var_count_expected = dict(Counter(reference_series).most_common(max_categories))
@@ -60,7 +60,7 @@ class DriftTests(AbstractTestCollection):
         total_psi = 0
         output_data = pd.DataFrame(columns=["Modality", "Reference_distribution", "Actual_distribution", "Psi"])
         for category in range(len(all_modalities)):
-            modality_psi = DriftTests._calculate_psi(category, actual_distribution, expected_distribution)
+            modality_psi = DriftTests._calculate_modality_drift(category, actual_distribution, expected_distribution)
 
             total_psi += modality_psi
             row = {
@@ -72,6 +72,29 @@ class DriftTests(AbstractTestCollection):
 
             output_data = output_data.append(pd.Series(row), ignore_index=True)
         return total_psi, output_data
+
+    @staticmethod
+    def _calculate_numerical_drift(actual_series, reference_series):
+        all_modalities, actual_frequencies, expected_frequencies = DriftTests._calculate_frequencies(
+            actual_series, reference_series)
+        expected_distribution = expected_frequencies / len(reference_series)
+        actual_distribution = actual_frequencies / len(actual_series)
+        total_drift = 0
+        output_data = pd.DataFrame(
+            columns=["Modality", "Reference_distribution", "Actual_distribution", "Modality_drift"])
+        for category in range(len(all_modalities)):
+            modality_drift = DriftTests._calculate_modality_drift(category, actual_distribution, expected_distribution)
+
+            total_drift += modality_drift
+            row = {
+                "Modality": all_modalities[category],
+                "Reference_distribution": expected_distribution[category],
+                "Actual_distribution": expected_distribution[category],
+                "Modality_drift": modality_drift
+            }
+
+            output_data = output_data.append(pd.Series(row), ignore_index=True)
+        return total_drift, output_data
 
     @staticmethod
     def _calculate_ks(actual_series, reference_series) -> Ks_2sampResult:
@@ -224,7 +247,6 @@ class DriftTests(AbstractTestCollection):
         Returns:
             metric:
                 the pvalue of chi square test
-
             passed:
                 TRUE if metric > threshold
 
@@ -281,16 +303,10 @@ class DriftTests(AbstractTestCollection):
                 Name of column with numerical feature
             threshold:
                 threshold for p-value of KS test
-            max_categories:
-                maxiumum number of modalities
 
         Returns:
-            KS_statistics :
-            the KS statistics of the test. The higher the value, the higher the drift
-
             metric:
                 the pvalue of KS test
-
             passed:
                 TRUE if metric > threshold
         """
@@ -301,13 +317,25 @@ class DriftTests(AbstractTestCollection):
             f'"{column_name}" is not a column of Reference Dataset Columns: {",".join(reference_ds.columns)}'
         reference_series = reference_ds[column_name]
 
+        reference_converted = bin_numerical_values(reference_series)
+        actual_converted = bin_numerical_values(actual_series)
+        total_ks, output_data = self._calculate_numerical_drift(actual_converted, reference_converted)
         result = self._calculate_ks(actual_series, reference_series)
+
+        passed = result.pvalue >= threshold
+        output_df_sample = None
+
+        if not passed:
+            main_drifting_modalities_bool = output_data["Modality_drift"] > 0.2 * threshold  # need to verify
+            modalities_list = output_data[main_drifting_modalities_bool]["Modality"].tolist()
+            failed_df = actual_ds.loc[actual_converted.isin(modalities_list)]
+            output_df_sample = compress(save_df(failed_df))
 
         return self.save_results(SingleTestResult(
             passed=result.pvalue >= threshold,
-            metric=result.statistic,
-            props={"p_value": str(result.pvalue)})
-        )
+            metric=result.pvalue,
+            output_df=output_df_sample
+        ))
 
     def test_drift_earth_movers_distance(self,
                                          reference_ds: pd.DataFrame,
@@ -335,7 +363,6 @@ class DriftTests(AbstractTestCollection):
         Returns:
             metric:
                 the earth movers distance
-
             passed:
                 TRUE if metric < threshold
         """
