@@ -15,29 +15,6 @@ SERIES_3 = pd.Series(['a'] * 20 + ['c'] * 50 + ['d'] * 30)
 SERIES_3_NUM = pd.Series([1] * 20 + [3] * 50 + [4] * 30)
 
 
-def test_drift_ks_stat():
-    tests = GiskardTestFunctions()
-
-    assert tests.drift.test_drift_ks(reference_series=SERIES_100_A,
-                                     actual_series=SERIES_100_A).metric == 0
-
-    assert pytest.approx(tests.drift.test_drift_ks(
-        reference_series=SERIES_100_A,
-        actual_series=SERIES_100_B).metric, 0.1) == 1
-
-    assert pytest.approx(tests.drift.test_drift_ks(
-        reference_series=SERIES_1,
-        actual_series=SERIES_2).metric, 0.1) == 0.3
-
-
-def test_drift_ks_stat_pass_fail():
-    tests = GiskardTestFunctions()
-    assert not tests.drift.test_drift_ks(reference_series=SERIES_1,
-                                         actual_series=SERIES_2,
-                                         threshold=0.05).passed
-    # assert tests.drift.test_drift_ks(reference_series=SERIES_1, actual_series=SERIES_2, threshold=0.4).passed
-
-
 def test_drift_earth_movers_distance():
     tests = GiskardTestFunctions()
 
@@ -132,6 +109,23 @@ def _test_drift_data_chi_square_max_categories(german_credit_test_data, threshol
 def test_drift_data_chi_square_max_categories_pass_fail(german_credit_test_data):
     assert not _test_drift_data_chi_square_max_categories(german_credit_test_data, 0.8)
     assert _test_drift_data_chi_square_max_categories(german_credit_test_data, 0.1)
+
+
+def _test_drift_data_ks(german_credit_test_data, threshold=0.05):
+    tests = GiskardTestFunctions()
+    results = tests.drift.test_drift_ks(
+        reference_ds=german_credit_test_data.df[:len(german_credit_test_data.df) // 2],
+        actual_ds=german_credit_test_data.df[len(german_credit_test_data.df) // 2:],
+        column_name='credit_amount',
+        threshold=threshold)
+
+    assert round(results.metric, 2) == 0.72
+    return results.passed
+
+
+def test_drift_data_ks_pass_fail(german_credit_test_data):
+    assert not _test_drift_data_ks(german_credit_test_data, 0.9)
+    assert _test_drift_data_ks(german_credit_test_data, 0.5)
 
 
 def _test_drift_prediction_psi(german_credit_test_data, german_credit_model, threshold=0.02):
