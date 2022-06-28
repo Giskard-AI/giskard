@@ -272,7 +272,7 @@ dependencies {
         implementation "io.jsonwebtoken:jjwt-jackson"
     }
     implementation("org.springdoc:springdoc-openapi-webmvc-core")
-    implementation group: 'org.springdoc', name: 'springdoc-openapi-ui', version: '1.6.7'
+    implementation group: 'org.springdoc', name: 'springdoc-openapi-ui', version: '1.6.9'
     implementation "org.postgresql:postgresql"
     implementation "com.h2database:h2"
     liquibaseRuntime "org.postgresql:postgresql"
