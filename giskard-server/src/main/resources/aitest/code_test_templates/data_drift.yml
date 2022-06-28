@@ -32,6 +32,8 @@ items:
                 The total psi score between the actual and expected datasets
             passed:
                 TRUE if total_psi <= threshold
+          output_df:
+                Dataframe containing the actual set rows with the categories that have drifted the most
       """
       tests.drift.test_drift_psi(
           actual_ds=actual_ds.df,
@@ -69,9 +71,10 @@ items:
         Returns:
             metric:
                 The pvalue of chi square test
-
             passed:
                 TRUE if metric > threshold
+          output_df:
+                Dataframe containing the actual set rows with the categories that have drifted the most
       """
       tests.drift.test_drift_chi_square(
           actual_ds=actual_ds.df,
@@ -111,6 +114,8 @@ items:
                 The pvalue of KS test
             passed:
                 TRUE if metric > threshold
+          output_df:
+                Dataframe containing the actual set rows with the numeric partition that have drifted the most
       """
       tests.drift.test_drift_ks(
           actual_ds=actual_ds.df,
@@ -148,9 +153,10 @@ items:
         Returns:
             metric:
                 The earth movers distance
-
             passed:
                 TRUE if metric < threshold
+          output_df:
+                Dataframe containing the actual set rows with the numeric partition that have drifted the most
       """
       tests.drift.test_drift_earth_movers_distance(
           actual_ds=actual_ds.df,
