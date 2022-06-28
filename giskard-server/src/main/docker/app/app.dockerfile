@@ -5,6 +5,7 @@ COPY gradle gradle
 COPY gradlew .
 COPY gradle.properties .
 COPY settings.gradle .
+COPY build.gradle .
 
 COPY giskard-common giskard-common
 
