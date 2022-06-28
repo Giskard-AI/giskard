@@ -1,7 +1,6 @@
+from functools import partial
 import numpy as np
-from io import BytesIO
 import pandas as pd
-from giskard.model import SupportedModelTypes
 from sklearn.metrics import accuracy_score, recall_score
 from sklearn.metrics import roc_auc_score, f1_score, precision_score, mean_squared_error, \
     mean_absolute_error, r2_score
@@ -10,10 +9,36 @@ from generated.ml_worker_pb2 import SingleTestResult
 from ml_worker.core.giskard_dataset import GiskardDataset
 from ml_worker.core.model import GiskardModel
 from ml_worker.testing.abstract_test_collection import AbstractTestCollection
-from ml_worker.testing.utils import save_df, compress, decompress
+from ml_worker.testing.utils import save_df, compress
+
+
+class RawSingleTestResult:
+    def __init__(self, actual_slices_size=int, metric=float, passed=bool, output_df=pd.DataFrame):
+        self.actual_slices_size = actual_slices_size
+        self.metric = metric
+        self.passed = passed
+        self.output_df = output_df
+
+
+# class DiffPredictionResult:
+#     def __init__(self, actual_slices_size=int, reference_slices_size=int, metric=float, passed=bool, output_df=pd.DataFrame):
+#         self.actual_slices_size = actual_slices_size
+#         self.reference_slices_size = reference_slices_size
+#         self.metric = metric
+#         self.passed = passed
+#         self.output_df = output_df
 
 
 class PerformanceTests(AbstractTestCollection):
+    def transform_results(self, results):
+        return self.save_results(
+            SingleTestResult(
+                actual_slices_size=results.actual_slices_size,
+                metric=results.metric,
+                passed=results.passed,
+                output_df=compress(save_df(results.output_df))
+            ))
+
     def test_auc(self, actual_slice: GiskardDataset, model: GiskardModel, threshold=1):
 
         """
@@ -52,8 +77,7 @@ class PerformanceTests(AbstractTestCollection):
                 passed=metric >= threshold
             ))
 
-    def _test_classification_score(self, score_fn, gsk_dataset: GiskardDataset, model: GiskardModel, threshold=1,
-                                   compress_df=True):
+    def _test_classification_score(self, score_fn, gsk_dataset: GiskardDataset, model: GiskardModel, threshold=1):
         is_binary_classification = len(model.classification_labels) == 2
         dataframe = gsk_dataset.df
         prediction = model.run_predict(dataframe).raw_prediction
@@ -64,18 +88,15 @@ class PerformanceTests(AbstractTestCollection):
         else:
             metric = score_fn(actual_target, prediction, average='macro')
         output_df_sample = dataframe.loc[actual_target != prediction]
-        if compress_df:
-            output_df_sample = compress(save_df(output_df_sample))
-        return self.save_results(
-            SingleTestResult(
-                actual_slices_size=[len(gsk_dataset)],
-                metric=metric,
-                passed=metric >= threshold,
-                output_df=output_df_sample
-            ))
 
-    def _test_accuracy_score(self, score_fn, gsk_dataset: GiskardDataset, model: GiskardModel, threshold=1,
-                             compress_df=True):
+        return RawSingleTestResult(
+            actual_slices_size=[len(gsk_dataset)],
+            metric=metric,
+            passed=metric >= threshold,
+            output_df=output_df_sample
+        )
+
+    def _test_accuracy_score(self, score_fn, gsk_dataset: GiskardDataset, model: GiskardModel, threshold=1):
         dataframe = gsk_dataset.df
         prediction = model.run_predict(dataframe).raw_prediction
         labels_mapping = {model.classification_labels[i]: i for i in range(len(model.classification_labels))}
@@ -84,36 +105,31 @@ class PerformanceTests(AbstractTestCollection):
         metric = score_fn(actual_target, prediction)
 
         output_df_sample = dataframe.loc[actual_target != prediction]
-        if compress_df:
-            output_df_sample = compress(save_df(output_df_sample))
-        return self.save_results(
-            SingleTestResult(
+
+        return RawSingleTestResult(
                 actual_slices_size=[len(gsk_dataset)],
                 metric=metric,
                 passed=metric >= threshold,
                 output_df=output_df_sample
-            ))
+            )
 
     def _test_regression_score(self, score_fn, giskard_ds, model: GiskardModel, threshold=1, r2=False,
-                               percent_rows=0.3, compress_df=True):
+                               percent_rows=0.3):
         results_df = pd.DataFrame()
         results_df["actual_target"] = giskard_ds.df[giskard_ds.target]
         results_df["prediction"] = model.run_predict(giskard_ds.df).raw_prediction
 
         metric = score_fn(results_df["actual_target"], results_df["prediction"])
         output_df_sample = self._get_failed_df(results_df, percent_rows)
-        if compress_df:
-            output_df_sample = compress(save_df(output_df_sample))
 
-        return self.save_results(
-            SingleTestResult(
+        return RawSingleTestResult(
                 actual_slices_size=[len(giskard_ds)],
                 metric=metric,
                 passed=metric >= threshold if r2 else metric <= threshold,
                 output_df=output_df_sample
-            ))
+            )
 
-    def test_f1(self, actual_slice: GiskardDataset, model: GiskardModel, threshold=1, compress_df=True):
+    def test_f1(self, actual_slice: GiskardDataset, model: GiskardModel, threshold=1):
         """
         Test if the model F1 score is higher than a defined threshold for a given slice
 
@@ -136,9 +152,11 @@ class PerformanceTests(AbstractTestCollection):
                 TRUE if F1 Score metrics > threshold
 
         """
-        return self._test_classification_score(f1_score, actual_slice, model, threshold, compress_df)
+        results = self._test_classification_score(f1_score, actual_slice, model, threshold)
+        transformed_results = self.transform_results(results)
+        return transformed_results
 
-    def test_accuracy(self, actual_slice: GiskardDataset, model: GiskardModel, threshold=1, compress_df=True):
+    def test_accuracy(self, actual_slice: GiskardDataset, model: GiskardModel, threshold=1):
         """
         Test if the model Accuracy is higher than a threshold for a given slice
 
@@ -161,9 +179,12 @@ class PerformanceTests(AbstractTestCollection):
                 TRUE if Accuracy metrics > threshold
 
         """
-        return self._test_accuracy_score(accuracy_score, actual_slice, model, threshold, compress_df)
+        results = self._test_accuracy_score(accuracy_score, actual_slice, model, threshold)
+        transformed_results = self.transform_results(results)
 
-    def test_precision(self, actual_slice, model: GiskardModel, threshold=1, compress_df=True):
+        return transformed_results
+
+    def test_precision(self, actual_slice, model: GiskardModel, threshold=1):
         """
         Test if the model Precision is higher than a threshold for a given slice
 
@@ -186,10 +207,12 @@ class PerformanceTests(AbstractTestCollection):
                 TRUE if Precision metrics > threshold
 
         """
-        return self._test_classification_score(precision_score,
-                                               actual_slice, model, threshold, compress_df)
+        results = self._test_classification_score(precision_score, actual_slice, model, threshold)
+        transformed_results = self.transform_results(results)
 
-    def test_recall(self, actual_slice, model: GiskardModel, threshold=1, compress_df=True):
+        return transformed_results
+
+    def test_recall(self, actual_slice, model: GiskardModel, threshold=1):
         """
         Test if the model Recall is higher than a threshold for a given slice
 
@@ -212,8 +235,10 @@ class PerformanceTests(AbstractTestCollection):
                 TRUE if Recall metric > threshold
 
         """
-        return self._test_classification_score(recall_score,
-                                               actual_slice, model, threshold, compress_df)
+        results = self._test_classification_score(recall_score, actual_slice, model, threshold)
+        transformed_results = self.transform_results(results)
+
+        return transformed_results
 
     @staticmethod
     def _get_failed_df(results_df, percent_rows=0.3):
@@ -226,7 +251,7 @@ class PerformanceTests(AbstractTestCollection):
     def _get_rmse(y_actual, y_predicted):
         return np.sqrt(mean_squared_error(y_actual, y_predicted))
 
-    def test_rmse(self, actual_slice, model: GiskardModel, threshold=1, percent_rows=0.3, compress_df=True):
+    def test_rmse(self, actual_slice, model: GiskardModel, threshold=1, percent_rows=0.3):
         """
         Test if the model RMSE is lower than a threshold
 
@@ -249,10 +274,12 @@ class PerformanceTests(AbstractTestCollection):
                 TRUE if RMSE metric < threshold
 
         """
-        return self._test_regression_score(self._get_rmse, actual_slice, model, threshold, percent_rows=percent_rows,
-                                           compress_df=compress_df)
+        results = self._test_regression_score(self._get_rmse, actual_slice, model, threshold, percent_rows=percent_rows)
+        transformed_results = self.transform_results(results)
 
-    def test_mae(self, actual_slice, model: GiskardModel, threshold=1, percent_rows=0.3, compress_df=True):
+        return transformed_results
+
+    def test_mae(self, actual_slice, model: GiskardModel, threshold=1, percent_rows=0.3):
         """
         Test if the model Mean Absolute Error is lower than a threshold
 
@@ -275,8 +302,11 @@ class PerformanceTests(AbstractTestCollection):
                 TRUE if MAE metric < threshold
 
         """
-        return self._test_regression_score(mean_absolute_error, actual_slice, model, threshold, percent_rows=percent_rows,
-                                           compress_df=compress_df)
+        results = self._test_regression_score(mean_absolute_error, actual_slice, model,
+                                              threshold, percent_rows=percent_rows)
+        transformed_results = self.transform_results(results)
+
+        return transformed_results
 
     def test_r2(self, actual_slice, model: GiskardModel, threshold=1):
         """
@@ -301,26 +331,25 @@ class PerformanceTests(AbstractTestCollection):
                 TRUE if R-Squared metric > threshold
 
         """
-        return self._test_regression_score(r2_score, actual_slice, model, threshold, r2=True)
+        results = self._test_regression_score(r2_score, actual_slice, model, threshold, r2=True)
+        transformed_results = self.transform_results(results)
 
-    def _test_diff_prediction(self, test_fn, model, actual_slice, reference_slice, threshold, compress_df=False,
-                              percent_rows=None):
+        return transformed_results
+
+    def _test_diff_prediction(self, test_fn, model, actual_slice, reference_slice, threshold, percent_rows=None):
         self.do_save_results = False
-        result_1 = test_fn(reference_slice, model, compress_df=compress_df, percent_rows=percent_rows) if percent_rows is not None \
-            else test_fn(reference_slice, model, compress_df=compress_df)
+        result_1 = test_fn(reference_slice, model, percent_rows=percent_rows) if percent_rows is not None \
+            else test_fn(reference_slice, model)
         metric_1 = result_1.metric
-        # output_df_1 = pd.read_csv(BytesIO(decompress(result_1.output_df)))
-        output_df_1 = result_1.output_df
 
-        result_2 = test_fn(actual_slice, model, compress_df=compress_df, percent_rows=percent_rows) if percent_rows is not None \
-            else test_fn(actual_slice, model, compress_df=compress_df)
+        result_2 = test_fn(actual_slice, model, percent_rows=percent_rows) if percent_rows is not None \
+            else test_fn(actual_slice, model)
         metric_2 = result_2.metric
-        # output_df_2 = pd.read_csv(BytesIO(decompress(result_2.output_df)))
         output_df_2 = result_2.output_df
 
         self.do_save_results = True
         change_pct = abs(metric_1 - metric_2) / metric_1
-        output_df_sample = compress(save_df(pd.concat([output_df_1, output_df_2])))
+        output_df_sample = compress(save_df(output_df_2))
 
         return self.save_results(
             SingleTestResult(
@@ -390,7 +419,8 @@ class PerformanceTests(AbstractTestCollection):
                 TRUE if F1 Score difference < threshold
 
         """
-        return self._test_diff_prediction(self.test_f1, model, actual_slice, reference_slice, threshold)
+        partial_f1 = partial(self._test_classification_score, f1_score)
+        return self._test_diff_prediction(partial_f1, model, actual_slice, reference_slice, threshold)
 
     def test_diff_precision(self, actual_slice, reference_slice, model, threshold=0.1):
         """
@@ -558,7 +588,8 @@ class PerformanceTests(AbstractTestCollection):
             passed:
                 TRUE if RMSE difference < threshold
         """
-        return self._test_diff_prediction(self.test_rmse, model, actual_slice, reference_slice, threshold, percent_rows=percent_rows)
+        return self._test_diff_prediction(self.test_rmse, model, actual_slice, reference_slice, threshold,
+                                          percent_rows=percent_rows)
 
     def test_diff_reference_actual_rmse(self, reference_slice, actual_slice, model, threshold=0.1):
         """
