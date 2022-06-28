@@ -7,6 +7,7 @@ import pandas as pd
 
 COMPRESSION_MAX_OUTPUT_SIZE = 10 ** 9  # 1GB
 
+
 def ge_result_to_test_result(result, passed=True) -> SingleTestResult:
     """
         Converts a result of Great Expectations to TestResultMessage - java/python bridge test result class
@@ -71,6 +72,7 @@ def compress(data: bytes, method: Optional[str] = "zstd") -> bytes:
 
     return compressed_data
 
+
 def decompress(
         data: bytes, method: Optional[str] = "zstd", max_output_size: int = COMPRESSION_MAX_OUTPUT_SIZE
 ) -> bytes:
@@ -82,3 +84,10 @@ def decompress(
     else:
         raise ValueError("Invalid compression method: {method}. Choose 'zstd' or None.")
     return decompressed_data
+
+
+def bin_numerical_values(data_series):
+    deciles_value = int(0.1 * len(data_series))
+    converted_series = pd.qcut(data_series, deciles_value, labels=range(deciles_value))
+
+    return converted_series
