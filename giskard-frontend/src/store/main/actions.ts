@@ -18,7 +18,8 @@ import {
     commitSetUserProfile
 } from './mutations';
 import {AppNotification, MainState} from './state';
-import {AdminUserDTO, ManagedUserVM, ProjectPostDTO, UpdateMeDTO} from '@/generated-sources';
+import {ManagedUserVM, ProjectPostDTO, UpdateMeDTO} from '@/generated-sources';
+import mixpanel from "mixpanel-browser";
 
 type MainContext = ActionContext<MainState, State>;
 
@@ -45,14 +46,10 @@ export const actions = {
         }
     },
     async actionGetUserProfile(context: MainContext) {
-        try {
-            const response = await api.getMe();
-            if (response) {
-                commitSetUserProfile(context, response.user);
-                commitSetAppSettings(context, response.app);
-            }
-        } catch (error) {
-            await dispatchCheckApiError(context, error);
+        const response = await api.getUserAndAppSettings();
+        if (response) {
+            commitSetUserProfile(context, response.user);
+            commitSetAppSettings(context, response.app);
         }
     },
     async actionGetCoworkers(context: MainContext) {
@@ -89,10 +86,18 @@ export const actions = {
             }
             if (token) {
                 try {
-                    const response = await api.getMe();
+                    const response = await api.getUserAndAppSettings();
                     commitSetLoggedIn(context, true);
                     commitSetUserProfile(context, response.user);
-                    commitSetAppSettings(context, response.app);
+                    let appConfig = response.app;
+                    commitSetAppSettings(context, appConfig);
+                    mixpanel.track('Giskard init', {
+                        "config": {
+                            "giskardVersion": appConfig.giskardVersion,
+                            "planCode": appConfig.planCode
+                        }
+
+                    });
                 } catch (error) {
                     await dispatchRemoveLogIn(context);
                 }

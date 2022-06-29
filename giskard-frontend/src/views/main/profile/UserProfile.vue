@@ -88,7 +88,7 @@
         </v-col>
       </v-row>
       <div v-if="!userProfile">Not found</div>
-      <v-row v-if="appConfig">
+      <v-row v-if="appSettings">
         <v-col cols="6">
           <v-card>
             <v-card-title class="font-weight-light secondary--text">
@@ -99,28 +99,56 @@
                 <table class="w100">
                   <tr>
                     <td>Giskard version</td>
-                    <td>{{ appConfig.giskardVersion }}</td>
+                    <td>{{ appSettings.giskardVersion }}</td>
+                  </tr>
+                  <tr>
+                    <td>License</td>
+                    <td>{{ appSettings.planName }}</td>
                   </tr>
                 </table>
               </v-simple-table>
             </v-card-text>
           </v-card>
         </v-col>
+        <v-col>
+          <v-card>
+            <v-card-title class="font-weight-light secondary--text">Tracking</v-card-title>
+            <v-card-text>
+              <div class="mb-2">
+                <p>Giskard sends anonymous usage reports.</p>
+                <p>Tracking helps us improve the product and fix bugs🐞 as soon as possible.</p>
+                <v-switch
+                    v-model="enableTracking"
+                    :label="`Enable tracking`"
+                ></v-switch>
+                <p>If you're one of the design partners, please enter your contact email address</p>
+                <v-row dense>
+                  <v-col>
+                    <v-text-field v-model="contactEmail"></v-text-field>
+                  </v-col>
+                  <v-col :align="'right'">
+                    <v-btn small tile color="primary" @click="generateToken">Save</v-btn>
+                  </v-col>
+                </v-row>
+              </div>
+            </v-card-text>
+          </v-card>
+        </v-col>
       </v-row>
-
     </v-container>
   </div>
 </template>
 
 <script lang="ts">
 import {Component, Vue} from 'vue-property-decorator';
-import {readUserProfile} from '@/store/main/getters';
+import {readAppSettings, readUserProfile} from '@/store/main/getters';
 import {api} from '@/api';
 import {commitAddNotification, commitRemoveNotification} from '@/store/main/mutations';
 import {dispatchUpdateUserProfile} from '@/store/main/actions';
 import ButtonModalConfirmation from '@/components/ButtonModalConfirmation.vue';
-import {ApplicationConfigDTO, UpdateMeDTO} from '@/generated-sources';
 import {copyToClipboard} from '@/global-keys';
+import AppInfoDTO = AppConfigDTO.AppInfoDTO;
+import {AppConfigDTO, UpdateMeDTO} from "@/generated-sources";
 
 @Component({
   components: {
@@ -133,7 +161,9 @@ export default class UserProfile extends Vue {
   private email: string = '';
   private editModeToggle = false;
   private apiAccessToken: string = '';
-  private appConfig: ApplicationConfigDTO | null = null;
+  enableTracking: boolean = true;
+  contactEmail: string = '';
+  private appSettings: AppInfoDTO | null = null;
 
   private resetFormData() {
     const userProfile = readUserProfile(this.$store);
@@ -146,8 +176,7 @@ export default class UserProfile extends Vue {
   }
 
   public async created() {
-    this.appConfig = await api.getConfig();
-
+    this.appSettings = await readAppSettings(this.$store);
     this.resetFormData();
   }
 

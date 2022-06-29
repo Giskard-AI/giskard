@@ -5,6 +5,7 @@ import {State} from '../state';
 import {AdminUserDTO, AppConfigDTO, ProjectDTO} from '@/generated-sources';
 import AppInfoDTO = AppConfigDTO.AppInfoDTO;
 import Vue from "vue";
+import mixpanel from "mixpanel-browser";
 
 
 export const mutations = {
@@ -19,6 +20,12 @@ export const mutations = {
     },
     setUserProfile(state: MainState, payload: AdminUserDTO) {
         state.userProfile = payload;
+        mixpanel.alias(payload.user_id);
+        mixpanel.people.set({
+            "$name": payload.displayName,
+            "$email": payload.email
+        });
+
     },
     setAppSettings(state: MainState, payload: AppInfoDTO) {
         state.appSettings = payload;

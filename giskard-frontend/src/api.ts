@@ -6,7 +6,6 @@ import Vue from "vue";
 import {
     AdminUserDTO,
     AppConfigDTO,
-    ApplicationConfigDTO,
     CreateFeedbackDTO,
     CreateFeedbackReplyDTO,
     DatasetDTO,
@@ -40,6 +39,7 @@ import ErrorToast from "@/views/main/utils/ErrorToast.vue";
 import router from "@/router";
 import {commitSetLoggedIn, commitSetToken} from "@/store/main/mutations";
 import store from "@/store";
+import mixpanel from "mixpanel-browser";
 import AdminUserDTOWithPassword = AdminUserDTO.AdminUserDTOWithPassword;
 
 function jwtRequestInterceptor(config) {
@@ -73,6 +73,7 @@ function unpackInterceptor(response) {
 }
 
 async function errorInterceptor(error) {
+    mixpanel.track('API error', {error});
     if (error.response.status === 401) {
         removeLocalToken();
         commitSetToken(store, '');
@@ -87,8 +88,8 @@ async function errorInterceptor(error) {
             title = error.response.statusText;
             detail = "Error while connecting to Giskard server, check that it's running";
         } else {
-            title = error.response.data.title;
-            detail = error.response.data.detail;
+            title = error.response.data.title || error.message;
+            detail = error.response.data.detail || error.request.responseURL;
         }
 
         Vue.$toast(
@@ -147,8 +148,8 @@ export const api = {
     async logInGetToken(username: string, password: string) {
         return apiV2.post<unknown, JWTToken>(`/authenticate`, {username, password});
     },
-    async getMe() {
-        return apiV2.get<unknown, AppConfigDTO>(`/account`);
+    async getUserAndAppSettings() {
+        return apiV2.get<unknown, AppConfigDTO>(`/settings`);
     },
     async updateMe(data: UpdateMeDTO) {
         return apiV2.put<unknown, AdminUserDTO>(`/account`, data);
@@ -243,7 +244,7 @@ export const api = {
         return apiV2.post<unknown, any>(`/inspection/${inspectionId}/rowsFiltered`, filter, {params: props});
     },
     async getLabelsForTarget(inspectionId: number) {
-        return await apiV2.get<unknown, string[]>(`/inspection/${inspectionId}/labels`);
+        return apiV2.get<unknown, string[]>(`/inspection/${inspectionId}/labels`);
     },
     async getProjectDatasets(id: number) {
         return axiosProject.get<unknown, DatasetDTO[]>(`/${id}/datasets`);
@@ -338,7 +339,4 @@ export const api = {
     async executeTestSuite(suiteId: number) {
         return apiV2.post<unknown, Array<TestExecutionResultDTO>>(`/testing/suites/execute`, {suiteId});
     },
-    async getConfig() {
-        return apiV2.get<unknown, ApplicationConfigDTO>(`/config`);
-    }
 };

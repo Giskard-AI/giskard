@@ -44,10 +44,10 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue } from 'vue-property-decorator';
-import { api } from '@/api';
-import { commitAddNotification, commitRemoveNotification } from '@/store/main/mutations';
-import { readToken } from '@/store/main/getters';
+import {Component, Vue} from 'vue-property-decorator';
+import {api} from '@/api';
+import {commitAddNotification, commitRemoveNotification} from '@/store/main/mutations';
+import mixpanel from "mixpanel-browser";
 
 @Component
 export default class AdminUsers extends Vue {
@@ -56,11 +56,12 @@ export default class AdminUsers extends Vue {
   public link: string = "";
 
   public async sendEmail() {
+    mixpanel.track('Invite user - email');
     if (this.emailToInvite) {
       const loadingNotification = { content: 'Sending...', showProgress: true };
       try {
           commitAddNotification(this.$store, loadingNotification);
-          const response = await api.inviteToSignup(this.emailToInvite);
+          await api.inviteToSignup(this.emailToInvite);
           commitRemoveNotification(this.$store, loadingNotification);
           commitAddNotification(this.$store, { content: 'User is invited', color: 'success'});
           this.emailToInvite = "";
@@ -72,6 +73,7 @@ export default class AdminUsers extends Vue {
   }
   
   public async generateLink() {
+    mixpanel.track('Invite user - generate link');
     const loadingNotification = { content: 'Generating...', showProgress: true };
     try {
         commitAddNotification(this.$store, loadingNotification);

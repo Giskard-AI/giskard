@@ -14,9 +14,10 @@ export namespace AppConfigDTO {
      * Generated from ai.giskard.web.dto.config.AppConfigDTO$AppInfoDTO
      */
     export interface AppInfoDTO {
-        plan_code: string;
-        plan_name: string;
+        giskardVersion: string;
+        planCode: string;
+        planName: string;
         roles: RoleDTO[];
-        seats_available: number;
+        seatsAvailable: number;
     }
 }

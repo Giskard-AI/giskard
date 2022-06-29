@@ -84,6 +84,7 @@ import {api} from "@/api";
 import Inspector from "./Inspector.vue";
 import MessageReply from "@/components/MessageReply.vue";
 import {FeedbackDTO} from "@/generated-sources";
+import mixpanel from "mixpanel-browser";
 
 @Component({
   components: {Inspector, MessageReply}
@@ -120,6 +121,7 @@ export default class FeedbackDetail extends Vue {
   }
 
   async doSendReply(content: string, replyToId: number | null = null) {
+    mixpanel.track('Reply to feedback', {replyTo: replyToId});
     await api.replyToFeedback(this.id, content, replyToId)
     await this.reloadFeedback()
   }
