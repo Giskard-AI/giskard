@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.info.BuildProperties;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
@@ -32,6 +33,9 @@ class AppConfigIT {
     private static final String DEFAULT_EMAIL = "johndoe@localhost";
 
     private static final String DEFAULT_DISPLAY_NAME = "john doe";
+
+    @Autowired
+    private BuildProperties buildProperties;
 
     @Autowired
     private UserRepository userRepository;
@@ -78,6 +82,7 @@ class AppConfigIT {
             .perform(get("/api/v2/settings").accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
+            .andExpect(jsonPath("$.[*].giskardVersion").value(buildProperties.getVersion()))
             .andExpect(jsonPath("$.[*].user_id").value(DEFAULT_LOGIN))
             .andExpect(jsonPath("$.[*].displayName").value(DEFAULT_DISPLAY_NAME));
     }
