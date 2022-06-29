@@ -103,7 +103,7 @@ class AccountControllerIT {
         userService.createUser(user);
 
         restAccountMockMvc
-            .perform(get("/api/v2/account").accept(MediaType.APPLICATION_JSON))
+            .perform(get("/api/v2/settings").accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(jsonPath("$.user.user_id").value(TEST_USER_LOGIN))
@@ -114,7 +114,7 @@ class AccountControllerIT {
     @Test
     void testGetUnknownAccount() throws Exception {
         restAccountMockMvc
-            .perform(get("/api/v2/account").accept(MediaType.APPLICATION_PROBLEM_JSON))
+            .perform(get("/api/v2/settings").accept(MediaType.APPLICATION_PROBLEM_JSON))
             .andExpect(status().isInternalServerError());
     }
 
