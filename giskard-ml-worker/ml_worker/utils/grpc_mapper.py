@@ -7,7 +7,7 @@ from zstandard import decompress
 
 from ml_worker.core.giskard_dataset import GiskardDataset
 from ml_worker.core.model import GiskardModel
-from ml_worker_pb2 import SerializedGiskardModel, SerializedGiskardDataset
+from generated.ml_worker_pb2 import SerializedGiskardModel, SerializedGiskardDataset
 
 
 def deserialize_model(serialized_model: SerializedGiskardModel) -> GiskardModel:
