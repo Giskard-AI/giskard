@@ -209,7 +209,7 @@ class UserAdminControllerIT {
         userRepository.saveAndFlush(user);
 
         ResultActions perform = restUserMockMvc
-            .perform(get("/api/v2/account").accept(MediaType.APPLICATION_JSON));
+            .perform(get("/api/v2/settings").accept(MediaType.APPLICATION_JSON));
         perform
             .andExpect(status().isOk())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
