@@ -75,6 +75,7 @@ import {api} from '@/api';
 import {performApiActionWithNotif} from '@/api-commons';
 import {commitAddNotification} from '@/store/main/mutations';
 import {FileDTO, ProjectDTO} from '@/generated-sources';
+import mixpanel from "mixpanel-browser";
 
 @Component
 export default class Datasets extends Vue {
@@ -97,6 +98,7 @@ export default class Datasets extends Vue {
   }
 
   public async upload_data() {
+    mixpanel.track('Upload dataset');
     let project: ProjectDTO = await api.getProject(this.projectId);
     await performApiActionWithNotif(this.$store,
         () => api.uploadDataFile(project.key, this.fileData),
@@ -107,6 +109,7 @@ export default class Datasets extends Vue {
   }
 
   public async deleteDataFile(id: number, fileName: string) {
+    mixpanel.track('Delete dataset', {id});
     if (await this.$dialog.confirm({
       text: `Are you sure you want to delete dataset <strong>${fileName}</strong>?`,
       title: 'Delete dataset'
@@ -118,6 +121,7 @@ export default class Datasets extends Vue {
   }
 
   public downloadDataFile(id: number) {
+    mixpanel.track('Download dataset file', {id});
     api.downloadDataFile(id)
   }
 

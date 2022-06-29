@@ -22,6 +22,7 @@ import "vue-toastification/dist/index.css";
 import {FontAwesomeIcon} from "@fortawesome/vue-fontawesome";
 import {library} from '@fortawesome/fontawesome-svg-core'
 import {faUserSecret} from '@fortawesome/free-solid-svg-icons'
+import mixpanel from 'mixpanel-browser';
 
 Vue.config.productionTip = false;
 
@@ -56,4 +57,12 @@ Vue.use(Toast, {
         // You can modify the toast if you want
         return toast;
     }
+});
+const isDev = process.env.NODE_ENV === 'development';
+const devProjectKey = '4cca5fabca54f6df41ea500e33076c99';
+const prodProjectKey = '2c3efacc6c26ffb991a782b476b8c620';
+
+mixpanel.init(isDev ? devProjectKey : prodProjectKey, {
+    debug: isDev,
+    api_host: "https://tracker.giskard.ai",
 });

@@ -38,6 +38,7 @@ import { Component, Vue } from 'vue-property-decorator';
 import { appName } from '@/env';
 import { commitAddNotification } from '@/store/main/mutations';
 import { dispatchResetPassword } from '@/store/main/actions';
+import mixpanel from "mixpanel-browser";
 
 @Component
 export default class UserProfileEdit extends Vue {
@@ -73,6 +74,7 @@ export default class UserProfileEdit extends Vue {
   }
 
   public async submit() {
+    mixpanel.track('Reset password');
     (this.$refs.observer as any).validate().then(async () => {
       const token = this.checkToken();
       if (token) {
