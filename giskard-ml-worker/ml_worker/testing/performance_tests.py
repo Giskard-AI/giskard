@@ -20,15 +20,6 @@ class RawSingleTestResult:
         self.output_df = output_df
 
 
-# class DiffPredictionResult:
-#     def __init__(self, actual_slices_size=int, reference_slices_size=int, metric=float, passed=bool, output_df=pd.DataFrame):
-#         self.actual_slices_size = actual_slices_size
-#         self.reference_slices_size = reference_slices_size
-#         self.metric = metric
-#         self.passed = passed
-#         self.output_df = output_df
-
-
 class PerformanceTests(AbstractTestCollection):
     def transform_results(self, results):
         return self.save_results(
@@ -389,7 +380,8 @@ class PerformanceTests(AbstractTestCollection):
                 TRUE if Accuracy difference < threshold
 
         """
-        return self._test_diff_prediction(self.test_accuracy, model, actual_slice, reference_slice, threshold)
+        partial_accuracy = partial(self._test_classification_score, accuracy_score)
+        return self._test_diff_prediction(partial_accuracy, model, actual_slice, reference_slice, threshold)
 
     def test_diff_f1(self, actual_slice, reference_slice, model, threshold=0.1):
         """
@@ -449,7 +441,8 @@ class PerformanceTests(AbstractTestCollection):
             passed:
                 TRUE if Precision difference < threshold
         """
-        return self._test_diff_prediction(self.test_precision, model, actual_slice, reference_slice, threshold)
+        partial_precision = partial(self._test_classification_score, precision_score)
+        return self._test_diff_prediction(partial_precision, model, actual_slice, reference_slice, threshold)
 
     def test_diff_recall(self, actual_slice, reference_slice, model, threshold=0.1):
         """
@@ -478,7 +471,8 @@ class PerformanceTests(AbstractTestCollection):
             passed:
                 TRUE if Recall difference < threshold
         """
-        return self._test_diff_prediction(self.test_recall, model, actual_slice, reference_slice, threshold)
+        partial_recall = partial(self._test_classification_score, recall_score)
+        return self._test_diff_prediction(partial_recall, model, actual_slice, reference_slice, threshold)
 
     def _test_diff_reference_actual(self, test_fn, model, reference_slice, actual_slice, threshold=0.1):
         self.do_save_results = False
@@ -529,7 +523,8 @@ class PerformanceTests(AbstractTestCollection):
                 TRUE if F1 Score difference < threshold
 
         """
-        return self._test_diff_reference_actual(self.test_f1, model, reference_slice, actual_slice, threshold)
+        partial_f1 = partial(self._test_classification_score, f1_score)
+        return self._test_diff_reference_actual(partial_f1, model, reference_slice, actual_slice, threshold)
 
     def test_diff_reference_actual_accuracy(self, reference_slice, actual_slice, model, threshold=0.1):
         """
@@ -559,7 +554,8 @@ class PerformanceTests(AbstractTestCollection):
                 TRUE if Accuracy difference < threshold
 
         """
-        return self._test_diff_reference_actual(self.test_accuracy, model, reference_slice, actual_slice, threshold)
+        partial_accuracy = partial(self._test_classification_score, accuracy_score)
+        return self._test_diff_reference_actual(partial_accuracy, model, reference_slice, actual_slice, threshold)
 
     def test_diff_rmse(self, actual_slice, reference_slice, model, threshold=0.1, percent_rows=0.15):
         """
@@ -588,7 +584,8 @@ class PerformanceTests(AbstractTestCollection):
             passed:
                 TRUE if RMSE difference < threshold
         """
-        return self._test_diff_prediction(self.test_rmse, model, actual_slice, reference_slice, threshold,
+        partial_rmse = partial(self._test_regression_score, self._get_rmse)
+        return self._test_diff_prediction(partial_rmse, model, actual_slice, reference_slice, threshold,
                                           percent_rows=percent_rows)
 
     def test_diff_reference_actual_rmse(self, reference_slice, actual_slice, model, threshold=0.1):
@@ -618,4 +615,5 @@ class PerformanceTests(AbstractTestCollection):
                 TRUE if RMSE difference < threshold
 
         """
-        return self._test_diff_reference_actual(self.test_rmse, model, reference_slice, actual_slice, threshold)
+        partial_rmse = partial(self._test_regression_score, self._get_rmse)
+        return self._test_diff_reference_actual(partial_rmse, model, reference_slice, actual_slice, threshold)

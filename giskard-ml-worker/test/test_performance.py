@@ -207,7 +207,7 @@ def _test_diff_recall(german_credit_data, german_credit_model, threshold):
         model=german_credit_model,
         threshold=threshold
     )
-    assert round(result.metric, 2) == 0.09
+    assert round(result.metric, 2) == 0.1
     assert type(result.output_df) is bytes
     return result.passed
 
