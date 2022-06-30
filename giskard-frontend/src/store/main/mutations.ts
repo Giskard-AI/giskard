@@ -26,12 +26,27 @@ export const mutations = {
     },
     setAppSettings(state: MainState, payload: AppInfoDTO) {
         state.appSettings = payload;
+        if (state.appSettings.generalSettings.isAnalyticsEnabled && !mixpanel.has_opted_in_tracking()) {
+            mixpanel.opt_in_tracking();
+        } else if (!state.appSettings.generalSettings.isAnalyticsEnabled && !mixpanel.has_opted_out_tracking()) {
+            mixpanel.opt_out_tracking();
+        }
         mixpanel.people.set(
             {
                 "Giskard Version": state.appSettings.version,
                 "Giskard Plan": state.appSettings.planCode
             }
         );
+        Vue.filter('roleName', function (value) {
+            if (state.appSettings) {
+                let roles = Object.assign({}, ...state.appSettings!.roles.map((x) => ({[x.id]: x.name})));
+                if (value in roles) {
+                    return roles[value];
+                } else {
+                    return value;
+                }
+            }
+        });
     },
     setCoworkers(state: MainState, payload: IUserProfileMinimal[]) {
         state.coworkers = payload;
