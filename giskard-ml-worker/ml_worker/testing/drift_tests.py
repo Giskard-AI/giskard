@@ -17,6 +17,9 @@ from ml_worker.testing.utils import save_df, compress, bin_numerical_values
 
 
 class DriftTests(AbstractTestCollection):
+    # Class Variable
+    other_modalities = '^other_modalities_[a-z0-9]{32}$'
+
     @staticmethod
     def _calculate_modality_drift(category, actual_distribution, expected_distribution):
         # To use log and avoid zero distribution probability,
@@ -197,7 +200,7 @@ class DriftTests(AbstractTestCollection):
         if not passed:
             main_drifting_modalities_bool = output_data["Psi"] > psi_contribution_percent * total_psi
             modalities_list = output_data[main_drifting_modalities_bool]["Modality"].tolist()
-            filtered_modalities = [w for w in modalities_list if not re.match('^other_modalities_[a-z0-9]{32}$', w)]
+            filtered_modalities = [w for w in modalities_list if not re.match(DriftTests.other_modalities, w)]
             failed_df = actual_ds.loc[actual_series.isin(filtered_modalities)]
             output_df_sample = compress(save_df(failed_df))
 
@@ -265,7 +268,7 @@ class DriftTests(AbstractTestCollection):
         if not passed:
             main_drifting_modalities_bool = output_data["Chi_square"] > chi_square_contribution_percent * chi_square
             modalities_list = output_data[main_drifting_modalities_bool]["Modality"].tolist()
-            filtered_modalities = [w for w in modalities_list if not re.match('^other_modalities_[a-z0-9]{32}$', w)]
+            filtered_modalities = [w for w in modalities_list if not re.match(DriftTests.other_modalities, w)]
             failed_df = actual_ds.loc[actual_series.isin(filtered_modalities)]
 
             output_df_sample = compress(save_df(failed_df))
@@ -285,7 +288,8 @@ class DriftTests(AbstractTestCollection):
                       reference_ds: pd.DataFrame,
                       actual_ds: pd.DataFrame,
                       column_name: str,
-                      threshold=0.05) -> SingleTestResult:
+                      threshold=0.05,
+                      psi_contribution_percent: float = 0.2) -> SingleTestResult:
         """
          Test if the pvalue of the KS test between the actual and expected datasets is above
           the threshold for a given numerical feature
@@ -317,22 +321,24 @@ class DriftTests(AbstractTestCollection):
             f'"{column_name}" is not a column of Reference Dataset Columns: {",".join(reference_ds.columns)}'
         reference_series = reference_ds[column_name]
 
-        reference_converted = bin_numerical_values(reference_series)
-        actual_converted = bin_numerical_values(actual_series)
-        total_ks, output_data = self._calculate_numerical_drift(actual_converted, reference_converted)
         result = self._calculate_ks(actual_series, reference_series)
+
+        reference_converted, labels, bins = bin_numerical_values(reference_series)
+        actual_converted, _, _ = bin_numerical_values(actual_series, labels, bins)
+        total_psi, output_data = self._calculate_numerical_drift(actual_converted, reference_converted)
 
         passed = result.pvalue >= threshold
         output_df_sample = None
 
         if not passed:
-            main_drifting_modalities_bool = output_data["Modality_drift"] > 0.2 * threshold  # need to verify
+            main_drifting_modalities_bool = output_data[
+                                                "Modality_drift"] > psi_contribution_percent * threshold  # need to verify
             modalities_list = output_data[main_drifting_modalities_bool]["Modality"].tolist()
             failed_df = actual_ds.loc[actual_converted.isin(modalities_list)]
             output_df_sample = compress(save_df(failed_df))
 
         return self.save_results(SingleTestResult(
-            passed=result.pvalue >= threshold,
+            passed=passed,
             metric=result.pvalue,
             output_df=output_df_sample
         ))
@@ -428,7 +434,7 @@ class DriftTests(AbstractTestCollection):
         if not passed:
             main_drifting_modalities_bool = output_data["Psi"] > psi_contribution_percent * total_psi
             modalities_list = output_data[main_drifting_modalities_bool]["Modality"].tolist()
-            filtered_modalities = [w for w in modalities_list if not re.match('^other_modalities_[a-z0-9]{32}$', w)]
+            filtered_modalities = [w for w in modalities_list if not re.match(DriftTests.other_modalities, w)]
             failed_df = actual_slice.loc[prediction_actual.isin(filtered_modalities)]
             output_df_sample = compress(save_df(failed_df))
 
@@ -496,7 +502,7 @@ class DriftTests(AbstractTestCollection):
             main_drifting_modalities_bool = output_data["Chi_square"] > chi_square_contribution_percent * chi_square
             modalities_list = output_data[main_drifting_modalities_bool]["Modality"].tolist()
 
-            filtered_modalities = [w for w in modalities_list if not re.match('^other_modalities_[a-z0-9]{32}$', w)]
+            filtered_modalities = [w for w in modalities_list if not re.match(DriftTests.other_modalities, w)]
             failed_df = actual_slice.loc[prediction_actual.isin(filtered_modalities)]
 
             output_df_sample = compress(save_df(failed_df))
