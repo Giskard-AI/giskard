@@ -157,7 +157,6 @@ export default class UserProfile extends Vue {
   private email: string = '';
   private editModeToggle = false;
   private apiAccessToken: string = '';
-  enableTracking: boolean = true;
   private appSettings: AppInfoDTO | null = null;
   private isAdmin: boolean = false;
 
