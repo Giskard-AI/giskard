@@ -85,15 +85,14 @@ export const actions = {
                 }
             }
             if (token) {
-                try {
-                    const response = await api.getUserAndAppSettings();
-                    commitSetLoggedIn(context, true);
-                    commitSetUserProfile(context, response.user);
-                    let appConfig = response.app;
-                    commitSetAppSettings(context, appConfig);
-                } catch (error) {
-                    await dispatchRemoveLogIn(context);
+                const response = await api.getUserAndAppSettings();
+                commitSetLoggedIn(context, true);
+                commitSetUserProfile(context, response.user);
+                let appConfig = response.app;
+                if (appConfig.generalSettings.isAnalyticsEnabled) {
+                    mixpanel.opt_in_tracking();
                 }
+                commitSetAppSettings(context, appConfig);
             } else {
                 await dispatchRemoveLogIn(context);
             }

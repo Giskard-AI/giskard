@@ -20,11 +20,7 @@ export const mutations = {
     },
     setUserProfile(state: MainState, payload: AdminUserDTO) {
         state.userProfile = payload;
-        mixpanel.alias(payload.user_id);
-        mixpanel.people.set({
-            "$name": payload.displayName,
-            "$email": payload.email
-        });
+        mixpanel.alias(payload.id);
     },
     setAppSettings(state: MainState, payload: AppInfoDTO) {
         state.appSettings = payload;
