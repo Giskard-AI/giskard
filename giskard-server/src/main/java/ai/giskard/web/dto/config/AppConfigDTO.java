@@ -1,5 +1,6 @@
 package ai.giskard.web.dto.config;
 
+import ai.giskard.domain.GeneralSettings;
 import ai.giskard.web.dto.user.AdminUserDTO;
 import ai.giskard.web.dto.user.RoleDTO;
 import com.dataiku.j2ts.annotations.UIModel;
@@ -29,6 +30,7 @@ public class AppConfigDTO {
         private String planName;
         private int seatsAvailable;
         private List<RoleDTO> roles;
-        private String giskardVersion;
+        private String version;
+        private GeneralSettings generalSettings;
     }
 }

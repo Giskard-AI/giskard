@@ -91,13 +91,6 @@ export const actions = {
                     commitSetUserProfile(context, response.user);
                     let appConfig = response.app;
                     commitSetAppSettings(context, appConfig);
-                    mixpanel.track('Giskard init', {
-                        "config": {
-                            "giskardVersion": appConfig.giskardVersion,
-                            "planCode": appConfig.planCode
-                        }
-
-                    });
                 } catch (error) {
                     await dispatchRemoveLogIn(context);
                 }

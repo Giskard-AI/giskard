@@ -12,7 +12,7 @@ import {
     ExplainResponseDTO,
     FeatureMetadataDTO,
     FeedbackDTO,
-    FeedbackMinimalDTO,
+    FeedbackMinimalDTO, GeneralSettings,
     InspectionCreateDTO,
     InspectionDTO,
     JWTToken,
@@ -150,6 +150,9 @@ export const api = {
     },
     async getUserAndAppSettings() {
         return apiV2.get<unknown, AppConfigDTO>(`/settings`);
+    },
+    async saveGeneralSettings(settings: GeneralSettings) {
+        return apiV2.post<unknown, GeneralSettings>(`/settings`, settings);
     },
     async updateMe(data: UpdateMeDTO) {
         return apiV2.put<unknown, AdminUserDTO>(`/account`, data);
