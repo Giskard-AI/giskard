@@ -82,7 +82,7 @@ class AppConfigIT {
             .perform(get("/api/v2/settings").accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
-            .andExpect(jsonPath("$.[*].giskardVersion").value(buildProperties.getVersion()))
+            .andExpect(jsonPath("$.[*].version").value(buildProperties.getVersion()))
             .andExpect(jsonPath("$.[*].user_id").value(DEFAULT_LOGIN))
             .andExpect(jsonPath("$.[*].displayName").value(DEFAULT_DISPLAY_NAME));
     }

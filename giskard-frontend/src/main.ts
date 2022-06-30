@@ -58,11 +58,17 @@ Vue.use(Toast, {
         return toast;
     }
 });
-const isDev = process.env.NODE_ENV === 'development';
-const devProjectKey = '4cca5fabca54f6df41ea500e33076c99';
-const prodProjectKey = '2c3efacc6c26ffb991a782b476b8c620';
 
-mixpanel.init(isDev ? devProjectKey : prodProjectKey, {
-    debug: isDev,
-    api_host: "https://tracker.giskard.ai",
-});
+export function setupMixpanel() {
+    const isDev = process.env.NODE_ENV === 'development';
+    const devProjectKey = '4cca5fabca54f6df41ea500e33076c99';
+    const prodProjectKey = '2c3efacc6c26ffb991a782b476b8c620';
+
+    mixpanel.init(isDev ? devProjectKey : prodProjectKey, {
+        debug: isDev,
+        api_host: "https://tracker.giskard.ai",
+        opt_out_tracking_by_default: true
+    });
+}
+
+setupMixpanel();

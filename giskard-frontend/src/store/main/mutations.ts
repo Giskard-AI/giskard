@@ -1,11 +1,11 @@
 import {IUserProfileMinimal} from '@/interfaces';
-import {MainState, AppNotification} from './state';
+import {AppNotification, MainState} from './state';
 import {getStoreAccessors} from 'typesafe-vuex';
 import {State} from '../state';
 import {AdminUserDTO, AppConfigDTO, ProjectDTO} from '@/generated-sources';
-import AppInfoDTO = AppConfigDTO.AppInfoDTO;
 import Vue from "vue";
 import mixpanel from "mixpanel-browser";
+import AppInfoDTO = AppConfigDTO.AppInfoDTO;
 
 
 export const mutations = {
@@ -25,10 +25,15 @@ export const mutations = {
             "$name": payload.displayName,
             "$email": payload.email
         });
-
     },
     setAppSettings(state: MainState, payload: AppInfoDTO) {
         state.appSettings = payload;
+        mixpanel.people.set(
+            {
+                "Giskard Version": state.appSettings.version,
+                "Giskard Plan": state.appSettings.planCode
+            }
+        );
     },
     setCoworkers(state: MainState, payload: IUserProfileMinimal[]) {
         state.coworkers = payload;

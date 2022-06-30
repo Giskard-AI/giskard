@@ -1,4 +1,5 @@
 import type {AdminUserDTO} from './../user/admin-user-dto';
+import type {GeneralSettings} from './../../../domain/general-settings';
 import type {RoleDTO} from './../user/role-dto';
 
 /**
@@ -14,10 +15,11 @@ export namespace AppConfigDTO {
      * Generated from ai.giskard.web.dto.config.AppConfigDTO$AppInfoDTO
      */
     export interface AppInfoDTO {
-        giskardVersion: string;
+        generalSettings: GeneralSettings;
         planCode: string;
         planName: string;
         roles: RoleDTO[];
         seatsAvailable: number;
+        version: string;
     }
 }

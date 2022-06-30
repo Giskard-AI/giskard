@@ -1,9 +1,6 @@
 package ai.giskard.service;
 
-import ai.giskard.domain.FeatureType;
-import ai.giskard.domain.Project;
-import ai.giskard.domain.Role;
-import ai.giskard.domain.User;
+import ai.giskard.domain.*;
 import ai.giskard.domain.ml.ModelLanguage;
 import ai.giskard.repository.ProjectRepository;
 import ai.giskard.repository.RoleRepository;
@@ -44,6 +41,7 @@ public class InitService {
     private final Logger logger = LoggerFactory.getLogger(InitService.class);
 
     final UserRepository userRepository;
+    final private GeneralSettingsService generalSettingsService;
 
     final RoleRepository roleRepository;
 
@@ -197,6 +195,7 @@ public class InitService {
     @EventListener(ApplicationReadyEvent.class)
     @Transactional
     public void init() {
+        generalSettingsService.saveIfNotExists(new GeneralSettings());
         initAuthorities();
         initUsers();
         initProjects();

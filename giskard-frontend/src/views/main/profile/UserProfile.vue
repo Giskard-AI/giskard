@@ -87,10 +87,9 @@
           </v-card>
         </v-col>
       </v-row>
-      <div v-if="!userProfile">Not found</div>
       <v-row v-if="appSettings">
         <v-col cols="6">
-          <v-card>
+          <v-card height="100%">
             <v-card-title class="font-weight-light secondary--text">
               Application
             </v-card-title>
@@ -99,10 +98,10 @@
                 <table class="w100">
                   <tr>
                     <td>Giskard version</td>
-                    <td>{{ appSettings.giskardVersion }}</td>
+                    <td>{{ appSettings.version }}</td>
                   </tr>
                   <tr>
-                    <td>License</td>
+                    <td>Plan</td>
                     <td>{{ appSettings.planName }}</td>
                   </tr>
                 </table>
@@ -110,26 +109,21 @@
             </v-card-text>
           </v-card>
         </v-col>
-        <v-col>
-          <v-card>
-            <v-card-title class="font-weight-light secondary--text">Tracking</v-card-title>
+        <v-col v-show="isAdmin">
+          <v-card height="100%">
+            <v-card-title class="font-weight-light secondary--text">
+              <span>Usage reporting</span>
+              <v-spacer/>
+              <v-switch
+                  v-model="appSettings.generalSettings.isAnalyticsEnabled"
+                  @change="saveGeneralSettings(appSettings.generalSettings)"
+              ></v-switch>
+            </v-card-title>
             <v-card-text>
               <div class="mb-2">
-                <p>Giskard sends anonymous usage reports.</p>
-                <p>Tracking helps us improve the product and fix bugs🐞 as soon as possible.</p>
-                <v-switch
-                    v-model="enableTracking"
-                    :label="`Enable tracking`"
-                ></v-switch>
-                <p>If you're one of the design partners, please enter your contact email address</p>
-                <v-row dense>
-                  <v-col>
-                    <v-text-field v-model="contactEmail"></v-text-field>
-                  </v-col>
-                  <v-col :align="'right'">
-                    <v-btn small tile color="primary" @click="generateToken">Save</v-btn>
-                  </v-col>
-                </v-row>
+                <p>Giskard can send usage reports.</p>
+                <p>The raw user data is never sent, only metadata. This information helps us improve the product and fix
+                  bugs sooner. 🐞</p>
               </div>
             </v-card-text>
           </v-card>
@@ -147,8 +141,10 @@ import {commitAddNotification, commitRemoveNotification} from '@/store/main/muta
 import {dispatchUpdateUserProfile} from '@/store/main/actions';
 import ButtonModalConfirmation from '@/components/ButtonModalConfirmation.vue';
 import {copyToClipboard} from '@/global-keys';
+import {AppConfigDTO, GeneralSettings, UpdateMeDTO} from "@/generated-sources";
+import mixpanel from "mixpanel-browser";
+import {Role} from "@/enums";
 import AppInfoDTO = AppConfigDTO.AppInfoDTO;
-import {AppConfigDTO, UpdateMeDTO} from "@/generated-sources";
 
 @Component({
   components: {
@@ -162,8 +158,8 @@ export default class UserProfile extends Vue {
   private editModeToggle = false;
   private apiAccessToken: string = '';
   enableTracking: boolean = true;
-  contactEmail: string = '';
   private appSettings: AppInfoDTO | null = null;
+  private isAdmin: boolean = false;
 
   private resetFormData() {
     const userProfile = readUserProfile(this.$store);
@@ -172,6 +168,7 @@ export default class UserProfile extends Vue {
         this.displayName = userProfile.displayName;
       }
       this.email = userProfile.email;
+      this.isAdmin = userProfile.roles!.includes(Role.ADMIN);
     }
   }
 
@@ -221,6 +218,15 @@ export default class UserProfile extends Vue {
   public async copyToken() {
     await copyToClipboard(this.apiAccessToken);
     commitAddNotification(this.$store, {content: "Copied to clipboard", color: "success"});
+  }
+
+  public async saveGeneralSettings(settings: GeneralSettings) {
+    if (!settings.isAnalyticsEnabled) {
+      mixpanel.opt_out_tracking();
+    } else {
+      mixpanel.opt_in_tracking();
+    }
+    this.appSettings!.generalSettings = await api.saveGeneralSettings(settings);
   }
 
 }
