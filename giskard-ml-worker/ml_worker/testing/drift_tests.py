@@ -29,7 +29,7 @@ class DriftTests(AbstractTestCollection):
         expected_distribution_bounded = max(expected_distribution[category], min_distribution_probability)
         actual_distribution_bounded = max(actual_distribution[category], min_distribution_probability)
         modality_drift = (expected_distribution_bounded - actual_distribution_bounded) * \
-                        np.log(expected_distribution_bounded / actual_distribution_bounded)
+                         np.log(expected_distribution_bounded / actual_distribution_bounded)
         return modality_drift
 
     @staticmethod
@@ -323,19 +323,15 @@ class DriftTests(AbstractTestCollection):
 
         result = self._calculate_ks(actual_series, reference_series)
 
-        reference_converted, labels, bins = bin_numerical_values(reference_series)
-        actual_converted, _, _ = bin_numerical_values(actual_series, labels, bins)
-        total_psi, output_data = self._calculate_numerical_drift(actual_converted, reference_converted)
+        actual_converted, output_data, total_psi = self.convert_calculate_psi_numerical_drift(actual_series,
+                                                                                              reference_series)
 
         passed = result.pvalue >= threshold
         output_df_sample = None
 
         if not passed:
-            main_drifting_modalities_bool = output_data[
-                                                "Modality_drift"] > psi_contribution_percent * threshold  # need to verify
-            modalities_list = output_data[main_drifting_modalities_bool]["Modality"].tolist()
-            failed_df = actual_ds.loc[actual_converted.isin(modalities_list)]
-            output_df_sample = compress(save_df(failed_df))
+            output_df_sample = self.generate_output_df(actual_converted, actual_ds, output_data,psi_contribution_percent,
+                                                       total_psi)
 
         return self.save_results(SingleTestResult(
             passed=passed,
@@ -347,7 +343,8 @@ class DriftTests(AbstractTestCollection):
                                          reference_ds: pd.DataFrame,
                                          actual_ds: pd.DataFrame,
                                          column_name: str,
-                                         threshold: float = None) -> SingleTestResult:
+                                         threshold: float = None,
+                                         psi_contribution_percent: float = 0.2) -> SingleTestResult:
         """
         Test if the earth movers distance between the actual and expected datasets is
         below the threshold for a given numerical feature
@@ -364,7 +361,7 @@ class DriftTests(AbstractTestCollection):
             column_name(str):
                 Name of column with numerical feature
             threshold:
-                threshold for p-value of earth movers distance
+                threshold for earth movers distance
 
         Returns:
             metric:
@@ -380,10 +377,37 @@ class DriftTests(AbstractTestCollection):
         reference_series = reference_ds[column_name]
 
         metric = self._calculate_earth_movers_distance(actual_series, reference_series)
+
+        actual_converted, output_data, total_psi = self.convert_calculate_psi_numerical_drift(actual_series,
+                                                                                              reference_series)
+        passed = metric <= threshold
+        output_df_sample = None
+
+        if not passed:
+            output_df_sample = self.generate_output_df(actual_converted, actual_ds, output_data,psi_contribution_percent,
+                                                       total_psi)
+
         return self.save_results(SingleTestResult(
-            passed=True if threshold is None else metric <= threshold,
-            metric=metric
+            passed=True if threshold is None else passed,
+            metric=metric,
+            output_df=output_df_sample
+
         ))
+
+    def convert_calculate_psi_numerical_drift(self, actual_series, reference_series):
+        reference_converted, labels, bins = bin_numerical_values(reference_series)
+        actual_converted, _, _ = bin_numerical_values(actual_series, labels, bins)
+        total_psi, output_data = self._calculate_numerical_drift(actual_converted, reference_converted)
+        return actual_converted, output_data, total_psi
+
+    def generate_output_df(self, actual_converted, actual_ds, output_data, psi_contribution_percent,
+                           total_psi):
+        main_drifting_modalities_bool = output_data[
+                                            "Modality_drift"] > psi_contribution_percent * total_psi
+        modalities_list = output_data[main_drifting_modalities_bool]["Modality"].tolist()
+        failed_df = actual_ds.loc[actual_converted.isin(modalities_list)]
+        output_df_sample = compress(save_df(failed_df))
+        return output_df_sample
 
     def test_drift_prediction_psi(self, reference_slice: GiskardDataset, actual_slice: GiskardDataset,
                                   model: GiskardModel,
@@ -421,8 +445,7 @@ class DriftTests(AbstractTestCollection):
                 psi result message
 
         """
-        reference_slice = reference_slice.df.reset_index(drop=True)
-        actual_slice = actual_slice.df.reset_index(drop=True)
+        actual_slice, reference_slice = self.reset_index_actual_reference(actual_slice.df, reference_slice.df)
         prediction_reference = pd.Series(model.run_predict(reference_slice).prediction)
         prediction_actual = pd.Series(model.run_predict(actual_slice).prediction)
         total_psi, output_data = self._calculate_drift_psi(prediction_actual, prediction_reference, max_categories)
@@ -449,6 +472,11 @@ class DriftTests(AbstractTestCollection):
             messages=messages,
             output_df=output_df_sample
         ))
+
+    def reset_index_actual_reference(self, actual_df, reference_df):
+        reference_slice = reference_df.reset_index(drop=True)
+        actual_slice = actual_df.reset_index(drop=True)
+        return actual_slice, reference_slice
 
     def test_drift_prediction_chi_square(self, reference_slice, actual_slice, model,
                                          max_categories: int = 10,
@@ -486,8 +514,7 @@ class DriftTests(AbstractTestCollection):
                 message describing if prediction is drifting or not
 
         """
-        reference_slice = reference_slice.df.reset_index(drop=True)
-        actual_slice = actual_slice.df.reset_index(drop=True)
+        actual_slice, reference_slice = self.reset_index_actual_reference(actual_slice.df, reference_slice.df)
         prediction_reference = pd.Series(model.run_predict(reference_slice).prediction)
         prediction_actual = pd.Series(model.run_predict(actual_slice).prediction)
 
@@ -524,7 +551,8 @@ class DriftTests(AbstractTestCollection):
                                  actual_slice: GiskardDataset,
                                  model: GiskardModel,
                                  classification_label=None,
-                                 threshold=None) -> SingleTestResult:
+                                 threshold=None,
+                                 psi_contribution_percent: float = 0.2) -> SingleTestResult:
         """
         Test if the pvalue of the KS test for prediction between the reference and actual datasets for
          a given subpopulation is above the threshold
@@ -553,27 +581,39 @@ class DriftTests(AbstractTestCollection):
             messages:
                 Kolmogorov-Smirnov result message
         """
+        actual_slice, reference_slice = self.reset_index_actual_reference(actual_slice.df, reference_slice.df)
+
         assert model.model_type != "classification" or classification_label in model.classification_labels, \
             f'"{classification_label}" is not part of model labels: {",".join(model.classification_labels)}'
 
-        prediction_reference = model.run_predict(reference_slice.df).all_predictions[classification_label].values if \
-            model.model_type == "classification" else model.run_predict(reference_slice.df).prediction
-        prediction_actual = model.run_predict(actual_slice.df).all_predictions[classification_label].values if \
-            model.model_type == "classification" else model.run_predict(actual_slice.df).prediction
+        prediction_reference = pd.Series(
+            model.run_predict(reference_slice).all_predictions[classification_label].values) if \
+            model.model_type == "classification" else pd.Series(model.run_predict(reference_slice).prediction)
+        prediction_actual = pd.Series(model.run_predict(actual_slice).all_predictions[classification_label].values) if \
+            model.model_type == "classification" else pd.Series(model.run_predict(actual_slice).prediction)
 
         result: Ks_2sampResult = self._calculate_ks(prediction_reference, prediction_actual)
+
+        actual_converted, output_data, total_psi = self.convert_calculate_psi_numerical_drift(prediction_actual,
+                                                                                              prediction_reference)
+
         passed = True if threshold is None else result.pvalue >= threshold
+        output_df_sample = None
         messages: Union[typing.List[TestMessage], None] = None
+
         if not passed:
+            output_df_sample = self.generate_output_df(actual_converted, actual_slice, output_data,psi_contribution_percent, total_psi)
             messages = [TestMessage(
                 type=TestMessageType.ERROR,
                 text=f"The prediction is drifting (pvalue is equal to {result.pvalue} and is below the test risk level {threshold}) "
+
             )]
 
         return self.save_results(SingleTestResult(
             passed=passed,
             metric=result.pvalue,
-            messages=messages
+            messages=messages,
+            output_df=output_df_sample
         ))
 
     def test_drift_prediction_earth_movers_distance(self,
@@ -581,7 +621,8 @@ class DriftTests(AbstractTestCollection):
                                                     actual_slice: GiskardDataset,
                                                     model: GiskardModel,
                                                     classification_label=None,
-                                                    threshold=None) -> SingleTestResult:
+                                                    threshold=None,
+                                                    psi_contribution_percent: float = 0.2) -> SingleTestResult:
         """
         Test if the Earth Mover’s Distance value between the reference and actual datasets is
         below the threshold for the classification labels predictions for classification
@@ -613,15 +654,26 @@ class DriftTests(AbstractTestCollection):
                 Earth Mover's Distance value
 
         """
+        actual_slice, reference_slice = self.reset_index_actual_reference(actual_slice.df, reference_slice.df)
 
-        prediction_reference = model.run_predict(reference_slice.df).all_predictions[classification_label].values if \
-            model.model_type == "classification" else model.run_predict(reference_slice.df).prediction
-        prediction_actual = model.run_predict(actual_slice.df).all_predictions[classification_label].values if \
-            model.model_type == "classification" else model.run_predict(actual_slice.df).prediction
+        prediction_reference = model.run_predict(reference_slice).all_predictions[classification_label].values if \
+            model.model_type == "classification" else model.run_predict(reference_slice).prediction
+        prediction_actual = model.run_predict(actual_slice).all_predictions[classification_label].values if \
+            model.model_type == "classification" else model.run_predict(actual_slice).prediction
 
         metric = self._calculate_earth_movers_distance(prediction_reference, prediction_actual)
+
+        actual_converted, output_data, total_psi = self.convert_calculate_psi_numerical_drift(prediction_actual,
+                                                                                              prediction_reference)
+
+        passed = True if threshold is None else metric <= threshold
+        output_df_sample = None
+
+        if not passed:
+            output_df_sample = self.generate_output_df(actual_converted, actual_slice, output_data, psi_contribution_percent, total_psi)
 
         return self.save_results(SingleTestResult(
             passed=True if threshold is None else metric <= threshold,
             metric=metric,
+            output_df=output_df_sample
         ))
