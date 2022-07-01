@@ -97,6 +97,10 @@
               <v-simple-table>
                 <table class="w100">
                   <tr>
+                    <td>Instance</td>
+                    <td>{{ appSettings.generalSettings.instanceId }}</td>
+                  </tr>
+                  <tr>
                     <td>Giskard version</td>
                     <td>{{ appSettings.version }}</td>
                   </tr>
