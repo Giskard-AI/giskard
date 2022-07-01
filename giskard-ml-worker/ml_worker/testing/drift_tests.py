@@ -210,6 +210,8 @@ class DriftTests(AbstractTestCollection):
             )]
 
         return self.save_results(SingleTestResult(
+            actual_slices_size=[len(actual_series)],
+            reference_slices_size=[len(reference_series)],
             passed=passed,
             metric=total_psi,
             messages=messages,
@@ -278,6 +280,8 @@ class DriftTests(AbstractTestCollection):
             )]
 
         return self.save_results(SingleTestResult(
+            actual_slices_size=[len(actual_series)],
+            reference_slices_size=[len(reference_series)],
             passed=passed,
             metric=p_value,
             messages=messages,
@@ -334,6 +338,8 @@ class DriftTests(AbstractTestCollection):
                                                        total_psi)
 
         return self.save_results(SingleTestResult(
+            actual_slices_size=[len(actual_series)],
+            reference_slices_size=[len(reference_series)],
             passed=passed,
             metric=result.pvalue,
             output_df=output_df_sample
@@ -388,6 +394,8 @@ class DriftTests(AbstractTestCollection):
                                                        total_psi)
 
         return self.save_results(SingleTestResult(
+            actual_slices_size=[len(actual_series)],
+            reference_slices_size=[len(reference_series)],
             passed=True if threshold is None else passed,
             metric=metric,
             output_df=output_df_sample
@@ -467,6 +475,8 @@ class DriftTests(AbstractTestCollection):
             )]
 
         return self.save_results(SingleTestResult(
+            actual_slices_size=[len(actual_slice)],
+            reference_slices_size=[len(reference_slice)],
             passed=passed,
             metric=total_psi,
             messages=messages,
@@ -539,6 +549,8 @@ class DriftTests(AbstractTestCollection):
             )]
 
         return self.save_results(SingleTestResult(
+            actual_slices_size=[len(actual_slice)],
+            reference_slices_size=[len(reference_slice)],
             passed=passed,
             metric=p_value,
             messages=messages,
@@ -610,6 +622,8 @@ class DriftTests(AbstractTestCollection):
             )]
 
         return self.save_results(SingleTestResult(
+            actual_slices_size=[len(actual_slice)],
+            reference_slices_size=[len(reference_slice)],
             passed=passed,
             metric=result.pvalue,
             messages=messages,
@@ -673,6 +687,8 @@ class DriftTests(AbstractTestCollection):
             output_df_sample = self.generate_output_df(actual_converted, actual_slice, output_data, psi_contribution_percent, total_psi)
 
         return self.save_results(SingleTestResult(
+            actual_slices_size=[len(actual_slice)],
+            reference_slices_size=[len(reference_slice)],
             passed=True if threshold is None else metric <= threshold,
             metric=metric,
             output_df=output_df_sample

@@ -489,6 +489,8 @@ class PerformanceTests(AbstractTestCollection):
 
         return self.save_results(
             SingleTestResult(
+                actual_slices_size=[len(actual_slice)],
+                reference_slices_size=[len(reference_slice)],
                 metric=change_pct,
                 passed=change_pct < threshold,
                 output_df=output_df_sample
