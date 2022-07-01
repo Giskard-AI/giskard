@@ -19,7 +19,6 @@ import {
 } from './mutations';
 import {AppNotification, MainState} from './state';
 import {ManagedUserVM, ProjectPostDTO, UpdateMeDTO} from '@/generated-sources';
-import mixpanel from "mixpanel-browser";
 
 type MainContext = ActionContext<MainState, State>;
 
