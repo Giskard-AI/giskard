@@ -1,6 +1,7 @@
 import pandas as pd
 
-from generated.ml_worker_pb2 import SingleTestResult
+from generated.ml_worker_pb2 import SingleTestResult, TestMessage, TestMessageType
+
 from ml_worker.core.giskard_dataset import GiskardDataset
 from ml_worker.core.model import GiskardModel
 from ml_worker.testing.abstract_test_collection import AbstractTestCollection
@@ -85,11 +86,16 @@ class MetamorphicTests(AbstractTestCollection):
 
         output_df_sample = compress(save_df(failed_df))
 
+        messages = [TestMessage(
+            type=TestMessageType.INFO,
+            text=f"{modified_rows_count} number of rows were perturbed"
+        )]
+
         return self.save_results(SingleTestResult(
             actual_slices_size=[len(actual_slice)],
-            number_of_perturbed_rows=modified_rows_count,
             metric=passed_ratio,
             passed=passed_ratio > threshold,
+            messages=messages,
             output_df=output_df_sample))
 
     def test_metamorphic_invariance(self,
