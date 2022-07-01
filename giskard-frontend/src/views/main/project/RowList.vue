@@ -163,6 +163,8 @@ import {api} from '@/api';
 import {Filter, InspectionDTO, RegressionUnit, RowFilterType} from '@/generated-sources';
 import MultiSelector from '@/views/main/utils/MultiSelector.vue';
 import {isClassification} from '@/ml-utils';
+import mixpanel from "mixpanel-browser";
+import {anonymize} from "@/utils";
 
 /**
  * Filter selector
@@ -245,10 +247,27 @@ export default class RowList extends Vue {
   @Watch('thresholdLabel')
   @Watch('maxDiffThreshold')
   @Watch('minDiffThreshold')
-  async reloadAlways(nv, ov) {
+  async applyFilter(nv, ov) {
     if (JSON.stringify(nv) === JSON.stringify(ov)) {
       return;
     }
+
+    mixpanel.track('Inspection filter', {
+      inspectionId: this.inspection.id,
+      'regressionThreshold': this.regressionThreshold,
+      'selectedFilter': this.selectedFilter,
+      'minThreshold': this.minThreshold,
+      'maxThreshold': this.maxThreshold,
+      'minActualThreshold': this.minActualThreshold,
+      'maxActualThreshold': this.maxActualThreshold,
+      'targetLabel': await anonymize(this.targetLabel),
+      'predictedLabel': await anonymize(this.predictedLabel),
+      'shuffleMode': this.shuffleMode,
+      'percentRegressionUnit': this.percentRegressionUnit,
+      'thresholdLabel': await anonymize(this.thresholdLabel),
+      'maxDiffThreshold': this.maxDiffThreshold,
+      'minDiffThreshold': this.minDiffThreshold,
+    });
     await this.fetchRowAndEmit(true);
   }
 
@@ -294,7 +313,7 @@ export default class RowList extends Vue {
       'isRandom': this.shuffleMode
     };
     const filter: Filter = {
-        'maxDiffThreshold': this.maxDiffThreshold == null ? this.maxDiffThreshold! : this.maxDiffThreshold / 100,
+      'maxDiffThreshold': this.maxDiffThreshold == null ? this.maxDiffThreshold! : this.maxDiffThreshold / 100,
       'minDiffThreshold': this.minDiffThreshold == null ? this.minDiffThreshold! : this.minDiffThreshold / 100,
       'maxLabelThreshold': this.maxActualThreshold!,
       'minLabelThreshold': this.minActualThreshold!,
@@ -302,7 +321,7 @@ export default class RowList extends Vue {
       'maxThreshold': this.maxThreshold!,
       'targetLabel': this.targetLabel,
       'predictedLabel': this.predictedLabel,
-        'rowFilter': this.selectedFilter,
+      'rowFilter': this.selectedFilter,
       'regressionUnit': this.percentRegressionUnit ? RegressionUnit.ABSDIFFPERCENT : RegressionUnit.ABSDIFF,
       'thresholdLabel': this.thresholdLabel!
 
@@ -313,7 +332,7 @@ export default class RowList extends Vue {
   }
 
   public async fetchDetails() {
-    this.labels = await api.getLabelsForTarget( this.inspection.id);
+    this.labels = await api.getLabelsForTarget(this.inspection.id);
   }
 
 }

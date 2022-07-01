@@ -32,6 +32,7 @@ public class GeneralSettingsService {
         Optional<SerializedGiskardGeneralSettings> result = settingsRepository.findById(SerializedGiskardGeneralSettings.ID);
         if (result.isEmpty()) {
             save(settings);
+            log.info("Saved general settings: {}", settings);
         }
     }
 

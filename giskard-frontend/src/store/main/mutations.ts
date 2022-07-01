@@ -33,13 +33,14 @@ export const mutations = {
         }
         mixpanel.people.set(
             {
+                "Giskard Instance": state.appSettings.generalSettings.instanceId,
                 "Giskard Version": state.appSettings.version,
                 "Giskard Plan": state.appSettings.planCode
             }
         );
         Vue.filter('roleName', function (value) {
             if (state.appSettings) {
-                let roles = Object.assign({}, ...state.appSettings!.roles.map((x) => ({[x.id]: x.name})));
+                let roles = Object.assign({}, ...state.appSettings.roles.map((x) => ({[x.id]: x.name})));
                 if (value in roles) {
                     return roles[value];
                 } else {

@@ -66,7 +66,7 @@ export function setupMixpanel() {
 
     mixpanel.init(isDev ? devProjectKey : prodProjectKey, {
         debug: isDev,
-        api_host: "https://analytics.giskard.ai",
+        api_host: "https://pxl.giskard.ai",
         opt_out_tracking_by_default: true
     });
 }
