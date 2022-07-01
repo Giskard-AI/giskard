@@ -25,9 +25,9 @@ import java.time.Instant;
 @Getter
 @Setter
 public class SerializedGiskardGeneralSettings {
-    public static final Long ID = 0L;
+    public static final Long SINGLE_ID = 0L;
     @Id
-    private final Long id = ID;
+    private Long id = SINGLE_ID;
 
     @Column(columnDefinition = "VARCHAR")
     private String settings;
