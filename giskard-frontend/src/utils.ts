@@ -31,18 +31,24 @@ async function anonymizeString(str: string): Promise<string> {
 }
 
 export async function anonymize(obj: any) {
-    if (_.isArray(obj)) {
-        return Promise.all(obj.map(anonymize));
-    } else if (_.isObject(obj)) {
-        const ret = {}
-        for (const k of Object.keys(obj)) {
-            ret[k] = await anonymize(obj[k]);
+    try {
+        if (_.isArray(obj)) {
+            return Promise.all(obj.map(anonymize));
+        } else if (_.isObject(obj)) {
+            const ret = {}
+            for (const k of Object.keys(obj)) {
+                ret[k] = await anonymize(obj[k]);
+            }
+            return ret;
+        } else {
+            return anonymizeString(obj.toString());
         }
-        return ret;
-    } else {
-        return anonymizeString(obj.toString());
+    } catch (e) {
+        console.error(`Failed to anonymize data ${obj}, falling back to empty value`, e)
+        return null;
     }
 }
-export function isAdmin(store){
+
+export function isAdmin(store) {
     return readUserProfile(store)?.roles!.includes(Role.ADMIN)
 }
