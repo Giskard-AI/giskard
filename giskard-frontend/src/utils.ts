@@ -1,5 +1,7 @@
 import {UserDTO} from '@/generated-sources';
 import * as _ from "lodash";
+import {readUserProfile} from "@/store/main/getters";
+import {Role} from "@/enums";
 
 export const getLocalToken = (): string | null => localStorage.getItem('token');
 
@@ -40,5 +42,7 @@ export async function anonymize(obj: any) {
     } else {
         return anonymizeString(obj.toString());
     }
-
+}
+export function isAdmin(store){
+    return readUserProfile(store)?.roles!.includes(Role.ADMIN)
 }
