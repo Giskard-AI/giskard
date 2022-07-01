@@ -1,7 +1,7 @@
 <template>
   <v-tabs v-if="data">
     <v-tab>Overview</v-tab>
-    <v-tab>Inspector</v-tab>
+    <v-tab @change="onInspectorActivated">Inspector</v-tab>
     <v-tab-item class="height85vh">
       <div class="d-flex flex-column metadata fill-height align-baseline">
         <v-container class="w100 flex-grow-1 ">
@@ -104,6 +104,13 @@ export default class FeedbackDetail extends Vue {
     this.data = (await api.getFeedback(this.id));
     this.userData = JSON.parse(this.data.userData);
     this.originalData = JSON.parse(this.data.originalData);
+  }
+
+  onInspectorActivated() {
+    mixpanel.track('Open inspector from feedback', {
+      modelId: this.data?.model.id,
+      datasetId: this.data?.dataset.id
+    });
   }
 
   resetInput() {
