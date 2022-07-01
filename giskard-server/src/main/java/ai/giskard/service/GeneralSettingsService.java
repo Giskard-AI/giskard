@@ -20,7 +20,7 @@ public class GeneralSettingsService {
     private final GeneralSettingsRepository settingsRepository;
 
     public GeneralSettings getSettings() {
-        return deserializeSettings(settingsRepository.getById(SerializedGiskardGeneralSettings.ID).getSettings());
+        return deserializeSettings(settingsRepository.getById(SerializedGiskardGeneralSettings.SINGLE_ID).getSettings());
     }
 
     public GeneralSettings save(GeneralSettings settings) {
@@ -29,7 +29,7 @@ public class GeneralSettingsService {
     }
 
     public void saveIfNotExists(GeneralSettings settings) {
-        Optional<SerializedGiskardGeneralSettings> result = settingsRepository.findById(SerializedGiskardGeneralSettings.ID);
+        Optional<SerializedGiskardGeneralSettings> result = settingsRepository.findById(SerializedGiskardGeneralSettings.SINGLE_ID);
         if (result.isEmpty()) {
             save(settings);
             log.info("Saved general settings: {}", settings);
