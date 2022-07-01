@@ -87,10 +87,9 @@
           </v-card>
         </v-col>
       </v-row>
-      <div v-if="!userProfile">Not found</div>
-      <v-row v-if="appConfig">
+      <v-row v-if="appSettings">
         <v-col cols="6">
-          <v-card>
+          <v-card height="100%">
             <v-card-title class="font-weight-light secondary--text">
               Application
             </v-card-title>
@@ -98,29 +97,58 @@
               <v-simple-table>
                 <table class="w100">
                   <tr>
+                    <td>Instance</td>
+                    <td>{{ appSettings.generalSettings.instanceId }}</td>
+                  </tr>
+                  <tr>
                     <td>Giskard version</td>
-                    <td>{{ appConfig.giskardVersion }}</td>
+                    <td>{{ appSettings.version }}</td>
+                  </tr>
+                  <tr>
+                    <td>Plan</td>
+                    <td>{{ appSettings.planName }}</td>
                   </tr>
                 </table>
               </v-simple-table>
             </v-card-text>
           </v-card>
         </v-col>
+        <v-col v-show="isAdmin">
+          <v-card height="100%">
+            <v-card-title class="font-weight-light secondary--text">
+              <span>Usage reporting</span>
+              <v-spacer/>
+              <v-switch
+                  v-model="appSettings.generalSettings.isAnalyticsEnabled"
+                  @change="saveGeneralSettings(appSettings.generalSettings)"
+              ></v-switch>
+            </v-card-title>
+            <v-card-text>
+              <div class="mb-2">
+                <p>Giskard can send usage reports.</p>
+                <p>The raw user data is never sent, only metadata. This information helps us improve the product and fix
+                  bugs sooner. 🐞</p>
+              </div>
+            </v-card-text>
+          </v-card>
+        </v-col>
       </v-row>
-
     </v-container>
   </div>
 </template>
 
 <script lang="ts">
 import {Component, Vue} from 'vue-property-decorator';
-import {readUserProfile} from '@/store/main/getters';
+import {readAppSettings, readUserProfile} from '@/store/main/getters';
 import {api} from '@/api';
 import {commitAddNotification, commitRemoveNotification} from '@/store/main/mutations';
 import {dispatchUpdateUserProfile} from '@/store/main/actions';
 import ButtonModalConfirmation from '@/components/ButtonModalConfirmation.vue';
-import {ApplicationConfigDTO, UpdateMeDTO} from '@/generated-sources';
 import {copyToClipboard} from '@/global-keys';
+import {AppConfigDTO, GeneralSettings, UpdateMeDTO} from "@/generated-sources";
+import mixpanel from "mixpanel-browser";
+import {Role} from "@/enums";
+import AppInfoDTO = AppConfigDTO.AppInfoDTO;
 
 @Component({
   components: {
@@ -133,7 +161,8 @@ export default class UserProfile extends Vue {
   private email: string = '';
   private editModeToggle = false;
   private apiAccessToken: string = '';
-  private appConfig: ApplicationConfigDTO | null = null;
+  private appSettings: AppInfoDTO | null = null;
+  private isAdmin: boolean = false;
 
   private resetFormData() {
     const userProfile = readUserProfile(this.$store);
@@ -142,12 +171,12 @@ export default class UserProfile extends Vue {
         this.displayName = userProfile.displayName;
       }
       this.email = userProfile.email;
+      this.isAdmin = userProfile.roles!.includes(Role.ADMIN);
     }
   }
 
   public async created() {
-    this.appConfig = await api.getConfig();
-
+    this.appSettings = await readAppSettings(this.$store);
     this.resetFormData();
   }
 
@@ -192,6 +221,15 @@ export default class UserProfile extends Vue {
   public async copyToken() {
     await copyToClipboard(this.apiAccessToken);
     commitAddNotification(this.$store, {content: "Copied to clipboard", color: "success"});
+  }
+
+  public async saveGeneralSettings(settings: GeneralSettings) {
+    if (!settings.isAnalyticsEnabled) {
+      mixpanel.opt_out_tracking();
+    } else {
+      mixpanel.opt_in_tracking();
+    }
+    this.appSettings!.generalSettings = await api.saveGeneralSettings(settings);
   }
 
 }

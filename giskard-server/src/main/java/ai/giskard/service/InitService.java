@@ -1,9 +1,6 @@
 package ai.giskard.service;
 
-import ai.giskard.domain.FeatureType;
-import ai.giskard.domain.Project;
-import ai.giskard.domain.Role;
-import ai.giskard.domain.User;
+import ai.giskard.domain.*;
 import ai.giskard.domain.ml.ModelLanguage;
 import ai.giskard.repository.ProjectRepository;
 import ai.giskard.repository.RoleRepository;
@@ -40,28 +37,6 @@ import static java.util.Arrays.stream;
 @Service
 @RequiredArgsConstructor
 public class InitService {
-
-    private final Logger logger = LoggerFactory.getLogger(InitService.class);
-
-    final UserRepository userRepository;
-
-    final RoleRepository roleRepository;
-
-    final UserService userService;
-
-    final ProjectRepository projectRepository;
-    final ProjectService projectService;
-
-    final PasswordEncoder passwordEncoder;
-    private final ResourceLoader resourceLoader;
-    private final FileUploadService fileUploadService;
-
-    private record ProjectConfig(String name, String creator, ModelUploadParamsDTO modelParams,
-                                 DataUploadParamsDTO datasetParams) {
-    }
-
-    String[] mockKeys = stream(AuthoritiesConstants.AUTHORITIES).map(key -> key.replace("ROLE_", "")).toArray(String[]::new);
-    public Map<String, String> users = stream(mockKeys).collect(Collectors.toMap(String::toLowerCase, String::toLowerCase));
 
     private static final Map<String, FeatureType> germanCreditFeatureTypes = new HashMap<>();
     private static final Map<String, FeatureType> enronFeatureTypes = new HashMap<>();
@@ -125,7 +100,19 @@ public class InitService {
         zillowFeatureTypes.put("OverallQual", FeatureType.CATEGORY);
     }
 
+    final UserRepository userRepository;
+    final RoleRepository roleRepository;
+    final UserService userService;
+    final ProjectRepository projectRepository;
+    final ProjectService projectService;
+    final PasswordEncoder passwordEncoder;
+    private final Logger logger = LoggerFactory.getLogger(InitService.class);
+    private final GeneralSettingsService generalSettingsService;
+    private final ResourceLoader resourceLoader;
+    private final FileUploadService fileUploadService;
     private final Map<String, ProjectConfig> projects = createProjectConfigMap();
+    String[] mockKeys = stream(AuthoritiesConstants.AUTHORITIES).map(key -> key.replace("ROLE_", "")).toArray(String[]::new);
+    private final Map<String, String> users = stream(mockKeys).collect(Collectors.toMap(String::toLowerCase, String::toLowerCase));
 
     private Map<String, ProjectConfig> createProjectConfigMap() {
         String zillowProjectKey = "zillow";
@@ -197,11 +184,11 @@ public class InitService {
     @EventListener(ApplicationReadyEvent.class)
     @Transactional
     public void init() {
+        generalSettingsService.saveIfNotExists(new GeneralSettings());
         initAuthorities();
         initUsers();
         initProjects();
     }
-
 
     /**
      * Initialising users with different authorities
@@ -285,7 +272,7 @@ public class InitService {
             datasets.forEach(e -> uploadDataframe(projectKey, e));
             logger.info("Created project: {}", projectName);
         } else {
-            logger.info(String.format("Project with key %s already exists", projectKey));
+            logger.info("Project with key {} already exists", projectKey);
         }
     }
 
@@ -348,5 +335,9 @@ public class InitService {
             logger.warn("Failed to upload model for demo project {}", projectKey);
             throw new RuntimeException(e);
         }
+    }
+
+    private record ProjectConfig(String name, String creator, ModelUploadParamsDTO modelParams,
+                                 DataUploadParamsDTO datasetParams) {
     }
 }

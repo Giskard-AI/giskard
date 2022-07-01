@@ -33,7 +33,7 @@
 </template>
 
 <script>
-import { readUserProfile } from '@/store/main/getters';
+import {readUserProfile} from '@/store/main/getters';
 
 export default {
   name: 'message-reply',

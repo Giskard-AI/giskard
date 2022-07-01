@@ -51,7 +51,7 @@
                              v-model="inputData[c.name]"
                              class="common-style-input"
                              :class="{'is-dirty': dirty || inputData[c.name] !== originalData[c.name]}"
-                             @change="$emit('update:inputData', inputData)"
+                             @change="onValuePerturbation(c)"
                              required
                       />
                       <textarea v-if="c.type === 'text'"
@@ -59,14 +59,14 @@
                                 :rows="!inputData[c.name] ? 1 : Math.min(15, parseInt(inputData[c.name].length / 40) + 1)"
                                 class="common-style-input"
                                 :class="{'is-dirty': dirty || inputData[c.name] !== originalData[c.name]}"
-                                @change="$emit('update:inputData', inputData)"
+                                @change="onValuePerturbation(c)"
                                 required
                       ></textarea>
                       <select v-if="c.type === 'category'"
                               v-model="inputData[c.name]"
                               class="common-style-input"
                               :class="{'is-dirty': dirty || inputData[c.name] !== originalData[c.name]}"
-                              @change="$emit('update:inputData', inputData)"
+                              @change="onValuePerturbation(c)"
                               required
                       >
                         <option v-for="k in c.values" :key="k" :value="k">{{ k }}</option>
@@ -156,6 +156,8 @@ import {api} from '@/api';
 import FeedbackPopover from '@/components/FeedbackPopover.vue';
 import {DatasetDTO, FeatureMetadataDTO, ModelDTO} from "@/generated-sources";
 import {isClassification} from "@/ml-utils";
+import mixpanel from "mixpanel-browser";
+import {anonymize} from "@/utils";
 
 @Component({
   components: {OverlayLoader, PredictionResults, FeedbackPopover, PredictionExplanations, TextExplanation}
@@ -180,6 +182,7 @@ export default class Inspector extends Vue {
 
   @Watch('originalData')
   public resetInput() {
+    mixpanel.track("Inspection feature reset")
     this.$emit('reset');
     (this.$refs.dataFormObserver as HTMLFormElement).reset();
   }
@@ -212,6 +215,16 @@ export default class Inspector extends Vue {
     if (isClassification(this.model.modelType)) {
       this.classificationResult = r
     }
+  }
+
+  async onValuePerturbation(featureMeta: FeatureMetadataDTO) {
+    mixpanel.track("Feature perturbation", {
+      featureType: featureMeta.type,
+      featureName: await anonymize(featureMeta.name),
+      modelId: this.model.id,
+      datasetId: this.dataset.id
+    })
+    this.$emit('update:inputData', this.inputData)
   }
 
 }

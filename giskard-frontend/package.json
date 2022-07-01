@@ -21,6 +21,8 @@
     "echarts": "^5.3.2",
     "lodash": "^4.17.21",
     "mousetrap": "^1.6.5",
+    "@types/mixpanel-browser": "^2.38.0",
+    "mixpanel-browser": "^2.45.0",
     "numeral": "^2.0.6",
     "posthog-js": "^1.23.0",
     "register-service-worker": "^1.7.2",
