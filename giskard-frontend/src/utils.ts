@@ -2,6 +2,7 @@ import {UserDTO} from '@/generated-sources';
 import * as _ from "lodash";
 import {readUserProfile} from "@/store/main/getters";
 import {Role} from "@/enums";
+import * as crypto from "crypto-js";
 
 export const getLocalToken = (): string | null => localStorage.getItem('token');
 
@@ -22,22 +23,19 @@ export const toSlug = (str: string): string => {
         .replace(/(-{2,})+/g, '-');        // Replace multiple - with single -
 }
 
-async function anonymizeString(str: string): Promise<string> {
-    const encoder = new TextEncoder();
-    const data = encoder.encode(str);
-    const hashBuffer = await crypto.subtle.digest('SHA-1', data);
-    const hashArray = Array.from(new Uint8Array(hashBuffer))
-    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+function anonymizeString(str: string): string {
+    let res = crypto.SHA1(str);
+    return res.toString().substring(0, 10);
 }
 
-export async function anonymize(obj: any) {
+export function anonymize(obj: any) {
     try {
         if (_.isArray(obj)) {
-            return Promise.all(obj.map(anonymize));
+            return obj.map(anonymize);
         } else if (_.isObject(obj)) {
             const ret = {}
             for (const k of Object.keys(obj)) {
-                ret[k] = await anonymize(obj[k]);
+                ret[k] = anonymize(obj[k]);
             }
             return ret;
         } else {
