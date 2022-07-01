@@ -130,7 +130,7 @@ export default class AdminUsers extends Vue {
   public async mounted() {
     await dispatchGetUsers(this.$store);
     const appSettings = await readAppSettings(this.$store);
-    this.canAddUsers = !appSettings || !appSettings.seats_available || appSettings.seats_available > 0;
+    this.canAddUsers = !appSettings || !appSettings.seatsAvailable || appSettings.seatsAvailable > 0;
   }
 
   public async deleteUser(user) {

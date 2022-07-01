@@ -37,6 +37,7 @@ import {Component, Emit, Prop, Vue} from 'vue-property-decorator';
 import OverlayLoader from '@/components/OverlayLoader.vue';
 import {api} from '@/api';
 import {DatasetDTO, ModelDTO} from '@/generated-sources';
+import mixpanel from "mixpanel-browser";
 
 @Component({
   components: { OverlayLoader }
@@ -65,14 +66,15 @@ export default class InspectorLauncher extends Vue {
 
   public async loadDatasets() {
     this.loading = true;
-    const response = await api.getProjectDatasets(this.projectId);
-    this.datasets = response.sort((a, b) =>
+    this.datasets = await api.getProjectDatasets(this.projectId);
+    this.datasets.sort((a, b) =>
       new Date(a.createdDate) < new Date(b.createdDate) ? 1 : -1
     );
     this.loading = false;
   }
 
   public async launchInspector() {
+    mixpanel.track('Create inspection', {datasetId: this.datasetSelected!.id, modelId: this.model.id});
     const inspection = await api.prepareInspection({datasetId: this.datasetSelected!.id, modelId: this.model.id});
     await this.$router.push({ name: 'project-inspector', params: {inspectionId: inspection.id.toString()}});
     this.reset();

@@ -127,6 +127,7 @@ import Datasets from '@/views/main/project/Datasets.vue';
 import FeedbackList from '@/views/main/project/FeedbackList.vue';
 import { Role } from '@/enums';
 import { ProjectPostDTO } from '@/generated-sources';
+import mixpanel from "mixpanel-browser";
 
 @Component({
 	components: {
@@ -191,6 +192,7 @@ export default class Project extends Vue {
 	public async inviteUser() {
 		if (this.project && this.userToInvite) {
 			try {
+        mixpanel.track('Invite user to project', {projectId: this.project.id, userId: this.userToInvite.id!});
 				await dispatchInviteUserToProject(this.$store, {projectId: this.project.id, userId: this.userToInvite.id!})
 				this.openShareDialog = false
 			}	catch (e) {
@@ -217,6 +219,7 @@ export default class Project extends Vue {
   public async deleteProject() {
 		if (this.project) {
 			try {
+        mixpanel.track('Delete project', {id: this.project.id});
 				await dispatchDeleteProject(this.$store, {id: this.project.id})
         await this.$router.push('/main/dashboard');
 			} catch (e) {

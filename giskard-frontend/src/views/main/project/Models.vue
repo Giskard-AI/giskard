@@ -80,6 +80,7 @@ import {api} from '@/api';
 import {performApiActionWithNotif} from '@/api-commons';
 import InspectorLauncher from './InspectorLauncher.vue';
 import {ModelDTO} from '@/generated-sources';
+import mixpanel from "mixpanel-browser";
 
 @Component({
   components: {InspectorLauncher}
@@ -102,6 +103,7 @@ export default class Models extends Vue {
   }
 
   public async deleteModelPickle(id: number, fileName: string) {
+    mixpanel.track('Delete model', {id});
     if (await this.$dialog.confirm({
       text: `Are you sure you want to delete model <strong>${fileName}</strong>?`,
       title: 'Delete model'
@@ -113,6 +115,7 @@ export default class Models extends Vue {
   }
 
   public downloadModelPickle(id: number) {
+    mixpanel.track('Download model', {id});
     api.downloadModelFile(id)
   }
 
