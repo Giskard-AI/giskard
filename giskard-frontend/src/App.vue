@@ -26,7 +26,7 @@
 <script lang="ts">
 import {Component, Vue} from 'vue-property-decorator';
 import NotificationsManager from '@/components/NotificationsManager.vue';
-import {readAppSettings, readIsLoggedIn} from '@/store/main/getters';
+import {readIsLoggedIn} from '@/store/main/getters';
 import {dispatchCheckLoggedIn} from '@/store/main/actions';
 import {editor} from 'monaco-editor';
 import IEditorOptions = editor.IEditorOptions;
@@ -43,7 +43,6 @@ export default class App extends Vue {
 
   public async created() {
     await dispatchCheckLoggedIn(this.$store);
-    const appSettings = await readAppSettings(this.$store);
 
     ((this.$root as any).monacoOptions as IEditorOptions) = {
       automaticLayout: true,
