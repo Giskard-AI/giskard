@@ -5,6 +5,7 @@ import ai.giskard.domain.SerializedGiskardGeneralSettings;
 import ai.giskard.repository.GeneralSettingsRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,6 +34,14 @@ public class GeneralSettingsService {
         if (result.isEmpty()) {
             save(settings);
             log.info("Saved general settings: {}", settings);
+        } else {
+            String savedSettings = result.get().getSettings();
+            GeneralSettings generalSettings = deserializeSettings(savedSettings);
+            String newSettings = serializeSettings(generalSettings);
+            if (!savedSettings.equals(newSettings)) {
+                log.info("Missing some default settings, updating it. Current version: {}, new version: {}", savedSettings, newSettings);
+                save(generalSettings);
+            }
         }
     }
 
@@ -47,7 +56,9 @@ public class GeneralSettingsService {
     private String serializeSettings(GeneralSettings settings) {
         String serializedSettings;
         try {
-            serializedSettings = new ObjectMapper().writeValueAsString(settings);
+            ObjectMapper mapper = new ObjectMapper();
+            mapper.configure(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS, true);
+            serializedSettings = mapper.writeValueAsString(settings);
         } catch (JsonProcessingException e) {
             throw new GiskardRuntimeException("Failed to serialize general settings", e);
         }
