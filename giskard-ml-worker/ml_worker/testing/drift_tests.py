@@ -184,6 +184,9 @@ class DriftTests(AbstractTestCollection):
                 the total psi score between the actual and expected datasets
             passed:
                 TRUE if total_psi <= threshold
+          output_df:
+                Dataframe containing the actual set rows with the categories that have drifted the most
+
 
         """
         assert column_name in actual_ds.columns, \
@@ -254,6 +257,9 @@ class DriftTests(AbstractTestCollection):
                 the pvalue of chi square test
             passed:
                 TRUE if metric > threshold
+          output_df:
+                Dataframe containing the actual set rows with the categories that have drifted the most
+
 
         """
         assert column_name in actual_ds.columns, \
@@ -316,7 +322,10 @@ class DriftTests(AbstractTestCollection):
             metric:
                 the pvalue of KS test
             passed:
-                TRUE if metric > threshold
+                TRUE if metric >= threshold
+          output_df:
+                Dataframe containing the actual set rows with the numeric partition that have drifted the most
+
         """
         assert column_name in actual_ds.columns, \
             f'"{column_name}" is not a column of Actual Dataset Columns: {",".join(actual_ds.columns)}'
@@ -374,6 +383,9 @@ class DriftTests(AbstractTestCollection):
                 the earth movers distance
             passed:
                 TRUE if metric < threshold
+          output_df:
+                Dataframe containing the actual set rows with the numeric partition that have drifted the most
+
         """
         assert column_name in actual_ds.columns, \
             f'"{column_name}" is not a column of Actual Dataset Columns: {",".join(actual_ds.columns)}'

@@ -28,12 +28,12 @@ items:
               Threshold value of AUC metrics
 
       Returns:
-          total rows tested:
-              Length of slice_df tested
+          actual_slices_size:
+              Length of actual_slice tested
           metric:
               The AUC performance metric
           passed:
-              tRUE if AUC metrics > threshold
+              TRUE if AUC metrics >= threshold
           output_df:
               Dataframe containing all the incorrect rows of the given data slice
 
@@ -70,12 +70,12 @@ items:
               Threshold value for F1 Score
 
       Returns:
-          total rows tested:
-              Length of slice_df tested
+          actual_slices_size:
+              Length of actual_slice tested
           metric:
               The F1 score metric
           passed:
-              TRUE if F1 Score metrics > threshold
+              TRUE if F1 Score metrics >= threshold
           output_df:
               Dataframe containing all the incorrect rows of the given data slice
       """
@@ -116,8 +116,10 @@ items:
               Threshold value for F1 Score difference
 
       Returns:
-          total rows tested:
-              Length of actual dataset
+          actual_slices_size:
+              Length of actual_slice tested
+          reference_slices_size:
+              Length of reference_slice tested
           metric:
               The F1 Score difference  metric
           passed:
@@ -165,6 +167,10 @@ items:
 
 
       Returns:
+          actual_slices_size:
+              Length of actual_slice tested
+          reference_slices_size:
+              Length of reference_slice tested
           metric:
               The F1 Score difference  metric
           passed:
@@ -206,12 +212,12 @@ items:
               Threshold value for Accuracy
 
       Returns:
-          total rows tested:
-              Length of slice_df tested
+          actual_slices_size:
+              Length of actual_slice tested
           metric:
               The Accuracy metric
           passed:
-              TRUE if Accuracy metrics > threshold
+              TRUE if Accuracy metrics >= threshold
           output_df:
               Dataframe containing all the incorrect rows of the given data slice
 
@@ -252,8 +258,10 @@ items:
               Threshold value for Accuracy Score difference
 
       Returns:
-          total rows tested:
-              Length of actual dataset
+          actual_slices_size:
+              Length of actual_slice tested
+          reference_slices_size:
+              Length of reference_slice tested
           metric:
               The Accuracy difference  metric
           passed:
@@ -299,6 +307,10 @@ items:
               Threshold value for Accuracy difference
 
       Returns:
+          actual_slices_size:
+              Length of actual_slice tested
+          reference_slices_size:
+              Length of reference_slice tested
           metric:
               The Accuracy difference  metric
           passed:
@@ -338,12 +350,12 @@ items:
               Threshold value for Precision
 
       Returns:
-          total rows tested:
-              Length of slice_df tested
+          actual_slices_size:
+              Length of actual_slice tested
           metric:
               The Precision metric
           passed:
-              TRUE if Precision metrics > threshold
+              TRUE if Precision metrics >= threshold
           output_df:
               Dataframe containing all the incorrect rows of the given data slice
 
@@ -384,8 +396,10 @@ items:
               Threshold value for Precision difference
 
       Returns:
-          total rows tested:
-              Length of actual dataset
+          actual_slices_size:
+              Length of actual_slice tested
+          reference_slices_size:
+              Length of reference_slice tested
           metric:
               The Precision difference  metric
           passed:
@@ -425,12 +439,12 @@ items:
               Threshold value for Recall
 
       Returns:
-          total rows tested:
-              Length of slice_df tested
+          actual_slices_size:
+              Length of actual_slice tested
           metric:
               The Recall metric
           passed:
-              TRUE if Recall metric > threshold
+              TRUE if Recall metric >= threshold
           output_df:
               Dataframe containing all the incorrect rows of the given data slice
 
@@ -471,8 +485,10 @@ items:
               Threshold value for Recall difference
 
       Returns:
-          total rows tested:
-              Length of actual dataset
+          actual_slices_size:
+              Length of actual_slice tested
+          reference_slices_size:
+              Length of reference_slice tested
           metric:
               The Recall difference  metric
           passed:
@@ -511,12 +527,12 @@ items:
               Threshold value for RMSE
 
       Returns:
-          total rows tested:
-              Length of slice_df tested
+          actual_slices_size:
+              Length of actual_slice tested
           metric:
               The RMSE metric
           passed:
-              TRUE if RMSE metric < threshold
+              TRUE if RMSE metric <= threshold
           output_df:
               Dataframe containing the rows with the top 30% the highest absolute error sorted with descending order
 
@@ -556,8 +572,10 @@ items:
               Threshold value for RMSE difference
 
       Returns:
-          total rows tested:
-              Length of actual dataset
+          actual_slices_size:
+              Length of actual_slice tested
+          reference_slices_size:
+              Length of reference_slice tested
           metric:
               The RMSE difference  metric
           passed:
@@ -604,6 +622,10 @@ items:
               Threshold value for RMSE difference
 
       Returns:
+          actual_slices_size:
+              Length of actual_slice tested
+          reference_slices_size:
+              Length of reference_slice tested
           metric:
               The RMSE difference  metric
           passed:
@@ -642,12 +664,14 @@ items:
               Threshold value for MAE
 
       Returns:
-          total rows tested:
-              Length of slice_df tested
+          actual_slices_size:
+              Length of actual_slice tested
+          reference_slices_size:
+              Length of reference_slice tested
           metric:
               The MAE metric
           passed:
-              TRUE if MAE metric < threshold
+              TRUE if MAE metric <= threshold
           output_df:
               Dataframe containing the rows with the top 30% the highest absolute error sorted with descending order
       """
@@ -681,12 +705,12 @@ items:
               Threshold value for R-Squared
 
       Returns:
-          total rows tested:
-              Length of slice_df tested
+          actual_slices_size:
+              Length of actual_slice tested
           metric:
               The R-Squared metric
           passed:
-              TRUE if R-Squared metric > threshold
+              TRUE if R-Squared metric >= threshold
           output_df:
               Dataframe containing the rows with the top 30% the highest absolute error sorted with descending order
 
