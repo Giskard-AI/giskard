@@ -32,8 +32,8 @@ items:
               Threshold for the percentage of passed rows
 
       Returns:
-          slice_nb_rows:
-              Length of slice_df tested
+          actual_slices_size:
+              Length of actual_slice tested
           metrics:
               The ratio of rows with the right classification label over the total of rows in the slice
           passed:
@@ -82,8 +82,8 @@ items:
               Threshold for the percentage of passed rows
 
       Returns:
-          slice_nb_rows:
-              Length of slice_df tested
+          actual_slices_size:
+              Length of actual_slice tested
           metrics:
               The proportion of rows in the right range inside the slice
           passed:
@@ -130,8 +130,8 @@ items:
               Threshold for the percentage of passed rows
 
       Returns:
-          slice_nb_rows:
-              Length of slice_df tested
+          actual_slices_size:
+              Length of actual_slice tested
           metrics:
               The proportion of rows in the right range inside the slice
           passed:
