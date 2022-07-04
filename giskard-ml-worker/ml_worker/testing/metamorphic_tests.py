@@ -71,7 +71,9 @@ class MetamorphicTests(AbstractTestCollection):
                           output_sensitivity=None,
                           output_proba=True
                           ) -> SingleTestResult:
-        results_df, modified_rows_count = self._perturb_and_predict(actual_slice.df,
+        actual_slice = actual_slice.df.reset_index(drop=True)
+
+        results_df, modified_rows_count = self._perturb_and_predict(actual_slice,
                                                                     model,
                                                                     perturbation_dict,
                                                                     classification_label=classification_label,
@@ -81,7 +83,7 @@ class MetamorphicTests(AbstractTestCollection):
                                                           model.model_type,
                                                           output_sensitivity,
                                                           flag)
-        failed_df = actual_slice.df.loc[failed_idx]
+        failed_df = actual_slice.loc[failed_idx]
         passed_ratio = len(passed_idx) / modified_rows_count if modified_rows_count != 0 else 1
 
         output_df_sample = compress(save_df(failed_df))
