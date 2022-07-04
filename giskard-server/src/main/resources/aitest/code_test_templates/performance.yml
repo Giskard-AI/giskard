@@ -631,7 +631,7 @@ items:
           passed:
               TRUE if RMSE difference < threshold
         output_df:
-              Dataframe containing the rows with the top 15% highest absolute error for both data slices
+              Dataframe containing the rows with the top 30 % highest absolute error sorted with descending order  for actual slice
       """
       tests.performance.test_diff_reference_actual_rmse(
           actual_slice=actual_ds.slice(lambda df: df.head(len(df) // 2)),
