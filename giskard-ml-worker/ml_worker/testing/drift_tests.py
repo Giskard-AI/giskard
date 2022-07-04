@@ -189,6 +189,8 @@ class DriftTests(AbstractTestCollection):
 
 
         """
+        actual_ds, reference_ds = self.reset_index_actual_reference(actual_ds, reference_ds)
+
         assert column_name in actual_ds.columns, \
             f'"{column_name}" is not a column of Actual Dataset Columns: {", ".join(actual_ds.columns)}'
         actual_series = actual_ds[column_name]
@@ -262,6 +264,8 @@ class DriftTests(AbstractTestCollection):
 
 
         """
+        actual_ds, reference_ds = self.reset_index_actual_reference(actual_ds, reference_ds)
+
         assert column_name in actual_ds.columns, \
             f'"{column_name}" is not a column of Actual Dataset Columns: {",".join(actual_ds.columns)}'
         actual_series = actual_ds[column_name]
@@ -327,6 +331,8 @@ class DriftTests(AbstractTestCollection):
                 Dataframe containing the actual set rows with the numeric partition that have drifted the most
 
         """
+        actual_ds, reference_ds = self.reset_index_actual_reference(actual_ds, reference_ds)
+
         assert column_name in actual_ds.columns, \
             f'"{column_name}" is not a column of Actual Dataset Columns: {",".join(actual_ds.columns)}'
         actual_series = actual_ds[column_name]
@@ -387,6 +393,8 @@ class DriftTests(AbstractTestCollection):
                 Dataframe containing the actual set rows with the numeric partition that have drifted the most
 
         """
+        actual_ds, reference_ds = self.reset_index_actual_reference(actual_ds, reference_ds)
+
         assert column_name in actual_ds.columns, \
             f'"{column_name}" is not a column of Actual Dataset Columns: {",".join(actual_ds.columns)}'
         actual_series = actual_ds[column_name]
