@@ -119,9 +119,11 @@ def bin_numerical_values(data_series, labels=None, bins=None):
         deciles_value = os.environ.get('GSK_TEST_DRIFT_BIN_COUNT', int(0.1 * len(data_series)))
         converted_tuple = pd.qcut(data_series, deciles_value, labels=range(deciles_value), retbins=True)
 
-        if converted_tuple is None:  # If the given reference set is too small
-            labels = sorted(int(data_series.unique()))  # The unique value in the dataset will be the label
-            converted_series, bins = data_series, sorted(int(data_series.unique()))
+        if deciles_value == 0:  # If the given reference set is too small
+            labels = range(len(data_series.unique()) - 1)
+
+            # Every unique value in the dataset will be a new bin
+            converted_series, bins = data_series, sorted(data_series.unique())
         else:
             labels = range(deciles_value)
             converted_series, bins = converted_tuple

@@ -177,6 +177,25 @@ def test_drift_clf_prob_ks_pass_fail(german_credit_data, german_credit_model):
     assert _test_drift_clf_prob_ks(german_credit_data, german_credit_model, 0.05)
 
 
+def _test_drift_clf_prob_ks_small_dataset(german_credit_data, german_credit_model, threshold=0.02):
+    tests = GiskardTestFunctions()
+    ds = german_credit_data
+    results = tests.drift.test_drift_prediction_ks(
+        reference_slice=ds.slice(lambda df: df.head(9)),
+        actual_slice=ds.slice(lambda df: df.tail(10)),
+        model=german_credit_model,
+        threshold=threshold,
+        classification_label='Default')
+
+    assert pytest.approx(results.metric, 0.1) == 0.90
+    return results.passed
+
+
+def test_drift_clf_prob_ks_pass_fail_small_dataset(german_credit_data, german_credit_model):
+    assert not _test_drift_clf_prob_ks_small_dataset(german_credit_data, german_credit_model, 1)
+    assert _test_drift_clf_prob_ks_small_dataset(german_credit_data, german_credit_model, 0.05)
+
+
 def _test_drift_reg_output_earth_movers_distance(diabetes_dataset_with_target, linear_regression_diabetes,
                                                  threshold=0.02):
     tests = GiskardTestFunctions()
