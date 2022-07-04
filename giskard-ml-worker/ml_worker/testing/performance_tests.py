@@ -343,7 +343,7 @@ class PerformanceTests(AbstractTestCollection):
 
         self.do_save_results = True
         change_pct = abs(metric_1 - metric_2) / metric_1
-        output_df_sample = compress(save_df(output_df_2))
+        output_df_sample = compress(save_df(pd.concat([output_df_1, output_df_2])))
 
         return self.save_results(
             SingleTestResult(
