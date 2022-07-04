@@ -562,7 +562,7 @@ class PerformanceTests(AbstractTestCollection):
         partial_accuracy = partial(self._test_classification_score, accuracy_score)
         return self._test_diff_reference_actual(partial_accuracy, model, reference_slice, actual_slice, threshold)
 
-    def test_diff_rmse(self, actual_slice, reference_slice, model, threshold=0.1, percent_rows=0.15):
+    def test_diff_rmse(self, actual_slice, reference_slice, model, threshold=0.1):
         """
         Test if the absolute percentage change of model RMSE between two samples is lower than a threshold
 
@@ -591,7 +591,7 @@ class PerformanceTests(AbstractTestCollection):
         """
         partial_rmse = partial(self._test_regression_score, self._get_rmse)
         return self._test_diff_prediction(partial_rmse, model, actual_slice, reference_slice, threshold,
-                                          percent_rows=percent_rows)
+                                          percent_rows=0.15)
 
     def test_diff_reference_actual_rmse(self, reference_slice, actual_slice, model, threshold=0.1):
         """
