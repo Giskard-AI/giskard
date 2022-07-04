@@ -70,7 +70,7 @@ class PerformanceTests(AbstractTestCollection):
 
     def _test_classification_score(self, score_fn, gsk_dataset: GiskardDataset, model: GiskardModel, threshold=1):
         is_binary_classification = len(model.classification_labels) == 2
-        dataframe = gsk_dataset.df
+        dataframe = gsk_dataset.df.reset_index(drop=True)
         prediction = model.run_predict(dataframe).raw_prediction
         labels_mapping = {model.classification_labels[i]: i for i in range(len(model.classification_labels))}
         actual_target = dataframe[gsk_dataset.target].map(labels_mapping)
@@ -88,7 +88,7 @@ class PerformanceTests(AbstractTestCollection):
         )
 
     def _test_accuracy_score(self, score_fn, gsk_dataset: GiskardDataset, model: GiskardModel, threshold=1):
-        dataframe = gsk_dataset.df
+        dataframe = gsk_dataset.df.reset_index(drop=True)
         prediction = model.run_predict(dataframe).raw_prediction
         labels_mapping = {model.classification_labels[i]: i for i in range(len(model.classification_labels))}
         actual_target = dataframe[gsk_dataset.target].map(labels_mapping)
@@ -107,8 +107,10 @@ class PerformanceTests(AbstractTestCollection):
     def _test_regression_score(self, score_fn, giskard_ds, model: GiskardModel, threshold=1, r2=False,
                                percent_rows=0.3):
         results_df = pd.DataFrame()
-        results_df["actual_target"] = giskard_ds.df[giskard_ds.target]
-        results_df["prediction"] = model.run_predict(giskard_ds.df).raw_prediction
+        dataframe = giskard_ds.df.reset_index(drop=True)
+
+        results_df["actual_target"] = dataframe[giskard_ds.target]
+        results_df["prediction"] = model.run_predict(dataframe).raw_prediction
 
         metric = score_fn(results_df["actual_target"], results_df["prediction"])
         output_df_sample = self._get_failed_df(results_df, percent_rows)
@@ -332,6 +334,7 @@ class PerformanceTests(AbstractTestCollection):
         result_1 = test_fn(reference_slice, model, percent_rows=percent_rows) if percent_rows is not None \
             else test_fn(reference_slice, model)
         metric_1 = result_1.metric
+        output_df_1 = result_1.output_df
 
         result_2 = test_fn(actual_slice, model, percent_rows=percent_rows) if percent_rows is not None \
             else test_fn(actual_slice, model)
