@@ -48,7 +48,7 @@ public class User extends AbstractAuditingEntity {
 
     @NotNull
     @Column(name = "is_active", nullable = false)
-    private boolean activated = false;
+    private boolean activated = true;
 
     @NotNull
     @Column(nullable = false)

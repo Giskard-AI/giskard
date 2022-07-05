@@ -484,6 +484,6 @@ class UserAdminControllerIT {
     }
 
     private void assertPersistedUsers(Consumer<List<User>> userAssertion) {
-        userAssertion.accept(userRepository.findAllByIdNotNullAndActivatedIsTrue());
+        userAssertion.accept(userRepository.findAllByIdNotNullAndEnabledIsTrue());
     }
 }
