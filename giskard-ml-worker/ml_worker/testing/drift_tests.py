@@ -202,14 +202,14 @@ class DriftTests(AbstractTestCollection):
 
         passed = True if threshold is None else total_psi <= threshold
         messages: Union[typing.List[TestMessage], None] = None
-        output_df_sample = None
-        if not passed:
-            main_drifting_modalities_bool = output_data["Psi"] > psi_contribution_percent * total_psi
-            modalities_list = output_data[main_drifting_modalities_bool]["Modality"].tolist()
-            filtered_modalities = [w for w in modalities_list if not re.match(DriftTests.other_modalities, w)]
-            failed_df = actual_ds.loc[actual_series.isin(filtered_modalities)]
-            output_df_sample = compress(save_df(failed_df))
 
+        main_drifting_modalities_bool = output_data["Psi"] > psi_contribution_percent * total_psi
+        modalities_list = output_data[main_drifting_modalities_bool]["Modality"].tolist()
+        filtered_modalities = [w for w in modalities_list if not re.match(DriftTests.other_modalities, w)]
+        failed_df = actual_ds.loc[actual_series.isin(filtered_modalities)]
+        output_df_sample = compress(save_df(failed_df))
+
+        if filtered_modalities:
             messages = [TestMessage(
                 type=TestMessageType.ERROR,
                 text=f"The data is drifting for the following modalities {*filtered_modalities,}"
@@ -279,14 +279,15 @@ class DriftTests(AbstractTestCollection):
         chi_square, p_value, output_data = self._calculate_chi_square(actual_series, reference_series, max_categories)
         passed = p_value > threshold
         messages: Union[typing.List[TestMessage], None] = None
-        output_df_sample = None
-        if not passed:
-            main_drifting_modalities_bool = output_data["Chi_square"] > chi_square_contribution_percent * chi_square
-            modalities_list = output_data[main_drifting_modalities_bool]["Modality"].tolist()
-            filtered_modalities = [w for w in modalities_list if not re.match(DriftTests.other_modalities, w)]
-            failed_df = actual_ds.loc[actual_series.isin(filtered_modalities)]
 
-            output_df_sample = compress(save_df(failed_df))
+        main_drifting_modalities_bool = output_data["Chi_square"] > chi_square_contribution_percent * chi_square
+        modalities_list = output_data[main_drifting_modalities_bool]["Modality"].tolist()
+        filtered_modalities = [w for w in modalities_list if not re.match(DriftTests.other_modalities, w)]
+        failed_df = actual_ds.loc[actual_series.isin(filtered_modalities)]
+
+        output_df_sample = compress(save_df(failed_df))
+
+        if filtered_modalities:
             messages = [TestMessage(
                 type=TestMessageType.ERROR,
                 text=f"The prediction is drifting for the following modalities {*filtered_modalities,}"
@@ -356,17 +357,23 @@ class DriftTests(AbstractTestCollection):
                                                                                               reference_series)
 
         passed = result.pvalue >= threshold
-        output_df_sample = None
+
+        output_df_sample = self.generate_output_df(actual_converted, actual_ds, output_data,psi_contribution_percent,
+                                                       total_psi)
+        messages: Union[typing.List[TestMessage], None] = None
 
         if not passed:
-            output_df_sample = self.generate_output_df(actual_converted, actual_ds, output_data,psi_contribution_percent,
-                                                       total_psi)
+            messages = [TestMessage(
+                type=TestMessageType.ERROR,
+                text=f"The prediction is drifting (p-value is equal to {result.pvalue} and is below the test risk level {threshold}) "
 
+            )]
         return self.save_results(SingleTestResult(
             actual_slices_size=[len(actual_series)],
             reference_slices_size=[len(reference_series)],
             passed=passed,
             metric=result.pvalue,
+            messages=messages,
             output_df=output_df_sample
         ))
 
@@ -424,17 +431,22 @@ class DriftTests(AbstractTestCollection):
         actual_converted, output_data, total_psi = self.convert_calculate_psi_numerical_drift(actual_series,
                                                                                               reference_series)
         passed = metric <= threshold
-        output_df_sample = None
+        output_df_sample = self.generate_output_df(actual_converted, actual_ds, output_data,psi_contribution_percent,
+                                                       total_psi)
+        messages: Union[typing.List[TestMessage], None] = None
 
         if not passed:
-            output_df_sample = self.generate_output_df(actual_converted, actual_ds, output_data,psi_contribution_percent,
-                                                       total_psi)
+            messages = [TestMessage(
+                type=TestMessageType.ERROR,
+                text=f"The prediction is drifting (metric is equal to {metric} and is below the test risk level {threshold}) "
 
+            )]
         return self.save_results(SingleTestResult(
             actual_slices_size=[len(actual_series)],
             reference_slices_size=[len(reference_series)],
             passed=True if threshold is None else passed,
             metric=metric,
+            messages=messages,
             output_df=output_df_sample
 
         ))
@@ -502,15 +514,14 @@ class DriftTests(AbstractTestCollection):
 
         passed = True if threshold is None else total_psi <= threshold
         messages: Union[typing.List[TestMessage], None] = None
-        output_df_sample = None
 
-        if not passed:
-            main_drifting_modalities_bool = output_data["Psi"] > psi_contribution_percent * total_psi
-            modalities_list = output_data[main_drifting_modalities_bool]["Modality"].tolist()
-            filtered_modalities = [w for w in modalities_list if not re.match(DriftTests.other_modalities, w)]
-            failed_df = actual_slice.loc[prediction_actual.isin(filtered_modalities)]
-            output_df_sample = compress(save_df(failed_df))
+        main_drifting_modalities_bool = output_data["Psi"] > psi_contribution_percent * total_psi
+        modalities_list = output_data[main_drifting_modalities_bool]["Modality"].tolist()
+        filtered_modalities = [w for w in modalities_list if not re.match(DriftTests.other_modalities, w)]
+        failed_df = actual_slice.loc[prediction_actual.isin(filtered_modalities)]
+        output_df_sample = compress(save_df(failed_df))
 
+        if filtered_modalities:
             messages = [TestMessage(
                 type=TestMessageType.ERROR,
                 text=f"The prediction is drifting for the following modalities {*filtered_modalities,}"
@@ -581,16 +592,16 @@ class DriftTests(AbstractTestCollection):
 
         passed = p_value > threshold
         messages: Union[typing.List[TestMessage], None] = None
-        output_df_sample = None
 
-        if not passed:
-            main_drifting_modalities_bool = output_data["Chi_square"] > chi_square_contribution_percent * chi_square
-            modalities_list = output_data[main_drifting_modalities_bool]["Modality"].tolist()
+        main_drifting_modalities_bool = output_data["Chi_square"] > chi_square_contribution_percent * chi_square
+        modalities_list = output_data[main_drifting_modalities_bool]["Modality"].tolist()
 
-            filtered_modalities = [w for w in modalities_list if not re.match(DriftTests.other_modalities, w)]
-            failed_df = actual_slice.loc[prediction_actual.isin(filtered_modalities)]
+        filtered_modalities = [w for w in modalities_list if not re.match(DriftTests.other_modalities, w)]
+        failed_df = actual_slice.loc[prediction_actual.isin(filtered_modalities)]
 
-            output_df_sample = compress(save_df(failed_df))
+        output_df_sample = compress(save_df(failed_df))
+
+        if filtered_modalities:
             messages = [TestMessage(
                 type=TestMessageType.ERROR,
                 text=f"The prediction is drifting for the following modalities {*filtered_modalities,}"
@@ -664,11 +675,11 @@ class DriftTests(AbstractTestCollection):
                                                                                               prediction_reference)
 
         passed = True if threshold is None else result.pvalue >= threshold
-        output_df_sample = None
         messages: Union[typing.List[TestMessage], None] = None
 
+        output_df_sample = self.generate_output_df(actual_converted, actual_slice, output_data,psi_contribution_percent, total_psi)
+
         if not passed:
-            output_df_sample = self.generate_output_df(actual_converted, actual_slice, output_data,psi_contribution_percent, total_psi)
             messages = [TestMessage(
                 type=TestMessageType.ERROR,
                 text=f"The prediction is drifting (pvalue is equal to {result.pvalue} and is below the test risk level {threshold}) "
@@ -735,15 +746,21 @@ class DriftTests(AbstractTestCollection):
                                                                                               prediction_reference)
 
         passed = True if threshold is None else metric <= threshold
-        output_df_sample = None
+        messages: Union[typing.List[TestMessage], None] = None
+
+        output_df_sample = self.generate_output_df(actual_converted, actual_slice, output_data, psi_contribution_percent, total_psi)
 
         if not passed:
-            output_df_sample = self.generate_output_df(actual_converted, actual_slice, output_data, psi_contribution_percent, total_psi)
+            messages = [TestMessage(
+                type=TestMessageType.ERROR,
+                text=f"The prediction is drifting (metric is equal to {metric} and is above the test risk level {threshold}) "
 
+            )]
         return self.save_results(SingleTestResult(
             actual_slices_size=[len(actual_slice)],
             reference_slices_size=[len(reference_slice)],
             passed=True if threshold is None else metric <= threshold,
             metric=metric,
+            messages=messages,
             output_df=output_df_sample
         ))
