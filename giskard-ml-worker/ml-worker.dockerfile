@@ -67,7 +67,7 @@ WORKDIR /app
 RUN mkdir "generated"
 COPY ./giskard-common/proto proto
 
-RUN python3.7 -m grpc_tools.protoc \
+RUN python3 -m grpc_tools.protoc \
       -Iproto \
       --python_out=generated \
       --grpc_python_out=generated \
