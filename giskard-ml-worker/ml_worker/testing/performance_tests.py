@@ -39,20 +39,21 @@ class PerformanceTests(AbstractTestCollection):
 
         Args:
             actual_slice(GiskardDataset):
-                slice of the actual dataset 
+              Slice of the actual dataset
             model(GiskardModel):
-                uploaded model
-            threshold(int):
-                threshold value of AUC metrics
+              Model used to compute the test
+            threshold(float):
+              Threshold value of AUC metrics
 
         Returns:
-            total rows tested:
-                length of actual_slice tested
-            metric:
-                the AUC performance metric
-            passed:
-                TRUE if AUC metrics > threshold
-
+          actual_slices_size:
+              Length of actual_slice tested
+          metric:
+              The AUC performance metric
+          passed:
+              TRUE if AUC metrics >= threshold
+          output_df:
+              Dataframe containing all the incorrect rows of the given data slice
         """
         if len(model.classification_labels) == 2:
             metric = roc_auc_score(actual_slice.df[actual_slice.target],
@@ -130,20 +131,21 @@ class PerformanceTests(AbstractTestCollection):
 
         Args:
             actual_slice(GiskardDataset):
-                slice of the actual dataset 
+              Slice of the actual dataset
             model(GiskardModel):
-                uploaded model
-            threshold(int):
-                threshold value for F1 Score
+              Model used to compute the test
+            threshold(float):
+              Threshold value for F1 Score
 
         Returns:
-            total rows tested:
-                length of actual_slice tested
+            actual_slices_size:
+              Length of actual_slice tested
             metric:
-                the F1 score metric
+              The F1 score metric
             passed:
-                TRUE if F1 Score metrics > threshold
-
+              TRUE if F1 Score metrics >= threshold
+            output_df:
+              Dataframe containing all the incorrect rows of the given data slice
         """
         results = self._test_classification_score(f1_score, actual_slice, model, threshold)
         transformed_results = self.transform_results(results)
@@ -157,20 +159,21 @@ class PerformanceTests(AbstractTestCollection):
 
         Args:
             actual_slice(GiskardDataset):
-                slice of the actual dataset 
+              Slice of the actual dataset
             model(GiskardModel):
-                uploaded model
-            threshold(int):
-                threshold value for Accuracy
+              Model used to compute the test
+            threshold(float):
+              Threshold value for Accuracy
 
         Returns:
-            total rows tested:
-                length of actual_slice tested
-            metric:
-                the Accuracy metric
-            passed:
-                TRUE if Accuracy metrics > threshold
-
+          actual_slices_size:
+              Length of actual_slice tested
+          metric:
+              The Accuracy metric
+          passed:
+              TRUE if Accuracy metrics >= threshold
+          output_df:
+              Dataframe containing all the incorrect rows of the given data slice
         """
         results = self._test_accuracy_score(accuracy_score, actual_slice, model, threshold)
         transformed_results = self.transform_results(results)
@@ -185,20 +188,20 @@ class PerformanceTests(AbstractTestCollection):
 
         Args:
             actual_slice(GiskardDataset):
-                slice of the actual dataset 
+              Slice of the actual dataset
             model(GiskardModel):
-                uploaded model
-            threshold(int):
-                threshold value for Precision
-
+              Model used to compute the test
+            threshold(float):
+              Threshold value for Precision
         Returns:
-            total rows tested:
-                length of actual_slice tested
+            actual_slices_size:
+              Length of actual_slice tested
             metric:
-                the Precision metric
+              The Precision metric
             passed:
-                TRUE if Precision metrics > threshold
-
+              TRUE if Precision metrics >= threshold
+            output_df:
+              Dataframe containing all the incorrect rows of the given data slice
         """
         results = self._test_classification_score(precision_score, actual_slice, model, threshold)
         transformed_results = self.transform_results(results)
@@ -213,20 +216,20 @@ class PerformanceTests(AbstractTestCollection):
 
         Args:
             actual_slice(GiskardDataset):
-                slice of the actual dataset 
+              Slice of the actual dataset
             model(GiskardModel):
-                uploaded model
-            threshold(int):
-                threshold value for Recall
-
+              Model used to compute the test
+            threshold(float):
+              Threshold value for Recall
         Returns:
-            total rows tested:
-                length of actual_slice tested
+            actual_slices_size:
+              Length of actual_slice tested
             metric:
-                the Recall metric
+              The Recall metric
             passed:
-                TRUE if Recall metric > threshold
-
+              TRUE if Recall metric >= threshold
+            output_df:
+              Dataframe containing all the incorrect rows of the given data slice
         """
         results = self._test_classification_score(recall_score, actual_slice, model, threshold)
         transformed_results = self.transform_results(results)
@@ -252,20 +255,20 @@ class PerformanceTests(AbstractTestCollection):
 
         Args:
             actual_slice(GiskardDataset):
-                actual dataset 
+              Slice of actual dataset
             model(GiskardModel):
-                uploaded model
-            threshold(int):
-                threshold value for RMSE
-
+              Model used to compute the test
+            threshold(float):
+              Threshold value for RMSE
         Returns:
-            total rows tested:
-                length of actual_slice tested
+            actual_slices_size:
+              Length of actual_slice tested
             metric:
-                the RMSE metric
+              The RMSE metric
             passed:
-                TRUE if RMSE metric < threshold
-
+              TRUE if RMSE metric <= threshold
+            output_df:
+              Dataframe containing the rows with the top 30% the highest absolute error sorted with descending order
         """
         results = self._test_regression_score(self._get_rmse, actual_slice, model, threshold, percent_rows=percent_rows)
         transformed_results = self.transform_results(results)
@@ -280,20 +283,23 @@ class PerformanceTests(AbstractTestCollection):
 
         Args:
             actual_slice(GiskardDataset):
-                actual dataset 
+              Slice of actual dataset
             model(GiskardModel):
-                uploaded model
-            threshold(int):
-                threshold value for MAE
+              Model used to compute the test
+            threshold(float):
+              Threshold value for MAE
 
         Returns:
-            total rows tested:
-                length of actual_slice tested
+            actual_slices_size:
+              Length of actual_slice tested
+            reference_slices_size:
+              Length of reference_slice tested
             metric:
-                the MAE metric
+              The MAE metric
             passed:
-                TRUE if MAE metric < threshold
-
+              TRUE if MAE metric <= threshold
+            output_df:
+              Dataframe containing the rows with the top 30% the highest absolute error sorted with descending order
         """
         results = self._test_regression_score(mean_absolute_error, actual_slice, model,
                                               threshold, percent_rows=percent_rows)
@@ -309,20 +315,21 @@ class PerformanceTests(AbstractTestCollection):
 
         Args:
             actual_slice(GiskardDataset):
-                actual dataset 
+              Slice of actual dataset
             model(GiskardModel):
-                uploaded model
-            threshold(int):
-                threshold value for R-Squared
+              Model used to compute the test
+            threshold(float):
+              Threshold value for R-Squared
 
         Returns:
-            total rows tested:
-                length of actual_slice tested
+            actual_slices_size:
+              Length of actual_slice tested
             metric:
-                the R-Squared metric
+              The R-Squared metric
             passed:
-                TRUE if R-Squared metric > threshold
-
+              TRUE if R-Squared metric >= threshold
+            output_df:
+              Dataframe containing the rows with the top 30% the highest absolute error sorted with descending order
         """
         results = self._test_regression_score(r2_score, actual_slice, model, threshold, r2=True)
         transformed_results = self.transform_results(results)
@@ -365,23 +372,25 @@ class PerformanceTests(AbstractTestCollection):
         and the test will fail
 
         Args:
-          actual_slice(GiskardDataset):
-              slice of the actual dataset
-          reference_slice(GiskardDataset):
-              slice of the actual dataset
+            actual_slice(GiskardDataset):
+              Slice of the actual dataset
+            reference_slice(GiskardDataset):
+              Slice of the actual dataset
             model(GiskardModel):
-                uploaded model
-            threshold(int):
-                threshold value for Accuracy Score difference
-
+              Model used to compute the test
+            threshold(float):
+              Threshold value for Accuracy Score difference
         Returns:
-            total rows tested:
-                length of actual dataset
+            actual_slices_size:
+              Length of actual_slice tested
+            reference_slices_size:
+              Length of reference_slice tested
             metric:
-                the Accuracy difference  metric
+              The Accuracy difference  metric
             passed:
-                TRUE if Accuracy difference < threshold
-
+              TRUE if Accuracy difference < threshold
+            output_df:
+              Dataframe containing all the incorrect rows of the two data slices
         """
         partial_accuracy = partial(self._test_classification_score, accuracy_score)
         return self._test_diff_prediction(partial_accuracy, model, actual_slice, reference_slice, threshold)
@@ -397,21 +406,25 @@ class PerformanceTests(AbstractTestCollection):
 
         Args:
             actual_slice(GiskardDataset):
-                slice of the actual dataset
+              Slice of the actual dataset
             reference_slice(GiskardDataset):
-                slice of the actual dataset
+              Slice of the actual dataset
             model(GiskardModel):
-                uploaded model
-            threshold(int):
-                threshold value for F1 Score difference
+              Model used to compute the test
+            threshold(float):
+              Threshold value for F1 Score difference
 
         Returns:
-            total rows tested:
-                length of actual dataset
+            actual_slices_size:
+              Length of actual_slice tested
+            reference_slices_size:
+              Length of reference_slice tested
             metric:
-                the F1 Score difference  metric
+              The F1 Score difference  metric
             passed:
-                TRUE if F1 Score difference < threshold
+              TRUE if F1 Score difference < threshold
+            output_df:
+              Dataframe containing all the incorrect rows of the two data slices
 
         """
         partial_f1 = partial(self._test_classification_score, f1_score)
@@ -428,21 +441,24 @@ class PerformanceTests(AbstractTestCollection):
 
         Args:
             actual_slice(GiskardDataset):
-                slice of the actual dataset
+              Slice of the actual dataset
             reference_slice(GiskardDataset):
-                slice of the actual dataset
+              Slice of the actual dataset
             model(GiskardModel):
-                uploaded model
-            threshold(int):
-                threshold value for Precision difference
-
+              Model used to compute the test
+            threshold(float):
+              Threshold value for Precision difference
         Returns:
-            total rows tested:
-                length of actual dataset
+            actual_slices_size:
+              Length of actual_slice tested
+            reference_slices_size:
+              Length of reference_slice tested
             metric:
-                the Precision difference  metric
+              The Precision difference  metric
             passed:
-                TRUE if Precision difference < threshold
+              TRUE if Precision difference < threshold
+            output_df:
+              Dataframe containing all the incorrect rows of the two data slices
         """
         partial_precision = partial(self._test_classification_score, precision_score)
         return self._test_diff_prediction(partial_precision, model, actual_slice, reference_slice, threshold)
@@ -458,21 +474,24 @@ class PerformanceTests(AbstractTestCollection):
 
         Args:
             actual_slice(GiskardDataset):
-                slice of the actual dataset
+              Slice of the actual dataset
             reference_slice(GiskardDataset):
-                slice of the actual dataset
+              Slice of the actual dataset
             model(GiskardModel):
-                uploaded model
-            threshold(int):
-                threshold value for Recall difference
-
+              Model used to compute the test
+            threshold(float):
+              Threshold value for Recall difference
         Returns:
-            total rows tested:
-                length of actual dataset
+            actual_slices_size:
+              Length of actual_slice tested
+            reference_slices_size:
+              Length of reference_slice tested
             metric:
-                the Recall difference  metric
+              The Recall difference  metric
             passed:
-                TRUE if Recall difference < threshold
+              TRUE if Recall difference < threshold
+            output_df:
+              Dataframe containing all the incorrect rows of the two data slices
         """
         partial_recall = partial(self._test_classification_score, recall_score)
         return self._test_diff_prediction(partial_recall, model, actual_slice, reference_slice, threshold)
@@ -511,21 +530,25 @@ class PerformanceTests(AbstractTestCollection):
         and the test will fail.
 
         Args:
-            reference_slice(GiskardDataset):
-                reference dataset 
             actual_slice(GiskardDataset):
-                actual dataset 
+              Slice of actual dataset
+            reference_slice(GiskardDataset):
+              Slice of reference dataset
             model(GiskardModel):
-                uploaded model
-            threshold(int):
-                threshold value for F1 Score difference
-
-
+              Model used to compute the test
+            threshold(float):
+              Threshold value for F1 Score difference
         Returns:
-            metric:
-                the F1 Score difference  metric
-            passed:
-                TRUE if F1 Score difference < threshold
+          actual_slices_size:
+              Length of actual_slice tested
+          reference_slices_size:
+              Length of reference_slice tested
+          metric:
+              The F1 Score difference  metric
+          passed:
+              TRUE if F1 Score difference < threshold
+          output_df:
+              Dataframe containing all the incorrect rows of the actual dataset
 
         """
         partial_f1 = partial(self._test_classification_score, f1_score)
@@ -542,22 +565,25 @@ class PerformanceTests(AbstractTestCollection):
         and the test will fail.
 
         Args:
-            reference_slice(GiskardDataset):
-                reference dataset 
             actual_slice(GiskardDataset):
-                actual dataset 
+              Slice of actual dataset
+            reference_slice(GiskardDataset):
+              Slice of reference dataset
             model(GiskardModel):
-                uploaded model
-            threshold(int):
-                threshold value for Accuracy difference
-
-
+              Model used to compute the test
+            threshold(float):
+              Threshold value for Accuracy difference
         Returns:
+            actual_slices_size:
+              Length of actual_slice tested
+            reference_slices_size:
+              Length of reference_slice tested
             metric:
-                the Accuracy difference  metric
+              The Accuracy difference  metric
             passed:
-                TRUE if Accuracy difference < threshold
-
+              TRUE if Accuracy difference < threshold
+            output_df:
+              Dataframe containing all the incorrect rows of the given actual dataset
         """
         partial_accuracy = partial(self._test_classification_score, accuracy_score)
         return self._test_diff_reference_actual(partial_accuracy, model, reference_slice, actual_slice, threshold)
@@ -573,21 +599,26 @@ class PerformanceTests(AbstractTestCollection):
 
         Args:
             actual_slice(GiskardDataset):
-                slice of the actual dataset
+              Slice of the actual dataset
             reference_slice(GiskardDataset):
-                slice of the actual dataset
+              Slice of the actual dataset
             model(GiskardModel):
-                uploaded model
-            threshold(int):
-                threshold value for RMSE difference
+              Model used to compute the test
+            threshold(float):
+              Threshold value for RMSE difference
 
         Returns:
-            total rows tested:
-                length of actual dataset
+            actual_slices_size:
+              Length of actual_slice tested
+            reference_slices_size:
+              Length of reference_slice tested
             metric:
-                the RMSE difference  metric
+              The RMSE difference  metric
             passed:
-                TRUE if RMSE difference < threshold
+              TRUE if RMSE difference < threshold
+            output_df:
+              Dataframe containing the rows with the top 15% the highest absolute error sorted with descending order
+              for both slices
         """
         partial_rmse = partial(self._test_regression_score, self._get_rmse)
         return self._test_diff_prediction(partial_rmse, model, actual_slice, reference_slice, threshold,
@@ -604,21 +635,25 @@ class PerformanceTests(AbstractTestCollection):
         and the test will fail.
 
         Args:
-            reference_slice(GiskardDataset):
-                slice of reference dataset
             actual_slice(GiskardDataset):
-                slice of actual dataset
+              Slice of actual dataset
+            reference_slice(GiskardDataset):
+              Slice of reference dataset
             model(GiskardModel):
-                uploaded model
-            threshold(int):
-                threshold value for RMSE difference
-
+              Model used to compute the test
+            threshold(float):
+              Threshold value for RMSE difference
         Returns:
-            metric:
-                the RMSE difference  metric
-            passed:
-                TRUE if RMSE difference < threshold
-
+          actual_slices_size:
+              Length of actual_slice tested
+          reference_slices_size:
+              Length of reference_slice tested
+          metric:
+              The RMSE difference  metric
+          passed:
+              TRUE if RMSE difference < threshold
+        output_df:
+              Dataframe containing the rows with the top 30 % highest absolute error sorted with descending order  for actual slice
         """
         partial_rmse = partial(self._test_regression_score, self._get_rmse)
         return self._test_diff_reference_actual(partial_rmse, model, reference_slice, actual_slice, threshold)

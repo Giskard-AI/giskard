@@ -126,7 +126,6 @@ items:
               TRUE if F1 Score difference < threshold
           output_df:
               Dataframe containing all the incorrect rows of the two data slices
-
       """
       tests.performance.test_diff_f1(
           actual_slice=actual_ds.slice(lambda df: df.head(len(df) // 2)),
@@ -164,8 +163,6 @@ items:
               Model used to compute the test
           threshold(float):
               Threshold value for F1 Score difference
-
-
       Returns:
           actual_slices_size:
               Length of actual_slice tested
@@ -177,7 +174,6 @@ items:
               TRUE if F1 Score difference < threshold
           output_df:
               Dataframe containing all the incorrect rows of the actual dataset
-
       """
       tests.performance.test_diff_reference_actual_f1(
           reference_slice=reference_ds.slice(lambda df: df.head(len(df) // 2)),
@@ -210,7 +206,6 @@ items:
               Model used to compute the test
           threshold(float):
               Threshold value for Accuracy
-
       Returns:
           actual_slices_size:
               Length of actual_slice tested
@@ -220,7 +215,6 @@ items:
               TRUE if Accuracy metrics >= threshold
           output_df:
               Dataframe containing all the incorrect rows of the given data slice
-
       """
       tests.performance.test_accuracy(
           actual_slice=actual_ds.slice(lambda df: df.head(len(df) // 2)),
@@ -256,7 +250,6 @@ items:
               Model used to compute the test
           threshold(float):
               Threshold value for Accuracy Score difference
-
       Returns:
           actual_slices_size:
               Length of actual_slice tested
@@ -305,7 +298,6 @@ items:
               Model used to compute the test
           threshold(float):
               Threshold value for Accuracy difference
-
       Returns:
           actual_slices_size:
               Length of actual_slice tested
@@ -394,7 +386,6 @@ items:
               Model used to compute the test
           threshold(float):
               Threshold value for Precision difference
-
       Returns:
           actual_slices_size:
               Length of actual_slice tested
@@ -570,7 +561,6 @@ items:
               Model used to compute the test
           threshold(float):
               Threshold value for RMSE difference
-
       Returns:
           actual_slices_size:
               Length of actual_slice tested
@@ -583,7 +573,6 @@ items:
           output_df:
               Dataframe containing the rows with the top 15% the highest absolute error sorted with descending order
               for both slices
-
       """
       tests.performance.test_diff_rmse(
           actual_slice=actual_ds.slice(lambda df: df.head(len(df) // 2)),
@@ -620,7 +609,6 @@ items:
               Model used to compute the test
           threshold(float):
               Threshold value for RMSE difference
-
       Returns:
           actual_slices_size:
               Length of actual_slice tested
@@ -713,7 +701,6 @@ items:
               TRUE if R-Squared metric >= threshold
           output_df:
               Dataframe containing the rows with the top 30% the highest absolute error sorted with descending order
-
       """
       tests.performance.test_r2(
           actual_slice=actual_ds.slice(lambda df: df.head(len(df) // 2)),
