@@ -6,6 +6,7 @@ import {AdminUserDTO, AppConfigDTO, ProjectDTO} from '@/generated-sources';
 import Vue from "vue";
 import mixpanel from "mixpanel-browser";
 import AppInfoDTO = AppConfigDTO.AppInfoDTO;
+import {anonymize} from "@/utils";
 
 
 export const mutations = {
@@ -20,9 +21,6 @@ export const mutations = {
     },
     setUserProfile(state: MainState, payload: AdminUserDTO) {
         state.userProfile = payload;
-        if (payload.id) {
-            mixpanel.alias(payload.id.toString());
-        }
     },
     setAppSettings(state: MainState, payload: AppInfoDTO) {
         state.appSettings = payload;
@@ -31,9 +29,13 @@ export const mutations = {
         } else if (!state.appSettings.generalSettings.isAnalyticsEnabled && !mixpanel.has_opted_out_tracking()) {
             mixpanel.opt_out_tracking();
         }
+        let instanceId = state.appSettings.generalSettings.instanceId;
+        if (state.userProfile) {
+            mixpanel.alias(`${instanceId}-${anonymize(state.userProfile?.user_id)}`);
+        }
         mixpanel.people.set(
             {
-                "Giskard Instance": state.appSettings.generalSettings.instanceId,
+                "Giskard Instance": instanceId,
                 "Giskard Version": state.appSettings.version,
                 "Giskard Plan": state.appSettings.planCode
             }
