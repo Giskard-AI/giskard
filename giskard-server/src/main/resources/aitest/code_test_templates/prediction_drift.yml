@@ -196,7 +196,6 @@ items:
                 Kolmogorov-Smirnov result message
             output_df:
                 Dataframe containing the actual set rows with the output probability prediction that have drifted the most
-
       """
       tests.drift.test_drift_prediction_ks(
           actual_slice=actual_ds.slice(lambda df: df.head(len(df)//2)),

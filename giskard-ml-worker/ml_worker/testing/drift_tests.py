@@ -466,29 +466,34 @@ class DriftTests(AbstractTestCollection):
         for females between reference and actual sets is below 0.2
 
         Args:
-            reference_slice(GiskardDataset):
-                slice of the reference dataset 
             actual_slice(GiskardDataset):
-                slice of the actual dataset 
+                Slice of the actual dataset
+            reference_slice(GiskardDataset):
+                Slice of the reference dataset
             model(GiskardModel):
-                uploaded model
+                Model used to compute the test
+            threshold(float):
+                Threshold value for PSI
             max_categories:
                 the maximum categories to compute the PSI score
-            threshold:
-                threshold value for PSI
             psi_contribution_percent:
                 the ratio between the PSI score of a given category over the total PSI score
                 of the categorical variable. If there is a drift, the test provides all the
                 categories that have a PSI contribution over than this ratio.
 
         Returns:
+            actual_slices_size:
+                Length of actual slice tested
+            reference_slices_size:
+                Length of reference slice tested
             passed:
-                TRUE if total psi <= threshold
+                TRUE if metric <= threshold
             metric:
-                total PSI value
+                Total PSI value
             messages:
-                psi result message
-
+                Psi result message
+            output_df:
+                Dataframe containing the actual set rows with the labels that have drifted the most
         """
         actual_slice, reference_slice = self.reset_index_actual_reference(actual_slice.df, reference_slice.df)
         prediction_reference = pd.Series(model.run_predict(reference_slice).prediction)
@@ -537,28 +542,34 @@ class DriftTests(AbstractTestCollection):
         for females between reference and actual sets is below 0.2
 
         Args:
-            reference_slice(GiskardDataset):
-                slice of the reference dataset 
             actual_slice(GiskardDataset):
-                slice of the actual dataset 
+                Slice of the actual dataset
+            reference_slice(GiskardDataset):
+                Slice of the reference dataset
             model(GiskardModel):
-                uploaded model
+                Model used to compute the test
+            threshold(float):
+                Threshold value for Chi-Square
             max_categories:
                 the maximum categories to compute the PSI score
-            threshold:
-                threshold value for p-value
             chi_square_contribution_percent:
                 the ratio between the Chi-Square value of a given category over the total Chi-Square
                 value of the categorical variable. If there is a drift, the test provides all the
                 categories that have a PSI contribution over than this ratio.
 
         Returns:
+            actual_slices_size:
+                Length of actual slice tested
+            reference_slices_size:
+                Length of reference slice tested
             passed:
-                TRUE if p_value > threshold
+                TRUE if metric > threshold
             metric:
-                p-value of chi_square test
+                Calculated p-value of Chi_square
             messages:
-                message describing if prediction is drifting or not
+                Message describing if prediction is drifting or not
+            output_df:
+                Dataframe containing the actual set rows with the labels that have drifted the most
 
         """
         actual_slice, reference_slice = self.reset_index_actual_reference(actual_slice.df, reference_slice.df)
@@ -611,24 +622,30 @@ class DriftTests(AbstractTestCollection):
          rejected at 5% level and that we cannot assume drift for this variable.
 
         Args:
-            reference_slice(GiskardDataset):
-                slice of the reference dataset 
             actual_slice(GiskardDataset):
-                slice of the actual dataset 
+                Slice of the actual dataset
+            reference_slice(GiskardDataset):
+                Slice of the reference dataset
             model(GiskardModel):
-                uploaded model
-            threshold:
-                threshold for p-value Kolmogorov-Smirnov test
+                Model used to compute the test
+            threshold(float):
+                Threshold for p-value Kolmogorov-Smirnov test
             classification_label:
-                one specific label value from the target column for classification model
+                One specific label value from the target column for classification model
 
         Returns:
+            actual_slices_size:
+                Length of actual slice tested
+            reference_slices_size:
+                Length of reference slice tested
             passed:
-                TRUE if p-value >= threshold
+                TRUE if metric >= threshold
             metric:
-                calculated p-value Kolmogorov-Smirnov test
+                The calculated p-value Kolmogorov-Smirnov test
             messages:
                 Kolmogorov-Smirnov result message
+            output_df:
+                Dataframe containing the actual set rows with the output prediction that have drifted the most
         """
         actual_slice, reference_slice = self.reset_index_actual_reference(actual_slice.df, reference_slice.df)
 
