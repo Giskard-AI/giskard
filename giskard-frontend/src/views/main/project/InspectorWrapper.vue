@@ -35,7 +35,7 @@
                :inputData.sync='inputData'
                @reset='resetInput'
                @submitValueFeedback='submitValueFeedback'
-               @submitVariationFeedback='submitValueVariationFeedback'
+               @submitValueVariationFeedback='submitValueVariationFeedback'
     />
 
     <!-- For general feedback -->
