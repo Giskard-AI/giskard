@@ -29,7 +29,7 @@ public class ProjectService {
     final ProjectRepository projectRepository;
     final GiskardMapper giskardMapper;
 
-    public static final Pattern PROJECT_KEY_PATTERN = Pattern.compile("^[a-z\\d-]+$");
+    public static final Pattern PROJECT_KEY_PATTERN = Pattern.compile("^[a-z\\d_]+$");
 
     /**
      * Update project
@@ -44,7 +44,7 @@ public class ProjectService {
         return projectRepository.save(project);
     }
 
-    private static boolean isProjectKeyValid(String projectKey) {
+    public static boolean isProjectKeyValid(String projectKey) {
         return PROJECT_KEY_PATTERN.matcher(projectKey).matches();
     }
 
