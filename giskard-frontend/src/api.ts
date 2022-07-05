@@ -127,7 +127,7 @@ axiosProject.interceptors.request.use(jwtRequestInterceptor);
 
 
 function downloadURL(urlString) {
-    let url = new URL(urlString);
+    let url = new URL(urlString, window.location.origin);
     let token = getLocalToken();
     if (token) {
         url.searchParams.append('token', token);
