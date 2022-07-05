@@ -23,26 +23,24 @@ class HeuristicTests(AbstractTestCollection):
         of people with high-salaries are classified as “non default”
 
         Args:
-            actual_slice:
-                slice of the actual dataset
-            model:
-                uploaded model
-            classification_label:
-                classification label you want to test
-            threshold:
-                threshold for the percentage of passed rows
+           actual_slice(GiskardDataset):
+              Slice of the  actual dataset
+          model(GiskardModel):
+              Model used to compute the test
+          classification_label(str):
+              Classification label you want to test
+          threshold(float):
+              Threshold for the percentage of passed rows
 
         Returns:
-            slice_nb_rows:
-                length of actual_slice tested
-            metrics:
-                the ratio of raws with the right classification label over the total of raws in the slice
-            passed:
-                TRUE if passed_ratio > threshold
+          actual_slices_size:
+              Length of actual_slice tested
+          metrics:
+              The ratio of rows with the right classification label over the total of rows in the slice
+          passed:
+              TRUE if passed_ratio > threshold
           output_df:
               Dataframe containing the rows that do not return the right classification label
-
-
         """
         actual_slice = actual_slice.df.reset_index(drop=True)
         prediction_results = model.run_predict(actual_slice).prediction
@@ -85,18 +83,18 @@ class HeuristicTests(AbstractTestCollection):
 
         For Regression : The predicted Sale Price of a house in the city falls in a particular range
         Args:
-            actual_slice:
-                slice of the actual dataset
-            model:
-                uploaded model
-            classification_label:
-                classification label you want to test
-            min_range:
-                minimum probability of occurrence of classification label
-            max_range:
-                maximum probability of occurrence of classification label
-            threshold:
-                threshold for the percentage of passed rows
+           actual_slice(GiskardDataset):
+              Slice of the actual dataset
+          model(GiskardModel):
+              Model used to compute the test
+          classification_label(str):
+              Optional. Classification label you want to test
+          min_range(float):
+              Minimum probability of occurrence of classification label
+          max_range(float):
+              Maximum probability of occurrence of classification label
+          threshold(float):
+              Threshold for the percentage of passed rows
 
         Returns:
             slice_nb_rows:

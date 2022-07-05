@@ -72,7 +72,7 @@ items:
               Slice of the actual dataset
           model(GiskardModel):
               Model used to compute the test
-          classification_label:
+          classification_label(str):
               Classification label you want to test
           min_range(float):
               Minimum probability of occurrence of classification label
