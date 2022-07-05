@@ -162,16 +162,15 @@ class DriftTests(AbstractTestCollection):
 
         Example : The test is passed when the  PSI score of gender between reference and actual sets is below 0.2
 
-
         Args:
             actual_ds(GiskardDataset):
                 Actual dataset to compute the test
             reference_ds(GiskardDataset):
                 Reference dataset to compute the test
             column_name(str):
-                Name of column with numerical feature
-            threshold:
-                threshold value for PSI
+                Name of column with categorical feature
+            threshold(float:
+                Threshold value for PSI
             max_categories:
                 the maximum categories to compute the PSI score
             psi_contribution_percent:
@@ -180,14 +179,16 @@ class DriftTests(AbstractTestCollection):
                 categories that have a PSI contribution over than this ratio.
 
         Returns:
+            actual_slices_size:
+                Length of rows with given categorical feature in actual slice
+            reference_slices_size:
+                Length of rows with given categorical feature in reference slice
             metric:
-                the total psi score between the actual and expected datasets
+                The total psi score between the actual and expected datasets
             passed:
                 TRUE if total_psi <= threshold
           output_df:
                 Dataframe containing the actual set rows with the categories that have drifted the most
-
-
         """
         actual_ds, reference_ds = self.reset_index_actual_reference(actual_ds, reference_ds)
 
@@ -244,9 +245,9 @@ class DriftTests(AbstractTestCollection):
             reference_ds(GiskardDataset):
                 Reference dataset to compute the test
             column_name(str):
-                Name of column with numerical feature
-            threshold:
-                threshold for p-value of chi-square
+                Name of column with categorical feature
+            threshold(float):
+                Threshold for p-value of chi-square
             max_categories:
                 the maximum categories to compute the chi square
             chi_square_contribution_percent:
@@ -255,14 +256,16 @@ class DriftTests(AbstractTestCollection):
                 categories that have a PSI contribution over than this ratio.
 
         Returns:
+            actual_slices_size:
+                Length of rows with given categorical feature in actual slice
+            reference_slices_size:
+                Length of rows with given categorical feature in reference slice
             metric:
-                the pvalue of chi square test
+                The pvalue of chi square test
             passed:
                 TRUE if metric > threshold
           output_df:
                 Dataframe containing the actual set rows with the categories that have drifted the most
-
-
         """
         actual_ds, reference_ds = self.reset_index_actual_reference(actual_ds, reference_ds)
 
@@ -305,8 +308,8 @@ class DriftTests(AbstractTestCollection):
                       threshold=0.05,
                       psi_contribution_percent: float = 0.2) -> SingleTestResult:
         """
-         Test if the pvalue of the KS test between the actual and expected datasets is above
-          the threshold for a given numerical feature
+        Test if the pvalue of the KS test between the actual and expected datasets is above
+        the threshold for a given numerical feature
 
         Example : The test is passed when the pvalue of the KS test of the numerical variable
         between the actual and expected datasets is higher than 0.05. It means that the KS test
@@ -314,22 +317,29 @@ class DriftTests(AbstractTestCollection):
 
         Args:
             actual_ds(GiskardDataset):
-                Actual dataset to compute the test
+               Actual dataset to compute the test
             reference_ds(GiskardDataset):
                 Reference dataset to compute the test
             column_name(str):
                 Name of column with numerical feature
             threshold:
-                threshold for p-value of KS test
+                Threshold for p-value of KS test
+            psi_contribution_percent:
+                the ratio between the PSI score of a given category over the total PSI score
+                of the categorical variable. If there is a drift, the test provides all the
+                categories that have a PSI contribution over than this ratio.
 
         Returns:
+            actual_slices_size:
+                Length of rows with given numerical feature in actual slice
+            reference_slices_size:
+                Length of rows with given numerical feature in reference slice
             metric:
-                the pvalue of KS test
+                The pvalue of KS test
             passed:
                 TRUE if metric >= threshold
           output_df:
                 Dataframe containing the actual set rows with the numeric partition that have drifted the most
-
         """
         actual_ds, reference_ds = self.reset_index_actual_reference(actual_ds, reference_ds)
 
@@ -382,16 +392,23 @@ class DriftTests(AbstractTestCollection):
             column_name(str):
                 Name of column with numerical feature
             threshold:
-                threshold for earth movers distance
+                Threshold for earth movers distance
+            psi_contribution_percent:
+                the ratio between the PSI score of a given category over the total PSI score
+                of the categorical variable. If there is a drift, the test provides all the
+                categories that have a PSI contribution over than this ratio.
 
         Returns:
+            actual_slices_size:
+                Length of rows with given numerical feature in actual slice
+            reference_slices_size:
+                Length of rows with given numerical feature in reference slice
             metric:
-                the earth movers distance
+                The earth movers distance
             passed:
-                TRUE if metric < threshold
+                TRUE if metric <= threshold
           output_df:
                 Dataframe containing the actual set rows with the numeric partition that have drifted the most
-
         """
         actual_ds, reference_ds = self.reset_index_actual_reference(actual_ds, reference_ds)
 
