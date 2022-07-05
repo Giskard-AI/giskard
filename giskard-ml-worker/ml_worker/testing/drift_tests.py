@@ -201,13 +201,13 @@ class DriftTests(AbstractTestCollection):
         total_psi, output_data = self._calculate_drift_psi(actual_series, reference_series, max_categories)
 
         passed = True if threshold is None else total_psi <= threshold
-        messages: Union[typing.List[TestMessage], None] = None
 
         main_drifting_modalities_bool = output_data["Psi"] > psi_contribution_percent * total_psi
         modalities_list = output_data[main_drifting_modalities_bool]["Modality"].tolist()
         filtered_modalities = [w for w in modalities_list if not re.match(DriftTests.other_modalities, w)]
         failed_df = actual_ds.loc[actual_series.isin(filtered_modalities)]
         output_df_sample = compress(save_df(failed_df))
+        messages: Union[typing.List[TestMessage], None] = None
 
         if filtered_modalities:
             messages = [TestMessage(
@@ -278,7 +278,6 @@ class DriftTests(AbstractTestCollection):
 
         chi_square, p_value, output_data = self._calculate_chi_square(actual_series, reference_series, max_categories)
         passed = p_value > threshold
-        messages: Union[typing.List[TestMessage], None] = None
 
         main_drifting_modalities_bool = output_data["Chi_square"] > chi_square_contribution_percent * chi_square
         modalities_list = output_data[main_drifting_modalities_bool]["Modality"].tolist()
@@ -286,6 +285,7 @@ class DriftTests(AbstractTestCollection):
         failed_df = actual_ds.loc[actual_series.isin(filtered_modalities)]
 
         output_df_sample = compress(save_df(failed_df))
+        messages: Union[typing.List[TestMessage], None] = None
 
         if filtered_modalities:
             messages = [TestMessage(
@@ -513,13 +513,13 @@ class DriftTests(AbstractTestCollection):
         total_psi, output_data = self._calculate_drift_psi(prediction_actual, prediction_reference, max_categories)
 
         passed = True if threshold is None else total_psi <= threshold
-        messages: Union[typing.List[TestMessage], None] = None
 
         main_drifting_modalities_bool = output_data["Psi"] > psi_contribution_percent * total_psi
         modalities_list = output_data[main_drifting_modalities_bool]["Modality"].tolist()
         filtered_modalities = [w for w in modalities_list if not re.match(DriftTests.other_modalities, w)]
         failed_df = actual_slice.loc[prediction_actual.isin(filtered_modalities)]
         output_df_sample = compress(save_df(failed_df))
+        messages: Union[typing.List[TestMessage], None] = None
 
         if filtered_modalities:
             messages = [TestMessage(
@@ -591,7 +591,6 @@ class DriftTests(AbstractTestCollection):
                                                                       max_categories)
 
         passed = p_value > threshold
-        messages: Union[typing.List[TestMessage], None] = None
 
         main_drifting_modalities_bool = output_data["Chi_square"] > chi_square_contribution_percent * chi_square
         modalities_list = output_data[main_drifting_modalities_bool]["Modality"].tolist()
@@ -600,6 +599,7 @@ class DriftTests(AbstractTestCollection):
         failed_df = actual_slice.loc[prediction_actual.isin(filtered_modalities)]
 
         output_df_sample = compress(save_df(failed_df))
+        messages: Union[typing.List[TestMessage], None] = None
 
         if filtered_modalities:
             messages = [TestMessage(
@@ -675,9 +675,8 @@ class DriftTests(AbstractTestCollection):
                                                                                               prediction_reference)
 
         passed = True if threshold is None else result.pvalue >= threshold
-        messages: Union[typing.List[TestMessage], None] = None
-
         output_df_sample = self.generate_output_df(actual_converted, actual_slice, output_data,psi_contribution_percent, total_psi)
+        messages: Union[typing.List[TestMessage], None] = None
 
         if not passed:
             messages = [TestMessage(
@@ -746,9 +745,8 @@ class DriftTests(AbstractTestCollection):
                                                                                               prediction_reference)
 
         passed = True if threshold is None else metric <= threshold
-        messages: Union[typing.List[TestMessage], None] = None
-
         output_df_sample = self.generate_output_df(actual_converted, actual_slice, output_data, psi_contribution_percent, total_psi)
+        messages: Union[typing.List[TestMessage], None] = None
 
         if not passed:
             messages = [TestMessage(
