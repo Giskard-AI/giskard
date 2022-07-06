@@ -19,15 +19,53 @@
 </p>
 <br />
 
+**_Why Giskard?_**
+
 ⚡ **Collaborate faster** with **feedback** from business stakeholders.<br/>
 🧑‍🔧 **Deploy automated tests** to eliminate regressions, errors & biases.
 
+---
+
+**Open Source Project Website:** https://giskard.ai/
+
+**Get started with the Documentation:** https://docs.giskard.ai/
+
+**Documentation Source Code:** https://github.com/Giskard-AI/documentation
+
+**Join our User Community:** https://gisk.ar/discord
+
+<a href="https://discord.com/invite/ABvfpbu69R">
+         <img alt="Discord" src="readme/Discord.png">
+      </a>
+
+---
+
 <br />
+
+<h2>Interactive demo</h2>
+
+Click the image below to start the demo:
 
 <a align='center' href="https://app.arcade.software/share/zPfpXFt8lRm5XDkaWM85">
          <img width='600' align='center' alt="Interactive demo" src="readme/demo.png">
       </a>
 <br/>
+
+<h2>Product workflow</h2>
+
+<h3 >Installation</h3>
+
+**Requirements:** `git`, `docker` and `docker-compose`
+
+```shell
+git clone https://github.com/Giskard-AI/giskard.git
+cd giskard
+docker-compose up -d
+```
+
+After the application is started you can access at:
+
+http://localhost:19000 with default login / password: **admin** / **admin**
 
 
 <h3>Upload your model</h3>
@@ -80,30 +118,11 @@
   Protect your ML models against the risk of regressions, drift and bias.</br>
   [👉 Documentation](https://docs.giskard.ai/start/)
 
-<h3>Get Started</h3>
 
-Get started with Giskard by reading [our documentation](https://docs.giskard.ai/)
 
-<h3 >Installation</h3>
 
-**Requirements:** `docker` and `docker-compose`
-
-```shell
-git clone https://github.com/Giskard-AI/giskard.git
-cd giskard
-docker-compose up -d
-```
-
-After the application is started you can access at:
-
-http://localhost:19000
-
-> login / password: **admin** / **admin**
-
-<h3>Community</h3>
-
-Join [our community](https://discord.com/invite/ABvfpbu69R) on Discord to get support and leave feedback <br/>
-<a href="https://discord.com/invite/ABvfpbu69R">
-         <img alt="Discord" src="readme/Discord.png">
-      </a>
 <br/>
+
+<h2>Star history</h2>
+
+[![Star History Chart](https://api.star-history.com/svg?repos=Giskard-AI/giskard&type=Date)](https://star-history.com/#Giskard-AI/giskard&Date)
