@@ -95,10 +95,11 @@ Vue.component("v-chart", ECharts);
 })
 export default class PredictionResults extends Vue {
   @Prop({required: true}) model!: ModelDTO;
+  @Prop({required: true}) datasetId!: number;
   @Prop({required: true}) predictionTask!: ModelType;
   @Prop() targetFeature!: string;
   @Prop() classificationLabels!: string[];
-  @Prop() inputData!: object;
+  @Prop() inputData!: {[key: string]: string};
   @Prop({default: false}) modified!: boolean;
 
   prediction: string | number | undefined = "";
@@ -120,6 +121,7 @@ export default class PredictionResults extends Vue {
         this.loading = true;
         const predictionResult = (await api.predict(
             this.model.id,
+            this.datasetId,
             this.inputData
         ))
         this.prediction = predictionResult.prediction;
