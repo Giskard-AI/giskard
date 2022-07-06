@@ -4,6 +4,8 @@ import numpy
 import pandas as pd
 from pydantic import BaseModel
 
+from ml_worker.core.giskard_dataset import GiskardDataset
+
 
 class ModelPredictionResults(BaseModel):
     prediction: Any
@@ -26,8 +28,13 @@ class GiskardModel:
         self.feature_names = feature_names
         self.classification_labels = classification_labels
 
-    def run_predict(self, input_df: pd.DataFrame):
-        raw_prediction = self.prediction_function(input_df[self.feature_names])
+    def run_predict(self, dataset: GiskardDataset):
+        df = dataset.df.copy()
+        if dataset.target and dataset.target in df.columns:
+            df.drop(dataset.target, axis=1, inplace=True)
+        if self.feature_names:
+            df = df[self.feature_names]
+        raw_prediction = self.prediction_function(df)
         if self.model_type == "regression":
             result = ModelPredictionResults(
                 prediction=raw_prediction,

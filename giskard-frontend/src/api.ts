@@ -12,7 +12,8 @@ import {
     ExplainResponseDTO,
     FeatureMetadataDTO,
     FeedbackDTO,
-    FeedbackMinimalDTO, GeneralSettings,
+    FeedbackMinimalDTO,
+    GeneralSettings,
     InspectionCreateDTO,
     InspectionDTO,
     JWTToken,
@@ -21,6 +22,7 @@ import {
     ModelDTO,
     PasswordResetRequest,
     PredictionDTO,
+    PredictionInputDTO,
     ProjectDTO,
     ProjectPostDTO,
     RoleDTO,
@@ -266,8 +268,12 @@ export const api = {
         config.headers['content-type'] = 'multipart/form-data';
         return apiV2.post<unknown, DatasetDTO>(`/project/data/upload`, formData, config);
     },
-    async predict(modelId: number, inputData: object) {
-        return apiV2.post<unknown, PredictionDTO>(`/models/${modelId}/predict`, {features: inputData});
+    async predict(modelId: number, datasetId: number, inputData: { [key: string]: string }) {
+        const data: PredictionInputDTO = {
+            datasetId: datasetId,
+            features: inputData
+        }
+        return apiV2.post<unknown, PredictionDTO>(`/models/${modelId}/predict`, data);
     },
 
     async prepareInspection(payload: InspectionCreateDTO) {
