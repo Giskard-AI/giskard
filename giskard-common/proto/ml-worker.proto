@@ -59,6 +59,9 @@ message DataFrame{
 message RunModelForDataFrameRequest{
   SerializedGiskardModel model = 1;
   DataFrame dataframe = 2;
+  string target = 3;
+  map<string, string> feature_types = 4;
+
 }
 message RunModelRequest{
   SerializedGiskardModel model = 1;

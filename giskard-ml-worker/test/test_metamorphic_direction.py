@@ -1,14 +1,15 @@
 import pytest
 
+from ml_worker.core.giskard_dataset import GiskardDataset
 from ml_worker.testing.functions import GiskardTestFunctions
 
 
-def _test_metamorphic_increasing_regression(df, model, threshold):
+def _test_metamorphic_increasing_regression(ds: GiskardDataset, model, threshold):
     tests = GiskardTestFunctions()
     perturbation = {
         "bmi": lambda x: x.bmi + x.bmi * 0.1}
     results = tests.metamorphic.test_metamorphic_increasing(
-        df=df,
+        df=ds,
         model=model,
         perturbation_dict=perturbation,
         threshold=threshold
@@ -20,12 +21,12 @@ def _test_metamorphic_increasing_regression(df, model, threshold):
     return results.passed
 
 
-def _test_metamorphic_decreasing_regression(df, model, threshold):
+def _test_metamorphic_decreasing_regression(ds: GiskardDataset, model, threshold):
     tests = GiskardTestFunctions()
     perturbation = {
         "age": lambda x: x.age - x.age * 0.1}
     results = tests.metamorphic.test_metamorphic_decreasing(
-        df=df,
+        df=ds,
         model=model,
         perturbation_dict=perturbation,
         threshold=threshold

@@ -95,6 +95,7 @@
         <v-col cols="12" md="6">
           <PredictionResults
               :model="model"
+              :dataset-id="dataset.id"
               :targetFeature="dataset.target"
               :classificationLabels="model.classificationLabels"
               :predictionTask="model.modelType"
@@ -166,7 +167,7 @@ export default class Inspector extends Vue {
   @Prop({required: true}) model!: ModelDTO
   @Prop({required: true}) dataset!: DatasetDTO
   @Prop({required: true}) originalData!: object // used for the variation feedback
-  @Prop({required: true}) inputData!: object
+  @Prop({required: true}) inputData!: {[key: string]: string}
   @Prop({default: false}) isMiniMode!: boolean;
   loadingData = false;
   inputMetaData: FeatureMetadataDTO[] = [];
