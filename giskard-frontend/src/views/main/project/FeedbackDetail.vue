@@ -93,7 +93,7 @@ export default class FeedbackDetail extends Vue {
   @Prop({required: true}) id!: number;
 
   data: FeedbackDTO | null = null;
-  userData: object | null = null;
+  userData: {[key: string]: string} | null = null;
   originalData: object | null = null;
 
   async mounted() {
