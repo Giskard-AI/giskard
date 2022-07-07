@@ -72,9 +72,11 @@ class PerformanceTests(AbstractTestCollection):
     def _test_classification_score(self, score_fn, gsk_dataset: GiskardDataset, model: GiskardModel, threshold=1):
         is_binary_classification = len(model.classification_labels) == 2
         dataframe = gsk_dataset.df.reset_index(drop=True)
-        prediction = model.run_predict(dataframe).raw_prediction
-        labels_mapping = {model.classification_labels[i]: i for i in range(len(model.classification_labels))}
-        actual_target = dataframe[gsk_dataset.target].map(labels_mapping)
+        prediction = model.run_predict(dataframe).prediction
+
+        if gsk_dataset.target not in dataframe:
+            raise ValueError("Target Column is not available")
+        actual_target = dataframe[gsk_dataset.target]
         if is_binary_classification:
             metric = score_fn(actual_target, prediction)
         else:
@@ -82,7 +84,7 @@ class PerformanceTests(AbstractTestCollection):
         output_df_sample = dataframe.loc[actual_target != prediction]
 
         return RawSingleTestResult(
-            actual_slices_size=[len(gsk_dataset)],
+            actual_slices_size=[len(dataframe)],
             metric=metric,
             passed=metric >= threshold,
             output_df=output_df_sample
@@ -99,7 +101,7 @@ class PerformanceTests(AbstractTestCollection):
         output_df_sample = dataframe.loc[actual_target != prediction]
 
         return RawSingleTestResult(
-                actual_slices_size=[len(gsk_dataset)],
+                actual_slices_size=[len(dataframe)],
                 metric=metric,
                 passed=metric >= threshold,
                 output_df=output_df_sample
