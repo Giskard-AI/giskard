@@ -139,7 +139,7 @@ message TestResultMessage {
 message SerializedGiskardModel{
   bytes serialized_prediction_function = 1;
   string model_type = 2;
-  float threshold = 3;
-  repeated  string feature_names = 4;
-  repeated  string classification_labels = 5;
+  google.protobuf.DoubleValue threshold = 3;
+  repeated string feature_names = 4;
+  repeated string classification_labels = 5;
 }
