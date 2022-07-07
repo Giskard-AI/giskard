@@ -2,6 +2,7 @@ import logging
 import re
 
 import grpc
+import numpy as np
 import pandas as pd
 from eli5.lime import TextExplainer
 
@@ -12,6 +13,7 @@ from generated.ml_worker_pb2_grpc import MLWorkerServicer
 from ml_worker.core.giskard_dataset import GiskardDataset
 from ml_worker.core.model_explanation import explain, text_explanation_prediction_wrapper, parse_text_explainer_response
 from ml_worker.exceptions.IllegalArgumentError import IllegalArgumentError
+from ml_worker.exceptions.giskard_exception import GiskardException
 from ml_worker.utils.grpc_mapper import deserialize_model, deserialize_dataset
 
 logger = logging.getLogger()
@@ -88,9 +90,19 @@ class MLWorkerServiceImpl(MLWorkerServicer):
                                                 raw_prediction=predictions.prediction)
 
     def runModel(self, request: RunModelRequest, context) -> RunModelResponse:
-        import numpy as np
-        model = deserialize_model(request.model)
-        dataset = deserialize_dataset(request.dataset)
+        try:
+            model = deserialize_model(request.model)
+            dataset = deserialize_dataset(request.dataset)
+        except ValueError as e:
+            if 'unsupported pickle protocol' in str(e):
+                raise ValueError('Unable to unpickle object, '
+                                 'check that Python version of client code is the same as in ML Worker.'
+                                 f'\nOriginal Error: {e}') from e
+            raise e
+        except ModuleNotFoundError as e:
+            raise GiskardException(f"Failed to import '{e.name}'. "
+                                   f"Make sure it's installed in the ML Worker environment, "
+                                   "refer to https://docs.giskard.ai/ for more information") from e
         prediction_results = model.run_predict(dataset)
 
         if model.model_type == "classification":
