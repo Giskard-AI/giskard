@@ -41,7 +41,7 @@ def enron_data() -> GiskardDataset:
 
 
 @pytest.fixture()
-def enron_data_test_data(enron_data):
+def enron_test_data(enron_data):
     return GiskardDataset(
         df=pd.DataFrame(enron_data.df).drop(columns=['Target']),
         feature_types=input_types,
