@@ -22,7 +22,7 @@
             <div
                 class="text-h6"
                 :class="
-                !actual
+                !isDefined(actual)
                   ? 'info--text text--darken-2'
                   : prediction === actualForDisplay
                   ? 'success--text'
@@ -34,8 +34,8 @@
           </div>
           <div>
             <div class="mb-2">
-              <div>Actual <span v-show="actual && modified">(before modification)</span></div>
-              <div v-if="actual" class="text-h6">{{ actualForDisplay }}</div>
+              <div>Actual <span v-show="isDefined(actual) && modified">(before modification)</span></div>
+              <div v-if="isDefined(actual)" class="text-h6">{{ actualForDisplay }}</div>
               <div v-else>-</div>
             </div>
             <div class="caption">
@@ -55,13 +55,13 @@
           </div>
         </v-col>
         <v-col lg="4">
-          <div>Actual <span v-show="actual && modified">(before modification)</span></div>
-          <div v-if="actual" class="text-h6">{{ actual | formatTwoDigits }}</div>
+          <div>Actual <span v-show="isDefined(actual) && modified">(before modification)</span></div>
+          <div v-if="isDefined(actual)" class="text-h6">{{ actual | formatTwoDigits }}</div>
           <div v-else>-</div>
         </v-col>
         <v-col lg="4">
           <div>Difference</div>
-          <div v-if="actual" class="font-weight-light center-center">
+          <div v-if="isDefined(actual)" class="font-weight-light center-center">
             {{ ((prediction - actual) / actual) * 100 | formatTwoDigits }} %
           </div>
           <div v-else>-</div>
@@ -86,6 +86,7 @@ import {CanvasRenderer} from "echarts/renderers";
 import {GridComponent} from "echarts/components";
 import {ModelDTO, ModelType} from "@/generated-sources";
 import {isClassification} from "@/ml-utils";
+import * as _ from "lodash";
 
 use([CanvasRenderer, BarChart, GridComponent]);
 Vue.component("v-chart", ECharts);
@@ -153,9 +154,9 @@ export default class PredictionResults extends Vue {
   }
 
   get actualForDisplay() {
-    if (this.actual) {
-      if (isNaN(parseInt(this.actual.toString()))) return this.actual;
-      else return this.classificationLabels[parseInt(this.actual.toString())];
+    if (this.isDefined(this.actual)) {
+      if (isNaN(parseInt(this.actual!.toString()))) return this.actual;
+      else return this.classificationLabels[parseInt(this.actual!.toString())];
     } else return "";
   }
 
@@ -181,7 +182,9 @@ export default class PredictionResults extends Vue {
     }
     return filteredObject;
   }
-
+  isDefined(val:any){
+    return !_.isNil(val);
+  }
   get chartOptions() {
     const results = this.firstNSortedByKey(this.resultProbabilities, this.predCategoriesN)
     return {

@@ -197,7 +197,7 @@ class MetamorphicTests(AbstractTestCollection):
                 dataframe containing the rows whose probability doesn't increase after perturbation
 
         """
-        assert model.model_type != "classification" or classification_label in model.classification_labels, \
+        assert model.model_type != "classification" or str(classification_label) in model.classification_labels, \
             f'"{classification_label}" is not part of model labels: {",".join(model.classification_labels)}'
 
         return self._test_metamorphic(flag='Increasing',

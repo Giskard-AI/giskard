@@ -153,7 +153,7 @@ public class InitService {
             ),
             germanCreditProjectKey, new ProjectConfig("German credit scoring", "admin",
                 ModelUploadParamsDTO.builder().modelType("classification")
-                    .classificationLabels(List.of("Default", "Not Default"))
+                    .classificationLabels(List.of("Default", "Not default"))
                     .projectKey(germanCreditProjectKey)
                     .name("German credit score")
                     .language(ModelLanguage.PYTHON)
