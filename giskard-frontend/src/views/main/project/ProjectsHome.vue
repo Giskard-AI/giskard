@@ -114,7 +114,7 @@ export default class ProjectsHome extends Vue {
 
   public async mounted() {
     const f = this.$route.query.f ? this.$route.query.f[0] || "" : ""
-    this.creatorFilter = parseInt(f) || 0;
+    this.creatorFilter = parseInt(f) || 1;
     await this.loadProjects();
   }
 
