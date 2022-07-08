@@ -74,8 +74,23 @@ function unpackInterceptor(response) {
     return response.data;
 }
 
+function trackError(error) {
+    try {
+        mixpanel.track('API error', {
+            'code': error.code,
+            'message': error.message,
+            'httpCode': error.response.code,
+            'method': error.config.method,
+            'url': error.config.url,
+            'data': error.response.data
+        });
+    } catch (e) {
+        console.error("Failed to track API Error", e)
+    }
+}
+
 async function errorInterceptor(error) {
-    mixpanel.track('API error', {error});
+    trackError(error);
     if (error.response.status === 401) {
         removeLocalToken();
         commitSetToken(store, '');
