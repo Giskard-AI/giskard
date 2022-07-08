@@ -97,6 +97,7 @@ export default class PredictionExplanations extends Vue {
   }
 
   private createSimpleExplanationChart(explanation: object) {
+    const sortedExplanation = Object.entries(explanation!).sort((a,b) => b[1]-a[1])
     return {
       xAxis: {
         type: "value",
@@ -107,7 +108,7 @@ export default class PredictionExplanations extends Vue {
       },
       yAxis: {
         type: "category",
-        data: Object.keys(explanation!),
+        data: sortedExplanation.map(el=>el[0]),
       },
       series: [
         {
@@ -124,7 +125,7 @@ export default class PredictionExplanations extends Vue {
           labelLayout: {
             hideOverlap: true,
           },
-          data: Object.values(explanation!),
+          data: sortedExplanation.map(el=>el[1]),
         },
       ],
       color: ["#0091EA"],
