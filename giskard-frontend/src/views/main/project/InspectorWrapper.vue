@@ -17,7 +17,7 @@
           <v-icon>mdi-skip-next</v-icon>
         </v-btn>
         <span class='caption grey--text'>Entry #{{ totalRows === 0 ? 0 : rowNb + 1 }} / {{ totalRows }}</span>
-        <span style='margin-left: 15px' class='caption grey--text'>Row Index {{ originalData.Index + 1 }}</span>
+        <span style='margin-left: 15px' class='caption grey--text' v-show="originalData && isDefined(originalData.Index)">Row Index {{ originalData.Index + 1 }}</span>
       </v-toolbar>
     </v-row>
 
@@ -102,6 +102,7 @@ import Mousetrap from 'mousetrap';
 import RowList from '@/views/main/project/RowList.vue';
 import {CreateFeedbackDTO, InspectionDTO} from '@/generated-sources';
 import mixpanel from "mixpanel-browser";
+import _ from "lodash";
 
 type CreatedFeedbackCommonDTO = {
   targetFeature: string;
@@ -140,7 +141,9 @@ export default class InspectorWrapper extends Vue {
   feedbackSubmitted: boolean = false;
 
   totalRows = 0;
-
+  isDefined(val: any){
+    return !_.isNil(val);
+  }
   async init() {
     this.inspection = await api.getInspection(this.inspectionId);
   }
