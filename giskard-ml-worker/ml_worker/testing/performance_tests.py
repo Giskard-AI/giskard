@@ -58,9 +58,10 @@ class PerformanceTests(AbstractTestCollection):
                 pos_label=model.classification_labels[1]
             )
         else:
-            metric = score_fn(dataframe[gsk_dataset.target],
-                              model.run_predict(gsk_dataset).raw_prediction,
-                              average='macro')
+            metric = score_fn(
+                dataframe[gsk_dataset.target].astype(str),
+                model.run_predict(gsk_dataset).prediction,
+                average='macro')
 
         return self.save_results(
             SingleTestResult(
@@ -75,7 +76,6 @@ class PerformanceTests(AbstractTestCollection):
             dataframe[gsk_dataset.target].astype(str),
             model.run_predict(gsk_dataset).prediction
         )
-
 
         return self.save_results(
             SingleTestResult(
