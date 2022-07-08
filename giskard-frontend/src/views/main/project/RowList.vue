@@ -100,8 +100,8 @@
       </v-row>
     </v-container>
 
-    <v-container v-if='selectedFilter===RowFilterType.CUSTOM && isClassification(inspection.model.modelType) '>
-      <v-row>
+    <v-container v-if='selectedFilter===RowFilterType.CUSTOM'>
+      <v-row v-if="isClassification(inspection.model.modelType)">
         <v-col cols='12' md='3' v-show="!isTargetUndefined">
           <MultiSelector label='Actual Labels' :options='labels' :selected-options.sync='targetLabel'></MultiSelector>
         </v-col>
@@ -110,7 +110,7 @@
                          :selected-options.sync='predictedLabel'></MultiSelector>
         </v-col>
       </v-row>
-      <v-row>
+      <v-row v-if="isClassification(inspection.model.modelType)">
         <v-col cols='12' md='2' class='pl-0 pt-5'>
           <v-subheader>Probability of</v-subheader>
         </v-col>
@@ -150,6 +150,28 @@
               %
             </template>
           </v-text-field>
+        </v-col>
+      </v-row>
+      <v-row v-if="!isClassification(inspection.model.modelType)">
+        <v-col class="flex-nowrap d-flex pl-0" cols="6">
+          <v-subheader class='justify-center pt-5 pl-0'>Prediction is between :</v-subheader>
+          <v-text-field
+              label='Min'
+              :value='minThreshold'
+              step='0.001'
+              hide-details
+              type='number'
+              @change='(val)=>{this.minThreshold=val;}'
+          />
+          <v-subheader class='justify-center pt-5'> and</v-subheader>
+          <v-text-field
+              label='Max'
+              :value='maxThreshold'
+              step='0.001'
+              hide-details
+              type='number'
+              @change='(val)=>{this.maxThreshold=val;}'
+          />
         </v-col>
       </v-row>
     </v-container>
