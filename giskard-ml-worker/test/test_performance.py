@@ -348,3 +348,21 @@ def test_diff_reference_actual_rmse(diabetes_dataset_with_target, linear_regress
 def test_recall_exception(enron_test_data, enron_model):
     with pytest.raises(Exception):
         _test_recall(enron_test_data, enron_model, 0.4)
+
+
+@pytest.mark.parametrize('data,model,threshold,expected_metric,actual_slices_size',
+                         [('german_credit_data', 'german_credit_model', 0.5, 0.85, 1000),
+                          ('enron_data', 'enron_model', 0.5, 0.68, 50)])
+def test_f1(data, model, threshold, expected_metric,actual_slices_size, request):
+    tests = GiskardTestFunctions()
+    results = tests.performance.test_f1(
+        actual_slice=request.getfixturevalue(data),
+        model=request.getfixturevalue(model),
+        threshold=threshold
+    )
+
+    assert results.actual_slices_size[0] == actual_slices_size
+
+    assert round(results.metric, 2) == expected_metric
+    assert type(results.output_df) is bytes
+    assert results.passed
