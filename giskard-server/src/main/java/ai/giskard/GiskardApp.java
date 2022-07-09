@@ -90,9 +90,18 @@ public class GiskardApp {
         String[] profiles = env.getActiveProfiles().length == 0 ? env.getDefaultProfiles() : env.getActiveProfiles();
         boolean hasApiDocsProfile = Arrays.asList(profiles).contains("api-docs");
         String giskardHome = env.getProperty("giskard.home");
+        double totalMemory = Runtime.getRuntime().totalMemory() / 1024 / 1024;
+        double maxMemory = Runtime.getRuntime().maxMemory() / 1024 / 1024;
+        double freeMemory = Runtime.getRuntime().freeMemory() / 1024 / 1024;
+        String memoryStatusLine = String.format("Merory status:\n\t" +
+            "Total: %s MB\n\t" +
+            "Max: %s MB\n\t" +
+            "Free: %s MB", totalMemory, maxMemory, freeMemory);
         String swaggerURL = hasApiDocsProfile ? String.format("Swagger UI: %s://localhost:%s%sswagger-ui/index.html\t\n\t", protocol, serverPort, contextPath) : "";
         log.info(
             "\n----------------------------------------------------------\n\t" +
+                memoryStatusLine +
+                "\n----------------------------------------------------------\n\t" +
                 "Application '{}' is running! Access URLs:\n\t" +
                 "Local: \t\t{}://localhost:{}{}\n\t" +
                 "External: \t{}://{}:{}{}\n\t" +
