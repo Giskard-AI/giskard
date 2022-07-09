@@ -22,7 +22,7 @@ services:
     env_file:
       - .env
     environment:
-      - _JAVA_OPTIONS=-Xmx2048m -Xms256m
+      - _JAVA_OPTIONS=-Xmx4048m -Xms512m
       - SPRING_PROFILES_ACTIVE=prod
       - MANAGEMENT_METRICS_EXPORT_PROMETHEUS_ENABLED=true
       - SPRING_DATASOURCE_USERNAME=postgres
