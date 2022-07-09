@@ -91,13 +91,13 @@ class PerformanceTests(AbstractTestCollection):
             output_df=output_df_sample
         )
 
-    def _test_accuracy_score(self, score_fn, gsk_dataset: GiskardDataset, model: GiskardModel, threshold=1):
+    def _test_accuracy_score(self, gsk_dataset: GiskardDataset, model: GiskardModel, threshold=1):
         dataframe = gsk_dataset.df.reset_index(drop=True)
         prediction = model.run_predict(dataframe).raw_prediction
         labels_mapping = {model.classification_labels[i]: i for i in range(len(model.classification_labels))}
         actual_target = dataframe[gsk_dataset.target].map(labels_mapping)
 
-        metric = score_fn(actual_target, prediction)
+        metric = accuracy_score(actual_target, prediction)
 
         output_df_sample = dataframe.loc[actual_target != prediction]
 
@@ -178,7 +178,7 @@ class PerformanceTests(AbstractTestCollection):
           output_df:
               Dataframe containing all the incorrect rows of the given data slice
         """
-        results = self._test_accuracy_score(accuracy_score, actual_slice, model, threshold)
+        results = self._test_accuracy_score(actual_slice, model, threshold)
         transformed_results = self.transform_results(results)
 
         return transformed_results
@@ -588,8 +588,7 @@ class PerformanceTests(AbstractTestCollection):
             output_df:
               Dataframe containing all the incorrect rows of the given actual dataset
         """
-        partial_accuracy = partial(self._test_classification_score, accuracy_score)
-        return self._test_diff_reference_actual(partial_accuracy, model, reference_slice, actual_slice, threshold)
+        return self._test_diff_reference_actual(self._test_accuracy_score, model, reference_slice, actual_slice, threshold)
 
     def test_diff_rmse(self, actual_slice, reference_slice, model, threshold=0.1):
         """
