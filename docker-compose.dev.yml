@@ -24,6 +24,8 @@ services:
       dockerfile: ./giskard-ml-worker/ml-worker.dockerfile
 
   backend:
+    ports:
+    - "9000:9000"
     build:
       dockerfile: ./giskard-server/src/main/docker/app/app.dockerfile
       context: .
