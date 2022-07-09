@@ -45,8 +45,7 @@
                       v-slot="{ dirty }"
                   >
                     <div class="py-1 d-flex">
-                      <label class="info--text">{{ c.name }}
-                      </label>
+                      <label class="info--text">{{ c.name }}</label>
                       <input type="number" v-if="c.type === 'numeric'"
                              v-model="inputData[c.name]"
                              class="common-style-input"
@@ -167,7 +166,7 @@ export default class Inspector extends Vue {
   @Prop({required: true}) model!: ModelDTO
   @Prop({required: true}) dataset!: DatasetDTO
   @Prop({required: true}) originalData!: object // used for the variation feedback
-  @Prop({required: true}) inputData!: {[key: string]: string}
+  @Prop({required: true}) inputData!: { [key: string]: string }
   @Prop({default: false}) isMiniMode!: boolean;
   loadingData = false;
   inputMetaData: FeatureMetadataDTO[] = [];
@@ -231,7 +230,7 @@ export default class Inspector extends Vue {
 }
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 label {
   display: inline-block;
   width: 40%;
@@ -244,6 +243,8 @@ label {
   line-height: 24px;
   min-height: 24px;
   width: 56%;
+  padding-left: 6px;
+  padding-right: 6px;
 }
 
 select.common-style-input {
@@ -267,7 +268,7 @@ select.common-style-input {
   padding-bottom: 8px;
 }
 
->>> .v-tabs.no-tab-header > .v-tabs-bar {
+> > > .v-tabs.no-tab-header > .v-tabs-bar {
   display: none;
 }
 
