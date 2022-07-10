@@ -8,7 +8,7 @@ If you choose to contribute, please be mindful to respect our [code of conduct](
 
 ## The different ways you can contribute to Giskard!
 
-There are 4 ways you can contribute to Giskard:
+There are 5 ways you can contribute to Giskard:
 * Submitting issues related to bugs or desired new features.
 * Contributing to the examples or to the documentation;
 * Fixing outstanding issues with the existing code;
