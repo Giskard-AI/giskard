@@ -11,7 +11,10 @@
               <v-chip v-show="dirty || isInputNotOriginal" small label outlined color="accent" class="mx-1 pa-1">
                 modified
               </v-chip>
-              <v-btn text small @click="resetInput" :disabled="!(dirty || isInputNotOriginal)">reset</v-btn>
+              <v-btn text small @click="resetInput"
+                     v-track-click="'Inspection feature reset'"
+                     :disabled="!(dirty || isInputNotOriginal)">reset
+              </v-btn>
               <v-menu left bottom offset-y :close-on-content-click="false">
                 <template v-slot:activator="{ on, attrs }">
                   <v-btn icon v-bind="attrs" v-on="on">
@@ -45,8 +48,7 @@
                       v-slot="{ dirty }"
                   >
                     <div class="py-1 d-flex">
-                      <label class="info--text">{{ c.name }}
-                      </label>
+                      <label class="info--text">{{ c.name }}</label>
                       <input type="number" v-if="c.type === 'numeric'"
                              v-model="inputData[c.name]"
                              class="common-style-input"
@@ -95,6 +97,7 @@
         <v-col cols="12" md="6">
           <PredictionResults
               :model="model"
+              :dataset-id="dataset.id"
               :targetFeature="dataset.target"
               :classificationLabels="model.classificationLabels"
               :predictionTask="model.modelType"
@@ -166,7 +169,7 @@ export default class Inspector extends Vue {
   @Prop({required: true}) model!: ModelDTO
   @Prop({required: true}) dataset!: DatasetDTO
   @Prop({required: true}) originalData!: object // used for the variation feedback
-  @Prop({required: true}) inputData!: object
+  @Prop({required: true}) inputData!: { [key: string]: string }
   @Prop({default: false}) isMiniMode!: boolean;
   loadingData = false;
   inputMetaData: FeatureMetadataDTO[] = [];
@@ -182,7 +185,6 @@ export default class Inspector extends Vue {
 
   @Watch('originalData')
   public resetInput() {
-    mixpanel.track("Inspection feature reset")
     this.$emit('reset');
     (this.$refs.dataFormObserver as HTMLFormElement).reset();
   }
@@ -230,7 +232,7 @@ export default class Inspector extends Vue {
 }
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 label {
   display: inline-block;
   width: 40%;
@@ -243,6 +245,8 @@ label {
   line-height: 24px;
   min-height: 24px;
   width: 56%;
+  padding-left: 6px;
+  padding-right: 6px;
 }
 
 select.common-style-input {
@@ -266,7 +270,7 @@ select.common-style-input {
   padding-bottom: 8px;
 }
 
->>> .v-tabs.no-tab-header > .v-tabs-bar {
+> > > .v-tabs.no-tab-header > .v-tabs-bar {
   display: none;
 }
 

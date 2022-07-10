@@ -29,6 +29,9 @@ function anonymizeString(str: string): string {
 }
 
 export function anonymize(obj: any) {
+    if (_.isNil(obj)){
+        return obj;
+    }
     try {
         if (_.isArray(obj)) {
             return obj.map(anonymize);

@@ -10,28 +10,30 @@ from ml_worker.testing.utils import save_df, compress
 
 class MetamorphicTests(AbstractTestCollection):
     @staticmethod
-    def _predict_numeric_result(df, model: GiskardModel, output_proba=True, classification_label=None):
+    def _predict_numeric_result(ds: GiskardDataset, model: GiskardModel, output_proba=True, classification_label=None):
         if model.model_type == 'regression' or not output_proba:
-            return model.run_predict(df).raw_prediction
+            return model.run_predict(ds).raw_prediction
         elif model.model_type == 'classification' and classification_label is not None:
-            return model.run_predict(df).all_predictions[classification_label].values
+            return model.run_predict(ds).all_predictions[classification_label].values
         elif model.model_type == 'classification':
-            return model.run_predict(df).probabilities
+            return model.run_predict(ds).probabilities
 
     @staticmethod
     def _prediction_ratio(prediction, perturbed_prediction):
         return abs(perturbed_prediction - prediction) / prediction if prediction != 0 else abs(perturbed_prediction)
 
     @staticmethod
-    def _perturb_and_predict(df, model: GiskardModel, perturbation_dict, output_proba=True,
+    def _perturb_and_predict(ds: GiskardDataset, model: GiskardModel, perturbation_dict, output_proba=True,
                              classification_label=None):
         results_df = pd.DataFrame()
-        results_df["prediction"] = MetamorphicTests._predict_numeric_result(df, model, output_proba,
+        results_df["prediction"] = MetamorphicTests._predict_numeric_result(ds, model, output_proba,
                                                                             classification_label)
-        modified_rows = apply_perturbation_inplace(df, perturbation_dict)
+        modified_rows = apply_perturbation_inplace(ds.df, perturbation_dict)
         if len(modified_rows):
+            ds.df = ds.df.iloc[modified_rows]
             results_df = results_df.iloc[modified_rows]
-            results_df["perturbed_prediction"] = MetamorphicTests._predict_numeric_result(df.iloc[modified_rows], model,
+            results_df["perturbed_prediction"] = MetamorphicTests._predict_numeric_result(ds,
+                                                                                          model,
                                                                                           output_proba,
                                                                                           classification_label)
         else:
@@ -70,7 +72,7 @@ class MetamorphicTests(AbstractTestCollection):
                           output_sensitivity=None,
                           output_proba=True
                           ) -> SingleTestResult:
-        results_df, modified_rows_count = self._perturb_and_predict(actual_slice.df,
+        results_df, modified_rows_count = self._perturb_and_predict(actual_slice,
                                                                     model,
                                                                     perturbation_dict,
                                                                     classification_label=classification_label,
@@ -195,8 +197,8 @@ class MetamorphicTests(AbstractTestCollection):
                 dataframe containing the rows whose probability doesn't increase after perturbation
 
         """
-        assert model.model_type != "classification" or classification_label in model.classification_labels, \
-                    f'"{classification_label}" is not part of model labels: {",".join(model.classification_labels)}'
+        assert model.model_type != "classification" or str(classification_label) in model.classification_labels, \
+            f'"{classification_label}" is not part of model labels: {",".join(model.classification_labels)}'
 
         return self._test_metamorphic(flag='Increasing',
                                       actual_slice=df,
@@ -254,7 +256,7 @@ class MetamorphicTests(AbstractTestCollection):
         """
 
         assert model.model_type != "classification" or classification_label in model.classification_labels, \
-                    f'"{classification_label}" is not part of model labels: {",".join(model.classification_labels)}'
+            f'"{classification_label}" is not part of model labels: {",".join(model.classification_labels)}'
 
         return self._test_metamorphic(flag='Decreasing',
                                       actual_slice=df,

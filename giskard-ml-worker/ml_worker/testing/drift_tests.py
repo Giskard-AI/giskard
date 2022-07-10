@@ -306,8 +306,8 @@ class DriftTests(AbstractTestCollection):
                 psi result message
 
         """
-        prediction_reference = model.run_predict(reference_slice.df).prediction
-        prediction_actual = model.run_predict(actual_slice.df).prediction
+        prediction_reference = model.run_predict(reference_slice).prediction
+        prediction_actual = model.run_predict(actual_slice).prediction
         total_psi, output_data = self._calculate_drift_psi(prediction_reference, prediction_actual, max_categories)
 
         passed = True if threshold is None else total_psi <= threshold
@@ -362,8 +362,8 @@ class DriftTests(AbstractTestCollection):
                 message describing if prediction is drifting or not
 
         """
-        prediction_reference = model.run_predict(reference_slice.df).prediction
-        prediction_actual = model.run_predict(actual_slice.df).prediction
+        prediction_reference = model.run_predict(reference_slice).prediction
+        prediction_actual = model.run_predict(actual_slice).prediction
         chi_square, p_value, output_data = self._calculate_chi_square(prediction_reference, prediction_actual,
                                                                       max_categories)
 
@@ -420,10 +420,10 @@ class DriftTests(AbstractTestCollection):
         assert model.model_type != "classification" or classification_label in model.classification_labels, \
             f'"{classification_label}" is not part of model labels: {",".join(model.classification_labels)}'
 
-        prediction_reference = model.run_predict(reference_slice.df).all_predictions[classification_label].values if \
-            model.model_type == "classification" else model.run_predict(reference_slice.df).prediction
-        prediction_actual = model.run_predict(actual_slice.df).all_predictions[classification_label].values if \
-            model.model_type == "classification" else model.run_predict(actual_slice.df).prediction
+        prediction_reference = model.run_predict(reference_slice).all_predictions[classification_label].values if \
+            model.model_type == "classification" else model.run_predict(reference_slice).prediction
+        prediction_actual = model.run_predict(actual_slice).all_predictions[classification_label].values if \
+            model.model_type == "classification" else model.run_predict(actual_slice).prediction
 
         result: Ks_2sampResult = self._calculate_ks(prediction_reference, prediction_actual)
         passed = True if threshold is None else result.pvalue >= threshold
@@ -478,10 +478,10 @@ class DriftTests(AbstractTestCollection):
 
         """
 
-        prediction_reference = model.run_predict(reference_slice.df).all_predictions[classification_label].values if \
-            model.model_type == "classification" else model.run_predict(reference_slice.df).prediction
-        prediction_actual = model.run_predict(actual_slice.df).all_predictions[classification_label].values if \
-            model.model_type == "classification" else model.run_predict(actual_slice.df).prediction
+        prediction_reference = model.run_predict(reference_slice).all_predictions[classification_label].values if \
+            model.model_type == "classification" else model.run_predict(reference_slice).prediction
+        prediction_actual = model.run_predict(actual_slice).all_predictions[classification_label].values if \
+            model.model_type == "classification" else model.run_predict(actual_slice).prediction
 
         metric = self._calculate_earth_movers_distance(prediction_reference, prediction_actual)
 
