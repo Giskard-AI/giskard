@@ -11,7 +11,10 @@
               <v-chip v-show="dirty || isInputNotOriginal" small label outlined color="accent" class="mx-1 pa-1">
                 modified
               </v-chip>
-              <v-btn text small @click="resetInput" :disabled="!(dirty || isInputNotOriginal)">reset</v-btn>
+              <v-btn text small @click="resetInput(); trackReset()"
+                     v-track-click="'Inspection feature reset'"
+                     :disabled="!(dirty || isInputNotOriginal)">reset
+              </v-btn>
               <v-menu left bottom offset-y :close-on-content-click="false">
                 <template v-slot:activator="{ on, attrs }">
                   <v-btn icon v-bind="attrs" v-on="on">
