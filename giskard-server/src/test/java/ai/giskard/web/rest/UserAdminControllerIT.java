@@ -90,6 +90,7 @@ class UserAdminControllerIT {
         User user = createEntity();
         user.setLogin(DEFAULT_LOGIN);
         user.setEmail(DEFAULT_EMAIL);
+        user.setEnabled(true);
         return user;
     }
 
@@ -484,6 +485,6 @@ class UserAdminControllerIT {
     }
 
     private void assertPersistedUsers(Consumer<List<User>> userAssertion) {
-        userAssertion.accept(userRepository.findAllByIdNotNullAndActivatedIsTrue());
+        userAssertion.accept(userRepository.findAllByIdNotNullAndEnabledIsTrue());
     }
 }

@@ -38,12 +38,10 @@ public class ModelService {
     private final FileLocationService fileLocationService;
     private final GRPCMapper grpcMapper;
 
-    public RunModelForDataFrameResponse predict(ProjectModel model, Map<String, String> features) throws IOException {
+    public RunModelForDataFrameResponse predict(ProjectModel model, Dataset dataset, Map<String, String> features) throws IOException {
         RunModelForDataFrameResponse response;
         try (MLWorkerClient client = mlWorkerService.createClient()) {
-            response = client.runModelForDataframe(
-                model,
-                DataFrame.newBuilder().addRows(DataRow.newBuilder().putAllColumns(features)).build());
+            response = client.runModelForDataframe(model, dataset, features);
         }
         return response;
     }
@@ -124,7 +122,7 @@ public class ModelService {
             log.info("Removing model requirements file: {}", modelsDirectory.getFileName());
             Files.deleteIfExists(modelsDirectory.resolve(model.getRequirementsFileName()));
         } catch (IOException e) {
-            throw new RuntimeException(String.format("Failed to remove model files %s", model.getFileName()), e);
+            throw new GiskardRuntimeException(String.format("Failed to remove model files %s", model.getFileName()), e);
         }
 
     }

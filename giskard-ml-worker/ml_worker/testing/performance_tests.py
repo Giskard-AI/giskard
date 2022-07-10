@@ -36,10 +36,10 @@ class PerformanceTests(AbstractTestCollection):
         """
         if len(model.classification_labels) == 2:
             metric = roc_auc_score(actual_slice.df[actual_slice.target],
-                                   model.run_predict(actual_slice.df).raw_prediction)
+                                   model.run_predict(actual_slice).raw_prediction)
         else:
             metric = roc_auc_score(actual_slice.df[actual_slice.target],
-                                   model.run_predict(actual_slice.df).all_predictions, multi_class='ovr')
+                                   model.run_predict(actual_slice).all_predictions, multi_class='ovr')
 
         return self.save_results(
             SingleTestResult(
@@ -51,12 +51,17 @@ class PerformanceTests(AbstractTestCollection):
     def _test_classification_score(self, score_fn, gsk_dataset: GiskardDataset, model: GiskardModel, threshold=1):
         is_binary_classification = len(model.classification_labels) == 2
         dataframe = gsk_dataset.df
-        prediction = model.run_predict(dataframe).raw_prediction
-        labels_mapping = {model.classification_labels[i]: i for i in range(len(model.classification_labels))}
         if is_binary_classification:
-            metric = score_fn(dataframe[gsk_dataset.target].map(labels_mapping), prediction)
+            metric = score_fn(
+                dataframe[gsk_dataset.target].astype(str),
+                model.run_predict(gsk_dataset).prediction,
+                pos_label=model.classification_labels[1]
+            )
         else:
-            metric = score_fn(dataframe[gsk_dataset.target].map(labels_mapping), prediction, average='macro')
+            metric = score_fn(
+                dataframe[gsk_dataset.target].astype(str),
+                model.run_predict(gsk_dataset).prediction,
+                average='macro')
 
         return self.save_results(
             SingleTestResult(
@@ -67,9 +72,10 @@ class PerformanceTests(AbstractTestCollection):
 
     def _test_accuracy_score(self, score_fn, gsk_dataset: GiskardDataset, model: GiskardModel, threshold=1):
         dataframe = gsk_dataset.df
-        prediction = model.run_predict(dataframe).raw_prediction
-        labels_mapping = {model.classification_labels[i]: i for i in range(len(model.classification_labels))}
-        metric = score_fn(dataframe[gsk_dataset.target].map(labels_mapping), prediction)
+        metric = score_fn(
+            dataframe[gsk_dataset.target].astype(str),
+            model.run_predict(gsk_dataset).prediction
+        )
 
         return self.save_results(
             SingleTestResult(
@@ -81,7 +87,7 @@ class PerformanceTests(AbstractTestCollection):
     def _test_regression_score(self, score_fn, giskard_ds, model: GiskardModel, threshold=1, negative=False,
                                r2=False):
         metric = (-1 if negative else 1) * score_fn(
-            model.run_predict(giskard_ds.df).raw_prediction,
+            model.run_predict(giskard_ds).raw_prediction,
             giskard_ds.df[giskard_ds.target]
         )
         return self.save_results(

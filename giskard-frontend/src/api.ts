@@ -12,7 +12,8 @@ import {
     ExplainResponseDTO,
     FeatureMetadataDTO,
     FeedbackDTO,
-    FeedbackMinimalDTO, GeneralSettings,
+    FeedbackMinimalDTO,
+    GeneralSettings,
     InspectionCreateDTO,
     InspectionDTO,
     JWTToken,
@@ -21,6 +22,7 @@ import {
     ModelDTO,
     PasswordResetRequest,
     PredictionDTO,
+    PredictionInputDTO,
     ProjectDTO,
     ProjectPostDTO,
     RoleDTO,
@@ -72,8 +74,23 @@ function unpackInterceptor(response) {
     return response.data;
 }
 
+function trackError(error) {
+    try {
+        mixpanel.track('API error', {
+            'code': error.code,
+            'message': error.message,
+            'httpCode': error.response.code,
+            'method': error.config.method,
+            'url': error.config.url,
+            'data': error.response.data
+        });
+    } catch (e) {
+        console.error("Failed to track API Error", e)
+    }
+}
+
 async function errorInterceptor(error) {
-    mixpanel.track('API error', {error});
+    trackError(error);
     if (error.response.status === 401) {
         removeLocalToken();
         commitSetToken(store, '');
@@ -127,7 +144,7 @@ axiosProject.interceptors.request.use(jwtRequestInterceptor);
 
 
 function downloadURL(urlString) {
-    let url = new URL(urlString);
+    let url = new URL(urlString, window.location.origin);
     let token = getLocalToken();
     if (token) {
         url.searchParams.append('token', token);
@@ -266,8 +283,12 @@ export const api = {
         config.headers['content-type'] = 'multipart/form-data';
         return apiV2.post<unknown, DatasetDTO>(`/project/data/upload`, formData, config);
     },
-    async predict(modelId: number, inputData: object) {
-        return apiV2.post<unknown, PredictionDTO>(`/models/${modelId}/predict`, {features: inputData});
+    async predict(modelId: number, datasetId: number, inputData: { [key: string]: string }) {
+        const data: PredictionInputDTO = {
+            datasetId: datasetId,
+            features: inputData
+        }
+        return apiV2.post<unknown, PredictionDTO>(`/models/${modelId}/predict`, data);
     },
 
     async prepareInspection(payload: InspectionCreateDTO) {

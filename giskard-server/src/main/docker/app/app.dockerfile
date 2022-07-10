@@ -1,4 +1,4 @@
-FROM openjdk:17-buster as build
+FROM eclipse-temurin:17 as build
 WORKDIR /workspace
 
 COPY gradle gradle
@@ -18,6 +18,6 @@ COPY giskard-server/sonar-project.properties .
 ARG RUN_TESTS=false
 RUN bash -c "if [ "$RUN_TESTS" = true ] ; then  ../gradlew -Pprod clean test bootJar ; else ../gradlew -Pprod clean bootJar ; fi"
 
-FROM openjdk:17-buster
+FROM eclipse-temurin:17
 COPY --from=build /workspace/giskard-server/build/libs/giskard*.jar /giskard/lib/giskard.jar
 ENTRYPOINT ["java","-jar","/giskard/lib/giskard.jar"]

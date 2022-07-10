@@ -24,6 +24,17 @@ services:
       dockerfile: ./giskard-ml-worker/ml-worker.dockerfile
 
   backend:
+    ports:
+      - "9000:9000"
+    environment:
+      - SPRING_PROFILES_ACTIVE=dev
+#     Dev profile is configured to use H2 DB for local development, override it with "prod" Postgres here
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=y1QYbF2BtFUC
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/app
+      - SPRING_LIQUIBASE_URL=jdbc:postgresql://db:5432/app
+      - SPRING_JPA_DATABASE_PLATFORM=tech.jhipster.domain.util.FixedPostgreSQL10Dialect
+
     build:
       dockerfile: ./giskard-server/src/main/docker/app/app.dockerfile
       context: .
