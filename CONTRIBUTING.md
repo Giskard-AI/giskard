@@ -1,4 +1,4 @@
-#👉 How to contribute to Giskard?
+# 👉 How to contribute to Giskard?
 
 Everyone is encouraged to contribute, and we appreciate each and every one of them. Helping the community is thus not limited to writing code. The community will greatly benefit from your efforts to provide clarification, assist others, and enhance the documentation. 📗
 
@@ -9,11 +9,11 @@ If you choose to contribute, please be mindful to respect our [code of conduct](
 ## The different ways you can contribute to Giskard!
 
 There are 4 ways you can contribute to Giskard:
-* Fixing outstanding issues with the existing code;
-* Implementing new tests;
-* Contributing to the examples or to the documentation;
 * Submitting issues related to bugs or desired new features.
-
+* Contributing to the examples or to the documentation;
+* Fixing outstanding issues with the existing code;
+* Implementing new ML tests (performance tests, drifts, metamorphic, etc.);
+* Implementing new features to Giskard
 
 ### Did you find a bug? 
 
@@ -24,7 +24,7 @@ If you did not find it, please follow these steps to inform us:
 
 * Include your **OS type and version**, the versions of **Python**, and different Python libraries you used;
 * A short, self-contained, code snippet that allows us to reproduce the bug in less than 30s;
-* Provide the *full* traceback if an exception is raised.
+* Provide the *full* stack trace if an exception is raised.
 
 To get the logs of a given container, you can run
 
@@ -32,7 +32,7 @@ To get the logs of a given container, you can run
 docker logs <NAME OF THE CONTAINER>
 ```
 
-### Do you want to implement a new test?
+### Do you want to implement a new ML test?
 
 Custom and domain-based tests are welcome. If you have an idea, you can inform us by providing us a short description of the test and possibly a link to its documentation (paper, etc.).
 
