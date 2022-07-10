@@ -11,7 +11,7 @@
               <v-chip v-show="dirty || isInputNotOriginal" small label outlined color="accent" class="mx-1 pa-1">
                 modified
               </v-chip>
-              <v-btn text small @click="resetInput(); trackReset()"
+              <v-btn text small @click="resetInput"
                      v-track-click="'Inspection feature reset'"
                      :disabled="!(dirty || isInputNotOriginal)">reset
               </v-btn>
@@ -185,7 +185,6 @@ export default class Inspector extends Vue {
 
   @Watch('originalData')
   public resetInput() {
-    mixpanel.track("Inspection feature reset")
     this.$emit('reset');
     (this.$refs.dataFormObserver as HTMLFormElement).reset();
   }
