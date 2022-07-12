@@ -19,6 +19,8 @@ services:
         FRONTEND_ENV: ${FRONTEND_ENV-production}
 
   ml-worker:
+    ports:
+      - "50051:50051"
     build:
       context: .
       dockerfile: ./giskard-ml-worker/ml-worker.dockerfile
@@ -26,6 +28,10 @@ services:
   backend:
     ports:
       - "9000:9000"
+    # entrypoint:
+    #  - java 
+    #  - jar 
+    #  - /giskard/lib/giskard.jar
     environment:
       - SPRING_PROFILES_ACTIVE=dev
 #     Dev profile is configured to use H2 DB for local development, override it with "prod" Postgres here
