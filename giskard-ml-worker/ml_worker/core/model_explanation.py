@@ -11,19 +11,24 @@ from ml_worker.core.model import GiskardModel
 
 def explain(model: GiskardModel, dataset: GiskardDataset, input_data: Dict):
     from alibi.explainers import KernelShap
-
-    feature_columns = list(model.feature_names)
     feature_names = list(model.feature_names)
+    df = dataset.df.copy()
+
+    if dataset.target and dataset.target in df.columns:
+        df.drop(dataset.target, axis=1, inplace=True)
+    if feature_names:
+        df = df[feature_names]
+
     kernel_shap = KernelShap(
         predictor=lambda array: model.prediction_function(
-            pd.DataFrame(array, columns=feature_columns)
+            pd.DataFrame(array, columns=feature_names)
         ),
         feature_names=feature_names,
         task=model.model_type,
     )
-    kernel_shap.fit(background_example(dataset.df[feature_columns], dataset.feature_types))
+    kernel_shap.fit(background_example(df, dataset.feature_types))
     input_df = pd.DataFrame({k: [v] for k, v in input_data.items()})[
-        feature_columns
+        feature_names
     ]
     explanations = kernel_shap.explain(input_df)
     if model.model_type == "regression":
@@ -110,4 +115,4 @@ def parse_text_explainer_response(response: str) -> Dict[str, str]:
             labels.append(label)
         else:
             explanations_html.append(str(paragraph))
-    return zip(labels, explanations_html)
+    return dict(zip(labels, explanations_html))
