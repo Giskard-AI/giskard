@@ -1,5 +1,5 @@
 # `python-base` sets up all our shared environment variables
-FROM python:3.7-slim as python-base
+FROM python:3.9-slim as python-base
 
     # python
 ENV PYTHONUNBUFFERED=1 \
@@ -49,11 +49,18 @@ RUN curl -sSL https://raw.githubusercontent.com/sdispater/poetry/master/get-poet
 WORKDIR $PYSETUP_PATH
 COPY ./giskard-ml-worker/pyproject.toml ./giskard-ml-worker/poetry.lock* ./
 
+# Custom package installation
+COPY ./giskard-ml-worker/GiskardCustomModel ./giskard-ml-worker/GiskardCustomModel
+WORKDIR $PYSETUP_PATH/giskard-ml-worker/GiskardCustomModel
+RUN mv GiskardCustomModel giskardcustommodel
+RUN poetry build
+RUN pip install ./dist/giskardcustommodel-0.1.0.tar.gz
+WORKDIR $PYSETUP_PATH
+
 # install deps - uses $POETRY_VIRTUALENVS_IN_PROJECT internally
 # Allow installing dev dependencies to run tests
 ARG INSTALL_DEV=false
 RUN bash -c "if [ $INSTALL_DEV == 'true' ] ; then poetry install --no-root ; else poetry install --no-root --no-dev ; fi"
-
 
 
 FROM builder-base as proto-builder
