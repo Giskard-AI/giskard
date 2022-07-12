@@ -201,7 +201,7 @@ class PerformanceTests(AbstractTestCollection):
         """
         Test if the model RMSE is lower than a threshold
 
-        Example: The test is passed when the RMSE is lower than 0.7
+        Example: The test is passed when the RMSE is lower than 10
 
         Args:
             actual_slice(GiskardDataset):
@@ -226,7 +226,7 @@ class PerformanceTests(AbstractTestCollection):
         """
         Test if the model Mean Absolute Error is lower than a threshold
 
-        Example: The test is passed when the MAE is lower than 0.7
+        Example: The test is passed when the MAE is lower than 10
 
         Args:
             actual_slice(GiskardDataset):
