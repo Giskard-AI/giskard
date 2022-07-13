@@ -50,12 +50,8 @@ WORKDIR $PYSETUP_PATH
 COPY ./giskard-ml-worker/pyproject.toml ./giskard-ml-worker/poetry.lock* ./
 
 # Custom package installation
-COPY ./giskard-ml-worker/GiskardCustomModel ./giskard-ml-worker/GiskardCustomModel
-WORKDIR $PYSETUP_PATH/giskard-ml-worker/GiskardCustomModel
-RUN mv GiskardCustomModel giskardcustommodel
-RUN poetry build
-RUN pip install ./dist/giskardcustommodel-0.1.0.tar.gz
-WORKDIR $PYSETUP_PATH
+COPY ./giskard-ml-worker/giskardcustommodel ./giskard-ml-worker/giskardcustommodel
+RUN poetry add ./giskard-ml-worker/giskardcustommodel
 
 # install deps - uses $POETRY_VIRTUALENVS_IN_PROJECT internally
 # Allow installing dev dependencies to run tests
