@@ -51,6 +51,7 @@ COPY ./giskard-ml-worker/pyproject.toml ./giskard-ml-worker/poetry.lock* ./
 
 # Custom package installation
 COPY ./giskard-ml-worker/giskardcustommodel ./giskard-ml-worker/giskardcustommodel
+RUN poetry add llvmlite
 RUN poetry add ./giskard-ml-worker/giskardcustommodel
 
 # install deps - uses $POETRY_VIRTUALENVS_IN_PROJECT internally
