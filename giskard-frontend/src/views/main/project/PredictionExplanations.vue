@@ -155,12 +155,34 @@ export default class PredictionExplanations extends Vue {
   }
 
   get chartOptionsMultiClassification() {
-    const firstExplanations =
-      this.fullExplanations[Object.keys(this.fullExplanations!)[0]];
+    const labels = Object.keys(this.fullExplanations!);
+    const firstExplanations = this.fullExplanations[labels[0]];
+    const topFeatures = Object.keys(firstExplanations!);
+    // Compute the sum of SHAP explanations by feature
+    const explanationSum: Array<number> = topFeatures.map(
+      feature => labels.map(
+        label => this.fullExplanations[label][feature]
+      ).reduce((a, b) => a + b, 0));
+    // Create an object with key Feature and value the sum of SHAP explanations
+    const explanationSumByFeature: object = {};
+    topFeatures.forEach((element, index) => {
+      explanationSumByFeature[element] = explanationSum[index];
+    });
+    // Array of features sorted by sum of SHAP explanations
+    // Bonus: sort by feature name to guarantee same order if the explanation sum is the same
+    const sortedTopFeatures: Array<string> = Object.entries(
+      explanationSumByFeature
+    ).sort((a, b) => a[1] - b[1] || b[0].localeCompare(a[0])
+    ).map(el=>el[0])
     let chartSeries: object[] = [];
     for (const [className, explanation] of Object.entries(
       this.fullExplanations
     )) {
+      // Guarantee that the explanation object follows the same feature order
+      let explanationSortedByFeature: object = {}
+      sortedTopFeatures.forEach(feature => {
+        explanationSortedByFeature[feature] = explanation[feature]
+      });
       chartSeries.push({
         name: className,
         type: "bar",
@@ -179,7 +201,7 @@ export default class PredictionExplanations extends Vue {
         labelLayout: {
           hideOverlap: true,
         },
-        data: Object.values(explanation!),
+        data: Object.values(explanationSortedByFeature!),
       });
     }
     return {
@@ -192,7 +214,7 @@ export default class PredictionExplanations extends Vue {
       },
       yAxis: {
         type: "category",
-        data: Object.keys(firstExplanations!),
+        data: sortedTopFeatures,
       },
       legend: {
         data: Object.keys(this.fullExplanations),
