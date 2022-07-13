@@ -137,7 +137,7 @@ class TokenProviderTest {
     }
 
     private String createUnsupportedToken() {
-        return Jwts.builder().setPayload("payload").signWith(key, SignatureAlgorithm.HS512).compact();
+        return Jwts.builder().setPayload("payload").signWith(key, TokenProvider.SIGNATURE_ALGORITHM).compact();
     }
 
     private String createTokenWithDifferentSignature() {
@@ -148,7 +148,7 @@ class TokenProviderTest {
         return Jwts
             .builder()
             .setSubject("anonymous")
-            .signWith(otherKey, SignatureAlgorithm.HS512)
+            .signWith(otherKey, TokenProvider.SIGNATURE_ALGORITHM)
             .setExpiration(new Date(new Date().getTime() + ONE_MINUTE))
             .compact();
     }

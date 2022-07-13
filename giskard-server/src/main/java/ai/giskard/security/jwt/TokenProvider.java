@@ -29,7 +29,8 @@ import java.util.stream.Collectors;
 @Component
 public class TokenProvider {
 
-    public static final int GENERATED_KEY_BITS = 512;
+    public static final int GENERATED_KEY_BITS = 256;
+    public static final SignatureAlgorithm SIGNATURE_ALGORITHM = SignatureAlgorithm.HS256;
     private final Logger log = LoggerFactory.getLogger(TokenProvider.class);
 
     private static final String AUTHORITIES_KEY = "auth";
@@ -65,7 +66,7 @@ public class TokenProvider {
             base64SecretProperty = secretProperty;
             keyBytes = base64SecretProperty.getBytes(StandardCharsets.UTF_8);
         } else {
-            log.info("No secret key was specified in the configuration, generating a new on of {} bits", GENERATED_KEY_BITS);
+            log.info("No JWT secret key was specified in the configuration, generating a new one of {} bits", GENERATED_KEY_BITS);
             keyBytes = new byte[GENERATED_KEY_BITS / 8];
             new SecureRandom().nextBytes(keyBytes);
         }
@@ -97,7 +98,7 @@ public class TokenProvider {
             .claim(AUTHORITIES_KEY, authorities)
             .claim(ID, ((GiskardUser) authentication.getPrincipal()).getId())
             .claim(TOKEN_TYPE_KEY, JWTTokenType.UI)
-            .signWith(key, SignatureAlgorithm.HS512)
+            .signWith(key, SIGNATURE_ALGORITHM)
             .setExpiration(validity)
             .compact();
     }
@@ -111,7 +112,7 @@ public class TokenProvider {
             .setSubject(authentication.getName())
             .claim(TOKEN_TYPE_KEY, JWTTokenType.API)
             .claim(AUTHORITIES_KEY, authorities)
-            .signWith(key, SignatureAlgorithm.HS512)
+            .signWith(key, SIGNATURE_ALGORITHM)
             .setExpiration(new Date(now + this.apiTokenValidityInMilliseconds))
             .compact();
     }
@@ -123,7 +124,7 @@ public class TokenProvider {
             .setSubject(invitorEmail)
             .setAudience(invitedEmail)
             .claim(TOKEN_TYPE_KEY, JWTTokenType.INVITATION)
-            .signWith(key, SignatureAlgorithm.HS512)
+            .signWith(key, SIGNATURE_ALGORITHM)
             .setExpiration(new Date(now + this.invitationTokenValidityInMilliseconds))
             .compact();
     }
