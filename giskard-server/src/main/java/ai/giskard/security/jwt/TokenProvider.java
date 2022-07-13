@@ -3,6 +3,7 @@ package ai.giskard.security.jwt;
 import ai.giskard.config.ApplicationProperties;
 import ai.giskard.management.SecurityMetersService;
 import ai.giskard.security.GiskardUser;
+import ai.giskard.web.dto.JWTToken;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
@@ -81,7 +82,7 @@ public class TokenProvider {
         this.securityMetersService = securityMetersService;
     }
 
-    public String createToken(Authentication authentication, boolean rememberMe) {
+    public JWTToken createToken(Authentication authentication, boolean rememberMe) {
         String authorities = authentication.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.joining(","));
 
         long now = (new Date()).getTime();
@@ -92,7 +93,7 @@ public class TokenProvider {
             validity = new Date(now + this.tokenValidityInMilliseconds);
         }
 
-        return Jwts
+        return new JWTToken(Jwts
             .builder()
             .setSubject(authentication.getName())
             .claim(AUTHORITIES_KEY, authorities)
@@ -100,21 +101,22 @@ public class TokenProvider {
             .claim(TOKEN_TYPE_KEY, JWTTokenType.UI)
             .signWith(key, SIGNATURE_ALGORITHM)
             .setExpiration(validity)
-            .compact();
+            .compact(), validity.toInstant());
     }
 
-    public String createAPIaccessToken(Authentication authentication) {
+    public JWTToken createAPIaccessToken(Authentication authentication) {
         String authorities = authentication.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.joining(","));
 
         long now = (new Date()).getTime();
-        return Jwts
+        Date expiration = new Date(now + this.apiTokenValidityInMilliseconds);
+        return new JWTToken(Jwts
             .builder()
             .setSubject(authentication.getName())
             .claim(TOKEN_TYPE_KEY, JWTTokenType.API)
             .claim(AUTHORITIES_KEY, authorities)
             .signWith(key, SIGNATURE_ALGORITHM)
-            .setExpiration(new Date(now + this.apiTokenValidityInMilliseconds))
-            .compact();
+            .setExpiration(expiration)
+            .compact(), expiration.toInstant());
     }
 
     public String createInvitationToken(String invitorEmail, String invitedEmail) {
@@ -138,7 +140,7 @@ public class TokenProvider {
                 .stream(claims.get(AUTHORITIES_KEY).toString().split(","))
                 .filter(auth -> !auth.trim().isEmpty())
                 .map(SimpleGrantedAuthority::new)
-                .collect(Collectors.toList());
+                .toList();
         } else {
             authorities = Collections.emptyList();
         }
