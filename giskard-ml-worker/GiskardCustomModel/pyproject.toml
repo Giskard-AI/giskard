@@ -7,6 +7,9 @@ authors = ["Francesco Ventura <francesco.ventura@sysdig.com>"]
 [tool.poetry.dependencies]
 python = ">=3.9,<3.11"
 scikit-learn = ">=1.0.2"
+ipykernel = "^6.15.1"
+pandas = "^1.4.3"
+giskard = "^1.2.0"
 
 [tool.poetry.dev-dependencies]
 
