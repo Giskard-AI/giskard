@@ -97,7 +97,7 @@ export default class PredictionExplanations extends Vue {
   }
 
   private createSimpleExplanationChart(explanation: object) {
-    const sortedExplanation = Object.entries(explanation!).sort((a,b) => b[1]-a[1])
+    const sortedExplanation = Object.entries(explanation!).sort((a,b) => a[1]-b[1])
     return {
       xAxis: {
         type: "value",
