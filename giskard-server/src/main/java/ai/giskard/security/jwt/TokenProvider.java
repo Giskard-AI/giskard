@@ -55,8 +55,8 @@ public class TokenProvider {
         String base64SecretProperty = jHipsterProperties.getSecurity().getAuthentication().getJwt().getBase64Secret();
         String secretProperty = jHipsterProperties.getSecurity().getAuthentication().getJwt().getSecret();
         if (!ObjectUtils.isEmpty(base64SecretProperty)) {
-            log.debug("Using a Base64-encoded JWT secret key");
             keyBytes = Decoders.BASE64.decode(base64SecretProperty);
+            log.info("Using a provided Base64-encoded JWT secret key of {} bytes", keyBytes.length);
         } else if (secretProperty != null) {
             log.warn(
                 "Warning: the JWT key used is not Base64-encoded. " +
