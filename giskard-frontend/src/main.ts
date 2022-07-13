@@ -23,6 +23,7 @@ import {FontAwesomeIcon} from "@fortawesome/vue-fontawesome";
 import {library} from '@fortawesome/fontawesome-svg-core'
 import {faUserSecret} from '@fortawesome/free-solid-svg-icons'
 import mixpanel from 'mixpanel-browser';
+import _ from "lodash";
 
 Vue.config.productionTip = false;
 
@@ -69,6 +70,23 @@ export function setupMixpanel() {
         api_host: "https://pxl.giskard.ai",
         opt_out_tracking_by_default: true
     });
+    Vue.directive('trackClick', {
+        inserted: (el, binding, _vnode) => {
+            el.addEventListener("click", (_evt) => {
+                try {
+                    if (_.isString(binding.value)) {
+                        mixpanel.track(binding.value);
+                    } else if (_.isObject(binding.value)) {
+                        // @ts-ignore
+                        mixpanel.track(binding.value.name, binding.value.data);
+                    }
+                } catch (e) {
+                    console.error("Failed to track event", binding.value, e);
+                }
+            });
+        },
+    })
+
 }
 
 setupMixpanel();
