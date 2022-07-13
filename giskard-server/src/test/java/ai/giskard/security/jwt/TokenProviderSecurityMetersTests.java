@@ -126,7 +126,7 @@ class TokenProviderSecurityMetersTests {
     private String createUnsupportedToken() {
         Key key = (Key) ReflectionTestUtils.getField(tokenProvider, "key");
 
-        return Jwts.builder().setPayload("payload").signWith(key, SignatureAlgorithm.HS256).compact();
+        return Jwts.builder().setPayload("payload").signWith(key, TokenProvider.SIGNATURE_ALGORITHM).compact();
     }
 
     private String createMalformedToken() {
@@ -143,7 +143,7 @@ class TokenProviderSecurityMetersTests {
         return Jwts
             .builder()
             .setSubject("anonymous")
-            .signWith(otherKey, SignatureAlgorithm.HS512)
+            .signWith(otherKey, TokenProvider.SIGNATURE_ALGORITHM)
             .setExpiration(new Date(new Date().getTime() + ONE_MINUTE))
             .compact();
     }
