@@ -101,8 +101,8 @@ class MLWorkerServiceImpl(MLWorkerServicer):
             raise e
         except ModuleNotFoundError as e:
             raise GiskardException(f"Failed to import '{e.name}'. "
-                                   f"Make sure it's installed in the ML Worker environment, "
-                                   "refer to https://docs.giskard.ai/ for more information") from e
+                                   f"Make sure it's installed in the ML Worker environment."
+                                   "To install it, refer to https://docs.giskard.ai/") from e
         prediction_results = model.run_predict(dataset)
 
         if model.model_type == "classification":
