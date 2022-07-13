@@ -11,34 +11,34 @@ from ml_worker.core.model import GiskardModel
 
 def explain(model: GiskardModel, dataset: GiskardDataset, input_data: Dict):
     from alibi.explainers import KernelShap
-    feature_names = list(model.feature_names)
     df = dataset.df.copy()
 
     if dataset.target and dataset.target in df.columns:
         df.drop(dataset.target, axis=1, inplace=True)
-    if feature_names:
-        df = df[feature_names]
+    if model.feature_names:
+        df = df[model.feature_names]
+
+    filtered_column_names = list(df.columns)
 
     kernel_shap = KernelShap(
-        predictor=lambda array: model.prediction_function(
-            pd.DataFrame(array, columns=feature_names)
-        ),
-        feature_names=feature_names,
+        predictor=lambda array: model.prediction_function(pd.DataFrame(array, columns=list(df.columns))),
+        feature_names=filtered_column_names,
         task=model.model_type,
     )
+
     kernel_shap.fit(background_example(df, dataset.feature_types))
-    input_df = pd.DataFrame({k: [v] for k, v in input_data.items()})[
-        feature_names
-    ]
+    input_df = pd.DataFrame({k: [v] for k, v in input_data.items()})[filtered_column_names]
+
     explanations = kernel_shap.explain(input_df)
+
     if model.model_type == "regression":
         explanation_chart_data = summary_shap_regression(
-            shap_values=explanations.shap_values, feature_names=feature_names
+            shap_values=explanations.shap_values, feature_names=filtered_column_names
         )
     elif model.model_type == "classification":
         explanation_chart_data = summary_shap_classification(
             shap_values=explanations.shap_values,
-            feature_names=feature_names,
+            feature_names=filtered_column_names,
             class_names=model.classification_labels,
         )
     else:
