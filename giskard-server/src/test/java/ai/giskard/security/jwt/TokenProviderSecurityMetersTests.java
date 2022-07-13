@@ -112,7 +112,7 @@ class TokenProviderSecurityMetersTests {
     private String createValidToken() {
         Authentication authentication = createAuthentication(AuthoritiesConstants.AITESTER);
 
-        return tokenProvider.createToken(authentication, false);
+        return tokenProvider.createToken(authentication, false).getToken();
     }
 
     private String createExpiredToken() {
@@ -120,7 +120,7 @@ class TokenProviderSecurityMetersTests {
 
         Authentication authentication = createAuthentication(AuthoritiesConstants.AITESTER);
 
-        return tokenProvider.createToken(authentication, false);
+        return tokenProvider.createToken(authentication, false).getToken();
     }
 
     private String createUnsupportedToken() {

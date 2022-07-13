@@ -75,14 +75,24 @@
             <v-card-text>
               <div class="mb-2">
                 <v-btn small tile color="primary" @click="generateToken">Generate</v-btn>
-                <v-btn v-if="apiAccessToken" small tile color="secondary" class="ml-2" @click="copyToken">
+                <v-btn v-if="apiAccessToken && apiAccessToken.id_token" small tile color="secondary" class="ml-2"
+                       @click="copyToken">
                   Copy
                   <v-icon right dark>mdi-content-copy</v-icon>
                 </v-btn>
               </div>
-              <div class="token-area-wrapper" v-if="apiAccessToken">
-                <span class="token-area" ref="apiAccessToken">{{ apiAccessToken }}</span>
-              </div>
+              <v-row>
+                <v-col>
+                  <div class="token-area-wrapper" v-if="apiAccessToken && apiAccessToken.id_token">
+                    <span class="token-area" ref="apiAccessToken">{{ apiAccessToken.id_token }}</span>
+                  </div>
+                </v-col>
+              </v-row>
+              <v-row v-if="apiAccessToken && apiAccessToken.id_token">
+                <v-col class="text-right">
+                  Expires on <span>{{ apiAccessToken.expiryDate | date }}</span>
+                </v-col>
+              </v-row>
             </v-card-text>
           </v-card>
         </v-col>
@@ -145,7 +155,7 @@ import {commitAddNotification, commitRemoveNotification} from '@/store/main/muta
 import {dispatchUpdateUserProfile} from '@/store/main/actions';
 import ButtonModalConfirmation from '@/components/ButtonModalConfirmation.vue';
 import {copyToClipboard} from '@/global-keys';
-import {AppConfigDTO, GeneralSettings, UpdateMeDTO} from "@/generated-sources";
+import {AppConfigDTO, GeneralSettings, JWTToken, UpdateMeDTO} from "@/generated-sources";
 import mixpanel from "mixpanel-browser";
 import {Role} from "@/enums";
 import AppInfoDTO = AppConfigDTO.AppInfoDTO;
@@ -160,7 +170,7 @@ export default class UserProfile extends Vue {
   private displayName: string = '';
   private email: string = '';
   private editModeToggle = false;
-  private apiAccessToken: string = '';
+  private apiAccessToken: JWTToken | null = null;
   private appSettings: AppInfoDTO | null = null;
   private isAdmin: boolean = false;
 
@@ -211,7 +221,7 @@ export default class UserProfile extends Vue {
     try {
       commitAddNotification(this.$store, loadingNotification);
       commitRemoveNotification(this.$store, loadingNotification);
-      this.apiAccessToken = (await api.getApiAccessToken()).id_token;
+      this.apiAccessToken = await api.getApiAccessToken();
     } catch (error) {
       commitRemoveNotification(this.$store, loadingNotification);
       commitAddNotification(this.$store, {content: 'Could not reach server', color: 'error'});
@@ -219,7 +229,7 @@ export default class UserProfile extends Vue {
   }
 
   public async copyToken() {
-    await copyToClipboard(this.apiAccessToken);
+    await copyToClipboard(this.apiAccessToken?.id_token);
     commitAddNotification(this.$store, {content: "Copied to clipboard", color: "success"});
   }
 
