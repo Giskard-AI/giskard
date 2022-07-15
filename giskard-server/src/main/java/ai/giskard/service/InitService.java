@@ -106,8 +106,8 @@ public class InitService {
     private final ResourceLoader resourceLoader;
     private final FileUploadService fileUploadService;
     private final Map<String, ProjectConfig> projects = createProjectConfigMap();
-    String[] mockKeys = stream(AuthoritiesConstants.AUTHORITIES).map(key -> key.replace("ROLE_", "")).toArray(String[]::new);
-    private final Map<String, String> users = stream(mockKeys).collect(Collectors.toMap(String::toLowerCase, String::toLowerCase));
+    String[] mockKeys = Arrays.stream(AuthoritiesConstants.AUTHORITIES).map(key -> key.replace("ROLE_", "")).toArray(String[]::new);
+    private final Map<String, String> users = Arrays.stream(mockKeys).collect(Collectors.toMap(String::toLowerCase, String::toLowerCase));
 
     private Map<String, ProjectConfig> createProjectConfigMap() {
         String zillowProjectKey = "zillow";
@@ -257,7 +257,6 @@ public class InitService {
             uploadDataframe(projectKey);
         } else {
             logger.info("Project with key {} already exists", projectKey);
-        }
         }
     }
 
