@@ -5,7 +5,7 @@ from ml_worker.testing.functions import GiskardTestFunctions
 
 @pytest.mark.parametrize('data,model,threshold,expected_metric,actual_slices_size',
                          [('german_credit_data', 'german_credit_model', 0.5, 0.85, 1000),
-                          ('enron_data', 'enron_model', 0.5, 0.68, 50)])
+                          ('enron_data', 'enron_model', 0.5, 0.67, 50)])
 def test_f1(data, model, threshold, expected_metric, actual_slices_size, request):
     tests = GiskardTestFunctions()
     results = tests.performance.test_f1(
@@ -23,7 +23,7 @@ def test_f1(data, model, threshold, expected_metric, actual_slices_size, request
 
 @pytest.mark.parametrize('data,model,threshold,expected_metric,actual_slices_size',
                          [('german_credit_data', 'german_credit_model', 0.5, 0.71, 1000),
-                          ('enron_data', 'enron_model', 0.5, 0.95, 50)])
+                          ('enron_data', 'enron_model', 0.5, 0.94, 50)])
 def test_auc(data, model, threshold, expected_metric, actual_slices_size, request):
     tests = GiskardTestFunctions()
     results = tests.performance.test_auc(
@@ -219,7 +219,7 @@ def test_diff_rmse(data, model, threshold, expected_metric, actual_slices_size, 
 
 @pytest.mark.parametrize('data,model,threshold,expected_metric',
                          [('german_credit_data', 'german_credit_model', 0.1, 0.03),
-                          ('enron_data', 'enron_model', 0.5, 0.09)])
+                          ('enron_data', 'enron_model', 0.5, 0.15)])
 def test_diff_reference_actual_f1(data, model, threshold, expected_metric, request):
     tests = GiskardTestFunctions()
     data = request.getfixturevalue(data)

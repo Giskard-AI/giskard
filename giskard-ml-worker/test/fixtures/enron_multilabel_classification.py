@@ -5,15 +5,13 @@ import pandas as pd
 import pytest
 from sklearn import model_selection
 from sklearn.compose import ColumnTransformer
+from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.feature_extraction.text import TfidfTransformer
 from sklearn.impute import SimpleImputer
 from sklearn.linear_model import LogisticRegression
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder
 from sklearn.preprocessing import StandardScaler
-from sklearn.feature_extraction.text import CountVectorizer
-from sklearn.feature_extraction.text import TfidfTransformer
-from nltk.corpus import stopwords
-from string import punctuation
 
 from ml_worker.core.giskard_dataset import GiskardDataset
 from ml_worker.core.model import GiskardModel
@@ -53,7 +51,6 @@ def enron_test_data(enron_data):
 def enron_model(enron_data) -> GiskardModel:
     start = time.time()
 
-    stoplist = set(stopwords.words('english') + list(punctuation))
     columns_to_scale = [key for key in input_types.keys() if input_types[key] == "numeric"]
 
     numeric_transformer = Pipeline([('imputer', SimpleImputer(strategy='median')),
@@ -66,7 +63,7 @@ def enron_model(enron_data) -> GiskardModel:
         ('onehot', OneHotEncoder(handle_unknown='ignore', sparse=False))])
 
     text_transformer = Pipeline([
-        ('vect', CountVectorizer(stop_words=stoplist)),
+        ('vect', CountVectorizer()),
         ('tfidf', TfidfTransformer())
     ])
 

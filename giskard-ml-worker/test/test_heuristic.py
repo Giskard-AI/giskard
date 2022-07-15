@@ -6,7 +6,7 @@ from ml_worker.testing.functions import GiskardTestFunctions
 @pytest.mark.parametrize('data,model,label,threshold,expected_metric,actual_slices_size',
                          [('german_credit_data', 'german_credit_model', 0, 0.1, 0.20, 500),
                           ('german_credit_data', 'german_credit_model', 1, 0.5, 0.80, 500),
-                          ('enron_data', 'enron_model', 0, 0.1, 0.28, 25)])
+                          ('enron_data', 'enron_model', 0, 0.1, 0.32, 25)])
 def test_heuristic(data, model, threshold, label, expected_metric, actual_slices_size, request):
     tests = GiskardTestFunctions()
     data = request.getfixturevalue(data)
@@ -48,7 +48,7 @@ def test_heuristic_filtered(data, model, threshold, label, expected_metric, actu
 @pytest.mark.parametrize('data,model,label,threshold,expected_metric,actual_slices_size',
                          [('german_credit_data', 'german_credit_model', 0, 0.1, 0.34, 500),
                           ('german_credit_data', 'german_credit_model', 1, 0.1, 0.34, 500),
-                          ('enron_data', 'enron_model', 0, 0.1, 0.36, 25)])
+                          ('enron_data', 'enron_model', 0, 0.1, 0.32, 25)])
 def test_output_in_range_clf(data, model, threshold, label, expected_metric, actual_slices_size, request):
     tests = GiskardTestFunctions()
     data = request.getfixturevalue(data)
