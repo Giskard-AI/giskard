@@ -5,7 +5,7 @@
         <v-file-input outlined dense counter shrink v-model="fileData" label="Select data (.csv, .xls, .xlsx)"
                       accept=".csv,.xlsx,.xls"></v-file-input>
         <v-btn tile color="primary" class="ml-2" @click="upload_data" :disabled="!fileData">Upload</v-btn>
-        <v-btn tile class="mx-2" @click="open_doc_upload_api">Use API</v-btn>
+<v-btn tile class="mx-2" href="https://docs.giskard.ai/start/guides/upload-your-model" target="_blank">Use API</v-btn>
         <v-spacer></v-spacer>
         <v-btn text @click="loadDatasets()" color="secondary">Reload
           <v-icon right>refresh</v-icon>
