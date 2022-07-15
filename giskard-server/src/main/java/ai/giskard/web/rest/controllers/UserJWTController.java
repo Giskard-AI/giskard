@@ -42,16 +42,16 @@ public class UserJWTController {
 
         Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
         SecurityContextHolder.getContext().setAuthentication(authentication);
-        String jwt = tokenProvider.createToken(authentication, loginVM.isRememberMe());
+        JWTToken jwt = tokenProvider.createToken(authentication, loginVM.isRememberMe());
         HttpHeaders httpHeaders = new HttpHeaders();
-        httpHeaders.add(JWTFilter.AUTHORIZATION_HEADER, "Bearer " + jwt);
-        return new ResponseEntity<>(new JWTToken(jwt), httpHeaders, HttpStatus.OK);
+        httpHeaders.add(JWTFilter.AUTHORIZATION_HEADER, "Bearer " + jwt.getToken());
+        return new ResponseEntity<>(jwt, httpHeaders, HttpStatus.OK);
     }
 
     @GetMapping(path = "/api-access-token")
     public ResponseEntity<JWTToken> getAPIaccessToken(@AuthenticationPrincipal final UserDetails user) {
 
-        JWTToken token = new JWTToken(tokenProvider.createAPIaccessToken(SecurityContextHolder.getContext().getAuthentication()));
+        JWTToken token = tokenProvider.createAPIaccessToken(SecurityContextHolder.getContext().getAuthentication());
         return new ResponseEntity<>(token, HttpStatus.OK);
     }
 }

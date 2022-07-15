@@ -44,7 +44,7 @@ public class ProjectService {
         return projectRepository.save(project);
     }
 
-    private static boolean isProjectKeyValid(String projectKey) {
+    public static boolean isProjectKeyValid(String projectKey) {
         return PROJECT_KEY_PATTERN.matcher(projectKey).matches();
     }
 

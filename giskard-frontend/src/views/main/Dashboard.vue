@@ -1,53 +1,61 @@
 <template>
   <div>
-  <v-toolbar flat light><v-toolbar-title class="text-h5 font-weight-light">Welcome, {{greetedUser}}!</v-toolbar-title></v-toolbar>
+    <v-toolbar flat light>
+      <v-toolbar-title class="text-h5 font-weight-light">Welcome, {{ greetedUser }}!</v-toolbar-title>
+    </v-toolbar>
 
-  <v-container fluid>
-    <div class="my-2 text-h6 secondary--text font-weight-light">You have...</div>
-    <v-row>
-      <v-col sm=4 lg=3 v-if="isAdmin || isCreator">
-        <v-card dark tile color="success" :to="{path: '/main/projects', query: {f: 1}}">
-          <v-card-title class="text-h2">{{ projects.filter(p => p.owner.id === userProfile.id).length }}
-            <v-spacer></v-spacer>
-            <v-icon style="font-size: 4rem">model_training</v-icon></v-card-title>
-          <v-card-subtitle class="text-h5">projects</v-card-subtitle>
-        </v-card>
-      </v-col>
-      <v-col sm=4 lg=3>
-        <v-card dark tile color="secondary" :to="{path: '/main/projects', query: {f: 2}}">
-          <v-card-title class="text-h2">{{ projects.filter(p => p.owner.id !== userProfile.id).length }}
-            <v-spacer></v-spacer>
-            <v-icon style="font-size: 4rem">group_work</v-icon></v-card-title>
-          <v-card-subtitle class="text-h5">projects invited to</v-card-subtitle>
-        </v-card>
-      </v-col>
-      <v-col sm=4 lg=3 v-if="isAdmin">
-        <v-card dark tile color="warning" to="/main/admin/users">
-          <v-card-title class="text-h2">{{ users.length }}
-            <v-spacer></v-spacer>
-            <v-icon style="font-size: 4rem">groups</v-icon></v-card-title>
-          <v-card-subtitle class="text-h5">managed users</v-card-subtitle>
-        </v-card>
-      </v-col>
-    </v-row>
-  </v-container>
+    <v-container fluid>
+      <div class="my-2 text-h6 secondary--text font-weight-light">You have...</div>
+      <v-row>
+        <v-col sm=4 lg=3 v-if="isAdmin || isCreator">
+          <v-card dark tile color="success" :to="{path: '/main/projects', query: {f: 1}}">
+            <v-card-title class="text-h2">{{ projects.filter(p => p.owner.id === userProfile.id).length }}
+              <v-spacer></v-spacer>
+              <v-icon style="font-size: 4rem">model_training</v-icon>
+            </v-card-title>
+            <v-card-subtitle class="text-h5">projects</v-card-subtitle>
+          </v-card>
+        </v-col>
+        <v-col sm=4 lg=3>
+          <v-card dark tile color="secondary" :to="{path: '/main/projects', query: {f: 2}}">
+            <v-card-title class="text-h2">{{ projects.filter(p => p.owner.id !== userProfile.id).length }}
+              <v-spacer></v-spacer>
+              <v-icon style="font-size: 4rem">group_work</v-icon>
+            </v-card-title>
+            <v-card-subtitle class="text-h5">projects invited to</v-card-subtitle>
+          </v-card>
+        </v-col>
+        <v-col sm=4 lg=3 v-if="isAdmin">
+          <v-card dark tile color="warning" to="/main/admin/users">
+            <v-card-title class="text-h2">{{ users.length }}
+              <v-spacer></v-spacer>
+              <v-icon style="font-size: 4rem">groups</v-icon>
+            </v-card-title>
+            <v-card-subtitle class="text-h5">managed users</v-card-subtitle>
+          </v-card>
+        </v-col>
+      </v-row>
+    </v-container>
   </div>
 </template>
 
 <script lang="ts">
-import { Component, Vue } from 'vue-property-decorator';
-import { readUserProfile, readAllProjects, readHasAdminAccess } from '@/store/main/getters';
-import { readAdminUsers } from '@/store/admin/getters';
-import { dispatchGetUsers } from '@/store/admin/actions';
-import { dispatchGetProjects } from '@/store/main/actions';
-import { Role } from '@/enums';
+import {Component, Vue} from 'vue-property-decorator';
+import {readUserProfile, readAllProjects, readHasAdminAccess} from '@/store/main/getters';
+import {readAdminUsers} from '@/store/admin/getters';
+import {dispatchGetUsers} from '@/store/admin/actions';
+import {dispatchGetProjects} from '@/store/main/actions';
+import {Role} from '@/enums';
+import {isAdmin} from "@/utils";
 
 @Component
 export default class Dashboard extends Vue {
 
   public async mounted() {
     await dispatchGetProjects(this.$store);
-    await dispatchGetUsers(this.$store);
+    if (isAdmin(this.$store)) {
+      await dispatchGetUsers(this.$store);
+    }
   }
 
   get userProfile() {

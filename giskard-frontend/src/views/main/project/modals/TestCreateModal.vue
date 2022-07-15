@@ -31,6 +31,7 @@ import {Prop} from "vue-property-decorator";
 import {api} from "@/api";
 import ModelSelector from "@/views/main/utils/ModelSelector.vue";
 import {format} from 'date-fns'
+import mixpanel from "mixpanel-browser";
 import { ModelDTO } from '@/generated-sources';
 
 
@@ -43,6 +44,7 @@ export default class TestCreateModal extends Vue {
   model: ModelDTO | null = null;
 
   public async submit() {
+    mixpanel.track('Create test', {name: this.name});
     let createdTestSuite = await api.createTest(this.suiteId, this.name);
     this.$emit('submit', createdTestSuite)
   }

@@ -1,10 +1,13 @@
 <template>
   <div>
-    <div class="d-flex justify-end">
-      <v-btn text @click="loadModelPickles()" color="secondary">Reload
-        <v-icon right>refresh</v-icon>
-      </v-btn>
+    <v-container class="mt-2 mb-0" v-if="isProjectOwnerOrAdmin">
+      <div class="d-flex justify-end">
+        <v-btn tile class="mx-2" href="https://docs.giskard.ai/start/guides/upload-your-model" target="_blank">Upload with API</v-btn>
+        <v-btn text @click="loadModelPickles()" color="secondary">Reload
+          <v-icon right>refresh</v-icon>
+        </v-btn>
     </div>
+    </v-container>
     <v-container v-if="models.length > 0">
       <v-card flat>
         <v-row class="px-2 py-1 caption secondary--text text--lighten-3">
@@ -80,6 +83,7 @@ import {api} from '@/api';
 import {performApiActionWithNotif} from '@/api-commons';
 import InspectorLauncher from './InspectorLauncher.vue';
 import {ModelDTO} from '@/generated-sources';
+import mixpanel from "mixpanel-browser";
 
 @Component({
   components: {InspectorLauncher}
@@ -102,6 +106,7 @@ export default class Models extends Vue {
   }
 
   public async deleteModelPickle(id: number, fileName: string) {
+    mixpanel.track('Delete model', {id});
     if (await this.$dialog.confirm({
       text: `Are you sure you want to delete model <strong>${fileName}</strong>?`,
       title: 'Delete model'
@@ -113,6 +118,7 @@ export default class Models extends Vue {
   }
 
   public downloadModelPickle(id: number) {
+    mixpanel.track('Download model', {id});
     api.downloadModelFile(id)
   }
 

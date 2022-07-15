@@ -3,7 +3,7 @@
     <v-card-title>
       Select dataset
     </v-card-title>
-    <OverlayLoader v-show="loading" />
+    <OverlayLoader v-show="loading"/>
     <v-card-text class="scrollable-with-limits">
       <div v-if="datasets.length > 0">
         <v-radio-group v-model="datasetSelected">
@@ -18,12 +18,13 @@
       <div v-else>No dataset uploaded yet on this project.</div>
     </v-card-text>
     <v-card-actions>
-      <v-btn text @click="reset()"> Cancel </v-btn>
+      <v-btn text @click="reset()"> Cancel</v-btn>
       <v-spacer></v-spacer>
       <v-btn
           color="primary"
           @click="launchInspector()"
-          :disabled="errorLoadingFeatures"
+          :disabled="creatingInspection"
+          :loading='creatingInspection'
       >
         Inspect
       </v-btn>
@@ -37,19 +38,20 @@ import {Component, Emit, Prop, Vue} from 'vue-property-decorator';
 import OverlayLoader from '@/components/OverlayLoader.vue';
 import {api} from '@/api';
 import {DatasetDTO, ModelDTO} from '@/generated-sources';
+import mixpanel from "mixpanel-browser";
 
 @Component({
-  components: { OverlayLoader }
+  components: {OverlayLoader}
 })
 export default class InspectorLauncher extends Vue {
-  @Prop({ required: true }) projectId!: number;
-  @Prop({ required: true }) model!: ModelDTO;
+  @Prop({required: true}) projectId!: number;
+  @Prop({required: true}) model!: ModelDTO;
   loading = false;
   step = 1;
   datasets: DatasetDTO[] = [];
   datasetSelected: DatasetDTO | null = null;
   datasetFeatures: string[] = [];
-  errorLoadingFeatures: string | null = null;
+  creatingInspection = false;
 
   public async mounted() {
     await this.loadDatasets();
@@ -60,22 +62,27 @@ export default class InspectorLauncher extends Vue {
     this.step = 1;
     this.datasetSelected = null;
     this.datasetFeatures = [];
-    this.errorLoadingFeatures = null;
   }
 
   public async loadDatasets() {
     this.loading = true;
-    const response = await api.getProjectDatasets(this.projectId);
-    this.datasets = response.sort((a, b) =>
-      new Date(a.createdDate) < new Date(b.createdDate) ? 1 : -1
+    this.datasets = await api.getProjectDatasets(this.projectId);
+    this.datasets.sort((a, b) =>
+        new Date(a.createdDate) < new Date(b.createdDate) ? 1 : -1
     );
     this.loading = false;
   }
 
   public async launchInspector() {
-    const inspection = await api.prepareInspection({datasetId: this.datasetSelected!.id, modelId: this.model.id});
-    await this.$router.push({ name: 'project-inspector', params: {inspectionId: inspection.id.toString()}});
-    this.reset();
+    mixpanel.track('Create inspection', {datasetId: this.datasetSelected!.id, modelId: this.model.id});
+    try {
+      this.creatingInspection = true;
+      const inspection = await api.prepareInspection({datasetId: this.datasetSelected!.id, modelId: this.model.id});
+      await this.$router.push({name: 'project-inspector', params: {inspectionId: inspection.id.toString()}});
+      this.reset();
+    } finally {
+      this.creatingInspection = false;
+    }
   }
 }
 </script>

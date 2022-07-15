@@ -33,7 +33,7 @@ def ge_result_to_test_result(result, passed=True) -> SingleTestResult:
     )
 
 
-def apply_perturbation_inplace(df, perturbation_dict):
+def apply_perturbation_inplace(df: pd.DataFrame, perturbation_dict):
     modified_rows = []
     i = 0
     for idx, r in df.iterrows():

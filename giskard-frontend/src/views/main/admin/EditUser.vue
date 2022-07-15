@@ -82,6 +82,7 @@ import {AdminUserDTO} from '@/generated-sources';
 import {Role} from '@/enums';
 import {api} from "@/api";
 import AdminUserDTOWithPassword = AdminUserDTO.AdminUserDTOWithPassword;
+import mixpanel from "mixpanel-browser";
 
 @Component({
   components: {
@@ -131,6 +132,7 @@ export default class EditUser extends Vue {
   }
 
   public submit() {
+    mixpanel.track('Edit user', {login: this.user!.user_id, roles: this.roles});
     this.$refs.observer.validate().then(async () => {
       const updatedProfile: Partial<AdminUserDTOWithPassword> = {
         id: this.user!.id,

@@ -100,8 +100,8 @@
       </v-row>
     </v-container>
 
-    <v-container v-if='selectedFilter===RowFilterType.CUSTOM && isClassification(inspection.model.modelType) '>
-      <v-row>
+    <v-container v-if='selectedFilter===RowFilterType.CUSTOM'>
+      <v-row v-if="isClassification(inspection.model.modelType)">
         <v-col cols='12' md='3' v-show="!isTargetUndefined">
           <MultiSelector label='Actual Labels' :options='labels' :selected-options.sync='targetLabel'></MultiSelector>
         </v-col>
@@ -110,7 +110,7 @@
                          :selected-options.sync='predictedLabel'></MultiSelector>
         </v-col>
       </v-row>
-      <v-row>
+      <v-row v-if="isClassification(inspection.model.modelType)">
         <v-col cols='12' md='2' class='pl-0 pt-5'>
           <v-subheader>Probability of</v-subheader>
         </v-col>
@@ -153,6 +153,28 @@
           </v-text-field>
         </v-col>
       </v-row>
+      <v-row v-if="!isClassification(inspection.model.modelType)">
+        <v-col class="flex-nowrap d-flex pl-0" cols="6">
+          <v-subheader class='justify-center pt-5 pl-0'>Prediction is between :</v-subheader>
+          <v-text-field
+              label='Min'
+              :value='minThreshold'
+              step='0.001'
+              hide-details
+              type='number'
+              @change='(val)=>{this.minThreshold=val;}'
+          />
+          <v-subheader class='justify-center pt-5'> and</v-subheader>
+          <v-text-field
+              label='Max'
+              :value='maxThreshold'
+              step='0.001'
+              hide-details
+              type='number'
+              @change='(val)=>{this.maxThreshold=val;}'
+          />
+        </v-col>
+      </v-row>
     </v-container>
 
   </v-container>
@@ -164,6 +186,8 @@ import {api} from '@/api';
 import {Filter, InspectionDTO, RegressionUnit, RowFilterType} from '@/generated-sources';
 import MultiSelector from '@/views/main/utils/MultiSelector.vue';
 import {isClassification} from '@/ml-utils';
+import mixpanel from "mixpanel-browser";
+import {anonymize} from "@/utils";
 
 /**
  * Filter selector
@@ -249,10 +273,27 @@ export default class RowList extends Vue {
   @Watch('thresholdLabel')
   @Watch('maxDiffThreshold')
   @Watch('minDiffThreshold')
-  async reloadAlways(nv, ov) {
+  async applyFilter(nv, ov) {
     if (JSON.stringify(nv) === JSON.stringify(ov)) {
       return;
     }
+
+    mixpanel.track('Inspection filter', {
+      inspectionId: this.inspection.id,
+      'regressionThreshold': this.regressionThreshold,
+      'selectedFilter': this.selectedFilter,
+      'minThreshold': this.minThreshold,
+      'maxThreshold': this.maxThreshold,
+      'minActualThreshold': this.minActualThreshold,
+      'maxActualThreshold': this.maxActualThreshold,
+      'targetLabel': anonymize(this.targetLabel),
+      'predictedLabel': anonymize(this.predictedLabel),
+      'shuffleMode': this.shuffleMode,
+      'percentRegressionUnit': this.percentRegressionUnit,
+      'thresholdLabel': anonymize(this.thresholdLabel),
+      'maxDiffThreshold': this.maxDiffThreshold,
+      'minDiffThreshold': this.minDiffThreshold,
+    });
     await this.fetchRowAndEmit(true);
   }
 
@@ -298,7 +339,7 @@ export default class RowList extends Vue {
       'isRandom': this.shuffleMode
     };
     const filter: Filter = {
-        'maxDiffThreshold': this.maxDiffThreshold == null ? this.maxDiffThreshold! : this.maxDiffThreshold / 100,
+      'maxDiffThreshold': this.maxDiffThreshold == null ? this.maxDiffThreshold! : this.maxDiffThreshold / 100,
       'minDiffThreshold': this.minDiffThreshold == null ? this.minDiffThreshold! : this.minDiffThreshold! / 100,
       'maxLabelThreshold': this.maxActualThreshold!,
       'minLabelThreshold': this.minActualThreshold!,
@@ -306,7 +347,7 @@ export default class RowList extends Vue {
       'maxThreshold': this.maxThreshold!,
       'targetLabel': this.targetLabel,
       'predictedLabel': this.predictedLabel,
-        'rowFilter': this.selectedFilter,
+      'rowFilter': this.selectedFilter,
       'regressionUnit': this.percentRegressionUnit ? RegressionUnit.ABSDIFFPERCENT : RegressionUnit.ABSDIFF,
       'thresholdLabel': this.thresholdLabel!
 
@@ -317,7 +358,7 @@ export default class RowList extends Vue {
   }
 
   public async fetchDetails() {
-    this.labels = await api.getLabelsForTarget( this.inspection.id);
+    this.labels = await api.getLabelsForTarget(this.inspection.id);
   }
 
 }

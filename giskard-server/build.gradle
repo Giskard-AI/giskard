@@ -11,7 +11,7 @@ plugins {
     id "eclipse"
     id "jacoco"
     id "org.springframework.boot" version "${springBootVersion}"
-    id "com.google.cloud.tools.jib" version "3.2.0"
+    id "com.google.cloud.tools.jib" version "3.2.1"
     id "com.gorylenko.gradle-git-properties" version "2.4.0"
     id "io.freefair.lombok" version "6.4.1"
     id "org.liquibase.gradle" version "2.1.1"
@@ -156,9 +156,7 @@ liquibase {
             defaultSchemaName ""
             logLevel "info"
             classpath "$buildDir/classes/java/main"
-//            Andrey: removed foreignkeys because they blocked entity deletion
-//            diffTypes "catalog,tables,functions,views,columns,indexes,primarykeys,uniqueconstraints,data,storedprocedure,triggers,sequences,databasePackage,databasePackageBody"
-//            excludeObjects "sequence:hibernate_sequence,sequence_generator"
+            excludeObjects "sequence:hibernate_sequence,sequence_generator"
         }
     }
 
@@ -272,7 +270,7 @@ dependencies {
         implementation "io.jsonwebtoken:jjwt-jackson"
     }
     implementation("org.springdoc:springdoc-openapi-webmvc-core")
-    implementation group: 'org.springdoc', name: 'springdoc-openapi-ui', version: '1.6.7'
+    implementation group: 'org.springdoc', name: 'springdoc-openapi-ui', version: '1.6.9'
     implementation "org.postgresql:postgresql"
     implementation "com.h2database:h2"
     liquibaseRuntime "org.postgresql:postgresql"
@@ -295,8 +293,8 @@ dependencies {
     annotationProcessor "org.mapstruct:mapstruct-processor:${mapstructVersion}"
 
     implementation files("$projectDir/src/main/resources/third-party/j2ts-api.jar")
-    implementation group: 'com.fasterxml.jackson.dataformat', name: 'jackson-dataformat-yaml', version: '2.13.2'
-    implementation group: 'com.github.luben', name: 'zstd-jni', version: '1.5.2-2'
+    implementation group: 'com.fasterxml.jackson.dataformat', name: 'jackson-dataformat-yaml', version: '2.13.3'
+    implementation group: 'com.github.luben', name: 'zstd-jni', version: '1.5.2-3'
     implementation 'org.apache.commons:commons-compress:1.21'
 
 }

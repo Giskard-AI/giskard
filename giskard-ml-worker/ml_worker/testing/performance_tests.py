@@ -57,10 +57,10 @@ class PerformanceTests(AbstractTestCollection):
         """
         if len(model.classification_labels) == 2:
             metric = roc_auc_score(actual_slice.df[actual_slice.target],
-                                   model.run_predict(actual_slice.df).raw_prediction)
+                                   model.run_predict(actual_slice).raw_prediction)
         else:
             metric = roc_auc_score(actual_slice.df[actual_slice.target],
-                                   model.run_predict(actual_slice.df).all_predictions, multi_class='ovr')
+                                   model.run_predict(actual_slice).all_predictions, multi_class='ovr')
 
         return self.save_results(
             SingleTestResult(
@@ -70,18 +70,23 @@ class PerformanceTests(AbstractTestCollection):
             ))
 
     def _test_classification_score(self, score_fn, gsk_dataset: GiskardDataset, model: GiskardModel, threshold=1):
+        if gsk_dataset.target not in dataframe:
+            raise ValueError("Target column is not available")
+
         is_binary_classification = len(model.classification_labels) == 2
         dataframe = gsk_dataset.df.reset_index(drop=True)
-        prediction = model.run_predict(dataframe).raw_prediction
-        labels_mapping = {model.classification_labels[i]: i for i in range(len(model.classification_labels))}
-
-        if gsk_dataset.target not in dataframe:
-            raise ValueError("Target Column is not available")
-        actual_target = dataframe[gsk_dataset.target].map(labels_mapping)
+        actual_target = dataframe[gsk_dataset.target].astype(str)
+        prediction = model.run_predict(gsk_dataset).prediction
         if is_binary_classification:
-            metric = score_fn(actual_target, prediction)
+            metric = score_fn(
+                actual_target, prediction,
+                pos_label=model.classification_labels[1]
+            )
         else:
-            metric = score_fn(actual_target, prediction, average='macro')
+            metric = score_fn(
+                actual_target, prediction,
+                average='macro')
+
         output_df_sample = dataframe.loc[actual_target != prediction]
 
         return RawSingleTestResult(
@@ -92,10 +97,11 @@ class PerformanceTests(AbstractTestCollection):
         )
 
     def _test_accuracy_score(self, gsk_dataset: GiskardDataset, model: GiskardModel, threshold=1):
+        if gsk_dataset.target not in dataframe:
+            raise ValueError("Target column is not available")
         dataframe = gsk_dataset.df.reset_index(drop=True)
-        prediction = model.run_predict(dataframe).raw_prediction
-        labels_mapping = {model.classification_labels[i]: i for i in range(len(model.classification_labels))}
-        actual_target = dataframe[gsk_dataset.target].map(labels_mapping)
+        prediction = model.run_predict(gsk_dataset).prediction
+        actual_target = dataframe[gsk_dataset.target].astype(str)
 
         metric = accuracy_score(actual_target, prediction)
 
@@ -113,8 +119,8 @@ class PerformanceTests(AbstractTestCollection):
         results_df = pd.DataFrame()
         dataframe = giskard_ds.df.reset_index(drop=True)
 
-        results_df["actual_target"] = dataframe[giskard_ds.target]
-        results_df["prediction"] = model.run_predict(dataframe).raw_prediction
+        results_df["actual_target"] = giskard_ds.df[giskard_ds.target]
+        results_df["prediction"] = model.run_predict(giskard_ds).raw_prediction
 
         metric = score_fn(results_df["actual_target"], results_df["prediction"])
         output_df_sample = self._get_failed_df(results_df, percent_rows)
@@ -254,7 +260,7 @@ class PerformanceTests(AbstractTestCollection):
         """
         Test if the model RMSE is lower than a threshold
 
-        Example: The test is passed when the RMSE is lower than 0.7
+        Example: The test is passed when the RMSE is lower than 10
 
         Args:
             actual_slice(GiskardDataset):
@@ -282,7 +288,7 @@ class PerformanceTests(AbstractTestCollection):
         """
         Test if the model Mean Absolute Error is lower than a threshold
 
-        Example: The test is passed when the MAE is lower than 0.7
+        Example: The test is passed when the MAE is lower than 10
 
         Args:
             actual_slice(GiskardDataset):
