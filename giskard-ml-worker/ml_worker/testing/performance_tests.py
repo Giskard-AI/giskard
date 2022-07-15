@@ -13,7 +13,7 @@ from ml_worker.testing.utils import save_df, compress
 
 
 class RawSingleTestResult:
-    def __init__(self, actual_slices_size=int, metric=float, passed=bool, output_df=pd.DataFrame):
+    def __init__(self, actual_slices_size: int, metric: float, passed: bool, output_df=pd.DataFrame):
         self.actual_slices_size = actual_slices_size
         self.metric = metric
         self.passed = passed
@@ -70,12 +70,12 @@ class PerformanceTests(AbstractTestCollection):
             ))
 
     def _test_classification_score(self, score_fn, gsk_dataset: GiskardDataset, model: GiskardModel, threshold=1):
-        if gsk_dataset.target not in dataframe:
+        if not gsk_dataset.target:
             raise ValueError("Target column is not available")
 
         is_binary_classification = len(model.classification_labels) == 2
-        dataframe = gsk_dataset.df.reset_index(drop=True)
-        actual_target = dataframe[gsk_dataset.target].astype(str)
+        gsk_dataset.df.reset_index(drop=True, inplace=True)
+        actual_target = gsk_dataset.df[gsk_dataset.target].astype(str)
         prediction = model.run_predict(gsk_dataset).prediction
         if is_binary_classification:
             metric = score_fn(
@@ -87,37 +87,37 @@ class PerformanceTests(AbstractTestCollection):
                 actual_target, prediction,
                 average='macro')
 
-        output_df_sample = dataframe.loc[actual_target != prediction]
+        output_df_sample = gsk_dataset.df.loc[actual_target != prediction]
 
         return RawSingleTestResult(
-            actual_slices_size=[len(dataframe)],
+            actual_slices_size=[len(gsk_dataset)],
             metric=metric,
             passed=metric >= threshold,
             output_df=output_df_sample
         )
 
     def _test_accuracy_score(self, gsk_dataset: GiskardDataset, model: GiskardModel, threshold=1):
-        if gsk_dataset.target not in dataframe:
+        if not gsk_dataset.target:
             raise ValueError("Target column is not available")
-        dataframe = gsk_dataset.df.reset_index(drop=True)
+        gsk_dataset.df.reset_index(drop=True, inplace=True)
         prediction = model.run_predict(gsk_dataset).prediction
-        actual_target = dataframe[gsk_dataset.target].astype(str)
+        actual_target = gsk_dataset.df[gsk_dataset.target].astype(str)
 
         metric = accuracy_score(actual_target, prediction)
 
-        output_df_sample = dataframe.loc[actual_target != prediction]
+        output_df_sample = gsk_dataset.df.loc[actual_target != prediction]
 
         return RawSingleTestResult(
-                actual_slices_size=[len(dataframe)],
-                metric=metric,
-                passed=metric >= threshold,
-                output_df=output_df_sample
-            )
+            actual_slices_size=[len(gsk_dataset)],
+            metric=metric,
+            passed=metric >= threshold,
+            output_df=output_df_sample
+        )
 
     def _test_regression_score(self, score_fn, giskard_ds, model: GiskardModel, threshold=1, r2=False,
                                percent_rows=0.3):
         results_df = pd.DataFrame()
-        dataframe = giskard_ds.df.reset_index(drop=True)
+        giskard_ds.df.reset_index(drop=True, inplace=True)
 
         results_df["actual_target"] = giskard_ds.df[giskard_ds.target]
         results_df["prediction"] = model.run_predict(giskard_ds).raw_prediction
@@ -126,11 +126,11 @@ class PerformanceTests(AbstractTestCollection):
         output_df_sample = self._get_failed_df(results_df, percent_rows)
 
         return RawSingleTestResult(
-                actual_slices_size=[len(giskard_ds)],
-                metric=metric,
-                passed=metric >= threshold if r2 else metric <= threshold,
-                output_df=output_df_sample
-            )
+            actual_slices_size=[len(giskard_ds)],
+            metric=metric,
+            passed=metric >= threshold if r2 else metric <= threshold,
+            output_df=output_df_sample
+        )
 
     def test_f1(self, actual_slice: GiskardDataset, model: GiskardModel, threshold=1):
         """
@@ -401,8 +401,7 @@ class PerformanceTests(AbstractTestCollection):
             output_df:
               Dataframe containing all the incorrect rows of the two data slices
         """
-        partial_accuracy = partial(self._test_classification_score, accuracy_score)
-        return self._test_diff_prediction(partial_accuracy, model, actual_slice, reference_slice, threshold)
+        return self._test_diff_prediction(self._test_accuracy_score, model, actual_slice, reference_slice, threshold)
 
     def test_diff_f1(self, actual_slice, reference_slice, model, threshold=0.1):
         """
@@ -594,7 +593,8 @@ class PerformanceTests(AbstractTestCollection):
             output_df:
               Dataframe containing all the incorrect rows of the given actual dataset
         """
-        return self._test_diff_reference_actual(self._test_accuracy_score, model, reference_slice, actual_slice, threshold)
+        return self._test_diff_reference_actual(self._test_accuracy_score, model, reference_slice, actual_slice,
+                                                threshold)
 
     def test_diff_rmse(self, actual_slice, reference_slice, model, threshold=0.1):
         """

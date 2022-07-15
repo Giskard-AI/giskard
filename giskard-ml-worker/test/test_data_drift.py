@@ -6,8 +6,8 @@ from ml_worker.testing.functions import GiskardTestFunctions
 def _test_drift_data_psi(german_credit_test_data, threshold=0.05):
     tests = GiskardTestFunctions()
     results = tests.drift.test_drift_psi(
-        reference_ds=german_credit_test_data.df[:len(german_credit_test_data.df) // 2],
-        actual_ds=german_credit_test_data.df[len(german_credit_test_data.df) // 2:],
+        reference_ds=german_credit_test_data.slice(lambda df: df.head(len(df) // 2)),
+        actual_ds=german_credit_test_data.slice(lambda df: df.tail(len(df) // 2)),
         column_name='personal_status',
         threshold=threshold)
 
@@ -23,8 +23,8 @@ def test_drift_data_psi_pass_fail(german_credit_test_data):
 def _test_drift_data_psi_max_categories(german_credit_test_data, threshold=0.05):
     tests = GiskardTestFunctions()
     results = tests.drift.test_drift_psi(
-        reference_ds=german_credit_test_data.df[:len(german_credit_test_data.df) // 2],
-        actual_ds=german_credit_test_data.df[len(german_credit_test_data.df) // 2:],
+        reference_ds=german_credit_test_data.slice(lambda df: df.head(len(df) // 2)),
+        actual_ds=german_credit_test_data.slice(lambda df: df.tail(len(df) // 2)),
         column_name='personal_status',
         max_categories=2,
         threshold=threshold)
@@ -41,8 +41,8 @@ def test_drift_data_psi_max_categories_pass_fail(german_credit_test_data):
 def _test_drift_data_chi_square(german_credit_test_data, threshold=0.05):
     tests = GiskardTestFunctions()
     results = tests.drift.test_drift_chi_square(
-        reference_ds=german_credit_test_data.df[:len(german_credit_test_data.df) // 2],
-        actual_ds=german_credit_test_data.df[len(german_credit_test_data.df) // 2:],
+        reference_ds=german_credit_test_data.slice(lambda df: df.head(len(df) // 2)),
+        actual_ds=german_credit_test_data.slice(lambda df: df.tail(len(df) // 2)),
         column_name='personal_status',
         threshold=threshold)
 
@@ -58,8 +58,8 @@ def test_drift_data_chi_squared_pass_fail(german_credit_test_data):
 def _test_drift_data_chi_square_max_categories(german_credit_test_data, threshold=0.05):
     tests = GiskardTestFunctions()
     results = tests.drift.test_drift_chi_square(
-        reference_ds=german_credit_test_data.df[:len(german_credit_test_data.df) // 2],
-        actual_ds=german_credit_test_data.df[len(german_credit_test_data.df) // 2:],
+        reference_ds=german_credit_test_data.slice(lambda df: df.head(len(df) // 2)),
+        actual_ds=german_credit_test_data.slice(lambda df: df.tail(len(df) // 2)),
         column_name='personal_status',
         max_categories=2,
         threshold=threshold)
@@ -76,8 +76,8 @@ def test_drift_data_chi_square_max_categories_pass_fail(german_credit_test_data)
 def _test_drift_data_ks(german_credit_test_data, threshold=0.05):
     tests = GiskardTestFunctions()
     results = tests.drift.test_drift_ks(
-        reference_ds=german_credit_test_data.df[:len(german_credit_test_data.df) // 2],
-        actual_ds=german_credit_test_data.df[len(german_credit_test_data.df) // 2:],
+        reference_ds=german_credit_test_data.slice(lambda df: df.head(len(df) // 2)),
+        actual_ds=german_credit_test_data.slice(lambda df: df.tail(len(df) // 2)),
         column_name='credit_amount',
         threshold=threshold)
 
@@ -93,8 +93,8 @@ def test_drift_data_ks_pass_fail(german_credit_test_data):
 def _test_drift_data_earth_movers_distance(german_credit_test_data, threshold=0.05):
     tests = GiskardTestFunctions()
     results = tests.drift.test_drift_earth_movers_distance(
-        reference_ds=german_credit_test_data.df[:len(german_credit_test_data.df) // 2],
-        actual_ds=german_credit_test_data.df[len(german_credit_test_data.df) // 2:],
+        reference_ds=german_credit_test_data.slice(lambda df: df.head(len(df) // 2)),
+        actual_ds=german_credit_test_data.slice(lambda df: df.tail(len(df) // 2)),
         column_name='credit_amount',
         threshold=threshold)
 

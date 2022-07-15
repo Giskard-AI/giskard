@@ -1,8 +1,8 @@
+import re
 import typing
 import uuid
 from collections import Counter
 from typing import Union
-import re
 
 import numpy as np
 import pandas as pd
@@ -150,8 +150,8 @@ class DriftTests(AbstractTestCollection):
         return chi_square, p_value, output_data
 
     def test_drift_psi(self,
-                       reference_ds: pd.DataFrame,
-                       actual_ds: pd.DataFrame,
+                       reference_ds: GiskardDataset,
+                       actual_ds: GiskardDataset,
                        column_name: str,
                        threshold=0.2,
                        max_categories: int = 20,
@@ -190,14 +190,15 @@ class DriftTests(AbstractTestCollection):
           output_df:
                 Dataframe containing the actual set rows with the categories that have drifted the most
         """
-        actual_ds, reference_ds = self.reset_index_actual_reference(actual_ds, reference_ds)
+        actual_ds.df.reset_index(drop=True, inplace=True)
+        reference_ds.df.reset_index(drop=True, inplace=True)
 
         assert column_name in actual_ds.columns, \
             f'"{column_name}" is not a column of Actual Dataset Columns: {", ".join(actual_ds.columns)}'
-        actual_series = actual_ds[column_name]
+        actual_series = actual_ds.df[column_name]
         assert column_name in reference_ds.columns, \
             f'"{column_name}" is not a column of Reference Dataset Columns: {", ".join(reference_ds.columns)}'
-        reference_series = reference_ds[column_name]
+        reference_series = reference_ds.df[column_name]
         total_psi, output_data = self._calculate_drift_psi(actual_series, reference_series, max_categories)
 
         passed = True if threshold is None else total_psi <= threshold
@@ -205,7 +206,7 @@ class DriftTests(AbstractTestCollection):
         main_drifting_modalities_bool = output_data["Psi"] > psi_contribution_percent * total_psi
         modalities_list = output_data[main_drifting_modalities_bool]["Modality"].tolist()
         filtered_modalities = [w for w in modalities_list if not re.match(DriftTests.other_modalities, w)]
-        failed_df = actual_ds.loc[actual_series.isin(filtered_modalities)]
+        failed_df = actual_ds.df.loc[actual_series.isin(filtered_modalities)]
         output_df_sample = compress(save_df(failed_df))
         messages: Union[typing.List[TestMessage], None] = None
 
@@ -267,14 +268,15 @@ class DriftTests(AbstractTestCollection):
           output_df:
                 Dataframe containing the actual set rows with the categories that have drifted the most
         """
-        actual_ds, reference_ds = self.reset_index_actual_reference(actual_ds, reference_ds)
+        actual_ds.df.reset_index(drop=True, inplace=True)
+        reference_ds.df.reset_index(drop=True, inplace=True)
 
         assert column_name in actual_ds.columns, \
             f'"{column_name}" is not a column of Actual Dataset Columns: {",".join(actual_ds.columns)}'
-        actual_series = actual_ds[column_name]
+        actual_series = actual_ds.df[column_name]
         assert column_name in reference_ds.columns, \
             f'"{column_name}" is not a column of Reference Dataset Columns: {",".join(reference_ds.columns)}'
-        reference_series = reference_ds[column_name]
+        reference_series = reference_ds.df[column_name]
 
         chi_square, p_value, output_data = self._calculate_chi_square(actual_series, reference_series, max_categories)
         passed = p_value > threshold
@@ -282,7 +284,7 @@ class DriftTests(AbstractTestCollection):
         main_drifting_modalities_bool = output_data["Chi_square"] > chi_square_contribution_percent * chi_square
         modalities_list = output_data[main_drifting_modalities_bool]["Modality"].tolist()
         filtered_modalities = [w for w in modalities_list if not re.match(DriftTests.other_modalities, w)]
-        failed_df = actual_ds.loc[actual_series.isin(filtered_modalities)]
+        failed_df = actual_ds.df.loc[actual_series.isin(filtered_modalities)]
 
         output_df_sample = compress(save_df(failed_df))
         messages: Union[typing.List[TestMessage], None] = None
@@ -342,14 +344,15 @@ class DriftTests(AbstractTestCollection):
           output_df:
                 Dataframe containing the actual set rows with the numeric partition that have drifted the most
         """
-        actual_ds, reference_ds = self.reset_index_actual_reference(actual_ds, reference_ds)
+        actual_ds.df.reset_index(drop=True, inplace=True)
+        reference_ds.df.reset_index(drop=True, inplace=True)
 
         assert column_name in actual_ds.columns, \
             f'"{column_name}" is not a column of Actual Dataset Columns: {",".join(actual_ds.columns)}'
-        actual_series = actual_ds[column_name]
+        actual_series = actual_ds.df[column_name]
         assert column_name in reference_ds.columns, \
             f'"{column_name}" is not a column of Reference Dataset Columns: {",".join(reference_ds.columns)}'
-        reference_series = reference_ds[column_name]
+        reference_series = reference_ds.df[column_name]
 
         result = self._calculate_ks(actual_series, reference_series)
 
@@ -358,8 +361,9 @@ class DriftTests(AbstractTestCollection):
 
         passed = result.pvalue >= threshold
 
-        output_df_sample = self.generate_output_df(actual_converted, actual_ds, output_data,psi_contribution_percent,
-                                                       total_psi)
+        output_df_sample = self.generate_output_df(actual_converted, actual_ds.df, output_data,
+                                                   psi_contribution_percent,
+                                                   total_psi)
         messages: Union[typing.List[TestMessage], None] = None
 
         if not passed:
@@ -417,22 +421,24 @@ class DriftTests(AbstractTestCollection):
           output_df:
                 Dataframe containing the actual set rows with the numeric partition that have drifted the most
         """
-        actual_ds, reference_ds = self.reset_index_actual_reference(actual_ds, reference_ds)
+        actual_ds.df.reset_index(drop=True, inplace=True)
+        reference_ds.df.reset_index(drop=True, inplace=True)
 
         assert column_name in actual_ds.columns, \
             f'"{column_name}" is not a column of Actual Dataset Columns: {",".join(actual_ds.columns)}'
-        actual_series = actual_ds[column_name]
+        actual_series = actual_ds.df[column_name]
         assert column_name in reference_ds.columns, \
             f'"{column_name}" is not a column of Reference Dataset Columns: {",".join(reference_ds.columns)}'
-        reference_series = reference_ds[column_name]
+        reference_series = reference_ds.df[column_name]
 
         metric = self._calculate_earth_movers_distance(actual_series, reference_series)
 
         actual_converted, output_data, total_psi = self.convert_calculate_psi_numerical_drift(actual_series,
                                                                                               reference_series)
         passed = metric <= threshold
-        output_df_sample = self.generate_output_df(actual_converted, actual_ds, output_data,psi_contribution_percent,
-                                                       total_psi)
+        output_df_sample = self.generate_output_df(actual_converted, actual_ds.df, output_data,
+                                                   psi_contribution_percent,
+                                                   total_psi)
         messages: Union[typing.List[TestMessage], None] = None
 
         if not passed:
@@ -457,12 +463,12 @@ class DriftTests(AbstractTestCollection):
         total_psi, output_data = self._calculate_numerical_drift(actual_converted, reference_converted)
         return actual_converted, output_data, total_psi
 
-    def generate_output_df(self, actual_converted, actual_ds, output_data, psi_contribution_percent,
+    @staticmethod
+    def generate_output_df(actual_converted, actual_df: pd.DataFrame, output_data, psi_contribution_percent,
                            total_psi):
-        main_drifting_modalities_bool = output_data[
-                                            "Modality_drift"] > psi_contribution_percent * total_psi
+        main_drifting_modalities_bool = output_data["Modality_drift"] > psi_contribution_percent * total_psi
         modalities_list = output_data[main_drifting_modalities_bool]["Modality"].tolist()
-        failed_df = actual_ds.loc[actual_converted.isin(modalities_list)]
+        failed_df = actual_df.loc[actual_converted.isin(modalities_list)]
         output_df_sample = compress(save_df(failed_df))
         return output_df_sample
 
@@ -507,7 +513,8 @@ class DriftTests(AbstractTestCollection):
             output_df:
                 Dataframe containing the actual set rows with the labels that have drifted the most
         """
-        actual_slice, reference_slice = self.reset_index_actual_reference(actual_slice.df, reference_slice.df)
+        actual_slice.df.reset_index(drop=True, inplace=True)
+        reference_slice.df.reset_index(drop=True, inplace=True)
         prediction_reference = pd.Series(model.run_predict(reference_slice).prediction)
         prediction_actual = pd.Series(model.run_predict(actual_slice).prediction)
         total_psi, output_data = self._calculate_drift_psi(prediction_actual, prediction_reference, max_categories)
@@ -517,7 +524,7 @@ class DriftTests(AbstractTestCollection):
         main_drifting_modalities_bool = output_data["Psi"] > psi_contribution_percent * total_psi
         modalities_list = output_data[main_drifting_modalities_bool]["Modality"].tolist()
         filtered_modalities = [w for w in modalities_list if not re.match(DriftTests.other_modalities, w)]
-        failed_df = actual_slice.loc[prediction_actual.isin(filtered_modalities)]
+        failed_df = actual_slice.df.loc[prediction_actual.isin(filtered_modalities)]
         output_df_sample = compress(save_df(failed_df))
         messages: Union[typing.List[TestMessage], None] = None
 
@@ -535,11 +542,6 @@ class DriftTests(AbstractTestCollection):
             messages=messages,
             output_df=output_df_sample
         ))
-
-    def reset_index_actual_reference(self, actual_df, reference_df):
-        reference_slice = reference_df.reset_index(drop=True)
-        actual_slice = actual_df.reset_index(drop=True)
-        return actual_slice, reference_slice
 
     def test_drift_prediction_chi_square(self, reference_slice, actual_slice, model,
                                          max_categories: int = 10,
@@ -583,7 +585,8 @@ class DriftTests(AbstractTestCollection):
                 Dataframe containing the actual set rows with the labels that have drifted the most
 
         """
-        actual_slice, reference_slice = self.reset_index_actual_reference(actual_slice.df, reference_slice.df)
+        actual_slice.df.reset_index(drop=True, inplace=True)
+        reference_slice.df.reset_index(drop=True, inplace=True)
         prediction_reference = pd.Series(model.run_predict(reference_slice).prediction)
         prediction_actual = pd.Series(model.run_predict(actual_slice).prediction)
 
@@ -596,7 +599,7 @@ class DriftTests(AbstractTestCollection):
         modalities_list = output_data[main_drifting_modalities_bool]["Modality"].tolist()
 
         filtered_modalities = [w for w in modalities_list if not re.match(DriftTests.other_modalities, w)]
-        failed_df = actual_slice.loc[prediction_actual.isin(filtered_modalities)]
+        failed_df = actual_slice.df.loc[prediction_actual.isin(filtered_modalities)]
 
         output_df_sample = compress(save_df(failed_df))
         messages: Union[typing.List[TestMessage], None] = None
@@ -658,7 +661,8 @@ class DriftTests(AbstractTestCollection):
             output_df:
                 Dataframe containing the actual set rows with the output prediction that have drifted the most
         """
-        actual_slice, reference_slice = self.reset_index_actual_reference(actual_slice.df, reference_slice.df)
+        actual_slice.df.reset_index(drop=True, inplace=True)
+        reference_slice.df.reset_index(drop=True, inplace=True)
 
         assert model.model_type != "classification" or classification_label in model.classification_labels, \
             f'"{classification_label}" is not part of model labels: {",".join(model.classification_labels)}'
@@ -675,7 +679,8 @@ class DriftTests(AbstractTestCollection):
                                                                                               prediction_reference)
 
         passed = True if threshold is None else result.pvalue >= threshold
-        output_df_sample = self.generate_output_df(actual_converted, actual_slice, output_data,psi_contribution_percent, total_psi)
+        output_df_sample = self.generate_output_df(actual_converted, actual_slice.df, output_data,
+                                                   psi_contribution_percent, total_psi)
         messages: Union[typing.List[TestMessage], None] = None
 
         if not passed:
@@ -732,7 +737,8 @@ class DriftTests(AbstractTestCollection):
                 Earth Mover's Distance value
 
         """
-        actual_slice, reference_slice = self.reset_index_actual_reference(actual_slice.df, reference_slice.df)
+        actual_slice.df.reset_index(drop=True, inplace=True)
+        reference_slice.df.reset_index(drop=True, inplace=True)
 
         prediction_reference = model.run_predict(reference_slice).all_predictions[classification_label].values if \
             model.model_type == "classification" else model.run_predict(reference_slice).prediction
@@ -745,7 +751,8 @@ class DriftTests(AbstractTestCollection):
                                                                                               prediction_reference)
 
         passed = True if threshold is None else metric <= threshold
-        output_df_sample = self.generate_output_df(actual_converted, actual_slice, output_data, psi_contribution_percent, total_psi)
+        output_df_sample = self.generate_output_df(actual_converted, actual_slice.df, output_data,
+                                                   psi_contribution_percent, total_psi)
         messages: Union[typing.List[TestMessage], None] = None
 
         if not passed:

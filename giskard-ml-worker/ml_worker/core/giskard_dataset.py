@@ -1,4 +1,4 @@
-from typing import Mapping, Callable, Optional, Dict
+from typing import Callable, Optional, Dict
 
 import pandas as pd
 
@@ -12,6 +12,10 @@ class GiskardDataset:
         self.df = df
         self.target = target
         self.feature_types = feature_types
+
+    @property
+    def columns(self):
+        return self.df.columns
 
     def slice(self, slice_fn: Callable):
         if slice_fn is None:

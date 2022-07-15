@@ -42,13 +42,13 @@ class HeuristicTests(AbstractTestCollection):
           output_df:
               Dataframe containing the rows that do not return the right classification label
         """
-        actual_slice = actual_slice.df.reset_index(drop=True)
+        actual_slice.df.reset_index(drop=True, inplace=True)
         prediction_results = model.run_predict(actual_slice).prediction
         assert classification_label in model.classification_labels, \
             f'"{classification_label}" is not part of model labels: {",".join(model.classification_labels)}'
 
-        passed_idx = actual_slice.loc[prediction_results == classification_label].index.values
-        failed_df = actual_slice.loc[~actual_slice.index.isin(passed_idx)]
+        passed_idx = actual_slice.df.loc[prediction_results == classification_label].index.values
+        failed_df = actual_slice.df.loc[~actual_slice.df.index.isin(passed_idx)]
 
         passed_ratio = len(passed_idx) / len(actual_slice)
         output_df_sample = compress(save_df(failed_df))
@@ -112,7 +112,7 @@ class HeuristicTests(AbstractTestCollection):
 
         """
         results_df = pd.DataFrame()
-        actual_slice = actual_slice.df.reset_index(drop=True)
+        actual_slice.df.reset_index(drop=True, inplace=True)
 
         prediction_results = model.run_predict(actual_slice)
 
@@ -129,8 +129,8 @@ class HeuristicTests(AbstractTestCollection):
                 f"Prediction task is not supported: {model.model_type}"
             )
 
-        passed_idx = actual_slice.loc[(results_df["output"] <= max_range) & (results_df["output"] >= min_range)].index.values
-        failed_df = actual_slice.loc[~actual_slice.index.isin(passed_idx)]
+        passed_idx = actual_slice.df.loc[(results_df["output"] <= max_range) & (results_df["output"] >= min_range)].index.values
+        failed_df = actual_slice.df.loc[~actual_slice.df.index.isin(passed_idx)]
 
         passed_ratio = len(passed_idx) / len(actual_slice)
         output_df_sample = compress(save_df(failed_df))
