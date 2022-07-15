@@ -2,7 +2,7 @@
   <div>
     <v-container class="mt-2 mb-0" v-if="isProjectOwnerOrAdmin">
       <div class="d-flex justify-end">
-        <v-btn tile class="mx-2" @click="open_doc_upload_api">Upload with API</v-btn>
+        <v-btn tile class="mx-2" href="https://docs.giskard.ai/start/guides/upload-your-model" target="_blank">Upload with API</v-btn>
         <v-btn text @click="loadModelPickles()" color="secondary">Reload
           <v-icon right>refresh</v-icon>
         </v-btn>
@@ -98,10 +98,6 @@ export default class Models extends Vue {
 
   activated() {
     this.loadModelPickles()
-  }
-
-  public async open_doc_upload_api() {
-    window.open("https://docs.giskard.ai/start/guides/upload-your-model");
   }
 
   private async loadModelPickles() {
