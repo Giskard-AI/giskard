@@ -95,19 +95,19 @@ def bin_numerical_values(data_series, labels=None, bins=None):
     if labels is not None and bins is not None:
         # Convert actual dataset based on bins of reference dataset
 
-        if data_series.min() <= bins[0]:
+        if data_series.min() < bins[0]:
             # If actual dataset set has value smaller than the minimum bin of reference,
             # it is added in the bin with label -1
             print(f"Miniumum value {data_series.min()} of Actual Dataset has been appended in the bin")
             bins = np.insert(bins, 0, data_series.min())
             labels = np.insert(labels, 0, -1)
 
-        if data_series.max() >= bins[-1]:
+        if data_series.max() > bins[-1]:
             # If actual dataset set has value larger than the maximum bin of reference,
-            # it is added in the bin with label [last bin value + 1]
+            # it is added in the bin with label 10
             print(f"Maximum value {data_series.max()} of Actual Dataset has been appended in the bin")
             bins = np.append(bins, data_series.max())
-            labels = np.append(labels, (labels[-1] + 1))
+            labels = np.append(labels, 10)
 
         converted_series = pd.cut(data_series, bins=bins, labels=labels, include_lowest=True)
         labels = None
@@ -115,16 +115,18 @@ def bin_numerical_values(data_series, labels=None, bins=None):
     else:
         # Convert reference dataset into 10 quantiles
 
-        # User can define the bin length by declaring GSK_TEST_DRIFT_BIN_COUNT
-        deciles_value = os.environ.get('GSK_TEST_DRIFT_BIN_COUNT', int(0.1 * len(data_series)))
-        converted_tuple = pd.qcut(data_series, deciles_value, labels=range(deciles_value), retbins=True)
+        # User can define the bin length by declaring GSK_TEST_DRIFT_BIN_COUNT in docker file
+        num_quantile = os.environ.get('GSK_TEST_DRIFT_BIN_COUNT', 10)
+        converted_tuple = pd.qcut(data_series, num_quantile, labels=range(num_quantile), duplicates='drop',
+                                  retbins=True)
 
-        if deciles_value == 0:  # If the given reference set is too small
+        if len(data_series) < num_quantile:  # If the given reference set is too small
             labels = range(len(data_series.unique()) - 1)
 
             # Every unique value in the dataset will be a new bin
             converted_series, bins = data_series, sorted(data_series.unique())
         else:
-            labels = range(deciles_value)
             converted_series, bins = converted_tuple
+            labels = range(num_quantile)
+
     return converted_series, labels, bins
