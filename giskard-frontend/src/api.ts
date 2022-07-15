@@ -6,7 +6,6 @@ import Vue from "vue";
 import {
     AdminUserDTO,
     AppConfigDTO,
-    ApplicationConfigDTO,
     CreateFeedbackDTO,
     CreateFeedbackReplyDTO,
     DatasetDTO,
@@ -14,6 +13,7 @@ import {
     FeatureMetadataDTO,
     FeedbackDTO,
     FeedbackMinimalDTO,
+    GeneralSettings,
     InspectionCreateDTO,
     InspectionDTO,
     JWTToken,
@@ -22,6 +22,7 @@ import {
     ModelDTO,
     PasswordResetRequest,
     PredictionDTO,
+    PredictionInputDTO,
     ProjectDTO,
     ProjectPostDTO,
     RoleDTO,
@@ -40,6 +41,7 @@ import ErrorToast from "@/views/main/utils/ErrorToast.vue";
 import router from "@/router";
 import {commitSetLoggedIn, commitSetToken} from "@/store/main/mutations";
 import store from "@/store";
+import mixpanel from "mixpanel-browser";
 import AdminUserDTOWithPassword = AdminUserDTO.AdminUserDTOWithPassword;
 
 function jwtRequestInterceptor(config) {
@@ -72,7 +74,23 @@ function unpackInterceptor(response) {
     return response.data;
 }
 
+function trackError(error) {
+    try {
+        mixpanel.track('API error', {
+            'code': error.code,
+            'message': error.message,
+            'httpCode': error.response.code,
+            'method': error.config.method,
+            'url': error.config.url,
+            'data': error.response.data
+        });
+    } catch (e) {
+        console.error("Failed to track API Error", e)
+    }
+}
+
 async function errorInterceptor(error) {
+    trackError(error);
     if (error.response.status === 401) {
         removeLocalToken();
         commitSetToken(store, '');
@@ -87,8 +105,8 @@ async function errorInterceptor(error) {
             title = error.response.statusText;
             detail = "Error while connecting to Giskard server, check that it's running";
         } else {
-            title = error.response.data.title;
-            detail = error.response.data.detail;
+            title = error.response.data.title || error.message;
+            detail = error.response.data.detail || error.request.responseURL;
         }
 
         Vue.$toast(
@@ -126,7 +144,7 @@ axiosProject.interceptors.request.use(jwtRequestInterceptor);
 
 
 function downloadURL(urlString) {
-    let url = new URL(urlString);
+    let url = new URL(urlString, window.location.origin);
     let token = getLocalToken();
     if (token) {
         url.searchParams.append('token', token);
@@ -147,8 +165,11 @@ export const api = {
     async logInGetToken(username: string, password: string) {
         return apiV2.post<unknown, JWTToken>(`/authenticate`, {username, password});
     },
-    async getMe() {
-        return apiV2.get<unknown, AppConfigDTO>(`/account`);
+    async getUserAndAppSettings() {
+        return apiV2.get<unknown, AppConfigDTO>(`/settings`);
+    },
+    async saveGeneralSettings(settings: GeneralSettings) {
+        return apiV2.post<unknown, GeneralSettings>(`/settings`, settings);
     },
     async updateMe(data: UpdateMeDTO) {
         return apiV2.put<unknown, AdminUserDTO>(`/account`, data);
@@ -243,7 +264,7 @@ export const api = {
         return apiV2.post<unknown, any>(`/inspection/${inspectionId}/rowsFiltered`, filter, {params: props});
     },
     async getLabelsForTarget(inspectionId: number) {
-        return await apiV2.get<unknown, string[]>(`/inspection/${inspectionId}/labels`);
+        return apiV2.get<unknown, string[]>(`/inspection/${inspectionId}/labels`);
     },
     async getProjectDatasets(id: number) {
         return axiosProject.get<unknown, DatasetDTO[]>(`/${id}/datasets`);
@@ -262,8 +283,12 @@ export const api = {
         config.headers['content-type'] = 'multipart/form-data';
         return apiV2.post<unknown, DatasetDTO>(`/project/data/upload`, formData, config);
     },
-    async predict(modelId: number, inputData: object) {
-        return apiV2.post<unknown, PredictionDTO>(`/models/${modelId}/predict`, {features: inputData});
+    async predict(modelId: number, datasetId: number, inputData: { [key: string]: string }) {
+        const data: PredictionInputDTO = {
+            datasetId: datasetId,
+            features: inputData
+        }
+        return apiV2.post<unknown, PredictionDTO>(`/models/${modelId}/predict`, data);
     },
 
     async prepareInspection(payload: InspectionCreateDTO) {
@@ -338,7 +363,4 @@ export const api = {
     async executeTestSuite(suiteId: number) {
         return apiV2.post<unknown, Array<TestExecutionResultDTO>>(`/testing/suites/execute`, {suiteId});
     },
-    async getConfig() {
-        return apiV2.get<unknown, ApplicationConfigDTO>(`/config`);
-    }
 };

@@ -75,22 +75,31 @@
             <v-card-text>
               <div class="mb-2">
                 <v-btn small tile color="primary" @click="generateToken">Generate</v-btn>
-                <v-btn v-if="apiAccessToken" small tile color="secondary" class="ml-2" @click="copyToken">
+                <v-btn v-if="apiAccessToken && apiAccessToken.id_token" small tile color="secondary" class="ml-2"
+                       @click="copyToken">
                   Copy
                   <v-icon right dark>mdi-content-copy</v-icon>
                 </v-btn>
               </div>
-              <div class="token-area-wrapper" v-if="apiAccessToken">
-                <span class="token-area" ref="apiAccessToken">{{ apiAccessToken }}</span>
-              </div>
+              <v-row>
+                <v-col>
+                  <div class="token-area-wrapper" v-if="apiAccessToken && apiAccessToken.id_token">
+                    <span class="token-area" ref="apiAccessToken">{{ apiAccessToken.id_token }}</span>
+                  </div>
+                </v-col>
+              </v-row>
+              <v-row v-if="apiAccessToken && apiAccessToken.id_token">
+                <v-col class="text-right">
+                  Expires on <span>{{ apiAccessToken.expiryDate | date }}</span>
+                </v-col>
+              </v-row>
             </v-card-text>
           </v-card>
         </v-col>
       </v-row>
-      <div v-if="!userProfile">Not found</div>
-      <v-row v-if="appConfig">
+      <v-row v-if="appSettings">
         <v-col cols="6">
-          <v-card>
+          <v-card height="100%">
             <v-card-title class="font-weight-light secondary--text">
               Application
             </v-card-title>
@@ -98,29 +107,58 @@
               <v-simple-table>
                 <table class="w100">
                   <tr>
+                    <td>Instance</td>
+                    <td>{{ appSettings.generalSettings.instanceId }}</td>
+                  </tr>
+                  <tr>
                     <td>Giskard version</td>
-                    <td>{{ appConfig.giskardVersion }}</td>
+                    <td>{{ appSettings.version }}</td>
+                  </tr>
+                  <tr>
+                    <td>Plan</td>
+                    <td>{{ appSettings.planName }}</td>
                   </tr>
                 </table>
               </v-simple-table>
             </v-card-text>
           </v-card>
         </v-col>
+        <v-col v-show="isAdmin">
+          <v-card height="100%">
+            <v-card-title class="font-weight-light secondary--text">
+              <span>Usage reporting</span>
+              <v-spacer/>
+              <v-switch
+                  v-model="appSettings.generalSettings.isAnalyticsEnabled"
+                  @change="saveGeneralSettings(appSettings.generalSettings)"
+              ></v-switch>
+            </v-card-title>
+            <v-card-text>
+              <div class="mb-2">
+                <p>Giskard can send usage reports.</p>
+                <p>The raw user data is never sent, only metadata. This information helps us improve the product and fix
+                  bugs sooner. 🐞</p>
+              </div>
+            </v-card-text>
+          </v-card>
+        </v-col>
       </v-row>
-
     </v-container>
   </div>
 </template>
 
 <script lang="ts">
 import {Component, Vue} from 'vue-property-decorator';
-import {readUserProfile} from '@/store/main/getters';
+import {readAppSettings, readUserProfile} from '@/store/main/getters';
 import {api} from '@/api';
 import {commitAddNotification, commitRemoveNotification} from '@/store/main/mutations';
 import {dispatchUpdateUserProfile} from '@/store/main/actions';
 import ButtonModalConfirmation from '@/components/ButtonModalConfirmation.vue';
-import {ApplicationConfigDTO, UpdateMeDTO} from '@/generated-sources';
 import {copyToClipboard} from '@/global-keys';
+import {AppConfigDTO, GeneralSettings, JWTToken, UpdateMeDTO} from "@/generated-sources";
+import mixpanel from "mixpanel-browser";
+import {Role} from "@/enums";
+import AppInfoDTO = AppConfigDTO.AppInfoDTO;
 
 @Component({
   components: {
@@ -132,8 +170,9 @@ export default class UserProfile extends Vue {
   private displayName: string = '';
   private email: string = '';
   private editModeToggle = false;
-  private apiAccessToken: string = '';
-  private appConfig: ApplicationConfigDTO | null = null;
+  private apiAccessToken: JWTToken | null = null;
+  private appSettings: AppInfoDTO | null = null;
+  private isAdmin: boolean = false;
 
   private resetFormData() {
     const userProfile = readUserProfile(this.$store);
@@ -142,12 +181,12 @@ export default class UserProfile extends Vue {
         this.displayName = userProfile.displayName;
       }
       this.email = userProfile.email;
+      this.isAdmin = userProfile.roles!.includes(Role.ADMIN);
     }
   }
 
   public async created() {
-    this.appConfig = await api.getConfig();
-
+    this.appSettings = await readAppSettings(this.$store);
     this.resetFormData();
   }
 
@@ -182,7 +221,7 @@ export default class UserProfile extends Vue {
     try {
       commitAddNotification(this.$store, loadingNotification);
       commitRemoveNotification(this.$store, loadingNotification);
-      this.apiAccessToken = (await api.getApiAccessToken()).id_token;
+      this.apiAccessToken = await api.getApiAccessToken();
     } catch (error) {
       commitRemoveNotification(this.$store, loadingNotification);
       commitAddNotification(this.$store, {content: 'Could not reach server', color: 'error'});
@@ -190,8 +229,17 @@ export default class UserProfile extends Vue {
   }
 
   public async copyToken() {
-    await copyToClipboard(this.apiAccessToken);
+    await copyToClipboard(this.apiAccessToken?.id_token);
     commitAddNotification(this.$store, {content: "Copied to clipboard", color: "success"});
+  }
+
+  public async saveGeneralSettings(settings: GeneralSettings) {
+    if (!settings.isAnalyticsEnabled) {
+      mixpanel.opt_out_tracking();
+    } else {
+      mixpanel.opt_in_tracking();
+    }
+    this.appSettings!.generalSettings = await api.saveGeneralSettings(settings);
   }
 
 }

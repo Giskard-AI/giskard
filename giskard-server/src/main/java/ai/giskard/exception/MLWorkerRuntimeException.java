@@ -8,7 +8,11 @@ import lombok.Setter;
 import java.util.List;
 
 @Getter
-public class MLWorkerRuntimeException extends StatusRuntimeException {
+public class
+
+
+
+MLWorkerRuntimeException extends StatusRuntimeException {
     @Setter
     private String message;
     private final String details;

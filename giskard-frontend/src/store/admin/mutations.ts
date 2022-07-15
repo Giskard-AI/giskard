@@ -1,8 +1,7 @@
-import { AdminState } from './state';
-import { getStoreAccessors } from 'typesafe-vuex';
-import { State } from '../state';
-import { AdminUserDTO, RoleDTO } from '@/generated-sources';
-import AdminUserDTOWithPassword = AdminUserDTO.AdminUserDTOWithPassword;
+import {AdminState} from './state';
+import {getStoreAccessors} from 'typesafe-vuex';
+import {State} from '../state';
+import {AdminUserDTO, RoleDTO} from '@/generated-sources';
 
 export const mutations = {
     setUsers(state: AdminState, payload: AdminUserDTO[]) {

@@ -43,6 +43,7 @@ import {api} from "@/api";
 import ModelSelector from "@/views/main/utils/ModelSelector.vue";
 import {ModelDTO} from '@/generated-sources';
 import DatasetSelector from "@/views/main/utils/DatasetSelector.vue";
+import mixpanel from "mixpanel-browser";
 
 @Component({
   components: {DatasetSelector, ModelSelector}
@@ -56,6 +57,13 @@ export default class TestSuiteCreateModal extends Vue {
   shouldCreateAutoTests: boolean = true;
 
   public async submit() {
+    mixpanel.track('Create test suite', {
+      projectId: this.projectId,
+      referenceDatasetId: this.referenceDS && this.referenceDS.id,
+      actualDatasetId: this.actualDS && this.actualDS.id,
+      modelId: this.model!.id,
+      shouldGenerateTests: this.shouldCreateAutoTests
+    });
     let createdTestSuite = await api.createTestSuite({
       name: this.name,
       projectId: this.projectId,

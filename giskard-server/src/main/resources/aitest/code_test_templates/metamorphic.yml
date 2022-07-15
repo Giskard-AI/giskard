@@ -35,9 +35,9 @@ items:
 
       Returns:
           actual_slices_size:
-              total number of rows of actual dataset
-          number_of_perturbed_rows:
-              Number of perturbed rows
+              Length of actual_slice tested
+          message:
+              Test result message
           metric:
               The ratio of unchanged rows over the perturbed rows
           passed:
@@ -103,9 +103,9 @@ items:
 
       Returns:
           actual_slices_size:
-              Total number of rows of actual dataset
-          number_of_perturbed_rows:
-              Number of perturbed rows
+              Length of actual_slice tested
+          message:
+              Test result message
           metric:
               The ratio of unchanged rows over the perturbed rows
           passed:
@@ -169,9 +169,9 @@ items:
 
       Returns:
           actual_slices_size:
-              Total number of rows of actual dataset
-          number_of_perturbed_rows:
-              Number of perturbed rows
+              Length of actual_slice tested
+          message:
+              Test result message
           metric:
               The ratio of increasing rows over the perturbed rows
           passed:
@@ -232,9 +232,9 @@ items:
 
       Returns:
           actual_slices_size:
-              Total number of rows of actual dataset
-          number_of_perturbed_rows:
-              Number of perturbed rows
+              Length of actual_slice tested
+          message:
+              Test result message
           metric:
               The ratio of increasing rows over the perturbed rows
           passed:
@@ -298,9 +298,9 @@ items:
 
       Returns:
           actual_slices_size:
-              Total number of rows of actual dataset
-          number_of_perturbed_rows:
-              Number of perturbed rows
+              Length of actual_slice tested
+          message:
+              Test result message
           metric:
               The ratio of decreasing rows over the perturbed rows
           passed:
@@ -361,9 +361,9 @@ items:
 
       Returns:
           actual_slices_size:
-              Total number of rows of actual dataset
-          number_of_perturbed_rows:
-              Number of perturbed rows
+              Length of actual_slice tested
+          message:
+              Test result message
           metric:
               The ratio of decreasing rows over the perturbed rows
           passed:

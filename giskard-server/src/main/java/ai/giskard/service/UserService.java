@@ -1,21 +1,13 @@
 package ai.giskard.service;
 
-import ai.giskard.config.Constants;
 import ai.giskard.domain.Role;
 import ai.giskard.domain.User;
 import ai.giskard.repository.RoleRepository;
 import ai.giskard.repository.UserRepository;
 import ai.giskard.security.AuthoritiesConstants;
-import ai.giskard.security.SecurityUtils;
 import ai.giskard.web.dto.mapper.GiskardMapper;
 import ai.giskard.web.dto.user.AdminUserDTO;
 import ai.giskard.web.dto.user.UserDTO;
-
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
-import java.util.*;
-import java.util.stream.Collectors;
-
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,6 +18,11 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import tech.jhipster.security.RandomUtil;
+
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Service class for managing users.
@@ -176,7 +173,6 @@ public class UserService {
                 if (userDTO.getPassword() != null) {
                     user.setPassword(passwordEncoder.encode(userDTO.getPassword()));
                 }
-                user.setActivated(userDTO.isActivated());
                 Set<Role> managedAuthorities = user.getRoles();
                 managedAuthorities.clear();
                 userDTO
@@ -197,19 +193,8 @@ public class UserService {
         userRepository
             .findOneByLogin(login)
             .ifPresent(user -> {
-                user.setActivated(false);
                 user.setEnabled(false);
                 log.debug("Deleted[deactivated] user : {}", user);
-            });
-    }
-
-    public void disableUser(String login) {
-        userRepository
-            .findOneByLogin(login)
-            .ifPresent(user -> {
-                user.setActivated(false);
-                userRepository.save(user);
-                log.debug("Deleted User: {}", user);
             });
     }
 
@@ -230,7 +215,7 @@ public class UserService {
                 if (email != null) {
                     user.setEmail(email.toLowerCase());
                 }
-                if (password!=null) {
+                if (password != null) {
                     user.setPassword(passwordEncoder.encode(password));
                 }
                 log.debug("Changed Information for User: {}", user);
@@ -285,6 +270,6 @@ public class UserService {
      */
     @Transactional(readOnly = true)
     public List<String> getAuthorities() {
-        return roleRepository.findAll().stream().map(Role::getName).collect(Collectors.toList());
+        return roleRepository.findAll().stream().map(Role::getName).toList();
     }
 }

@@ -185,7 +185,8 @@ import {Prop} from 'vue-property-decorator';
 import {api} from '@/api';
 import _ from 'lodash';
 import numeral from 'numeral';
-import {CodeTestCollection, TestDTO, TestExecutionResultDTO, TestType} from '@/generated-sources';
+import {CodeTestCollection, TestDTO, TestExecutionResultDTO, TestResult, TestType} from '@/generated-sources';
+import mixpanel from "mixpanel-browser";
 
 Vue.filter('formatNumber', function (value, fmt) {
   return numeral(value).format(fmt || '0.0'); // displaying other groupings/separators is possible, look at the docs
@@ -212,9 +213,14 @@ export default class TestEditor extends Vue {
   }
 
   async save() {
-    const t = this.testDetails;
-    if (t) {
-      this.testDetailsOriginal = await api.saveTest(t);
+    if (this.testDetails) {
+      mixpanel.track('Save test', {
+        testId: this.testDetails.id,
+        suiteId: this.testDetails.suiteId,
+        language: this.testDetails.language,
+        type: this.testDetails.type}
+      );
+      this.testDetailsOriginal = await api.saveTest(this.testDetails);
     }
   }
 
@@ -229,6 +235,7 @@ export default class TestEditor extends Vue {
       }
     })) {
       let testSuite = await api.deleteTest(this.testId);
+      mixpanel.track('Delete test', {testId: this.testId, projectId: testSuite.project.id});
       await this.$router.push({
         name: 'suite-details', params: {
           suiteId: testSuite.id.toString(),
@@ -253,6 +260,8 @@ export default class TestEditor extends Vue {
   }
 
   async runTest() {
+    mixpanel.track('Run test', {testId: this.testId});
+
     try {
       this.executingTest = true;
 
@@ -262,6 +271,9 @@ export default class TestEditor extends Vue {
         await this.save();
       }
       this.runResult = await api.runTest(this.testId);
+      if (this.runResult?.status === TestResult.ERROR) {
+        mixpanel.track('Test error', {testId: this.testId, message: this.runResult.message});
+      }
     } finally {
       this.executingTest = false;
     }
