@@ -7,33 +7,33 @@ authors = ["Andrey Avtomonov <andrey@giskard.ai>"]
 [tool.poetry.dependencies]
 python = ">=3.7.1,<3.11"
 alibi = { extras = ["shap"], version = "^0.7.0" }
-beautifulsoup4 = ">=4.11.1"
-cloudpickle = ">=2.1.0"
-eli5 = ">=0.13.0"
-great-expectations = ">=0.15.8"
-grpcio = ">=1.46.3"
-grpcio-status = ">=1.46.3"
-pandas = ">=1.3.5"
-protobuf = ">=3.9.2,<3.20"
-pydantic = ">=1.9.1"
-scikit-learn = ">=1.0.2"
-shap = ">=0.40.0"
+beautifulsoup4 = "^4.11.1"
+cloudpickle = "^2.1.0"
+eli5 = "^0.13.0"
+great-expectations = "^0.15.8"
+grpcio = "^1.46.3"
+grpcio-status = "^1.46.3"
+pandas = "^1.3.5"
+protobuf = "^3.9.2"
+pydantic = "^1.9.1"
+scikit-learn = "^1.0.2"
+shap = "^0.40.0"
 zstandard = "^0.15.2"
 numpy = "^1.21.6"
 
 # Extra commonly used dependencies
 catboost = "^1.0.6"
 nltk = "^3.7"
-tensorflow = "^2.9.1"
+torch = "^1.12.0"
 
 [tool.poetry.dev-dependencies]
-grpcio-tools = ">=1.46.3"
-mypy-protobuf = ">=3.2.0"
-pytest = ">=7.1.2"
-pytest-cov = ">=3.0.0"
+grpcio-tools = "^1.46.3"
+mypy-protobuf = "^3.2.0"
+pytest = "^7.1.2"
+pytest-cov = "^3.0.0"
 
 [build-system]
-requires = ["poetry-core>=1.0.0"]
+requires = ["poetry-core^1.0.0"]
 build-backend = "poetry.core.masonry.api"
 
 [virtualenvs]
