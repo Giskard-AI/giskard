@@ -97,7 +97,7 @@ export default class PredictionExplanations extends Vue {
   }
 
   private createSimpleExplanationChart(explanation: object) {
-    const sortedExplanation = Object.entries(explanation!).sort((a,b) => a[1]-b[1])
+    const sortedExplanation = Object.entries(explanation).sort((a,b) => a[1]-b[1])
     return {
       xAxis: {
         type: "value",
@@ -157,7 +157,7 @@ export default class PredictionExplanations extends Vue {
   get chartOptionsMultiClassification() {
     const labels = Object.keys(this.fullExplanations!);
     const firstExplanations = this.fullExplanations[labels[0]];
-    const topFeatures = Object.keys(firstExplanations!);
+    const topFeatures = Object.keys(firstExplanations);
     // Compute the sum of SHAP explanations by feature
     const explanationSum: Array<number> = topFeatures.map(
       feature => labels.map(
@@ -201,7 +201,7 @@ export default class PredictionExplanations extends Vue {
         labelLayout: {
           hideOverlap: true,
         },
-        data: Object.values(explanationSortedByFeature!),
+        data: Object.values(explanationSortedByFeature),
       });
     }
     return {
