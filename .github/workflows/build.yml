@@ -3,7 +3,6 @@ on:
   push:
     branches:
       - main
-  pull_request:
 
 jobs:
   build:
@@ -17,7 +16,7 @@ jobs:
 
       - name: Print branch name
         shell: bash
-        run: echo ${{ steps.extract_branch.outputs.branch }}
+        run: env
       - name: Print dependabot
         shell: bash
         run: echo ${{ startsWith(steps.extract_branch.outputs.branch, 'dependabot/') }}
