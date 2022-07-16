@@ -15,6 +15,13 @@ jobs:
         shell: bash
         run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
 
+      - name: Print branch name
+        shell: bash
+        run: echo ${{ steps.extract_branch.outputs.branch }}
+      - name: Print dependabot
+        shell: bash
+        run: echo ${{ startsWith(steps.extract_branch.outputs.branch, 'dependabot/') }}
+
       - uses: actions/checkout@v2
         with:
           fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
