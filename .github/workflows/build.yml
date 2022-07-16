@@ -13,7 +13,7 @@ jobs:
       - name: Extract branch name
         id: extract_branch
         shell: bash
-        run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF_NAME})"
+        run: echo "##[set-output name=branch;]$(echo ${GITHUB_HEAD_REF})"
 
       - name: Print branch name
         shell: bash
