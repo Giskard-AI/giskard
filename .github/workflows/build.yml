@@ -10,6 +10,11 @@ jobs:
     name: Build
     runs-on: ubuntu-latest
     steps:
+      - name: Extract branch name
+        id: extract_branch
+        shell: bash
+        run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
+
       - uses: actions/checkout@v2
         with:
           fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
@@ -22,12 +27,15 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: '3.7'
+
       - name: Cache SonarQube packages
         uses: actions/cache@v3
+        if: ${{ !startsWith(steps.extract_branch.outputs.branch, 'dependabot/') }}
         with:
           path: ~/.sonar/cache
           key: ${{ runner.os }}-sonar
           restore-keys: ${{ runner.os }}-sonar
+
       - name: Cache Gradle packages
         uses: actions/cache@v3
         with:
@@ -46,9 +54,19 @@ jobs:
           path: giskard-frontend/node_modules
           key: ${{ runner.os }}-frontend-${{ hashFiles('giskard-frontend/package-lock.json')}}
           restore-keys: ${{ runner.os }}-frontend
-      - name: Build and analyze
+
+      - name: Build and analyze with sonar
+        if: ${{ !startsWith(steps.extract_branch.outputs.branch, 'dependabot/') }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
         run: ./gradlew build jacocoTestReport sonarqube --info
+
+      - name: Build and analyze without sonar
+        if: ${{ startsWith(steps.extract_branch.outputs.branch, 'dependabot/') }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+        run: ./gradlew build
