@@ -126,3 +126,9 @@ http://localhost:19000 with default login / password: **admin** / **admin**
 <h2>Star history</h2>
 
 [![Star History Chart](https://api.star-history.com/svg?repos=Giskard-AI/giskard&type=Date)](https://star-history.com/#Giskard-AI/giskard&Date)
+
+<h2>How to contribute</h2>
+
+We welcome contributions from the Machine Learning community!
+
+Read this [guide](CONTRIBUTING.md) to get started.
