@@ -1,6 +1,7 @@
 import pandas as pd
 
-from generated.ml_worker_pb2 import SingleTestResult
+from generated.ml_worker_pb2 import SingleTestResult, TestMessage, TestMessageType
+
 from ml_worker.core.giskard_dataset import GiskardDataset
 from ml_worker.core.model import GiskardModel
 from ml_worker.testing.abstract_test_collection import AbstractTestCollection
@@ -10,28 +11,30 @@ from ml_worker.testing.utils import save_df, compress
 
 class MetamorphicTests(AbstractTestCollection):
     @staticmethod
-    def _predict_numeric_result(df, model: GiskardModel, output_proba=True, classification_label=None):
+    def _predict_numeric_result(ds: GiskardDataset, model: GiskardModel, output_proba=True, classification_label=None):
         if model.model_type == 'regression' or not output_proba:
-            return model.run_predict(df).raw_prediction
+            return model.run_predict(ds).raw_prediction
         elif model.model_type == 'classification' and classification_label is not None:
-            return model.run_predict(df).all_predictions[classification_label].values
+            return model.run_predict(ds).all_predictions[classification_label].values
         elif model.model_type == 'classification':
-            return model.run_predict(df).probabilities
+            return model.run_predict(ds).probabilities
 
     @staticmethod
     def _prediction_ratio(prediction, perturbed_prediction):
         return abs(perturbed_prediction - prediction) / prediction if prediction != 0 else abs(perturbed_prediction)
 
     @staticmethod
-    def _perturb_and_predict(df, model: GiskardModel, perturbation_dict, output_proba=True,
+    def _perturb_and_predict(ds: GiskardDataset, model: GiskardModel, perturbation_dict, output_proba=True,
                              classification_label=None):
         results_df = pd.DataFrame()
-        results_df["prediction"] = MetamorphicTests._predict_numeric_result(df, model, output_proba,
+        results_df["prediction"] = MetamorphicTests._predict_numeric_result(ds, model, output_proba,
                                                                             classification_label)
-        modified_rows = apply_perturbation_inplace(df, perturbation_dict)
+        modified_rows = apply_perturbation_inplace(ds.df, perturbation_dict)
         if len(modified_rows):
+            ds.df = ds.df.iloc[modified_rows]
             results_df = results_df.iloc[modified_rows]
-            results_df["perturbed_prediction"] = MetamorphicTests._predict_numeric_result(df.iloc[modified_rows], model,
+            results_df["perturbed_prediction"] = MetamorphicTests._predict_numeric_result(ds,
+                                                                                          model,
                                                                                           output_proba,
                                                                                           classification_label)
         else:
@@ -70,7 +73,9 @@ class MetamorphicTests(AbstractTestCollection):
                           output_sensitivity=None,
                           output_proba=True
                           ) -> SingleTestResult:
-        results_df, modified_rows_count = self._perturb_and_predict(actual_slice.df,
+        actual_slice.df.reset_index(drop=True, inplace=True)
+
+        results_df, modified_rows_count = self._perturb_and_predict(actual_slice,
                                                                     model,
                                                                     perturbation_dict,
                                                                     classification_label=classification_label,
@@ -85,11 +90,16 @@ class MetamorphicTests(AbstractTestCollection):
 
         output_df_sample = compress(save_df(failed_df))
 
+        messages = [TestMessage(
+            type=TestMessageType.INFO,
+            text=f"{modified_rows_count} number of rows were perturbed"
+        )]
+
         return self.save_results(SingleTestResult(
             actual_slices_size=[len(actual_slice)],
-            number_of_perturbed_rows=modified_rows_count,
             metric=passed_ratio,
             passed=passed_ratio > threshold,
+            messages=messages,
             output_df=output_df_sample))
 
     def test_metamorphic_invariance(self,
@@ -114,30 +124,30 @@ class MetamorphicTests(AbstractTestCollection):
 
         Args:
             df(GiskardDataset):
-                Dataset used to compute the test
+              Dataset used to compute the test
             model(GiskardModel):
-                Model used to compute the test
+              Model used to compute the test
             perturbation_dict(dict):
-                Dictionary of the perturbations. It provides the perturbed features as key and a perturbation lambda function as value
+              Dictionary of the perturbations. It provides the perturbed features as key
+              and a perturbation lambda function as value
             threshold(float):
-                Threshold of the ratio of invariant rows
+              Threshold of the ratio of invariant rows
             output_sensitivity(float):
-                the threshold for ratio between the difference between perturbed prediction and actual prediction over
+                Optional. The threshold for ratio between the difference between perturbed prediction and actual prediction over
                 the actual prediction for a regression model. We consider there is a prediction difference for
                 regression if the ratio is above the output_sensitivity of 0.1
 
         Returns:
             actual_slices_size:
-                total number of rows of dataframe
-            number_of_perturbed_rows:
-                number of perturbed rows
+              Length of actual_slice tested
+            message:
+              Test result message
             metric:
-                the ratio of invariant rows over the perturbed rows
+              The ratio of unchanged rows over the perturbed rows
             passed:
-                TRUE if passed_ratio > threshold
+              TRUE if metric > threshold
             output_df:
-                dataframe containing the non-invariant rows
-
+              Dataframe of rows where the prediction changes due to perturbation
         """
 
         return self._test_metamorphic(flag='Invariance',
@@ -171,32 +181,31 @@ class MetamorphicTests(AbstractTestCollection):
 
         Args:
             df(GiskardDataset):
-                Dataset used to compute the test
+              Dataset used to compute the test
             model(GiskardModel):
-                Model used to compute the test
+              Model used to compute the test
             perturbation_dict(dict):
-                Dictionary of the perturbations. It provides the perturbed features as key
-                and a perturbation lambda function as value
+              Dictionary of the perturbations. It provides the perturbed features as key
+              and a perturbation lambda function as value
             threshold(float):
-                Threshold of the ratio of increasing rows
+              Threshold of the ratio of increasing rows
             classification_label(str):
-                one specific label value from the target column
+              Optional.One specific label value from the target column
 
         Returns:
             actual_slices_size:
-                total number of rows of dataframe
-            number_of_perturbed_rows:
-                number of perturbed rows
+              Length of actual_slice tested
+            message:
+              Test result message
             metric:
-                the ratio of increasing rows over the perturbed rows
+              The ratio of increasing rows over the perturbed rows
             passed:
-                TRUE if passed_ratio > threshold
+              TRUE if metric > threshold
             output_df:
-                dataframe containing the rows whose probability doesn't increase after perturbation
-
+              Dataframe containing the rows whose probability doesn't increase after perturbation
         """
-        assert model.model_type != "classification" or classification_label in model.classification_labels, \
-                    f'"{classification_label}" is not part of model labels: {",".join(model.classification_labels)}'
+        assert model.model_type != "classification" or str(classification_label) in model.classification_labels, \
+            f'"{classification_label}" is not part of model labels: {",".join(model.classification_labels)}'
 
         return self._test_metamorphic(flag='Increasing',
                                       actual_slice=df,
@@ -228,33 +237,33 @@ class MetamorphicTests(AbstractTestCollection):
 
         Args:
             df(GiskardDataset):
-                Dataset used to compute the test
+              Dataset used to compute the test
             model(GiskardModel):
-                Model used to compute the test
+              Model used to compute the test
             perturbation_dict(dict):
-                Dictionary of the perturbations. It provides the perturbed features as key
-                and a perturbation lambda function as value
+              Dictionary of the perturbations. It provides the perturbed features as key
+              and a perturbation lambda function as value
             threshold(float):
-                Threshold of the ratio of decreasing rows
+              Threshold of the ratio of decreasing rows
             classification_label(str):
-                one specific label value from the target column
+              Optional. One specific label value from the target column
 
         Returns:
             actual_slices_size:
-                total number of rows of dataframe
-            number_of_perturbed_rows:
-                number of perturbed rows
+              Length of actual_slice tested
+            message:
+              Test result message
             metric:
-                the ratio of decreasing rows over the perturbed rows
+              The ratio of decreasing rows over the perturbed rows
             passed:
-                TRUE if passed_ratio > threshold
+              TRUE if metric > threshold
             output_df:
-                dataframe containing the rows whose probability doesn't decrease after perturbation
+              Dataframe containing the rows whose probability doesn't decrease after perturbation
 
         """
 
         assert model.model_type != "classification" or classification_label in model.classification_labels, \
-                    f'"{classification_label}" is not part of model labels: {",".join(model.classification_labels)}'
+            f'"{classification_label}" is not part of model labels: {",".join(model.classification_labels)}'
 
         return self._test_metamorphic(flag='Decreasing',
                                       actual_slice=df,

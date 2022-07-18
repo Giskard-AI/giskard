@@ -7,14 +7,14 @@ from zstandard import decompress
 
 from ml_worker.core.giskard_dataset import GiskardDataset
 from ml_worker.core.model import GiskardModel
-from ml_worker_pb2 import SerializedGiskardModel, SerializedGiskardDataset
+from generated.ml_worker_pb2 import SerializedGiskardModel, SerializedGiskardDataset
 
 
 def deserialize_model(serialized_model: SerializedGiskardModel) -> GiskardModel:
     return GiskardModel(
         cloudpickle.load(ZstdDecompressor().stream_reader(serialized_model.serialized_prediction_function)),
         model_type=serialized_model.model_type,
-        classification_threshold=serialized_model.threshold,
+        classification_threshold=serialized_model.threshold.value if serialized_model.HasField('threshold') else None,
         feature_names=list(serialized_model.feature_names),
         classification_labels=list(serialized_model.classification_labels)
     )

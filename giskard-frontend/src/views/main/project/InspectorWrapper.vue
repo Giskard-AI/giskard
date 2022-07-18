@@ -1,8 +1,8 @@
 <template>
   <v-container fluid v-if="inspection">
     <v-row
-      no-gutters
-      style='height: 60px;'
+        no-gutters
+        style='height: 60px;'
     >
       <v-toolbar flat id='data-explorer-toolbar'>
         <span class='subtitle-2 mr-2'>Dataset Explorer</span>
@@ -16,8 +16,8 @@
         <v-btn icon @click='next' :disabled='!canNext()'>
           <v-icon>mdi-skip-next</v-icon>
         </v-btn>
-        <span class='caption grey--text'>Entry #{{ totalRows === 0 ? 0 : rowNb+1 }} / {{ totalRows }}</span>
-        <span style='margin-left: 15px' class='caption grey--text'>Row Index {{ originalData.Index +1 }}</span>
+        <span class='caption grey--text'>Entry #{{ totalRows === 0 ? 0 : rowNb + 1 }} / {{ totalRows }}</span>
+        <span style='margin-left: 15px' class='caption grey--text' v-show="originalData && isDefined(originalData.Index)">Row Index {{ originalData.Index + 1 }}</span>
       </v-toolbar>
     </v-row>
 
@@ -35,7 +35,7 @@
                :inputData.sync='inputData'
                @reset='resetInput'
                @submitValueFeedback='submitValueFeedback'
-               @submitVariationFeedback='submitValueVariationFeedback'
+               @submitValueVariationFeedback='submitValueVariationFeedback'
     />
 
     <!-- For general feedback -->
@@ -54,8 +54,8 @@
       <span v-else>Feedback</span>
     </v-tooltip>
     <v-overlay
-      :value='feedbackPopupToggle'
-      :z-index='1'
+        :value='feedbackPopupToggle'
+        :z-index='1'
     ></v-overlay>
     <v-card v-if='feedbackPopupToggle' id='feedback-card' dark color='primary'>
       <v-card-title>Is this input case insightful?</v-card-title>
@@ -66,13 +66,13 @@
           <v-radio label='Other' value='other'></v-radio>
         </v-radio-group>
         <v-textarea
-          v-model='feedback'
-          :disabled='feedbackSubmitted'
-          placeholder='Why?'
-          rows='2'
-          no-resize
-          outlined
-          hide-details
+            v-model='feedback'
+            :disabled='feedbackSubmitted'
+            placeholder='Why?'
+            rows='2'
+            no-resize
+            outlined
+            hide-details
         ></v-textarea>
       </v-card-text>
       <p v-if='feedbackError' class='caption error--text mb-0'>{{ feedbackError }}</p>
@@ -96,12 +96,13 @@ import PredictionResults from './PredictionResults.vue';
 import PredictionExplanations from './PredictionExplanations.vue';
 import TextExplanation from './TextExplanation.vue';
 import {api} from '@/api';
-import {readToken} from '@/store/main/getters';
 import FeedbackPopover from '@/components/FeedbackPopover.vue';
 import Inspector from './Inspector.vue';
 import Mousetrap from 'mousetrap';
 import RowList from '@/views/main/project/RowList.vue';
 import {CreateFeedbackDTO, InspectionDTO} from '@/generated-sources';
+import mixpanel from "mixpanel-browser";
+import _ from "lodash";
 
 type CreatedFeedbackCommonDTO = {
   targetFeature: string;
@@ -140,8 +141,10 @@ export default class InspectorWrapper extends Vue {
   feedbackSubmitted: boolean = false;
 
   totalRows = 0;
-
-  async init(){
+  isDefined(val: any){
+    return !_.isNil(val);
+  }
+  async init() {
     this.inspection = await api.getInspection(this.inspectionId);
   }
 
@@ -152,7 +155,7 @@ export default class InspectorWrapper extends Vue {
   private getCurrentRow(rowDetails, totalRows: number, hasFilterChanged: boolean) {
     this.loadingData = true;
     this.inputData = rowDetails;
-    this.originalData = { ...this.inputData }; // deep copy to avoid caching mechanisms
+    this.originalData = {...this.inputData}; // deep copy to avoid caching mechanisms
     this.dataErrorMsg = '';
     this.loadingData = false;
     this.totalRows = totalRows;
@@ -205,7 +208,7 @@ export default class InspectorWrapper extends Vue {
 
 
   private resetInput() {
-    this.inputData = { ...this.originalData };
+    this.inputData = {...this.originalData};
   }
 
   public clearFeedback() {
@@ -261,6 +264,13 @@ export default class InspectorWrapper extends Vue {
   }
 
   private async doSubmitFeedback(payload: CreateFeedbackDTO) {
+    mixpanel.track('Submit feedback', {
+      datasetId: payload.datasetId,
+      feedbackChoice: payload.feedbackChoice,
+      feedbackType: payload.feedbackType,
+      modelId: payload.modelId,
+      projectId: payload.projectId
+    });
     await api.submitFeedback(payload, payload.projectId);
   }
 

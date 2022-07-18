@@ -1,19 +1,17 @@
 package ai.giskard.web.dto.config;
 
+import ai.giskard.domain.GeneralSettings;
 import ai.giskard.web.dto.user.AdminUserDTO;
 import ai.giskard.web.dto.user.RoleDTO;
 import com.dataiku.j2ts.annotations.UIModel;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.util.List;
 
 @NoArgsConstructor
 @AllArgsConstructor
 @UIModel
+@Builder
 public class AppConfigDTO {
     @Getter
     @Setter
@@ -24,22 +22,15 @@ public class AppConfigDTO {
 
     @NoArgsConstructor
     @AllArgsConstructor
+    @Builder
+    @Getter
+    @Setter
     public static class AppInfoDTO {
-        @Getter
-        @Setter
-        @JsonProperty("plan_code")
         private String planCode;
-        @Getter
-        @Setter
-        @JsonProperty("plan_name")
         private String planName;
-        @Getter
-        @Setter
-        @JsonProperty("seats_available")
         private int seatsAvailable;
-
-        @Getter
-        @Setter
-        List<RoleDTO> roles;
+        private List<RoleDTO> roles;
+        private String version;
+        private GeneralSettings generalSettings;
     }
 }

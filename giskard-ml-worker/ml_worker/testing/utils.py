@@ -1,9 +1,14 @@
+import os
+
 from generated.ml_worker_pb2 import SingleTestResult
-from zstandard import ZstdCompressor
+from zstandard import ZstdCompressor, ZstdDecompressor
 from typing import Optional
 from io import BytesIO
 import re
 import pandas as pd
+import numpy as np
+
+COMPRESSION_MAX_OUTPUT_SIZE = 10 ** 9  # 1GB
 
 
 def ge_result_to_test_result(result, passed=True) -> SingleTestResult:
@@ -24,12 +29,11 @@ def ge_result_to_test_result(result, passed=True) -> SingleTestResult:
         unexpected_percent_total=result['unexpected_percent_total'],
         unexpected_percent_nonmissing=result['unexpected_percent_nonmissing'],
         partial_unexpected_index_list=result['partial_unexpected_index_list'],
-        # partial_unexpected_counts=result['partial_unexpected_counts'],
         unexpected_index_list=result['unexpected_index_list']
     )
 
 
-def apply_perturbation_inplace(df, perturbation_dict):
+def apply_perturbation_inplace(df: pd.DataFrame, perturbation_dict):
     modified_rows = []
     i = 0
     for idx, r in df.iterrows():
@@ -46,7 +50,7 @@ def apply_perturbation_inplace(df, perturbation_dict):
 
 
 def save_df(df: pd.DataFrame, format: str = "csv") -> bytes:
-    pandas_version: int = int(re.sub("[^0-9]", "", pd.__version__))
+    pandas_version: int = int(re.sub("\D", "", pd.__version__))
     if format == "csv":
         csv_buffer = BytesIO()
         if pandas_version >= 120:
@@ -69,3 +73,60 @@ def compress(data: bytes, method: Optional[str] = "zstd") -> bytes:
         raise ValueError("Invalid compression method: {method}. Choose 'zstd' or None.")
 
     return compressed_data
+
+
+def decompress(
+        data: bytes, method: Optional[str] = "zstd", max_output_size: int = COMPRESSION_MAX_OUTPUT_SIZE
+) -> bytes:
+    if method == "zstd":
+        decompressor = ZstdDecompressor()
+        decompressed_data = decompressor.decompress(data, max_output_size=max_output_size)
+    elif method is None:
+        decompressed_data = data
+    else:
+        raise ValueError("Invalid compression method: {method}. Choose 'zstd' or None.")
+    return decompressed_data
+
+
+def bin_numerical_values(data_series, labels=None, bins=None):
+    """
+    Bin numerical values into quantile partitions to convert numerical value as categorical value to compute drifts
+    """
+    if labels is not None and bins is not None:
+        # Convert actual dataset based on bins of reference dataset
+
+        if data_series.min() < bins[0]:
+            # If actual dataset set has value smaller than the minimum bin of reference,
+            # it is added in the bin with label -1
+            print(f"Miniumum value {data_series.min()} of Actual Dataset has been appended in the bin")
+            bins = np.insert(bins, 0, data_series.min())
+            labels = np.insert(labels, 0, -1)
+
+        if data_series.max() > bins[-1]:
+            # If actual dataset set has value larger than the maximum bin of reference,
+            # it is added in the bin with label 10
+            print(f"Maximum value {data_series.max()} of Actual Dataset has been appended in the bin")
+            bins = np.append(bins, data_series.max())
+            labels = np.append(labels, 10)
+
+        converted_series = pd.cut(data_series, bins=bins, labels=labels, include_lowest=True)
+        labels = None
+        bins = None
+    else:
+        # Convert reference dataset into 10 quantiles
+
+        # User can define the bin length by declaring GSK_TEST_DRIFT_BIN_COUNT in docker file
+        num_quantile = os.environ.get('GSK_TEST_DRIFT_BIN_COUNT', 10)
+        converted_tuple = pd.qcut(data_series, num_quantile, labels=range(num_quantile), duplicates='drop',
+                                  retbins=True)
+
+        if len(data_series) < num_quantile:  # If the given reference set is too small
+            labels = range(len(data_series.unique()) - 1)
+
+            # Every unique value in the dataset will be a new bin
+            converted_series, bins = data_series, sorted(data_series.unique())
+        else:
+            converted_series, bins = converted_tuple
+            labels = range(num_quantile)
+
+    return converted_series, labels, bins
