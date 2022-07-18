@@ -41,13 +41,13 @@
             <v-card-text v-if="!errorLoadingMetadata && Object.keys(inputMetaData).length > 0" id="inputTextCard">
               <div class="caption error--text">{{ dataErrorMsg }}</div>
               <v-form lazy-validation>
-                <div v-for="c in inputMetaData" :key="c.name"
+                <div v-for="c in datasetFeatures" :key="c.name"
                      v-show="featuresToView.includes(c.name)">
                   <ValidationProvider
                       :name="c.name"
                       v-slot="{ dirty }"
                   >
-                    <div class="py-1 d-flex">
+                    <div class="py-1 d-flex" v-if="model.featureNames.includes(c.name)">
                       <label class="info--text">{{ c.name }}</label>
                       <input type="number" v-if="c.type === 'numeric'"
                              v-model="inputData[c.name]"
@@ -81,6 +81,10 @@
                           :inputType="c.type"
                           @submit="$emit(dirty ? 'submitValueVariationFeedback' : 'submitValueFeedback', arguments[0])"
                       />
+                    </div>
+                    <div class="py-1 d-flex" v-if="!model.featureNames.includes(c.name)">
+                      <label class="info--text">{{ c.name }}</label>
+                      <span>{{ inputData[c.name] }}</span>
                     </div>
                   </ValidationProvider>
                 </div>
@@ -161,6 +165,7 @@ import {DatasetDTO, FeatureMetadataDTO, ModelDTO} from "@/generated-sources";
 import {isClassification} from "@/ml-utils";
 import mixpanel from "mixpanel-browser";
 import {anonymize} from "@/utils";
+import _ from 'lodash';
 
 @Component({
   components: {OverlayLoader, PredictionResults, FeedbackPopover, PredictionExplanations, TextExplanation}
@@ -229,6 +234,12 @@ export default class Inspector extends Vue {
     this.$emit('update:inputData', this.inputData)
   }
 
+  get datasetFeatures() {
+    return _.sortBy(this.inputMetaData.filter(x => x.name !== this.dataset.target),
+        e => !this.model.featureNames.includes(e.name),
+        'name'
+    )
+  }
 }
 </script>
 
