@@ -40,6 +40,7 @@ export const mutations = {
                 "Giskard Plan": state.appSettings.planCode
             }
         );
+        mixpanel.track("Read App Settings")
         Vue.filter('roleName', function (value) {
             if (state.appSettings) {
                 let roles = Object.assign({}, ...state.appSettings.roles.map((x) => ({[x.id]: x.name})));
