@@ -59,7 +59,7 @@ class TokenProviderTest {
     @Test
     void testReturnFalseWhenJWTisMalformed() {
         Authentication authentication = createAuthentication(AuthoritiesConstants.AITESTER);
-        String token = tokenProvider.createToken(authentication, false);
+        String token = tokenProvider.createToken(authentication, false).getToken();
         String invalidToken = token.substring(1);
         boolean isTokenValid = tokenProvider.validateToken(invalidToken);
 
@@ -71,7 +71,7 @@ class TokenProviderTest {
         ReflectionTestUtils.setField(tokenProvider, "tokenValidityInMilliseconds", -ONE_MINUTE);
 
         Authentication authentication = createAuthentication(AuthoritiesConstants.AITESTER);
-        String token = tokenProvider.createToken(authentication, false);
+        String token = tokenProvider.createToken(authentication, false).getToken();
         Assertions.assertThrows(ExpiredJwtException.class, () -> {
             tokenProvider.validateToken(token);
         });
@@ -96,7 +96,7 @@ class TokenProviderTest {
     @Test
     void testAPIauthToken() {
         Instant tokenAcquiryDate = (new Date()).toInstant();
-        String token = tokenProvider.createAPIaccessToken(createAuthentication(AuthoritiesConstants.AITESTER));
+        String token = tokenProvider.createAPIaccessToken(createAuthentication(AuthoritiesConstants.AITESTER)).getToken();
 
         JwtParser jwtParser = Jwts.parserBuilder().setSigningKey(key).build();
         Claims claims = jwtParser.parseClaimsJws(token).getBody();
@@ -137,7 +137,7 @@ class TokenProviderTest {
     }
 
     private String createUnsupportedToken() {
-        return Jwts.builder().setPayload("payload").signWith(key, SignatureAlgorithm.HS512).compact();
+        return Jwts.builder().setPayload("payload").signWith(key, TokenProvider.SIGNATURE_ALGORITHM).compact();
     }
 
     private String createTokenWithDifferentSignature() {
@@ -148,7 +148,7 @@ class TokenProviderTest {
         return Jwts
             .builder()
             .setSubject("anonymous")
-            .signWith(otherKey, SignatureAlgorithm.HS512)
+            .signWith(otherKey, TokenProvider.SIGNATURE_ALGORITHM)
             .setExpiration(new Date(new Date().getTime() + ONE_MINUTE))
             .compact();
     }

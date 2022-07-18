@@ -3,6 +3,7 @@ package ai.giskard.security.jwt;
 import ai.giskard.config.ApplicationProperties;
 import ai.giskard.management.SecurityMetersService;
 import ai.giskard.security.GiskardUser;
+import ai.giskard.web.dto.JWTToken;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
@@ -29,7 +30,8 @@ import java.util.stream.Collectors;
 @Component
 public class TokenProvider {
 
-    public static final int GENERATED_KEY_BITS = 512;
+    public static final int GENERATED_KEY_BITS = 256;
+    public static final SignatureAlgorithm SIGNATURE_ALGORITHM = SignatureAlgorithm.HS256;
     private final Logger log = LoggerFactory.getLogger(TokenProvider.class);
 
     private static final String AUTHORITIES_KEY = "auth";
@@ -55,8 +57,8 @@ public class TokenProvider {
         String base64SecretProperty = jHipsterProperties.getSecurity().getAuthentication().getJwt().getBase64Secret();
         String secretProperty = jHipsterProperties.getSecurity().getAuthentication().getJwt().getSecret();
         if (!ObjectUtils.isEmpty(base64SecretProperty)) {
-            log.debug("Using a Base64-encoded JWT secret key");
             keyBytes = Decoders.BASE64.decode(base64SecretProperty);
+            log.info("Using a provided Base64-encoded JWT secret key of {} bytes", keyBytes.length);
         } else if (secretProperty != null) {
             log.warn(
                 "Warning: the JWT key used is not Base64-encoded. " +
@@ -65,7 +67,7 @@ public class TokenProvider {
             base64SecretProperty = secretProperty;
             keyBytes = base64SecretProperty.getBytes(StandardCharsets.UTF_8);
         } else {
-            log.info("No secret key was specified in the configuration, generating a new on of {} bits", GENERATED_KEY_BITS);
+            log.info("No JWT secret key was specified in the configuration, generating a new one of {} bits", GENERATED_KEY_BITS);
             keyBytes = new byte[GENERATED_KEY_BITS / 8];
             new SecureRandom().nextBytes(keyBytes);
         }
@@ -80,7 +82,7 @@ public class TokenProvider {
         this.securityMetersService = securityMetersService;
     }
 
-    public String createToken(Authentication authentication, boolean rememberMe) {
+    public JWTToken createToken(Authentication authentication, boolean rememberMe) {
         String authorities = authentication.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.joining(","));
 
         long now = (new Date()).getTime();
@@ -91,29 +93,30 @@ public class TokenProvider {
             validity = new Date(now + this.tokenValidityInMilliseconds);
         }
 
-        return Jwts
+        return new JWTToken(Jwts
             .builder()
             .setSubject(authentication.getName())
             .claim(AUTHORITIES_KEY, authorities)
             .claim(ID, ((GiskardUser) authentication.getPrincipal()).getId())
             .claim(TOKEN_TYPE_KEY, JWTTokenType.UI)
-            .signWith(key, SignatureAlgorithm.HS512)
+            .signWith(key, SIGNATURE_ALGORITHM)
             .setExpiration(validity)
-            .compact();
+            .compact(), validity.toInstant());
     }
 
-    public String createAPIaccessToken(Authentication authentication) {
+    public JWTToken createAPIaccessToken(Authentication authentication) {
         String authorities = authentication.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.joining(","));
 
         long now = (new Date()).getTime();
-        return Jwts
+        Date expiration = new Date(now + this.apiTokenValidityInMilliseconds);
+        return new JWTToken(Jwts
             .builder()
             .setSubject(authentication.getName())
             .claim(TOKEN_TYPE_KEY, JWTTokenType.API)
             .claim(AUTHORITIES_KEY, authorities)
-            .signWith(key, SignatureAlgorithm.HS512)
-            .setExpiration(new Date(now + this.apiTokenValidityInMilliseconds))
-            .compact();
+            .signWith(key, SIGNATURE_ALGORITHM)
+            .setExpiration(expiration)
+            .compact(), expiration.toInstant());
     }
 
     public String createInvitationToken(String invitorEmail, String invitedEmail) {
@@ -123,7 +126,7 @@ public class TokenProvider {
             .setSubject(invitorEmail)
             .setAudience(invitedEmail)
             .claim(TOKEN_TYPE_KEY, JWTTokenType.INVITATION)
-            .signWith(key, SignatureAlgorithm.HS512)
+            .signWith(key, SIGNATURE_ALGORITHM)
             .setExpiration(new Date(now + this.invitationTokenValidityInMilliseconds))
             .compact();
     }
@@ -137,7 +140,7 @@ public class TokenProvider {
                 .stream(claims.get(AUTHORITIES_KEY).toString().split(","))
                 .filter(auth -> !auth.trim().isEmpty())
                 .map(SimpleGrantedAuthority::new)
-                .collect(Collectors.toList());
+                .toList();
         } else {
             authorities = Collections.emptyList();
         }
