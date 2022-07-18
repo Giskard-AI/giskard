@@ -116,6 +116,7 @@
         </v-col>
         <v-col cols='12' md='3'>
           <v-select
+              dense
               :items='labels'
               v-model='thresholdLabel'
               hide-details
@@ -199,11 +200,13 @@ export default class RowList extends Vue {
   @Prop({required: true}) currentRowIdx!: number;
   @Prop({required: true}) shuffleMode!: boolean;
 
-  isClassification = isClassification;
   rows: Record<string, any>[] = [];
   numberOfRows: number = 0;
+  numberOfPages: number = 0;
   page: number = 0;
   itemsPerPage = 200;
+  prediction: string | number | undefined = '';
+  loading = false;
   errorMsg: string = '';
   rowIdxInPage: number = 0;
   labels: string[] = [];
@@ -211,8 +214,8 @@ export default class RowList extends Vue {
   targetLabel: string[] = [];
   minThreshold = null;
   maxThreshold = null;
-  minDiffThreshold = isClassification(this.inspection.model.modelType) ? 0 : undefined;
-  maxDiffThreshold?: number = isClassification(this.inspection.model.modelType) ? 100 : undefined;
+  minDiffThreshold = 0;
+  maxDiffThreshold?: number = 100;
   filterTypes: any[] = [];
   selectedFilter = RowFilterType.ALL;
   regressionThreshold: number = 0.1;
@@ -220,6 +223,7 @@ export default class RowList extends Vue {
   thresholdLabel?: string = undefined;
   minActualThreshold = null;
   maxActualThreshold = null;
+  isClassification = isClassification;
   RowFilterType = RowFilterType;
   isTargetUndefined = true;
 
@@ -314,7 +318,7 @@ export default class RowList extends Vue {
 
   /**
    * Selecting row in the page
-   * @param rowIdxInResults row's index in results
+   * @param rowIdxInResults row's index in
    */
   public async getRow(rowIdxInResults) {
     this.rowIdxInPage = rowIdxInResults % this.itemsPerPage;
@@ -336,7 +340,7 @@ export default class RowList extends Vue {
     };
     const filter: Filter = {
       'maxDiffThreshold': this.maxDiffThreshold == null ? this.maxDiffThreshold! : this.maxDiffThreshold / 100,
-      'minDiffThreshold': this.minDiffThreshold == null ? this.minDiffThreshold! : this.minDiffThreshold / 100,
+      'minDiffThreshold': this.minDiffThreshold == null ? this.minDiffThreshold! : this.minDiffThreshold! / 100,
       'maxLabelThreshold': this.maxActualThreshold!,
       'minLabelThreshold': this.minActualThreshold!,
       'minThreshold': this.minThreshold!,

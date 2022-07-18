@@ -10,7 +10,6 @@ def test_metamorphic_invariance_no_change(german_credit_test_data, german_credit
           perturbation_dict=perturbation,
           threshold=0.1)
     assert results.actual_slices_size[0] == 1000
-    assert results.number_of_perturbed_rows == 0
     assert results.passed
 
 
@@ -26,7 +25,6 @@ def _test_metamorphic_invariance_male_female(german_credit_test_data, german_cre
           threshold=threshold)
     assert results.actual_slices_size[0] == len(german_credit_test_data)
     assert round(results.metric, 2) == 0.97
-    assert results.number_of_perturbed_rows == 1000
     return results.passed
 
 
@@ -48,7 +46,6 @@ def test_metamorphic_invariance_2_perturbations(german_credit_test_data, german_
           threshold=0.1)
     assert results.actual_slices_size[0] == len(german_credit_test_data)
     assert round(results.metric, 2) == 0.86
-    assert results.number_of_perturbed_rows == 1000
 
 
 def test_metamorphic_invariance_some_rows(german_credit_test_data, german_credit_model):
@@ -62,7 +59,6 @@ def test_metamorphic_invariance_some_rows(german_credit_test_data, german_credit
           perturbation_dict=perturbation,
           threshold=0.1)
 
-    assert results.number_of_perturbed_rows == 690
     assert round(results.metric, 2) == 0.97
 
 
@@ -78,4 +74,3 @@ def test_metamorphic_invariance_regression(diabetes_dataset_with_target, linear_
           threshold=0.1)
     assert results.actual_slices_size[0] == len(diabetes_dataset_with_target)
     assert round(results.metric, 2) == 0.11
-    assert results.number_of_perturbed_rows == 207

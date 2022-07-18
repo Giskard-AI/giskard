@@ -121,15 +121,12 @@ class MLWorkerServiceImpl(MLWorkerServicer):
         else:
             results = pd.Series(prediction_results.prediction)
             preds_serie = results
-            if dataset.target and dataset.target in dataset.df.columns:
-                target_serie = dataset.df[dataset.target]
-                diff = preds_serie - target_serie
-                diff_percent = pd.Series(diff / target_serie, name="diffPercent")
-                abs_diff = pd.Series(diff.abs(), name="absDiff")
-                abs_diff_percent = pd.Series(abs_diff / target_serie, name="absDiffPercent")
-                calculated = pd.concat([preds_serie, target_serie, abs_diff, abs_diff_percent, diff_percent], axis=1)
-            else:
-                calculated = pd.concat([preds_serie], axis=1)
+            target_serie = dataset.df[dataset.target]
+            diff = preds_serie - target_serie
+            diff_percent = pd.Series(diff / target_serie, name="diffPercent")
+            abs_diff = pd.Series(diff.abs(), name="absDiff")
+            abs_diff_percent = pd.Series(abs_diff / target_serie, name="absDiffPercent")
+            calculated = pd.concat([preds_serie, target_serie, abs_diff, abs_diff_percent, diff_percent], axis=1)
 
         return RunModelResponse(
             results_csv=results.to_csv(index=False),
