@@ -13,7 +13,7 @@ plugins {
     id "org.springframework.boot" version "${springBootVersion}"
     id "com.google.cloud.tools.jib" version "3.2.1"
     id "com.gorylenko.gradle-git-properties" version "2.4.0"
-    id "io.freefair.lombok" version "6.4.1"
+    id "io.freefair.lombok" version "6.5.0.3"
     id "org.liquibase.gradle" version "2.1.1"
     id "org.sonarqube"
     id "io.spring.nohttp" version "0.0.10"
