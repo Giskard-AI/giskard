@@ -54,6 +54,10 @@ COPY ./giskard-ml-worker/pyproject.toml ./giskard-ml-worker/poetry.lock* ./
 ARG INSTALL_DEV=false
 RUN bash -c "if [ $INSTALL_DEV == 'true' ] ; then poetry install --no-root ; else poetry install --no-root --no-dev ; fi"
 
+# ------------------------------------------------------------------------
+# Add your python dependencies here, for example
+# RUN poetry add catboost transformers "tensorflow^2.9.1"
+# ------------------------------------------------------------------------
 
 
 FROM builder-base as proto-builder
