@@ -3,245 +3,225 @@ import pytest
 from ml_worker.testing.functions import GiskardTestFunctions
 
 
-def _test_drift_data_psi(german_credit_test_data, threshold=0.05):
+@pytest.mark.parametrize('data,threshold,expected_metric,column_name',
+                         [('german_credit_data', 0.05, 0.0, 'personal_status'),
+                          ('enron_data', 2, 1.19, 'Week_day')])
+def test_drift_data_psi(data, threshold, expected_metric, column_name, request):
     tests = GiskardTestFunctions()
+    data = request.getfixturevalue(data)
     results = tests.drift.test_drift_psi(
-        reference_ds=german_credit_test_data.slice(lambda df: df.head(len(df) // 2)),
-        actual_ds=german_credit_test_data.slice(lambda df: df.tail(len(df) // 2)),
-        column_name='personal_status',
+        reference_ds=data.slice(lambda df: df.head(len(df) // 2)),
+        actual_ds=data.slice(lambda df: df.tail(len(df) // 2)),
+        column_name=column_name,
         threshold=threshold)
 
-    assert round(results.metric, 2) == 0.00
-    return results.passed
+    assert round(results.metric, 2) == expected_metric
+    assert results.passed
 
 
-def test_drift_data_psi_pass_fail(german_credit_test_data):
-    assert not _test_drift_data_psi(german_credit_test_data, 0)
-    assert _test_drift_data_psi(german_credit_test_data, 0.1)
-
-
-def _test_drift_data_psi_max_categories(german_credit_test_data, threshold=0.05):
+@pytest.mark.parametrize('data,threshold,expected_metric,column_name,max_categories',
+                         [('german_credit_data', 0.05, 0.0, 'personal_status', 2),
+                          ('enron_data', 2, 0.28, 'Week_day', 2)])
+def test_drift_data_psi_max_categories(data, threshold, expected_metric, column_name, max_categories, request):
     tests = GiskardTestFunctions()
+    data = request.getfixturevalue(data)
     results = tests.drift.test_drift_psi(
-        reference_ds=german_credit_test_data.slice(lambda df: df.head(len(df) // 2)),
-        actual_ds=german_credit_test_data.slice(lambda df: df.tail(len(df) // 2)),
-        column_name='personal_status',
-        max_categories=2,
+        reference_ds=data.slice(lambda df: df.head(len(df) // 2)),
+        actual_ds=data.slice(lambda df: df.tail(len(df) // 2)),
+        column_name=column_name,
+        max_categories=max_categories,
         threshold=threshold)
 
-    assert round(results.metric, 2) == 0.00
-    return results.passed
+    assert round(results.metric, 2) == expected_metric
+    assert results.passed
 
 
-def test_drift_data_psi_max_categories_pass_fail(german_credit_test_data):
-    assert not _test_drift_data_psi_max_categories(german_credit_test_data, 0)
-    assert _test_drift_data_psi_max_categories(german_credit_test_data, 0.1)
-
-
-def _test_drift_data_chi_square(german_credit_test_data, threshold=0.05):
+@pytest.mark.parametrize('data,threshold,expected_metric,column_name',
+                         [('german_credit_data', 0.05, 0.76, 'personal_status'),
+                          ('enron_data', 0, 0, 'Week_day')])
+def test_drift_data_chi_square(data, threshold, expected_metric, column_name, request):
     tests = GiskardTestFunctions()
+    data = request.getfixturevalue(data)
     results = tests.drift.test_drift_chi_square(
-        reference_ds=german_credit_test_data.slice(lambda df: df.head(len(df) // 2)),
-        actual_ds=german_credit_test_data.slice(lambda df: df.tail(len(df) // 2)),
-        column_name='personal_status',
+        reference_ds=data.slice(lambda df: df.head(len(df) // 2)),
+        actual_ds=data.slice(lambda df: df.tail(len(df) // 2)),
+        column_name=column_name,
         threshold=threshold)
 
-    assert round(results.metric, 2) == 0.76
-    return results.passed
+    assert round(results.metric, 2) == expected_metric
+    assert results.passed
 
 
-def test_drift_data_chi_squared_pass_fail(german_credit_test_data):
-    assert not _test_drift_data_chi_square(german_credit_test_data, 0.8)
-    assert _test_drift_data_chi_square(german_credit_test_data, 0.1)
-
-
-def _test_drift_data_chi_square_max_categories(german_credit_test_data, threshold=0.05):
+@pytest.mark.parametrize('data,threshold,expected_metric,column_name,max_categories',
+                         [('german_credit_data', 0.05, 0.76, 'personal_status', 2),
+                          ('enron_data', 0.02, 0.04, 'Week_day', 2)])
+def test_drift_data_chi_square_max_categories(data, threshold, expected_metric, column_name, max_categories, request):
     tests = GiskardTestFunctions()
+    data = request.getfixturevalue(data)
     results = tests.drift.test_drift_chi_square(
-        reference_ds=german_credit_test_data.slice(lambda df: df.head(len(df) // 2)),
-        actual_ds=german_credit_test_data.slice(lambda df: df.tail(len(df) // 2)),
-        column_name='personal_status',
-        max_categories=2,
+        reference_ds=data.slice(lambda df: df.head(len(df) // 2)),
+        actual_ds=data.slice(lambda df: df.tail(len(df) // 2)),
+        column_name=column_name,
+        max_categories=max_categories,
         threshold=threshold)
 
-    assert round(results.metric, 2) == 0.76
-    return results.passed
+    assert round(results.metric, 2) == expected_metric
+    assert results.passed
 
 
-def test_drift_data_chi_square_max_categories_pass_fail(german_credit_test_data):
-    assert not _test_drift_data_chi_square_max_categories(german_credit_test_data, 0.8)
-    assert _test_drift_data_chi_square_max_categories(german_credit_test_data, 0.1)
-
-
-def _test_drift_data_ks(german_credit_test_data, threshold=0.05):
+@pytest.mark.parametrize('data,threshold,expected_metric,column_name',
+                         [('german_credit_data', 0.05, 0.72, 'credit_amount'),
+                          ('enron_data', 0.05, 0.29, 'Hour')])
+def test_drift_data_ks(data, threshold, expected_metric, column_name, request):
     tests = GiskardTestFunctions()
+    data = request.getfixturevalue(data)
     results = tests.drift.test_drift_ks(
-        reference_ds=german_credit_test_data.slice(lambda df: df.head(len(df) // 2)),
-        actual_ds=german_credit_test_data.slice(lambda df: df.tail(len(df) // 2)),
-        column_name='credit_amount',
+        reference_ds=data.slice(lambda df: df.head(len(df) // 2)),
+        actual_ds=data.slice(lambda df: df.tail(len(df) // 2)),
+        column_name=column_name,
         threshold=threshold)
 
-    assert round(results.metric, 2) == 0.72
-    return results.passed
+    assert round(results.metric, 2) == expected_metric
+    assert results.passed
 
 
-def test_drift_data_ks_pass_fail(german_credit_test_data):
-    assert not _test_drift_data_ks(german_credit_test_data, 0.9)
-    assert _test_drift_data_ks(german_credit_test_data, 0.5)
-
-
-def _test_drift_data_earth_movers_distance(german_credit_test_data, threshold=0.05):
+@pytest.mark.parametrize('data,threshold,expected_metric,column_name',
+                         [('german_credit_data', 1, 0.01, 'credit_amount'),
+                          ('enron_data', 1, 0.16, 'Hour')])
+def test_drift_data_earth_movers_distance(data, threshold, expected_metric, column_name, request):
     tests = GiskardTestFunctions()
+    data = request.getfixturevalue(data)
     results = tests.drift.test_drift_earth_movers_distance(
-        reference_ds=german_credit_test_data.slice(lambda df: df.head(len(df) // 2)),
-        actual_ds=german_credit_test_data.slice(lambda df: df.tail(len(df) // 2)),
-        column_name='credit_amount',
+        reference_ds=data.slice(lambda df: df.head(len(df) // 2)),
+        actual_ds=data.slice(lambda df: df.tail(len(df) // 2)),
+        column_name=column_name,
         threshold=threshold)
 
-    assert round(results.metric, 2) == 0.01
-    return results.passed
+    assert round(results.metric, 2) == expected_metric
+    assert results.passed
 
 
-def test_drift_data_earth_movers_distance_pass_fail(german_credit_test_data):
-    assert not _test_drift_data_earth_movers_distance(german_credit_test_data, 0.00001)
-    assert _test_drift_data_earth_movers_distance(german_credit_test_data, 0.5)
-
-
-def _test_drift_prediction_psi(german_credit_test_data, german_credit_model, threshold=0.02):
+@pytest.mark.parametrize('data,model,threshold,expected_metric',
+                         [('german_credit_data', 'german_credit_model', 1, 0.02),
+                          ('enron_data', 'enron_model', 2, 1.35)])
+def test_drift_prediction_psi(data, model, threshold, expected_metric, request):
     tests = GiskardTestFunctions()
+    data = request.getfixturevalue(data)
     results = tests.drift.test_drift_prediction_psi(
-        reference_slice=german_credit_test_data.slice(lambda df: df.head(len(df) // 2)),
-        actual_slice=german_credit_test_data.slice(lambda df: df.tail(len(df) // 2)),
-        model=german_credit_model,
+        reference_slice=data.slice(lambda df: df.head(len(df) // 2)),
+        actual_slice=data.slice(lambda df: df.tail(len(df) // 2)),
+        model=request.getfixturevalue(model),
         threshold=threshold)
 
-    assert pytest.approx(results.metric, 0.1) == 0.022
-    return results.passed
+    assert round(results.metric, 2) == expected_metric
+    assert results.passed
 
 
-def test_drift_prediction_psi_pass_fail(german_credit_test_data, german_credit_model):
-    assert not _test_drift_prediction_psi(german_credit_test_data, german_credit_model, 0.02)
-    assert _test_drift_prediction_psi(german_credit_test_data, german_credit_model, 0.1)
-
-
-def _test_drift_prediction_chi_square(german_credit_test_data, german_credit_model, threshold=0.02):
+@pytest.mark.parametrize('data,model,threshold,expected_metric',
+                         [('german_credit_data', 'german_credit_model', 0, 0),
+                          ('enron_data', 'enron_model', -1, 0)])
+def test_drift_prediction_chi_square(data, model, threshold, expected_metric, request):
     tests = GiskardTestFunctions()
+    data = request.getfixturevalue(data)
     results = tests.drift.test_drift_prediction_chi_square(
-        reference_slice=german_credit_test_data.slice(lambda df: df.head(len(df) // 2)),
-        actual_slice=german_credit_test_data.slice(lambda df: df.tail(len(df) // 2)),
-        model=german_credit_model,
+        reference_slice=data.slice(lambda df: df.head(len(df) // 2)),
+        actual_slice=data.slice(lambda df: df.tail(len(df) // 2)),
+        model=request.getfixturevalue(model),
         threshold=threshold)
 
-    assert round(results.metric, 2) == 0
-    return results.passed
+    assert round(results.metric, 2) == expected_metric
+    assert results.passed
 
 
-def test_drift_prediction_chi_square_pass_fail(german_credit_test_data, german_credit_model):
-    assert not _test_drift_prediction_chi_square(german_credit_test_data, german_credit_model, 9)
-
-
-def _test_drift_reg_output_ks(diabetes_dataset_with_target, linear_regression_diabetes, threshold=0.02):
+@pytest.mark.parametrize('data,model,threshold,expected_metric',
+                         [('diabetes_dataset_with_target', 'linear_regression_diabetes', 0, 0.69)])
+def test_drift_reg_output_ks(data, model, threshold, expected_metric, request):
     tests = GiskardTestFunctions()
-    ds = diabetes_dataset_with_target
+    data = request.getfixturevalue(data)
     results = tests.drift.test_drift_prediction_ks(
-        reference_slice=ds.slice(lambda df: df.head(len(df) // 2)),
-        actual_slice=ds.slice(lambda df: df.tail(len(df) // 2)),
-        model=linear_regression_diabetes,
+        reference_slice=data.slice(lambda df: df.head(len(df) // 2)),
+        actual_slice=data.slice(lambda df: df.tail(len(df) // 2)),
+        model=request.getfixturevalue(model),
         threshold=threshold)
 
-    assert pytest.approx(results.metric, 0.1) == 0.6899029016494751
-    return results.passed
+    assert round(results.metric, 2) == expected_metric
+    assert results.passed
 
 
-def test_drift_reg_output_ks_pass_fail(diabetes_dataset_with_target, linear_regression_diabetes):
-    assert not _test_drift_reg_output_ks(diabetes_dataset_with_target, linear_regression_diabetes, 0.7)
-    assert _test_drift_reg_output_ks(diabetes_dataset_with_target, linear_regression_diabetes, 0.05)
-
-
-def _test_drift_clf_prob_ks(german_credit_data, german_credit_model, threshold=0.02):
+@pytest.mark.parametrize('data,model,threshold,expected_metric,classification_label',
+                         [('german_credit_data', 'german_credit_model', 0.05, 0.15, 'Default'),
+                          ('enron_data', 'enron_model', 0.05, 0.29, 'CALIFORNIA CRISIS')])
+def test_drift_clf_prob_ks(data, model, threshold, expected_metric, classification_label, request):
     tests = GiskardTestFunctions()
-    ds = german_credit_data
+    data = request.getfixturevalue(data)
     results = tests.drift.test_drift_prediction_ks(
-        reference_slice=ds.slice(lambda df: df.head(len(df) // 2)),
-        actual_slice=ds.slice(lambda df: df.tail(len(df) // 2)),
-        model=german_credit_model,
+        reference_slice=data.slice(lambda df: df.head(len(df) // 2)),
+        actual_slice=data.slice(lambda df: df.tail(len(df) // 2)),
+        model=request.getfixturevalue(model),
         threshold=threshold,
-        classification_label='Default')
+        classification_label=classification_label)
 
-    assert pytest.approx(results.metric, 0.1) == 0.14973188936710358
-    return results.passed
-
-
-def test_drift_clf_prob_ks_pass_fail(german_credit_data, german_credit_model):
-    assert not _test_drift_clf_prob_ks(german_credit_data, german_credit_model, 0.2)
-    assert _test_drift_clf_prob_ks(german_credit_data, german_credit_model, 0.05)
+    assert round(results.metric, 2) == expected_metric
+    assert results.passed
 
 
-def _test_drift_clf_prob_ks_small_dataset(german_credit_data, german_credit_model, threshold=0.02):
+@pytest.mark.parametrize('data,model,threshold,expected_metric,classification_label,num_rows',
+                         [('german_credit_data', 'german_credit_model', 0.05, 0.73, 'Default', 9),
+                          ('enron_data', 'enron_model', 0.05, 0.99, 'CALIFORNIA CRISIS', 9),
+                          ('german_credit_data', 'german_credit_model', 0.05, 0.73, 'Default', 1),
+                          ('german_credit_data', 'german_credit_model', 0.05, 0.99, 'Default', 10),
+                          ('german_credit_data', 'german_credit_model', 0.05, 0.83, 'Default', 11)])
+def test_drift_clf_prob_ks_small_dataset(data, model, threshold, expected_metric,
+                                         classification_label, num_rows, request):
     tests = GiskardTestFunctions()
-    ds = german_credit_data
+    data = request.getfixturevalue(data)
     results = tests.drift.test_drift_prediction_ks(
-        reference_slice=ds.slice(lambda df: df.head(9)),
-        actual_slice=ds.slice(lambda df: df.tail(10)),
-        model=german_credit_model,
+        reference_slice=data.slice(lambda df: df.head(num_rows)),
+        actual_slice=data.slice(lambda df: df.tail(num_rows)),
+        model=request.getfixturevalue(model),
         threshold=threshold,
-        classification_label='Default')
+        classification_label=classification_label)
 
-    assert pytest.approx(results.metric, 0.1) == 0.90
-    return results.passed
+    assert round(results.metric, 2) == expected_metric
+    assert results.passed
 
-
-def test_drift_clf_prob_ks_pass_fail_small_dataset(german_credit_data, german_credit_model):
-    assert not _test_drift_clf_prob_ks_small_dataset(german_credit_data, german_credit_model, 1)
-    assert _test_drift_clf_prob_ks_small_dataset(german_credit_data, german_credit_model, 0.05)
-
-
-def _test_drift_reg_output_earth_movers_distance(diabetes_dataset_with_target, linear_regression_diabetes,
-                                                 threshold=0.02):
+@pytest.mark.parametrize('data,model,threshold,expected_metric',
+                         [('diabetes_dataset_with_target', 'linear_regression_diabetes', 0.05, 0.02)])
+def test_drift_reg_output_earth_movers_distance(data, model, threshold, expected_metric, request):
     tests = GiskardTestFunctions()
-    ds = diabetes_dataset_with_target
+    data = request.getfixturevalue(data)
     results = tests.drift.test_drift_prediction_earth_movers_distance(
-        reference_slice=ds.slice(lambda df: df.head(len(df) // 2)),
-        actual_slice=ds.slice(lambda df: df.tail(len(df) // 2)),
-        model=linear_regression_diabetes,
+        reference_slice=data.slice(lambda df: df.head(len(df) // 2)),
+        actual_slice=data.slice(lambda df: df.tail(len(df) // 2)),
+        model=request.getfixturevalue(model),
         threshold=threshold)
 
-    assert pytest.approx(results.metric, 0.1) == 0.02
-    return results.passed
+    assert round(results.metric, 2) == expected_metric
+    assert results.passed
 
 
-def test_drift_reg_output_earth_movers_distance_pass_fail(diabetes_dataset_with_target, linear_regression_diabetes):
-    assert not _test_drift_reg_output_earth_movers_distance(
-        diabetes_dataset_with_target, linear_regression_diabetes, 0.01)
-    assert _test_drift_reg_output_earth_movers_distance(
-        diabetes_dataset_with_target, linear_regression_diabetes, 0.03)
-
-
-def _test_drift_clf_prob_earth_movers_distance(german_credit_data, german_credit_model,
-                                               threshold=0.02):
+@pytest.mark.parametrize('data,model,threshold,expected_metric,classification_label',
+                         [('german_credit_data', 'german_credit_model', 0.05, 0.03, 'Default'),
+                          ('enron_data', 'enron_model', 0.2, 0.12, 'CALIFORNIA CRISIS')])
+def test_drift_clf_prob_earth_movers_distance(data, model, threshold, expected_metric, classification_label, request):
     tests = GiskardTestFunctions()
-    ds = german_credit_data
+    data = request.getfixturevalue(data)
     results = tests.drift.test_drift_prediction_earth_movers_distance(
-        reference_slice=ds.slice(lambda df: df.head(len(df) // 2)),
-        actual_slice=ds.slice(lambda df: df.tail(len(df) // 2)),
-        model=german_credit_model,
-        classification_label='Default',
+        reference_slice=data.slice(lambda df: df.head(len(df) // 2)),
+        actual_slice=data.slice(lambda df: df.tail(len(df) // 2)),
+        model=request.getfixturevalue(model),
+        classification_label=classification_label,
         threshold=threshold)
 
-    assert pytest.approx(results.metric, 0.01) == 0.034422677010297775
-    return results.passed
-
-
-def test_drift_clf_prob_earth_movers_distance_pass_fail(german_credit_data, german_credit_model):
-    assert not _test_drift_clf_prob_earth_movers_distance(german_credit_data, german_credit_model, 0.01)
-    assert _test_drift_clf_prob_earth_movers_distance(german_credit_data, german_credit_model, 0.04)
+    assert round(results.metric, 2) == expected_metric
+    assert results.passed
 
 
 def test_drift_clf_prob_ks_exception(german_credit_data, german_credit_model, threshold=0.02):
     with pytest.raises(Exception):
         tests = GiskardTestFunctions()
         ds = german_credit_data
-        results = tests.drift.test_drift_prediction_ks(
+        tests.drift.test_drift_prediction_ks(
             reference_slice=ds.slice(lambda df: df.head(len(df) // 2)),
             actual_slice=ds.slice(lambda df: df.tail(len(df) // 2)),
             model=german_credit_model,

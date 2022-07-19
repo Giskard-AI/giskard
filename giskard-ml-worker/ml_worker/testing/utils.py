@@ -120,8 +120,9 @@ def bin_numerical_values(data_series, labels=None, bins=None):
         converted_tuple = pd.qcut(data_series, num_quantile, labels=range(num_quantile), duplicates='drop',
                                   retbins=True)
 
-        if len(data_series) < num_quantile:  # If the given reference set is too small
-            labels = range(len(data_series.unique()) - 1)
+        num_unique_values = len(np.unique(data_series))
+        if num_unique_values < num_quantile:  # If the given reference set is too small
+            labels = range(num_unique_values - 1)
 
             # Every unique value in the dataset will be a new bin
             converted_series, bins = data_series, sorted(data_series.unique())
