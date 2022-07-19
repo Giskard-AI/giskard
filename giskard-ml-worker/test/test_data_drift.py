@@ -103,7 +103,7 @@ def test_drift_data_earth_movers_distance(data, threshold, expected_metric, colu
 
 @pytest.mark.parametrize('data,model,threshold,expected_metric',
                          [('german_credit_data', 'german_credit_model', 1, 0.02),
-                          ('enron_data', 'enron_model', 2, 1.35)])
+                          ('enron_data', 'enron_model', 2, 1.36)])
 def test_drift_prediction_psi(data, model, threshold, expected_metric, request):
     tests = GiskardTestFunctions()
     data = request.getfixturevalue(data)
@@ -185,6 +185,7 @@ def test_drift_clf_prob_ks_small_dataset(data, model, threshold, expected_metric
     assert round(results.metric, 2) == expected_metric
     assert results.passed
 
+
 @pytest.mark.parametrize('data,model,threshold,expected_metric',
                          [('diabetes_dataset_with_target', 'linear_regression_diabetes', 0.05, 0.02)])
 def test_drift_reg_output_earth_movers_distance(data, model, threshold, expected_metric, request):
@@ -227,3 +228,28 @@ def test_drift_clf_prob_ks_exception(german_credit_data, german_credit_model, th
             model=german_credit_model,
             threshold=threshold,
             classification_label='random_value')
+
+@pytest.mark.parametrize('data,threshold,expected_metric,column_name',
+                         [('german_credit_data', 0.05, 0.76, 'credit_amount')])
+def test_drift_data_chi_square_exception(data, threshold, expected_metric, column_name, request):
+    with pytest.raises(Exception):
+        tests = GiskardTestFunctions()
+        data = request.getfixturevalue(data)
+        tests.drift.test_drift_chi_square(
+            reference_ds=data.slice(lambda df: df.head(len(df) // 2)),
+            actual_ds=data.slice(lambda df: df.tail(len(df) // 2)),
+            column_name=column_name,
+            threshold=threshold)
+
+
+@pytest.mark.parametrize('data,threshold,expected_metric,column_name',
+                         [('german_credit_data', 0.05, 0.72, 'personal_status')])
+def test_drift_data_ks_exception(data, threshold, expected_metric, column_name, request):
+    with pytest.raises(Exception):
+        tests = GiskardTestFunctions()
+        data = request.getfixturevalue(data)
+        tests.drift.test_drift_ks(
+            reference_ds=data.slice(lambda df: df.head(len(df) // 2)),
+            actual_ds=data.slice(lambda df: df.tail(len(df) // 2)),
+            column_name=column_name,
+            threshold=threshold)

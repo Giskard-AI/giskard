@@ -193,12 +193,17 @@ class DriftTests(AbstractTestCollection):
         actual_ds.df.reset_index(drop=True, inplace=True)
         reference_ds.df.reset_index(drop=True, inplace=True)
 
+
         assert column_name in actual_ds.columns, \
             f'"{column_name}" is not a column of Actual Dataset Columns: {", ".join(actual_ds.columns)}'
-        actual_series = actual_ds.df[column_name]
         assert column_name in reference_ds.columns, \
             f'"{column_name}" is not a column of Reference Dataset Columns: {", ".join(reference_ds.columns)}'
+        self._verify_type(actual_ds, column_name, 'category')
+        self._verify_type(reference_ds, column_name, 'category')
+
+        actual_series = actual_ds.df[column_name]
         reference_series = reference_ds.df[column_name]
+
         total_psi, output_data = self._calculate_drift_psi(actual_series, reference_series, max_categories)
 
         passed = True if threshold is None else total_psi <= threshold
@@ -273,9 +278,12 @@ class DriftTests(AbstractTestCollection):
 
         assert column_name in actual_ds.columns, \
             f'"{column_name}" is not a column of Actual Dataset Columns: {",".join(actual_ds.columns)}'
-        actual_series = actual_ds.df[column_name]
         assert column_name in reference_ds.columns, \
             f'"{column_name}" is not a column of Reference Dataset Columns: {",".join(reference_ds.columns)}'
+        self._verify_type(actual_ds, column_name, 'category')
+        self._verify_type(reference_ds, column_name, 'category')
+
+        actual_series = actual_ds.df[column_name]
         reference_series = reference_ds.df[column_name]
 
         chi_square, p_value, output_data = self._calculate_chi_square(actual_series, reference_series, max_categories)
@@ -349,9 +357,12 @@ class DriftTests(AbstractTestCollection):
 
         assert column_name in actual_ds.columns, \
             f'"{column_name}" is not a column of Actual Dataset Columns: {",".join(actual_ds.columns)}'
-        actual_series = actual_ds.df[column_name]
         assert column_name in reference_ds.columns, \
             f'"{column_name}" is not a column of Reference Dataset Columns: {",".join(reference_ds.columns)}'
+        self._verify_type(actual_ds, column_name, 'numeric')
+        self._verify_type(reference_ds, column_name, 'numeric')
+
+        actual_series = actual_ds.df[column_name]
         reference_series = reference_ds.df[column_name]
 
         result = self._calculate_ks(actual_series, reference_series)
@@ -426,9 +437,13 @@ class DriftTests(AbstractTestCollection):
 
         assert column_name in actual_ds.columns, \
             f'"{column_name}" is not a column of Actual Dataset Columns: {",".join(actual_ds.columns)}'
-        actual_series = actual_ds.df[column_name]
         assert column_name in reference_ds.columns, \
             f'"{column_name}" is not a column of Reference Dataset Columns: {",".join(reference_ds.columns)}'
+
+        self._verify_type(actual_ds, column_name, 'numeric')
+        self._verify_type(reference_ds, column_name, 'numeric')
+
+        actual_series = actual_ds.df[column_name]
         reference_series = reference_ds.df[column_name]
 
         metric = self._calculate_earth_movers_distance(actual_series, reference_series)
@@ -769,3 +784,8 @@ class DriftTests(AbstractTestCollection):
             messages=messages,
             output_df=output_df_sample
         ))
+
+    @staticmethod
+    def _verify_type(gsk_dataset, column_name, column_type):
+        assert gsk_dataset.feature_types[column_name] == column_type, f'Column "{column_name}" does not belong to' \
+                                                                      f' type "{column_type}"'
