@@ -24,7 +24,7 @@
                 :class="
                 !isDefined(actual)
                   ? 'info--text text--darken-2'
-                  : prediction === actualForDisplay
+                  : prediction === actual
                   ? 'success--text'
                   : 'error--text'
               "
@@ -35,7 +35,7 @@
           <div>
             <div class="mb-2">
               <div>Actual <span v-show="isDefined(actual) && modified">(before modification)</span></div>
-              <div v-if="isDefined(actual)" class="text-h6">{{ actualForDisplay }}</div>
+              <div v-if="isDefined(actual)" class="text-h6">{{ actual }}</div>
               <div v-else>-</div>
             </div>
             <div class="caption">
@@ -151,13 +151,6 @@ export default class PredictionResults extends Vue {
   get actual() {
     if (this.targetFeature && !this.errorMsg) return this.inputData[this.targetFeature]
     else return undefined
-  }
-
-  get actualForDisplay() {
-    if (this.isDefined(this.actual)) {
-      if (isNaN(parseInt(this.actual!.toString()))) return this.actual;
-      else return this.classificationLabels[parseInt(this.actual!.toString())];
-    } else return "";
   }
 
   /**
