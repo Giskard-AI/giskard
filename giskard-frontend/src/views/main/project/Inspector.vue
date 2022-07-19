@@ -47,7 +47,7 @@
                       :name="c.name"
                       v-slot="{ dirty }"
                   >
-                    <div class="py-1 d-flex" v-if="model.featureNames.includes(c.name)">
+                    <div class="py-1 d-flex" v-if="isFeatureEditable(c.name)">
                       <label class="info--text">{{ c.name }}</label>
                       <input type="number" v-if="c.type === 'numeric'"
                              v-model="inputData[c.name]"
@@ -82,7 +82,7 @@
                           @submit="$emit(dirty ? 'submitValueVariationFeedback' : 'submitValueFeedback', arguments[0])"
                       />
                     </div>
-                    <div class="py-1 d-flex" v-if="!model.featureNames.includes(c.name)">
+                    <div class="py-1 d-flex" v-else>
                       <label class="info--text">{{ c.name }}</label>
                       <span>{{ inputData[c.name] }}</span>
                     </div>
@@ -234,9 +234,17 @@ export default class Inspector extends Vue {
     this.$emit('update:inputData', this.inputData)
   }
 
+  isFeatureEditable(featureName: string) {
+    if (!this.model.featureNames || this.model.featureNames.length == 0) {
+      // if user doesn't specify feature names consider all columns as feature names
+      return true;
+    }
+    return this.model.featureNames.includes(featureName)
+  }
+
   get datasetFeatures() {
     return _.sortBy(this.inputMetaData.filter(x => x.name !== this.dataset.target),
-        e => !this.model.featureNames.includes(e.name),
+        e => !this.model.featureNames?.includes(e.name),
         'name'
     )
   }
