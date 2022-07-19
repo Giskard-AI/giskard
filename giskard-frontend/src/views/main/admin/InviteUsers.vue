@@ -48,9 +48,10 @@ import {Component, Vue} from 'vue-property-decorator';
 import {api} from '@/api';
 import {commitAddNotification, commitRemoveNotification} from '@/store/main/mutations';
 import mixpanel from "mixpanel-browser";
+import {copyToClipboard} from "@/global-keys";
 
 @Component
-export default class AdminUsers extends Vue {
+export default class InviteUsers extends Vue {
 
   public emailToInvite: string = "";
   public link: string = "";
@@ -86,9 +87,8 @@ export default class AdminUsers extends Vue {
     }
   }
 
-  public copyLink() {
-    (this.$refs["link"] as Vue).$el.querySelector('input')?.select();
-    document.execCommand("copy");
+  public async copyLink() {
+    await copyToClipboard(this.link);
     commitAddNotification(this.$store, {content: "Copied to clipboard", color: "success"});
   }
 
