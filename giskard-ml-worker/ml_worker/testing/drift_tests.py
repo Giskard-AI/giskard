@@ -149,6 +149,40 @@ class DriftTests(AbstractTestCollection):
             p_value = 0
         return chi_square, p_value, output_data
 
+    @staticmethod
+    def _validate_column_type(gsk_dataset, column_name, column_type):
+        assert gsk_dataset.feature_types[column_name] == column_type, f'Column "{column_name}" does not belong to' \
+                                                                      f' type "{column_type}"'
+
+    @staticmethod
+    def _validate_column_name(actual_ds, column_name, reference_ds):
+        assert column_name in actual_ds.columns, \
+            f'"{column_name}" is not a column of Actual Dataset Columns: {", ".join(actual_ds.columns)}'
+        assert column_name in reference_ds.columns, \
+            f'"{column_name}" is not a column of Reference Dataset Columns: {", ".join(reference_ds.columns)}'
+
+    @staticmethod
+    def _validate_series_notempty(actual_series, reference_series):
+        if actual_series.empty:
+            raise ValueError("Actual Series computed from the column is empty")
+        if reference_series.empty:
+            raise ValueError("Reference Series computed from the column is empty")
+
+    @staticmethod
+    def generate_output_df(actual_converted, actual_df: pd.DataFrame, output_data, psi_contribution_percent,
+                           total_psi):
+        main_drifting_modalities_bool = output_data["Modality_drift"] > psi_contribution_percent * total_psi
+        modalities_list = output_data[main_drifting_modalities_bool]["Modality"].tolist()
+        failed_df = actual_df.loc[actual_converted.isin(modalities_list)]
+        output_df_sample = compress(save_df(failed_df))
+        return output_df_sample
+
+    def convert_calculate_psi_numerical_drift(self, actual_series, reference_series):
+        reference_converted, labels, bins = bin_numerical_values(reference_series)
+        actual_converted, _, _ = bin_numerical_values(actual_series, labels, bins)
+        total_psi, output_data = self._calculate_numerical_drift(actual_converted, reference_converted)
+        return actual_converted, output_data, total_psi
+
     def test_drift_psi(self,
                        reference_ds: GiskardDataset,
                        actual_ds: GiskardDataset,
@@ -193,12 +227,13 @@ class DriftTests(AbstractTestCollection):
         actual_ds.df.reset_index(drop=True, inplace=True)
         reference_ds.df.reset_index(drop=True, inplace=True)
 
-        self._verify_column_name(actual_ds, column_name, reference_ds)
-        self._verify_column_type(actual_ds, column_name, 'category')
-        self._verify_column_type(reference_ds, column_name, 'category')
+        self._validate_column_name(actual_ds, column_name, reference_ds)
+        self._validate_column_type(actual_ds, column_name, 'category')
+        self._validate_column_type(reference_ds, column_name, 'category')
 
         actual_series = actual_ds.df[column_name]
         reference_series = reference_ds.df[column_name]
+        self._validate_series_notempty(actual_series, reference_series)
 
         total_psi, output_data = self._calculate_drift_psi(actual_series, reference_series, max_categories)
 
@@ -225,13 +260,6 @@ class DriftTests(AbstractTestCollection):
             messages=messages,
             output_df=output_df_sample
         ))
-
-    @staticmethod
-    def _verify_column_name(actual_ds, column_name, reference_ds):
-        assert column_name in actual_ds.columns, \
-            f'"{column_name}" is not a column of Actual Dataset Columns: {", ".join(actual_ds.columns)}'
-        assert column_name in reference_ds.columns, \
-            f'"{column_name}" is not a column of Reference Dataset Columns: {", ".join(reference_ds.columns)}'
 
     def test_drift_chi_square(self,
                               reference_ds: pd.DataFrame,
@@ -279,12 +307,13 @@ class DriftTests(AbstractTestCollection):
         actual_ds.df.reset_index(drop=True, inplace=True)
         reference_ds.df.reset_index(drop=True, inplace=True)
 
-        self._verify_column_name(actual_ds, column_name, reference_ds)
-        self._verify_column_type(actual_ds, column_name, 'category')
-        self._verify_column_type(reference_ds, column_name, 'category')
+        self._validate_column_name(actual_ds, column_name, reference_ds)
+        self._validate_column_type(actual_ds, column_name, 'category')
+        self._validate_column_type(reference_ds, column_name, 'category')
 
         actual_series = actual_ds.df[column_name]
         reference_series = reference_ds.df[column_name]
+        self._validate_series_notempty(actual_series, reference_series)
 
         chi_square, p_value, output_data = self._calculate_chi_square(actual_series, reference_series, max_categories)
         passed = p_value > threshold
@@ -355,12 +384,13 @@ class DriftTests(AbstractTestCollection):
         actual_ds.df.reset_index(drop=True, inplace=True)
         reference_ds.df.reset_index(drop=True, inplace=True)
 
-        self._verify_column_name(actual_ds, column_name, reference_ds)
-        self._verify_column_type(actual_ds, column_name, 'numeric')
-        self._verify_column_type(reference_ds, column_name, 'numeric')
+        self._validate_column_name(actual_ds, column_name, reference_ds)
+        self._validate_column_type(actual_ds, column_name, 'numeric')
+        self._validate_column_type(reference_ds, column_name, 'numeric')
 
         actual_series = actual_ds.df[column_name]
         reference_series = reference_ds.df[column_name]
+        self._validate_series_notempty(actual_series, reference_series)
 
         result = self._calculate_ks(actual_series, reference_series)
 
@@ -432,12 +462,13 @@ class DriftTests(AbstractTestCollection):
         actual_ds.df.reset_index(drop=True, inplace=True)
         reference_ds.df.reset_index(drop=True, inplace=True)
 
-        self._verify_column_name(actual_ds, column_name, reference_ds)
-        self._verify_column_type(actual_ds, column_name, 'numeric')
-        self._verify_column_type(reference_ds, column_name, 'numeric')
+        self._validate_column_name(actual_ds, column_name, reference_ds)
+        self._validate_column_type(actual_ds, column_name, 'numeric')
+        self._validate_column_type(reference_ds, column_name, 'numeric')
 
         actual_series = actual_ds.df[column_name]
         reference_series = reference_ds.df[column_name]
+        self._validate_series_notempty(actual_series, reference_series)
 
         metric = self._calculate_earth_movers_distance(actual_series, reference_series)
 
@@ -464,21 +495,6 @@ class DriftTests(AbstractTestCollection):
             output_df=output_df_sample
 
         ))
-
-    def convert_calculate_psi_numerical_drift(self, actual_series, reference_series):
-        reference_converted, labels, bins = bin_numerical_values(reference_series)
-        actual_converted, _, _ = bin_numerical_values(actual_series, labels, bins)
-        total_psi, output_data = self._calculate_numerical_drift(actual_converted, reference_converted)
-        return actual_converted, output_data, total_psi
-
-    @staticmethod
-    def generate_output_df(actual_converted, actual_df: pd.DataFrame, output_data, psi_contribution_percent,
-                           total_psi):
-        main_drifting_modalities_bool = output_data["Modality_drift"] > psi_contribution_percent * total_psi
-        modalities_list = output_data[main_drifting_modalities_bool]["Modality"].tolist()
-        failed_df = actual_df.loc[actual_converted.isin(modalities_list)]
-        output_df_sample = compress(save_df(failed_df))
-        return output_df_sample
 
     def test_drift_prediction_psi(self, reference_slice: GiskardDataset, actual_slice: GiskardDataset,
                                   model: GiskardModel,
@@ -777,8 +793,3 @@ class DriftTests(AbstractTestCollection):
             messages=messages,
             output_df=output_df_sample
         ))
-
-    @staticmethod
-    def _verify_column_type(gsk_dataset, column_name, column_type):
-        assert gsk_dataset.feature_types[column_name] == column_type, f'Column "{column_name}" does not belong to' \
-                                                                      f' type "{column_type}"'
