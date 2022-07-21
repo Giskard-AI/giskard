@@ -86,6 +86,21 @@ def test_drift_data_ks(data, threshold, expected_metric, column_name, request):
 
 
 @pytest.mark.parametrize('data,threshold,expected_metric,column_name',
+                         [('german_credit_data', 0.05, 0.0, 'duration_in_month')])
+def test_drift_data_ks_unique_values(data, threshold, expected_metric, column_name, request):
+    tests = GiskardTestFunctions()
+    data = request.getfixturevalue(data)
+    results = tests.drift.test_drift_ks(
+        reference_ds=data.slice(lambda df: df[df['duration_in_month'] == 6]),
+        actual_ds=data.slice(lambda df: df[df['duration_in_month'].isin([6, 48])]),
+        column_name=column_name,
+        threshold=threshold)
+
+    assert round(results.metric, 2) == expected_metric
+    assert not results.passed
+
+
+@pytest.mark.parametrize('data,threshold,expected_metric,column_name',
                          [('german_credit_data', 1, 0.01, 'credit_amount'),
                           ('enron_data', 1, 0.16, 'Hour')])
 def test_drift_data_earth_movers_distance(data, threshold, expected_metric, column_name, request):
@@ -186,6 +201,23 @@ def test_drift_clf_prob_ks_small_dataset(data, model, threshold, expected_metric
     assert results.passed
 
 
+@pytest.mark.parametrize('data,model,threshold,expected_metric,classification_label',
+                         [('german_credit_data', 'german_credit_model', 0.05, 0.29, 'Default')])
+def test_drift_clf_prob_ks_small_unique_dataset(data, model, threshold, expected_metric,
+                                                classification_label, request):
+    tests = GiskardTestFunctions()
+    data = request.getfixturevalue(data)
+    results = tests.drift.test_drift_prediction_ks(
+        reference_slice=data.slice(lambda df: df[df['housing'] == 'own']),
+        actual_slice=data.slice(lambda df: df[df['housing'].isin(['own', 'rent'])]),
+        model=request.getfixturevalue(model),
+        threshold=threshold,
+        classification_label=classification_label)
+
+    assert round(results.metric, 2) == expected_metric
+    assert results.passed
+
+
 @pytest.mark.parametrize('data,model,threshold,expected_metric',
                          [('diabetes_dataset_with_target', 'linear_regression_diabetes', 0.05, 0.02)])
 def test_drift_reg_output_earth_movers_distance(data, model, threshold, expected_metric, request):
@@ -228,6 +260,7 @@ def test_drift_clf_prob_ks_exception(german_credit_data, german_credit_model, th
             model=german_credit_model,
             threshold=threshold,
             classification_label='random_value')
+
 
 @pytest.mark.parametrize('data,threshold,expected_metric,column_name',
                          [('german_credit_data', 0.05, 0.76, 'credit_amount')])
