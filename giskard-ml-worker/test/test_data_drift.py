@@ -168,7 +168,7 @@ def test_drift_clf_prob_ks(data, model, threshold, expected_metric, classificati
 @pytest.mark.parametrize('data,model,threshold,expected_metric,classification_label,num_rows',
                          [('german_credit_data', 'german_credit_model', 0.05, 0.73, 'Default', 9),
                           ('enron_data', 'enron_model', 0.05, 0.99, 'CALIFORNIA CRISIS', 9),
-                          ('german_credit_data', 'german_credit_model', 0.05, 0.73, 'Default', 1),
+                          ('german_credit_data', 'german_credit_model', 0.05, 1, 'Default', 1),
                           ('german_credit_data', 'german_credit_model', 0.05, 0.99, 'Default', 10),
                           ('german_credit_data', 'german_credit_model', 0.05, 0.83, 'Default', 11)])
 def test_drift_clf_prob_ks_small_dataset(data, model, threshold, expected_metric,
