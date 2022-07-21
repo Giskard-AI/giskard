@@ -1,4 +1,5 @@
 import pytest
+import numpy as np
 
 from ml_worker.testing.functions import GiskardTestFunctions
 
@@ -75,6 +76,24 @@ def test_drift_data_chi_square_max_categories(data, threshold, expected_metric, 
 def test_drift_data_ks(data, threshold, expected_metric, column_name, request):
     tests = GiskardTestFunctions()
     data = request.getfixturevalue(data)
+    results = tests.drift.test_drift_ks(
+        reference_ds=data.slice(lambda df: df.head(len(df) // 2)),
+        actual_ds=data.slice(lambda df: df.tail(len(df) // 2)),
+        column_name=column_name,
+        threshold=threshold)
+
+    assert round(results.metric, 2) == expected_metric
+    assert results.passed
+
+
+@pytest.mark.parametrize('data,threshold,expected_metric,column_name',
+                         [('german_credit_data', 0.05, 0.72, 'credit_amount'),
+                          ('enron_data', 0.05, 0.29, 'Hour')])
+def test_drift_data_ks_with_nan(data, threshold, expected_metric, column_name, request):
+    tests = GiskardTestFunctions()
+    data = request.getfixturevalue(data)
+    data.df.replace({1169: np.nan}, inplace=True)
+
     results = tests.drift.test_drift_ks(
         reference_ds=data.slice(lambda df: df.head(len(df) // 2)),
         actual_ds=data.slice(lambda df: df.tail(len(df) // 2)),
