@@ -193,11 +193,7 @@ class DriftTests(AbstractTestCollection):
         actual_ds.df.reset_index(drop=True, inplace=True)
         reference_ds.df.reset_index(drop=True, inplace=True)
 
-
-        assert column_name in actual_ds.columns, \
-            f'"{column_name}" is not a column of Actual Dataset Columns: {", ".join(actual_ds.columns)}'
-        assert column_name in reference_ds.columns, \
-            f'"{column_name}" is not a column of Reference Dataset Columns: {", ".join(reference_ds.columns)}'
+        self._verify_column_name(actual_ds, column_name, reference_ds)
         self._verify_type(actual_ds, column_name, 'category')
         self._verify_type(reference_ds, column_name, 'category')
 
@@ -229,6 +225,13 @@ class DriftTests(AbstractTestCollection):
             messages=messages,
             output_df=output_df_sample
         ))
+
+    @staticmethod
+    def _verify_column_name(actual_ds, column_name, reference_ds):
+        assert column_name in actual_ds.columns, \
+            f'"{column_name}" is not a column of Actual Dataset Columns: {", ".join(actual_ds.columns)}'
+        assert column_name in reference_ds.columns, \
+            f'"{column_name}" is not a column of Reference Dataset Columns: {", ".join(reference_ds.columns)}'
 
     def test_drift_chi_square(self,
                               reference_ds: pd.DataFrame,
@@ -276,10 +279,7 @@ class DriftTests(AbstractTestCollection):
         actual_ds.df.reset_index(drop=True, inplace=True)
         reference_ds.df.reset_index(drop=True, inplace=True)
 
-        assert column_name in actual_ds.columns, \
-            f'"{column_name}" is not a column of Actual Dataset Columns: {",".join(actual_ds.columns)}'
-        assert column_name in reference_ds.columns, \
-            f'"{column_name}" is not a column of Reference Dataset Columns: {",".join(reference_ds.columns)}'
+        self._verify_column_name(actual_ds, column_name, reference_ds)
         self._verify_type(actual_ds, column_name, 'category')
         self._verify_type(reference_ds, column_name, 'category')
 
@@ -355,10 +355,7 @@ class DriftTests(AbstractTestCollection):
         actual_ds.df.reset_index(drop=True, inplace=True)
         reference_ds.df.reset_index(drop=True, inplace=True)
 
-        assert column_name in actual_ds.columns, \
-            f'"{column_name}" is not a column of Actual Dataset Columns: {",".join(actual_ds.columns)}'
-        assert column_name in reference_ds.columns, \
-            f'"{column_name}" is not a column of Reference Dataset Columns: {",".join(reference_ds.columns)}'
+        self._verify_column_name(actual_ds, column_name, reference_ds)
         self._verify_type(actual_ds, column_name, 'numeric')
         self._verify_type(reference_ds, column_name, 'numeric')
 
@@ -435,11 +432,7 @@ class DriftTests(AbstractTestCollection):
         actual_ds.df.reset_index(drop=True, inplace=True)
         reference_ds.df.reset_index(drop=True, inplace=True)
 
-        assert column_name in actual_ds.columns, \
-            f'"{column_name}" is not a column of Actual Dataset Columns: {",".join(actual_ds.columns)}'
-        assert column_name in reference_ds.columns, \
-            f'"{column_name}" is not a column of Reference Dataset Columns: {",".join(reference_ds.columns)}'
-
+        self._verify_column_name(actual_ds, column_name, reference_ds)
         self._verify_type(actual_ds, column_name, 'numeric')
         self._verify_type(reference_ds, column_name, 'numeric')
 
