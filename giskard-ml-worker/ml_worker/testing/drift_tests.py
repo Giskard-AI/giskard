@@ -224,16 +224,7 @@ class DriftTests(AbstractTestCollection):
           output_df:
                 Dataframe containing the actual set rows with the categories that have drifted the most
         """
-        actual_ds.df.reset_index(drop=True, inplace=True)
-        reference_ds.df.reset_index(drop=True, inplace=True)
-
-        self._validate_column_name(actual_ds, column_name, reference_ds)
-        self._validate_column_type(actual_ds, column_name, 'category')
-        self._validate_column_type(reference_ds, column_name, 'category')
-
-        actual_series = actual_ds.df[column_name]
-        reference_series = reference_ds.df[column_name]
-        self._validate_series_notempty(actual_series, reference_series)
+        actual_series, reference_series = self._generate_series(actual_ds, reference_ds, column_name, 'category')
 
         total_psi, output_data = self._calculate_drift_psi(actual_series, reference_series, max_categories)
 
@@ -304,16 +295,7 @@ class DriftTests(AbstractTestCollection):
           output_df:
                 Dataframe containing the actual set rows with the categories that have drifted the most
         """
-        actual_ds.df.reset_index(drop=True, inplace=True)
-        reference_ds.df.reset_index(drop=True, inplace=True)
-
-        self._validate_column_name(actual_ds, column_name, reference_ds)
-        self._validate_column_type(actual_ds, column_name, 'category')
-        self._validate_column_type(reference_ds, column_name, 'category')
-
-        actual_series = actual_ds.df[column_name]
-        reference_series = reference_ds.df[column_name]
-        self._validate_series_notempty(actual_series, reference_series)
+        actual_series, reference_series = self._generate_series(actual_ds, reference_ds, column_name, 'category')
 
         chi_square, p_value, output_data = self._calculate_chi_square(actual_series, reference_series, max_categories)
         passed = p_value > threshold
@@ -340,6 +322,17 @@ class DriftTests(AbstractTestCollection):
             messages=messages,
             output_df=output_df_sample
         ))
+
+    def _generate_series(self, actual_ds, reference_ds, column_name, column_type):
+        actual_ds.df.reset_index(drop=True, inplace=True)
+        reference_ds.df.reset_index(drop=True, inplace=True)
+        self._validate_column_name(actual_ds, column_name, reference_ds)
+        self._validate_column_type(actual_ds, column_name, column_type)
+        self._validate_column_type(reference_ds, column_name, column_type)
+        actual_series = actual_ds.df[column_name]
+        reference_series = reference_ds.df[column_name]
+        self._validate_series_notempty(actual_series, reference_series)
+        return actual_series, reference_series
 
     def test_drift_ks(self,
                       reference_ds: pd.DataFrame,
@@ -381,16 +374,7 @@ class DriftTests(AbstractTestCollection):
           output_df:
                 Dataframe containing the actual set rows with the numeric partition that have drifted the most
         """
-        actual_ds.df.reset_index(drop=True, inplace=True)
-        reference_ds.df.reset_index(drop=True, inplace=True)
-
-        self._validate_column_name(actual_ds, column_name, reference_ds)
-        self._validate_column_type(actual_ds, column_name, 'numeric')
-        self._validate_column_type(reference_ds, column_name, 'numeric')
-
-        actual_series = actual_ds.df[column_name]
-        reference_series = reference_ds.df[column_name]
-        self._validate_series_notempty(actual_series, reference_series)
+        actual_series, reference_series = self._generate_series(actual_ds, reference_ds, column_name, 'numeric')
 
         result = self._calculate_ks(actual_series, reference_series)
 
@@ -459,16 +443,7 @@ class DriftTests(AbstractTestCollection):
           output_df:
                 Dataframe containing the actual set rows with the numeric partition that have drifted the most
         """
-        actual_ds.df.reset_index(drop=True, inplace=True)
-        reference_ds.df.reset_index(drop=True, inplace=True)
-
-        self._validate_column_name(actual_ds, column_name, reference_ds)
-        self._validate_column_type(actual_ds, column_name, 'numeric')
-        self._validate_column_type(reference_ds, column_name, 'numeric')
-
-        actual_series = actual_ds.df[column_name]
-        reference_series = reference_ds.df[column_name]
-        self._validate_series_notempty(actual_series, reference_series)
+        actual_series, reference_series = self._generate_series(actual_ds, reference_ds, column_name, 'numeric')
 
         metric = self._calculate_earth_movers_distance(actual_series, reference_series)
 
