@@ -194,8 +194,8 @@ class DriftTests(AbstractTestCollection):
         reference_ds.df.reset_index(drop=True, inplace=True)
 
         self._verify_column_name(actual_ds, column_name, reference_ds)
-        self._verify_type(actual_ds, column_name, 'category')
-        self._verify_type(reference_ds, column_name, 'category')
+        self._verify_column_type(actual_ds, column_name, 'category')
+        self._verify_column_type(reference_ds, column_name, 'category')
 
         actual_series = actual_ds.df[column_name]
         reference_series = reference_ds.df[column_name]
@@ -280,8 +280,8 @@ class DriftTests(AbstractTestCollection):
         reference_ds.df.reset_index(drop=True, inplace=True)
 
         self._verify_column_name(actual_ds, column_name, reference_ds)
-        self._verify_type(actual_ds, column_name, 'category')
-        self._verify_type(reference_ds, column_name, 'category')
+        self._verify_column_type(actual_ds, column_name, 'category')
+        self._verify_column_type(reference_ds, column_name, 'category')
 
         actual_series = actual_ds.df[column_name]
         reference_series = reference_ds.df[column_name]
@@ -356,8 +356,8 @@ class DriftTests(AbstractTestCollection):
         reference_ds.df.reset_index(drop=True, inplace=True)
 
         self._verify_column_name(actual_ds, column_name, reference_ds)
-        self._verify_type(actual_ds, column_name, 'numeric')
-        self._verify_type(reference_ds, column_name, 'numeric')
+        self._verify_column_type(actual_ds, column_name, 'numeric')
+        self._verify_column_type(reference_ds, column_name, 'numeric')
 
         actual_series = actual_ds.df[column_name]
         reference_series = reference_ds.df[column_name]
@@ -433,8 +433,8 @@ class DriftTests(AbstractTestCollection):
         reference_ds.df.reset_index(drop=True, inplace=True)
 
         self._verify_column_name(actual_ds, column_name, reference_ds)
-        self._verify_type(actual_ds, column_name, 'numeric')
-        self._verify_type(reference_ds, column_name, 'numeric')
+        self._verify_column_type(actual_ds, column_name, 'numeric')
+        self._verify_column_type(reference_ds, column_name, 'numeric')
 
         actual_series = actual_ds.df[column_name]
         reference_series = reference_ds.df[column_name]
@@ -779,6 +779,6 @@ class DriftTests(AbstractTestCollection):
         ))
 
     @staticmethod
-    def _verify_type(gsk_dataset, column_name, column_type):
+    def _verify_column_type(gsk_dataset, column_name, column_type):
         assert gsk_dataset.feature_types[column_name] == column_type, f'Column "{column_name}" does not belong to' \
                                                                       f' type "{column_type}"'
