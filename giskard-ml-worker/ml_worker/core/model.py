@@ -2,6 +2,7 @@ from typing import List, Any, Optional, Callable, Iterable, Union
 
 import numpy
 import pandas as pd
+from builtins import Exception
 from pydantic import BaseModel
 
 from ml_worker.core.giskard_dataset import GiskardDataset
@@ -30,6 +31,10 @@ class GiskardModel:
 
     def run_predict(self, dataset: GiskardDataset):
         df = dataset.df.copy()
+        try:
+            df = df.astype(dataset.column_types)
+        except Exception as e:
+            raise ValueError("Failed to apply column types to dataset") from e
         if dataset.target and dataset.target in df.columns:
             df.drop(dataset.target, axis=1, inplace=True)
         if self.feature_names:
