@@ -85,10 +85,14 @@ public class MLWorkerClient implements AutoCloseable {
         if(dataset.getFeatureTypes() != null){
             requestBuilder.putAllFeatureTypes(Maps.transformValues(dataset.getFeatureTypes(), FeatureType::getName));
         }
+        if(dataset.getColumnTypes() != null){
+            requestBuilder.putAllColumnTypes(dataset.getColumnTypes());
+        }
         return blockingStub.runModelForDataFrame(requestBuilder.build());
     }
 
     public RunModelResponse runModelForDataStream(ProjectModel model, Dataset dataset) throws IOException {
+        Map<String, String> columnTypes = dataset.getColumnTypes();
         RunModelRequest request = RunModelRequest.newBuilder()
             .setModel(grpcMapper.serialize(model))
             .setDataset(grpcMapper.serialize(dataset))

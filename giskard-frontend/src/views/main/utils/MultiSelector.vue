@@ -6,6 +6,7 @@
       :items="options"
       :label="label"
       multiple
+      chips
       @change="emit"
   >
     <template v-slot:prepend-item>
@@ -26,17 +27,6 @@
         </v-list-item-content>
       </v-list-item>
       <v-divider class="mt-2"></v-divider>
-    </template>
-    <template v-slot:selection="{ item, index }">
-      <v-chip v-if="index < 1">
-        <span>{{ item }}</span>
-      </v-chip>
-      <span
-          v-if="index == 1"
-          class="grey--text text-caption"
-      >
-          (+{{ selectOptions.length - 1 }} others)
-        </span>
     </template>
   </v-select>
 </template>
@@ -77,7 +67,5 @@ export default class MultiSelector extends Vue {
 </script>
 
 <style scoped>
-.dataset-selector {
-  min-width: 300px
-}
+
 </style>

@@ -80,7 +80,9 @@ class MLWorkerServiceImpl(MLWorkerServicer):
         model = deserialize_model(request.model)
         ds = GiskardDataset(pd.DataFrame([r.columns for r in request.dataframe.rows]),
                             target=request.target,
-                            feature_types=request.feature_types)
+                            feature_types=request.feature_types,
+                            column_types=request.column_types,
+                            )
         predictions = model.run_predict(ds)
         if model.model_type == "classification":
             return RunModelForDataFrameResponse(all_predictions=self.pandas_df_to_proto_df(predictions.all_predictions),
