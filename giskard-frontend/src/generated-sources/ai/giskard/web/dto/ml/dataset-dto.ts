@@ -6,5 +6,5 @@ import type {_FileDTO} from './file-dto';
  */
 export interface DatasetDTO extends _FileDTO {
     featureTypes: {[key: string]: FeatureType};
-    target: string;
+    target?: string | null;
 }

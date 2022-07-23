@@ -44,6 +44,9 @@ public class GRPCMapper {
         SerializedGiskardDataset.Builder builder = SerializedGiskardDataset.newBuilder()
             .setSerializedDf(ByteString.readFrom(Files.newInputStream(datasetPath)))
             .putAllFeatureTypes(Maps.transformValues(dataset.getFeatureTypes(), FeatureType::getName));
+        if (dataset.getColumnTypes() != null) {
+            builder.putAllColumnTypes(dataset.getColumnTypes());
+        }
         if (dataset.getTarget() != null) {
             builder.setTarget(dataset.getTarget());
         }

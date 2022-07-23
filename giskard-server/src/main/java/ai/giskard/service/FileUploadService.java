@@ -16,7 +16,6 @@ import org.apache.commons.compress.compressors.CompressorException;
 import org.apache.commons.compress.compressors.CompressorStreamFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -67,7 +66,7 @@ public class FileUploadService {
         try {
             requirementsStream.transferTo(Files.newOutputStream(requirementsFilePath));
         } catch (IOException e) {
-            throw new RuntimeException("Error writing requirements file: " + requirementsFilePath, e);
+            throw new GiskardRuntimeException("Error writing requirements file: " + requirementsFilePath, e);
         }
         model.setRequirementsFileName(requirementsFilename);
         return modelRepository.save(model);
@@ -115,12 +114,12 @@ public class FileUploadService {
 
     private void createOrEnsureOutputDirectory(Path outputPath) {
         if (Files.exists(outputPath) && !Files.isDirectory(outputPath)) {
-            throw new RuntimeException(String.format("Output path exists, but not a directory: %s", outputPath));
+            throw new GiskardRuntimeException(String.format("Output path exists, but not a directory: %s", outputPath));
         }
         try {
             Files.createDirectories(outputPath);
         } catch (IOException e) {
-            throw new RuntimeException("Failed to create output directory", e);
+            throw new GiskardRuntimeException("Failed to create output directory", e);
         }
     }
 
@@ -131,14 +130,14 @@ public class FileUploadService {
             return new CompressorStreamFactory()
                 .createCompressorInputStream(CompressorStreamFactory.ZSTANDARD, compressedInputStream);
         } catch (IOException e) {
-            throw new RuntimeException(String.format("Failed to read file to %s", compressedInputPath), e);
+            throw new GiskardRuntimeException(String.format("Failed to read file to %s", compressedInputPath), e);
         } catch (CompressorException e) {
-            throw new RuntimeException(String.format("Failed to decompress input when reading %s", compressedInputPath), e);
+            throw new GiskardRuntimeException(String.format("Failed to decompress input when reading %s", compressedInputPath), e);
         }
     }
 
     @Transactional
-    public Dataset uploadDataset(Project project, String datasetName, Map<String, FeatureType> featureTypes, String target, InputStream inputStream) throws IOException {
+    public Dataset uploadDataset(Project project, String datasetName, Map<String, FeatureType> featureTypes, Map<String, String> columnTypes, String target, InputStream inputStream) throws IOException {
         Path datasetPath = locationService.datasetsDirectory(project.getKey());
         createOrEnsureOutputDirectory(datasetPath);
 
@@ -146,6 +145,7 @@ public class FileUploadService {
         dataset.setName(nameOrDefault(datasetName, "Dataset"));
         dataset.setProject(project);
         dataset.setFeatureTypes(featureTypes);
+        dataset.setColumnTypes(columnTypes);
         dataset.setTarget(target);
         dataset = datasetRepository.save(dataset);
 

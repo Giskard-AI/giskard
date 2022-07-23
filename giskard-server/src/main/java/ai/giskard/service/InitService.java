@@ -303,7 +303,7 @@ public class InitService {
                 project,
                 dsParams.getName() + " " + fileName,
                 dsParams.getFeatureTypes(),
-                target,
+                dsParams.getColumnTypes(), target,
                 dsStream
             );
         } catch (IOException e) {

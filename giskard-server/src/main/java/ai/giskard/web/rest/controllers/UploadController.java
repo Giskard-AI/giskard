@@ -57,6 +57,7 @@ public class UploadController {
 
         Dataset savedDataset = uploadService.uploadDataset(
             project, params.getName(), params.getFeatureTypes(),
+            params.getColumnTypes(),
             params.getTarget(), file.getInputStream()
         );
         return giskardMapper.datasetToDatasetDTO(savedDataset);

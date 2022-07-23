@@ -24,5 +24,6 @@ def deserialize_dataset(serialized_dataset: SerializedGiskardDataset) -> Giskard
     return GiskardDataset(
         df=pd.read_csv(BytesIO(decompress(serialized_dataset.serialized_df)), keep_default_na=False),
         target=serialized_dataset.target,
-        feature_types=dict(serialized_dataset.feature_types)
+        feature_types=dict(serialized_dataset.feature_types),
+        column_types=dict(serialized_dataset.column_types)
     )

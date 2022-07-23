@@ -83,7 +83,7 @@ public class InspectionService {
         if (inspection.getDataset().getTarget() != null) {
             DoubleColumn absDiffPercentColumn = calculatedTable.doubleColumn("absDiffPercent");
             DoubleColumn diffPercent = calculatedTable.doubleColumn("diffPercent");
-            switch (filter.getRowFilter()) {
+            switch (filter.getType()) {
                 case CORRECT -> {
                     threshold = getThresholdForRegression(absDiffPercentColumn, true);
                     selection = absDiffPercentColumn.isLessThanOrEqualTo(threshold);
@@ -117,7 +117,7 @@ public class InspectionService {
                 }
                 default -> selection = null;
             }
-        } else if (filter.getRowFilter() == CUSTOM) {
+        } else if (filter.getType() == CUSTOM) {
             DoubleColumn prediction = calculatedTable.doubleColumn(0);
             selection = prediction.isNotMissing();
             if (filter.getMinThreshold() != null) {
@@ -149,7 +149,7 @@ public class InspectionService {
         if (inspection.getDataset().getTarget() != null) {
             StringColumn targetClass = calculatedTable.stringColumn(1);
             Selection correctSelection = predictedClass.isEqualTo(targetClass);
-            switch (filter.getRowFilter()) {
+            switch (filter.getType()) {
                 case CORRECT -> selection = correctSelection;
                 case WRONG -> selection = predictedClass.isNotEqualTo(targetClass);
                 case CUSTOM -> {
@@ -164,7 +164,7 @@ public class InspectionService {
                 }
                 default -> selection = null;
             }
-        } else if (filter.getRowFilter() == CUSTOM) {
+        } else if (filter.getType() == CUSTOM) {
             customClassifFilters(filter, predsTable, predictedClass, selection);
         }
         return selection;

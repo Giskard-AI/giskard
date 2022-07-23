@@ -4,6 +4,7 @@ package ai.giskard.domain.ml;
 import ai.giskard.domain.FeatureType;
 import ai.giskard.domain.ProjectFile;
 import ai.giskard.utils.JSONStringAttributeConverter;
+import ai.giskard.utils.SimpleJSONStringAttributeConverter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.core.type.TypeReference;
 import lombok.Getter;
@@ -32,6 +33,11 @@ public class Dataset extends ProjectFile {
     @Setter
     @Convert(converter = FeatureTypesConverter.class)
     private Map<String, FeatureType> featureTypes;
+
+    @Setter
+    @Column(columnDefinition = "VARCHAR")
+    @Convert(converter = SimpleJSONStringAttributeConverter.class)
+    private Map<String, String> columnTypes;
     @Setter
     private String target;
 
