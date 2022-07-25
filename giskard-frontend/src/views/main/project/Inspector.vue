@@ -168,7 +168,7 @@ import PredictionExplanations from './PredictionExplanations.vue';
 import TextExplanation from './TextExplanation.vue';
 import {api} from '@/api';
 import FeedbackPopover from '@/components/FeedbackPopover.vue';
-import {DatasetDTO, FeatureMetadataDTO, ModelDTO, FeedbackType} from "@/generated-sources";
+import {DatasetDTO, ColumnMetadataDTO, ModelDTO, FeedbackType} from "@/generated-sources";
 
 import {isClassification} from "@/ml-utils";
 import mixpanel from "mixpanel-browser";
@@ -185,7 +185,7 @@ export default class Inspector extends Vue {
   @Prop({required: true}) inputData!: { [key: string]: string }
   @Prop({default: false}) isMiniMode!: boolean;
   loadingData = false;
-  inputMetaData: FeatureMetadataDTO[] = [];
+  inputMetaData: ColumnMetadataDTO[] = [];
   featuresToView: string[] = []
   errorLoadingMetadata = ""
   dataErrorMsg = ""
@@ -208,7 +208,7 @@ export default class Inspector extends Vue {
   async loadMetaData() {
     this.loadingData = true;
     try {
-      this.inputMetaData = await api.getFeaturesMetadata(this.dataset.id)
+      this.inputMetaData = await api.getColumnsMetadata(this.dataset.id, this.model.id)
       this.featuresToView = this.inputMetaData.filter(e=>e.name!=this.dataset.target).map(e => e.name)
 
       this.errorLoadingMetadata = ""
@@ -233,7 +233,7 @@ export default class Inspector extends Vue {
     }
   }
 
-  async onValuePerturbation(featureMeta: FeatureMetadataDTO) {
+  async onValuePerturbation(featureMeta: ColumnMetadataDTO) {
     mixpanel.track("Feature perturbation", {
       featureType: featureMeta.type,
       featureName: anonymize(featureMeta.name),

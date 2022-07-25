@@ -16,8 +16,8 @@
       <span v-else>Feedback</span>
     </v-tooltip>
     <v-overlay
-      :value='feedbackPopupToggle'
-      :z-index='1'
+        :value='feedbackPopupToggle'
+        :z-index='1'
     ></v-overlay>
     <v-card v-if='feedbackPopupToggle' class='feedback-card' dark color='primary'>
       <v-card-title>Is this input case insightful?</v-card-title>
@@ -28,13 +28,13 @@
           <v-radio label='Other' value='other'></v-radio>
         </v-radio-group>
         <v-textarea
-          v-model='feedback'
-          :disabled='feedbackSubmitted'
-          placeholder='Why?'
-          rows='2'
-          no-resize
-          outlined
-          hide-details
+            v-model='feedback'
+            :disabled='feedbackSubmitted'
+            placeholder='Why?'
+            rows='2'
+            no-resize
+            outlined
+            hide-details
         ></v-textarea>
       </v-card-text>
       <p v-if='feedbackError' class='caption error--text mb-0'>{{ feedbackError }}</p>
@@ -52,19 +52,19 @@
 </template>
 
 <script lang='ts'>
-import { Component, Prop, Vue } from 'vue-property-decorator';
+import {Component, Prop, Vue} from 'vue-property-decorator';
 import OverlayLoader from '@/components/OverlayLoader.vue';
 import PredictionResults from './PredictionResults.vue';
 import PredictionExplanations from './PredictionExplanations.vue';
 import TextExplanation from './TextExplanation.vue';
-import { api } from '@/api';
+import {api} from '@/api';
 import FeedbackPopover from '@/components/FeedbackPopover.vue';
 import Inspector from './Inspector.vue';
 import RowList from '@/views/main/project/RowList.vue';
-import { CreateFeedbackDTO, DatasetDTO, ModelDTO } from '@/generated-sources';
+import {CreateFeedbackDTO, DatasetDTO, ModelDTO} from '@/generated-sources';
 
 type CreatedFeedbackTargetDTO = {
-  targetFeature: string;
+  targetFeature?: string | null;
   userData: string;
   modelId: number;
   datasetId: number;
@@ -95,7 +95,7 @@ export default class TargetFeedback extends Vue {
   feedbackError: string = '';
   feedbackSubmitted: boolean = false;
 
-  async mounted(){
+  async mounted() {
     console.log(this.inputData)
   }
 

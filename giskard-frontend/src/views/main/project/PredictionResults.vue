@@ -1,27 +1,27 @@
 <template>
   <v-card class='mb-4'>
-    <OverlayLoader v-show='loading' />
+    <OverlayLoader v-show='loading'/>
     <v-card-title>Result</v-card-title>
     <v-card-text class='text-center' v-if='inputData'>
       <v-row v-if='prediction && isClassification(predictionTask)'>
         <v-col
-          lg='8'
-          md='12'
-          sm='12'
-          xs='12'
-          v-if='
+            lg='8'
+            md='12'
+            sm='12'
+            xs='12'
+            v-if='
             resultProbabilities && Object.keys(resultProbabilities).length > 0
           '
         >
           <div>Probabilities</div>
-          <v-chart class='chart' :option='chartOptions' autoresize />
+          <v-chart class='chart' :option='chartOptions' autoresize/>
         </v-col>
         <v-col lg='4'>
           <div class='mb-3'>
             <div>Prediction</div>
             <div
-              class='text-h6'
-              :class="
+                class='text-h6'
+                :class="
                 !isDefined(actual)
                   ? 'info--text text--darken-2'
                   : prediction === actual
@@ -39,46 +39,45 @@
               <div class='targetFeedbackDiv' v-if='isDefined(actual) && targetMetaData'>
                 <div class='text-h6'></div>
                 <v-form lazy-validation>
-                    <ValidationProvider
+                  <ValidationProvider
                       :name="targetMetaData.name"
                       v-slot="{ dirty }"
-                    >
-                      <div class="py-1 d-flex">
-                        <input type="number" v-if="targetMetaData.type === 'numeric'"
-                               v-model="inputData[targetMetaData.name]"
-                               class="common-style-input"
-                               :class="{'is-dirty': dirty || inputData[targetMetaData.name] !== originalData[targetMetaData.name]}"
-                               @change="$emit('update:inputData', inputData)"
-                               required
-                        />
-                        <textarea v-if="targetMetaData.type === 'text'"
-                                  v-model="inputData[targetMetaData.name]"
-                                  :rows="!inputData[targetMetaData.name] ? 1 : Math.min(15, parseInt(inputData[targetMetaData.name].length / 40) + 1)"
-                                  class="common-style-input"
-                                  :class="{'is-dirty': dirty || inputData[targetMetaData.name] !== originalData[targetMetaData.name]}"
-                                  @change="$emit('update:inputData', inputData)"
-                                  required
-                        ></textarea>
-                        <select v-if="targetMetaData.type === 'category'"
+                  >
+                    <div class="py-1 d-flex">
+                      <input type="number" v-if="targetMetaData.type === 'numeric'"
+                             v-model="inputData[targetMetaData.name]"
+                             class="common-style-input"
+                             :class="{'is-dirty': dirty || inputData[targetMetaData.name] !== originalData[targetMetaData.name]}"
+                             @change="$emit('update:inputData', inputData)"
+                             required
+                      />
+                      <textarea v-if="targetMetaData.type === 'text'"
                                 v-model="inputData[targetMetaData.name]"
+                                :rows="!inputData[targetMetaData.name] ? 1 : Math.min(15, parseInt(inputData[targetMetaData.name].length / 40) + 1)"
                                 class="common-style-input"
                                 :class="{'is-dirty': dirty || inputData[targetMetaData.name] !== originalData[targetMetaData.name]}"
                                 @change="$emit('update:inputData', inputData)"
                                 required
-                        >
-                          <option v-for="k in targetMetaData.values" :key="k" :value="k">{{ k }}</option>
-                        </select>
-                        <FeedbackPopover
+                      ></textarea>
+                      <select v-if="targetMetaData.type === 'category'"
+                              v-model="inputData[targetMetaData.name]"
+                              class="common-style-input"
+                              :class="{'is-dirty': dirty || inputData[targetMetaData.name] !== originalData[targetMetaData.name]}"
+                              @change="$emit('update:inputData', inputData)"
+                              required
+                      >
+                        <option v-for="k in targetMetaData.values" :key="k" :value="k">{{ k }}</option>
+                      </select>
+                      <FeedbackPopover
                           v-if="true"
                           :inputLabel="targetFeature"
                           :inputValue="inputData[targetFeature]"
                           :originalValue="originalData[targetFeature]"
                           inputType="category"
                           :feedback-type='FeedbackType.TARGET'
-                          v-on="$listeners"
-                        />
-                      </div>
-                    </ValidationProvider>
+                      />
+                    </div>
+                  </ValidationProvider>
                 </v-form>
               </div>
               <div v-else>-</div>
@@ -121,17 +120,16 @@
 </template>
 
 <script lang='ts'>
-import { Component, Prop, Vue, Watch } from 'vue-property-decorator';
+import {Component, Prop, Vue, Watch} from 'vue-property-decorator';
 import OverlayLoader from '@/components/OverlayLoader.vue';
-import { api } from '@/api';
+import {api} from '@/api';
 import ECharts from 'vue-echarts';
-import { use } from 'echarts/core';
-import { BarChart } from 'echarts/charts';
-import { CanvasRenderer } from 'echarts/renderers';
-import { GridComponent } from 'echarts/components';
-import { DatasetDTO, FeatureMetadataDTO, ModelDTO, ModelType,FeedbackType} from '@/generated-sources';
-import { isClassification } from '@/ml-utils';
-import * as _ from 'lodash';
+import {use} from 'echarts/core';
+import {BarChart} from 'echarts/charts';
+import {CanvasRenderer} from 'echarts/renderers';
+import {GridComponent} from 'echarts/components';
+import {ColumnMetadataDTO, FeedbackType, ModelDTO, ModelType} from '@/generated-sources';
+import {isClassification} from '@/ml-utils';
 import FeedbackPopover from '@/components/FeedbackPopover.vue';
 import * as _ from "lodash";
 
@@ -139,19 +137,19 @@ use([CanvasRenderer, BarChart, GridComponent]);
 Vue.component('v-chart', ECharts);
 
 @Component({
-  components: { FeedbackPopover, OverlayLoader }
+  components: {FeedbackPopover, OverlayLoader}
 })
 export default class PredictionResults extends Vue {
-  @Prop({ required: true }) model!: ModelDTO;
+  @Prop({required: true}) model!: ModelDTO;
   @Prop({required: true}) datasetId!: number;
-  @Prop({ required: true }) predictionTask!: ModelType;
-  @Prop({ required: true }) inputMetaData!: FeatureMetadataDTO[];
+  @Prop({required: true}) predictionTask!: ModelType;
+  @Prop({required: true}) inputMetaData!: ColumnMetadataDTO[];
   @Prop() targetFeature!: string;
   @Prop() classificationLabels!: string[];
-  @Prop() inputData!: {[key: string]: string};
-  @Prop({ required: true }) originalData!: object;
-  @Prop({ default: false }) modified!: boolean;
-  FeedbackType=FeedbackType;
+  @Prop() inputData!: { [key: string]: string };
+  @Prop({required: true}) originalData!: object;
+  @Prop({default: false}) modified!: boolean;
+  FeedbackType = FeedbackType;
 
 
   prediction: string | number | undefined = '';
@@ -164,7 +162,7 @@ export default class PredictionResults extends Vue {
   targetMetaData;
 
   async mounted() {
-    this.targetMetaData=this.inputMetaData.filter(e=>e.name==this.targetFeature)[0]
+    this.targetMetaData = this.inputMetaData.filter(e => e.name == this.targetFeature)[0]
     await this.submitPrediction();
   }
 
@@ -172,15 +170,15 @@ export default class PredictionResults extends Vue {
     return !_.isEqual(this.inputData[this.targetFeature], this.originalData[this.targetFeature]);
   }
 
-  @Watch('inputData', { deep: true })
+  @Watch('inputData', {deep: true})
   public async submitPrediction() {
     if (Object.keys(this.inputData).length) {
       try {
         this.loading = true;
         const predictionResult = (await api.predict(
-          this.model.id,
+            this.model.id,
             this.datasetId,
-          this.inputData
+            this.inputData
         ));
         this.prediction = predictionResult.prediction;
         this.$emit('result', this.prediction);
@@ -188,8 +186,8 @@ export default class PredictionResults extends Vue {
         // Sort the object by value - solution based on:
         // https://stackoverflow.com/questions/55319092/sort-a-javascript-object-by-key-or-value-es6
         this.resultProbabilities = Object.entries(this.resultProbabilities)
-          .sort(([, v1], [, v2]) => +v2 - +v1)
-          .reduce((r, [k, v]) => ({ ...r, [k]: v }), {});
+            .sort(([, v1], [, v2]) => +v2 - +v1)
+            .reduce((r, [k, v]) => ({...r, [k]: v}), {});
         this.errorMsg = '';
       } catch (error) {
         this.errorMsg = error.response.data.detail;
@@ -220,21 +218,23 @@ export default class PredictionResults extends Vue {
   private firstNSortedByKey(obj, n) {
     const numberExtraCategories = Object.keys(obj).length - n;
     let filteredObject = Object.keys(obj)
-      .slice(0, n)
-      .sort()
-      .reduce(function(acc, current) {
-        acc[current] = obj[current];
-        return acc;
-      }, {});
+        .slice(0, n)
+        .sort()
+        .reduce(function (acc, current) {
+          acc[current] = obj[current];
+          return acc;
+        }, {});
     if (numberExtraCategories > 0) {
       const sumOthers = Object.values(obj).slice(n, -1).reduce((acc: any, val: any) => acc + val, 0);
-      filteredObject = { [`Others (${numberExtraCategories})`]: sumOthers, ...filteredObject };
+      filteredObject = {[`Others (${numberExtraCategories})`]: sumOthers, ...filteredObject};
     }
     return filteredObject;
   }
-  isDefined(val:any){
+
+  isDefined(val: any) {
     return !_.isNil(val);
   }
+
   get chartOptions() {
     const results = this.firstNSortedByKey(this.resultProbabilities, this.predCategoriesN);
     return {
@@ -257,9 +257,9 @@ export default class PredictionResults extends Vue {
             show: true,
             position: 'right',
             formatter: (params) =>
-              params.value % 1 == 0
-                ? params.value
-                : params.value.toFixed(2).toLocaleString()
+                params.value % 1 == 0
+                    ? params.value
+                    : params.value.toFixed(2).toLocaleString()
           },
           data: Object.values(results)
         }
@@ -306,7 +306,8 @@ div.caption {
 .v-data-table tbody td {
   font-size: 10px !important;
 }
-.targetFeedbackDiv >>> select{
+
+.targetFeedbackDiv >>> select {
   flex-grow: 1;
 }
 

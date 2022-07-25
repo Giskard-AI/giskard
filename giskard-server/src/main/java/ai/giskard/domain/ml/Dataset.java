@@ -46,4 +46,8 @@ public class Dataset extends ProjectFile {
     @JsonIgnore
     private Set<Inspection> inspections = new HashSet<>();
 
+    public boolean hasTarget(){
+        return getTarget() != null;
+    }
+
 }

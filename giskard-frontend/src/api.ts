@@ -6,11 +6,11 @@ import Vue from "vue";
 import {
     AdminUserDTO,
     AppConfigDTO,
+    ColumnMetadataDTO,
     CreateFeedbackDTO,
     CreateFeedbackReplyDTO,
     DatasetDTO,
     ExplainResponseDTO,
-    FeatureMetadataDTO,
     FeedbackDTO,
     FeedbackMinimalDTO,
     GeneralSettings,
@@ -258,8 +258,8 @@ export const api = {
     async peekDataFile(datasetId: number) { //TODO
         return apiV2.get<unknown, any>(`/dataset/${datasetId}/rows`, {params: {offset: 0, size: 10}});
     },
-    async getFeaturesMetadata(datasetId: number) {
-        return apiV2.get<unknown, FeatureMetadataDTO[]>(`/dataset/${datasetId}/features`);
+    async getColumnsMetadata(datasetId: number, modelId: number) {
+        return apiV2.get<unknown, ColumnMetadataDTO[]>(`/dataset/${datasetId}/model/${modelId}/features`);
     },
     async getDataFilteredByRange(inspectionId, props, filter) {
         return apiV2.post<unknown, any>(`/inspection/${inspectionId}/rowsFiltered`, filter, {params: props});

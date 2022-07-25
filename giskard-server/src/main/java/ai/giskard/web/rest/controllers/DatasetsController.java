@@ -2,7 +2,7 @@ package ai.giskard.web.rest.controllers;
 
 import ai.giskard.repository.ml.DatasetRepository;
 import ai.giskard.service.DatasetService;
-import ai.giskard.web.dto.FeatureMetadataDTO;
+import ai.giskard.web.dto.ColumnMetadataDTO;
 import ai.giskard.web.dto.MessageDTO;
 import ai.giskard.web.dto.mapper.GiskardMapper;
 import ai.giskard.web.dto.ml.DatasetDTO;
@@ -44,7 +44,7 @@ public class DatasetsController {
      */
 
     @GetMapping("/dataset/{datasetId}/rows")
-    public String getRows(@PathVariable @NotNull Long datasetId, @NotNull int offset, @NotNull int size) throws IOException {
+    public String getRows(@PathVariable @NotNull Long datasetId, @NotNull int offset, @NotNull int size) {
         Table filteredTable = datasetService.getRows(datasetId, offset, offset + size);
         return filteredTable.write().toString("json");
     }
@@ -68,8 +68,8 @@ public class DatasetsController {
         return new MessageDTO("Dataset {} has been deleted", datasetId);
     }
 
-    @GetMapping("/dataset/{datasetId}/features")
-    public List<FeatureMetadataDTO> datasetFeaturesMetadata(@PathVariable @NotNull Long datasetId) {
-        return datasetService.getFeaturesWithDistinctValues(datasetId);
+    @GetMapping("/dataset/{datasetId}/model/{modelId}/features")
+    public List<ColumnMetadataDTO> datasetColumnsMetadata(@PathVariable @NotNull Long datasetId, @PathVariable @NotNull Long modelId) {
+        return datasetService.getFeaturesWithDistinctValues(datasetId, modelId);
     }
 }

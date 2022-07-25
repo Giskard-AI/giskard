@@ -3,12 +3,13 @@ package ai.giskard.service;
 import ai.giskard.config.ApplicationProperties;
 import ai.giskard.domain.FeatureType;
 import ai.giskard.domain.ml.Dataset;
+import ai.giskard.domain.ml.ProjectModel;
 import ai.giskard.repository.InspectionRepository;
 import ai.giskard.repository.UserRepository;
 import ai.giskard.repository.ml.DatasetRepository;
 import ai.giskard.repository.ml.ModelRepository;
 import ai.giskard.security.PermissionEvaluator;
-import ai.giskard.web.dto.FeatureMetadataDTO;
+import ai.giskard.web.dto.ColumnMetadataDTO;
 import ai.giskard.web.dto.ml.DatasetDetailsDTO;
 import ai.giskard.web.rest.errors.Entity;
 import ai.giskard.web.rest.errors.EntityNotFoundException;
@@ -27,6 +28,7 @@ import javax.validation.constraints.NotNull;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -47,7 +49,7 @@ public class DatasetService {
     private final PermissionEvaluator permissionEvaluator;
 
     /**
-     *  Read table from file
+     * Read table from file
      *
      * @param datasetId id of the dataset
      * @return the table
@@ -113,22 +115,34 @@ public class DatasetService {
             log.info("Removing dataset file: {}", datasetPath.getFileName());
             Files.deleteIfExists(datasetPath);
         } catch (IOException e) {
-            throw new RuntimeException(String.format("Failed to remove dataset file %s", datasetPath.getFileName()), e);
+            throw new GiskardRuntimeException(String.format("Failed to remove dataset file %s", datasetPath.getFileName()), e);
         }
-
     }
 
     @Transactional
-    public List<FeatureMetadataDTO> getFeaturesWithDistinctValues(Long datasetId) {
+    public List<ColumnMetadataDTO> getFeaturesWithDistinctValues(Long datasetId, Long modelId) {
         Dataset dataset = datasetRepository.getById(datasetId);
+        ProjectModel model = modelRepository.getById(modelId);
+
         permissionEvaluator.validateCanReadProject(dataset.getProject().getId());
 
         Table data = readTableByDatasetId(datasetId);
 
-        return dataset.getFeatureTypes().entrySet().stream().map(featureAndType -> {
+        Map<String, FeatureType> featureTypes = new HashMap<>(dataset.getFeatureTypes());
+
+
+        if (dataset.hasTarget()) {
+            if (model.getModelType().isClassification()) {
+                featureTypes.put(dataset.getTarget(), FeatureType.CATEGORY);
+            } else {
+                featureTypes.put(dataset.getTarget(), FeatureType.NUMERIC);
+            }
+        }
+
+        return featureTypes.entrySet().stream().map(featureAndType -> {
             String featureName = featureAndType.getKey();
             FeatureType type = featureAndType.getValue();
-            FeatureMetadataDTO meta = new FeatureMetadataDTO();
+            ColumnMetadataDTO meta = new ColumnMetadataDTO();
             meta.setType(type);
             meta.setName(featureName);
             if (type == FeatureType.CATEGORY) {

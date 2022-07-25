@@ -34,8 +34,7 @@
                :originalData='originalData'
                class='px-0'
                @reset='resetInput'
-               @submitValueFeedback='submitValueFeedback'
-               @submitValueVariationFeedback='submitValueVariationFeedback'
+               @submitFeedback='submitFeedback'
     />
 
     <!-- For general feedback -->
@@ -99,7 +98,7 @@ import {api} from '@/api';
 import FeedbackPopover from '@/components/FeedbackPopover.vue';
 import Inspector from './Inspector.vue';
 import Mousetrap from 'mousetrap';
-import {CreateFeedbackDTO, Filter, InspectionDTO, ModelType, RowFilterType} from '@/generated-sources';
+import {CreateFeedbackDTO, FeedbackType, Filter, InspectionDTO, ModelType, RowFilterType} from '@/generated-sources';
 import mixpanel from "mixpanel-browser";
 import _ from "lodash";
 import InspectionFilter from './InspectionFilter.vue';
@@ -243,7 +242,7 @@ export default class InspectorWrapper extends Vue {
     }
   }
 
-  public async submitFeedback(userData: object,feedbackType:FeedbackType ) {
+  public async submitFeedback(userData: object, feedbackType: FeedbackType) {
     const feedback: CreateFeedbackDTO = {
       ...this.commonFeedbackData,
       feedbackType: feedbackType,

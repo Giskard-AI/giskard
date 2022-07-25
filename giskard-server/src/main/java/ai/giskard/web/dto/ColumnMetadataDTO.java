@@ -10,7 +10,7 @@ import java.util.Set;
 @Getter
 @Setter
 @UIModel
-public class FeatureMetadataDTO {
+public class ColumnMetadataDTO {
     private String name;
     private FeatureType type;
     private Set<String> values;

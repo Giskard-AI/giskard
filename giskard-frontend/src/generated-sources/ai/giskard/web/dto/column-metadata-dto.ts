@@ -1,9 +1,9 @@
 import type {FeatureType} from './../../domain/feature-type';
 
 /**
- * Generated from ai.giskard.web.dto.FeatureMetadataDTO
+ * Generated from ai.giskard.web.dto.ColumnMetadataDTO
  */
-export interface FeatureMetadataDTO {
+export interface ColumnMetadataDTO {
     name: string;
     type: FeatureType;
     values: string[];
