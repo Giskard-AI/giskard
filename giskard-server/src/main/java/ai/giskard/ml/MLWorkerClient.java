@@ -79,20 +79,19 @@ public class MLWorkerClient implements AutoCloseable {
         RunModelForDataFrameRequest.Builder requestBuilder = RunModelForDataFrameRequest.newBuilder()
             .setModel(grpcMapper.serialize(model))
             .setDataframe(DataFrame.newBuilder().addRows(DataRow.newBuilder().putAllColumns(features)).build());
-        if(dataset.getTarget() != null){
+        if (dataset.getTarget() != null) {
             requestBuilder.setTarget(dataset.getTarget());
         }
-        if(dataset.getFeatureTypes() != null){
+        if (dataset.getFeatureTypes() != null) {
             requestBuilder.putAllFeatureTypes(Maps.transformValues(dataset.getFeatureTypes(), FeatureType::getName));
         }
-        if(dataset.getColumnTypes() != null){
+        if (dataset.getColumnTypes() != null) {
             requestBuilder.putAllColumnTypes(dataset.getColumnTypes());
         }
         return blockingStub.runModelForDataFrame(requestBuilder.build());
     }
 
     public RunModelResponse runModelForDataStream(ProjectModel model, Dataset dataset) throws IOException {
-        Map<String, String> columnTypes = dataset.getColumnTypes();
         RunModelRequest request = RunModelRequest.newBuilder()
             .setModel(grpcMapper.serialize(model))
             .setDataset(grpcMapper.serialize(dataset))
