@@ -79,6 +79,7 @@ function trackError(error) {
         mixpanel.track('API error', {
             'code': error.code,
             'message': error.message,
+            'detail': error.response.data.detail,
             'httpCode': error.response.code,
             'method': error.config.method,
             'url': error.config.url,
