@@ -3,7 +3,7 @@ package ai.giskard.web.rest.controllers;
 import ai.giskard.domain.ml.Inspection;
 import ai.giskard.domain.ml.table.Filter;
 import ai.giskard.repository.InspectionRepository;
-import ai.giskard.service.DatasetService;
+import ai.giskard.security.PermissionEvaluator;
 import ai.giskard.service.InspectionService;
 import ai.giskard.service.ModelService;
 import ai.giskard.web.dto.InspectionCreateDTO;
@@ -17,10 +17,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.RandomUtils;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import tech.tablesaw.api.Table;
 
 import javax.validation.constraints.NotNull;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.List;
 
@@ -32,8 +34,9 @@ public class InspectionController {
     private final InspectionService inspectionService;
     private final ModelService modelService;
     private final InspectionRepository inspectionRepository;
-    private final DatasetService datasetService;
     private final GiskardMapper giskardMapper;
+    final PermissionEvaluator permissionEvaluator;
+
 
     /**
      * Retrieve the row specified by the given range on the dataset
@@ -48,7 +51,11 @@ public class InspectionController {
      * @throws Exception
      */
     @PostMapping("/inspection/{inspectionId}/rowsFiltered")
-    public JsonNode getRowsFiltered(@PathVariable @NotNull Long inspectionId, @RequestBody Filter filter, @RequestParam("minRange") @NotNull int rangeMin, @RequestParam("maxRange") @NotNull int rangeMax, @RequestParam("isRandom") @NotNull boolean isRandom) throws Exception {
+    @Transactional
+    public JsonNode getRowsFiltered(@PathVariable @NotNull Long inspectionId, @RequestBody Filter filter, @RequestParam("minRange") @NotNull int rangeMin, @RequestParam("maxRange") @NotNull int rangeMax, @RequestParam("isRandom") @NotNull boolean isRandom) throws JsonProcessingException, FileNotFoundException {
+        Inspection inspection = inspectionRepository.getById(inspectionId);
+        permissionEvaluator.validateCanReadProject(inspection.getDataset().getProject().getId());
+
         Table filteredTable = inspectionService.getRowsFiltered(inspectionId, filter);
         if (rangeMax > filteredTable.rowCount()) {
             rangeMax = filteredTable.rowCount();
@@ -82,7 +89,7 @@ public class InspectionController {
      * @return List of labels
      */
     @GetMapping("/inspection/{inspectionId}/labels")
-    public List<String> getLabels(@PathVariable @NotNull Long inspectionId) throws JsonProcessingException {
+    public List<String> getLabels(@PathVariable @NotNull Long inspectionId) {
         return inspectionService.getLabels(inspectionId);
     }
 

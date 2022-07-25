@@ -14,7 +14,7 @@ def deserialize_model(serialized_model: SerializedGiskardModel) -> GiskardModel:
     return GiskardModel(
         cloudpickle.load(ZstdDecompressor().stream_reader(serialized_model.serialized_prediction_function)),
         model_type=serialized_model.model_type,
-        classification_threshold=serialized_model.threshold,
+        classification_threshold=serialized_model.threshold.value if serialized_model.HasField('threshold') else None,
         feature_names=list(serialized_model.feature_names),
         classification_labels=list(serialized_model.classification_labels)
     )
@@ -24,5 +24,6 @@ def deserialize_dataset(serialized_dataset: SerializedGiskardDataset) -> Giskard
     return GiskardDataset(
         df=pd.read_csv(BytesIO(decompress(serialized_dataset.serialized_df)), keep_default_na=False),
         target=serialized_dataset.target,
-        feature_types=dict(serialized_dataset.feature_types)
+        feature_types=dict(serialized_dataset.feature_types),
+        column_types=dict(serialized_dataset.column_types)
     )

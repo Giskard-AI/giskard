@@ -11,7 +11,10 @@
               <v-chip v-show="dirty || isInputNotOriginal" small label outlined color="accent" class="mx-1 pa-1">
                 modified
               </v-chip>
-              <v-btn text small @click="resetInput" :disabled="!(dirty || isInputNotOriginal)">reset</v-btn>
+              <v-btn text small @click="resetInput"
+                     v-track-click="'Inspection feature reset'"
+                     :disabled="!(dirty || isInputNotOriginal)">reset
+              </v-btn>
               <v-menu left bottom offset-y :close-on-content-click="false">
                 <template v-slot:activator="{ on, attrs }">
                   <v-btn icon v-bind="attrs" v-on="on">
@@ -38,20 +41,19 @@
             <v-card-text v-if="!errorLoadingMetadata && Object.keys(inputMetaData).length > 0" id="inputTextCard">
               <div class="caption error--text">{{ dataErrorMsg }}</div>
               <v-form lazy-validation>
-                <div v-for="c in inputMetaData" :key="c.name"
+                <div v-for="c in datasetFeatures" :key="c.name"
                      v-show="featuresToView.includes(c.name)">
                   <ValidationProvider
                       :name="c.name"
                       v-slot="{ dirty }"
                   >
-                    <div class="py-1 d-flex">
-                      <label class="info--text">{{ c.name }}
-                      </label>
+                    <div class="py-1 d-flex" v-if="isFeatureEditable(c.name)">
+                      <label class="info--text">{{ c.name }}</label>
                       <input type="number" v-if="c.type === 'numeric'"
                              v-model="inputData[c.name]"
                              class="common-style-input"
                              :class="{'is-dirty': dirty || inputData[c.name] !== originalData[c.name]}"
-                             @change="$emit('update:inputData', inputData)"
+                             @change="onValuePerturbation(c)"
                              required
                       />
                       <textarea v-if="c.type === 'text'"
@@ -59,14 +61,14 @@
                                 :rows="!inputData[c.name] ? 1 : Math.min(15, parseInt(inputData[c.name].length / 40) + 1)"
                                 class="common-style-input"
                                 :class="{'is-dirty': dirty || inputData[c.name] !== originalData[c.name]}"
-                                @change="$emit('update:inputData', inputData)"
+                                @change="onValuePerturbation(c)"
                                 required
                       ></textarea>
                       <select v-if="c.type === 'category'"
                               v-model="inputData[c.name]"
                               class="common-style-input"
                               :class="{'is-dirty': dirty || inputData[c.name] !== originalData[c.name]}"
-                              @change="$emit('update:inputData', inputData)"
+                              @change="onValuePerturbation(c)"
                               required
                       >
                         <option v-for="k in c.values" :key="k" :value="k">{{ k }}</option>
@@ -80,6 +82,10 @@
                           :feedback-type='dirty ? FeedbackType.VALUE_PERTURBATION: FeedbackType.VALUE'
                           v-on="$listeners"
                       />
+                    </div>
+                    <div class="py-1 d-flex" v-else>
+                      <label class="info--text">{{ c.name }}</label>
+                      <span>{{ inputData[c.name] }}</span>
                     </div>
                   </ValidationProvider>
                 </div>
@@ -96,6 +102,7 @@
         <v-col cols="12" md="6">
           <PredictionResults v-if='Object.keys(inputMetaData).length > 0'
               :model="model"
+              :dataset-id="dataset.id"
               :targetFeature="dataset.target"
               :classificationLabels="model.classificationLabels"
               :predictionTask="model.modelType"
@@ -164,6 +171,9 @@ import FeedbackPopover from '@/components/FeedbackPopover.vue';
 import {DatasetDTO, FeatureMetadataDTO, ModelDTO, FeedbackType} from "@/generated-sources";
 
 import {isClassification} from "@/ml-utils";
+import mixpanel from "mixpanel-browser";
+import {anonymize} from "@/utils";
+import _ from 'lodash';
 
 @Component({
   components: {OverlayLoader, PredictionResults, FeedbackPopover, PredictionExplanations, TextExplanation}
@@ -172,7 +182,7 @@ export default class Inspector extends Vue {
   @Prop({required: true}) model!: ModelDTO
   @Prop({required: true}) dataset!: DatasetDTO
   @Prop({required: true}) originalData!: object // used for the variation feedback
-  @Prop({required: true}) inputData!: object
+  @Prop({required: true}) inputData!: { [key: string]: string }
   @Prop({default: false}) isMiniMode!: boolean;
   loadingData = false;
   inputMetaData: FeatureMetadataDTO[] = [];
@@ -223,10 +233,34 @@ export default class Inspector extends Vue {
     }
   }
 
+  async onValuePerturbation(featureMeta: FeatureMetadataDTO) {
+    mixpanel.track("Feature perturbation", {
+      featureType: featureMeta.type,
+      featureName: anonymize(featureMeta.name),
+      modelId: this.model.id,
+      datasetId: this.dataset.id
+    })
+    this.$emit('update:inputData', this.inputData)
+  }
+
+  isFeatureEditable(featureName: string) {
+    if (!this.model.featureNames || this.model.featureNames.length == 0) {
+      // if user doesn't specify feature names consider all columns as feature names
+      return true;
+    }
+    return this.model.featureNames.includes(featureName)
+  }
+
+  get datasetFeatures() {
+    return _.sortBy(this.inputMetaData.filter(x => x.name !== this.dataset.target),
+        e => !this.model.featureNames?.includes(e.name),
+        'name'
+    )
+  }
 }
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 label {
   display: inline-block;
   width: 40%;
@@ -239,6 +273,8 @@ label {
   line-height: 24px;
   min-height: 24px;
   width: 56%;
+  padding-left: 6px;
+  padding-right: 6px;
 }
 
 select.common-style-input {
@@ -262,7 +298,7 @@ select.common-style-input {
   padding-bottom: 8px;
 }
 
->>> .v-tabs.no-tab-header > .v-tabs-bar {
+> > > .v-tabs.no-tab-header > .v-tabs-bar {
   display: none;
 }
 

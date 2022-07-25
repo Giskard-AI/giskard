@@ -6,6 +6,7 @@ import ai.giskard.config.ApplicationProperties;
 import ai.giskard.management.SecurityMetersService;
 import ai.giskard.security.AuthoritiesConstants;
 import ai.giskard.security.GiskardUser;
+import ai.giskard.web.dto.JWTToken;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
@@ -50,9 +51,9 @@ class JWTFilterTest {
     @Test
     void testJWTFilter() throws Exception {
         UsernamePasswordAuthenticationToken authentication = createAuthentication(AuthoritiesConstants.AICREATOR);
-        String jwt = tokenProvider.createToken(authentication, false);
+        JWTToken jwt = tokenProvider.createToken(authentication, false);
         MockHttpServletRequest request = new MockHttpServletRequest();
-        request.addHeader(JWTFilter.AUTHORIZATION_HEADER, "Bearer " + jwt);
+        request.addHeader(JWTFilter.AUTHORIZATION_HEADER, "Bearer " + jwt.getToken());
         request.setRequestURI("/api/test");
         MockHttpServletResponse response = new MockHttpServletResponse();
         MockFilterChain filterChain = new MockFilterChain();
@@ -60,7 +61,7 @@ class JWTFilterTest {
         assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
         assertThat(SecurityContextHolder.getContext().getAuthentication().getName()).isEqualTo("test-user");
         assertThat(((GiskardUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getId()).isEqualTo(1L);
-        assertThat(SecurityContextHolder.getContext().getAuthentication().getCredentials()).hasToString(jwt);
+        assertThat(SecurityContextHolder.getContext().getAuthentication().getCredentials()).hasToString(jwt.getToken());
     }
 
     @Test
@@ -102,9 +103,9 @@ class JWTFilterTest {
     @Test
     void testJWTFilterWrongScheme() throws Exception {
         UsernamePasswordAuthenticationToken authentication = createAuthentication(AuthoritiesConstants.AICREATOR);
-        String jwt = tokenProvider.createToken(authentication, false);
+        JWTToken jwt = tokenProvider.createToken(authentication, false);
         MockHttpServletRequest request = new MockHttpServletRequest();
-        request.addHeader(JWTFilter.AUTHORIZATION_HEADER, "Basic " + jwt);
+        request.addHeader(JWTFilter.AUTHORIZATION_HEADER, "Basic " + jwt.getToken());
         request.setRequestURI("/api/test");
         MockHttpServletResponse response = new MockHttpServletResponse();
         MockFilterChain filterChain = new MockFilterChain();

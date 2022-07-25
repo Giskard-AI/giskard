@@ -7,7 +7,7 @@ import type {_FileDTO} from './file-dto';
  */
 export interface ModelDTO extends _FileDTO {
     classificationLabels: string[];
-    featureNames: string[];
+    featureNames?: string[] | null;
     language: ModelLanguage;
     languageVersion: string;
     modelType: ModelType;

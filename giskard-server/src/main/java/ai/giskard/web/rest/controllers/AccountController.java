@@ -2,16 +2,13 @@ package ai.giskard.web.rest.controllers;
 
 import ai.giskard.domain.User;
 import ai.giskard.repository.UserRepository;
-import ai.giskard.security.AuthoritiesConstants;
 import ai.giskard.security.SecurityUtils;
 import ai.giskard.security.jwt.JWTTokenType;
 import ai.giskard.security.jwt.TokenProvider;
 import ai.giskard.service.MailService;
 import ai.giskard.service.UserService;
 import ai.giskard.web.dto.PasswordResetRequest;
-import ai.giskard.web.dto.config.AppConfigDTO;
 import ai.giskard.web.dto.user.AdminUserDTO;
-import ai.giskard.web.dto.user.RoleDTO;
 import ai.giskard.web.dto.user.UpdateMeDTO;
 import ai.giskard.web.rest.errors.EmailAlreadyUsedException;
 import ai.giskard.web.rest.errors.InvalidPasswordException;
@@ -31,9 +28,7 @@ import tech.jhipster.config.JHipsterProperties;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
-import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import static ai.giskard.security.AuthoritiesConstants.ADMIN;
 
@@ -127,21 +122,6 @@ public class AccountController {
     public String isAuthenticated(HttpServletRequest request) {
         log.debug("REST request to check if the current user is authenticated");
         return request.getRemoteUser();
-    }
-
-    @GetMapping("/account")
-    public AppConfigDTO getApplicationSettings(@AuthenticationPrincipal final UserDetails user) {
-        log.debug("REST request to get all public User names");
-        AdminUserDTO userDTO = userRepository
-            .findOneWithRolesByLogin(user.getUsername())
-            .map(AdminUserDTO::new)
-            .orElseThrow(() -> new RuntimeException("User could not be found"));
-
-        List<RoleDTO> roles = AuthoritiesConstants.AUTHORITY_NAMES.entrySet().stream()
-            .map(auth -> new RoleDTO(auth.getKey(), auth.getValue()))
-            .collect(Collectors.toList());
-        return new AppConfigDTO(
-            new AppConfigDTO.AppInfoDTO("basic", "Basic", 1, roles), userDTO);
     }
 
     /**

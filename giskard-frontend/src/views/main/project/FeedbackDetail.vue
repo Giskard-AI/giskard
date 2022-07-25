@@ -1,7 +1,7 @@
 <template>
   <v-tabs v-if="data">
     <v-tab>Overview</v-tab>
-    <v-tab>Inspector</v-tab>
+    <v-tab @change="onInspectorActivated">Inspector</v-tab>
     <v-tab-item class="height85vh">
       <div class="d-flex flex-column metadata fill-height align-baseline">
         <v-container class="w100 flex-grow-1 ">
@@ -84,6 +84,7 @@ import {api} from "@/api";
 import Inspector from "./Inspector.vue";
 import MessageReply from "@/components/MessageReply.vue";
 import {FeedbackDTO} from "@/generated-sources";
+import mixpanel from "mixpanel-browser";
 
 @Component({
   components: {Inspector, MessageReply}
@@ -92,7 +93,7 @@ export default class FeedbackDetail extends Vue {
   @Prop({required: true}) id!: number;
 
   data: FeedbackDTO | null = null;
-  userData: object | null = null;
+  userData: {[key: string]: string} | null = null;
   originalData: object | null = null;
 
   async mounted() {
@@ -103,6 +104,13 @@ export default class FeedbackDetail extends Vue {
     this.data = (await api.getFeedback(this.id));
     this.userData = JSON.parse(this.data.userData);
     this.originalData = JSON.parse(this.data.originalData);
+  }
+
+  onInspectorActivated() {
+    mixpanel.track('Open inspector from feedback', {
+      modelId: this.data?.model.id,
+      datasetId: this.data?.dataset.id
+    });
   }
 
   resetInput() {
@@ -120,6 +128,7 @@ export default class FeedbackDetail extends Vue {
   }
 
   async doSendReply(content: string, replyToId: number | null = null) {
+    mixpanel.track('Reply to feedback', {replyTo: replyToId});
     await api.replyToFeedback(this.id, content, replyToId)
     await this.reloadFeedback()
   }

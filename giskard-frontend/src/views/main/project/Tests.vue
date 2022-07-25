@@ -62,6 +62,7 @@ import TestSuiteCreateModal from '@/views/main/project/modals/TestSuiteCreateMod
 import { api } from '@/api';
 import TestCreateModal from '@/views/main/project/modals/TestCreateModal.vue';
 import { TestDTO, TestExecutionResultDTO, TestResult } from '@/generated-sources';
+import mixpanel from "mixpanel-browser";
 
 @Component({
   components: { TestSuiteCreateModal, TestCreateModal }
@@ -93,7 +94,7 @@ export default class Tests extends Vue {
   public async executeTestSuite() {
     this.isTestSuiteRunning = true;
     try {
-
+      mixpanel.track('Run test suite', {suiteId: this.suiteId});
       let res = await api.executeTestSuite(this.suiteId);
       res.forEach((testResult: TestExecutionResultDTO) => {
         Tests.applyTestExecutionResults(this.tests[testResult.testId], testResult);
@@ -128,6 +129,7 @@ export default class Tests extends Vue {
   }
 
   public async runTest(event: Event, test: TestDTO) {
+    mixpanel.track('Run test from suite page', {testId: test.id});
     event.stopPropagation();
     this.runningTestIds.add(test.id);
     this.$forceUpdate();

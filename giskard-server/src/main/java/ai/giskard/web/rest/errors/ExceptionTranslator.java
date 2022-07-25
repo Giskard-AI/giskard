@@ -4,6 +4,7 @@ import ai.giskard.exception.EntityAlreadyExistsException;
 import ai.giskard.exception.MLWorkerRuntimeException;
 import io.grpc.StatusRuntimeException;
 import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.security.WeakKeyException;
 import lombok.NonNull;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
@@ -268,5 +269,9 @@ public class ExceptionTranslator implements ProblemHandling, SecurityAdviceTrait
     @ExceptionHandler
     public ResponseEntity<Problem> handleIllegalArgumentException(IllegalArgumentException ex, NativeWebRequest request) {
         return create(Status.BAD_REQUEST, ex, request);
+    }
+    @ExceptionHandler
+    public ResponseEntity<Problem> weakKeyException(WeakKeyException ex, NativeWebRequest request) {
+        return create(Status.UNAUTHORIZED, ex, request);
     }
 }

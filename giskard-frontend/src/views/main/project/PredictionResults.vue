@@ -22,9 +22,9 @@
             <div
               class='text-h6'
               :class="
-                !actual
+                !isDefined(actual)
                   ? 'info--text text--darken-2'
-                  : prediction === actualForDisplay
+                  : prediction === actual
                   ? 'success--text'
                   : 'error--text'
               "
@@ -35,11 +35,10 @@
           <div>
 
             <div class='mb-2'>
-              <div>Actual <span v-show='actual && modified'>(before modification)</span></div>
-              <div class='targetFeedbackDiv' v-if='actual && targetMetaData'>
+              <div>Actual <span v-show='isDefined(actual) && modified'>(before modification)</span></div>
+              <div class='targetFeedbackDiv' v-if='isDefined(actual) && targetMetaData'>
                 <div class='text-h6'></div>
                 <v-form lazy-validation>
-
                     <ValidationProvider
                       :name="targetMetaData.name"
                       v-slot="{ dirty }"
@@ -81,38 +80,12 @@
                       </div>
                     </ValidationProvider>
                 </v-form>
-
               </div>
               <div v-else>-</div>
             </div>
-            <div class='caption'>
-              <div v-if='targetFeature'>target: {{ targetFeature }}</div>
-              <div v-if='model && model.threshold'>threshold: {{ model.threshold }}</div>
-              <div id='labels-container' v-if='actual && isClassification(predictionTask)'>
-                <v-simple-table dense height='200px' fixed-header>
-                  <template v-slot:default>
-                    <thead>
-                    <tr>
-                      <th scope='col' class='text-center'>
-                        Index
-                      </th>
-                      <th scope='col' class='text-center'>
-                        Label
-                      </th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <tr
-                      v-for='(label, key) in classificationLabels'
-                      :key='label'
-                    >
-                      <td>{{ key }}</td>
-                      <td>{{ label }}</td>
-                    </tr>
-                    </tbody>
-                  </template>
-                </v-simple-table>
-              </div>
+            <div class="caption">
+              <div v-if="targetFeature">target: {{ targetFeature }}</div>
+              <div v-if="model && model.threshold">threshold: {{ model.threshold }}</div>
             </div>
           </div>
         </v-col>
@@ -126,14 +99,14 @@
             {{ prediction | formatTwoDigits }}
           </div>
         </v-col>
-        <v-col lg='4'>
-          <div>Actual <span v-show='actual && modified'>(before modification)</span></div>
-          <div v-if='actual' class='text-h6'>{{ actual | formatTwoDigits }}</div>
+        <v-col lg="4">
+          <div>Actual <span v-show="isDefined(actual) && modified">(before modification)</span></div>
+          <div v-if="isDefined(actual)" class="text-h6">{{ actual | formatTwoDigits }}</div>
           <div v-else>-</div>
         </v-col>
         <v-col lg='4'>
           <div>Difference</div>
-          <div v-if='actual' class='font-weight-light center-center'>
+          <div v-if="isDefined(actual)" class="font-weight-light center-center">
             {{ ((prediction - actual) / actual) * 100 | formatTwoDigits }} %
           </div>
           <div v-else>-</div>
@@ -160,6 +133,7 @@ import { DatasetDTO, FeatureMetadataDTO, ModelDTO, ModelType,FeedbackType} from 
 import { isClassification } from '@/ml-utils';
 import * as _ from 'lodash';
 import FeedbackPopover from '@/components/FeedbackPopover.vue';
+import * as _ from "lodash";
 
 use([CanvasRenderer, BarChart, GridComponent]);
 Vue.component('v-chart', ECharts);
@@ -169,12 +143,12 @@ Vue.component('v-chart', ECharts);
 })
 export default class PredictionResults extends Vue {
   @Prop({ required: true }) model!: ModelDTO;
-  @Prop({ required: true }) dataset!: DatasetDTO;
+  @Prop({required: true}) datasetId!: number;
   @Prop({ required: true }) predictionTask!: ModelType;
   @Prop({ required: true }) inputMetaData!: FeatureMetadataDTO[];
   @Prop() targetFeature!: string;
   @Prop() classificationLabels!: string[];
-  @Prop() inputData!: object;
+  @Prop() inputData!: {[key: string]: string};
   @Prop({ required: true }) originalData!: object;
   @Prop({ default: false }) modified!: boolean;
   FeedbackType=FeedbackType;
@@ -205,6 +179,7 @@ export default class PredictionResults extends Vue {
         this.loading = true;
         const predictionResult = (await api.predict(
           this.model.id,
+            this.datasetId,
           this.inputData
         ));
         this.prediction = predictionResult.prediction;
@@ -235,13 +210,6 @@ export default class PredictionResults extends Vue {
     else return undefined;
   }
 
-  get actualForDisplay() {
-    if (this.actual) {
-      if (isNaN(parseInt(this.actual.toString()))) return this.actual;
-      else return this.classificationLabels[parseInt(this.actual.toString())];
-    } else return '';
-  }
-
   /**
    * Getting first n entries of sorted objects and sort alphabetically, aggregating for "Others" options
    *
@@ -264,7 +232,9 @@ export default class PredictionResults extends Vue {
     }
     return filteredObject;
   }
-
+  isDefined(val:any){
+    return !_.isNil(val);
+  }
   get chartOptions() {
     const results = this.firstNSortedByKey(this.resultProbabilities, this.predCategoriesN);
     return {

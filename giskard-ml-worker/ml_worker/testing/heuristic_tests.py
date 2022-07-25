@@ -41,7 +41,7 @@ class HeuristicTests(AbstractTestCollection):
 
         """
 
-        prediction_results = model.run_predict(actual_slice.df).prediction
+        prediction_results = model.run_predict(actual_slice).prediction
         assert classification_label in model.classification_labels, \
             f'"{classification_label}" is not part of model labels: {",".join(model.classification_labels)}'
 
@@ -103,7 +103,7 @@ class HeuristicTests(AbstractTestCollection):
         """
         results_df = pd.DataFrame()
 
-        prediction_results = model.run_predict(actual_slice.df)
+        prediction_results = model.run_predict(actual_slice)
 
         if model.model_type == "regression":
             results_df["output"] = prediction_results.raw_prediction

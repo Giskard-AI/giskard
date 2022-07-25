@@ -1,12 +1,14 @@
 package ai.giskard.ml;
 
 import ai.giskard.config.SpringContext;
+import ai.giskard.domain.FeatureType;
 import ai.giskard.domain.ml.Dataset;
 import ai.giskard.domain.ml.ProjectModel;
 import ai.giskard.domain.ml.testing.Test;
 import ai.giskard.exception.MLWorkerRuntimeException;
 import ai.giskard.service.GRPCMapper;
 import ai.giskard.worker.*;
+import com.google.common.collect.Maps;
 import com.google.protobuf.ByteString;
 import io.grpc.Channel;
 import io.grpc.ManagedChannel;
@@ -73,6 +75,22 @@ public class MLWorkerClient implements AutoCloseable {
         }
     }
 
+    public RunModelForDataFrameResponse runModelForDataframe(ProjectModel model, Dataset dataset, Map<String, String> features) throws IOException {
+        RunModelForDataFrameRequest.Builder requestBuilder = RunModelForDataFrameRequest.newBuilder()
+            .setModel(grpcMapper.serialize(model))
+            .setDataframe(DataFrame.newBuilder().addRows(DataRow.newBuilder().putAllColumns(features)).build());
+        if (dataset.getTarget() != null) {
+            requestBuilder.setTarget(dataset.getTarget());
+        }
+        if (dataset.getFeatureTypes() != null) {
+            requestBuilder.putAllFeatureTypes(Maps.transformValues(dataset.getFeatureTypes(), FeatureType::getName));
+        }
+        if (dataset.getColumnTypes() != null) {
+            requestBuilder.putAllColumnTypes(dataset.getColumnTypes());
+        }
+        return blockingStub.runModelForDataFrame(requestBuilder.build());
+    }
+
     public RunModelResponse runModelForDataStream(ProjectModel model, Dataset dataset) throws IOException {
         RunModelRequest request = RunModelRequest.newBuilder()
             .setModel(grpcMapper.serialize(model))
@@ -90,15 +108,6 @@ public class MLWorkerClient implements AutoCloseable {
             .build();
 
         return blockingStub.explain(request);
-    }
-
-    public RunModelForDataFrameResponse runModelForDataframe(ProjectModel model, DataFrame df) throws IOException {
-        RunModelForDataFrameRequest request = RunModelForDataFrameRequest.newBuilder()
-            .setModel(grpcMapper.serialize(model))
-            .setDataframe(df)
-            .build();
-
-        return blockingStub.runModelForDataFrame(request);
     }
 
     public void shutdown() {

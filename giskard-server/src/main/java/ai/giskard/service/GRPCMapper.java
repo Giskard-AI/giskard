@@ -7,6 +7,7 @@ import ai.giskard.worker.SerializedGiskardDataset;
 import ai.giskard.worker.SerializedGiskardModel;
 import com.google.common.collect.Maps;
 import com.google.protobuf.ByteString;
+import com.google.protobuf.DoubleValue;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -26,7 +27,7 @@ public class GRPCMapper {
             .setSerializedPredictionFunction(ByteString.readFrom(Files.newInputStream(modelPath)))
             .setModelType(model.getModelType().getSimplifiedName());
         if (model.getThreshold() != null) {
-            builder.setThreshold(model.getThreshold());
+            builder.setThreshold(DoubleValue.newBuilder().setValue(model.getThreshold()).build());
         }
         if (model.getClassificationLabels() != null) {
             builder.addAllClassificationLabels(model.getClassificationLabels());
@@ -43,6 +44,9 @@ public class GRPCMapper {
         SerializedGiskardDataset.Builder builder = SerializedGiskardDataset.newBuilder()
             .setSerializedDf(ByteString.readFrom(Files.newInputStream(datasetPath)))
             .putAllFeatureTypes(Maps.transformValues(dataset.getFeatureTypes(), FeatureType::getName));
+        if (dataset.getColumnTypes() != null) {
+            builder.putAllColumnTypes(dataset.getColumnTypes());
+        }
         if (dataset.getTarget() != null) {
             builder.setTarget(dataset.getTarget());
         }

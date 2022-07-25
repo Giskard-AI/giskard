@@ -26,7 +26,7 @@ import {Prop, Vue} from "vue-property-decorator";
 import Component from "vue-class-component";
 import TestSuiteCreateModal from "@/views/main/project/modals/TestSuiteCreateModal.vue";
 import {api} from "@/api";
-import { DatasetDTO, ModelDTO, TestSuiteDTO } from '@/generated-sources';
+import {DatasetDTO, ModelDTO, TestSuiteDTO} from '@/generated-sources';
 
 @Component({
   components: {TestSuiteCreateModal}
