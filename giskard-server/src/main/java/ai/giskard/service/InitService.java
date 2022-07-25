@@ -39,12 +39,37 @@ import static java.util.Arrays.stream;
 public class InitService {
 
     private static final Map<String, FeatureType> germanCreditFeatureTypes = new HashMap<>();
+    private static final Map<String, String> germanCreditColumnTypes = new HashMap<>();
     private static final Map<String, FeatureType> enronFeatureTypes = new HashMap<>();
+    private static final Map<String, String> enronColumnTypes = new HashMap<>();
     private static final Map<String, FeatureType> zillowFeatureTypes = new HashMap<>();
+    private static final Map<String, String> zillowColumnTypes = new HashMap<>();
     private static final String CLASSPATH = "classpath:";
     private static final String PROJECTDIR = "demo_projects/";
 
     static {
+        germanCreditColumnTypes.put("account_check_status", "object");
+        germanCreditColumnTypes.put("duration_in_month", "int64");
+        germanCreditColumnTypes.put("credit_history", "object");
+        germanCreditColumnTypes.put("purpose", "object");
+        germanCreditColumnTypes.put("credit_amount", "int64");
+        germanCreditColumnTypes.put("savings", "object");
+        germanCreditColumnTypes.put("present_emp_since", "object");
+        germanCreditColumnTypes.put("installment_as_income_perc", "int64");
+        germanCreditColumnTypes.put("sex", "object");
+        germanCreditColumnTypes.put("personal_status", "object");
+        germanCreditColumnTypes.put("other_debtors", "object");
+        germanCreditColumnTypes.put("present_res_since", "int64");
+        germanCreditColumnTypes.put("property", "object");
+        germanCreditColumnTypes.put("age", "int64");
+        germanCreditColumnTypes.put("other_installment_plans", "object");
+        germanCreditColumnTypes.put("housing", "object");
+        germanCreditColumnTypes.put("credits_this_bank", "int64");
+        germanCreditColumnTypes.put("job", "object");
+        germanCreditColumnTypes.put("people_under_maintenance", "int64");
+        germanCreditColumnTypes.put("telephone", "object");
+        germanCreditColumnTypes.put("foreign_worker", "object");
+
         germanCreditFeatureTypes.put("account_check_status", FeatureType.CATEGORY);
         germanCreditFeatureTypes.put("duration_in_month", FeatureType.NUMERIC);
         germanCreditFeatureTypes.put("credit_history", FeatureType.CATEGORY);
@@ -67,6 +92,15 @@ public class InitService {
         germanCreditFeatureTypes.put("telephone", FeatureType.CATEGORY);
         germanCreditFeatureTypes.put("foreign_worker", FeatureType.CATEGORY);
 
+
+        enronColumnTypes.put("Subject", "object");
+        enronColumnTypes.put("Content", "object");
+        enronColumnTypes.put("Week_day", "object");
+        enronColumnTypes.put("Year", "float64");
+        enronColumnTypes.put("Month", "object");
+        enronColumnTypes.put("Hour", "float64");
+        enronColumnTypes.put("Nb_of_forwarded_msg", "float64");
+
         enronFeatureTypes.put("Subject", FeatureType.TEXT);
         enronFeatureTypes.put("Content", FeatureType.TEXT);
         enronFeatureTypes.put("Week_day", FeatureType.CATEGORY);
@@ -74,6 +108,30 @@ public class InitService {
         enronFeatureTypes.put("Hour", FeatureType.NUMERIC);
         enronFeatureTypes.put("Nb_of_forwarded_msg", FeatureType.NUMERIC);
         enronFeatureTypes.put("Year", FeatureType.NUMERIC);
+
+        zillowColumnTypes.put("TypeOfDewelling", "object");
+        zillowColumnTypes.put("BldgType", "object");
+        zillowColumnTypes.put("AbvGrndLivArea", "int64");
+        zillowColumnTypes.put("Neighborhood", "object");
+        zillowColumnTypes.put("KitchenQual", "object");
+        zillowColumnTypes.put("NumGarageCars", "int64");
+        zillowColumnTypes.put("YearBuilt", "int64");
+        zillowColumnTypes.put("YearRemodAdd", "int64");
+        zillowColumnTypes.put("ExterQual", "object");
+        zillowColumnTypes.put("LotArea", "int64");
+        zillowColumnTypes.put("LotShape", "object");
+        zillowColumnTypes.put("Fireplaces", "int64");
+        zillowColumnTypes.put("NumBathroom", "int64");
+        zillowColumnTypes.put("Basement1Type", "object");
+        zillowColumnTypes.put("Basement1SurfaceArea", "int64");
+        zillowColumnTypes.put("Basement2Type", "object");
+        zillowColumnTypes.put("Basement2SurfaceArea", "int64");
+        zillowColumnTypes.put("TotalBasementArea", "int64");
+        zillowColumnTypes.put("GarageArea", "int64");
+        zillowColumnTypes.put("1stFlrArea", "int64");
+        zillowColumnTypes.put("2ndFlrArea", "int64");
+        zillowColumnTypes.put("Utilities", "object");
+        zillowColumnTypes.put("OverallQual", "int64");
 
         zillowFeatureTypes.put("TypeOfDewelling", FeatureType.CATEGORY);
         zillowFeatureTypes.put("BldgType", FeatureType.CATEGORY);
@@ -132,6 +190,7 @@ public class InitService {
                     .projectKey(zillowProjectKey)
                     .name("Zillow data")
                     .featureTypes(zillowFeatureTypes)
+                    .columnTypes(zillowColumnTypes)
                     .target("SalePrice")
                     .build()
             ),
@@ -147,6 +206,7 @@ public class InitService {
                 DataUploadParamsDTO.builder()
                     .name("Enron data")
                     .featureTypes(enronFeatureTypes)
+                    .columnTypes(enronColumnTypes)
                     .projectKey(enronProjectKey)
                     .target("Target")
                     .build()
@@ -165,6 +225,7 @@ public class InitService {
                     .projectKey(germanCreditProjectKey)
                     .target("default")
                     .featureTypes(germanCreditFeatureTypes)
+                    .columnTypes(germanCreditColumnTypes)
                     .build()
             )
         );
