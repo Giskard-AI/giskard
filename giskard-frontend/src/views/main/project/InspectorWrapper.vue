@@ -207,8 +207,10 @@ export default class InspectorWrapper extends Vue {
   }
 
   public async next() {
-    this.clearFeedback();
-    this.rowNb += 1;
+    if (this.canNext()) {
+      this.clearFeedback();
+      this.rowNb += 1;
+    }
   }
 
   public async previous() {
@@ -270,7 +272,6 @@ export default class InspectorWrapper extends Vue {
   @Watch('shuffleMode')
   @Watch('percentRegressionUnit')
   async applyFilter(nv, ov) {
-    debugger
     if (JSON.stringify(nv) === JSON.stringify(ov)) {
       return;
     }

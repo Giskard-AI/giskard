@@ -2,6 +2,7 @@
   <v-menu
       v-model="menu"
       :close-on-content-click="false"
+      disable-keys
       offset-x right
       :nudge-left="dirtyFilterValue.type === RowFilterType.CUSTOM ? 1000 : 300"
       :nudge-bottom="28"
@@ -17,57 +18,61 @@
           v-on="on"
       >
         <v-icon left>
-          {{dirtyFilterValue.type === RowFilterType.ALL ? 'mdi-filter-outline' : 'mdi-filter'}}
+          {{ dirtyFilterValue.type === RowFilterType.ALL ? 'mdi-filter-outline' : 'mdi-filter' }}
         </v-icon>
         {{ filterTypesByKey[filter.type].label }}
       </v-btn>
     </template>
 
-    <v-card>
-      <v-row no-gutters>
-        <v-col v-if="dirtyFilterValue.type === RowFilterType.CUSTOM" class="left-column d-flex">
-          <CustomInspectionFilter
-              :is-target-available="isTargetAvailable"
-              :labels="labels"
-              :model-type="modelType"
-              v-model="dirtyFilterValue"
-          />
-        </v-col>
-        <v-col class="right-column">
-          <v-list dense class="pa-0">
-            <v-list-item
-                @click="selectFilter(item)"
-                class="tile"
-                :class="{'selected': dirtyFilterValue.type === item.value}"
-                v-for="item in filterTypes"
-                :key="item.value"
-                :disabled="item.disabled"
-                link
-            >
-              <v-list-item-title>{{ item.label }}</v-list-item-title>
-            </v-list-item>
-          </v-list>
-        </v-col>
-      </v-row>
+    <v-form @submit.p.prevent="save">
+      <v-card>
+        <v-row no-gutters>
+          <v-col v-if="dirtyFilterValue.type === RowFilterType.CUSTOM" class="left-column d-flex"
+                 @keydown.tab="e=>e.stopPropagation()"
+          >
+            <CustomInspectionFilter
+                :is-target-available="isTargetAvailable"
+                :labels="labels"
+                :model-type="modelType"
+                v-model="dirtyFilterValue"
+            />
+          </v-col>
+          <v-col class="right-column">
+            <v-list dense class="pa-0">
+              <v-list-item
+                  @click="selectFilter(item)"
+                  class="tile"
+                  :class="{'selected': dirtyFilterValue.type === item.value}"
+                  v-for="item in filterTypes"
+                  :key="item.value"
+                  :disabled="item.disabled"
+                  link
+              >
+                <v-list-item-title>{{ item.label }}</v-list-item-title>
+              </v-list-item>
+            </v-list>
+          </v-col>
+        </v-row>
 
-      <v-card-actions class="actions-section" v-show="dirtyFilterValue.type === RowFilterType.CUSTOM">
-        <v-spacer></v-spacer>
+        <v-card-actions class="actions-section" v-show="dirtyFilterValue.type === RowFilterType.CUSTOM">
+          <v-spacer></v-spacer>
 
-        <v-btn
-            text
-            @click="menu = false"
-        >
-          Cancel
-        </v-btn>
-        <v-btn
-            color="primary"
-            text
-            @click="save"
-        >
-          Save
-        </v-btn>
-      </v-card-actions>
-    </v-card>
+          <v-btn
+              text
+              @click="menu = false"
+          >
+            Cancel
+          </v-btn>
+          <v-btn
+              color="primary"
+              text
+              type="submit"
+          >
+            Save
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-form>
   </v-menu>
 
 </template>
@@ -135,7 +140,7 @@ export default class InspectionFilter extends Vue {
     }
   }
 
-  mounted(){
+  mounted() {
     this.$emit('input', this.filter); // send an initial value outside
   }
 
@@ -173,18 +178,22 @@ export default class InspectionFilter extends Vue {
 
 .right-column {
   max-width: 300px;
+  min-width: 300px;
 }
 
 .left-column {
-  min-width: 800px;
+  min-width: 700px;
   border-right: 1px solid lightgrey;
 }
-.v-list-item__title{
+
+.v-list-item__title {
   white-space: break-spaces;
 }
+
 .actions-section {
   border-top: 1px solid lightgrey;
 }
+
 .tile {
   cursor: pointer;
 

@@ -1,5 +1,6 @@
 <template>
   <v-select
+      clearable
       hide-details="auto"
       dense
       v-model="selectOptions"

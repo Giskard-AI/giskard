@@ -5,7 +5,6 @@
       <v-col>
         <v-text-field
             v-model='value.minThreshold'
-            step='0.001'
             hide-details
             class="pa-0 ma-0"
             type='number'
@@ -16,7 +15,6 @@
         <v-text-field
             class="pa-0 ma-0"
             v-model='value.maxThreshold'
-            step='0.001'
             hide-details
             type='number'
         ></v-text-field>
@@ -28,7 +26,6 @@
         <v-text-field
             class="pa-0 ma-0"
             v-model='value.minLabelThreshold'
-            step='0.001'
             hide-details
             type='number'
         >
@@ -39,7 +36,6 @@
         <v-text-field
             class="pa-0 ma-0"
             v-model='value.maxLabelThreshold'
-            step='0.001'
             hide-details
             type='number'
         ></v-text-field>
@@ -89,6 +85,7 @@
       <v-col>Probability of</v-col>
       <v-col cols="3">
         <v-select
+            clearable
             class="pa-0 ma-0"
             :items='labels'
             v-model='value.thresholdLabel'
@@ -100,7 +97,6 @@
         <v-text-field
             class="pa-0 ma-0"
             v-model='value.minThreshold'
-            step='0.001'
             hide-details
             type='number'
         >
@@ -112,7 +108,6 @@
         <v-text-field
             class="pa-0 ma-0"
             v-model='value.maxThreshold'
-            step='0.001'
             hide-details
             type='number'
         >
