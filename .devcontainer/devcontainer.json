@@ -36,7 +36,7 @@
 	"postStartCommand": "bash ./.devcontainer/postStartCommand.sh",
 
 	// Comment out to connect as root instead. More info: https://aka.ms/vscode-remote/containers/non-root.
-	"remoteUser": "node",
+	// "remoteUser": "node",
 	"features": {
 		"docker-in-docker": "20.10",
 		"git": "latest",
