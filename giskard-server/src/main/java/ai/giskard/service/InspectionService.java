@@ -109,10 +109,10 @@ public class InspectionService {
                         selection = selection.and(target.isLessThanOrEqualTo(filter.getMaxLabelThreshold()));
                     }
                     if (filter.getMaxDiffThreshold() != null) {
-                        selection = selection.and(diffPercent.isLessThanOrEqualTo(filter.getMaxDiffThreshold()));
+                        selection = selection.and(diffPercent.isLessThanOrEqualTo(filter.getMaxDiffThreshold() / 100));
                     }
                     if (filter.getMinDiffThreshold() != null) {
-                        selection = selection.and(diffPercent.isGreaterThanOrEqualTo(filter.getMinDiffThreshold()));
+                        selection = selection.and(diffPercent.isGreaterThanOrEqualTo(filter.getMinDiffThreshold() / 100));
                     }
                 }
                 default -> selection = null;
@@ -177,10 +177,10 @@ public class InspectionService {
         if (filter.getThresholdLabel() != null) {
             DoubleColumn probPredicted = (DoubleColumn) predsTable.column(filter.getThresholdLabel());
             if (filter.getMaxThreshold() != null) {
-                selection.and(probPredicted.isLessThanOrEqualTo(filter.getMaxThreshold()));
+                selection.and(probPredicted.isLessThanOrEqualTo(filter.getMaxThreshold() / 100));
             }
             if (filter.getMinThreshold() != null) {
-                selection.and(probPredicted.isGreaterThanOrEqualTo(filter.getMinThreshold()));
+                selection.and(probPredicted.isGreaterThanOrEqualTo(filter.getMinThreshold() / 100));
             }
         }
     }
