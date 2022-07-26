@@ -46,7 +46,7 @@
 
 Click the image below to start the demo:
 
-<a align='center' href="https://app.arcade.software/share/zPfpXFt8lRm5XDkaWM85">
+<a align='center' href="https://app.arcade.software/share/DicI8Axi0Wb53vz4QXi3">
          <img width='600' align='center' alt="Interactive demo" src="readme/demo.png">
       </a>
 <br/>
