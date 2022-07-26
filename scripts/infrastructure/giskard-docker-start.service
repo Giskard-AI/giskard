@@ -10,14 +10,13 @@ WorkingDirectory=/home/ec2-user
 Type=oneshot
 RemainAfterExit=yes
 
-# change this to branch main before merging
-ExecStartPre=-/bin/bash -c "/bin/curl -f 'https://raw.githubusercontent.com/Giskard-AI/giskard/feat/ami/docker-compose.ami.yml' -o docker-compose.ami.yml"
+ExecStartPre=-/bin/bash -c "/bin/curl -f 'https://raw.githubusercontent.com/Giskard-AI/giskard/main/docker-compose.ami.yml' -o docker-compose.ami.yml"
 ExecStartPre=-/bin/bash -c "/bin/curl -f 'https://raw.githubusercontent.com/Giskard-AI/giskard/main/docker-compose.yml' -o docker-compose.yml"
 ExecStartPre=-/usr/local/bin/docker-compose pull --quiet
 ExecStart=/usr/local/bin/docker-compose -f docker-compose.yml -f docker-compose.ami.yml up -d
 
 ExecStartPost=/bin/bash -c "echo 'Pruning docker images...'"
-ExecStartPost=-docker image prune -f
+ExecStartPost=-/usr/local/bin/docker image prune -f
 
 ExecStop=/usr/local/bin/docker-compose down
 
