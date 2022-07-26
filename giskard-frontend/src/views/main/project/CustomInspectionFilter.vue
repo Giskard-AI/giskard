@@ -20,7 +20,7 @@
         ></v-text-field>
       </v-col>
     </v-row>
-    <v-row align="center" v-show="isTargetAvailable">
+    <v-row align="center" v-if="!isClassification && isTargetAvailable">
       <v-col cols="5">Actual value is between</v-col>
       <v-col>
         <v-text-field
@@ -41,7 +41,7 @@
         ></v-text-field>
       </v-col>
     </v-row>
-    <v-row align="center" v-show="isTargetAvailable">
+    <v-row align="center" v-if="!isClassification && isTargetAvailable">
       <v-col cols="5">Diff percentage value is between</v-col>
       <v-col>
         <v-text-field
