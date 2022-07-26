@@ -68,7 +68,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-        run: ./gradlew build jacocoTestReport sonarqube --info
+        run: ./gradlew build jacocoTestReport sonarqube --info --parallel
 
       - name: Build and analyze without sonar
         if: ${{ startsWith(steps.extract_source_branch.outputs.branch, 'dependabot/') }}
@@ -76,4 +76,4 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-        run: ./gradlew build
+        run: ./gradlew build --parallel

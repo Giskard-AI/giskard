@@ -25,11 +25,11 @@ transformers = ">=4.7.0,<5.0.0"
 typing-extensions = ">=3.7.4.3"
 
 [package.extras]
-all = ["ray (>=0.8.7,<2.0.0)", "shap (>=0.40.0,<0.41.0)", "numba (>=0.50.0,!=0.54.0,<0.56.0)", "tensorflow (>=2.0.0,!=2.6.0,!=2.6.1,<2.10.0)", "torch (>=1.9.0,<2.0.0)"]
-ray = ["ray (>=0.8.7,<2.0.0)"]
-shap = ["shap (>=0.40.0,<0.41.0)", "numba (>=0.50.0,!=0.54.0,<0.56.0)"]
-tensorflow = ["tensorflow (>=2.0.0,!=2.6.0,!=2.6.1,<2.10.0)"]
 torch = ["torch (>=1.9.0,<2.0.0)"]
+tensorflow = ["tensorflow (>=2.0.0,!=2.6.0,!=2.6.1,<2.10.0)"]
+shap = ["numba (>=0.50.0,!=0.54.0,<0.56.0)", "shap (>=0.40.0,<0.41.0)"]
+ray = ["ray (>=0.8.7,<2.0.0)"]
+all = ["torch (>=1.9.0,<2.0.0)", "tensorflow (>=2.0.0,!=2.6.0,!=2.6.1,<2.10.0)", "numba (>=0.50.0,!=0.54.0,<0.56.0)", "shap (>=0.40.0,<0.41.0)", "ray (>=0.8.7,<2.0.0)"]
 
 [[package]]
 name = "altair"
@@ -426,7 +426,7 @@ test = ["pytest (>=7)", "pytest-mock (>=3)", "mock (>=4)", "pytest-cov", "covera
 
 [[package]]
 name = "great-expectations"
-version = "0.15.14"
+version = "0.15.15"
 description = "Always know what to expect from your data."
 category = "main"
 optional = false
@@ -439,6 +439,7 @@ colorama = ">=0.4.3"
 cryptography = ">=3.2"
 importlib-metadata = ">=1.7.0"
 Ipython = ">=7.16.3"
+ipywidgets = ">=7.5.1"
 jinja2 = ">=2.10"
 jsonpatch = ">=1.22"
 jsonschema = ">=2.5.1"
@@ -461,13 +462,13 @@ tzlocal = ">=1.2"
 urllib3 = ">=1.25.4,<1.27"
 
 [package.extras]
-arrow = ["feather-format (>=0.4.1)", "pyarrow (<3.1.0)"]
+arrow = ["feather-format (>=0.4.1)", "pyarrow"]
 athena = ["pyathena (>=1.11)", "sqlalchemy (>=1.3.18,<2.0.0)"]
 aws_secrets = ["boto3 (==1.17.106)"]
-azure = ["azure-identity (>=1.0.0)", "azure-keyvault-secrets (>=4.0.0)", "azure-storage-blob (>=12.5.0)"]
-azure_secrets = ["azure-identity (>=1.0.0)", "azure-keyvault-secrets (>=4.0.0)", "azure-storage-blob (>=12.5.0)"]
+azure = ["azure-identity (>=1.10.0)", "azure-keyvault-secrets (>=4.0.0)", "azure-storage-blob (>=12.5.0)"]
+azure_secrets = ["azure-identity (>=1.10.0)", "azure-keyvault-secrets (>=4.0.0)", "azure-storage-blob (>=12.5.0)"]
 bigquery = ["gcsfs (>=0.5.1)", "google-cloud-secret-manager (>=1.0.0)", "google-cloud-storage (>=1.28.0)", "sqlalchemy-bigquery (>=1.3.0)", "sqlalchemy (>=1.3.18,<2.0.0)"]
-dremio = ["pyarrow (<3.1.0)", "pyodbc (>=4.0.30)", "sqlalchemy-dremio (>=1.2.1)", "sqlalchemy (>=1.3.18,<2.0.0)"]
+dremio = ["pyarrow", "pyodbc (>=4.0.30)", "sqlalchemy-dremio (>=1.2.1)", "sqlalchemy (>=1.3.18,<2.0.0)"]
 excel = ["openpyxl (>=3.0.7)", "xlrd (>=1.1.0,<2.0.0)"]
 gcp = ["gcsfs (>=0.5.1)", "google-cloud-secret-manager (>=1.0.0)", "google-cloud-storage (>=1.28.0)", "sqlalchemy-bigquery (>=1.3.0)", "sqlalchemy (>=1.3.18,<2.0.0)"]
 hive = ["PyHive (>=0.6.5)", "thrift (>=0.16.0)", "thrift-sasl (>=0.4.3)"]
@@ -477,11 +478,11 @@ pagerduty = ["pypd (==1.1.0)"]
 postgresql = ["psycopg2-binary (>=2.7.6)", "sqlalchemy (>=1.3.18,<2.0.0)"]
 redshift = ["psycopg2-binary (>=2.7.6)", "sqlalchemy-redshift (>=0.7.7)", "sqlalchemy (>=1.3.18,<2.0.0)"]
 s3 = ["boto3 (==1.17.106)"]
-snowflake = ["snowflake-connector-python (==2.5.0)", "snowflake-sqlalchemy (>=1.2.3)", "sqlalchemy (>=1.3.18,<2.0.0)"]
+snowflake = ["snowflake-connector-python (>=2.5.0)", "snowflake-sqlalchemy (>=1.2.3)", "sqlalchemy (>=1.3.18,<2.0.0)"]
 spark = ["pyspark (>=2.3.2)"]
 sqlalchemy = ["sqlalchemy (>=1.3.18,<2.0.0)"]
 teradata = ["teradatasqlalchemy (==17.0.0.1)", "sqlalchemy (>=1.3.18,<2.0.0)"]
-test = ["boto3 (==1.17.106)", "flask (>=1.0.0)", "freezegun (>=0.3.15)", "ipywidgets (>=7.5.1)", "mock-alchemy (>=0.2.5)", "moto (>=1.3.7,<2.0.0)", "nbconvert (>=5)", "pyfakefs (>=4.5.1)", "pytest (>=5.3.5)", "pytest-benchmark (>=3.4.1)", "requirements-parser (>=0.2.0)", "s3fs (>=0.5.1)", "snapshottest (==0.6.0)", "sqlalchemy (>=1.3.18,<2.0.0)", "black (==22.3.0)", "flake8 (==3.8.3)", "isort (==5.4.2)", "pre-commit (>=2.6.0)", "pytest-cov (>=2.8.1)", "pytest-order (>=0.9.5)", "pyupgrade (==2.7.2)"]
+test = ["boto3 (==1.17.106)", "flask (>=1.0.0)", "freezegun (>=0.3.15)", "mock-alchemy (>=0.2.5)", "moto (>=1.3.7,<2.0.0)", "nbconvert (>=5)", "pyfakefs (>=4.5.1)", "pytest (>=5.3.5)", "pytest-benchmark (>=3.4.1)", "requirements-parser (>=0.2.0)", "s3fs (>=0.5.1)", "snapshottest (==0.6.0)", "sqlalchemy (>=1.3.18,<2.0.0)", "black (==22.3.0)", "flake8 (==3.8.3)", "invoke (>=1.7.1)", "isort (==5.4.2)", "pre-commit (>=2.6.0)", "pytest-cov (>=2.8.1)", "pytest-order (>=0.9.5)", "pyupgrade (==2.7.2)"]
 trino = ["trino (>=0.310.0)", "sqlalchemy (>=1.3.18,<2.0.0)"]
 
 [[package]]
@@ -541,13 +542,13 @@ tqdm = "*"
 typing-extensions = ">=3.7.4.3"
 
 [package.extras]
-all = ["pytest", "datasets", "soundfile", "black (>=22.0,<23.0)", "isort (>=5.5.4)", "flake8 (>=3.8.3)"]
-dev = ["pytest", "datasets", "soundfile", "black (>=22.0,<23.0)", "isort (>=5.5.4)", "flake8 (>=3.8.3)"]
-fastai = ["toml", "fastai (>=2.4)", "fastcore (>=1.3.27)"]
-quality = ["black (>=22.0,<23.0)", "isort (>=5.5.4)", "flake8 (>=3.8.3)"]
-tensorflow = ["tensorflow", "pydot", "graphviz"]
-testing = ["pytest", "datasets", "soundfile"]
 torch = ["torch"]
+testing = ["soundfile", "datasets", "pytest"]
+tensorflow = ["graphviz", "pydot", "tensorflow"]
+quality = ["flake8 (>=3.8.3)", "isort (>=5.5.4)", "black (>=22.0,<23.0)"]
+fastai = ["fastcore (>=1.3.27)", "fastai (>=2.4)", "toml"]
+dev = ["flake8 (>=3.8.3)", "isort (>=5.5.4)", "black (>=22.0,<23.0)", "soundfile", "datasets", "pytest"]
+all = ["flake8 (>=3.8.3)", "isort (>=5.5.4)", "black (>=22.0,<23.0)", "soundfile", "datasets", "pytest"]
 
 [[package]]
 name = "idna"
@@ -690,6 +691,25 @@ optional = false
 python-versions = "*"
 
 [[package]]
+name = "ipywidgets"
+version = "7.7.1"
+description = "IPython HTML widgets for Jupyter"
+category = "main"
+optional = false
+python-versions = "*"
+
+[package.dependencies]
+ipykernel = ">=4.5.1"
+ipython = {version = ">=4.0.0", markers = "python_version >= \"3.3\""}
+ipython-genutils = ">=0.2.0,<0.3.0"
+jupyterlab-widgets = {version = ">=1.0.0", markers = "python_version >= \"3.6\""}
+traitlets = ">=4.3.1"
+widgetsnbextension = ">=3.6.0,<3.7.0"
+
+[package.extras]
+test = ["pytest (>=3.6.0)", "pytest-cov", "mock"]
+
+[[package]]
 name = "jedi"
 version = "0.18.1"
 description = "An autocompletion tool for Python that can be used for text editors."
@@ -799,6 +819,14 @@ traitlets = "*"
 
 [package.extras]
 test = ["ipykernel", "pre-commit", "pytest", "pytest-cov", "pytest-timeout"]
+
+[[package]]
+name = "jupyterlab-widgets"
+version = "1.1.1"
+description = "A JupyterLab extension."
+category = "main"
+optional = false
+python-versions = ">=3.6"
 
 [[package]]
 name = "kiwisolver"
@@ -1106,8 +1134,8 @@ python-versions = ">=3.6"
 importlib-metadata = {version = ">=0.12", markers = "python_version < \"3.8\""}
 
 [package.extras]
-dev = ["pre-commit", "tox"]
-testing = ["pytest", "pytest-benchmark"]
+testing = ["pytest-benchmark", "pytest"]
+dev = ["tox", "pre-commit"]
 
 [[package]]
 name = "preshed"
@@ -1260,7 +1288,7 @@ coverage = {version = ">=5.2.1", extras = ["toml"]}
 pytest = ">=4.6"
 
 [package.extras]
-testing = ["fields", "hunter", "process-tests", "six", "pytest-xdist", "virtualenv"]
+testing = ["virtualenv", "pytest-xdist", "six", "process-tests", "hunter", "fields"]
 
 [[package]]
 name = "python-dateutil"
@@ -1428,10 +1456,10 @@ scipy = ">=1.1.0"
 threadpoolctl = ">=2.0.0"
 
 [package.extras]
-benchmark = ["matplotlib (>=2.2.3)", "pandas (>=0.25.0)", "memory-profiler (>=0.57.0)"]
-docs = ["matplotlib (>=2.2.3)", "scikit-image (>=0.14.5)", "pandas (>=0.25.0)", "seaborn (>=0.9.0)", "memory-profiler (>=0.57.0)", "sphinx (>=4.0.1)", "sphinx-gallery (>=0.7.0)", "numpydoc (>=1.0.0)", "Pillow (>=7.1.2)", "sphinx-prompt (>=1.3.0)", "sphinxext-opengraph (>=0.4.2)"]
-examples = ["matplotlib (>=2.2.3)", "scikit-image (>=0.14.5)", "pandas (>=0.25.0)", "seaborn (>=0.9.0)"]
-tests = ["matplotlib (>=2.2.3)", "scikit-image (>=0.14.5)", "pandas (>=0.25.0)", "pytest (>=5.0.1)", "pytest-cov (>=2.9.0)", "flake8 (>=3.8.2)", "black (>=21.6b0)", "mypy (>=0.770)", "pyamg (>=4.0.0)"]
+tests = ["pyamg (>=4.0.0)", "mypy (>=0.770)", "black (>=21.6b0)", "flake8 (>=3.8.2)", "pytest-cov (>=2.9.0)", "pytest (>=5.0.1)", "pandas (>=0.25.0)", "scikit-image (>=0.14.5)", "matplotlib (>=2.2.3)"]
+examples = ["seaborn (>=0.9.0)", "pandas (>=0.25.0)", "scikit-image (>=0.14.5)", "matplotlib (>=2.2.3)"]
+docs = ["sphinxext-opengraph (>=0.4.2)", "sphinx-prompt (>=1.3.0)", "Pillow (>=7.1.2)", "numpydoc (>=1.0.0)", "sphinx-gallery (>=0.7.0)", "sphinx (>=4.0.1)", "memory-profiler (>=0.57.0)", "seaborn (>=0.9.0)", "pandas (>=0.25.0)", "scikit-image (>=0.14.5)", "matplotlib (>=2.2.3)"]
+benchmark = ["memory-profiler (>=0.57.0)", "pandas (>=0.25.0)", "matplotlib (>=2.2.3)"]
 
 [[package]]
 name = "scipy"
@@ -1453,9 +1481,9 @@ optional = false
 python-versions = "*"
 
 [package.extras]
-nativelib = ["pyobjc-framework-cocoa", "pywin32"]
-objc = ["pyobjc-framework-cocoa"]
 win32 = ["pywin32"]
+objc = ["pyobjc-framework-cocoa"]
+nativelib = ["pywin32", "pyobjc-framework-cocoa"]
 
 [[package]]
 name = "setuptools-scm"
@@ -1882,6 +1910,17 @@ optional = false
 python-versions = "*"
 
 [[package]]
+name = "widgetsnbextension"
+version = "3.6.1"
+description = "IPython HTML widgets for Jupyter"
+category = "main"
+optional = false
+python-versions = "*"
+
+[package.dependencies]
+notebook = ">=4.4.1"
+
+[[package]]
 name = "zipp"
 version = "3.8.0"
 description = "Backport of pathlib-compatible object wrapper for zip files"
@@ -2242,8 +2281,8 @@ graphviz = [
     {file = "graphviz-0.20.zip", hash = "sha256:76bdfb73f42e72564ffe9c7299482f9d72f8e6cb8d54bce7b48ab323755e9ba5"},
 ]
 great-expectations = [
-    {file = "great_expectations-0.15.14-py3-none-any.whl", hash = "sha256:90693feb002ef367c7d9880d3bf2417ce49dd7c67dbf825520795fa001ddf297"},
-    {file = "great_expectations-0.15.14.tar.gz", hash = "sha256:82d08be098da7bfdabe24d49119a1df6a6586c0821e482be606cbdaafd01acc1"},
+    {file = "great_expectations-0.15.15-py3-none-any.whl", hash = "sha256:ac7b9a2510607a6965f58b003eeeb1b05e8f9cdf1480a6eedd79d4395ae3b40a"},
+    {file = "great_expectations-0.15.15.tar.gz", hash = "sha256:d37ef2c5305e6ecf03184ce9fd48b1d1a147a0356b1dfdf526ca970e17dfde32"},
 ]
 grpcio = [
     {file = "grpcio-1.47.0-cp310-cp310-linux_armv7l.whl", hash = "sha256:544da3458d1d249bb8aed5504adf3e194a931e212017934bf7bfa774dad37fb3"},
@@ -2389,6 +2428,10 @@ ipython-genutils = [
     {file = "ipython_genutils-0.2.0-py2.py3-none-any.whl", hash = "sha256:72dd37233799e619666c9f639a9da83c34013a73e8bbc79a7a6348d93c61fab8"},
     {file = "ipython_genutils-0.2.0.tar.gz", hash = "sha256:eb2e116e75ecef9d4d228fdc66af54269afa26ab4463042e33785b887c628ba8"},
 ]
+ipywidgets = [
+    {file = "ipywidgets-7.7.1-py2.py3-none-any.whl", hash = "sha256:aa1076ab7102b2486ae2607c43c243200a07c17d6093676c419d4b6762489a50"},
+    {file = "ipywidgets-7.7.1.tar.gz", hash = "sha256:5f2fa1b7afae1af32c88088c9828ad978de93ddda393d7ed414e553fee93dcab"},
+]
 jedi = [
     {file = "jedi-0.18.1-py2.py3-none-any.whl", hash = "sha256:637c9635fcf47945ceb91cd7f320234a7be540ded6f3e99a50cb6febdfd1ba8d"},
     {file = "jedi-0.18.1.tar.gz", hash = "sha256:74137626a64a99c8eb6ae5832d99b3bdd7d29a3850fe2aa80a4126b2a7d949ab"},
@@ -2420,6 +2463,10 @@ jupyter-client = [
 jupyter-core = [
     {file = "jupyter_core-4.10.0-py3-none-any.whl", hash = "sha256:e7f5212177af7ab34179690140f188aa9bf3d322d8155ed972cbded19f55b6f3"},
     {file = "jupyter_core-4.10.0.tar.gz", hash = "sha256:a6de44b16b7b31d7271130c71a6792c4040f077011961138afed5e5e73181aec"},
+]
+jupyterlab-widgets = [
+    {file = "jupyterlab_widgets-1.1.1-py3-none-any.whl", hash = "sha256:90ab47d99da03a3697074acb23b2975ead1d6171aa41cb2812041a7f2a08177a"},
+    {file = "jupyterlab_widgets-1.1.1.tar.gz", hash = "sha256:67d0ef1e407e0c42c8ab60b9d901cd7a4c68923650763f75bf17fb06c1943b79"},
 ]
 kiwisolver = [
     {file = "kiwisolver-1.4.2-cp310-cp310-macosx_10_9_universal2.whl", hash = "sha256:6e395ece147f0692ca7cdb05a028d31b83b72c369f7b4a2c1798f4b96af1e3d8"},
@@ -3581,6 +3628,10 @@ wcwidth = [
 webencodings = [
     {file = "webencodings-0.5.1-py2.py3-none-any.whl", hash = "sha256:a0af1213f3c2226497a97e2b3aa01a7e4bee4f403f95be16fc9acd2947514a78"},
     {file = "webencodings-0.5.1.tar.gz", hash = "sha256:b36a1c245f2d304965eb4e0a82848379241dc04b865afcc4aab16748587e1923"},
+]
+widgetsnbextension = [
+    {file = "widgetsnbextension-3.6.1-py2.py3-none-any.whl", hash = "sha256:954e0faefdd414e4e013f17dbc7fd86f24cf1d243a3ac85d5f0fc2c2d2b50c66"},
+    {file = "widgetsnbextension-3.6.1.tar.gz", hash = "sha256:9c84ae64c2893c7cbe2eaafc7505221a795c27d68938454034ac487319a75b10"},
 ]
 zipp = [
     {file = "zipp-3.8.0-py3-none-any.whl", hash = "sha256:c4f6e5bbf48e74f7a38e7cc5b0480ff42b0ae5178957d564d18932525d5cf099"},
