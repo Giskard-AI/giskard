@@ -334,6 +334,11 @@ if (project.hasProperty("gae")) {
     bootJar.dependsOn = [createPom]
 }
 
+bootJar {
+    archiveFileName = "${archiveBaseName.get()}.${archiveExtension.get()}"
+}
+
+
 task cleanGenerated(type: Delete) {
     delete "$buildDir/extracted-include-protos", "$buildDir/extracted-protos", "$buildDir/proto", "$buildDir/generated/source/proto"
 }
