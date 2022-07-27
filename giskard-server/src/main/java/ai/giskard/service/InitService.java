@@ -120,48 +120,48 @@ public class InitService {
         String germanCreditProjectKey = "credit";
 
         return Map.of(
-            zillowProjectKey, new ProjectConfig("Zillow price prediction", "aicreator",
+            zillowProjectKey, new ProjectConfig("House Pricing Regression", "aicreator",
                 ModelUploadParamsDTO.builder().modelType("regression")
                     .projectKey(zillowProjectKey)
-                    .name("Zillow regression")
+                    .name("House Pricing Model")
                     .language(ModelLanguage.PYTHON)
                     .languageVersion("3.7")
                     .featureNames(zillowFeatureTypes.keySet().stream().toList())
                     .build(),
                 DataUploadParamsDTO.builder()
                     .projectKey(zillowProjectKey)
-                    .name("Zillow data")
+                    .name("House Pricing Data")
                     .featureTypes(zillowFeatureTypes)
                     .target("SalePrice")
                     .build()
             ),
-            enronProjectKey, new ProjectConfig("Enron", "aitester",
+            enronProjectKey, new ProjectConfig("Email Classification", "aitester",
                 ModelUploadParamsDTO.builder().modelType("classification")
                     .classificationLabels(List.of("CALIFORNIA CRISIS", "INFLUENCE", "INTERNAL", "REGULATION"))
                     .projectKey(enronProjectKey)
-                    .name("Enron model")
+                    .name("Email Classification Model")
                     .language(ModelLanguage.PYTHON)
                     .languageVersion("3.7")
                     .featureNames(enronFeatureTypes.keySet().stream().toList())
                     .build(),
                 DataUploadParamsDTO.builder()
-                    .name("Enron data")
+                    .name("Email data")
                     .featureTypes(enronFeatureTypes)
                     .projectKey(enronProjectKey)
                     .target("Target")
                     .build()
             ),
-            germanCreditProjectKey, new ProjectConfig("German credit scoring", "admin",
+            germanCreditProjectKey, new ProjectConfig("Credit Scoring Classification", "admin",
                 ModelUploadParamsDTO.builder().modelType("classification")
                     .classificationLabels(List.of("Default", "Not default"))
                     .projectKey(germanCreditProjectKey)
-                    .name("German credit score")
+                    .name("Credit Scoring Model")
                     .language(ModelLanguage.PYTHON)
                     .languageVersion("3.7")
                     .featureNames(germanCreditFeatureTypes.keySet().stream().toList())
                     .build(),
                 DataUploadParamsDTO.builder()
-                    .name("German Credit data")
+                    .name("Credit Scoring data")
                     .projectKey(germanCreditProjectKey)
                     .target("default")
                     .featureTypes(germanCreditFeatureTypes)
