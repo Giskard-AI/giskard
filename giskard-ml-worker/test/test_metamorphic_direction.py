@@ -105,15 +105,17 @@ def test_metamorphic_decreasing_exception(german_credit_test_data, german_credit
         )
 
 
-def test_metamorphic_increasing_exception(german_credit_test_data, german_credit_model):
-    with pytest.raises(Exception):
-        tests = GiskardTestFunctions()
-        perturbation = {
-            "duration_in_month": lambda x: x.duration_in_month - x.duration_in_month * 0.5}
-        results = tests.metamorphic.test_metamorphic_increasing(
-            df=german_credit_test_data,
-            model=german_credit_model,
-            classification_label='random_value',
-            perturbation_dict=perturbation,
-            threshold=0.5
-        )
+def test_metamorphic_increasing_enron(enron_data, enron_model):
+    import nlpaug.augmenter.word as naw  # uncomment for text perturbation
+    aug = naw.SpellingAug(dict_path=None, name='Spelling_Aug', aug_min=1, aug_max=10, aug_p=0.3, stopwords=None,
+                          tokenizer=None, reverse_tokenizer=None, include_reverse=True, stopwords_regex=None, verbose=0) # uncomment for text perturbation
+    tests = GiskardTestFunctions()
+    perturbation = {
+        "Content": lambda x: aug.augment(x["Content"])}
+    results = tests.metamorphic.test_metamorphic_increasing(
+        df=enron_data,
+        model=enron_model,
+        classification_label='INFLUENCE',
+        perturbation_dict=perturbation,
+        threshold=0.5
+    )
