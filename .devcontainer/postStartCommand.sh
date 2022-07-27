@@ -3,7 +3,7 @@
 set -ex
 
 # Build the app with gradle
-./gradlew build
+nohup ./gradlew build -x test -x integrationTest > ~/build.log
 
 # Boot the Java backend (which spins up a dev H2 database)
 ./gradlew -Pprod bootJar
