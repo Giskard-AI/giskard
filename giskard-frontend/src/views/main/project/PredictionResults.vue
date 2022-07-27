@@ -1,8 +1,8 @@
 <template>
   <v-card class="mb-4">
-    <OverlayLoader v-show="loading"/>
     <v-card-title>Result</v-card-title>
-    <v-card-text class="text-center" v-if="inputData">
+    <v-card-text class="text-center card-text" v-if="inputData">
+      <OverlayLoader :show="loading" absolute solid no-fade/>
       <v-row v-if="prediction && isClassification(predictionTask)">
         <v-col
             lg="8"
@@ -24,7 +24,7 @@
                 :class="
                 !isDefined(actual)
                   ? 'info--text text--darken-2'
-                  : prediction === actual
+                  : isCorrectPrediction
                   ? 'success--text'
                   : 'error--text'
               "
@@ -87,6 +87,7 @@ import {GridComponent} from "echarts/components";
 import {ModelDTO, ModelType} from "@/generated-sources";
 import {isClassification} from "@/ml-utils";
 import * as _ from "lodash";
+import {CanceledError} from "axios";
 
 use([CanvasRenderer, BarChart, GridComponent]);
 Vue.component("v-chart", ECharts);
@@ -100,7 +101,7 @@ export default class PredictionResults extends Vue {
   @Prop({required: true}) predictionTask!: ModelType;
   @Prop() targetFeature!: string;
   @Prop() classificationLabels!: string[];
-  @Prop() inputData!: {[key: string]: string};
+  @Prop() inputData!: { [key: string]: string };
   @Prop({default: false}) modified!: boolean;
 
   prediction: string | number | undefined = "";
@@ -110,20 +111,26 @@ export default class PredictionResults extends Vue {
   isClassification = isClassification;
   ModelType = ModelType;
   predCategoriesN = 10;
+  controller?: AbortController;
 
   async mounted() {
     await this.submitPrediction()
   }
 
   @Watch("inputData", {deep: true})
-  public async submitPrediction() {
+  private async submitPrediction() {
+    if (this.controller) {
+      this.controller.abort();
+    }
+    this.controller = new AbortController();
     if (Object.keys(this.inputData).length) {
       try {
         this.loading = true;
         const predictionResult = (await api.predict(
             this.model.id,
             this.datasetId,
-            this.inputData
+            this.inputData,
+            this.controller
         ))
         this.prediction = predictionResult.prediction;
         this.$emit("result", this.prediction);
@@ -134,17 +141,27 @@ export default class PredictionResults extends Vue {
             .sort(([, v1], [, v2]) => +v2 - +v1)
             .reduce((r, [k, v]) => ({...r, [k]: v}), {});
         this.errorMsg = "";
-      } catch (error) {
-        this.errorMsg = error.response.data.detail;
-        this.prediction = undefined;
-      } finally {
         this.loading = false;
+      } catch (error) {
+        if (!(error instanceof CanceledError)) {
+          this.errorMsg = error.response.data.detail;
+          this.prediction = undefined;
+          this.loading = false;
+        }
       }
     } else {
       // reset
       this.errorMsg = "";
       this.prediction = undefined;
       this.resultProbabilities = {};
+    }
+  }
+
+  get isCorrectPrediction() {
+    if (_.isNumber(this.actual) || _.isNumber(this.prediction)) {
+      return _.toNumber(this.actual) === _.toNumber(this.prediction);
+    } else {
+      return _.toString(this.actual) === _.toString(this.prediction);
     }
   }
 
@@ -161,23 +178,25 @@ export default class PredictionResults extends Vue {
    * @private
    */
   private firstNSortedByKey(obj, n) {
-    const numberExtraCategories=Object.keys(obj).length-n;
-    let filteredObject=Object.keys(obj)
-      .slice(0,n)
-      .sort()
-      .reduce(function(acc, current) {
-        acc[current] = obj[current]
-        return acc;
-      }, {});
+    const numberExtraCategories = Object.keys(obj).length - n;
+    let filteredObject = Object.keys(obj)
+        .slice(0, n)
+        .sort()
+        .reduce(function (acc, current) {
+          acc[current] = obj[current]
+          return acc;
+        }, {});
     if (numberExtraCategories > 0) {
       const sumOthers = Object.values(obj).slice(n, -1).reduce((acc: any, val: any) => acc + val, 0);
-      filteredObject={[`Others (${numberExtraCategories})`] : sumOthers,...filteredObject };
+      filteredObject = {[`Others (${numberExtraCategories})`]: sumOthers, ...filteredObject};
     }
     return filteredObject;
   }
-  isDefined(val:any){
+
+  isDefined(val: any) {
     return !_.isNil(val);
   }
+
   get chartOptions() {
     const results = this.firstNSortedByKey(this.resultProbabilities, this.predCategoriesN)
     return {
@@ -244,6 +263,10 @@ div.caption {
 #labels-container {
   font-size: 10px;
   margin-top: 20px;
+}
+
+.card-text {
+  position: relative;
 }
 
 .v-data-table tbody td {
