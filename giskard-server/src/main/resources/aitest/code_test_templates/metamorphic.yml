@@ -51,7 +51,7 @@ items:
       # You can choose all_perturbation to perturb categorical, text and numerical feature at the same time
       all_perturbation = {
           "{{NUMERIC FEATURE NAME}}": lambda x: x["{{NUMERIC FEATURE NAME}}"] * 2,
-          "{{CATEGORICAL FEATURE NAME}}": lambda x: x["{{CATEGORICAL FEATURE NAME}}"].apply(lambda value: "{{CATEGORY 1}}" if value == "{{CATEGORY 2}}" else value),
+        "{{CATEGORICAL FEATURE NAME}}": lambda x: "{{CATEGORY 1}}" if x["{{CATEGORICAL FEATURE NAME}}"] == "{{CATEGORY 2}}" else x["{{CATEGORICAL FEATURE NAME}}"] ,
           "{{TEXTUAL FEATURE NAME}}": lambda x: x["{{TEXTUAL FEATURE NAME}}"].apply(lambda value: aug.augment(value))
       }
 
@@ -118,8 +118,8 @@ items:
 
       # You can choose all_perturbation to perturb categorical, text and numerical feature at the same time
       all_perturbation = {"{{NUMERIC FEATURE NAME}}": lambda x: x["{{NUMERIC FEATURE NAME}}"] * 2,
-                "{{CATEGORICAL FEATURE NAME}}": lambda x: x["{{CATEGORICAL FEATURE NAME}}"].apply(
-                    lambda value: "{{CATEGORY 1}}" if value == "{{CATEGORY 2}}" else value),
+                          "{{CATEGORICAL FEATURE NAME}}": lambda x: "{{CATEGORY 1}}" if
+                          x["{{CATEGORICAL FEATURE NAME}}"] == "{{CATEGORY 2}}" else x["{{CATEGORICAL FEATURE NAME}}"] ,
                 "{{TEXTUAL FEATURE NAME}}": lambda x: x["{{TEXTUAL FEATURE NAME}}"].apply(lambda value: aug.augment(value))}
 
       # Or you can choose one feature at a time eg. Numerical feature
@@ -185,8 +185,8 @@ items:
 
       # You can choose all_perturbation to perturb categorical, text and numerical feature at the same time
       all_perturbation = {"{{NUMERIC FEATURE NAME}}": lambda x: x["{{NUMERIC FEATURE NAME}}"] * 2,
-                "{{CATEGORICAL FEATURE NAME}}": lambda x: x["{{CATEGORICAL FEATURE NAME}}"].apply(
-                    lambda value: "{{CATEGORY 1}}" if value == "{{CATEGORY 2}}" else value),
+                          "{{CATEGORICAL FEATURE NAME}}": lambda x: "{{CATEGORY 1}}" if
+                          x["{{CATEGORICAL FEATURE NAME}}"] == "{{CATEGORY 2}}" else x["{{CATEGORICAL FEATURE NAME}}"] ,
                 "{{TEXTUAL FEATURE NAME}}": lambda x: x["{{TEXTUAL FEATURE NAME}}"].apply(lambda value: aug.augment(value))}
 
       # Or you can choose one feature at a time eg. Numerical feature
@@ -248,8 +248,8 @@ items:
 
       # You can choose all_perturbation to perturb categorical, text and numerical feature at the same time
       all_perturbation = {"{{NUMERIC FEATURE NAME}}": lambda x: x["{{NUMERIC FEATURE NAME}}"] * 2,
-                "{{CATEGORICAL FEATURE NAME}}": lambda x: x["{{CATEGORICAL FEATURE NAME}}"].apply(
-                    lambda value: "{{CATEGORY 1}}" if value == "{{CATEGORY 2}}" else value),
+                          "{{CATEGORICAL FEATURE NAME}}": lambda x: "{{CATEGORY 1}}" if
+                          x["{{CATEGORICAL FEATURE NAME}}"] == "{{CATEGORY 2}}" else x["{{CATEGORICAL FEATURE NAME}}"] ,
                 "{{TEXTUAL FEATURE NAME}}": lambda x: x["{{TEXTUAL FEATURE NAME}}"].apply(lambda value: aug.augment(value))}
 
       # Or you can choose one feature at a time eg. Numerical feature
@@ -314,8 +314,8 @@ items:
 
       # You can choose all_perturbation to perturb categorical, text and numerical feature at the same time
       all_perturbation = {"{{NUMERIC FEATURE NAME}}": lambda x: x["{{NUMERIC FEATURE NAME}}"] * 2,
-                "{{CATEGORICAL FEATURE NAME}}": lambda x: x["{{CATEGORICAL FEATURE NAME}}"].apply(
-                    lambda value: "{{CATEGORY 1}}" if value == "{{CATEGORY 2}}" else value),
+                          "{{CATEGORICAL FEATURE NAME}}": lambda x: "{{CATEGORY 1}}" if
+                          x["{{CATEGORICAL FEATURE NAME}}"] == "{{CATEGORY 2}}" else x["{{CATEGORICAL FEATURE NAME}}"] ,
                 "{{TEXTUAL FEATURE NAME}}": lambda x: x["{{TEXTUAL FEATURE NAME}}"].apply(lambda value: aug.augment(value))}
 
       # Or you can choose one feature at a time eg. Numerical feature
@@ -377,8 +377,8 @@ items:
 
       # You can choose all_perturbation to perturb categorical, text and numerical feature at the same time
       all_perturbation = {"{{NUMERIC FEATURE NAME}}": lambda x: x["{{NUMERIC FEATURE NAME}}"] * 2,
-                "{{CATEGORICAL FEATURE NAME}}": lambda x: x["{{CATEGORICAL FEATURE NAME}}"].apply(
-                    lambda value: "{{CATEGORY 1}}" if value == "{{CATEGORY 2}}" else value),
+                          "{{CATEGORICAL FEATURE NAME}}": lambda x: "{{CATEGORY 1}}" if
+                    x["{{CATEGORICAL FEATURE NAME}}"] == "{{CATEGORY 2}}" else x["{{CATEGORICAL FEATURE NAME}}"] ,
                 "{{TEXTUAL FEATURE NAME}}": lambda x: x["{{TEXTUAL FEATURE NAME}}"].apply(lambda value: aug.augment(value))}
 
       # Or you can choose one feature at a time eg. Numerical feature
