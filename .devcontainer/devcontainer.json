@@ -23,10 +23,10 @@
 
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
 	"forwardPorts": [
-		8000
+		8080
 	],
 	"portsAttributes": {
-		"8000": {
+		"8080": {
 			"label": "Giskard Preview",
 			"onAutoForward": "openBrowser"
 		}
