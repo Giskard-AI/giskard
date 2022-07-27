@@ -45,15 +45,27 @@ items:
           output_df:
               Dataframe of rows where the prediction changes due to perturbation
       """
-      # import nlpaug.augmenter.word as naw  # uncomment for text perturbation
-      # aug = naw.SpellingAug(dict_path='./spelling_en.txt') # uncomment for text perturbation
+      import nlpaug.augmenter.word as naw
+
+      aug = naw.SpellingAug(dict_path=None,
+      name='Spelling_Aug',
+      aug_min=1,
+      aug_max=10,
+      aug_p=0.3,
+      stopwords=None,
+      tokenizer=None,
+      reverse_tokenizer=None,
+      include_reverse=True,
+      stopwords_regex=None,
+      verbose=0)
 
       # You can choose all_perturbation to perturb categorical, text and numerical feature at the same time
       all_perturbation = {
-          "{{NUMERIC FEATURE NAME}}": lambda x: x["{{NUMERIC FEATURE NAME}}"] * 2,
-        "{{CATEGORICAL FEATURE NAME}}": lambda x: "{{CATEGORY 1}}" if x["{{CATEGORICAL FEATURE NAME}}"] == "{{CATEGORY 2}}" else x["{{CATEGORICAL FEATURE NAME}}"] ,
-          "{{TEXTUAL FEATURE NAME}}": lambda x: x["{{TEXTUAL FEATURE NAME}}"].apply(lambda value: aug.augment(value))
-      }
+              "{{NUMERIC FEATURE NAME}}": lambda x: x["{{NUMERIC FEATURE NAME}}"] * 2,
+              "{{CATEGORICAL FEATURE NAME}}": lambda x: "{{CATEGORY 1}}" if
+              x["{{CATEGORICAL FEATURE NAME}}"] == "{{CATEGORY 2}}" else x["{{CATEGORICAL FEATURE NAME}}"] ,
+              "{{TEXTUAL FEATURE NAME}}": lambda x: aug.augment(x["{{TEXTUAL FEATURE NAME}}"])
+                          }
 
       # Or you can choose one feature at a time eg. Numerical feature
       perturbation = {
@@ -113,14 +125,25 @@ items:
           output_df:
               Dataframe of rows where the prediction changes due to perturbation
       """
-      #import nlpaug.augmenter.word as naw  # uncomment for text perturbation
-      #aug = naw.SpellingAug(dict_path='./spelling_en.txt') # uncomment for text perturbation
+      import nlpaug.augmenter.word as naw
+
+      aug = naw.SpellingAug(dict_path=None,
+                            name='Spelling_Aug',
+                            aug_min=1,
+                            aug_max=10,
+                            aug_p=0.3,
+                            stopwords=None,
+                            tokenizer=None,
+                            reverse_tokenizer=None,
+                            include_reverse=True,
+                            stopwords_regex=None,
+                            verbose=0)
 
       # You can choose all_perturbation to perturb categorical, text and numerical feature at the same time
       all_perturbation = {"{{NUMERIC FEATURE NAME}}": lambda x: x["{{NUMERIC FEATURE NAME}}"] * 2,
                           "{{CATEGORICAL FEATURE NAME}}": lambda x: "{{CATEGORY 1}}" if
                           x["{{CATEGORICAL FEATURE NAME}}"] == "{{CATEGORY 2}}" else x["{{CATEGORICAL FEATURE NAME}}"] ,
-                "{{TEXTUAL FEATURE NAME}}": lambda x: x["{{TEXTUAL FEATURE NAME}}"].apply(lambda value: aug.augment(value))}
+                          "{{TEXTUAL FEATURE NAME}}": lambda x: aug.augment(x["{{TEXTUAL FEATURE NAME}}"])}
 
       # Or you can choose one feature at a time eg. Numerical feature
       perturbation = {
@@ -180,14 +203,25 @@ items:
               Dataframe containing the rows whose probability doesn't increase after perturbation
 
       """
-      #import nlpaug.augmenter.word as naw  # uncomment for text perturbation
-      #aug = naw.SpellingAug(dict_path='./spelling_en.txt') # uncomment for text perturbation
+      import nlpaug.augmenter.word as naw
+
+      aug = naw.SpellingAug(dict_path=None,
+                            name='Spelling_Aug',
+                            aug_min=1,
+                            aug_max=10,
+                            aug_p=0.3,
+                            stopwords=None,
+                            tokenizer=None,
+                            reverse_tokenizer=None,
+                            include_reverse=True,
+                            stopwords_regex=None,
+                            verbose=0)
 
       # You can choose all_perturbation to perturb categorical, text and numerical feature at the same time
       all_perturbation = {"{{NUMERIC FEATURE NAME}}": lambda x: x["{{NUMERIC FEATURE NAME}}"] * 2,
                           "{{CATEGORICAL FEATURE NAME}}": lambda x: "{{CATEGORY 1}}" if
                           x["{{CATEGORICAL FEATURE NAME}}"] == "{{CATEGORY 2}}" else x["{{CATEGORICAL FEATURE NAME}}"] ,
-                "{{TEXTUAL FEATURE NAME}}": lambda x: x["{{TEXTUAL FEATURE NAME}}"].apply(lambda value: aug.augment(value))}
+                          "{{TEXTUAL FEATURE NAME}}": lambda x: aug.augment(x["{{TEXTUAL FEATURE NAME}}"])}
 
       # Or you can choose one feature at a time eg. Numerical feature
       perturbation = {
@@ -243,14 +277,25 @@ items:
               Dataframe containing the rows whose probability doesn't increase after perturbation
 
       """
-      #import nlpaug.augmenter.word as naw  # uncomment for text perturbation
-      #aug = naw.SpellingAug(dict_path='./spelling_en.txt') # uncomment for text perturbation
+      import nlpaug.augmenter.word as naw
+
+      aug = naw.SpellingAug(dict_path=None,
+                            name='Spelling_Aug',
+                            aug_min=1,
+                            aug_max=10,
+                            aug_p=0.3,
+                            stopwords=None,
+                            tokenizer=None,
+                            reverse_tokenizer=None,
+                            include_reverse=True,
+                            stopwords_regex=None,
+                            verbose=0)
 
       # You can choose all_perturbation to perturb categorical, text and numerical feature at the same time
       all_perturbation = {"{{NUMERIC FEATURE NAME}}": lambda x: x["{{NUMERIC FEATURE NAME}}"] * 2,
                           "{{CATEGORICAL FEATURE NAME}}": lambda x: "{{CATEGORY 1}}" if
                           x["{{CATEGORICAL FEATURE NAME}}"] == "{{CATEGORY 2}}" else x["{{CATEGORICAL FEATURE NAME}}"] ,
-                "{{TEXTUAL FEATURE NAME}}": lambda x: x["{{TEXTUAL FEATURE NAME}}"].apply(lambda value: aug.augment(value))}
+                          "{{TEXTUAL FEATURE NAME}}": lambda x: aug.augment(x["{{TEXTUAL FEATURE NAME}}"])}
 
       # Or you can choose one feature at a time eg. Numerical feature
       perturbation = {
@@ -309,14 +354,25 @@ items:
               Dataframe containing the rows whose probability doesn't decrease after perturbation
 
       """
-      #import nlpaug.augmenter.word as naw  # uncomment for text perturbation
-      #aug = naw.SpellingAug(dict_path='./spelling_en.txt') # uncomment for text perturbation
+      import nlpaug.augmenter.word as naw
+
+      aug = naw.SpellingAug(dict_path=None,
+                            name='Spelling_Aug',
+                            aug_min=1,
+                            aug_max=10,
+                            aug_p=0.3,
+                            stopwords=None,
+                            tokenizer=None,
+                            reverse_tokenizer=None,
+                            include_reverse=True,
+                            stopwords_regex=None,
+                            verbose=0)
 
       # You can choose all_perturbation to perturb categorical, text and numerical feature at the same time
       all_perturbation = {"{{NUMERIC FEATURE NAME}}": lambda x: x["{{NUMERIC FEATURE NAME}}"] * 2,
                           "{{CATEGORICAL FEATURE NAME}}": lambda x: "{{CATEGORY 1}}" if
                           x["{{CATEGORICAL FEATURE NAME}}"] == "{{CATEGORY 2}}" else x["{{CATEGORICAL FEATURE NAME}}"] ,
-                "{{TEXTUAL FEATURE NAME}}": lambda x: x["{{TEXTUAL FEATURE NAME}}"].apply(lambda value: aug.augment(value))}
+                          "{{TEXTUAL FEATURE NAME}}": lambda x: aug.augment(x["{{TEXTUAL FEATURE NAME}}"])}
 
       # Or you can choose one feature at a time eg. Numerical feature
       perturbation = {
@@ -372,14 +428,25 @@ items:
               Dataframe containing the rows whose probability doesn't decrease after perturbation
 
       """
-      #import nlpaug.augmenter.word as naw  # uncomment for text perturbation
-      #aug = naw.SpellingAug(dict_path='./spelling_en.txt') # uncomment for text perturbation
+      import nlpaug.augmenter.word as naw
+
+      aug = naw.SpellingAug(dict_path=None,
+                            name='Spelling_Aug',
+                            aug_min=1,
+                            aug_max=10,
+                            aug_p=0.3,
+                            stopwords=None,
+                            tokenizer=None,
+                            reverse_tokenizer=None,
+                            include_reverse=True,
+                            stopwords_regex=None,
+                            verbose=0)
 
       # You can choose all_perturbation to perturb categorical, text and numerical feature at the same time
       all_perturbation = {"{{NUMERIC FEATURE NAME}}": lambda x: x["{{NUMERIC FEATURE NAME}}"] * 2,
                           "{{CATEGORICAL FEATURE NAME}}": lambda x: "{{CATEGORY 1}}" if
                     x["{{CATEGORICAL FEATURE NAME}}"] == "{{CATEGORY 2}}" else x["{{CATEGORICAL FEATURE NAME}}"] ,
-                "{{TEXTUAL FEATURE NAME}}": lambda x: x["{{TEXTUAL FEATURE NAME}}"].apply(lambda value: aug.augment(value))}
+                  "{{TEXTUAL FEATURE NAME}}": lambda x: aug.augment(x["{{TEXTUAL FEATURE NAME}}"])}
 
       # Or you can choose one feature at a time eg. Numerical feature
       perturbation = {
