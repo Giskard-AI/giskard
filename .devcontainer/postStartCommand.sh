@@ -17,5 +17,6 @@ lsof -t -i:50051 | xargs -r kill
 
 # Run the frontend in dev mode
 lsof -t -i:8080 | xargs -r kill
+export VUE_APP_DOMAIN_JAVA=https://$CODESPACE_NAME-9000.githubpreview.dev
 (cd giskard-frontend && nohup npm run serve > ~/frontend.log &)
 
