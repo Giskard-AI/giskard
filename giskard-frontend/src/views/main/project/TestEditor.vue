@@ -230,6 +230,7 @@ export default class TestEditor extends Vue {
   }
 
   resizeEditor() {
+    mixpanel.track('Resize test code editor', {maximize: !this.fullScreen});
     this.fullScreen = !this.fullScreen;
     setTimeout(() => {
       this.$refs.editor?.editor.layout();
