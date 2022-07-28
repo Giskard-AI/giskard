@@ -1,0 +1,45 @@
+title: Custom Test
+id: custom_test
+order: 6
+items:
+  - id: your_custom_test
+    title: Your Custom Test
+    hint: Write your own custom tests
+    # language=Python
+    code: |-
+      """
+      Summary: Create your own custom tests
+
+      Description: Giskard enables you to create your own tests .
+      Here is a detailed guide https://docs.giskard.ai/start/guides/create-your-custom-test
+
+      Returns:
+          metrics:
+              metrics of your test
+          passed:
+              boolean value of the results. Example: True if the test passed False if the test failed
+      """
+      # Detailed guide for creating custom test : https://docs.giskard.ai/start/guides/create-your-custom-test
+      # Import giskard libraries
+      from generated.ml_worker_pb2 import SingleTestResult
+      from ml_worker.testing.abstract_test_collection import AbstractTestCollection
+
+
+      # Create your custom test
+      class CustomTest(AbstractTestCollection):
+          def test_function(self) -> SingleTestResult:
+              # Write your code here, you can use variables like
+              # actual_ds, reference_ds and model:
+              # model.run_predict(actual_ds).prediction
+
+              # Return the results using SingleTest Results
+              return self.save_results(
+                  SingleTestResult(
+                      passed=True,  # Boolean value of the results. Example: True if the test passed False if the test failed
+                      metric=1  # Metrics of your test
+                  )
+              )
+
+
+      # Execute the test
+      CustomTest(tests.tests_results).test_function()
