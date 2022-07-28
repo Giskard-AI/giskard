@@ -29,7 +29,7 @@
 # About Giskard
 **Giskard creates interfaces for humans to inspect & test AI models. It is  open-source and self-hosted.**
 
-Giskard lets you instantly see your model's prediction for a given set of feature values. You can set the values directly in Giskard and see the prediction change. You can build a complete test suite for your model and run it in your CI/CD pipeline.
+Giskard lets you instantly see your model's prediction for a given set of feature values. You can set the values directly in Giskard and see the prediction change.
 
 Saw anything strange? Leave a feedback directly within Giskard, so that your team can explore the query that generated the faulty result. Designed for both tech and business users, Giskard is super intuitive to use! 👌
 
