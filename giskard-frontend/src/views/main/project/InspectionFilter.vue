@@ -18,7 +18,7 @@
           v-on="on"
       >
         <v-icon left>
-          {{ dirtyFilterValue.type === RowFilterType.ALL ? 'mdi-filter-outline' : 'mdi-filter' }}
+          {{ filter.type === RowFilterType.ALL ? 'mdi-filter-outline' : 'mdi-filter' }}
         </v-icon>
         {{ filterTypesByKey[filter.type].label }}
       </v-btn>

@@ -23,6 +23,7 @@ numpy = "^1.21.6"
 #torch = ">=1.10.0"
 #tensorflow = ">=2.0.0"
 #catboost = ">=1.0.6"
+nlpaug = "^1.1.11"
 
 [tool.poetry.dev-dependencies]
 grpcio-tools = ">=1.46.3"
