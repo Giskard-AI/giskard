@@ -70,12 +70,20 @@ export default class PredictionExplanations extends Vue {
   ModelType = ModelType;
   controller?: AbortController;
 
-  mounted() {
-    this.getExplanation()
+  async mounted() {
+    await this.getExplanation()
   }
 
   @Watch("inputData", {deep: true})
-  public async getExplanation() {
+  private async onInputDataChange() {
+    await this.debouncedGetExplanation();
+  }
+
+  private debouncedGetExplanation = _.debounce(async () => {
+    await this.getExplanation();
+  }, 150);
+
+  private async getExplanation() {
     if (this.controller) {
       this.controller.abort();
     }
