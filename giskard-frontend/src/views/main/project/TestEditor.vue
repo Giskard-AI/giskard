@@ -73,9 +73,11 @@
           <v-tooltip left>
             <template v-slot:activator="{ on, attrs }">
               <v-btn
+                  class="code-editor-resize"
                   v-bind="attrs"
                   v-on="on"
-                  icon style="position: absolute; top: 10px; right: 20px; z-index: 100" @click="resizeEditor">
+                  icon
+                  @click="resizeEditor">
                 <v-icon>{{ fullScreen ? 'mdi-fullscreen-exit' : 'mdi-fullscreen' }}</v-icon>
               </v-btn>
             </template>
@@ -359,6 +361,13 @@ export default class TestEditor extends Vue {
 .templates-list {
   max-height: 500px;
   overflow: scroll;
+}
+
+.code-editor-resize {
+  position: absolute;
+  top: 5px;
+  right: 15px;
+  z-index: 100;
 }
 
 .editor {
