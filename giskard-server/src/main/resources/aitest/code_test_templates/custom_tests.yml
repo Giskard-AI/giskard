@@ -24,21 +24,22 @@ items:
       from generated.ml_worker_pb2 import SingleTestResult
       from ml_worker.testing.abstract_test_collection import AbstractTestCollection
 
+
       # Create your custom test
       class CustomTest(AbstractTestCollection):
-        def test_function(self, input_values)-> SingleTestResult:
-          # Write your code here
+          def test_function(self) -> SingleTestResult:
+              # Write your code here, you can use variables like
+              # actual_ds, reference_ds and model:
+              # model.run_predict(actual_ds).prediction
 
-          # Return the results using SingleTest Results
-          return self.save_results(SingleTestResult(
-          passed=True, # Boolean value of the results. Example: True if the test passed False if the test failed
-          metric=1) #  Metrics of your test
-          )
+              # Return the results using SingleTest Results
+              return self.save_results(
+                  SingleTestResult(
+                      passed=True,  # Boolean value of the results. Example: True if the test passed False if the test failed
+                      metric=1  # Metrics of your test
+                  )
+              )
 
-      custom_test = CustomTest(tests.tests_results) # Create Object
 
       # Execute the test
-      custom_test.test_function(
-      input_values = "XXXX", # You can use the variables from your test suite
-      )
-
+      CustomTest(tests.tests_results).test_function()
