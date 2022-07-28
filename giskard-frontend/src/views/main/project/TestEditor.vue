@@ -29,7 +29,7 @@
       </v-col>
     </v-row>
     <v-row>
-      <v-col :cols='3'>
+      <v-col :cols='3' v-show="!fullScreen">
         <v-alert
             text
             style='opacity: 80%'
@@ -59,16 +59,31 @@
         </v-alert>
 
       </v-col>
-      <v-col :cols='6'>
-        <MonacoEditor
-            v-if="testDetails.type === 'CODE'"
-            v-model='testDetails.code'
-            class='editor'
-            language='python'
-            :options='$root.monacoOptions'
-        />
+      <v-col :cols='fullScreen ? 12 : 6'>
+        <div style="position: relative">
+          <MonacoEditor
+              ref="editor"
+              v-if="testDetails.type === 'CODE'"
+              v-model='testDetails.code'
+              class='editor'
+              :class="{'tall' : fullScreen}"
+              language='python'
+              :options='$root.monacoOptions'
+          />
+          <v-tooltip left>
+            <template v-slot:activator="{ on, attrs }">
+              <v-btn
+                  v-bind="attrs"
+                  v-on="on"
+                  icon style="position: absolute; top: 10px; right: 20px; z-index: 100" @click="resizeEditor">
+                <v-icon>{{ fullScreen ? 'mdi-fullscreen-exit' : 'mdi-fullscreen' }}</v-icon>
+              </v-btn>
+            </template>
+            <span>{{ fullScreen ? 'Minimize' : 'Maximize' }}</span>
+          </v-tooltip>
+        </div>
       </v-col>
-      <v-col :cols='3'>
+      <v-col :cols='3' v-show="!fullScreen">
         <v-list class="templates-list">
           <v-subheader>Code presets</v-subheader>
           <v-list-group
@@ -188,6 +203,7 @@ import numeral from 'numeral';
 import {CodeTestCollection, TestDTO, TestExecutionResultDTO, TestResult, TestType} from '@/generated-sources';
 import mixpanel from "mixpanel-browser";
 
+
 Vue.filter('formatNumber', function (value, fmt) {
   return numeral(value).format(fmt || '0.0'); // displaying other groupings/separators is possible, look at the docs
 });
@@ -202,6 +218,7 @@ export default class TestEditor extends Vue {
   runResult: TestExecutionResultDTO | null = null;
   executingTest = false;
   testAvailability: { [p: string]: boolean } = {};
+  fullScreen = false;
 
 
   async mounted() {
@@ -212,13 +229,21 @@ export default class TestEditor extends Vue {
     return !_.isEqual(this.testDetailsOriginal, this.testDetails);
   }
 
+  resizeEditor() {
+    this.fullScreen = !this.fullScreen;
+    setTimeout(() => {
+      this.$refs.editor?.editor.layout();
+    })
+  }
+
   async save() {
     if (this.testDetails) {
       mixpanel.track('Save test', {
-        testId: this.testDetails.id,
-        suiteId: this.testDetails.suiteId,
-        language: this.testDetails.language,
-        type: this.testDetails.type}
+            testId: this.testDetails.id,
+            suiteId: this.testDetails.suiteId,
+            language: this.testDetails.language,
+            type: this.testDetails.type
+          }
       );
       this.testDetailsOriginal = await api.saveTest(this.testDetails);
     }
@@ -294,7 +319,7 @@ export default class TestEditor extends Vue {
         this.testDetails.type = TestType.CODE;
       }
       if (this.testDetails.code == null) {
-        this.testDetails!.code = '';
+        this.testDetails.code = '';
       }
     }
 
@@ -338,6 +363,15 @@ export default class TestEditor extends Vue {
 .editor {
   height: 400px;
   border: 1px solid grey;
+
+  ::v-deep .suggest-widget {
+    display: none;
+    content: 'asdasdasd';
+  }
+
+  &.tall {
+    height: 600px;
+  }
 }
 
 .snippet {
