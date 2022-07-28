@@ -376,7 +376,6 @@ export default class TestEditor extends Vue {
 
   ::v-deep .suggest-widget {
     display: none;
-    content: 'asdasdasd';
   }
 
   &.tall {
