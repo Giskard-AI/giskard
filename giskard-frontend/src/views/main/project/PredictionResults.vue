@@ -67,10 +67,14 @@
           <div v-else>-</div>
         </v-col>
       </v-row>
-      <p v-if="!prediction && !errorMsg">No data yet</p>
-      <p v-if="errorMsg" class="error--text">
-        {{ errorMsg }}
-      </p>
+      <v-row>
+        <v-col v-if="!prediction && !errorMsg"><p>No data yet</p></v-col>
+        <v-col v-if="errorMsg">
+          <p class="error--text">
+            {{ errorMsg }}
+          </p>
+        </v-col>
+      </v-row>
     </v-card-text>
   </v-card>
 </template>
@@ -118,6 +122,14 @@ export default class PredictionResults extends Vue {
   }
 
   @Watch("inputData", {deep: true})
+  private async onInputDataChange() {
+    await this.debouncedSubmitPrediction();
+  }
+
+  private debouncedSubmitPrediction = _.debounce(async () => {
+    await this.submitPrediction();
+  }, 150);
+
   private async submitPrediction() {
     if (this.controller) {
       this.controller.abort();

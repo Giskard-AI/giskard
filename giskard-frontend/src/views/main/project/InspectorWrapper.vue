@@ -42,6 +42,7 @@
     <v-tooltip left>
       <template v-slot:activator='{ on, attrs }'>
         <v-btn :class="feedbackPopupToggle? 'secondary': 'primary'" bottom fab fixed
+               class="zindex-10"
                right
                v-bind='attrs'
                @click='feedbackPopupToggle = !feedbackPopupToggle' v-on='on'
@@ -55,7 +56,7 @@
     </v-tooltip>
     <v-overlay
         :value='feedbackPopupToggle'
-        :z-index='1'
+        :z-index='10'
     ></v-overlay>
     <v-card v-if='feedbackPopupToggle' id='feedback-card' color='primary' dark>
       <v-card-title>Is this input case insightful?</v-card-title>
@@ -79,8 +80,9 @@
       <v-card-actions>
         <v-spacer></v-spacer>
         <v-btn :disabled='feedbackSubmitted' light small text @click='clearFeedback'>Cancel</v-btn>
-        <v-btn :disabled='!(feedback && feedbackChoice) || feedbackSubmitted' class='mx-1' color='white' light small
-               @click='submitGeneralFeedback'>Send
+        <v-btn :disabled='!(feedback && feedbackChoice) || feedbackSubmitted' class='mx-1' color='white'
+               light small @click='submitGeneralFeedback'>
+          Send
         </v-btn>
         <v-icon v-show='feedbackSubmitted' color='white'>mdi-check</v-icon>
       </v-card-actions>
@@ -239,6 +241,7 @@ export default class InspectorWrapper extends Vue {
     try {
       await this.doSubmitFeedback(feedback);
       this.feedbackSubmitted = true;
+      this.feedbackPopupToggle = false;
     } catch (err) {
       this.feedbackError = err.response.data.detail;
     }
@@ -354,14 +357,16 @@ export default class InspectorWrapper extends Vue {
 }
 
 #feedback-card {
-  z-index: 2;
+  z-index: 10;
   width: 42vw;
   position: fixed;
   opacity: 0.96;
   right: 8px;
   bottom: 80px;
 }
-
+.zindex-10{
+  z-index: 10;
+}
 #feedback-card .v-card__title {
   font-size: 1.1rem;
   padding: 8px 12px 0;
