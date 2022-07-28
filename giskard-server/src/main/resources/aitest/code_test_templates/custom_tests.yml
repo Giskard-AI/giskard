@@ -1,0 +1,52 @@
+title: Custom Tests
+id: custom_test
+order: 6
+items:
+  - id: your_custom_test
+    title: Your Custom Test
+    hint: Write your own custom tests
+    # language=Python
+    code: |-
+      """
+      Summary: Create your own custom tests
+
+      Description: Giskard enables you to create your own tests .
+      Here is a detailed guide https://docs.giskard.ai/start/guides/create-your-custom-test
+
+      Example: We have created a function "test_function" under the Class
+      CustomTest to check if the number of unique values in column is less than a threshold
+
+      Args:
+          actual_ds.df(GiskardDataset):
+              Dataset used to compute
+          column_name(str):
+              Name of the column you want to test
+          threshold(float):
+              Threshold for the percentage of passed rows
+      Returns:
+          metrics:
+              metrics of your test
+          passed:
+              boolean value of the results. Example: True if the test passed False if the test failed
+      """
+      from generated.ml_worker_pb2 import SingleTestResult
+      from ml_worker.testing.abstract_test_collection import AbstractTestCollection
+
+      class CustomTest(AbstractTestCollection):
+
+        def test_function(self, actual_ds, threshold, column_name)-> SingleTestResult:
+          num_unique = actual_ds[column_name].nunique()
+          passed = num_unique < threshold
+
+          return self.save_results(SingleTestResult(
+          passed=passed,
+          metric=num_unique,
+          ))
+
+      custom_test = CustomTest(tests.tests_results)
+      custom_test.test_function(
+      actual_ds=actual_ds.df,
+      column_name="{{CATEGORICAL FEATURE NAME}}",
+      threshold=3
+      )
+
