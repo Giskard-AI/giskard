@@ -104,7 +104,7 @@ Test the absence of concept drift inside your model</details>
 # Interactive demo
 Play with Giskard before installing! Click the image below to start the demo:
 
-<a align='center' href="https://app.arcade.software/share/zPfpXFt8lRm5XDkaWM85" target="_blank">
+<a align='center' href="https://app.arcade.software/share/DicI8Axi0Wb53vz4QXi3" target="_blank">
          <img width='600' align='center' alt="Interactive demo" src="readme/demo.png">
       </a>
 
