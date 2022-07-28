@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios, {AxiosError} from 'axios';
 import {apiURL} from '@/env';
 import {getLocalToken, removeLocalToken} from '@/utils';
 import Vue from "vue";
@@ -91,36 +91,40 @@ function trackError(error) {
 }
 
 async function errorInterceptor(error) {
-    trackError(error);
-    if (error.response.status === 401) {
-        removeLocalToken();
-        commitSetToken(store, '');
-        commitSetLoggedIn(store, false);
-        if (router.currentRoute.path !== '/auth/login') {
-            await router.push('/auth/login');
-        }
-    } else {
-        let title: string;
-        let detail: string;
-        if (error.response.status === 502) {
-            title = error.response.statusText;
-            detail = "Error while connecting to Giskard server, check that it's running";
+    if (error.code !== AxiosError.ERR_CANCELED) {
+        trackError(error);
+    }
+    if (error.response) {
+        if (error.response.status === 401) {
+            removeLocalToken();
+            commitSetToken(store, '');
+            commitSetLoggedIn(store, false);
+            if (router.currentRoute.path !== '/auth/login') {
+                await router.push('/auth/login');
+            }
         } else {
-            title = error.response.data.title || error.message;
-            detail = error.response.data.detail || error.request.responseURL;
-        }
+            let title: string;
+            let detail: string;
+            if (error.response.status === 502) {
+                title = error.response.statusText;
+                detail = "Error while connecting to Giskard server, check that it's running";
+            } else {
+                title = error.response.data.title || error.message;
+                detail = error.response.data.detail || error.request.responseURL;
+            }
 
-        Vue.$toast(
-            {
-                component: ErrorToast,
-                props: {
-                    title: title || 'Error',
-                    detail: detail
-                }
-            },
-            {
-                type: TYPE.ERROR,
-            });
+            Vue.$toast(
+                {
+                    component: ErrorToast,
+                    props: {
+                        title: title || 'Error',
+                        detail: detail
+                    }
+                },
+                {
+                    type: TYPE.ERROR,
+                });
+        }
     }
     return Promise.reject(error);
 }
@@ -284,19 +288,21 @@ export const api = {
         config.headers['content-type'] = 'multipart/form-data';
         return apiV2.post<unknown, DatasetDTO>(`/project/data/upload`, formData, config);
     },
-    async predict(modelId: number, datasetId: number, inputData: { [key: string]: string }) {
+    async predict(modelId: number, datasetId: number, inputData: { [key: string]: string }, controller: AbortController) {
         const data: PredictionInputDTO = {
             datasetId: datasetId,
             features: inputData
         }
-        return apiV2.post<unknown, PredictionDTO>(`/models/${modelId}/predict`, data);
+        return apiV2.post<unknown, PredictionDTO>(`/models/${modelId}/predict`, data, {signal: controller.signal});
     },
 
     async prepareInspection(payload: InspectionCreateDTO) {
         return apiV2.post<unknown, InspectionDTO>(`/inspection`, payload);
     },
-    async explain(modelId: number, datasetId: number, inputData: object) {
-        return apiV2.post<unknown, ExplainResponseDTO>(`/models/${modelId}/explain/${datasetId}`, {features: inputData});
+    async explain(modelId: number, datasetId: number, inputData: object, controller: AbortController) {
+        return apiV2.post<unknown, ExplainResponseDTO>(`/models/${modelId}/explain/${datasetId}`,
+            {features: inputData},
+            {signal: controller.signal});
     },
     async explainText(modelId: number, datasetId: number, inputData: object, featureName: string) {
         return apiV2.post<unknown, { [key: string]: string }>(`/models/explain-text/${featureName}`,

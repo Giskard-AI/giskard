@@ -42,6 +42,7 @@
     <v-tooltip left>
       <template v-slot:activator='{ on, attrs }'>
         <v-btn :class="feedbackPopupToggle? 'secondary': 'primary'" bottom fab fixed
+               class="zindex-10"
                right
                v-bind='attrs'
                @click='feedbackPopupToggle = !feedbackPopupToggle' v-on='on'
@@ -55,7 +56,7 @@
     </v-tooltip>
     <v-overlay
         :value='feedbackPopupToggle'
-        :z-index='1'
+        :z-index='10'
     ></v-overlay>
     <v-card v-if='feedbackPopupToggle' id='feedback-card' color='primary' dark>
       <v-card-title>Is this input case insightful?</v-card-title>
@@ -79,8 +80,9 @@
       <v-card-actions>
         <v-spacer></v-spacer>
         <v-btn :disabled='feedbackSubmitted' light small text @click='clearFeedback'>Cancel</v-btn>
-        <v-btn :disabled='!(feedback && feedbackChoice) || feedbackSubmitted' class='mx-1' color='white' light small
-               @click='submitGeneralFeedback'>Send
+        <v-btn :disabled='!(feedback && feedbackChoice) || feedbackSubmitted' class='mx-1' color='white'
+               light small @click='submitGeneralFeedback'>
+          Send
         </v-btn>
         <v-icon v-show='feedbackSubmitted' color='white'>mdi-check</v-icon>
       </v-card-actions>
@@ -140,7 +142,7 @@ export default class InspectorWrapper extends Vue {
   feedbackError: string = '';
   feedbackSubmitted: boolean = false;
   labels: string[] = [];
-  filter: Filter | null = null;
+  filter: Filter = {type: RowFilterType.ALL};
 
   totalRows = 0;
   mt = ModelType;
@@ -174,7 +176,6 @@ export default class InspectorWrapper extends Vue {
   async mounted() {
     this.labels = await api.getLabelsForTarget(this.inspectionId);
     await this.init();
-    await this.fetchRowAndEmit(true);
   }
 
   bindKeys() {
@@ -206,17 +207,19 @@ export default class InspectorWrapper extends Vue {
     this.resetKeys();
   }
 
-  public async next() {
+  public next() {
     if (this.canNext()) {
       this.clearFeedback();
       this.rowNb += 1;
+      this.debouncedUpdateRow();
     }
   }
 
-  public async previous() {
+  public previous() {
     if (this.canPrevious()) {
       this.clearFeedback();
       this.rowNb -= 1;
+      this.debouncedUpdateRow();
     }
   }
 
@@ -238,6 +241,7 @@ export default class InspectorWrapper extends Vue {
     try {
       await this.doSubmitFeedback(feedback);
       this.feedbackSubmitted = true;
+      this.feedbackPopupToggle = false;
     } catch (err) {
       this.feedbackError = err.response.data.detail;
     }
@@ -261,49 +265,39 @@ export default class InspectorWrapper extends Vue {
     await this.doSubmitFeedback(feedback);
   }
 
-  @Watch('rowNb')
-  async reloadOnRowIdx() {
-    await this.fetchRowAndEmit(false);
-  }
+  private debouncedUpdateRow = _.debounce(async () => {
+    await this.updateRow(false);
+  }, 150);
+
 
   @Watch('inspection.id')
   @Watch('regressionThreshold')
-  @Watch('filter', {deep: true})
+  @Watch('filter', {deep: true, immediate: false})
   @Watch('shuffleMode')
   @Watch('percentRegressionUnit')
   async applyFilter(nv, ov) {
     if (JSON.stringify(nv) === JSON.stringify(ov)) {
       return;
     }
-    await this.fetchRowAndEmit(true);
+    await this.updateRow(true);
   }
 
-  async fetchRowAndEmit(hasFilterChanged) {
-    await this.fetchRows(this.rowNb, hasFilterChanged);
-    const row = await this.getRow(this.rowNb);
-    this.getCurrentRow(row, this.numberOfRows, hasFilterChanged)
+  async updateRow(forceFetch) {
+    await this.fetchRows(this.rowNb, forceFetch);
+    this.assignCurrentRow(forceFetch)
   }
 
   /**
    * Calling fetch rows if necessary, i.e. when start or end of the page
    * @param rowIdxInResults index of the row in the results
-   * @param hasFilterChanged
+   * @param forceFetch
    */
-  public async fetchRows(rowIdxInResults: number, hasFilterChanged: boolean) {
+  public async fetchRows(rowIdxInResults: number, forceFetch: boolean) {
     const remainder = rowIdxInResults % this.itemsPerPage;
     const newPage = Math.floor(rowIdxInResults / this.itemsPerPage);
-    if (remainder == 0 || hasFilterChanged) {
+    if ((rowIdxInResults > 0 && remainder === 0) || forceFetch) {
       await this.fetchRowsByRange(newPage * this.itemsPerPage, (newPage + 1) * this.itemsPerPage);
     }
-  }
-
-  /**
-   * Selecting row in the page
-   * @param rowIdxInResults row's index in results
-   */
-  public async getRow(rowIdxInResults) {
-    this.rowIdxInPage = rowIdxInResults % this.itemsPerPage;
-    return this.rows[this.rowIdxInPage];
   }
 
   /**
@@ -318,21 +312,21 @@ export default class InspectorWrapper extends Vue {
       'maxRange': maxRange,
       'isRandom': this.shuffleMode
     };
-    if (this.filter !== null) {
-      const response = await api.getDataFilteredByRange(this.inspection?.id, props, this.filter);
-      this.rows = response.data;
-      this.numberOfRows = response.rowNb;
-    }
+    const response = await api.getDataFilteredByRange(this.inspection?.id, props, this.filter);
+    this.rows = response.data;
+    this.numberOfRows = response.rowNb;
   }
 
-  private getCurrentRow(rowDetails, totalRows: number, hasFilterChanged: boolean) {
+  private assignCurrentRow(forceFetch: boolean) {
+    this.rowIdxInPage = this.rowNb % this.itemsPerPage;
     this.loadingData = true;
-    this.inputData = rowDetails;
+
+    this.inputData = this.rows[this.rowIdxInPage];
     this.originalData = {...this.inputData}; // deep copy to avoid caching mechanisms
     this.dataErrorMsg = '';
     this.loadingData = false;
-    this.totalRows = totalRows;
-    if (hasFilterChanged) {
+    this.totalRows = this.numberOfRows;
+    if (forceFetch) {
       this.rowNb = 0;
     }
   }
@@ -363,14 +357,16 @@ export default class InspectorWrapper extends Vue {
 }
 
 #feedback-card {
-  z-index: 2;
+  z-index: 10;
   width: 42vw;
   position: fixed;
   opacity: 0.96;
   right: 8px;
   bottom: 80px;
 }
-
+.zindex-10{
+  z-index: 10;
+}
 #feedback-card .v-card__title {
   font-size: 1.1rem;
   padding: 8px 12px 0;
