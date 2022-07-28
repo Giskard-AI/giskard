@@ -13,40 +13,32 @@ items:
       Description: Giskard enables you to create your own tests .
       Here is a detailed guide https://docs.giskard.ai/start/guides/create-your-custom-test
 
-      Example: We have created a function "test_function" under the Class
-      CustomTest to check if the number of unique values in column is less than a threshold
-
-      Args:
-          actual_ds.df(GiskardDataset):
-              Dataset used to compute
-          column_name(str):
-              Name of the column you want to test
-          threshold(float):
-              Threshold for the percentage of passed rows
       Returns:
           metrics:
               metrics of your test
           passed:
               boolean value of the results. Example: True if the test passed False if the test failed
       """
+      # Detailed guide for creating custom test : https://docs.giskard.ai/start/guides/create-your-custom-test
+      # Import giskard libraries
       from generated.ml_worker_pb2 import SingleTestResult
       from ml_worker.testing.abstract_test_collection import AbstractTestCollection
 
+      # Create your custom test
       class CustomTest(AbstractTestCollection):
+        def test_function(self, input_values)-> SingleTestResult:
+          # Write your code here
 
-        def test_function(self, actual_ds, threshold, column_name)-> SingleTestResult:
-          num_unique = actual_ds[column_name].nunique()
-          passed = num_unique < threshold
-
+          # Return the results using SingleTest Results
           return self.save_results(SingleTestResult(
-          passed=passed,
-          metric=num_unique,
-          ))
+          passed=True, # Boolean value of the results. Example: True if the test passed False if the test failed
+          metric=1) #  Metrics of your test
+          )
 
-      custom_test = CustomTest(tests.tests_results)
+      custom_test = CustomTest(tests.tests_results) # Create Object
+
+      # Execute the test
       custom_test.test_function(
-      actual_ds=actual_ds.df,
-      column_name="{{CATEGORICAL FEATURE NAME}}",
-      threshold=3
+      input_values = "XXXX", # You can use the variables from your test suite
       )
 
