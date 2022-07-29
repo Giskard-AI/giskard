@@ -81,7 +81,7 @@ export default class PredictionExplanations extends Vue {
 
   private debouncedGetExplanation = _.debounce(async () => {
     await this.getExplanation();
-  }, 150);
+  }, 250);
 
   private async getExplanation() {
     if (this.controller) {
