@@ -128,7 +128,7 @@ export default class PredictionResults extends Vue {
 
   private debouncedSubmitPrediction = _.debounce(async () => {
     await this.submitPrediction();
-  }, 150);
+  }, 250);
 
   private async submitPrediction() {
     if (this.controller) {
