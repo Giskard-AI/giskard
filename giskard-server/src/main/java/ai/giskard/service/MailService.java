@@ -101,7 +101,6 @@ public class MailService {
     public void sendUserSignupInvitationEmail(String currentEmail, String email, String inviteLink) {
         log.debug("Sending user invitation email to '{}'", email);
         Context context = new Context();
-        //context.setVariable("projectName", projectName);
         context.setVariable("email", email);
         context.setVariable("inviter", currentEmail);
         context.setVariable("inviteLink", inviteLink);
