@@ -374,6 +374,7 @@ public class InitService {
     }
 
     private void uploadModel(String projectKey, String filename) {
+        ProjectConfig config = projects.get(projectKey);
         String pathToModel = CLASSPATH + PROJECTDIR + projectKey + "/models/" + filename + ".model.pkl.zst";
         String pathToRequirements = CLASSPATH + PROJECTDIR + projectKey + "/requirements/" + filename + ".requirements.txt";
         Resource modelResource = resourceLoader.getResource(pathToModel);
@@ -381,7 +382,7 @@ public class InitService {
         ModelUploadParamsDTO modelDTO = projects.get(projectKey).modelParams;
         ModelUploadParamsDTO modelDTOCopy = ModelUploadParamsDTO.builder().modelType(modelDTO.getModelType())
             .projectKey(modelDTO.getProjectKey())
-            .name(modelDTO.getProjectKey() + " model " + filename)
+            .name(config.modelParams.getName() + " " + filename)
             .language(modelDTO.getLanguage())
             .languageVersion(modelDTO.getLanguageVersion())
             .featureNames(modelDTO.getFeatureNames())
