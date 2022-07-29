@@ -1,6 +1,6 @@
 <template>
   <div>
-    <OverlayLoader v-show="loading"/>
+    <OverlayLoader :show="loading" absolute solid/>
     <v-container>
       <p v-if="textFeatureNames.length == 0" class="text-center">None</p>
       <div v-else>
@@ -81,12 +81,11 @@ export default class TextExplanation extends Vue {
 
   @Watch("classificationResult")
   setSelectedLabel() {
-    if (
-        this.classificationResult &&
-        this.classificationLabels.indexOf(this.classificationResult) > 0
-    ) {
+    if (this.classificationResult && this.classificationLabels.includes(this.classificationResult)) {
       this.selectedLabel = this.classificationResult;
-    } else this.selectedLabel = this.classificationLabels[0];
+    } else {
+      this.selectedLabel = this.classificationLabels[0];
+    }
   }
 
   public async getExplanation() {

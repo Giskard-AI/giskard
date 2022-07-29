@@ -87,6 +87,7 @@ export default class FeedbackPopover extends Vue {
     this.$emit('submit', feedback)
     this.submitted = true;
     this.submittedOnce = true;
+    this.opened = false;
   }
 }
 </script>
