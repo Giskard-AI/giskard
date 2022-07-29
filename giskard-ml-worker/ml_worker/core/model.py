@@ -30,13 +30,7 @@ class GiskardModel:
         self.classification_labels = classification_labels
 
     def run_predict(self, dataset: GiskardDataset):
-        df = dataset.df.copy()
-        df = self.cast_column_to_types(df, dataset.column_types)
-
-        if dataset.target and dataset.target in df.columns:
-            df.drop(dataset.target, axis=1, inplace=True)
-        if self.feature_names:
-            df = df[self.feature_names]
+        df = self.prepare_dataframe(dataset)
         raw_prediction = self.prediction_function(df)
         if self.model_type == "regression":
             result = ModelPredictionResults(
@@ -68,6 +62,15 @@ class GiskardModel:
                 f"Prediction task is not supported: {self.model_type}"
             )
         return result
+
+    def prepare_dataframe(self, dataset):
+        df = dataset.df.copy()
+        df = self.cast_column_to_types(df, dataset.column_types)
+        if dataset.target and dataset.target in df.columns:
+            df.drop(dataset.target, axis=1, inplace=True)
+        if self.feature_names:
+            df = df[self.feature_names]
+        return df
 
     @staticmethod
     def cast_column_to_types(df, column_types):
