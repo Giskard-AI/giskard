@@ -4,7 +4,7 @@
       <v-row>
         <v-col cols="12" md="6">
           <v-card>
-            <OverlayLoader v-show="loadingData"/>
+            <OverlayLoader :show="loadingData"/>
             <v-card-title>
               Input Data
               <v-spacer></v-spacer>

@@ -1,6 +1,6 @@
 <template>
   <div class="main">
-    <OverlayLoader v-show="loading"/>
+    <OverlayLoader :show="loading" solid absolute no-fade/>
     <v-container class="text-center">
       <v-row
           v-if="
@@ -48,6 +48,7 @@ import {GridComponent} from "echarts/components";
 import "echarts/lib/component/legend";
 import {ModelType} from "@/generated-sources";
 import _ from "lodash";
+import {CanceledError} from "axios";
 
 use([CanvasRenderer, BarChart, GridComponent]);
 Vue.component("v-chart", ECharts);
@@ -67,13 +68,26 @@ export default class PredictionExplanations extends Vue {
   errorMsg: string = "";
   fullExplanations: object = {};
   ModelType = ModelType;
+  controller?: AbortController;
 
-  mounted() {
-    this.getExplanation()
+  async mounted() {
+    await this.getExplanation()
   }
 
   @Watch("inputData", {deep: true})
-  public async getExplanation() {
+  private async onInputDataChange() {
+    await this.debouncedGetExplanation();
+  }
+
+  private debouncedGetExplanation = _.debounce(async () => {
+    await this.getExplanation();
+  }, 150);
+
+  private async getExplanation() {
+    if (this.controller) {
+      this.controller.abort();
+    }
+    this.controller = new AbortController();
     if (Object.keys(this.inputData).length) {
       try {
         this.loading = true;
@@ -81,13 +95,16 @@ export default class PredictionExplanations extends Vue {
         const explainResponse = await api.explain(
             this.modelId,
             this.datasetId,
-            this.inputData
+            this.inputData,
+            this.controller
         )
         this.fullExplanations = explainResponse.explanations;
-      } catch (error) {
-        this.errorMsg = error.response.data.detail;
-      } finally {
         this.loading = false;
+      } catch (error) {
+        if (!(error instanceof CanceledError)) {
+          this.errorMsg = error.response.data.detail;
+          this.loading = false;
+        }
       }
     } else {
       // reset
