@@ -16,7 +16,7 @@ ExecStartPre=-/usr/local/bin/docker-compose pull --quiet
 ExecStart=/usr/local/bin/docker-compose -f docker-compose.yml -f docker-compose.ami.yml up -d
 
 ExecStartPost=/bin/bash -c "echo 'Pruning docker images...'"
-ExecStartPost=-/usr/local/bin/docker image prune -f
+ExecStartPost=-/usr/bin/docker image prune -f
 
 ExecStop=/usr/local/bin/docker-compose down
 

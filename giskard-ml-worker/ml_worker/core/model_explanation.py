@@ -1,5 +1,4 @@
 import re
-from datetime import datetime
 from typing import Dict, List, Callable
 
 import numpy as np
@@ -13,6 +12,8 @@ from ml_worker.core.model import GiskardModel
 
 def explain(model: GiskardModel, dataset: GiskardDataset, input_data: Dict):
     df = model.prepare_dataframe(dataset)
+    feature_names = list(df.columns)
+
     input_df = model.prepare_dataframe(GiskardDataset(
         df=pd.DataFrame([input_data]),
         target=dataset.target,
@@ -22,26 +23,22 @@ def explain(model: GiskardModel, dataset: GiskardDataset, input_data: Dict):
 
     kernel_shap = KernelShap(
         predictor=lambda array: model.prediction_function(pd.DataFrame(array, columns=list(df.columns))),
-        feature_names=model.feature_names,
+        feature_names=feature_names,
         task=model.model_type,
     )
 
     example = background_example(df, dataset.feature_types)
-    start = datetime.now()
     kernel_shap.fit(example)
-    print('fit in ', datetime.now() - start)
-    start = datetime.now()
     explanations = kernel_shap.explain(input_df)
-    print('explain in ', datetime.now() - start)
 
     if model.model_type == "regression":
         explanation_chart_data = summary_shap_regression(
-            shap_values=explanations.shap_values, feature_names=model.feature_names
+            shap_values=explanations.shap_values, feature_names=feature_names
         )
     elif model.model_type == "classification":
         explanation_chart_data = summary_shap_classification(
             shap_values=explanations.shap_values,
-            feature_names=model.feature_names,
+            feature_names=feature_names,
             class_names=model.classification_labels,
         )
     else:
