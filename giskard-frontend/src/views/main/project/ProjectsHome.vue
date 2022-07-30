@@ -21,8 +21,9 @@
     <v-container v-if="projects.length > 0">
       <v-card flat>
         <v-row class="px-2 py-1 caption secondary--text text--lighten-3">
-          <v-col cols=3>Name</v-col>
-          <v-col cols=5>Description</v-col>
+          <v-col cols=2>Name</v-col>
+          <v-col cols=2>Project key</v-col>
+          <v-col cols=4>Description</v-col>
           <v-col cols=2>Created by</v-col>
           <v-col cols=2>Created on</v-col>
         </v-row>
@@ -33,10 +34,13 @@
                 :to="{name: 'project-overview', params: {id: p.id}}"
                 v-show="creatorFilter === 0 || creatorFilter === 1 && p.owner.id === userProfile.id || creatorFilter === 2 && p.owner.id !== userProfile.id">
           <v-row class="pa-2">
-            <v-col cols=3>
+            <v-col cols=2>
               <div class="subtitle-2 primary--text text--darken-1">{{ p.name }}</div>
             </v-col>
-            <v-col cols=5>
+            <v-col cols=2>
+              <div>{{ p.key }}</div>
+            </v-col>
+            <v-col cols=4>
               <div>{{ p.description || "-" }}</div>
             </v-col>
             <v-col cols=2>
