@@ -1,0 +1,1229 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Welcome to Giskard AI Test’s documentation! &mdash; Giskard AI Test 1.0.0 documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="_static/doctools.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="#" class="icon icon-home"> Giskard AI Test
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <!-- Local TOC -->
+              <div class="local-toc"><ul>
+<li><a class="reference internal" href="#">Welcome to Giskard AI Test’s documentation!</a></li>
+<li><a class="reference internal" href="#testing-package">testing package</a><ul>
+<li><a class="reference internal" href="#submodules">Submodules</a></li>
+<li><a class="reference internal" href="#module-ml_worker.testing.abstract_test_collection">testing.abstract_test_collection module</a></li>
+<li><a class="reference internal" href="#module-ml_worker.testing.drift_tests">testing.drift_tests module</a></li>
+<li><a class="reference internal" href="#module-ml_worker.testing.heuristic_tests">testing.heuristic_tests module</a></li>
+<li><a class="reference internal" href="#module-ml_worker.testing.metamorphic_tests">testing.metamorphic_tests module</a></li>
+<li><a class="reference internal" href="#module-ml_worker.testing.performance_tests">testing.performance_tests module</a></li>
+<li><a class="reference internal" href="#module-ml_worker.testing">Module contents</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#indices-and-tables">Indices and tables</a></li>
+</ul>
+</div>
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="#">Giskard AI Test</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="#" class="icon icon-home"></a> &raquo;</li>
+      <li>Welcome to Giskard AI Test’s documentation!</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="welcome-to-giskard-ai-test-s-documentation">
+<h1>Welcome to Giskard AI Test’s documentation!<a class="headerlink" href="#welcome-to-giskard-ai-test-s-documentation" title="Permalink to this heading"></a></h1>
+</section>
+<section id="testing-package">
+<h1>testing package<a class="headerlink" href="#testing-package" title="Permalink to this heading"></a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this heading"></a></h2>
+</section>
+<section id="module-ml_worker.testing.abstract_test_collection">
+<span id="testing-abstract-test-collection-module"></span><h2>testing.abstract_test_collection module<a class="headerlink" href="#module-ml_worker.testing.abstract_test_collection" title="Permalink to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="ml_worker.testing.abstract_test_collection.AbstractTestCollection">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ml_worker.testing.abstract_test_collection.</span></span><span class="sig-name descname"><span class="pre">AbstractTestCollection</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">test_results</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">NamedSingleTestResult</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ml_worker/testing/abstract_test_collection.html#AbstractTestCollection"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ml_worker.testing.abstract_test_collection.AbstractTestCollection" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">ABC</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ml_worker.testing.abstract_test_collection.AbstractTestCollection.do_save_results">
+<span class="sig-name descname"><span class="pre">do_save_results</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">True</span></em><a class="headerlink" href="#ml_worker.testing.abstract_test_collection.AbstractTestCollection.do_save_results" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ml_worker.testing.abstract_test_collection.AbstractTestCollection.save_results">
+<span class="sig-name descname"><span class="pre">save_results</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">result</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">SingleTestResult</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">test_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ml_worker/testing/abstract_test_collection.html#AbstractTestCollection.save_results"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ml_worker.testing.abstract_test_collection.AbstractTestCollection.save_results" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ml_worker.testing.abstract_test_collection.AbstractTestCollection.tests_results">
+<span class="sig-name descname"><span class="pre">tests_results</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">NamedSingleTestResult</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ml_worker.testing.abstract_test_collection.AbstractTestCollection.tests_results" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-ml_worker.testing.drift_tests">
+<span id="testing-drift-tests-module"></span><h2>testing.drift_tests module<a class="headerlink" href="#module-ml_worker.testing.drift_tests" title="Permalink to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="ml_worker.testing.drift_tests.DriftTests">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ml_worker.testing.drift_tests.</span></span><span class="sig-name descname"><span class="pre">DriftTests</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">test_results</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">NamedSingleTestResult</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ml_worker/testing/drift_tests.html#DriftTests"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ml_worker.testing.drift_tests.DriftTests" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="testing.html#ml_worker.testing.abstract_test_collection.AbstractTestCollection" title="ml_worker.testing.abstract_test_collection.AbstractTestCollection"><code class="xref py py-class docutils literal notranslate"><span class="pre">AbstractTestCollection</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="ml_worker.testing.drift_tests.DriftTests.test_drift_chi_square">
+<span class="sig-name descname"><span class="pre">test_drift_chi_square</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reference_series</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Series</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">actual_series</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Series</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_categories</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">SingleTestResult</span></span></span><a class="reference internal" href="_modules/ml_worker/testing/drift_tests.html#DriftTests.test_drift_chi_square"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ml_worker.testing.drift_tests.DriftTests.test_drift_chi_square" title="Permalink to this definition"></a></dt>
+<dd><p>Test if the p-value of the chi square test between the actual and expected datasets is
+above the threshold for a given categorical feature</p>
+<dl class="simple">
+<dt>Example<span class="classifier">The test is passed when the pvalue of the chi square test of the categorical variable between</span></dt><dd><p>reference and actual sets is higher than 0.05. It means that chi square test cannot be rejected at 5% level
+and that we cannot assume drift for this variable.</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>reference_series</strong> (<em>GiskardDataset</em>) – a categorical column in reference dataset</p></li>
+<li><p><strong>actual_series</strong> (<em>GiskardDataset</em>) – categorical column in actual dataset that is compared to var_expected</p></li>
+<li><p><strong>threshold</strong> – threshold for p-value of chi-square</p></li>
+<li><p><strong>max_categories</strong> – the maximum categories to compute the chi square</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><p>the pvalue of chi square test</p>
+<dl class="simple">
+<dt>passed:</dt><dd><p>TRUE if metric &gt; threshold</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>metric</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ml_worker.testing.drift_tests.DriftTests.test_drift_earth_movers_distance">
+<span class="sig-name descname"><span class="pre">test_drift_earth_movers_distance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reference_series</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Series</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">actual_series</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Series</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">SingleTestResult</span></span></span><a class="reference internal" href="_modules/ml_worker/testing/drift_tests.html#DriftTests.test_drift_earth_movers_distance"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ml_worker.testing.drift_tests.DriftTests.test_drift_earth_movers_distance" title="Permalink to this definition"></a></dt>
+<dd><p>Test if the earth movers distance between the actual and expected datasets is
+below the threshold for a given numerical feature</p>
+<dl class="simple">
+<dt>Example<span class="classifier">The test is passed when the earth movers distance of the numerical</span></dt><dd><p>variable between the actual and expected datasets is lower than 0.1.
+It means that we cannot assume drift for this variable.</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>reference_series</strong> (<em>GiskardDataset</em>) – a numerical column in reference dataset</p></li>
+<li><p><strong>actual_series</strong> (<em>GiskardDataset</em>) – numerical column in actual dataset that is compared to var_expected</p></li>
+<li><p><strong>threshold</strong> – threshold for p-value of earth movers distance</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><p>the earth movers distance</p>
+<dl class="simple">
+<dt>passed:</dt><dd><p>TRUE if metric &lt; threshold</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>metric</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ml_worker.testing.drift_tests.DriftTests.test_drift_ks">
+<span class="sig-name descname"><span class="pre">test_drift_ks</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reference_series</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Series</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">actual_series</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Series</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.05</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">SingleTestResult</span></span></span><a class="reference internal" href="_modules/ml_worker/testing/drift_tests.html#DriftTests.test_drift_ks"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ml_worker.testing.drift_tests.DriftTests.test_drift_ks" title="Permalink to this definition"></a></dt>
+<dd><blockquote>
+<div><dl class="simple">
+<dt>Test if the pvalue of the KS test between the actual and expected datasets is above</dt><dd><p>the threshold for a given numerical feature</p>
+</dd>
+</dl>
+</div></blockquote>
+<p>Example : The test is passed when the pvalue of the KS test of the numerical variable
+between the actual and expected datasets is higher than 0.05. It means that the KS test
+cannot be rejected at 5% level and that we cannot assume drift for this variable.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>reference_series</strong> (<em>GiskardDataset</em>) – a numerical column in reference dataset</p></li>
+<li><p><strong>actual_series</strong> (<em>GiskardDataset</em>) – numerical column in actual dataset that is compared to var_expected</p></li>
+<li><p><strong>threshold</strong> – threshold for p-value of KS test</p></li>
+<li><p><strong>max_categories</strong> – maxiumum number of modalities</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><p>the KS statistics of the test. The higher the value, the higher the drift</p>
+<dl class="simple">
+<dt>metric:</dt><dd><p>the pvalue of KS test</p>
+</dd>
+<dt>passed:</dt><dd><p>TRUE if metric &gt; threshold</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>KS_statistics</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ml_worker.testing.drift_tests.DriftTests.test_drift_prediction_chi_square">
+<span class="sig-name descname"><span class="pre">test_drift_prediction_chi_square</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reference_slice</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">actual_slice</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_categories</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chi_square_contribution_percent</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.2</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ml_worker/testing/drift_tests.html#DriftTests.test_drift_prediction_chi_square"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ml_worker.testing.drift_tests.DriftTests.test_drift_prediction_chi_square" title="Permalink to this definition"></a></dt>
+<dd><p>Test if the Chi Square value between the reference and actual datasets is below the threshold
+for the classification labels predictions for a given slice</p>
+<p>Example : The test is passed when the  Chi Square value of classification labels prediction
+for females between reference and actual sets is below 0.2</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>reference_slice</strong> (<em>GiskardDataset</em>) – slice of the reference dataset</p></li>
+<li><p><strong>actual_slice</strong> (<em>GiskardDataset</em>) – slice of the actual dataset</p></li>
+<li><p><strong>model</strong> (<em>GiskardModel</em>) – uploaded model</p></li>
+<li><p><strong>max_categories</strong> – the maximum categories to compute the PSI score</p></li>
+<li><p><strong>threshold</strong> – threshold value for p-value</p></li>
+<li><p><strong>chi_square_contribution_percent</strong> – the ratio between the Chi-Square value of a given category over the total Chi-Square
+value of the categorical variable. If there is a drift, the test provides all the
+categories that have a PSI contribution over than this ratio.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><p>TRUE if p_value &gt; threshold
+metric:</p>
+<blockquote>
+<div><p>p-value of chi_square test</p>
+</div></blockquote>
+<dl class="simple">
+<dt>messages:</dt><dd><p>message describing if prediction is drifting or not</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>passed</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ml_worker.testing.drift_tests.DriftTests.test_drift_prediction_earth_movers_distance">
+<span class="sig-name descname"><span class="pre">test_drift_prediction_earth_movers_distance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reference_slice</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">GiskardDataset</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">actual_slice</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">GiskardDataset</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">GiskardModel</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">classification_label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">SingleTestResult</span></span></span><a class="reference internal" href="_modules/ml_worker/testing/drift_tests.html#DriftTests.test_drift_prediction_earth_movers_distance"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ml_worker.testing.drift_tests.DriftTests.test_drift_prediction_earth_movers_distance" title="Permalink to this definition"></a></dt>
+<dd><p>Test if the Earth Mover’s Distance value between the reference and actual datasets is
+below the threshold for the classification labels predictions for classification
+model and prediction for regression models</p>
+<p>Example :
+Classification : The test is passed when the  Earth Mover’s Distance value of classification
+labels probabilities for females between reference and actual sets is below 0.2</p>
+<p>Regression : The test is passed when the  Earth Mover’s Distance value of prediction
+for females between reference and actual sets is below 0.2</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>reference_slice</strong> (<em>GiskardDataset</em>) – slice of the reference dataset</p></li>
+<li><p><strong>actual_slice</strong> (<em>GiskardDataset</em>) – slice of the actual dataset</p></li>
+<li><p><strong>model</strong> (<em>GiskardModel</em>) – uploaded model</p></li>
+<li><p><strong>classification_label</strong> – one specific label value from the target column for classification model</p></li>
+<li><p><strong>threshold</strong> – threshold for earth mover’s distance</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><p>TRUE if metric &lt;= threshold
+metric:</p>
+<blockquote>
+<div><p>Earth Mover’s Distance value</p>
+</div></blockquote>
+</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>passed</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ml_worker.testing.drift_tests.DriftTests.test_drift_prediction_ks">
+<span class="sig-name descname"><span class="pre">test_drift_prediction_ks</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reference_slice</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">GiskardDataset</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">actual_slice</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">GiskardDataset</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">GiskardModel</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">classification_label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">SingleTestResult</span></span></span><a class="reference internal" href="_modules/ml_worker/testing/drift_tests.html#DriftTests.test_drift_prediction_ks"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ml_worker.testing.drift_tests.DriftTests.test_drift_prediction_ks" title="Permalink to this definition"></a></dt>
+<dd><dl class="simple">
+<dt>Test if the pvalue of the KS test for prediction between the reference and actual datasets for</dt><dd><p>a given subpopulation is above the threshold</p>
+</dd>
+<dt>Example<span class="classifier">The test is passed when the pvalue of the KS test for the prediction for females</span></dt><dd><p>between reference and actual dataset is higher than 0.05. It means that the KS test cannot be
+rejected at 5% level and that we cannot assume drift for this variable.</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>reference_slice</strong> (<em>GiskardDataset</em>) – slice of the reference dataset</p></li>
+<li><p><strong>actual_slice</strong> (<em>GiskardDataset</em>) – slice of the actual dataset</p></li>
+<li><p><strong>model</strong> (<em>GiskardModel</em>) – uploaded model</p></li>
+<li><p><strong>threshold</strong> – threshold for p-value Kolmogorov-Smirnov test</p></li>
+<li><p><strong>classification_label</strong> – one specific label value from the target column for classification model</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><p>TRUE if p-value &gt;= threshold
+metric:</p>
+<blockquote>
+<div><p>calculated p-value Kolmogorov-Smirnov test</p>
+</div></blockquote>
+<dl class="simple">
+<dt>messages:</dt><dd><p>Kolmogorov-Smirnov result message</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>passed</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ml_worker.testing.drift_tests.DriftTests.test_drift_prediction_psi">
+<span class="sig-name descname"><span class="pre">test_drift_prediction_psi</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reference_slice</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">GiskardDataset</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">actual_slice</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">GiskardDataset</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">GiskardModel</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_categories</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">psi_contribution_percent</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.2</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ml_worker/testing/drift_tests.html#DriftTests.test_drift_prediction_psi"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ml_worker.testing.drift_tests.DriftTests.test_drift_prediction_psi" title="Permalink to this definition"></a></dt>
+<dd><p>Test if the PSI score between the reference and actual datasets is below the threshold
+for the classification labels predictions</p>
+<p>Example : The test is passed when the  PSI score of classification labels prediction
+for females between reference and actual sets is below 0.2</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>reference_slice</strong> (<em>GiskardDataset</em>) – slice of the reference dataset</p></li>
+<li><p><strong>actual_slice</strong> (<em>GiskardDataset</em>) – slice of the actual dataset</p></li>
+<li><p><strong>model</strong> (<em>GiskardModel</em>) – uploaded model</p></li>
+<li><p><strong>max_categories</strong> – the maximum categories to compute the PSI score</p></li>
+<li><p><strong>threshold</strong> – threshold value for PSI</p></li>
+<li><p><strong>psi_contribution_percent</strong> – the ratio between the PSI score of a given category over the total PSI score
+of the categorical variable. If there is a drift, the test provides all the
+categories that have a PSI contribution over than this ratio.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><p>TRUE if total psi &lt;= threshold
+metric:</p>
+<blockquote>
+<div><p>total PSI value</p>
+</div></blockquote>
+<dl class="simple">
+<dt>messages:</dt><dd><p>psi result message</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>passed</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ml_worker.testing.drift_tests.DriftTests.test_drift_psi">
+<span class="sig-name descname"><span class="pre">test_drift_psi</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reference_series</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Series</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">actual_series</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Series</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_categories</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">SingleTestResult</span></span></span><a class="reference internal" href="_modules/ml_worker/testing/drift_tests.html#DriftTests.test_drift_psi"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ml_worker.testing.drift_tests.DriftTests.test_drift_psi" title="Permalink to this definition"></a></dt>
+<dd><p>Test if the PSI score between the actual and expected datasets is below the threshold for
+a given categorical feature</p>
+<p>Example : The test is passed when the  PSI score of gender between reference and actual sets is below 0.2</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>reference_series</strong> (<em>GiskardDataset</em>) – a categorical column in reference dataset</p></li>
+<li><p><strong>actual_series</strong> (<em>GiskardDataset</em>) – categorical column in actual dataset that is compared to var_expected</p></li>
+<li><p><strong>threshold</strong> – threshold value for PSI</p></li>
+<li><p><strong>max_categories</strong> – the maximum categories to compute the PSI score</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><p>the total psi score between the actual and expected datasets
+passed:</p>
+<blockquote>
+<div><p>TRUE if total_psi &lt;= threshold</p>
+</div></blockquote>
+</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>metric</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ml_worker.testing.drift_tests.DriftTests.tests_results">
+<span class="sig-name descname"><span class="pre">tests_results</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">NamedSingleTestResult</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ml_worker.testing.drift_tests.DriftTests.tests_results" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-ml_worker.testing.heuristic_tests">
+<span id="testing-heuristic-tests-module"></span><h2>testing.heuristic_tests module<a class="headerlink" href="#module-ml_worker.testing.heuristic_tests" title="Permalink to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="ml_worker.testing.heuristic_tests.HeuristicTests">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ml_worker.testing.heuristic_tests.</span></span><span class="sig-name descname"><span class="pre">HeuristicTests</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">test_results</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">NamedSingleTestResult</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ml_worker/testing/heuristic_tests.html#HeuristicTests"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ml_worker.testing.heuristic_tests.HeuristicTests" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="testing.html#ml_worker.testing.abstract_test_collection.AbstractTestCollection" title="ml_worker.testing.abstract_test_collection.AbstractTestCollection"><code class="xref py py-class docutils literal notranslate"><span class="pre">AbstractTestCollection</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="ml_worker.testing.heuristic_tests.HeuristicTests.test_output_in_range">
+<span class="sig-name descname"><span class="pre">test_output_in_range</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">actual_slice</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">GiskardDataset</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">GiskardModel</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">classification_label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_range</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_range</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.7</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">SingleTestResult</span></span></span><a class="reference internal" href="_modules/ml_worker/testing/heuristic_tests.html#HeuristicTests.test_output_in_range"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ml_worker.testing.heuristic_tests.HeuristicTests.test_output_in_range" title="Permalink to this definition"></a></dt>
+<dd><p>Summary: Test if the model output belongs to the right range for a slice</p>
+<p>Description: - The test is passed when the ratio of rows in the right range inside the
+slice is higher than the threshold.</p>
+<blockquote>
+<div><p>For classification: Test if the predicted probability for a given classification label
+belongs to the right range for a dataset slice</p>
+</div></blockquote>
+<p>For regression : Test if the predicted output belongs to the right range for a dataset slice</p>
+<p>Example :
+For Classification: For a credit scoring model, the test is passed when more than 50% of
+people with high wage have a probability of defaulting between 0 and 0.1</p>
+<p>For Regression : The predicted Sale Price of a house in the city falls in a particular range
+:param actual_slice: slice of the actual dataset
+:param model: uploaded model
+:param classification_label: classification label you want to test
+:param min_range: minimum probability of occurrence of classification label
+:param max_range: maximum probability of occurrence of classification label
+:param threshold: threshold for the percentage of passed rows</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><p>length of actual_slice tested</p>
+<dl class="simple">
+<dt>metrics:</dt><dd><p>the proportion of rows in the right range inside the slice</p>
+</dd>
+<dt>passed:</dt><dd><p>TRUE if metric &gt; threshold</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>slice_nb_rows</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ml_worker.testing.heuristic_tests.HeuristicTests.test_right_label">
+<span class="sig-name descname"><span class="pre">test_right_label</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">actual_slice</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">GiskardDataset</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">GiskardModel</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">classification_label</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">SingleTestResult</span></span></span><a class="reference internal" href="_modules/ml_worker/testing/heuristic_tests.html#HeuristicTests.test_right_label"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ml_worker.testing.heuristic_tests.HeuristicTests.test_right_label" title="Permalink to this definition"></a></dt>
+<dd><p>Summary: Test if the model returns the right classification label for a slice</p>
+<p>Description: The test is passed when the percentage of rows returning the right
+classification label is higher than the threshold in a given slice</p>
+<p>Example: For a credit scoring model, the test is passed when more than 50%
+of people with high-salaries are classified as “non default”</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>actual_slice</strong> – slice of the actual dataset</p></li>
+<li><p><strong>model</strong> – uploaded model</p></li>
+<li><p><strong>classification_label</strong> – classification label you want to test</p></li>
+<li><p><strong>threshold</strong> – threshold for the percentage of passed rows</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><p>length of actual_slice tested
+metrics:</p>
+<blockquote>
+<div><p>the ratio of raws with the right classification label over the total of raws in the slice</p>
+</div></blockquote>
+<dl class="simple">
+<dt>passed:</dt><dd><p>TRUE if passed_ratio &gt; threshold</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>slice_nb_rows</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ml_worker.testing.heuristic_tests.HeuristicTests.tests_results">
+<span class="sig-name descname"><span class="pre">tests_results</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">NamedSingleTestResult</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ml_worker.testing.heuristic_tests.HeuristicTests.tests_results" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-ml_worker.testing.metamorphic_tests">
+<span id="testing-metamorphic-tests-module"></span><h2>testing.metamorphic_tests module<a class="headerlink" href="#module-ml_worker.testing.metamorphic_tests" title="Permalink to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="ml_worker.testing.metamorphic_tests.MetamorphicTests">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ml_worker.testing.metamorphic_tests.</span></span><span class="sig-name descname"><span class="pre">MetamorphicTests</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">test_results</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">NamedSingleTestResult</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ml_worker/testing/metamorphic_tests.html#MetamorphicTests"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ml_worker.testing.metamorphic_tests.MetamorphicTests" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="testing.html#ml_worker.testing.abstract_test_collection.AbstractTestCollection" title="ml_worker.testing.abstract_test_collection.AbstractTestCollection"><code class="xref py py-class docutils literal notranslate"><span class="pre">AbstractTestCollection</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="ml_worker.testing.metamorphic_tests.MetamorphicTests.test_metamorphic_decreasing">
+<span class="sig-name descname"><span class="pre">test_metamorphic_decreasing</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">GiskardDataset</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">perturbation_dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">classification_label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ml_worker/testing/metamorphic_tests.html#MetamorphicTests.test_metamorphic_decreasing"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ml_worker.testing.metamorphic_tests.MetamorphicTests.test_metamorphic_decreasing" title="Permalink to this definition"></a></dt>
+<dd><p>Summary: Tests if the model probability decreases when the feature values are perturbed</p>
+<p>Description: -
+- For classification: Test if the model probability of a given classification_label is
+decreasing after feature values perturbation.</p>
+<ul class="simple">
+<li><p>For regression: Test if the model prediction is decreasing after feature values perturbation.</p></li>
+</ul>
+<p>The test is passed when the percentage of rows that are decreasing is higher than the threshold</p>
+<dl class="simple">
+<dt>Example<span class="classifier">For a credit scoring model, the test is passed when a increase of wage by 10%,</span></dt><dd><p>default probability is decreasing for more than 50% of people in the dataset</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>df</strong> (<em>GiskardDataset</em>) – Dataset used to compute the test</p></li>
+<li><p><strong>model</strong> (<em>GiskardModel</em>) – Model used to compute the test</p></li>
+<li><p><strong>perturbation_dict</strong> (<em>dict</em>) – Dictionary of the perturbations. It provides the perturbed features as key
+and a perturbation lambda function as value</p></li>
+<li><p><strong>threshold</strong> (<em>float</em>) – Threshold of the ratio of decreasing rows</p></li>
+<li><p><strong>classification_label</strong> (<em>str</em>) – one specific label value from the target column</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><p>total number of rows of dataframe
+number_of_perturbed_rows:</p>
+<blockquote>
+<div><p>number of perturbed rows</p>
+</div></blockquote>
+<dl class="simple">
+<dt>metric:</dt><dd><p>the ratio of decreasing rows over the perturbed rows</p>
+</dd>
+<dt>passed:</dt><dd><p>TRUE if passed_ratio &gt; threshold</p>
+</dd>
+<dt>output_df:</dt><dd><p>dataframe containing the rows whose probability doesn’t decrease after perturbation</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>actual_slices_size</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ml_worker.testing.metamorphic_tests.MetamorphicTests.test_metamorphic_increasing">
+<span class="sig-name descname"><span class="pre">test_metamorphic_increasing</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">GiskardDataset</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">perturbation_dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">classification_label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ml_worker/testing/metamorphic_tests.html#MetamorphicTests.test_metamorphic_increasing"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ml_worker.testing.metamorphic_tests.MetamorphicTests.test_metamorphic_increasing" title="Permalink to this definition"></a></dt>
+<dd><p>Summary: Tests if the model probability increases when the feature values are perturbed</p>
+<p>Description: -
+- For classification: Test if the model probability of a given classification_label is
+increasing after feature values perturbation.</p>
+<ul class="simple">
+<li><p>For regression: Test if the model prediction is increasing after feature values perturbation.</p></li>
+</ul>
+<p>The test is passed when the percentage of rows that are increasing is higher than the threshold</p>
+<dl class="simple">
+<dt>Example<span class="classifier">For a credit scoring model, the test is passed when a decrease of wage by 10%,</span></dt><dd><p>default probability is increasing for more than 50% of people in the dataset</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>df</strong> (<em>GiskardDataset</em>) – Dataset used to compute the test</p></li>
+<li><p><strong>model</strong> (<em>GiskardModel</em>) – Model used to compute the test</p></li>
+<li><p><strong>perturbation_dict</strong> (<em>dict</em>) – Dictionary of the perturbations. It provides the perturbed features as key
+and a perturbation lambda function as value</p></li>
+<li><p><strong>threshold</strong> (<em>float</em>) – Threshold of the ratio of increasing rows</p></li>
+<li><p><strong>classification_label</strong> (<em>str</em>) – one specific label value from the target column</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><p>total number of rows of dataframe
+number_of_perturbed_rows:</p>
+<blockquote>
+<div><p>number of perturbed rows</p>
+</div></blockquote>
+<dl class="simple">
+<dt>metric:</dt><dd><p>the ratio of increasing rows over the perturbed rows</p>
+</dd>
+<dt>passed:</dt><dd><p>TRUE if passed_ratio &gt; threshold</p>
+</dd>
+<dt>output_df:</dt><dd><p>dataframe containing the rows whose probability doesn’t increase after perturbation</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>actual_slices_size</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ml_worker.testing.metamorphic_tests.MetamorphicTests.test_metamorphic_invariance">
+<span class="sig-name descname"><span class="pre">test_metamorphic_invariance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">GiskardDataset</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">perturbation_dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_sensitivity</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">SingleTestResult</span></span></span><a class="reference internal" href="_modules/ml_worker/testing/metamorphic_tests.html#MetamorphicTests.test_metamorphic_invariance"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ml_worker.testing.metamorphic_tests.MetamorphicTests.test_metamorphic_invariance" title="Permalink to this definition"></a></dt>
+<dd><p>Summary: Tests if the model prediction is invariant when the feature values are perturbed</p>
+<p>Description: -
+For classification: Test if the predicted classification label remains the same after
+feature values perturbation.
+For regression: Check whether the predicted output remains the same at the output_sensibility
+level after feature values perturbation.</p>
+<p>The test is passed when the ratio of invariant rows is higher than the threshold</p>
+<p>Example : The test is passed when, after switching gender from male to female,
+more than 50%(threshold 0.5) of males have unchanged outputs</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>df</strong> (<em>GiskardDataset</em>) – Dataset used to compute the test</p></li>
+<li><p><strong>model</strong> (<em>GiskardModel</em>) – Model used to compute the test</p></li>
+<li><p><strong>perturbation_dict</strong> (<em>dict</em>) – Dictionary of the perturbations. It provides the perturbed features as key and a perturbation lambda function as value</p></li>
+<li><p><strong>threshold</strong> (<em>float</em>) – Threshold of the ratio of invariant rows</p></li>
+<li><p><strong>output_sensitivity</strong> (<em>float</em>) – the threshold for ratio between the difference between perturbed prediction and actual prediction over
+the actual prediction for a regression model. We consider there is a prediction difference for
+regression if the ratio is above the output_sensitivity of 0.1</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><p>total number of rows of dataframe
+number_of_perturbed_rows:</p>
+<blockquote>
+<div><p>number of perturbed rows</p>
+</div></blockquote>
+<dl class="simple">
+<dt>metric:</dt><dd><p>the ratio of invariant rows over the perturbed rows</p>
+</dd>
+<dt>passed:</dt><dd><p>TRUE if passed_ratio &gt; threshold</p>
+</dd>
+<dt>output_df:</dt><dd><p>dataframe containing the non-invariant rows</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>actual_slices_size</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ml_worker.testing.metamorphic_tests.MetamorphicTests.tests_results">
+<span class="sig-name descname"><span class="pre">tests_results</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">NamedSingleTestResult</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ml_worker.testing.metamorphic_tests.MetamorphicTests.tests_results" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-ml_worker.testing.performance_tests">
+<span id="testing-performance-tests-module"></span><h2>testing.performance_tests module<a class="headerlink" href="#module-ml_worker.testing.performance_tests" title="Permalink to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="ml_worker.testing.performance_tests.PerformanceTests">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ml_worker.testing.performance_tests.</span></span><span class="sig-name descname"><span class="pre">PerformanceTests</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">test_results</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">NamedSingleTestResult</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ml_worker/testing/performance_tests.html#PerformanceTests"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ml_worker.testing.performance_tests.PerformanceTests" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="testing.html#ml_worker.testing.abstract_test_collection.AbstractTestCollection" title="ml_worker.testing.abstract_test_collection.AbstractTestCollection"><code class="xref py py-class docutils literal notranslate"><span class="pre">AbstractTestCollection</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="ml_worker.testing.performance_tests.PerformanceTests.test_accuracy">
+<span class="sig-name descname"><span class="pre">test_accuracy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">actual_slice</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">GiskardDataset</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">GiskardModel</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ml_worker/testing/performance_tests.html#PerformanceTests.test_accuracy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ml_worker.testing.performance_tests.PerformanceTests.test_accuracy" title="Permalink to this definition"></a></dt>
+<dd><p>Test if the model Accuracy is higher than a threshold for a given slice</p>
+<p>Example: The test is passed when the Accuracy for females is higher than 0.7</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>actual_slice</strong> (<em>GiskardDataset</em>) – slice of the actual dataset</p></li>
+<li><p><strong>model</strong> (<em>GiskardModel</em>) – uploaded model</p></li>
+<li><p><strong>threshold</strong> (<em>int</em>) – threshold value for Accuracy</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><p>length of actual_slice tested
+metric:</p>
+<blockquote>
+<div><p>the Accuracy metric</p>
+</div></blockquote>
+<dl class="simple">
+<dt>passed:</dt><dd><p>TRUE if Accuracy metrics &gt; threshold</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>total rows tested</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ml_worker.testing.performance_tests.PerformanceTests.test_auc">
+<span class="sig-name descname"><span class="pre">test_auc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">actual_slice</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">GiskardDataset</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">GiskardModel</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ml_worker/testing/performance_tests.html#PerformanceTests.test_auc"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ml_worker.testing.performance_tests.PerformanceTests.test_auc" title="Permalink to this definition"></a></dt>
+<dd><p>Test if the model AUC performance is higher than a threshold for a given slice</p>
+<p>Example : The test is passed when the AUC for females is higher than 0.7</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>actual_slice</strong> (<em>GiskardDataset</em>) – slice of the actual dataset</p></li>
+<li><p><strong>model</strong> (<em>GiskardModel</em>) – uploaded model</p></li>
+<li><p><strong>threshold</strong> (<em>int</em>) – threshold value of AUC metrics</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><p>length of actual_slice tested
+metric:</p>
+<blockquote>
+<div><p>the AUC performance metric</p>
+</div></blockquote>
+<dl class="simple">
+<dt>passed:</dt><dd><p>TRUE if AUC metrics &gt; threshold</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>total rows tested</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ml_worker.testing.performance_tests.PerformanceTests.test_diff_accuracy">
+<span class="sig-name descname"><span class="pre">test_diff_accuracy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">actual_slice</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reference_slice</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ml_worker/testing/performance_tests.html#PerformanceTests.test_diff_accuracy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ml_worker.testing.performance_tests.PerformanceTests.test_diff_accuracy" title="Permalink to this definition"></a></dt>
+<dd><p>Test if the absolute percentage change of model Accuracy between two samples is lower than a threshold</p>
+<p>Example : The test is passed when the Accuracy for females has a difference lower than 10% from the
+Accuracy for males. For example, if the Accuracy for males is 0.8 (actual_slice) and the Accuracy  for
+females is 0.6 (reference_slice) then the absolute percentage Accuracy change is 0.2 / 0.8 = 0.25
+and the test will fail</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>actual_slice</strong> (<em>GiskardDataset</em>) – slice of the actual dataset</p></li>
+<li><p><strong>reference_slice</strong> (<em>GiskardDataset</em>) – <p>slice of the actual dataset
+model(GiskardModel):</p>
+<blockquote>
+<div><p>uploaded model</p>
+</div></blockquote>
+<dl class="simple">
+<dt>threshold(int):</dt><dd><p>threshold value for Accuracy Score difference</p>
+</dd>
+</dl>
+</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><p>length of actual dataset
+metric:</p>
+<blockquote>
+<div><p>the Accuracy difference  metric</p>
+</div></blockquote>
+<dl class="simple">
+<dt>passed:</dt><dd><p>TRUE if Accuracy difference &lt; threshold</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>total rows tested</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ml_worker.testing.performance_tests.PerformanceTests.test_diff_f1">
+<span class="sig-name descname"><span class="pre">test_diff_f1</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">actual_slice</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reference_slice</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ml_worker/testing/performance_tests.html#PerformanceTests.test_diff_f1"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ml_worker.testing.performance_tests.PerformanceTests.test_diff_f1" title="Permalink to this definition"></a></dt>
+<dd><p>Test if the absolute percentage change in model F1 Score between two samples is lower than a threshold</p>
+<p>Example : The test is passed when the F1 Score for females has a difference lower than 10% from the
+F1 Score for males. For example, if the F1 Score for males is 0.8 (actual_slice) and the F1 Score  for
+females is 0.6 (reference_slice) then the absolute percentage F1 Score  change is 0.2 / 0.8 = 0.25
+and the test will fail</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>actual_slice</strong> (<em>GiskardDataset</em>) – slice of the actual dataset</p></li>
+<li><p><strong>reference_slice</strong> (<em>GiskardDataset</em>) – slice of the actual dataset</p></li>
+<li><p><strong>model</strong> (<em>GiskardModel</em>) – uploaded model</p></li>
+<li><p><strong>threshold</strong> (<em>int</em>) – threshold value for F1 Score difference</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><p>length of actual dataset
+metric:</p>
+<blockquote>
+<div><p>the F1 Score difference  metric</p>
+</div></blockquote>
+<dl class="simple">
+<dt>passed:</dt><dd><p>TRUE if F1 Score difference &lt; threshold</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>total rows tested</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ml_worker.testing.performance_tests.PerformanceTests.test_diff_precision">
+<span class="sig-name descname"><span class="pre">test_diff_precision</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">actual_slice</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reference_slice</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ml_worker/testing/performance_tests.html#PerformanceTests.test_diff_precision"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ml_worker.testing.performance_tests.PerformanceTests.test_diff_precision" title="Permalink to this definition"></a></dt>
+<dd><p>Test if the absolute percentage change of model Precision between two samples is lower than a threshold</p>
+<p>Example : The test is passed when the Precision for females has a difference lower than 10% from the
+Accuracy for males. For example, if the Precision for males is 0.8 (actual_slice) and the Precision  for
+females is 0.6 (reference_slice) then the absolute percentage Precision change is 0.2 / 0.8 = 0.25
+and the test will fail</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>actual_slice</strong> (<em>GiskardDataset</em>) – slice of the actual dataset</p></li>
+<li><p><strong>reference_slice</strong> (<em>GiskardDataset</em>) – slice of the actual dataset</p></li>
+<li><p><strong>model</strong> (<em>GiskardModel</em>) – uploaded model</p></li>
+<li><p><strong>threshold</strong> (<em>int</em>) – threshold value for Precision difference</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><p>length of actual dataset
+metric:</p>
+<blockquote>
+<div><p>the Precision difference  metric</p>
+</div></blockquote>
+<dl class="simple">
+<dt>passed:</dt><dd><p>TRUE if Precision difference &lt; threshold</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>total rows tested</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ml_worker.testing.performance_tests.PerformanceTests.test_diff_recall">
+<span class="sig-name descname"><span class="pre">test_diff_recall</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">actual_slice</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reference_slice</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ml_worker/testing/performance_tests.html#PerformanceTests.test_diff_recall"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ml_worker.testing.performance_tests.PerformanceTests.test_diff_recall" title="Permalink to this definition"></a></dt>
+<dd><p>Test if the absolute percentage change of model Recall between two samples is lower than a threshold</p>
+<p>Example : The test is passed when the Recall for females has a difference lower than 10% from the
+Accuracy for males. For example, if the Recall for males is 0.8 (actual_slice) and the Recall  for
+females is 0.6 (reference_slice) then the absolute percentage Recall change is 0.2 / 0.8 = 0.25
+and the test will fail</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>actual_slice</strong> (<em>GiskardDataset</em>) – slice of the actual dataset</p></li>
+<li><p><strong>reference_slice</strong> (<em>GiskardDataset</em>) – slice of the actual dataset</p></li>
+<li><p><strong>model</strong> (<em>GiskardModel</em>) – uploaded model</p></li>
+<li><p><strong>threshold</strong> (<em>int</em>) – threshold value for Recall difference</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><p>length of actual dataset
+metric:</p>
+<blockquote>
+<div><p>the Recall difference  metric</p>
+</div></blockquote>
+<dl class="simple">
+<dt>passed:</dt><dd><p>TRUE if Recall difference &lt; threshold</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>total rows tested</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ml_worker.testing.performance_tests.PerformanceTests.test_diff_reference_actual_accuracy">
+<span class="sig-name descname"><span class="pre">test_diff_reference_actual_accuracy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reference_slice</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">actual_slice</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ml_worker/testing/performance_tests.html#PerformanceTests.test_diff_reference_actual_accuracy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ml_worker.testing.performance_tests.PerformanceTests.test_diff_reference_actual_accuracy" title="Permalink to this definition"></a></dt>
+<dd><p>Test if the absolute percentage change in model Accuracy between reference and actual data
+is lower than a threshold</p>
+<p>Example : The test is passed when the Accuracy for reference dataset has a difference lower than 10% from the
+Accuracy for actual dataset. For example, if the Accuracy for reference dataset is 0.8 (reference_slice) and the Accuracy  for
+actual dataset is 0.6 (actual_slice) then the absolute percentage Accuracy  change is 0.2 / 0.8 = 0.25
+and the test will fail.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>reference_slice</strong> (<em>GiskardDataset</em>) – reference dataset</p></li>
+<li><p><strong>actual_slice</strong> (<em>GiskardDataset</em>) – actual dataset</p></li>
+<li><p><strong>model</strong> (<em>GiskardModel</em>) – uploaded model</p></li>
+<li><p><strong>threshold</strong> (<em>int</em>) – threshold value for Accuracy difference</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><p>the Accuracy difference  metric
+passed:</p>
+<blockquote>
+<div><p>TRUE if Accuracy difference &lt; threshold</p>
+</div></blockquote>
+</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>metric</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ml_worker.testing.performance_tests.PerformanceTests.test_diff_reference_actual_f1">
+<span class="sig-name descname"><span class="pre">test_diff_reference_actual_f1</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reference_slice</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">actual_slice</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ml_worker/testing/performance_tests.html#PerformanceTests.test_diff_reference_actual_f1"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ml_worker.testing.performance_tests.PerformanceTests.test_diff_reference_actual_f1" title="Permalink to this definition"></a></dt>
+<dd><p>Test if the absolute percentage change in model F1 Score between reference and actual data
+is lower than a threshold</p>
+<p>Example : The test is passed when the F1 Score for reference dataset has a difference lower than 10% from the
+F1 Score for actual dataset. For example, if the F1 Score for reference dataset is 0.8 (reference_slice) and the F1 Score  for
+actual dataset is 0.6 (actual_slice) then the absolute percentage F1 Score  change is 0.2 / 0.8 = 0.25
+and the test will fail.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>reference_slice</strong> (<em>GiskardDataset</em>) – reference dataset</p></li>
+<li><p><strong>actual_slice</strong> (<em>GiskardDataset</em>) – actual dataset</p></li>
+<li><p><strong>model</strong> (<em>GiskardModel</em>) – uploaded model</p></li>
+<li><p><strong>threshold</strong> (<em>int</em>) – threshold value for F1 Score difference</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><p>the F1 Score difference  metric
+passed:</p>
+<blockquote>
+<div><p>TRUE if F1 Score difference &lt; threshold</p>
+</div></blockquote>
+</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>metric</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ml_worker.testing.performance_tests.PerformanceTests.test_diff_reference_actual_rmse">
+<span class="sig-name descname"><span class="pre">test_diff_reference_actual_rmse</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reference_slice</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">actual_slice</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ml_worker/testing/performance_tests.html#PerformanceTests.test_diff_reference_actual_rmse"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ml_worker.testing.performance_tests.PerformanceTests.test_diff_reference_actual_rmse" title="Permalink to this definition"></a></dt>
+<dd><p>Test if the absolute percentage change in model RMSE between reference and actual data
+is lower than a threshold</p>
+<p>Example : The test is passed when the RMSE for reference dataset has a difference lower than 10% from the
+RMSE for actual dataset. For example, if the RMSE for reference dataset is 0.8 (reference_slice) and the RMSE  for
+actual dataset is 0.6 (actual_slice) then the absolute percentage RMSE  change is 0.2 / 0.8 = 0.25
+and the test will fail.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>reference_slice</strong> (<em>GiskardDataset</em>) – slice of reference dataset</p></li>
+<li><p><strong>actual_slice</strong> (<em>GiskardDataset</em>) – slice of actual dataset</p></li>
+<li><p><strong>model</strong> (<em>GiskardModel</em>) – uploaded model</p></li>
+<li><p><strong>threshold</strong> (<em>int</em>) – threshold value for RMSE difference</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><p>the RMSE difference  metric
+passed:</p>
+<blockquote>
+<div><p>TRUE if RMSE difference &lt; threshold</p>
+</div></blockquote>
+</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>metric</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ml_worker.testing.performance_tests.PerformanceTests.test_diff_rmse">
+<span class="sig-name descname"><span class="pre">test_diff_rmse</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">actual_slice</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reference_slice</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ml_worker/testing/performance_tests.html#PerformanceTests.test_diff_rmse"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ml_worker.testing.performance_tests.PerformanceTests.test_diff_rmse" title="Permalink to this definition"></a></dt>
+<dd><p>Test if the absolute percentage change of model RMSE between two samples is lower than a threshold</p>
+<p>Example : The test is passed when the RMSE for females has a difference lower than 10% from the
+RMSE for males. For example, if the RMSE for males is 0.8 (actual_slice) and the RMSE  for
+females is 0.6 (reference_slice) then the absolute percentage RMSE change is 0.2 / 0.8 = 0.25
+and the test will fail</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>actual_slice</strong> (<em>GiskardDataset</em>) – slice of the actual dataset</p></li>
+<li><p><strong>reference_slice</strong> (<em>GiskardDataset</em>) – slice of the actual dataset</p></li>
+<li><p><strong>model</strong> (<em>GiskardModel</em>) – uploaded model</p></li>
+<li><p><strong>threshold</strong> (<em>int</em>) – threshold value for RMSE difference</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><p>length of actual dataset
+metric:</p>
+<blockquote>
+<div><p>the RMSE difference  metric</p>
+</div></blockquote>
+<dl class="simple">
+<dt>passed:</dt><dd><p>TRUE if RMSE difference &lt; threshold</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>total rows tested</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ml_worker.testing.performance_tests.PerformanceTests.test_f1">
+<span class="sig-name descname"><span class="pre">test_f1</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">actual_slice</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">GiskardDataset</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">GiskardModel</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ml_worker/testing/performance_tests.html#PerformanceTests.test_f1"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ml_worker.testing.performance_tests.PerformanceTests.test_f1" title="Permalink to this definition"></a></dt>
+<dd><p>Test if the model F1 score is higher than a defined threshold for a given slice</p>
+<p>Example: The test is passed when F1 score for females is higher than 0.7</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>actual_slice</strong> (<em>GiskardDataset</em>) – slice of the actual dataset</p></li>
+<li><p><strong>model</strong> (<em>GiskardModel</em>) – uploaded model</p></li>
+<li><p><strong>threshold</strong> (<em>int</em>) – threshold value for F1 Score</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><p>length of actual_slice tested
+metric:</p>
+<blockquote>
+<div><p>the F1 score metric</p>
+</div></blockquote>
+<dl class="simple">
+<dt>passed:</dt><dd><p>TRUE if F1 Score metrics &gt; threshold</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>total rows tested</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ml_worker.testing.performance_tests.PerformanceTests.test_mae">
+<span class="sig-name descname"><span class="pre">test_mae</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">actual_slice</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">GiskardModel</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ml_worker/testing/performance_tests.html#PerformanceTests.test_mae"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ml_worker.testing.performance_tests.PerformanceTests.test_mae" title="Permalink to this definition"></a></dt>
+<dd><p>Test if the model Mean Absolute Error is lower than a threshold</p>
+<p>Example: The test is passed when the MAE is lower than 10</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>actual_slice</strong> (<em>GiskardDataset</em>) – actual dataset</p></li>
+<li><p><strong>model</strong> (<em>GiskardModel</em>) – uploaded model</p></li>
+<li><p><strong>threshold</strong> (<em>int</em>) – threshold value for MAE</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><p>length of actual_slice tested
+metric:</p>
+<blockquote>
+<div><p>the MAE metric</p>
+</div></blockquote>
+<dl class="simple">
+<dt>passed:</dt><dd><p>TRUE if MAE metric &lt; threshold</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>total rows tested</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ml_worker.testing.performance_tests.PerformanceTests.test_precision">
+<span class="sig-name descname"><span class="pre">test_precision</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">actual_slice</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">GiskardModel</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ml_worker/testing/performance_tests.html#PerformanceTests.test_precision"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ml_worker.testing.performance_tests.PerformanceTests.test_precision" title="Permalink to this definition"></a></dt>
+<dd><p>Test if the model Precision is higher than a threshold for a given slice</p>
+<p>Example: The test is passed when the Precision for females is higher than 0.7</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>actual_slice</strong> (<em>GiskardDataset</em>) – slice of the actual dataset</p></li>
+<li><p><strong>model</strong> (<em>GiskardModel</em>) – uploaded model</p></li>
+<li><p><strong>threshold</strong> (<em>int</em>) – threshold value for Precision</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><p>length of actual_slice tested
+metric:</p>
+<blockquote>
+<div><p>the Precision metric</p>
+</div></blockquote>
+<dl class="simple">
+<dt>passed:</dt><dd><p>TRUE if Precision metrics &gt; threshold</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>total rows tested</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ml_worker.testing.performance_tests.PerformanceTests.test_r2">
+<span class="sig-name descname"><span class="pre">test_r2</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">actual_slice</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">GiskardModel</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ml_worker/testing/performance_tests.html#PerformanceTests.test_r2"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ml_worker.testing.performance_tests.PerformanceTests.test_r2" title="Permalink to this definition"></a></dt>
+<dd><p>Test if the model R-Squared is higher than a threshold</p>
+<p>Example: The test is passed when the R-Squared is higher than 0.7</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>actual_slice</strong> (<em>GiskardDataset</em>) – actual dataset</p></li>
+<li><p><strong>model</strong> (<em>GiskardModel</em>) – uploaded model</p></li>
+<li><p><strong>threshold</strong> (<em>int</em>) – threshold value for R-Squared</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><p>length of actual_slice tested
+metric:</p>
+<blockquote>
+<div><p>the R-Squared metric</p>
+</div></blockquote>
+<dl class="simple">
+<dt>passed:</dt><dd><p>TRUE if R-Squared metric &gt; threshold</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>total rows tested</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ml_worker.testing.performance_tests.PerformanceTests.test_recall">
+<span class="sig-name descname"><span class="pre">test_recall</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">actual_slice</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">GiskardModel</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ml_worker/testing/performance_tests.html#PerformanceTests.test_recall"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ml_worker.testing.performance_tests.PerformanceTests.test_recall" title="Permalink to this definition"></a></dt>
+<dd><p>Test if the model Recall is higher than a threshold for a given slice</p>
+<p>Example: The test is passed when the Recall for females is higher than 0.7</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>actual_slice</strong> (<em>GiskardDataset</em>) – slice of the actual dataset</p></li>
+<li><p><strong>model</strong> (<em>GiskardModel</em>) – uploaded model</p></li>
+<li><p><strong>threshold</strong> (<em>int</em>) – threshold value for Recall</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><p>length of actual_slice tested
+metric:</p>
+<blockquote>
+<div><p>the Recall metric</p>
+</div></blockquote>
+<dl class="simple">
+<dt>passed:</dt><dd><p>TRUE if Recall metric &gt; threshold</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>total rows tested</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ml_worker.testing.performance_tests.PerformanceTests.test_rmse">
+<span class="sig-name descname"><span class="pre">test_rmse</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">actual_slice</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">GiskardModel</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ml_worker/testing/performance_tests.html#PerformanceTests.test_rmse"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ml_worker.testing.performance_tests.PerformanceTests.test_rmse" title="Permalink to this definition"></a></dt>
+<dd><p>Test if the model RMSE is lower than a threshold</p>
+<p>Example: The test is passed when the RMSE is lower than 10</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>actual_slice</strong> (<em>GiskardDataset</em>) – actual dataset</p></li>
+<li><p><strong>model</strong> (<em>GiskardModel</em>) – uploaded model</p></li>
+<li><p><strong>threshold</strong> (<em>int</em>) – threshold value for RMSE</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><p>length of actual_slice tested
+metric:</p>
+<blockquote>
+<div><p>the RMSE metric</p>
+</div></blockquote>
+<dl class="simple">
+<dt>passed:</dt><dd><p>TRUE if RMSE metric &lt; threshold</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>total rows tested</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ml_worker.testing.performance_tests.PerformanceTests.tests_results">
+<span class="sig-name descname"><span class="pre">tests_results</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">NamedSingleTestResult</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ml_worker.testing.performance_tests.PerformanceTests.tests_results" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-ml_worker.testing">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-ml_worker.testing" title="Permalink to this heading"></a></h2>
+</section>
+</section>
+<section id="indices-and-tables">
+<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this heading"></a></h1>
+<ul class="simple">
+<li><p><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></p></li>
+<li><p><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></p></li>
+<li><p><a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a></p></li>
+</ul>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Giskard.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

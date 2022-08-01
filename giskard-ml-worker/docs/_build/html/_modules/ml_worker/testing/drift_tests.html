@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ml_worker.testing.drift_tests &mdash; Giskard AI Test 1.0.0 documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../index.html" class="icon icon-home"> Giskard AI Test
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <!-- Local TOC -->
+              <div class="local-toc"></div>
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">Giskard AI Test</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+      <li>ml_worker.testing.drift_tests</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for ml_worker.testing.drift_tests</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">typing</span>
+<span class="kn">import</span> <span class="nn">uuid</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">Counter</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Union</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">from</span> <span class="nn">scipy.stats</span> <span class="kn">import</span> <span class="n">chi2</span><span class="p">,</span> <span class="n">ks_2samp</span>
+<span class="kn">from</span> <span class="nn">scipy.stats.stats</span> <span class="kn">import</span> <span class="n">Ks_2sampResult</span><span class="p">,</span> <span class="n">wasserstein_distance</span>
+
+<span class="kn">from</span> <span class="nn">generated.ml_worker_pb2</span> <span class="kn">import</span> <span class="n">SingleTestResult</span><span class="p">,</span> <span class="n">TestMessage</span><span class="p">,</span> <span class="n">TestMessageType</span>
+<span class="kn">from</span> <span class="nn">ml_worker.core.giskard_dataset</span> <span class="kn">import</span> <span class="n">GiskardDataset</span>
+<span class="kn">from</span> <span class="nn">ml_worker.core.model</span> <span class="kn">import</span> <span class="n">GiskardModel</span>
+<span class="kn">from</span> <span class="nn">ml_worker.testing.abstract_test_collection</span> <span class="kn">import</span> <span class="n">AbstractTestCollection</span>
+
+
+<div class="viewcode-block" id="DriftTests"><a class="viewcode-back" href="../../../testing.html#ml_worker.testing.drift_tests.DriftTests">[docs]</a><span class="k">class</span> <span class="nc">DriftTests</span><span class="p">(</span><span class="n">AbstractTestCollection</span><span class="p">):</span>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_calculate_psi</span><span class="p">(</span><span class="n">category</span><span class="p">,</span> <span class="n">actual_distribution</span><span class="p">,</span> <span class="n">expected_distribution</span><span class="p">):</span>
+        <span class="c1"># To use log and avoid zero distribution probability,</span>
+        <span class="c1"># we bound distribution probability by min_distribution_probability</span>
+        <span class="n">min_distribution_probability</span> <span class="o">=</span> <span class="mf">0.0001</span>
+
+        <span class="n">expected_distribution_bounded</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">expected_distribution</span><span class="p">[</span><span class="n">category</span><span class="p">],</span> <span class="n">min_distribution_probability</span><span class="p">)</span>
+        <span class="n">actual_distribution_bounded</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">actual_distribution</span><span class="p">[</span><span class="n">category</span><span class="p">],</span> <span class="n">min_distribution_probability</span><span class="p">)</span>
+        <span class="n">modality_psi</span> <span class="o">=</span> <span class="p">(</span><span class="n">expected_distribution_bounded</span> <span class="o">-</span> <span class="n">actual_distribution_bounded</span><span class="p">)</span> <span class="o">*</span> \
+                       <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">expected_distribution_bounded</span> <span class="o">/</span> <span class="n">actual_distribution_bounded</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">modality_psi</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_calculate_frequencies</span><span class="p">(</span><span class="n">actual_series</span><span class="p">,</span> <span class="n">reference_series</span><span class="p">,</span> <span class="n">max_categories</span><span class="p">):</span>
+        <span class="n">all_modalities</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">reference_series</span><span class="p">)</span><span class="o">.</span><span class="n">union</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">actual_series</span><span class="p">)))</span>
+        <span class="k">if</span> <span class="n">max_categories</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">all_modalities</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">max_categories</span><span class="p">:</span>
+            <span class="n">var_count_expected</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">Counter</span><span class="p">(</span><span class="n">reference_series</span><span class="p">)</span><span class="o">.</span><span class="n">most_common</span><span class="p">(</span><span class="n">max_categories</span><span class="p">))</span>
+            <span class="n">other_modalities_key</span> <span class="o">=</span> <span class="s1">&#39;other_modalities_&#39;</span> <span class="o">+</span> <span class="n">uuid</span><span class="o">.</span><span class="n">uuid1</span><span class="p">()</span><span class="o">.</span><span class="n">hex</span>
+            <span class="n">var_count_expected</span><span class="p">[</span><span class="n">other_modalities_key</span><span class="p">]</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">reference_series</span><span class="p">)</span> <span class="o">-</span> <span class="nb">sum</span><span class="p">(</span><span class="n">var_count_expected</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+            <span class="n">categories_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">var_count_expected</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+
+            <span class="n">var_count_actual</span> <span class="o">=</span> <span class="n">Counter</span><span class="p">(</span><span class="n">actual_series</span><span class="p">)</span>
+            <span class="c1"># For test data, we take the same category names as expected_data</span>
+            <span class="n">var_count_actual</span> <span class="o">=</span> <span class="p">{</span><span class="n">i</span><span class="p">:</span> <span class="n">var_count_actual</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">categories_list</span><span class="p">}</span>
+            <span class="n">var_count_actual</span><span class="p">[</span><span class="n">other_modalities_key</span><span class="p">]</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">actual_series</span><span class="p">)</span> <span class="o">-</span> <span class="nb">sum</span><span class="p">(</span><span class="n">var_count_actual</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+
+            <span class="n">all_modalities</span> <span class="o">=</span> <span class="n">categories_list</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">var_count_expected</span> <span class="o">=</span> <span class="n">Counter</span><span class="p">(</span><span class="n">reference_series</span><span class="p">)</span>
+            <span class="n">var_count_actual</span> <span class="o">=</span> <span class="n">Counter</span><span class="p">(</span><span class="n">actual_series</span><span class="p">)</span>
+        <span class="n">expected_frequencies</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">var_count_expected</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">all_modalities</span><span class="p">])</span>
+        <span class="n">actual_frequencies</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">var_count_actual</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">all_modalities</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">all_modalities</span><span class="p">,</span> <span class="n">actual_frequencies</span><span class="p">,</span> <span class="n">expected_frequencies</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_calculate_drift_psi</span><span class="p">(</span><span class="n">actual_series</span><span class="p">,</span> <span class="n">reference_series</span><span class="p">,</span> <span class="n">max_categories</span><span class="p">):</span>
+        <span class="n">all_modalities</span><span class="p">,</span> <span class="n">actual_frequencies</span><span class="p">,</span> <span class="n">expected_frequencies</span> <span class="o">=</span> <span class="n">DriftTests</span><span class="o">.</span><span class="n">_calculate_frequencies</span><span class="p">(</span>
+            <span class="n">actual_series</span><span class="p">,</span> <span class="n">reference_series</span><span class="p">,</span> <span class="n">max_categories</span><span class="p">)</span>
+        <span class="n">expected_distribution</span> <span class="o">=</span> <span class="n">expected_frequencies</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">reference_series</span><span class="p">)</span>
+        <span class="n">actual_distribution</span> <span class="o">=</span> <span class="n">actual_frequencies</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">actual_series</span><span class="p">)</span>
+        <span class="n">total_psi</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">output_data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;Modality&quot;</span><span class="p">,</span> <span class="s2">&quot;Reference_distribution&quot;</span><span class="p">,</span> <span class="s2">&quot;Actual_distribution&quot;</span><span class="p">,</span> <span class="s2">&quot;Psi&quot;</span><span class="p">])</span>
+        <span class="k">for</span> <span class="n">category</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">all_modalities</span><span class="p">)):</span>
+            <span class="n">modality_psi</span> <span class="o">=</span> <span class="n">DriftTests</span><span class="o">.</span><span class="n">_calculate_psi</span><span class="p">(</span><span class="n">category</span><span class="p">,</span> <span class="n">actual_distribution</span><span class="p">,</span> <span class="n">expected_distribution</span><span class="p">)</span>
+
+            <span class="n">total_psi</span> <span class="o">+=</span> <span class="n">modality_psi</span>
+            <span class="n">row</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s2">&quot;Modality&quot;</span><span class="p">:</span> <span class="n">all_modalities</span><span class="p">[</span><span class="n">category</span><span class="p">],</span>
+                <span class="s2">&quot;Reference_distribution&quot;</span><span class="p">:</span> <span class="n">expected_distribution</span><span class="p">[</span><span class="n">category</span><span class="p">],</span>
+                <span class="s2">&quot;Actual_distribution&quot;</span><span class="p">:</span> <span class="n">expected_distribution</span><span class="p">[</span><span class="n">category</span><span class="p">],</span>
+                <span class="s2">&quot;Psi&quot;</span><span class="p">:</span> <span class="n">modality_psi</span>
+            <span class="p">}</span>
+
+            <span class="n">output_data</span> <span class="o">=</span> <span class="n">output_data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">row</span><span class="p">),</span> <span class="n">ignore_index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">total_psi</span><span class="p">,</span> <span class="n">output_data</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_calculate_ks</span><span class="p">(</span><span class="n">actual_series</span><span class="p">,</span> <span class="n">reference_series</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Ks_2sampResult</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">ks_2samp</span><span class="p">(</span><span class="n">reference_series</span><span class="p">,</span> <span class="n">actual_series</span><span class="p">)</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_calculate_earth_movers_distance</span><span class="p">(</span><span class="n">actual_series</span><span class="p">,</span> <span class="n">reference_series</span><span class="p">):</span>
+        <span class="n">unique_reference</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">reference_series</span><span class="p">)</span>
+        <span class="n">unique_actual</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">actual_series</span><span class="p">)</span>
+        <span class="n">sample_space</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">unique_reference</span><span class="p">)</span><span class="o">.</span><span class="n">union</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">unique_actual</span><span class="p">)))</span>
+        <span class="n">val_max</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">sample_space</span><span class="p">)</span>
+        <span class="n">val_min</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">sample_space</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">val_max</span> <span class="o">==</span> <span class="n">val_min</span><span class="p">:</span>
+            <span class="n">metric</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Normalizing reference_series and actual_series for comparison purposes</span>
+            <span class="n">reference_series</span> <span class="o">=</span> <span class="p">(</span><span class="n">reference_series</span> <span class="o">-</span> <span class="n">val_min</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">val_max</span> <span class="o">-</span> <span class="n">val_min</span><span class="p">)</span>
+            <span class="n">actual_series</span> <span class="o">=</span> <span class="p">(</span><span class="n">actual_series</span> <span class="o">-</span> <span class="n">val_min</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">val_max</span> <span class="o">-</span> <span class="n">val_min</span><span class="p">)</span>
+
+            <span class="n">metric</span> <span class="o">=</span> <span class="n">wasserstein_distance</span><span class="p">(</span><span class="n">reference_series</span><span class="p">,</span> <span class="n">actual_series</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">metric</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_calculate_chi_square</span><span class="p">(</span><span class="n">actual_series</span><span class="p">,</span> <span class="n">reference_series</span><span class="p">,</span> <span class="n">max_categories</span><span class="p">):</span>
+        <span class="n">all_modalities</span><span class="p">,</span> <span class="n">actual_frequencies</span><span class="p">,</span> <span class="n">expected_frequencies</span> <span class="o">=</span> <span class="n">DriftTests</span><span class="o">.</span><span class="n">_calculate_frequencies</span><span class="p">(</span>
+            <span class="n">actual_series</span><span class="p">,</span> <span class="n">reference_series</span><span class="p">,</span> <span class="n">max_categories</span><span class="p">)</span>
+        <span class="n">chi_square</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="c1"># it&#39;s necessary for comparison purposes to normalize expected_frequencies</span>
+        <span class="c1"># so that reference and actual has the same size</span>
+        <span class="c1"># See https://github.com/scipy/scipy/blob/v1.8.0/scipy/stats/_stats_py.py#L6787</span>
+        <span class="n">k_norm</span> <span class="o">=</span> <span class="n">actual_series</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="n">reference_series</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">output_data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;Modality&quot;</span><span class="p">,</span> <span class="s2">&quot;Reference_frequencies&quot;</span><span class="p">,</span> <span class="s2">&quot;Actual_frequencies&quot;</span><span class="p">,</span> <span class="s2">&quot;Chi_square&quot;</span><span class="p">])</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">all_modalities</span><span class="p">)):</span>
+            <span class="n">chi_square_value</span> <span class="o">=</span> <span class="p">(</span><span class="n">actual_frequencies</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">-</span> <span class="n">expected_frequencies</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">*</span> <span class="n">k_norm</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">/</span> <span class="p">(</span>
+                    <span class="n">expected_frequencies</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">*</span> <span class="n">k_norm</span><span class="p">)</span>
+            <span class="n">chi_square</span> <span class="o">+=</span> <span class="n">chi_square_value</span>
+
+            <span class="n">row</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;Modality&quot;</span><span class="p">:</span> <span class="n">all_modalities</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+                   <span class="s2">&quot;Reference_frequencies&quot;</span><span class="p">:</span> <span class="n">expected_frequencies</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+                   <span class="s2">&quot;Actual_frequencies&quot;</span><span class="p">:</span> <span class="n">actual_frequencies</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+                   <span class="s2">&quot;Chi_square&quot;</span><span class="p">:</span> <span class="n">chi_square_value</span><span class="p">}</span>
+
+            <span class="n">output_data</span> <span class="o">=</span> <span class="n">output_data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">row</span><span class="p">),</span> <span class="n">ignore_index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="c1"># if reference_series and actual_series has only one modality it turns nan (len(all_modalities)=1)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">all_modalities</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">chi_cdf</span> <span class="o">=</span> <span class="n">chi2</span><span class="o">.</span><span class="n">cdf</span><span class="p">(</span><span class="n">chi_square</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">all_modalities</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="n">p_value</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">chi_cdf</span> <span class="k">if</span> <span class="n">chi_cdf</span> <span class="o">!=</span> <span class="mi">0</span> <span class="k">else</span> <span class="mi">0</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">p_value</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">return</span> <span class="n">chi_square</span><span class="p">,</span> <span class="n">p_value</span><span class="p">,</span> <span class="n">output_data</span>
+
+<div class="viewcode-block" id="DriftTests.test_drift_psi"><a class="viewcode-back" href="../../../testing.html#ml_worker.testing.drift_tests.DriftTests.test_drift_psi">[docs]</a>    <span class="k">def</span> <span class="nf">test_drift_psi</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                       <span class="n">reference_series</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">,</span>
+                       <span class="n">actual_series</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">,</span>
+                       <span class="n">threshold</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span>
+                       <span class="n">max_categories</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SingleTestResult</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Test if the PSI score between the actual and expected datasets is below the threshold for</span>
+<span class="sd">        a given categorical feature</span>
+
+<span class="sd">        Example : The test is passed when the  PSI score of gender between reference and actual sets is below 0.2</span>
+
+
+<span class="sd">        Args:</span>
+<span class="sd">            reference_series(GiskardDataset):</span>
+<span class="sd">                a categorical column in reference dataset</span>
+<span class="sd">            actual_series(GiskardDataset):</span>
+<span class="sd">                categorical column in actual dataset that is compared to var_expected</span>
+<span class="sd">            threshold:</span>
+<span class="sd">                threshold value for PSI</span>
+<span class="sd">            max_categories:</span>
+<span class="sd">                the maximum categories to compute the PSI score</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            metric:</span>
+<span class="sd">                the total psi score between the actual and expected datasets</span>
+<span class="sd">            passed:</span>
+<span class="sd">                TRUE if total_psi &lt;= threshold</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">total_psi</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calculate_drift_psi</span><span class="p">(</span><span class="n">actual_series</span><span class="p">,</span> <span class="n">reference_series</span><span class="p">,</span> <span class="n">max_categories</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">save_results</span><span class="p">(</span><span class="n">SingleTestResult</span><span class="p">(</span>
+            <span class="n">passed</span><span class="o">=</span><span class="n">total_psi</span> <span class="o">&lt;=</span> <span class="n">threshold</span><span class="p">,</span>
+            <span class="n">metric</span><span class="o">=</span><span class="n">total_psi</span>
+        <span class="p">))</span></div>
+
+<div class="viewcode-block" id="DriftTests.test_drift_chi_square"><a class="viewcode-back" href="../../../testing.html#ml_worker.testing.drift_tests.DriftTests.test_drift_chi_square">[docs]</a>    <span class="k">def</span> <span class="nf">test_drift_chi_square</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                              <span class="n">reference_series</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">,</span>
+                              <span class="n">actual_series</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">,</span>
+                              <span class="n">threshold</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span>
+                              <span class="n">max_categories</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SingleTestResult</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Test if the p-value of the chi square test between the actual and expected datasets is</span>
+<span class="sd">        above the threshold for a given categorical feature</span>
+
+<span class="sd">        Example : The test is passed when the pvalue of the chi square test of the categorical variable between</span>
+<span class="sd">         reference and actual sets is higher than 0.05. It means that chi square test cannot be rejected at 5% level</span>
+<span class="sd">         and that we cannot assume drift for this variable.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            reference_series(GiskardDataset):</span>
+<span class="sd">                a categorical column in reference dataset</span>
+<span class="sd">            actual_series(GiskardDataset):</span>
+<span class="sd">                categorical column in actual dataset that is compared to var_expected</span>
+<span class="sd">            threshold:</span>
+<span class="sd">                threshold for p-value of chi-square</span>
+<span class="sd">            max_categories:</span>
+<span class="sd">                the maximum categories to compute the chi square</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            metric:</span>
+<span class="sd">                the pvalue of chi square test</span>
+
+<span class="sd">            passed:</span>
+<span class="sd">                TRUE if metric &gt; threshold</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">chi_square</span><span class="p">,</span> <span class="n">p_value</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calculate_chi_square</span><span class="p">(</span><span class="n">actual_series</span><span class="p">,</span> <span class="n">reference_series</span><span class="p">,</span> <span class="n">max_categories</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">save_results</span><span class="p">(</span><span class="n">SingleTestResult</span><span class="p">(</span>
+            <span class="n">passed</span><span class="o">=</span><span class="n">p_value</span> <span class="o">&lt;=</span> <span class="n">threshold</span><span class="p">,</span>
+            <span class="n">metric</span><span class="o">=</span><span class="n">p_value</span><span class="p">,</span>
+        <span class="p">))</span></div>
+
+<div class="viewcode-block" id="DriftTests.test_drift_ks"><a class="viewcode-back" href="../../../testing.html#ml_worker.testing.drift_tests.DriftTests.test_drift_ks">[docs]</a>    <span class="k">def</span> <span class="nf">test_drift_ks</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                      <span class="n">reference_series</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">,</span>
+                      <span class="n">actual_series</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">,</span>
+                      <span class="n">threshold</span><span class="o">=</span><span class="mf">0.05</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SingleTestResult</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">         Test if the pvalue of the KS test between the actual and expected datasets is above</span>
+<span class="sd">          the threshold for a given numerical feature</span>
+
+<span class="sd">        Example : The test is passed when the pvalue of the KS test of the numerical variable</span>
+<span class="sd">        between the actual and expected datasets is higher than 0.05. It means that the KS test</span>
+<span class="sd">        cannot be rejected at 5% level and that we cannot assume drift for this variable.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            reference_series(GiskardDataset):</span>
+<span class="sd">                a numerical column in reference dataset</span>
+<span class="sd">            actual_series(GiskardDataset):</span>
+<span class="sd">                numerical column in actual dataset that is compared to var_expected</span>
+<span class="sd">            threshold:</span>
+<span class="sd">                threshold for p-value of KS test</span>
+<span class="sd">            max_categories:</span>
+<span class="sd">                maxiumum number of modalities</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            KS_statistics :</span>
+<span class="sd">            the KS statistics of the test. The higher the value, the higher the drift</span>
+
+<span class="sd">            metric:</span>
+<span class="sd">                the pvalue of KS test</span>
+
+<span class="sd">            passed:</span>
+<span class="sd">                TRUE if metric &gt; threshold</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calculate_ks</span><span class="p">(</span><span class="n">actual_series</span><span class="p">,</span> <span class="n">reference_series</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">save_results</span><span class="p">(</span><span class="n">SingleTestResult</span><span class="p">(</span>
+            <span class="n">passed</span><span class="o">=</span><span class="n">result</span><span class="o">.</span><span class="n">pvalue</span> <span class="o">&gt;=</span> <span class="n">threshold</span><span class="p">,</span>
+            <span class="n">metric</span><span class="o">=</span><span class="n">result</span><span class="o">.</span><span class="n">statistic</span><span class="p">,</span>
+            <span class="n">props</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;p_value&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">pvalue</span><span class="p">)})</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="DriftTests.test_drift_earth_movers_distance"><a class="viewcode-back" href="../../../testing.html#ml_worker.testing.drift_tests.DriftTests.test_drift_earth_movers_distance">[docs]</a>    <span class="k">def</span> <span class="nf">test_drift_earth_movers_distance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                                         <span class="n">reference_series</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">],</span>
+                                         <span class="n">actual_series</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">],</span>
+                                         <span class="n">threshold</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SingleTestResult</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Test if the earth movers distance between the actual and expected datasets is</span>
+<span class="sd">        below the threshold for a given numerical feature</span>
+
+<span class="sd">        Example : The test is passed when the earth movers distance of the numerical</span>
+<span class="sd">         variable between the actual and expected datasets is lower than 0.1.</span>
+<span class="sd">         It means that we cannot assume drift for this variable.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            reference_series(GiskardDataset):</span>
+<span class="sd">                a numerical column in reference dataset</span>
+<span class="sd">            actual_series(GiskardDataset):</span>
+<span class="sd">                numerical column in actual dataset that is compared to var_expected</span>
+<span class="sd">            threshold:</span>
+<span class="sd">                threshold for p-value of earth movers distance</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            metric:</span>
+<span class="sd">                the earth movers distance</span>
+
+<span class="sd">            passed:</span>
+<span class="sd">                TRUE if metric &lt; threshold</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">metric</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calculate_earth_movers_distance</span><span class="p">(</span><span class="n">actual_series</span><span class="p">,</span> <span class="n">reference_series</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">save_results</span><span class="p">(</span><span class="n">SingleTestResult</span><span class="p">(</span>
+            <span class="n">passed</span><span class="o">=</span><span class="kc">True</span> <span class="k">if</span> <span class="n">threshold</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">metric</span> <span class="o">&lt;=</span> <span class="n">threshold</span><span class="p">,</span>
+            <span class="n">metric</span><span class="o">=</span><span class="n">metric</span>
+        <span class="p">))</span></div>
+
+<div class="viewcode-block" id="DriftTests.test_drift_prediction_psi"><a class="viewcode-back" href="../../../testing.html#ml_worker.testing.drift_tests.DriftTests.test_drift_prediction_psi">[docs]</a>    <span class="k">def</span> <span class="nf">test_drift_prediction_psi</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reference_slice</span><span class="p">:</span> <span class="n">GiskardDataset</span><span class="p">,</span> <span class="n">actual_slice</span><span class="p">:</span> <span class="n">GiskardDataset</span><span class="p">,</span>
+                                  <span class="n">model</span><span class="p">:</span> <span class="n">GiskardModel</span><span class="p">,</span>
+                                  <span class="n">max_categories</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span> <span class="n">threshold</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.2</span><span class="p">,</span>
+                                  <span class="n">psi_contribution_percent</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.2</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Test if the PSI score between the reference and actual datasets is below the threshold</span>
+<span class="sd">        for the classification labels predictions</span>
+
+<span class="sd">        Example : The test is passed when the  PSI score of classification labels prediction</span>
+<span class="sd">        for females between reference and actual sets is below 0.2</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            reference_slice(GiskardDataset):</span>
+<span class="sd">                slice of the reference dataset </span>
+<span class="sd">            actual_slice(GiskardDataset):</span>
+<span class="sd">                slice of the actual dataset </span>
+<span class="sd">            model(GiskardModel):</span>
+<span class="sd">                uploaded model</span>
+<span class="sd">            max_categories:</span>
+<span class="sd">                the maximum categories to compute the PSI score</span>
+<span class="sd">            threshold:</span>
+<span class="sd">                threshold value for PSI</span>
+<span class="sd">            psi_contribution_percent:</span>
+<span class="sd">                the ratio between the PSI score of a given category over the total PSI score</span>
+<span class="sd">                of the categorical variable. If there is a drift, the test provides all the</span>
+<span class="sd">                categories that have a PSI contribution over than this ratio.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            passed:</span>
+<span class="sd">                TRUE if total psi &lt;= threshold</span>
+<span class="sd">            metric:</span>
+<span class="sd">                total PSI value</span>
+<span class="sd">            messages:</span>
+<span class="sd">                psi result message</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">prediction_reference</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">run_predict</span><span class="p">(</span><span class="n">reference_slice</span><span class="p">)</span><span class="o">.</span><span class="n">prediction</span>
+        <span class="n">prediction_actual</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">run_predict</span><span class="p">(</span><span class="n">actual_slice</span><span class="p">)</span><span class="o">.</span><span class="n">prediction</span>
+        <span class="n">total_psi</span><span class="p">,</span> <span class="n">output_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calculate_drift_psi</span><span class="p">(</span><span class="n">prediction_reference</span><span class="p">,</span> <span class="n">prediction_actual</span><span class="p">,</span> <span class="n">max_categories</span><span class="p">)</span>
+
+        <span class="n">passed</span> <span class="o">=</span> <span class="kc">True</span> <span class="k">if</span> <span class="n">threshold</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">total_psi</span> <span class="o">&lt;=</span> <span class="n">threshold</span>
+        <span class="n">messages</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">typing</span><span class="o">.</span><span class="n">List</span><span class="p">[</span><span class="n">TestMessage</span><span class="p">],</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">passed</span><span class="p">:</span>
+            <span class="n">main_drifting_modalities_bool</span> <span class="o">=</span> <span class="n">output_data</span><span class="p">[</span><span class="s2">&quot;Psi&quot;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">psi_contribution_percent</span> <span class="o">*</span> <span class="n">total_psi</span>
+            <span class="n">modalities_list</span> <span class="o">=</span> <span class="n">output_data</span><span class="p">[</span><span class="n">main_drifting_modalities_bool</span><span class="p">][</span><span class="s2">&quot;Modality&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+            <span class="n">messages</span> <span class="o">=</span> <span class="p">[</span><span class="n">TestMessage</span><span class="p">(</span>
+                <span class="nb">type</span><span class="o">=</span><span class="n">TestMessageType</span><span class="o">.</span><span class="n">ERROR</span><span class="p">,</span>
+                <span class="n">text</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;The prediction is drifting for the following modalities </span><span class="si">{</span><span class="o">*</span><span class="n">modalities_list</span><span class="p">,</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)]</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">save_results</span><span class="p">(</span><span class="n">SingleTestResult</span><span class="p">(</span>
+            <span class="n">passed</span><span class="o">=</span><span class="n">passed</span><span class="p">,</span>
+            <span class="n">metric</span><span class="o">=</span><span class="n">total_psi</span><span class="p">,</span>
+            <span class="n">messages</span><span class="o">=</span><span class="n">messages</span>
+        <span class="p">))</span></div>
+
+<div class="viewcode-block" id="DriftTests.test_drift_prediction_chi_square"><a class="viewcode-back" href="../../../testing.html#ml_worker.testing.drift_tests.DriftTests.test_drift_prediction_chi_square">[docs]</a>    <span class="k">def</span> <span class="nf">test_drift_prediction_chi_square</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reference_slice</span><span class="p">,</span> <span class="n">actual_slice</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span>
+                                         <span class="n">max_categories</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span>
+                                         <span class="n">threshold</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                                         <span class="n">chi_square_contribution_percent</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.2</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Test if the Chi Square value between the reference and actual datasets is below the threshold</span>
+<span class="sd">        for the classification labels predictions for a given slice</span>
+
+<span class="sd">        Example : The test is passed when the  Chi Square value of classification labels prediction</span>
+<span class="sd">        for females between reference and actual sets is below 0.2</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            reference_slice(GiskardDataset):</span>
+<span class="sd">                slice of the reference dataset </span>
+<span class="sd">            actual_slice(GiskardDataset):</span>
+<span class="sd">                slice of the actual dataset </span>
+<span class="sd">            model(GiskardModel):</span>
+<span class="sd">                uploaded model</span>
+<span class="sd">            max_categories:</span>
+<span class="sd">                the maximum categories to compute the PSI score</span>
+<span class="sd">            threshold:</span>
+<span class="sd">                threshold value for p-value</span>
+<span class="sd">            chi_square_contribution_percent:</span>
+<span class="sd">                the ratio between the Chi-Square value of a given category over the total Chi-Square</span>
+<span class="sd">                value of the categorical variable. If there is a drift, the test provides all the</span>
+<span class="sd">                categories that have a PSI contribution over than this ratio.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            passed:</span>
+<span class="sd">                TRUE if p_value &gt; threshold</span>
+<span class="sd">            metric:</span>
+<span class="sd">                p-value of chi_square test</span>
+<span class="sd">            messages:</span>
+<span class="sd">                message describing if prediction is drifting or not</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">prediction_reference</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">run_predict</span><span class="p">(</span><span class="n">reference_slice</span><span class="p">)</span><span class="o">.</span><span class="n">prediction</span>
+        <span class="n">prediction_actual</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">run_predict</span><span class="p">(</span><span class="n">actual_slice</span><span class="p">)</span><span class="o">.</span><span class="n">prediction</span>
+        <span class="n">chi_square</span><span class="p">,</span> <span class="n">p_value</span><span class="p">,</span> <span class="n">output_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calculate_chi_square</span><span class="p">(</span><span class="n">prediction_reference</span><span class="p">,</span> <span class="n">prediction_actual</span><span class="p">,</span>
+                                                                      <span class="n">max_categories</span><span class="p">)</span>
+
+        <span class="n">passed</span> <span class="o">=</span> <span class="n">p_value</span> <span class="o">&gt;</span> <span class="n">threshold</span>
+        <span class="n">messages</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">typing</span><span class="o">.</span><span class="n">List</span><span class="p">[</span><span class="n">TestMessage</span><span class="p">],</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">passed</span><span class="p">:</span>
+            <span class="n">main_drifting_modalities_bool</span> <span class="o">=</span> <span class="n">output_data</span><span class="p">[</span><span class="s2">&quot;Chi_square&quot;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">chi_square_contribution_percent</span> <span class="o">*</span> <span class="n">chi_square</span>
+            <span class="n">modalities_list</span> <span class="o">=</span> <span class="n">output_data</span><span class="p">[</span><span class="n">main_drifting_modalities_bool</span><span class="p">][</span><span class="s2">&quot;Modality&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+            <span class="n">messages</span> <span class="o">=</span> <span class="p">[</span><span class="n">TestMessage</span><span class="p">(</span>
+                <span class="nb">type</span><span class="o">=</span><span class="n">TestMessageType</span><span class="o">.</span><span class="n">ERROR</span><span class="p">,</span>
+                <span class="n">text</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;The prediction is drifting for the following modalities </span><span class="si">{</span><span class="o">*</span><span class="n">modalities_list</span><span class="p">,</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)]</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">save_results</span><span class="p">(</span><span class="n">SingleTestResult</span><span class="p">(</span>
+            <span class="n">passed</span><span class="o">=</span><span class="n">passed</span><span class="p">,</span>
+            <span class="n">metric</span><span class="o">=</span><span class="n">p_value</span><span class="p">,</span>
+            <span class="n">messages</span><span class="o">=</span><span class="n">messages</span>
+        <span class="p">))</span></div>
+
+<div class="viewcode-block" id="DriftTests.test_drift_prediction_ks"><a class="viewcode-back" href="../../../testing.html#ml_worker.testing.drift_tests.DriftTests.test_drift_prediction_ks">[docs]</a>    <span class="k">def</span> <span class="nf">test_drift_prediction_ks</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                                 <span class="n">reference_slice</span><span class="p">:</span> <span class="n">GiskardDataset</span><span class="p">,</span>
+                                 <span class="n">actual_slice</span><span class="p">:</span> <span class="n">GiskardDataset</span><span class="p">,</span>
+                                 <span class="n">model</span><span class="p">:</span> <span class="n">GiskardModel</span><span class="p">,</span>
+                                 <span class="n">classification_label</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                                 <span class="n">threshold</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SingleTestResult</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Test if the pvalue of the KS test for prediction between the reference and actual datasets for</span>
+<span class="sd">         a given subpopulation is above the threshold</span>
+
+<span class="sd">        Example : The test is passed when the pvalue of the KS test for the prediction for females</span>
+<span class="sd">         between reference and actual dataset is higher than 0.05. It means that the KS test cannot be</span>
+<span class="sd">         rejected at 5% level and that we cannot assume drift for this variable.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            reference_slice(GiskardDataset):</span>
+<span class="sd">                slice of the reference dataset </span>
+<span class="sd">            actual_slice(GiskardDataset):</span>
+<span class="sd">                slice of the actual dataset </span>
+<span class="sd">            model(GiskardModel):</span>
+<span class="sd">                uploaded model</span>
+<span class="sd">            threshold:</span>
+<span class="sd">                threshold for p-value Kolmogorov-Smirnov test</span>
+<span class="sd">            classification_label:</span>
+<span class="sd">                one specific label value from the target column for classification model</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            passed:</span>
+<span class="sd">                TRUE if p-value &gt;= threshold</span>
+<span class="sd">            metric:</span>
+<span class="sd">                calculated p-value Kolmogorov-Smirnov test</span>
+<span class="sd">            messages:</span>
+<span class="sd">                Kolmogorov-Smirnov result message</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="n">model</span><span class="o">.</span><span class="n">model_type</span> <span class="o">!=</span> <span class="s2">&quot;classification&quot;</span> <span class="ow">or</span> <span class="n">classification_label</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">classification_labels</span><span class="p">,</span> \
+            <span class="sa">f</span><span class="s1">&#39;&quot;</span><span class="si">{</span><span class="n">classification_label</span><span class="si">}</span><span class="s1">&quot; is not part of model labels: </span><span class="si">{</span><span class="s2">&quot;,&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">classification_labels</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span>
+
+        <span class="n">prediction_reference</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">run_predict</span><span class="p">(</span><span class="n">reference_slice</span><span class="p">)</span><span class="o">.</span><span class="n">all_predictions</span><span class="p">[</span><span class="n">classification_label</span><span class="p">]</span><span class="o">.</span><span class="n">values</span> <span class="k">if</span> \
+            <span class="n">model</span><span class="o">.</span><span class="n">model_type</span> <span class="o">==</span> <span class="s2">&quot;classification&quot;</span> <span class="k">else</span> <span class="n">model</span><span class="o">.</span><span class="n">run_predict</span><span class="p">(</span><span class="n">reference_slice</span><span class="p">)</span><span class="o">.</span><span class="n">prediction</span>
+        <span class="n">prediction_actual</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">run_predict</span><span class="p">(</span><span class="n">actual_slice</span><span class="p">)</span><span class="o">.</span><span class="n">all_predictions</span><span class="p">[</span><span class="n">classification_label</span><span class="p">]</span><span class="o">.</span><span class="n">values</span> <span class="k">if</span> \
+            <span class="n">model</span><span class="o">.</span><span class="n">model_type</span> <span class="o">==</span> <span class="s2">&quot;classification&quot;</span> <span class="k">else</span> <span class="n">model</span><span class="o">.</span><span class="n">run_predict</span><span class="p">(</span><span class="n">actual_slice</span><span class="p">)</span><span class="o">.</span><span class="n">prediction</span>
+
+        <span class="n">result</span><span class="p">:</span> <span class="n">Ks_2sampResult</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calculate_ks</span><span class="p">(</span><span class="n">prediction_reference</span><span class="p">,</span> <span class="n">prediction_actual</span><span class="p">)</span>
+        <span class="n">passed</span> <span class="o">=</span> <span class="kc">True</span> <span class="k">if</span> <span class="n">threshold</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">result</span><span class="o">.</span><span class="n">pvalue</span> <span class="o">&gt;=</span> <span class="n">threshold</span>
+        <span class="n">messages</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">typing</span><span class="o">.</span><span class="n">List</span><span class="p">[</span><span class="n">TestMessage</span><span class="p">],</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">passed</span><span class="p">:</span>
+            <span class="n">messages</span> <span class="o">=</span> <span class="p">[</span><span class="n">TestMessage</span><span class="p">(</span>
+                <span class="nb">type</span><span class="o">=</span><span class="n">TestMessageType</span><span class="o">.</span><span class="n">ERROR</span><span class="p">,</span>
+                <span class="n">text</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;The prediction is drifting (pvalue is equal to </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">pvalue</span><span class="si">}</span><span class="s2"> and is below the test risk level </span><span class="si">{</span><span class="n">threshold</span><span class="si">}</span><span class="s2">) &quot;</span>
+            <span class="p">)]</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">save_results</span><span class="p">(</span><span class="n">SingleTestResult</span><span class="p">(</span>
+            <span class="n">passed</span><span class="o">=</span><span class="n">passed</span><span class="p">,</span>
+            <span class="n">metric</span><span class="o">=</span><span class="n">result</span><span class="o">.</span><span class="n">pvalue</span><span class="p">,</span>
+            <span class="n">messages</span><span class="o">=</span><span class="n">messages</span>
+        <span class="p">))</span></div>
+
+<div class="viewcode-block" id="DriftTests.test_drift_prediction_earth_movers_distance"><a class="viewcode-back" href="../../../testing.html#ml_worker.testing.drift_tests.DriftTests.test_drift_prediction_earth_movers_distance">[docs]</a>    <span class="k">def</span> <span class="nf">test_drift_prediction_earth_movers_distance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                                                    <span class="n">reference_slice</span><span class="p">:</span> <span class="n">GiskardDataset</span><span class="p">,</span>
+                                                    <span class="n">actual_slice</span><span class="p">:</span> <span class="n">GiskardDataset</span><span class="p">,</span>
+                                                    <span class="n">model</span><span class="p">:</span> <span class="n">GiskardModel</span><span class="p">,</span>
+                                                    <span class="n">classification_label</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                                                    <span class="n">threshold</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SingleTestResult</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Test if the Earth Mover’s Distance value between the reference and actual datasets is</span>
+<span class="sd">        below the threshold for the classification labels predictions for classification</span>
+<span class="sd">        model and prediction for regression models</span>
+
+<span class="sd">        Example :</span>
+<span class="sd">        Classification : The test is passed when the  Earth Mover’s Distance value of classification</span>
+<span class="sd">        labels probabilities for females between reference and actual sets is below 0.2</span>
+
+<span class="sd">        Regression : The test is passed when the  Earth Mover’s Distance value of prediction</span>
+<span class="sd">        for females between reference and actual sets is below 0.2</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            reference_slice(GiskardDataset):</span>
+<span class="sd">                slice of the reference dataset </span>
+<span class="sd">            actual_slice(GiskardDataset):</span>
+<span class="sd">                slice of the actual dataset </span>
+<span class="sd">            model(GiskardModel):</span>
+<span class="sd">                uploaded model</span>
+<span class="sd">            classification_label:</span>
+<span class="sd">                one specific label value from the target column for classification model</span>
+<span class="sd">            threshold:</span>
+<span class="sd">                threshold for earth mover&#39;s distance</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            passed:</span>
+<span class="sd">                TRUE if metric &lt;= threshold</span>
+<span class="sd">            metric:</span>
+<span class="sd">                Earth Mover&#39;s Distance value</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">prediction_reference</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">run_predict</span><span class="p">(</span><span class="n">reference_slice</span><span class="p">)</span><span class="o">.</span><span class="n">all_predictions</span><span class="p">[</span><span class="n">classification_label</span><span class="p">]</span><span class="o">.</span><span class="n">values</span> <span class="k">if</span> \
+            <span class="n">model</span><span class="o">.</span><span class="n">model_type</span> <span class="o">==</span> <span class="s2">&quot;classification&quot;</span> <span class="k">else</span> <span class="n">model</span><span class="o">.</span><span class="n">run_predict</span><span class="p">(</span><span class="n">reference_slice</span><span class="p">)</span><span class="o">.</span><span class="n">prediction</span>
+        <span class="n">prediction_actual</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">run_predict</span><span class="p">(</span><span class="n">actual_slice</span><span class="p">)</span><span class="o">.</span><span class="n">all_predictions</span><span class="p">[</span><span class="n">classification_label</span><span class="p">]</span><span class="o">.</span><span class="n">values</span> <span class="k">if</span> \
+            <span class="n">model</span><span class="o">.</span><span class="n">model_type</span> <span class="o">==</span> <span class="s2">&quot;classification&quot;</span> <span class="k">else</span> <span class="n">model</span><span class="o">.</span><span class="n">run_predict</span><span class="p">(</span><span class="n">actual_slice</span><span class="p">)</span><span class="o">.</span><span class="n">prediction</span>
+
+        <span class="n">metric</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calculate_earth_movers_distance</span><span class="p">(</span><span class="n">prediction_reference</span><span class="p">,</span> <span class="n">prediction_actual</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">save_results</span><span class="p">(</span><span class="n">SingleTestResult</span><span class="p">(</span>
+            <span class="n">passed</span><span class="o">=</span><span class="kc">True</span> <span class="k">if</span> <span class="n">threshold</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">metric</span> <span class="o">&lt;=</span> <span class="n">threshold</span><span class="p">,</span>
+            <span class="n">metric</span><span class="o">=</span><span class="n">metric</span><span class="p">,</span>
+        <span class="p">))</span></div></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Giskard.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

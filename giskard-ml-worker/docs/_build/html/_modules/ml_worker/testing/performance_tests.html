@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ml_worker.testing.performance_tests &mdash; Giskard AI Test 1.0.0 documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../index.html" class="icon icon-home"> Giskard AI Test
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <!-- Local TOC -->
+              <div class="local-toc"></div>
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">Giskard AI Test</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+      <li>ml_worker.testing.performance_tests</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for ml_worker.testing.performance_tests</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">sklearn.metrics</span> <span class="kn">import</span> <span class="n">accuracy_score</span><span class="p">,</span> <span class="n">recall_score</span>
+<span class="kn">from</span> <span class="nn">sklearn.metrics</span> <span class="kn">import</span> <span class="n">roc_auc_score</span><span class="p">,</span> <span class="n">f1_score</span><span class="p">,</span> <span class="n">precision_score</span><span class="p">,</span> <span class="n">mean_squared_error</span><span class="p">,</span> \
+    <span class="n">mean_absolute_error</span><span class="p">,</span> <span class="n">r2_score</span>
+
+<span class="kn">from</span> <span class="nn">generated.ml_worker_pb2</span> <span class="kn">import</span> <span class="n">SingleTestResult</span>
+<span class="kn">from</span> <span class="nn">ml_worker.core.giskard_dataset</span> <span class="kn">import</span> <span class="n">GiskardDataset</span>
+<span class="kn">from</span> <span class="nn">ml_worker.core.model</span> <span class="kn">import</span> <span class="n">GiskardModel</span>
+<span class="kn">from</span> <span class="nn">ml_worker.testing.abstract_test_collection</span> <span class="kn">import</span> <span class="n">AbstractTestCollection</span>
+
+
+<div class="viewcode-block" id="PerformanceTests"><a class="viewcode-back" href="../../../testing.html#ml_worker.testing.performance_tests.PerformanceTests">[docs]</a><span class="k">class</span> <span class="nc">PerformanceTests</span><span class="p">(</span><span class="n">AbstractTestCollection</span><span class="p">):</span>
+<div class="viewcode-block" id="PerformanceTests.test_auc"><a class="viewcode-back" href="../../../testing.html#ml_worker.testing.performance_tests.PerformanceTests.test_auc">[docs]</a>    <span class="k">def</span> <span class="nf">test_auc</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">actual_slice</span><span class="p">:</span> <span class="n">GiskardDataset</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="n">GiskardModel</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Test if the model AUC performance is higher than a threshold for a given slice</span>
+
+<span class="sd">        Example : The test is passed when the AUC for females is higher than 0.7</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            actual_slice(GiskardDataset):</span>
+<span class="sd">                slice of the actual dataset </span>
+<span class="sd">            model(GiskardModel):</span>
+<span class="sd">                uploaded model</span>
+<span class="sd">            threshold(int):</span>
+<span class="sd">                threshold value of AUC metrics</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            total rows tested:</span>
+<span class="sd">                length of actual_slice tested</span>
+<span class="sd">            metric:</span>
+<span class="sd">                the AUC performance metric</span>
+<span class="sd">            passed:</span>
+<span class="sd">                TRUE if AUC metrics &gt; threshold</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">classification_labels</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="n">metric</span> <span class="o">=</span> <span class="n">roc_auc_score</span><span class="p">(</span><span class="n">actual_slice</span><span class="o">.</span><span class="n">df</span><span class="p">[</span><span class="n">actual_slice</span><span class="o">.</span><span class="n">target</span><span class="p">],</span>
+                                   <span class="n">model</span><span class="o">.</span><span class="n">run_predict</span><span class="p">(</span><span class="n">actual_slice</span><span class="p">)</span><span class="o">.</span><span class="n">raw_prediction</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">metric</span> <span class="o">=</span> <span class="n">roc_auc_score</span><span class="p">(</span><span class="n">actual_slice</span><span class="o">.</span><span class="n">df</span><span class="p">[</span><span class="n">actual_slice</span><span class="o">.</span><span class="n">target</span><span class="p">],</span>
+                                   <span class="n">model</span><span class="o">.</span><span class="n">run_predict</span><span class="p">(</span><span class="n">actual_slice</span><span class="p">)</span><span class="o">.</span><span class="n">all_predictions</span><span class="p">,</span> <span class="n">multi_class</span><span class="o">=</span><span class="s1">&#39;ovr&#39;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">save_results</span><span class="p">(</span>
+            <span class="n">SingleTestResult</span><span class="p">(</span>
+                <span class="n">actual_slices_size</span><span class="o">=</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">actual_slice</span><span class="p">)],</span>
+                <span class="n">metric</span><span class="o">=</span><span class="n">metric</span><span class="p">,</span>
+                <span class="n">passed</span><span class="o">=</span><span class="n">metric</span> <span class="o">&gt;=</span> <span class="n">threshold</span>
+            <span class="p">))</span></div>
+
+    <span class="k">def</span> <span class="nf">_test_classification_score</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">score_fn</span><span class="p">,</span> <span class="n">gsk_dataset</span><span class="p">:</span> <span class="n">GiskardDataset</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="n">GiskardModel</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+        <span class="n">is_binary_classification</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">classification_labels</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span>
+        <span class="n">dataframe</span> <span class="o">=</span> <span class="n">gsk_dataset</span><span class="o">.</span><span class="n">df</span>
+        <span class="k">if</span> <span class="n">is_binary_classification</span><span class="p">:</span>
+            <span class="n">metric</span> <span class="o">=</span> <span class="n">score_fn</span><span class="p">(</span>
+                <span class="n">dataframe</span><span class="p">[</span><span class="n">gsk_dataset</span><span class="o">.</span><span class="n">target</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">),</span>
+                <span class="n">model</span><span class="o">.</span><span class="n">run_predict</span><span class="p">(</span><span class="n">gsk_dataset</span><span class="p">)</span><span class="o">.</span><span class="n">prediction</span><span class="p">,</span>
+                <span class="n">pos_label</span><span class="o">=</span><span class="n">model</span><span class="o">.</span><span class="n">classification_labels</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">metric</span> <span class="o">=</span> <span class="n">score_fn</span><span class="p">(</span>
+                <span class="n">dataframe</span><span class="p">[</span><span class="n">gsk_dataset</span><span class="o">.</span><span class="n">target</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">),</span>
+                <span class="n">model</span><span class="o">.</span><span class="n">run_predict</span><span class="p">(</span><span class="n">gsk_dataset</span><span class="p">)</span><span class="o">.</span><span class="n">prediction</span><span class="p">,</span>
+                <span class="n">average</span><span class="o">=</span><span class="s1">&#39;macro&#39;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">save_results</span><span class="p">(</span>
+            <span class="n">SingleTestResult</span><span class="p">(</span>
+                <span class="n">actual_slices_size</span><span class="o">=</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">gsk_dataset</span><span class="p">)],</span>
+                <span class="n">metric</span><span class="o">=</span><span class="n">metric</span><span class="p">,</span>
+                <span class="n">passed</span><span class="o">=</span><span class="n">metric</span> <span class="o">&gt;=</span> <span class="n">threshold</span>
+            <span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">_test_accuracy_score</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">score_fn</span><span class="p">,</span> <span class="n">gsk_dataset</span><span class="p">:</span> <span class="n">GiskardDataset</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="n">GiskardModel</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+        <span class="n">dataframe</span> <span class="o">=</span> <span class="n">gsk_dataset</span><span class="o">.</span><span class="n">df</span>
+        <span class="n">metric</span> <span class="o">=</span> <span class="n">score_fn</span><span class="p">(</span>
+            <span class="n">dataframe</span><span class="p">[</span><span class="n">gsk_dataset</span><span class="o">.</span><span class="n">target</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">),</span>
+            <span class="n">model</span><span class="o">.</span><span class="n">run_predict</span><span class="p">(</span><span class="n">gsk_dataset</span><span class="p">)</span><span class="o">.</span><span class="n">prediction</span>
+        <span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">save_results</span><span class="p">(</span>
+            <span class="n">SingleTestResult</span><span class="p">(</span>
+                <span class="n">actual_slices_size</span><span class="o">=</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">gsk_dataset</span><span class="p">)],</span>
+                <span class="n">metric</span><span class="o">=</span><span class="n">metric</span><span class="p">,</span>
+                <span class="n">passed</span><span class="o">=</span><span class="n">metric</span> <span class="o">&gt;=</span> <span class="n">threshold</span>
+            <span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">_test_regression_score</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">score_fn</span><span class="p">,</span> <span class="n">giskard_ds</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="n">GiskardModel</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">negative</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                               <span class="n">r2</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="n">metric</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span> <span class="k">if</span> <span class="n">negative</span> <span class="k">else</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">score_fn</span><span class="p">(</span>
+            <span class="n">model</span><span class="o">.</span><span class="n">run_predict</span><span class="p">(</span><span class="n">giskard_ds</span><span class="p">)</span><span class="o">.</span><span class="n">raw_prediction</span><span class="p">,</span>
+            <span class="n">giskard_ds</span><span class="o">.</span><span class="n">df</span><span class="p">[</span><span class="n">giskard_ds</span><span class="o">.</span><span class="n">target</span><span class="p">]</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">save_results</span><span class="p">(</span>
+            <span class="n">SingleTestResult</span><span class="p">(</span>
+                <span class="n">actual_slices_size</span><span class="o">=</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">giskard_ds</span><span class="p">)],</span>
+                <span class="n">metric</span><span class="o">=</span><span class="n">metric</span><span class="p">,</span>
+                <span class="n">passed</span><span class="o">=</span><span class="n">metric</span> <span class="o">&gt;=</span> <span class="n">threshold</span> <span class="k">if</span> <span class="n">r2</span> <span class="k">else</span> <span class="n">metric</span> <span class="o">&lt;=</span> <span class="n">threshold</span>
+            <span class="p">))</span>
+
+<div class="viewcode-block" id="PerformanceTests.test_f1"><a class="viewcode-back" href="../../../testing.html#ml_worker.testing.performance_tests.PerformanceTests.test_f1">[docs]</a>    <span class="k">def</span> <span class="nf">test_f1</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">actual_slice</span><span class="p">:</span> <span class="n">GiskardDataset</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="n">GiskardModel</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Test if the model F1 score is higher than a defined threshold for a given slice</span>
+
+<span class="sd">        Example: The test is passed when F1 score for females is higher than 0.7</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            actual_slice(GiskardDataset):</span>
+<span class="sd">                slice of the actual dataset </span>
+<span class="sd">            model(GiskardModel):</span>
+<span class="sd">                uploaded model</span>
+<span class="sd">            threshold(int):</span>
+<span class="sd">                threshold value for F1 Score</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            total rows tested:</span>
+<span class="sd">                length of actual_slice tested</span>
+<span class="sd">            metric:</span>
+<span class="sd">                the F1 score metric</span>
+<span class="sd">            passed:</span>
+<span class="sd">                TRUE if F1 Score metrics &gt; threshold</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_test_classification_score</span><span class="p">(</span><span class="n">f1_score</span><span class="p">,</span> <span class="n">actual_slice</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">threshold</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="PerformanceTests.test_accuracy"><a class="viewcode-back" href="../../../testing.html#ml_worker.testing.performance_tests.PerformanceTests.test_accuracy">[docs]</a>    <span class="k">def</span> <span class="nf">test_accuracy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">actual_slice</span><span class="p">:</span> <span class="n">GiskardDataset</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="n">GiskardModel</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Test if the model Accuracy is higher than a threshold for a given slice</span>
+
+<span class="sd">        Example: The test is passed when the Accuracy for females is higher than 0.7</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            actual_slice(GiskardDataset):</span>
+<span class="sd">                slice of the actual dataset </span>
+<span class="sd">            model(GiskardModel):</span>
+<span class="sd">                uploaded model</span>
+<span class="sd">            threshold(int):</span>
+<span class="sd">                threshold value for Accuracy</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            total rows tested:</span>
+<span class="sd">                length of actual_slice tested</span>
+<span class="sd">            metric:</span>
+<span class="sd">                the Accuracy metric</span>
+<span class="sd">            passed:</span>
+<span class="sd">                TRUE if Accuracy metrics &gt; threshold</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_test_accuracy_score</span><span class="p">(</span><span class="n">accuracy_score</span><span class="p">,</span> <span class="n">actual_slice</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">threshold</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="PerformanceTests.test_precision"><a class="viewcode-back" href="../../../testing.html#ml_worker.testing.performance_tests.PerformanceTests.test_precision">[docs]</a>    <span class="k">def</span> <span class="nf">test_precision</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">actual_slice</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="n">GiskardModel</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Test if the model Precision is higher than a threshold for a given slice</span>
+
+<span class="sd">        Example: The test is passed when the Precision for females is higher than 0.7</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            actual_slice(GiskardDataset):</span>
+<span class="sd">                slice of the actual dataset </span>
+<span class="sd">            model(GiskardModel):</span>
+<span class="sd">                uploaded model</span>
+<span class="sd">            threshold(int):</span>
+<span class="sd">                threshold value for Precision</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            total rows tested:</span>
+<span class="sd">                length of actual_slice tested</span>
+<span class="sd">            metric:</span>
+<span class="sd">                the Precision metric</span>
+<span class="sd">            passed:</span>
+<span class="sd">                TRUE if Precision metrics &gt; threshold</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_test_classification_score</span><span class="p">(</span><span class="n">precision_score</span><span class="p">,</span>
+                                               <span class="n">actual_slice</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">threshold</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="PerformanceTests.test_recall"><a class="viewcode-back" href="../../../testing.html#ml_worker.testing.performance_tests.PerformanceTests.test_recall">[docs]</a>    <span class="k">def</span> <span class="nf">test_recall</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">actual_slice</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="n">GiskardModel</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Test if the model Recall is higher than a threshold for a given slice</span>
+
+<span class="sd">        Example: The test is passed when the Recall for females is higher than 0.7</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            actual_slice(GiskardDataset):</span>
+<span class="sd">                slice of the actual dataset </span>
+<span class="sd">            model(GiskardModel):</span>
+<span class="sd">                uploaded model</span>
+<span class="sd">            threshold(int):</span>
+<span class="sd">                threshold value for Recall</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            total rows tested:</span>
+<span class="sd">                length of actual_slice tested</span>
+<span class="sd">            metric:</span>
+<span class="sd">                the Recall metric</span>
+<span class="sd">            passed:</span>
+<span class="sd">                TRUE if Recall metric &gt; threshold</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_test_classification_score</span><span class="p">(</span><span class="n">recall_score</span><span class="p">,</span>
+                                               <span class="n">actual_slice</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">threshold</span><span class="p">)</span></div>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_get_rmse</span><span class="p">(</span><span class="n">y_actual</span><span class="p">,</span> <span class="n">y_predicted</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">mean_squared_error</span><span class="p">(</span><span class="n">y_actual</span><span class="p">,</span> <span class="n">y_predicted</span><span class="p">))</span>
+
+<div class="viewcode-block" id="PerformanceTests.test_rmse"><a class="viewcode-back" href="../../../testing.html#ml_worker.testing.performance_tests.PerformanceTests.test_rmse">[docs]</a>    <span class="k">def</span> <span class="nf">test_rmse</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">actual_slice</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="n">GiskardModel</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Test if the model RMSE is lower than a threshold</span>
+
+<span class="sd">        Example: The test is passed when the RMSE is lower than 10</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            actual_slice(GiskardDataset):</span>
+<span class="sd">                actual dataset </span>
+<span class="sd">            model(GiskardModel):</span>
+<span class="sd">                uploaded model</span>
+<span class="sd">            threshold(int):</span>
+<span class="sd">                threshold value for RMSE</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            total rows tested:</span>
+<span class="sd">                length of actual_slice tested</span>
+<span class="sd">            metric:</span>
+<span class="sd">                the RMSE metric</span>
+<span class="sd">            passed:</span>
+<span class="sd">                TRUE if RMSE metric &lt; threshold</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_test_regression_score</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_rmse</span><span class="p">,</span> <span class="n">actual_slice</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">threshold</span><span class="p">,</span> <span class="n">negative</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="PerformanceTests.test_mae"><a class="viewcode-back" href="../../../testing.html#ml_worker.testing.performance_tests.PerformanceTests.test_mae">[docs]</a>    <span class="k">def</span> <span class="nf">test_mae</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">actual_slice</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="n">GiskardModel</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Test if the model Mean Absolute Error is lower than a threshold</span>
+
+<span class="sd">        Example: The test is passed when the MAE is lower than 10</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            actual_slice(GiskardDataset):</span>
+<span class="sd">                actual dataset </span>
+<span class="sd">            model(GiskardModel):</span>
+<span class="sd">                uploaded model</span>
+<span class="sd">            threshold(int):</span>
+<span class="sd">                threshold value for MAE</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            total rows tested:</span>
+<span class="sd">                length of actual_slice tested</span>
+<span class="sd">            metric:</span>
+<span class="sd">                the MAE metric</span>
+<span class="sd">            passed:</span>
+<span class="sd">                TRUE if MAE metric &lt; threshold</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_test_regression_score</span><span class="p">(</span><span class="n">mean_absolute_error</span><span class="p">,</span> <span class="n">actual_slice</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">threshold</span><span class="p">,</span>
+                                           <span class="n">negative</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="PerformanceTests.test_r2"><a class="viewcode-back" href="../../../testing.html#ml_worker.testing.performance_tests.PerformanceTests.test_r2">[docs]</a>    <span class="k">def</span> <span class="nf">test_r2</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">actual_slice</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="n">GiskardModel</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Test if the model R-Squared is higher than a threshold</span>
+
+<span class="sd">        Example: The test is passed when the R-Squared is higher than 0.7</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            actual_slice(GiskardDataset):</span>
+<span class="sd">                actual dataset </span>
+<span class="sd">            model(GiskardModel):</span>
+<span class="sd">                uploaded model</span>
+<span class="sd">            threshold(int):</span>
+<span class="sd">                threshold value for R-Squared</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            total rows tested:</span>
+<span class="sd">                length of actual_slice tested</span>
+<span class="sd">            metric:</span>
+<span class="sd">                the R-Squared metric</span>
+<span class="sd">            passed:</span>
+<span class="sd">                TRUE if R-Squared metric &gt; threshold</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_test_regression_score</span><span class="p">(</span><span class="n">r2_score</span><span class="p">,</span> <span class="n">actual_slice</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">threshold</span><span class="p">,</span> <span class="n">r2</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">_test_diff_prediction</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">test_fn</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">actual_slice</span><span class="p">,</span> <span class="n">reference_slice</span><span class="p">,</span> <span class="n">threshold</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">do_save_results</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="n">metric_1</span> <span class="o">=</span> <span class="n">test_fn</span><span class="p">(</span><span class="n">actual_slice</span><span class="p">,</span> <span class="n">model</span><span class="p">)</span><span class="o">.</span><span class="n">metric</span>
+        <span class="n">metric_2</span> <span class="o">=</span> <span class="n">test_fn</span><span class="p">(</span><span class="n">reference_slice</span><span class="p">,</span> <span class="n">model</span><span class="p">)</span><span class="o">.</span><span class="n">metric</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">do_save_results</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="n">change_pct</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">metric_1</span> <span class="o">-</span> <span class="n">metric_2</span><span class="p">)</span> <span class="o">/</span> <span class="n">metric_1</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">save_results</span><span class="p">(</span>
+            <span class="n">SingleTestResult</span><span class="p">(</span>
+                <span class="n">actual_slices_size</span><span class="o">=</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">actual_slice</span><span class="p">)],</span>
+                <span class="n">reference_slices_size</span><span class="o">=</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">reference_slice</span><span class="p">)],</span>
+                <span class="n">metric</span><span class="o">=</span><span class="n">change_pct</span><span class="p">,</span>
+                <span class="n">passed</span><span class="o">=</span><span class="n">change_pct</span> <span class="o">&lt;</span> <span class="n">threshold</span>
+            <span class="p">))</span>
+
+<div class="viewcode-block" id="PerformanceTests.test_diff_accuracy"><a class="viewcode-back" href="../../../testing.html#ml_worker.testing.performance_tests.PerformanceTests.test_diff_accuracy">[docs]</a>    <span class="k">def</span> <span class="nf">test_diff_accuracy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">actual_slice</span><span class="p">,</span> <span class="n">reference_slice</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mf">0.1</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">        Test if the absolute percentage change of model Accuracy between two samples is lower than a threshold</span>
+
+<span class="sd">        Example : The test is passed when the Accuracy for females has a difference lower than 10% from the</span>
+<span class="sd">        Accuracy for males. For example, if the Accuracy for males is 0.8 (actual_slice) and the Accuracy  for</span>
+<span class="sd">        females is 0.6 (reference_slice) then the absolute percentage Accuracy change is 0.2 / 0.8 = 0.25</span>
+<span class="sd">        and the test will fail</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          actual_slice(GiskardDataset):</span>
+<span class="sd">              slice of the actual dataset</span>
+<span class="sd">          reference_slice(GiskardDataset):</span>
+<span class="sd">              slice of the actual dataset</span>
+<span class="sd">            model(GiskardModel):</span>
+<span class="sd">                uploaded model</span>
+<span class="sd">            threshold(int):</span>
+<span class="sd">                threshold value for Accuracy Score difference</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            total rows tested:</span>
+<span class="sd">                length of actual dataset</span>
+<span class="sd">            metric:</span>
+<span class="sd">                the Accuracy difference  metric</span>
+<span class="sd">            passed:</span>
+<span class="sd">                TRUE if Accuracy difference &lt; threshold</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_test_diff_prediction</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">test_accuracy</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">actual_slice</span><span class="p">,</span> <span class="n">reference_slice</span><span class="p">,</span> <span class="n">threshold</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="PerformanceTests.test_diff_f1"><a class="viewcode-back" href="../../../testing.html#ml_worker.testing.performance_tests.PerformanceTests.test_diff_f1">[docs]</a>    <span class="k">def</span> <span class="nf">test_diff_f1</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">actual_slice</span><span class="p">,</span> <span class="n">reference_slice</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mf">0.1</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Test if the absolute percentage change in model F1 Score between two samples is lower than a threshold</span>
+
+<span class="sd">        Example : The test is passed when the F1 Score for females has a difference lower than 10% from the</span>
+<span class="sd">        F1 Score for males. For example, if the F1 Score for males is 0.8 (actual_slice) and the F1 Score  for</span>
+<span class="sd">        females is 0.6 (reference_slice) then the absolute percentage F1 Score  change is 0.2 / 0.8 = 0.25</span>
+<span class="sd">        and the test will fail</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            actual_slice(GiskardDataset):</span>
+<span class="sd">                slice of the actual dataset</span>
+<span class="sd">            reference_slice(GiskardDataset):</span>
+<span class="sd">                slice of the actual dataset</span>
+<span class="sd">            model(GiskardModel):</span>
+<span class="sd">                uploaded model</span>
+<span class="sd">            threshold(int):</span>
+<span class="sd">                threshold value for F1 Score difference</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            total rows tested:</span>
+<span class="sd">                length of actual dataset</span>
+<span class="sd">            metric:</span>
+<span class="sd">                the F1 Score difference  metric</span>
+<span class="sd">            passed:</span>
+<span class="sd">                TRUE if F1 Score difference &lt; threshold</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_test_diff_prediction</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">test_f1</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">actual_slice</span><span class="p">,</span> <span class="n">reference_slice</span><span class="p">,</span> <span class="n">threshold</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="PerformanceTests.test_diff_precision"><a class="viewcode-back" href="../../../testing.html#ml_worker.testing.performance_tests.PerformanceTests.test_diff_precision">[docs]</a>    <span class="k">def</span> <span class="nf">test_diff_precision</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">actual_slice</span><span class="p">,</span> <span class="n">reference_slice</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mf">0.1</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Test if the absolute percentage change of model Precision between two samples is lower than a threshold</span>
+
+<span class="sd">        Example : The test is passed when the Precision for females has a difference lower than 10% from the</span>
+<span class="sd">        Accuracy for males. For example, if the Precision for males is 0.8 (actual_slice) and the Precision  for</span>
+<span class="sd">        females is 0.6 (reference_slice) then the absolute percentage Precision change is 0.2 / 0.8 = 0.25</span>
+<span class="sd">        and the test will fail</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            actual_slice(GiskardDataset):</span>
+<span class="sd">                slice of the actual dataset</span>
+<span class="sd">            reference_slice(GiskardDataset):</span>
+<span class="sd">                slice of the actual dataset</span>
+<span class="sd">            model(GiskardModel):</span>
+<span class="sd">                uploaded model</span>
+<span class="sd">            threshold(int):</span>
+<span class="sd">                threshold value for Precision difference</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            total rows tested:</span>
+<span class="sd">                length of actual dataset</span>
+<span class="sd">            metric:</span>
+<span class="sd">                the Precision difference  metric</span>
+<span class="sd">            passed:</span>
+<span class="sd">                TRUE if Precision difference &lt; threshold</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_test_diff_prediction</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">test_precision</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">actual_slice</span><span class="p">,</span> <span class="n">reference_slice</span><span class="p">,</span> <span class="n">threshold</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="PerformanceTests.test_diff_recall"><a class="viewcode-back" href="../../../testing.html#ml_worker.testing.performance_tests.PerformanceTests.test_diff_recall">[docs]</a>    <span class="k">def</span> <span class="nf">test_diff_recall</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">actual_slice</span><span class="p">,</span> <span class="n">reference_slice</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mf">0.1</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Test if the absolute percentage change of model Recall between two samples is lower than a threshold</span>
+
+<span class="sd">        Example : The test is passed when the Recall for females has a difference lower than 10% from the</span>
+<span class="sd">        Accuracy for males. For example, if the Recall for males is 0.8 (actual_slice) and the Recall  for</span>
+<span class="sd">        females is 0.6 (reference_slice) then the absolute percentage Recall change is 0.2 / 0.8 = 0.25</span>
+<span class="sd">        and the test will fail</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            actual_slice(GiskardDataset):</span>
+<span class="sd">                slice of the actual dataset</span>
+<span class="sd">            reference_slice(GiskardDataset):</span>
+<span class="sd">                slice of the actual dataset</span>
+<span class="sd">            model(GiskardModel):</span>
+<span class="sd">                uploaded model</span>
+<span class="sd">            threshold(int):</span>
+<span class="sd">                threshold value for Recall difference</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            total rows tested:</span>
+<span class="sd">                length of actual dataset</span>
+<span class="sd">            metric:</span>
+<span class="sd">                the Recall difference  metric</span>
+<span class="sd">            passed:</span>
+<span class="sd">                TRUE if Recall difference &lt; threshold</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_test_diff_prediction</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">test_recall</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">actual_slice</span><span class="p">,</span> <span class="n">reference_slice</span><span class="p">,</span> <span class="n">threshold</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">_test_diff_reference_actual</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">test_fn</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">reference_slice</span><span class="p">,</span> <span class="n">actual_slice</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mf">0.1</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">do_save_results</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="n">metric_1</span> <span class="o">=</span> <span class="n">test_fn</span><span class="p">(</span><span class="n">reference_slice</span><span class="p">,</span> <span class="n">model</span><span class="p">)</span><span class="o">.</span><span class="n">metric</span>
+        <span class="n">metric_2</span> <span class="o">=</span> <span class="n">test_fn</span><span class="p">(</span><span class="n">actual_slice</span><span class="p">,</span> <span class="n">model</span><span class="p">)</span><span class="o">.</span><span class="n">metric</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">do_save_results</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="n">change_pct</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">metric_1</span> <span class="o">-</span> <span class="n">metric_2</span><span class="p">)</span> <span class="o">/</span> <span class="n">metric_1</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">save_results</span><span class="p">(</span>
+            <span class="n">SingleTestResult</span><span class="p">(</span>
+                <span class="n">metric</span><span class="o">=</span><span class="n">change_pct</span><span class="p">,</span>
+                <span class="n">passed</span><span class="o">=</span><span class="n">change_pct</span> <span class="o">&lt;</span> <span class="n">threshold</span>
+            <span class="p">))</span>
+
+<div class="viewcode-block" id="PerformanceTests.test_diff_reference_actual_f1"><a class="viewcode-back" href="../../../testing.html#ml_worker.testing.performance_tests.PerformanceTests.test_diff_reference_actual_f1">[docs]</a>    <span class="k">def</span> <span class="nf">test_diff_reference_actual_f1</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reference_slice</span><span class="p">,</span> <span class="n">actual_slice</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mf">0.1</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Test if the absolute percentage change in model F1 Score between reference and actual data</span>
+<span class="sd">        is lower than a threshold</span>
+
+<span class="sd">        Example : The test is passed when the F1 Score for reference dataset has a difference lower than 10% from the</span>
+<span class="sd">        F1 Score for actual dataset. For example, if the F1 Score for reference dataset is 0.8 (reference_slice) and the F1 Score  for</span>
+<span class="sd">        actual dataset is 0.6 (actual_slice) then the absolute percentage F1 Score  change is 0.2 / 0.8 = 0.25</span>
+<span class="sd">        and the test will fail.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            reference_slice(GiskardDataset):</span>
+<span class="sd">                reference dataset </span>
+<span class="sd">            actual_slice(GiskardDataset):</span>
+<span class="sd">                actual dataset </span>
+<span class="sd">            model(GiskardModel):</span>
+<span class="sd">                uploaded model</span>
+<span class="sd">            threshold(int):</span>
+<span class="sd">                threshold value for F1 Score difference</span>
+
+
+<span class="sd">        Returns:</span>
+<span class="sd">            metric:</span>
+<span class="sd">                the F1 Score difference  metric</span>
+<span class="sd">            passed:</span>
+<span class="sd">                TRUE if F1 Score difference &lt; threshold</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_test_diff_reference_actual</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">test_f1</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">reference_slice</span><span class="p">,</span> <span class="n">actual_slice</span><span class="p">,</span> <span class="n">threshold</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="PerformanceTests.test_diff_reference_actual_accuracy"><a class="viewcode-back" href="../../../testing.html#ml_worker.testing.performance_tests.PerformanceTests.test_diff_reference_actual_accuracy">[docs]</a>    <span class="k">def</span> <span class="nf">test_diff_reference_actual_accuracy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reference_slice</span><span class="p">,</span> <span class="n">actual_slice</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mf">0.1</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Test if the absolute percentage change in model Accuracy between reference and actual data</span>
+<span class="sd">        is lower than a threshold</span>
+
+<span class="sd">        Example : The test is passed when the Accuracy for reference dataset has a difference lower than 10% from the</span>
+<span class="sd">        Accuracy for actual dataset. For example, if the Accuracy for reference dataset is 0.8 (reference_slice) and the Accuracy  for</span>
+<span class="sd">        actual dataset is 0.6 (actual_slice) then the absolute percentage Accuracy  change is 0.2 / 0.8 = 0.25</span>
+<span class="sd">        and the test will fail.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            reference_slice(GiskardDataset):</span>
+<span class="sd">                reference dataset </span>
+<span class="sd">            actual_slice(GiskardDataset):</span>
+<span class="sd">                actual dataset </span>
+<span class="sd">            model(GiskardModel):</span>
+<span class="sd">                uploaded model</span>
+<span class="sd">            threshold(int):</span>
+<span class="sd">                threshold value for Accuracy difference</span>
+
+
+<span class="sd">        Returns:</span>
+<span class="sd">            metric:</span>
+<span class="sd">                the Accuracy difference  metric</span>
+<span class="sd">            passed:</span>
+<span class="sd">                TRUE if Accuracy difference &lt; threshold</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_test_diff_reference_actual</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">test_accuracy</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">reference_slice</span><span class="p">,</span> <span class="n">actual_slice</span><span class="p">,</span> <span class="n">threshold</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="PerformanceTests.test_diff_rmse"><a class="viewcode-back" href="../../../testing.html#ml_worker.testing.performance_tests.PerformanceTests.test_diff_rmse">[docs]</a>    <span class="k">def</span> <span class="nf">test_diff_rmse</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">actual_slice</span><span class="p">,</span> <span class="n">reference_slice</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mf">0.1</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Test if the absolute percentage change of model RMSE between two samples is lower than a threshold</span>
+
+<span class="sd">        Example : The test is passed when the RMSE for females has a difference lower than 10% from the</span>
+<span class="sd">        RMSE for males. For example, if the RMSE for males is 0.8 (actual_slice) and the RMSE  for</span>
+<span class="sd">        females is 0.6 (reference_slice) then the absolute percentage RMSE change is 0.2 / 0.8 = 0.25</span>
+<span class="sd">        and the test will fail</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            actual_slice(GiskardDataset):</span>
+<span class="sd">                slice of the actual dataset</span>
+<span class="sd">            reference_slice(GiskardDataset):</span>
+<span class="sd">                slice of the actual dataset</span>
+<span class="sd">            model(GiskardModel):</span>
+<span class="sd">                uploaded model</span>
+<span class="sd">            threshold(int):</span>
+<span class="sd">                threshold value for RMSE difference</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            total rows tested:</span>
+<span class="sd">                length of actual dataset</span>
+<span class="sd">            metric:</span>
+<span class="sd">                the RMSE difference  metric</span>
+<span class="sd">            passed:</span>
+<span class="sd">                TRUE if RMSE difference &lt; threshold</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_test_diff_prediction</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">test_rmse</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">actual_slice</span><span class="p">,</span> <span class="n">reference_slice</span><span class="p">,</span> <span class="n">threshold</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="PerformanceTests.test_diff_reference_actual_rmse"><a class="viewcode-back" href="../../../testing.html#ml_worker.testing.performance_tests.PerformanceTests.test_diff_reference_actual_rmse">[docs]</a>    <span class="k">def</span> <span class="nf">test_diff_reference_actual_rmse</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reference_slice</span><span class="p">,</span> <span class="n">actual_slice</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mf">0.1</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Test if the absolute percentage change in model RMSE between reference and actual data</span>
+<span class="sd">        is lower than a threshold</span>
+
+<span class="sd">        Example : The test is passed when the RMSE for reference dataset has a difference lower than 10% from the</span>
+<span class="sd">        RMSE for actual dataset. For example, if the RMSE for reference dataset is 0.8 (reference_slice) and the RMSE  for</span>
+<span class="sd">        actual dataset is 0.6 (actual_slice) then the absolute percentage RMSE  change is 0.2 / 0.8 = 0.25</span>
+<span class="sd">        and the test will fail.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            reference_slice(GiskardDataset):</span>
+<span class="sd">                slice of reference dataset</span>
+<span class="sd">            actual_slice(GiskardDataset):</span>
+<span class="sd">                slice of actual dataset</span>
+<span class="sd">            model(GiskardModel):</span>
+<span class="sd">                uploaded model</span>
+<span class="sd">            threshold(int):</span>
+<span class="sd">                threshold value for RMSE difference</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            metric:</span>
+<span class="sd">                the RMSE difference  metric</span>
+<span class="sd">            passed:</span>
+<span class="sd">                TRUE if RMSE difference &lt; threshold</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_test_diff_reference_actual</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">test_rmse</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">reference_slice</span><span class="p">,</span> <span class="n">actual_slice</span><span class="p">,</span> <span class="n">threshold</span><span class="p">)</span></div></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Giskard.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

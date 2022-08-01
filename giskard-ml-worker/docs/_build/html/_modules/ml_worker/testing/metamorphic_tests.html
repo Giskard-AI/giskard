@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ml_worker.testing.metamorphic_tests &mdash; Giskard AI Test 1.0.0 documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../index.html" class="icon icon-home"> Giskard AI Test
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <!-- Local TOC -->
+              <div class="local-toc"></div>
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">Giskard AI Test</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+      <li>ml_worker.testing.metamorphic_tests</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for ml_worker.testing.metamorphic_tests</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+
+<span class="kn">from</span> <span class="nn">generated.ml_worker_pb2</span> <span class="kn">import</span> <span class="n">SingleTestResult</span>
+<span class="kn">from</span> <span class="nn">ml_worker.core.giskard_dataset</span> <span class="kn">import</span> <span class="n">GiskardDataset</span>
+<span class="kn">from</span> <span class="nn">ml_worker.core.model</span> <span class="kn">import</span> <span class="n">GiskardModel</span>
+<span class="kn">from</span> <span class="nn">ml_worker.testing.abstract_test_collection</span> <span class="kn">import</span> <span class="n">AbstractTestCollection</span>
+<span class="kn">from</span> <span class="nn">ml_worker.testing.utils</span> <span class="kn">import</span> <span class="n">apply_perturbation_inplace</span>
+<span class="kn">from</span> <span class="nn">ml_worker.testing.utils</span> <span class="kn">import</span> <span class="n">save_df</span><span class="p">,</span> <span class="n">compress</span>
+
+
+<div class="viewcode-block" id="MetamorphicTests"><a class="viewcode-back" href="../../../testing.html#ml_worker.testing.metamorphic_tests.MetamorphicTests">[docs]</a><span class="k">class</span> <span class="nc">MetamorphicTests</span><span class="p">(</span><span class="n">AbstractTestCollection</span><span class="p">):</span>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_predict_numeric_result</span><span class="p">(</span><span class="n">ds</span><span class="p">:</span> <span class="n">GiskardDataset</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="n">GiskardModel</span><span class="p">,</span> <span class="n">output_proba</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">classification_label</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">model</span><span class="o">.</span><span class="n">model_type</span> <span class="o">==</span> <span class="s1">&#39;regression&#39;</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">output_proba</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">model</span><span class="o">.</span><span class="n">run_predict</span><span class="p">(</span><span class="n">ds</span><span class="p">)</span><span class="o">.</span><span class="n">raw_prediction</span>
+        <span class="k">elif</span> <span class="n">model</span><span class="o">.</span><span class="n">model_type</span> <span class="o">==</span> <span class="s1">&#39;classification&#39;</span> <span class="ow">and</span> <span class="n">classification_label</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">model</span><span class="o">.</span><span class="n">run_predict</span><span class="p">(</span><span class="n">ds</span><span class="p">)</span><span class="o">.</span><span class="n">all_predictions</span><span class="p">[</span><span class="n">classification_label</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+        <span class="k">elif</span> <span class="n">model</span><span class="o">.</span><span class="n">model_type</span> <span class="o">==</span> <span class="s1">&#39;classification&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">model</span><span class="o">.</span><span class="n">run_predict</span><span class="p">(</span><span class="n">ds</span><span class="p">)</span><span class="o">.</span><span class="n">probabilities</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_prediction_ratio</span><span class="p">(</span><span class="n">prediction</span><span class="p">,</span> <span class="n">perturbed_prediction</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">abs</span><span class="p">(</span><span class="n">perturbed_prediction</span> <span class="o">-</span> <span class="n">prediction</span><span class="p">)</span> <span class="o">/</span> <span class="n">prediction</span> <span class="k">if</span> <span class="n">prediction</span> <span class="o">!=</span> <span class="mi">0</span> <span class="k">else</span> <span class="nb">abs</span><span class="p">(</span><span class="n">perturbed_prediction</span><span class="p">)</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_perturb_and_predict</span><span class="p">(</span><span class="n">ds</span><span class="p">:</span> <span class="n">GiskardDataset</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="n">GiskardModel</span><span class="p">,</span> <span class="n">perturbation_dict</span><span class="p">,</span> <span class="n">output_proba</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                             <span class="n">classification_label</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="n">results_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>
+        <span class="n">results_df</span><span class="p">[</span><span class="s2">&quot;prediction&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">MetamorphicTests</span><span class="o">.</span><span class="n">_predict_numeric_result</span><span class="p">(</span><span class="n">ds</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">output_proba</span><span class="p">,</span>
+                                                                            <span class="n">classification_label</span><span class="p">)</span>
+        <span class="n">modified_rows</span> <span class="o">=</span> <span class="n">apply_perturbation_inplace</span><span class="p">(</span><span class="n">ds</span><span class="o">.</span><span class="n">df</span><span class="p">,</span> <span class="n">perturbation_dict</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">modified_rows</span><span class="p">):</span>
+            <span class="n">ds</span><span class="o">.</span><span class="n">df</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">modified_rows</span><span class="p">]</span>
+            <span class="n">results_df</span> <span class="o">=</span> <span class="n">results_df</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">modified_rows</span><span class="p">]</span>
+            <span class="n">results_df</span><span class="p">[</span><span class="s2">&quot;perturbed_prediction&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">MetamorphicTests</span><span class="o">.</span><span class="n">_predict_numeric_result</span><span class="p">(</span><span class="n">ds</span><span class="p">,</span>
+                                                                                          <span class="n">model</span><span class="p">,</span>
+                                                                                          <span class="n">output_proba</span><span class="p">,</span>
+                                                                                          <span class="n">classification_label</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">results_df</span><span class="p">[</span><span class="s2">&quot;perturbed_prediction&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">results_df</span><span class="p">[</span><span class="s2">&quot;prediction&quot;</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">results_df</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">modified_rows</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_compare_prediction</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">results_df</span><span class="p">,</span> <span class="n">prediction_task</span><span class="p">,</span> <span class="n">output_sensitivity</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">flag</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">flag</span> <span class="o">==</span> <span class="s1">&#39;Invariance&#39;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">prediction_task</span> <span class="o">==</span> <span class="s1">&#39;classification&#39;</span><span class="p">:</span>
+                <span class="n">passed_idx</span> <span class="o">=</span> <span class="n">results_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span>
+                    <span class="n">results_df</span><span class="p">[</span><span class="s1">&#39;prediction&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">results_df</span><span class="p">[</span><span class="s1">&#39;perturbed_prediction&#39;</span><span class="p">]]</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">values</span>
+
+            <span class="k">elif</span> <span class="n">prediction_task</span> <span class="o">==</span> <span class="s1">&#39;regression&#39;</span><span class="p">:</span>
+                <span class="n">results_df</span><span class="p">[</span><span class="s1">&#39;predict_difference_ratio&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">results_df</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span>
+                    <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_prediction_ratio</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="s2">&quot;prediction&quot;</span><span class="p">],</span> <span class="n">x</span><span class="p">[</span><span class="s2">&quot;perturbed_prediction&quot;</span><span class="p">]),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+                <span class="n">passed_idx</span> <span class="o">=</span> <span class="n">results_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">results_df</span><span class="p">[</span><span class="s1">&#39;predict_difference_ratio&#39;</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">output_sensitivity</span><span class="p">]</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">values</span>
+
+        <span class="k">elif</span> <span class="n">flag</span> <span class="o">==</span> <span class="s1">&#39;Increasing&#39;</span><span class="p">:</span>
+            <span class="n">passed_idx</span> <span class="o">=</span> <span class="n">results_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span>
+                <span class="n">results_df</span><span class="p">[</span><span class="s1">&#39;prediction&#39;</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">results_df</span><span class="p">[</span><span class="s1">&#39;perturbed_prediction&#39;</span><span class="p">]]</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">values</span>
+
+        <span class="k">elif</span> <span class="n">flag</span> <span class="o">==</span> <span class="s1">&#39;Decreasing&#39;</span><span class="p">:</span>
+            <span class="n">passed_idx</span> <span class="o">=</span> <span class="n">results_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span>
+                <span class="n">results_df</span><span class="p">[</span><span class="s1">&#39;prediction&#39;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">results_df</span><span class="p">[</span><span class="s1">&#39;perturbed_prediction&#39;</span><span class="p">]]</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">values</span>
+
+        <span class="n">failed_idx</span> <span class="o">=</span> <span class="n">results_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="o">~</span><span class="n">results_df</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">passed_idx</span><span class="p">)]</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">values</span>
+        <span class="k">return</span> <span class="n">passed_idx</span><span class="p">,</span> <span class="n">failed_idx</span>
+
+    <span class="k">def</span> <span class="nf">_test_metamorphic</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                          <span class="n">flag</span><span class="p">,</span>
+                          <span class="n">actual_slice</span><span class="p">:</span> <span class="n">GiskardDataset</span><span class="p">,</span>
+                          <span class="n">model</span><span class="p">,</span>
+                          <span class="n">perturbation_dict</span><span class="p">,</span>
+                          <span class="n">threshold</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+                          <span class="n">classification_label</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                          <span class="n">output_sensitivity</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                          <span class="n">output_proba</span><span class="o">=</span><span class="kc">True</span>
+                          <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SingleTestResult</span><span class="p">:</span>
+        <span class="n">results_df</span><span class="p">,</span> <span class="n">modified_rows_count</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_perturb_and_predict</span><span class="p">(</span><span class="n">actual_slice</span><span class="p">,</span>
+                                                                    <span class="n">model</span><span class="p">,</span>
+                                                                    <span class="n">perturbation_dict</span><span class="p">,</span>
+                                                                    <span class="n">classification_label</span><span class="o">=</span><span class="n">classification_label</span><span class="p">,</span>
+                                                                    <span class="n">output_proba</span><span class="o">=</span><span class="n">output_proba</span><span class="p">)</span>
+
+        <span class="n">passed_idx</span><span class="p">,</span> <span class="n">failed_idx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compare_prediction</span><span class="p">(</span><span class="n">results_df</span><span class="p">,</span>
+                                                          <span class="n">model</span><span class="o">.</span><span class="n">model_type</span><span class="p">,</span>
+                                                          <span class="n">output_sensitivity</span><span class="p">,</span>
+                                                          <span class="n">flag</span><span class="p">)</span>
+        <span class="n">failed_df</span> <span class="o">=</span> <span class="n">actual_slice</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">failed_idx</span><span class="p">]</span>
+        <span class="n">passed_ratio</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">passed_idx</span><span class="p">)</span> <span class="o">/</span> <span class="n">modified_rows_count</span> <span class="k">if</span> <span class="n">modified_rows_count</span> <span class="o">!=</span> <span class="mi">0</span> <span class="k">else</span> <span class="mi">1</span>
+
+        <span class="n">output_df_sample</span> <span class="o">=</span> <span class="n">compress</span><span class="p">(</span><span class="n">save_df</span><span class="p">(</span><span class="n">failed_df</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">save_results</span><span class="p">(</span><span class="n">SingleTestResult</span><span class="p">(</span>
+            <span class="n">actual_slices_size</span><span class="o">=</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">actual_slice</span><span class="p">)],</span>
+            <span class="n">number_of_perturbed_rows</span><span class="o">=</span><span class="n">modified_rows_count</span><span class="p">,</span>
+            <span class="n">metric</span><span class="o">=</span><span class="n">passed_ratio</span><span class="p">,</span>
+            <span class="n">passed</span><span class="o">=</span><span class="n">passed_ratio</span> <span class="o">&gt;</span> <span class="n">threshold</span><span class="p">,</span>
+            <span class="n">output_df</span><span class="o">=</span><span class="n">output_df_sample</span><span class="p">))</span>
+
+<div class="viewcode-block" id="MetamorphicTests.test_metamorphic_invariance"><a class="viewcode-back" href="../../../testing.html#ml_worker.testing.metamorphic_tests.MetamorphicTests.test_metamorphic_invariance">[docs]</a>    <span class="k">def</span> <span class="nf">test_metamorphic_invariance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                                    <span class="n">df</span><span class="p">:</span> <span class="n">GiskardDataset</span><span class="p">,</span>
+                                    <span class="n">model</span><span class="p">,</span>
+                                    <span class="n">perturbation_dict</span><span class="p">,</span>
+                                    <span class="n">threshold</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                                    <span class="n">output_sensitivity</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SingleTestResult</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Summary: Tests if the model prediction is invariant when the feature values are perturbed</span>
+
+<span class="sd">        Description: -</span>
+<span class="sd">        For classification: Test if the predicted classification label remains the same after</span>
+<span class="sd">        feature values perturbation.</span>
+<span class="sd">        For regression: Check whether the predicted output remains the same at the output_sensibility</span>
+<span class="sd">        level after feature values perturbation.</span>
+
+<span class="sd">        The test is passed when the ratio of invariant rows is higher than the threshold</span>
+
+<span class="sd">        Example : The test is passed when, after switching gender from male to female,</span>
+<span class="sd">        more than 50%(threshold 0.5) of males have unchanged outputs</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            df(GiskardDataset):</span>
+<span class="sd">                Dataset used to compute the test</span>
+<span class="sd">            model(GiskardModel):</span>
+<span class="sd">                Model used to compute the test</span>
+<span class="sd">            perturbation_dict(dict):</span>
+<span class="sd">                Dictionary of the perturbations. It provides the perturbed features as key and a perturbation lambda function as value</span>
+<span class="sd">            threshold(float):</span>
+<span class="sd">                Threshold of the ratio of invariant rows</span>
+<span class="sd">            output_sensitivity(float):</span>
+<span class="sd">                the threshold for ratio between the difference between perturbed prediction and actual prediction over</span>
+<span class="sd">                the actual prediction for a regression model. We consider there is a prediction difference for</span>
+<span class="sd">                regression if the ratio is above the output_sensitivity of 0.1</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            actual_slices_size:</span>
+<span class="sd">                total number of rows of dataframe</span>
+<span class="sd">            number_of_perturbed_rows:</span>
+<span class="sd">                number of perturbed rows</span>
+<span class="sd">            metric:</span>
+<span class="sd">                the ratio of invariant rows over the perturbed rows</span>
+<span class="sd">            passed:</span>
+<span class="sd">                TRUE if passed_ratio &gt; threshold</span>
+<span class="sd">            output_df:</span>
+<span class="sd">                dataframe containing the non-invariant rows</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_test_metamorphic</span><span class="p">(</span><span class="n">flag</span><span class="o">=</span><span class="s1">&#39;Invariance&#39;</span><span class="p">,</span>
+                                      <span class="n">actual_slice</span><span class="o">=</span><span class="n">df</span><span class="p">,</span>
+                                      <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span>
+                                      <span class="n">perturbation_dict</span><span class="o">=</span><span class="n">perturbation_dict</span><span class="p">,</span>
+                                      <span class="n">threshold</span><span class="o">=</span><span class="n">threshold</span><span class="p">,</span>
+                                      <span class="n">output_sensitivity</span><span class="o">=</span><span class="n">output_sensitivity</span><span class="p">,</span>
+                                      <span class="n">output_proba</span><span class="o">=</span><span class="kc">False</span>
+                                      <span class="p">)</span></div>
+
+<div class="viewcode-block" id="MetamorphicTests.test_metamorphic_increasing"><a class="viewcode-back" href="../../../testing.html#ml_worker.testing.metamorphic_tests.MetamorphicTests.test_metamorphic_increasing">[docs]</a>    <span class="k">def</span> <span class="nf">test_metamorphic_increasing</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                                    <span class="n">df</span><span class="p">:</span> <span class="n">GiskardDataset</span><span class="p">,</span>
+                                    <span class="n">model</span><span class="p">,</span>
+                                    <span class="n">perturbation_dict</span><span class="p">,</span>
+                                    <span class="n">threshold</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                                    <span class="n">classification_label</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Summary: Tests if the model probability increases when the feature values are perturbed</span>
+
+<span class="sd">        Description: -</span>
+<span class="sd">        - For classification: Test if the model probability of a given classification_label is</span>
+<span class="sd">        increasing after feature values perturbation.</span>
+
+<span class="sd">        - For regression: Test if the model prediction is increasing after feature values perturbation.</span>
+
+<span class="sd">        The test is passed when the percentage of rows that are increasing is higher than the threshold</span>
+
+<span class="sd">        Example : For a credit scoring model, the test is passed when a decrease of wage by 10%,</span>
+<span class="sd">         default probability is increasing for more than 50% of people in the dataset</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            df(GiskardDataset):</span>
+<span class="sd">                Dataset used to compute the test</span>
+<span class="sd">            model(GiskardModel):</span>
+<span class="sd">                Model used to compute the test</span>
+<span class="sd">            perturbation_dict(dict):</span>
+<span class="sd">                Dictionary of the perturbations. It provides the perturbed features as key</span>
+<span class="sd">                and a perturbation lambda function as value</span>
+<span class="sd">            threshold(float):</span>
+<span class="sd">                Threshold of the ratio of increasing rows</span>
+<span class="sd">            classification_label(str):</span>
+<span class="sd">                one specific label value from the target column</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            actual_slices_size:</span>
+<span class="sd">                total number of rows of dataframe</span>
+<span class="sd">            number_of_perturbed_rows:</span>
+<span class="sd">                number of perturbed rows</span>
+<span class="sd">            metric:</span>
+<span class="sd">                the ratio of increasing rows over the perturbed rows</span>
+<span class="sd">            passed:</span>
+<span class="sd">                TRUE if passed_ratio &gt; threshold</span>
+<span class="sd">            output_df:</span>
+<span class="sd">                dataframe containing the rows whose probability doesn&#39;t increase after perturbation</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="n">model</span><span class="o">.</span><span class="n">model_type</span> <span class="o">!=</span> <span class="s2">&quot;classification&quot;</span> <span class="ow">or</span> <span class="nb">str</span><span class="p">(</span><span class="n">classification_label</span><span class="p">)</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">classification_labels</span><span class="p">,</span> \
+            <span class="sa">f</span><span class="s1">&#39;&quot;</span><span class="si">{</span><span class="n">classification_label</span><span class="si">}</span><span class="s1">&quot; is not part of model labels: </span><span class="si">{</span><span class="s2">&quot;,&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">classification_labels</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_test_metamorphic</span><span class="p">(</span><span class="n">flag</span><span class="o">=</span><span class="s1">&#39;Increasing&#39;</span><span class="p">,</span>
+                                      <span class="n">actual_slice</span><span class="o">=</span><span class="n">df</span><span class="p">,</span>
+                                      <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span>
+                                      <span class="n">perturbation_dict</span><span class="o">=</span><span class="n">perturbation_dict</span><span class="p">,</span>
+                                      <span class="n">classification_label</span><span class="o">=</span><span class="n">classification_label</span><span class="p">,</span>
+                                      <span class="n">threshold</span><span class="o">=</span><span class="n">threshold</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="MetamorphicTests.test_metamorphic_decreasing"><a class="viewcode-back" href="../../../testing.html#ml_worker.testing.metamorphic_tests.MetamorphicTests.test_metamorphic_decreasing">[docs]</a>    <span class="k">def</span> <span class="nf">test_metamorphic_decreasing</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                                    <span class="n">df</span><span class="p">:</span> <span class="n">GiskardDataset</span><span class="p">,</span>
+                                    <span class="n">model</span><span class="p">,</span>
+                                    <span class="n">perturbation_dict</span><span class="p">,</span>
+                                    <span class="n">threshold</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                                    <span class="n">classification_label</span><span class="o">=</span><span class="kc">None</span>
+                                    <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Summary: Tests if the model probability decreases when the feature values are perturbed</span>
+
+<span class="sd">        Description: -</span>
+<span class="sd">        - For classification: Test if the model probability of a given classification_label is</span>
+<span class="sd">        decreasing after feature values perturbation.</span>
+
+<span class="sd">        - For regression: Test if the model prediction is decreasing after feature values perturbation.</span>
+
+<span class="sd">        The test is passed when the percentage of rows that are decreasing is higher than the threshold</span>
+
+<span class="sd">        Example : For a credit scoring model, the test is passed when a increase of wage by 10%,</span>
+<span class="sd">         default probability is decreasing for more than 50% of people in the dataset</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            df(GiskardDataset):</span>
+<span class="sd">                Dataset used to compute the test</span>
+<span class="sd">            model(GiskardModel):</span>
+<span class="sd">                Model used to compute the test</span>
+<span class="sd">            perturbation_dict(dict):</span>
+<span class="sd">                Dictionary of the perturbations. It provides the perturbed features as key</span>
+<span class="sd">                and a perturbation lambda function as value</span>
+<span class="sd">            threshold(float):</span>
+<span class="sd">                Threshold of the ratio of decreasing rows</span>
+<span class="sd">            classification_label(str):</span>
+<span class="sd">                one specific label value from the target column</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            actual_slices_size:</span>
+<span class="sd">                total number of rows of dataframe</span>
+<span class="sd">            number_of_perturbed_rows:</span>
+<span class="sd">                number of perturbed rows</span>
+<span class="sd">            metric:</span>
+<span class="sd">                the ratio of decreasing rows over the perturbed rows</span>
+<span class="sd">            passed:</span>
+<span class="sd">                TRUE if passed_ratio &gt; threshold</span>
+<span class="sd">            output_df:</span>
+<span class="sd">                dataframe containing the rows whose probability doesn&#39;t decrease after perturbation</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">assert</span> <span class="n">model</span><span class="o">.</span><span class="n">model_type</span> <span class="o">!=</span> <span class="s2">&quot;classification&quot;</span> <span class="ow">or</span> <span class="n">classification_label</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">classification_labels</span><span class="p">,</span> \
+            <span class="sa">f</span><span class="s1">&#39;&quot;</span><span class="si">{</span><span class="n">classification_label</span><span class="si">}</span><span class="s1">&quot; is not part of model labels: </span><span class="si">{</span><span class="s2">&quot;,&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">classification_labels</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_test_metamorphic</span><span class="p">(</span><span class="n">flag</span><span class="o">=</span><span class="s1">&#39;Decreasing&#39;</span><span class="p">,</span>
+                                      <span class="n">actual_slice</span><span class="o">=</span><span class="n">df</span><span class="p">,</span>
+                                      <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span>
+                                      <span class="n">perturbation_dict</span><span class="o">=</span><span class="n">perturbation_dict</span><span class="p">,</span>
+                                      <span class="n">classification_label</span><span class="o">=</span><span class="n">classification_label</span><span class="p">,</span>
+                                      <span class="n">threshold</span><span class="o">=</span><span class="n">threshold</span><span class="p">)</span></div></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Giskard.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
