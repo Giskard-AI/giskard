@@ -239,8 +239,8 @@ export default class InspectorWrapper extends Vue {
       feedbackMessage: this.feedback
     };
     try {
-      await this.doSubmitFeedback(feedback);
       this.feedbackSubmitted = true;
+      await this.doSubmitFeedback(feedback);
       this.feedbackPopupToggle = false;
     } catch (err) {
       this.feedbackError = err.response.data.detail;
