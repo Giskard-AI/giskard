@@ -34,6 +34,8 @@ class PerformanceTests(AbstractTestCollection):
                 TRUE if AUC metrics > threshold
 
         """
+        if not actual_slice.target:
+            raise ValueError("Target column is not available")
         if len(model.classification_labels) == 2:
             metric = roc_auc_score(actual_slice.df[actual_slice.target],
                                    model.run_predict(actual_slice).raw_prediction)
@@ -88,15 +90,17 @@ class PerformanceTests(AbstractTestCollection):
                 passed=metric >= threshold
             ))
 
-    def _test_regression_score(self, score_fn, giskard_ds, model: GiskardModel, threshold=1, negative=False,
+    def _test_regression_score(self, score_fn, gsk_dataset, model: GiskardModel, threshold=1, negative=False,
                                r2=False):
+        if not gsk_dataset.target:
+            raise ValueError("Target column is not available")
         metric = (-1 if negative else 1) * score_fn(
-            model.run_predict(giskard_ds).raw_prediction,
-            giskard_ds.df[giskard_ds.target]
+            model.run_predict(gsk_dataset).raw_prediction,
+            gsk_dataset.df[gsk_dataset.target]
         )
         return self.save_results(
             SingleTestResult(
-                actual_slices_size=[len(giskard_ds)],
+                actual_slices_size=[len(gsk_dataset)],
                 metric=metric,
                 passed=metric >= threshold if r2 else metric <= threshold
             ))
