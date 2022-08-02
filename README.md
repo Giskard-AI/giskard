@@ -1,8 +1,8 @@
 <p align="center">
-  <img width="500" alt="giskardlogo" src="readme/Logo_full_darkgreen.png">
+  <img alt="giskardlogo" src="readme/correct_logo.png">
 </p>
 <h1 align="center" weight='300' >Open-Source CI/CD platform for ML teams</h1>
-<h3 align="center" weight='300' >Deliver ML products, better & faster</h3>
+<h3 align="center" weight='300' >Giskard creates interfaces for humans to inspect and test AI models</h3>
 <p align="center">
    <a href="https://github.com/Giskard-AI/giskard/releases">
       <img alt="GitHub release" src="https://img.shields.io/github/v/release/Giskard-AI/giskard">
@@ -17,112 +17,143 @@
     <img alt="Giskard on Discord" src="https://img.shields.io/discord/939190303397666868?label=Discord"/>
   </a>
 </p>
+<h3 align="center">
+   <a href="https://docs.giskard.ai/"><b>Documentation</b></a> &bull;
+   <a href="https://www.giskard.ai/knowledge-categories/blog/?utm_source=github&utm_medium=github&utm_campaign=github_readme&utm_id=readmeblog"><b>Blog</b></a> &bull;  
+  <a href="https://www.giskard.ai/?utm_source=github&utm_medium=github&utm_campaign=github_readme&utm_id=readmeblog"><b>Website</b></a> &bull;
+  <a href="https://gisk.ar/discord"><b>Discord Community</b></a> &bull;
+  <a href="https://www.giskard.ai/about?utm_source=github&utm_medium=github&utm_campaign=github_readme&utm_id=readmeblog#advisors"><b>Advisors</b></a>
+ </h3>
 <br />
 
-**_Why Giskard?_**
+# About Giskard
+**Giskard creates interfaces for humans to inspect & test AI models. It is  open-source and self-hosted.**
 
-⚡ **Collaborate faster** with **feedback** from business stakeholders.<br/>
-🧑‍🔧 **Deploy automated tests** to eliminate regressions, errors & biases.
+Giskard lets you instantly see your model's prediction for a given set of feature values. You can set the values directly in Giskard and see the prediction change.
 
----
+Saw anything strange? Leave a feedback directly within Giskard, so that your team can explore the query that generated the faulty result. Designed for both tech and business users, Giskard is super intuitive to use! 👌
 
-**Open Source Project Website:** https://giskard.ai/
-
-**Get started with the Documentation:** https://docs.giskard.ai/
-
-**Documentation Source Code:** https://github.com/Giskard-AI/documentation
-
-**Join our User Community:** https://gisk.ar/discord
-
-<a href="https://discord.com/invite/ABvfpbu69R">
-         <img alt="Discord" src="readme/Discord.png">
-      </a>
-
----
-
-<br />
-
-<h2>Interactive demo</h2>
-
-Click the image below to start the demo:
-
-<a align='center' href="https://app.arcade.software/share/zPfpXFt8lRm5XDkaWM85">
-         <img width='600' align='center' alt="Interactive demo" src="readme/demo.png">
-      </a>
+And of course, Giskard works with any model, any environment and integrates seemlessly with your favorite tools ⤵️ <br/>
+<p>
+  <img width='600' src="readme/tools.png">
+</p>
 <br/>
 
-<h2>Product workflow</h2>
+# Why use Giskard
+### Inspect the model's performance
+- instantly see the model's prediction for a given set of feature values
+- change the values directly in Giskard and see the prediction change
+- works with any type of models, datasets and environments 
 
-<h3 >Installation</h3>
+### Collaborate with business stakeholders
+- leave notes and tag teammates directly within the Giskard interface
+- use discussion threads to have all information centralized for easier follow-up and decision making
+-  enjoy Giskard's super-intuitive design, made with both tech and business users in mind
 
+
+### Automatically test & monitor
+- turn the collected feedback into executable tests for safe deployment. Giskard provides presets of tests so that you design and execute your tests in no time
+- receive actionable alerts on AI model bugs in production
+- protect your ML models against the risk of regressions, drift and bias<br/>
+
+<!--- <p>
+  <img width='600' src="readme/perturbation.png" radius = 8px>
+</p> --->
+<br />
+
+# 🏄🏽‍♂️ Workflow
+1. **Explore your ML model:** Easily upload any Python model: PyTorch, TensorFlow, 🤗 Transformers, Scikit-learn, etc. Play with the model to test its performance. 
+
+<p align="center">
+  <img width='600' src="readme/Give_feedback.jpeg">
+</p>
+
+2. **Discuss and analyze feedback:** Enter feedback directly within Giskard and discuss it with your team. 
+
+<p align="center">
+  <img width='600' src="readme/feedback1.png">
+</p>
+
+3. **Turn feedback into tests:** Use Giskard test presets to design and execute your tests in no time.
+
+<p align="center">
+  <img width='600' src="readme/test1.png">
+</p>
+
+Giskard lets you automate tests in any of the categories below:
+<details>
+  <summary><b>Metamorphic testing</b></summary>
+Test if your model outputs behave as expected before and after input perturbation
+</details>
+<details>
+  <summary><b>Heuristics testing</b></summary>
+Test if your model output respects some business rules
+</details>
+<details>
+  <summary><b>Performance testing</b></summary>
+Test if your model performance is sufficiently high within some particular data slices</details>
+<details>
+  <summary><b>Data drift testing</b></summary>
+Test if your features don't drift between the reference and actual dataset</details>
+<details>
+  <summary><b>Prediction drift testing</b></summary>
+Test the absence of concept drift inside your model</details>
+
+<br />
+
+# Interactive demo
+Play with Giskard before installing! Click the image below to start the demo:
+
+<a align='center' href="https://app.arcade.software/share/DicI8Axi0Wb53vz4QXi3" target="_blank">
+         <img width='600' align='center' alt="Interactive demo" src="readme/demo.png">
+      </a>
+
+<br/>
+
+<!--- You can also check out the [product tour video](https://www.youtube.com/watch?v=D4p69FpxslI&ab_channel=Giskard) for a deep dive into features and use-cases. --->
+
+
+<br/>
+
+# Getting Started with Giskard
+## 🚀 Installation
 **Requirements:** `git`, `docker` and `docker-compose`
-
-```shell
+```sh
 git clone https://github.com/Giskard-AI/giskard.git
 cd giskard
 docker-compose up -d
 ```
 
-After the application is started you can access at:
+That's it. Access at http://localhost:19000 with login/password: admin/admin.
 
-http://localhost:19000 with default login / password: **admin** / **admin**
+## 🥋 Guides: Jump right in
+Follow our handy guides to get started on the basics as quickly as possible:
 
+1. <a href="https://github.com/Giskard-AI/giskard-doc/blob/main/guides/installation.md"><b>installation.md</b></a>
+2. <a href="https://github.com/Giskard-AI/giskard-doc/blob/main/guides/configuration.md"><b>configuration.md</b></a>
+3. <a href="https://github.com/Giskard-AI/giskard-doc/blob/main/guides/upload-your-model.md"><b>upload-your-model.md</b></a>
+4. <a href="https://github.com/Giskard-AI/giskard-doc/blob/main/guides/review-your-model.md"><b>review-your-model.md</b></a>
+5. <a href="https://github.com/Giskard-AI/giskard-doc/blob/main/guides/create-tests-from-your-review.md"><b>create-tests-from-your-review.md</b></a>
+<br />
 
-<h3>Upload your model</h3>
+# 🪄Become a Giskard Design Partner
+As our product is young, working in close collaboration with our first users is very important to identify what to improve, and how we can deliver value. It needs to be a Win-Win scenario!
+<p>
+  <img width='600' src="readme/design_partner.png">
+</p>
 
-  <a align='center' href="https://app.arcade.software/share/zPfpXFt8lRm5XDkaWM85">
-         <img width='500' alt="Interactive demo" src="readme/upload.png">
-      </a>
-<br/>
-  <br/>
-  <br/>
-  
-  Easy upload for any Python model: PyTorch, TensorFlow, Transformers, Scikit-learn, etc. </br>
-[👉 Documentation](https://docs.giskard.ai/start/guides/upload-your-model)
+If you are interested in joining our Design Partner program, drop us a line at hello@giskard.ai.
 
-<h3>Collect feedback on your model</h3>
-  
-  <a align='center' href="https://app.arcade.software/share/zPfpXFt8lRm5XDkaWM85">
-         <img width='600' alt="Interactive demo" src="readme/feedback.png">
-      </a>
-<br/>
-  <br/>
-  <br/>
-  
-  Improve ML models with business stakeholders in no time. </br>
-[👉 Documentation](https://docs.giskard.ai/start/guides/review-your-model)
-  
- <h3>Get automated test suites in seconds</h3>
-  
-  <a href="https://app.arcade.software/share/zPfpXFt8lRm5XDkaWM85">
-         <img width='600' alt="Interactive demo" src="readme/test.png">
-      </a>
-<br/>
-   <br/>
-   <br/>
-  
+❗️ The final entry date is September 2022 ❗️
 
-  Exhaustive test suites, backed by  State-of-the-Art ML research.</br>
-  [👉 Documentation](https://docs.giskard.ai/start/guides/create-tests-from-your-review)
-  
-   <h3>Deploy tests in your CI/CD Pipeline</h3>
-  
-  <a href="https://app.arcade.software/share/zPfpXFt8lRm5XDkaWM85">
-         <img width='600' alt="Deploy tests in CI/CD Pipeline" src="readme/pipeline.png">
-      </a>
-<br/>
-   <br/>
-   <br/>
-  
+<br />
 
-  Protect your ML models against the risk of regressions, drift and bias.</br>
-  [👉 Documentation](https://docs.giskard.ai/start/)
+# How to contribute
+We welcome contributions from the Machine Learning community!
 
+Read this [guide](CONTRIBUTING.md) to get started.
 
+<br />
 
-
-<br/>
-
-<h2>Star history</h2>
-
-[![Star History Chart](https://api.star-history.com/svg?repos=Giskard-AI/giskard&type=Date)](https://star-history.com/#Giskard-AI/giskard&Date)
+# Like what we're doing?
+🌟 [Leave us a star](https://github.com/Giskard-AI/giskard), it helps the project to get discovered by others and keeps us motivated to build awesome open-source tools! 🌟

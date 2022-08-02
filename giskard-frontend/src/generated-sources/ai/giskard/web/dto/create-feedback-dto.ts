@@ -11,6 +11,6 @@ export interface CreateFeedbackDTO {
     modelId: number;
     originalData: string;
     projectId: number;
-    targetFeature: string;
+    targetFeature?: string | null;
     userData: string;
 }

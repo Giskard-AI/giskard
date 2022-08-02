@@ -1,5 +1,9 @@
 # Giskard
 
+🚧  **WORK IN PROGRESS** 🚧 
+This README is no longer valid, following our migration.
+TODO: rewrite this README from scratch. 
+
 ## Backend Requirements
 
 * [Docker](https://www.docker.com/)

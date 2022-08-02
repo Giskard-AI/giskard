@@ -19,4 +19,5 @@ include(
         "giskard-server",
         "giskard-frontend",
         "giskard-ml-worker",
+        "giskard-demo-notebook",
 )

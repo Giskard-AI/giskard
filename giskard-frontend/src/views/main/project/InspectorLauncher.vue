@@ -3,7 +3,7 @@
     <v-card-title>
       Select dataset
     </v-card-title>
-    <OverlayLoader v-show="loading"/>
+    <OverlayLoader :show="loading"/>
     <v-card-text class="scrollable-with-limits">
       <div v-if="datasets.length > 0">
         <v-radio-group v-model="datasetSelected">

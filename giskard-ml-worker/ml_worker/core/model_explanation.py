@@ -3,6 +3,7 @@ from typing import Dict, List, Callable
 
 import numpy as np
 import pandas as pd
+from alibi.explainers import KernelShap
 from bs4 import BeautifulSoup
 
 from ml_worker.core.giskard_dataset import GiskardDataset
@@ -10,35 +11,34 @@ from ml_worker.core.model import GiskardModel
 
 
 def explain(model: GiskardModel, dataset: GiskardDataset, input_data: Dict):
-    from alibi.explainers import KernelShap
-    df = dataset.df.copy()
+    df = model.prepare_dataframe(dataset)
+    feature_names = list(df.columns)
 
-    if dataset.target and dataset.target in df.columns:
-        df.drop(dataset.target, axis=1, inplace=True)
-    if model.feature_names:
-        df = df[model.feature_names]
-
-    filtered_column_names = list(df.columns)
+    input_df = model.prepare_dataframe(GiskardDataset(
+        df=pd.DataFrame([input_data]),
+        target=dataset.target,
+        feature_types=dataset.feature_types,
+        column_types=dataset.column_types
+    ))
 
     kernel_shap = KernelShap(
         predictor=lambda array: model.prediction_function(pd.DataFrame(array, columns=list(df.columns))),
-        feature_names=filtered_column_names,
+        feature_names=feature_names,
         task=model.model_type,
     )
 
-    kernel_shap.fit(background_example(df, dataset.feature_types))
-    input_df = pd.DataFrame({k: [v] for k, v in input_data.items()})[filtered_column_names]
-
+    example = background_example(df, dataset.feature_types)
+    kernel_shap.fit(example)
     explanations = kernel_shap.explain(input_df)
 
     if model.model_type == "regression":
         explanation_chart_data = summary_shap_regression(
-            shap_values=explanations.shap_values, feature_names=filtered_column_names
+            shap_values=explanations.shap_values, feature_names=feature_names
         )
     elif model.model_type == "classification":
         explanation_chart_data = summary_shap_classification(
             shap_values=explanations.shap_values,
-            feature_names=filtered_column_names,
+            feature_names=feature_names,
             class_names=model.classification_labels,
         )
     else:
@@ -52,10 +52,10 @@ def background_example(df: pd.DataFrame, input_types: Dict[str, str]) -> pd.Data
     example = df.mode(dropna=False).iloc[[0]]  # si plusieurs modes, on prend le premier
     example.fillna("", inplace=True)
     median = df.median()
-    num_columns = [key for key in list(df.columns) if input_types[key] == "numeric"]
+    num_columns = [key for key in list(df.columns) if input_types.get(key) == "numeric"]
     for column in num_columns:
         example[column] = median[column]
-    return example
+    return example.astype(df.dtypes)
 
 
 def summary_shap_classification(

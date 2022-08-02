@@ -12,6 +12,7 @@ public class CreateFeedbackDTO {
     private Long projectId;
     private Long modelId;
     private Long datasetId;
+    @UINullable
     private String targetFeature;
     private String feedbackType;
     @UINullable
