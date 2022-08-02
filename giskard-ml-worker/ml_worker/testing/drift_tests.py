@@ -144,6 +144,17 @@ class DriftTests(AbstractTestCollection):
         if reference_series.empty:
             raise ValueError("Reference Series computed from the column is empty")
 
+    def _generate_series(self, actual_ds, reference_ds, column_name, column_type):
+        actual_ds.df.reset_index(drop=True, inplace=True)
+        reference_ds.df.reset_index(drop=True, inplace=True)
+        self._validate_column_name(actual_ds, column_name, reference_ds)
+        self._validate_column_type(actual_ds, column_name, column_type)
+        self._validate_column_type(reference_ds, column_name, column_type)
+        actual_series = actual_ds.df[column_name]
+        reference_series = reference_ds.df[column_name]
+        self._validate_series_notempty(actual_series, reference_series)
+        return actual_series, reference_series
+
     def test_drift_psi(self,
                        reference_ds: GiskardDataset,
                        actual_ds: GiskardDataset,
@@ -273,17 +284,6 @@ class DriftTests(AbstractTestCollection):
             metric=p_value,
             messages=messages
         ))
-
-    def _generate_series(self, actual_ds, reference_ds, column_name, column_type):
-        actual_ds.df.reset_index(drop=True, inplace=True)
-        reference_ds.df.reset_index(drop=True, inplace=True)
-        self._validate_column_name(actual_ds, column_name, reference_ds)
-        self._validate_column_type(actual_ds, column_name, column_type)
-        self._validate_column_type(reference_ds, column_name, column_type)
-        actual_series = actual_ds.df[column_name]
-        reference_series = reference_ds.df[column_name]
-        self._validate_series_notempty(actual_series, reference_series)
-        return actual_series, reference_series
 
     def test_drift_ks(self,
                       reference_ds: GiskardDataset,
