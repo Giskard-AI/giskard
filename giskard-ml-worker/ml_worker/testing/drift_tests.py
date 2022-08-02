@@ -20,16 +20,16 @@ class DriftTests(AbstractTestCollection):
     other_modalities = '^other_modalities_[a-z0-9]{32}$'
 
     @staticmethod
-    def _calculate_modality_drift(category, actual_distribution, expected_distribution):
+    def _calculate_psi(category, actual_distribution, expected_distribution):
         # To use log and avoid zero distribution probability,
         # we bound distribution probability by min_distribution_probability
         min_distribution_probability = 0.0001
 
         expected_distribution_bounded = max(expected_distribution[category], min_distribution_probability)
         actual_distribution_bounded = max(actual_distribution[category], min_distribution_probability)
-        modality_drift = (expected_distribution_bounded - actual_distribution_bounded) * \
+        modality_psi = (expected_distribution_bounded - actual_distribution_bounded) * \
                          np.log(expected_distribution_bounded / actual_distribution_bounded)
-        return modality_drift
+        return modality_psi
 
     @staticmethod
     def _calculate_frequencies(actual_series, reference_series, max_categories=None):
@@ -62,7 +62,7 @@ class DriftTests(AbstractTestCollection):
         total_psi = 0
         output_data = pd.DataFrame(columns=["Modality", "Reference_distribution", "Actual_distribution", "Psi"])
         for category in range(len(all_modalities)):
-            modality_psi = DriftTests._calculate_modality_drift(category, actual_distribution, expected_distribution)
+            modality_psi = DriftTests._calculate_psi(category, actual_distribution, expected_distribution)
 
             total_psi += modality_psi
             row = {
@@ -85,7 +85,7 @@ class DriftTests(AbstractTestCollection):
         output_data = pd.DataFrame(
             columns=["Modality", "Reference_distribution", "Actual_distribution", "Modality_drift"])
         for category in range(len(all_modalities)):
-            modality_drift = DriftTests._calculate_modality_drift(category, actual_distribution, expected_distribution)
+            modality_drift = DriftTests._calculate_psi(category, actual_distribution, expected_distribution)
 
             total_drift += modality_drift
             row = {
