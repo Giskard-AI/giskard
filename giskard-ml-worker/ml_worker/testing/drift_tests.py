@@ -489,7 +489,7 @@ class DriftTests(AbstractTestCollection):
             model(GiskardModel):
                 Model used to compute the test
             threshold(float):
-                Threshold value for Chi-Square
+                Threshold value of p-value of Chi-Square
             max_categories:
                 the maximum categories to compute the PSI score
             chi_square_contribution_percent:
@@ -565,7 +565,7 @@ class DriftTests(AbstractTestCollection):
             model(GiskardModel):
                 Model used to compute the test
             threshold(float):
-                Threshold for p-value Kolmogorov-Smirnov test
+                Threshold for p-value of Kolmogorov-Smirnov test
             classification_label:
                 One specific label value from the target column for classification model
 
@@ -613,7 +613,7 @@ class DriftTests(AbstractTestCollection):
             reference_slices_size=[len(reference_slice)],
             passed=passed,
             metric=result.pvalue,
-            messages=messages,
+            messages=messages
         ))
 
     def test_drift_prediction_earth_movers_distance(self,
