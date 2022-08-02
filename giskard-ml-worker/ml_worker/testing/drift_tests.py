@@ -248,8 +248,6 @@ class DriftTests(AbstractTestCollection):
                 The pvalue of chi square test
             passed:
                 TRUE if metric > threshold
-          output_df:
-                Dataframe containing the actual set rows with the categories that have drifted the most
         """
         actual_series, reference_series = self._generate_series(actual_ds, reference_ds, column_name, 'category')
 
