@@ -35,29 +35,16 @@ items:
 
       Returns:
           actual_slices_size:
-              total number of rows of actual dataset
-          number_of_perturbed_rows:
-              Number of perturbed rows
+              Length of actual_slice tested
+          message:
+              Test result message
           metric:
               The ratio of unchanged rows over the perturbed rows
           passed:
               TRUE if metric > threshold
-          output_df:
-              Dataframe of rows where the prediction changes due to perturbation
       """
-      import nlpaug.augmenter.word as naw
-
-      aug = naw.SpellingAug(dict_path=None,
-      name='Spelling_Aug',
-      aug_min=1,
-      aug_max=10,
-      aug_p=0.3,
-      stopwords=None,
-      tokenizer=None,
-      reverse_tokenizer=None,
-      include_reverse=True,
-      stopwords_regex=None,
-      verbose=0)
+      # import nlpaug.augmenter.word as naw  # uncomment for text perturbation
+      # aug = naw.SpellingAug(dict_path='./spelling_en.txt') # uncomment for text perturbation
 
       # You can choose all_perturbation to perturb categorical, text and numerical feature at the same time
       all_perturbation = {
@@ -115,15 +102,13 @@ items:
 
       Returns:
           actual_slices_size:
-              Total number of rows of actual dataset
-          number_of_perturbed_rows:
-              Number of perturbed rows
+              Length of actual_slice tested
+          message:
+              Test result message
           metric:
               The ratio of unchanged rows over the perturbed rows
           passed:
               TRUE if metric > threshold
-          output_df:
-              Dataframe of rows where the prediction changes due to perturbation
       """
       import nlpaug.augmenter.word as naw
 
@@ -192,9 +177,9 @@ items:
 
       Returns:
           actual_slices_size:
-              Total number of rows of actual dataset
-          number_of_perturbed_rows:
-              Number of perturbed rows
+              Length of actual_slice tested
+          message:
+              Test result message
           metric:
               The ratio of increasing rows over the perturbed rows
           passed:
@@ -266,9 +251,9 @@ items:
 
       Returns:
           actual_slices_size:
-              Total number of rows of actual dataset
-          number_of_perturbed_rows:
-              Number of perturbed rows
+              Length of actual_slice tested
+          message:
+              Test result message
           metric:
               The ratio of increasing rows over the perturbed rows
           passed:
@@ -343,9 +328,9 @@ items:
 
       Returns:
           actual_slices_size:
-              Total number of rows of actual dataset
-          number_of_perturbed_rows:
-              Number of perturbed rows
+              Length of actual_slice tested
+          message:
+              Test result message
           metric:
               The ratio of decreasing rows over the perturbed rows
           passed:
@@ -417,9 +402,9 @@ items:
 
       Returns:
           actual_slices_size:
-              Total number of rows of actual dataset
-          number_of_perturbed_rows:
-              Number of perturbed rows
+              Length of actual_slice tested
+          message:
+              Test result message
           metric:
               The ratio of decreasing rows over the perturbed rows
           passed:
