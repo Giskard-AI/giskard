@@ -28,13 +28,12 @@ items:
               Threshold value of AUC metrics
 
       Returns:
-          total rows tested:
-              Length of slice_df tested
+          actual_slices_size:
+              Length of actual_slice tested
           metric:
               The AUC performance metric
           passed:
-              tRUE if AUC metrics > threshold
-
+              TRUE if AUC metrics >= threshold
       """
       tests.performance.test_auc(
             actual_slice=actual_ds.slice(lambda df: df.head(len(df) // 2)),
@@ -68,12 +67,12 @@ items:
               Threshold value for F1 Score
 
       Returns:
-          total rows tested:
-              Length of slice_df tested
+          actual_slices_size:
+              Length of actual_slice tested
           metric:
               The F1 score metric
           passed:
-              TRUE if F1 Score metrics > threshold
+              TRUE if F1 Score metrics >= threshold
       """
       tests.performance.test_f1(
           actual_slice=actual_ds.slice(lambda df: df.head(len(df) // 2)),
@@ -112,13 +111,14 @@ items:
               Threshold value for F1 Score difference
 
       Returns:
-          total rows tested:
-              Length of actual dataset
+          actual_slices_size:
+              Length of actual_slice tested
+          reference_slices_size:
+              Length of reference_slice tested
           metric:
               The F1 Score difference  metric
           passed:
               TRUE if F1 Score difference < threshold
-
       """
       tests.performance.test_diff_f1(
           actual_slice=actual_ds.slice(lambda df: df.head(len(df) // 2)),
@@ -156,14 +156,15 @@ items:
               Model used to compute the test
           threshold(float):
               Threshold value for F1 Score difference
-
-
       Returns:
+          actual_slices_size:
+              Length of actual_slice tested
+          reference_slices_size:
+              Length of reference_slice tested
           metric:
               The F1 Score difference  metric
           passed:
               TRUE if F1 Score difference < threshold
-
       """
       tests.performance.test_diff_reference_actual_f1(
           reference_slice=reference_ds.slice(lambda df: df.head(len(df) // 2)),
@@ -196,15 +197,13 @@ items:
               Model used to compute the test
           threshold(float):
               Threshold value for Accuracy
-
       Returns:
-          total rows tested:
-              Length of slice_df tested
+          actual_slices_size:
+              Length of actual_slice tested
           metric:
               The Accuracy metric
           passed:
-              TRUE if Accuracy metrics > threshold
-
+              TRUE if Accuracy metrics >= threshold
       """
       tests.performance.test_accuracy(
           actual_slice=actual_ds.slice(lambda df: df.head(len(df) // 2)),
@@ -240,10 +239,11 @@ items:
               Model used to compute the test
           threshold(float):
               Threshold value for Accuracy Score difference
-
       Returns:
-          total rows tested:
-              Length of actual dataset
+          actual_slices_size:
+              Length of actual_slice tested
+          reference_slices_size:
+              Length of reference_slice tested
           metric:
               The Accuracy difference  metric
           passed:
@@ -285,8 +285,11 @@ items:
               Model used to compute the test
           threshold(float):
               Threshold value for Accuracy difference
-
       Returns:
+          actual_slices_size:
+              Length of actual_slice tested
+          reference_slices_size:
+              Length of reference_slice tested
           metric:
               The Accuracy difference  metric
           passed:
@@ -324,13 +327,12 @@ items:
               Threshold value for Precision
 
       Returns:
-          total rows tested:
-              Length of slice_df tested
+          actual_slices_size:
+              Length of actual_slice tested
           metric:
               The Precision metric
           passed:
-              TRUE if Precision metrics > threshold
-
+              TRUE if Precision metrics >= threshold
       """
       tests.performance.test_precision(
           actual_slice=actual_ds.slice(lambda df: df.head(len(df) // 2)),
@@ -366,10 +368,11 @@ items:
               Model used to compute the test
           threshold(float):
               Threshold value for Precision difference
-
       Returns:
-          total rows tested:
-              Length of actual dataset
+          actual_slices_size:
+              Length of actual_slice tested
+          reference_slices_size:
+              Length of reference_slice tested
           metric:
               The Precision difference  metric
           passed:
@@ -407,13 +410,12 @@ items:
               Threshold value for Recall
 
       Returns:
-          total rows tested:
-              Length of slice_df tested
+          actual_slices_size:
+              Length of actual_slice tested
           metric:
               The Recall metric
           passed:
-              TRUE if Recall metric > threshold
-
+              TRUE if Recall metric >= threshold
       """
       tests.performance.test_recall(
           actual_slice=actual_ds.slice(lambda df: df.head(len(df) // 2)),
@@ -451,8 +453,10 @@ items:
               Threshold value for Recall difference
 
       Returns:
-          total rows tested:
-              Length of actual dataset
+          actual_slices_size:
+              Length of actual_slice tested
+          reference_slices_size:
+              Length of reference_slice tested
           metric:
               The Recall difference  metric
           passed:
@@ -489,13 +493,12 @@ items:
               Threshold value for RMSE
 
       Returns:
-          total rows tested:
-              Length of slice_df tested
+          actual_slices_size:
+              Length of actual_slice tested
           metric:
               The RMSE metric
           passed:
-              TRUE if RMSE metric < threshold
-
+              TRUE if RMSE metric <= threshold
       """
       tests.performance.test_rmse(
           actual_slice=actual_ds.slice(lambda df: df.head(len(df) // 2)),
@@ -530,10 +533,11 @@ items:
               Model used to compute the test
           threshold(float):
               Threshold value for RMSE difference
-
       Returns:
-          total rows tested:
-              Length of actual dataset
+          actual_slices_size:
+              Length of actual_slice tested
+          reference_slices_size:
+              Length of reference_slice tested
           metric:
               The RMSE difference  metric
           passed:
@@ -574,13 +578,15 @@ items:
               Model used to compute the test
           threshold(float):
               Threshold value for RMSE difference
-
       Returns:
+          actual_slices_size:
+              Length of actual_slice tested
+          reference_slices_size:
+              Length of reference_slice tested
           metric:
               The RMSE difference  metric
           passed:
               TRUE if RMSE difference < threshold
-
       """
       tests.performance.test_diff_reference_actual_rmse(
           actual_slice=actual_ds.slice(lambda df: df.head(len(df) // 2)),
@@ -613,12 +619,14 @@ items:
               Threshold value for MAE
 
       Returns:
-          total rows tested:
-              Length of slice_df tested
+          actual_slices_size:
+              Length of actual_slice tested
+          reference_slices_size:
+              Length of reference_slice tested
           metric:
               The MAE metric
           passed:
-              TRUE if MAE metric < threshold
+              TRUE if MAE metric <= threshold
       """
       tests.performance.test_mae(
             actual_slice=actual_ds.slice(lambda df: df.head(len(df) // 2)),
@@ -650,13 +658,12 @@ items:
               Threshold value for R-Squared
 
       Returns:
-          total rows tested:
-              Length of slice_df tested
+          actual_slices_size:
+              Length of actual_slice tested
           metric:
               The R-Squared metric
           passed:
-              TRUE if R-Squared metric > threshold
-
+              TRUE if R-Squared metric >= threshold
       """
       tests.performance.test_r2(
           actual_slice=actual_ds.slice(lambda df: df.head(len(df) // 2)),
