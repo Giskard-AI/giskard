@@ -42,9 +42,6 @@ items:
                 Total PSI value
             messages:
                 Psi result message
-            output_df:
-                Dataframe containing the actual set rows with the labels that have drifted the most
-
       """
       tests.drift.test_drift_prediction_psi(
           actual_slice=actual_ds.slice(lambda df: df.head(len(df)//2)),
@@ -92,9 +89,6 @@ items:
                 Calculated p-value of Chi_square
             messages:
                 Message describing if prediction is drifting or not
-            output_df:
-                Dataframe containing the actual set rows with the labels that have drifted the most
-
       """
       tests.drift.test_drift_prediction_chi_square(
           actual_slice=actual_ds.slice(lambda df: df.head(len(df)//2)),
@@ -142,8 +136,6 @@ items:
                 The calculated p-value Kolmogorov-Smirnov test
             messages:
                 Kolmogorov-Smirnov result message
-            output_df:
-                Dataframe containing the actual set rows with the numeric prediction that have drifted the most
       """
       tests.drift.test_drift_prediction_ks(
           actual_slice=actual_ds.slice(lambda df: df.head(len(df)//2)),
@@ -194,8 +186,6 @@ items:
                 The calculated p-value Kolmogorov-Smirnov test
             messages:
                 Kolmogorov-Smirnov result message
-            output_df:
-                Dataframe containing the actual set rows with the output probability prediction that have drifted the most
       """
       tests.drift.test_drift_prediction_ks(
           actual_slice=actual_ds.slice(lambda df: df.head(len(df)//2)),
@@ -242,8 +232,6 @@ items:
                 TRUE if metric >= threshold
             metric:
                 Earth Mover's Distance value
-            output_df:
-                Dataframe containing the actual set rows with the numeric prediction that have drifted the most
       """
       tests.drift.test_drift_prediction_earth_movers_distance(
           actual_slice=actual_ds.slice(lambda df: df.head(len(df)//2)),
@@ -292,8 +280,6 @@ items:
                 TRUE if metric >= threshold
             metric:
                 Earth Mover's Distance value
-            output_df:
-                Dataframe containing the actual set rows with the output probability prediction that have drifted the most
       """
       tests.drift.test_drift_prediction_earth_movers_distance(
           actual_slice=actual_ds.slice(lambda df: df.head(len(df)//2)),
