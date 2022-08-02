@@ -437,9 +437,9 @@ class PerformanceTests(AbstractTestCollection):
         is lower than a threshold
 
         Example : The test is passed when the F1 Score for reference dataset has a difference lower than 10% from the
-        F1 Score for actual dataset. For example, if the F1 Score for reference dataset is 0.8 (reference_slice) and the F1 Score  for
-        actual dataset is 0.6 (actual_slice) then the absolute percentage F1 Score  change is 0.2 / 0.8 = 0.25
-        and the test will fail.
+        F1 Score for actual dataset. For example, if the F1 Score for reference dataset is 0.8 (reference_slice) and the
+         F1 Score  for actual dataset is 0.6 (actual_slice) then the absolute percentage F1 Score  change is
+        0.2 / 0.8 = 0.25 and the test will fail.
 
         Args:
             actual_slice(GiskardDataset):
@@ -468,9 +468,9 @@ class PerformanceTests(AbstractTestCollection):
         is lower than a threshold
 
         Example : The test is passed when the Accuracy for reference dataset has a difference lower than 10% from the
-        Accuracy for actual dataset. For example, if the Accuracy for reference dataset is 0.8 (reference_slice) and the Accuracy  for
-        actual dataset is 0.6 (actual_slice) then the absolute percentage Accuracy  change is 0.2 / 0.8 = 0.25
-        and the test will fail.
+        Accuracy for actual dataset. For example, if the Accuracy for reference dataset is 0.8 (reference_slice) and the
+         Accuracy  for actual dataset is 0.6 (actual_slice) then the absolute percentage Accuracy
+        change is 0.2 / 0.8 = 0.25 and the test will fail.
 
         Args:
             actual_slice(GiskardDataset):
@@ -530,8 +530,8 @@ class PerformanceTests(AbstractTestCollection):
         is lower than a threshold
 
         Example : The test is passed when the RMSE for reference dataset has a difference lower than 10% from the
-        RMSE for actual dataset. For example, if the RMSE for reference dataset is 0.8 (reference_slice) and the RMSE  for
-        actual dataset is 0.6 (actual_slice) then the absolute percentage RMSE  change is 0.2 / 0.8 = 0.25
+        RMSE for actual dataset. For example, if the RMSE for reference dataset is 0.8 (reference_slice) and the RMSE
+        for actual dataset is 0.6 (actual_slice) then the absolute percentage RMSE  change is 0.2 / 0.8 = 0.25
         and the test will fail.
 
         Args:

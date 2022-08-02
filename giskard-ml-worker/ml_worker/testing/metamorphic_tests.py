@@ -223,7 +223,7 @@ class MetamorphicTests(AbstractTestCollection):
 
         The test is passed when the percentage of rows that are decreasing is higher than the threshold
 
-        Example : For a credit scoring model, the test is passed when a increase of wage by 10%,
+        Example : For a credit scoring model, the test is passed when an increase of wage by 10%,
          default probability is decreasing for more than 50% of people in the dataset
 
         Args:
