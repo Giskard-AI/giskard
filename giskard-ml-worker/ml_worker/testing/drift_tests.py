@@ -28,7 +28,7 @@ class DriftTests(AbstractTestCollection):
         expected_distribution_bounded = max(expected_distribution[category], min_distribution_probability)
         actual_distribution_bounded = max(actual_distribution[category], min_distribution_probability)
         modality_psi = (expected_distribution_bounded - actual_distribution_bounded) * \
-                         np.log(expected_distribution_bounded / actual_distribution_bounded)
+                       np.log(expected_distribution_bounded / actual_distribution_bounded)
         return modality_psi
 
     @staticmethod
@@ -234,8 +234,8 @@ class DriftTests(AbstractTestCollection):
         ))
 
     def test_drift_chi_square(self,
-                              reference_ds: pd.DataFrame,
-                              actual_ds: pd.DataFrame,
+                              reference_ds: GiskardDataset,
+                              actual_ds: GiskardDataset,
                               column_name: str,
                               threshold=0.05,
                               max_categories: int = 20,
@@ -313,8 +313,8 @@ class DriftTests(AbstractTestCollection):
         return actual_series, reference_series
 
     def test_drift_ks(self,
-                      reference_ds: pd.DataFrame,
-                      actual_ds: pd.DataFrame,
+                      reference_ds: GiskardDataset,
+                      actual_ds: GiskardDataset,
                       column_name: str,
                       threshold=0.05) -> SingleTestResult:
         """
@@ -370,8 +370,8 @@ class DriftTests(AbstractTestCollection):
         ))
 
     def test_drift_earth_movers_distance(self,
-                                         reference_ds: pd.DataFrame,
-                                         actual_ds: pd.DataFrame,
+                                         reference_ds: GiskardDataset,
+                                         actual_ds: GiskardDataset,
                                          column_name: str,
                                          threshold: float = None) -> SingleTestResult:
         """
@@ -494,7 +494,10 @@ class DriftTests(AbstractTestCollection):
             messages=messages
         ))
 
-    def test_drift_prediction_chi_square(self, reference_slice, actual_slice, model,
+    def test_drift_prediction_chi_square(self,
+                                         reference_slice: GiskardDataset,
+                                         actual_slice: GiskardDataset,
+                                         model: GiskardModel,
                                          max_categories: int = 10,
                                          threshold: float = None,
                                          chi_square_contribution_percent: float = 0.2):
