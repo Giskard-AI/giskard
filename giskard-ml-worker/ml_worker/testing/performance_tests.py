@@ -73,6 +73,8 @@ class PerformanceTests(AbstractTestCollection):
             ))
 
     def _test_accuracy_score(self, score_fn, gsk_dataset: GiskardDataset, model: GiskardModel, threshold=1):
+        if not gsk_dataset.target:
+            raise ValueError("Target column is not available")
         dataframe = gsk_dataset.df
         metric = score_fn(
             dataframe[gsk_dataset.target].astype(str),
