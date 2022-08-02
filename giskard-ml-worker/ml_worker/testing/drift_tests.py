@@ -334,10 +334,6 @@ class DriftTests(AbstractTestCollection):
                 Name of column with numerical feature
             threshold:
                 Threshold for p-value of KS test
-            psi_contribution_percent:
-                the ratio between the PSI score of a given category over the total PSI score
-                of the categorical variable. If there is a drift, the test provides all the
-                categories that have a PSI contribution over than this ratio.
 
         Returns:
             actual_slices_size:
@@ -377,8 +373,7 @@ class DriftTests(AbstractTestCollection):
                                          reference_ds: pd.DataFrame,
                                          actual_ds: pd.DataFrame,
                                          column_name: str,
-                                         threshold: float = None,
-                                         psi_contribution_percent: float = 0.2) -> SingleTestResult:
+                                         threshold: float = None) -> SingleTestResult:
         """
         Test if the earth movers distance between the actual and expected datasets is
         below the threshold for a given numerical feature
@@ -396,10 +391,6 @@ class DriftTests(AbstractTestCollection):
                 Name of column with numerical feature
             threshold:
                 Threshold for earth movers distance
-            psi_contribution_percent:
-                the ratio between the PSI score of a given category over the total PSI score
-                of the categorical variable. If there is a drift, the test provides all the
-                categories that have a PSI contribution over than this ratio.
 
         Returns:
             actual_slices_size:
