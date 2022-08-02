@@ -153,7 +153,7 @@ def test_diff_f1(data, model, threshold, expected_metric, request):
 
 
 @pytest.mark.parametrize('data,model,threshold,expected_metric',
-                         [('german_credit_data', 'german_credit_model', 0.2, 0.04)])
+                         [('german_credit_data', 'german_credit_model', 0.2, 0.03)])
 def test_diff_accuracy(data, model, threshold, expected_metric, request):
     tests = GiskardTestFunctions()
     data = request.getfixturevalue(data)
@@ -169,7 +169,7 @@ def test_diff_accuracy(data, model, threshold, expected_metric, request):
 
 
 @pytest.mark.parametrize('data,model,threshold,expected_metric',
-                         [('german_credit_data', 'german_credit_model', 0.2, 0.1)])
+                         [('german_credit_data', 'german_credit_model', 0.2, 0.09)])
 def test_diff_recall(data, model, threshold, expected_metric, request):
     tests = GiskardTestFunctions()
     data = request.getfixturevalue(data)
