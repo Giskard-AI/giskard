@@ -76,29 +76,6 @@ class DriftTests(AbstractTestCollection):
         return total_psi, output_data
 
     @staticmethod
-    def _calculate_numerical_drift(actual_series, reference_series):
-        all_modalities, actual_frequencies, expected_frequencies = DriftTests._calculate_frequencies(
-            actual_series, reference_series)
-        expected_distribution = expected_frequencies / len(reference_series)
-        actual_distribution = actual_frequencies / len(actual_series)
-        total_drift = 0
-        output_data = pd.DataFrame(
-            columns=["Modality", "Reference_distribution", "Actual_distribution", "Modality_drift"])
-        for category in range(len(all_modalities)):
-            modality_drift = DriftTests._calculate_psi(category, actual_distribution, expected_distribution)
-
-            total_drift += modality_drift
-            row = {
-                "Modality": all_modalities[category],
-                "Reference_distribution": expected_distribution[category],
-                "Actual_distribution": expected_distribution[category],
-                "Modality_drift": modality_drift
-            }
-
-            output_data = output_data.append(pd.Series(row), ignore_index=True)
-        return total_drift, output_data
-
-    @staticmethod
     def _calculate_ks(actual_series, reference_series) -> Ks_2sampResult:
         return ks_2samp(reference_series, actual_series)
 
