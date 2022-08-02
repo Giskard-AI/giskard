@@ -49,6 +49,8 @@ class PerformanceTests(AbstractTestCollection):
             ))
 
     def _test_classification_score(self, score_fn, gsk_dataset: GiskardDataset, model: GiskardModel, threshold=1):
+        if not gsk_dataset.target:
+            raise ValueError("Target column is not available")
         is_binary_classification = len(model.classification_labels) == 2
         dataframe = gsk_dataset.df
         if is_binary_classification:
