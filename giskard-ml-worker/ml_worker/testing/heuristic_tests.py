@@ -38,8 +38,6 @@ class HeuristicTests(AbstractTestCollection):
               The ratio of rows with the right classification label over the total of rows in the slice
           passed:
               TRUE if passed_ratio > threshold
-          output_df:
-              Dataframe containing the rows that do not return the right classification label
         """
         actual_slice.df.reset_index(drop=True, inplace=True)
         prediction_results = model.run_predict(actual_slice).prediction
@@ -79,33 +77,26 @@ class HeuristicTests(AbstractTestCollection):
 
         For Regression : The predicted Sale Price of a house in the city falls in a particular range
         Args:
-           actual_slice(GiskardDataset):
-              Slice of the actual dataset
-          model(GiskardModel):
-              Model used to compute the test
-          classification_label(str):
-              Optional. Classification label you want to test
-          min_range(float):
-              Minimum probability of occurrence of classification label
-          max_range(float):
-              Maximum probability of occurrence of classification label
-          threshold(float):
-              Threshold for the percentage of passed rows
+            actual_slice(GiskardDataset):
+                Slice of the actual dataset
+            model(GiskardModel):
+                Model used to compute the test
+            classification_label(str):
+                Optional. Classification label you want to test
+            min_range(float):
+                Minimum probability of occurrence of classification label
+            max_range(float):
+                Maximum probability of occurrence of classification label
+            threshold(float):
+                Threshold for the percentage of passed rows
 
         Returns:
-            slice_nb_rows:
-                length of actual_slice tested
-
+            actual_slices_size:
+                Length of actual_slice tested
             metrics:
-                the proportion of rows in the right range inside the slice
+                The proportion of rows in the right range inside the slice
             passed:
                 TRUE if metric > threshold
-          output_df:
-              For classification : Dataframe containing the rows with model classification probability that do not
-              belong to the right range
-              For Regression: Dataframe containing the rows with predicted output that do not belong to the right range
-
-
         """
         results_df = pd.DataFrame()
         actual_slice.df.reset_index(drop=True, inplace=True)
