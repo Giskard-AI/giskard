@@ -316,8 +316,7 @@ class DriftTests(AbstractTestCollection):
                       reference_ds: pd.DataFrame,
                       actual_ds: pd.DataFrame,
                       column_name: str,
-                      threshold=0.05,
-                      psi_contribution_percent: float = 0.2) -> SingleTestResult:
+                      threshold=0.05) -> SingleTestResult:
         """
         Test if the pvalue of the KS test between the actual and expected datasets is above
         the threshold for a given numerical feature
@@ -582,8 +581,7 @@ class DriftTests(AbstractTestCollection):
                                  actual_slice: GiskardDataset,
                                  model: GiskardModel,
                                  classification_label=None,
-                                 threshold=None,
-                                 psi_contribution_percent: float = 0.2) -> SingleTestResult:
+                                 threshold=None) -> SingleTestResult:
         """
         Test if the pvalue of the KS test for prediction between the reference and actual datasets for
          a given subpopulation is above the threshold
@@ -656,8 +654,7 @@ class DriftTests(AbstractTestCollection):
                                                     actual_slice: GiskardDataset,
                                                     model: GiskardModel,
                                                     classification_label=None,
-                                                    threshold=None,
-                                                    psi_contribution_percent: float = 0.2) -> SingleTestResult:
+                                                    threshold=None) -> SingleTestResult:
         """
         Test if the Earth Mover’s Distance value between the reference and actual datasets is
         below the threshold for the classification labels predictions for classification
