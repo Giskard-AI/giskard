@@ -287,10 +287,8 @@ class PerformanceTests(AbstractTestCollection):
         try:
             change_pct = abs(metric_1 - metric_2) / metric_1
         except ZeroDivisionError:
-            messages = f"WARNING: The {test_name} inside the reference_slice is equal to zero. Make sure that your " \
-                       f"reference_slice is not too small. The {test_name} inside the actual slice" \
-                       f" is returned as the 'metric' of the test."
-            change_pct = metric_2
+            raise ZeroDivisionError(f"Unable to calculate performance difference: the {test_name} inside the"
+                                    f" reference_slice is equal to zero")
 
         return self.save_results(
             SingleTestResult(
@@ -436,17 +434,15 @@ class PerformanceTests(AbstractTestCollection):
         try:
             change_pct = abs(metric_1 - metric_2) / metric_1
         except ZeroDivisionError:
-            messages = f"WARNING: The {test_name} inside the reference_slice is equal to zero. Make sure that your " \
-                       f"reference_slice is not too small. The {test_name} inside the actual slice" \
-                       f" is returned as the 'metric' of the test."
-            change_pct = metric_2
+            raise ZeroDivisionError(f"Unable to calculate performance difference: the {test_name} inside the"
+                                    f" reference_slice is equal to zero")
+
         return self.save_results(
             SingleTestResult(
                 actual_slices_size=[len(actual_slice)],
                 reference_slices_size=[len(reference_slice)],
                 metric=change_pct,
                 passed=change_pct < threshold,
-                messages=messages
             ))
 
     def test_diff_reference_actual_f1(self, reference_slice, actual_slice, model, threshold=0.1):
