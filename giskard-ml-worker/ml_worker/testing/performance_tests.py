@@ -278,19 +278,27 @@ class PerformanceTests(AbstractTestCollection):
         """
         return self._test_regression_score(r2_score, actual_slice, model, threshold, r2=True)
 
-    def _test_diff_prediction(self, test_fn, model, actual_slice, reference_slice, threshold):
+    def _test_diff_prediction(self, test_fn, model, actual_slice, reference_slice, threshold, test_name=None):
         self.do_save_results = False
         metric_1 = test_fn(reference_slice, model).metric
         metric_2 = test_fn(actual_slice, model).metric
         self.do_save_results = True
-        change_pct = abs(metric_1 - metric_2) / metric_1
+        messages = None
+        try:
+            change_pct = abs(metric_1 - metric_2) / metric_1
+        except ZeroDivisionError:
+            messages = f"WARNING: The {test_name} inside the reference_slice is equal to zero. Make sure that your " \
+                       f"reference_slice is not too small. The {test_name} inside the actual slice" \
+                       f" is returned as the 'metric' of the test."
+            change_pct = metric_2
 
         return self.save_results(
             SingleTestResult(
                 actual_slices_size=[len(actual_slice)],
                 reference_slices_size=[len(reference_slice)],
                 metric=change_pct,
-                passed=change_pct < threshold
+                passed=change_pct < threshold,
+                messages=messages
             ))
 
     def test_diff_accuracy(self, actual_slice, reference_slice, model, threshold=0.1):
@@ -322,7 +330,8 @@ class PerformanceTests(AbstractTestCollection):
             passed:
               TRUE if Accuracy difference < threshold
         """
-        return self._test_diff_prediction(self.test_accuracy, model, actual_slice, reference_slice, threshold)
+        return self._test_diff_prediction(self.test_accuracy, model, actual_slice, reference_slice, threshold,
+                                          test_name='Accuracy')
 
     def test_diff_f1(self, actual_slice, reference_slice, model, threshold=0.1):
         """
@@ -353,7 +362,8 @@ class PerformanceTests(AbstractTestCollection):
             passed:
               TRUE if F1 Score difference < threshold
         """
-        return self._test_diff_prediction(self.test_f1, model, actual_slice, reference_slice, threshold)
+        return self._test_diff_prediction(self.test_f1, model, actual_slice, reference_slice, threshold,
+                                          test_name='F1 Score')
 
     def test_diff_precision(self, actual_slice, reference_slice, model, threshold=0.1):
         """
@@ -383,7 +393,8 @@ class PerformanceTests(AbstractTestCollection):
             passed:
               TRUE if Precision difference < threshold
         """
-        return self._test_diff_prediction(self.test_precision, model, actual_slice, reference_slice, threshold)
+        return self._test_diff_prediction(self.test_precision, model, actual_slice, reference_slice, threshold,
+                                          test_name='Precision')
 
     def test_diff_recall(self, actual_slice, reference_slice, model, threshold=0.1):
         """
@@ -413,22 +424,29 @@ class PerformanceTests(AbstractTestCollection):
             passed:
               TRUE if Recall difference < threshold
         """
-        return self._test_diff_prediction(self.test_recall, model, actual_slice, reference_slice, threshold)
+        return self._test_diff_prediction(self.test_recall, model, actual_slice, reference_slice, threshold,
+                                          test_name='Recall')
 
-    def _test_diff_reference_actual(self, test_fn, model, reference_slice, actual_slice, threshold=0.1):
+    def _test_diff_reference_actual(self, test_fn, model, reference_slice, actual_slice, test_name=None, threshold=0.1):
         self.do_save_results = False
         metric_1 = test_fn(reference_slice, model).metric
         metric_2 = test_fn(actual_slice, model).metric
         self.do_save_results = True
-        change_pct = abs(metric_1 - metric_2) / metric_1
-
+        messages = None
+        try:
+            change_pct = abs(metric_1 - metric_2) / metric_1
+        except ZeroDivisionError:
+            messages = f"WARNING: The {test_name} inside the reference_slice is equal to zero. Make sure that your " \
+                       f"reference_slice is not too small. The {test_name} inside the actual slice" \
+                       f" is returned as the 'metric' of the test."
+            change_pct = metric_2
         return self.save_results(
             SingleTestResult(
                 actual_slices_size=[len(actual_slice)],
                 reference_slices_size=[len(reference_slice)],
                 metric=change_pct,
-                passed=change_pct < threshold
-
+                passed=change_pct < threshold,
+                messages=messages
             ))
 
     def test_diff_reference_actual_f1(self, reference_slice, actual_slice, model, threshold=0.1):
@@ -460,7 +478,8 @@ class PerformanceTests(AbstractTestCollection):
           passed:
               TRUE if F1 Score difference < threshold
         """
-        return self._test_diff_reference_actual(self.test_f1, model, reference_slice, actual_slice, threshold)
+        return self._test_diff_reference_actual(self.test_f1, model, reference_slice,
+                                                actual_slice, threshold, test_name='F1 Score')
 
     def test_diff_reference_actual_accuracy(self, reference_slice, actual_slice, model, threshold=0.1):
         """
@@ -491,7 +510,8 @@ class PerformanceTests(AbstractTestCollection):
             passed:
               TRUE if Accuracy difference < threshold
         """
-        return self._test_diff_reference_actual(self.test_accuracy, model, reference_slice, actual_slice, threshold)
+        return self._test_diff_reference_actual(self.test_accuracy, model, reference_slice, actual_slice, threshold,
+                                                test_name='Accuracy')
 
     def test_diff_rmse(self, actual_slice, reference_slice, model, threshold=0.1):
         """
@@ -522,7 +542,8 @@ class PerformanceTests(AbstractTestCollection):
             passed:
               TRUE if RMSE difference < threshold
         """
-        return self._test_diff_prediction(self.test_rmse, model, actual_slice, reference_slice, threshold)
+        return self._test_diff_prediction(self.test_rmse, model, actual_slice, reference_slice, threshold,
+                                          test_name='RMSE')
 
     def test_diff_reference_actual_rmse(self, reference_slice, actual_slice, model, threshold=0.1):
         """
@@ -553,4 +574,5 @@ class PerformanceTests(AbstractTestCollection):
           passed:
               TRUE if RMSE difference < threshold
         """
-        return self._test_diff_reference_actual(self.test_rmse, model, reference_slice, actual_slice, threshold)
+        return self._test_diff_reference_actual(self.test_rmse, model, reference_slice, actual_slice, threshold,
+                                                test_name='RMSE')
