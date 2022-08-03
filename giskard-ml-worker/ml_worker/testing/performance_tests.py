@@ -280,8 +280,8 @@ class PerformanceTests(AbstractTestCollection):
 
     def _test_diff_prediction(self, test_fn, model, actual_slice, reference_slice, threshold):
         self.do_save_results = False
-        metric_1 = test_fn(actual_slice, model).metric
-        metric_2 = test_fn(reference_slice, model).metric
+        metric_1 = test_fn(reference_slice, model).metric
+        metric_2 = test_fn(actual_slice, model).metric
         self.do_save_results = True
         change_pct = abs(metric_1 - metric_2) / metric_1
 
