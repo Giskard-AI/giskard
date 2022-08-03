@@ -55,7 +55,7 @@ def _test_metamorphic_increasing_classification(df, model, threshold):
 def _test_metamorphic_decreasing_classification(df, model, threshold):
     tests = GiskardTestFunctions()
     perturbation = {
-        "duration_in_month": lambda x: x.duration_in_month - x.duration_in_month * 0.5}
+        "duration_in_month": lambda x: x.duration_in_month * 0.5}
     results = tests.metamorphic.test_metamorphic_decreasing(
         df=df,
         model=model,
@@ -91,7 +91,7 @@ def test_metamorphic_decreasing_exception(german_credit_test_data, german_credit
     with pytest.raises(Exception):
         tests = GiskardTestFunctions()
         perturbation = {
-            "duration_in_month": lambda x: x.duration_in_month - x.duration_in_month * 0.5}
+            "duration_in_month": lambda x: x.duration_in_month * 0.5}
         results = tests.metamorphic.test_metamorphic_decreasing(
             df=german_credit_test_data,
             model=german_credit_model,
@@ -105,7 +105,7 @@ def test_metamorphic_increasing_exception(german_credit_test_data, german_credit
     with pytest.raises(Exception):
         tests = GiskardTestFunctions()
         perturbation = {
-            "duration_in_month": lambda x: x.duration_in_month - x.duration_in_month * 0.5}
+            "duration_in_month": lambda x: x.duration_in_month * 0.5}
         results = tests.metamorphic.test_metamorphic_increasing(
             df=german_credit_test_data,
             model=german_credit_model,
