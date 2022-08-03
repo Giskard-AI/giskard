@@ -101,7 +101,7 @@ class MetamorphicTests(AbstractTestCollection):
                                     df: GiskardDataset,
                                     model,
                                     perturbation_dict,
-                                    threshold=1,
+                                    threshold=0.5,
                                     output_sensitivity=None) -> SingleTestResult:
         """
         Summary: Tests if the model prediction is invariant when the feature values are perturbed
@@ -156,7 +156,7 @@ class MetamorphicTests(AbstractTestCollection):
                                     df: GiskardDataset,
                                     model,
                                     perturbation_dict,
-                                    threshold=1,
+                                    threshold=0.5,
                                     classification_label=None):
         """
         Summary: Tests if the model probability increases when the feature values are perturbed
@@ -209,7 +209,7 @@ class MetamorphicTests(AbstractTestCollection):
                                     df: GiskardDataset,
                                     model,
                                     perturbation_dict,
-                                    threshold=1,
+                                    threshold=0.5,
                                     classification_label=None
                                     ):
         """

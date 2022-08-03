@@ -63,7 +63,7 @@ items:
           df=actual_ds,
           model=model,
           perturbation_dict=perturbation,  # Update your perturbation choice here
-          threshold=0.1
+          threshold=0.5
       )
 
   - id: metamorphic_invariance_regression
@@ -140,7 +140,7 @@ items:
           model=model,
           perturbation_dict=perturbation, # Update your perturbation choice here
           output_sensitivity=0.1,
-          threshold=0.1
+          threshold=0.5
       )
   - id: metamorphic_increasing_classification
     title: Increasing for Classification
@@ -184,9 +184,6 @@ items:
               The ratio of increasing rows over the perturbed rows
           passed:
               TRUE if metric > threshold
-          output_df:
-              Dataframe containing the rows whose probability doesn't increase after perturbation
-
       """
       import nlpaug.augmenter.word as naw
 
@@ -218,7 +215,7 @@ items:
           model=model,
           perturbation_dict=perturbation, # Update your perturbation choice here
           classification_label='{{CLASSIFICATION LABEL}}',
-          threshold=0.1
+          threshold=0.5
       )
   - id: metamorphic_increasing_regression
     title: Increasing for Regression
@@ -258,9 +255,6 @@ items:
               The ratio of increasing rows over the perturbed rows
           passed:
               TRUE if metric > threshold
-          output_df:
-              Dataframe containing the rows whose probability doesn't increase after perturbation
-
       """
       import nlpaug.augmenter.word as naw
 
@@ -291,7 +285,7 @@ items:
           df=actual_ds,
           model=model,
           perturbation_dict=perturbation, # Update your perturbation choice here
-          threshold=0.1
+          threshold=0.5
       )
   - id: metamorphic_decreasing_classification
     title: Decreasing for Classification
@@ -335,9 +329,6 @@ items:
               The ratio of decreasing rows over the perturbed rows
           passed:
               TRUE if metric > threshold
-          output_df:
-              Dataframe containing the rows whose probability doesn't decrease after perturbation
-
       """
       import nlpaug.augmenter.word as naw
 
@@ -369,7 +360,7 @@ items:
           model=model,
           perturbation_dict=perturbation, # Update your perturbation choice here
           classification_label='{{CLASSIFICATION LABEL}}',
-          threshold=0.1
+          threshold=0.5
       )
   - id: metamorphic_decreasing_regression
     title: Decreasing for Regression
@@ -409,9 +400,6 @@ items:
               The ratio of decreasing rows over the perturbed rows
           passed:
               TRUE if metric > threshold
-          output_df:
-              Dataframe containing the rows whose probability doesn't decrease after perturbation
-
       """
       import nlpaug.augmenter.word as naw
 
@@ -442,5 +430,5 @@ items:
           df=actual_ds,
           model=model,
           perturbation_dict=perturbation, # Update your perturbation choice here
-          threshold=0.1
+          threshold=0.5
       )
