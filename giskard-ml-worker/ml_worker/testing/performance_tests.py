@@ -283,7 +283,6 @@ class PerformanceTests(AbstractTestCollection):
         metric_1 = test_fn(reference_slice, model).metric
         metric_2 = test_fn(actual_slice, model).metric
         self.do_save_results = True
-        messages = None
         try:
             change_pct = abs(metric_1 - metric_2) / metric_1
         except ZeroDivisionError:
@@ -296,7 +295,6 @@ class PerformanceTests(AbstractTestCollection):
                 reference_slices_size=[len(reference_slice)],
                 metric=change_pct,
                 passed=change_pct < threshold,
-                messages=messages
             ))
 
     def test_diff_accuracy(self, actual_slice, reference_slice, model, threshold=0.1):
@@ -425,12 +423,11 @@ class PerformanceTests(AbstractTestCollection):
         return self._test_diff_prediction(self.test_recall, model, actual_slice, reference_slice, threshold,
                                           test_name='Recall')
 
-    def _test_diff_reference_actual(self, test_fn, model, reference_slice, actual_slice, test_name=None, threshold=0.1):
+    def _test_diff_reference_actual(self, test_fn, model, reference_slice, actual_slice, threshold=0.1, test_name=None):
         self.do_save_results = False
         metric_1 = test_fn(reference_slice, model).metric
         metric_2 = test_fn(actual_slice, model).metric
         self.do_save_results = True
-        messages = None
         try:
             change_pct = abs(metric_1 - metric_2) / metric_1
         except ZeroDivisionError:
