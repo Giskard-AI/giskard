@@ -43,8 +43,19 @@ items:
           passed:
               TRUE if metric > threshold
       """
-      # import nlpaug.augmenter.word as naw  # uncomment for text perturbation
-      # aug = naw.SpellingAug(dict_path='./spelling_en.txt') # uncomment for text perturbation
+      import nlpaug.augmenter.word as naw
+
+      aug = naw.SpellingAug(dict_path=None,
+                            name='Spelling_Aug',
+                            aug_min=1,
+                            aug_max=10,
+                            aug_p=0.3,
+                            stopwords=None,
+                            tokenizer=None,
+                            reverse_tokenizer=None,
+                            include_reverse=True,
+                            stopwords_regex=None,
+                            verbose=0)
 
       # You can choose all_perturbation to perturb categorical, text and numerical feature at the same time
       all_perturbation = {
