@@ -317,8 +317,6 @@ class DriftTests(AbstractTestCollection):
                 The pvalue of KS test
             passed:
                 TRUE if metric >= threshold
-          output_df:
-                Dataframe containing the actual set rows with the numeric partition that have drifted the most
         """
         actual_series, reference_series = self._generate_series(actual_ds, reference_ds, column_name, 'numeric')
 
@@ -374,8 +372,6 @@ class DriftTests(AbstractTestCollection):
                 The earth movers distance
             passed:
                 TRUE if metric <= threshold
-          output_df:
-                Dataframe containing the actual set rows with the numeric partition that have drifted the most
         """
         actual_series, reference_series = self._generate_series(actual_ds, reference_ds, column_name, 'numeric')
 
@@ -420,9 +416,9 @@ class DriftTests(AbstractTestCollection):
             threshold(float):
                 Threshold value for PSI
             max_categories:
-                the maximum categories to compute the PSI score
+                The maximum categories to compute the PSI score
             psi_contribution_percent:
-                the ratio between the PSI score of a given category over the total PSI score
+                The ratio between the PSI score of a given category over the total PSI score
                 of the categorical variable. If there is a drift, the test provides all the
                 categories that have a PSI contribution over than this ratio.
 
@@ -437,8 +433,6 @@ class DriftTests(AbstractTestCollection):
                 Total PSI value
             messages:
                 Psi result message
-            output_df:
-                Dataframe containing the actual set rows with the labels that have drifted the most
         """
         actual_slice.df.reset_index(drop=True, inplace=True)
         reference_slice.df.reset_index(drop=True, inplace=True)
@@ -508,9 +502,6 @@ class DriftTests(AbstractTestCollection):
                 Calculated p-value of Chi_square
             messages:
                 Message describing if prediction is drifting or not
-            output_df:
-                Dataframe containing the actual set rows with the labels that have drifted the most
-
         """
         actual_slice.df.reset_index(drop=True, inplace=True)
         reference_slice.df.reset_index(drop=True, inplace=True)
@@ -566,7 +557,7 @@ class DriftTests(AbstractTestCollection):
                 Model used to compute the test
             threshold(float):
                 Threshold for p-value of Kolmogorov-Smirnov test
-            classification_label:
+            classification_label(str):
                 One specific label value from the target column for classification model
 
         Returns:
@@ -580,8 +571,6 @@ class DriftTests(AbstractTestCollection):
                 The calculated p-value Kolmogorov-Smirnov test
             messages:
                 Kolmogorov-Smirnov result message
-            output_df:
-                Dataframe containing the actual set rows with the output prediction that have drifted the most
         """
         actual_slice.df.reset_index(drop=True, inplace=True)
         reference_slice.df.reset_index(drop=True, inplace=True)
