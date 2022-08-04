@@ -10,6 +10,11 @@ from ml_worker.testing.abstract_test_collection import AbstractTestCollection
 
 
 class PerformanceTests(AbstractTestCollection):
+    @staticmethod
+    def _verify_target_availability(dataset):
+        if not dataset.target:
+            raise ValueError("Target column is not available")
+
     def test_auc(self, actual_slice: GiskardDataset, model: GiskardModel, threshold=1):
 
         """
@@ -34,8 +39,7 @@ class PerformanceTests(AbstractTestCollection):
                 TRUE if AUC metrics > threshold
 
         """
-        if not actual_slice.target:
-            raise ValueError("Target column is not available")
+        self._verify_target_availability(actual_slice)
         if len(model.classification_labels) == 2:
             metric = roc_auc_score(actual_slice.df[actual_slice.target],
                                    model.run_predict(actual_slice).raw_prediction)
@@ -51,8 +55,7 @@ class PerformanceTests(AbstractTestCollection):
             ))
 
     def _test_classification_score(self, score_fn, gsk_dataset: GiskardDataset, model: GiskardModel, threshold=1):
-        if not gsk_dataset.target:
-            raise ValueError("Target column is not available")
+        self._verify_target_availability(gsk_dataset)
         is_binary_classification = len(model.classification_labels) == 2
         dataframe = gsk_dataset.df
         if is_binary_classification:
@@ -75,8 +78,7 @@ class PerformanceTests(AbstractTestCollection):
             ))
 
     def _test_accuracy_score(self, score_fn, gsk_dataset: GiskardDataset, model: GiskardModel, threshold=1):
-        if not gsk_dataset.target:
-            raise ValueError("Target column is not available")
+        self._verify_target_availability(gsk_dataset)
         dataframe = gsk_dataset.df
         metric = score_fn(
             dataframe[gsk_dataset.target].astype(str),
@@ -92,8 +94,7 @@ class PerformanceTests(AbstractTestCollection):
 
     def _test_regression_score(self, score_fn, gsk_dataset, model: GiskardModel, threshold=1, negative=False,
                                r2=False):
-        if not gsk_dataset.target:
-            raise ValueError("Target column is not available")
+        self._verify_target_availability(gsk_dataset)
         metric = (-1 if negative else 1) * score_fn(
             model.run_predict(gsk_dataset).raw_prediction,
             gsk_dataset.df[gsk_dataset.target]
