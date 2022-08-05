@@ -63,6 +63,7 @@ import { api } from '@/api';
 import TestCreateModal from '@/views/main/project/modals/TestCreateModal.vue';
 import { TestDTO, TestExecutionResultDTO, TestResult } from '@/generated-sources';
 import mixpanel from "mixpanel-browser";
+import {testStatusToColor} from "@/views/main/tests/test-utils";
 
 @Component({
   components: { TestSuiteCreateModal, TestCreateModal }
@@ -75,16 +76,7 @@ export default class Tests extends Vue {
   runningTestIds = new Set();
 
   testStatusToColor(status: TestResult) {
-    switch (status) {
-      case TestResult.PASSED:
-        return 'green lighten-2';
-      case TestResult.FAILED:
-        return 'orange lighten-2';
-      case TestResult.ERROR:
-        return 'red lighten-2';
-      default:
-        return 'grey lighten-2';
-    }
+    return testStatusToColor(status);
   }
 
   public isTestRunning(testId: number) {
