@@ -1,3 +1,4 @@
+import logging
 from typing import List, Any, Optional, Callable, Iterable, Union
 
 import numpy
@@ -74,6 +75,8 @@ class GiskardModel:
 
     @staticmethod
     def cast_column_to_types(df, column_types):
+        current_types = df.dtypes.apply(lambda x: x.name).to_dict()
+        logging.info(f"Casting dataframe columns from {current_types} to {column_types}")
         if column_types:
             try:
                 df = df.astype(column_types)
