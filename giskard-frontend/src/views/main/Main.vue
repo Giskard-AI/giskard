@@ -1,5 +1,5 @@
 <template>
-  <v-main>
+  <v-main class="fill-height vertical-container">
     <v-navigation-drawer
         dark
         fixed
@@ -52,9 +52,9 @@
       </v-layout>
     </v-navigation-drawer>
 
-    <v-main class="pa-1">
+    <div class="pa-1 vertical-container">
       <router-view></router-view>
-    </v-main>
+    </div>
   </v-main>
 </template>
 
@@ -106,6 +106,8 @@ export default class Main extends Vue {
 </script>
 
 <style scoped>
+
+
 .background {
   background-image: url("~@/assets/wallpaper-skyline-reduced.jpg");
   background-position: 0 20%;

@@ -21,6 +21,7 @@
         <span v-show="originalData && isDefined(originalData.Index)" class='caption grey--text'
               style='margin-left: 15px'>Row Index {{ originalData.Index + 1 }}</span>
       </v-toolbar>
+      <v-spacer/>
       <InspectionFilter
           :is-target-available="isDefined(inspection.dataset.target)"
           :labels="labels"

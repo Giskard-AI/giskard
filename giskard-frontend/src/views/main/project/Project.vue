@@ -1,5 +1,5 @@
 <template>
-	<div v-if="project">
+	<div v-if="project" class="vertical-container">
     <v-toolbar flat dense light class="secondary--text text--lighten-2">
 			<v-toolbar-title>
 				<router-link to="/main/projects">
@@ -98,7 +98,7 @@
 			</v-card>
 		</v-dialog>
 
-		<v-container fluid id="container-project-tab">
+		<v-container fluid id="container-project-tab" class="vertical-container">
 			<v-tabs>
 				<v-tab :to="{name: 'project-overview'}"><v-icon left>notes</v-icon>Overview</v-tab>
 				<v-tab :to="{name: 'project-datasets'}"><v-icon left>stacked_bar_chart</v-icon>Datasets</v-tab>
