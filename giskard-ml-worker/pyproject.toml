@@ -23,7 +23,7 @@ numpy = "^1.21.6"
 
 # Extra commonly used dependencies
 catboost = "^1.0.6"
-torch = "^1.12.0"
+torch = "^1.12.1"
 nlpaug = "^1.1.11"
 
 [tool.poetry.dev-dependencies]
