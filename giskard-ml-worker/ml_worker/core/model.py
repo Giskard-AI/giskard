@@ -70,6 +70,10 @@ class GiskardModel:
         if dataset.target and dataset.target in df.columns:
             df.drop(dataset.target, axis=1, inplace=True)
         if self.feature_names:
+            if set(self.feature_names) > set(df.columns):
+                column_names = set(self.feature_names) - set(df.columns)
+                raise ValueError(
+                    f"The following columns are not found in the dataset: {', '.join(sorted(column_names))}")
             df = df[self.feature_names]
         return df
 
