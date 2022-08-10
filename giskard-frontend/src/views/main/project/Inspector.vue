@@ -41,7 +41,7 @@
             <v-card-text v-if="!errorLoadingMetadata && Object.keys(inputMetaData).length > 0" id="inputTextCard">
               <div class="caption error--text">{{ dataErrorMsg }}</div>
               <v-form lazy-validation>
-                <div v-for="c in datasetFeatures" :key="c.name"
+                <div v-for="c in datasetNonTargetColumns" :key="c.name"
                      v-show="featuresToView.includes(c.name)">
                   <ValidationProvider
                       :name="c.name"
@@ -116,7 +116,7 @@
             <v-card-text>
               <v-tabs
                   :class="{'no-tab-header':  !isClassification(model.modelType) || textFeatureNames.length === 0}">
-                <v-tab v-if='featuresToView.length>1'>
+                <v-tab v-if='modelFeatures.length>1'>
                   <v-icon left>mdi-align-horizontal-left</v-icon>
                   Global
                 </v-tab>
@@ -124,7 +124,7 @@
                   <v-icon left>text_snippet</v-icon>
                   Text
                 </v-tab>
-                <v-tab-item v-if='featuresToView.length>1'>
+                <v-tab-item v-if='modelFeatures.length>1'>
 
                   <PredictionExplanations :modelId="model.id"
                                           :datasetId="dataset.id"
@@ -241,8 +241,12 @@ export default class Inspector extends Vue {
     }
     return this.model.featureNames.includes(featureName)
   }
-
-  get datasetFeatures() {
+  get modelFeatures(){
+    return this.inputMetaData
+        .filter(x => (x.name !== this.dataset.target) && (!this.model.featureNames || this.model.featureNames.includes(x.name)))
+        .map(x => x.name);
+  }
+  get datasetNonTargetColumns() {
     return _.sortBy(this.inputMetaData.filter(x => x.name !== this.dataset.target),
         e => !this.model.featureNames?.includes(e.name),
         'name'
