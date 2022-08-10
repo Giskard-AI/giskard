@@ -338,6 +338,11 @@ task cleanGenerated(type: Delete) {
     delete "$buildDir/extracted-include-protos", "$buildDir/extracted-protos", "$buildDir/proto", "$buildDir/generated/source/proto"
 }
 
+bootJar {
+    archiveFileName = "${archiveBaseName.get()}.${archiveExtension.get()}"
+}
+
+
 task cleanResources(type: Delete) {
     delete "build/resources"
 }
