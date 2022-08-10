@@ -116,7 +116,7 @@
             <v-card-text>
               <v-tabs
                   :class="{'no-tab-header':  !isClassification(model.modelType) || textFeatureNames.length === 0}">
-                <v-tab v-if='featuresToView.length>1'>
+                <v-tab v-if='datasetFeatures.length>1'>
                   <v-icon left>mdi-align-horizontal-left</v-icon>
                   Global
                 </v-tab>
@@ -124,7 +124,7 @@
                   <v-icon left>text_snippet</v-icon>
                   Text
                 </v-tab>
-                <v-tab-item v-if='featuresToView.length>1'>
+                <v-tab-item v-if='datasetFeatures.length>1'>
 
                   <PredictionExplanations :modelId="model.id"
                                           :datasetId="dataset.id"
