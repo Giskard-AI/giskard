@@ -81,15 +81,19 @@ public class TestSuiteService {
         Dataset ds = suite.getReferenceDataset() != null ? suite.getReferenceDataset() : suite.getActualDataset();
         if (ds != null) {
             ds.getFeatureTypes().forEach((fName, fType) -> {
-                substitutions.putIfAbsent("FEATURE NAME", fName);
-                if (fType == FeatureType.CATEGORY) {
-                    substitutions.putIfAbsent("CATEGORICAL FEATURE NAME", fName);
-                }
-                if (fType == FeatureType.NUMERIC) {
-                    substitutions.putIfAbsent("NUMERIC FEATURE NAME", fName);
-                }
-                if (fType == FeatureType.TEXT) {
-                    substitutions.putIfAbsent("TEXTUAL FEATURE NAME", fName);
+                if (fName.equals(ds.getTarget())) {
+                    substitutions.putIfAbsent("TARGET NAME", fName);
+                } else {
+                    substitutions.putIfAbsent("FEATURE NAME", fName);
+                    if (fType == FeatureType.CATEGORY) {
+                        substitutions.putIfAbsent("CATEGORICAL FEATURE NAME", fName);
+                    }
+                    if (fType == FeatureType.NUMERIC) {
+                        substitutions.putIfAbsent("NUMERIC FEATURE NAME", fName);
+                    }
+                    if (fType == FeatureType.TEXT) {
+                        substitutions.putIfAbsent("TEXTUAL FEATURE NAME", fName);
+                    }
                 }
             });
         }
