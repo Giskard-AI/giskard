@@ -10,6 +10,7 @@ import ai.giskard.web.dto.DataUploadParamsDTO;
 import ai.giskard.web.dto.ModelUploadParamsDTO;
 import ai.giskard.web.rest.errors.Entity;
 import ai.giskard.web.rest.errors.EntityNotFoundException;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -380,6 +381,10 @@ public class InitService {
         Resource modelResource = resourceLoader.getResource(pathToModel);
         Resource requirementsResource = resourceLoader.getResource(pathToRequirements);
         ModelUploadParamsDTO modelDTO = projects.get(projectKey).modelParams;
+        // hacky way to override features list, we should rely on project export/import in the future to handle demo projects
+        if ("enron".equals(projectKey) && "pytorch_bert".equals(filename)) {
+            modelDTO.setFeatureNames(Lists.newArrayList("Content"));
+        }
         ModelUploadParamsDTO modelDTOCopy = ModelUploadParamsDTO.builder().modelType(modelDTO.getModelType())
             .projectKey(modelDTO.getProjectKey())
             .name(config.modelParams.getName() + " " + filename)
