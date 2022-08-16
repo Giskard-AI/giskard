@@ -57,7 +57,7 @@
     "eslint": "^8.21.0",
     "eslint-plugin-vue": "^8.0.1",
     "monaco-editor-webpack-plugin": "~7.0.1",
-    "sass": "~1.54.0",
+    "sass": "~1.54.4",
     "sass-loader": "^13.0.0",
     "typescript": "^4.7.3",
     "vue-cli-plugin-vuetify": "^2.5.1",
