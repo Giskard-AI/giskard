@@ -209,9 +209,9 @@ repositories {
 }
 
 dependencies {
+    implementation "io.grpc:grpc-netty:${grpcVersion}"
     implementation "io.grpc:grpc-protobuf:${grpcVersion}"
     implementation "io.grpc:grpc-stub:${grpcVersion}"
-    runtimeOnly "io.grpc:grpc-netty-shaded:${grpcVersion}"
     testImplementation "io.grpc:grpc-testing:${grpcVersion}"
 
     // import JHipster dependencies BOM
@@ -274,7 +274,7 @@ dependencies {
     implementation "org.postgresql:postgresql"
     implementation "com.h2database:h2"
     liquibaseRuntime "org.postgresql:postgresql"
-    annotationProcessor "org.hibernate:hibernate-jpamodelgen:${hibernateVersion}.Final"
+//    annotationProcessor "org.hibernate:hibernate-jpamodelgen:${hibernateVersion}.Final"
     annotationProcessor "org.glassfish.jaxb:jaxb-runtime:${jaxbRuntimeVersion}"
     annotationProcessor "org.springframework.boot:spring-boot-configuration-processor:${springBootVersion}"
     testImplementation "org.springframework.boot:spring-boot-starter-test"
@@ -296,6 +296,8 @@ dependencies {
     implementation group: 'com.fasterxml.jackson.dataformat', name: 'jackson-dataformat-yaml', version: '2.13.3'
     implementation group: 'com.github.luben', name: 'zstd-jni', version: '1.5.2-3'
     implementation 'org.apache.commons:commons-compress:1.21'
+
+    implementation 'commons-codec:commons-codec:1.15'
 
 }
 

@@ -4,9 +4,10 @@ import re
 import grpc
 import numpy as np
 import pandas as pd
+import tqdm
 from eli5.lime import TextExplainer
 
-from generated.ml_worker_pb2 import ExplainResponse, ExplainTextResponse
+from generated.ml_worker_pb2 import ExplainResponse, ExplainTextResponse, UploadStatus
 from generated.ml_worker_pb2 import RunTestRequest, TestResultMessage, RunModelResponse, RunModelRequest, DataFrame, \
     DataRow, RunModelForDataFrameResponse, RunModelForDataFrameRequest, ExplainRequest, ExplainTextRequest
 from generated.ml_worker_pb2_grpc import MLWorkerServicer
@@ -15,6 +16,7 @@ from ml_worker.core.model_explanation import explain, text_explanation_predictio
 from ml_worker.exceptions.IllegalArgumentError import IllegalArgumentError
 from ml_worker.exceptions.giskard_exception import GiskardException
 from ml_worker.utils.grpc_mapper import deserialize_model, deserialize_dataset
+from ml_worker_pb2 import EchoMsg, UploadStatusCode, FileUploadRequest
 
 logger = logging.getLogger()
 
@@ -22,6 +24,22 @@ logger = logging.getLogger()
 class MLWorkerServiceImpl(MLWorkerServicer):
     def __init__(self) -> None:
         super().__init__()
+
+    def echo(self, request, context):
+        return EchoMsg(msg="Response :" + request.msg)
+
+    def upload(self, request_iterator, context):
+        upload_message: FileUploadRequest
+        progress = None
+        for upload_message in request_iterator:
+            if upload_message.HasField("metadata"):
+                print(upload_message.metadata.name)
+                progress = tqdm.tqdm(f"Receiving {upload_message.metadata.name}", unit="B", unit_scale=True,
+                                     unit_divisor=1024)
+            elif upload_message.HasField("chunk"):
+                progress.update(len(upload_message.chunk.content))
+        progress.close()
+        return UploadStatus(code=UploadStatusCode.Ok)
 
     def runTest(self, request: RunTestRequest, context: grpc.ServicerContext) -> TestResultMessage:
         from ml_worker.testing.functions import GiskardTestFunctions
