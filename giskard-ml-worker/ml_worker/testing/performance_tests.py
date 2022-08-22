@@ -11,6 +11,11 @@ from ml_worker.testing.abstract_test_collection import AbstractTestCollection
 
 
 class PerformanceTests(AbstractTestCollection):
+    @staticmethod
+    def _verify_target_availability(dataset):
+        if not dataset.target:
+            raise ValueError("Target column is not available")
+
     def test_auc(self, actual_slice: GiskardDataset, model: GiskardModel, threshold=1):
 
         """
@@ -34,6 +39,7 @@ class PerformanceTests(AbstractTestCollection):
           passed:
               TRUE if AUC metrics >= threshold
         """
+        self._verify_target_availability(actual_slice)
         if len(model.classification_labels) == 2:
             metric = roc_auc_score(actual_slice.df[actual_slice.target],
                                    model.run_predict(actual_slice).raw_prediction)
@@ -49,9 +55,7 @@ class PerformanceTests(AbstractTestCollection):
             ))
 
     def _test_classification_score(self, score_fn, gsk_dataset: GiskardDataset, model: GiskardModel, threshold=1):
-        if not gsk_dataset.target:
-            raise ValueError("Target column is not available")
-
+        self._verify_target_availability(gsk_dataset)
         is_binary_classification = len(model.classification_labels) == 2
         gsk_dataset.df.reset_index(drop=True, inplace=True)
         actual_target = gsk_dataset.df[gsk_dataset.target].astype(str)
@@ -74,8 +78,7 @@ class PerformanceTests(AbstractTestCollection):
             ))
 
     def _test_accuracy_score(self, gsk_dataset: GiskardDataset, model: GiskardModel, threshold=1):
-        if not gsk_dataset.target:
-            raise ValueError("Target column is not available")
+        self._verify_target_availability(gsk_dataset)
         gsk_dataset.df.reset_index(drop=True, inplace=True)
         prediction = model.run_predict(gsk_dataset).prediction
         actual_target = gsk_dataset.df[gsk_dataset.target].astype(str)
@@ -92,6 +95,7 @@ class PerformanceTests(AbstractTestCollection):
     def _test_regression_score(self, score_fn, giskard_ds, model: GiskardModel, threshold=1, r2=False):
         results_df = pd.DataFrame()
         giskard_ds.df.reset_index(drop=True, inplace=True)
+        self._verify_target_availability(giskard_ds)
 
         results_df["actual_target"] = giskard_ds.df[giskard_ds.target]
         results_df["prediction"] = model.run_predict(giskard_ds).raw_prediction

@@ -1,5 +1,5 @@
 <template>
-  <v-container fluid v-if="testSuite">
+  <v-container fluid v-if="testSuite" class="vertical-container">
     <v-row>
       <v-col>
         <span>Test suite: </span>
@@ -32,7 +32,7 @@
         </v-btn>
       </v-col>
     </v-row>
-    <router-view></router-view>
+    <router-view class="vertical-container"></router-view>
   </v-container>
 </template>
 

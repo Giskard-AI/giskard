@@ -6,7 +6,7 @@ import com.dataiku.j2ts.annotations.UIModel;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.Date;
+import java.time.Instant;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -18,13 +18,13 @@ public class TestExecutionResultDTO {
     private TestResult status;
     private List<NamedSingleTestResultDTO> result;
     private String message;
-    private Date executionDate;
+    private Instant executionDate;
 
     public TestExecutionResultDTO(Long testId) {
         this.testId = testId;
     }
 
     public void setResult(TestResultMessage message) {
-        result = message.getResultsList().stream().map(NamedSingleTestResultDTO::new).collect(Collectors.toList());
+        result = message.getResultsList().stream().map(NamedSingleTestResultDTO::new).toList();
     }
 }

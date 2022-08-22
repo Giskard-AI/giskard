@@ -270,7 +270,7 @@ dependencies {
         implementation "io.jsonwebtoken:jjwt-jackson"
     }
     implementation("org.springdoc:springdoc-openapi-webmvc-core")
-    implementation group: 'org.springdoc', name: 'springdoc-openapi-ui', version: '1.6.9'
+    implementation group: 'org.springdoc', name: 'springdoc-openapi-ui', version: '1.6.10'
     implementation "org.postgresql:postgresql"
     implementation "com.h2database:h2"
     liquibaseRuntime "org.postgresql:postgresql"
@@ -337,6 +337,11 @@ if (project.hasProperty("gae")) {
 task cleanGenerated(type: Delete) {
     delete "$buildDir/extracted-include-protos", "$buildDir/extracted-protos", "$buildDir/proto", "$buildDir/generated/source/proto"
 }
+
+bootJar {
+    archiveFileName = "${archiveBaseName.get()}.${archiveExtension.get()}"
+}
+
 
 task cleanResources(type: Delete) {
     delete "build/resources"

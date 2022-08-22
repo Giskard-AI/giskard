@@ -18,7 +18,7 @@
     </v-toolbar>
 
     <!-- Project list -->
-    <v-container v-if="projects.length > 0">
+    <div v-if="projects.length > 0">
       <v-card flat>
         <v-row class="px-2 py-1 caption secondary--text text--lighten-3">
           <v-col cols=2>Name</v-col>
@@ -55,7 +55,7 @@
           <v-divider></v-divider>
         </v-card>
       </v-hover>
-    </v-container>
+    </div>
     <v-container v-else class="font-weight-light font-italic secondary--text">
       <div v-if="isAdmin || isCreator">None created, none invited</div>
       <div v-else>You have not been invited to any projects yet</div>

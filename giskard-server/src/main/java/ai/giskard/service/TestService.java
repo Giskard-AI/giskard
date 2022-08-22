@@ -61,12 +61,11 @@ public class TestService {
 
         TestExecution testExecution = new TestExecution(test);
         testExecutionRepository.save(testExecution);
-        res.setExecutionDate(testExecution.getExecutionDate());
+        res.setExecutionDate(testExecution.getExecutionDate().toInstant());
 
         ProjectModel model = test.getTestSuite().getModel();
         Dataset referenceDS = test.getTestSuite().getReferenceDataset();
         Dataset actualDS = test.getTestSuite().getActualDataset();
-        Path modelPath = fileLocationService.resolvedModelPath(model.getProject().getKey(), model.getId());
         try (MLWorkerClient client = mlWorkerService.createClient()) {
 
 
