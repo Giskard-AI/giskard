@@ -35,3 +35,22 @@ $notification-spinner-size: 20px;
     margin: 0;
   }
 }
+
+.vertical-container {
+  @extend .d-flex;
+  @extend .flex-grow-1;
+  @extend .flex-column;
+
+  & > .v-tabs,
+  & > .v-toolbar,
+  & > .row {
+    flex-grow: 0;
+     margin-bottom: 0;
+  }
+}
+
+.vertical-container .v-main__wrap {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}

@@ -25,7 +25,7 @@
                 !isDefined(actual)
                   ? 'info--text text--darken-2'
                   : isCorrectPrediction
-                  ? 'success--text'
+                  ? 'primary--text'
                   : 'error--text'
               "
             >

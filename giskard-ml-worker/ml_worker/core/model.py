@@ -1,3 +1,4 @@
+import logging
 from typing import List, Any, Optional, Callable, Iterable, Union
 
 import numpy
@@ -65,15 +66,30 @@ class GiskardModel:
 
     def prepare_dataframe(self, dataset):
         df = dataset.df.copy()
-        df = self.cast_column_to_types(df, dataset.column_types)
-        if dataset.target and dataset.target in df.columns:
-            df.drop(dataset.target, axis=1, inplace=True)
+        column_types = dict(dataset.column_types) if dataset.column_types else None
+        if dataset.target:
+            if dataset.target in df.columns:
+                df.drop(dataset.target, axis=1, inplace=True)
+            if column_types and dataset.target in column_types:
+                del column_types[dataset.target]
+
         if self.feature_names:
+            if set(self.feature_names) > set(df.columns):
+                column_names = set(self.feature_names) - set(df.columns)
+                raise ValueError(
+                    f"The following columns are not found in the dataset: {', '.join(sorted(column_names))}")
             df = df[self.feature_names]
+            if column_types:
+                column_types = {k: v for k, v in column_types.items() if k in self.feature_names}
+
+        if column_types:
+            df = self.cast_column_to_types(df, column_types)
         return df
 
     @staticmethod
     def cast_column_to_types(df, column_types):
+        current_types = df.dtypes.apply(lambda x: x.name).to_dict()
+        logging.info(f"Casting dataframe columns from {current_types} to {column_types}")
         if column_types:
             try:
                 df = df.astype(column_types)

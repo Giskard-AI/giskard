@@ -1,8 +1,8 @@
 import logging
-import time
 
 import pandas as pd
 import pytest
+import time
 from sklearn import model_selection
 from sklearn.compose import ColumnTransformer
 from sklearn.impute import SimpleImputer
@@ -99,4 +99,40 @@ def german_credit_model(german_credit_data) -> GiskardModel:
         feature_names=list(input_types),
         classification_threshold=0.5,
         classification_labels=clf.classes_
+    )
+
+
+@pytest.fixture()
+def german_credit_catboost(german_credit_data) -> GiskardModel:
+    from catboost import CatBoostClassifier
+    from sklearn import model_selection
+
+    start = time.time()
+    feature_types = {i: input_types[i] for i in input_types if i != 'default'}
+
+    columns_to_encode = [key for key in feature_types.keys() if feature_types[key] == "category"]
+
+    credit = german_credit_data.df
+
+    Y = credit['default']
+    X = credit.drop(columns="default")
+    X_train, X_test, Y_train, Y_test = model_selection.train_test_split(X, Y,
+                                                                        test_size=0.20,
+                                                                        random_state=30,
+                                                                        stratify=Y)
+    cb = CatBoostClassifier(iterations=2,
+                            learning_rate=1,
+                            depth=2)
+    cb.fit(X_train, Y_train, columns_to_encode)
+
+    train_time = time.time() - start
+    model_score = cb.score(X_test, Y_test)
+    logging.info(f"Trained model with score: {model_score} in {round(train_time * 1000)} ms")
+
+    return GiskardModel(
+        prediction_function=cb.predict_proba,
+        model_type='classification',
+        feature_names=list(input_types),
+        classification_threshold=0.5,
+        classification_labels=cb.classes_
     )
