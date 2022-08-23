@@ -1,6 +1,7 @@
 import os
-import sys
 from logging.config import fileConfig
+
+import sys
 
 
 def resolve(filename):
@@ -10,11 +11,12 @@ def resolve(filename):
             return path
 
 
-def load_logging_config():
-    from main import settings
-
-    if settings.environment:
-        config_path = resolve(f'logging_config{"." + settings.environment}.ini')
+def load_logging_config(env=None):
+    if env is None:
+        from main import settings
+        env = settings.environment
+    if env:
+        config_path = resolve(f'logging_config{"." + env}.ini')
         if config_path:
             fileConfig(config_path)
         else:

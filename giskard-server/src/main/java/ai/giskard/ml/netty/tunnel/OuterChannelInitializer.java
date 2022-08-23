@@ -8,6 +8,7 @@ import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
+import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
 import org.apache.commons.codec.binary.Hex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,6 +19,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.concurrent.ExecutionException;
 
 public class OuterChannelInitializer extends ChannelInitializer<SocketChannel> {
+    boolean withHeaders = false;
 
     private static class InnerServerStartResponse {
         final SettableFuture<Channel> innerChannelFuture;
@@ -43,6 +45,7 @@ public class OuterChannelInitializer extends ChannelInitializer<SocketChannel> {
         //pipeline.addLast(serverHandler);
         pipeline.addLast(
             //new LoggingHandler(LogLevel.DEBUG),
+            new LengthFieldBasedFrameDecoder(Integer.MAX_VALUE, 8,4),
             new ChannelInboundHandlerAdapter() {
                 @Override
                 public void channelInactive(ChannelHandlerContext ctx) throws Exception {
@@ -55,8 +58,13 @@ public class OuterChannelInitializer extends ChannelInitializer<SocketChannel> {
                     try {
                         Channel innerChannel = innerServerData.innerChannelFuture.get();
                         ByteBuf in = (ByteBuf) msg;
-                        //String client = in.readBytes(8).toString(StandardCharsets.UTF_8);
-                        log.debug("Outer->Inner: Writing {} bytes from {} to {} : {}", in.readableBytes(), ctx.channel().id(), "-", Hex.encodeHexString(in.nioBuffer()));
+                        int contentLength = 0;
+                        if (withHeaders) {
+                            String client = in.readBytes(8).toString(StandardCharsets.UTF_8);
+                            int len = in.readInt();
+                            contentLength = in.readableBytes();
+                        }
+                        log.debug("Outer->Inner: Writing {} bytes from {} to {} : {}", contentLength, ctx.channel().id(), "-", Hex.encodeHexString(in.nioBuffer()));
                         innerChannel.writeAndFlush(in);
                     } catch (ExecutionException | InterruptedException e) {
                         throw new RuntimeException(e);
@@ -87,9 +95,13 @@ public class OuterChannelInitializer extends ChannelInitializer<SocketChannel> {
                         @Override
                         public void channelRead(ChannelHandlerContext ctx, Object msg) {
                             ByteBuf in = (ByteBuf) msg;
-                            log.debug("Inner->Outer: Writing {} bytes from {} to {} : {}", in.readableBytes(), ch.id(), outerChannel.id(), Hex.encodeHexString(in.nioBuffer()));
-                            outerChannel.write(Unpooled.copiedBuffer(ch.id().asShortText(), StandardCharsets.UTF_8));
-                            outerChannel.writeAndFlush(msg);
+                            int originalLength = in.readableBytes();
+                            log.debug("Inner->Outer: Writing {} bytes from {} to {} : {}", originalLength, ch.id(), outerChannel.id(), Hex.encodeHexString(in.nioBuffer()));
+                            if (withHeaders) {
+                                outerChannel.write(Unpooled.copiedBuffer(ch.id().asShortText(), StandardCharsets.UTF_8));
+                                outerChannel.write(Unpooled.copyInt(originalLength));
+                            }
+                            outerChannel.writeAndFlush(in);
                         }
                     });
             }

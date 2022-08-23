@@ -20,13 +20,16 @@ from ml_worker_pb2 import EchoMsg, UploadStatusCode, FileUploadRequest
 
 logger = logging.getLogger()
 
+cnt = 1
+
 
 class MLWorkerServiceImpl(MLWorkerServicer):
     def __init__(self) -> None:
         super().__init__()
 
     def echo(self, request, context):
-        return EchoMsg(msg="Response :" + request.msg)
+        globals()['cnt'] += 1
+        return EchoMsg(msg=f"Response {cnt}: {request.msg}")
 
     def upload(self, request_iterator, context):
         upload_message: FileUploadRequest

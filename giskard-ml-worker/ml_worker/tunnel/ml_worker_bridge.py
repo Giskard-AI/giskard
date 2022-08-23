@@ -4,10 +4,12 @@ import socket
 
 from ml_worker.utils.logging import load_logging_config
 
-load_logging_config()
+load_logging_config('')
 logger = logging.getLogger()
 
 connected_clients = {}
+
+with_headers = False
 
 
 class MLWorkerTunnel:
@@ -18,6 +20,8 @@ class MLWorkerTunnel:
         self.local_port = local_port
         self.remote_host = remote_host
         self.remote_port = remote_port
+        self.buffers = {}
+        self.buffer = b''
 
         self.remote_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
@@ -43,22 +47,18 @@ class MLWorkerTunnel:
         self.loop.create_task(self.grpc_to_remote(client, grpc_socket))
 
     async def send(self, sock, data):
-        logger.info(f"Sending {len(data)} bytes from to {sock.getpeername()}")
-        # sock.setblocking(True)
-        try:
-            if self.remote_socket == sock:
-                assert data[:8] in connected_clients
-            await self.loop.sock_sendall(sock, data)
-        except Exception as e:
-            logger.error("Failed to send data", e)
+        sock.setblocking(True)
+        logger.info(f"Sending {len(data)} bytes to {sock.getpeername()}")
+        await self.loop.sock_sendall(sock, data)
+        logger.info(f"Sent {len(data)} bytes to {sock.getpeername()}")
 
-    async def recv(self, sock: socket.socket, size=1024 * 1):
+    async def recv(self, sock: socket.socket, size=1024 * 256):
         data = None
-        sock.setblocking(False)
-        try:
-            data = await self.loop.sock_recv(sock, size)
-        except Exception as e:
-            logger.error("Failed to send data", e)
+        sock.setblocking(True)
+        logger.info(f"Reading from {sock.getpeername()}")
+        data = await self.loop.sock_recv(sock, size)
+        logger.info(f"Read {len(data)} bytes from {sock.getpeername()}")
+
         if not len(data):
             if not self.is_connected(sock):
                 s: socket.socket
@@ -69,27 +69,45 @@ class MLWorkerTunnel:
             logger.error("Connection lost")
             raise Exception("Connection lost")
         if self.remote_socket == sock:
-            return data[8:], data[:8]
+            if with_headers:
+                self.buffer += data
+                client = self.buffer[:8]
+                length = int.from_bytes(self.buffer[8:12], "big")
+                payload = self.buffer[12:12 + length]
+                self.buffer = self.buffer[12 + length:]
+                return payload, client
+            else:
+                return data, None
         else:
             return data, None
 
     async def send_to_remote(self, client: bytes, data: bytes):
-        await self.send(self.remote_socket, client + data)
+        if with_headers:
+            logger.info(f"Send to remote: {client.decode()}-{len(data)}")
+            await self.send(self.remote_socket, client + len(data).to_bytes(4, "big") + data)
+        else:
+            await self.send(self.remote_socket, data)
 
     async def remote_to_grpc(self):
         logger.info("Created remote->grpc sync task")
         while True:
-            data, client = await self.recv(self.remote_socket)
-            if client not in connected_clients:
-                await self.connect_and_handshake(client, data)
-            grpc_socket = connected_clients.get(client)
-            await self.send(grpc_socket, data)
+            try:
+                data, client = await self.recv(self.remote_socket)
+                if client not in connected_clients:
+                    await self.connect_and_handshake(client, data)
+                grpc_socket = connected_clients.get(client)
+                await self.send(grpc_socket, data)
+            except Exception as e:
+                print(e)
 
     async def grpc_to_remote(self, client, grpc_socket):
         logger.info("Created grpc->remote sync task")
         while True:
-            data, _ = await self.recv(grpc_socket)
-            await self.send_to_remote(client, data)
+            try:
+                data, _ = await self.recv(grpc_socket)
+                await self.send_to_remote(client, data)
+            except Exception as e:
+                print(e)
 
     @staticmethod
     def is_connected(s: socket.socket):
