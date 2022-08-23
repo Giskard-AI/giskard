@@ -47,14 +47,14 @@ class MLWorkerTunnel:
         self.loop.create_task(self.grpc_to_remote(client, grpc_socket))
 
     async def send(self, sock, data):
-        sock.setblocking(True)
+        # sock.setblocking(False)
         logger.info(f"Sending {len(data)} bytes to {sock.getpeername()}")
         await self.loop.sock_sendall(sock, data)
         logger.info(f"Sent {len(data)} bytes to {sock.getpeername()}")
 
     async def recv(self, sock: socket.socket, size=1024 * 256):
         data = None
-        sock.setblocking(True)
+        sock.setblocking(False)
         logger.info(f"Reading from {sock.getpeername()}")
         data = await self.loop.sock_recv(sock, size)
         logger.info(f"Read {len(data)} bytes from {sock.getpeername()}")

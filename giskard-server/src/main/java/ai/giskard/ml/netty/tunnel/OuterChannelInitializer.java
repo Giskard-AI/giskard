@@ -42,10 +42,11 @@ public class OuterChannelInitializer extends ChannelInitializer<SocketChannel> {
         this.innerServerData = startInnerServer(outerChannel);
 
         ChannelPipeline pipeline = outerChannel.pipeline();
-        //pipeline.addLast(serverHandler);
+        if (withHeaders) {
+            pipeline.addLast(new LengthFieldBasedFrameDecoder(Integer.MAX_VALUE, 8, 4));
+        }
         pipeline.addLast(
             //new LoggingHandler(LogLevel.DEBUG),
-            new LengthFieldBasedFrameDecoder(Integer.MAX_VALUE, 8,4),
             new ChannelInboundHandlerAdapter() {
                 @Override
                 public void channelInactive(ChannelHandlerContext ctx) throws Exception {
