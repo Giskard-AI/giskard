@@ -16,7 +16,7 @@ class PerformanceTests(AbstractTestCollection):
         if not dataset.target:
             raise ValueError("Target column is not available")
 
-    def test_auc(self, actual_slice: GiskardDataset, model: GiskardModel, threshold=1):
+    def test_auc(self, actual_slice: GiskardDataset, model: GiskardModel, threshold=1.0):
 
         """
         Test if the model AUC performance is higher than a threshold for a given slice
@@ -54,7 +54,7 @@ class PerformanceTests(AbstractTestCollection):
                 passed=metric >= threshold
             ))
 
-    def _test_classification_score(self, score_fn, gsk_dataset: GiskardDataset, model: GiskardModel, threshold=1):
+    def _test_classification_score(self, score_fn, gsk_dataset: GiskardDataset, model: GiskardModel, threshold=1.0):
         self._verify_target_availability(gsk_dataset)
         is_binary_classification = len(model.classification_labels) == 2
         gsk_dataset.df.reset_index(drop=True, inplace=True)
@@ -77,7 +77,7 @@ class PerformanceTests(AbstractTestCollection):
                 passed=metric >= threshold
             ))
 
-    def _test_accuracy_score(self, gsk_dataset: GiskardDataset, model: GiskardModel, threshold=1):
+    def _test_accuracy_score(self, gsk_dataset: GiskardDataset, model: GiskardModel, threshold=1.0):
         self._verify_target_availability(gsk_dataset)
         gsk_dataset.df.reset_index(drop=True, inplace=True)
         prediction = model.run_predict(gsk_dataset).prediction
@@ -92,7 +92,7 @@ class PerformanceTests(AbstractTestCollection):
                 passed=metric >= threshold
             ))
 
-    def _test_regression_score(self, score_fn, giskard_ds, model: GiskardModel, threshold=1, r2=False):
+    def _test_regression_score(self, score_fn, giskard_ds, model: GiskardModel, threshold=1.0, r2=False):
         results_df = pd.DataFrame()
         giskard_ds.df.reset_index(drop=True, inplace=True)
         self._verify_target_availability(giskard_ds)
@@ -109,7 +109,7 @@ class PerformanceTests(AbstractTestCollection):
                 passed=metric >= threshold if r2 else metric <= threshold
             ))
 
-    def test_f1(self, actual_slice: GiskardDataset, model: GiskardModel, threshold=1):
+    def test_f1(self, actual_slice: GiskardDataset, model: GiskardModel, threshold=1.0):
         """
         Test if the model F1 score is higher than a defined threshold for a given slice
 
@@ -133,7 +133,7 @@ class PerformanceTests(AbstractTestCollection):
         """
         return self._test_classification_score(f1_score, actual_slice, model, threshold)
 
-    def test_accuracy(self, actual_slice: GiskardDataset, model: GiskardModel, threshold=1):
+    def test_accuracy(self, actual_slice: GiskardDataset, model: GiskardModel, threshold=1.0):
         """
         Test if the model Accuracy is higher than a threshold for a given slice
 
@@ -157,7 +157,7 @@ class PerformanceTests(AbstractTestCollection):
         """
         return self._test_accuracy_score(actual_slice, model, threshold)
 
-    def test_precision(self, actual_slice, model: GiskardModel, threshold=1):
+    def test_precision(self, actual_slice, model: GiskardModel, threshold=1.0):
         """
         Test if the model Precision is higher than a threshold for a given slice
 
@@ -181,7 +181,7 @@ class PerformanceTests(AbstractTestCollection):
         return self._test_classification_score(precision_score,
                                                actual_slice, model, threshold)
 
-    def test_recall(self, actual_slice, model: GiskardModel, threshold=1):
+    def test_recall(self, actual_slice, model: GiskardModel, threshold=1.0):
         """
         Test if the model Recall is higher than a threshold for a given slice
 
@@ -209,7 +209,7 @@ class PerformanceTests(AbstractTestCollection):
     def _get_rmse(y_actual, y_predicted):
         return np.sqrt(mean_squared_error(y_actual, y_predicted))
 
-    def test_rmse(self, actual_slice, model: GiskardModel, threshold=1):
+    def test_rmse(self, actual_slice, model: GiskardModel, threshold=1.0):
         """
         Test if the model RMSE is lower than a threshold
 
@@ -232,7 +232,7 @@ class PerformanceTests(AbstractTestCollection):
         """
         return self._test_regression_score(self._get_rmse, actual_slice, model, threshold)
 
-    def test_mae(self, actual_slice, model: GiskardModel, threshold=1):
+    def test_mae(self, actual_slice, model: GiskardModel, threshold=1.0):
         """
         Test if the model Mean Absolute Error is lower than a threshold
 
@@ -258,7 +258,7 @@ class PerformanceTests(AbstractTestCollection):
         """
         return self._test_regression_score(mean_absolute_error, actual_slice, model, threshold)
 
-    def test_r2(self, actual_slice, model: GiskardModel, threshold=1):
+    def test_r2(self, actual_slice, model: GiskardModel, threshold=1.0):
         """
         Test if the model R-Squared is higher than a threshold
 
