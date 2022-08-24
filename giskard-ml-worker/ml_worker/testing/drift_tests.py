@@ -274,7 +274,7 @@ class DriftTests(AbstractTestCollection):
         if filtered_modalities:
             messages = [TestMessage(
                 type=TestMessageType.ERROR,
-                text=f"The prediction is drifting for the following modalities {*filtered_modalities,}"
+                text=f"The data is drifting for the following modalities {*filtered_modalities,}"
             )]
 
         return self.save_results(SingleTestResult(
@@ -329,7 +329,7 @@ class DriftTests(AbstractTestCollection):
         if not passed:
             messages = [TestMessage(
                 type=TestMessageType.ERROR,
-                text=f"The prediction is drifting (p-value is equal to {result.pvalue} and is below the test risk level {threshold}) "
+                text=f"The data is drifting (p-value is equal to {result.pvalue} and is below the test risk level {threshold}) "
 
             )]
         return self.save_results(SingleTestResult(
@@ -384,7 +384,7 @@ class DriftTests(AbstractTestCollection):
         if not passed:
             messages = [TestMessage(
                 type=TestMessageType.ERROR,
-                text=f"The prediction is drifting (metric is equal to {metric} and is below the test risk level {threshold}) "
+                text=f"The data is drifting (metric is equal to {metric} and is below the test risk level {threshold}) "
 
             )]
         return self.save_results(SingleTestResult(
