@@ -104,6 +104,7 @@ export default class PredictionResults extends Vue {
   @Prop({required: true}) datasetId!: number;
   @Prop({required: true}) predictionTask!: ModelType;
   @Prop() targetFeature!: string;
+  @Prop() modelFeatures!: string[];
   @Prop() classificationLabels!: string[];
   @Prop() inputData!: { [key: string]: string };
   @Prop({default: false}) modified!: boolean;
@@ -138,10 +139,11 @@ export default class PredictionResults extends Vue {
     if (Object.keys(this.inputData).length) {
       try {
         this.loading = true;
+
         const predictionResult = (await api.predict(
             this.model.id,
             this.datasetId,
-            this.inputData,
+            _.pick(this.inputData, this.modelFeatures),
             this.controller
         ))
         this.prediction = predictionResult.prediction;
