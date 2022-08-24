@@ -2,7 +2,9 @@
   <div>
     <v-container class="mt-2 mb-0" v-if="isProjectOwnerOrAdmin">
       <div class="d-flex justify-end align-center">
-        <v-btn tile small class="mx-2" href="https://docs.giskard.ai/start/guides/upload-your-model" target="_blank">Upload with API</v-btn>
+        <v-btn tile small class="mx-2" href="https://docs.giskard.ai/start/guides/upload-your-model" target="_blank">
+          Upload with API
+        </v-btn>
         <v-btn text @click="loadDatasets()" color="secondary">Reload
           <v-icon right>refresh</v-icon>
         </v-btn>
@@ -74,6 +76,9 @@ import {commitAddNotification} from '@/store/main/mutations';
 import {FileDTO, ProjectDTO} from '@/generated-sources';
 import mixpanel from "mixpanel-browser";
 
+const GISKARD_INDEX_COLUMN_NAME = '_GISKARD_INDEX_';
+
+
 @Component
 export default class Datasets extends Vue {
   @Prop({type: Number, required: true}) projectId!: number;
@@ -82,7 +87,7 @@ export default class Datasets extends Vue {
   public files: FileDTO[] = [];
   public fileData = null;
   public lastVisitedFileId;
-  public filePreviewHeader: { text: string, value: string }[] = [];
+  public filePreviewHeader: { text: string, value: string, sortable: boolean }[] = [];
   public filePreviewData: any[] = [];
 
   activated() {
@@ -124,13 +129,20 @@ export default class Datasets extends Vue {
 
   public async peakDataFile(id: number) {
     if (this.lastVisitedFileId != id) {
-      this.lastVisitedFileId = id; // this is a trick to avoid recalling the api every time one panel is opened/closed 
+      this.lastVisitedFileId = id; // this is a trick to avoid recalling the api every time one panel is opened/closed
       try {
         const response = await api.peekDataFile(id)
         const headers = Object.keys(response[0])
-        this.filePreviewHeader = headers.map(e => {
-          return {text: e.trim(), value: e, sortable: false,}
+        this.filePreviewHeader = headers.filter(e => e != GISKARD_INDEX_COLUMN_NAME).map(e => {
+          return {text: e.trim(), value: e, sortable: false}
         });
+        if (headers.includes(GISKARD_INDEX_COLUMN_NAME)) {
+          this.filePreviewHeader = [{
+            text: '#',
+            value: GISKARD_INDEX_COLUMN_NAME,
+            sortable: false
+          }].concat(this.filePreviewHeader);
+        }
         this.filePreviewData = response
       } catch (error) {
         commitAddNotification(this.$store, {content: error.response.statusText, color: 'error'});
