@@ -63,6 +63,7 @@ export default class PredictionExplanations extends Vue {
   @Prop() targetFeature!: string;
   @Prop() classificationLabels!: string[];
   @Prop({default: {}}) inputData!: object;
+  @Prop() modelFeatures!: string[];
 
   loading: boolean = false;
   errorMsg: string = "";
@@ -95,7 +96,7 @@ export default class PredictionExplanations extends Vue {
         const explainResponse = await api.explain(
             this.modelId,
             this.datasetId,
-            this.inputData,
+            _.pick(this.inputData, this.modelFeatures),
             this.controller
         )
         this.fullExplanations = explainResponse.explanations;
