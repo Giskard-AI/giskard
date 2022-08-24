@@ -24,6 +24,7 @@ import java.nio.file.Path;
 import java.util.List;
 
 import static ai.giskard.domain.ml.table.RowFilterType.CUSTOM;
+import static ai.giskard.service.DatasetService.GISKARD_DATASET_INDEX_COLUMN_NAME;
 import static ai.giskard.web.rest.errors.Entity.INSPECTION;
 
 @Service
@@ -194,7 +195,7 @@ public class InspectionService {
     public Table getRowsFiltered(@NotNull Long inspectionId, @NotNull Filter filter) throws FileNotFoundException {
         Inspection inspection = inspectionRepository.findById(inspectionId).orElseThrow(() -> new EntityNotFoundException(INSPECTION, inspectionId));
         Table table = datasetService.readTableByDatasetId(inspection.getDataset().getId());
-        table.addColumns(IntColumn.indexColumn("Index", table.rowCount(), 0));
+        table.addColumns(IntColumn.indexColumn(GISKARD_DATASET_INDEX_COLUMN_NAME, table.rowCount(), 0));
         Selection selection = inspection.getModel().getModelType().isClassification() ? getSelection(inspection, filter) : getSelectionRegression(inspection, filter);
         return selection == null ? table : table.where(selection);
     }
