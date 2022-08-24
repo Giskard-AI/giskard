@@ -16,7 +16,6 @@ class GiskardDataset:
         self.feature_types = feature_types
         self.column_types = column_types
 
-
     @property
     def columns(self):
         return self.df.columns
