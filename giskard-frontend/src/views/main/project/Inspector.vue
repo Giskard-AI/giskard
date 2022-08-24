@@ -103,6 +103,7 @@
               :model="model"
               :dataset-id="dataset.id"
               :targetFeature="dataset.target"
+              :modelFeatures="modelFeatures"
               :classificationLabels="model.classificationLabels"
               :predictionTask="model.modelType"
               :inputData="inputData"
@@ -132,6 +133,7 @@
                                           :classificationLabels="model.classificationLabels"
                                           :predictionTask="model.modelType"
                                           :inputData="inputData"
+                                          :modelFeatures="modelFeatures"
                   />
                 </v-tab-item>
                 <v-tab-item v-if='textFeatureNames.length'>
