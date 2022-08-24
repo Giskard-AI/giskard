@@ -17,7 +17,7 @@ from ml_worker.testing.abstract_test_collection import AbstractTestCollection
 
 class DriftTests(AbstractTestCollection):
     # Class Variable
-    other_modalities = '^other_modalities_[a-z0-9]{32}$'
+    other_modalities_pattern = '^other_modalities_[a-z0-9]{32}$'
 
     @staticmethod
     def _calculate_psi(category, actual_distribution, expected_distribution):
@@ -202,7 +202,7 @@ class DriftTests(AbstractTestCollection):
 
         main_drifting_modalities_bool = output_data["Psi"] > psi_contribution_percent * total_psi
         modalities_list = output_data[main_drifting_modalities_bool]["Modality"].tolist()
-        filtered_modalities = [w for w in modalities_list if not re.match(DriftTests.other_modalities, w)]
+        filtered_modalities = [w for w in modalities_list if not re.match(DriftTests.other_modalities_pattern, w)]
         messages: Union[typing.List[TestMessage], None] = None
 
         if filtered_modalities:
@@ -267,7 +267,7 @@ class DriftTests(AbstractTestCollection):
 
         main_drifting_modalities_bool = output_data["Chi_square"] > chi_square_contribution_percent * chi_square
         modalities_list = output_data[main_drifting_modalities_bool]["Modality"].tolist()
-        filtered_modalities = [w for w in modalities_list if not re.match(DriftTests.other_modalities, w)]
+        filtered_modalities = [w for w in modalities_list if not re.match(DriftTests.other_modalities_pattern, w)]
 
         messages: Union[typing.List[TestMessage], None] = None
 
@@ -444,7 +444,7 @@ class DriftTests(AbstractTestCollection):
 
         main_drifting_modalities_bool = output_data["Psi"] > psi_contribution_percent * total_psi
         modalities_list = output_data[main_drifting_modalities_bool]["Modality"].tolist()
-        filtered_modalities = [w for w in modalities_list if not re.match(DriftTests.other_modalities, w)]
+        filtered_modalities = [w for w in modalities_list if not re.match(DriftTests.other_modalities_pattern, w)]
         messages: Union[typing.List[TestMessage], None] = None
 
         if filtered_modalities:
@@ -516,7 +516,7 @@ class DriftTests(AbstractTestCollection):
         main_drifting_modalities_bool = output_data["Chi_square"] > chi_square_contribution_percent * chi_square
         modalities_list = output_data[main_drifting_modalities_bool]["Modality"].tolist()
 
-        filtered_modalities = [w for w in modalities_list if not re.match(DriftTests.other_modalities, w)]
+        filtered_modalities = [w for w in modalities_list if not re.match(DriftTests.other_modalities_pattern, w)]
 
         messages: Union[typing.List[TestMessage], None] = None
 
