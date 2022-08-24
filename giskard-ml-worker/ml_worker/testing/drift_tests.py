@@ -131,7 +131,7 @@ class DriftTests(AbstractTestCollection):
                                                                       f' type "{column_type}"'
 
     @staticmethod
-    def _validate_column_name(actual_ds, column_name, reference_ds):
+    def _validate_column_name(actual_ds, reference_ds, column_name):
         assert column_name in actual_ds.columns, \
             f'"{column_name}" is not a column of Actual Dataset Columns: {", ".join(actual_ds.columns)}'
         assert column_name in reference_ds.columns, \
@@ -147,7 +147,7 @@ class DriftTests(AbstractTestCollection):
     def _generate_series(self, actual_ds, reference_ds, column_name, column_type):
         actual_ds.df.reset_index(drop=True, inplace=True)
         reference_ds.df.reset_index(drop=True, inplace=True)
-        self._validate_column_name(actual_ds, column_name, reference_ds)
+        self._validate_column_name(actual_ds, reference_ds, column_name)
         self._validate_column_type(actual_ds, column_name, column_type)
         self._validate_column_type(reference_ds, column_name, column_type)
         actual_series = actual_ds.df[column_name]
