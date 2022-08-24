@@ -35,6 +35,7 @@ import java.util.stream.Collectors;
 @Transactional
 @RequiredArgsConstructor
 public class DatasetService {
+    public static final String GISKARD_DATASET_INDEX_COLUMN_NAME = "_GISKARD_INDEX_";
     private final Logger log = LoggerFactory.getLogger(DatasetService.class);
 
     final UserRepository userRepository;
@@ -97,7 +98,7 @@ public class DatasetService {
      */
     public Table getRows(@NotNull Long id, @NotNull int rangeMin, @NotNull int rangeMax) {
         Table table = readTableByDatasetId(id);
-        table.addColumns(IntColumn.indexColumn("Index", table.rowCount(), 0));
+        table.addColumns(IntColumn.indexColumn(GISKARD_DATASET_INDEX_COLUMN_NAME, table.rowCount(), 0));
         return table.inRange(rangeMin, rangeMax);
     }
 
