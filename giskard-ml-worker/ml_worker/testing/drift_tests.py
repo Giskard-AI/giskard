@@ -196,20 +196,8 @@ class DriftTests(AbstractTestCollection):
         """
         actual_series, reference_series = self._generate_series(actual_ds, reference_ds, column_name, 'category')
 
-        total_psi, output_data = self._calculate_drift_psi(actual_series, reference_series, max_categories)
-
-        passed = True if threshold is None else total_psi <= threshold
-
-        main_drifting_modalities_bool = output_data["Psi"] > psi_contribution_percent * total_psi
-        modalities_list = output_data[main_drifting_modalities_bool]["Modality"].tolist()
-        filtered_modalities = [w for w in modalities_list if not re.match(DriftTests.other_modalities_pattern, w)]
-        messages: Union[typing.List[TestMessage], None] = None
-
-        if filtered_modalities:
-            messages = [TestMessage(
-                type=TestMessageType.ERROR,
-                text=f"The data is drifting for the following modalities {*filtered_modalities,}"
-            )]
+        messages, passed, total_psi = self._test_series_drift_psi(actual_series, reference_series, 'data',
+                                                                  max_categories, psi_contribution_percent, threshold)
 
         return self.save_results(SingleTestResult(
             actual_slices_size=[len(actual_series)],
@@ -262,20 +250,9 @@ class DriftTests(AbstractTestCollection):
         """
         actual_series, reference_series = self._generate_series(actual_ds, reference_ds, column_name, 'category')
 
-        chi_square, p_value, output_data = self._calculate_chi_square(actual_series, reference_series, max_categories)
-        passed = p_value > threshold
-
-        main_drifting_modalities_bool = output_data["Chi_square"] > chi_square_contribution_percent * chi_square
-        modalities_list = output_data[main_drifting_modalities_bool]["Modality"].tolist()
-        filtered_modalities = [w for w in modalities_list if not re.match(DriftTests.other_modalities_pattern, w)]
-
-        messages: Union[typing.List[TestMessage], None] = None
-
-        if filtered_modalities:
-            messages = [TestMessage(
-                type=TestMessageType.ERROR,
-                text=f"The data is drifting for the following modalities {*filtered_modalities,}"
-            )]
+        messages, p_value, passed = self._test_series_drift_chi(actual_series, reference_series, 'data',
+                                                                chi_square_contribution_percent, max_categories,
+                                                                threshold)
 
         return self.save_results(SingleTestResult(
             actual_slices_size=[len(actual_series)],
@@ -324,14 +301,8 @@ class DriftTests(AbstractTestCollection):
 
         passed = result.pvalue >= threshold
 
-        messages: Union[typing.List[TestMessage], None] = None
+        messages = self._generate_message_no_modalities(passed, result, threshold, 'data')
 
-        if not passed:
-            messages = [TestMessage(
-                type=TestMessageType.ERROR,
-                text=f"The data is drifting (p-value is equal to {result.pvalue} and is below the test risk level {threshold}) "
-
-            )]
         return self.save_results(SingleTestResult(
             actual_slices_size=[len(actual_series)],
             reference_slices_size=[len(reference_series)],
@@ -438,20 +409,8 @@ class DriftTests(AbstractTestCollection):
         reference_slice.df.reset_index(drop=True, inplace=True)
         prediction_reference = pd.Series(model.run_predict(reference_slice).prediction)
         prediction_actual = pd.Series(model.run_predict(actual_slice).prediction)
-        total_psi, output_data = self._calculate_drift_psi(prediction_actual, prediction_reference, max_categories)
-
-        passed = True if threshold is None else total_psi <= threshold
-
-        main_drifting_modalities_bool = output_data["Psi"] > psi_contribution_percent * total_psi
-        modalities_list = output_data[main_drifting_modalities_bool]["Modality"].tolist()
-        filtered_modalities = [w for w in modalities_list if not re.match(DriftTests.other_modalities_pattern, w)]
-        messages: Union[typing.List[TestMessage], None] = None
-
-        if filtered_modalities:
-            messages = [TestMessage(
-                type=TestMessageType.ERROR,
-                text=f"The prediction is drifting for the following modalities {*filtered_modalities,}"
-            )]
+        messages, passed, total_psi = self._test_series_drift_psi(prediction_actual, prediction_reference, 'prediction',
+                                                                  max_categories, psi_contribution_percent, threshold)
 
         return self.save_results(SingleTestResult(
             actual_slices_size=[len(actual_slice)],
@@ -460,6 +419,27 @@ class DriftTests(AbstractTestCollection):
             metric=total_psi,
             messages=messages
         ))
+
+    def _test_series_drift_psi(self, actual_series, reference_series, test_data, max_categories,
+                               psi_contribution_percent,
+                               threshold):
+        total_psi, output_data = self._calculate_drift_psi(actual_series, reference_series, max_categories)
+        passed = True if threshold is None else total_psi <= threshold
+        main_drifting_modalities_bool = output_data["Psi"] > psi_contribution_percent * total_psi
+        messages = self._generate_message_modalities(main_drifting_modalities_bool, output_data, test_data)
+        return messages, passed, total_psi
+
+    @staticmethod
+    def _generate_message_modalities(main_drifting_modalities_bool, output_data, test_data):
+        modalities_list = output_data[main_drifting_modalities_bool]["Modality"].tolist()
+        filtered_modalities = [w for w in modalities_list if not re.match(DriftTests.other_modalities_pattern, w)]
+        messages: Union[typing.List[TestMessage], None] = None
+        if filtered_modalities:
+            messages = [TestMessage(
+                type=TestMessageType.ERROR,
+                text=f"The {test_data} is drifting for the following modalities {*filtered_modalities,}"
+            )]
+        return messages
 
     def test_drift_prediction_chi_square(self,
                                          reference_slice: GiskardDataset,
@@ -508,23 +488,9 @@ class DriftTests(AbstractTestCollection):
         prediction_reference = pd.Series(model.run_predict(reference_slice).prediction)
         prediction_actual = pd.Series(model.run_predict(actual_slice).prediction)
 
-        chi_square, p_value, output_data = self._calculate_chi_square(prediction_actual, prediction_reference,
-                                                                      max_categories)
-
-        passed = p_value > threshold
-
-        main_drifting_modalities_bool = output_data["Chi_square"] > chi_square_contribution_percent * chi_square
-        modalities_list = output_data[main_drifting_modalities_bool]["Modality"].tolist()
-
-        filtered_modalities = [w for w in modalities_list if not re.match(DriftTests.other_modalities_pattern, w)]
-
-        messages: Union[typing.List[TestMessage], None] = None
-
-        if filtered_modalities:
-            messages = [TestMessage(
-                type=TestMessageType.ERROR,
-                text=f"The prediction is drifting for the following modalities {*filtered_modalities,}"
-            )]
+        messages, p_value, passed = self._test_series_drift_chi(prediction_actual, prediction_reference, 'prediction',
+                                                                chi_square_contribution_percent, max_categories,
+                                                                threshold)
 
         return self.save_results(SingleTestResult(
             actual_slices_size=[len(actual_slice)],
@@ -533,6 +499,16 @@ class DriftTests(AbstractTestCollection):
             metric=p_value,
             messages=messages
         ))
+
+    def _test_series_drift_chi(self, actual_series, reference_series, test_data, chi_square_contribution_percent,
+                               max_categories,
+                               threshold):
+        chi_square, p_value, output_data = self._calculate_chi_square(actual_series, reference_series,
+                                                                      max_categories)
+        passed = p_value > threshold
+        main_drifting_modalities_bool = output_data["Chi_square"] > chi_square_contribution_percent * chi_square
+        messages = self._generate_message_modalities(main_drifting_modalities_bool, output_data, test_data)
+        return messages, p_value, passed
 
     def test_drift_prediction_ks(self,
                                  reference_slice: GiskardDataset,
@@ -588,14 +564,7 @@ class DriftTests(AbstractTestCollection):
 
         passed = True if threshold is None else result.pvalue >= threshold
 
-        messages: Union[typing.List[TestMessage], None] = None
-
-        if not passed:
-            messages = [TestMessage(
-                type=TestMessageType.ERROR,
-                text=f"The prediction is drifting (pvalue is equal to {result.pvalue} and is below the test risk level {threshold}) "
-
-            )]
+        messages = self._generate_message_no_modalities(passed, result, threshold, 'prediction')
 
         return self.save_results(SingleTestResult(
             actual_slices_size=[len(actual_slice)],
@@ -604,6 +573,18 @@ class DriftTests(AbstractTestCollection):
             metric=result.pvalue,
             messages=messages
         ))
+
+    @staticmethod
+    def _generate_message_no_modalities(passed, result, threshold, data_type):
+        messages: Union[typing.List[TestMessage], None] = None
+        if not passed:
+            messages = [TestMessage(
+                type=TestMessageType.ERROR,
+                text=f"The {data_type} is drifting (p-value is equal to {result.pvalue} "
+                     f"and is below the test risk level {threshold}) "
+
+            )]
+        return messages
 
     def test_drift_prediction_earth_movers_distance(self,
                                                     reference_slice: GiskardDataset,
@@ -658,7 +639,8 @@ class DriftTests(AbstractTestCollection):
         if not passed:
             messages = [TestMessage(
                 type=TestMessageType.ERROR,
-                text=f"The prediction is drifting (metric is equal to {metric} and is above the test risk level {threshold}) "
+                text=f"The prediction is drifting (metric is equal to {metric} "
+                     f"and is above the test risk level {threshold}) "
 
             )]
         return self.save_results(SingleTestResult(
