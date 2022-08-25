@@ -219,7 +219,7 @@ def test_diff_rmse(data, model, threshold, expected_metric, actual_slices_size, 
 
 @pytest.mark.parametrize('data,model,threshold,expected_metric',
                          [('german_credit_data', 'german_credit_model', 0.1, 0.03),
-                          ('enron_data', 'enron_model', 0.5, 0.15)])
+                          ('enron_data', 'enron_model', 0.5, 0.17)])
 def test_diff_reference_actual_f1(data, model, threshold, expected_metric, request):
     tests = GiskardTestFunctions()
     data = request.getfixturevalue(data)
