@@ -301,7 +301,7 @@ class DriftTests(AbstractTestCollection):
 
         passed = result.pvalue >= threshold
 
-        messages = self._generate_message_no_modalities(passed, result, threshold, 'data')
+        messages = self._generate_message_ks(passed, result, threshold, 'data')
 
         return self.save_results(SingleTestResult(
             actual_slices_size=[len(actual_series)],
@@ -564,7 +564,7 @@ class DriftTests(AbstractTestCollection):
 
         passed = True if threshold is None else result.pvalue >= threshold
 
-        messages = self._generate_message_no_modalities(passed, result, threshold, 'prediction')
+        messages = self._generate_message_ks(passed, result, threshold, 'prediction')
 
         return self.save_results(SingleTestResult(
             actual_slices_size=[len(actual_slice)],
@@ -575,7 +575,7 @@ class DriftTests(AbstractTestCollection):
         ))
 
     @staticmethod
-    def _generate_message_no_modalities(passed, result, threshold, data_type):
+    def _generate_message_ks(passed, result, threshold, data_type):
         messages: Union[typing.List[TestMessage], None] = None
         if not passed:
             messages = [TestMessage(
