@@ -144,7 +144,7 @@ class DriftTests(AbstractTestCollection):
         if reference_series.empty:
             raise ValueError("Reference Series computed from the column is empty")
 
-    def _generate_series(self, actual_ds, reference_ds, column_name, column_type):
+    def _extract_series(self, actual_ds, reference_ds, column_name, column_type):
         actual_ds.df.reset_index(drop=True, inplace=True)
         reference_ds.df.reset_index(drop=True, inplace=True)
         self._validate_column_name(actual_ds, reference_ds, column_name)
@@ -194,7 +194,7 @@ class DriftTests(AbstractTestCollection):
             passed:
                 TRUE if total_psi <= threshold
         """
-        actual_series, reference_series = self._generate_series(actual_ds, reference_ds, column_name, 'category')
+        actual_series, reference_series = self._extract_series(actual_ds, reference_ds, column_name, 'category')
 
         messages, passed, total_psi = self._test_series_drift_psi(actual_series, reference_series, 'data',
                                                                   max_categories, psi_contribution_percent, threshold)
@@ -248,7 +248,7 @@ class DriftTests(AbstractTestCollection):
             passed:
                 TRUE if metric > threshold
         """
-        actual_series, reference_series = self._generate_series(actual_ds, reference_ds, column_name, 'category')
+        actual_series, reference_series = self._extract_series(actual_ds, reference_ds, column_name, 'category')
 
         messages, p_value, passed = self._test_series_drift_chi(actual_series, reference_series, 'data',
                                                                 chi_square_contribution_percent, max_categories,
@@ -295,7 +295,7 @@ class DriftTests(AbstractTestCollection):
             passed:
                 TRUE if metric >= threshold
         """
-        actual_series, reference_series = self._generate_series(actual_ds, reference_ds, column_name, 'numeric')
+        actual_series, reference_series = self._extract_series(actual_ds, reference_ds, column_name, 'numeric')
 
         result = self._calculate_ks(actual_series, reference_series)
 
@@ -344,7 +344,7 @@ class DriftTests(AbstractTestCollection):
             passed:
                 TRUE if metric <= threshold
         """
-        actual_series, reference_series = self._generate_series(actual_ds, reference_ds, column_name, 'numeric')
+        actual_series, reference_series = self._extract_series(actual_ds, reference_ds, column_name, 'numeric')
 
         metric = self._calculate_earth_movers_distance(actual_series, reference_series)
 
