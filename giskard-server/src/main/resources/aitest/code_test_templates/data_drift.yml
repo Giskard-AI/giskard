@@ -38,8 +38,8 @@ items:
                 TRUE if total_psi <= threshold
       """
       tests.drift.test_drift_psi(
-          actual_ds=actual_ds.df,
-          reference_ds=reference_ds.df,
+          actual_ds=actual_ds,
+          reference_ds=reference_ds,
           column_name='{{CATEGORICAL FEATURE NAME}}',
           threshold=0.2
       )
@@ -81,8 +81,8 @@ items:
                 TRUE if metric > threshold
       """
       tests.drift.test_drift_chi_square(
-          actual_ds=actual_ds.df,
-          reference_ds=reference_ds.df,
+          actual_ds=actual_ds,
+          reference_ds=reference_ds,
           column_name='{{CATEGORICAL FEATURE NAME}}',
           threshold=0.05
       )
@@ -124,8 +124,8 @@ items:
                 TRUE if metric >= threshold
       """
       tests.drift.test_drift_ks(
-          actual_ds=actual_ds.df,
-          reference_ds=reference_ds.df,
+          actual_ds=actual_ds,
+          reference_ds=reference_ds,
           column_name='{{NUMERIC FEATURE NAME}}',
           threshold=0.05
       )
@@ -167,8 +167,8 @@ items:
                 TRUE if metric <= threshold
       """
       tests.drift.test_drift_earth_movers_distance(
-          actual_ds=actual_ds.df,
-          reference_ds=reference_ds.df,
+          actual_ds=actual_ds,
+          reference_ds=reference_ds,
           column_name='{{NUMERIC FEATURE NAME}}',
           threshold=0.1
       )
