@@ -129,11 +129,11 @@ That's it. Access at http://localhost:19000 with login/password: admin/admin.
 ## 🥋 Guides: Jump right in
 Follow our handy guides to get started on the basics as quickly as possible:
 
-1. <a href="https://github.com/Giskard-AI/giskard-doc/blob/main/guides/installation.md"><b>installation.md</b></a>
-2. <a href="https://github.com/Giskard-AI/giskard-doc/blob/main/guides/configuration.md"><b>configuration.md</b></a>
-3. <a href="https://github.com/Giskard-AI/giskard-doc/blob/main/guides/upload-your-model.md"><b>upload-your-model.md</b></a>
-4. <a href="https://github.com/Giskard-AI/giskard-doc/blob/main/guides/review-your-model.md"><b>review-your-model.md</b></a>
-5. <a href="https://github.com/Giskard-AI/giskard-doc/blob/main/guides/create-tests-from-your-review.md"><b>create-tests-from-your-review.md</b></a>
+1. <a href="https://docs.giskard.ai/start/guides/installation"><b>Installation</b></a>
+2. <a href="https://docs.giskard.ai/start/guides/configuration"><b>Configuration</b></a>
+3. <a href="https://docs.giskard.ai/start/guides/upload-your-model"><b>Upload your ML model & data</b></a>
+4. <a href="https://docs.giskard.ai/start/guides/review-your-model"><b>Evaluate your ML model</b></a>
+5. <a href="https://docs.giskard.ai/start/guides/create-tests-from-your-review"><b>Test your ML model</b></a>
 <br />
 
 # 🪄Become a Giskard Design Partner
