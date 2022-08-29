@@ -32,7 +32,9 @@ input_types = {
 def enron_data() -> GiskardDataset:
     logging.info("Fetching Enron Data")
     return GiskardDataset(
-        df=pd.read_csv(path('test_data/enron_data.csv')),
+        df=pd.read_csv(path('test_data/enron_data.csv'),
+                       keep_default_na=False,
+                       na_values=["_GSK_NA_"]),
         target='Target',
         feature_types=input_types
     )
