@@ -1,7 +1,7 @@
 <p align="center">
   <img alt="giskardlogo" src="readme/correct_logo.png">
 </p>
-<h1 align="center" weight='300' >Collaborative & Open-Source CI/CD platform for ML teams</h1>
+<h1 align="center" weight='300' >Collaborative & Open-Source Continous Integration & Delivery for ML teams</h1>
 <h3 align="center" weight='300' >Eliminate AI bias in production. Deliver ML products, better & faster</h3>
 <p align="center">
    <a href="https://github.com/Giskard-AI/giskard/releases">
