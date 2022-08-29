@@ -64,6 +64,7 @@ public class DatasetService {
             CsvReadOptions csvReadOptions = CsvReadOptions
                 .builder(fileUploadService.decompressFileToStream(filePath))
                 .columnTypesPartial(columnTypes)
+                .missingValueIndicator("_GSK_NA_")
                 .maxCharsPerColumn(-1)
                 .build();
             table = Table.read().csv(csvReadOptions);
