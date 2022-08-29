@@ -10,6 +10,7 @@ import java.util.Map;
 @Getter
 @Setter
 @AllArgsConstructor
+@NoArgsConstructor
 @Builder
 public class DataUploadParamsDTO {
     private String name;
