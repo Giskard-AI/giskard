@@ -88,7 +88,7 @@ class MetamorphicTests(AbstractTestCollection):
 
         messages = [TestMessage(
             type=TestMessageType.INFO,
-            text=f"{modified_rows_count} number of rows were perturbed"
+            text=f"{modified_rows_count} rows were perturbed"
         )]
 
         return self.save_results(SingleTestResult(
