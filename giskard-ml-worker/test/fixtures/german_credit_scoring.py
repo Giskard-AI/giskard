@@ -42,7 +42,9 @@ input_types = {'account_check_status': "category",
 def german_credit_data() -> GiskardDataset:
     logging.info("Reading german_credit_prepared.csv")
     return GiskardDataset(
-        df=pd.read_csv(path('test_data/german_credit_prepared.csv')),
+        df=pd.read_csv(path('test_data/german_credit_prepared.csv'),
+                       keep_default_na=False,
+                       na_values=["_GSK_NA_"]),
         target='default',
         feature_types=input_types
     )

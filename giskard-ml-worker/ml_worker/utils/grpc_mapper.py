@@ -22,7 +22,11 @@ def deserialize_model(serialized_model: SerializedGiskardModel) -> GiskardModel:
 
 def deserialize_dataset(serialized_dataset: SerializedGiskardDataset) -> GiskardDataset:
     return GiskardDataset(
-        df=pd.read_csv(BytesIO(decompress(serialized_dataset.serialized_df))),
+        df=pd.read_csv(
+            BytesIO(decompress(serialized_dataset.serialized_df)),
+            keep_default_na=False,
+            na_values=["_GSK_NA_"]
+        ),
         target=serialized_dataset.target,
         feature_types=dict(serialized_dataset.feature_types),
         column_types=dict(serialized_dataset.column_types)

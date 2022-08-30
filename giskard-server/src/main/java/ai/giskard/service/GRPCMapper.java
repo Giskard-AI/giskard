@@ -46,6 +46,7 @@ public class GRPCMapper {
             .putAllFeatureTypes(Maps.transformValues(dataset.getFeatureTypes(), FeatureType::getName));
         if (dataset.getColumnTypes() != null) {
             builder.putAllColumnTypes(dataset.getColumnTypes());
+
         }
         if (dataset.getTarget() != null) {
             builder.setTarget(dataset.getTarget());
