@@ -580,7 +580,7 @@ class DriftTests(AbstractTestCollection):
         if not passed:
             messages = [TestMessage(
                 type=TestMessageType.ERROR,
-                text=f"The {data_type} is drifting (p-value is equal to {result.pvalue} "
+                text=f"The {data_type} is drifting (p-value is equal to {np.round(result.pvalue, 9)} "
                      f"and is below the test risk level {threshold}) "
 
             )]
