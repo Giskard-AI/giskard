@@ -32,6 +32,10 @@ items:
                 Threshold value for PSI
 
         Returns:
+            actual_slices_size:
+                Length of actual slice tested
+            reference_slices_size:
+                Length of reference slice tested
             passed:
                 TRUE if metric <= threshold
             metric:
@@ -75,6 +79,10 @@ items:
                 Threshold value for Chi-Square
 
         Returns:
+            actual_slices_size:
+                Length of actual slice tested
+            reference_slices_size:
+                Length of reference slice tested
             passed:
                 TRUE if metric > threshold
             metric:
@@ -118,6 +126,10 @@ items:
                 Threshold for p-value Kolmogorov-Smirnov test
 
         Returns:
+            actual_slices_size:
+                Length of actual slice tested
+            reference_slices_size:
+                Length of reference slice tested
             passed:
                 TRUE if metric >= threshold
             metric:
@@ -164,6 +176,10 @@ items:
                 One specific label value from the target column for classification model
 
         Returns:
+            actual_slices_size:
+                Length of actual slice tested
+            reference_slices_size:
+                Length of reference slice tested
             passed:
                 TRUE if metric >= threshold
             metric:
@@ -208,6 +224,10 @@ items:
                 Threshold for p-value Earth Mover’s Distance test
 
         Returns:
+            actual_slices_size:
+                Length of actual slice tested
+            reference_slices_size:
+                Length of reference slice tested
             passed:
                 TRUE if metric >= threshold
             metric:
@@ -252,6 +272,10 @@ items:
                 Threshold for p-value Earth Mover’s Distance
 
         Returns:
+            actual_slices_size:
+                Length of actual slice tested
+            reference_slices_size:
+                Length of reference slice tested
             passed:
                 TRUE if metric >= threshold
             metric:

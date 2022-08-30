@@ -18,22 +18,29 @@ items:
         Example : The test is passed when the  PSI score of gender between reference and actual sets is below 0.2
 
         Args:
-            actual_series(GiskardDataset):
-                Categorical column in actual dataset
-            reference_series(GiskardDataset):
-                Categorical column in reference dataset
-            threshold:
+            actual_ds(GiskardDataset):
+                Actual dataset to compute the test
+            reference_ds(GiskardDataset):
+                Reference dataset to compute the test
+            column_name(str):
+                Name of column with categorical feature
+            threshold(float:
                 Threshold value for PSI
 
         Returns:
+            actual_slices_size:
+                Length of rows with given categorical feature in actual slice
+            reference_slices_size:
+                Length of rows with given categorical feature in reference slice
             metric:
                 The total psi score between the actual and expected datasets
             passed:
                 TRUE if total_psi <= threshold
       """
       tests.drift.test_drift_psi(
-          actual_series=actual_ds.df['{{CATEGORICAL FEATURE NAME}}'],
-          reference_series=reference_ds.df['{{CATEGORICAL FEATURE NAME}}'],
+          actual_ds=actual_ds,
+          reference_ds=reference_ds,
+          column_name='{{CATEGORICAL FEATURE NAME}}',
           threshold=0.2
       )
   - id: drift_chi_square
@@ -54,23 +61,29 @@ items:
         and that we cannot assume drift for this variable.
 
         Args:
-            actual_series(GiskardDataset):
-                Categorical column in actual dataset
-            reference_series(GiskardDataset):
-                Categorical column in reference dataset
-            threshold:
+            actual_ds(GiskardDataset):
+                Actual dataset to compute the test
+            reference_ds(GiskardDataset):
+                Reference dataset to compute the test
+            column_name(str):
+                Name of column with categorical feature
+            threshold(float):
                 Threshold for p-value of chi-square
 
         Returns:
+            actual_slices_size:
+                Length of rows with given categorical feature in actual slice
+            reference_slices_size:
+                Length of rows with given categorical feature in reference slice
             metric:
                 The pvalue of chi square test
-
             passed:
                 TRUE if metric > threshold
       """
       tests.drift.test_drift_chi_square(
-          actual_series=actual_ds.df['{{CATEGORICAL FEATURE NAME}}'],
-          reference_series=reference_ds.df['{{CATEGORICAL FEATURE NAME}}'],
+          actual_ds=actual_ds,
+          reference_ds=reference_ds,
+          column_name='{{CATEGORICAL FEATURE NAME}}',
           threshold=0.05
       )
   - id: drift_ks
@@ -91,22 +104,29 @@ items:
         cannot be rejected at 5% level and that we cannot assume drift for this variable.
 
         Args:
-            actual_series(GiskardDataset):
-               Numerical column in actual dataset
-            reference_series(GiskardDataset):
-                Numerical column in reference dataset
+            actual_ds(GiskardDataset):
+               Actual dataset to compute the test
+            reference_ds(GiskardDataset):
+                Reference dataset to compute the test
+            column_name(str):
+                Name of column with numerical feature
             threshold:
                 Threshold for p-value of KS test
 
         Returns:
+            actual_slices_size:
+                Length of rows with given numerical feature in actual slice
+            reference_slices_size:
+                Length of rows with given numerical feature in reference slice
             metric:
                 The pvalue of KS test
             passed:
-                TRUE if metric > threshold
+                TRUE if metric >= threshold
       """
       tests.drift.test_drift_ks(
-          actual_series=actual_ds.df['{{NUMERIC FEATURE NAME}}'],
-          reference_series=reference_ds.df['{{NUMERIC FEATURE NAME}}'],
+          actual_ds=actual_ds,
+          reference_ds=reference_ds,
+          column_name='{{NUMERIC FEATURE NAME}}',
           threshold=0.05
       )
   - id: drift_earth_movers_distance
@@ -127,22 +147,28 @@ items:
          It means that we cannot assume drift for this variable.
 
         Args:
-            actual_series(GiskardDataset):
-                Numerical column in actual dataset
-            reference_series(GiskardDataset):
-                Numerical column in reference dataset
+            actual_ds(GiskardDataset):
+                Actual dataset to compute the test
+            reference_ds(GiskardDataset):
+                Reference dataset to compute the test
+            column_name(str):
+                Name of column with numerical feature
             threshold:
-                Threshold for p-value of earth movers distance
+                Threshold for earth movers distance
 
         Returns:
+            actual_slices_size:
+                Length of rows with given numerical feature in actual slice
+            reference_slices_size:
+                Length of rows with given numerical feature in reference slice
             metric:
                 The earth movers distance
-
             passed:
-                TRUE if metric < threshold
+                TRUE if metric <= threshold
       """
       tests.drift.test_drift_earth_movers_distance(
-          actual_series=actual_ds.df['{{NUMERIC FEATURE NAME}}'],
-          reference_series=reference_ds.df['{{NUMERIC FEATURE NAME}}'],
+          actual_ds=actual_ds,
+          reference_ds=reference_ds,
+          column_name='{{NUMERIC FEATURE NAME}}',
           threshold=0.1
       )

@@ -22,32 +22,31 @@ class HeuristicTests(AbstractTestCollection):
         of people with high-salaries are classified as “non default”
 
         Args:
-            actual_slice:
-                slice of the actual dataset
-            model:
-                uploaded model
-            classification_label:
-                classification label you want to test
-            threshold:
-                threshold for the percentage of passed rows
+           actual_slice(GiskardDataset):
+              Slice of the  actual dataset
+          model(GiskardModel):
+              Model used to compute the test
+          classification_label(str):
+              Classification label you want to test
+          threshold(float):
+              Threshold for the percentage of passed rows
 
         Returns:
-            slice_nb_rows:
-                length of actual_slice tested
-            metrics:
-                the ratio of raws with the right classification label over the total of raws in the slice
-            passed:
-                TRUE if passed_ratio > threshold
-
+          actual_slices_size:
+              Length of actual_slice tested
+          metrics:
+              The ratio of rows with the right classification label over the total of rows in the slice
+          passed:
+              TRUE if passed_ratio > threshold
         """
-
+        actual_slice.df.reset_index(drop=True, inplace=True)
         prediction_results = model.run_predict(actual_slice).prediction
         assert classification_label in model.classification_labels, \
             f'"{classification_label}" is not part of model labels: {",".join(model.classification_labels)}'
 
-        passed_slice = actual_slice.df.loc[prediction_results == classification_label]
+        passed_idx = actual_slice.df.loc[prediction_results == classification_label].index.values
 
-        passed_ratio = len(passed_slice) / len(actual_slice)
+        passed_ratio = len(passed_idx) / len(actual_slice)
         return self.save_results(SingleTestResult(
             actual_slices_size=[len(actual_slice)],
             metric=passed_ratio,
@@ -78,30 +77,29 @@ class HeuristicTests(AbstractTestCollection):
 
         For Regression : The predicted Sale Price of a house in the city falls in a particular range
         Args:
-            actual_slice:
-                slice of the actual dataset
-            model:
-                uploaded model
-            classification_label:
-                classification label you want to test
-            min_range:
-                minimum probability of occurrence of classification label
-            max_range:
-                maximum probability of occurrence of classification label
-            threshold:
-                threshold for the percentage of passed rows
+            actual_slice(GiskardDataset):
+                Slice of the actual dataset
+            model(GiskardModel):
+                Model used to compute the test
+            classification_label(str):
+                Optional. Classification label you want to test
+            min_range(float):
+                Minimum probability of occurrence of classification label
+            max_range(float):
+                Maximum probability of occurrence of classification label
+            threshold(float):
+                Threshold for the percentage of passed rows
 
         Returns:
-            slice_nb_rows:
-                length of actual_slice tested
-
+            actual_slices_size:
+                Length of actual_slice tested
             metrics:
-                the proportion of rows in the right range inside the slice
+                The proportion of rows in the right range inside the slice
             passed:
                 TRUE if metric > threshold
-
         """
         results_df = pd.DataFrame()
+        actual_slice.df.reset_index(drop=True, inplace=True)
 
         prediction_results = model.run_predict(actual_slice)
 
@@ -109,21 +107,19 @@ class HeuristicTests(AbstractTestCollection):
             results_df["output"] = prediction_results.raw_prediction
 
         elif model.model_type == "classification":
-            results_df["output"] = prediction_results.all_predictions[classification_label]
             assert classification_label in model.classification_labels, \
                 f'"{classification_label}" is not part of model labels: {",".join(model.classification_labels)}'
+            results_df["output"] = prediction_results.all_predictions[classification_label]
 
         else:
             raise ValueError(
                 f"Prediction task is not supported: {model.model_type}"
             )
 
-        matching_prediction_mask = \
-            (results_df["output"] <= max_range) & \
-            (results_df["output"] >= min_range)
+        passed_idx = actual_slice.df.loc[(results_df["output"] <= max_range) & (results_df["output"] >= min_range)].index.values
 
-        expected = actual_slice.df[matching_prediction_mask]
-        passed_ratio = len(expected) / len(actual_slice)
+        passed_ratio = len(passed_idx) / len(actual_slice)
+
         return self.save_results(SingleTestResult(
             actual_slices_size=[len(actual_slice)],
             metric=passed_ratio,

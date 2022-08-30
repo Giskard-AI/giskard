@@ -41,6 +41,7 @@
     "ai.giskard.web.dto.ml.DatasetDTO": "DatasetDTO",
     "ai.giskard.web.dto.PredictionDTO": "PredictionDTO",
     "ai.giskard.web.dto.user.AdminUserDTO$AdminUserDTOWithPassword": "AdminUserDTO.AdminUserDTOWithPassword",
+    "ai.giskard.web.dto.ml.TestResultMessageDTO": "TestResultMessageDTO",
     "ai.giskard.web.dto.DataUploadParamsDTO": "DataUploadParamsDTO",
     "ai.giskard.web.dto.ml.write.TestSuitePostDTO": "TestSuitePostDTO",
     "ai.giskard.domain.ml.ModelLanguage": "ModelLanguage",
