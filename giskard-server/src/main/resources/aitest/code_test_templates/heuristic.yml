@@ -32,8 +32,8 @@ items:
               Threshold for the percentage of passed rows
 
       Returns:
-          slice_nb_rows:
-              Length of slice_df tested
+          actual_slices_size:
+              Length of actual_slice tested
           metrics:
               The ratio of rows with the right classification label over the total of rows in the slice
           passed:
@@ -70,7 +70,7 @@ items:
               Slice of the actual dataset
           model(GiskardModel):
               Model used to compute the test
-          classification_label:
+          classification_label(str):
               Classification label you want to test
           min_range(float):
               Minimum probability of occurrence of classification label
@@ -80,8 +80,8 @@ items:
               Threshold for the percentage of passed rows
 
       Returns:
-          slice_nb_rows:
-              Length of slice_df tested
+          actual_slices_size:
+              Length of actual_slice tested
           metrics:
               The proportion of rows in the right range inside the slice
           passed:
@@ -126,8 +126,8 @@ items:
               Threshold for the percentage of passed rows
 
       Returns:
-          slice_nb_rows:
-              Length of slice_df tested
+          actual_slices_size:
+              Length of actual_slice tested
           metrics:
               The proportion of rows in the right range inside the slice
           passed:

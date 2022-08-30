@@ -35,29 +35,27 @@ items:
 
       Returns:
           actual_slices_size:
-              total number of rows of actual dataset
-          number_of_perturbed_rows:
-              Number of perturbed rows
+              Length of actual_slice tested
+          message:
+              Test result message
           metric:
               The ratio of unchanged rows over the perturbed rows
           passed:
               TRUE if metric > threshold
-          output_df:
-              Dataframe of rows where the prediction changes due to perturbation
       """
       import nlpaug.augmenter.word as naw
 
       aug = naw.SpellingAug(dict_path=None,
-      name='Spelling_Aug',
-      aug_min=1,
-      aug_max=10,
-      aug_p=0.3,
-      stopwords=None,
-      tokenizer=None,
-      reverse_tokenizer=None,
-      include_reverse=True,
-      stopwords_regex=None,
-      verbose=0)
+                            name='Spelling_Aug',
+                            aug_min=1,
+                            aug_max=10,
+                            aug_p=0.3,
+                            stopwords=None,
+                            tokenizer=None,
+                            reverse_tokenizer=None,
+                            include_reverse=True,
+                            stopwords_regex=None,
+                            verbose=0)
 
       # You can choose all_perturbation to perturb categorical, text and numerical feature at the same time
       all_perturbation = {
@@ -76,7 +74,7 @@ items:
           df=actual_ds,
           model=model,
           perturbation_dict=perturbation,  # Update your perturbation choice here
-          threshold=0.1
+          threshold=0.5
       )
 
   - id: metamorphic_invariance_regression
@@ -115,15 +113,13 @@ items:
 
       Returns:
           actual_slices_size:
-              Total number of rows of actual dataset
-          number_of_perturbed_rows:
-              Number of perturbed rows
+              Length of actual_slice tested
+          message:
+              Test result message
           metric:
               The ratio of unchanged rows over the perturbed rows
           passed:
               TRUE if metric > threshold
-          output_df:
-              Dataframe of rows where the prediction changes due to perturbation
       """
       import nlpaug.augmenter.word as naw
 
@@ -155,7 +151,7 @@ items:
           model=model,
           perturbation_dict=perturbation, # Update your perturbation choice here
           output_sensitivity=0.1,
-          threshold=0.1
+          threshold=0.5
       )
   - id: metamorphic_increasing_classification
     title: Increasing for Classification
@@ -192,16 +188,13 @@ items:
 
       Returns:
           actual_slices_size:
-              Total number of rows of actual dataset
-          number_of_perturbed_rows:
-              Number of perturbed rows
+              Length of actual_slice tested
+          message:
+              Test result message
           metric:
               The ratio of increasing rows over the perturbed rows
           passed:
               TRUE if metric > threshold
-          output_df:
-              Dataframe containing the rows whose probability doesn't increase after perturbation
-
       """
       import nlpaug.augmenter.word as naw
 
@@ -233,7 +226,7 @@ items:
           model=model,
           perturbation_dict=perturbation, # Update your perturbation choice here
           classification_label='{{CLASSIFICATION LABEL}}',
-          threshold=0.1
+          threshold=0.5
       )
   - id: metamorphic_increasing_regression
     title: Increasing for Regression
@@ -266,16 +259,13 @@ items:
 
       Returns:
           actual_slices_size:
-              Total number of rows of actual dataset
-          number_of_perturbed_rows:
-              Number of perturbed rows
+              Length of actual_slice tested
+          message:
+              Test result message
           metric:
               The ratio of increasing rows over the perturbed rows
           passed:
               TRUE if metric > threshold
-          output_df:
-              Dataframe containing the rows whose probability doesn't increase after perturbation
-
       """
       import nlpaug.augmenter.word as naw
 
@@ -306,7 +296,7 @@ items:
           df=actual_ds,
           model=model,
           perturbation_dict=perturbation, # Update your perturbation choice here
-          threshold=0.1
+          threshold=0.5
       )
   - id: metamorphic_decreasing_classification
     title: Decreasing for Classification
@@ -343,16 +333,13 @@ items:
 
       Returns:
           actual_slices_size:
-              Total number of rows of actual dataset
-          number_of_perturbed_rows:
-              Number of perturbed rows
+              Length of actual_slice tested
+          message:
+              Test result message
           metric:
               The ratio of decreasing rows over the perturbed rows
           passed:
               TRUE if metric > threshold
-          output_df:
-              Dataframe containing the rows whose probability doesn't decrease after perturbation
-
       """
       import nlpaug.augmenter.word as naw
 
@@ -384,7 +371,7 @@ items:
           model=model,
           perturbation_dict=perturbation, # Update your perturbation choice here
           classification_label='{{CLASSIFICATION LABEL}}',
-          threshold=0.1
+          threshold=0.5
       )
   - id: metamorphic_decreasing_regression
     title: Decreasing for Regression
@@ -417,16 +404,13 @@ items:
 
       Returns:
           actual_slices_size:
-              Total number of rows of actual dataset
-          number_of_perturbed_rows:
-              Number of perturbed rows
+              Length of actual_slice tested
+          message:
+              Test result message
           metric:
               The ratio of decreasing rows over the perturbed rows
           passed:
               TRUE if metric > threshold
-          output_df:
-              Dataframe containing the rows whose probability doesn't decrease after perturbation
-
       """
       import nlpaug.augmenter.word as naw
 
@@ -457,5 +441,5 @@ items:
           df=actual_ds,
           model=model,
           perturbation_dict=perturbation, # Update your perturbation choice here
-          threshold=0.1
+          threshold=0.5
       )
