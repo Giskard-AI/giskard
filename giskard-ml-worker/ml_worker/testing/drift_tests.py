@@ -355,7 +355,7 @@ class DriftTests(AbstractTestCollection):
         if not passed:
             messages = [TestMessage(
                 type=TestMessageType.ERROR,
-                text=f"The data is drifting (metric is equal to {metric} and is below the test risk level {threshold}) "
+                text=f"The data is drifting (metric is equal to {np.round(metric, 9)} and is below the test risk level {threshold}) "
 
             )]
         return self.save_results(SingleTestResult(
@@ -639,7 +639,7 @@ class DriftTests(AbstractTestCollection):
         if not passed:
             messages = [TestMessage(
                 type=TestMessageType.ERROR,
-                text=f"The prediction is drifting (metric is equal to {metric} "
+                text=f"The prediction is drifting (metric is equal to {np.round(metric, 9)} "
                      f"and is above the test risk level {threshold}) "
 
             )]
