@@ -176,7 +176,7 @@
             </div>
             <div class="d-flex justify-space-between align-center">
               <div class='text-body-2'>Metric: {{ testResult.result.metric }}</div>
-              <div class='text-body-2' v-if="testResult.result.messages && testResult.result.messages.length">
+              <div class='text-body-2 text-right' v-if="testResult.result.messages && testResult.result.messages.length">
                 {{ testResult.result.messages[0].text }}
               </div>
               <!--              <a class="text-body-2 results-link text-decoration-underline">Full results</a>-->
