@@ -14,15 +14,20 @@ def explain(model: GiskardModel, dataset: GiskardDataset, input_data: Dict):
     df = model.prepare_dataframe(dataset)
     feature_names = list(df.columns)
 
+    # Make sure column order is that column order is the same as in df
+    input_data_df = pd.DataFrame([input_data])[df.columns]
     input_df = model.prepare_dataframe(GiskardDataset(
-        df=pd.DataFrame([input_data]),
+        df=input_data_df,
         target=dataset.target,
         feature_types=dataset.feature_types,
         column_types=dataset.column_types
     ))
 
+    def predict_array(array):
+        return model.prediction_function(pd.DataFrame(array, columns=list(df.columns)))
+
     kernel_shap = KernelShap(
-        predictor=lambda array: model.prediction_function(pd.DataFrame(array, columns=list(df.columns))),
+        predictor=predict_array,
         feature_names=feature_names,
         task=model.model_type,
     )
