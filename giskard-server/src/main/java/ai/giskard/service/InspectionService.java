@@ -42,8 +42,7 @@ public class InspectionService {
     final FileLocationService fileLocationService;
 
     public Table getTableFromBucketFile(String location) throws FileNotFoundException {
-        InputStreamReader reader = new InputStreamReader(
-            new FileInputStream(location));
+        InputStreamReader reader = new InputStreamReader(new FileInputStream(location));
         return Table.read().csv(reader);
     }
 
