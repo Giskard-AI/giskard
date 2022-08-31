@@ -39,7 +39,7 @@ def test_auc(data, model, threshold, expected_metric, actual_slices_size, reques
 
 @pytest.mark.parametrize('data,model,threshold,expected_metric,actual_slices_size',
                          [('enron_data', 'enron_model', 0.5, 1, 7)])
-def test_auc_with_unique_target_NoException(data, model, threshold, expected_metric, actual_slices_size, request):
+def test_auc_with_unique_target_no_exception(data, model, threshold, expected_metric, actual_slices_size, request):
     tests = GiskardTestFunctions()
     data = request.getfixturevalue(data)
     results = tests.performance.test_auc(
@@ -55,8 +55,7 @@ def test_auc_with_unique_target_NoException(data, model, threshold, expected_met
 
 @pytest.mark.parametrize('data,model,threshold,expected_metric,actual_slices_size',
                          [('enron_data', 'enron_model', 0.5, 1, 7)])
-def test_auc_with_unique_target_RaiseException(data, model, threshold, expected_metric, actual_slices_size, request):
-
+def test_auc_with_unique_target_raise_exception(data, model, threshold, expected_metric, actual_slices_size, request):
     with pytest.raises(Exception):
         tests = GiskardTestFunctions()
         data = request.getfixturevalue(data)
