@@ -60,15 +60,11 @@ def test_auc_with_unique_target_RaiseException(data, model, threshold, expected_
     with pytest.raises(Exception):
         tests = GiskardTestFunctions()
         data = request.getfixturevalue(data)
-        results = tests.performance.test_auc(
+        tests.performance.test_auc(
             actual_slice=data.slice(lambda df: df.drop_duplicates('Target').head()),
             model=request.getfixturevalue(model),
             threshold=threshold
         )
-
-        assert results.actual_slices_size[0] == actual_slices_size
-        assert round(results.metric, 2) == expected_metric
-        assert results.passed
 
 
 @pytest.mark.parametrize('data,model,threshold,expected_metric,actual_slices_size',
