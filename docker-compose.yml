@@ -1,60 +1,60 @@
 version: "3.8"
 services:
 
-  db:
-    image: postgres:12-alpine
-    volumes:
-      - app-db-data:/var/lib/postgresql/data/pgdata
-    env_file:
-      - .env
-    environment:
-      - PGDATA=/var/lib/postgresql/data/pgdata
-
-  ml-worker:
-    image: '${DOCKER_REGISTRY}/ml-worker:${TAG-latest}'
-    environment:
-      - GSK_ENVIRONMENT=prod
-
-  backend:
-    image: '${DOCKER_REGISTRY}/backend:${TAG-latest}'
-    depends_on:
-      - db
-    env_file:
-      - .env
-    environment:
-      - _JAVA_OPTIONS=-Xmx4048m -Xms512m
-      - SPRING_PROFILES_ACTIVE=prod
-      - JHIPSTER_SECURITY_AUTHENTICATION_JWT_BASE64_SECRET=${GISKARD_JWT_SECRET-}
-      - MANAGEMENT_METRICS_EXPORT_PROMETHEUS_ENABLED=true
-      - SPRING_DATASOURCE_USERNAME=postgres
-      - SPRING_DATASOURCE_PASSWORD=y1QYbF2BtFUC
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/app
-      - SPRING_LIQUIBASE_URL=jdbc:postgresql://db:5432/app
-      - GISKARD_ML_WORKER_HOST=ml-worker
-      - GISKARD_ML_WORKER_PORT=50051
-      - SPRING_MAIL_HOST
-      - SPRING_MAIL_PORT
-      - SPRING_MAIL_USERNAME
-      - SPRING_MAIL_PASSWORD
-      - JHIPSTER_MAIL_BASEURL
-    volumes:
-      - giskard-home:/giskard-home
-
-
-  frontend:
-    image: '${DOCKER_REGISTRY}/frontend:${TAG-latest}'
-    ports:
-      - "19000:80"
-    expose:
-      - 19000
-    depends_on:
-      - jupyter
-      - backend
-    env_file:
-      - .env
+#  db:
+#    image: postgres:12-alpine
+#    volumes:
+#      - app-db-data:/var/lib/postgresql/data/pgdata
+#    env_file:
+#      - .env
+#    environment:
+#      - PGDATA=/var/lib/postgresql/data/pgdata
+#
+#  ml-worker:
+##    image: ${DOCKER_REGISTRY}/ml-worker:${TAG-latest}
+#    environment:
+#      - GSK_ENVIRONMENT=prod
+#
+#  backend:
+##    image: ${DOCKER_REGISTRY}/backend:${TAG-latest}
+#    depends_on:
+#      - db
+#    env_file:
+#      - .env
+#    environment:
+#      - _JAVA_OPTIONS=-Xmx4048m -Xms512m
+#      - SPRING_PROFILES_ACTIVE=prod
+#      - JHIPSTER_SECURITY_AUTHENTICATION_JWT_BASE64_SECRET=${GISKARD_JWT_SECRET-}
+#      - MANAGEMENT_METRICS_EXPORT_PROMETHEUS_ENABLED=true
+#      - SPRING_DATASOURCE_USERNAME=postgres
+#      - SPRING_DATASOURCE_PASSWORD=y1QYbF2BtFUC
+#      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/app
+#      - SPRING_LIQUIBASE_URL=jdbc:postgresql://db:5432/app
+#      - GISKARD_ML_WORKER_HOST=ml-worker
+#      - GISKARD_ML_WORKER_PORT=50051
+#      - SPRING_MAIL_HOST
+#      - SPRING_MAIL_PORT
+#      - SPRING_MAIL_USERNAME
+#      - SPRING_MAIL_PASSWORD
+#      - JHIPSTER_MAIL_BASEURL
+#    volumes:
+#      - giskard-home:/giskard-home
+#
+#
+#  frontend:
+##    image: ${DOCKER_REGISTRY}/frontend:${TAG-latest}
+#    ports:
+#      - "19000:80"
+#    expose:
+#      - 19000
+#    depends_on:
+#      - jupyter
+#      - backend
+#    env_file:
+#      - .env
 
   jupyter:
-    image: '${DOCKER_REGISTRY}/jupyter:${TAG-latest}'
+    image: ${DOCKER_REGISTRY}/jupyter:${TAG-latest}
     entrypoint:
       - /usr/local/bin/start.sh
       - jupyter
