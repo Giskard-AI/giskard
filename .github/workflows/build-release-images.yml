@@ -27,6 +27,7 @@ jobs:
       run: |
         echo LATEST: ${{steps.tag.outputs.latest_version}}
         echo CURRENT: ${{steps.tag.outputs.name}}
+        echo VERSION: ${{steps.tag.outputs}}
         echo EQUALITY: ${{ steps.tag.outputs.name == steps.tag.outputs.latest_version }}
 #
 #
