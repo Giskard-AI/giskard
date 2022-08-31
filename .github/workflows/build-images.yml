@@ -1,25 +1,17 @@
-# This is a test workflow that is triggered on each push and PR
-
 name: Build Docker images
 
-# Controls when the action will run. Workflow runs when manually triggered using the UI
-# or API.
 on:
   push:
-#    branches:
-#    - main
-#  pull_request:
-#    branches:
-#      - main
-#  workflow_dispatch:
+    branches:
+    - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
 
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   build-images:
-    # The type of runner that the job will run on
     runs-on: ubuntu-latest
-
-    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
@@ -29,6 +21,16 @@ jobs:
       run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
       id: extract_branch
 
+    - name: Generate docker config file
+      env:
+        TAG: dev
+      run: |
+        sudo sysctl -w kernel.unprivileged_userns_clone=1
+        docker-compose -f docker-compose.yml -f docker-compose.dev.yml config > docker-stack.yml 
+      
+    - name: Build images
+      run: docker-compose -f docker-stack.yml build --parallel
+
     - name: Configure AWS credentials
       uses: aws-actions/configure-aws-credentials@v1
       if: ${{ steps.extract_branch.outputs.branch == 'main' }}
@@ -36,16 +38,6 @@ jobs:
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: us-east-1
-
-    - name: Generate docker config file
-      run: |
-        sudo sysctl -w kernel.unprivileged_userns_clone=1
-        docker-compose -f docker-compose.yml -f docker-compose.dev.yml config > docker-stack.yml 
-      
-    - name: Build Jupyter image
-      env:
-        TAG: dev
-      run: docker-compose -f docker-stack.yml build --parallel
 
     - name: Push images to ECR
       if: ${{ steps.extract_branch.outputs.branch == 'main' }}
