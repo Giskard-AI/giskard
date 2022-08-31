@@ -21,9 +21,9 @@ jobs:
 #      run: echo ::set-output name=version::${GITHUB_REF#refs/*/*v}
 
 
-    - name: Set tag name
+    - name: test latest tag
       if: ${{ steps.tag.outputs.name == steps.tag.outputs.latest_version }}
-      id: tag
+      id: publish_latest
       run: |
         echo ${{steps.tag.outputs.latest_version}} ${{steps.tag.outputs.name}}
 #
