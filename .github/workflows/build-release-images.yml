@@ -17,7 +17,6 @@ jobs:
       run: |
         echo ::set-output name=name::${GITHUB_REF#refs/*/}
         echo ::set-output name=version::${GITHUB_REF#refs/*/v}
-#        replace "grep -P" with "grep -E" to test on Mac
         echo ::set-output name=latest_version::$(git tag | grep -P "^v\d+\.\d+\.\d+$" | sort -hr | head -1)
 #      run: echo ::set-output name=version::${GITHUB_REF#refs/*/*v}
 
