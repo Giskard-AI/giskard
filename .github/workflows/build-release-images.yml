@@ -49,7 +49,7 @@ jobs:
           TAG: ${{ steps.tag.outputs.version }}
         run: |
           for image in $(cat docker-stack.yml | grep '^ *image:.*giskard' | cut -d':' -f 2 | tr -d ' '); \
-          do; \
+          do \
               docker tag "${image}":"${TAG}" "${image}":latest; \
           done;
 
