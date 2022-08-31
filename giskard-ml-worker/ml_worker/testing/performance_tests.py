@@ -48,7 +48,7 @@ class PerformanceTests(AbstractTestCollection):
                 metric = roc_auc_score(actual_slice.df[actual_slice.target],
                                        model.run_predict(actual_slice).all_predictions, multi_class='ovr')
             except ValueError:
-                raise ValueError("Unable to perform AUC test : Dataset does not include all the classes declared "
+                raise ValueError("Unable to perform AUC test: Dataset does not include all the classes declared "
                                  "in classification_labels")
 
         return self.save_results(
