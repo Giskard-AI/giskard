@@ -22,7 +22,7 @@ jobs:
 
 
     - name: test latest tag
-      if: ${{ steps.tag.outputs.name == steps.tag.outputs.latest_version }}
+#      if: ${{ steps.tag.outputs.name == steps.tag.outputs.latest_version }}
       id: publish_latest
       run: |
         echo ${{steps.tag.outputs.latest_version}} ${{steps.tag.outputs.name}}
