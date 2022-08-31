@@ -6,12 +6,12 @@ name: Build Docker images
 # or API.
 on:
   push:
-    branches:
-    - main
-  pull_request:
-    branches:
-      - main
-  workflow_dispatch:
+#    branches:
+#    - main
+#  pull_request:
+#    branches:
+#      - main
+#  workflow_dispatch:
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
@@ -43,21 +43,14 @@ jobs:
         docker-compose -f docker-compose.yml -f docker-compose.dev.yml config > docker-stack.yml 
       
     - name: Build Jupyter image
-      run: docker-compose -f docker-stack.yml build jupyter
-
-    - name: Build Frontend image
-      run: docker-compose -f docker-stack.yml build frontend
-
-    - name: Build Backend image
-      run: docker-compose -f docker-stack.yml build backend
-
-    - name: Build ML Worker image
-      run: docker-compose -f docker-stack.yml build ml-worker
+      env:
+        TAG: dev
+      run: docker-compose -f docker-stack.yml build --parallel
 
     - name: Push images to ECR
       if: ${{ steps.extract_branch.outputs.branch == 'main' }}
       env:
-        TAG: latest
+        TAG: dev
       run: |
         aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin public.ecr.aws/giskard
         docker-compose -f docker-compose.yml -f docker-compose.dev.yml push
