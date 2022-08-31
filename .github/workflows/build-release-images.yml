@@ -25,7 +25,8 @@ jobs:
 #      if: ${{ steps.tag.outputs.name == steps.tag.outputs.latest_version }}
       id: publish_latest
       run: |
-        echo ${{steps.tag.outputs.latest_version}} ${{steps.tag.outputs.name}}
+        echo LATEST: ${{steps.tag.outputs.latest_version}}
+        echo CURRENT: ${{steps.tag.outputs.name}}
 #
 #
 #
