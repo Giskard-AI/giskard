@@ -118,7 +118,7 @@
                     <td>Plan</td>
                     <td>{{ appSettings.planName }}</td>
                   </tr>
-                  <tr><td colspan="2"><v-divider/></td></tr>
+                  <tr><td colspan="2"><v-divider class="divider"/></td></tr>
                   <tr>
                     <td>Last commit</td>
                     <td>{{ appSettings.buildCommitId }}</td>
@@ -262,7 +262,10 @@ export default class UserProfile extends Vue {
   background-color: rgba(211, 211, 211, 0.52);
   padding: 10px;
 }
-
+.divider{
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
 .token-area {
   user-select: all;
   word-break: break-all;
