@@ -1,5 +1,7 @@
 import logging
 import re
+import time
+
 
 import grpc
 import numpy as np
@@ -25,7 +27,6 @@ class MLWorkerServiceImpl(MLWorkerServicer):
 
     def runTest(self, request: RunTestRequest, context: grpc.ServicerContext) -> TestResultMessage:
         from ml_worker.testing.functions import GiskardTestFunctions
-
         model = deserialize_model(request.model)
 
         tests = GiskardTestFunctions()
@@ -38,7 +39,9 @@ class MLWorkerServiceImpl(MLWorkerServicer):
         if request.actual_ds.serialized_df:
             _globals['actual_ds'] = deserialize_dataset(request.actual_ds)
         try:
+            start_time = time.time()
             exec(request.code, _globals)
+            logging.info(f"Successfully executed the {tests.tests_results[0].name} test in {(time.time() - start_time)}s")
         except NameError as e:
             missing_name = re.findall(r"name '(\w+)' is not defined", str(e))[0]
             if missing_name == 'reference_ds':
