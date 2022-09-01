@@ -115,6 +115,18 @@
                     <td>{{ appSettings.version }}</td>
                   </tr>
                   <tr>
+                    <td>Build commit</td>
+                    <td>{{ appSettings.buildCommitId }}</td>
+                  </tr>
+                  <tr>
+                    <td>Build commit date</td>
+                    <td>{{ appSettings.buildCommitTime | date }}</td>
+                  </tr>
+                  <tr>
+                    <td>Built from</td>
+                    <td>{{ appSettings.buildBranch }}</td>
+                  </tr>
+                  <tr>
                     <td>Plan</td>
                     <td>{{ appSettings.planName }}</td>
                   </tr>
