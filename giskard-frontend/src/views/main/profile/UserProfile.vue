@@ -111,9 +111,14 @@
                     <td>{{ appSettings.generalSettings.instanceId }}</td>
                   </tr>
                   <tr>
-                    <td>Giskard version</td>
+                    <td>Version</td>
                     <td>{{ appSettings.version }}</td>
                   </tr>
+                  <tr>
+                    <td>Plan</td>
+                    <td>{{ appSettings.planName }}</td>
+                  </tr>
+                  <tr><td colspan="2"><v-divider/></td></tr>
                   <tr>
                     <td>Last commit</td>
                     <td>{{ appSettings.buildCommitId }}</td>
@@ -125,10 +130,6 @@
                   <tr>
                     <td>Build branch</td>
                     <td>{{ appSettings.buildBranch }}</td>
-                  </tr>
-                  <tr>
-                    <td>Plan</td>
-                    <td>{{ appSettings.planName }}</td>
                   </tr>
                 </table>
               </v-simple-table>
