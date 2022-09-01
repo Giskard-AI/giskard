@@ -18,6 +18,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -63,13 +64,19 @@ public class SettingsController {
             .map(auth -> new RoleDTO(auth.getKey(), auth.getValue()))
             .toList();
 
+        Instant buildCommitTime = null;
+        try {
+            buildCommitTime = OffsetDateTime.parse(gitCommitTime, DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZ")).toInstant();
+        } catch (Exception e) {
+            log.warn("Failed to parse gitCommitTime {}", gitCommitTime);
+        }
         return AppConfigDTO.builder()
             .app(AppConfigDTO.AppInfoDTO.builder()
                 .generalSettings(settingsService.getSettings())
                 .version(buildVersion)
                 .buildBranch(gitBuildBranch)
                 .buildCommitId(gitBuildCommitId)
-                .buildCommitTime(OffsetDateTime.parse(gitCommitTime, DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZ")).toInstant())
+                .buildCommitTime(buildCommitTime)
                 .planCode("open-source")
                 .planName("Open Source")
                 .roles(roles)
