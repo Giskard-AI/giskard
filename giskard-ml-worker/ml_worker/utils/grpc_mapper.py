@@ -1,4 +1,6 @@
 from io import BytesIO
+import logging
+import time
 
 import cloudpickle
 import pandas as pd
@@ -11,17 +13,26 @@ from generated.ml_worker_pb2 import SerializedGiskardModel, SerializedGiskardDat
 
 
 def deserialize_model(serialized_model: SerializedGiskardModel) -> GiskardModel:
-    return GiskardModel(
+    logging.info("Initiating model deserialization")
+    start_time = time.time()
+
+    deserialized_model = GiskardModel(
         cloudpickle.load(ZstdDecompressor().stream_reader(serialized_model.serialized_prediction_function)),
         model_type=serialized_model.model_type,
         classification_threshold=serialized_model.threshold.value if serialized_model.HasField('threshold') else None,
         feature_names=list(serialized_model.feature_names),
         classification_labels=list(serialized_model.classification_labels)
     )
+    logging.info(f"Successfully deserialized model in {(time.time() - start_time)}s")
+
+    return deserialized_model
 
 
 def deserialize_dataset(serialized_dataset: SerializedGiskardDataset) -> GiskardDataset:
-    return GiskardDataset(
+    logging.info("Initiating dataset deserialization")
+    start_time = time.time()
+
+    deserialized_dataset = GiskardDataset(
         df=pd.read_csv(
             BytesIO(decompress(serialized_dataset.serialized_df)),
             keep_default_na=False,
@@ -31,3 +42,6 @@ def deserialize_dataset(serialized_dataset: SerializedGiskardDataset) -> Giskard
         feature_types=dict(serialized_dataset.feature_types),
         column_types=dict(serialized_dataset.column_types)
     )
+    logging.info(f"Successfully deserialized dataset in {(time.time() - start_time)}s")
+
+    return deserialized_dataset
