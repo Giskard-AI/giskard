@@ -115,15 +115,15 @@
                     <td>{{ appSettings.version }}</td>
                   </tr>
                   <tr>
-                    <td>Build commit</td>
+                    <td>Last commit</td>
                     <td>{{ appSettings.buildCommitId }}</td>
                   </tr>
                   <tr>
-                    <td>Build commit date</td>
+                    <td>Last commit date</td>
                     <td>{{ appSettings.buildCommitTime | date }}</td>
                   </tr>
                   <tr>
-                    <td>Built from</td>
+                    <td>Build branch</td>
                     <td>{{ appSettings.buildBranch }}</td>
                   </tr>
                   <tr>
