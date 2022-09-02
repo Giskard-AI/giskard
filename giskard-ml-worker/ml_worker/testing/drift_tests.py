@@ -437,7 +437,7 @@ class DriftTests(AbstractTestCollection):
         if filtered_modalities:
             messages = [TestMessage(
                 type=TestMessageType.ERROR,
-                text=f"The {test_data} is drifting for the following modalities {*filtered_modalities,}"
+                text=f"The {test_data} is drifting for the following modalities: {','.join(filtered_modalities)}"
             )]
         return messages
 

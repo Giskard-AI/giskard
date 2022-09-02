@@ -12,37 +12,38 @@ items:
       - BINARY_CLASSIFICATION
     # language=Python
     code: |
-      """
-        Summary: Test if classification labels prediction is drifting between actual and reference set with PSI score
+      #region Documentation
+      #        Summary: Test if classification labels prediction is drifting between actual and reference set with PSI score
+      #
+      #        Description: Test if the PSI score between the actual and reference datasets is below the threshold
+      #        for the classification labels predictions
+      #
+      #        Example : The test is passed when the  PSI score of classification labels prediction
+      #        for females  between actual and reference sets is below 0.2
+      #
+      #        Args:
+      #            actual_slice(GiskardDataset):
+      #                Slice of the actual dataset
+      #            reference_slice(GiskardDataset):
+      #                Slice of the reference dataset
+      #            model(GiskardModel):
+      #                Model used to compute the test
+      #            threshold(float):
+      #                Threshold value for PSI
+      #
+      #        Returns:
+      #            actual_slices_size:
+      #                Length of actual slice tested
+      #            reference_slices_size:
+      #                Length of reference slice tested
+      #            passed:
+      #                TRUE if metric <= threshold
+      #            metric:
+      #                Total PSI value
+      #            messages:
+      #                Psi result message
+      #endregion
 
-        Description: Test if the PSI score between the actual and reference datasets is below the threshold
-        for the classification labels predictions
-
-        Example : The test is passed when the  PSI score of classification labels prediction
-        for females  between actual and reference sets is below 0.2
-
-        Args:
-            actual_slice(GiskardDataset):
-                Slice of the actual dataset
-            reference_slice(GiskardDataset):
-                Slice of the reference dataset
-            model(GiskardModel):
-                Model used to compute the test
-            threshold(float):
-                Threshold value for PSI
-
-        Returns:
-            actual_slices_size:
-                Length of actual slice tested
-            reference_slices_size:
-                Length of reference slice tested
-            passed:
-                TRUE if metric <= threshold
-            metric:
-                Total PSI value
-            messages:
-                Psi result message
-      """
       tests.drift.test_drift_prediction_psi(
           actual_slice=actual_ds.slice(lambda df: df.head(len(df)//2)),
           reference_slice=reference_ds.slice(lambda df: df.tail(len(df)//2)),
@@ -59,37 +60,38 @@ items:
       - BINARY_CLASSIFICATION
     # language=Python
     code: |
-      """
-        Summary: Test if classification labels prediction is drifting between actual and reference set with chi square
+      #region Documentation
+      #        Summary: Test if classification labels prediction is drifting between actual and reference set with chi square
+      #
+      #        Description: Test if the Chi Square value between the actual and reference datasets is below the threshold
+      #        for the classification labels predictions
+      #
+      #        Example : The test is passed when the  Chi Square value of classification labels prediction
+      #        for females between actual and reference sets is below 0.2
+      #
+      #        Args:
+      #            actual_slice(GiskardDataset):
+      #                Slice of the actual dataset
+      #            reference_slice(GiskardDataset):
+      #                Slice of the reference dataset
+      #            model(GiskardModel):
+      #                Model used to compute the test
+      #            threshold(float):
+      #                Threshold value for Chi-Square
+      #
+      #        Returns:
+      #            actual_slices_size:
+      #                Length of actual slice tested
+      #            reference_slices_size:
+      #                Length of reference slice tested
+      #            passed:
+      #                TRUE if metric > threshold
+      #            metric:
+      #                Calculated p-value of Chi_square
+      #            messages:
+      #                Message describing if prediction is drifting or not
+      #endregion
 
-        Description: Test if the Chi Square value between the actual and reference datasets is below the threshold
-        for the classification labels predictions
-
-        Example : The test is passed when the  Chi Square value of classification labels prediction
-        for females between actual and reference sets is below 0.2
-
-        Args:
-            actual_slice(GiskardDataset):
-                Slice of the actual dataset
-            reference_slice(GiskardDataset):
-                Slice of the reference dataset
-            model(GiskardModel):
-                Model used to compute the test
-            threshold(float):
-                Threshold value for Chi-Square
-
-        Returns:
-            actual_slices_size:
-                Length of actual slice tested
-            reference_slices_size:
-                Length of reference slice tested
-            passed:
-                TRUE if metric > threshold
-            metric:
-                Calculated p-value of Chi_square
-            messages:
-                Message describing if prediction is drifting or not
-      """
       tests.drift.test_drift_prediction_chi_square(
           actual_slice=actual_ds.slice(lambda df: df.head(len(df)//2)),
           reference_slice=reference_ds.slice(lambda df: df.tail(len(df)//2)),
@@ -105,38 +107,39 @@ items:
       - REGRESSION
     # language=Python
     code: |-
-      """
-         Summary: Test if regression prediction is drifting between actual and reference set with KS score
+      #region Documentation
+      #         Summary: Test if regression prediction is drifting between actual and reference set with KS score
+      #
+      #         Description: Test if the p-value of the KS test for prediction between the actual and reference datasets for
+      #         a given slice is above the threshold
+      #
+      #        Example : The test is passed when the p-value of the KS test for the prediction for females
+      #         between actual and reference dataset is higher than 0.05. It means that the KS test cannot be
+      #         rejected at 5% level and that we cannot assume drift for this variable.
+      #
+      #        Args:
+      #            actual_slice(GiskardDataset):
+      #                Slice of the actual dataset
+      #            reference_slice(GiskardDataset):
+      #                Slice of the reference dataset
+      #            model(GiskardModel):
+      #                Model used to compute the test
+      #            threshold(float):
+      #                Threshold for p-value Kolmogorov-Smirnov test
+      #
+      #        Returns:
+      #            actual_slices_size:
+      #                Length of actual slice tested
+      #            reference_slices_size:
+      #                Length of reference slice tested
+      #            passed:
+      #                TRUE if metric >= threshold
+      #            metric:
+      #                The calculated p-value Kolmogorov-Smirnov test
+      #            messages:
+      #                Kolmogorov-Smirnov result message
+      #endregion
 
-         Description: Test if the p-value of the KS test for prediction between the actual and reference datasets for
-         a given slice is above the threshold
-
-        Example : The test is passed when the p-value of the KS test for the prediction for females
-         between actual and reference dataset is higher than 0.05. It means that the KS test cannot be
-         rejected at 5% level and that we cannot assume drift for this variable.
-
-        Args:
-            actual_slice(GiskardDataset):
-                Slice of the actual dataset
-            reference_slice(GiskardDataset):
-                Slice of the reference dataset
-            model(GiskardModel):
-                Model used to compute the test
-            threshold(float):
-                Threshold for p-value Kolmogorov-Smirnov test
-
-        Returns:
-            actual_slices_size:
-                Length of actual slice tested
-            reference_slices_size:
-                Length of reference slice tested
-            passed:
-                TRUE if metric >= threshold
-            metric:
-                The calculated p-value Kolmogorov-Smirnov test
-            messages:
-                Kolmogorov-Smirnov result message
-      """
       tests.drift.test_drift_prediction_ks(
           actual_slice=actual_ds.slice(lambda df: df.head(len(df)//2)),
           reference_slice=reference_ds.slice(lambda df: df.tail(len(df)//2)),
@@ -153,40 +156,41 @@ items:
       - BINARY_CLASSIFICATION
     # language=Python
     code: |-
-      """
-        Summary: Test if classification labels probability is drifting between actual and reference set with KS score
+      #region Documentation
+      #        Summary: Test if classification labels probability is drifting between actual and reference set with KS score
+      #
+      #        Description: Test if the p-value of the KS test for prediction between the actual and reference datasets for
+      #        a given slice is above the threshold
+      #
+      #        Example : The test is passed when the p-value of the KS test for the prediction for females
+      #        between actual and reference dataset is higher than 0.05. It means that the KS test cannot be
+      #        rejected at 5% level and that we cannot assume drift for this variable.
+      #
+      #        Args:
+      #            actual_slice(GiskardDataset):
+      #                Slice of the actual dataset
+      #            reference_slice(GiskardDataset):
+      #                Slice of the reference dataset
+      #            model(GiskardModel):
+      #                Model used to compute the test
+      #            threshold(float):
+      #                Threshold for p-value Kolmogorov-Smirnov test
+      #            classification_label:
+      #                One specific label value from the target column for classification model
+      #
+      #        Returns:
+      #            actual_slices_size:
+      #                Length of actual slice tested
+      #            reference_slices_size:
+      #                Length of reference slice tested
+      #            passed:
+      #                TRUE if metric >= threshold
+      #            metric:
+      #                The calculated p-value Kolmogorov-Smirnov test
+      #            messages:
+      #                Kolmogorov-Smirnov result message
+      #endregion
 
-        Description: Test if the p-value of the KS test for prediction between the actual and reference datasets for
-        a given slice is above the threshold
-
-        Example : The test is passed when the p-value of the KS test for the prediction for females
-        between actual and reference dataset is higher than 0.05. It means that the KS test cannot be
-        rejected at 5% level and that we cannot assume drift for this variable.
-
-        Args:
-            actual_slice(GiskardDataset):
-                Slice of the actual dataset
-            reference_slice(GiskardDataset):
-                Slice of the reference dataset
-            model(GiskardModel):
-                Model used to compute the test
-            threshold(float):
-                Threshold for p-value Kolmogorov-Smirnov test
-            classification_label:
-                One specific label value from the target column for classification model
-
-        Returns:
-            actual_slices_size:
-                Length of actual slice tested
-            reference_slices_size:
-                Length of reference slice tested
-            passed:
-                TRUE if metric >= threshold
-            metric:
-                The calculated p-value Kolmogorov-Smirnov test
-            messages:
-                Kolmogorov-Smirnov result message
-      """
       tests.drift.test_drift_prediction_ks(
           actual_slice=actual_ds.slice(lambda df: df.head(len(df)//2)),
           reference_slice=reference_ds.slice(lambda df: df.tail(len(df)//2)),
@@ -203,36 +207,37 @@ items:
       - REGRESSION
     # language=Python
     code: |-
-      """
-       Summary: Test if regression output is drifting between reference and
-       test set with Earth mover's distance
+      #region Documentation
+      #       Summary: Test if regression output is drifting between reference and
+      #       test set with Earth mover's distance
+      #
+      #        Description: Test if the Earth Mover’s Distance value between the actual and reference datasets is
+      #        below the threshold for the prediction for regression models
+      #
+      #        Example: The test is passed when the  Earth Mover’s Distance value of prediction
+      #        for females between actual and reference sets is below 0.2
+      #
+      #        Args:
+      #            actual_slice(GiskardDataset):
+      #                Slice of the actual dataset
+      #            reference_slice(GiskardDataset):
+      #                Slice of the reference dataset
+      #            model(GiskardModel):
+      #                Model used to compute the test
+      #            threshold(float):
+      #                Threshold for p-value Earth Mover’s Distance test
+      #
+      #        Returns:
+      #            actual_slices_size:
+      #                Length of actual slice tested
+      #            reference_slices_size:
+      #                Length of reference slice tested
+      #            passed:
+      #                TRUE if metric >= threshold
+      #            metric:
+      #                Earth Mover's Distance value
+      #endregion
 
-        Description: Test if the Earth Mover’s Distance value between the actual and reference datasets is
-        below the threshold for the prediction for regression models
-
-        Example: The test is passed when the  Earth Mover’s Distance value of prediction
-        for females between actual and reference sets is below 0.2
-
-        Args:
-            actual_slice(GiskardDataset):
-                Slice of the actual dataset
-            reference_slice(GiskardDataset):
-                Slice of the reference dataset
-            model(GiskardModel):
-                Model used to compute the test
-            threshold(float):
-                Threshold for p-value Earth Mover’s Distance test
-
-        Returns:
-            actual_slices_size:
-                Length of actual slice tested
-            reference_slices_size:
-                Length of reference slice tested
-            passed:
-                TRUE if metric >= threshold
-            metric:
-                Earth Mover's Distance value
-      """
       tests.drift.test_drift_prediction_earth_movers_distance(
           actual_slice=actual_ds.slice(lambda df: df.head(len(df)//2)),
           reference_slice=reference_ds.slice(lambda df: df.tail(len(df)//2)),
@@ -249,38 +254,39 @@ items:
       - BINARY_CLASSIFICATION
     # language=Python
     code: |-
-      """
-        Summary: Test if classification labels probability is drifting between reference and
-        test set with Earth mover's distance
+      #region Documentation
+      #        Summary: Test if classification labels probability is drifting between reference and
+      #        test set with Earth mover's distance
+      #
+      #        Description: Test if the Earth Mover’s Distance value between the actual and reference datasets is
+      #        below the threshold for the classification labels predictions
+      #
+      #        Example: The test is passed when the  Earth Mover’s Distance value of classification
+      #        labels probabilities for females between actual and reference sets is below 0.2
+      #
+      #        Args:
+      #            actual_slice(GiskardDataset):
+      #                Slice of the actual dataset
+      #            reference_slice(GiskardDataset):
+      #                Slice of the reference dataset
+      #            model(GiskardModel):
+      #                Model used to compute the test
+      #            classification_label:
+      #                One specific label value from the target column for classification model
+      #            threshold(float):
+      #                Threshold for p-value Earth Mover’s Distance
+      #
+      #        Returns:
+      #            actual_slices_size:
+      #                Length of actual slice tested
+      #            reference_slices_size:
+      #                Length of reference slice tested
+      #            passed:
+      #                TRUE if metric >= threshold
+      #            metric:
+      #                Earth Mover's Distance value
+      #endregion
 
-        Description: Test if the Earth Mover’s Distance value between the actual and reference datasets is
-        below the threshold for the classification labels predictions
-
-        Example: The test is passed when the  Earth Mover’s Distance value of classification
-        labels probabilities for females between actual and reference sets is below 0.2
-
-        Args:
-            actual_slice(GiskardDataset):
-                Slice of the actual dataset
-            reference_slice(GiskardDataset):
-                Slice of the reference dataset
-            model(GiskardModel):
-                Model used to compute the test
-            classification_label:
-                One specific label value from the target column for classification model
-            threshold(float):
-                Threshold for p-value Earth Mover’s Distance
-
-        Returns:
-            actual_slices_size:
-                Length of actual slice tested
-            reference_slices_size:
-                Length of reference slice tested
-            passed:
-                TRUE if metric >= threshold
-            metric:
-                Earth Mover's Distance value
-      """
       tests.drift.test_drift_prediction_earth_movers_distance(
           actual_slice=actual_ds.slice(lambda df: df.head(len(df)//2)),
           reference_slice=reference_ds.slice(lambda df: df.tail(len(df)//2)),
