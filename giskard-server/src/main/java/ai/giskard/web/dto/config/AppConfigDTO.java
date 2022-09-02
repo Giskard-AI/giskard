@@ -6,6 +6,7 @@ import ai.giskard.web.dto.user.RoleDTO;
 import com.dataiku.j2ts.annotations.UIModel;
 import lombok.*;
 
+import java.time.Instant;
 import java.util.List;
 
 @NoArgsConstructor
@@ -31,6 +32,9 @@ public class AppConfigDTO {
         private int seatsAvailable;
         private List<RoleDTO> roles;
         private String version;
+        private String buildBranch;
+        private String buildCommitId;
+        private Instant buildCommitTime;
         private GeneralSettings generalSettings;
     }
 }

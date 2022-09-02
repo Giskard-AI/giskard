@@ -6,6 +6,8 @@ COPY gradlew .
 COPY gradle.properties .
 COPY settings.gradle .
 COPY build.gradle .
+# Copying .git to make gradle-git-properties gradle plugin work
+COPY .git .git
 
 COPY giskard-common giskard-common
 

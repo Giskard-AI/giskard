@@ -177,8 +177,9 @@ task liquibaseJavaDBdiff(type: GradleBuild) {
 }
 
 gitProperties {
+    dateFormat = "yyyy-MM-dd'T'HH:mm:ssZ"
     failOnNoGitDirectory = false
-    keys = ["git.branch", "git.commit.id.abbrev", "git.commit.id.describe"]
+    keys = ["git.branch", "git.commit.id.abbrev", "git.commit.id.describe", "git.commit.time"]
 }
 
 checkstyle {
