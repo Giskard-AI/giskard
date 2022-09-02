@@ -56,7 +56,7 @@ def test_auc_with_unique_target_no_exception(data, model, threshold, expected_me
 @pytest.mark.parametrize('data,model,threshold,expected_metric,actual_slices_size',
                          [('enron_data', 'enron_model', 0.5, 1, 7)])
 def test_auc_with_unique_target_raise_exception(data, model, threshold, expected_metric, actual_slices_size, request):
-    with pytest.raises(Exception):
+    with pytest.raises(AssertionError) as e:
         tests = GiskardTestFunctions()
         data = request.getfixturevalue(data)
         tests.performance.test_auc(
@@ -64,6 +64,7 @@ def test_auc_with_unique_target_raise_exception(data, model, threshold, expected
             model=request.getfixturevalue(model),
             threshold=threshold
         )
+    assert "Predicted classes don't exist in the dataset" in str(e.value)
 
 
 @pytest.mark.parametrize('data,model,threshold,expected_metric,actual_slices_size',
