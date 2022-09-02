@@ -1,5 +1,7 @@
 import logging
+from timeit import timeit
 from typing import List, Any, Optional, Callable, Iterable, Union
+import time
 
 import numpy
 import pandas as pd
@@ -7,6 +9,7 @@ from builtins import Exception
 from pydantic import BaseModel
 
 from ml_worker.core.giskard_dataset import GiskardDataset
+from ml_worker.utils.logging import timer, Timer
 
 
 class ModelPredictionResults(BaseModel):
@@ -31,6 +34,7 @@ class GiskardModel:
         self.classification_labels = classification_labels
 
     def run_predict(self, dataset: GiskardDataset):
+        timer = Timer()
         df = self.prepare_dataframe(dataset)
         raw_prediction = self.prediction_function(df)
         if self.model_type == "regression":
@@ -62,6 +66,7 @@ class GiskardModel:
             raise ValueError(
                 f"Prediction task is not supported: {self.model_type}"
             )
+        timer.stop(f"Predicted dataset with shape {dataset.df.shape}")
         return result
 
     def prepare_dataframe(self, dataset):

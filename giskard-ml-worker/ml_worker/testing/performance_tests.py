@@ -44,8 +44,12 @@ class PerformanceTests(AbstractTestCollection):
             metric = roc_auc_score(actual_slice.df[actual_slice.target],
                                    model.run_predict(actual_slice).raw_prediction)
         else:
-            metric = roc_auc_score(actual_slice.df[actual_slice.target],
-                                   model.run_predict(actual_slice).all_predictions, multi_class='ovr')
+            predictions = model.run_predict(actual_slice).all_predictions
+            non_declared_categories = set(predictions.columns) - set(actual_slice.df[actual_slice.target].unique())
+            assert not len(non_declared_categories), \
+                f"Predicted classes don't exist in the dataset \"{actual_slice.target}\" column: {non_declared_categories}"
+
+            metric = roc_auc_score(actual_slice.df[actual_slice.target], predictions, multi_class='ovr')
 
         return self.save_results(
             SingleTestResult(
