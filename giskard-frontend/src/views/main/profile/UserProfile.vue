@@ -111,12 +111,25 @@
                     <td>{{ appSettings.generalSettings.instanceId }}</td>
                   </tr>
                   <tr>
-                    <td>Giskard version</td>
+                    <td>Version</td>
                     <td>{{ appSettings.version }}</td>
                   </tr>
                   <tr>
                     <td>Plan</td>
                     <td>{{ appSettings.planName }}</td>
+                  </tr>
+                  <tr><td colspan="2"><v-divider class="divider"/></td></tr>
+                  <tr>
+                    <td>Last commit</td>
+                    <td>{{ appSettings.buildCommitId }}</td>
+                  </tr>
+                  <tr>
+                    <td>Last commit date</td>
+                    <td>{{ appSettings.buildCommitTime | date }}</td>
+                  </tr>
+                  <tr>
+                    <td>Build branch</td>
+                    <td>{{ appSettings.buildBranch }}</td>
                   </tr>
                 </table>
               </v-simple-table>
@@ -249,7 +262,10 @@ export default class UserProfile extends Vue {
   background-color: rgba(211, 211, 211, 0.52);
   padding: 10px;
 }
-
+.divider{
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
 .token-area {
   user-select: all;
   word-break: break-all;

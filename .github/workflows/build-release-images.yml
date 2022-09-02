@@ -1,0 +1,69 @@
+name: Build and publish released version
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+jobs:
+  build-images:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set tag name
+        id: tag
+        run: |
+          echo ::set-output name=name::${GITHUB_REF#refs/*/}
+          echo ::set-output name=version::${GITHUB_REF#refs/*/v}
+          echo ::set-output name=latest_version::$(git ls-remote --tags origin | grep -Po "v\d+\.\d+\.\d+" | sort -hr | head -1)
+
+      - name: Generate docker config file
+        env:
+          TAG: ${{ steps.tag.outputs.version }}
+        run: |
+          sudo sysctl -w kernel.unprivileged_userns_clone=1
+          docker-compose -f docker-compose.yml -f docker-compose.dev.yml config > docker-stack.yml
+
+      - name: Build images
+        run: docker-compose -f docker-stack.yml build
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Push <current version> images to ECR
+        env:
+          TAG: ${{ steps.tag.outputs.version }}
+        run: |
+          aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin public.ecr.aws/giskard
+          docker-compose -f docker-compose.yml -f docker-compose.dev.yml push
+
+      - name: Tag images as <latest>
+        if: ${{ steps.tag.outputs.name == steps.tag.outputs.latest_version }}
+        env:
+          TAG: ${{ steps.tag.outputs.version }}
+        run: |
+          for image in $(cat docker-stack.yml | grep '^ *image:.*giskard' | cut -d':' -f 2 | tr -d ' '); \
+          do \
+              docker tag "${image}":"${TAG}" "${image}":latest; \
+          done;
+
+      - name: Push <latest> images to ECR
+        if: ${{ steps.tag.outputs.name == steps.tag.outputs.latest_version }}
+        env:
+          TAG: latest
+        run: |
+          aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin public.ecr.aws/giskard
+          docker-compose -f docker-compose.yml -f docker-compose.dev.yml push
+
+      - name: Invoke deployment hook
+        run: |
+          curl --max-time 900 ${{ secrets.TEST_SERVER_WEBHOOK_URL_BASE }}/redeploy-prod 
+
+      - name: Remove containers and volumes
+        run: docker-compose -f docker-stack.yml down -v --remove-orphans
