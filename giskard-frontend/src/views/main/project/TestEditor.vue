@@ -59,7 +59,7 @@
 
       </v-col>
       <v-col :cols='fullScreen ? 12 : 6' class="vertical-container test-code-container">
-        <OverlayLoader absolute solid :show="!isEditorReady"/>
+        <OverlayLoader absolute solid :show="!isEditorReady" no-fade/>
         <div class="editor-wrapper" :class="{'tall' : fullScreen}">
           <MonacoEditor
               ref="editor"
