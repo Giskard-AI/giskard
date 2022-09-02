@@ -1,5 +1,6 @@
 import logging
 from typing import List, Any, Optional, Callable, Iterable, Union
+import time
 
 import numpy
 import pandas as pd
@@ -31,6 +32,7 @@ class GiskardModel:
         self.classification_labels = classification_labels
 
     def run_predict(self, dataset: GiskardDataset):
+        start_time = time.time()
         df = self.prepare_dataframe(dataset)
         raw_prediction = self.prediction_function(df)
         if self.model_type == "regression":
@@ -62,6 +64,7 @@ class GiskardModel:
             raise ValueError(
                 f"Prediction task is not supported: {self.model_type}"
             )
+        logging.info(f"Predicted dataset with {dataset.df.shape} shape in {(time.time() - start_time)}s")
         return result
 
     def prepare_dataframe(self, dataset):
