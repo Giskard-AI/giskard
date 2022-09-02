@@ -10,10 +10,10 @@ from zstandard import decompress
 from ml_worker.core.giskard_dataset import GiskardDataset
 from ml_worker.core.model import GiskardModel
 from generated.ml_worker_pb2 import SerializedGiskardModel, SerializedGiskardDataset
+import tensorflow_text
 
 
 def deserialize_model(serialized_model: SerializedGiskardModel) -> GiskardModel:
-    logging.info("Initiating model deserialization")
     start_time = time.time()
 
     deserialized_model = GiskardModel(
@@ -29,7 +29,6 @@ def deserialize_model(serialized_model: SerializedGiskardModel) -> GiskardModel:
 
 
 def deserialize_dataset(serialized_dataset: SerializedGiskardDataset) -> GiskardDataset:
-    logging.info("Initiating dataset deserialization")
     start_time = time.time()
 
     deserialized_dataset = GiskardDataset(
