@@ -44,9 +44,9 @@ services:
   frontend:
     image: '${DOCKER_REGISTRY}/frontend:${TAG-latest}'
     ports:
-      - "19000:80"
+      - "${GISKARD_PORT-19000}:80"
     expose:
-      - 19000
+      - ${GISKARD_PORT-19000}
     depends_on:
       - jupyter
       - backend
