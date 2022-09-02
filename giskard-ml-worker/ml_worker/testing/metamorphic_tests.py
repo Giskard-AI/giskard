@@ -1,5 +1,6 @@
 import pandas as pd
-
+import time
+import logging
 from generated.ml_worker_pb2 import SingleTestResult, TestMessage, TestMessageType
 
 from ml_worker.core.giskard_dataset import GiskardDataset
@@ -41,6 +42,8 @@ class MetamorphicTests(AbstractTestCollection):
         return results_df, len(modified_rows)
 
     def _compare_prediction(self, results_df, prediction_task, output_sensitivity=None, flag=None):
+        start_time = time.time()
+
         if flag == 'Invariance':
             if prediction_task == 'classification':
                 passed_idx = results_df.loc[
@@ -60,6 +63,7 @@ class MetamorphicTests(AbstractTestCollection):
                 results_df['prediction'] > results_df['perturbed_prediction']].index.values
 
         failed_idx = results_df.loc[~results_df.index.isin(passed_idx)].index.values
+        logging.info(f"Compared and predicted the data in {(time.time() - start_time)}s")
         return passed_idx, failed_idx
 
     def _test_metamorphic(self,
