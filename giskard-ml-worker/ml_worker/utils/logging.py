@@ -4,7 +4,6 @@ from datetime import timedelta
 from functools import wraps
 from logging.config import fileConfig
 from timeit import default_timer
-import inspect
 
 import sys
 
