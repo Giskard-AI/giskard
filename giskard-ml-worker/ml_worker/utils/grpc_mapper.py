@@ -10,7 +10,6 @@ from zstandard import decompress
 from ml_worker.core.giskard_dataset import GiskardDataset
 from ml_worker.core.model import GiskardModel
 from generated.ml_worker_pb2 import SerializedGiskardModel, SerializedGiskardDataset
-import tensorflow_text
 
 
 def deserialize_model(serialized_model: SerializedGiskardModel) -> GiskardModel:
