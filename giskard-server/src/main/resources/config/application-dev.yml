@@ -18,7 +18,7 @@ logging:
     ROOT: INFO
     tech.jhipster: INFO
     org.hibernate.SQL: INFO
-    ai.giskard: DEBUG
+    ai.giskard: INFO
 
 spring:
   devtools:
