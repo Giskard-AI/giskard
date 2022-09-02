@@ -135,16 +135,18 @@ def test_drift_data_earth_movers_distance(data, threshold, expected_metric, colu
     assert results.passed
 
 
-@pytest.mark.parametrize('data,model,threshold,expected_metric',
-                         [('german_credit_data', 'german_credit_model', 1, 0.02),
-                          ('enron_data', 'enron_model', 2, 1.36)])
+@pytest.mark.parametrize('data,model,threshold,expected_metric', [
+    ('german_credit_data', 'german_credit_model', 1, 0.02),
+    ('enron_data', 'enron_model', 2, 1.36)
+])
 def test_drift_prediction_psi(data, model, threshold, expected_metric, request):
     tests = GiskardTestFunctions()
     data = request.getfixturevalue(data)
+    model = request.getfixturevalue(model)
     results = tests.drift.test_drift_prediction_psi(
         reference_slice=data.slice(lambda df: df.head(len(df) // 2)),
         actual_slice=data.slice(lambda df: df.tail(len(df) // 2)),
-        model=request.getfixturevalue(model),
+        model=model,
         threshold=threshold)
 
     assert round(results.metric, 2) == expected_metric
