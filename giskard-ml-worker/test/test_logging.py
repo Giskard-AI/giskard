@@ -17,7 +17,3 @@ def wait():
 
 def test_with_timer():
     wait()
-    # timer = Timer("Sleeping for {}")
-    # with timer:
-    #     time.sleep(0.1)
-    # assert timer.message is not None
