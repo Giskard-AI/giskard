@@ -34,12 +34,12 @@ items:
       #              The AUC performance metric
       #          passed:
       #              TRUE if AUC metrics >= threshold
-#endregion
-tests.performance.test_auc(
-            actual_slice=actual_ds.slice(lambda df: df.head(len(df) // 2)),
-            model=model,
-            threshold=0.7
-        )
+      #endregion
+      tests.performance.test_auc(
+                  actual_slice=actual_ds.slice(lambda df: df.head(len(df) // 2)),
+                  model=model,
+                  threshold=0.7
+              )
 
   - id: f1
     title: F1
