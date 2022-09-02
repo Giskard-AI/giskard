@@ -4,6 +4,7 @@ from datetime import timedelta
 from functools import wraps
 from logging.config import fileConfig
 from timeit import default_timer
+import inspect
 
 import sys
 
@@ -78,11 +79,12 @@ class Timer:
 
 
 def timer(message=None):
-    def timing_decorator(f):
+    @wraps(timer)
+    def timing_decorator(fn):
         @wraps(timing_decorator)
         def wrap(*args, **kw):
-            with Timer(message if message else f'{f.__name__}'):
-                result = f(*args, **kw)
+            with Timer(message if message else f'{fn.__module__}.{fn.__qualname__}'):
+                result = fn(*args, **kw)
             return result
 
         return wrap
