@@ -17,6 +17,7 @@ from ml_worker.core.model_explanation import explain, text_explanation_predictio
 from ml_worker.exceptions.IllegalArgumentError import IllegalArgumentError
 from ml_worker.exceptions.giskard_exception import GiskardException
 from ml_worker.utils.grpc_mapper import deserialize_model, deserialize_dataset
+from ml_worker.utils.logging import Timer
 
 logger = logging.getLogger()
 
@@ -39,9 +40,9 @@ class MLWorkerServiceImpl(MLWorkerServicer):
         if request.actual_ds.serialized_df:
             _globals['actual_ds'] = deserialize_dataset(request.actual_ds)
         try:
-            start_time = time.time()
+            timer = Timer()
             exec(request.code, _globals)
-            logging.info(f"Successfully executed the {tests.tests_results[0].name} test in {(time.time() - start_time)}s")
+            timer.stop(f"Test {tests.tests_results[0].name}")
         except NameError as e:
             missing_name = re.findall(r"name '(\w+)' is not defined", str(e))[0]
             if missing_name == 'reference_ds':

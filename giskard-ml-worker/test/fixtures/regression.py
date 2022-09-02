@@ -6,7 +6,7 @@ from sklearn.metrics import mean_squared_error
 
 from ml_worker.core.giskard_dataset import GiskardDataset
 from ml_worker.core.model import GiskardModel
-from test.test_utils import timing
+from ml_worker.utils.logging import timer
 
 
 @pytest.fixture()
@@ -32,7 +32,7 @@ def diabetes_dataset_with_target():
 
 
 @pytest.fixture()
-@timing
+@timer
 def linear_regression_diabetes() -> GiskardModel:
     diabetes = datasets.load_diabetes()
 
