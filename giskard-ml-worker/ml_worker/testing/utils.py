@@ -3,6 +3,7 @@ import time
 import logging
 
 from generated.ml_worker_pb2 import SingleTestResult
+from ml_worker.utils.logging import timer
 
 
 def ge_result_to_test_result(result, passed=True) -> SingleTestResult:
@@ -27,8 +28,8 @@ def ge_result_to_test_result(result, passed=True) -> SingleTestResult:
     )
 
 
+@timer("Perturb data")
 def apply_perturbation_inplace(df: pd.DataFrame, perturbation_dict):
-    start_time = time.time()
     modified_rows = []
     i = 0
     for idx, r in df.iterrows():
@@ -41,5 +42,4 @@ def apply_perturbation_inplace(df: pd.DataFrame, perturbation_dict):
                 modified_rows.append(i)
                 df.loc[idx, pert_col] = new_value
         i += 1
-    logging.info(f"Perturbed data in {(time.time() - start_time)}s")
     return modified_rows
