@@ -58,6 +58,8 @@ public class TestService {
     public TestExecutionResultDTO runTest(Long testId) throws IOException {
         TestExecutionResultDTO res = new TestExecutionResultDTO(testId);
         Test test = testRepository.findById(testId).orElseThrow(() -> new EntityNotFoundException(Entity.TEST, testId));
+        logger.info("Running test {}({}) for suite {}, project {}",
+            test.getName(), test.getId(), test.getTestSuite().getId(), test.getTestSuite().getProject().getKey());
 
         TestExecution testExecution = new TestExecution(test);
         testExecutionRepository.save(testExecution);

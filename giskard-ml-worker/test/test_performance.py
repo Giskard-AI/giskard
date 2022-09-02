@@ -38,6 +38,36 @@ def test_auc(data, model, threshold, expected_metric, actual_slices_size, reques
 
 
 @pytest.mark.parametrize('data,model,threshold,expected_metric,actual_slices_size',
+                         [('enron_data', 'enron_model', 0.5, 1, 7)])
+def test_auc_with_unique_target_no_exception(data, model, threshold, expected_metric, actual_slices_size, request):
+    tests = GiskardTestFunctions()
+    data = request.getfixturevalue(data)
+    results = tests.performance.test_auc(
+        actual_slice=data.slice(lambda df: df.drop_duplicates('Target')),
+        model=request.getfixturevalue(model),
+        threshold=threshold
+    )
+
+    assert results.actual_slices_size[0] == actual_slices_size
+    assert round(results.metric, 2) == expected_metric
+    assert results.passed
+
+
+@pytest.mark.parametrize('data,model,threshold,expected_metric,actual_slices_size',
+                         [('enron_data', 'enron_model', 0.5, 1, 7)])
+def test_auc_with_unique_target_raise_exception(data, model, threshold, expected_metric, actual_slices_size, request):
+    with pytest.raises(AssertionError) as e:
+        tests = GiskardTestFunctions()
+        data = request.getfixturevalue(data)
+        tests.performance.test_auc(
+            actual_slice=data.slice(lambda df: df.drop_duplicates('Target').head()),
+            model=request.getfixturevalue(model),
+            threshold=threshold
+        )
+    assert "Predicted classes don't exist in the dataset" in str(e.value)
+
+
+@pytest.mark.parametrize('data,model,threshold,expected_metric,actual_slices_size',
                          [('german_credit_data', 'german_credit_model', 0.5, 0.81, 1000),
                           ('enron_data', 'enron_model', 0.5, 0.72, 50)])
 def test_precision(data, model, threshold, expected_metric, actual_slices_size, request):
