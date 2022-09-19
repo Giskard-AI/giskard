@@ -22,6 +22,17 @@
               style='margin-left: 15px'>Row Index {{ originalData.Index + 1 }}</span>
       </v-toolbar>
       <v-spacer/>
+      <v-tooltip left>
+        <template v-slot:activator="{ on, attrs }">
+          <v-icon v-on="on" class="pr-5"> info</v-icon>
+        </template>
+        <span>
+          Model : {{ inspection.model.name }}
+          <br/>
+          Dataset : {{ inspection.dataset.name }}
+        </span>
+      </v-tooltip>
+
       <InspectionFilter
           :is-target-available="isDefined(inspection.dataset.target)"
           :labels="labels"
