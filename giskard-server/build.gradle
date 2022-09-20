@@ -271,7 +271,7 @@ dependencies {
         implementation "io.jsonwebtoken:jjwt-jackson"
     }
     implementation("org.springdoc:springdoc-openapi-webmvc-core")
-    implementation group: 'org.springdoc', name: 'springdoc-openapi-ui', version: '1.6.10'
+    implementation group: 'org.springdoc', name: 'springdoc-openapi-ui', version: '1.6.11'
     implementation "org.postgresql:postgresql"
     implementation "com.h2database:h2"
     liquibaseRuntime "org.postgresql:postgresql"
@@ -295,7 +295,7 @@ dependencies {
 
     implementation files("$projectDir/src/main/resources/third-party/j2ts-api.jar")
     implementation group: 'com.fasterxml.jackson.dataformat', name: 'jackson-dataformat-yaml', version: '2.13.3'
-    implementation group: 'com.github.luben', name: 'zstd-jni', version: '1.5.2-3'
+    implementation group: 'com.github.luben', name: 'zstd-jni', version: '1.5.2-4'
     implementation 'org.apache.commons:commons-compress:1.21'
 
 }
