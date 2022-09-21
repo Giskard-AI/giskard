@@ -1,6 +1,8 @@
 <template>
-  <v-overlay :value="show" :absolute="absolute" :color="solid ? '#ffffff':'#cdcdcd90'" :opacity="solid ? 1: 0.46"
-             :class="classes">
+  <v-overlay :value="show" :absolute="absolute"
+             :color="solid ? '#ffffff':'#cdcdcd90'" :opacity="solid ? 1: 0.46"
+             :class="classes"
+             :z-index="1000">
     <v-progress-circular class="ma-2" :size="size" color="primary" indeterminate></v-progress-circular>
   </v-overlay>
 </template>

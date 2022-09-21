@@ -14,6 +14,7 @@ import java.util.List;
 @NoArgsConstructor
 @UIModel
 public class SingleTestResultDTO {
+    private List<TestResultMessageDTO> messages;
     private List<Integer> actualSlicesSize;
     private List<Integer> referenceSlicesSize;
     private boolean passed;
@@ -40,5 +41,7 @@ public class SingleTestResultDTO {
         this.metric = message.getMetric();
         this.actualSlicesSize = message.getActualSlicesSizeList();
         this.referenceSlicesSize = message.getReferenceSlicesSizeList();
+        this.messages = message.getMessagesList().stream().map(
+            msg -> new TestResultMessageDTO(msg.getType(), msg.getText())).toList();
     }
 }

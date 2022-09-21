@@ -15,6 +15,9 @@ export namespace AppConfigDTO {
      * Generated from ai.giskard.web.dto.config.AppConfigDTO$AppInfoDTO
      */
     export interface AppInfoDTO {
+        buildBranch: string;
+        buildCommitId: string;
+        buildCommitTime: any /* TODO: Missing translation of java.time.Instant */;
         generalSettings: GeneralSettings;
         planCode: string;
         planName: string;

@@ -15,6 +15,7 @@ from sklearn.preprocessing import StandardScaler
 
 from ml_worker.core.giskard_dataset import GiskardDataset
 from ml_worker.core.model import GiskardModel
+from ml_worker.utils.logging import timer, Timer
 from test import path
 
 input_types = {
@@ -32,7 +33,9 @@ input_types = {
 def enron_data() -> GiskardDataset:
     logging.info("Fetching Enron Data")
     return GiskardDataset(
-        df=pd.read_csv(path('test_data/enron_data.csv')),
+        df=pd.read_csv(path('test_data/enron_data.csv'),
+                       keep_default_na=False,
+                       na_values=["_GSK_NA_"]),
         target='Target',
         feature_types=input_types
     )
@@ -49,7 +52,7 @@ def enron_test_data(enron_data):
 
 @pytest.fixture()
 def enron_model(enron_data) -> GiskardModel:
-    start = time.time()
+    timer = Timer()
 
     columns_to_scale = [key for key in input_types.keys() if input_types[key] == "numeric"]
 
@@ -85,9 +88,8 @@ def enron_model(enron_data) -> GiskardModel:
                                                                         stratify=Y)
     clf.fit(X_train, Y_train)
 
-    train_time = time.time() - start
     model_score = clf.score(X_test, Y_test)
-    logging.info(f"Trained model with score: {model_score} in {round(train_time * 1000)} ms")
+    timer.stop(f"Trained model with score: {model_score}")
 
     return GiskardModel(
         prediction_function=clf.predict_proba,

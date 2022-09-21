@@ -58,7 +58,8 @@
         </v-alert>
 
       </v-col>
-      <v-col :cols='fullScreen ? 12 : 6' class="vertical-container">
+      <v-col :cols='fullScreen ? 12 : 6' class="vertical-container test-code-container">
+        <OverlayLoader absolute solid :show="!isEditorReady" no-fade/>
         <div class="editor-wrapper" :class="{'tall' : fullScreen}">
           <MonacoEditor
               ref="editor"
@@ -175,8 +176,12 @@
               <div class="text-body-2">{{ runResult.executionDate | date }}</div>
             </div>
             <div class="d-flex justify-space-between align-center">
-              <div class='text-body-2'>Metric: {{ testResult.result.metric  }}</div>
-<!--              <a class="text-body-2 results-link text-decoration-underline">Full results</a>-->
+              <div class='text-body-2'>Metric: {{ testResult.result.metric }}</div>
+              <div class='text-body-2 text-right'
+                   v-if="testResult.result.messages && testResult.result.messages.length">
+                {{ testResult.result.messages[0].text }}
+              </div>
+              <!--              <a class="text-body-2 results-link text-decoration-underline">Full results</a>-->
             </div>
           </v-alert>
         </template>
@@ -190,6 +195,7 @@ import Vue from 'vue';
 // @ts-ignore
 import MonacoEditor from 'vue-monaco';
 import * as monaco from 'monaco-editor';
+import {editor} from 'monaco-editor';
 
 import Component from 'vue-class-component';
 import {Prop, Watch} from 'vue-property-decorator';
@@ -200,13 +206,15 @@ import {CodeTestCollection, TestDTO, TestExecutionResultDTO, TestResult, TestTyp
 import mixpanel from "mixpanel-browser";
 import {testStatusToColor} from "@/views/main/tests/test-utils";
 import Mousetrap from "mousetrap";
+import IStandaloneCodeEditor = editor.IStandaloneCodeEditor;
+import OverlayLoader from '@/components/OverlayLoader.vue';
 
 
 Vue.filter('formatNumber', function (value, fmt) {
   return numeral(value).format(fmt || '0.0'); // displaying other groupings/separators is possible, look at the docs
 });
 
-@Component({components: {MonacoEditor}})
+@Component({components: {MonacoEditor, OverlayLoader}})
 export default class TestEditor extends Vue {
   @Prop({required: true}) testId!: number;
   @Prop({required: true}) suiteId!: number;
@@ -218,8 +226,9 @@ export default class TestEditor extends Vue {
   testAvailability: { [p: string]: boolean } = {};
   fullScreen = false;
   mouseTrap = new Mousetrap();
+  isEditorReady = false;
 
-  get editor() {
+  get editor(): IStandaloneCodeEditor {
     return this.$refs.editor?.editor;
   }
 
@@ -228,6 +237,8 @@ export default class TestEditor extends Vue {
     await this.init();
     this.resizeEditor();
     this.setUpKeyBindings();
+    await this.editor.getAction('editor.foldAllMarkerRegions').run();
+    this.isEditorReady = true;
   }
 
   destroyed() {
@@ -292,7 +303,12 @@ export default class TestEditor extends Vue {
         true: 'Yes'
       }
     })) {
+      this.isEditorReady = false;
       this.testDetails!.code = code;
+      setTimeout(async () => {
+        await this.editor.getAction('editor.foldAllMarkerRegions').run();
+        this.isEditorReady = true;
+      });
     }
   }
 
@@ -476,5 +492,8 @@ export default class TestEditor extends Vue {
 
 ::v-deep .v-alert {
   margin: 0;
+}
+.test-code-container{
+  position: relative;
 }
 </style>
