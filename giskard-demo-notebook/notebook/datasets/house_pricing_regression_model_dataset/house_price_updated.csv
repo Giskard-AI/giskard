@@ -1,4 +1,4 @@
-TypeOfDewelling,BldgType,AbvGrndLivArea,Neighborhood,KitchenQual,NumGarageCars,YearBuilt,YearRemodAdd,ExterQual,LotArea,LotShape,Fireplaces,NumBathroom,Basement1Type,Basement1SurfaceArea,Basement2Type,Basement2SurfaceArea,TotalBasementArea,GarageArea,1stFlrArea,2ndFlrArea,Utilities,OverallQual,SalePrice
+TypeOfDewelling,BldgType,AbvGroundLivingArea,Neighborhood,KitchenQuality,NumGarageCars,YearBuilt,RemodelYear,ExternalQuality,LotArea,LotShape,Fireplaces,NumBathroom,Basement1Type,Basement1SurfaceArea,Basement2Type,Basement2SurfaceArea,TotalBasementArea,GarageArea,1stFlrArea,2ndFlrArea,Utilities,OverallQuality,SalePrice
 2-STORY 1946 & NEWER,OneFam,1710,CollgCr,Good,2,2003,2003,Good,8450,Regular,0,2,GoodLivingQuarters,706,Unfinshed,0,856,548,856,854,AllUtilitiesAvl,7,208500
 1-STORY 1946 & NEWER ALL STYLES,OneFam,1262,Veenker,Average,2,1976,1976,Average,9600,Regular,1,2,AverageLivingQuarters,978,Unfinshed,0,1262,460,1262,0,AllUtilitiesAvl,6,181500
 2-STORY 1946 & NEWER,OneFam,1786,CollgCr,Good,2,2001,2002,Good,11250,SlightlyIrregular,1,2,GoodLivingQuarters,486,Unfinshed,0,920,608,920,866,AllUtilitiesAvl,7,223500

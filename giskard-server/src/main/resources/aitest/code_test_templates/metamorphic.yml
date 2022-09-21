@@ -12,52 +12,51 @@ items:
       - BINARY_CLASSIFICATION
     # language=Python
     code: |-
-      """
-      Summary: Tests if the model prediction is invariant when the feature values are perturbed
+      #region Documentation
+      #      Summary: Tests if the model prediction is invariant when the feature values are perturbed
+      #
+      #      Description: Test if the predicted classification label remains the same after
+      #      feature values perturbation.The test is passed when the percentage of unchanged
+      #      rows is higher than the threshold
+      #
+      #      Example : The test is passed when, after switching gender from male to female,
+      #      more than 50%(threshold 0.5) of males have unchanged outputs
+      #
+      #      Args:
+      #          df(GiskardDataset):
+      #              Dataset used to compute the test
+      #          model(GiskardModel):
+      #              Model used to compute the test
+      #          perturbation_dict(dict):
+      #              Dictionary of the perturbations. It provides the perturbed features as key
+      #              and a perturbation lambda function as value
+      #          threshold(float):
+      #              Threshold of the ratio of invariant rows
+      #
+      #      Returns:
+      #          actual_slices_size:
+      #              Length of actual_slice tested
+      #          message:
+      #              Test result message
+      #          metric:
+      #              The ratio of unchanged rows over the perturbed rows
+      #          passed:
+      #              TRUE if metric > threshold
+      #endregion
 
-      Description: Test if the predicted classification label remains the same after
-      feature values perturbation.The test is passed when the percentage of unchanged
-      rows is higher than the threshold
-
-      Example : The test is passed when, after switching gender from male to female,
-      more than 50%(threshold 0.5) of males have unchanged outputs
-
-      Args:
-          df(GiskardDataset):
-              Dataset used to compute the test
-          model(GiskardModel):
-              Model used to compute the test
-          perturbation_dict(dict):
-              Dictionary of the perturbations. It provides the perturbed features as key
-              and a perturbation lambda function as value
-          threshold(float):
-              Threshold of the ratio of invariant rows
-
-      Returns:
-          actual_slices_size:
-              total number of rows of actual dataset
-          number_of_perturbed_rows:
-              Number of perturbed rows
-          metric:
-              The ratio of unchanged rows over the perturbed rows
-          passed:
-              TRUE if metric > threshold
-          output_df:
-              Dataframe of rows where the prediction changes due to perturbation
-      """
       import nlpaug.augmenter.word as naw
 
       aug = naw.SpellingAug(dict_path=None,
-      name='Spelling_Aug',
-      aug_min=1,
-      aug_max=10,
-      aug_p=0.3,
-      stopwords=None,
-      tokenizer=None,
-      reverse_tokenizer=None,
-      include_reverse=True,
-      stopwords_regex=None,
-      verbose=0)
+                            name='Spelling_Aug',
+                            aug_min=1,
+                            aug_max=10,
+                            aug_p=0.3,
+                            stopwords=None,
+                            tokenizer=None,
+                            reverse_tokenizer=None,
+                            include_reverse=True,
+                            stopwords_regex=None,
+                            verbose=0)
 
       # You can choose all_perturbation to perturb categorical, text and numerical feature at the same time
       all_perturbation = {
@@ -76,7 +75,7 @@ items:
           df=actual_ds,
           model=model,
           perturbation_dict=perturbation,  # Update your perturbation choice here
-          threshold=0.1
+          threshold=0.5
       )
 
   - id: metamorphic_invariance_regression
@@ -88,43 +87,42 @@ items:
       - REGRESSION
     # language=Python
     code: |-
-      """
-      Summary: Tests if the model prediction is invariant when the feature values are perturbed
+      #region Documentation
+      #      Summary: Tests if the model prediction is invariant when the feature values are perturbed
+      #
+      #      Description: Test whether the predicted output remains the same at the output_sensibility
+      #      level after feature values perturbation.
+      #
+      #      The test is passed when the percentage of unchanged rows is higher than the threshold
+      #
+      #      Example : The test is passed when, after switching gender from male to female,
+      #      more than 50%(threshold 0.5) of males have unchanged outputs
+      #
+      #      Args:
+      #          df(GiskardDataset):
+      #                Dataset used to compute the test
+      #          model(GiskardModel):
+      #              Model used to compute the test
+      #          perturbation_dict(dict):
+      #              Dictionary of the perturbations. It provides the perturbed features as key and a perturbation lambda function as value
+      #          threshold(float):
+      #              Threshold of the ratio of invariant rows
+      #          output_sensitivity(float):
+      #              The threshold for ratio between the difference between perturbed prediction and actual prediction over
+      #              the actual prediction for a regression model. We consider there is a prediction difference for
+      #              regression if the ratio is above the output_sensitivity of 0.1
+      #
+      #      Returns:
+      #          actual_slices_size:
+      #              Length of actual_slice tested
+      #          message:
+      #              Test result message
+      #          metric:
+      #              The ratio of unchanged rows over the perturbed rows
+      #          passed:
+      #              TRUE if metric > threshold
+      #endregion
 
-      Description: Test whether the predicted output remains the same at the output_sensibility
-      level after feature values perturbation.
-
-      The test is passed when the percentage of unchanged rows is higher than the threshold
-
-      Example : The test is passed when, after switching gender from male to female,
-      more than 50%(threshold 0.5) of males have unchanged outputs
-
-      Args:
-          df(GiskardDataset):
-                Dataset used to compute the test
-          model(GiskardModel):
-              Model used to compute the test
-          perturbation_dict(dict):
-              Dictionary of the perturbations. It provides the perturbed features as key and a perturbation lambda function as value
-          threshold(float):
-              Threshold of the ratio of invariant rows
-          output_sensitivity(float):
-              The threshold for ratio between the difference between perturbed prediction and actual prediction over
-              the actual prediction for a regression model. We consider there is a prediction difference for
-              regression if the ratio is above the output_sensitivity of 0.1
-
-      Returns:
-          actual_slices_size:
-              Total number of rows of actual dataset
-          number_of_perturbed_rows:
-              Number of perturbed rows
-          metric:
-              The ratio of unchanged rows over the perturbed rows
-          passed:
-              TRUE if metric > threshold
-          output_df:
-              Dataframe of rows where the prediction changes due to perturbation
-      """
       import nlpaug.augmenter.word as naw
 
       aug = naw.SpellingAug(dict_path=None,
@@ -155,7 +153,7 @@ items:
           model=model,
           perturbation_dict=perturbation, # Update your perturbation choice here
           output_sensitivity=0.1,
-          threshold=0.1
+          threshold=0.5
       )
   - id: metamorphic_increasing_classification
     title: Increasing for Classification
@@ -167,42 +165,40 @@ items:
       - BINARY_CLASSIFICATION
     # language=Python
     code: |-
-      """
-      Summary: Tests if the model probability increases when the feature values are perturbed
+      #region Documentation
+      #      Summary: Tests if the model probability increases when the feature values are perturbed
+      #
+      #      Description: Test if the model probability of a given classification_label is
+      #      increasing after feature values perturbation.The test is passed when the percentage of
+      #      rows that are increasing is higher than the threshold
+      #
+      #      Example : For a credit scoring model, the test is passed when a decrease of wage by 10%,
+      #      default probability is increasing for more than 50% of people in the dataset
+      #
+      #      Args:
+      #          df(GiskardDataset):
+      #              Dataset used to compute the test
+      #          model(GiskardModel):
+      #              Model used to compute the test
+      #          perturbation_dict(dict):
+      #              Dictionary of the perturbations. It provides the perturbed features as key
+      #              and a perturbation lambda function as value
+      #          threshold(float):
+      #              Threshold of the ratio of increasing rows
+      #          classification_label(str):
+      #              One specific label value from the target column
+      #
+      #      Returns:
+      #          actual_slices_size:
+      #              Length of actual_slice tested
+      #          message:
+      #              Test result message
+      #          metric:
+      #              The ratio of increasing rows over the perturbed rows
+      #          passed:
+      #              TRUE if metric > threshold
+      #endregion
 
-      Description: Test if the model probability of a given classification_label is
-      increasing after feature values perturbation.The test is passed when the percentage of
-      rows that are increasing is higher than the threshold
-
-      Example : For a credit scoring model, the test is passed when a decrease of wage by 10%,
-      default probability is increasing for more than 50% of people in the dataset
-
-      Args:
-          df(GiskardDataset):
-              Dataset used to compute the test
-          model(GiskardModel):
-              Model used to compute the test
-          perturbation_dict(dict):
-              Dictionary of the perturbations. It provides the perturbed features as key
-              and a perturbation lambda function as value
-          threshold(float):
-              Threshold of the ratio of increasing rows
-          classification_label(str):
-              One specific label value from the target column
-
-      Returns:
-          actual_slices_size:
-              Total number of rows of actual dataset
-          number_of_perturbed_rows:
-              Number of perturbed rows
-          metric:
-              The ratio of increasing rows over the perturbed rows
-          passed:
-              TRUE if metric > threshold
-          output_df:
-              Dataframe containing the rows whose probability doesn't increase after perturbation
-
-      """
       import nlpaug.augmenter.word as naw
 
       aug = naw.SpellingAug(dict_path=None,
@@ -233,7 +229,7 @@ items:
           model=model,
           perturbation_dict=perturbation, # Update your perturbation choice here
           classification_label='{{CLASSIFICATION LABEL}}',
-          threshold=0.1
+          threshold=0.5
       )
   - id: metamorphic_increasing_regression
     title: Increasing for Regression
@@ -244,39 +240,37 @@ items:
       - REGRESSION
     # language=Python
     code: |-
-      """
-      Summary: Tests if the model prediction increases when the feature values are perturbed
+      #region Documentation
+      #      Summary: Tests if the model prediction increases when the feature values are perturbed
+      #
+      #      Description: Test if the model prediction is increasing after feature values perturbation.
+      #      The test is passed when the percentage of rows that are increasing is higher than the threshold
+      #
+      #      Example: For a house price prediction, the test is passed when a increase of surface area by 10% results
+      #      in increasing the Sale Price for more than 50% of houses in the dataset
+      #
+      #      Args:
+      #          df(GiskardDataset):
+      #              Dataset used to compute the test
+      #          model(GiskardModel):
+      #              Model used to compute the test
+      #          perturbation_dict(dict):
+      #              Dictionary of the perturbations. It provides the perturbed features as key
+      #              and a perturbation lambda function as value
+      #          threshold(float):
+      #              Threshold of the ratio of increasing rows
+      #
+      #      Returns:
+      #          actual_slices_size:
+      #              Length of actual_slice tested
+      #          message:
+      #              Test result message
+      #          metric:
+      #              The ratio of increasing rows over the perturbed rows
+      #          passed:
+      #              TRUE if metric > threshold
+      #endregion
 
-      Description: Test if the model prediction is increasing after feature values perturbation.
-      The test is passed when the percentage of rows that are increasing is higher than the threshold
-
-      Example: For a house price prediction, the test is passed when a increase of surface area by 10% results
-      in increasing the Sale Price for more than 50% of houses in the dataset
-
-      Args:
-          df(GiskardDataset):
-              Dataset used to compute the test
-          model(GiskardModel):
-              Model used to compute the test
-          perturbation_dict(dict):
-              Dictionary of the perturbations. It provides the perturbed features as key
-              and a perturbation lambda function as value
-          threshold(float):
-              Threshold of the ratio of increasing rows
-
-      Returns:
-          actual_slices_size:
-              Total number of rows of actual dataset
-          number_of_perturbed_rows:
-              Number of perturbed rows
-          metric:
-              The ratio of increasing rows over the perturbed rows
-          passed:
-              TRUE if metric > threshold
-          output_df:
-              Dataframe containing the rows whose probability doesn't increase after perturbation
-
-      """
       import nlpaug.augmenter.word as naw
 
       aug = naw.SpellingAug(dict_path=None,
@@ -306,7 +300,7 @@ items:
           df=actual_ds,
           model=model,
           perturbation_dict=perturbation, # Update your perturbation choice here
-          threshold=0.1
+          threshold=0.5
       )
   - id: metamorphic_decreasing_classification
     title: Decreasing for Classification
@@ -318,42 +312,40 @@ items:
       - BINARY_CLASSIFICATION
     # language=Python
     code: |-
-      """
-      Summary: Tests if the model probability decreases when the feature values are perturbed
+      #region Documentation
+      #      Summary: Tests if the model probability decreases when the feature values are perturbed
+      #
+      #      Description: Test if the model probability of a given classification_label is
+      #      decreasing after feature values perturbation.The test is passed when the percentage of
+      #      rows that are decreasing is higher than the threshold
+      #
+      #      Example : For a credit scoring model, the test is passed when a increase of wage by 10%,
+      #      default probability is decreasing for more than 50% of people in the dataset
+      #
+      #      Args:
+      #          df(GiskardDataset):
+      #              Dataset used to compute the test
+      #          model(GiskardModel):
+      #              Model used to compute the test
+      #          perturbation_dict(dict):
+      #              Dictionary of the perturbations. It provides the perturbed features as key
+      #              and a perturbation lambda function as value
+      #          threshold(float):
+      #              Threshold of the ratio of decreasing rows
+      #          classification_label(str):
+      #              One specific label value from the target column
+      #
+      #      Returns:
+      #          actual_slices_size:
+      #              Length of actual_slice tested
+      #          message:
+      #              Test result message
+      #          metric:
+      #              The ratio of decreasing rows over the perturbed rows
+      #          passed:
+      #              TRUE if metric > threshold
+      #endregion
 
-      Description: Test if the model probability of a given classification_label is
-      decreasing after feature values perturbation.The test is passed when the percentage of
-      rows that are decreasing is higher than the threshold
-
-      Example : For a credit scoring model, the test is passed when a increase of wage by 10%,
-      default probability is decreasing for more than 50% of people in the dataset
-
-      Args:
-          df(GiskardDataset):
-              Dataset used to compute the test
-          model(GiskardModel):
-              Model used to compute the test
-          perturbation_dict(dict):
-              Dictionary of the perturbations. It provides the perturbed features as key
-              and a perturbation lambda function as value
-          threshold(float):
-              Threshold of the ratio of decreasing rows
-          classification_label(str):
-              One specific label value from the target column
-
-      Returns:
-          actual_slices_size:
-              Total number of rows of actual dataset
-          number_of_perturbed_rows:
-              Number of perturbed rows
-          metric:
-              The ratio of decreasing rows over the perturbed rows
-          passed:
-              TRUE if metric > threshold
-          output_df:
-              Dataframe containing the rows whose probability doesn't decrease after perturbation
-
-      """
       import nlpaug.augmenter.word as naw
 
       aug = naw.SpellingAug(dict_path=None,
@@ -384,7 +376,7 @@ items:
           model=model,
           perturbation_dict=perturbation, # Update your perturbation choice here
           classification_label='{{CLASSIFICATION LABEL}}',
-          threshold=0.1
+          threshold=0.5
       )
   - id: metamorphic_decreasing_regression
     title: Decreasing for Regression
@@ -395,39 +387,37 @@ items:
       - REGRESSION
     # language=Python
     code: |-
-      """
-      Summary: Tests if the model prediction decreases when the feature values are perturbed
+      #region Documentation
+      #      Summary: Tests if the model prediction decreases when the feature values are perturbed
+      #
+      #      Description: Test if the model prediction is decreasing after feature values perturbation.
+      #      The test is passed when the percentage of rows that are decreasing is higher than the threshold
+      #
+      #      Example: For a house price prediction, the test is passed when a decrease of surface area by 10% results
+      #      in decreasing the Sale Price for more than 50% of houses in the dataset
+      #
+      #      Args:
+      #          df(GiskardDataset):
+      #              Dataset used to compute the test
+      #          model(GiskardModel):
+      #              Model used to compute the test
+      #          perturbation_dict(dict):
+      #              Dictionary of the perturbations. It provides the perturbed features as key
+      #              and a perturbation lambda function as value
+      #          threshold(float):
+      #              Threshold of the ratio of decreasing rows
+      #
+      #      Returns:
+      #          actual_slices_size:
+      #              Length of actual_slice tested
+      #          message:
+      #              Test result message
+      #          metric:
+      #              The ratio of decreasing rows over the perturbed rows
+      #          passed:
+      #              TRUE if metric > threshold
+      #endregion
 
-      Description: Test if the model prediction is decreasing after feature values perturbation.
-      The test is passed when the percentage of rows that are decreasing is higher than the threshold
-
-      Example: For a house price prediction, the test is passed when a decrease of surface area by 10% results
-      in decreasing the Sale Price for more than 50% of houses in the dataset
-
-      Args:
-          df(GiskardDataset):
-              Dataset used to compute the test
-          model(GiskardModel):
-              Model used to compute the test
-          perturbation_dict(dict):
-              Dictionary of the perturbations. It provides the perturbed features as key
-              and a perturbation lambda function as value
-          threshold(float):
-              Threshold of the ratio of decreasing rows
-
-      Returns:
-          actual_slices_size:
-              Total number of rows of actual dataset
-          number_of_perturbed_rows:
-              Number of perturbed rows
-          metric:
-              The ratio of decreasing rows over the perturbed rows
-          passed:
-              TRUE if metric > threshold
-          output_df:
-              Dataframe containing the rows whose probability doesn't decrease after perturbation
-
-      """
       import nlpaug.augmenter.word as naw
 
       aug = naw.SpellingAug(dict_path=None,
@@ -457,5 +447,5 @@ items:
           df=actual_ds,
           model=model,
           perturbation_dict=perturbation, # Update your perturbation choice here
-          threshold=0.1
+          threshold=0.5
       )
