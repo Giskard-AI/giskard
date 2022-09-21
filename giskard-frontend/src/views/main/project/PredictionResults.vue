@@ -29,13 +29,13 @@
                   : 'error--text'
               "
             >
-              {{ prediction }}
+              {{ sliceStr(prediction, nbCharsSlicedCategory, maxCharsCategory)  }}
             </div>
           </div>
           <div>
             <div class="mb-2">
               <div>Actual <span v-show="isDefined(actual) && modified">(before modification)</span></div>
-              <div v-if="isDefined(actual)" class="text-h6">{{ actual }}</div>
+              <div v-if="isDefined(actual)" class="text-h6">{{ sliceStr(actual, nbCharsSlicedCategory, maxCharsCategory) }}</div>
               <div v-else>-</div>
             </div>
             <div class="caption">
@@ -56,7 +56,7 @@
         </v-col>
         <v-col lg="4">
           <div>Actual <span v-show="isDefined(actual) && modified">(before modification)</span></div>
-          <div v-if="isDefined(actual)" class="text-h6">{{ actual | formatTwoDigits }}</div>
+          <div v-if="isDefined(actual)" class="text-h6">{{  sliceStr(actual, nbCharsSlicedCategory, maxCharsCategory) | formatTwoDigits }}</div>
           <div v-else>-</div>
         </v-col>
         <v-col lg="4">
@@ -76,11 +76,17 @@
         </v-col>
       </v-row>
     </v-card-text>
+
+    <v-card-actions :class="Object.keys(resultProbabilities).length > predCategoriesN ? '' : 'd-none'">
+      <ResultPopover :resultProbabilities='resultToPopover'></ResultPopover>
+    </v-card-actions>
+
   </v-card>
 </template>
 
 <script lang="ts">
 import {Component, Prop, Vue, Watch} from "vue-property-decorator";
+import ResultPopover from "@/components/ResultPopover.vue"
 import OverlayLoader from "@/components/OverlayLoader.vue";
 import {api} from "@/api";
 import ECharts from "vue-echarts";
@@ -97,7 +103,7 @@ use([CanvasRenderer, BarChart, GridComponent]);
 Vue.component("v-chart", ECharts);
 
 @Component({
-  components: {OverlayLoader}
+  components: {OverlayLoader, ResultPopover}
 })
 export default class PredictionResults extends Vue {
   @Prop({required: true}) model!: ModelDTO;
@@ -115,11 +121,22 @@ export default class PredictionResults extends Vue {
   errorMsg: string = "";
   isClassification = isClassification;
   ModelType = ModelType;
-  predCategoriesN = 10;
+  predCategoriesN = 5;
   controller?: AbortController;
+  windowWidth = window.innerWidth;
+  resultToPopover: object = {};
 
   async mounted() {
     await this.submitPrediction()
+    window.addEventListener('resize', () => {
+      this.windowWidth = window.innerWidth
+    })
+  }
+
+
+  @Watch("resultProbabilities")
+  private updateResultPopover(){
+      this.resultToPopover = this.sliceLongCategoryName(this.resultProbabilities, this.maxCharsCategory * 2, this.nbCharsSlicedCategory * 2);
   }
 
   @Watch("inputData", {deep: true})
@@ -184,6 +201,30 @@ export default class PredictionResults extends Vue {
     else return undefined
   }
 
+  // Breakpoints for number of displayed characters on the chart
+  get maxCharsCategory(){
+    switch (this.$vuetify.breakpoint.name) {
+          case 'xs': return 20
+          case 'sm': return 35
+          case 'md': return 20
+          case 'lg': return 30
+          case 'xl': return 40
+        }
+  }
+
+  get nbCharsSlicedCategory(){
+    return this.maxCharsCategory! / 2 - 3;
+  }
+
+  /** 
+   * Returning the n first chars of s ... n last chars of s
+   */
+   sliceStr(s: string, n: number, max_size: number){
+    if (s.length > max_size)
+      return s.slice (0, n) + '...' +  s.slice(-n)
+    return s
+  }
+
   /**
    * Getting first n entries of sorted objects and sort alphabetically, aggregating for "Others" options
    *
@@ -191,20 +232,33 @@ export default class PredictionResults extends Vue {
    * @param n number of entries to keep
    * @private
    */
-  private firstNSortedByKey(obj, n) {
-    const numberExtraCategories = Object.keys(obj).length - n;
-    let filteredObject = Object.keys(obj)
-        .slice(0, n)
-        .sort()
-        .reduce(function (acc, current) {
-          acc[current] = obj[current]
-          return acc;
-        }, {});
-    if (numberExtraCategories > 0) {
-      const sumOthers = Object.values(obj).slice(n, -1).reduce((acc: any, val: any) => acc + val, 0);
-      filteredObject = {[`Others (${numberExtraCategories})`]: sumOthers, ...filteredObject};
-    }
-    return filteredObject;
+   private firstNSortedByKey(obj: Object, n: number) {
+
+    let listed = Object.entries(obj)
+        .sort(([,a],[,b]) => a-b)
+        .slice(-n);
+    return Object.fromEntries(listed)
+  }
+
+  /**
+   * For every element s of arr, if s.length > max_size return a new string with the n first characters then ... then the n last characters
+   * Helper to long category names
+   *
+   * @param obj Object
+   * @param max_size the size in which we start slicing
+   * @param n number of slice to keep
+   * @private
+   */
+  private sliceLongCategoryName(obj, max_size, n){
+    let res = Object.fromEntries(Object.entries(obj).map(function(elt) {
+      let s = elt[0]
+      if (s.length > max_size) {
+        let newStrList = [s.slice (0, n), '...', s.slice(-n)]
+      return ["".concat(...newStrList), elt[1]]
+      }
+      return elt
+    }))
+    return res
   }
 
   isDefined(val: any) {
@@ -212,7 +266,8 @@ export default class PredictionResults extends Vue {
   }
 
   get chartOptions() {
-    const results = this.firstNSortedByKey(this.resultProbabilities, this.predCategoriesN)
+    let results = this.firstNSortedByKey(this.resultProbabilities, this.predCategoriesN)
+    results = this.sliceLongCategoryName(results, this.maxCharsCategory, this.nbCharsSlicedCategory)
     return {
       xAxis: {
         type: "value",
@@ -224,7 +279,7 @@ export default class PredictionResults extends Vue {
         data: Object.keys(results),
         axisLabel: {
           interval: 0,
-        }
+        },
       },
       series: [
         {
@@ -252,6 +307,30 @@ export default class PredictionResults extends Vue {
     };
   }
 
+  get bigChartOption(){
+    let updateOptions = {... this.chartOptions};
+    updateOptions['dataZoom'] =  [
+        {
+          type: 'inside',
+          yAxisIndex: 0,
+          maxValueSpan: 20,
+          minValueSpan: 20,
+          zoomOnMouseWheel: false,
+          moveOnMouseWheel: true,
+          moveOnMouseMove: false
+        },
+        {
+          handleStyle : {
+            color: '#FF4200'
+          },
+          zoomLock: true,
+        },
+      ]
+    // Getting every element, not just the most important ones
+    updateOptions['series'][0]['data'] = Object.values(this.resultProbabilities);
+    updateOptions['yAxis']['data'] = Object.keys(this.resultProbabilities);
+    return updateOptions;
+  }
 }
 </script>
 
@@ -267,6 +346,11 @@ div.center-center {
   height: 90%;
   min-height: 100px;
   width: 90%;
+}
+
+.bigchart {
+  height: 100%;
+  min-height: 400px;
 }
 
 div.caption {
