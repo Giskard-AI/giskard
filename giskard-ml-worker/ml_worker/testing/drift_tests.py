@@ -446,7 +446,7 @@ class DriftTests(AbstractTestCollection):
                                          actual_slice: GiskardDataset,
                                          model: GiskardModel,
                                          max_categories: int = 10,
-                                         threshold: float = None,
+                                         threshold: float = 0.05,
                                          chi_square_contribution_percent: float = 0.2):
         """
         Test if the Chi Square value between the reference and actual datasets is below the threshold
