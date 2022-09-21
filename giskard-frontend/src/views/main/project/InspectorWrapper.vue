@@ -5,7 +5,18 @@
         no-gutters
         style='height: 60px;'
     >
+
       <v-toolbar id='data-explorer-toolbar' flat>
+        <v-tooltip nudge-bottom="145" nudge-right="102" >
+          <template v-slot:activator="{ on, attrs }">
+            <v-icon v-on="on" class="pr-5" small>info </v-icon>
+          </template>
+          <span>
+            Model : {{ inspection.model.name }}
+          <br/>
+          Dataset : {{ inspection.dataset.name }}
+        </span>
+        </v-tooltip>
         <span class='subtitle-2 mr-2'>Dataset Explorer</span>
         <v-btn icon @click='shuffleMode = !shuffleMode'>
           <v-icon v-if='shuffleMode' color='primary'>mdi-shuffle-variant</v-icon>
@@ -22,16 +33,6 @@
               style='margin-left: 15px'>Row Index {{ originalData.Index + 1 }}</span>
       </v-toolbar>
       <v-spacer/>
-      <v-tooltip left>
-        <template v-slot:activator="{ on, attrs }">
-          <v-icon v-on="on" class="pr-5"> info</v-icon>
-        </template>
-        <span>
-          Model : {{ inspection.model.name }}
-          <br/>
-          Dataset : {{ inspection.dataset.name }}
-        </span>
-      </v-tooltip>
 
       <InspectionFilter
           :is-target-available="isDefined(inspection.dataset.target)"
@@ -382,5 +383,8 @@ export default class InspectorWrapper extends Vue {
 #feedback-card .v-card__title {
   font-size: 1.1rem;
   padding: 8px 12px 0;
+}
+/deep/ .v-toolbar__content {
+  padding: 0px;
 }
 </style>
