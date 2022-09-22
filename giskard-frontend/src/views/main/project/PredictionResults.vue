@@ -13,30 +13,36 @@
             resultProbabilities && Object.keys(resultProbabilities).length > 0
           "
         >
-          <div>Probabilities</div>
-          <v-chart class="chart" :option="chartOptions" autoresize/>
+          <div>Probabilities <span v-if="Object.keys(resultProbabilities).length > 5"> (5 of {{ Object.keys(resultProbabilities).length }})</span></div>
+          <v-chart class="chart" :option="chartOptions" :init-options="chartInit" autoresize/>
         </v-col>
         <v-col lg="4">
           <div class="mb-3">
             <div>Prediction</div>
-            <div
-                class="text-h6"
-                :class="
-                !isDefined(actual)
-                  ? 'info--text text--darken-2'
-                  : isCorrectPrediction
-                  ? 'primary--text'
-                  : 'error--text'
-              "
-            >
-              {{ sliceStr(prediction, nbCharsSlicedCategory, maxCharsCategory)  }}
-            </div>
+            <v-tooltip bottom>
+              <template v-slot:activator="{ on, attrs }">
+                <div class="text-h6" :class="classColorPrediction" v-on="prediction.length > maxCharsCategory ? on : ''"> 
+                  {{  sliceStr(prediction, nbCharsSlicedCategory, maxCharsCategory) }}
+                </div>
+              </template>
+              <span> {{ prediction}}</span>
+            </v-tooltip>
+              
           </div>
           <div>
             <div class="mb-2">
               <div>Actual <span v-show="isDefined(actual) && modified">(before modification)</span></div>
-              <div v-if="isDefined(actual)" class="text-h6">{{ sliceStr(actual, nbCharsSlicedCategory, maxCharsCategory) }}</div>
-              <div v-else>-</div>
+
+              <v-tooltip bottom>
+                <template v-slot:activator="{ on, attrs }">
+                  <div class="text-h6">
+                    <div v-if="isDefined(actual)" v-on="actual.length > maxCharsCategory ? on : ''">{{ sliceStr(actual, nbCharsSlicedCategory, maxCharsCategory) }}</div>
+                    <div v-else>-</div>
+                  </div>
+                </template>
+                <span>{{actual}}</span>
+              </v-tooltip>
+
             </div>
             <div class="caption">
               <div v-if="targetFeature">target: {{ targetFeature }}</div>
@@ -56,7 +62,7 @@
         </v-col>
         <v-col lg="4">
           <div>Actual <span v-show="isDefined(actual) && modified">(before modification)</span></div>
-          <div v-if="isDefined(actual)" class="text-h6">{{  sliceStr(actual, nbCharsSlicedCategory, maxCharsCategory) | formatTwoDigits }}</div>
+          <div v-if="isDefined(actual)" class="text-h6">{{  actual | formatTwoDigits }}</div>
           <div v-else>-</div>
         </v-col>
         <v-col lg="4">
@@ -78,7 +84,7 @@
     </v-card-text>
 
     <v-card-actions :class="Object.keys(resultProbabilities).length > predCategoriesN ? '' : 'd-none'">
-      <ResultPopover :resultProbabilities='resultToPopover'></ResultPopover>
+      <ResultPopover :resultProbabilities='resultProbabilities' :prediction='prediction' :actual='actual' :classColorPrediction='classColorPrediction'></ResultPopover>
     </v-card-actions>
 
   </v-card>
@@ -96,6 +102,7 @@ import {CanvasRenderer} from "echarts/renderers";
 import {GridComponent} from "echarts/components";
 import {ModelDTO, ModelType} from "@/generated-sources";
 import {isClassification} from "@/ml-utils";
+import {sliceStr} from "@/utils";
 import * as _ from "lodash";
 import {CanceledError} from "axios";
 
@@ -124,19 +131,17 @@ export default class PredictionResults extends Vue {
   predCategoriesN = 5;
   controller?: AbortController;
   windowWidth = window.innerWidth;
-  resultToPopover: object = {};
+
+
+  sliceStr(s, m, n){
+    return sliceStr(s, m, n);
+  }
 
   async mounted() {
     await this.submitPrediction()
     window.addEventListener('resize', () => {
       this.windowWidth = window.innerWidth
     })
-  }
-
-
-  @Watch("resultProbabilities")
-  private updateResultPopover(){
-      this.resultToPopover = this.sliceLongCategoryName(this.resultProbabilities, this.maxCharsCategory * 2, this.nbCharsSlicedCategory * 2);
   }
 
   @Watch("inputData", {deep: true})
@@ -156,7 +161,6 @@ export default class PredictionResults extends Vue {
     if (Object.keys(this.inputData).length) {
       try {
         this.loading = true;
-
         const predictionResult = (await api.predict(
             this.model.id,
             this.datasetId,
@@ -188,6 +192,15 @@ export default class PredictionResults extends Vue {
     }
   }
 
+
+  get classColorPrediction(){
+    return !this.isDefined(this.actual)
+                  ? 'info--text text--darken-2'
+                  : this.isCorrectPrediction
+                  ? 'primary--text'
+                  : 'error--text'
+  }
+
   get isCorrectPrediction() {
     if (_.isNumber(this.actual) || _.isNumber(this.prediction)) {
       return _.toNumber(this.actual) === _.toNumber(this.prediction);
@@ -214,15 +227,6 @@ export default class PredictionResults extends Vue {
 
   get nbCharsSlicedCategory(){
     return this.maxCharsCategory! / 2 - 3;
-  }
-
-  /** 
-   * Returning the n first chars of s ... n last chars of s
-   */
-   sliceStr(s: string, n: number, max_size: number){
-    if (s.length > max_size)
-      return s.slice (0, n) + '...' +  s.slice(-n)
-    return s
   }
 
   /**
@@ -263,6 +267,12 @@ export default class PredictionResults extends Vue {
 
   isDefined(val: any) {
     return !_.isNil(val);
+  }
+
+  get chartInit(){
+      return {
+          renderer: 'svg'
+      }
   }
 
   get chartOptions() {
@@ -370,4 +380,8 @@ div.caption {
 .v-data-table tbody td {
   font-size: 10px !important;
 }
+.v-tooltip__content {
+        max-width: 400px !important;
+        overflow-wrap: anywhere;
+    }
 </style>
