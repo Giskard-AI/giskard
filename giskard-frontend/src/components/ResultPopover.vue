@@ -33,27 +33,27 @@
                                         <div v-else> - </div>
                                     </div>
                                 </template>
-                                <span class="predict"> {{actual}}"></span>
+                                <span class="predict"> {{actual}}</span>
                             </v-tooltip>
 
                         </v-col>
                     </v-row>
-                    <v-row justify="end" align="center">
-                        <span>
-                            ({{ numberDisplayed }} of {{ totalCategories }})
-                        </span>
+                    <v-row align="center">
                         <v-col cols="4">
                             <v-text-field
                                 dense
                                 solo
                                 hide-details
                                 clearable
-                                class="mx-2 flex-1"
+                                class="mx-2 mb-2 flex-1"
                                 v-model="search"
                                 append-icon="mdi-magnify"
                                 label="Search"
                             ></v-text-field>
                         </v-col>
+                        <span>
+                            ({{ numberDisplayed }} of {{ totalCategories }})
+                        </span>
                     </v-row>
                     <v-chart class="chart pr-5" :option="chartOptions" :init-options="chartInit" autoresize/>
                 </v-card-text>
