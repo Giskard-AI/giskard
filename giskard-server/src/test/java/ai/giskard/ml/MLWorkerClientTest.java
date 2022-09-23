@@ -19,8 +19,8 @@ import java.time.Instant;
 
 class MLWorkerClientTest {
     public MLWorkerClient createClient() {
-        int proxyPort = 11222;
-        int realPort = 50051;
+        int proxyPort = 31524;
+        //int realPort = 50051;
         ManagedChannel channel = ManagedChannelBuilder.forAddress("localhost", proxyPort)
             .usePlaintext()
             .build();
@@ -30,11 +30,13 @@ class MLWorkerClientTest {
     @Test
     void testClient() {
         Instant start = Instant.now();
-        int runs = 50;
-        try (MLWorkerClient client = createClient()) {
-            for (int i = 0; i < runs; i++) {
-                EchoMsg response = client.blockingStub.echo(EchoMsg.newBuilder().setMsg("Hello " + i).build());
-                System.out.println(response.getMsg());
+        int runs = 30;
+        for (int t = 0; t < 100; t++) {
+            try (MLWorkerClient client = createClient()) {
+                for (int i = 0; i < runs; i++) {
+                    EchoMsg response = client.blockingStub.echo(EchoMsg.newBuilder().setMsg("Hello " + i).build());
+                    System.out.println("Try %d : %s".formatted(t, response.getMsg()));
+                }
             }
         }
         long elapsed = Instant.now().toEpochMilli() - start.toEpochMilli();

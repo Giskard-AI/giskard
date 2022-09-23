@@ -17,7 +17,7 @@ from ml_worker.exceptions.IllegalArgumentError import CodedError
 MESSAGE_TYPE = Union[Message, Iterable[Message]]
 
 
-class ErrorInterceptor(grpc.ServerInterceptor):
+class ErrorInterceptor(grpc.aio.ServerInterceptor):
 
     @staticmethod
     def terminate_with_exception(error_code: StatusCode, e: Exception, context: ServicerContext):
@@ -53,5 +53,5 @@ class ErrorInterceptor(grpc.ServerInterceptor):
 
         return wrapper
 
-    def intercept_service(self, continuation, handler_call_details):
+    async def intercept_service(self, continuation, handler_call_details):
         return wrap_server_method_handler(ErrorInterceptor._wrapper, continuation(handler_call_details))
