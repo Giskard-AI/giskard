@@ -11,17 +11,21 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
 import lombok.SneakyThrows;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.util.SocketUtils;
 
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import static ai.giskard.ml.netty.tunnel.ServiceChannelCommand.REGISTER_CLIENT_CHANNEL;
 
 
 public class OuterChannelInitializer extends ChannelInitializer<SocketChannel> {
+    Set<ChannelId> serviceChannelsIds = new HashSet<>();
     Map<String, SettableFuture<Channel>> outerChannelByInnerChannelId = new HashMap<>();
     private final Map<ChannelId, String> innerChannelIdByOuterChannel = new HashMap<>();
     private final Map<String, Channel> innerChannelById = new HashMap<>();
@@ -51,11 +55,22 @@ public class OuterChannelInitializer extends ChannelInitializer<SocketChannel> {
         pipeline.addLast(
             new ChannelInboundHandlerAdapter() {
                 @Override
+                public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+                    log.debug("Outer channel inactive {}", ctx.channel().id());
+                    if (serviceChannelsIds.contains(ctx.channel().id())) {
+                        log.info("Shutting down inner server for outer channel {}", ctx.channel().id());
+                        innerServerData.group.shutdownGracefully().sync();
+                        serviceChannelsIds.remove(ctx.channel().id());
+                    }
+                }
+
+                @Override
                 public void channelRead(ChannelHandlerContext ctx, Object msg) {
+                    ChannelId channelId = ctx.channel().id();
                     ByteBuf in = (ByteBuf) msg;
-                    if (innerChannelIdByOuterChannel.containsKey(ctx.channel().id())) {
-                        Channel innerChannel = innerChannelById.get(innerChannelIdByOuterChannel.get(outerChannel.id()));
-                        //log.debug("Outer->Outer: Writing {} bytes from {} to {}", in.readableBytes(), outerChannel.id(), innerChannel.id());
+                    if (innerChannelIdByOuterChannel.containsKey(channelId)) {
+                        Channel innerChannel = innerChannelById.get(innerChannelIdByOuterChannel.get(channelId));
+                        log.debug("Outer->Inner: Writing {} bytes from {} to {}", in.readableBytes(), channelId, innerChannel.id());
                         innerChannel.writeAndFlush(msg);
                     } else {
                         if (in.readableBytes() >= 5) {
@@ -67,12 +82,14 @@ public class OuterChannelInitializer extends ChannelInitializer<SocketChannel> {
                             }
                             switch (messageType) {
                                 case 0 -> {
+                                    serviceChannelsIds.add(channelId);
                                     initInnerServer(outerChannel);
                                 }
                                 case 1 -> {
                                     String innerChannelId = payload.toString(StandardCharsets.UTF_8);
                                     outerChannelByInnerChannelId.get(innerChannelId).set(outerChannel);
-                                    innerChannelIdByOuterChannel.put(outerChannel.id(), innerChannelId);
+                                    innerChannelIdByOuterChannel.put(channelId, innerChannelId);
+                                    log.info("Linked outer channel {} with inner channel {}", outerChannel.id(), innerChannelId);
                                 }
                                 default -> throw new RuntimeException("Unknown command");
                             }
@@ -82,15 +99,18 @@ public class OuterChannelInitializer extends ChannelInitializer<SocketChannel> {
             });
     }
 
+    /**
+     * Checks if a channel serves as a communication channel (transfers GRPC messages)
+     * or as a service channel (transfers Giskard service messages to create other communication channels)
+     */
     private boolean isDataChannel(Channel channel) {
         return innerChannelIdByOuterChannel.containsKey(channel.id());
     }
 
-    private InnerServerStartResponse startInnerServer(SocketChannel mainOuterChannel) {
+    private InnerServerStartResponse startInnerServer(SocketChannel serviceOuterChannel) {
 
         final SettableFuture<Channel> innerChannelFuture = SettableFuture.create();
-        //SocketUtils.findAvailableTcpPort()
-        int innerPort = 11222;
+        int innerPort = SocketUtils.findAvailableTcpPort();
 
         ChannelInitializer<SocketChannel> childHandler = new ChannelInitializer<>() {
             @Override
@@ -98,6 +118,16 @@ public class OuterChannelInitializer extends ChannelInitializer<SocketChannel> {
                 ChannelPipeline pipeline = ch.pipeline();
                 pipeline.addLast(
                     new ChannelInboundHandlerAdapter() {
+                        @Override
+                        public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+                            super.channelInactive(ctx);
+                            log.info("Connection to inner server closed, channel id {}", ctx.channel().id());
+                            Channel outerChannel = outerChannelByInnerChannelId.remove(ctx.channel().id().asShortText()).get();
+                            innerChannelIdByOuterChannel.remove(outerChannel.id());
+                            outerChannel.close();
+
+                        }
+
                         @Override
                         public void channelActive(ChannelHandlerContext ctx) {
                             Channel innerChannel = ctx.channel();
@@ -117,7 +147,8 @@ public class OuterChannelInitializer extends ChannelInitializer<SocketChannel> {
                             ByteBuf out = Unpooled.buffer();
                             out.writeBytes(Unpooled.copiedBuffer(innerChannelShortName, StandardCharsets.UTF_8));
                             out.writeByte(REGISTER_CLIENT_CHANNEL.code);
-                            mainOuterChannel.writeAndFlush(out);
+                            log.info("Linking inner channel {} with new outer channel through service channel {}", innerChannelShortName, serviceOuterChannel.id());
+                            serviceOuterChannel.writeAndFlush(out);
                         }
 
                         @SneakyThrows
@@ -125,8 +156,8 @@ public class OuterChannelInitializer extends ChannelInitializer<SocketChannel> {
                         public void channelRead(ChannelHandlerContext ctx, Object msg) {
                             Channel outerChannel = outerChannelByInnerChannelId.get(ctx.channel().id().asShortText()).get();
                             ByteBuf in = (ByteBuf) msg;
-                            //int originalLength = in.readableBytes();
-                            //log.debug("Inner->Outer: Writing {} bytes from {} to {}", originalLength, ch.id(), outerChannel.id());
+                            int originalLength = in.readableBytes();
+                            log.debug("Inner->Outer: Writing {} bytes from {} to {}", originalLength, ch.id(), outerChannel.id());
 
                             outerChannel.writeAndFlush(in);
                         }
@@ -143,7 +174,6 @@ public class OuterChannelInitializer extends ChannelInitializer<SocketChannel> {
             .childHandler(childHandler)
             .localAddress(innerPort)
             .bind();
-
         try {
             bindFuture.await();
         } catch (InterruptedException ex) {
@@ -152,7 +182,7 @@ public class OuterChannelInitializer extends ChannelInitializer<SocketChannel> {
         if (!bindFuture.isSuccess()) {
             throw new RuntimeException("bind failed", bindFuture.cause());
         }
-        log.info("Started inner server {} for incoming channel {}", address, mainOuterChannel.id());
+        log.info("Started inner server {} for incoming service channel {}", address, serviceOuterChannel.id());
 
         return new InnerServerStartResponse(innerChannelFuture, group);
 
