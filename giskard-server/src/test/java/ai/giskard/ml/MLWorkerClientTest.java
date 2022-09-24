@@ -16,10 +16,12 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Instant;
+import java.util.List;
+import java.util.stream.IntStream;
 
 class MLWorkerClientTest {
     public MLWorkerClient createClient() {
-        int proxyPort = 31524;
+        int proxyPort = 46050;
         //int realPort = 50051;
         ManagedChannel channel = ManagedChannelBuilder.forAddress("localhost", proxyPort)
             .usePlaintext()
@@ -28,14 +30,31 @@ class MLWorkerClientTest {
     }
 
     @Test
-    void testClient() {
+    void testClientSimple() throws InterruptedException {
+        runTest();
+    }
+
+    @Test
+    void testClient() throws InterruptedException {
+        List<Thread> threads = IntStream.range(0, 5)
+            .mapToObj(operand -> new Thread(this::runTest, "thread_" + operand))
+            .toList();
+        threads.forEach(Thread::start);
+
+        for (Thread thread : threads) {
+            thread.join();
+        }
+
+    }
+
+    private void runTest() {
         Instant start = Instant.now();
-        int runs = 30;
-        for (int t = 0; t < 100; t++) {
+        int runs = 5;
+        for (int t = 0; t < 500; t++) {
             try (MLWorkerClient client = createClient()) {
                 for (int i = 0; i < runs; i++) {
                     EchoMsg response = client.blockingStub.echo(EchoMsg.newBuilder().setMsg("Hello " + i).build());
-                    System.out.println("Try %d : %s".formatted(t, response.getMsg()));
+                    System.out.println("%s: Try %d : %s".formatted(Thread.currentThread().getName(), t, response.getMsg()));
                 }
             }
         }

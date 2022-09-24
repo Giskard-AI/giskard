@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import os
 
 import grpc
 
@@ -47,6 +48,7 @@ async def start():
 
 
 if __name__ == '__main__':
+    logger.info(f"Starting ML Worker, PID: {os.getpid()}")
     try:
         asyncio.get_event_loop().run_until_complete(start())
     except KeyboardInterrupt:
