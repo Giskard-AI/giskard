@@ -22,7 +22,7 @@ zstandard = "^0.15.2"
 numpy = "^1.21.6"
 
 # Extra commonly used dependencies
-catboost = "^1.0.6"
+catboost = "^1.1"
 torch = "^1.12.0"
 nlpaug = "^1.1.11"
 
