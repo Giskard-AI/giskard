@@ -3,27 +3,26 @@ package ai.giskard.service.ml;
 import ai.giskard.config.ApplicationProperties;
 import ai.giskard.grpc.MLWorkerClientErrorInterceptor;
 import ai.giskard.ml.MLWorkerClient;
+import ai.giskard.ml.tunnel.MLWorkerTunnelService;
 import io.grpc.ClientInterceptor;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.util.unit.DataSize;
 
 @Service
+@RequiredArgsConstructor
 public class MLWorkerService {
     private final ApplicationProperties applicationProperties;
+    private final MLWorkerTunnelService mlWorkerTunnelService;
 
 
     public MLWorkerClient createClient() {
         ClientInterceptor clientInterceptor = new MLWorkerClientErrorInterceptor();
 
-        ManagedChannel channel = ManagedChannelBuilder.forAddress(
-                applicationProperties.getMlWorkerHost(),
-                applicationProperties.getMlWorkerPort()
-            )
+        ManagedChannel channel = ManagedChannelBuilder.forAddress(getMlWorkerHost(), getMlWorkerPort())
             .intercept(clientInterceptor)
-            // Channels are secure by default (via SSL/TLS). For the example we disable TLS to avoid
-            // needing certificates.
             .usePlaintext()
             .maxInboundMessageSize((int) DataSize.ofMegabytes(applicationProperties.getMaxInboundMLWorkerMessageMB()).toBytes())
             .build();
@@ -32,7 +31,17 @@ public class MLWorkerService {
         return new MLWorkerClient(channel);
     }
 
-    public MLWorkerService(ApplicationProperties applicationProperties) {
-        this.applicationProperties = applicationProperties;
+    private int getMlWorkerPort() {
+        if (applicationProperties.isExternalMlWorkerEnabled() && mlWorkerTunnelService.tunnelPort.isPresent()) {
+            return mlWorkerTunnelService.tunnelPort.get();
+        }
+        return applicationProperties.getMlWorkerPort();
+    }
+
+    private String getMlWorkerHost() {
+        if (applicationProperties.isExternalMlWorkerEnabled()) {
+            return "localhost";
+        }
+        return applicationProperties.getMlWorkerHost();
     }
 }

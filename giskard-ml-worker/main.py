@@ -17,7 +17,7 @@ load_logging_config()
 logger = logging.getLogger()
 
 
-async def start_grpc_server():
+async def start_grpc_server(remote=False):
     logger.info("Starting local ML Worker server")
     server = grpc.aio.server(
         # interceptors=[ErrorInterceptor()],
@@ -27,22 +27,22 @@ async def start_grpc_server():
         ]
     )
 
-    add_MLWorkerServicer_to_server(MLWorkerServiceImpl(), server)
     port = settings.port or find_free_port()
+    add_MLWorkerServicer_to_server(MLWorkerServiceImpl(port, remote), server)
     server.add_insecure_port(f'{settings.host}:{port}')
     await server.start()
     logging.info(f"Started ML Worker server on port {port} with settings [{settings}]")
     return server, port
 
 
-async def start():
+async def start(remote=False, remote_host='localhost', remote_port=10050):
     tasks = []
-    server, grpc_server_port = await start_grpc_server()
-    remote_host = 'localhost'
-    remote_port = 10050
-    tunnel = MLWorkerTunnel(grpc_server_port, remote_host, remote_port)
+    server, grpc_server_port = await start_grpc_server(remote)
+    if remote:
+        logger.info("Configuring ML Worker tunnel")
+        tunnel = MLWorkerTunnel(grpc_server_port, remote_host, remote_port)
+        tasks.append(asyncio.create_task(tunnel.start()))
 
-    tasks.append(asyncio.create_task(tunnel.start()))
     tasks.append(asyncio.create_task(server.wait_for_termination()))
     await asyncio.wait(tasks)
 
@@ -50,6 +50,6 @@ async def start():
 if __name__ == '__main__':
     logger.info(f"Starting ML Worker, PID: {os.getpid()}")
     try:
-        asyncio.get_event_loop().run_until_complete(start())
+        asyncio.get_event_loop().run_until_complete(start(remote=True))
     except KeyboardInterrupt:
         logger.info("Exiting")

@@ -4,7 +4,7 @@
 <configuration scan="true">
     <include resource="org/springframework/boot/logging/logback/base.xml"/>
 
-    <logger name="ai.giskard" level="INFO"/>
+    <logger name="ai.giskard" level="DEBUG"/>
 
     <logger name="tech.jhipster" level="WARN"/>
 

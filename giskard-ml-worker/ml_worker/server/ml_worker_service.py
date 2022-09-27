@@ -1,15 +1,17 @@
 import logging
+import platform
 import re
-import time
-
 
 import grpc
 import numpy as np
 import pandas as pd
+import pkg_resources
+import sys
 import tqdm
 from eli5.lime import TextExplainer
 
-from generated.ml_worker_pb2 import ExplainResponse, ExplainTextResponse, UploadStatus
+from generated.ml_worker_pb2 import ExplainResponse, ExplainTextResponse, UploadStatus, MLWorkerInfoRequest, \
+    MLWorkerInfo, PlatformInfo
 from generated.ml_worker_pb2 import RunTestRequest, TestResultMessage, RunModelResponse, RunModelRequest, DataFrame, \
     DataRow, RunModelForDataFrameResponse, RunModelForDataFrameRequest, ExplainRequest, ExplainTextRequest
 from generated.ml_worker_pb2_grpc import MLWorkerServicer
@@ -27,8 +29,10 @@ cnt = 1
 
 
 class MLWorkerServiceImpl(MLWorkerServicer):
-    def __init__(self) -> None:
+    def __init__(self, port=None, remote=None) -> None:
         super().__init__()
+        self.port = port
+        self.remote = remote
 
     def echo(self, request, context):
         globals()['cnt'] += 1
@@ -46,6 +50,25 @@ class MLWorkerServiceImpl(MLWorkerServicer):
                 progress.update(len(upload_message.chunk.content))
         progress.close()
         return UploadStatus(code=UploadStatusCode.Ok)
+
+    def getInfo(self, request: MLWorkerInfoRequest, context):
+        installed_packages = {p.project_name: p.version for p in
+                              pkg_resources.working_set} if request.list_packages else None
+        return MLWorkerInfo(
+            platform=PlatformInfo(
+                machine=platform.uname().machine,
+                node=platform.uname().node,
+                processor=platform.uname().processor,
+                release=platform.uname().release,
+                system=platform.uname().system,
+                version=platform.uname().version
+            ),
+            interpreter=sys.executable,
+            interpreter_version=platform.python_version(),
+            installed_packages=installed_packages,
+            internal_grpc_port=self.port,
+            is_remote=self.remote
+        )
 
     def runTest(self, request: RunTestRequest, context: grpc.ServicerContext) -> TestResultMessage:
         from ml_worker.testing.functions import GiskardTestFunctions

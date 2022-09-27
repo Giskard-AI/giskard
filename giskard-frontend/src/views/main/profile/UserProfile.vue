@@ -118,7 +118,11 @@
                     <td>Plan</td>
                     <td>{{ appSettings.planName }}</td>
                   </tr>
-                  <tr><td colspan="2"><v-divider class="divider"/></td></tr>
+                  <tr>
+                    <td colspan="2">
+                      <v-divider class="divider"/>
+                    </td>
+                  </tr>
                   <tr>
                     <td>Last commit</td>
                     <td>{{ appSettings.buildCommitId }}</td>
@@ -156,6 +160,73 @@
           </v-card>
         </v-col>
       </v-row>
+      <v-row v-show="isAdmin">
+        <v-col>
+          <v-card height="100%">
+            <v-card-title class="font-weight-light secondary--text">
+              <span>ML Worker</span>
+              <v-spacer/>
+              <v-chip small :color="mlWorkerSettings.isRemote ? 'blue': 'green'" outlined>
+                {{ mlWorkerSettings.isRemote ? 'external' : 'internal' }}
+              </v-chip>
+            </v-card-title>
+            <v-card-text>
+              <v-simple-table v-if="mlWorkerSettings">
+                <table class="w100">
+                  <tr>
+                    <th style="width: 30%"></th>
+                  </tr>
+                  <tr>
+                    <td>Python version</td>
+                    <td>{{ mlWorkerSettings.interpreterVersion }}</td>
+                  </tr>
+                  <tr>
+                    <td>Python path</td>
+                    <td>{{ mlWorkerSettings.interpreter }}</td>
+                  </tr>
+                  <tr>
+                    <td>Host</td>
+                    <td>{{ mlWorkerSettings.platform.node }}</td>
+                  </tr>
+                  <tr>
+                    <td>Internal ML Worker port</td>
+                    <td>{{ mlWorkerSettings.internalGrpcPort }}</td>
+                  </tr>
+                  <tr>
+                    <td>Architecture</td>
+                    <td>{{ mlWorkerSettings.platform.machine }}</td>
+                  </tr>
+                  <tr>
+                    <td>Installed packages</td>
+                    <td class="overflow-hidden">
+                      <v-text-field
+                          class="pt-5"
+                          dense
+                          v-model="installedPackagesSearch"
+                          append-icon="mdi-magnify"
+                          label="Search"
+                          single-line
+                          hide-details
+                          clearable
+                      ></v-text-field>
+                      <v-data-table
+                          dense
+                          :sort-by="['name']"
+                          :headers="installedPackagesHeaders"
+                          :items="installedPackagesData"
+                          :search="installedPackagesSearch"
+                      ></v-data-table>
+                    </td>
+                  </tr>
+                </table>
+              </v-simple-table>
+
+              <v-card-text v-else>Not available</v-card-text>
+            </v-card-text>
+
+          </v-card>
+        </v-col>
+      </v-row>
     </v-container>
   </div>
 </template>
@@ -168,7 +239,7 @@ import {commitAddNotification, commitRemoveNotification} from '@/store/main/muta
 import {dispatchUpdateUserProfile} from '@/store/main/actions';
 import ButtonModalConfirmation from '@/components/ButtonModalConfirmation.vue';
 import {copyToClipboard} from '@/global-keys';
-import {AppConfigDTO, GeneralSettings, JWTToken, UpdateMeDTO} from "@/generated-sources";
+import {AppConfigDTO, GeneralSettings, JWTToken, MLWorkerInfoDTO, UpdateMeDTO} from "@/generated-sources";
 import mixpanel from "mixpanel-browser";
 import {Role} from "@/enums";
 import AppInfoDTO = AppConfigDTO.AppInfoDTO;
@@ -186,6 +257,14 @@ export default class UserProfile extends Vue {
   private apiAccessToken: JWTToken | null = null;
   private appSettings: AppInfoDTO | null = null;
   private isAdmin: boolean = false;
+  private mlWorkerSettings?: MLWorkerInfoDTO;
+  private installedPackagesHeaders = [{text: 'Name', value: 'name', width: '70%'}, {
+    text: 'Version',
+    value: 'version',
+    width: '30%'
+  }];
+  private installedPackagesData: { name: string, version: string }[] = [];
+  private installedPackagesSearch = "";
 
   private resetFormData() {
     const userProfile = readUserProfile(this.$store);
@@ -200,6 +279,10 @@ export default class UserProfile extends Vue {
 
   public async created() {
     this.appSettings = await readAppSettings(this.$store);
+    this.mlWorkerSettings = await api.getMLWorkerSettings();
+    this.installedPackagesData = [];
+    this.installedPackagesData =
+        Object.entries(this.mlWorkerSettings.installedPackages).map(([key, value]) => ({name: key, version: value}));
     this.resetFormData();
   }
 
@@ -262,10 +345,12 @@ export default class UserProfile extends Vue {
   background-color: rgba(211, 211, 211, 0.52);
   padding: 10px;
 }
-.divider{
+
+.divider {
   margin-top: 10px;
   margin-bottom: 10px;
 }
+
 .token-area {
   user-select: all;
   word-break: break-all;
