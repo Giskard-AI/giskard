@@ -51,8 +51,12 @@ public class MLWorkerTunnelService {
             .childHandler(initializer);
         initializer.eventBus.register(new EventListener() {
             @Subscribe
-            public void onInnerServerStarted(InnerServerStartResponse event) {
-                tunnelPort = Optional.of(event.port());
+            public void onInnerServerStarted(Optional<InnerServerStartResponse> event) {
+                if (event.isEmpty()) {
+                    tunnelPort = Optional.empty();
+                } else {
+                    tunnelPort = Optional.of(event.get().port());
+                }
             }
         });
         ChannelFuture f = b.bind().sync();

@@ -17,10 +17,7 @@ import org.springframework.util.SocketUtils;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import static ai.giskard.ml.tunnel.ServiceChannelCommand.REGISTER_CLIENT_CHANNEL;
 import static ai.giskard.ml.tunnel.ServiceChannelCommand.START_INNER_SERVER;
@@ -32,11 +29,11 @@ public class OuterChannelInitializer extends ChannelInitializer<SocketChannel> {
     private final Logger log = LoggerFactory.getLogger(OuterChannelInitializer.class);
     private final Set<ChannelId> serviceChannelsIds = new HashSet<>();
     private final Map<String, SettableFuture<Channel>> outerChannelByInnerChannelId = new HashMap<>();
-    private InnerServerStartResponse innerServerData;
+    private Optional<InnerServerStartResponse> innerServerData = Optional.empty();
     public EventBus eventBus = new EventBus();
 
     private void initInnerServer(SocketChannel outerChannel) {
-        this.innerServerData = startInnerServer(outerChannel);
+        this.innerServerData = Optional.of(startInnerServer(outerChannel));
         eventBus.post(this.innerServerData);
     }
 
@@ -50,8 +47,10 @@ public class OuterChannelInitializer extends ChannelInitializer<SocketChannel> {
                 log.debug("Outer channel inactive {}", ctx.channel().id());
                 if (serviceChannelsIds.contains(ctx.channel().id())) {
                     log.info("Shutting down inner server for outer channel {}", ctx.channel().id());
-                    innerServerData.group.shutdownGracefully();
+                    innerServerData.ifPresent(innerServerStartResponse -> innerServerStartResponse.group.shutdownGracefully());
                     serviceChannelsIds.remove(ctx.channel().id());
+                    innerServerData = Optional.empty();
+                    eventBus.post(innerServerData);
                 }
             }
 
@@ -77,7 +76,7 @@ public class OuterChannelInitializer extends ChannelInitializer<SocketChannel> {
                                 if (in.readableBytes() > 0) {
                                     try {
                                         payload = in.readBytes(payloadLength);
-                                    } catch (Exception e){
+                                    } catch (Exception e) {
                                         System.out.println(e);
                                     }
                                 }

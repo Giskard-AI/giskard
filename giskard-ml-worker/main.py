@@ -1,12 +1,13 @@
 import asyncio
 import logging
 import os
+import sys
 
 import grpc
 
 from generated.ml_worker_pb2_grpc import add_MLWorkerServicer_to_server
 from ml_worker.server.ml_worker_service import MLWorkerServiceImpl
-from ml_worker.tunnel.ml_worker_bridge import MLWorkerTunnel
+from ml_worker.bridge.ml_worker_bridge import MLWorkerBridge
 from ml_worker.utils.logging import load_logging_config
 from ml_worker.utils.network import find_free_port
 from settings import Settings
@@ -40,7 +41,7 @@ async def start(remote=False, remote_host='localhost', remote_port=10050):
     server, grpc_server_port = await start_grpc_server(remote)
     if remote:
         logger.info("Configuring ML Worker tunnel")
-        tunnel = MLWorkerTunnel(grpc_server_port, remote_host, remote_port)
+        tunnel = MLWorkerBridge(grpc_server_port, remote_host, remote_port)
         tasks.append(asyncio.create_task(tunnel.start()))
 
     tasks.append(asyncio.create_task(server.wait_for_termination()))
@@ -50,6 +51,6 @@ async def start(remote=False, remote_host='localhost', remote_port=10050):
 if __name__ == '__main__':
     logger.info(f"Starting ML Worker, PID: {os.getpid()}")
     try:
-        asyncio.get_event_loop().run_until_complete(start(remote=True))
+        asyncio.get_event_loop().run_until_complete(start(remote=(len(sys.argv) > 1 and sys.argv[1] == 'remote')))
     except KeyboardInterrupt:
         logger.info("Exiting")
