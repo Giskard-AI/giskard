@@ -4,15 +4,15 @@ from asyncio import StreamReader, StreamWriter
 
 from tenacity import retry, wait_exponential
 
-from ml_worker.tunnel.error import ConnectionLost
-from ml_worker.tunnel.service_messages import *
+from ml_worker.bridge.error import ConnectionLost
+from ml_worker.bridge.service_messages import *
 from ml_worker.utils.logging import load_logging_config
 
 load_logging_config('')
 logger = logging.getLogger()
 
 
-class MLWorkerTunnel:
+class MLWorkerBridge:
     def __init__(self, local_port: int, remote_host: str, remote_port: int,
                  execution_loop=asyncio.get_event_loop()) -> None:
         self.loop = execution_loop
@@ -92,7 +92,7 @@ class MLWorkerTunnel:
         try:
             try:
                 while True:
-                    data = await reader.read(1024*256)
+                    data = await reader.read(1024 * 256)
                     if len(data):
                         logger.debug(f"{log_prefix}Writing {len(data)} bytes")
                         writer.write(data)

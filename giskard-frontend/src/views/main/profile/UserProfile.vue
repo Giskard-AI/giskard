@@ -166,8 +166,18 @@
             <v-card-title class="font-weight-light secondary--text">
               <span>ML Worker</span>
               <v-spacer/>
-              <v-chip small :color="mlWorkerSettings.isRemote ? 'blue': 'green'" outlined>
-                {{ mlWorkerSettings.isRemote ? 'external' : 'internal' }}
+              <v-chip small
+                      class="justify-center"
+                      outlined
+                      :color="mlWorkerSettingsLoading ? 'grey' : (mlWorkerSettings ? 'green': 'red')"
+                      @click="initMLWorkerInfo"
+              >
+                <v-progress-circular size="20" indeterminate v-show="mlWorkerSettingsLoading" class="pl-10 pr-10"/>
+                <v-container v-show="!mlWorkerSettingsLoading">
+                  <span v-if="mlWorkerSettings">{{ mlWorkerSettings.isRemote ? 'external' : 'internal' }}</span>
+                  <span v-else>unavailable</span>
+                  <v-icon size="10" :color="mlWorkerSettings ? 'green': 'red'" class="pl-5">mdi-circle</v-icon>
+                </v-container>
               </v-chip>
             </v-card-title>
             <v-card-text>
@@ -221,7 +231,10 @@
                 </table>
               </v-simple-table>
 
-              <v-card-text v-else>Not available</v-card-text>
+              <v-card-text v-else class="pa-0">
+                <span v-show="mlWorkerSettingsLoading">Loading information</span>
+                <span v-show="!mlWorkerSettingsLoading">Not available. Check that ML Worker is connected.</span>
+              </v-card-text>
             </v-card-text>
 
           </v-card>
@@ -257,7 +270,8 @@ export default class UserProfile extends Vue {
   private apiAccessToken: JWTToken | null = null;
   private appSettings: AppInfoDTO | null = null;
   private isAdmin: boolean = false;
-  private mlWorkerSettings?: MLWorkerInfoDTO;
+  private mlWorkerSettings: MLWorkerInfoDTO | null = null;
+  private mlWorkerSettingsLoading = false;
   private installedPackagesHeaders = [{text: 'Name', value: 'name', width: '70%'}, {
     text: 'Version',
     value: 'version',
@@ -279,11 +293,22 @@ export default class UserProfile extends Vue {
 
   public async created() {
     this.appSettings = await readAppSettings(this.$store);
-    this.mlWorkerSettings = await api.getMLWorkerSettings();
-    this.installedPackagesData = [];
-    this.installedPackagesData =
-        Object.entries(this.mlWorkerSettings.installedPackages).map(([key, value]) => ({name: key, version: value}));
+    await this.initMLWorkerInfo();
     this.resetFormData();
+  }
+
+  private async initMLWorkerInfo() {
+    try {
+      this.mlWorkerSettings = null;
+      this.mlWorkerSettingsLoading = true;
+      this.mlWorkerSettings = await api.getMLWorkerSettings();
+      this.installedPackagesData = [];
+      this.installedPackagesData =
+          Object.entries(this.mlWorkerSettings.installedPackages).map(([key, value]) => ({name: key, version: value}));
+    } catch (error) {
+    } finally {
+      this.mlWorkerSettingsLoading = false;
+    }
   }
 
   get userProfile() {
