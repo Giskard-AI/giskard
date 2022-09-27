@@ -5,11 +5,8 @@ from asyncio import StreamReader, StreamWriter
 from tenacity import retry, wait_exponential
 
 from ml_worker.tunnel.error import ConnectionLost
+from ml_worker.tunnel.service_messages import *
 from ml_worker.utils.logging import load_logging_config
-
-START_INNER_SERVER = 0
-
-CREATE_CLIENT_CHANNEL = 1
 
 load_logging_config('')
 logger = logging.getLogger()
@@ -28,16 +25,18 @@ class MLWorkerTunnel:
 
     @retry(wait=wait_exponential(min=0.1, max=5, multiplier=0.1))
     async def start(self):
+        remote_writer = None
         try:
             logger.info(f"Connecting to: {self.remote_host}:{self.remote_port}")
             remote_reader, remote_writer = await asyncio.open_connection(self.remote_host, self.remote_port)
+            logger.info(f"Connected service socket to remote host {self.remote_host}:{self.remote_port}")
+            await self.send_service_message(remote_writer, START_INNER_SERVER)
+            self.loop.create_task(self.listen_remote_server_service_socket(remote_reader))
         except Exception as e:
+            remote_writer.close()
+            await remote_writer.wait_closed()
             logger.error(f"Failed to connect to a remote host: {self.remote_host}:{self.remote_port} : {str(e)}")
             raise e
-        logger.info(f"Connected service socket to remote host {self.remote_host}:{self.remote_port}")
-        await self.send_service_message(remote_writer, START_INNER_SERVER)
-
-        self.loop.create_task(self.listen_remote_server_service_socket(remote_reader))
 
     async def send_service_message(self, remote_writer: StreamWriter, msg_type: int, data: bytes = b''):
         msg = self.create_service_message(msg_type, data)
@@ -65,6 +64,7 @@ class MLWorkerTunnel:
                 else:
                     raise ConnectionLost()
         except ConnectionLost:
+            logger.info("Connection to remote host lost")
             await self.start()
         except Exception as e:
             logger.exception(e)
@@ -81,24 +81,27 @@ class MLWorkerTunnel:
             grpc_reader, grpc_writer = await asyncio.open_connection(self.local_host, self.local_port)
             logger.info(f"Connected client {client} to grpc host {(self.local_host, self.local_port)}")
 
-            self.loop.create_task(self.sync_data(client, grpc_reader, remote_writer))
-            self.loop.create_task(self.sync_data(client, remote_reader, grpc_writer))
+            self.loop.create_task(
+                self.sync_data(client, grpc_reader, remote_writer, f"{client.decode()}: grpc->remote"))
+            self.loop.create_task(
+                self.sync_data(client, remote_reader, grpc_writer, f"{client.decode()}: remote->grpc"))
 
     @staticmethod
-    async def sync_data(client, reader: StreamReader, writer: StreamWriter):
+    async def sync_data(client, reader: StreamReader, writer: StreamWriter, task_name: str = None):
+        log_prefix = '' if not task_name else task_name + ': '
         try:
             try:
                 while True:
-                    data = await reader.read(1024)
+                    data = await reader.read(1024*256)
                     if len(data):
+                        logger.debug(f"{log_prefix}Writing {len(data)} bytes")
                         writer.write(data)
                         await writer.drain()
                     else:
                         raise ConnectionLost()
             finally:
                 writer.close()
-                await writer.wait_closed()
-        except ConnectionLost:
-            logger.info(f"Connection lost: {client}")
-        except Exception as e:
-            logger.exception(e)
+        except (ConnectionLost, ConnectionResetError):
+            logger.info(f"{log_prefix}Connection lost: {client}")
+        except Exception:
+            logger.exception(f"{log_prefix}Sync data error")
