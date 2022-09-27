@@ -1,7 +1,25 @@
 <template>
   <div>
     <v-container fluid class='pa-0'>
-      <v-row>
+      <v-row align="center">
+        <v-col cols="6" :align="'right'" align-self="end" class="pl-0 pb-0">
+          <v-container>
+            <v-row>
+              <v-col class="ml-0 pb-0"> <v-select :items="statusFilter" label="Status" v-model="status"> </v-select> </v-col>
+              <v-col cols="8" class="pl-0 pb-0">
+                <v-text-field
+                  dense
+                  solo
+                  hide-details
+                  class="my-2 mr-5 flex-1"
+                  v-model="search"
+                  append-icon="mdi-magnify"
+                  label="Search"
+                > </v-text-field>
+              </v-col>
+            </v-row>
+          </v-container>
+        </v-col>
         <v-col :align="'right'">
           <v-btn small tile color='primary' class='mx-1' @click='createTest()'>
             <v-icon left>add</v-icon>
@@ -15,11 +33,18 @@
           </v-btn>
         </v-col>
       </v-row>
+      <v-row>
+        <v-col class="pt-0">
+          <div class="body-1">
+            Total: {{ nbTotalTests }} tests.&nbsp; &nbsp; Executed: {{ nbTestsPassed  + nbTestsFailed}}.&nbsp; &nbsp; Passed: {{ nbTestsPassed }}.&nbsp; &nbsp; Failed: {{ nbTestsFailed }}.
+          </div>
+        </v-col>
+      </v-row>
 
       <v-row>
         <v-col>
           <v-list two-line class='tests-list'>
-            <template v-for='(test) in tests'>
+            <template v-for='(test) in filteredTests'>
               <v-divider :inset='false'></v-divider>
 
               <v-list-item :key='test.id' v-ripple class='test-list-item' @click='openTest(test.id)'>
@@ -56,24 +81,65 @@
 
 <script lang='ts'>
 
-import { Prop, Vue } from 'vue-property-decorator';
+import { Prop, Vue, Watch } from 'vue-property-decorator';
 import Component from 'vue-class-component';
 import TestSuiteCreateModal from '@/views/main/project/modals/TestSuiteCreateModal.vue';
 import { api } from '@/api';
 import TestCreateModal from '@/views/main/project/modals/TestCreateModal.vue';
-import { TestDTO, TestExecutionResultDTO, TestResult } from '@/generated-sources';
+import { TestDTO, TestExecutionResultDTO, TestResult, TestType } from '@/generated-sources';
 import mixpanel from "mixpanel-browser";
 import {testStatusToColor, testStatusToIcon} from "@/views/main/tests/test-utils";
 
 @Component({
   components: { TestSuiteCreateModal, TestCreateModal }
 })
+
 export default class Tests extends Vue {
   @Prop({ required: true }) suiteId!: number;
 
   tests: { [id: number]: TestDTO } = {};
   isTestSuiteRunning = false;
   runningTestIds = new Set();
+  search: string = "";
+  filteredTests: { [id: number]: TestDTO } = {};
+  nbTestsPassed : number = 0;
+  nbTestsFailed : number = 0;
+  nbTotalTests : number = 0;
+  statusFilter = ['All', 'Passed', 'Failed', 'Not Executed']
+  status = 'All';
+
+
+  @Watch("search")
+  @Watch("status")
+  private filter(){
+    let s = this.status;
+    let status : TestResult? = null;
+    switch(s){
+      case("Passed"):
+        status = TestResult.PASSED;
+        break;
+      case("Failed"):
+        status = TestResult.FAILED;
+        break;
+    }
+    let search = this.search;
+    this.filteredTests = Object.fromEntries(
+      Object.entries(this.tests)
+        .filter(function(test){
+          let name = test[1].name;
+          let filterStatus : boolean;
+          if (s == "All"){
+            filterStatus = true
+          }
+            
+          else
+            filterStatus = test[1].status == status;
+          let filterName = name.toLocaleLowerCase().includes(search.toLocaleLowerCase());
+          return filterName && filterStatus;
+        })
+    )
+    this.getAllNumbersTests()
+  }
 
   testStatusToColor(status: TestResult) {
     return testStatusToColor(status);
@@ -97,7 +163,20 @@ export default class Tests extends Vue {
       });
     } finally {
       this.isTestSuiteRunning = false;
+      this.getAllNumbersTests();
     }
+  }
+
+  private setNumbersTests(result? : TestResult){
+    return Object.values(this.filteredTests)
+              .filter((test) => result != null ? test.status == result : true)
+              .reduce((partial) => partial + 1, 0);
+  }
+
+  private getAllNumbersTests(){
+    this.nbTestsPassed = this.setNumbersTests(TestResult.PASSED);
+    this.nbTestsFailed = this.setNumbersTests(TestResult.FAILED);
+    this.nbTotalTests = this.setNumbersTests();
   }
 
 
@@ -117,7 +196,8 @@ export default class Tests extends Vue {
   private async init() {
     let testsList = await api.getTests(this.suiteId);
     this.tests = Object.assign({}, ...testsList.map((x) => ({ [x.id]: x })));
-
+    this.filteredTests = this.tests;
+    this.getAllNumbersTests();  
   }
 
   public async mounted() {
