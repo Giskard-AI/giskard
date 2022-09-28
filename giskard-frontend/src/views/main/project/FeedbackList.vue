@@ -62,6 +62,10 @@
           :items="feedbacks"
           :headers="tableHeaders"
           :search="search"
+          :items-per-page="25"
+          :footer-props="{
+            'items-per-page-options': [10, 25, 50, 100]
+          }"
           @click:row="openFeedback"
       >
         <!-- eslint-disable-next-line vue/valid-v-slot -->
