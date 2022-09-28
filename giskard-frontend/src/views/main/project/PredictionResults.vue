@@ -22,7 +22,7 @@
             <v-tooltip bottom>
               <template v-slot:activator="{ on, attrs }">
                 <div class="text-h6" :class="classColorPrediction" v-on="prediction.length > maxCharsCategory ? on : ''"> 
-                  {{  sliceStr(prediction, nbCharsSlicedCategory, maxCharsCategory) }}
+                  {{  abbreviateMiddle(prediction, nbCharsSlicedCategory, maxCharsCategory) }}
                 </div>
               </template>
               <span> {{ prediction}}</span>
@@ -36,7 +36,7 @@
               <v-tooltip bottom>
                 <template v-slot:activator="{ on, attrs }">
                   <div class="text-h6">
-                    <div v-if="isDefined(actual)" v-on="actual.length > maxCharsCategory ? on : ''">{{ sliceStr(actual, nbCharsSlicedCategory, maxCharsCategory) }}</div>
+                    <div v-if="isDefined(actual)" v-on="actual.length > maxCharsCategory ? on : ''">{{ abbreviateMiddle(actual, nbCharsSlicedCategory, maxCharsCategory) }}</div>
                     <div v-else>-</div>
                   </div>
                 </template>
@@ -83,7 +83,7 @@
       </v-row>
     </v-card-text>
 
-    <v-card-actions :class="Object.keys(resultProbabilities).length > predCategoriesN ? '' : 'd-none'">
+    <v-card-actions :v-show="Object.keys(resultProbabilities).length > predCategoriesN">
       <ResultPopover :resultProbabilities='resultProbabilities' :prediction='prediction' :actual='actual' :classColorPrediction='classColorPrediction'></ResultPopover>
     </v-card-actions>
 
@@ -102,7 +102,7 @@ import {CanvasRenderer} from "echarts/renderers";
 import {GridComponent} from "echarts/components";
 import {ModelDTO, ModelType} from "@/generated-sources";
 import {isClassification} from "@/ml-utils";
-import {sliceStr} from "@/utils";
+import {abbreviateMiddle} from "@/utils";
 import * as _ from "lodash";
 import {CanceledError} from "axios";
 
@@ -133,8 +133,8 @@ export default class PredictionResults extends Vue {
   windowWidth = window.innerWidth;
 
 
-  sliceStr(s, m, n){
-    return sliceStr(s, m, n);
+  abbreviateMiddle(s, m, n){
+    return abbreviateMiddle(s, m, n);
   }
 
   async mounted() {
@@ -255,12 +255,7 @@ export default class PredictionResults extends Vue {
    */
   private sliceLongCategoryName(obj, max_size, n){
     let res = Object.fromEntries(Object.entries(obj).map(function(elt) {
-      let s = elt[0]
-      if (s.length > max_size) {
-        let newStrList = [s.slice (0, n), '...', s.slice(-n)]
-      return ["".concat(...newStrList), elt[1]]
-      }
-      return elt
+      return ["".concat(...[abbreviateMiddle(elt[0], n, max_size)]),elt[1]]
     }))
     return res
   }
