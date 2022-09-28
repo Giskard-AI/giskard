@@ -30,6 +30,8 @@ message MLWorkerInfo{
   map<string, string> installed_packages = 4;
   uint32 internal_grpc_port = 5;
   bool is_remote = 6;
+  uint32 pid = 7;
+  uint64 process_start_time = 8;
 }
 message PlatformInfo{
   string machine = 1;

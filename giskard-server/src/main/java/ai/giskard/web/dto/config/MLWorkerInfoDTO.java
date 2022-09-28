@@ -24,4 +24,6 @@ public class MLWorkerInfoDTO {
     public Map<String, String> installedPackages;
     public int internalGrpcPort;
     public boolean isRemote;
+    public int pid;
+    public long processStartTime;
 }

@@ -7,7 +7,9 @@ export interface MLWorkerInfoDTO {
     interpreter: string;
     interpreterVersion: string;
     isRemote: boolean;
+    pid: number;
     platform: MLWorkerInfoDTO.PlatformInfoDTO;
+    processStartTime: number;
 }
 
 export namespace MLWorkerInfoDTO {
