@@ -15,7 +15,7 @@
 
                             <v-tooltip bottom>
                                 <template v-slot:activator="{ on, attrs }">
-                                    <div v-on="prediction.length > maxCharsCategory ? on : ''" :class="classColorPrediction" class="text-h6">  {{ sliceStr(prediction, maxCharsCategory / 2, maxCharsCategory) }}</div>
+                                    <div v-on="prediction.length > maxCharsCategory ? on : ''" :class="classColorPrediction" class="text-h6">  {{ abbreviateMiddle(prediction, maxCharsCategory / 2, maxCharsCategory) }}</div>
                                 </template>
                                 <span>{{prediction}}</span>
                             </v-tooltip>
@@ -28,7 +28,7 @@
                                 <template v-slot:activator="{ on, attrs }">
                                     <div class="text-h6">
                                         <div v-if="isDefined(actual)">
-                                            <div v-on="actual.length > maxCharsCategory ? on : ''"> {{ sliceStr(actual, maxCharsCategory / 2,  maxCharsCategory) }}</div>
+                                            <div v-on="actual.length > maxCharsCategory ? on : ''"> {{ abbreviateMiddle(actual, maxCharsCategory / 2,  maxCharsCategory) }}</div>
                                         </div> 
                                         <div v-else> - </div>
                                     </div>
@@ -70,7 +70,7 @@
 
 <script lang="ts">
 import * as _ from "lodash";
-import {Component, Prop, Vue, Watch} from 'vue-property-decorator';
+import {Component, Prop, Vue} from 'vue-property-decorator';
 import {use} from "echarts/core";
 import ECharts from "vue-echarts";
 import {SVGRenderer} from "echarts/renderers";
@@ -78,7 +78,7 @@ import {BarChart} from "echarts/charts";
 import {GridComponent} from "echarts/components";
 import {DataZoomSliderComponent} from "echarts/components"
 import {DataZoomInsideComponent} from "echarts/components"
-import {sliceStr} from "@/utils";
+import {abbreviateMiddle} from "@/utils";
 
 use([SVGRenderer, BarChart, GridComponent, DataZoomSliderComponent, DataZoomInsideComponent]);
 Vue.component("v-chart", ECharts);
@@ -95,14 +95,13 @@ export default class ResultPopover extends Vue {
     numberDisplayed : number = 0;
     windowWidth = window.innerWidth;
 
-    sliceStr(s, n, m){
-        return sliceStr(s, n, m);
-    }
+    abbreviateMiddle = abbreviateMiddle;
+    
     async mounted() {  
         window.addEventListener('resize', () => {
         this.windowWidth = window.innerWidth
         })
-  }
+    }
 
     get totalCategories(){
         return Object.keys(this.resultProbabilities).length;
@@ -148,7 +147,7 @@ export default class ResultPopover extends Vue {
                 )
                 .sort((a, b) => b[0].localeCompare(a[0]))
                 .map(function (elt){
-                    elt[0] = sliceStr(elt[0], max/2, max);
+                    elt[0] = abbreviateMiddle(elt[0], max/2, max);
                     return elt;
                 })
         );
