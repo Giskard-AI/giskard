@@ -43,7 +43,7 @@ public class OuterChannelInitializer extends ChannelInitializer<SocketChannel> {
 
         ChannelInboundHandlerAdapter outerChannelHandler = new ChannelInboundHandlerAdapter() {
             @Override
-            public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+            public void channelInactive(ChannelHandlerContext ctx) {
                 log.debug("Outer channel inactive {}", ctx.channel().id());
                 if (serviceChannelsIds.contains(ctx.channel().id())) {
                     log.info("Shutting down inner server for outer channel {}", ctx.channel().id());
@@ -52,6 +52,12 @@ public class OuterChannelInitializer extends ChannelInitializer<SocketChannel> {
                     innerServerData = Optional.empty();
                     eventBus.post(innerServerData);
                 }
+            }
+
+            @Override
+            public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
+                log.warn("Caught exception in outer server handler", cause);
+                ctx.close();
             }
 
             @Override
@@ -74,11 +80,7 @@ public class OuterChannelInitializer extends ChannelInitializer<SocketChannel> {
                             case REGISTER_CLIENT_CHANNEL -> {
                                 ByteBuf payload = null;
                                 if (in.readableBytes() > 0) {
-                                    try {
-                                        payload = in.readBytes(payloadLength);
-                                    } catch (Exception e) {
-                                        System.out.println(e);
-                                    }
+                                    payload = in.readBytes(payloadLength);
                                 }
                                 assert payload != null;
                                 String innerChannelId = payload.toString(StandardCharsets.UTF_8);
@@ -90,6 +92,7 @@ public class OuterChannelInitializer extends ChannelInitializer<SocketChannel> {
                         }
                     }
                 }
+
             }
         };
 
@@ -112,8 +115,9 @@ public class OuterChannelInitializer extends ChannelInitializer<SocketChannel> {
                             super.channelInactive(ctx);
                             log.info("Connection to inner server closed, channel id {}", ctx.channel().id());
                             Channel outerChannel = outerChannelByInnerChannelId.remove(ctx.channel().id().asShortText()).get();
-                            innerChannelIdByOuterChannel.remove(outerChannel.id());
                             outerChannel.close().sync();
+                            innerChannelIdByOuterChannel.remove(outerChannel.id());
+                            log.info("Closed outer channel {}", outerChannel.id());
                         }
 
                         @Override
@@ -148,6 +152,12 @@ public class OuterChannelInitializer extends ChannelInitializer<SocketChannel> {
                             log.debug("Inner->Outer: Writing {} bytes from {} to {}", originalLength, ch.id(), outerChannel.id());
 
                             outerChannel.writeAndFlush(in);
+                        }
+
+                        @Override
+                        public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
+                            log.error("Caught exception in inner server handler", cause);
+                            ctx.close();
                         }
                     });
             }
