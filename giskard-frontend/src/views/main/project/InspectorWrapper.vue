@@ -5,7 +5,18 @@
         no-gutters
         style='height: 60px;'
     >
+
       <v-toolbar id='data-explorer-toolbar' flat>
+        <v-tooltip nudge-bottom="145" nudge-right="102"  class="pa-0 asdasd">
+          <template v-slot:activator="{ on, attrs }">
+            <v-icon v-on="on" class="pr-5" small>info </v-icon>
+          </template>
+          <span>
+            Model : {{ inspection.model.name }}
+          <br/>
+          Dataset : {{ inspection.dataset.name }}
+        </span>
+        </v-tooltip>
         <span class='subtitle-2 mr-2'>Dataset Explorer</span>
         <v-btn icon @click='shuffleMode = !shuffleMode'>
           <v-icon v-if='shuffleMode' color='primary'>mdi-shuffle-variant</v-icon>
@@ -22,6 +33,7 @@
               style='margin-left: 15px'>Row Index {{ originalData.Index + 1 }}</span>
       </v-toolbar>
       <v-spacer/>
+
       <InspectionFilter
           :is-target-available="isDefined(inspection.dataset.target)"
           :labels="labels"
