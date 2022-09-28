@@ -86,7 +86,7 @@ import Component from 'vue-class-component';
 import TestSuiteCreateModal from '@/views/main/project/modals/TestSuiteCreateModal.vue';
 import { api } from '@/api';
 import TestCreateModal from '@/views/main/project/modals/TestCreateModal.vue';
-import { TestDTO, TestExecutionResultDTO, TestResult, TestType } from '@/generated-sources';
+import { TestDTO, TestExecutionResultDTO, TestResult } from '@/generated-sources';
 import mixpanel from "mixpanel-browser";
 import {testStatusToColor, testStatusToIcon} from "@/views/main/tests/test-utils";
 
@@ -98,43 +98,43 @@ export default class Tests extends Vue {
   @Prop({ required: true }) suiteId!: number;
 
   tests: { [id: number]: TestDTO } = {};
+  filteredTests: { [id: number]: TestDTO } = {};
   isTestSuiteRunning = false;
   runningTestIds = new Set();
   search: string = "";
-  filteredTests: { [id: number]: TestDTO } = {};
   nbTestsPassed : number = 0;
   nbTestsFailed : number = 0;
   nbTotalTests : number = 0;
   statusFilter = ['All', 'Passed', 'Failed', 'Not Executed']
-  status = 'All';
+  status = ""
 
 
   @Watch("search")
   @Watch("status")
-  private filter(){
-    let s = this.status;
-    let status : TestResult? = null;
-    switch(s){
-      case("Passed"):
-        status = TestResult.PASSED;
-        break;
-      case("Failed"):
-        status = TestResult.FAILED;
-        break;
-    }
+  private filterTests(){
     let search = this.search;
+    let status = this.status;
     this.filteredTests = Object.fromEntries(
       Object.entries(this.tests)
         .filter(function(test){
-          let name = test[1].name;
-          let filterStatus : boolean;
-          if (s == "All"){
-            filterStatus = true
+          let filterStatus: boolean; 
+          switch(status){
+            case 'Passed':
+              filterStatus = test[1].status == TestResult.PASSED
+              break;
+            case 'Failed':
+              filterStatus = test[1].status == TestResult.FAILED
+              break;
+            case 'Not Executed':
+              filterStatus = test[1].status == null
+              break;
+            default:
+              filterStatus = true;
           }
-            
-          else
-            filterStatus = test[1].status == status;
+
+          let name = test[1].name;
           let filterName = name.toLocaleLowerCase().includes(search.toLocaleLowerCase());
+
           return filterName && filterStatus;
         })
     )
