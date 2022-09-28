@@ -1,4 +1,5 @@
 import logging
+import os
 import platform
 import re
 
@@ -6,6 +7,7 @@ import grpc
 import numpy as np
 import pandas as pd
 import pkg_resources
+import psutil
 import sys
 import tqdm
 from eli5.lime import TextExplainer
@@ -54,6 +56,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
     def getInfo(self, request: MLWorkerInfoRequest, context):
         installed_packages = {p.project_name: p.version for p in
                               pkg_resources.working_set} if request.list_packages else None
+        current_process = psutil.Process(os.getpid())
         return MLWorkerInfo(
             platform=PlatformInfo(
                 machine=platform.uname().machine,
@@ -63,6 +66,8 @@ class MLWorkerServiceImpl(MLWorkerServicer):
                 system=platform.uname().system,
                 version=platform.uname().version
             ),
+            pid=os.getpid(),
+            process_start_time=int(current_process.create_time()),
             interpreter=sys.executable,
             interpreter_version=platform.python_version(),
             installed_packages=installed_packages,

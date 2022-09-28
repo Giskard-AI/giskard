@@ -173,7 +173,7 @@
                       @click="initMLWorkerInfo"
               >
                 <v-progress-circular size="20" indeterminate v-show="mlWorkerSettingsLoading" class="pl-10 pr-10"/>
-                <v-container v-show="!mlWorkerSettingsLoading">
+                <v-container v-show="!mlWorkerSettingsLoading" class="pr-0">
                   <span v-if="mlWorkerSettings">{{ mlWorkerSettings.isRemote ? 'external' : 'internal' }}</span>
                   <span v-else>unavailable</span>
                   <v-icon size="10" :color="mlWorkerSettings ? 'green': 'red'" class="pl-5">mdi-circle</v-icon>
@@ -193,10 +193,17 @@
                   <tr>
                     <td>Python path</td>
                     <td>{{ mlWorkerSettings.interpreter }}</td>
-                  </tr>
                   <tr>
                     <td>Host</td>
                     <td>{{ mlWorkerSettings.platform.node }}</td>
+                  </tr>
+                  <tr>
+                    <td>Process id</td>
+                    <td>{{ mlWorkerSettings.pid }}</td>
+                  </tr>
+                  <tr>
+                    <td>Process start time</td>
+                    <td>{{ epochToDate(mlWorkerSettings.processStartTime) }}</td>
                   </tr>
                   <tr>
                     <td>Internal ML Worker port</td>
@@ -233,7 +240,7 @@
 
               <v-card-text v-else class="pa-0">
                 <span v-show="mlWorkerSettingsLoading">Loading information</span>
-                <span v-show="!mlWorkerSettingsLoading">Not available. Check that ML Worker is connected.</span>
+                <span v-show="!mlWorkerSettingsLoading">Not available. Check that ML Worker is running.</span>
               </v-card-text>
             </v-card-text>
 
@@ -255,6 +262,7 @@ import {copyToClipboard} from '@/global-keys';
 import {AppConfigDTO, GeneralSettings, JWTToken, MLWorkerInfoDTO, UpdateMeDTO} from "@/generated-sources";
 import mixpanel from "mixpanel-browser";
 import {Role} from "@/enums";
+import moment from "moment";
 import AppInfoDTO = AppConfigDTO.AppInfoDTO;
 
 @Component({
@@ -361,6 +369,10 @@ export default class UserProfile extends Vue {
       mixpanel.opt_in_tracking();
     }
     this.appSettings!.generalSettings = await api.saveGeneralSettings(settings);
+  }
+
+  private epochToDate(epoch: number) {
+    return moment.unix(epoch).format('DD/MM/YYYY HH:mm:ss');
   }
 
 }
