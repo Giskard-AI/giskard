@@ -24,7 +24,7 @@
 
               <v-list-item :key='test.id' v-ripple class='test-list-item' @click='openTest(test.id)'>
                 <v-list-item-avatar>
-                  <v-icon :color='testStatusToColor(test.status)'>circle</v-icon>
+                  <v-icon :color='testStatusToColor(test.status)'>{{ testStatusToIcon(test.status) }}</v-icon>
                 </v-list-item-avatar>
                 <v-list-item-content>
                   <v-list-item-title v-text='test.name'></v-list-item-title>
@@ -63,7 +63,7 @@ import { api } from '@/api';
 import TestCreateModal from '@/views/main/project/modals/TestCreateModal.vue';
 import { TestDTO, TestExecutionResultDTO, TestResult } from '@/generated-sources';
 import mixpanel from "mixpanel-browser";
-import {testStatusToColor} from "@/views/main/tests/test-utils";
+import {testStatusToColor, testStatusToIcon} from "@/views/main/tests/test-utils";
 
 @Component({
   components: { TestSuiteCreateModal, TestCreateModal }
@@ -77,6 +77,10 @@ export default class Tests extends Vue {
 
   testStatusToColor(status: TestResult) {
     return testStatusToColor(status);
+  }
+
+  testStatusToIcon(status: TestResult){
+    return testStatusToIcon(status);
   }
 
   public isTestRunning(testId: number) {
