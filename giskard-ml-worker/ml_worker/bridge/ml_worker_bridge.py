@@ -8,7 +8,7 @@ from ml_worker.bridge.error import ConnectionLost
 from ml_worker.bridge.service_messages import *
 from ml_worker.utils.logging import load_logging_config
 
-load_logging_config('')
+load_logging_config()
 logger = logging.getLogger()
 
 
@@ -27,9 +27,9 @@ class MLWorkerBridge:
     async def start(self):
         remote_writer = None
         try:
-            logger.info(f"Connecting to: {self.remote_host}:{self.remote_port}")
+            logger.info(f"Connecting to {self.remote_host}:{self.remote_port}")
             remote_reader, remote_writer = await asyncio.open_connection(self.remote_host, self.remote_port)
-            logger.info(f"Connected service socket to remote host {self.remote_host}:{self.remote_port}")
+            logger.info(f"Connected to Giskard server {self.remote_host}:{self.remote_port}")
             await self.send_service_message(remote_writer, START_INNER_SERVER)
             self.loop.create_task(self.listen_remote_server_service_socket(remote_reader))
         except Exception as e:
@@ -52,34 +52,33 @@ class MLWorkerBridge:
 
     async def listen_remote_server_service_socket(self, remote_reader: StreamReader):
         try:
-            logger.info("Created remote server listener task")
+            logger.debug("Created remote server listener task")
             while True:
-                logger.info("waiting for a service command")
+                logger.debug("waiting for a service command")
                 data = await remote_reader.read(9)  # command payload is 1 byte by design
                 if len(data):
                     client = data[:8]
                     command = int.from_bytes(data[8:], "big")
-                    logger.info(f"service command received: {client}: {command}")
+                    logger.debug(f"service command received: {client}: {command}")
                     await self.handle_server_command(client, command)
                 else:
                     raise ConnectionLost()
         except ConnectionLost:
-            logger.info("Connection to remote host lost")
+            logger.info("Connection to Giskard host lost")
             await self.start()
         except Exception as e:
             logger.exception(e)
-            print(e)
 
     async def handle_server_command(self, client, command):
         if command == CREATE_CLIENT_CHANNEL:
             remote_reader, remote_writer = await asyncio.open_connection(self.remote_host, self.remote_port)
-            logger.info(f"Connected client {client} to remote host {(self.remote_host, self.remote_port)}")
+            logger.debug(f"Connected client {client} to remote host {(self.remote_host, self.remote_port)}")
 
             remote_writer.write(self.create_service_message(CREATE_CLIENT_CHANNEL, client))
             await remote_writer.drain()
 
             grpc_reader, grpc_writer = await asyncio.open_connection(self.local_host, self.local_port)
-            logger.info(f"Connected client {client} to grpc host {(self.local_host, self.local_port)}")
+            logger.debug(f"Connected client {client} to grpc host {(self.local_host, self.local_port)}")
 
             self.loop.create_task(
                 self.sync_data(client, grpc_reader, remote_writer, f"{client.decode()}: grpc->remote"))
@@ -102,6 +101,6 @@ class MLWorkerBridge:
             finally:
                 writer.close()
         except (ConnectionLost, ConnectionResetError):
-            logger.info(f"{log_prefix}Connection lost: {client}")
+            logger.debug(f"{log_prefix}Connection lost: {client}")
         except Exception:
             logger.exception(f"{log_prefix}Sync data error")

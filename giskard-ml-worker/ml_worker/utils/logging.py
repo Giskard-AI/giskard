@@ -19,7 +19,7 @@ def resolve(filename):
 
 def load_logging_config(env=None):
     if env is None:
-        from main import settings
+        from cli import settings
         env = settings.environment
     if env:
         config_path = resolve(f'logging_config{"." + env}.ini')
