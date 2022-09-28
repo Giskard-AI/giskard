@@ -96,7 +96,7 @@ items:
           actual_slice=actual_ds.slice(lambda df: df.head(len(df)//2)),
           reference_slice=reference_ds.slice(lambda df: df.tail(len(df)//2)),
           model=model,
-          threshold=0.2
+          threshold=0.05
       )
   - id: drift_reg_output_ks
     title: Regression Output drift (Kolmogorov–Smirnov)

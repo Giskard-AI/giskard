@@ -174,5 +174,5 @@ items:
           actual_ds=actual_ds,
           reference_ds=reference_ds,
           column_name='{{NUMERIC FEATURE NAME}}',
-          threshold=0.1
+          threshold=0.2
       )
