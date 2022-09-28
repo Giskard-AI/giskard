@@ -1,6 +1,6 @@
 import {TestResult} from "@/generated-sources";
 
-export function testStatusToColor(status: TestResult) {
+function testStatusToColor(status: TestResult) {
     switch (status) {
         case TestResult.PASSED:
             return 'green lighten-2';
@@ -11,4 +11,19 @@ export function testStatusToColor(status: TestResult) {
         default:
             return 'grey lighten-2';
     }
+}
+
+function testStatusToIcon(status: TestResult){
+    switch (status) {
+        case TestResult.PASSED:
+            return 'fa-check';
+        case TestResult.FAILED:
+            return 'fa-xmark';
+        default:
+            return '';
+    }
+}
+
+export {
+    testStatusToColor, testStatusToIcon
 }
