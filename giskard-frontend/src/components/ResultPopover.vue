@@ -15,7 +15,7 @@
 
                             <v-tooltip bottom>
                                 <template v-slot:activator="{ on, attrs }">
-                                    <div v-on="prediction.length > maxCharsCategory ? on : ''" :class="classColorPrediction" class="text-h6">  {{ abbreviateMiddle(prediction, maxCharsCategory / 2, maxCharsCategory) }}</div>
+                                    <div v-on="prediction.length > maxLengthDisplayedCategory ? on : ''" :class="classColorPrediction" class="text-h6">  {{ abbreviateMiddle(prediction, maxLengthDisplayedCategory) }}</div>
                                 </template>
                                 <span>{{prediction}}</span>
                             </v-tooltip>
@@ -28,7 +28,7 @@
                                 <template v-slot:activator="{ on, attrs }">
                                     <div class="text-h6">
                                         <div v-if="isDefined(actual)">
-                                            <div v-on="actual.length > maxCharsCategory ? on : ''"> {{ abbreviateMiddle(actual, maxCharsCategory / 2,  maxCharsCategory) }}</div>
+                                            <div v-on="actual.length > maxLengthDisplayedCategory ? on : ''"> {{ abbreviateMiddle(actual,  maxLengthDisplayedCategory) }}</div>
                                         </div> 
                                         <div v-else> - </div>
                                     </div>
@@ -78,7 +78,7 @@ import {BarChart} from "echarts/charts";
 import {GridComponent} from "echarts/components";
 import {DataZoomSliderComponent} from "echarts/components"
 import {DataZoomInsideComponent} from "echarts/components"
-import {abbreviateMiddle} from "@/utils";
+import {abbreviateMiddle, maxLengthDisplayedCategory} from "@/results-utils";
 
 use([SVGRenderer, BarChart, GridComponent, DataZoomSliderComponent, DataZoomInsideComponent]);
 Vue.component("v-chart", ECharts);
@@ -93,13 +93,14 @@ export default class ResultPopover extends Vue {
     search: string = "";
     showSlider : boolean = true;
     numberDisplayed : number = 0;
-    windowWidth = window.innerWidth;
+    sizeResultCard? = 0;
 
     abbreviateMiddle = abbreviateMiddle;
-    
-    async mounted() {  
+
+    async mounted(){
+        this.sizeResultCard = 9 * window.innerWidth / 10;
         window.addEventListener('resize', () => {
-        this.windowWidth = window.innerWidth
+            this.sizeResultCard = 9 * window.innerWidth / 10;
         })
     }
 
@@ -107,14 +108,8 @@ export default class ResultPopover extends Vue {
         return Object.keys(this.resultProbabilities).length;
     }
 
-    get maxCharsCategory(){
-        switch (this.$vuetify.breakpoint.name) {
-            case 'xs': return 10
-            case 'sm': return 20
-            case 'md': return 30
-            case 'lg': return 50
-            case 'xl': return 70
-        }
+    get maxLengthDisplayedCategory(){
+        return maxLengthDisplayedCategory(this.sizeResultCard);
     }
 
     isDefined(val: any) {
@@ -131,7 +126,7 @@ export default class ResultPopover extends Vue {
         let maxPercentage = Math.max(...Object.values(this.resultProbabilities));
         const maxShown = maxPercentage + (20 * maxPercentage) / 100;
         this.showSlider = Object.keys(this.resultProbabilities).length > 20;
-        let max = this.maxCharsCategory;
+        let max = this.maxLengthDisplayedCategory;
         let s = this.search;
         let def = this.isDefined;
         let results = Object.fromEntries(
@@ -147,7 +142,7 @@ export default class ResultPopover extends Vue {
                 )
                 .sort((a, b) => b[0].localeCompare(a[0]))
                 .map(function (elt){
-                    elt[0] = abbreviateMiddle(elt[0], max/2, max);
+                    elt[0] = abbreviateMiddle(elt[0], max);
                     return elt;
                 })
         );
