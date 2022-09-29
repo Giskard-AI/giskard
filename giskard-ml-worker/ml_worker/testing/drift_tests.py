@@ -315,7 +315,7 @@ class DriftTests(AbstractTestCollection):
                                          reference_ds: GiskardDataset,
                                          actual_ds: GiskardDataset,
                                          column_name: str,
-                                         threshold: float = None) -> SingleTestResult:
+                                         threshold: float = 0.2) -> SingleTestResult:
         """
         Test if the earth movers distance between the actual and expected datasets is
         below the threshold for a given numerical feature
@@ -446,7 +446,7 @@ class DriftTests(AbstractTestCollection):
                                          actual_slice: GiskardDataset,
                                          model: GiskardModel,
                                          max_categories: int = 10,
-                                         threshold: float = None,
+                                         threshold: float = 0.05,
                                          chi_square_contribution_percent: float = 0.2):
         """
         Test if the Chi Square value between the reference and actual datasets is below the threshold
@@ -591,7 +591,7 @@ class DriftTests(AbstractTestCollection):
                                                     actual_slice: GiskardDataset,
                                                     model: GiskardModel,
                                                     classification_label=None,
-                                                    threshold=None) -> SingleTestResult:
+                                                    threshold=0.2) -> SingleTestResult:
         """
         Test if the Earth Mover’s Distance value between the reference and actual datasets is
         below the threshold for the classification labels predictions for classification
