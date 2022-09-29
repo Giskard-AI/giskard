@@ -299,31 +299,6 @@ export default class PredictionResults extends Vue {
       },
     };
   }
-
-  get bigChartOption(){
-    let updateOptions = {... this.chartOptions};
-    updateOptions['dataZoom'] =  [
-        {
-          type: 'inside',
-          yAxisIndex: 0,
-          maxValueSpan: 20,
-          minValueSpan: 20,
-          zoomOnMouseWheel: false,
-          moveOnMouseWheel: true,
-          moveOnMouseMove: false
-        },
-        {
-          handleStyle : {
-            color: '#FF4200'
-          },
-          zoomLock: true,
-        },
-      ]
-    // Getting every element, not just the most important ones
-    updateOptions['series'][0]['data'] = Object.values(this.resultProbabilities);
-    updateOptions['yAxis']['data'] = Object.keys(this.resultProbabilities);
-    return updateOptions;
-  }
 }
 </script>
 
@@ -339,11 +314,6 @@ div.center-center {
   height: 90%;
   min-height: 100px;
   width: 90%;
-}
-
-.bigchart {
-  height: 100%;
-  min-height: 400px;
 }
 
 div.caption {
