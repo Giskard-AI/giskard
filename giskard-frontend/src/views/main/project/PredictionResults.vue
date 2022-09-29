@@ -1,5 +1,5 @@
 <template>
-  <v-card class="mb-4">
+  <v-card class="mb-4" id="resultCard">
     <v-card-title>Result</v-card-title>
     <v-card-text class="text-center card-text" v-if="inputData">
       <OverlayLoader :show="loading" absolute solid no-fade/>
@@ -21,8 +21,8 @@
             <div>Prediction</div>
             <v-tooltip bottom>
               <template v-slot:activator="{ on, attrs }">
-                <div class="text-h6" :class="classColorPrediction" v-on="prediction.length > maxCharsCategory ? on : ''"> 
-                  {{  abbreviateMiddle(prediction, nbCharsSlicedCategory, maxCharsCategory) }}
+                <div class="text-h6" :class="classColorPrediction" v-on="prediction.length > maxLengthDisplayedCategory ? on : ''"> 
+                  {{  abbreviateMiddle(prediction, maxLengthDisplayedCategory) }}
                 </div>
               </template>
               <span> {{ prediction}}</span>
@@ -36,7 +36,7 @@
               <v-tooltip bottom>
                 <template v-slot:activator="{ on, attrs }">
                   <div class="text-h6">
-                    <div v-if="isDefined(actual)" v-on="actual.length > maxCharsCategory ? on : ''">{{ abbreviateMiddle(actual, nbCharsSlicedCategory, maxCharsCategory) }}</div>
+                    <div v-if="isDefined(actual)" v-on="actual.length > maxLengthDisplayedCategory ? on : ''">{{ abbreviateMiddle(actual, maxLengthDisplayedCategory) }}</div>
                     <div v-else>-</div>
                   </div>
                 </template>
@@ -83,7 +83,7 @@
       </v-row>
     </v-card-text>
 
-    <v-card-actions :v-show="Object.keys(resultProbabilities).length > predCategoriesN">
+    <v-card-actions v-show="Object.keys(resultProbabilities).length > predCategoriesN">
       <ResultPopover :resultProbabilities='resultProbabilities' :prediction='prediction' :actual='actual' :classColorPrediction='classColorPrediction'></ResultPopover>
     </v-card-actions>
 
@@ -102,7 +102,7 @@ import {CanvasRenderer} from "echarts/renderers";
 import {GridComponent} from "echarts/components";
 import {ModelDTO, ModelType} from "@/generated-sources";
 import {isClassification} from "@/ml-utils";
-import {abbreviateMiddle} from "@/utils";
+import {abbreviateMiddle, maxLengthDisplayedCategory} from "@/results-utils";
 import * as _ from "lodash";
 import {CanceledError} from "axios";
 
@@ -130,17 +130,15 @@ export default class PredictionResults extends Vue {
   ModelType = ModelType;
   predCategoriesN = 5;
   controller?: AbortController;
-  windowWidth = window.innerWidth;
+  sizeResultCard? = 0;
 
-
-  abbreviateMiddle(s, m, n){
-    return abbreviateMiddle(s, m, n);
-  }
+  abbreviateMiddle = abbreviateMiddle;
 
   async mounted() {
+    this.sizeResultCard = this.$parent?.$el.querySelector('#resultCard')?.clientWidth;
     await this.submitPrediction()
     window.addEventListener('resize', () => {
-      this.windowWidth = window.innerWidth
+        this.sizeResultCard = this.$parent?.$el.querySelector('#resultCard')?.clientWidth;
     })
   }
 
@@ -214,20 +212,10 @@ export default class PredictionResults extends Vue {
     else return undefined
   }
 
-  // Breakpoints for number of displayed characters on the chart
-  get maxCharsCategory(){
-    switch (this.$vuetify.breakpoint.name) {
-          case 'xs': return 20
-          case 'sm': return 35
-          case 'md': return 20
-          case 'lg': return 30
-          case 'xl': return 40
-        }
+  get maxLengthDisplayedCategory(){
+    return maxLengthDisplayedCategory(this.sizeResultCard);
   }
 
-  get nbCharsSlicedCategory(){
-    return this.maxCharsCategory! / 2 - 3;
-  }
 
   /**
    * Getting first n entries of sorted objects and sort alphabetically, aggregating for "Others" options
@@ -253,9 +241,9 @@ export default class PredictionResults extends Vue {
    * @param n number of slice to keep
    * @private
    */
-  private sliceLongCategoryName(obj, max_size, n){
+  private sliceLongCategoryName(obj, max_size){
     let res = Object.fromEntries(Object.entries(obj).map(function(elt) {
-      return ["".concat(...[abbreviateMiddle(elt[0], n, max_size)]),elt[1]]
+      return ["".concat(...[abbreviateMiddle(elt[0], max_size)]),elt[1]]
     }))
     return res
   }
@@ -272,7 +260,7 @@ export default class PredictionResults extends Vue {
 
   get chartOptions() {
     let results = this.firstNSortedByKey(this.resultProbabilities, this.predCategoriesN)
-    results = this.sliceLongCategoryName(results, this.maxCharsCategory, this.nbCharsSlicedCategory)
+    results = this.sliceLongCategoryName(results, this.maxLengthDisplayedCategory)
     return {
       xAxis: {
         type: "value",
