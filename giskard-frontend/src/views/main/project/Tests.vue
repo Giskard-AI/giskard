@@ -5,12 +5,12 @@
         <v-col cols="6" :align="'right'" align-self="end" class="pl-0 pb-0">
           <v-container>
             <v-row>
-              <v-col>
+              <v-col class="pr-0">
                 <v-select
                     dense
-                    :items="statusFilter" label="Status" v-model="status" hide-details></v-select>
+                    :items="Object.keys(statusFilter)" label="Status" v-model="status" hide-details></v-select>
               </v-col>
-              <v-col cols="8" class="pl-0">
+              <v-col cols="8">
                 <v-text-field
                     dense
                     hide-details
@@ -38,7 +38,7 @@
       <v-row>
         <v-col class="pt-0">
           <div class="body-1 text-subtitle-1">
-            Total: {{ nbTotalTests }} tests.&nbsp; &nbsp; Executed: {{ nbTestsPassed + nbTestsFailed }}.&nbsp; &nbsp;
+            Total: {{ nbTotalTests }} tests.&nbsp; &nbsp; Executed: {{ nbTestsExecuted }}.&nbsp; &nbsp;
             Passed: {{ nbTestsPassed }}.&nbsp; &nbsp; Failed: {{ nbTestsFailed }}.
           </div>
         </v-col>
@@ -105,11 +105,13 @@ export default class Tests extends Vue {
   isTestSuiteRunning = false;
   runningTestIds = new Set();
   search: string = "";
-  nbTestsPassed: number = 0;
-  nbTestsFailed: number = 0;
-  nbTotalTests: number = 0;
-  statusFilter = ['All', 'Passed', 'Failed', 'Not Executed']
-  status = 'All'
+  statusFilter = {
+    'All': null,
+    'Passed': TestResult.PASSED,
+    'Failed': TestResult.FAILED,
+    'Not Executed': null
+  }
+  status : string = 'All';
 
 
   @Watch("search")
@@ -117,31 +119,22 @@ export default class Tests extends Vue {
   private filterTests() {
     let search = this.search;
     let status = this.status;
+    let statusFilter = this.statusFilter;
     this.filteredTests = Object.fromEntries(
-        Object.entries(this.tests)
-            .filter(function (test) {
-              let filterStatus: boolean;
-              switch (status) {
-                case 'Passed':
-                  filterStatus = test[1].status == TestResult.PASSED
-                  break;
-                case 'Failed':
-                  filterStatus = test[1].status == TestResult.FAILED
-                  break;
-                case 'Not Executed':
-                  filterStatus = test[1].status == null
-                  break;
-                default:
-                  filterStatus = true;
-              }
+      Object.entries(this.tests)
+          .filter(function (test) {
+            let filterStatus: boolean;
+            if (status == 'All')
+              filterStatus = true;
+            else
+              filterStatus = statusFilter[status] == test[1].status;
+            
+            let name = test[1].name;
+            let filterName = name.toLocaleLowerCase().includes(search.toLocaleLowerCase());
 
-              let name = test[1].name;
-              let filterName = name.toLocaleLowerCase().includes(search.toLocaleLowerCase());
-
-              return filterName && filterStatus;
-            })
+            return filterName && filterStatus;
+          })
     )
-    this.getAllNumbersTests()
   }
 
   testStatusToColor(status: TestResult) {
@@ -166,22 +159,30 @@ export default class Tests extends Vue {
       });
     } finally {
       this.isTestSuiteRunning = false;
-      this.getAllNumbersTests();
     }
   }
 
-  private setNumbersTests(result?: TestResult) {
+  private countTestsWithStatus(result?: TestResult | null) {
     return Object.values(this.filteredTests)
-        .filter((test) => result != null ? test.status == result : true)
-        .reduce((partial) => partial + 1, 0);
+        .filter((test) => test.status == result)
+        .length;
   }
 
-  private getAllNumbersTests() {
-    this.nbTestsPassed = this.setNumbersTests(TestResult.PASSED);
-    this.nbTestsFailed = this.setNumbersTests(TestResult.FAILED);
-    this.nbTotalTests = this.setNumbersTests();
+  get nbTestsPassed() {
+    return this.countTestsWithStatus(TestResult.PASSED);
   }
 
+  get nbTestsFailed() {
+    return this.countTestsWithStatus(TestResult.FAILED);
+  }
+
+  get nbTestsExecuted() {
+    return this.nbTotalTests - this.countTestsWithStatus(null);
+  }
+
+  get nbTotalTests() {
+    return Object.keys(this.filteredTests).length;
+  }
 
   public async createTest() {
     const newTest = await this.$dialog.showAndWait(TestCreateModal, {width: 800, suiteId: this.suiteId});
@@ -200,7 +201,6 @@ export default class Tests extends Vue {
     let testsList = await api.getTests(this.suiteId);
     this.tests = Object.assign({}, ...testsList.map((x) => ({[x.id]: x})));
     this.filteredTests = this.tests;
-    this.getAllNumbersTests();
   }
 
   public async mounted() {
