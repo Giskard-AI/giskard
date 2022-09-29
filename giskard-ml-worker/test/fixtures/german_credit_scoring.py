@@ -2,7 +2,6 @@ import logging
 
 import pandas as pd
 import pytest
-import time
 from sklearn import model_selection
 from sklearn.compose import ColumnTransformer
 from sklearn.impute import SimpleImputer
@@ -11,9 +10,9 @@ from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder
 from sklearn.preprocessing import StandardScaler
 
-from ml_worker.core.giskard_dataset import GiskardDataset
-from ml_worker.core.model import GiskardModel
-from ml_worker.utils.logging import timer, Timer
+from giskard.ml_worker.core.giskard_dataset import GiskardDataset
+from giskard.ml_worker.core.model import GiskardModel
+from giskard.ml_worker.utils.logging import Timer
 from test import path
 
 input_types = {'account_check_status': "category",

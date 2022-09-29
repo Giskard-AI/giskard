@@ -1,7 +1,7 @@
 import pytest
 
-from ml_worker.core.giskard_dataset import GiskardDataset
-from ml_worker.testing.functions import GiskardTestFunctions
+from giskard.ml_worker.core.giskard_dataset import GiskardDataset
+from giskard.ml_worker.testing.functions import GiskardTestFunctions
 
 
 def _test_metamorphic_increasing_regression(ds: GiskardDataset, model, threshold):

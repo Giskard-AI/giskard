@@ -7,28 +7,34 @@ from timeit import default_timer
 
 import sys
 
-import sys
-
 
 def resolve(filename):
     for directory in sys.path:
         path = os.path.join(directory, filename)
+        print(path)
         if os.path.isfile(path):
             return path
 
 
-def load_logging_config(env=None):
-    if env is None:
-        from cli import settings
-        env = settings.environment
-    if env:
-        config_path = resolve(f'logging_config{"." + env}.ini')
-        if config_path:
-            fileConfig(config_path)
-        else:
-            print(f"Failed to load logging config from {config_path}")
-    else:
-        fileConfig(resolve('logging_config.ini'))
+def load_logging_config(env="prod"):
+    logging.basicConfig(
+        level=logging.DEBUG,
+        format="%(asctime)s %(levelname)s %(message)s",
+        datefmt="%Y-%m-%d %H:%M:%S",
+    )
+    logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
+
+    # if env is None:
+    #     from giskard.cli import settings
+    #     env = settings.environment
+    # if env:
+    #     config_path = resolve(f'logging_config{"." + env}.ini')
+    #     if config_path:
+    #         fileConfig(config_path)
+    #     else:
+    #         print(f"Failed to load logging config from {config_path}")
+    # else:
+    #     fileConfig(resolve('logging_config.ini'))
 
 
 timer_logger = logging.getLogger("timer")

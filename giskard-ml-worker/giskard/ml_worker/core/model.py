@@ -1,15 +1,13 @@
 import logging
-from timeit import timeit
 from typing import List, Any, Optional, Callable, Iterable, Union
-import time
 
 import numpy
 import pandas as pd
 from builtins import Exception
 from pydantic import BaseModel
 
-from ml_worker.core.giskard_dataset import GiskardDataset
-from ml_worker.utils.logging import timer, Timer
+from giskard.ml_worker.core.giskard_dataset import GiskardDataset
+from giskard.ml_worker.utils.logging import Timer
 
 
 class ModelPredictionResults(BaseModel):

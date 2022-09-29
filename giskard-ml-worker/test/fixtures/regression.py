@@ -2,9 +2,9 @@ import pytest
 from sklearn import datasets, linear_model
 from sklearn.metrics import mean_squared_error
 
-from ml_worker.core.giskard_dataset import GiskardDataset
-from ml_worker.core.model import GiskardModel
-from ml_worker.utils.logging import Timer
+from giskard.ml_worker.core.giskard_dataset import GiskardDataset
+from giskard.ml_worker.core.model import GiskardModel
+from giskard.ml_worker.utils.logging import Timer
 
 
 @pytest.fixture()

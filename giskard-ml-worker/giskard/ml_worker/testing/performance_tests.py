@@ -4,10 +4,10 @@ from sklearn.metrics import accuracy_score, recall_score
 from sklearn.metrics import roc_auc_score, f1_score, precision_score, mean_squared_error, \
     mean_absolute_error, r2_score
 
-from generated.ml_worker_pb2 import SingleTestResult
-from ml_worker.core.giskard_dataset import GiskardDataset
-from ml_worker.core.model import GiskardModel
-from ml_worker.testing.abstract_test_collection import AbstractTestCollection
+from giskard.ml_worker.generated.ml_worker_pb2 import SingleTestResult
+from giskard.ml_worker.core.giskard_dataset import GiskardDataset
+from giskard.ml_worker.core.model import GiskardModel
+from giskard.ml_worker.testing.abstract_test_collection import AbstractTestCollection
 
 
 class PerformanceTests(AbstractTestCollection):

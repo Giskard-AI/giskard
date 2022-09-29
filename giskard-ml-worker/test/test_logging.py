@@ -1,6 +1,6 @@
 import time
 
-from ml_worker.utils.logging import Timer
+from giskard.ml_worker.utils.logging import Timer
 
 
 def test_timer():

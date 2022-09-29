@@ -1,13 +1,11 @@
 import pandas as pd
-import time
-import logging
-from generated.ml_worker_pb2 import SingleTestResult, TestMessage, TestMessageType
+from giskard.ml_worker.generated.ml_worker_pb2 import SingleTestResult, TestMessage, TestMessageType
 
-from ml_worker.core.giskard_dataset import GiskardDataset
-from ml_worker.core.model import GiskardModel
-from ml_worker.testing.abstract_test_collection import AbstractTestCollection
-from ml_worker.testing.utils import apply_perturbation_inplace
-from ml_worker.utils.logging import timer
+from giskard.ml_worker.core.giskard_dataset import GiskardDataset
+from giskard.ml_worker.core.model import GiskardModel
+from giskard.ml_worker.testing.abstract_test_collection import AbstractTestCollection
+from giskard.ml_worker.testing.utils import apply_perturbation_inplace
+from giskard.ml_worker.utils.logging import timer
 
 
 class MetamorphicTests(AbstractTestCollection):

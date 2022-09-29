@@ -12,7 +12,7 @@ from grpc import ServicerContext, StatusCode
 from grpc.experimental import wrap_server_method_handler
 from grpc_status import rpc_status
 
-from ml_worker.exceptions.IllegalArgumentError import CodedError
+from giskard.ml_worker.exceptions.IllegalArgumentError import CodedError
 
 MESSAGE_TYPE = Union[Message, Iterable[Message]]
 
