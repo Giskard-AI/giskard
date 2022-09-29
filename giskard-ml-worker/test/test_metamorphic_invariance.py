@@ -1,4 +1,4 @@
-from ml_worker.testing.functions import GiskardTestFunctions
+from giskard.ml_worker.testing.functions import GiskardTestFunctions
 
 
 def test_metamorphic_invariance_no_change(german_credit_test_data, german_credit_model):

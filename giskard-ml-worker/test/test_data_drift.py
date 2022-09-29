@@ -1,7 +1,7 @@
 import pytest
 import numpy as np
 
-from ml_worker.testing.functions import GiskardTestFunctions
+from giskard.ml_worker.testing.functions import GiskardTestFunctions
 
 
 @pytest.mark.parametrize('data,threshold,expected_metric,column_name',

@@ -1,9 +1,9 @@
 import numpy as np
 import pytest
 
-from ml_worker.core.giskard_dataset import GiskardDataset
-from ml_worker.core.model import GiskardModel
-from ml_worker.core.model_explanation import explain
+from giskard.ml_worker.core.giskard_dataset import GiskardDataset
+from giskard.ml_worker.core.model import GiskardModel
+from giskard.ml_worker.core.model_explanation import explain
 
 
 @pytest.mark.parametrize(

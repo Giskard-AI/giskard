@@ -1,16 +1,14 @@
-import logging
 from io import BytesIO
 
 import cloudpickle
 import pandas as pd
-import time
 from zstandard import ZstdDecompressor
 from zstandard import decompress
 
-from generated.ml_worker_pb2 import SerializedGiskardModel, SerializedGiskardDataset
-from ml_worker.core.giskard_dataset import GiskardDataset
-from ml_worker.core.model import GiskardModel
-from ml_worker.utils.logging import timer
+from giskard.ml_worker.generated.ml_worker_pb2 import SerializedGiskardModel, SerializedGiskardDataset
+from giskard.ml_worker.core.giskard_dataset import GiskardDataset
+from giskard.ml_worker.core.model import GiskardModel
+from giskard.ml_worker.utils.logging import timer
 
 
 @timer()

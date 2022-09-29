@@ -5,8 +5,8 @@ import click
 import grpc
 from click import STRING, INT
 
-from ml_worker.utils.logging import load_logging_config
-from settings import Settings
+from giskard.ml_worker.utils.logging import load_logging_config
+from giskard.settings import Settings
 
 settings = Settings()
 
@@ -15,12 +15,12 @@ logger = logging.getLogger()
 
 
 async def start_grpc_server(remote=False):
-    from generated.ml_worker_pb2_grpc import add_MLWorkerServicer_to_server
-    from ml_worker.server.ml_worker_service import MLWorkerServiceImpl
-    from ml_worker.utils.network import find_free_port
-    from settings import Settings
+    from giskard.ml_worker.generated.ml_worker_pb2_grpc import add_MLWorkerServicer_to_server
+    from giskard.ml_worker.server.ml_worker_service import MLWorkerServiceImpl
+    from giskard.ml_worker.utils.network import find_free_port
+    from giskard.settings import Settings
+
     settings = Settings()
-    logger.info("Starting local ML Worker server")
     server = grpc.aio.server(
         # interceptors=[ErrorInterceptor()],
         options=[
@@ -39,7 +39,7 @@ async def start_grpc_server(remote=False):
 
 
 async def start(remote_host=None, remote_port=None):
-    from ml_worker.bridge.ml_worker_bridge import MLWorkerBridge
+    from giskard.ml_worker.bridge.ml_worker_bridge import MLWorkerBridge
 
     is_remote = remote_host is not None and remote_port is not None
     tasks = []
@@ -53,11 +53,22 @@ async def start(remote_host=None, remote_port=None):
     await asyncio.wait(tasks)
 
 
-@click.command(help="Start ML Worker", context_settings={'show_default': True})
+@click.group("cli")
+def cli():
+    pass
+
+
+@cli.group("worker", help="ML Worker management")
+def worker() -> None:
+    pass
+
+
+@worker.command("start", help="Start ML Worker", context_settings={'show_default': True})
 @click.option('--host', '-h', type=STRING, help='Remote Giskard host address to connect to')
 @click.option('--port', '-p', type=INT, default=40051,
               help='Remote Giskard port accepting external ML Worker connections')
-def cli(host, port):
+def start_command(host, port):
+    logger.info("Starting ML Worker")
     try:
         asyncio.get_event_loop().run_until_complete(start(host, port))
     except KeyboardInterrupt:

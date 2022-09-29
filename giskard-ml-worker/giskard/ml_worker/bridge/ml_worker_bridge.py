@@ -4,9 +4,9 @@ from asyncio import StreamReader, StreamWriter
 
 from tenacity import retry, wait_exponential
 
-from ml_worker.bridge.error import ConnectionLost
-from ml_worker.bridge.service_messages import *
-from ml_worker.utils.logging import load_logging_config
+from giskard.ml_worker.bridge.error import ConnectionLost
+from giskard.ml_worker.bridge.service_messages import START_INNER_SERVER, CREATE_CLIENT_CHANNEL
+from giskard.ml_worker.utils.logging import load_logging_config
 
 load_logging_config()
 logger = logging.getLogger()
@@ -91,11 +91,12 @@ class MLWorkerBridge:
         try:
             try:
                 while True:
-                    data = await reader.read(1024 * 256)
+                    data = await reader.read(1024*256)
                     if len(data):
                         logger.debug(f"{log_prefix}Writing {len(data)} bytes")
                         writer.write(data)
                         await writer.drain()
+                        logger.debug(f"{log_prefix}Wrote {len(data)} bytes")
                     else:
                         raise ConnectionLost()
             finally:

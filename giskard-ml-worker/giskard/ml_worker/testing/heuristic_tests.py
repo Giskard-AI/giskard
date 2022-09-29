@@ -1,9 +1,9 @@
 import pandas as pd
 
-from generated.ml_worker_pb2 import SingleTestResult
-from ml_worker.core.giskard_dataset import GiskardDataset
-from ml_worker.core.model import GiskardModel
-from ml_worker.testing.abstract_test_collection import AbstractTestCollection
+from giskard.ml_worker.generated.ml_worker_pb2 import SingleTestResult
+from giskard.ml_worker.core.giskard_dataset import GiskardDataset
+from giskard.ml_worker.core.model import GiskardModel
+from giskard.ml_worker.testing.abstract_test_collection import AbstractTestCollection
 
 
 class HeuristicTests(AbstractTestCollection):

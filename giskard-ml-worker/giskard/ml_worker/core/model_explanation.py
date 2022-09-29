@@ -6,8 +6,8 @@ import pandas as pd
 from alibi.explainers import KernelShap
 from bs4 import BeautifulSoup
 
-from ml_worker.core.giskard_dataset import GiskardDataset
-from ml_worker.core.model import GiskardModel
+from giskard.ml_worker.core.giskard_dataset import GiskardDataset
+from giskard.ml_worker.core.model import GiskardModel
 
 
 def explain(model: GiskardModel, dataset: GiskardDataset, input_data: Dict):

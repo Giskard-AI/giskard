@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "giskard-python-worker"
+name = "giskard"
 version = "0.1.0"
 description = ""
 authors = ["Andrey Avtomonov <andrey@giskard.ai>"]
@@ -22,9 +22,9 @@ zstandard = "^0.15.2"
 numpy = "^1.21.6"
 
 # Extra commonly used dependencies
-catboost = "^1.0.6"
-torch = "^1.12.0"
-nlpaug = "^1.1.11"
+#catboost = "^1.0.6"
+#torch = "^1.12.0"
+#nlpaug = "^1.1.11"
 
 [tool.poetry.dev-dependencies]
 grpcio-tools = "^1.46.3"
@@ -35,6 +35,10 @@ pytest-cov = "^3.0.0"
 [build-system]
 requires = ["poetry-core^1.0.0"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.scripts]
+giskard = "giskard.cli:cli"
+
 
 [virtualenvs]
 create = true

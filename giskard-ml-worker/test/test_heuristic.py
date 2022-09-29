@@ -1,6 +1,6 @@
 import pytest
 
-from ml_worker.testing.functions import GiskardTestFunctions
+from giskard.ml_worker.testing.functions import GiskardTestFunctions
 
 
 @pytest.mark.parametrize('data,model,label,threshold,expected_metric,actual_slices_size',

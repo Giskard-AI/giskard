@@ -12,18 +12,18 @@ import sys
 import tqdm
 from eli5.lime import TextExplainer
 
-from generated.ml_worker_pb2 import ExplainResponse, ExplainTextResponse, UploadStatus, MLWorkerInfoRequest, \
+from giskard.ml_worker.generated.ml_worker_pb2 import ExplainResponse, ExplainTextResponse, UploadStatus, MLWorkerInfoRequest, \
     MLWorkerInfo, PlatformInfo
-from generated.ml_worker_pb2 import RunTestRequest, TestResultMessage, RunModelResponse, RunModelRequest, DataFrame, \
+from giskard.ml_worker.generated.ml_worker_pb2 import RunTestRequest, TestResultMessage, RunModelResponse, RunModelRequest, DataFrame, \
     DataRow, RunModelForDataFrameResponse, RunModelForDataFrameRequest, ExplainRequest, ExplainTextRequest
-from generated.ml_worker_pb2_grpc import MLWorkerServicer
-from ml_worker.core.giskard_dataset import GiskardDataset
-from ml_worker.core.model_explanation import explain, text_explanation_prediction_wrapper, parse_text_explainer_response
-from ml_worker.exceptions.IllegalArgumentError import IllegalArgumentError
-from ml_worker.exceptions.giskard_exception import GiskardException
-from ml_worker.utils.grpc_mapper import deserialize_model, deserialize_dataset
-from ml_worker.utils.logging import Timer
-from ml_worker_pb2 import EchoMsg, UploadStatusCode, FileUploadRequest
+from giskard.ml_worker.core.giskard_dataset import GiskardDataset
+from giskard.ml_worker.core.model_explanation import explain, text_explanation_prediction_wrapper, parse_text_explainer_response
+from giskard.ml_worker.exceptions.IllegalArgumentError import IllegalArgumentError
+from giskard.ml_worker.exceptions.giskard_exception import GiskardException
+from giskard.ml_worker.generated.ml_worker_pb2_grpc import MLWorkerServicer
+from giskard.ml_worker.utils.grpc_mapper import deserialize_model, deserialize_dataset
+from giskard.ml_worker.utils.logging import Timer
+from giskard.ml_worker.generated.ml_worker_pb2 import EchoMsg, UploadStatusCode, FileUploadRequest
 
 logger = logging.getLogger()
 
@@ -76,7 +76,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
         )
 
     def runTest(self, request: RunTestRequest, context: grpc.ServicerContext) -> TestResultMessage:
-        from ml_worker.testing.functions import GiskardTestFunctions
+        from giskard.ml_worker.testing.functions import GiskardTestFunctions
         model = deserialize_model(request.model)
 
         tests = GiskardTestFunctions()

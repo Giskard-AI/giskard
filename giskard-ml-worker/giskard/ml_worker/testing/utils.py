@@ -1,9 +1,7 @@
 import pandas as pd
-import time
-import logging
 
-from generated.ml_worker_pb2 import SingleTestResult
-from ml_worker.utils.logging import timer
+from giskard.ml_worker.generated.ml_worker_pb2 import SingleTestResult
+from giskard.ml_worker.utils.logging import timer
 
 
 def ge_result_to_test_result(result, passed=True) -> SingleTestResult:

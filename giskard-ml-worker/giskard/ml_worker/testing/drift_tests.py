@@ -9,10 +9,10 @@ import pandas as pd
 from scipy.stats import chi2, ks_2samp
 from scipy.stats.stats import Ks_2sampResult, wasserstein_distance
 
-from generated.ml_worker_pb2 import SingleTestResult, TestMessage, TestMessageType
-from ml_worker.core.giskard_dataset import GiskardDataset
-from ml_worker.core.model import GiskardModel
-from ml_worker.testing.abstract_test_collection import AbstractTestCollection
+from giskard.ml_worker.generated.ml_worker_pb2 import SingleTestResult, TestMessage, TestMessageType
+from giskard.ml_worker.core.giskard_dataset import GiskardDataset
+from giskard.ml_worker.core.model import GiskardModel
+from giskard.ml_worker.testing.abstract_test_collection import AbstractTestCollection
 
 
 class DriftTests(AbstractTestCollection):

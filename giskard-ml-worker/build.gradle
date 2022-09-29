@@ -24,7 +24,7 @@ python {
     scope = 'VIRTUALENV'
     installVirtualenv = true
     pip 'poetry:1.1.13'
-    environment "PYTHONPATH", file('generated')
+    environment "PYTHONPATH", file('giskard/ml_worker/generated')
 }
 
 task install(type: PythonTask) {
@@ -36,7 +36,7 @@ task install(type: PythonTask) {
 }
 
 task cleanup(type: Delete) {
-    delete 'generated', '.venv', 'coverage.xml', '.coverage'
+    delete 'giskard/ml_worker/generated', '.venv', 'coverage.xml', '.coverage'
 }
 
 task generateProto(type: PythonTask) {
@@ -44,7 +44,7 @@ task generateProto(type: PythonTask) {
 
     environment "PATH", file(project.extensions.python.envPath + "/bin")
 
-    def out = 'generated'
+    def out = 'giskard/ml_worker/generated'
     def fout = file(out)
     def pdir = file('../giskard-common/proto')
 
@@ -52,7 +52,7 @@ task generateProto(type: PythonTask) {
         mkdir fout
     }
     doLast {
-        ant.replaceregexp(match: '^import ([^\\.]*?_pb2)', replace: 'import ' + out + '.\\1', flags: 'g', byline: true) {
+        ant.replaceregexp(match: '^import ([^\\.]*?_pb2)', replace: 'import ' + out.replaceAll('/', '.') + '.\\1', flags: 'g', byline: true) {
             fileset(dir: fout, includes: '*py')
         }
     }
@@ -72,8 +72,8 @@ idea {
 
 //        "generated" directory should be marked as both source and generatedSource,
 //        otherwise intellij doesn't recognize it as a generated source 🤷‍
-        sourceDirs += file('generated')
-        generatedSourceDirs += file('generated')
+        sourceDirs += file('giskard/ml_worker/generated')
+        generatedSourceDirs += file('giskard/ml_worker/generated')
 
         testSourceDirs += file('test')
     }

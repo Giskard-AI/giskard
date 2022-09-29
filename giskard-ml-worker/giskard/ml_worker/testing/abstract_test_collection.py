@@ -3,7 +3,7 @@ import logging
 from abc import ABC
 from typing import List
 
-from generated.ml_worker_pb2 import NamedSingleTestResult, SingleTestResult
+from giskard.ml_worker.generated.ml_worker_pb2 import NamedSingleTestResult, SingleTestResult
 
 
 class AbstractTestCollection(ABC):
