@@ -1,5 +1,4 @@
 import asyncio
-import codecs
 import logging
 from asyncio import StreamReader, StreamWriter
 
@@ -7,11 +6,9 @@ from tenacity import retry, wait_exponential
 
 from giskard.ml_worker.bridge.error import ConnectionLost
 from giskard.ml_worker.bridge.service_messages import START_INNER_SERVER, CREATE_CLIENT_CHANNEL
-from giskard.ml_worker.utils.logging import load_logging_config
 from giskard.ml_worker.utils.network import readable_hex
 
-load_logging_config()
-logger = logging.getLogger()
+logger = logging.getLogger(__name__)
 
 
 class MLWorkerBridge:

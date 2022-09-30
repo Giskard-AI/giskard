@@ -5,13 +5,11 @@ import click
 import grpc
 from click import STRING, INT
 
-from giskard.ml_worker.utils.logging import load_logging_config
 from giskard.settings import Settings
 
 settings = Settings()
 
-load_logging_config()
-logger = logging.getLogger()
+logger = logging.getLogger(__name__)
 
 
 async def start_grpc_server(remote=False):
@@ -33,8 +31,8 @@ async def start_grpc_server(remote=False):
     add_MLWorkerServicer_to_server(MLWorkerServiceImpl(port, remote), server)
     server.add_insecure_port(f'{settings.host}:{port}')
     await server.start()
-    logging.info(f"Started ML Worker server on port {port}")
-    logging.debug(f"ML Worker settings: {settings}")
+    logger.info(f"Started ML Worker server on port {port}")
+    logger.debug(f"ML Worker settings: {settings}")
     return server, port
 
 
@@ -63,10 +61,17 @@ def worker() -> None:
     pass
 
 
+def set_verbose(ctx, param, value):
+    if value:
+        logging.getLogger().setLevel(logging.DEBUG)
+
+
 @worker.command("start", help="Start ML Worker", context_settings={'show_default': True})
 @click.option('--host', '-h', type=STRING, help='Remote Giskard host address to connect to')
 @click.option('--port', '-p', type=INT, default=40051,
               help='Remote Giskard port accepting external ML Worker connections')
+@click.option('--verbose', '-v', is_flag=True, callback=set_verbose, default=False,
+              expose_value=False, is_eager=True, help='Enable verbose logging')
 def start_command(host, port):
     logger.info("Starting ML Worker")
     try:

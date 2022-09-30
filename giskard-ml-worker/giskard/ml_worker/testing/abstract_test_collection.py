@@ -5,6 +5,8 @@ from typing import List
 
 from giskard.ml_worker.generated.ml_worker_pb2 import NamedSingleTestResult, SingleTestResult
 
+logger = logging.getLogger(__name__)
+
 
 class AbstractTestCollection(ABC):
     tests_results: List[NamedSingleTestResult]
@@ -19,7 +21,7 @@ class AbstractTestCollection(ABC):
         for frame in stack:
             if frame.function.startswith('test_'):
                 return frame.function
-        logging.warning(f"Failed to extract test method name")
+        logger.warning(f"Failed to extract test method name")
 
     def save_results(self, result: SingleTestResult, test_name=None):
         if not self.do_save_results:

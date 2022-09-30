@@ -9,6 +9,8 @@ from pydantic import BaseModel
 from giskard.ml_worker.core.giskard_dataset import GiskardDataset
 from giskard.ml_worker.utils.logging import Timer
 
+logger = logging.getLogger(__name__)
+
 
 class ModelPredictionResults(BaseModel):
     prediction: Any
@@ -92,7 +94,7 @@ class GiskardModel:
     @staticmethod
     def cast_column_to_types(df, column_types):
         current_types = df.dtypes.apply(lambda x: x.name).to_dict()
-        logging.info(f"Casting dataframe columns from {current_types} to {column_types}")
+        logger.info(f"Casting dataframe columns from {current_types} to {column_types}")
         if column_types:
             try:
                 df = df.astype(column_types)

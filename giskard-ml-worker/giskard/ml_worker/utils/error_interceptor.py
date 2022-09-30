@@ -16,6 +16,8 @@ from giskard.ml_worker.exceptions.IllegalArgumentError import CodedError
 
 MESSAGE_TYPE = Union[Message, Iterable[Message]]
 
+logger = logging.getLogger(__name__)
+
 
 class ErrorInterceptor(grpc.aio.ServerInterceptor):
 
@@ -45,10 +47,10 @@ class ErrorInterceptor(grpc.aio.ServerInterceptor):
             try:
                 return behavior(request, context)
             except CodedError as e:
-                logging.exception(e)
+                logger.exception(e)
                 ErrorInterceptor.terminate_with_exception(e.code, e, context)
             except Exception as e:
-                logging.exception(e)
+                logger.exception(e)
                 ErrorInterceptor.terminate_with_exception(StatusCode.INTERNAL, e, context)
 
         return wrapper

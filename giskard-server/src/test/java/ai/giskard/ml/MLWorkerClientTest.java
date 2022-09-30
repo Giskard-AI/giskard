@@ -8,6 +8,7 @@ import com.google.protobuf.ByteString;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.stub.StreamObserver;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -19,6 +20,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.stream.IntStream;
 
+@Disabled
 class MLWorkerClientTest {
     public MLWorkerClient createClient() {
         int proxyPort = 46050;
@@ -28,6 +30,7 @@ class MLWorkerClientTest {
             .build();
         return new MLWorkerClient(channel);
     }
+
 
     @Test
     void testClientSimple() throws InterruptedException {
