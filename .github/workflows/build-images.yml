@@ -1,4 +1,4 @@
-name: Build Docker images
+name: Build Docker images and push to registry with dev tag
 
 on:
   push:
@@ -31,25 +31,23 @@ jobs:
     - name: Build images
       run: docker-compose -f docker-stack.yml build
 
-    - name: Configure AWS credentials
-      uses: aws-actions/configure-aws-credentials@v1
+    - name: Login to Docker registry
+      uses: docker/login-action@v2
       if: ${{ steps.extract_branch.outputs.branch == 'main' }}
       with:
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: us-east-1
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-    - name: Push images to ECR
+    - name: Push images to Docker registry
       if: ${{ steps.extract_branch.outputs.branch == 'main' }}
       env:
         TAG: dev
       run: |
-        aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin public.ecr.aws/giskard
         docker-compose -f docker-compose.yml -f docker-compose.dev.yml push
 
     - name: Invoke deployment hook
       run: |
-        curl --max-time 900 ${{ secrets.TEST_SERVER_WEBHOOK_URL_BASE }}/redeploy-dev 
+        curl -L --silent --max-time 900 ${{ secrets.TEST_SERVER_WEBHOOK_URL_BASE }}/redeploy-dev 
 
     - name: Remove containers and volumes
       run: docker-compose -f docker-stack.yml down -v --remove-orphans
