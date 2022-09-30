@@ -24,7 +24,7 @@ python {
     pythonBinary = 'python3'
     scope = 'VIRTUALENV'
     installVirtualenv = true
-    pip 'poetry:1.1.13'
+    pip 'poetry:1.2.1'
     environment "PYTHONPATH", file('generated')
 }
 
