@@ -43,26 +43,27 @@ public class MLWorkerTunnelService {
         }
     }
 
-    private Channel listenForTunnelConnections(int externalMlWorkerEntrypointPort) throws Exception {
+    private Channel listenForTunnelConnections(int externalMlWorkerEntrypointPort) {
         EventLoopGroup group = new NioEventLoopGroup();
         ServerBootstrap b = new ServerBootstrap();
 
         OuterChannelHandler outerChannelHandler = new OuterChannelHandler();
+        ChannelInitializer<SocketChannel> outerChannelInitializer = new ChannelInitializer<>() {
+            @Override
+            protected void initChannel(SocketChannel outerChannel) {
+                log.info("New outer connection, outer channel id {}", outerChannel.id());
+
+                outerChannel.pipeline().addLast(
+                    new LoggingHandler("Outer channel", LogLevel.DEBUG, ByteBufFormat.SIMPLE),
+                    outerChannelHandler
+                );
+            }
+        };
+
         b.group(group)
             .channel(NioServerSocketChannel.class)
             .localAddress(new InetSocketAddress(externalMlWorkerEntrypointPort))
-            .childHandler(new ChannelInitializer<SocketChannel>() {
-
-                @Override
-                protected void initChannel(SocketChannel outerChannel) {
-                    log.info("New outer connection, outer channel id {}", outerChannel.id());
-
-                    outerChannel.pipeline().addLast(
-                        new LoggingHandler("Outer channel", LogLevel.DEBUG, ByteBufFormat.SIMPLE),
-                        outerChannelHandler
-                    );
-                }
-            });
+            .childHandler(outerChannelInitializer);
 
         outerChannelHandler.eventBus.register(new EventListener() {
             @Subscribe
