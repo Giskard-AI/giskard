@@ -6,4 +6,4 @@ def path(p):
     return Path(__file__).parent / p
 
 
-fileConfig(path('../logging_config.ini'))
+#fileConfig(path('../logging_config.ini'))
