@@ -1,3 +1,4 @@
+import codecs
 import socket
 from contextlib import closing
 
@@ -7,3 +8,8 @@ def find_free_port():
         s.bind(('', 0))
         s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         return s.getsockname()[1]
+
+
+def readable_hex(data):
+    s = codecs.encode(data, 'hex').decode()
+    return " ".join(s[i:i + 2] for i in range(0, len(s), 2))

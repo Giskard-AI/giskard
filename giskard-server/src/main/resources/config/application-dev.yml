@@ -15,7 +15,7 @@
 
 logging:
   level:
-    ROOT: INFO
+    ROOT: DEBUG
     tech.jhipster: INFO
     org.hibernate.SQL: INFO
     ai.giskard: DEBUG

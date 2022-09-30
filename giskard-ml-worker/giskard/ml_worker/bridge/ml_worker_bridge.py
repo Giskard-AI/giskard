@@ -1,4 +1,5 @@
 import asyncio
+import codecs
 import logging
 from asyncio import StreamReader, StreamWriter
 
@@ -7,6 +8,7 @@ from tenacity import retry, wait_exponential
 from giskard.ml_worker.bridge.error import ConnectionLost
 from giskard.ml_worker.bridge.service_messages import START_INNER_SERVER, CREATE_CLIENT_CHANNEL
 from giskard.ml_worker.utils.logging import load_logging_config
+from giskard.ml_worker.utils.network import readable_hex
 
 load_logging_config()
 logger = logging.getLogger()
@@ -40,6 +42,7 @@ class MLWorkerBridge:
 
     async def send_service_message(self, remote_writer: StreamWriter, msg_type: int, data: bytes = b''):
         msg = self.create_service_message(msg_type, data)
+        logger.debug(f"Service message: Writing {len(msg)} bytes: {readable_hex(msg)}")
         remote_writer.write(msg)
         await remote_writer.drain()
 
@@ -73,8 +76,9 @@ class MLWorkerBridge:
         if command == CREATE_CLIENT_CHANNEL:
             remote_reader, remote_writer = await asyncio.open_connection(self.remote_host, self.remote_port)
             logger.debug(f"Connected client {client} to remote host {(self.remote_host, self.remote_port)}")
-
-            remote_writer.write(self.create_service_message(CREATE_CLIENT_CHANNEL, client))
+            message = self.create_service_message(CREATE_CLIENT_CHANNEL, client)
+            logger.debug(f"handle_server_command: Writing {len(message)} bytes: {readable_hex(message)}")
+            remote_writer.write(message)
             await remote_writer.drain()
 
             grpc_reader, grpc_writer = await asyncio.open_connection(self.local_host, self.local_port)
@@ -90,13 +94,12 @@ class MLWorkerBridge:
         log_prefix = '' if not task_name else task_name + ': '
         try:
             try:
-                while True:
-                    data = await reader.read(1024*256)
+                while not reader.at_eof():
+                    data = await reader.read(2048)
                     if len(data):
-                        logger.debug(f"{log_prefix}Writing {len(data)} bytes")
+                        logger.debug(f"{log_prefix}Writing {len(data)} bytes: {readable_hex(data)}")
                         writer.write(data)
                         await writer.drain()
-                        logger.debug(f"{log_prefix}Wrote {len(data)} bytes")
                     else:
                         raise ConnectionLost()
             finally:

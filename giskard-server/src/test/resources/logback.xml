@@ -39,7 +39,7 @@
     <logger name="LiquibaseSchemaResolver" level="WARN"/>
     <logger name="sun.rmi.transport" level="WARN"/>
     <logger name="com.tngtech.archunit.core.importer" level="ERROR"/>
-    <logger name="io.grpc.netty" level="INFO"/>
+    <logger name="io.grpc.netty" level="DEBUG"/>
 
     <root>
         <level>WARN</level>
