@@ -8,7 +8,13 @@
               <v-col class="pr-0">
                 <v-select
                     dense
-                    :items="Object.keys(statusFilter)" label="Status" v-model="status" hide-details></v-select>
+                    :items="Object.entries(statusFilter)"
+                    label="Status"
+                    v-model="status"
+                    hide-details
+                    item-value="[1]"
+                    item-text="[0]"
+                ></v-select>
               </v-col>
               <v-col cols="8">
                 <v-text-field
@@ -97,7 +103,9 @@ import {testStatusToColor, testStatusToIcon} from "@/views/main/tests/test-utils
   components: {TestSuiteCreateModal, TestCreateModal}
 })
 
+
 export default class Tests extends Vue {
+  private static EMPTY_TEST_STATUS_FILTER = 'All';
   @Prop({required: true}) suiteId!: number;
 
   tests: { [id: number]: TestDTO } = {};
@@ -106,34 +114,29 @@ export default class Tests extends Vue {
   runningTestIds = new Set();
   search: string = "";
   statusFilter = {
-    'All': null,
+    'All': Tests.EMPTY_TEST_STATUS_FILTER,
     'Passed': TestResult.PASSED,
     'Failed': TestResult.FAILED,
     'Not Executed': null
   }
-  status : string = 'All';
+  status: string = Tests.EMPTY_TEST_STATUS_FILTER;
 
 
   @Watch("search")
   @Watch("status")
   private filterTests() {
     let search = this.search;
-    let status = this.status;
-    let statusFilter = this.statusFilter;
+    let selectedStatus = this.status;
     this.filteredTests = Object.fromEntries(
-      Object.entries(this.tests)
-          .filter(function (test) {
-            let filterStatus: boolean;
-            if (status == 'All')
-              filterStatus = true;
-            else
-              filterStatus = statusFilter[status] == test[1].status;
-            
-            let name = test[1].name;
-            let filterName = name.toLocaleLowerCase().includes(search.toLocaleLowerCase());
+        Object.entries(this.tests)
+            .filter(function (test) {
+              let filterStatus = selectedStatus === Tests.EMPTY_TEST_STATUS_FILTER || selectedStatus == test[1].status;
 
-            return filterName && filterStatus;
-          })
+              let name = test[1].name;
+              let filterName = name.toLocaleLowerCase().includes(search.toLocaleLowerCase());
+
+              return filterName && filterStatus;
+            })
     )
   }
 
