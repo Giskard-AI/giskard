@@ -21,6 +21,7 @@ import java.util.*;
 import static ai.giskard.ml.tunnel.ServiceChannelCommand.REGISTER_CLIENT_CHANNEL;
 import static ai.giskard.ml.tunnel.ServiceChannelCommand.START_INNER_SERVER;
 
+@ChannelHandler.Sharable
 public class OuterChannelHandler extends ChannelInboundHandlerAdapter {
     private final Logger log = LoggerFactory.getLogger(OuterChannelHandler.class);
     private final Set<ChannelId> serviceChannelsIds = new HashSet<>();
