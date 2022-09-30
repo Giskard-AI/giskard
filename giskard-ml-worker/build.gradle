@@ -19,7 +19,7 @@ sonarqube {
 }
 
 python {
-//    envPath = '.venv'
+    envPath = '.venv'
     minPythonVersion = '3.7'
     pythonBinary = 'python3'
     scope = 'VIRTUALENV'
