@@ -53,8 +53,8 @@ jobs:
         uses: actions/cache@v3
         with:
           path: giskard-ml-worker/.venv
-          key: ${{ runner.os }}-ml-worker-${{ hashFiles('giskard-ml-worker/poetry.lock', 'giskard-ml-worker/build.gradle')}}
-          restore-keys: ${{ runner.os }}-ml-worker
+          key: ${{ runner.os }}-ml-worker-${{ hashFiles('giskard-ml-worker/poetry.lock')}}
+          restore-keys: ${{ runner.os }}-ml-worker-${{ hashFiles('giskard-ml-worker/poetry.lock')}}
       - name: Cache Frontend dependencies
         uses: actions/cache@v3
         with:
