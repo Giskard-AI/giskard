@@ -2,10 +2,18 @@ import logging
 import os
 from datetime import timedelta
 from functools import wraps
-from logging.config import fileConfig
 from timeit import default_timer
 
 import sys
+
+logger = logging.getLogger(__name__)
+
+
+def configure_logging():
+    logging.basicConfig(
+        format="%(asctime)s %(name)-12s %(levelname)-8s %(message)s"
+    )
+    logging.getLogger().setLevel(os.environ.get("GSK_LOGLEVEL", "INFO"))
 
 
 def resolve(filename):
@@ -14,30 +22,6 @@ def resolve(filename):
         print(path)
         if os.path.isfile(path):
             return path
-
-
-def load_logging_config(env="prod"):
-    logging.basicConfig(
-        level=logging.DEBUG,
-        format="%(asctime)s %(levelname)s %(message)s",
-        datefmt="%Y-%m-%d %H:%M:%S",
-    )
-    logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
-
-    # if env is None:
-    #     from giskard.cli import settings
-    #     env = settings.environment
-    # if env:
-    #     config_path = resolve(f'logging_config{"." + env}.ini')
-    #     if config_path:
-    #         fileConfig(config_path)
-    #     else:
-    #         print(f"Failed to load logging config from {config_path}")
-    # else:
-    #     fileConfig(resolve('logging_config.ini'))
-
-
-timer_logger = logging.getLogger("timer")
 
 
 class Timer:
@@ -60,13 +44,13 @@ class Timer:
         if message:
             self.message_template = message
         if not self.__start_time:
-            timer_logger.error("Timer was not started")
+            logger.error("Timer was not started")
             return
 
         self.duration = timedelta(seconds=default_timer() - self.__start_time)
         if log:
             self.message = self.create_message(self.duration)
-            timer_logger.log(self.level, self.message)
+            logger.log(self.level, self.message)
         return self.duration
 
     def __enter__(self):

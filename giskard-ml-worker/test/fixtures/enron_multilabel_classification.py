@@ -17,20 +17,21 @@ from giskard.ml_worker.core.model import GiskardModel
 from giskard.ml_worker.utils.logging import Timer
 from test import path
 
+logger = logging.getLogger(__name__)
 input_types = {
-        "Subject": "text",
-        "Content": "text",
-        "Week_day": "category",
-        "Month": "category",
-        "Hour": "numeric",
-        "Nb_of_forwarded_msg": "numeric",
-        "Year": "numeric"
-    }
+    "Subject": "text",
+    "Content": "text",
+    "Week_day": "category",
+    "Month": "category",
+    "Hour": "numeric",
+    "Nb_of_forwarded_msg": "numeric",
+    "Year": "numeric"
+}
 
 
 @pytest.fixture()
 def enron_data() -> GiskardDataset:
-    logging.info("Fetching Enron Data")
+    logger.info("Fetching Enron Data")
     return GiskardDataset(
         df=pd.read_csv(path('test_data/enron_data.csv'),
                        keep_default_na=False,

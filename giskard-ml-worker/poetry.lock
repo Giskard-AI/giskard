@@ -177,6 +177,23 @@ python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,>=2.7"
 importlib-metadata = {version = ">=0.20", markers = "python_version < \"3.8\""}
 
 [[package]]
+name = "catboost"
+version = "1.1"
+description = "Catboost Python Package"
+category = "dev"
+optional = false
+python-versions = "*"
+
+[package.dependencies]
+graphviz = "*"
+matplotlib = "*"
+numpy = ">=1.16.0"
+pandas = ">=0.24.0"
+plotly = "*"
+scipy = "*"
+six = "*"
+
+[[package]]
 name = "certifi"
 version = "2022.9.24"
 description = "Python package for providing Mozilla's CA Bundle."
@@ -1127,10 +1144,10 @@ python-versions = ">=3.7.1"
 
 [package.dependencies]
 numpy = [
-    {version = ">=1.21.0", markers = "python_version >= \"3.10\""},
     {version = ">=1.17.3", markers = "platform_machine != \"aarch64\" and platform_machine != \"arm64\" and python_version < \"3.10\""},
     {version = ">=1.19.2", markers = "platform_machine == \"aarch64\" and python_version < \"3.10\""},
     {version = ">=1.20.0", markers = "platform_machine == \"arm64\" and python_version < \"3.10\""},
+    {version = ">=1.21.0", markers = "python_version >= \"3.10\""},
 ]
 python-dateutil = ">=2.7.3"
 pytz = ">=2017.3"
@@ -1204,6 +1221,17 @@ description = "The smartest command line arguments parser in the world"
 category = "main"
 optional = false
 python-versions = "*"
+
+[[package]]
+name = "plotly"
+version = "5.10.0"
+description = "An open-source, interactive data visualization library for Python"
+category = "dev"
+optional = false
+python-versions = ">=3.6"
+
+[package.dependencies]
+tenacity = ">=6.2.0"
 
 [[package]]
 name = "pluggy"
@@ -2071,7 +2099,7 @@ cffi = ["cffi (>=1.11)"]
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.7.1,<3.11"
-content-hash = "47f593512b81281692700abcc18e7ade5faddc2741fd701c33896ef78445e8a2"
+content-hash = "9c9d2e4ebf9c760a01677bb0bd05d331a72a4b197b1c47c4dfa3797075fed1ac"
 
 [metadata.files]
 alibi = [
@@ -2176,6 +2204,23 @@ blis = [
 catalogue = [
     {file = "catalogue-1.0.0-py2.py3-none-any.whl", hash = "sha256:584d78e7f4c3c6e2fd498eb56dfc8ef1f4ff738480237de2ccd26cbe2cf47172"},
     {file = "catalogue-1.0.0.tar.gz", hash = "sha256:d74d1d856c6b36a37bf14aa6dbbc27d0582667b7ab979a6108e61a575e8723f5"},
+]
+catboost = [
+    {file = "catboost-1.1-cp310-none-macosx_10_6_universal2.whl", hash = "sha256:b5b47ad4c640e8061e00b9d9e620d47d64c2cdb2a3f34f403290922b71b4d8dc"},
+    {file = "catboost-1.1-cp310-none-manylinux1_x86_64.whl", hash = "sha256:d21afd39b561ff6775bccbd6671ea6dc1f02717c0aa2a0f9276c133b2b98072d"},
+    {file = "catboost-1.1-cp310-none-win_amd64.whl", hash = "sha256:bf4180951cb16845dfe47e781f4888bd6d0f444a2ef174c35ab60bb1dbba8748"},
+    {file = "catboost-1.1-cp36-none-macosx_10_6_universal2.whl", hash = "sha256:9e11b5fc29bd63b9f62b2acd69383b25ac3bebd313af01f5ac22e20ea59e01e3"},
+    {file = "catboost-1.1-cp36-none-manylinux1_x86_64.whl", hash = "sha256:d5a520c4d786c8dbb77ca11000a8c61a075d17b77ccc088f3a7c4fe5ad0de81b"},
+    {file = "catboost-1.1-cp36-none-win_amd64.whl", hash = "sha256:35cf2b88b733394df88254f57a6d09be7a36c41a0385b983db843fe0bd6da7ec"},
+    {file = "catboost-1.1-cp37-none-macosx_10_6_universal2.whl", hash = "sha256:a3f6c7e5704451da0a0e533f7975c52f9c7ef0397ffcf80d351bee1f565c781c"},
+    {file = "catboost-1.1-cp37-none-manylinux1_x86_64.whl", hash = "sha256:9920bc0de4e0bf8b4b2c66a806ab620d1337df87adfc1d26a7e6e95e0574d849"},
+    {file = "catboost-1.1-cp37-none-win_amd64.whl", hash = "sha256:e5c4af0eef17e0fce52810df3500e0e355f1d8495ceb3620bf49957aa592dac8"},
+    {file = "catboost-1.1-cp38-none-macosx_10_6_universal2.whl", hash = "sha256:c58e611c3672ee405f57021d51c074c4c2fc23ced4d5bb0addc8658535fd692e"},
+    {file = "catboost-1.1-cp38-none-manylinux1_x86_64.whl", hash = "sha256:902dce6acdf75abe1551c75fc2f155c528e51083d772b83372dffb9d3804dcb5"},
+    {file = "catboost-1.1-cp38-none-win_amd64.whl", hash = "sha256:6c115768e9e6bd597e8894ecc9b746f076d4204c61f85bf591a66c8119b7b798"},
+    {file = "catboost-1.1-cp39-none-macosx_10_6_universal2.whl", hash = "sha256:e8fd6033676c34b81dd54b5d400f3e718e3a2174214fda927f6918733fec2c63"},
+    {file = "catboost-1.1-cp39-none-manylinux1_x86_64.whl", hash = "sha256:4d12e85632e8e88bb8b5a00e2489160e6abc3ffdf3acf51bc3f6a9dee16cdac8"},
+    {file = "catboost-1.1-cp39-none-win_amd64.whl", hash = "sha256:5fdfe3ec6ffbd28115ae0717fdb35f020647149c85f7fe115d539032af6645cd"},
 ]
 certifi = [
     {file = "certifi-2022.9.24-py3-none-any.whl", hash = "sha256:90c1a32f1d68f940488354e36370f6cca89f0f106db09518524c88d6ed83f382"},
@@ -3114,6 +3159,10 @@ pkgutil_resolve_name = [
 plac = [
     {file = "plac-1.1.3-py2.py3-none-any.whl", hash = "sha256:487e553017d419f35add346c4c09707e52fa53f7e7181ce1098ca27620e9ceee"},
     {file = "plac-1.1.3.tar.gz", hash = "sha256:398cb947c60c4c25e275e1f1dadf027e7096858fb260b8ece3b33bcff90d985f"},
+]
+plotly = [
+    {file = "plotly-5.10.0-py2.py3-none-any.whl", hash = "sha256:989b13825cc974390aa0169479485d9257d37848a47bc63957251f8e1a7046ba"},
+    {file = "plotly-5.10.0.tar.gz", hash = "sha256:4d36d9859b7a153b273562deeed8c292587a472eb1fd57cd4158ec89d9defadb"},
 ]
 pluggy = [
     {file = "pluggy-1.0.0-py2.py3-none-any.whl", hash = "sha256:74134bbf457f031a36d68416e1509f34bd5ccc019f0bcc952c7b909d06b37bd3"},

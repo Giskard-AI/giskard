@@ -35,7 +35,7 @@ public class MLWorkerTunnelService {
     }
 
     @PostConstruct
-    private void init() throws Exception {
+    private void init() {
         if (applicationProperties.isExternalMlWorkerEnabled()) {
             Channel tunnelServerChannel = listenForTunnelConnections(
                 applicationProperties.getExternalMlWorkerEntrypointPort()

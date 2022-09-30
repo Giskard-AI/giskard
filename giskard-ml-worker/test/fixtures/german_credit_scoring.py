@@ -15,6 +15,7 @@ from giskard.ml_worker.core.model import GiskardModel
 from giskard.ml_worker.utils.logging import Timer
 from test import path
 
+logger = logging.getLogger(__name__)
 input_types = {'account_check_status': "category",
                'duration_in_month': "numeric",
                'credit_history': "category",
@@ -40,7 +41,7 @@ input_types = {'account_check_status': "category",
 
 @pytest.fixture()
 def german_credit_data() -> GiskardDataset:
-    logging.info("Reading german_credit_prepared.csv")
+    logger.info("Reading german_credit_prepared.csv")
     return GiskardDataset(
         df=pd.read_csv(path('test_data/german_credit_prepared.csv'),
                        keep_default_na=False,

@@ -12,20 +12,23 @@ import sys
 import tqdm
 from eli5.lime import TextExplainer
 
-from giskard.ml_worker.generated.ml_worker_pb2 import ExplainResponse, ExplainTextResponse, UploadStatus, MLWorkerInfoRequest, \
-    MLWorkerInfo, PlatformInfo
-from giskard.ml_worker.generated.ml_worker_pb2 import RunTestRequest, TestResultMessage, RunModelResponse, RunModelRequest, DataFrame, \
-    DataRow, RunModelForDataFrameResponse, RunModelForDataFrameRequest, ExplainRequest, ExplainTextRequest
 from giskard.ml_worker.core.giskard_dataset import GiskardDataset
-from giskard.ml_worker.core.model_explanation import explain, text_explanation_prediction_wrapper, parse_text_explainer_response
+from giskard.ml_worker.core.model_explanation import explain, text_explanation_prediction_wrapper, \
+    parse_text_explainer_response
 from giskard.ml_worker.exceptions.IllegalArgumentError import IllegalArgumentError
 from giskard.ml_worker.exceptions.giskard_exception import GiskardException
+from giskard.ml_worker.generated.ml_worker_pb2 import EchoMsg, UploadStatusCode, FileUploadRequest
+from giskard.ml_worker.generated.ml_worker_pb2 import ExplainResponse, ExplainTextResponse, UploadStatus, \
+    MLWorkerInfoRequest, \
+    MLWorkerInfo, PlatformInfo
+from giskard.ml_worker.generated.ml_worker_pb2 import RunTestRequest, TestResultMessage, RunModelResponse, \
+    RunModelRequest, DataFrame, \
+    DataRow, RunModelForDataFrameResponse, RunModelForDataFrameRequest, ExplainRequest, ExplainTextRequest
 from giskard.ml_worker.generated.ml_worker_pb2_grpc import MLWorkerServicer
 from giskard.ml_worker.utils.grpc_mapper import deserialize_model, deserialize_dataset
 from giskard.ml_worker.utils.logging import Timer
-from giskard.ml_worker.generated.ml_worker_pb2 import EchoMsg, UploadStatusCode, FileUploadRequest
 
-logger = logging.getLogger()
+logger = logging.getLogger(__name__)
 
 cnt = 1
 
