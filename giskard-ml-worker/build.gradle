@@ -23,7 +23,7 @@ python {
     minPythonVersion = '3.7'
     scope = 'VIRTUALENV'
     installVirtualenv = true
-    pip 'poetry:1.2'
+    pip 'poetry:1.2.1'
     environment "PYTHONPATH", file('giskard/ml_worker/generated')
 }
 
