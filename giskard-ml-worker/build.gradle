@@ -21,6 +21,7 @@ sonarqube {
 python {
     envPath = '.venv'
     minPythonVersion = '3.7'
+    pythonBinary = 'python3'
     scope = 'VIRTUALENV'
     installVirtualenv = true
     pip 'poetry:1.1.13'
