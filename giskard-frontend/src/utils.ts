@@ -50,15 +50,6 @@ export function anonymize(obj: any) {
     }
 }
 
-/** 
- * Returning the n first chars of s ... n last chars of s
- */
-export function abbreviateMiddle(s: string, n: number, max_size: number){
-    if (s.length > max_size)
-        return s.slice (0, n) + '...' +  s.slice(-n)
-    return s
-}
-
 export function isAdmin(store) {
     return readUserProfile(store)?.roles!.includes(Role.ADMIN)
 }
