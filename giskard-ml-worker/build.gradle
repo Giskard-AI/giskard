@@ -80,5 +80,5 @@ idea {
     }
 }
 
-build.dependsOn checkPython, install, generateProto, test
+build.dependsOn install, generateProto, test
 clean.dependsOn cleanup
