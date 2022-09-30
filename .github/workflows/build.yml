@@ -49,12 +49,12 @@ jobs:
           path: ~/.gradle/caches
           key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle') }}
           restore-keys: ${{ runner.os }}-gradle
-      - name: Cache ML Worker dependencies
-        uses: actions/cache@v3
-        with:
-          path: giskard-ml-worker/.venv
-          key: ${{ runner.os }}-ml-worker-${{ hashFiles('giskard-ml-worker/poetry.lock')}}
-          restore-keys: ${{ runner.os }}-ml-worker-${{ hashFiles('giskard-ml-worker/poetry.lock')}}
+#      - name: Cache ML Worker dependencies
+#        uses: actions/cache@v3
+#        with:
+#          path: giskard-ml-worker/.venv
+#          key: ${{ runner.os }}-ml-worker-${{ hashFiles('giskard-ml-worker/poetry.lock')}}
+#          restore-keys: ${{ runner.os }}-ml-worker-${{ hashFiles('giskard-ml-worker/poetry.lock')}}
       - name: Cache Frontend dependencies
         uses: actions/cache@v3
         with:
