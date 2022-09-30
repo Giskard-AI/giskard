@@ -22,7 +22,7 @@ python {
     envPath = '.venv'
     minPythonVersion = '3.7'
     pythonBinary = 'python3'
-    scope = 'USER'
+    scope = 'VIRTUALENV'
     installVirtualenv = true
     pip 'poetry:1.2.1'
     environment "PYTHONPATH", file('generated')
@@ -80,5 +80,5 @@ idea {
     }
 }
 
-build.dependsOn install, generateProto, test
+build.dependsOn checkPython, install, generateProto, test
 clean.dependsOn cleanup
