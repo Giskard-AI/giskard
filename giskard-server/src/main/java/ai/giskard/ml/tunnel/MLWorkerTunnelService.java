@@ -1,14 +1,18 @@
 package ai.giskard.ml.tunnel;
 
 import ai.giskard.config.ApplicationProperties;
-import ai.giskard.ml.tunnel.OuterChannelInitializer.InnerServerStartResponse;
 import com.google.common.eventbus.Subscribe;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelInitializer;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
+import io.netty.handler.logging.ByteBufFormat;
+import io.netty.handler.logging.LogLevel;
+import io.netty.handler.logging.LoggingHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -22,7 +26,6 @@ import java.util.Optional;
 public class MLWorkerTunnelService {
     private static final Logger log = LoggerFactory.getLogger(MLWorkerTunnelService.class);
     private final ApplicationProperties applicationProperties;
-    private Channel tunnelServerChannel;
 
     public Optional<Integer> tunnelPort = Optional.empty();
 
@@ -34,24 +37,36 @@ public class MLWorkerTunnelService {
     @PostConstruct
     private void init() throws Exception {
         if (applicationProperties.isExternalMlWorkerEnabled()) {
-            this.tunnelServerChannel = listenForTunnelConnections(
+            Channel tunnelServerChannel = listenForTunnelConnections(
                 applicationProperties.getExternalMlWorkerEntrypointPort()
             );
         }
     }
 
-
     private Channel listenForTunnelConnections(int externalMlWorkerEntrypointPort) throws Exception {
         EventLoopGroup group = new NioEventLoopGroup();
         ServerBootstrap b = new ServerBootstrap();
-        OuterChannelInitializer initializer = new OuterChannelInitializer();
+
+        OuterChannelHandler outerChannelHandler = new OuterChannelHandler();
         b.group(group)
             .channel(NioServerSocketChannel.class)
             .localAddress(new InetSocketAddress(externalMlWorkerEntrypointPort))
-            .childHandler(initializer);
-        initializer.eventBus.register(new EventListener() {
+            .childHandler(new ChannelInitializer<SocketChannel>() {
+
+                @Override
+                protected void initChannel(SocketChannel outerChannel) {
+                    log.info("New outer connection, outer channel id {}", outerChannel.id());
+
+                    outerChannel.pipeline().addLast(
+                        new LoggingHandler("Outer channel", LogLevel.DEBUG, ByteBufFormat.SIMPLE),
+                        outerChannelHandler
+                    );
+                }
+            });
+
+        outerChannelHandler.eventBus.register(new EventListener() {
             @Subscribe
-            public void onInnerServerStarted(Optional<InnerServerStartResponse> event) {
+            public void onInnerServerStarted(Optional<OuterChannelHandler.InnerServerStartResponse> event) {
                 if (event.isEmpty()) {
                     tunnelPort = Optional.empty();
                 } else {
@@ -59,8 +74,11 @@ public class MLWorkerTunnelService {
                 }
             }
         });
-        ChannelFuture f = b.bind().sync();
-        log.info("Listening for ML Worker tunnel connections on port {}", externalMlWorkerEntrypointPort);
+        ChannelFuture f = b.bind().addListener(future -> {
+            if (future.isSuccess()) {
+                log.info("Listening for ML Worker tunnel connections on port {}", externalMlWorkerEntrypointPort);
+            }
+        });
         f.channel().closeFuture().addListener(future -> {
             log.info("Shutting down ML Worker tunnel");
             group.shutdownGracefully();
