@@ -8,6 +8,8 @@ import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
+import io.netty.handler.logging.ByteBufFormat;
+import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,7 +56,16 @@ public class OuterChannelHandler extends ChannelInboundHandlerAdapter {
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
         log.warn("Caught exception in outer server handler", cause);
-        ctx.close();
+        Channel outerChannel = ctx.channel();
+        ctx.close().addListener(future -> log.info("Service channel connection is lost: {}", outerChannel.id()));
+
+        if (innerChannelIdByOuterChannel.containsKey(outerChannel.id())) {
+            Channel innerChannel = innerChannelById.get(innerChannelIdByOuterChannel.get(outerChannel.id()));
+            if (innerChannel != null) {
+                innerChannel.close().addListener(future ->
+                    log.info("Closed inner channel {} linked to closed outer channel {}", outerChannel.id(), innerChannel.id()));
+            }
+        }
     }
 
     @Override
@@ -64,10 +75,12 @@ public class OuterChannelHandler extends ChannelInboundHandlerAdapter {
         log.debug("Outer: Writing {} bytes from {}", in.readableBytes(), outerChannel.id());
         while (in.readableBytes() > 0) {
             if (innerChannelIdByOuterChannel.containsKey(outerChannel.id())) {
-                Channel innerChannel = innerChannelById.get(innerChannelIdByOuterChannel.get(outerChannel.id()));
-                log.debug("Outer->Inner: Writing {} bytes from {} to {}", in.readableBytes(), outerChannel.id(), innerChannel.id());
                 ByteBuf data = in.readBytes(in.readableBytes());
-                innerChannel.writeAndFlush(data);
+                Channel innerChannel = innerChannelById.get(innerChannelIdByOuterChannel.get(outerChannel.id()));
+                if (innerChannel != null) {
+                    log.debug("Outer->Inner: Writing {} bytes from {} to {}", in.readableBytes(), outerChannel.id(), innerChannel.id());
+                    innerChannel.writeAndFlush(data);
+                }
             } else {
                 // Giskard service messages have the following structure:
                 // <message length = 4B><message type = 1B><optional payload = [message length - 1]B>
@@ -115,7 +128,7 @@ public class OuterChannelHandler extends ChannelInboundHandlerAdapter {
                 protected void initChannel(Channel ch) {
                     ChannelPipeline pipeline = ch.pipeline();
                     pipeline.addLast(
-                        new LoggingHandler("Inner"),
+                        new LoggingHandler("Inner channel", LogLevel.DEBUG, ByteBufFormat.SIMPLE),
                         new InnerChannelHandler(
                             serviceOuterChannel,
                             outerChannelByInnerChannelId,
