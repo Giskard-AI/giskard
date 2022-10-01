@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 
 import static ai.giskard.ml.tunnel.ServiceChannelCommand.REGISTER_CLIENT_CHANNEL;
 
@@ -59,6 +60,9 @@ public class InnerChannelHandler extends ChannelInboundHandlerAdapter {
 
         innerChannelById.put(innerChannelShortName, innerChannel);
         innerChannelFuture.set(innerChannel);
+        innerChannel.closeFuture().addListener(future -> {
+            innerChannelById.remove(innerChannelShortName);
+        });
 
         SettableFuture<Channel> outerChannelFuture = SettableFuture.create();
         outerChannelByInnerChannelId.put(innerChannelShortName, outerChannelFuture);
@@ -86,8 +90,17 @@ public class InnerChannelHandler extends ChannelInboundHandlerAdapter {
     }
 
     @Override
-    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
-        log.error("Caught exception in inner server handler", cause);
-        ctx.close();
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws ExecutionException, InterruptedException {
+        log.warn("Caught exception in inner server handler", cause);
+        Channel outerChannel = outerChannelByInnerChannelId.get(ctx.channel().id().asShortText()).get();
+        ctx.close().addListener(future ->
+            log.info("Inner channel is closed by exception {}: {}", ctx.channel().id(), cause.getMessage())
+        );
+
+        if (outerChannel.isOpen()) {
+            outerChannel.close().addListener(future ->
+                log.info("Outer channel {} is closed due to exception in inner channel {}: {}",
+                    outerChannel.id(), ctx.channel().id(), cause.getMessage()));
+        }
     }
 }
