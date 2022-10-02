@@ -23,6 +23,7 @@ shap = "^0.40.0"
 zstandard = "^0.15.2"
 numpy = "^1.21.6"
 tenacity = "^8.1.0"
+python-daemon = "^2.3.1"
 
 [tool.poetry.group.dev.dependencies]
 setuptools = "^65.4.1"

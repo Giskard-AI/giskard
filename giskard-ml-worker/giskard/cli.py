@@ -1,54 +1,20 @@
 import asyncio
 import logging
+import os
 
 import click
-import grpc
+import lockfile
+import psutil
 from click import STRING, INT
+from lockfile.pidlockfile import PIDLockFile, read_pid_from_pidfile, remove_existing_pidfile
 
-from giskard.settings import Settings
+from giskard.cli_utils import remove_stale_pid_file, create_pid_file_path, run_daemon
+from giskard.ml_worker.ml_worker import start_ml_worker
+from giskard.settings import run_dir
 
-settings = Settings()
+run_dir.mkdir(parents=True, exist_ok=True)
 
 logger = logging.getLogger(__name__)
-
-
-async def start_grpc_server(remote=False):
-    from giskard.ml_worker.generated.ml_worker_pb2_grpc import add_MLWorkerServicer_to_server
-    from giskard.ml_worker.server.ml_worker_service import MLWorkerServiceImpl
-    from giskard.ml_worker.utils.network import find_free_port
-    from giskard.settings import Settings
-
-    settings = Settings()
-    server = grpc.aio.server(
-        # interceptors=[ErrorInterceptor()],
-        options=[
-            ('grpc.max_send_message_length', settings.max_send_message_length_mb * 1024 ** 2),
-            ('grpc.max_receive_message_length', settings.max_receive_message_length_mb * 1024 ** 2),
-        ]
-    )
-
-    port = settings.port or find_free_port()
-    add_MLWorkerServicer_to_server(MLWorkerServiceImpl(port, remote), server)
-    server.add_insecure_port(f'{settings.host}:{port}')
-    await server.start()
-    logger.info(f"Started ML Worker server on port {port}")
-    logger.debug(f"ML Worker settings: {settings}")
-    return server, port
-
-
-async def start(remote_host=None, remote_port=None):
-    from giskard.ml_worker.bridge.ml_worker_bridge import MLWorkerBridge
-
-    is_remote = remote_host is not None and remote_port is not None
-    tasks = []
-    server, grpc_server_port = await start_grpc_server(is_remote)
-    if is_remote:
-        logger.info("Remote server host and port are specified, connecting as an external ML Worker")
-        tunnel = MLWorkerBridge(grpc_server_port, remote_host, remote_port)
-        tasks.append(asyncio.create_task(tunnel.start()))
-
-    tasks.append(asyncio.create_task(server.wait_for_termination()))
-    await asyncio.wait(tasks)
 
 
 @click.group("cli")
@@ -56,28 +22,88 @@ def cli():
     pass
 
 
-@cli.group("worker", help="ML Worker management")
-def worker() -> None:
-    pass
-
-
-def set_verbose(ctx, param, value):
+def set_verbose(_ctx, _param, value):
     if value:
         logging.getLogger().setLevel(logging.DEBUG)
+
+
+@cli.group("worker", help="ML Worker management")
+@click.option('--verbose', '-v', is_flag=True, callback=set_verbose, default=False,
+              expose_value=False, is_eager=True, help='Enable verbose logging')
+def worker() -> None:
+    pass
 
 
 @worker.command("start", help="Start ML Worker", context_settings={'show_default': True})
 @click.option('--host', '-h', type=STRING, help='Remote Giskard host address to connect to')
 @click.option('--port', '-p', type=INT, default=40051,
               help='Remote Giskard port accepting external ML Worker connections')
-@click.option('--verbose', '-v', is_flag=True, callback=set_verbose, default=False,
-              expose_value=False, is_eager=True, help='Enable verbose logging')
-def start_command(host, port):
-    logger.info("Starting ML Worker")
+@click.option('--daemon', '-d', 'is_daemon', is_flag=True, default=False,
+              help='Should ML Worker be started as a Daemon in a background')
+def start_command(host, port, is_daemon):
+    logger.info("Starting ML Worker" + (" as daemon" if is_daemon else ""))
+    pid_file_path = create_pid_file_path(host, port)
+    pid_file = PIDLockFile(pid_file_path)
+    remove_stale_pid_file(pid_file)
+
     try:
-        asyncio.get_event_loop().run_until_complete(start(host, port))
+        pid_file.acquire()
+        if is_daemon:
+            # Releasing the lock because it will be re-acquired by a daemon process
+            pid_file.release()
+            run_daemon(host, port)
+        else:
+            asyncio.get_event_loop().run_until_complete(start_ml_worker(host, port))
     except KeyboardInterrupt:
         logger.info("Exiting")
+    except lockfile.AlreadyLocked:
+        existing_pid = read_pid_from_pidfile(pid_file_path)
+        logger.warning(
+            f"Another ML Worker for {host or ''}:{port or ''} is already running with PID: {existing_pid}. Not starting a new one.")
+    finally:
+        if pid_file.i_am_locking():
+            pid_file.release()
+
+
+@worker.command("stop", help="Stop ML Worker Daemon", context_settings={'show_default': True})
+@click.option('--host', '-h', type=STRING, help='Remote Giskard host Giskard is connected to')
+@click.option('--port', '-p', type=INT, default=40051, help='Remote Giskard port')
+@click.option('--all', '-a', 'stop_all', is_flag=True, default=False, help='Stop all running ML Workers')
+def stop_command(host, port, stop_all):
+    import re
+    if stop_all:
+        for pid_fname in os.listdir(run_dir):
+            if not re.match(r'^ml-worker-.*\.pid$', pid_fname):
+                continue
+            _stop_pid_fname(pid_fname)
+    else:
+        _find_and_stop(host, port)
+
+
+def _stop_pid_fname(pid_fname):
+    pid_file_path = str(run_dir / pid_fname)
+    remove_stale_pid_file(PIDLockFile(pid_file_path))
+    pid = read_pid_from_pidfile(pid_file_path)
+    if pid:
+        logger.info(f"Stopping ML Worker Daemon by PID: {pid}")
+        worker_process = psutil.Process(pid)
+        worker_process.terminate()
+        logger.info(f"Stopped")
+    remove_existing_pidfile(pid_file_path)
+
+
+def _find_and_stop(host, port):
+    pid_file_path = str(create_pid_file_path(host, port))
+    remove_stale_pid_file(PIDLockFile(pid_file_path))
+    pid = read_pid_from_pidfile(pid_file_path)
+    logger.info("Stopping ML Worker Daemon")
+    if pid:
+        worker_process = psutil.Process(pid)
+        worker_process.terminate()
+        logger.info(f"Stopped ML Worker for {host or ''}:{port or ''}")
+    else:
+        logger.info(f"ML Worker is not running for {host or ''}:{port or ''}")
+    remove_existing_pidfile(pid_file_path)
 
 
 if __name__ == '__main__':

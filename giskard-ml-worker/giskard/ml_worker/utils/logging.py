@@ -6,14 +6,19 @@ from timeit import default_timer
 
 import sys
 
+from giskard.settings import settings
+
 logger = logging.getLogger(__name__)
 
 
 def configure_logging():
+    stdout_handler = logging.StreamHandler(stream=sys.stdout)
+
     logging.basicConfig(
-        format="%(asctime)s %(name)-12s %(levelname)-8s %(message)s"
+        level=settings.loglevel,
+        format="%(asctime)s pid:%(process)d %(name)-12s %(levelname)-8s %(message)s",
+        handlers=[stdout_handler]
     )
-    logging.getLogger().setLevel(os.environ.get("GSK_LOGLEVEL", "INFO"))
 
 
 def resolve(filename):
