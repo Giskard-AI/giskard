@@ -96,10 +96,9 @@ def _stop_pid_fname(pid_fname):
     remove_stale_pid_file(PIDLockFile(pid_file_path))
     pid = read_pid_from_pidfile(pid_file_path)
     if pid:
-        logger.info(f"Stopping ML Worker Daemon by PID: {pid}")
         worker_process = psutil.Process(pid)
         worker_process.terminate()
-        logger.info(f"Stopped")
+        logger.info(f"Stopped ML Worker Daemon by PID: {pid}")
     remove_existing_pidfile(pid_file_path)
 
 
