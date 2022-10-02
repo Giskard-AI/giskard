@@ -34,13 +34,24 @@ def worker() -> None:
     pass
 
 
-@worker.command("start", help="Start ML Worker", context_settings={'show_default': True})
+@worker.command("start", context_settings={'show_default': True})
 @click.option('--host', '-h', type=STRING, help='Remote Giskard host address to connect to')
 @click.option('--port', '-p', type=INT, default=40051,
               help='Remote Giskard port accepting external ML Worker connections')
 @click.option('--daemon', '-d', 'is_daemon', is_flag=True, default=False,
               help='Should ML Worker be started as a Daemon in a background')
 def start_command(host, port, is_daemon):
+    """\b
+    Start ML Worker.
+
+    ML Worker can be started in 2 modes:
+
+    - internal: used by default by an ML Worker shipped by Giskard. ML Worker acts as a server that Giskard connects to.
+
+    - external: ML Worker acts as a client and should connect to a running Giskard instance
+        by specifying this instance's host and port.
+    """
+
     logger.info("Starting ML Worker" + (" as daemon" if is_daemon else ""))
     pid_file_path = create_pid_file_path(host, port)
     pid_file = PIDLockFile(pid_file_path)
@@ -65,7 +76,7 @@ def start_command(host, port, is_daemon):
             pid_file.release()
 
 
-@worker.command("stop", help="Stop ML Worker Daemon", context_settings={'show_default': True})
+@worker.command("stop", help="Stop running ML Workers", context_settings={'show_default': True})
 @click.option('--host', '-h', type=STRING, help='Remote Giskard host Giskard is connected to')
 @click.option('--port', '-p', type=INT, default=40051, help='Remote Giskard port')
 @click.option('--all', '-a', 'stop_all', is_flag=True, default=False, help='Stop all running ML Workers')
