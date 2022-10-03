@@ -46,7 +46,7 @@ task generateProto(type: PythonTask) {
 
     def out = 'giskard/ml_worker/generated'
     def fout = file(out)
-    def pdir = file('ml-worker-proto/proto')
+    def pdir = file('../giskard-common/proto')
 
     doFirst {
         mkdir fout
