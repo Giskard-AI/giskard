@@ -21,8 +21,8 @@ def remove_stale_pid_file(pid_file):
 
 
 def create_pid_file_path(host, port):
-    hash = hashlib.sha1(f"{host}{port}{sys.executable}".encode("UTF-8")).hexdigest()
-    return run_dir / f"ml-worker-{hash}.pid"
+    hash_value = hashlib.sha1(f"{host}{port}{sys.executable}".encode("UTF-8")).hexdigest()
+    return run_dir / f"ml-worker-{hash_value}.pid"
 
 
 def run_daemon(host, port):

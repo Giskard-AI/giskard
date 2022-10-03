@@ -17,28 +17,32 @@ run_dir.mkdir(parents=True, exist_ok=True)
 logger = logging.getLogger(__name__)
 
 
-@click.group("cli")
-def cli():
-    pass
-
-
 def set_verbose(_ctx, _param, value):
     if value:
         logging.getLogger().setLevel(logging.DEBUG)
 
 
+@click.group("cli")
+def cli():
+    """
+        Giskard Command Line
+    """
+
+
 @cli.group("worker", help="ML Worker management", context_settings={'show_default': True})
 def worker() -> None:
-    pass
+    """
+        ML Worker management
+    """
 
 
-def start_stop_options(function):
-    function = click.option('--host', '-h', type=STRING, help='Remote Giskard host address to connect to')(function)
-    function = click.option('--port', '-p', type=INT, default=40051,
-                            help='Remote Giskard port accepting external ML Worker connections')(function)
-    function = click.option('--verbose', '-v', is_flag=True, callback=set_verbose, default=False,
-                            expose_value=False, is_eager=True, help='Enable verbose logging')(function)
-    return function
+def start_stop_options(fn):
+    fn = click.option('--host', '-h', type=STRING, help='Remote Giskard host address to connect to')(fn)
+    fn = click.option('--port', '-p', type=INT, default=40051,
+                      help='Remote Giskard port accepting external ML Worker connections')(fn)
+    fn = click.option('--verbose', '-v', is_flag=True, callback=set_verbose, default=False,
+                      expose_value=False, is_eager=True, help='Enable verbose logging')(fn)
+    return fn
 
 
 @worker.command("start")
