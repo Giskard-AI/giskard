@@ -27,17 +27,22 @@ def set_verbose(_ctx, _param, value):
         logging.getLogger().setLevel(logging.DEBUG)
 
 
-@cli.group("worker", help="ML Worker management")
-@click.option('--verbose', '-v', is_flag=True, callback=set_verbose, default=False,
-              expose_value=False, is_eager=True, help='Enable verbose logging')
+@cli.group("worker", help="ML Worker management", context_settings={'show_default': True})
 def worker() -> None:
     pass
 
 
-@worker.command("start", context_settings={'show_default': True})
-@click.option('--host', '-h', type=STRING, help='Remote Giskard host address to connect to')
-@click.option('--port', '-p', type=INT, default=40051,
-              help='Remote Giskard port accepting external ML Worker connections')
+def start_stop_options(function):
+    function = click.option('--host', '-h', type=STRING, help='Remote Giskard host address to connect to')(function)
+    function = click.option('--port', '-p', type=INT, default=40051,
+                            help='Remote Giskard port accepting external ML Worker connections')(function)
+    function = click.option('--verbose', '-v', is_flag=True, callback=set_verbose, default=False,
+                            expose_value=False, is_eager=True, help='Enable verbose logging')(function)
+    return function
+
+
+@worker.command("start")
+@start_stop_options
 @click.option('--daemon', '-d', 'is_daemon', is_flag=True, default=False,
               help='Should ML Worker be started as a Daemon in a background')
 def start_command(host, port, is_daemon):
@@ -52,11 +57,14 @@ def start_command(host, port, is_daemon):
         by specifying this instance's host and port.
     """
 
+    _start_command(host, port, is_daemon)
+
+
+def _start_command(host, port, is_daemon):
     logger.info("Starting ML Worker" + (" as daemon" if is_daemon else ""))
     pid_file_path = create_pid_file_path(host, port)
     pid_file = PIDLockFile(pid_file_path)
     remove_stale_pid_file(pid_file)
-
     try:
         pid_file.acquire()
         if is_daemon:
@@ -76,9 +84,8 @@ def start_command(host, port, is_daemon):
             pid_file.release()
 
 
-@worker.command("stop", help="Stop running ML Workers", context_settings={'show_default': True})
-@click.option('--host', '-h', type=STRING, help='Remote Giskard host Giskard is connected to')
-@click.option('--port', '-p', type=INT, default=40051, help='Remote Giskard port')
+@worker.command("stop", help="Stop running ML Workers")
+@start_stop_options
 @click.option('--all', '-a', 'stop_all', is_flag=True, default=False, help='Stop all running ML Workers')
 def stop_command(host, port, stop_all):
     import re
@@ -89,6 +96,13 @@ def stop_command(host, port, stop_all):
             _stop_pid_fname(pid_fname)
     else:
         _find_and_stop(host, port)
+
+
+@worker.command("restart", help="Restart ML Worker")
+@start_stop_options
+def restart_command(host, port):
+    _find_and_stop(host, port)
+    _start_command(host, port, True)
 
 
 def _stop_pid_fname(pid_fname):

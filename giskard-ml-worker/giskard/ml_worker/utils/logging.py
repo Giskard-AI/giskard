@@ -1,5 +1,4 @@
 import logging
-import os
 from datetime import timedelta
 from functools import wraps
 from timeit import default_timer
@@ -19,14 +18,6 @@ def configure_logging():
         format="%(asctime)s pid:%(process)d %(name)-12s %(levelname)-8s %(message)s",
         handlers=[stdout_handler]
     )
-
-
-def resolve(filename):
-    for directory in sys.path:
-        path = os.path.join(directory, filename)
-        print(path)
-        if os.path.isfile(path):
-            return path
 
 
 class Timer:
