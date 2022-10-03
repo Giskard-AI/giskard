@@ -69,7 +69,7 @@ RUN poetry install
 WORKDIR /app
 
 RUN mkdir "generated"
-COPY ./giskard-common/proto proto
+COPY ./ml-worker-proto/proto proto
 
 RUN python3 -m grpc_tools.protoc \
       -Iproto \
