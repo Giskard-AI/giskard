@@ -102,13 +102,14 @@ class MLWorkerServiceImpl(MLWorkerServicer):
         except ValueError as e:
             if 'unsupported pickle protocol' in str(e):
                 raise ValueError('Unable to unpickle object, '
-                                 'check that Python version of client code is the same as in ML Worker.'
+                                 'Make sure that Python version of client code is the same as the Python version in ML Worker.'
+                                 'To change Python version, please refer to https://docs.giskard.ai/start/guides/configuration'
                                  f'\nOriginal Error: {e}') from e
             raise e
         except ModuleNotFoundError as e:
             raise GiskardException(f"Failed to import '{e.name}'. "
                                    f"Make sure it's installed in the ML Worker environment."
-                                   "To install it, refer to https://docs.giskard.ai/") from e
+                                   "To install it, refer to https://docs.giskard.ai/start/guides/configuration") from e
         prediction_results = model.run_predict(dataset)
 
         if model.model_type == "classification":
