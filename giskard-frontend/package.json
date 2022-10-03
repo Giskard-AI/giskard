@@ -48,7 +48,7 @@
     "@types/vue-moment": "^4.0.3",
     "@typescript-eslint/eslint-plugin": "^5.31.0",
     "@typescript-eslint/parser": "^5.27.1",
-    "@vue/cli-plugin-pwa": "^5.0.4",
+    "@vue/cli-plugin-pwa": "^5.0.8",
     "@vue/cli-plugin-typescript": "^5.0.8",
     "@vue/cli-service": "^5.0.8",
     "@vue/composition-api": "^1.6.2",
