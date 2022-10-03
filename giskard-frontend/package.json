@@ -30,7 +30,7 @@
     "rrweb-snapshot": "^1.1.14",
     "typesafe-vuex": "^3.2.2",
     "vee-validate": "^3.4.13",
-    "vue": "^2.7.8",
+    "vue": "^2.7.10",
     "vue-class-component": "^7.2.6",
     "vue-echarts": "^6.2.3",
     "vue-moment": "^4.1.0",
@@ -61,7 +61,7 @@
     "sass-loader": "^13.0.0",
     "typescript": "^4.7.4",
     "vue-cli-plugin-vuetify": "^2.5.1",
-    "vue-template-compiler": "^2.7.8",
+    "vue-template-compiler": "^2.7.10",
     "vuetify-loader": "^1.9.2"
   },
   "postcss": {
