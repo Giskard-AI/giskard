@@ -9,9 +9,8 @@ COPY build.gradle .
 # Copying .git to make gradle-git-properties gradle plugin work
 COPY .git .git
 
-COPY giskard-common giskard-common
-
 WORKDIR /workspace/giskard-server
+COPY giskard-server/ml-worker-proto ml-worker-proto
 COPY giskard-server/gradle gradle
 COPY giskard-server/src src
 COPY giskard-server/build.gradle .
