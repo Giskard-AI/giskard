@@ -69,8 +69,6 @@ public class TestService {
         Dataset referenceDS = test.getTestSuite().getReferenceDataset();
         Dataset actualDS = test.getTestSuite().getActualDataset();
         try (MLWorkerClient client = mlWorkerService.createClient()) {
-
-
             TestResultMessage testResult = client.runTest(
                 model,
                 createDSStream(referenceDS),
