@@ -1,29 +1,36 @@
 package ai.giskard.web.dto.config;
 
 import com.dataiku.j2ts.annotations.UIModel;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.util.Map;
 
-@NoArgsConstructor
 @UIModel
+@Getter
+@Setter
+@NoArgsConstructor
 public class MLWorkerInfoDTO {
+    @Getter
+    @Setter
     @NoArgsConstructor
     public static class PlatformInfoDTO {
-        public String machine;
-        public String node;
-        public String processor;
-        public String release;
-        public String system;
-        public String version;
+        private String machine;
+        private String node;
+        private String processor;
+        private String release;
+        private String system;
+        private String version;
     }
 
-    public PlatformInfoDTO platform;
-    public String interpreter;
-    public String interpreterVersion;
-    public Map<String, String> installedPackages;
-    public int internalGrpcPort;
-    public boolean isRemote;
-    public int pid;
-    public long processStartTime;
+    private PlatformInfoDTO platform;
+    private String interpreter;
+    private String interpreterVersion;
+    private Map<String, String> installedPackages;
+    private int internalGrpcPort;
+    private boolean isRemote;
+    private int pid;
+    private long processStartTime;
 }

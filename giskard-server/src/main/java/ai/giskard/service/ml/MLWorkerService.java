@@ -32,8 +32,8 @@ public class MLWorkerService {
     }
 
     private int getMlWorkerPort() {
-        if (applicationProperties.isExternalMlWorkerEnabled() && mlWorkerTunnelService.tunnelPort.isPresent()) {
-            return mlWorkerTunnelService.tunnelPort.get();
+        if (applicationProperties.isExternalMlWorkerEnabled() && mlWorkerTunnelService.getTunnelPort().isPresent()) {
+            return mlWorkerTunnelService.getTunnelPort().get();
         }
         return applicationProperties.getMlWorkerPort();
     }

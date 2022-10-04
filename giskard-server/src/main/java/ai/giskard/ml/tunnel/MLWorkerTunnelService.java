@@ -13,6 +13,7 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.logging.ByteBufFormat;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
+import lombok.Getter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -27,7 +28,8 @@ public class MLWorkerTunnelService {
     private static final Logger log = LoggerFactory.getLogger(MLWorkerTunnelService.class);
     private final ApplicationProperties applicationProperties;
 
-    public Optional<Integer> tunnelPort = Optional.empty();
+    @Getter
+    private Optional<Integer> tunnelPort = Optional.empty();
 
 
     public MLWorkerTunnelService(ApplicationProperties applicationProperties) {
@@ -37,9 +39,7 @@ public class MLWorkerTunnelService {
     @PostConstruct
     private void init() {
         if (applicationProperties.isExternalMlWorkerEnabled()) {
-            Channel tunnelServerChannel = listenForTunnelConnections(
-                applicationProperties.getExternalMlWorkerEntrypointPort()
-            );
+            listenForTunnelConnections(applicationProperties.getExternalMlWorkerEntrypointPort());
         }
     }
 
@@ -65,7 +65,7 @@ public class MLWorkerTunnelService {
             .localAddress(new InetSocketAddress(externalMlWorkerEntrypointPort))
             .childHandler(outerChannelInitializer);
 
-        outerChannelHandler.eventBus.register(new EventListener() {
+        outerChannelHandler.getEventBus().register(new EventListener() {
             @Subscribe
             public void onInnerServerStarted(Optional<OuterChannelHandler.InnerServerStartResponse> event) {
                 if (event.isEmpty()) {

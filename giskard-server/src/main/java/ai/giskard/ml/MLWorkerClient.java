@@ -6,7 +6,6 @@ import ai.giskard.domain.ml.Dataset;
 import ai.giskard.domain.ml.ProjectModel;
 import ai.giskard.domain.ml.testing.Test;
 import ai.giskard.exception.MLWorkerRuntimeException;
-import ai.giskard.service.FileLocationService;
 import ai.giskard.service.GRPCMapper;
 import ai.giskard.worker.*;
 import com.google.common.collect.Maps;

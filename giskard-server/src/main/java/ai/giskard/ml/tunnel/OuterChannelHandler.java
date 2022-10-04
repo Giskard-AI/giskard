@@ -11,6 +11,7 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.logging.ByteBufFormat;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
+import lombok.Getter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.SocketUtils;
@@ -32,7 +33,9 @@ public class OuterChannelHandler extends ChannelInboundHandlerAdapter {
     private final Map<String, Channel> innerChannelById = new HashMap<>();
 
     private final Map<String, SettableFuture<Channel>> outerChannelByInnerChannelId = new HashMap<>();
-    public EventBus eventBus = new EventBus();
+
+    @Getter
+    private EventBus eventBus = new EventBus();
 
 
     private void initInnerServer(SocketChannel outerChannel) {
@@ -75,42 +78,54 @@ public class OuterChannelHandler extends ChannelInboundHandlerAdapter {
         log.debug("Outer: Writing {} bytes from {}", in.readableBytes(), outerChannel.id());
         while (in.readableBytes() > 0) {
             if (innerChannelIdByOuterChannel.containsKey(outerChannel.id())) {
-                ByteBuf data = in.readBytes(in.readableBytes());
-                Channel innerChannel = innerChannelById.get(innerChannelIdByOuterChannel.get(outerChannel.id()));
-                if (innerChannel != null) {
-                    log.debug("Outer->Inner: Writing {} bytes from {} to {}", in.readableBytes(), outerChannel.id(), innerChannel.id());
-                    innerChannel.writeAndFlush(data);
-                }
+                passDataDirectly(in, outerChannel);
             } else {
-                // Giskard service messages have the following structure:
-                // <message length = 4B><message type = 1B><optional payload = [message length - 1]B>
-                if (in.readableBytes() < 5) {
-                    continue;
-                }
-                int payloadLength = in.readInt() - 1;
-                byte messageType = in.readByte();
-                ByteBuf payload = null;
-                if (payloadLength > 0 && in.readableBytes() >= payloadLength) {
-                    payload = in.readBytes(payloadLength);
-                }
-
-                switch (messageType) {
-                    case START_INNER_SERVER -> {
-                        serviceChannelsIds.add(outerChannel.id());
-                        initInnerServer(outerChannel);
-                    }
-                    case REGISTER_CLIENT_CHANNEL -> {
-                        assert payload != null;
-                        String innerChannelId = payload.toString(StandardCharsets.UTF_8);
-                        outerChannelByInnerChannelId.get(innerChannelId).set(ctx.channel());
-                        innerChannelIdByOuterChannel.put(outerChannel.id(), innerChannelId);
-                        log.info("Linked outer channel {} with inner channel {}", ctx.channel().id(), innerChannelId);
-                    }
-                    default -> throw new IllegalArgumentException("Unknown command");
-                }
+                handleServiceChannelInput(ctx, outerChannel, in);
             }
         }
 
+    }
+
+    private void handleServiceChannelInput(ChannelHandlerContext ctx, SocketChannel outerChannel, ByteBuf in) {
+        // Giskard service messages have the following structure:
+        // <message length = 4B><message type = 1B><optional payload = [message length - 1]B>
+        if (in.readableBytes() < 5) {
+            return;
+        }
+        int payloadLength = in.readInt() - 1;
+        byte messageType = in.readByte();
+        ByteBuf payload = null;
+        if (payloadLength > 0 && in.readableBytes() >= payloadLength) {
+            payload = in.readBytes(payloadLength);
+        }
+
+        handleServiceCommand(outerChannel, messageType, payload);
+    }
+
+    private void handleServiceCommand(SocketChannel outerChannel, byte messageType, ByteBuf payload) {
+        switch (messageType) {
+            case START_INNER_SERVER -> {
+                serviceChannelsIds.add(outerChannel.id());
+                initInnerServer(outerChannel);
+            }
+            case REGISTER_CLIENT_CHANNEL -> {
+                assert payload != null;
+                String innerChannelId = payload.toString(StandardCharsets.UTF_8);
+                outerChannelByInnerChannelId.get(innerChannelId).set(outerChannel);
+                innerChannelIdByOuterChannel.put(outerChannel.id(), innerChannelId);
+                log.info("Linked outer channel {} with inner channel {}", outerChannel.id(), innerChannelId);
+            }
+            default -> throw new IllegalArgumentException("Unknown command");
+        }
+    }
+
+    private void passDataDirectly(ByteBuf in, SocketChannel outerChannel) {
+        ByteBuf data = in.readBytes(in.readableBytes());
+        Channel innerChannel = innerChannelById.get(innerChannelIdByOuterChannel.get(outerChannel.id()));
+        if (innerChannel != null) {
+            log.debug("Outer->Inner: Writing {} bytes from {} to {}", in.readableBytes(), outerChannel.id(), innerChannel.id());
+            innerChannel.writeAndFlush(data);
+        }
     }
 
 
