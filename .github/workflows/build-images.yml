@@ -48,6 +48,7 @@ jobs:
         docker-compose -f docker-compose.yml -f docker-compose.dev.yml push
 
     - name: Invoke deployment hook
+      if: ${{ steps.extract_branch.outputs.branch == 'main' }}
       run: |
         curl -L --silent --max-time 900 ${{ secrets.TEST_SERVER_WEBHOOK_URL_BASE }}/redeploy-dev 
 
