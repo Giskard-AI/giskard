@@ -1,6 +1,7 @@
 package ai.giskard.web.dto.config;
 
 import com.dataiku.j2ts.annotations.UIModel;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -29,6 +30,7 @@ public class MLWorkerInfoDTO {
     private String interpreterVersion;
     private Map<String, String> installedPackages;
     private int internalGrpcPort;
+    @JsonProperty("isRemote")
     private boolean isRemote;
     private int pid;
     private long processStartTime;
