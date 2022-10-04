@@ -12,8 +12,7 @@ services:
 
   ml-worker:
     image: '${DOCKER_REGISTRY}/ml-worker:${TAG-latest}'
-    environment:
-      - GSK_ENVIRONMENT=prod
+    hostname: giskard-embedded-docker-worker
 
   backend:
     image: '${DOCKER_REGISTRY}/backend:${TAG-latest}'
