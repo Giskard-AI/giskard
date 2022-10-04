@@ -45,7 +45,7 @@ public class MLWorkerService {
     }
 
     private String getMlWorkerHost() {
-        if (applicationProperties.isExternalMlWorkerEnabled()) {
+        if (applicationProperties.isExternalMlWorkerEnabled() && mlWorkerTunnelService.getTunnelPort().isPresent()) {
             return "localhost";
         }
         return applicationProperties.getMlWorkerHost();
