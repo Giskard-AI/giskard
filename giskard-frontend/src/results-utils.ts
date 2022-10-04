@@ -1,9 +1,9 @@
 /** 
  * If the length of s is superior at max_size, split the string into
  */
- export function abbreviateMiddle(s: string, max_length: number){
-    if (max_length < 6) return s;
-    let n = (max_length / 2) - 2 ;
+export function abbreviateMiddle(s: string, max_length: number){
+    max_length = Math.max(max_length, 5);
+    let n = (max_length / 2) - 1 ;
     if (s.length > max_length)
         return s.slice (0, n) + '...' +  s.slice(-n)
     return s

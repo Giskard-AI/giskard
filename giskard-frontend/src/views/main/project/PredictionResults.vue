@@ -192,11 +192,8 @@ export default class PredictionResults extends Vue {
 
 
   get classColorPrediction(){
-    return !this.isDefined(this.actual)
-                  ? 'info--text text--darken-2'
-                  : this.isCorrectPrediction
-                  ? 'primary--text'
-                  : 'error--text'
+    if (!this.isDefined(this.actual)) return 'info--text text--darken-2'
+    else return this.isCorrectPrediction ? 'primary--text' : 'error--text'
   }
 
   get isCorrectPrediction() {
