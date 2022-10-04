@@ -12,8 +12,7 @@ services:
 
   ml-worker:
     image: '${DOCKER_REGISTRY}/ml-worker:${TAG-latest}'
-    environment:
-      - GSK_ENVIRONMENT=prod
+    hostname: giskard-embedded-docker-worker
 
   backend:
     image: '${DOCKER_REGISTRY}/backend:${TAG-latest}'
@@ -21,6 +20,8 @@ services:
       - db
     env_file:
       - .env
+    ports:
+      - "${GISKARD_EXTERNAL_ML_WORKER_PORT-40051}:40051"
     environment:
       - _JAVA_OPTIONS=-Xmx4048m -Xms512m
       - SPRING_PROFILES_ACTIVE=prod
