@@ -38,11 +38,6 @@ public class InnerChannelHandler extends ChannelInboundHandlerAdapter {
     }
 
     @Override
-    public void channelRegistered(ChannelHandlerContext ctx) throws Exception {
-        super.channelRegistered(ctx);
-    }
-
-    @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
         super.channelInactive(ctx);
         log.info("Connection to inner server closed, channel id {}", ctx.channel().id());
@@ -60,9 +55,7 @@ public class InnerChannelHandler extends ChannelInboundHandlerAdapter {
 
         innerChannelById.put(innerChannelShortName, innerChannel);
         innerChannelFuture.set(innerChannel);
-        innerChannel.closeFuture().addListener(future -> {
-            innerChannelById.remove(innerChannelShortName);
-        });
+        innerChannel.closeFuture().addListener(future -> innerChannelById.remove(innerChannelShortName));
 
         SettableFuture<Channel> outerChannelFuture = SettableFuture.create();
         outerChannelByInnerChannelId.put(innerChannelShortName, outerChannelFuture);

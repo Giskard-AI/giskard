@@ -2,22 +2,25 @@ package ai.giskard.ml;
 
 import ai.giskard.worker.UploadStatus;
 import io.grpc.stub.StreamObserver;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 class FileUploadObserver implements StreamObserver<UploadStatus> {
+    private final Logger log = LoggerFactory.getLogger(getClass());
 
     @Override
     public void onNext(UploadStatus uploadStatus) {
-        System.out.println("FileUploadObserver: File upload status :: " + uploadStatus.getCode());
+        log.debug("FileUploadObserver: File upload status :: " + uploadStatus.getCode());
     }
 
     @Override
     public void onError(Throwable throwable) {
-        System.out.println("FileUploadObserver: onError");
+        log.debug("FileUploadObserver: onError");
     }
 
     @Override
     public void onCompleted() {
-        System.out.println("FileUploadObserver: onCompleted");
+        log.debug("FileUploadObserver: onCompleted");
     }
 
 }
