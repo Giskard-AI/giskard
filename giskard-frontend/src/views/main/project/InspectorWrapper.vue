@@ -7,15 +7,29 @@
     >
 
       <v-toolbar id='data-explorer-toolbar' flat>
-        <v-tooltip nudge-bottom="145" nudge-right="102"  class="pa-0 asdasd">
+        <v-tooltip  class="pa-0" nudge-bottom="145" nudge-right="102">
           <template v-slot:activator="{ on, attrs }">
             <v-icon v-on="on" class="pr-5" small>info </v-icon>
           </template>
-          <span>
-            Model : {{ inspection.model.name }}
+          <h3> Model </h3>
+          <div class="row">
+            <div class="col"> Id </div>
+            <div class="col"> {{ inspection.model.id }}</div>
+          </div>
+          <div class="row">
+            <div class="col"> Name </div>
+            <div class="col"> {{ inspection.model.name }}</div>
+          </div>
           <br/>
-          Dataset : {{ inspection.dataset.name }}
-        </span>
+          <h3> Dataset </h3>
+          <div class="row">
+            <div class="col"> Id </div>
+            <div class="col"> {{ inspection.dataset.id }}</div>
+          </div>
+          <div class="row pb-3">
+            <div class="col"> Name </div>
+            <div class="col"> {{ inspection.dataset.name }}</div>
+          </div>
         </v-tooltip>
         <span class='subtitle-2 mr-2'>Dataset Explorer</span>
         <v-btn icon @click='shuffleMode = !shuffleMode'>
@@ -384,4 +398,9 @@ export default class InspectorWrapper extends Vue {
   font-size: 1.1rem;
   padding: 8px 12px 0;
 }
+
+.col{
+  padding-bottom: 0;
+}
+
 </style>
