@@ -75,8 +75,7 @@ import {use} from "echarts/core";
 import ECharts from "vue-echarts";
 import {SVGRenderer} from "echarts/renderers";
 import {BarChart} from "echarts/charts";
-import {GridComponent} from "echarts/components";
-import {DataZoomSliderComponent, DataZoomInsideComponent} from "echarts/components"
+import {DataZoomSliderComponent, DataZoomInsideComponent, GridComponent} from "echarts/components"
 import {abbreviateMiddle, maxLengthDisplayedCategory} from "@/results-utils";
 
 use([SVGRenderer, BarChart, GridComponent, DataZoomSliderComponent, DataZoomInsideComponent]);
