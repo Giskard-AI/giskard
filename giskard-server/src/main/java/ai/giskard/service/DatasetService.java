@@ -8,6 +8,7 @@ import ai.giskard.repository.UserRepository;
 import ai.giskard.repository.ml.DatasetRepository;
 import ai.giskard.repository.ml.ModelRepository;
 import ai.giskard.security.PermissionEvaluator;
+import ai.giskard.web.dto.DatasetMetadataDTO;
 import ai.giskard.web.dto.FeatureMetadataDTO;
 import ai.giskard.web.dto.ml.DatasetDetailsDTO;
 import ai.giskard.web.rest.errors.Entity;
@@ -89,6 +90,15 @@ public class DatasetService {
         return details;
     }
 
+    public DatasetMetadataDTO getMetadata(@NotNull Long id){
+        Dataset dataset = datasetRepository.findById(id).orElseThrow(() -> new EntityNotFoundException(Entity.DATASET, id));
+        DatasetMetadataDTO metadata = new DatasetMetadataDTO();
+        metadata.setId(id);
+        metadata.setColumnTypes(dataset.getColumnTypes());
+        metadata.setTarget(dataset.getTarget());
+        metadata.setFeatureTypes(dataset.getFeatureTypes());
+        return metadata;
+    }
     /**
      * Get filtered rows
      *
