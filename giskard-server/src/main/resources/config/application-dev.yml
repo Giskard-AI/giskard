@@ -15,10 +15,10 @@
 
 logging:
   level:
-    ROOT: INFO
+    ROOT: DEBUG
     tech.jhipster: INFO
     org.hibernate.SQL: INFO
-    ai.giskard: INFO
+    ai.giskard: DEBUG
 
 spring:
   devtools:
