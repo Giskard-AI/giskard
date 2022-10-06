@@ -18,11 +18,11 @@
       <v-menu left bottom offset-y rounded=0 v-if="isProjectOwnerOrAdmin">
         <template v-slot:activator="{ on, attrs }">
           <v-btn text small v-bind="attrs" v-on="on">
-            <v-icon>mdi-dots-horizontal</v-icon>
+            <v-icon>mdi-dots-horizontal</v-icon> 
           </v-btn>
         </template>
-        <v-list dense tile>
-          <v-list-item link @click="newName = project.name; newDescription = project.description; openEditDialog = true">
+        <v-list dense tile> 
+          <v-list-item link @click="newName = project.name; newLimeSamples = project.inspectionSettings.limeNumberSamples ; project.description; openEditDialog = true">
 						<v-list-item-title><v-icon dense left>edit</v-icon>Edit</v-list-item-title>
 					</v-list-item>
           <v-list-item link @click="openDeleteDialog = true">
@@ -72,6 +72,12 @@
 							<v-text-field label="Project Name*" type="text" v-model="newName" :error-messages="errors"></v-text-field>
 						</ValidationProvider>
 						<v-text-field label="Project Description" type="text" v-model="newDescription"></v-text-field>
+					</v-card-text>
+					<v-card-title>Modify project settings</v-card-title>
+					<v-card-text>
+						<ValidationProvider name="Lime Number Samples" rules="required" v-slot="{errors}">
+							<v-text-field label="Lime Number Samples*" type="number" :error-messages="errors" v-model="newLimeSamples"> </v-text-field>
+						</ValidationProvider>
 					</v-card-text>
 					<v-card-actions>
 						<v-spacer></v-spacer>
@@ -128,6 +134,7 @@ import FeedbackList from '@/views/main/project/FeedbackList.vue';
 import { Role } from '@/enums';
 import { ProjectPostDTO } from '@/generated-sources';
 import mixpanel from "mixpanel-browser";
+import { InspectionSettings } from '@/generated-sources'
 
 @Component({
 	components: {
@@ -143,6 +150,7 @@ export default class Project extends Vue {
 	openShareDialog = false;
 	openEditDialog = false;
 	openDeleteDialog = false;
+	newLimeSamples = 0;
 	newName = "";
 	newDescription = "";
 
@@ -152,7 +160,7 @@ export default class Project extends Vue {
 	public async mounted() {
 		// make sure project is loaded first
 		await dispatchGetProject(this.$store, {id: this.id});
-    await dispatchGetCoworkers(this.$store);
+    	await dispatchGetCoworkers(this.$store);
 
 		this.setInspector(this.$router.currentRoute);
 	}
@@ -168,6 +176,7 @@ export default class Project extends Vue {
 	get userProfile() {
 		return readUserProfile(this.$store);
 	}
+
 
 	get coworkerNamesAvailable() {
 		return readCoworkers(this.$store)
@@ -203,8 +212,12 @@ export default class Project extends Vue {
 
 	public async submitEditProject() {
 		if (this.project && this.newName) {
+			let inspectionSettings : InspectionSettings = {
+				limeNumberSamples: this.newLimeSamples
+			}
 			const proj: ProjectPostDTO = {
 				name: this.newName,
+				inspectionSettings: inspectionSettings,
 				description: this.newDescription,
 			}
 			try {

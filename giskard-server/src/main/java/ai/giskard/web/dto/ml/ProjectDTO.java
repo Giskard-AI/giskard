@@ -1,15 +1,15 @@
 package ai.giskard.web.dto.ml;
 
+import ai.giskard.domain.InspectionSettings;
+
 import ai.giskard.web.dto.user.UserDTO;
 import com.dataiku.j2ts.annotations.UIModel;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.validation.constraints.NotNull;
 import java.time.Instant;
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Getter
@@ -26,4 +26,5 @@ public class ProjectDTO {
     private String description;
     private List<UserDTO> guests;
     private Instant createdDate;
+    private InspectionSettings inspectionSettings;
 }

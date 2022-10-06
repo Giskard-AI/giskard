@@ -3,6 +3,9 @@ package ai.giskard.domain;
 import ai.giskard.domain.ml.Dataset;
 import ai.giskard.domain.ml.ProjectModel;
 import ai.giskard.domain.ml.TestSuite;
+import ai.giskard.utils.JSONStringAttributeConverter;
+
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -22,6 +25,12 @@ import java.util.Set;
 @EntityListeners(AuditingEntityListener.class)
 @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
 public class Project extends AbstractAuditingEntity {
+    @Converter
+    public static class InspectionSettingsConverter extends JSONStringAttributeConverter<InspectionSettings> {
+        @Override
+        public TypeReference<InspectionSettings> getValueTypeRef() {return new TypeReference<>() {};}
+    }
+
     @Getter
     @Setter
     @NotNull
@@ -71,6 +80,13 @@ public class Project extends AbstractAuditingEntity {
         joinColumns = @JoinColumn(name = "project_id"),
         inverseJoinColumns = @JoinColumn(name = "user_id"))
     private Set<User> guests = new HashSet<>();
+
+
+    @Getter
+    @Setter
+    @Column(columnDefinition = "VARCHAR")
+    @Convert(converter = InspectionSettingsConverter.class)
+    private InspectionSettings inspectionSettings;
 
 
     public void addGuest(User user) {
