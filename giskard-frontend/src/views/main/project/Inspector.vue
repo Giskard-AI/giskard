@@ -139,6 +139,7 @@
                 <v-tab-item v-if='textFeatureNames.length'>
                   <TextExplanation :modelId="model.id"
                                    :datasetId="dataset.id"
+                                   :projectId="projectId"
                                    :textFeatureNames="textFeatureNames"
                                    :classificationLabels="model.classificationLabels"
                                    :classificationResult="classificationResult"
@@ -175,6 +176,7 @@ import _ from 'lodash';
 export default class Inspector extends Vue {
   @Prop({required: true}) model!: ModelDTO
   @Prop({required: true}) dataset!: DatasetDTO
+  @Prop({required: true}) projectId!: number
   @Prop({required: true}) originalData!: object // used for the variation feedback
   @Prop({required: true}) inputData!: { [key: string]: string }
   @Prop({default: false}) isMiniMode!: boolean;

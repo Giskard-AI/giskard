@@ -43,6 +43,7 @@
     </v-row>
     <Inspector :dataset='inspection.dataset'
                :inputData.sync='inputData'
+               :projectId='commonFeedbackData.projectId'
                :model='inspection.model'
                :originalData='originalData'
                class='px-0'

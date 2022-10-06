@@ -304,11 +304,11 @@ export const api = {
             {features: inputData},
             {signal: controller.signal});
     },
-    async explainText(modelId: number, datasetId: number, inputData: object, featureName: string) {
+    async explainText(modelId: number, datasetId: number, projectId: number, inputData: object, featureName: string) {
         return apiV2.post<unknown, { [key: string]: string }>(`/models/explain-text/${featureName}`,
             {
                 features: inputData
-            }, {params: {modelId, datasetId}});
+            }, {params: {modelId, datasetId, projectId}});
     },
     // feedbacks
     async submitFeedback(payload: CreateFeedbackDTO, projectId: number) {

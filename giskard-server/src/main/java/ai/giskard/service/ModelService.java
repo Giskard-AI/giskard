@@ -1,6 +1,7 @@
 package ai.giskard.service;
 
 import ai.giskard.domain.FeatureType;
+import ai.giskard.domain.InspectionSettings;
 import ai.giskard.domain.ml.Dataset;
 import ai.giskard.domain.ml.Inspection;
 import ai.giskard.domain.ml.ProjectModel;
@@ -59,7 +60,7 @@ public class ModelService {
     }
 
 
-    public ExplainTextResponse explainText(ProjectModel model, Dataset dataset, String featureName, Map<String, String> features) throws IOException {
+    public ExplainTextResponse explainText(ProjectModel model, Dataset dataset, InspectionSettings inspectionSettings, String featureName, Map<String, String> features) throws IOException {
         ExplainTextResponse response;
         try (MLWorkerClient client = mlWorkerService.createClient()) {
             response = client.getBlockingStub().explainText(
@@ -68,7 +69,7 @@ public class ModelService {
                     .setFeatureName(featureName)
                     .putAllColumns(features)
                     .putAllFeatureTypes(Maps.transformValues(dataset.getFeatureTypes(), FeatureType::getName))
-                    .setNSamples(500)
+                    .setNSamples(inspectionSettings.getLimeNumberSamples())
                     .build()
             );
         }
