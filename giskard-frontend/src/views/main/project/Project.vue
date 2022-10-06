@@ -132,9 +132,8 @@ import Models from '@/views/main/project/Models.vue';
 import Datasets from '@/views/main/project/Datasets.vue';
 import FeedbackList from '@/views/main/project/FeedbackList.vue';
 import { Role } from '@/enums';
-import { ProjectPostDTO } from '@/generated-sources';
+import { ProjectPostDTO, InspectionSettings } from '@/generated-sources';
 import mixpanel from "mixpanel-browser";
-import { InspectionSettings } from '@/generated-sources'
 
 @Component({
 	components: {
