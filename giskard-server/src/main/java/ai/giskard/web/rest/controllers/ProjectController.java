@@ -1,5 +1,6 @@
 package ai.giskard.web.rest.controllers;
 
+import ai.giskard.domain.InspectionSettings;
 import ai.giskard.domain.Project;
 import ai.giskard.repository.ProjectRepository;
 import ai.giskard.security.PermissionEvaluator;
@@ -85,6 +86,10 @@ public class ProjectController {
             project = this.projectRepository.getOneByKey(key);
         } else {
             throw new IllegalArgumentException("Either project id or project key should be specified");
+        }
+        if (project.getInspectionSettings() == null){
+            project.setInspectionSettings(new InspectionSettings());
+            this.projectRepository.save(project);
         }
         permissionEvaluator.validateCanReadProject(project.getId());
         return giskardMapper.projectToProjectDTO(project);
