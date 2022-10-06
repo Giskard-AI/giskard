@@ -118,7 +118,11 @@
                     <td>Plan</td>
                     <td>{{ appSettings.planName }}</td>
                   </tr>
-                  <tr><td colspan="2"><v-divider class="divider"/></td></tr>
+                  <tr>
+                    <td colspan="2">
+                      <v-divider class="divider"/>
+                    </td>
+                  </tr>
                   <tr>
                     <td>Last commit</td>
                     <td>{{ appSettings.buildCommitId }}</td>
@@ -156,6 +160,93 @@
           </v-card>
         </v-col>
       </v-row>
+      <v-row v-show="isAdmin">
+        <v-col>
+          <v-card height="100%">
+            <v-card-title class="font-weight-light secondary--text">
+              <span>ML Worker</span>
+              <v-spacer/>
+              <v-chip small
+                      class="justify-center"
+                      outlined
+                      :color="mlWorkerSettingsLoading ? 'grey' : (mlWorkerSettings ? 'green': 'red')"
+                      @click="initMLWorkerInfo"
+              >
+                <v-progress-circular size="20" indeterminate v-show="mlWorkerSettingsLoading" class="pl-10 pr-10"/>
+                <v-container v-show="!mlWorkerSettingsLoading" class="pr-0">
+                  <span v-if="mlWorkerSettings">{{ mlWorkerSettings.isRemote ? 'external' : 'internal' }}</span>
+                  <span v-else>unavailable</span>
+                  <v-icon size="10" :color="mlWorkerSettings ? 'green': 'red'" class="pl-5">mdi-circle</v-icon>
+                </v-container>
+              </v-chip>
+            </v-card-title>
+            <v-card-text>
+              <v-simple-table v-if="mlWorkerSettings">
+                <table class="w100">
+                  <tr>
+                    <th style="width: 30%"></th>
+                  </tr>
+                  <tr>
+                    <td>Python version</td>
+                    <td>{{ mlWorkerSettings.interpreterVersion }}</td>
+                  </tr>
+                  <tr>
+                    <td>Python path</td>
+                    <td>{{ mlWorkerSettings.interpreter }}</td>
+                  <tr>
+                    <td>Host</td>
+                    <td>{{ mlWorkerSettings.platform.node }}</td>
+                  </tr>
+                  <tr>
+                    <td>Process id</td>
+                    <td>{{ mlWorkerSettings.pid }}</td>
+                  </tr>
+                  <tr>
+                    <td>Process start time</td>
+                    <td>{{ epochToDate(mlWorkerSettings.processStartTime) }}</td>
+                  </tr>
+                  <tr>
+                    <td>Internal ML Worker port</td>
+                    <td>{{ mlWorkerSettings.internalGrpcPort }}</td>
+                  </tr>
+                  <tr>
+                    <td>Architecture</td>
+                    <td>{{ mlWorkerSettings.platform.machine }}</td>
+                  </tr>
+                  <tr>
+                    <td>Installed packages</td>
+                    <td class="overflow-hidden">
+                      <v-text-field
+                          class="pt-5"
+                          dense
+                          v-model="installedPackagesSearch"
+                          append-icon="mdi-magnify"
+                          label="Search"
+                          single-line
+                          hide-details
+                          clearable
+                      ></v-text-field>
+                      <v-data-table
+                          dense
+                          :sort-by="['name']"
+                          :headers="installedPackagesHeaders"
+                          :items="installedPackagesData"
+                          :search="installedPackagesSearch"
+                      ></v-data-table>
+                    </td>
+                  </tr>
+                </table>
+              </v-simple-table>
+
+              <v-card-text v-else class="pa-0">
+                <span v-show="mlWorkerSettingsLoading">Loading information</span>
+                <span v-show="!mlWorkerSettingsLoading">Not available. Check that ML Worker is running.</span>
+              </v-card-text>
+            </v-card-text>
+
+          </v-card>
+        </v-col>
+      </v-row>
     </v-container>
   </div>
 </template>
@@ -168,9 +259,10 @@ import {commitAddNotification, commitRemoveNotification} from '@/store/main/muta
 import {dispatchUpdateUserProfile} from '@/store/main/actions';
 import ButtonModalConfirmation from '@/components/ButtonModalConfirmation.vue';
 import {copyToClipboard} from '@/global-keys';
-import {AppConfigDTO, GeneralSettings, JWTToken, UpdateMeDTO} from "@/generated-sources";
+import {AppConfigDTO, GeneralSettings, JWTToken, MLWorkerInfoDTO, UpdateMeDTO} from "@/generated-sources";
 import mixpanel from "mixpanel-browser";
 import {Role} from "@/enums";
+import moment from "moment";
 import AppInfoDTO = AppConfigDTO.AppInfoDTO;
 
 @Component({
@@ -186,6 +278,15 @@ export default class UserProfile extends Vue {
   private apiAccessToken: JWTToken | null = null;
   private appSettings: AppInfoDTO | null = null;
   private isAdmin: boolean = false;
+  private mlWorkerSettings: MLWorkerInfoDTO | null = null;
+  private mlWorkerSettingsLoading = false;
+  private installedPackagesHeaders = [{text: 'Name', value: 'name', width: '70%'}, {
+    text: 'Version',
+    value: 'version',
+    width: '30%'
+  }];
+  private installedPackagesData: { name: string, version: string }[] = [];
+  private installedPackagesSearch = "";
 
   private resetFormData() {
     const userProfile = readUserProfile(this.$store);
@@ -200,7 +301,22 @@ export default class UserProfile extends Vue {
 
   public async created() {
     this.appSettings = await readAppSettings(this.$store);
+    await this.initMLWorkerInfo();
     this.resetFormData();
+  }
+
+  private async initMLWorkerInfo() {
+    try {
+      this.mlWorkerSettings = null;
+      this.mlWorkerSettingsLoading = true;
+      this.mlWorkerSettings = await api.getMLWorkerSettings();
+      this.installedPackagesData = [];
+      this.installedPackagesData =
+          Object.entries(this.mlWorkerSettings.installedPackages).map(([key, value]) => ({name: key, version: value}));
+    } catch (error) {
+    } finally {
+      this.mlWorkerSettingsLoading = false;
+    }
   }
 
   get userProfile() {
@@ -255,6 +371,10 @@ export default class UserProfile extends Vue {
     this.appSettings!.generalSettings = await api.saveGeneralSettings(settings);
   }
 
+  private epochToDate(epoch: number) {
+    return moment.unix(epoch).format('DD/MM/YYYY HH:mm:ss');
+  }
+
 }
 </script>
 <style lang="scss" scoped>
@@ -262,10 +382,12 @@ export default class UserProfile extends Vue {
   background-color: rgba(211, 211, 211, 0.52);
   padding: 10px;
 }
-.divider{
+
+.divider {
   margin-top: 10px;
   margin-bottom: 10px;
 }
+
 .token-area {
   user-select: all;
   word-break: break-all;
