@@ -75,8 +75,8 @@ public class OuterChannelHandler extends ChannelInboundHandlerAdapter {
     public void channelRead(ChannelHandlerContext ctx, Object msg) {
         SocketChannel outerChannel = (SocketChannel) ctx.channel();
         ByteBuf in = (ByteBuf) msg;
-        log.debug("Outer: Writing {} bytes from {}", in.readableBytes(), outerChannel.id());
         while (in.readableBytes() > 0) {
+            log.debug("Outer: Writing {} bytes from {}", in.readableBytes(), outerChannel.id());
             if (innerChannelIdByOuterChannel.containsKey(outerChannel.id())) {
                 passDataDirectly(in, outerChannel);
             } else {
