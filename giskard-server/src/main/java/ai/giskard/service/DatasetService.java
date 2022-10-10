@@ -91,7 +91,7 @@ public class DatasetService {
     }
 
     public DatasetMetadataDTO getMetadata(@NotNull Long id){
-        Dataset dataset = datasetRepository.findById(id).orElseThrow(() -> new EntityNotFoundException(Entity.DATASET, id));
+        Dataset dataset = this.datasetRepository.getById(id);
         DatasetMetadataDTO metadata = new DatasetMetadataDTO();
         metadata.setId(id);
         metadata.setColumnTypes(dataset.getColumnTypes());
