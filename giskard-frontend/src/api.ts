@@ -18,7 +18,7 @@ import {
     InspectionDTO,
     JWTToken,
     ManagedUserVM,
-    MessageDTO,
+    MessageDTO, MLWorkerInfoDTO,
     ModelDTO,
     PasswordResetRequest,
     PredictionDTO,
@@ -172,6 +172,9 @@ export const api = {
     },
     async getUserAndAppSettings() {
         return apiV2.get<unknown, AppConfigDTO>(`/settings`);
+    },
+    async getMLWorkerSettings() {
+        return apiV2.get<unknown, MLWorkerInfoDTO>(`/settings/ml-worker-info`);
     },
     async saveGeneralSettings(settings: GeneralSettings) {
         return apiV2.post<unknown, GeneralSettings>(`/settings`, settings);

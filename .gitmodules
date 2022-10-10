@@ -1,0 +1,3 @@
+[submodule "giskard-server/ml-worker-proto"]
+	path = giskard-server/ml-worker-proto
+	url = ../ml-worker-proto.git

@@ -14,7 +14,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
+      with:
+        submodules: recursive
 
     - name: Extract branch name
       shell: bash
@@ -46,6 +48,7 @@ jobs:
         docker-compose -f docker-compose.yml -f docker-compose.dev.yml push
 
     - name: Invoke deployment hook
+      if: ${{ steps.extract_branch.outputs.branch == 'main' }}
       run: |
         curl -L --silent --max-time 900 ${{ secrets.TEST_SERVER_WEBHOOK_URL_BASE }}/redeploy-dev 
 

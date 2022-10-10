@@ -4,7 +4,7 @@
 <configuration scan="true">
     <include resource="org/springframework/boot/logging/logback/base.xml"/>
 
-    <logger name="ai.giskard" level="INFO"/>
+    <logger name="ai.giskard" level="DEBUG"/>
 
     <logger name="tech.jhipster" level="WARN"/>
 
@@ -39,6 +39,7 @@
     <logger name="LiquibaseSchemaResolver" level="WARN"/>
     <logger name="sun.rmi.transport" level="WARN"/>
     <logger name="com.tngtech.archunit.core.importer" level="ERROR"/>
+    <logger name="io.grpc.netty" level="DEBUG"/>
 
     <root>
         <level>WARN</level>
