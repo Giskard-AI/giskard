@@ -29,7 +29,11 @@ public class MLWorkerClient implements AutoCloseable {
     private final Logger logger;
 
     @Getter
-    private final MLWorkerGrpc.MLWorkerBlockingStub blockingStub;
+    public final MLWorkerGrpc.MLWorkerBlockingStub blockingStub;
+    @Getter
+    public final MLWorkerGrpc.MLWorkerStub stub;
+    @Getter
+    public final MLWorkerGrpc.MLWorkerFutureStub futureStub;
 
     private final GRPCMapper grpcMapper;
 
@@ -40,9 +44,16 @@ public class MLWorkerClient implements AutoCloseable {
         // Passing Channels to code makes code easier to test and makes it easier to reuse Channels.
         String id = RandomStringUtils.randomAlphanumeric(8); // NOSONAR: no security risk here
         logger = LoggerFactory.getLogger("MLWorkerClient [" + id + "]");
-        this.grpcMapper = SpringContext.getBean(GRPCMapper.class);
+        if (SpringContext.hasContext()) {
+            this.grpcMapper = SpringContext.getBean(GRPCMapper.class);
+        } else {
+            this.grpcMapper = new GRPCMapper(null);
+        }
         logger.debug("Creating MLWorkerClient");
         blockingStub = MLWorkerGrpc.newBlockingStub(channel);
+        stub = MLWorkerGrpc.newStub(channel);
+        futureStub = MLWorkerGrpc.newFutureStub(channel);
+
     }
 
     public TestResultMessage runTest(

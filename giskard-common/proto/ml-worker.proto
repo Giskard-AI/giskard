@@ -1,6 +1,7 @@
 syntax = "proto3";
 import "google/protobuf/any.proto";
 import "google/protobuf/wrappers.proto";
+import "google/protobuf/empty.proto";
 
 option java_multiple_files = true;
 option java_package = "ai.giskard.worker";
@@ -10,11 +11,50 @@ option objc_class_prefix = "WRK";
 package worker;
 
 service MLWorker {
+  rpc getInfo(MLWorkerInfoRequest) returns (MLWorkerInfo){}
   rpc runTest (RunTestRequest) returns (TestResultMessage) {}
   rpc runModel(RunModelRequest) returns (RunModelResponse) {}
   rpc runModelForDataFrame(RunModelForDataFrameRequest) returns (RunModelForDataFrameResponse) {}
   rpc explain(ExplainRequest) returns (ExplainResponse) {}
   rpc explainText(ExplainTextRequest) returns (ExplainTextResponse) {}
+  rpc echo(EchoMsg) returns (EchoMsg){}
+  rpc upload(stream FileUploadRequest) returns (UploadStatus) {}
+}
+message MLWorkerInfoRequest{
+  bool list_packages = 1;
+}
+message MLWorkerInfo{
+  PlatformInfo platform = 1;
+  string interpreter = 2;
+  string interpreter_version = 3;
+  map<string, string> installed_packages = 4;
+  uint32 internal_grpc_port = 5;
+  bool is_remote = 6;
+  uint32 pid = 7;
+  uint64 process_start_time = 8;
+}
+message PlatformInfo{
+  string machine = 1;
+  string node = 2;
+  string processor = 3;
+  string release = 4;
+  string system = 5;
+  string version = 6;
+}
+
+message FileUploadRequest {
+  oneof request {
+    FileUploadMetadata metadata = 1;
+    Chunk chunk = 2;
+  }
+}
+
+message FileUploadMetadata{
+  string name = 1;
+}
+
+message EchoMsg{
+  string  msg = 1;
 }
 
 message ExplainRequest{
@@ -144,4 +184,16 @@ message SerializedGiskardModel{
   google.protobuf.DoubleValue threshold = 3;
   repeated string feature_names = 4;
   repeated string classification_labels = 5;
+}
+
+message Chunk {
+  bytes content = 1;
+}
+enum UploadStatusCode {
+  Unknown = 0;
+  Ok = 1;
+  Failed = 2;
+}
+message UploadStatus {
+  UploadStatusCode code = 1;
 }
