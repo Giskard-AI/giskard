@@ -18,6 +18,8 @@ import java.nio.file.Path;
 public class ApplicationProperties {
     private String mlWorkerHost;
     private int mlWorkerPort;
+    private int externalMlWorkerEntrypointPort;
+    private boolean externalMlWorkerEnabled;
     private int apiTokenValidityInDays;
     private int invitationTokenValidityInDays;
     private int maxInboundMLWorkerMessageMB = 1024;
