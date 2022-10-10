@@ -18,7 +18,7 @@ plugins {
     id "org.sonarqube"
     id "io.spring.nohttp" version "0.0.10"
     id "com.github.andygoossens.gradle-modernizer-plugin" version "1.6.2"
-    id 'com.google.protobuf' version '0.8.18'
+    id 'com.google.protobuf' version '0.9.1'
 }
 
 group = "ai.giskard"
