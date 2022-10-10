@@ -13,6 +13,10 @@ public class SpringContext implements ApplicationContextAware {
         return context.getBean(beanClass);
     }
 
+    public static boolean hasContext(){
+        return context != null;
+    }
+
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         SpringContext.context = applicationContext; // NOSONAR
