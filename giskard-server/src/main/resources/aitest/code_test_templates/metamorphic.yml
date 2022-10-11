@@ -16,7 +16,7 @@ items:
       #      Summary: Tests if the model prediction is invariant when the feature values are perturbed
       #
       #      Description: Test if the predicted classification label remains the same after
-      #      feature values perturbation.The test is passed when the percentage of unchanged
+      #      feature values perturbation. The test is passed when the percentage of unchanged
       #      rows is higher than the threshold
       #
       #      Example : The test is passed when, after switching gender from male to female,
@@ -76,6 +76,82 @@ items:
           model=model,
           perturbation_dict=perturbation,  # Update your perturbation choice here
           threshold=0.5
+      )
+
+  - id: metamorphic_invariance_classification_stat
+    title: Invariance for Classification through t-test
+    hint: Tests if the Classification model prediction is invariant within a confidence interval when the feature values are perturbed
+    isMultipleDatasets: false
+    isGroundTruthRequired: false
+    modelTypes:
+      - MULTICLASS_CLASSIFICATION
+      - BINARY_CLASSIFICATION
+    # language=Python
+    code: |-
+      #region Documentation
+      #      Summary: Tests if the model prediction is invariant within a confidence interval when the feature values are perturbed
+      #
+      #      Description: Test if the predicted classification label remains in the vicinity of each other after
+      #      feature values perturbation. The test is passed when the t-test score (as a p-value) between the perturbed and unchanged
+      #      rows is lower than a certain quantile.
+      #
+      #      Example : The test is passed when, after switching gender from male to female,
+      #      the p-value between the two probability histograms (original and perturbed) remains below a certain quantile at some statistical significance.
+      #
+      #      Args:
+      #          df(GiskardDataset):
+      #              Dataset used to compute the test
+      #          model(GiskardModel):
+      #              Model used to compute the test
+      #          perturbation_dict(dict):
+      #              Dictionary of the perturbations. It provides the perturbed features as key
+      #              and a perturbation lambda function as value
+      #          threshold(float):
+      #              Critical quantile above which the null hypothesis that the populations are different cannot be rejected
+      #
+      #      Returns:
+      #          actual_slices_size:
+      #              Length of actual_slice tested
+      #          message:
+      #              Test result message
+      #          metric:
+      #              The t-test between unchanged rows over the perturbed rows
+      #          passed:
+      #              TRUE if t-score < threshold
+      #endregion
+
+      import nlpaug.augmenter.word as naw
+
+      aug = naw.SpellingAug(dict_path=None,
+                            name='Spelling_Aug',
+                            aug_min=1,
+                            aug_max=10,
+                            aug_p=0.3,
+                            stopwords=None,
+                            tokenizer=None,
+                            reverse_tokenizer=None,
+                            include_reverse=True,
+                            stopwords_regex=None,
+                            verbose=0)
+
+      # You can choose all_perturbation to perturb categorical, text and numerical feature at the same time
+      all_perturbation = {
+        "{{NUMERIC FEATURE NAME}}": lambda x: x["{{NUMERIC FEATURE NAME}}"] * 2,
+        "{{CATEGORICAL FEATURE NAME}}": lambda x: "{{CATEGORY 1}}" if
+        x["{{CATEGORICAL FEATURE NAME}}"] == "{{CATEGORY 2}}" else x["{{CATEGORICAL FEATURE NAME}}"] ,
+        "{{TEXTUAL FEATURE NAME}}": lambda x: aug.augment(x["{{TEXTUAL FEATURE NAME}}"])
+      }
+
+      # Or you can choose one feature at a time eg. Numerical feature
+      perturbation = {
+        "{{NUMERIC FEATURE NAME}}": lambda x: x["{{NUMERIC FEATURE NAME}}"] * 2,
+      }
+
+      tests.metamorphic.test_metamorphic_invariance_stat(
+        df=actual_ds,
+        model=model,
+        perturbation_dict=perturbation,  # Update your perturbation choice here
+        threshold=0.05
       )
 
   - id: metamorphic_invariance_regression
@@ -231,6 +307,83 @@ items:
           classification_label='{{CLASSIFICATION LABEL}}',
           threshold=0.5
       )
+
+  - id: metamorphic_increasing_classification_stat
+    title: Increasing for Classification through t-test
+    hint: Tests if the Model prediction probability is increasing (in a statistically significant way) when the feature values are perturbed
+    isMultipleDatasets: false
+    isGroundTruthRequired: false
+    modelTypes:
+      - MULTICLASS_CLASSIFICATION
+      - BINARY_CLASSIFICATION
+    # language=Python
+    code: |-
+      #region Documentation
+      #      Summary: Tests if the model probability increases (in a statistically significant way) when the feature values are perturbed
+      #
+      #      Description: Test if the model probability of a given classification_label is
+      #      increasing after feature values perturbation by a certain statistical significance.
+      #
+      #      Example : For a credit scoring model, the test is passed when a decrease of wage by 10%,
+      #      the default and perturbed probabilities is increasing by a certain statistical significance.
+      #
+      #      Args:
+      #          df(GiskardDataset):
+      #              Dataset used to compute the test
+      #          model(GiskardModel):
+      #              Model used to compute the test
+      #          perturbation_dict(dict):
+      #              Dictionary of the perturbations. It provides the perturbed features as key
+      #              and a perturbation lambda function as value
+      #          threshold(float):
+      #              Critical p-value
+      #          classification_label(str):
+      #              One specific label value from the target column
+      #
+      #      Returns:
+      #          actual_slices_size:
+      #              Length of actual_slice tested
+      #          message:
+      #              Test result message
+      #          metric:
+      #              The left-tailed t-test between unchanged rows over the perturbed rows
+      #          passed:
+      #              TRUE if t-score < threshold
+      #endregion
+
+      import nlpaug.augmenter.word as naw
+
+      aug = naw.SpellingAug(dict_path=None,
+                            name='Spelling_Aug',
+                            aug_min=1,
+                            aug_max=10,
+                            aug_p=0.3,
+                            stopwords=None,
+                            tokenizer=None,
+                            reverse_tokenizer=None,
+                            include_reverse=True,
+                            stopwords_regex=None,
+                            verbose=0)
+
+      # You can choose all_perturbation to perturb categorical, text and numerical feature at the same time
+      all_perturbation = {"{{NUMERIC FEATURE NAME}}": lambda x: x["{{NUMERIC FEATURE NAME}}"] * 2,
+                          "{{CATEGORICAL FEATURE NAME}}": lambda x: "{{CATEGORY 1}}" if
+                          x["{{CATEGORICAL FEATURE NAME}}"] == "{{CATEGORY 2}}" else x["{{CATEGORICAL FEATURE NAME}}"] ,
+                          "{{TEXTUAL FEATURE NAME}}": lambda x: aug.augment(x["{{TEXTUAL FEATURE NAME}}"])}
+
+      # Or you can choose one feature at a time eg. Numerical feature
+      perturbation = {
+        "{{NUMERIC FEATURE NAME}}": lambda x: x["{{NUMERIC FEATURE NAME}}"] * 2,
+      }
+
+      tests.metamorphic.test_metamorphic_increasing_stat(
+        df=actual_ds,
+        model=model,
+        perturbation_dict=perturbation, # Update your perturbation choice here
+        classification_label='{{CLASSIFICATION LABEL}}',
+        threshold=0.05
+      )
+
   - id: metamorphic_increasing_regression
     title: Increasing for Regression
     hint: Tests if the Model prediction  is increasing when the feature values are perturbed
@@ -448,4 +601,81 @@ items:
           model=model,
           perturbation_dict=perturbation, # Update your perturbation choice here
           threshold=0.5
+      )
+
+
+  - id: metamorphic_decreasing_classification_stat
+    title: Decreasing for Classification through t-test
+    hint: Tests if the Model prediction probability is decreasing (in a statistically significant way) when the feature values are perturbed
+    isMultipleDatasets: false
+    isGroundTruthRequired: false
+    modelTypes:
+      - MULTICLASS_CLASSIFICATION
+      - BINARY_CLASSIFICATION
+    # language=Python
+    code: |-
+      #region Documentation
+      #      Summary: Tests if the model probability decreases (in a statistically significant way) when the feature values are perturbed
+      #
+      #      Description: Test if the model probability of a given classification_label is
+      #      decreasing after feature values perturbation by a certain statistical significance.
+      #
+      #      Example : For a credit scoring model, the test is passed when a decrease of wage by 10%,
+      #      the default and perturbed probabilities is decreasing by a certain statistical significance.
+      #
+      #      Args:
+      #          df(GiskardDataset):
+      #              Dataset used to compute the test
+      #          model(GiskardModel):
+      #              Model used to compute the test
+      #          perturbation_dict(dict):
+      #              Dictionary of the perturbations. It provides the perturbed features as key
+      #              and a perturbation lambda function as value
+      #          threshold(float):
+      #              Critical p-value
+      #          classification_label(str):
+      #              One specific label value from the target column
+      #
+      #      Returns:
+      #          actual_slices_size:
+      #              Length of actual_slice tested
+      #          message:
+      #              Test result message
+      #          metric:
+      #              The right-tailed t-test between unchanged rows over the perturbed rows
+      #          passed:
+      #              TRUE if t-score < threshold
+      #endregion
+
+      import nlpaug.augmenter.word as naw
+
+      aug = naw.SpellingAug(dict_path=None,
+                            name='Spelling_Aug',
+                            aug_min=1,
+                            aug_max=10,
+                            aug_p=0.3,
+                            stopwords=None,
+                            tokenizer=None,
+                            reverse_tokenizer=None,
+                            include_reverse=True,
+                            stopwords_regex=None,
+                            verbose=0)
+
+      # You can choose all_perturbation to perturb categorical, text and numerical feature at the same time
+      all_perturbation = {"{{NUMERIC FEATURE NAME}}": lambda x: x["{{NUMERIC FEATURE NAME}}"] * 2,
+                          "{{CATEGORICAL FEATURE NAME}}": lambda x: "{{CATEGORY 1}}" if
+                          x["{{CATEGORICAL FEATURE NAME}}"] == "{{CATEGORY 2}}" else x["{{CATEGORICAL FEATURE NAME}}"] ,
+                          "{{TEXTUAL FEATURE NAME}}": lambda x: aug.augment(x["{{TEXTUAL FEATURE NAME}}"])}
+
+      # Or you can choose one feature at a time eg. Numerical feature
+      perturbation = {
+        "{{NUMERIC FEATURE NAME}}": lambda x: x["{{NUMERIC FEATURE NAME}}"] * 2,
+      }
+
+      tests.metamorphic.test_metamorphic_increasing_stat(
+        df=actual_ds,
+        model=model,
+        perturbation_dict=perturbation, # Update your perturbation choice here
+        classification_label='{{CLASSIFICATION LABEL}}',
+        threshold=0.05
       )
