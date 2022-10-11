@@ -26,7 +26,7 @@ public interface ProjectRepository extends MappableJpaRepository<Project, Long> 
     Optional<Project> findOneByKey(String key);
 
     default Project getOneByKey(String key) {
-        return findOneByKey(key).orElseThrow(() -> new EntityNotFoundException(Entity.PROJECT, By.KEY, key));
+        return findOneByKey(key).orElseThrow(() -> new EntityNotFoundException(Entity.PROJECT, By.KEY, key, "To get all the projects, use `list_projects()`"));
     }
 
     Optional<Project> findOneByName(String name);

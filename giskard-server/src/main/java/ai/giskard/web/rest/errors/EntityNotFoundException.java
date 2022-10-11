@@ -22,10 +22,15 @@ public class EntityNotFoundException extends BadRequestAlertException { //NOSONA
     }
 
     public EntityNotFoundException(Entity entity, String key) {
-        super(ErrorConstants.DEFAULT_TYPE, String.format("%s not found by key: %s", entity.getName(), key), entity.name().toLowerCase(), "entitynotfound");
+        super(ErrorConstants.DEFAULT_TYPE, String.format("%s not found by key: \'%s\'", entity.getName(), key), entity.name().toLowerCase(), "entitynotfound", "");
     }
 
     public EntityNotFoundException(Entity entity, By by, Object selector) {
-        super(ErrorConstants.DEFAULT_TYPE, String.format("%s not found by %s: %s", entity.getName(), by.getSelector(), selector), entity.name().toLowerCase(), "entitynotfound");
+        super(ErrorConstants.DEFAULT_TYPE, String.format("%s not found by %s: \'%s\'", entity.getName(), by.getSelector(), selector), entity.name().toLowerCase(), "entitynotfound", "");
     }
+
+    public EntityNotFoundException(Entity entity, By by, Object selector, String detail) {
+        super(ErrorConstants.DEFAULT_TYPE, String.format("%s not found by %s: \'%s\'", entity.getName(), by.getSelector(), selector), entity.name().toLowerCase(), "entitynotfound", detail);
+    }
+
 }
