@@ -605,7 +605,7 @@ items:
 
 
   - id: metamorphic_decreasing_classification_stat
-    title: Decreasing for Classification through t-test
+    title: Decreasing for Classification (t-test)
     hint: Tests if the Model prediction probability is decreasing (in a statistically significant way) when the feature values are perturbed
     isMultipleDatasets: false
     isGroundTruthRequired: false
