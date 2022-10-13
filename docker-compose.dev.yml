@@ -33,9 +33,16 @@ services:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/app
       - SPRING_LIQUIBASE_URL=jdbc:postgresql://db:5432/app
       - SPRING_JPA_DATABASE_PLATFORM=tech.jhipster.domain.util.FixedPostgreSQL10Dialect
-
+    
     build:
       dockerfile: ./giskard-server/src/main/docker/app/app.dockerfile
       context: .
       args:
         RUN_TESTS: ${RUN_TESTS-false}
+  
+  git:
+    ports:
+      - "1234:1234"
+    build:
+      dockerfile: ./giskard-git/Dockerfile
+      context: .

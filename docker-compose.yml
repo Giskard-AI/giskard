@@ -9,10 +9,15 @@ services:
       - .env
     environment:
       - PGDATA=/var/lib/postgresql/data/pgdata
-
+ 
   ml-worker:
     image: '${DOCKER_REGISTRY}/ml-worker:${TAG-latest}'
     hostname: giskard-embedded-docker-worker
+
+  git:
+    volumes:
+      - giskard-home:/created_tests
+
 
   backend:
     image: '${DOCKER_REGISTRY}/backend:${TAG-latest}'
@@ -40,8 +45,7 @@ services:
       - JHIPSTER_MAIL_BASEURL
     volumes:
       - giskard-home:/giskard-home
-
-
+    
   frontend:
     image: '${DOCKER_REGISTRY}/frontend:${TAG-latest}'
     ports:
