@@ -154,37 +154,7 @@
 
       </v-col>
       <v-col v-if='runResult' align-self="end" class="flex-grow-1" cols="6">
-        <v-alert
-            v-model='showRunResult'
-            border='left'
-            type='error'
-            v-if="runResult.status === 'ERROR'">
-          {{ runResult.message }}
-        </v-alert>
-        <template v-for='testResult in runResult.result'>
-          <v-alert
-              tile
-              class="test-results"
-              :color="getBadgeColor(runResult.status)"
-              v-model='showRunResult'
-              :type="testResult.result.passed ? 'success' : 'error'"
-              dismissible
-              close-icon="mdi-close"
-          >
-            <div class="d-flex justify-space-between align-center">
-              <div class='text-h6'>Test {{ testResult.result.passed ? 'passed' : 'failed' }}</div>
-              <div class="text-body-2">{{ runResult.executionDate | date }}</div>
-            </div>
-            <div class="d-flex justify-space-between align-center">
-              <div class='text-body-2'>Metric: {{ testResult.result.metric }}</div>
-              <div class='text-body-2 text-right'
-                   v-if="testResult.result.messages && testResult.result.messages.length">
-                {{ testResult.result.messages[0].text }}
-              </div>
-              <!--              <a class="text-body-2 results-link text-decoration-underline">Full results</a>-->
-            </div>
-          </v-alert>
-        </template>
+        <TestExecutionResultBadge :result="runResult"/>
       </v-col>
     </v-row>
   </ValidationObserver>
@@ -204,17 +174,17 @@ import _ from 'lodash';
 import numeral from 'numeral';
 import {CodeTestCollection, TestDTO, TestExecutionResultDTO, TestResult, TestType} from '@/generated-sources';
 import mixpanel from "mixpanel-browser";
-import {testStatusToColor} from "@/views/main/tests/test-utils";
 import Mousetrap from "mousetrap";
-import IStandaloneCodeEditor = editor.IStandaloneCodeEditor;
 import OverlayLoader from '@/components/OverlayLoader.vue';
+import TestExecutionResultBadge from './TestExecutionResultBadge.vue';
+import IStandaloneCodeEditor = editor.IStandaloneCodeEditor;
 
 
 Vue.filter('formatNumber', function (value, fmt) {
   return numeral(value).format(fmt || '0.0'); // displaying other groupings/separators is possible, look at the docs
 });
 
-@Component({components: {MonacoEditor, OverlayLoader}})
+@Component({components: {MonacoEditor, OverlayLoader, TestExecutionResultBadge}})
 export default class TestEditor extends Vue {
   @Prop({required: true}) testId!: number;
   @Prop({required: true}) suiteId!: number;
@@ -373,10 +343,6 @@ export default class TestEditor extends Vue {
     });
   }
 
-  getBadgeColor(testStatus: TestResult) {
-    return testStatusToColor(testStatus);
-  }
-
   private setUpKeyBindings() {
     this.mouseTrap.bind(['command+s', 'ctrl+s'], () => {
       this.save();
@@ -493,7 +459,8 @@ export default class TestEditor extends Vue {
 ::v-deep .v-alert {
   margin: 0;
 }
-.test-code-container{
+
+.test-code-container {
   position: relative;
 }
 </style>

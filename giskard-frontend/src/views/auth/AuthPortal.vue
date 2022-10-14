@@ -32,7 +32,7 @@ export default class AuthPortal extends Vue {
 
 <style>
 .background {
-  background-image: url("~@/assets/wallpaper-skyline-reduced.jpg");
+  background-image: url("~@/assets/wallpaper.jpg");
   background-position: 95% 20%;
   background-size: auto 100%;
 }

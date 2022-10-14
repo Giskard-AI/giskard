@@ -109,6 +109,14 @@ export default new Router({
                                     ]
                                 },
                                 {
+                                    path: 'project-tests-catalog',
+                                    name: 'project-tests-catalog',
+                                    component: () => import('./views/main/project/TestsCatalog.vue'),
+                                    props: (route) => {
+                                        return {projectId: Number(route.params.id)}
+                                    },
+                                },
+                                {
                                     path: 'test-suites',
                                     name: 'project-test-suites',
                                     component: () => import('./views/main/project/TestSuites.vue'),
