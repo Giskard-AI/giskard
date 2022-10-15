@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="vertical-container">
     <v-container fluid>
       <v-row>
         <v-col :align="'right'">

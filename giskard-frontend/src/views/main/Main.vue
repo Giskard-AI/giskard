@@ -52,8 +52,8 @@
       </v-layout>
     </v-navigation-drawer>
 
-    <div class="pa-0 vertical-container overflow-hidden h100">
-      <router-view class="overflow-hidden h100"></router-view>
+    <div class="pa-0 vertical-container overflow-hidden fill-height">
+      <router-view class="overflow-hidden fill-height"></router-view>
     </div>
   </v-main>
 </template>
