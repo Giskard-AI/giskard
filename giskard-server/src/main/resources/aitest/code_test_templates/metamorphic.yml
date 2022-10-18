@@ -475,6 +475,7 @@ items:
         df=actual_ds,
         model=model,
         perturbation_dict=perturbation,  # Update your perturbation choice here
+        classification_label='{{CLASSIFICATION LABEL}}',
         critical_quantile=0.05
       )
 
@@ -552,6 +553,7 @@ items:
         df=actual_ds,
         model=model,
         perturbation_dict=perturbation,  # Update your perturbation choice here
+        classification_label='{{CLASSIFICATION LABEL}}',
         critical_quantile=0.05
       )
 
@@ -849,6 +851,7 @@ items:
         df=actual_ds,
         model=model,
         perturbation_dict=perturbation,  # Update your perturbation choice here
+        classification_label='{{CLASSIFICATION LABEL}}',
         critical_quantile=0.05
       )
 
@@ -926,5 +929,6 @@ items:
         df=actual_ds,
         model=model,
         perturbation_dict=perturbation,  # Update your perturbation choice here
+        classification_label='{{CLASSIFICATION LABEL}}',
         critical_quantile=0.05
       )
