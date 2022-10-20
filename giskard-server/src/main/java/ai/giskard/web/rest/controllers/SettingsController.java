@@ -1,5 +1,6 @@
 package ai.giskard.web.rest.controllers;
 
+import ai.giskard.config.ApplicationProperties;
 import ai.giskard.domain.GeneralSettings;
 import ai.giskard.ml.MLWorkerClient;
 import ai.giskard.repository.UserRepository;
@@ -7,6 +8,7 @@ import ai.giskard.security.AuthoritiesConstants;
 import ai.giskard.service.GeneralSettingsService;
 import ai.giskard.service.ml.MLWorkerService;
 import ai.giskard.web.dto.config.AppConfigDTO;
+import ai.giskard.web.dto.config.GeneralSettingsDTO;
 import ai.giskard.web.dto.config.MLWorkerInfoDTO;
 import ai.giskard.web.dto.user.AdminUserDTO;
 import ai.giskard.web.dto.user.RoleDTO;
@@ -43,6 +45,7 @@ import static ai.giskard.security.AuthoritiesConstants.ADMIN;
 public class SettingsController {
     private final Logger log = LoggerFactory.getLogger(SettingsController.class);
     private final UserRepository userRepository;
+    private final ApplicationProperties applicationProperties;
     @Value("${build.version:-}")
     private String buildVersion;
     @Value("${git.branch:-}")
@@ -63,6 +66,16 @@ public class SettingsController {
     public GeneralSettings saveGeneralSettings(@RequestBody GeneralSettings settings) {
         return settingsService.save(settings);
     }
+
+    @GetMapping("/general")
+    @Transactional
+    public GeneralSettingsDTO getApplicationGeneralSettings(){
+        return GeneralSettingsDTO.builder()
+            .generalSettings(settingsService.getSettings())
+            .externalMlWorkerEntrypointPort(applicationProperties.getExternalMlWorkerEntrypointPort())
+            .build();
+    }
+
 
     @GetMapping("")
     @Transactional
