@@ -91,6 +91,7 @@ public class MLWorkerService {
             try {
                 finishedLatch.await();
             } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
                 log.warn("Interrupted while uploading a file: {}", file.getFileName());
                 throw new GiskardRuntimeException("Interrupted while uploading a file");
             }
