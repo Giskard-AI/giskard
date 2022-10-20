@@ -18,6 +18,13 @@ services:
       args:
         FRONTEND_ENV: ${FRONTEND_ENV-production}
 
+  git:
+    ports:
+      - "3000:3000"
+    build:
+      context: .
+      dockerfile: "giskard-git/Dockerfile"
+
   backend:
     ports:
       - "9000:9000"

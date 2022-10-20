@@ -41,6 +41,13 @@ services:
     volumes:
       - giskard-home:/giskard-home
 
+  git:
+    build:
+      context: .
+      dockerfile: "giskard-git/Dockerfile"
+    volumes:
+      - giskard-git:/home/git/
+
 
   frontend:
     image: '${DOCKER_REGISTRY}/frontend:${TAG-latest}'
@@ -69,4 +76,5 @@ services:
 
 volumes:
   app-db-data:
+  giskard-git:
   giskard-home:
