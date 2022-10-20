@@ -1,25 +1,13 @@
 package ai.giskard.ml;
 
-import ai.giskard.config.SpringContext;
-import ai.giskard.domain.FeatureType;
-import ai.giskard.domain.ml.Dataset;
-import ai.giskard.domain.ml.ProjectModel;
-import ai.giskard.domain.ml.testing.Test;
-import ai.giskard.exception.MLWorkerRuntimeException;
-import ai.giskard.service.GRPCMapper;
-import ai.giskard.worker.*;
-import com.google.common.collect.Maps;
-import com.google.protobuf.ByteString;
+import ai.giskard.worker.MLWorkerGrpc;
 import io.grpc.Channel;
 import io.grpc.ManagedChannel;
-import io.grpc.StatusRuntimeException;
 import lombok.Getter;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -29,13 +17,11 @@ public class MLWorkerClient implements AutoCloseable {
     private final Logger logger;
 
     @Getter
-    public final MLWorkerGrpc.MLWorkerBlockingStub blockingStub;
+    private final MLWorkerGrpc.MLWorkerBlockingStub blockingStub;
     @Getter
-    public final MLWorkerGrpc.MLWorkerStub stub;
+    private final MLWorkerGrpc.MLWorkerStub nonBlockingStub;
     @Getter
-    public final MLWorkerGrpc.MLWorkerFutureStub futureStub;
-
-    private final GRPCMapper grpcMapper;
+    private final MLWorkerGrpc.MLWorkerFutureStub futureStub;
 
     public MLWorkerClient(Channel channel) {
         // 'channel' here is a Channel, not a ManagedChannel, so it is not this code's responsibility to
@@ -44,82 +30,12 @@ public class MLWorkerClient implements AutoCloseable {
         // Passing Channels to code makes code easier to test and makes it easier to reuse Channels.
         String id = RandomStringUtils.randomAlphanumeric(8); // NOSONAR: no security risk here
         logger = LoggerFactory.getLogger("MLWorkerClient [" + id + "]");
-        if (SpringContext.hasContext()) {
-            this.grpcMapper = SpringContext.getBean(GRPCMapper.class);
-        } else {
-            this.grpcMapper = new GRPCMapper(null);
-        }
         logger.debug("Creating MLWorkerClient");
         blockingStub = MLWorkerGrpc.newBlockingStub(channel);
-        stub = MLWorkerGrpc.newStub(channel);
+        nonBlockingStub = MLWorkerGrpc.newStub(channel);
         futureStub = MLWorkerGrpc.newFutureStub(channel);
-
     }
 
-    public TestResultMessage runTest(
-        ProjectModel model,
-        ByteString referenceDFStream,
-        Dataset referenceDS,
-        ByteString actualDFStream,
-        Dataset actualDS,
-        Test test
-    ) throws IOException {
-        RunTestRequest.Builder requestBuilder = RunTestRequest.newBuilder()
-            .setCode(test.getCode())
-            .setModel(grpcMapper.serialize(model));
-        if (referenceDFStream != null) {
-            requestBuilder.setReferenceDs(grpcMapper.serialize(referenceDS));
-        }
-        if (actualDFStream != null) {
-            requestBuilder.setActualDs(grpcMapper.serialize(actualDS));
-        }
-        RunTestRequest request = requestBuilder.build();
-        logger.debug("Sending requiest to ML Worker: {}", request);
-        try {
-            return blockingStub.runTest(request);
-        } catch (StatusRuntimeException e) {
-            if (e.getCause() instanceof MLWorkerRuntimeException mlWorkerRE) {
-                mlWorkerRE.setMessage(String.format("Failed to execute test: %s", test.getName()));
-                throw mlWorkerRE;
-            }
-            throw e;
-        }
-    }
-
-    public RunModelForDataFrameResponse runModelForDataframe(ProjectModel model, Dataset dataset, Map<String, String> features) throws IOException {
-        RunModelForDataFrameRequest.Builder requestBuilder = RunModelForDataFrameRequest.newBuilder()
-            .setModel(grpcMapper.serialize(model))
-            .setDataframe(DataFrame.newBuilder().addRows(DataRow.newBuilder().putAllColumns(features)).build());
-        if (dataset.getTarget() != null) {
-            requestBuilder.setTarget(dataset.getTarget());
-        }
-        if (dataset.getFeatureTypes() != null) {
-            requestBuilder.putAllFeatureTypes(Maps.transformValues(dataset.getFeatureTypes(), FeatureType::getName));
-        }
-        if (dataset.getColumnTypes() != null) {
-            requestBuilder.putAllColumnTypes(dataset.getColumnTypes());
-        }
-        return blockingStub.runModelForDataFrame(requestBuilder.build());
-    }
-
-    public RunModelResponse runModelForDataStream(ProjectModel model, Dataset dataset) throws IOException {
-        RunModelRequest request = RunModelRequest.newBuilder()
-            .setModel(grpcMapper.serialize(model))
-            .setDataset(grpcMapper.serialize(dataset))
-            .build();
-
-        return blockingStub.runModel(request);
-    }
-
-    public ExplainResponse explain(ProjectModel model, Dataset dataset, Map<String, String> sample) throws IOException {
-        ExplainRequest request = ExplainRequest.newBuilder()
-            .setModel(grpcMapper.serialize(model))
-            .setDataset(grpcMapper.serialize(dataset))
-            .putAllColumns(sample)
-            .build();
-
-        return blockingStub.explain(request);
-    }
 
     public void shutdown() {
         logger.debug("Shutting down MLWorkerClient");
