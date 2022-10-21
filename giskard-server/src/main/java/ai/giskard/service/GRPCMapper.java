@@ -6,25 +6,18 @@ import ai.giskard.domain.ml.ProjectModel;
 import ai.giskard.worker.SerializedGiskardDataset;
 import ai.giskard.worker.SerializedGiskardModel;
 import com.google.common.collect.Maps;
-import com.google.protobuf.ByteString;
 import com.google.protobuf.DoubleValue;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-
 @Service
 @RequiredArgsConstructor
 public class GRPCMapper {
-    private final FileLocationService locationService;
 
-    public SerializedGiskardModel serialize(ProjectModel model) throws IOException {
-        Path modelPath = locationService.resolvedModelPath(model.getProject().getKey(), model.getId());
-
+    public SerializedGiskardModel serialize(ProjectModel model) {
         SerializedGiskardModel.Builder builder = SerializedGiskardModel.newBuilder()
-            .setSerializedPredictionFunction(ByteString.readFrom(Files.newInputStream(modelPath)))
+            .setFileName(model.getFileName())
+            .setProjectKey(model.getProject().getKey())
             .setModelType(model.getModelType().getSimplifiedName());
         if (model.getThreshold() != null) {
             builder.setThreshold(DoubleValue.newBuilder().setValue(model.getThreshold()).build());
@@ -38,11 +31,10 @@ public class GRPCMapper {
         return builder.build();
     }
 
-    public SerializedGiskardDataset serialize(Dataset dataset) throws IOException {
-        Path datasetPath = locationService.resolvedDatasetPath(dataset.getProject().getKey(), dataset.getId());
-
+    public SerializedGiskardDataset serialize(Dataset dataset) {
         SerializedGiskardDataset.Builder builder = SerializedGiskardDataset.newBuilder()
-            .setSerializedDf(ByteString.readFrom(Files.newInputStream(datasetPath)))
+            .setFileName(dataset.getFileName())
+            .setProjectKey(dataset.getProject().getKey())
             .putAllFeatureTypes(Maps.transformValues(dataset.getFeatureTypes(), FeatureType::getName));
         if (dataset.getColumnTypes() != null) {
             builder.putAllColumnTypes(dataset.getColumnTypes());
