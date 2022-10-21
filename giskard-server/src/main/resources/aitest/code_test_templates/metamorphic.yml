@@ -34,8 +34,6 @@ items:
       #              Threshold of the ratio of invariant rows
       #
       #      Returns:
-      #          actual_slices_size:
-      #              Length of actual_slice tested
       #          message:
       #              Test result message
       #          metric:
@@ -116,8 +114,6 @@ items:
       #              Critical quantile above which the null hypothesis cannot be rejected
       #
       #      Returns:
-      #          actual_slices_size:
-      #              Length of actual_slice tested
       #          message:
       #              Test result message
       #          metric:
@@ -200,8 +196,6 @@ items:
       #              Critical quantile above which the null hypothesis cannot be rejected
       #
       #      Returns:
-      #          actual_slices_size:
-      #              Length of actual_slice tested
       #          message:
       #              Test result message
       #          metric:
@@ -281,8 +275,6 @@ items:
       #              regression if the ratio is above the output_sensitivity of 0.1
       #
       #      Returns:
-      #          actual_slices_size:
-      #              Length of actual_slice tested
       #          message:
       #              Test result message
       #          metric:
@@ -358,8 +350,6 @@ items:
       #              One specific label value from the target column
       #
       #      Returns:
-      #          actual_slices_size:
-      #              Length of actual_slice tested
       #          message:
       #              Test result message
       #          metric:
@@ -434,8 +424,6 @@ items:
       #              Critical quantile above which the null hypothesis cannot be rejected
       #
       #      Returns:
-      #          actual_slices_size:
-      #              Length of actual_slice tested
       #          message:
       #              Test result message
       #          metric:
@@ -512,8 +500,6 @@ items:
       #              Critical quantile above which the null hypothesis cannot be rejected
       #
       #      Returns:
-      #          actual_slices_size:
-      #              Length of actual_slice tested
       #          message:
       #              Test result message
       #          metric:
@@ -587,8 +573,6 @@ items:
       #              Threshold of the ratio of increasing rows
       #
       #      Returns:
-      #          actual_slices_size:
-      #              Length of actual_slice tested
       #          message:
       #              Test result message
       #          metric:
@@ -662,8 +646,6 @@ items:
       #              One specific label value from the target column
       #
       #      Returns:
-      #          actual_slices_size:
-      #              Length of actual_slice tested
       #          message:
       #              Test result message
       #          metric:
@@ -734,8 +716,6 @@ items:
       #              Threshold of the ratio of decreasing rows
       #
       #      Returns:
-      #          actual_slices_size:
-      #              Length of actual_slice tested
       #          message:
       #              Test result message
       #          metric:
@@ -810,8 +790,6 @@ items:
       #              Critical quantile above which the null hypothesis cannot be rejected
       #
       #      Returns:
-      #          actual_slices_size:
-      #              Length of actual_slice tested
       #          message:
       #              Test result message
       #          metric:
@@ -888,8 +866,6 @@ items:
       #              Critical quantile above which the null hypothesis cannot be rejected
       #
       #      Returns:
-      #          actual_slices_size:
-      #              Length of actual_slice tested
       #          message:
       #              Test result message
       #          metric:
