@@ -68,4 +68,21 @@ class TestControllerIT {
             .andExpect(jsonPath("$.collections.[*].items").isNotEmpty())
             .andExpect(jsonPath("$.testAvailability").isNotEmpty());
     }
+
+    @Test
+    @Transactional
+    void testDatasetMetadata() throws Exception {
+        Project project = projectRepository.getOneByName(initService.getProjectByCreatorLogin("admin"));
+        Optional<Dataset> dataset = project.getDatasets().stream().findFirst();
+        if (dataset.isEmpty()) {
+            throw new AssertionError("demo dataset not found");
+        }
+        restUserMockMvc.perform(get(String.format("/api/v2/datasets/%s/metadata", dataset.get().getId())).accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
+            .andExpect(jsonPath("$.id").isNotEmpty())
+            .andExpect(jsonPath("$.target").isString())
+            .andExpect(jsonPath("$.featureTypes").isNotEmpty())
+            .andExpect(jsonPath("$.columnTypes").isNotEmpty());
+    }
 }
