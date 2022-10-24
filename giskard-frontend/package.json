@@ -36,7 +36,7 @@
     "vue-moment": "^4.1.0",
     "vue-monaco": "^1.2.2",
     "vue-property-decorator": "^9.1.2",
-    "vue-router": "^3.5.3",
+    "vue-router": "^3.6.5",
     "vue-toastification": "^1.7.14",
     "vuetify": "^2.6.8",
     "vuetify-dialog": "^2.0.17",
