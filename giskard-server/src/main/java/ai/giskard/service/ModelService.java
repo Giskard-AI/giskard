@@ -28,41 +28,65 @@ import java.util.Map;
 @Transactional
 @RequiredArgsConstructor
 public class ModelService {
-    private final Logger log = LoggerFactory.getLogger(ModelService.class);
-
     final DatasetRepository datasetRepository;
     final ModelRepository modelRepository;
     final PermissionEvaluator permissionEvaluator;
     final InspectionRepository inspectionRepository;
+    private final Logger log = LoggerFactory.getLogger(ModelService.class);
     private final MLWorkerService mlWorkerService;
     private final FileLocationService locationService;
     private final FileLocationService fileLocationService;
     private final GRPCMapper grpcMapper;
 
+
     public RunModelForDataFrameResponse predict(ProjectModel model, Dataset dataset, Map<String, String> features) throws IOException {
         RunModelForDataFrameResponse response;
         try (MLWorkerClient client = mlWorkerService.createClient()) {
-            response = client.runModelForDataframe(model, dataset, features);
+            UploadStatus modelUploadStatus = mlWorkerService.upload(client, model);
+            assert modelUploadStatus.getCode().equals(UploadStatusCode.Ok) : "Failed to upload model";
+            response = getRunModelForDataFrameResponse(model, dataset, features, client);
         }
+        return response;
+    }
+
+    private RunModelForDataFrameResponse getRunModelForDataFrameResponse(ProjectModel model, Dataset dataset, Map<String, String> features, MLWorkerClient client) {
+        RunModelForDataFrameResponse response;
+        RunModelForDataFrameRequest.Builder requestBuilder = RunModelForDataFrameRequest.newBuilder()
+            .setModel(grpcMapper.serialize(model))
+            .setDataframe(DataFrame.newBuilder().addRows(DataRow.newBuilder().putAllColumns(features)).build());
+        if (dataset.getTarget() != null) {
+            requestBuilder.setTarget(dataset.getTarget());
+        }
+        if (dataset.getFeatureTypes() != null) {
+            requestBuilder.putAllFeatureTypes(Maps.transformValues(dataset.getFeatureTypes(), FeatureType::getName));
+        }
+        if (dataset.getColumnTypes() != null) {
+            requestBuilder.putAllColumnTypes(dataset.getColumnTypes());
+        }
+        response = client.getBlockingStub().runModelForDataFrame(requestBuilder.build());
         return response;
     }
 
     public ExplainResponse explain(ProjectModel model, Dataset dataset, Map<String, String> features) throws IOException {
-
-        ExplainResponse response;
         try (MLWorkerClient client = mlWorkerService.createClient()) {
-            response = client.explain(
-                model,
-                dataset,
-                features);
-        }
-        return response;
-    }
+            mlWorkerService.upload(client, model);
+            mlWorkerService.upload(client, dataset);
 
+            ExplainRequest request = ExplainRequest.newBuilder()
+                .setModel(grpcMapper.serialize(model))
+                .setDataset(grpcMapper.serialize(dataset))
+                .putAllColumns(features)
+                .build();
+
+            return client.getBlockingStub().explain(request);
+        }
+    }
 
     public ExplainTextResponse explainText(ProjectModel model, Dataset dataset, InspectionSettings inspectionSettings, String featureName, Map<String, String> features) throws IOException {
         ExplainTextResponse response;
         try (MLWorkerClient client = mlWorkerService.createClient()) {
+            mlWorkerService.upload(client, model);
+
             response = client.getBlockingStub().explainText(
                 ExplainTextRequest.newBuilder()
                     .setModel(grpcMapper.serialize(model))
@@ -75,7 +99,6 @@ public class ModelService {
         }
         return response;
     }
-
 
     public Inspection createInspection(Long modelId, Long datasetId) throws IOException {
         log.info("Creating inspection for model {} and dataset {}", modelId, datasetId);
@@ -102,11 +125,20 @@ public class ModelService {
     private RunModelResponse predictSerializedDataset(ProjectModel model, Dataset dataset) throws IOException {
         RunModelResponse response;
         try (MLWorkerClient client = mlWorkerService.createClient()) {
-            response = client.runModelForDataStream(model, dataset);
+            mlWorkerService.upload(client, model);
+            mlWorkerService.upload(client, dataset);
+
+            RunModelRequest request = RunModelRequest.newBuilder()
+                .setModel(grpcMapper.serialize(model))
+                .setDataset(grpcMapper.serialize(dataset))
+                .build();
+
+            response = client.getBlockingStub().runModel(request);
         }
 
         return response;
     }
+
 
     public void deleteModel(Long modelId) {
         ProjectModel model = modelRepository.getById(modelId);
