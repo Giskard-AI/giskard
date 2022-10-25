@@ -24,7 +24,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @WithMockUser(authorities = AuthoritiesConstants.ADMIN)
 @IntegrationTest
-public class ProjectConfigIT {
+class ProjectConfigIT {
 
     private static final String DEFAULT_PROJECT_NAME = "Test Project";
     private static final String DEFAULT_PROJECT_KEY = "test_project";
