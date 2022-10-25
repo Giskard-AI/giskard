@@ -229,6 +229,7 @@ export default class TestEditor extends Vue {
   isEditorReady = false;
 
   get editor(): IStandaloneCodeEditor {
+    // @ts-ignore
     return this.$refs.editor?.editor;
   }
 
