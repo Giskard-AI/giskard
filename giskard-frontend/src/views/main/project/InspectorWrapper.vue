@@ -7,7 +7,7 @@
     >
 
       <v-toolbar id='data-explorer-toolbar' flat>
-        <v-tooltip  class="pa-0" bottom> 
+        <v-tooltip bottom> 
           <template v-slot:activator="{ on, attrs }">
             <v-icon v-on="on" class="pr-5" small>info </v-icon>
           </template>
@@ -401,9 +401,5 @@ export default class InspectorWrapper extends Vue {
 #feedback-card .v-card__title {
   font-size: 1.1rem;
   padding: 8px 12px 0;
-}
-
-.col{
-  padding-bottom: 0;
 }
 </style>
