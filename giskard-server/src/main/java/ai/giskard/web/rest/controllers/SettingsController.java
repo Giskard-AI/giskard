@@ -114,7 +114,7 @@ public class SettingsController {
     @GetMapping("/ml-worker-info")
     public MLWorkerInfoDTO getMLWorkerInfo() throws JsonProcessingException, InvalidProtocolBufferException {
         try (MLWorkerClient client = mlWorkerService.createClient()) {
-            MLWorkerInfo info = client.blockingStub.getInfo(
+            MLWorkerInfo info = client.getBlockingStub().getInfo(
                 MLWorkerInfoRequest.newBuilder().setListPackages(true).build());
 
             ObjectMapper objectMapper = new ObjectMapper();
