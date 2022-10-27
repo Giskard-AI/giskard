@@ -4,12 +4,11 @@ import ai.giskard.domain.ml.Dataset;
 import ai.giskard.domain.ml.ProjectModel;
 import ai.giskard.domain.ml.TestSuite;
 import ai.giskard.utils.JSONStringAttributeConverter;
-
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
+import com.fasterxml.jackson.core.type.TypeReference;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -28,7 +27,15 @@ public class Project extends AbstractAuditingEntity {
     @Converter
     public static class InspectionSettingsConverter extends JSONStringAttributeConverter<InspectionSettings> {
         @Override
-        public TypeReference<InspectionSettings> getValueTypeRef() {return new TypeReference<>() {};}
+        public TypeReference<InspectionSettings> getValueTypeRef() {
+            return new TypeReference<>() {
+            };
+        }
+
+        @Override
+        public InspectionSettings nullConverter() {
+            return new InspectionSettings();
+        }
     }
 
     @Getter
