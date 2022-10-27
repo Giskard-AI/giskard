@@ -87,10 +87,6 @@ public class ProjectController {
         } else {
             throw new IllegalArgumentException("Either project id or project key should be specified");
         }
-        if (project.getInspectionSettings() == null){
-            project.setInspectionSettings(new InspectionSettings());
-            this.projectRepository.save(project);
-        }
         permissionEvaluator.validateCanReadProject(project.getId());
         return giskardMapper.projectToProjectDTO(project);
     }
