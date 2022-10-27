@@ -110,5 +110,6 @@ public class Project extends AbstractAuditingEntity {
         this.name = name;
         this.description = description;
         this.owner = owner;
+        this.inspectionSettings = new InspectionSettings();
     }
 }
