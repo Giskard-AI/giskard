@@ -17,6 +17,7 @@
           <v-col cols="1">Size</v-col>
           <v-col cols="3">Uploaded on</v-col>
           <v-col cols="2">Target</v-col>
+          <v-col cols="1">Id</v-col>
           <v-col>Actions</v-col>
         </v-row>
 
@@ -28,6 +29,7 @@
               <v-col cols="1">{{ f.size | fileSize }}</v-col>
               <v-col cols="3">{{ f.createdDate | date }}</v-col>
               <v-col cols="2">{{ f.target }}</v-col>
+              <v-col cols="1"> {{ f.id }}</v-col>
               <v-col>
                 <span>
               <v-tooltip bottom dense>
