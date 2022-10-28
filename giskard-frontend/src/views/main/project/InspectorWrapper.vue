@@ -7,15 +7,33 @@
     >
 
       <v-toolbar id='data-explorer-toolbar' flat>
-        <v-tooltip nudge-bottom="145" nudge-right="102"  class="pa-0 asdasd">
+        <v-tooltip bottom> 
           <template v-slot:activator="{ on, attrs }">
             <v-icon v-on="on" class="pr-5" small>info </v-icon>
           </template>
-          <span>
-            Model : {{ inspection.model.name }}
-          <br/>
-          Dataset : {{ inspection.dataset.name }}
-        </span>
+            <h3> Model </h3>
+            <div class="d-flex">
+              <div> Id </div>
+              <v-spacer/>
+              <div> {{ inspection.model.id }}</div>
+            </div>
+            <div class="d-flex">
+              <div> Name </div>
+              <v-spacer/>
+              <div class="pl-5"> {{ inspection.model.name }}</div>
+            </div>
+            <br/>
+            <h3> Dataset </h3>
+            <div class="d-flex">
+              <div> Id </div>
+              <v-spacer/>
+              <div> {{ inspection.dataset.id }}</div>
+            </div>
+            <div class="d-flex pb-3">
+              <div> Name </div>
+              <v-spacer/>
+              <div class="pl-5"> {{ inspection.dataset.name }}</div>
+            </div>
         </v-tooltip>
         <span class='subtitle-2 mr-2'>Dataset Explorer</span>
         <v-btn icon @click='shuffleMode = !shuffleMode'>
