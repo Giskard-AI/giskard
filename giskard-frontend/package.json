@@ -21,7 +21,7 @@
     "core-js": "^3.24.1",
     "crypto-js": "^4.1.1",
     "date-fns": "^2.29.1",
-    "echarts": "^5.3.3",
+    "echarts": "^5.4.0",
     "lodash": "^4.17.21",
     "mixpanel-browser": "^2.45.0",
     "mousetrap": "^1.6.5",
