@@ -11,7 +11,7 @@ plugins {
     id "eclipse"
     id "jacoco"
     id "org.springframework.boot" version "${springBootVersion}"
-    id "com.google.cloud.tools.jib" version "3.2.1"
+    id "com.google.cloud.tools.jib" version "3.3.1"
     id "com.gorylenko.gradle-git-properties" version "2.4.0"
     id "io.freefair.lombok" version "6.5.0.3"
     id "org.liquibase.gradle" version "2.1.1"
