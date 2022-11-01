@@ -47,20 +47,25 @@ public class MLWorkerService {
         }
     }
 
-    public MLWorkerClient createClient() {
-        ClientInterceptor clientInterceptor = new MLWorkerClientErrorInterceptor();
-        String host = getMlWorkerHost();
-        int port = getMlWorkerPort();
-        log.info("Creating MLWorkerClient for {}:{}", host, port);
+    public MLWorkerClient createClient(boolean isInternal) {
+        try {
+            ClientInterceptor clientInterceptor = new MLWorkerClientErrorInterceptor();
+            String host = getMlWorkerHost(isInternal);
+            int port = getMlWorkerPort(isInternal);
+            log.info("Creating MLWorkerClient for {}:{}", host, port);
 
-        ManagedChannel channel = ManagedChannelBuilder.forAddress(host, port)
-            .intercept(clientInterceptor)
-            .usePlaintext()
-            .maxInboundMessageSize((int) DataSize.ofMegabytes(applicationProperties.getMaxInboundMLWorkerMessageMB()).toBytes())
-            .build();
+            ManagedChannel channel = ManagedChannelBuilder.forAddress(host, port)
+                .intercept(clientInterceptor)
+                .usePlaintext()
+                .maxInboundMessageSize((int) DataSize.ofMegabytes(applicationProperties.getMaxInboundMLWorkerMessageMB()).toBytes())
+                .build();
 
 
-        return new MLWorkerClient(channel);
+            return new MLWorkerClient(channel);
+        } catch (GiskardRuntimeException e) {
+            log.info("Failed to create ML Worker client", e);
+            return null;
+        }
     }
 
     public UploadStatus upload(MLWorkerClient client, ProjectFile file) throws IOException {
@@ -99,18 +104,24 @@ public class MLWorkerService {
         return result.get();
     }
 
-    private int getMlWorkerPort() {
-        if (applicationProperties.isExternalMlWorkerEnabled() && mlWorkerTunnelService.getTunnelPort().isPresent()) {
-            return mlWorkerTunnelService.getTunnelPort().get();
+    private int getMlWorkerPort(boolean isInternal) {
+        if (!isInternal && mlWorkerTunnelService.getTunnelPort().isEmpty()) {
+            throw new GiskardRuntimeException("No external worker is connected");
         }
-        return applicationProperties.getMlWorkerPort();
+        if (isInternal || !applicationProperties.isExternalMlWorkerEnabled()) {
+            return applicationProperties.getMlWorkerPort();
+        }
+        return mlWorkerTunnelService.getTunnelPort().get();
     }
 
-    private String getMlWorkerHost() {
-        if (applicationProperties.isExternalMlWorkerEnabled() && mlWorkerTunnelService.getTunnelPort().isPresent()) {
-            return "localhost";
+    private String getMlWorkerHost(boolean isInternal) {
+        if (!isInternal && mlWorkerTunnelService.getTunnelPort().isEmpty()) {
+            throw new GiskardRuntimeException("No external worker is connected");
         }
-        return applicationProperties.getMlWorkerHost();
+        if (isInternal || !applicationProperties.isExternalMlWorkerEnabled()) {
+            return applicationProperties.getMlWorkerHost();
+        }
+        return "localhost";
     }
 
     @RequiredArgsConstructor
