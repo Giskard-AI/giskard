@@ -18,7 +18,8 @@ import {
     InspectionDTO,
     JWTToken,
     ManagedUserVM,
-    MessageDTO, MLWorkerInfoDTO,
+    MessageDTO,
+    MLWorkerInfoDTO,
     ModelDTO,
     PasswordResetRequest,
     PredictionDTO,
@@ -35,7 +36,7 @@ import {
     UpdateMeDTO,
     UpdateTestSuiteDTO,
     UserDTO
-} from '@/generated-sources';
+} from './generated-sources';
 import {TYPE} from "vue-toastification";
 import ErrorToast from "@/views/main/utils/ErrorToast.vue";
 import router from "@/router";
@@ -174,7 +175,7 @@ export const api = {
         return apiV2.get<unknown, AppConfigDTO>(`/settings`);
     },
     async getMLWorkerSettings() {
-        return apiV2.get<unknown, MLWorkerInfoDTO>(`/settings/ml-worker-info`);
+        return apiV2.get<unknown, MLWorkerInfoDTO[]>(`/settings/ml-worker-info`);
     },
     async saveGeneralSettings(settings: GeneralSettings) {
         return apiV2.post<unknown, GeneralSettings>(`/settings`, settings);

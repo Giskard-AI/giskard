@@ -1,3 +1,4 @@
+import type {MLWorkerType} from './../../../domain/mlworker-type';
 import type {UserDTO} from './../user/user-dto';
 
 /**
@@ -9,6 +10,7 @@ export interface ProjectDTO {
     guests: UserDTO[];
     id: number;
     key: string;
+    mlWorkerType: MLWorkerType;
     name: string;
     owner: UserDTO;
 }

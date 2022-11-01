@@ -10,6 +10,7 @@ import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.ColumnDefault;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
@@ -72,6 +73,17 @@ public class Project extends AbstractAuditingEntity {
         inverseJoinColumns = @JoinColumn(name = "user_id"))
     private Set<User> guests = new HashSet<>();
 
+
+    @Setter
+    @Getter
+    @NotNull
+    @Enumerated(EnumType.STRING)
+    @ColumnDefault(value = "EXTERNAL")
+    private MLWorkerType mlWorkerType = MLWorkerType.EXTERNAL;
+
+    public boolean isUsingInternalWorker() {
+        return mlWorkerType == MLWorkerType.INTERNAL;
+    }
 
     public void addGuest(User user) {
         this.guests.add(user);
