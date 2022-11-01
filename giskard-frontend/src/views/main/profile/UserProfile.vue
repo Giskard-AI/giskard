@@ -140,8 +140,8 @@
             </v-card-text>
           </v-card>
         </v-col>
-        <v-col v-show="isAdmin">
-          <v-card height="100%">
+        <v-col>
+          <v-card height="100%" v-if="isAdmin">
             <v-card-title class="font-weight-light secondary--text">
               <span>Usage reporting</span>
               <v-spacer/>
@@ -158,11 +158,12 @@
               </div>
             </v-card-text>
           </v-card>
+          <v-skeleton-loader v-else type="card"></v-skeleton-loader>
         </v-col>
       </v-row>
-      <v-row v-show="isAdmin">
+      <v-row>
         <v-col>
-          <v-card height="100%">
+          <v-card height="100%" v-if="isAdmin">
             <v-card-title class="font-weight-light secondary--text d-flex">
               <span>ML Worker</span>
               <v-spacer/>
@@ -282,6 +283,7 @@
             </v-card-text>
 
           </v-card>
+          <v-skeleton-loader v-else type="card"></v-skeleton-loader>
         </v-col>
       </v-row>
     </v-container>
