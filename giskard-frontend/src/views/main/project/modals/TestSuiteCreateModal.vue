@@ -10,7 +10,7 @@
           <v-row>
             <v-col cols=12>
               <ValidationProvider name="Test suite name" mode="eager" rules="required" v-slot="{errors}">
-                <v-text-field label="Test suite name" v-model="name" :error-messages="errors"></v-text-field>
+                <v-text-field label="Test suite name" autofocus v-model="name" :error-messages="errors" outlined></v-text-field>
               </ValidationProvider>
               <ValidationProvider name="Model" mode="eager" rules="required" v-slot="{errors}">
                 <ModelSelector :project-id="projectId" :value.sync="model"/>

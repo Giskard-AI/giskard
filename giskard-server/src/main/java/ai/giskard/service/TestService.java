@@ -68,7 +68,7 @@ public class TestService {
         ProjectModel model = test.getTestSuite().getModel();
         Dataset referenceDS = test.getTestSuite().getReferenceDataset();
         Dataset actualDS = test.getTestSuite().getActualDataset();
-        try (MLWorkerClient client = mlWorkerService.createClient()) {
+        try (MLWorkerClient client = mlWorkerService.createClient(test.getTestSuite().getProject().isUsingInternalWorker())) {
             TestResultMessage testResult;
 
             mlWorkerService.upload(client, model);

@@ -43,7 +43,8 @@ public class MLWorkerClientErrorInterceptor implements ClientInterceptor {
 
     private Status interpretErrorStatus(Status basicStatus) {
         if (basicStatus.getCode() == Status.Code.UNAVAILABLE) {
-            basicStatus = basicStatus.withDescription("Failed to connect to ML Worker, check that it's running");
+            basicStatus = basicStatus.withDescription("Failed to connect to ML Worker, check that it's running. " +
+                "ML Worker can be started by running 'giskard worker start'. Refer to documentation for more information");
         }
         return basicStatus;
     }
