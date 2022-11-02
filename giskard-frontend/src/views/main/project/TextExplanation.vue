@@ -62,7 +62,6 @@ import mixpanel from "mixpanel-browser";
 export default class TextExplanation extends Vue {
   @Prop({required: true}) modelId!: number;
   @Prop({required: true}) datasetId!: number;
-  @Prop({required: true}) projectId!: number;
   @Prop({required: true}) textFeatureNames!: string[];
   @Prop({required: true}) classificationLabels!: string[];
   @Prop({default: {}}) inputData!: object;
@@ -101,7 +100,6 @@ export default class TextExplanation extends Vue {
         const response = await api.explainText(
             this.modelId,
             this.datasetId,
-            this.projectId,
             this.inputData,
             this.selectedFeature
         );
