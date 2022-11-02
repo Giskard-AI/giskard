@@ -104,8 +104,8 @@ public class SettingsController {
 
     @GetMapping("/ml-worker-info")
     public List<MLWorkerInfoDTO> getMLWorkerInfo() throws JsonProcessingException, InvalidProtocolBufferException, ExecutionException, InterruptedException {
-        try (MLWorkerClient internalClient = mlWorkerService.createClient(true);
-             MLWorkerClient externalClient = mlWorkerService.createClient(false)) {
+        try (MLWorkerClient internalClient = mlWorkerService.createClient(true, false);
+             MLWorkerClient externalClient = mlWorkerService.createClient(false, false)) {
             List<ListenableFuture<MLWorkerInfo>> awaitableResults = new ArrayList<>();
 
             if (internalClient != null) {
