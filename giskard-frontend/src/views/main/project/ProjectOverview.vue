@@ -7,6 +7,10 @@
           <td>{{ project.key }}</td>
         </tr>
         <tr>
+          <td>Project Id</td>
+          <td>{{ project.id }}</td>
+        </tr>
+        <tr>
           <td>Created by</td>
           <td>{{ getUserFullDisplayName(project.owner) }}</td>
         </tr>

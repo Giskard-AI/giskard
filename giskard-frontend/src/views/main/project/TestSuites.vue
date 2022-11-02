@@ -65,6 +65,12 @@ export default class TestSuites extends Vue {
         sortable: true,
         value: "actualDataset.name",
         align: "left"
+      },
+      {
+        text: "id",
+        sortable: false,
+        value: "id",
+        align: "left"
       }
     ];
   }
