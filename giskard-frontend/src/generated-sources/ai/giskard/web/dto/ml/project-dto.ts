@@ -1,4 +1,5 @@
 import type {InspectionSettings} from './../../../domain/inspection-settings';
+import type {MLWorkerType} from './../../../domain/mlworker-type';
 import type {UserDTO} from './../user/user-dto';
 
 /**
@@ -11,6 +12,7 @@ export interface ProjectDTO {
     id: number;
     inspectionSettings: InspectionSettings;
     key: string;
+    mlWorkerType: MLWorkerType;
     name: string;
     owner: UserDTO;
 }

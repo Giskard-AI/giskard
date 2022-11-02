@@ -326,6 +326,7 @@ public class InitService {
             User owner = userRepository.getOneByLogin(ownerLogin);
             Assert.notNull(owner, "Owner does not exist in database");
             Project project = new Project(projectKey, projectName, projectName, owner);
+            project.setMlWorkerType(MLWorkerType.INTERNAL);
             projectService.create(project, ownerLogin);
             projectRepository.save(project);
             List<String> models = getFileNames(projectKey, "models");
@@ -345,7 +346,6 @@ public class InitService {
      * @param projectKey key of the project
      * @param type       type (models/datasets)
      * @return List of names
-     * @throws IOException
      */
     private List<String> getFileNames(String projectKey, String type) throws IOException {
         String path = PROJECTDIR + projectKey + "/" + type + "/*";

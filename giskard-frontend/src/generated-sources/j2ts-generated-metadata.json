@@ -56,6 +56,7 @@
     "ai.giskard.web.dto.ModelMetadataDTO": "ModelMetadataDTO",
     "ai.giskard.web.dto.MessageDTO": "MessageDTO",
     "ai.giskard.domain.ml.CodeTestCollection": "CodeTestCollection",
+    "ai.giskard.domain.MLWorkerType": "MLWorkerType",
     "ai.giskard.domain.ml.CodeTestTemplate": "CodeTestTemplate",
     "ai.giskard.web.dto.PredictionInputDTO": "PredictionInputDTO",
     "ai.giskard.web.dto.config.AppConfigDTO": "AppConfigDTO",

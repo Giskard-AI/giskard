@@ -146,6 +146,14 @@ liquibase {
             logLevel "info"
             classpath "src/main/resources/"
         }
+        h2 {
+            driver "org.h2.Driver"
+            url System.getenv().getOrDefault("SPRING_LIQUIBASE_URL", "jdbc:h2:file:" + System.getenv().getOrDefault("GISKARD_HOME", "~/giskard-home") + "/database/giskard;AUTO_SERVER=TRUE")
+            changeLogFile "src/main/resources/config/liquibase/master.xml"
+            defaultSchemaName ""
+            logLevel "info"
+            classpath "src/main/resources/"
+        }
         diffLog {
             driver "org.postgresql.Driver"
             url System.getenv().getOrDefault("SPRING_LIQUIBASE_URL", "jdbc:postgresql://localhost:5432/app")

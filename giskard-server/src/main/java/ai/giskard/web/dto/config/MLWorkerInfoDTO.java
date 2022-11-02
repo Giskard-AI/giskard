@@ -25,6 +25,7 @@ public class MLWorkerInfoDTO {
         private String version;
     }
 
+
     private PlatformInfoDTO platform;
     private String interpreter;
     private String interpreterVersion;
