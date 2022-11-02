@@ -1,6 +1,5 @@
 package ai.giskard.web.rest.controllers;
 
-import ai.giskard.domain.InspectionSettings;
 import ai.giskard.domain.Project;
 import ai.giskard.repository.ProjectRepository;
 import ai.giskard.security.PermissionEvaluator;
