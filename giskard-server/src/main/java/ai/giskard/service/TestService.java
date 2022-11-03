@@ -58,6 +58,7 @@ public class TestService {
     public TestExecutionResultDTO runTest(Long testId) throws IOException {
         TestExecutionResultDTO res = new TestExecutionResultDTO(testId);
         Test test = testRepository.findById(testId).orElseThrow(() -> new EntityNotFoundException(Entity.TEST, testId));
+        res.setTestName(test.getName());
         logger.info("Running test {}({}) for suite {}, project {}",
             test.getName(), test.getId(), test.getTestSuite().getId(), test.getTestSuite().getProject().getKey());
 
@@ -68,7 +69,7 @@ public class TestService {
         ProjectModel model = test.getTestSuite().getModel();
         Dataset referenceDS = test.getTestSuite().getReferenceDataset();
         Dataset actualDS = test.getTestSuite().getActualDataset();
-        try (MLWorkerClient client = mlWorkerService.createClient()) {
+        try (MLWorkerClient client = mlWorkerService.createClient(test.getTestSuite().getProject().isUsingInternalWorker())) {
             TestResultMessage testResult;
 
             mlWorkerService.upload(client, model);

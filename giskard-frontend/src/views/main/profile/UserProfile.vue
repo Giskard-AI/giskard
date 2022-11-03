@@ -140,8 +140,8 @@
             </v-card-text>
           </v-card>
         </v-col>
-        <v-col v-show="isAdmin">
-          <v-card height="100%">
+        <v-col>
+          <v-card height="100%" v-if="isAdmin">
             <v-card-title class="font-weight-light secondary--text">
               <span>Usage reporting</span>
               <v-spacer/>
@@ -158,60 +158,77 @@
               </div>
             </v-card-text>
           </v-card>
+          <v-skeleton-loader v-else type="card"></v-skeleton-loader>
         </v-col>
       </v-row>
-      <v-row v-show="isAdmin">
+      <v-row>
         <v-col>
-          <v-card height="100%">
-            <v-card-title class="font-weight-light secondary--text">
+          <v-card height="100%" v-if="isAdmin">
+            <v-card-title class="font-weight-light secondary--text d-flex">
               <span>ML Worker</span>
               <v-spacer/>
-              <v-chip small
-                      class="justify-center"
-                      outlined
-                      :color="mlWorkerSettingsLoading ? 'grey' : (mlWorkerSettings ? 'green': 'red')"
-                      @click="initMLWorkerInfo"
-              >
-                <v-progress-circular size="20" indeterminate v-show="mlWorkerSettingsLoading" class="pl-10 pr-10"/>
-                <v-container v-show="!mlWorkerSettingsLoading" class="pr-0">
-                  <span v-if="mlWorkerSettings">{{ mlWorkerSettings.isRemote ? 'external' : 'internal' }}</span>
-                  <span v-else>unavailable</span>
-                  <v-icon size="10" :color="mlWorkerSettings ? 'green': 'red'" class="pl-5">mdi-circle</v-icon>
-                </v-container>
-              </v-chip>
+              <v-tabs class="worker-tabs">
+                <v-tab @change="externalWorkerSelected=true" :disabled="mlWorkerSettingsLoading" class="worker-tab">
+                  <span>external</span>
+                  <v-icon v-show="!mlWorkerSettingsLoading" size="10"
+                          :color="isWorkerAvailable(false) ? 'green': 'red'">mdi-circle
+                  </v-icon>
+                  <v-progress-circular size="20" indeterminate v-show="mlWorkerSettingsLoading"/>
+                </v-tab>
+                <v-tab @change="externalWorkerSelected=false" :disabled="mlWorkerSettingsLoading" class="worker-tab">
+                  <span>internal</span>
+                  <v-icon v-show="!mlWorkerSettingsLoading" size="10" :color="isWorkerAvailable(true) ? 'green': 'red'">
+                    mdi-circle
+                  </v-icon>
+                  <v-progress-circular size="20" indeterminate v-show="mlWorkerSettingsLoading"/>
+                </v-tab>
+              </v-tabs>
+              <v-btn icon @click="initMLWorkerInfo">
+                <v-icon>refresh</v-icon>
+              </v-btn>
             </v-card-title>
             <v-card-text>
-              <v-simple-table v-if="mlWorkerSettings">
+              <v-alert
+                  v-show="!externalWorkerSelected"
+                  color="primary"
+                  border="left"
+                  outlined
+                  colored-border
+                  icon="warning"
+              >Internal ML Worker is only used in demo projects. For other projects use an <span
+                  class="font-weight-bold">External ML Worker</span>.
+              </v-alert>
+              <v-simple-table v-if="currentWorker">
                 <table class="w100">
                   <tr>
                     <th style="width: 30%"></th>
                   </tr>
                   <tr>
                     <td>Python version</td>
-                    <td>{{ mlWorkerSettings.interpreterVersion }}</td>
+                    <td class="text-h6">{{ currentWorker.interpreterVersion }}</td>
                   </tr>
                   <tr>
                     <td>Python path</td>
-                    <td>{{ mlWorkerSettings.interpreter }}</td>
+                    <td>{{ currentWorker.interpreter }}</td>
                   <tr>
                     <td>Host</td>
-                    <td>{{ mlWorkerSettings.platform.node }}</td>
+                    <td>{{ currentWorker.platform.node }}</td>
                   </tr>
                   <tr>
                     <td>Process id</td>
-                    <td>{{ mlWorkerSettings.pid }}</td>
+                    <td>{{ currentWorker.pid }}</td>
                   </tr>
                   <tr>
                     <td>Process start time</td>
-                    <td>{{ epochToDate(mlWorkerSettings.processStartTime) }}</td>
+                    <td>{{ epochToDate(currentWorker.processStartTime) }}</td>
                   </tr>
                   <tr>
                     <td>Internal ML Worker port</td>
-                    <td>{{ mlWorkerSettings.internalGrpcPort }}</td>
+                    <td>{{ currentWorker.internalGrpcPort }}</td>
                   </tr>
                   <tr>
                     <td>Architecture</td>
-                    <td>{{ mlWorkerSettings.platform.machine }}</td>
+                    <td>{{ currentWorker.platform.machine }}</td>
                   </tr>
                   <tr>
                     <td>Installed packages</td>
@@ -237,14 +254,36 @@
                   </tr>
                 </table>
               </v-simple-table>
-
               <v-card-text v-else class="pa-0">
                 <span v-show="mlWorkerSettingsLoading">Loading information</span>
-                <span v-show="!mlWorkerSettingsLoading">Not available. Check that ML Worker is running.</span>
+                <v-container v-show="!mlWorkerSettingsLoading" class="pa-0">
+                  <div v-show="!externalWorkerSelected">
+                    <p>Not available. Check that internal ML Worker is running or start it with</p>
+                    <p><code class="text-body-1">docker-compose up -d ml-worker</code></p>
+                  </div>
+                  <div v-show="externalWorkerSelected">
+                    <v-alert
+                        color="primary"
+                        border="left"
+                        outlined
+                        colored-border
+                        icon="info"
+                    >No external ML Worker is connected
+                    </v-alert>
+                    <p>To connect a worker, install giskard library in any code environment of your choice with</p>
+                    <p><code class="text-body-1">pip install giskard</code></p>
+                    <p>then run</p>
+                    <p><code class="text-body-1">giskard worker start -h GISKARD_ADDRESS</code></p>
+                    <p>to connect to Giskard</p>
+                  </div>
+                </v-container>
               </v-card-text>
+
+
             </v-card-text>
 
           </v-card>
+          <v-skeleton-loader v-else type="card"></v-skeleton-loader>
         </v-col>
       </v-row>
     </v-container>
@@ -252,7 +291,7 @@
 </template>
 
 <script lang="ts">
-import {Component, Vue} from 'vue-property-decorator';
+import {Component, Vue, Watch} from 'vue-property-decorator';
 import {readAppSettings, readUserProfile} from '@/store/main/getters';
 import {api} from '@/api';
 import {commitAddNotification, commitRemoveNotification} from '@/store/main/mutations';
@@ -278,7 +317,9 @@ export default class UserProfile extends Vue {
   private apiAccessToken: JWTToken | null = null;
   private appSettings: AppInfoDTO | null = null;
   private isAdmin: boolean = false;
-  private mlWorkerSettings: MLWorkerInfoDTO | null = null;
+  private currentWorker: MLWorkerInfoDTO | null = null;
+  private allMLWorkerSettings: MLWorkerInfoDTO[] = [];
+  private externalWorkerSelected = true;
   private mlWorkerSettingsLoading = false;
   private installedPackagesHeaders = [{text: 'Name', value: 'name', width: '70%'}, {
     text: 'Version',
@@ -305,17 +346,32 @@ export default class UserProfile extends Vue {
     this.resetFormData();
   }
 
+  private isWorkerAvailable(isInternal: boolean): boolean {
+    return this.allMLWorkerSettings.find(value => value.isRemote === !isInternal) !== undefined;
+  }
+
   private async initMLWorkerInfo() {
     try {
-      this.mlWorkerSettings = null;
+      this.currentWorker = null;
       this.mlWorkerSettingsLoading = true;
-      this.mlWorkerSettings = await api.getMLWorkerSettings();
-      this.installedPackagesData = [];
-      this.installedPackagesData =
-          Object.entries(this.mlWorkerSettings.installedPackages).map(([key, value]) => ({name: key, version: value}));
+      this.allMLWorkerSettings = await api.getMLWorkerSettings();
+      this.currentWorker = this.allMLWorkerSettings.find(value => value.isRemote === this.externalWorkerSelected) || null;
     } catch (error) {
     } finally {
       this.mlWorkerSettingsLoading = false;
+    }
+  }
+
+  @Watch("externalWorkerSelected")
+  @Watch("allMLWorkerSettings", {deep: true})
+  public mlWorkerSelected() {
+    if (this.allMLWorkerSettings.length) {
+      this.currentWorker = this.allMLWorkerSettings.find(value => value.isRemote === this.externalWorkerSelected) || null;
+      this.installedPackagesData = this.currentWorker !== null ?
+          Object.entries(this.currentWorker.installedPackages).map(([key, value]) => ({
+            name: key,
+            version: value
+          })) : [];
     }
   }
 
@@ -378,6 +434,11 @@ export default class UserProfile extends Vue {
 }
 </script>
 <style lang="scss" scoped>
+.worker-tabs {
+  width: auto;
+  flex-grow: 0;
+}
+
 .token-area-wrapper {
   background-color: rgba(211, 211, 211, 0.52);
   padding: 10px;
@@ -393,6 +454,12 @@ export default class UserProfile extends Vue {
   word-break: break-all;
   font-size: 12px;
   font-family: monospace;
+}
+
+.worker-tab {
+  display: flex;
+  justify-content: space-between;
+  width: 120px;
 }
 </style>
 
