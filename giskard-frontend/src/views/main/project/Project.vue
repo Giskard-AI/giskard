@@ -212,7 +212,7 @@ export default class Project extends Vue {
 	public clickEditButton() {
 		this.newName = this.project.name;
 		this.newLimeSamples = this.project.inspectionSettings.limeNumberSamples;
-		this.project.description;
+		newDescription = this.project.description;
 	}
 
 	public async submitEditProject() {
