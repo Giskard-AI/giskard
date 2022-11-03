@@ -14,6 +14,8 @@ import ai.giskard.worker.MLWorkerInfo;
 import ai.giskard.worker.MLWorkerInfoRequest;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ListenableFuture;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.util.JsonFormat;
 import lombok.RequiredArgsConstructor;
@@ -31,7 +33,9 @@ import org.springframework.web.bind.annotation.*;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 import static ai.giskard.security.AuthoritiesConstants.ADMIN;
 
@@ -99,14 +103,27 @@ public class SettingsController {
     }
 
     @GetMapping("/ml-worker-info")
-    public MLWorkerInfoDTO getMLWorkerInfo() throws JsonProcessingException, InvalidProtocolBufferException {
-        try (MLWorkerClient client = mlWorkerService.createClient()) {
-            MLWorkerInfo info = client.getBlockingStub().getInfo(
-                MLWorkerInfoRequest.newBuilder().setListPackages(true).build());
+    public List<MLWorkerInfoDTO> getMLWorkerInfo() throws JsonProcessingException, InvalidProtocolBufferException, ExecutionException, InterruptedException {
+        try (MLWorkerClient internalClient = mlWorkerService.createClient(true, false);
+             MLWorkerClient externalClient = mlWorkerService.createClient(false, false)) {
+            List<ListenableFuture<MLWorkerInfo>> awaitableResults = new ArrayList<>();
 
-            ObjectMapper objectMapper = new ObjectMapper();
+            if (internalClient != null) {
+                awaitableResults.add(internalClient.getFutureStub().getInfo(MLWorkerInfoRequest.newBuilder().setListPackages(true).build()));
+            }
+            if (externalClient != null) {
+                awaitableResults.add(externalClient.getFutureStub().getInfo(MLWorkerInfoRequest.newBuilder().setListPackages(true).build()));
+            }
 
-            return objectMapper.readValue(JsonFormat.printer().print(info), MLWorkerInfoDTO.class);
+            List<MLWorkerInfo> mlWorkerInfos = Futures.successfulAsList(awaitableResults).get();
+            List<MLWorkerInfoDTO> res = new ArrayList<>();
+            for (MLWorkerInfo info : mlWorkerInfos) {
+                if (info != null) {
+                res.add(new ObjectMapper().readValue(JsonFormat.printer().print(info), MLWorkerInfoDTO.class));
+                }
+            }
+
+            return res;
         }
     }
 }

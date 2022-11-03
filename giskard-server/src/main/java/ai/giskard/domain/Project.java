@@ -10,11 +10,13 @@ import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.ColumnDefault;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
 @Entity(name = "projects")
@@ -73,6 +75,17 @@ public class Project extends AbstractAuditingEntity {
     private Set<User> guests = new HashSet<>();
 
 
+    @Setter
+    @Getter
+    @NotNull
+    @Enumerated(EnumType.STRING)
+    @ColumnDefault(value = "EXTERNAL")
+    private MLWorkerType mlWorkerType = MLWorkerType.EXTERNAL;
+
+    public boolean isUsingInternalWorker() {
+        return mlWorkerType == MLWorkerType.INTERNAL;
+    }
+
     public void addGuest(User user) {
         this.guests.add(user);
     }
@@ -87,5 +100,18 @@ public class Project extends AbstractAuditingEntity {
         this.name = name;
         this.description = description;
         this.owner = owner;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Project project = (Project) o;
+        return getKey().equals(project.getKey());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getKey());
     }
 }

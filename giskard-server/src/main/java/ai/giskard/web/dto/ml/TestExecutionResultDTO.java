@@ -15,6 +15,7 @@ import java.util.stream.Collectors;
 @UIModel
 public class TestExecutionResultDTO {
     private Long testId;
+    private String testName;
     private TestResult status;
     private List<NamedSingleTestResultDTO> result;
     private String message;
