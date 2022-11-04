@@ -2,6 +2,7 @@
  * Generated from ai.giskard.web.dto.config.MLWorkerInfoDTO
  */
 export interface MLWorkerInfoDTO {
+    giskardClientVersion: string;
     installedPackages: {[key: string]: string};
     internalGrpcPort: number;
     interpreter: string;

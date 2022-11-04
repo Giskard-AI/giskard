@@ -211,6 +211,10 @@
                     <td>Python path</td>
                     <td>{{ currentWorker.interpreter }}</td>
                   <tr>
+                  <tr>
+                    <td>Giskard client version</td>
+                    <td>{{ currentWorker.giskardClientVersion }}</td>
+                  <tr>
                     <td>Host</td>
                     <td>{{ currentWorker.platform.node }}</td>
                   </tr>
