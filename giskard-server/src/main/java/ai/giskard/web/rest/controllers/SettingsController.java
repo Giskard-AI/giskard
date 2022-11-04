@@ -1,5 +1,6 @@
 package ai.giskard.web.rest.controllers;
 
+import ai.giskard.config.ApplicationProperties;
 import ai.giskard.domain.GeneralSettings;
 import ai.giskard.ml.MLWorkerClient;
 import ai.giskard.repository.UserRepository;
@@ -56,6 +57,7 @@ public class SettingsController {
     @Value("${git.commit.time:-}")
     private String gitCommitTime;
     private final GeneralSettingsService settingsService;
+    private final ApplicationProperties applicationProperties;
 
     @Autowired
     private final MLWorkerService mlWorkerService;
@@ -96,6 +98,7 @@ public class SettingsController {
                 .buildCommitTime(buildCommitTime)
                 .planCode("open-source")
                 .planName("Open Source")
+                .externalMlWorkerEntrypointPort(applicationProperties.getExternalMlWorkerEntrypointPort())
                 .roles(roles)
                 .build())
             .user(userDTO)
@@ -104,8 +107,8 @@ public class SettingsController {
 
     @GetMapping("/ml-worker-info")
     public List<MLWorkerInfoDTO> getMLWorkerInfo() throws JsonProcessingException, InvalidProtocolBufferException, ExecutionException, InterruptedException {
-        try (MLWorkerClient internalClient = mlWorkerService.createClient(true);
-             MLWorkerClient externalClient = mlWorkerService.createClient(false)) {
+        try (MLWorkerClient internalClient = mlWorkerService.createClient(true, false);
+             MLWorkerClient externalClient = mlWorkerService.createClient(false, false)) {
             List<ListenableFuture<MLWorkerInfo>> awaitableResults = new ArrayList<>();
 
             if (internalClient != null) {
@@ -119,7 +122,7 @@ public class SettingsController {
             List<MLWorkerInfoDTO> res = new ArrayList<>();
             for (MLWorkerInfo info : mlWorkerInfos) {
                 if (info != null) {
-                res.add(new ObjectMapper().readValue(JsonFormat.printer().print(info), MLWorkerInfoDTO.class));
+                    res.add(new ObjectMapper().readValue(JsonFormat.printer().print(info), MLWorkerInfoDTO.class));
                 }
             }
 
