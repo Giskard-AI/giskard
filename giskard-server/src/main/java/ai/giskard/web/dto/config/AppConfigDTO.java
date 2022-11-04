@@ -36,5 +36,6 @@ public class AppConfigDTO {
         private String buildCommitId;
         private Instant buildCommitTime;
         private GeneralSettings generalSettings;
+        private int externalMlWorkerEntrypointPort;
     }
 }
