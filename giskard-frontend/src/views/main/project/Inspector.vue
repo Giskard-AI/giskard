@@ -188,7 +188,6 @@ export default class Inspector extends Vue {
 
   async mounted() {
     await this.loadMetaData();
-    console.log(this.model);
   }
 
   @Watch('originalData')

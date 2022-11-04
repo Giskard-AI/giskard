@@ -22,7 +22,7 @@
           </v-btn>
         </template>
         <v-list dense tile> 
-          <v-list-item link @click="clickEditButton(); openEditDialog = true;">
+          <v-list-item link @click="clickEditButton()">
 						<v-list-item-title><v-icon dense left>edit</v-icon>Edit</v-list-item-title>
 					</v-list-item>
           <v-list-item link @click="openDeleteDialog = true">
@@ -210,9 +210,13 @@ export default class Project extends Vue {
 	}
 
 	public clickEditButton() {
+		if (!this.project) {
+		  return;
+		}
 		this.newName = this.project.name;
 		this.newLimeSamples = this.project.inspectionSettings.limeNumberSamples;
-		newDescription = this.project.description;
+		this.newDescription = this.project.description;
+		this.openEditDialog = true;
 	}
 
 	public async submitEditProject() {
