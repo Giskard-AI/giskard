@@ -9,7 +9,7 @@
         <v-card-text>
           <v-row>
             <v-col cols=12>
-              <ValidationProvider name="Test suite name" mode="eager" rules="required" v-slot="{errors}">
+              <ValidationProvider name="Test suite name" rules="required" v-slot="{errors}">
                 <v-text-field label="Test suite name" autofocus v-model="name" :error-messages="errors" outlined></v-text-field>
               </ValidationProvider>
               <ValidationProvider name="Model" mode="eager" rules="required" v-slot="{errors}">

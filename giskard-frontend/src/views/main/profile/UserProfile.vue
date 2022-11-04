@@ -273,8 +273,20 @@
                     <p>To connect a worker, install giskard library in any code environment of your choice with</p>
                     <p><code class="text-body-1">pip install giskard</code></p>
                     <p>then run</p>
-                    <p><code class="text-body-1">giskard worker start -h GISKARD_ADDRESS</code></p>
-                    <p>to connect to Giskard</p>
+                    <code class="text-body-1">
+                      giskard worker start -h
+                      <v-tooltip right>
+                        <template v-slot:activator="{ on, attrs }">
+                          <span v-bind="attrs"
+                                v-on="on" class="giskard-address">{{ giskardAddress }}</span>
+                        </template>
+                        <p>IP address, hostname or DNS name of Giskard server can be used.</p>
+                        <p>Make sure that port {{ appSettings.externalMlWorkerEntrypointPort }} is accessible</p>
+                      </v-tooltip>
+                      <span
+                          v-if="appSettings.externalMlWorkerEntrypointPort !== 40051"> -p {{ appSettings.externalMlWorkerEntrypointPort }}</span>
+                    </code>
+                    <p class="mt-4 mb-0">to connect to Giskard</p>
                   </div>
                 </v-container>
               </v-card-text>
@@ -413,6 +425,10 @@ export default class UserProfile extends Vue {
     }
   }
 
+  get giskardAddress() {
+    return window.location.hostname;
+  }
+
   public async copyToken() {
     await copyToClipboard(this.apiAccessToken?.id_token);
     commitAddNotification(this.$store, {content: "Copied to clipboard", color: "success"});
@@ -460,6 +476,11 @@ export default class UserProfile extends Vue {
   display: flex;
   justify-content: space-between;
   width: 120px;
+}
+
+.giskard-address {
+  border: 1px lightgrey dashed;
+  padding: 2px;
 }
 </style>
 

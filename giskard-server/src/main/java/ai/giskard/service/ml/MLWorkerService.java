@@ -48,6 +48,10 @@ public class MLWorkerService {
     }
 
     public MLWorkerClient createClient(boolean isInternal) {
+        return createClient(isInternal, true);
+    }
+
+    public MLWorkerClient createClient(boolean isInternal, boolean raiseExceptionOnFailure) {
         try {
             ClientInterceptor clientInterceptor = new MLWorkerClientErrorInterceptor();
             String host = getMlWorkerHost(isInternal);
@@ -62,8 +66,13 @@ public class MLWorkerService {
 
 
             return new MLWorkerClient(channel);
-        } catch (GiskardRuntimeException e) {
-            log.info("Failed to create ML Worker client", e);
+        } catch (Exception e) {
+            log.warn("Failed to create ML Worker client", e);
+            if (raiseExceptionOnFailure) {
+                String workerType = isInternal ? "internal" : "external";
+                String fix = isInternal ? "docker-compose up -d ml-worker" : "giskard worker start -h GISKARD_ADDRESS";
+                throw new GiskardRuntimeException(String.format("Failed to establish a connection with %s ML Worker. Start it with \"%s\"", workerType, fix), e);
+            }
             return null;
         }
     }
