@@ -3,10 +3,12 @@ package ai.giskard.domain;
 import ai.giskard.domain.ml.Dataset;
 import ai.giskard.domain.ml.ProjectModel;
 import ai.giskard.domain.ml.TestSuite;
+import ai.giskard.utils.JSONStringAttributeConverter;
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
+import com.fasterxml.jackson.core.type.TypeReference;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -24,6 +26,20 @@ import java.util.Set;
 @EntityListeners(AuditingEntityListener.class)
 @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
 public class Project extends AbstractAuditingEntity {
+    @Converter
+    public static class InspectionSettingsConverter extends JSONStringAttributeConverter<InspectionSettings> {
+        @Override
+        public TypeReference<InspectionSettings> getValueTypeRef() {
+            return new TypeReference<>() {
+            };
+        }
+
+        @Override
+        public InspectionSettings nullConverter() {
+            return new InspectionSettings();
+        }
+    }
+
     @Getter
     @Setter
     @NotNull
@@ -75,6 +91,13 @@ public class Project extends AbstractAuditingEntity {
     private Set<User> guests = new HashSet<>();
 
 
+    @Getter
+    @Setter
+    @Column(columnDefinition = "VARCHAR")
+    @Convert(converter = InspectionSettingsConverter.class)
+    private InspectionSettings inspectionSettings;
+
+
     @Setter
     @Getter
     @NotNull
@@ -100,6 +123,7 @@ public class Project extends AbstractAuditingEntity {
         this.name = name;
         this.description = description;
         this.owner = owner;
+        this.inspectionSettings = new InspectionSettings();
     }
 
     @Override
