@@ -1,8 +1,10 @@
 package ai.giskard.web.rest.controllers;
 
+import ai.giskard.domain.InspectionSettings;
 import ai.giskard.domain.ml.Dataset;
 import ai.giskard.domain.ml.ModelType;
 import ai.giskard.domain.ml.ProjectModel;
+import ai.giskard.repository.ProjectRepository;
 import ai.giskard.repository.ml.DatasetRepository;
 import ai.giskard.repository.ml.ModelRepository;
 import ai.giskard.security.PermissionEvaluator;
@@ -31,6 +33,7 @@ public class ModelController {
     private final Logger log = LoggerFactory.getLogger(ModelController.class);
     private final ModelRepository modelRepository;
     private final DatasetRepository datasetRepository;
+    private final ProjectRepository projectRepository;
     private final GiskardMapper giskardMapper;
     private final PermissionEvaluator permissionEvaluator;
     private final ModelService modelService;
@@ -74,8 +77,10 @@ public class ModelController {
     public Map<String, String> explainText(@RequestParam @NotNull Long modelId, @RequestParam @NotNull Long datasetId, @PathVariable @NotNull String featureName, @RequestBody @NotNull PredictionInputDTO data) throws IOException {
         ProjectModel model = modelRepository.getById(modelId);
         Dataset dataset = datasetRepository.getById(datasetId);
+        long projectId = model.getProject().getId();
+        InspectionSettings inspectionSettings = projectRepository.getById(projectId).getInspectionSettings();
         permissionEvaluator.validateCanReadProject(model.getProject().getId());
-        return modelService.explainText(model, dataset, featureName, data.getFeatures()).getExplanationsMap();
+        return modelService.explainText(model, dataset, inspectionSettings, featureName, data.getFeatures()).getExplanationsMap();
     }
 
     @DeleteMapping("models/{modelId}")

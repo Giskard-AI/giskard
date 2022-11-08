@@ -14,7 +14,17 @@ public abstract class JSONStringAttributeConverter<T> implements AttributeConver
 
     @Override
     public final T convertToEntityAttribute(String dbData) {
+        if (dbData == null) {
+            return nullConverter();
+        }
         return JSON.fromJSON(dbData, getValueTypeRef());
+    }
+
+    /**
+     * @return a default object value in case there's null stored in the database
+     */
+    public T nullConverter() {
+        return null;
     }
 
     public abstract TypeReference<T> getValueTypeRef();
