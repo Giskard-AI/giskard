@@ -91,11 +91,8 @@ public class TestService {
             try {
                 testResult = client.getBlockingStub().runTest(request);
             } catch (StatusRuntimeException e) {
-                if (e.getCause() instanceof MLWorkerRuntimeException mlWorkerRE) {
-                    mlWorkerRE.setMessage(String.format("Failed to execute test: %s", test.getName()));
-                    throw mlWorkerRE;
-                }
-                throw e;
+                res.setStatus(TestResult.ERROR);
+                return res;
             }
 
             res.setResult(testResult);
