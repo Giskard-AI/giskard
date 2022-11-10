@@ -16,6 +16,15 @@ services:
 
   backend:
     image: '${DOCKER_REGISTRY}/backend:${TAG-latest}'
+    build:
+      dockerfile: ./giskard-server/src/main/docker/app/app.dockerfile
+      context: .
+      x-bake:
+        platforms:
+          - linux/amd64
+          - linux/arm64
+      args:
+        RUN_TESTS: ${RUN_TESTS-false}
     depends_on:
       - db
     env_file:
@@ -44,6 +53,15 @@ services:
 
   frontend:
     image: '${DOCKER_REGISTRY}/frontend:${TAG-latest}'
+    build:
+      context: giskard-frontend
+      dockerfile: Dockerfile
+      x-bake:
+        platforms:
+          - linux/amd64
+          - linux/arm64
+      args:
+        FRONTEND_ENV: ${FRONTEND_ENV-production}
     ports:
       - "${GISKARD_PORT-19000}:80"
     expose:

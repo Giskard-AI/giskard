@@ -4,6 +4,7 @@ on:
   push:
     branches:
     - main
+    - andrey/docker-buildx
   pull_request:
     branches:
       - main
@@ -30,9 +31,6 @@ jobs:
         sudo sysctl -w kernel.unprivileged_userns_clone=1
         docker-compose -f docker-compose.yml -f docker-compose.dev.yml config > docker-stack.yml 
       
-    - name: Build images
-      run: docker-compose -f docker-stack.yml build
-
     - name: Login to Docker registry
       uses: docker/login-action@v2
       if: ${{ steps.extract_branch.outputs.branch == 'main' }}
@@ -40,17 +38,20 @@ jobs:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-    - name: Push images to Docker registry
-      if: ${{ steps.extract_branch.outputs.branch == 'main' }}
-      env:
-        TAG: dev
-      run: |
-        docker-compose -f docker-compose.yml -f docker-compose.dev.yml push
+    - name: Build images
+      run: docker buildx bake -f docker-stack.yml --push
 
-    - name: Invoke deployment hook
-      if: ${{ steps.extract_branch.outputs.branch == 'main' }}
-      run: |
-        curl -L --silent --max-time 900 ${{ secrets.TEST_SERVER_WEBHOOK_URL_BASE }}/redeploy-dev 
+#    - name: Push images to Docker registry
+#      if: ${{ steps.extract_branch.outputs.branch == 'main' }}
+#      env:
+#        TAG: dev
+#      run: |
+#        docker-compose -f docker-compose.yml -f docker-compose.dev.yml push
+#
+#    - name: Invoke deployment hook
+#      if: ${{ steps.extract_branch.outputs.branch == 'main' }}
+#      run: |
+#        curl -L --silent --max-time 900 ${{ secrets.TEST_SERVER_WEBHOOK_URL_BASE }}/redeploy-dev
 
     - name: Remove containers and volumes
       run: docker-compose -f docker-stack.yml down -v --remove-orphans

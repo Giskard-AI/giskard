@@ -5,13 +5,6 @@ services:
     ports:
       - "5432:5432"
 
-  frontend:
-    build:
-      context: giskard-frontend
-      dockerfile: Dockerfile
-      args:
-        FRONTEND_ENV: ${FRONTEND_ENV-production}
-
   backend:
     ports:
       - "9000:9000"
@@ -27,9 +20,3 @@ services:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/app
       - SPRING_LIQUIBASE_URL=jdbc:postgresql://db:5432/app
       - SPRING_JPA_DATABASE_PLATFORM=tech.jhipster.domain.util.FixedPostgreSQL10Dialect
-
-    build:
-      dockerfile: ./giskard-server/src/main/docker/app/app.dockerfile
-      context: .
-      args:
-        RUN_TESTS: ${RUN_TESTS-false}
