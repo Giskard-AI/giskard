@@ -35,8 +35,8 @@
     <logger name="org.xnio" level="WARN"/>
     <logger name="io.swagger.v3" level="INFO"/>
     <logger name="sun.rmi" level="WARN"/>
-    <logger name="liquibase" level="WARN"/>
-    <logger name="LiquibaseSchemaResolver" level="WARN"/>
+    <logger name="liquibase" level="INFO"/>
+    <logger name="LiquibaseSchemaResolver" level="INFO"/>
     <logger name="sun.rmi.transport" level="WARN"/>
     <logger name="com.tngtech.archunit.core.importer" level="ERROR"/>
     <logger name="io.grpc.netty" level="DEBUG"/>
