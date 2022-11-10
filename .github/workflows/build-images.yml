@@ -54,5 +54,8 @@ jobs:
 #        curl -L --silent --max-time 900 ${{ secrets.TEST_SERVER_WEBHOOK_URL_BASE }}/redeploy-dev
 
     - name: Remove containers and volumes
-      run: docker-compose -f docker-stack.yml down -v --remove-orphans
+      run: |
+        docker-compose -f docker-stack.yml down -v --remove-orphans
+        docker buildx prune -a
+      
 
