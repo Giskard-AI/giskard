@@ -21,8 +21,8 @@ services:
       context: .
       x-bake:
         platforms:
-          - linux/amd64
           - linux/arm64
+          - linux/amd64
       args:
         RUN_TESTS: ${RUN_TESTS-false}
     depends_on:
@@ -58,8 +58,8 @@ services:
       dockerfile: Dockerfile
       x-bake:
         platforms:
-          - linux/amd64
           - linux/arm64
+          - linux/amd64
       args:
         FRONTEND_ENV: ${FRONTEND_ENV-production}
     ports:
