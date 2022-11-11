@@ -43,7 +43,7 @@ jobs:
       - name: Build and push
         uses: docker/bake-action@master
         with:
-          builder: ${{ steps.buildx.outputs.name }}
+#          builder: ${{ steps.buildx.outputs.name }}
           push: true
           targets: |
             frontend
