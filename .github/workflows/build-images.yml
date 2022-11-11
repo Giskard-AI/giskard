@@ -42,6 +42,8 @@ jobs:
 
       - name: Build and push
         uses: docker/bake-action@master
+        env:
+          TAG: dev
         with:
 #          builder: ${{ steps.buildx.outputs.name }}
           push: true
