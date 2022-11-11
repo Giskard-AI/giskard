@@ -21,13 +21,11 @@ jobs:
 
     - name: Set up QEMU
       uses: docker/setup-qemu-action@v2
+      with:
+        platforms: amd64,arm64
 
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v2
-
-    - name: Clean buildx cache
-      run: |
-        docker buildx prune -af
 
     - name: Extract branch name
       shell: bash
@@ -48,8 +46,14 @@ jobs:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-    - name: Build images
-      run: docker buildx bake -f docker-stack.yml --push
+    - name: Build and push
+      uses: docker/bake-action@v2
+      with:
+        push: true
+        files: docker-stack.yml
+
+      #    - name: Build images
+#      run: docker buildx bake -f docker-stack.yml --push
 
 #    - name: Push images to Docker registry
 #      if: ${{ steps.extract_branch.outputs.branch == 'main' }}
