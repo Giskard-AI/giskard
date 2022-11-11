@@ -19,6 +19,10 @@ jobs:
       with:
         submodules: recursive
 
+    - name: Clean buildx cache
+      run: |
+        docker buildx prune -af
+
     - name: Extract branch name
       shell: bash
       run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
