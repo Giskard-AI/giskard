@@ -48,7 +48,7 @@ jobs:
 #          builder: ${{ steps.buildx.outputs.name }}
           push: true
           targets: |
-            frontend
+            backend
           set: |
             *.platform=linux/amd64
             *.platform=linux/arm64
