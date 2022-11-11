@@ -21,7 +21,6 @@ services:
       context: .
       x-bake:
         platforms:
-          - linux/arm64
           - linux/amd64
       args:
         RUN_TESTS: ${RUN_TESTS-false}
@@ -58,7 +57,6 @@ services:
       dockerfile: Dockerfile
       x-bake:
         platforms:
-          - linux/arm64
           - linux/amd64
       args:
         FRONTEND_ENV: ${FRONTEND_ENV-production}
