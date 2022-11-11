@@ -34,7 +34,8 @@ jobs:
 
       - name: Login to Docker registry
         uses: docker/login-action@v2
-        if: ${{ steps.extract_branch.outputs.branch == 'main' }}
+#        if: ${{ steps.extract_branch.outputs.branch == 'main' }}
+        if: ${{ steps.extract_branch.outputs.branch == 'andrey/docker-buildx' }}
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
@@ -44,7 +45,8 @@ jobs:
         env:
           TAG: dev
         with:
-          push: ${{ steps.extract_branch.outputs.branch == 'main' }}
+#          push: ${{ steps.extract_branch.outputs.branch == 'main' }}
+          push: ${{ steps.extract_branch.outputs.branch == 'andrey/docker-buildx' }}
           set: |
             *.platform=linux/amd64
             *.platform=linux/arm64
