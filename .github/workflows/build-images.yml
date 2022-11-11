@@ -45,11 +45,11 @@ jobs:
         with:
           builder: ${{ steps.buildx.outputs.name }}
           push: true
-          targets:
-            - frontend
-          set:
-            - '*.platform=linux/amd64'
-            - '*.platform=linux/arm64'
+          targets: |
+            frontend
+          set: |
+            *.platform=linux/amd64
+            *.platform=linux/arm64
 
       #    - name: Invoke deployment hook
       #      if: ${{ steps.extract_branch.outputs.branch == 'main' }}
