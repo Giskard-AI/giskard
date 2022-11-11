@@ -22,6 +22,7 @@ services:
       x-bake:
         platforms:
           - linux/arm64
+          - linux/amd64
       args:
         RUN_TESTS: ${RUN_TESTS-false}
     depends_on:
@@ -58,6 +59,7 @@ services:
       x-bake:
         platforms:
           - linux/arm64
+          - linux/amd64
       args:
         FRONTEND_ENV: ${FRONTEND_ENV-production}
     ports:

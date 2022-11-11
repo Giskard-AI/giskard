@@ -19,10 +19,10 @@ jobs:
       with:
         submodules: recursive
 
-    - name: Set up QEMU
-      uses: docker/setup-qemu-action@master
-      with:
-        platforms: amd64,arm64
+#    - name: Set up QEMU
+#      uses: docker/setup-qemu-action@master
+#      with:
+#        platforms: amd64,arm64
 
     - name: Set up Docker Buildx
       id: buildx
@@ -43,7 +43,7 @@ jobs:
     - name: Build and push
       uses: docker/bake-action@master
       with:
-        builder: ${{ steps.buildx.outputs.name }}
+#        builder: ${{ steps.buildx.outputs.name }}
         push: true
 
 #    - name: Invoke deployment hook
