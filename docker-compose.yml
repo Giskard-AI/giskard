@@ -11,11 +11,11 @@ services:
       - PGDATA=/var/lib/postgresql/data/pgdata
 
   ml-worker:
-    image: '${DOCKER_REGISTRY}/ml-worker:${TAG-latest}'
+    image: 'docker.io/giskardai/ml-worker:${TAG-latest}'
     hostname: giskard-embedded-docker-worker
 
   backend:
-    image: '${DOCKER_REGISTRY}/backend:${TAG-latest}'
+    image: 'docker.io/giskardai/backend:${TAG-latest}'
     build:
       dockerfile: ./giskard-server/src/main/docker/app/app.dockerfile
       context: .
@@ -52,7 +52,7 @@ services:
 
 
   frontend:
-    image: '${DOCKER_REGISTRY}/frontend:${TAG-latest}'
+    image: 'docker.io/giskardai/frontend:${TAG-latest}'
     build:
       context: giskard-frontend
       dockerfile: Dockerfile
