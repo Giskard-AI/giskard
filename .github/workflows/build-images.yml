@@ -53,7 +53,7 @@ jobs:
 
     - name: Remove containers and volumes
       run: |
-        docker-compose -f docker-stack.yml down -v --remove-orphans
+        docker-compose down -v --remove-orphans
         docker builder prune --force --keep-storage=10GB
       
 
