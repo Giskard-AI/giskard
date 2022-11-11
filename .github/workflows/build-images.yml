@@ -54,7 +54,7 @@ jobs:
       with:
         builder: ${{ steps.buildx.outputs.name }}
         push: true
-        files: docker-stack.yml
+#        files: docker-stack.yml
 
       #    - name: Build images
 #      run: docker buildx bake -f docker-stack.yml --push
