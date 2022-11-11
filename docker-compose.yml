@@ -19,9 +19,6 @@ services:
     build:
       dockerfile: ./giskard-server/src/main/docker/app/app.dockerfile
       context: .
-      x-bake:
-        platforms:
-          - linux/arm64
       args:
         RUN_TESTS: ${RUN_TESTS-false}
     depends_on:
@@ -55,9 +52,6 @@ services:
     build:
       context: giskard-frontend
       dockerfile: Dockerfile
-      x-bake:
-        platforms:
-          - linux/arm64
       args:
         FRONTEND_ENV: ${FRONTEND_ENV-production}
     ports:
