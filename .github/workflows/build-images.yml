@@ -56,6 +56,6 @@ jobs:
     - name: Remove containers and volumes
       run: |
         docker-compose -f docker-stack.yml down -v --remove-orphans
-        docker buildx prune -a
+        docker buildx prune -af
       
 
