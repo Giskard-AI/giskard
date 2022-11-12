@@ -123,17 +123,22 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue, Prop, Watch } from 'vue-property-decorator';
-import { readProject, readCoworkers, readUserProfile } from '@/store/main/getters';
-import { dispatchGetProject, dispatchGetCoworkers, dispatchInviteUserToProject,
-	dispatchEditProject, dispatchDeleteProject } from '@/store/main/actions';
-import { IUserProfileMinimal } from '@/interfaces';
-import { getUserFullDisplayName } from '@/utils';
+import {Component, Prop, Vue, Watch} from 'vue-property-decorator';
+import {readCoworkers, readProject, readUserProfile} from '@/store/main/getters';
+import {
+  dispatchDeleteProject,
+  dispatchEditProject,
+  dispatchGetCoworkers,
+  dispatchGetProject,
+  dispatchInviteUserToProject
+} from '@/store/main/actions';
+import {IUserProfileMinimal} from '@/interfaces';
+import {getUserFullDisplayName} from '@/utils';
 import Models from '@/views/main/project/Models.vue';
 import Datasets from '@/views/main/project/Datasets.vue';
 import FeedbackList from '@/views/main/project/FeedbackList.vue';
-import { Role } from '@/enums';
-import { ProjectPostDTO, InspectionSettings } from '@/generated-sources';
+import {Role} from '@/enums';
+import {InspectionSettings, ProjectPostDTO} from '@/generated-sources';
 import mixpanel from "mixpanel-browser";
 
 @Component({

@@ -1,7 +1,7 @@
-import { MainState } from './state';
-import { getStoreAccessors } from 'typesafe-vuex';
-import { State } from '../state';
-import { Role } from '@/enums';
+import {MainState} from './state';
+import {getStoreAccessors} from 'typesafe-vuex';
+import {State} from '../state';
+import {Role} from '@/enums';
 
 export const getters = {
     hasAdminAccess: (state: MainState) => {
@@ -28,9 +28,6 @@ export const getters = {
 const {read} = getStoreAccessors<MainState, State>('');
 
 export const readHasAdminAccess = read(getters.hasAdminAccess);
-export const readIsLoggedIn = read(getters.isLoggedIn);
-export const readLoginError = read(getters.loginError);
-export const readToken = read(getters.token);
 export const readUserProfile = read(getters.userProfile);
 export const readAppSettings = read(getters.appSettings);
 export const readCoworkers = read(getters.coworkers);

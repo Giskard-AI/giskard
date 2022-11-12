@@ -63,9 +63,9 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue } from 'vue-property-decorator';
-import { readAdminUsers } from '@/store/admin/getters';
-import { dispatchGetUsers, dispatchDeleteUser } from '@/store/admin/actions';
+import {Component, Vue} from 'vue-property-decorator';
+import {readAdminUsers} from '@/store/admin/getters';
+import {dispatchDeleteUser, dispatchGetUsers} from '@/store/admin/actions';
 import {readAppSettings} from "@/store/main/getters";
 
 @Component

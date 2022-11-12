@@ -23,34 +23,25 @@
   </div>
 </template>
 
-<script lang="ts">
-import {Component, Vue} from 'vue-property-decorator';
+<script lang="ts" setup>
 import NotificationsManager from '@/components/NotificationsManager.vue';
-import {readIsLoggedIn} from '@/store/main/getters';
-import {dispatchCheckLoggedIn} from '@/store/main/actions';
-import {editor} from 'monaco-editor';
-import IEditorOptions = editor.IEditorOptions;
+import {computed, onBeforeMount} from "vue";
+import {useLoginStore} from "@/store/pinia/login";
 
-@Component({
-  components: {
-    NotificationsManager,
-  },
+const loginStore = useLoginStore();
+const loggedIn = computed(() => {
+  return loginStore.isLoggedIn;
+});
+onBeforeMount( async () => {
+  await loginStore.checkLoggedIn();
 })
-export default class App extends Vue {
-  get loggedIn() {
-    return readIsLoggedIn(this.$store);
-  }
 
-  public async created() {
-    await dispatchCheckLoggedIn(this.$store);
 
-    ((this.$root as any).monacoOptions as IEditorOptions) = {
-      automaticLayout: true,
-      minimap: {
-        enabled: false
-      },
-      renderLineHighlight: "none"
-    };
-  }
-}
+// ((this!.$root as any).monacoOptions as IEditorOptions) = {
+//   automaticLayout: true,
+//   minimap: {
+//     enabled: false
+//   },
+//   renderLineHighlight: "none"
+// };
 </script>

@@ -40,10 +40,11 @@ import {
 import {TYPE} from "vue-toastification";
 import ErrorToast from "@/views/main/utils/ErrorToast.vue";
 import router from "@/router";
-import {commitSetLoggedIn, commitSetToken} from "@/store/main/mutations";
-import store from "@/store";
 import mixpanel from "mixpanel-browser";
+import {useLoginStore} from "@/store/pinia/login";
 import AdminUserDTOWithPassword = AdminUserDTO.AdminUserDTOWithPassword;
+
+const loginStore = useLoginStore();
 
 function jwtRequestInterceptor(config) {
     // Do something before request is sent
@@ -103,8 +104,8 @@ async function errorInterceptor(error) {
     if (error.response) {
         if (error.response.status === 401) {
             removeLocalToken();
-            commitSetToken(store, '');
-            commitSetLoggedIn(store, false);
+            loginStore.token.value = '';
+            loginStore.isLoggedIn.value = false;
             if (router.currentRoute.path !== '/auth/login') {
                 await router.push('/auth/login');
             }

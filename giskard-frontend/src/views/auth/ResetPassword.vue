@@ -34,10 +34,10 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue } from 'vue-property-decorator';
-import { appName } from '@/env';
-import { commitAddNotification } from '@/store/main/mutations';
-import { dispatchResetPassword } from '@/store/main/actions';
+import {Component, Vue} from 'vue-property-decorator';
+import {appName} from '@/env';
+import {commitAddNotification} from '@/store/main/mutations';
+import {dispatchResetPassword} from '@/store/main/actions';
 import mixpanel from "mixpanel-browser";
 
 @Component

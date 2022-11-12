@@ -26,9 +26,9 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue } from 'vue-property-decorator';
-import { appName } from '@/env';
-import { dispatchPasswordRecovery } from '@/store/main/actions';
+import {Component, Vue} from 'vue-property-decorator';
+import {appName} from '@/env';
+import {dispatchPasswordRecovery} from '@/store/main/actions';
 
 @Component
 export default class Login extends Vue {

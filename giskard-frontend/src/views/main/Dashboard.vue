@@ -41,7 +41,7 @@
 
 <script lang="ts">
 import {Component, Vue} from 'vue-property-decorator';
-import {readUserProfile, readAllProjects, readHasAdminAccess} from '@/store/main/getters';
+import {readAllProjects, readHasAdminAccess, readUserProfile} from '@/store/main/getters';
 import {readAdminUsers} from '@/store/admin/getters';
 import {dispatchGetUsers} from '@/store/admin/actions';
 import {dispatchGetProjects} from '@/store/main/actions';

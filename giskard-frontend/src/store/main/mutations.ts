@@ -5,8 +5,8 @@ import {State} from '../state';
 import {AdminUserDTO, AppConfigDTO, ProjectDTO} from '@/generated-sources';
 import Vue from "vue";
 import mixpanel from "mixpanel-browser";
-import AppInfoDTO = AppConfigDTO.AppInfoDTO;
 import {anonymize} from "@/utils";
+import AppInfoDTO = AppConfigDTO.AppInfoDTO;
 
 
 export const mutations = {
@@ -15,9 +15,6 @@ export const mutations = {
     },
     setLoggedIn(state: MainState, payload: boolean) {
         state.isLoggedIn = payload;
-    },
-    setLogInError(state: MainState, payload: string | null) {
-        state.logInError = payload;
     },
     setUserProfile(state: MainState, payload: AdminUserDTO) {
         state.userProfile = payload;
@@ -69,7 +66,7 @@ export const mutations = {
             icon: payload.showProgress ? 'notification-spinner fas fa-spinner fa-spin' : true
         });
     },
-    removeNotification(state: MainState, payload: AppNotification) {
+    removeNotification(_state: MainState, _payload: AppNotification) {
         Vue.$toast.clear();
     },
 };
@@ -77,10 +74,8 @@ export const mutations = {
 const {commit} = getStoreAccessors<MainState | any, State>('');
 
 export const commitSetLoggedIn = commit(mutations.setLoggedIn);
-export const commitSetLogInError = commit(mutations.setLogInError);
 export const commitSetToken = commit(mutations.setToken);
 export const commitSetUserProfile = commit(mutations.setUserProfile);
-export const commitSetAppSettings = commit(mutations.setAppSettings);
 export const commitSetCoworkers = commit(mutations.setCoworkers);
 export const commitSetProjects = commit(mutations.setProjects);
 export const commitSetProject = commit(mutations.setProject);

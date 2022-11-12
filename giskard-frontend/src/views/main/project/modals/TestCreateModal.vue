@@ -32,7 +32,7 @@ import {api} from "@/api";
 import ModelSelector from "@/views/main/utils/ModelSelector.vue";
 import {format} from 'date-fns'
 import mixpanel from "mixpanel-browser";
-import { ModelDTO } from '@/generated-sources';
+import {ModelDTO} from '@/generated-sources';
 
 
 @Component({

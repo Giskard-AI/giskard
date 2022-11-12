@@ -8,7 +8,7 @@ import vuetify from './plugins/vuetify';
 import './plugins/vee-validate';
 import App from './App.vue';
 import router from './router';
-import store from '@/store';
+// import store from '@/store';
 import './registerServiceWorker';
 // import 'vuetify/dist/vuetify.min.css';
 import 'vuetify-dialog/dist/vuetify-dialog.css';
@@ -24,13 +24,26 @@ import {library} from '@fortawesome/fontawesome-svg-core'
 import {faUserSecret} from '@fortawesome/free-solid-svg-icons'
 import mixpanel from 'mixpanel-browser';
 import _ from "lodash";
+import {createPinia, PiniaVuePlugin} from "pinia";
+import VueMoment from "vue-moment";
+import VuetifyDialog from "vuetify-dialog";
 
 Vue.config.productionTip = false;
+Vue.use(VueMoment);
+Vue.use(VuetifyDialog, {
+    context: {
+        vuetify
+    }
+});
+
+Vue.use(PiniaVuePlugin);
+const pinia = createPinia();
 
 new Vue({
     router,
-    store,
+    // store,
     vuetify,
+    pinia,
     render: (h) => h(App)
 }).$mount('#app');
 

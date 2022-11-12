@@ -1,6 +1,6 @@
 import {api} from '@/api';
 import router from '@/router';
-import {getLocalToken, removeLocalToken, saveLocalToken} from '@/utils';
+import {removeLocalToken} from '@/utils';
 import {AxiosError} from 'axios';
 import {getStoreAccessors} from 'typesafe-vuex';
 import {ActionContext} from 'vuex';
@@ -8,10 +8,8 @@ import {State} from '../state';
 import {
     commitAddNotification,
     commitRemoveNotification,
-    commitSetAppSettings,
     commitSetCoworkers,
     commitSetLoggedIn,
-    commitSetLogInError,
     commitSetProject,
     commitSetProjects,
     commitSetToken,
@@ -23,34 +21,6 @@ import {ManagedUserVM, ProjectPostDTO, UpdateMeDTO} from '@/generated-sources';
 type MainContext = ActionContext<MainState, State>;
 
 export const actions = {
-    // Username here can be either User ID or email
-    async actionLogIn(context: MainContext, payload: { username: string; password: string }) {
-        try {
-            const response = await api.logInGetToken(payload.username, payload.password);
-            const token = response.id_token;
-            if (token) {
-                saveLocalToken(token);
-                commitSetToken(context, token);
-                commitSetLoggedIn(context, true);
-                commitSetLogInError(context, null);
-                await dispatchGetUserProfile(context);
-                await dispatchRouteLoggedIn(context);
-                commitAddNotification(context, {content: 'Logged in', color: 'success'});
-            } else {
-                await dispatchLogOut(context);
-            }
-        } catch (err) {
-            commitSetLogInError(context, err.response.data.detail);
-            await dispatchLogOut(context);
-        }
-    },
-    async actionGetUserProfile(context: MainContext) {
-        const response = await api.getUserAndAppSettings();
-        if (response) {
-            commitSetUserProfile(context, response.user);
-            commitSetAppSettings(context, response.app);
-        }
-    },
     async actionGetCoworkers(context: MainContext) {
         try {
             const response = await api.getCoworkersMinimal();
@@ -73,27 +43,7 @@ export const actions = {
             throw new Error(error.response.data.detail);
         }
     },
-    async actionCheckLoggedIn(context: MainContext) {
-        if (!context.state.isLoggedIn) {
-            let token = context.state.token;
-            if (!token) {
-                const localToken = getLocalToken();
-                if (localToken) {
-                    commitSetToken(context, localToken);
-                    token = localToken;
-                }
-            }
-            if (token) {
-                const response = await api.getUserAndAppSettings();
-                commitSetLoggedIn(context, true);
-                commitSetUserProfile(context, response.user);
-                let appConfig = response.app;
-                commitSetAppSettings(context, appConfig);
-            } else {
-                await dispatchRemoveLogIn(context);
-            }
-        }
-    },
+
     async actionRemoveLogIn(context: MainContext) {
         removeLocalToken();
         commitSetToken(context, '');
@@ -107,19 +57,14 @@ export const actions = {
         await dispatchLogOut(context);
         commitAddNotification(context, {content: 'Logged out', color: 'success'});
     },
-    actionRouteLogOut() {
+    async actionRouteLogOut() {
         if (router.currentRoute.path !== '/auth/login') {
-            router.push('/auth/login');
+            await router.push('/auth/login');
         }
     },
     async actionCheckApiError(context: MainContext, payload: AxiosError) {
         if (payload.response!.status === 401) {
             await dispatchLogOut(context);
-        }
-    },
-    actionRouteLoggedIn() {
-        if (router.currentRoute.path === '/auth/login' || router.currentRoute.path === '/') {
-            router.push('/main');
         }
     },
     async removeNotification(context: MainContext, payload: { notification: AppNotification, timeout: number }) {
@@ -200,7 +145,7 @@ export const actions = {
             await api.createProject(payload);
             commitRemoveNotification(context, loadingNotification);
             commitAddNotification(context, {content: 'Success', color: 'success'});
-            dispatchGetProjects(context);
+            await dispatchGetProjects(context);
         } catch (error) {
             await dispatchCheckApiError(context, error);
             throw new Error(error.response.data.detail);
@@ -264,14 +209,10 @@ export const actions = {
 const {dispatch} = getStoreAccessors<MainState | any, State>('');
 
 export const dispatchCheckApiError = dispatch(actions.actionCheckApiError);
-export const dispatchCheckLoggedIn = dispatch(actions.actionCheckLoggedIn);
-export const dispatchGetUserProfile = dispatch(actions.actionGetUserProfile);
 export const dispatchGetCoworkers = dispatch(actions.actionGetCoworkers);
-export const dispatchLogIn = dispatch(actions.actionLogIn);
 export const dispatchLogOut = dispatch(actions.actionLogOut);
 export const dispatchUserLogOut = dispatch(actions.actionUserLogOut);
 export const dispatchRemoveLogIn = dispatch(actions.actionRemoveLogIn);
-export const dispatchRouteLoggedIn = dispatch(actions.actionRouteLoggedIn);
 export const dispatchRouteLogOut = dispatch(actions.actionRouteLogOut);
 export const dispatchUpdateUserProfile = dispatch(actions.actionUpdateUserProfile);
 export const dispatchRemoveNotification = dispatch(actions.removeNotification);

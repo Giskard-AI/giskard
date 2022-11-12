@@ -26,19 +26,6 @@ export const actions = {
             await dispatchCheckApiError(context, error);
         }
     },
-    async actionUpdateUser(context: MainContext, payload: { user: Partial<AdminUserDTOWithPassword> }) {
-        const loadingNotification = { content: 'saving', showProgress: true };
-        try {
-            commitAddNotification(context, loadingNotification);
-            const response = await api.updateUser( payload.user);
-            commitSetUser(context, response);
-            commitRemoveNotification(context, loadingNotification);
-            commitAddNotification(context, { content: 'User successfully updated', color: 'success' });
-        } catch (error) {
-            await dispatchCheckApiError(context, error);
-            throw new Error(error.response.data.detail);
-        }
-    },
     async actionCreateUser(context: MainContext, payload: AdminUserDTOWithPassword) {
         const loadingNotification = { content: 'saving', showProgress: true };
         try {
@@ -56,7 +43,7 @@ export const actions = {
         const loadingNotification = { content: 'saving', showProgress: true };
         try {
             commitAddNotification(context, loadingNotification);
-            const response = await api.deleteUser( payload.id);
+            await api.deleteUser( payload.id);
             await this.actionGetUsers(context)
             commitRemoveNotification(context, loadingNotification);
             commitAddNotification(context, { content: 'Successfully deleted', color: 'success' });
@@ -71,6 +58,5 @@ const { dispatch } = getStoreAccessors<AdminState, State>('');
 
 export const dispatchCreateUser = dispatch(actions.actionCreateUser);
 export const dispatchGetUsers = dispatch(actions.actionGetUsers);
-export const dispatchUpdateUser = dispatch(actions.actionUpdateUser);
 export const dispatchDeleteUser = dispatch(actions.actionDeleteUser);
 export const dispatchGetRoles = dispatch(actions.actionGetRoles);

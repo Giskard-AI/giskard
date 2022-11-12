@@ -51,7 +51,7 @@ import {Component, Vue} from 'vue-property-decorator';
 import {readUserProfile} from '@/store/main/getters';
 import {dispatchUpdateUserProfile} from '@/store/main/actions';
 import ButtonModalConfirmation from '@/components/ButtonModalConfirmation.vue';
-import {AdminUserDTO, UpdateMeDTO} from '@/generated-sources';
+import {UpdateMeDTO} from '@/generated-sources';
 
 @Component({
   components: {

@@ -81,8 +81,8 @@ import ButtonModalConfirmation from '@/components/ButtonModalConfirmation.vue';
 import {AdminUserDTO} from '@/generated-sources';
 import {Role} from '@/enums';
 import {api} from "@/api";
-import AdminUserDTOWithPassword = AdminUserDTO.AdminUserDTOWithPassword;
 import mixpanel from "mixpanel-browser";
+import AdminUserDTOWithPassword = AdminUserDTO.AdminUserDTOWithPassword;
 
 @Component({
   components: {

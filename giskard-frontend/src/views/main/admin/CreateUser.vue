@@ -70,9 +70,9 @@ import {dispatchCreateUser, dispatchGetRoles, dispatchGetUsers} from '@/store/ad
 import {readAdminRoles} from '@/store/admin/getters';
 import {readAppSettings} from "@/store/main/getters";
 import {AdminUserDTO} from '@/generated-sources';
-import AdminUserDTOWithPassword = AdminUserDTO.AdminUserDTOWithPassword;
 import {Role} from '@/enums';
 import mixpanel from "mixpanel-browser";
+import AdminUserDTOWithPassword = AdminUserDTO.AdminUserDTOWithPassword;
 
 @Component
 export default class CreateUser extends Vue {

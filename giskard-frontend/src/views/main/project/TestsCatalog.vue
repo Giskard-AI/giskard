@@ -107,7 +107,6 @@ import {pasterColor} from "@/utils";
 import ModelSelector from "@/views/main/utils/ModelSelector.vue";
 import DatasetSelector from "@/views/main/utils/DatasetSelector.vue";
 import TestExecutionResultBadge from "@/views/main/project/TestExecutionResultBadge.vue";
-import AddTestToTestSuiteModal from "@/views/main/project/AddTestToTestSuiteModal.vue"
 
 defineProps<{
   projectId: number

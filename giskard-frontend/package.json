@@ -42,7 +42,8 @@
     "vue-toastification": "^1.7.14",
     "vuetify": "^2.6.11",
     "vuetify-dialog": "^2.0.17",
-    "vuex": "^3.6.2"
+    "vuex": "^3.6.2",
+    "pinia": "^2.0.23"
   },
   "devDependencies": {
     "@babel/core": "^7.19.3",

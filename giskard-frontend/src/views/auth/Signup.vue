@@ -35,7 +35,7 @@
 import {Component, Vue} from 'vue-property-decorator';
 import {dispatchSignupUser} from '@/store/main/actions';
 import {commitAddNotification} from '@/store/main/mutations';
-import {AdminUserDTO, ManagedUserVM} from '@/generated-sources';
+import {ManagedUserVM} from '@/generated-sources';
 
 @Component
 export default class Login extends Vue {
