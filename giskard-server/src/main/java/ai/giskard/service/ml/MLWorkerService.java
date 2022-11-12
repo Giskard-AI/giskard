@@ -47,6 +47,10 @@ public class MLWorkerService {
         }
     }
 
+    public MLWorkerClient createClient() {
+        return createClient(true);
+    }
+
     public MLWorkerClient createClient(boolean isInternal) {
         return createClient(isInternal, true);
     }
