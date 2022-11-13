@@ -1,14 +1,16 @@
 <template>
   <div style="width: 260px">
     <v-form @keyup.enter="submit">
-      <v-text-field @keyup.enter="submit" v-model="login" prepend-inner-icon="person" name="login" label="User ID or Email" type="text" autocomplete="username" dense outlined></v-text-field>
-      <v-text-field @keyup.enter="submit" v-model="password" prepend-inner-icon="lock" name="password" label="Password" id="password" type="password" autocomplete="current-password" dense outlined></v-text-field>
+      <v-text-field @keyup.enter="submit" v-model="login" prepend-inner-icon="person" name="login"
+                    label="User ID or Email" type="text" autocomplete="username" dense outlined></v-text-field>
+      <v-text-field @keyup.enter="submit" v-model="password" prepend-inner-icon="lock" name="password" label="Password"
+                    id="password" type="password" autocomplete="current-password" dense outlined></v-text-field>
     </v-form>
     <div class="d-flex justify-space-between align-center">
       <v-btn block @click.prevent="submit" color="primary">Login</v-btn>
     </div>
     <div v-if="loginError" class="text-body-2 error--text mt-2">
-      {{loginError}}
+      {{ loginError }}
     </div>
     <div class="my-2 text-center">
       <span class="caption"><router-link to="/recover-password">Forgot your password?</router-link></span>
@@ -16,30 +18,27 @@
   </div>
 </template>
 
-<script lang="ts">
-import { Component, Vue } from 'vue-property-decorator';
-import { readLoginError } from '@/store/main/getters';
-import { dispatchLogIn } from '@/store/main/actions';
-import { commitAddNotification } from '@/store/main/mutations';
+<script lang="ts" setup>
+import {readLoginError} from '@/store/main/getters';
+import {dispatchLogIn} from '@/store/main/actions';
+import {commitAddNotification} from '@/store/main/mutations';
+import store from '@/store';
+import {computed, ref} from "vue";
 
-@Component
-export default class Login extends Vue {
-  public login: string = '';
-  public password: string = '';
+const login = ref<string>('');
+const password = ref<string>('');
+const loginError = computed(() => {
+  return readLoginError(store);
+});
 
-  public get loginError() {
-    return readLoginError(this.$store);
-  }
-
-  public submit() {
-    if (this.login && this.password) {
-      dispatchLogIn(this.$store, {username: this.login, password: this.password});
-    } else {
-        commitAddNotification(this.$store, {
-          content: 'Please enter credentials',
-          color: 'error',
-        });
-      }
+function submit() {
+  if (login.value && password.value) {
+    dispatchLogIn(store, {username: login.value, password: password.value});
+  } else {
+    commitAddNotification(store, {
+      content: 'Please enter credentials',
+      color: 'error',
+    });
   }
 }
 </script>
