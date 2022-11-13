@@ -18,39 +18,32 @@
         </v-container>
       </v-main>
       <router-view v-else/>
-      <NotificationsManager></NotificationsManager>
     </v-app>
   </div>
 </template>
 
-<script lang="ts">
-import {Component, Vue} from 'vue-property-decorator';
-import NotificationsManager from '@/components/NotificationsManager.vue';
+<script lang="ts" setup>
 import {readIsLoggedIn} from '@/store/main/getters';
 import {dispatchCheckLoggedIn} from '@/store/main/actions';
-import {editor} from 'monaco-editor';
+import {computed, onBeforeMount, provide} from "vue";
+import store from "@/store";
+import {editor} from "monaco-editor";
 import IEditorOptions = editor.IEditorOptions;
 
-@Component({
-  components: {
-    NotificationsManager,
-  },
-})
-export default class App extends Vue {
-  get loggedIn() {
-    return readIsLoggedIn(this.$store);
-  }
+const loggedIn = computed(() => {
+  return readIsLoggedIn(store);
+});
 
-  public async created() {
-    await dispatchCheckLoggedIn(this.$store);
+onBeforeMount(async () => {
+  await dispatchCheckLoggedIn(store);
 
-    ((this.$root as any).monacoOptions as IEditorOptions) = {
-      automaticLayout: true,
-      minimap: {
-        enabled: false
-      },
-      renderLineHighlight: "none"
-    };
-  }
-}
+  let monacoOptions: IEditorOptions = {
+    automaticLayout: true,
+    minimap: {
+      enabled: false
+    },
+    renderLineHighlight: "none"
+  };
+  provide('monacoOptions', monacoOptions);
+});
 </script>
