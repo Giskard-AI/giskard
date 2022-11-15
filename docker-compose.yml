@@ -49,23 +49,9 @@ services:
     expose:
       - ${GISKARD_PORT-19000}
     depends_on:
-      - jupyter
       - backend
     env_file:
       - .env
-
-  jupyter:
-    image: '${DOCKER_REGISTRY}/jupyter:${TAG-latest}'
-    entrypoint:
-      - /usr/local/bin/start.sh
-      - jupyter
-      - notebook
-      - --NotebookApp.token=''
-      - --NotebookApp.allow_origin='*'
-      - --NotebookApp.base_url='/jupyter'
-    volumes:
-      - ./giskard-demo-notebook/notebook/german_credit.ipynb:/home/jovyan/german_credit.ipynb
-      - ./giskard-demo-notebook/notebook/german_credit_prepared.csv:/home/jovyan/german_credit_prepared.csv
 
 volumes:
   app-db-data:
