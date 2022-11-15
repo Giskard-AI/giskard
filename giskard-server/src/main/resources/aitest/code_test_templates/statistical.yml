@@ -180,8 +180,10 @@ items:
       #                  Model used to compute the test
       #              positive_outcome(str or float):
       #                  The target value that is considered a positive outcome in the dataset
-      #              threshold(float):
-      #                  Threshold below which the DI test is considered to fail, by default 80%
+      #              min_threshold(float):
+      #                  Threshold below which the DI test is considered to fail, by default 0.8
+      #              max_threshold(float):
+      #                  Threshold above which the DI test is considered to fail, by default 1.25
       #
       #        Returns:
       #              metric:
@@ -193,8 +195,9 @@ items:
       tests.statistical.test_disparate_impact(
         gsk_dataset=actual_ds,
         protected_slice=lambda df: df.head(len(df)//2),
-        unprotected_slice=lambda df: df.head(len(df)//2),
+        unprotected_slice=lambda df: df.tail(len(df)//2),
         model=model,
         positive_outcome='{{CLASSIFICATION LABEL}}',
-        threshold=0.8
+        min_threshold=0.8,
+        max_threshold=1.25
       )
