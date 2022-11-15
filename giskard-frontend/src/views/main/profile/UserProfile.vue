@@ -267,7 +267,7 @@
                   </div>
                   <div v-show="externalWorkerSelected">
                     <v-alert
-                        color="primary"
+                        color="warning"
                         border="left"
                         outlined
                         colored-border
