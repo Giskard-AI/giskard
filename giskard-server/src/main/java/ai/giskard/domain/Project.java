@@ -43,6 +43,7 @@ public class Project extends AbstractAuditingEntity {
     @Getter
     @Setter
     @NotNull
+    @Column(unique = true, nullable = false)
     private String key;
 
     @Getter
