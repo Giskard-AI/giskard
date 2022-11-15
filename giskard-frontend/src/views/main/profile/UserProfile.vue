@@ -288,8 +288,13 @@
                         <p>Make sure that port {{ appSettings.externalMlWorkerEntrypointPort }} is accessible</p>
                       </v-tooltip>
                       <span
-                          v-if="appSettings.externalMlWorkerEntrypointPort !== 40051"> -p {{ appSettings.externalMlWorkerEntrypointPort }}</span>
+                          v-if="appSettings.externalMlWorkerEntrypointPort !== 40051"> -p {{
+                          appSettings.externalMlWorkerEntrypointPort
+                        }}</span>
                     </code>
+                    <v-btn class="ml-1" x-small icon @click="copyMLWorkerCommand">
+                      <v-icon>mdi-content-copy</v-icon>
+                    </v-btn>
                     <p class="mt-4 mb-0">to connect to Giskard</p>
                   </div>
                 </v-container>
@@ -319,6 +324,7 @@ import mixpanel from "mixpanel-browser";
 import {Role} from "@/enums";
 import moment from "moment";
 import AppInfoDTO = AppConfigDTO.AppInfoDTO;
+import store from "@/store";
 
 @Component({
   components: {
@@ -376,6 +382,11 @@ export default class UserProfile extends Vue {
     } finally {
       this.mlWorkerSettingsLoading = false;
     }
+  }
+
+  public async copyMLWorkerCommand() {
+    await copyToClipboard('giskard worker start -h ' + this.giskardAddress);
+    commitAddNotification(store, {content: 'Copied', color: '#262a2d'});
   }
 
   @Watch("externalWorkerSelected")
