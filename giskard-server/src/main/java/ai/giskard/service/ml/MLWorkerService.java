@@ -2,6 +2,8 @@ package ai.giskard.service.ml;
 
 import ai.giskard.config.ApplicationProperties;
 import ai.giskard.domain.ProjectFile;
+import ai.giskard.domain.ml.Dataset;
+import ai.giskard.domain.ml.ProjectModel;
 import ai.giskard.grpc.MLWorkerClientErrorInterceptor;
 import ai.giskard.ml.MLWorkerClient;
 import ai.giskard.ml.tunnel.MLWorkerTunnelService;
@@ -94,11 +96,13 @@ public class MLWorkerService {
             );
             requestObserverRef.set(observer);
 
+            FileType fileType = determineFileTYpe(file);
+
             FileUploadRequest metadata = FileUploadRequest.newBuilder()
                 .setMetadata(
                     FileUploadMetadata.newBuilder()
                         .setId(file.getId())
-                        .setFileType(FileType.MODEL)
+                        .setFileType(fileType)
                         .setName(file.getFileName())
                         .setProjectKey(file.getProject().getKey())
                         .build())
@@ -115,6 +119,18 @@ public class MLWorkerService {
             }
         }
         return result.get();
+    }
+
+    private static FileType determineFileTYpe(ProjectFile file) {
+        FileType fileType;
+        if (file instanceof ProjectModel) {
+            fileType = FileType.MODEL;
+        } else if (file instanceof Dataset) {
+            fileType = FileType.DATASET;
+        } else {
+            throw new IllegalArgumentException(String.format("Upload object should be either model or dataset, got %s", file.getClass().getCanonicalName()));
+        }
+        return fileType;
     }
 
     private int getMlWorkerPort(boolean isInternal) {
