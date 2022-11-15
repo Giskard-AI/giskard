@@ -193,7 +193,8 @@ public class InitService {
                     .featureTypes(zillowFeatureTypes)
                     .columnTypes(zillowColumnTypes)
                     .target("SalePrice")
-                    .build()
+                    .build(),
+                new InspectionSettings()
             ),
             ENRON_PROJECT_KEY, new ProjectConfig("Email Classification", "aitester",
                 ModelUploadParamsDTO.builder().modelType("classification")
@@ -210,6 +211,9 @@ public class InitService {
                     .columnTypes(enronColumnTypes)
                     .projectKey(ENRON_PROJECT_KEY)
                     .target("Target")
+                    .build(),
+                InspectionSettings.builder()
+                    .limeNumberSamples(5)
                     .build()
             ),
             GERMAN_CREDIT_PROJECT_KEY, new ProjectConfig("Credit Scoring Classification", "admin",
@@ -227,7 +231,8 @@ public class InitService {
                     .target("default")
                     .featureTypes(germanCreditFeatureTypes)
                     .columnTypes(germanCreditColumnTypes)
-                    .build()
+                    .build(),
+                new InspectionSettings()
             )
         );
     }
@@ -327,6 +332,7 @@ public class InitService {
             Assert.notNull(owner, "Owner does not exist in database");
             Project project = new Project(projectKey, projectName, projectName, owner);
             project.setMlWorkerType(MLWorkerType.INTERNAL);
+            project.setInspectionSettings(projects.get(projectKey).inspectionSettings);
             projectService.create(project, ownerLogin);
             projectRepository.save(project);
             List<String> models = getFileNames(projectKey, "models");
@@ -405,6 +411,6 @@ public class InitService {
     }
 
     private record ProjectConfig(String name, String creator, ModelUploadParamsDTO modelParams,
-                                 DataUploadParamsDTO datasetParams) {
+                                 DataUploadParamsDTO datasetParams, InspectionSettings inspectionSettings) {
     }
 }
