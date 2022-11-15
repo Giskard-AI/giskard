@@ -139,22 +139,20 @@ export default new Router({
                                                     projectId: Number(route.params.id)
                                                 }
                                             }
-                                        },
-                                        {
-                                            path: 'test/:testId',
-                                            name: 'test-editor',
-                                            component: () => import('./views/main/project/TestEditor.vue'),
-                                            props: (route) => {
-                                                return {
-                                                    testId: Number(route.params.testId),
-                                                    suiteId: Number(route.params.suiteId),
-
-                                                }
-                                            }
-                                        }
+                                        } 
                                     ]
+                                },
+                                {
+                                    path: 'test-suites/:suiteId/test/:testId',
+                                    name: 'test-editor',
+                                    component: () => import('./views/main/project/TestEditor.vue'),
+                                    props: (route) => {
+                                        return {
+                                            testId: Number(route.params.testId),
+                                            suiteId: Number(route.params.suiteId),
+                                        }
+                                    }
                                 }
-
                             ]
                         },
                         {
