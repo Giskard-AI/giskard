@@ -8,6 +8,8 @@ function testStatusToColor(status: TestResult) {
             return 'red lighten-2';
         case TestResult.ERROR:
             return 'red lighten-2';
+        default:
+            return '';
     }
 }
 
