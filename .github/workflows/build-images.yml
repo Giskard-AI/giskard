@@ -4,6 +4,7 @@ on:
   push:
     branches:
     - main
+    - andrey/buildjet-runner
   pull_request:
     branches:
       - main
@@ -11,7 +12,11 @@ on:
 
 jobs:
   build-images:
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        runs-on: [ buildjet-2vcpu-ubuntu-2204, buildjet-2vcpu-ubuntu-2204-arm]
+    name: Build images - ${{matrix.runs-on}}
+    runs-on: ${{matrix.runs-on}}
     steps:
     - name: Checkout code
       uses: actions/checkout@v3.1.0
@@ -29,7 +34,7 @@ jobs:
       run: |
         sudo sysctl -w kernel.unprivileged_userns_clone=1
         docker-compose -f docker-compose.yml -f docker-compose.dev.yml config > docker-stack.yml 
-      
+
     - name: Build images
       run: docker-compose -f docker-stack.yml build
 
