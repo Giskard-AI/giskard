@@ -36,7 +36,7 @@ jobs:
         uses: baschny/append-buildx-action@v1
         with:
           builder: ${{ steps.builder.outputs.name }}
-          endpoint: ssh://${{ ARM_SSH_CONNECTION_STRING }}
+          endpoint: ssh://${{ secrets.ARM_SSH_CONNECTION_STRING }}
           ssh_private_key: ${{ secrets.ARM_SSH_PRIVATE_KEY }}
 
 
