@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - main
-      - andrey/docker-buildx
+      - andrey/docker-buildx-auto-ec2
 #  pull_request:
 #    branches:
 #      - main
