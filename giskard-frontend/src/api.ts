@@ -90,11 +90,16 @@ function trackError(error) {
         console.error("Failed to track API Error", e)
     }
 }
+function replacePlaceholders(detail: string) {
+    return detail.replaceAll("GISKARD_ADDRESS", window.location.hostname);
+}
 
 async function errorInterceptor(error) {
     if (error.code !== AxiosError.ERR_CANCELED) {
         trackError(error);
     }
+
+
     if (error.response) {
         if (error.response.status === 401) {
             removeLocalToken();
@@ -113,6 +118,8 @@ async function errorInterceptor(error) {
                 title = error.response.data.title || error.message;
                 detail = error.response.data.detail || error.request.responseURL;
             }
+
+            detail = replacePlaceholders(detail);
 
             Vue.$toast(
                 {
