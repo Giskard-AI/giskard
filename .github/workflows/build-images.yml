@@ -14,7 +14,7 @@ jobs:
   build-images:
     strategy:
       matrix:
-        runs-on: [ buildjet-2vcpu-ubuntu-2204, buildjet-2vcpu-ubuntu-2204-arm]
+        runs-on: [ buildjet-2vcpu-ubuntu-2204, buildjet-4vcpu-ubuntu-2204-arm]
     name: Build images - ${{matrix.runs-on}}
     runs-on: ${{matrix.runs-on}}
     steps:
@@ -40,13 +40,13 @@ jobs:
 
     - name: Login to Docker registry
       uses: docker/login-action@v2
-      if: ${{ steps.extract_branch.outputs.branch == 'main' }}
+#      if: ${{ steps.extract_branch.outputs.branch == 'main' }}
       with:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
 
     - name: Push images to Docker registry
-      if: ${{ steps.extract_branch.outputs.branch == 'main' }}
+#      if: ${{ steps.extract_branch.outputs.branch == 'main' }}
       env:
         TAG: dev
       run: |
