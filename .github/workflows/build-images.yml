@@ -12,7 +12,11 @@ on:
 
 jobs:
   build-images:
-    runs-on: buildjet-8vcpu-ubuntu-2204-arm
+    strategy:
+      matrix:
+        runs-on: [ buildjet-4vcpu-ubuntu-2204, buildjet-8vcpu-ubuntu-2204-arm]
+    name: Build images - ${{matrix.runs-on}}
+    runs-on: ${{matrix.runs-on}}
     steps:
       - name: Checkout code
         uses: actions/checkout@v3.1.0
