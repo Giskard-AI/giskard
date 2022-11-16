@@ -5,9 +5,9 @@ on:
     branches:
       - main
       - andrey/docker-buildx
-  pull_request:
-    branches:
-      - main
+#  pull_request:
+#    branches:
+#      - main
   workflow_dispatch:
 
 jobs:
