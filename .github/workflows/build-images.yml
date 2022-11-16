@@ -31,6 +31,15 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@master
 
+
+      - name: "Append ARM buildx builder from AWS"
+        uses: baschny/append-buildx-action@v1
+        with:
+          builder: ${{ steps.builder.outputs.name }}
+          endpoint: ssh://${{ ARM_SSH_CONNECTION_STRING }}
+          ssh_private_key: ${{ secrets.ARM_SSH_PRIVATE_KEY }}
+
+
       - name: Extract branch name
         shell: bash
         run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
@@ -51,10 +60,9 @@ jobs:
         with:
 #          push: ${{ steps.extract_branch.outputs.branch == 'main' }}
           push: ${{ steps.extract_branch.outputs.branch == 'andrey/docker-buildx' }}
-          set: ${{ (matrix.runs-on == 'buildjet-4vcpu-ubuntu-2204' && '*.platform=linux/amd64') || '*.platform=linux/arm64' }}
-#          set: |
-#            *.platform=linux/amd64
-#            *.platform=linux/arm64
+          set: |
+            *.platform=linux/amd64
+            *.platform=linux/arm64
 
       - name: Invoke deployment hook
         if: ${{ steps.extract_branch.outputs.branch == 'main' }}
