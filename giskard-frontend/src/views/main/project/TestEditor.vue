@@ -155,11 +155,17 @@
       </v-col>
       <v-col v-if='runResult' align-self="end" class="flex-grow-1" cols="6">
         <v-alert
+            tile
+            class="test-results"
             v-model='showRunResult'
-            border='left'
             type='error'
-            v-if="runResult.status === 'ERROR'">
-          {{ runResult.message }}
+            dismissible
+            close-icon="mdi-close"
+            :color="getBadgeColor(runResult.status)"
+            v-if="runResult.status === 'ERROR'"
+        >
+              <div class="text-h6"> Error </div>
+              <div class="text-body-3">{{ runResult.message }}</div>            
         </v-alert>
         <template v-for='testResult in runResult.result'>
           <v-alert
