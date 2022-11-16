@@ -90,16 +90,15 @@ public class TestService {
 
             try {
                 testResult = client.getBlockingStub().runTest(request);
+                res.setResult(testResult);
+                if (testResult.getResultsList().stream().anyMatch(r -> !r.getResult().getPassed())) {
+                    res.setStatus(TestResult.FAILED);
+                } else {
+                    res.setStatus(TestResult.PASSED);
+                }
             } catch (StatusRuntimeException e) {
                 res.setStatus(TestResult.ERROR);
-                return res;
-            }
-
-            res.setResult(testResult);
-            if (testResult.getResultsList().stream().anyMatch(r -> !r.getResult().getPassed())) {
-                res.setStatus(TestResult.FAILED);
-            } else {
-                res.setStatus(TestResult.PASSED);
+                res.setMessage(e.getMessage());
             }
         }
         testExecution.setResult(res.getStatus());
