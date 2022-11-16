@@ -7,7 +7,7 @@ function testStatusToColor(status: TestResult) {
         case TestResult.FAILED:
             return 'red lighten-2';
         case TestResult.ERROR:
-            return 'red lighten-2';
+            return 'red lighten-3';
         default:
             return '';
     }
