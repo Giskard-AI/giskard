@@ -1,4 +1,4 @@
-name: Build Docker images and push to registry with dev tag
+name: Build & Push dev images
 
 on:
   push:
