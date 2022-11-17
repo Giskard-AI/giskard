@@ -4,10 +4,9 @@ on:
   push:
     branches:
       - main
-      - andrey/docker-buildx
-#  pull_request:
-#    branches:
-#      - main
+  pull_request:
+    branches:
+      - main
   workflow_dispatch:
 
 jobs:
@@ -18,11 +17,6 @@ jobs:
         uses: actions/checkout@v3.1.0
         with:
           submodules: recursive
-
-#      - name: Set up QEMU
-#        uses: docker/setup-qemu-action@master
-#        with:
-#          platforms: amd64,arm64
 
       - name: Set up Docker Buildx
         id: builder
@@ -44,8 +38,7 @@ jobs:
 
       - name: Login to Docker registry
         uses: docker/login-action@v2
-#        if: ${{ steps.extract_branch.outputs.branch == 'main' }}
-        if: ${{ steps.extract_branch.outputs.branch == 'andrey/docker-buildx' }}
+        if: ${{ steps.extract_branch.outputs.branch == 'main' }}
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
@@ -55,8 +48,7 @@ jobs:
         env:
           TAG: dev
         with:
-#          push: ${{ steps.extract_branch.outputs.branch == 'main' }}
-          push: ${{ steps.extract_branch.outputs.branch == 'andrey/docker-buildx' }}
+          push: ${{ steps.extract_branch.outputs.branch == 'main' }}
           set: |
             *.platform=linux/amd64
             *.platform=linux/arm64
