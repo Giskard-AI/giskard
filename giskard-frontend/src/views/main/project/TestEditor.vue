@@ -153,20 +153,22 @@
         </v-btn>
 
       </v-col>
-      <v-col v-if='runResult' align-self="end" class="flex-grow-1" cols="6">
-        <v-alert
-            tile
-            class="test-results"
-            v-model='showRunResult'
-            type='error'
-            dismissible
-            close-icon="mdi-close"
-            :color="getBadgeColor(runResult.status)"
-            v-if="runResult.status === 'ERROR'"
-        >
-              <div class="text-h6"> Error </div>
-              <div class="text-body-3">{{ runResult.message }}</div>            
-        </v-alert>
+      <v-col v-if='runResult' align-self="end" class="flex-grow-1" style="height: 100%" cols="6">
+          <v-alert
+              tile
+              class="test-results"
+              v-model='showRunResult'
+              type='error'
+              dismissible
+              close-icon="mdi-close"
+              :color="getBadgeColor(runResult.status)"
+              v-if="runResult.status === 'ERROR'"
+          >
+            <div class="overflow-auto" style="height: 90px">
+                <div class="text-h6"> Error </div>
+                <div class="text-body-2">{{ runResult.message }}</div>
+            </div>
+          </v-alert>
         <template v-for='testResult in runResult.result'>
           <v-alert
               tile
@@ -503,4 +505,5 @@ export default class TestEditor extends Vue {
 .test-code-container{
   position: relative;
 }
+
 </style>
