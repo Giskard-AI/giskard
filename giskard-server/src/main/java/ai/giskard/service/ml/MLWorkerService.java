@@ -79,7 +79,9 @@ public class MLWorkerService {
         }
     }
 
-    public UploadStatus upload(MLWorkerClient client, ProjectFile file) throws IOException {
+    // synchronizing in order not to corrupt a file on an ML worker file in case of concurrent
+    // model execution
+    public synchronized UploadStatus upload(MLWorkerClient client, ProjectFile file) throws IOException {
         log.info("Uploading {}", file.getFileName());
         Path path = locationService.resolveFilePath(file);
 
