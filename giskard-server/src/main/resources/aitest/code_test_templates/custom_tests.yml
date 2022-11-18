@@ -9,9 +9,7 @@ items:
     code: |-
       # A detailed guide https://docs.giskard.ai/start/guides/create-your-custom-test
 
-      from giskard.ml_worker.generated.ml_worker_pb2 import SingleTestResult
-      from ml_worker.testing.abstract_test_collection import AbstractTestCollection
-
+      from giskard import SingleTestResult, AbstractTestCollection
 
       # Create your custom test
       class CustomTest(AbstractTestCollection):
