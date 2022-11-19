@@ -72,7 +72,7 @@ public class MLWorkerService {
             log.warn("Failed to create ML Worker client", e);
             if (raiseExceptionOnFailure) {
                 String workerType = isInternal ? "internal" : "external";
-                String fix = isInternal ? "docker-compose up -d ml-worker" : "giskard worker start -h GISKARD_ADDRESS";
+                String fix = isInternal ? "docker-compose up -d ml-worker" : "giskard worker start -h GISKARD_ADDRESS in the environment that can execute the specified model";
                 throw new GiskardRuntimeException(String.format("Failed to establish a connection with %s ML Worker. Start it with \"%s\"", workerType, fix), e);
             }
             return null;
