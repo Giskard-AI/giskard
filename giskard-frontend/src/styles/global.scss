@@ -45,7 +45,7 @@ $notification-spinner-size: 20px;
   & > .v-toolbar,
   & > .row {
     flex-grow: 0;
-     margin-bottom: 0;
+    margin-bottom: 0;
   }
 }
 
@@ -53,4 +53,27 @@ $notification-spinner-size: 20px;
   display: flex;
   flex-direction: column;
   flex-grow: 1;
+}
+
+
+$vt-color-error: white !default;
+$vt-text-color-error: #bb0000 !default;
+
+.Vue-Toastification__toast--error {
+  border: 2px solid $vt-text-color-error;
+  border-left: 10px solid $vt-text-color-error;
+  .Vue-Toastification__close-button{
+    color: black;
+  }
+
+}
+
+@import "vue-toastification/src/scss/index.scss";
+
+
+.error-toast {
+  [role=alert] {
+    color: black;
+    overflow: hidden;
+  }
 }
