@@ -90,6 +90,7 @@ function trackError(error) {
         console.error("Failed to track API Error", e)
     }
 }
+
 function replacePlaceholders(detail: string) {
     return detail.replaceAll("GISKARD_ADDRESS", window.location.hostname);
 }
@@ -111,12 +112,14 @@ async function errorInterceptor(error) {
         } else {
             let title: string;
             let detail: string;
+            let stack: string | undefined = undefined;
             if (error.response.status === 502) {
                 title = error.response.statusText;
                 detail = "Error while connecting to Giskard server, check that it's running";
             } else {
                 title = error.response.data.title || error.message;
                 detail = error.response.data.detail || error.request.responseURL;
+                stack = error.response.data.stack;
             }
 
             detail = replacePlaceholders(detail);
@@ -126,10 +129,12 @@ async function errorInterceptor(error) {
                     component: ErrorToast,
                     props: {
                         title: title || 'Error',
-                        detail: detail
+                        detail: detail,
+                        stack: stack
                     }
                 },
                 {
+                    toastClassName: "error-toast",
                     type: TYPE.ERROR,
                 });
         }

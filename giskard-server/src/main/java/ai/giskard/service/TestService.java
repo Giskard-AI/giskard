@@ -6,7 +6,7 @@ import ai.giskard.domain.ml.TestResult;
 import ai.giskard.domain.ml.TestSuite;
 import ai.giskard.domain.ml.testing.Test;
 import ai.giskard.domain.ml.testing.TestExecution;
-import ai.giskard.exception.MLWorkerRuntimeException;
+import ai.giskard.exception.MLWorkerException;
 import ai.giskard.ml.MLWorkerClient;
 import ai.giskard.repository.ml.TestExecutionRepository;
 import ai.giskard.repository.ml.TestRepository;
@@ -88,15 +88,7 @@ public class TestService {
             RunTestRequest request = requestBuilder.build();
             logger.debug("Sending requiest to ML Worker: {}", request);
 
-            try {
-                testResult = client.getBlockingStub().runTest(request);
-            } catch (StatusRuntimeException e) {
-                if (e.getCause() instanceof MLWorkerRuntimeException mlWorkerRE) {
-                    mlWorkerRE.setMessage(String.format("Failed to execute test: %s", test.getName()));
-                    throw mlWorkerRE;
-                }
-                throw e;
-            }
+            testResult = client.getBlockingStub().runTest(request);
 
             res.setResult(testResult);
             if (testResult.getResultsList().stream().anyMatch(r -> !r.getResult().getPassed())) {
@@ -123,7 +115,7 @@ public class TestService {
             .parallelStream().forEach(tests -> tests.forEach(test -> {
                 try {
                     result.add(runTest(test.getId()));
-                } catch (IOException | MLWorkerRuntimeException e) {
+                } catch (IOException | MLWorkerException e) {
                     logger.error("Failed to run test {} in suite {}", test.getId(), test.getTestSuite().getId(), e);
                 }
             }));
