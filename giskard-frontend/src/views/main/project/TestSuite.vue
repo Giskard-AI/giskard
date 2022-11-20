@@ -92,7 +92,7 @@ export default class TestSuite extends Vue {
   }
 
   async openSettings() {
-    let modifiedSuite = await this.$dialog.showAndWait(TestSuiteSettings, {width: 800, testSuite: this.testSuite});
+    let modifiedSuite = await this.$dialog.showAndWait(TestSuiteSettings, {scrollable: true, width: 800, testSuite: this.testSuite});
     if (modifiedSuite) {
       this.testSuite = modifiedSuite;
     }
