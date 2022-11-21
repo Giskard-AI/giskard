@@ -14,13 +14,13 @@
         <ModelSelector :value.sync="modifiedTestSuite.modelId" :return-object="false"
                        :project-id="testSuite.project.id"/>
         <DatasetSelector
+            :value.sync="modifiedTestSuite.actualDatasetId" :return-object="false" :project-id="testSuite.project.id"
+            label="Actual dataset"
+        />
+        <DatasetSelector
             :value.sync="modifiedTestSuite.referenceDatasetId"
             :return-object="false" :project-id="testSuite.project.id"
             label="Reference dataset"
-        />
-        <DatasetSelector
-            :value.sync="modifiedTestSuite.actualDatasetId" :return-object="false" :project-id="testSuite.project.id"
-            label="Actual dataset"
         />
       </v-form>
     </v-card-text>
