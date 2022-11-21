@@ -86,7 +86,7 @@ Giskard lets you automate tests in any of the categories below:
 Test if your model outputs behave as expected before and after input perturbation
 </details>
 <details>
-  <summary><b>Heuristics testing</b></summary>
+  <summary><b>Statistical testing</b></summary>
 Test if your model output respects some business rules
 </details>
 <details>

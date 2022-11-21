@@ -80,7 +80,9 @@ export default class TestSuites extends Vue {
   }
 
   public async createTestSuite() {
-    const newTestSuite = await this.$dialog.showAndWait(TestSuiteCreateModal, {width: 800, projectId: this.projectId});
+    const newTestSuite = await this.$dialog.showAndWait(TestSuiteCreateModal, {
+      width: 800, projectId: this.projectId, scrollable: true
+    });
     await this.$router.push({
       name: 'suite-details', params: {
         projectId: this.projectId.toString(),

@@ -1,7 +1,7 @@
 package ai.giskard.web.rest.errors;
 
 import ai.giskard.exception.EntityAlreadyExistsException;
-import ai.giskard.exception.MLWorkerRuntimeException;
+import ai.giskard.exception.MLWorkerException;
 import io.grpc.StatusRuntimeException;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.security.WeakKeyException;
@@ -36,6 +36,8 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static ai.giskard.web.rest.errors.ErrorConstants.DEFAULT_TYPE;
+import static org.zalando.problem.Status.BAD_REQUEST;
+import static org.zalando.problem.Status.INTERNAL_SERVER_ERROR;
 
 /**
  * Controller advice to translate the server side exceptions to client-friendly json structures.
@@ -126,11 +128,11 @@ public class ExceptionTranslator implements ProblemHandling, SecurityAdviceTrait
         StatusRuntimeException ex,
         NativeWebRequest request
     ) {
-        String details = null;
-        if (ex.getStatus().getCause() instanceof MLWorkerRuntimeException mlWorkerException) {
-            details = mlWorkerException.getDetails();
+        if (ex.getCause() instanceof MLWorkerException mlWorkerRE && !mlWorkerRE.getStatus().getCode().equals(io.grpc.Status.UNAVAILABLE.getCode())) {
+            return handleGRPCError(mlWorkerRE, request);
         }
-        MLWorkerError problem = new MLWorkerError(DEFAULT_TYPE, ex.getStatus().getCode(), ex.getStatus().getDescription(), details);
+
+        MLWorkerProblem problem = new MLWorkerProblem(DEFAULT_TYPE, ex.getStatus().getCode(), ex.getStatus().getDescription(), null);
 
         return create(
             problem,
@@ -140,11 +142,16 @@ public class ExceptionTranslator implements ProblemHandling, SecurityAdviceTrait
 
     @ExceptionHandler
     public ResponseEntity<Problem> handleGRPCError(
-        MLWorkerRuntimeException ex,
+        MLWorkerException ex,
         NativeWebRequest request
     ) {
-        MLWorkerError problem = new MLWorkerError(DEFAULT_TYPE, ex.getStatus().getCode(), ex.getMessage(), ex.getDetails());
-        return create(problem, request);
+        return create(Problem.builder()
+            .withType(DEFAULT_TYPE)
+            .withTitle(ex.getMessage())
+            .withStatus(INTERNAL_SERVER_ERROR)
+            .withDetail(ex.getErrorClass())
+            .with("stack", ex.getStack())
+            .build(), request);
     }
 
     @ExceptionHandler
@@ -268,8 +275,9 @@ public class ExceptionTranslator implements ProblemHandling, SecurityAdviceTrait
 
     @ExceptionHandler
     public ResponseEntity<Problem> handleIllegalArgumentException(IllegalArgumentException ex, NativeWebRequest request) {
-        return create(Status.BAD_REQUEST, ex, request);
+        return create(BAD_REQUEST, ex, request);
     }
+
     @ExceptionHandler
     public ResponseEntity<Problem> weakKeyException(WeakKeyException ex, NativeWebRequest request) {
         return create(Status.UNAUTHORIZED, ex, request);

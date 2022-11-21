@@ -9,7 +9,7 @@
           {{ testSuite.name }}
         </router-link>
       </v-col>
-      <v-col :align="'right'">
+      <v-col :align="'right'" v-show="$router.currentRoute.name === 'suite-test-list'">
         <v-btn
             class="mx-2 mr-0"
             dark
@@ -92,7 +92,7 @@ export default class TestSuite extends Vue {
   }
 
   async openSettings() {
-    let modifiedSuite = await this.$dialog.showAndWait(TestSuiteSettings, {width: 800, testSuite: this.testSuite});
+    let modifiedSuite = await this.$dialog.showAndWait(TestSuiteSettings, {scrollable: true, width: 800, testSuite: this.testSuite});
     if (modifiedSuite) {
       this.testSuite = modifiedSuite;
     }

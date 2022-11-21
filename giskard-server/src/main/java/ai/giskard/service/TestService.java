@@ -6,7 +6,7 @@ import ai.giskard.domain.ml.TestResult;
 import ai.giskard.domain.ml.TestSuite;
 import ai.giskard.domain.ml.testing.Test;
 import ai.giskard.domain.ml.testing.TestExecution;
-import ai.giskard.exception.MLWorkerRuntimeException;
+import ai.giskard.exception.MLWorkerException;
 import ai.giskard.ml.MLWorkerClient;
 import ai.giskard.repository.ml.TestExecutionRepository;
 import ai.giskard.repository.ml.TestRepository;
@@ -54,7 +54,7 @@ public class TestService {
         }).map(TestDTO::new);
     }
 
-    @Transactional
+    @Transactional(noRollbackFor = StatusRuntimeException.class)
     public TestExecutionResultDTO runTest(Long testId) throws IOException {
         TestExecutionResultDTO res = new TestExecutionResultDTO(testId);
         Test test = testRepository.findById(testId).orElseThrow(() -> new EntityNotFoundException(Entity.TEST, testId));
@@ -87,22 +87,18 @@ public class TestService {
             }
             RunTestRequest request = requestBuilder.build();
             logger.debug("Sending requiest to ML Worker: {}", request);
-
             try {
                 testResult = client.getBlockingStub().runTest(request);
-            } catch (StatusRuntimeException e) {
-                if (e.getCause() instanceof MLWorkerRuntimeException mlWorkerRE) {
-                    mlWorkerRE.setMessage(String.format("Failed to execute test: %s", test.getName()));
-                    throw mlWorkerRE;
+                res.setResult(testResult);
+                if (testResult.getResultsList().stream().anyMatch(r -> !r.getResult().getPassed())) {
+                    res.setStatus(TestResult.FAILED);
+                } else {
+                    res.setStatus(TestResult.PASSED);
                 }
+            } catch (StatusRuntimeException e) {
+                testExecution.setResult(TestResult.ERROR);
+                testExecutionRepository.save(testExecution);
                 throw e;
-            }
-
-            res.setResult(testResult);
-            if (testResult.getResultsList().stream().anyMatch(r -> !r.getResult().getPassed())) {
-                res.setStatus(TestResult.FAILED);
-            } else {
-                res.setStatus(TestResult.PASSED);
             }
         }
         testExecution.setResult(res.getStatus());
@@ -121,10 +117,15 @@ public class TestService {
         List<TestExecutionResultDTO> result = new ArrayList<>();
         Lists.partition(testRepository.findAllByTestSuiteId(suiteId), TEST_EXECUTION_CONCURRENCY)
             .parallelStream().forEach(tests -> tests.forEach(test -> {
+                Long testId = test.getId();
                 try {
-                    result.add(runTest(test.getId()));
-                } catch (IOException | MLWorkerRuntimeException e) {
-                    logger.error("Failed to run test {} in suite {}", test.getId(), test.getTestSuite().getId(), e);
+                    result.add(runTest(testId));
+                } catch (IOException e) {
+                    logger.error("Failed to run test {} in suite {}", testId, test.getTestSuite().getId(), e);
+                } catch (StatusRuntimeException e) {
+                    TestExecutionResultDTO res = new TestExecutionResultDTO(testId);
+                    res.setStatus(TestResult.ERROR);
+                    result.add(res);
                 }
             }));
         return result;
