@@ -94,7 +94,7 @@ public class MLWorkerService {
             );
             requestObserverRef.set(observer);
 
-            FileType fileType = determineFileTYpe(file);
+            FileType fileType = determineFileType(file);
 
             FileUploadRequest metadata = FileUploadRequest.newBuilder()
                 .setMetadata(
@@ -119,7 +119,7 @@ public class MLWorkerService {
         return result.get();
     }
 
-    private static FileType determineFileTYpe(ProjectFile file) {
+    private static FileType determineFileType(ProjectFile file) {
         FileType fileType;
         if (file instanceof ProjectModel) {
             fileType = FileType.MODEL;
