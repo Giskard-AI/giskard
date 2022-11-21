@@ -25,6 +25,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -124,6 +125,7 @@ public class TestService {
                     logger.error("Failed to run test {} in suite {}", testId, test.getTestSuite().getId(), e);
                 } catch (StatusRuntimeException e) {
                     TestExecutionResultDTO res = new TestExecutionResultDTO(testId);
+                    res.setExecutionDate(Instant.now());
                     res.setStatus(TestResult.ERROR);
                     result.add(res);
                 }
