@@ -1,7 +1,7 @@
 <template>
   <v-container fluid v-if="model && dataset">
     <ValidationObserver ref="dataFormObserver" v-slot="{ dirty }">
-      <v-row>
+      <v-row v-if='modelFeatures.length>1'>
         <v-col cols="12" md="6">
           <v-card>
             <OverlayLoader :show="loadingData"/>
