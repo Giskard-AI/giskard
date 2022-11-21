@@ -2,6 +2,8 @@ package ai.giskard.service.ml;
 
 import ai.giskard.config.ApplicationProperties;
 import ai.giskard.domain.ProjectFile;
+import ai.giskard.domain.ml.Dataset;
+import ai.giskard.domain.ml.ProjectModel;
 import ai.giskard.grpc.MLWorkerClientErrorInterceptor;
 import ai.giskard.ml.MLWorkerClient;
 import ai.giskard.ml.tunnel.MLWorkerTunnelService;
@@ -70,14 +72,16 @@ public class MLWorkerService {
             log.warn("Failed to create ML Worker client", e);
             if (raiseExceptionOnFailure) {
                 String workerType = isInternal ? "internal" : "external";
-                String fix = isInternal ? "docker-compose up -d ml-worker" : "giskard worker start -h GISKARD_ADDRESS";
+                String fix = isInternal ? "docker-compose up -d ml-worker" : "giskard worker start -h GISKARD_ADDRESS in the environment that can execute the specified model";
                 throw new GiskardRuntimeException(String.format("Failed to establish a connection with %s ML Worker. Start it with \"%s\"", workerType, fix), e);
             }
             return null;
         }
     }
 
-    public UploadStatus upload(MLWorkerClient client, ProjectFile file) throws IOException {
+    // synchronizing in order not to corrupt a file on an ML worker file in case of concurrent
+    // model execution
+    public synchronized UploadStatus upload(MLWorkerClient client, ProjectFile file) throws IOException {
         log.info("Uploading {}", file.getFileName());
         Path path = locationService.resolveFilePath(file);
 
@@ -90,11 +94,13 @@ public class MLWorkerService {
             );
             requestObserverRef.set(observer);
 
+            FileType fileType = determineFileType(file);
+
             FileUploadRequest metadata = FileUploadRequest.newBuilder()
                 .setMetadata(
                     FileUploadMetadata.newBuilder()
                         .setId(file.getId())
-                        .setFileType(FileType.MODEL)
+                        .setFileType(fileType)
                         .setName(file.getFileName())
                         .setProjectKey(file.getProject().getKey())
                         .build())
@@ -111,6 +117,18 @@ public class MLWorkerService {
             }
         }
         return result.get();
+    }
+
+    private static FileType determineFileType(ProjectFile file) {
+        FileType fileType;
+        if (file instanceof ProjectModel) {
+            fileType = FileType.MODEL;
+        } else if (file instanceof Dataset) {
+            fileType = FileType.DATASET;
+        } else {
+            throw new IllegalArgumentException(String.format("Upload object should be either model or dataset, got %s", file.getClass().getCanonicalName()));
+        }
+        return fileType;
     }
 
     private int getMlWorkerPort(boolean isInternal) {

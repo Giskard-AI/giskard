@@ -1,6 +1,7 @@
 package ai.giskard.grpc;
 
-import ai.giskard.exception.MLWorkerRuntimeException;
+import ai.giskard.exception.MLWorkerException;
+import ai.giskard.worker.MLWorkerErrorInfo;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.rpc.DebugInfo;
 import io.grpc.*;
@@ -24,13 +25,13 @@ public class MLWorkerClientErrorInterceptor implements ClientInterceptor {
                             super.onClose(basicStatus, trailers);
                         } else {
                             com.google.rpc.Status status = StatusProto.fromStatusAndTrailers(basicStatus, trailers);
-                            DebugInfo debugInfo = extractDebugInfo(status);
+                            MLWorkerErrorInfo errorInfo = extractErrorInfo(status);
 
-                            MLWorkerRuntimeException cause = new MLWorkerRuntimeException(
+                            MLWorkerException cause = new MLWorkerException(
                                 basicStatus,
                                 status.getMessage(),
-                                debugInfo == null ? null : debugInfo.getDetail(),
-                                debugInfo == null ? null : debugInfo.getStackEntriesList().stream().toList());
+                                errorInfo == null ? null : errorInfo.getError(),
+                                errorInfo == null ? null : errorInfo.getStack());
 
                             basicStatus = interpretErrorStatus(basicStatus);
                             super.onClose(basicStatus.withCause(cause), trailers);
@@ -48,16 +49,16 @@ public class MLWorkerClientErrorInterceptor implements ClientInterceptor {
         return basicStatus;
     }
 
-    private DebugInfo extractDebugInfo(com.google.rpc.Status status) {
-        DebugInfo debugInfo = null;
-        if (status.getDetailsCount() > 0 && status.getDetails(0).is(DebugInfo.class)) {
+    private MLWorkerErrorInfo extractErrorInfo(com.google.rpc.Status status) {
+        MLWorkerErrorInfo errorInfo = null;
+        if (status.getDetailsCount() > 0 && status.getDetails(0).is(MLWorkerErrorInfo.class)) {
             try {
-                debugInfo = status.getDetails(0).unpack(DebugInfo.class);
+                errorInfo = status.getDetails(0).unpack(MLWorkerErrorInfo.class);
             } catch (InvalidProtocolBufferException ex) {
-                log.warn("Failed to extract debugInfo from exception {}", ExceptionUtils.getMessage(ex));
+                log.warn("Failed to extract errorInfo from exception {}", ExceptionUtils.getMessage(ex));
             }
         }
-        return debugInfo;
+        return errorInfo;
     }
 
 }

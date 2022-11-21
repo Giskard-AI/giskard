@@ -7,9 +7,9 @@ function testStatusToColor(status: TestResult) {
         case TestResult.FAILED:
             return 'red lighten-2';
         case TestResult.ERROR:
-            return 'black lighten-2';
+            return 'red lighten-3';
         default:
-            return 'grey lighten-2';
+            return '';
     }
 }
 
@@ -19,6 +19,8 @@ function testStatusToIcon(status: TestResult){
             return 'fa-check';
         case TestResult.FAILED:
             return 'fa-xmark';
+        case TestResult.ERROR:
+            return 'fa-exclamation-triangle';
         default:
             return '';
     }
