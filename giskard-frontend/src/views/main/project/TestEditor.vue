@@ -154,21 +154,6 @@
 
       </v-col>
       <v-col v-if='runResult' align-self="end" class="flex-grow-1" style="height: 100%" cols="6">
-          <v-alert
-              tile
-              class="test-results"
-              v-model='showRunResult'
-              type='error'
-              dismissible
-              close-icon="mdi-close"
-              :color="getBadgeColor(runResult.status)"
-              v-if="runResult.status === 'ERROR'"
-          >
-            <div class="overflow-auto" style="height: 90px">
-                <div class="text-h6"> Error </div>
-                <div class="text-body-2">{{ runResult.message }}</div>
-            </div>
-          </v-alert>
         <template v-for='testResult in runResult.result'>
           <v-alert
               tile
@@ -214,8 +199,8 @@ import {CodeTestCollection, TestDTO, TestExecutionResultDTO, TestResult, TestTyp
 import mixpanel from "mixpanel-browser";
 import {testStatusToColor} from "@/views/main/tests/test-utils";
 import Mousetrap from "mousetrap";
-import IStandaloneCodeEditor = editor.IStandaloneCodeEditor;
 import OverlayLoader from '@/components/OverlayLoader.vue';
+import IStandaloneCodeEditor = editor.IStandaloneCodeEditor;
 
 
 Vue.filter('formatNumber', function (value, fmt) {
@@ -333,9 +318,6 @@ export default class TestEditor extends Vue {
         await this.save();
       }
       this.runResult = await api.runTest(this.testId);
-      if (this.runResult?.status === TestResult.ERROR) {
-        mixpanel.track('Test error', {testId: this.testId, message: this.runResult.message});
-      }
     } finally {
       this.executingTest = false;
     }
@@ -502,7 +484,8 @@ export default class TestEditor extends Vue {
 ::v-deep .v-alert {
   margin: 0;
 }
-.test-code-container{
+
+.test-code-container {
   position: relative;
 }
 
