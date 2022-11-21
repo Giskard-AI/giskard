@@ -4,9 +4,11 @@ import org.zalando.problem.AbstractThrowableProblem;
 import org.zalando.problem.Status;
 
 import java.net.URI;
+import java.util.List;
 
-public class MLWorkerError extends AbstractThrowableProblem { //NOSONAR: ok to have deep inheritance
-    public MLWorkerError(URI errorConstantURI, io.grpc.Status.Code code, String message, String detail) {
+public class MLWorkerProblem extends AbstractThrowableProblem { //NOSONAR: ok to have deep inheritance
+
+    public MLWorkerProblem(URI errorConstantURI, io.grpc.Status.Code code, String message, String detail) {
         super(errorConstantURI, message, translateGRPCStatusCode(code), detail);
     }
 

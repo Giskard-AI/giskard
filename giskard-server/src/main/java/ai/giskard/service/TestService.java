@@ -6,7 +6,7 @@ import ai.giskard.domain.ml.TestResult;
 import ai.giskard.domain.ml.TestSuite;
 import ai.giskard.domain.ml.testing.Test;
 import ai.giskard.domain.ml.testing.TestExecution;
-import ai.giskard.exception.MLWorkerRuntimeException;
+import ai.giskard.exception.MLWorkerException;
 import ai.giskard.ml.MLWorkerClient;
 import ai.giskard.repository.ml.TestExecutionRepository;
 import ai.giskard.repository.ml.TestRepository;
@@ -119,7 +119,7 @@ public class TestService {
             .parallelStream().forEach(tests -> tests.forEach(test -> {
                 try {
                     result.add(runTest(test.getId()));
-                } catch (IOException | MLWorkerRuntimeException e) {
+                } catch (IOException e) {
                     logger.error("Failed to run test {} in suite {}", test.getId(), test.getTestSuite().getId(), e);
                 }
             }));
