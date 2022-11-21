@@ -9,7 +9,7 @@
           {{ testSuite.name }}
         </router-link>
       </v-col>
-      <v-col :align="'right'">
+      <v-col :align="'right'" v-show="$router.currentRoute.name === 'suite-test-list'">
         <v-btn
             class="mx-2 mr-0"
             dark
