@@ -12,18 +12,17 @@ import store from '@/store';
 import './registerServiceWorker';
 import 'vuetify/dist/vuetify.min.css';
 import 'vuetify-dialog/dist/vuetify-dialog.css';
-import './styles/global.scss';
-import './styles/colors.scss';
 import './filters'
 
 import Toast, {POSITION} from "vue-toastification";
-// Import the CSS or use your own!
-import "vue-toastification/dist/index.css";
 import {FontAwesomeIcon} from "@fortawesome/vue-fontawesome";
 import {library} from '@fortawesome/fontawesome-svg-core'
 import {faUserSecret} from '@fortawesome/free-solid-svg-icons'
 import mixpanel from 'mixpanel-browser';
 import _ from "lodash";
+
+import './styles/global.scss';
+import './styles/colors.scss';
 
 Vue.config.productionTip = false;
 
