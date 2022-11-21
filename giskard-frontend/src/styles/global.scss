@@ -81,6 +81,6 @@ $vt-text-color-error: #bb0000 !default;
 // fix for https://github.com/yariksav/vuetify-dialog/issues/139
 .v-dialog--scrollable{
   .v-dialog-wrapper{
-    overflow: scroll;
+    overflow: auto;
   }
 }
