@@ -3,7 +3,7 @@
   "private": true,
   "scripts": {
     "serve": "vue-cli-service serve",
-    "build": "NODE_OPTIONS=--max_old_space_size=4096 vue-cli-service build",
+    "build": "vue-cli-service build",
     "test:unit": "vue-cli-service test:unit",
     "lint": "vue-cli-service lint"
   },
@@ -57,7 +57,7 @@
     "eslint": "^8.21.0",
     "eslint-plugin-vue": "^8.0.1",
     "monaco-editor-webpack-plugin": "~7.0.1",
-    "sass": "~1.32.6",
+    "sass": "^1.43.2",
     "sass-loader": "^13.0.0",
     "typescript": "^4.7.4",
     "vue-cli-plugin-vuetify": "^2.5.1",
