@@ -44,7 +44,6 @@ jobs:
         env:
           TAG: ${{ steps.tag.outputs.version }}
         with:
-          load: true
           set: |
             backend.args.RUN_TESTS=true
             frontend.args.FRONTEND_ENV=production
@@ -76,5 +75,5 @@ jobs:
         run: |
           curl -L --silent --max-time 900 ${{ secrets.TEST_SERVER_WEBHOOK_URL_BASE }}/redeploy-prod 
 
-      - name: Remove containers and volumes
-        run: docker-compose -f docker-stack.yml down -v --remove-orphans
+#      - name: Remove containers and volumes
+#        run: docker-compose -f docker-stack.yml down -v --remove-orphans
