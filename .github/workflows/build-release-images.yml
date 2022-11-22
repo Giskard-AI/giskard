@@ -39,39 +39,56 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Build <current version>
-        uses: docker/bake-action@master
-        env:
-          TAG: ${{ steps.tag.outputs.version }}
-        with:
-          set: |
-            backend.args.RUN_TESTS=true
-            frontend.args.FRONTEND_ENV=production
-            *.platform=linux/amd64
-            *.platform=linux/arm64
-
-      - name: Push <current version> images to Docker registry
-        env:
-          TAG: ${{ steps.tag.outputs.version }}
-        run: |
-          docker-compose push
-
-      - name: Tag and push <latest> images
+      - name: Build <current version>+latest backend image
         if: ${{ steps.tag.outputs.name == steps.tag.outputs.latest_version }}
         env:
-          SOURCE_TAG: ${{ steps.tag.outputs.version }}
-          TARGET_TAG: andrey-latest
+          IMAGE: docker.io/giskardai/backend
         run: |
-          docker tag docker.io/giskardai/backend:$SOURCE_TAG docker.io/giskardai/backend:$TARGET_TAG
-          docker push docker.io/giskardai/backend:$TARGET_TAG
-          docker tag docker.io/giskardai/frontend:$SOURCE_TAG docker.io/giskardai/frontend:$TARGET_TAG
-          docker push docker.io/giskardai/frontend:$TARGET_TAG
-#          for image in $(cat docker-compose.yml | grep '^ *image:.*giskard' | cut -d':' -f 2 | tr -d ' '); \
-#          do \
-#              docker tag "${image}":"${TAG}" "${image}":latest; \
-#          done;
+          docker buildx build \
+          --platform linux/amd64,linux/arm64 \
+          --tag $IMAGE:andrey-latest \
+          --tag $IMAGE:andrey-${{ steps.tag.outputs.version }} \
+          --file giskard-server/src/main/docker/app/app.dockerfile \
+          --push \
+          .
+
+      - name: Build <current version> backend image
+        if: ${{ steps.tag.outputs.name != steps.tag.outputs.latest_version }}
+        env:
+          IMAGE: docker.io/giskardai/backend
+        run: |
+          docker buildx build \
+          --platform linux/amd64,linux/arm64 \
+          --tag $IMAGE:andrey-${{ steps.tag.outputs.version }} \
+          --file giskard-server/src/main/docker/app/app.dockerfile \
+          --push \
+          .
+
+      - name: Build <current version>+latest frontend image
+        if: ${{ steps.tag.outputs.name == steps.tag.outputs.latest_version }}
+        env:
+          IMAGE: docker.io/giskardai/frontend
+        run: |
+          docker buildx build \
+          --platform linux/amd64,linux/arm64 \
+          --tag $IMAGE:andrey-latest \
+          --tag $IMAGE:andrey-${{ steps.tag.outputs.version }} \
+          --push \
+          giskard-frontend
+
+      - name: Build <current version> frontend image
+        if: ${{ steps.tag.outputs.name != steps.tag.outputs.latest_version }}
+        env:
+          IMAGE: docker.io/giskardai/frontend
+        run: |
+          docker buildx build \
+          --platform linux/amd64,linux/arm64 \
+          --tag $IMAGE:andrey-${{ steps.tag.outputs.version }} \
+          --push \
+          giskard-frontend
 
       - name: Invoke deployment hook
+        if: ${{ steps.tag.outputs.name == steps.tag.outputs.latest_version }}
         run: |
           curl -L --silent --max-time 900 ${{ secrets.TEST_SERVER_WEBHOOK_URL_BASE }}/redeploy-prod 
 
