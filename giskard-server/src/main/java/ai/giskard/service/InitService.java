@@ -172,12 +172,11 @@ public class InitService {
     private final GeneralSettingsService generalSettingsService;
     private final ResourceLoader resourceLoader;
     private final FileUploadService fileUploadService;
-    private final Map<String, ProjectConfig> projects = createProjectConfigMap();
+    private Map<String, ProjectConfig> projects;
     String[] mockKeys = stream(AuthoritiesConstants.AUTHORITIES).map(key -> key.replace("ROLE_", "")).toArray(String[]::new);
     private final Map<String, String> users = stream(mockKeys).collect(Collectors.toMap(String::toLowerCase, String::toLowerCase));
 
     private Map<String, ProjectConfig> createProjectConfigMap() {
-
         return Map.of(
             ZILLOW_PROJECT_KEY, new ProjectConfig("House Pricing Regression", "aicreator",
                 ModelUploadParamsDTO.builder().modelType("regression")
@@ -251,6 +250,7 @@ public class InitService {
     @EventListener(ApplicationReadyEvent.class)
     @Transactional
     public void init() {
+        projects = createProjectConfigMap();
         generalSettingsService.saveIfNotExists(new GeneralSettings());
         initAuthorities();
         initUsers();
