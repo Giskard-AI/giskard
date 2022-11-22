@@ -41,7 +41,6 @@ jobs:
         uses: docker/bake-action@master
         env:
           TAG: ${{ steps.tag.outputs.version }}
-        push: false
         with:
           set: |
             *.platform=linux/amd64
