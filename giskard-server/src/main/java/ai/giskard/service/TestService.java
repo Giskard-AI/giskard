@@ -6,7 +6,6 @@ import ai.giskard.domain.ml.TestResult;
 import ai.giskard.domain.ml.TestSuite;
 import ai.giskard.domain.ml.testing.Test;
 import ai.giskard.domain.ml.testing.TestExecution;
-import ai.giskard.exception.MLWorkerException;
 import ai.giskard.ml.MLWorkerClient;
 import ai.giskard.repository.ml.TestExecutionRepository;
 import ai.giskard.repository.ml.TestRepository;
@@ -25,7 +24,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -57,6 +55,15 @@ public class TestService {
 
     @Transactional(noRollbackFor = StatusRuntimeException.class)
     public TestExecutionResultDTO runTest(Long testId) throws IOException {
+        return runTest(testId, true);
+    }
+
+    @Transactional()
+    public TestExecutionResultDTO runTestNoError(Long testId) throws IOException {
+        return runTest(testId, false);
+    }
+
+    private TestExecutionResultDTO runTest(Long testId, boolean throwExceptionOnError) throws IOException {
         TestExecutionResultDTO res = new TestExecutionResultDTO(testId);
         Test test = testRepository.findById(testId).orElseThrow(() -> new EntityNotFoundException(Entity.TEST, testId));
         res.setTestName(test.getName());
@@ -97,9 +104,14 @@ public class TestService {
                     res.setStatus(TestResult.PASSED);
                 }
             } catch (StatusRuntimeException e) {
-                testExecution.setResult(TestResult.ERROR);
-                testExecutionRepository.save(testExecution);
-                throw e;
+                if (throwExceptionOnError) {
+                    testExecution.setResult(TestResult.ERROR);
+                    testExecutionRepository.save(testExecution);
+                    throw e;
+                } else {
+                    res.setStatus(TestResult.ERROR);
+                    res.setMessage(e.getCause().getMessage());
+                }
             }
         }
         testExecution.setResult(res.getStatus());
@@ -120,14 +132,10 @@ public class TestService {
             .parallelStream().forEach(tests -> tests.forEach(test -> {
                 Long testId = test.getId();
                 try {
-                    result.add(runTest(testId));
+                    TestExecutionResultDTO res = runTestNoError(testId);
+                    result.add(res);
                 } catch (IOException e) {
                     logger.error("Failed to run test {} in suite {}", testId, test.getTestSuite().getId(), e);
-                } catch (StatusRuntimeException e) {
-                    TestExecutionResultDTO res = new TestExecutionResultDTO(testId);
-                    res.setExecutionDate(Instant.now());
-                    res.setStatus(TestResult.ERROR);
-                    result.add(res);
                 }
             }));
         return result;
