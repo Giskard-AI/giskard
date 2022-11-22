@@ -43,6 +43,8 @@ jobs:
           TAG: ${{ steps.tag.outputs.version }}
         with:
           set: |
+            backend.args.RUN_TESTS=true
+            frontend.args.FRONTEND_ENV=production
             *.platform=linux/amd64
             *.platform=linux/arm64
 
