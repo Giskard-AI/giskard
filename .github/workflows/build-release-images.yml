@@ -41,6 +41,7 @@ jobs:
         uses: docker/bake-action@master
         env:
           TAG: ${{ steps.tag.outputs.version }}
+        load: true
         with:
           set: |
             backend.args.RUN_TESTS=true
