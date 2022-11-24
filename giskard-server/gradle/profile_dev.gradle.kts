@@ -1,8 +1,8 @@
 dependencies {
-    developmentOnly "org.springframework.boot:spring-boot-devtools:${springBootVersion}"
+    developmentOnly("org.springframework.boot:spring-boot-devtools:${springBootVersion}")
 }
 
-def profiles = "dev"
+val profiles = "dev"
 if (project.hasProperty("no-liquibase")) {
     profiles += ",no-liquibase"
 }
@@ -19,13 +19,13 @@ springBoot {
 }
 
 bootRun {
-    args = []
+    args = listOf()
 }
 
 
 processResources {
-    inputs.property('version', version)
-    inputs.property('springProfiles', profiles)
+    inputs.property("version", version)
+    inputs.property("springProfiles", profiles)
     filesMatching("**/application.yml") {
         filter {
             it.replace("#project.version#", version)
