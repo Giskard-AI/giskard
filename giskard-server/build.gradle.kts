@@ -309,7 +309,7 @@ tasks {
     }
 
     check {
-        dependsOn("integrationTest")
+        dependsOn("test", "integrationTest")
     }
 
     bootJar {

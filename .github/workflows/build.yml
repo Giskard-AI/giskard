@@ -7,7 +7,7 @@ on:
 
 jobs:
   build-back:
-    name: Build back & front
+    name: Build
     runs-on: ubuntu-latest
     steps:
       - name: Extract source branch name
@@ -57,7 +57,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-        run: ./gradlew :giskard-frontend:build :giskard-server:build jacocoTestReport sonarqube --info
+        run: ./gradlew build jacocoTestReport sonarqube --info
 
       - name: Build and analyze without sonar
         if: ${{ startsWith(steps.extract_source_branch.outputs.branch, 'dependabot/') }}
@@ -67,86 +67,86 @@ jobs:
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
         run: ./gradlew :giskard-frontend:build :giskard-server:build
 
-  build-client:
-    name: Build client
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        python-version: [ "3.7", "3.8", "3.9", "3.10" ]
-
-    steps:
-      - name: Extract branch name
-        shell: bash
-        run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
-        id: extract_branch
-
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Set up JDK 17
-        uses: actions/setup-java@v3
-        with:
-          distribution: 'temurin'
-          java-version: 17
-
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v3
-        with:
-          python-version: ${{ matrix.python-version }}
-
-      - name: Cache virtual environment
-        uses: actions/cache@v3
-        with:
-          path: giskard-client/.venv
-          key: ${{ runner.os }}-venv-${{ matrix.python-version }}-${{ hashFiles('poetry.lock')}}
-          restore-keys: ${{ runner.os }}-venv-${{ matrix.python-version }}
-
-      - name: Upgrade pip
-        run: python -m pip install --upgrade pip
-
-      - name: Build
-        run: ./gradlew :giskard-client:build
-
-#      - name: Replace local coverage.xml path by docker path for Sonar
-#        run: sed -i 's/\/home\/runner\/work\/giskard-client\/giskard-client\//\/github\/workspace\//g' coverage.xml
+#  build-client:
+#    name: Build client
+#    runs-on: ubuntu-latest
+#    strategy:
+#      fail-fast: false
+#      matrix:
+#        python-version: [ "3.7", "3.8", "3.9", "3.10" ]
 #
-#      - name: SonarCloud Scan
-#        uses: SonarSource/sonarcloud-github-action@master
+#    steps:
+#      - name: Extract branch name
+#        shell: bash
+#        run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
+#        id: extract_branch
+#
+#      - name: Checkout code
+#        uses: actions/checkout@v3
+#
+#      - name: Set up JDK 17
+#        uses: actions/setup-java@v3
+#        with:
+#          distribution: 'temurin'
+#          java-version: 17
+#
+#      - name: Set up Python ${{ matrix.python-version }}
+#        uses: actions/setup-python@v3
+#        with:
+#          python-version: ${{ matrix.python-version }}
+#
+#      - name: Cache virtual environment
+#        uses: actions/cache@v3
+#        with:
+#          path: giskard-client/.venv
+#          key: ${{ runner.os }}-venv-${{ matrix.python-version }}-${{ hashFiles('poetry.lock')}}
+#          restore-keys: ${{ runner.os }}-venv-${{ matrix.python-version }}
+#
+#      - name: Upgrade pip
+#        run: python -m pip install --upgrade pip
+#
+#      - name: Build
+#        run: ./gradlew :giskard-client:build
+#
+##      - name: Replace local coverage.xml path by docker path for Sonar
+##        run: sed -i 's/\/home\/runner\/work\/giskard-client\/giskard-client\//\/github\/workspace\//g' coverage.xml
+##
+##      - name: SonarCloud Scan
+##        uses: SonarSource/sonarcloud-github-action@master
+##        env:
+##          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+#
+#      - name: Extract current package version
+#        if: ${{ steps.extract_branch.outputs.branch == 'main' }}
+#        uses: SebRollen/toml-action@v1.0.1
+#        id: read_toml
+#        with:
+#          file: 'giskard-client/pyproject.toml'
+#          field: 'tool.poetry.version'
+#
+#      - name: Get current date
+#        if: ${{ steps.extract_branch.outputs.branch == 'main' }}
+#        id: current_date
 #        env:
-#          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-
-      - name: Extract current package version
-        if: ${{ steps.extract_branch.outputs.branch == 'main' }}
-        uses: SebRollen/toml-action@v1.0.1
-        id: read_toml
-        with:
-          file: 'giskard-client/pyproject.toml'
-          field: 'tool.poetry.version'
-
-      - name: Get current date
-        if: ${{ steps.extract_branch.outputs.branch == 'main' }}
-        id: current_date
-        env:
-          TZ: Europe/Paris
-        run: echo "CURRENT_DATE=$(date '+%Y%m%d%H%M%S')" >> $GITHUB_OUTPUT
-
-
-      - name: Set dev version
-        if: ${{ steps.extract_branch.outputs.branch == 'main' }}
-        uses: ciiiii/toml-editor@1.0.0
-        with:
-          file: "giskard-client/pyproject.toml"
-          key: "tool.poetry.version"
-          value: '${{ steps.read_toml.outputs.value }}.dev${{ steps.current_date.outputs.CURRENT_DATE }}'
-
-      - name: Build dev version
-        run: |
-          ./gradlew :giskard-client:package
-
-      - name: Archive built artifacts
-        if: ${{ steps.extract_branch.outputs.branch == 'main' }}
-        uses: actions/upload-artifact@v3
-        with:
-          name: giskard-dev-${{ matrix.python-version }}.whl
-          path: giskard-client/dist/*whl
+#          TZ: Europe/Paris
+#        run: echo "CURRENT_DATE=$(date '+%Y%m%d%H%M%S')" >> $GITHUB_OUTPUT
+#
+#
+#      - name: Set dev version
+#        if: ${{ steps.extract_branch.outputs.branch == 'main' }}
+#        uses: ciiiii/toml-editor@1.0.0
+#        with:
+#          file: "giskard-client/pyproject.toml"
+#          key: "tool.poetry.version"
+#          value: '${{ steps.read_toml.outputs.value }}.dev${{ steps.current_date.outputs.CURRENT_DATE }}'
+#
+#      - name: Build dev version
+#        run: |
+#          ./gradlew :giskard-client:package
+#
+#      - name: Archive built artifacts
+#        if: ${{ steps.extract_branch.outputs.branch == 'main' }}
+#        uses: actions/upload-artifact@v3
+#        with:
+#          name: giskard-dev-${{ matrix.python-version }}.whl
+#          path: giskard-client/dist/*whl

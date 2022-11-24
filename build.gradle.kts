@@ -1,6 +1,6 @@
 plugins {
     id("base")
-    id("org.sonarqube") version "3.3"
+    id("org.sonarqube")
     `kotlin-dsl`
 }
 
@@ -15,10 +15,8 @@ allprojects {
 sonarqube {
     properties {
         property("sonar.organization", "giskard")
-        property("sonar.host.url", "https://sonarcloud.io")
-
         property("sonar.projectKey", "giskard")
-        property("sonar.projectName", "Giskard")
+        property("sonar.host.url", "https://sonarcloud.io")
         property("sonar.projectVersion", version.toString())
     }
 }
