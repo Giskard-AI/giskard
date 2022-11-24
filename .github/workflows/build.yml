@@ -106,7 +106,7 @@ jobs:
         run: python -m pip install --upgrade pip
 
       - name: Build
-        run: ./gradlew :giskard-client:build :giskard-client:sonarqube --info
+        run: ./gradlew :giskard-client:build
 
 #      - name: Replace local coverage.xml path by docker path for Sonar
 #        run: sed -i 's/\/home\/runner\/work\/giskard-client\/giskard-client\//\/github\/workspace\//g' coverage.xml

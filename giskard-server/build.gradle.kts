@@ -225,7 +225,7 @@ dependencies {
     testImplementation("com.tngtech.archunit:archunit-junit5-api:${archunitJunit5Version}")
     testRuntimeOnly("com.tngtech.archunit:archunit-junit5-engine:${archunitJunit5Version}")
     developmentOnly("org.springframework.boot:spring-boot-devtools:${springBootVersion}")
-    protobuf(files("ml-worker-proto/proto"))
+    protobuf(files("../giskard-common/proto"))
 
     compileOnly("org.projectlombok:lombok")
     annotationProcessor("org.projectlombok:lombok")
