@@ -275,6 +275,9 @@ sourceSets {
 }
 
 tasks {
+    build {
+        dependsOn("generateProto")
+    }
     test {
         finalizedBy(jacocoTestReport)
     }
