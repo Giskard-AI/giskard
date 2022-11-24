@@ -1,0 +1,3 @@
+[submodule "ml-worker-proto"]
+	path = ml-worker-proto
+	url = ../ml-worker-proto.git
