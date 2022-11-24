@@ -4,8 +4,8 @@ WORKDIR /workspace
 COPY gradle gradle
 COPY gradlew .
 COPY gradle.properties .
-COPY settings.gradle .
-COPY build.gradle .
+COPY settings.gradle.kts .
+COPY build.gradle.kts .
 # Copying .git to make gradle-git-properties gradle plugin work
 COPY .git .git
 
@@ -13,7 +13,7 @@ WORKDIR /workspace/giskard-server
 COPY giskard-server/gradle gradle
 COPY giskard-server/ml-worker-proto ml-worker-proto
 COPY giskard-server/src src
-COPY giskard-server/build.gradle .
+COPY giskard-server/build.gradle.kts .
 COPY giskard-server/sonar-project.properties .
 
 ARG RUN_TESTS=false
