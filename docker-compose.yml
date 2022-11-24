@@ -13,6 +13,9 @@ services:
   ml-worker:
     image: 'docker.io/giskardai/ml-worker:${TAG-latest}'
     hostname: giskard-embedded-docker-worker
+    build:
+      dockerfile: giskard-client/docker/Dockerfile
+      context: giskard-client
 
   backend:
     image: 'docker.io/giskardai/backend:${TAG-latest}'
@@ -45,7 +48,6 @@ services:
       - JHIPSTER_MAIL_BASEURL
     volumes:
       - giskard-home:/giskard-home
-
 
   frontend:
     image: 'docker.io/giskardai/frontend:${TAG-latest}'

@@ -16,6 +16,7 @@ pluginManagement {
 
 rootProject.name = "giskard"
 include(
-        "giskard-server",
-        "giskard-frontend"
+    "giskard-server",
+    "giskard-frontend",
+    "giskard-client"
 )
