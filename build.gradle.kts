@@ -1,20 +1,23 @@
+import org.jetbrains.kotlin.utils.addToStdlib.ifFalse
 import java.util.*
 
 fun Project.applySonarProperties() {
-    val sonarProperties = Properties().apply {
-        load(file("sonar-project.properties").reader())
-    }
+    if (file("sonar-project.properties").exists()) {
+        val sonarProperties = Properties().apply {
+            load(file("sonar-project.properties").reader())
+        }
 
-    sonarProperties.forEach { key, value ->
-        sonarqube {
-            properties {
-                property(key as String, value as String)
+        sonarProperties.forEach { key, value ->
+            sonarqube {
+                properties {
+                    property(key as String, value as String)
+                }
             }
         }
-    }
-    sonarqube {
-        properties {
-            property("sonar.projectVersion", version.toString())
+        sonarqube {
+            properties {
+                property("sonar.projectVersion", version.toString())
+            }
         }
     }
 }
@@ -31,12 +34,9 @@ repositories {
 
 allprojects {
     version = extra["giskardVersion"]!!
-}
-
-
-
-subprojects {
     applySonarProperties()
 }
+
 applySonarProperties()
+
 
