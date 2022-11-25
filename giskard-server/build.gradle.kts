@@ -26,20 +26,6 @@ description = "Giskard main java backend"
 
 defaultTasks("bootRun")
 
-
-val sonarProperties = Properties().apply {
-    load(file("sonar-project.properties").reader())
-}
-
-sonarProperties.forEach { key, value ->
-    sonarqube {
-        properties {
-            property(key as String, value as String)
-        }
-    }
-}
-
-
 var profiles: String = ""
 if (project.hasProperty("prod")) {
     profiles = "prod"

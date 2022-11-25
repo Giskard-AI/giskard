@@ -31,6 +31,11 @@ jobs:
           distribution: 'temurin'
           java-version: 17
 
+      - name: Set up Python
+        uses: actions/setup-python@v3
+        with:
+          python-version: 3.9
+
       - name: Cache SonarQube packages
         uses: actions/cache@v3
         if: ${{ !startsWith(steps.extract_source_branch.outputs.branch, 'dependabot/') }}
@@ -44,12 +49,20 @@ jobs:
           path: ~/.gradle/caches
           key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle') }}
           restore-keys: ${{ runner.os }}-gradle
+
       - name: Cache Frontend dependencies
         uses: actions/cache@v3
         with:
           path: giskard-frontend/node_modules
           key: ${{ runner.os }}-frontend-${{ hashFiles('giskard-frontend/package-lock.json')}}
           restore-keys: ${{ runner.os }}-frontend
+
+      - name: Cache Frontend dependencies
+        uses: actions/cache@v3
+        with:
+          path: giskard-client/.venv
+          key: ${{ runner.os }}-client-${{ hashFiles('giskard-client/poetry.lock')}}
+          restore-keys: ${{ runner.os }}-client
 
       - name: Build and analyze with sonar
         if: ${{ !startsWith(steps.extract_source_branch.outputs.branch, 'dependabot/') }}

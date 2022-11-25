@@ -1,3 +1,24 @@
+import java.util.*
+
+fun Project.applySonarProperties() {
+    val sonarProperties = Properties().apply {
+        load(file("sonar-project.properties").reader())
+    }
+
+    sonarProperties.forEach { key, value ->
+        sonarqube {
+            properties {
+                property(key as String, value as String)
+            }
+        }
+    }
+    sonarqube {
+        properties {
+            property("sonar.projectVersion", version.toString())
+        }
+    }
+}
+
 plugins {
     id("base")
     id("org.sonarqube")
@@ -12,11 +33,10 @@ allprojects {
     version = extra["giskardVersion"]!!
 }
 
-sonarqube {
-    properties {
-        property("sonar.organization", "giskard")
-        property("sonar.projectKey", "giskard")
-        property("sonar.host.url", "https://sonarcloud.io")
-        property("sonar.projectVersion", version.toString())
-    }
+
+
+subprojects {
+    applySonarProperties()
 }
+applySonarProperties()
+

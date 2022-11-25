@@ -4,15 +4,6 @@ plugins {
     id("com.github.node-gradle.node") version "3.5.0"
 }
 
-sonarqube {
-    properties {
-        property("sonar.sources", "src")
-        property("sonar.exclusions", listOf("src/generated-sources/**", "src/plugins/**", "src/styles/font-awesome/**"))
-        property("sonar.sourceEncoding", "UTF-8")
-    }
-}
-
-
 node {
     version.set("16.14.0")
     npmVersion.set("8.3.1")
