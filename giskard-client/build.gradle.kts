@@ -8,18 +8,7 @@ plugins {
     id("ru.vyarus.use-python") version "3.0.0"
 }
 
-sonarqube {
-    properties {
-        property("sonar.python.version", "3")
-        property("sonar.sources", "ml_worker")
-        property("sonar.tests", "test")
-        property("sonar.language", "python")
-        property("sonar.sourceEncoding", "UTF-8")
-        property("sonar.dynamicAnalysis", "reuseReports")
-        property("sonar.core.codeCoveragePlugin", "cobertura")
-        property("sonar.python.coverage.reportPaths", "coverage.xml")
-    }
-}
+val protoGeneratedPath = "giskard/ml_worker/generated"
 tasks {
     val virtualEnvDirectory = ".venv"
     python {
@@ -28,7 +17,7 @@ tasks {
         scope = VIRTUALENV
         installVirtualenv = true
         pip(listOf("poetry:1.2.2"))
-        environment = mapOf("PYTHONPATH" to file("generated").absolutePath)
+        environment = mapOf("PYTHONPATH" to file(protoGeneratedPath).absolutePath)
     }
 
     create<PythonTask>("install") {
@@ -38,12 +27,12 @@ tasks {
     }
 
     clean {
-        delete("generated", virtualEnvDirectory, "coverage.xml", ".coverage")
+        delete(protoGeneratedPath, virtualEnvDirectory, "coverage.xml", ".coverage")
     }
 
     create<PythonTask>("fixGeneratedFiles") {
         val script_path = file("scripts/fix_grpc_generated_imports.py")
-        val fout = file("generated")
+        val fout = file(protoGeneratedPath)
         command = "$script_path $fout giskard.ml_worker.generated"
     }
 
@@ -51,7 +40,7 @@ tasks {
         dependsOn("install")
         environment("PATH", file(virtualEnvDirectory).resolve("bin"))
 
-        val fout = file("generated")
+        val fout = file(protoGeneratedPath)
         val pdir = file("../giskard-common/proto")
 
         doFirst {
@@ -79,14 +68,18 @@ tasks {
 
             // "generated" directory should be marked as both source and generatedSource,
             // otherwise intellij doesn"t recognize it as a generated source 🤷‍
-            sourceDirs.add(file("generated"))
-            generatedSourceDirs.add(file("generated"))
+            sourceDirs.add(file(protoGeneratedPath))
+            generatedSourceDirs.add(file(protoGeneratedPath))
 
-            testSourceDirs.add(file("test"))
+            testSourceDirs.add(file("tests"))
         }
     }
     build {
         dependsOn("install", "generateProto", "test")
+    }
+
+    check {
+        dependsOn("test")
     }
 }
 
