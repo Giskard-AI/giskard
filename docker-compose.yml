@@ -15,7 +15,7 @@ services:
     hostname: giskard-embedded-docker-worker
     build:
       dockerfile: giskard-client/docker/Dockerfile
-      context: giskard-client
+      context: .
 
   backend:
     image: 'docker.io/giskardai/backend:${TAG-latest}'

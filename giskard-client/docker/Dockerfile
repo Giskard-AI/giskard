@@ -47,7 +47,7 @@ RUN curl -sSL https://install.python-poetry.org | python3 -
 
 # copy project requirement files here to ensure they will be cached.
 WORKDIR $PYSETUP_PATH
-COPY pyproject.toml poetry.lock ./
+COPY ./giskard-client/pyproject.toml ./giskard-client/poetry.lock ./
 
 # install deps - uses $POETRY_VIRTUALENVS_IN_PROJECT internally
 # Allow installing dev dependencies to run tests
@@ -77,13 +77,19 @@ WORKDIR $PYSETUP_PATH
 # install dev dependencies needed to protobuf code generation
 RUN poetry install --only main,dev
 
-# copy makefile and proto to generate python sources
-COPY ./giskard ./giskard
-COPY ./ml-worker-proto ./ml-worker-proto
-COPY ./scripts ./scripts
-COPY ./Makefile ./
+COPY ./giskard-client/giskard ./giskard
+COPY ./giskard-common/proto ./proto
+COPY ./giskard-client/scripts ./scripts
 
-RUN make generate-proto
+RUN python -m grpc_tools.protoc \
+      -Iproto \
+      --python_out=giskard/ml_worker/generated \
+      --grpc_python_out=giskard/ml_worker/generated \
+      --mypy_out=giskard/ml_worker/generated \
+      --mypy_grpc_out=giskard/ml_worker/generated \
+      proto/ml-worker.proto && \
+    python scripts/fix_grpc_generated_imports.py giskard/ml_worker/generated giskard.ml_worker.generated
+
 
 
 # `production` image used for runtime
