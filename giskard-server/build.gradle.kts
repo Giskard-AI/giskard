@@ -261,6 +261,11 @@ sourceSets {
 }
 
 tasks {
+    withType<Test>() {
+        useJUnitPlatform()
+        maxParallelForks = Runtime.getRuntime().availableProcessors()
+    }
+
     test {
         finalizedBy(jacocoTestReport)
     }
@@ -284,7 +289,6 @@ tasks {
     }
 
     test {
-        useJUnitPlatform()
         exclude("**/*IT*", "**/*IntTest*")
         testLogging {
             events.add(org.gradle.api.tasks.testing.logging.TestLogEvent.FAILED)
@@ -299,7 +303,6 @@ tasks {
     }
 
     create<Test>("integrationTest") {
-        useJUnitPlatform()
         description = "Execute integration tests."
         group = "verification"
         include("**/*IT*", "**/*IntTest*")
@@ -326,6 +329,9 @@ tasks {
         reportOn("integrationTest")
     }
 
+    create<Delete>("distClean") {
+        delete(buildDir)
+    }
     create<Delete>("deleteLiquibaseH2DB") {
         delete(liquibaseH2db)
     }

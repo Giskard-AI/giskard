@@ -13,6 +13,8 @@ node {
 }
 
 tasks {
+    val distDir = "dist"
+
     "npm_run_build" {
         inputs.dir("$projectDir/src")
         inputs.dir("$projectDir/public")
@@ -23,9 +25,14 @@ tasks {
     build {
         dependsOn("npm_run_build")
     }
+
+    create<Delete>("distClean") {
+        delete(buildDir, distDir)
+    }
+
     clean {
         doFirst {
-            delete("build", "node_modules", "dist")
+            delete(buildDir, "node_modules", distDir)
         }
     }
 }
