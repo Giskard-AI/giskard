@@ -59,7 +59,7 @@ jobs:
           key: ${{ runner.os }}-frontend-${{ hashFiles('giskard-frontend/package-lock.json')}}
           restore-keys: ${{ runner.os }}-frontend
 
-      - name: Cache Frontend dependencies
+      - name: Cache Python dependencies
         uses: actions/cache@v3
         with:
           path: giskard-client/.venv
