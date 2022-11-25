@@ -294,10 +294,6 @@ tasks {
         reports.html.required.set(false)
     }
 
-    check {
-        dependsOn("test", "integrationTest")
-    }
-
     bootJar {
         archiveFileName.set("${archiveBaseName.get()}.${archiveExtension.get()}")
     }

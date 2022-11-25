@@ -77,9 +77,5 @@ tasks {
     build {
         dependsOn("install", "generateProto", "test")
     }
-
-    check {
-        dependsOn("test")
-    }
 }
 
