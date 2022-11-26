@@ -13,11 +13,20 @@ COPY .git .git
 
 COPY backend backend
 
+# init gradle to make dockerfile development faster by caching this step
+RUN ./gradlew wrapper --info
+
 ARG RUN_TESTS=false
 
 WORKDIR /workspace/backend
-RUN bash -c "if [ "$RUN_TESTS" = true ] ; then  ../gradlew -Pprod clean test bootJar --info --stacktrace; else ../gradlew -Pprod clean bootJar --info --stacktrace ; fi"
+
+RUN bash -c " \
+    echo RUN_TESTS=$RUN_TESTS && \
+    if [ "$RUN_TESTS" = true ] ;  \
+      then  ../gradlew -Pprod clean test bootJar --info --stacktrace;  \
+      else  ../gradlew -Pprod clean bootJar --info --stacktrace ;  \
+    fi"
 
 FROM eclipse-temurin:17-jre
-COPY --from=build /workspace/backend/build/libs/giskard*.jar /giskard/lib/giskard.jar
-ENTRYPOINT ["java","-jar","/giskard/lib/giskard.jar"]
+COPY --from=build /workspace/backend/build/libs/backend.jar /giskard/lib/backend.jar
+ENTRYPOINT ["java","-jar","/giskard/lib/backend.jar"]
