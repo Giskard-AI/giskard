@@ -81,7 +81,9 @@ COPY ./giskard-client/giskard ./giskard
 COPY ./giskard-common/proto ./proto
 COPY ./giskard-client/scripts ./scripts
 
-RUN python -m grpc_tools.protoc \
+
+RUN mkdir -p giskard/ml_worker/generated && \
+    python -m grpc_tools.protoc \
       -Iproto \
       --python_out=giskard/ml_worker/generated \
       --grpc_python_out=giskard/ml_worker/generated \
