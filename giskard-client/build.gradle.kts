@@ -13,7 +13,7 @@ tasks {
     val virtualEnvDirectory = ".venv"
     python {
         envPath = virtualEnvDirectory
-        minPythonVersion = "3.7"
+        minPythonVersion = "3.7.13"
         scope = VIRTUALENV
         installVirtualenv = true
         pip(listOf("poetry:1.2.2", "importlib-metadata:4.13.0"))
