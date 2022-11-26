@@ -1,6 +1,12 @@
 import com.google.protobuf.gradle.*
+import org.gradle.api.JavaVersion
 import java.text.SimpleDateFormat
 import java.util.*
+
+val MIN_JAVA_VERSION = 17
+if (JavaVersion.current().majorVersion.toInt() < MIN_JAVA_VERSION) {
+    throw GradleException("This build requires at least Java $MIN_JAVA_VERSION, version used: ${JavaVersion.current()}")
+}
 
 buildscript {
     repositories {
