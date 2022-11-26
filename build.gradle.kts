@@ -1,4 +1,3 @@
-import org.jetbrains.kotlin.utils.addToStdlib.ifFalse
 import java.util.*
 
 fun Project.applySonarProperties() {

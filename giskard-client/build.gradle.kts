@@ -16,7 +16,7 @@ tasks {
         minPythonVersion = "3.7"
         scope = VIRTUALENV
         installVirtualenv = true
-        pip(listOf("poetry:1.2.2"))
+        pip(listOf("poetry:1.2.2", "importlib-metadata:4.13.0"))
         environment = mapOf("PYTHONPATH" to file(protoGeneratedPath).absolutePath)
     }
 
