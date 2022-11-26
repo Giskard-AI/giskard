@@ -1,3 +1,5 @@
+import com.github.gradle.node.npm.task.NpmTask
+
 plugins {
     id("base")
     id("org.sonarqube")
@@ -22,6 +24,7 @@ tasks {
         inputs.file("$projectDir/package-lock.json")
         outputs.dir(buildDir)
     }
+
     build {
         dependsOn("npm_run_build")
     }
@@ -34,5 +37,9 @@ tasks {
         doFirst {
             delete(buildDir, "node_modules", distDir)
         }
+    }
+
+    register("start"){
+        dependsOn("npm_run_serve")
     }
 }

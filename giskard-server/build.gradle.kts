@@ -370,6 +370,10 @@ tasks {
     create<Delete>("cleanResources") {
         delete = setOf("build/resources")
     }
+
+    register("start"){
+        dependsOn("bootRun")
+    }
 }
 
 

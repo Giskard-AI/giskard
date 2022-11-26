@@ -77,5 +77,10 @@ tasks {
     build {
         dependsOn("install", "generateProto", "test")
     }
+
+    create<PythonTask>("start") {
+        module = "giskard.cli"
+        command = "worker start -s"
+    }
 }
 
