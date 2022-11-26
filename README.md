@@ -115,6 +115,8 @@ Play with Giskard before installing! Click the image below to start the demo:
 
 <br/>
 
+> Are you a developer? Check our [developer's readme](./README.dev.md)
+
 # Getting Started with Giskard
 ## 🚀 Installation
 **Requirements:** `git`, `docker` and `docker-compose`

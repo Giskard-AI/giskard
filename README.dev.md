@@ -1,4 +1,4 @@
-# Giskard
+# Giskard developer readme
 
 🚧  **WORK IN PROGRESS** 🚧 
 This readme is in process of creation, some information can be subject to change
