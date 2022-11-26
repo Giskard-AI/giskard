@@ -21,6 +21,9 @@ fun Project.applySonarProperties() {
         }
     }
 }
+tasks.clean {
+    delete(".gradle", "build")
+}
 
 plugins {
     id("base")

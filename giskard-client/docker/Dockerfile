@@ -78,7 +78,7 @@ WORKDIR $PYSETUP_PATH
 RUN poetry install --only main,dev
 
 COPY ./giskard-client/giskard ./giskard
-COPY ./giskard-common/proto ./proto
+COPY ./common/proto ./proto
 COPY ./giskard-client/scripts ./scripts
 
 # generate grpc stubs

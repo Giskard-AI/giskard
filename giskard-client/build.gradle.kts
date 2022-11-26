@@ -41,7 +41,7 @@ tasks {
         environment("PATH", file(virtualEnvDirectory).resolve("bin"))
 
         val fout = file(protoGeneratedPath)
-        val pdir = file("../giskard-common/proto")
+        val pdir = file("../common/proto")
 
         doFirst {
             mkdir(fout)

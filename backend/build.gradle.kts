@@ -104,7 +104,7 @@ liquibase {
     }
     activities.register("h2") {
         this.arguments = mapOf(
-            "url" to "jdbc:h2:$liquibaseH2db/db",
+            "url" to "jdbc:h2:$liquibaseH2db/db;TRACE_LEVEL_FILE=0",
             "changeLogFile" to "src/main/resources/config/liquibase/master.xml",
             "defaultSchemaName" to "",
             "logLevel" to "info",
@@ -169,6 +169,7 @@ dependencies {
     liquibaseRuntime("org.liquibase:liquibase-core")
     liquibaseRuntime("org.liquibase.ext:liquibase-hibernate5:${liquibaseHibernate5Version}")
     liquibaseRuntime("org.postgresql:postgresql:42.5.0")
+//    liquibaseRuntime("info.picocli:picocli:4.7.0")
     liquibaseRuntime(sourceSets.main.get().compileClasspath)
 
     implementation("org.springframework.boot:spring-boot-loader-tools")
@@ -211,7 +212,7 @@ dependencies {
     testImplementation("com.tngtech.archunit:archunit-junit5-api:${archunitJunit5Version}")
     testRuntimeOnly("com.tngtech.archunit:archunit-junit5-engine:${archunitJunit5Version}")
     developmentOnly("org.springframework.boot:spring-boot-devtools:${springBootVersion}")
-    protobuf(files("../giskard-common/proto"))
+    protobuf(files("../common/proto"))
 
     compileOnly("org.projectlombok:lombok")
     annotationProcessor("org.projectlombok:lombok")
@@ -320,13 +321,12 @@ tasks {
     }
 
     create<TestReport>("testReport") {
-        destinationDir = file("$buildDir/reports/tests")
-        reportOn(test)
+        destinationDirectory.set(file("$buildDir/reports/tests"))
     }
 
     create<TestReport>("integrationTestReport") {
-        destinationDir = file("$buildDir/reports/tests")
-        reportOn("integrationTest")
+        destinationDirectory.set(file("$buildDir/reports/tests"))
+        testResults.from("integrationTest")
     }
 
     create<Delete>("distClean") {
@@ -339,6 +339,9 @@ tasks {
     create<GradleBuild>("liquibaseUpdateH2") {
         doFirst {
             delete(liquibaseH2db)
+        }
+        doLast {
+            println("Created temporary H2 database: $liquibaseH2db")
         }
 
         startParameter.setExcludedTaskNames(setOf("test", "integrationTest"))
@@ -371,9 +374,13 @@ tasks {
         delete = setOf("build/resources")
     }
 
-    register("start"){
-        dependsOn("bootRun")
+    clean {
+        dependsOn("distClean")
     }
+
+//    register("start") {
+//        dependsOn("bootRun")
+//    }
 }
 
 

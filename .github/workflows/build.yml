@@ -50,8 +50,8 @@ jobs:
       - name: Cache Frontend dependencies
         uses: actions/cache@v3
         with:
-          path: giskard-frontend/node_modules
-          key: ${{ runner.os }}-frontend-${{ hashFiles('giskard-frontend/package-lock.json')}}
+          path: frontend/node_modules
+          key: ${{ runner.os }}-frontend-${{ hashFiles('frontend/package-lock.json')}}
           restore-keys: ${{ runner.os }}-frontend
 
       - name: Cache Python dependencies
