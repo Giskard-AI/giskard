@@ -81,7 +81,7 @@ COPY ./giskard-client/giskard ./giskard
 COPY ./giskard-common/proto ./proto
 COPY ./giskard-client/scripts ./scripts
 
-
+# generate grpc stubs
 RUN mkdir -p giskard/ml_worker/generated && \
     python -m grpc_tools.protoc \
       -Iproto \
