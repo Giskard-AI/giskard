@@ -378,9 +378,9 @@ tasks {
         dependsOn("distClean")
     }
 
-//    register("start") {
-//        dependsOn("bootRun")
-//    }
+    register("start") {
+        dependsOn("bootRun")
+    }
 }
 
 
