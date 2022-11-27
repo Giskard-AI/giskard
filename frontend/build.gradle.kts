@@ -1,5 +1,3 @@
-import com.github.gradle.node.npm.task.NpmTask
-
 plugins {
     id("base")
     id("org.sonarqube")
@@ -39,7 +37,7 @@ tasks {
         }
     }
 
-    register("start"){
+    register("start") {
         dependsOn("npm_run_serve")
     }
 }

@@ -70,8 +70,7 @@ tasks {
             // otherwise intellij doesn"t recognize it as a generated source 🤷‍
             sourceDirs.add(file(protoGeneratedPath))
             generatedSourceDirs.add(file(protoGeneratedPath))
-
-            testSourceDirs.add(file("tests"))
+            testSources.from(file("tests"))
         }
     }
     build {
@@ -81,6 +80,11 @@ tasks {
     create<PythonTask>("start") {
         module = "giskard.cli"
         command = "worker start -s"
+    }
+
+    create<PythonTask>("package") {
+        module = "poetry"
+        command = "build"
     }
 }
 
