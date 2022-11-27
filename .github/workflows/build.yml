@@ -61,13 +61,36 @@ jobs:
           key: ${{ runner.os }}-client-${{ hashFiles('python-client/poetry.lock')}}
           restore-keys: ${{ runner.os }}-client
 
+      - name: "Python client: extract current package version"
+#        if: ${{ steps.extract_branch.outputs.branch == 'main' }}
+        uses: SebRollen/toml-action@v1.0.1
+        id: read_toml
+        with:
+          file: 'python-client/pyproject.toml'
+          field: 'tool.poetry.version'
+
+      - name: Get current date
+#        if: ${{ steps.extract_branch.outputs.branch == 'main' }}
+        id: current_date
+        env:
+          TZ: Europe/Paris
+        run: echo "CURRENT_DATE=$(date '+%Y%m%d%H%M%S')" >> $GITHUB_OUTPUT
+
+      - name: "Python client: set dev version"
+#        if: ${{ steps.extract_branch.outputs.branch == 'main' }}
+        uses: ciiiii/toml-editor@1.0.0
+        with:
+          file: "python-client/pyproject.toml"
+          key: "tool.poetry.version"
+          value: '${{ steps.read_toml.outputs.value }}.dev${{ steps.current_date.outputs.CURRENT_DATE }}'
+
       - name: Build and analyze with sonar
         if: ${{ !startsWith(steps.extract_source_branch.outputs.branch, 'dependabot/') }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-        run: ./gradlew build jacocoTestReport sonarqube --info --parallel
+        run: ./gradlew build :python-client:package jacocoTestReport sonarqube --info --parallel
 
       - name: Build and analyze without sonar
         if: ${{ startsWith(steps.extract_source_branch.outputs.branch, 'dependabot/') }}
@@ -76,3 +99,10 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
         run: ./gradlew build --info --parallel
+
+      - name:  "Python client: archive built artifacts"
+#        if: ${{ steps.extract_branch.outputs.branch == 'main' }}
+        uses: actions/upload-artifact@v3
+        with:
+          name: giskard-dev-${{ matrix.python-version }}.whl
+          path: python-client/dist/*whl

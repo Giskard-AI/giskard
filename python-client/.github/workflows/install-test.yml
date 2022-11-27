@@ -62,7 +62,6 @@ jobs:
           TZ: Europe/Paris
         run: echo "CURRENT_DATE=$(date '+%Y%m%d%H%M%S')" >> $GITHUB_OUTPUT
 
-
       - name: Set dev version
         if: ${{ steps.extract_branch.outputs.branch == 'main' }}
         uses: ciiiii/toml-editor@1.0.0
