@@ -14,7 +14,7 @@ services:
     image: 'docker.io/giskardai/ml-worker:${TAG-latest}'
     hostname: giskard-embedded-docker-worker
     build:
-      dockerfile: giskard-client/docker/Dockerfile
+      dockerfile: python-client/docker/Dockerfile
       context: .
 
   backend:

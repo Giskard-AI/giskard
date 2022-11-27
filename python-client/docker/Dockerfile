@@ -47,7 +47,7 @@ RUN curl -sSL https://install.python-poetry.org | python3 -
 
 # copy project requirement files here to ensure they will be cached.
 WORKDIR $PYSETUP_PATH
-COPY ./giskard-client/pyproject.toml ./giskard-client/poetry.lock ./
+COPY ./python-client/pyproject.toml ./python-client/poetry.lock ./
 
 # install deps - uses $POETRY_VIRTUALENVS_IN_PROJECT internally
 # Allow installing dev dependencies to run tests
@@ -77,9 +77,9 @@ WORKDIR $PYSETUP_PATH
 # install dev dependencies needed to protobuf code generation
 RUN poetry install --only main,dev
 
-COPY ./giskard-client/giskard ./giskard
+COPY ./python-client/giskard ./giskard
 COPY ./common/proto ./proto
-COPY ./giskard-client/scripts ./scripts
+COPY ./python-client/scripts ./scripts
 
 # generate grpc stubs
 RUN mkdir -p giskard/ml_worker/generated && \

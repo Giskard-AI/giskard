@@ -16,5 +16,5 @@ rootProject.name = "giskard"
 include(
     "backend",
     "frontend",
-    "giskard-client"
+    "python-client"
 )

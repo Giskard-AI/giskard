@@ -13,8 +13,8 @@ description = "Inspect your AI models visually, find bugs, give feedback 🕵️
 readme = "README.md"
 authors = ["Giskard AI <hello@giskard.ai>"]
 license = "Apache Software License 2.0"
-repository = "https://github.com/Giskard-AI/giskard-client"
-homepage = "https://github.com/Giskard-AI/giskard-client"
+repository = "https://github.com/Giskard-AI/python-client"
+homepage = "https://github.com/Giskard-AI/python-client"
 include = ["giskard/ml_worker/generated/*"]
 
 # Keywords description https://python-poetry.org/docs/pyproject/#keywords
