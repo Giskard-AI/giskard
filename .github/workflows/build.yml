@@ -62,7 +62,7 @@ jobs:
           restore-keys: ${{ runner.os }}-client
 
       - name: "Python client: extract current package version"
-#        if: ${{ steps.extract_branch.outputs.branch == 'main' }}
+        if: ${{ steps.extract_branch.outputs.branch == 'main' }}
         uses: SebRollen/toml-action@v1.0.1
         id: read_toml
         with:
@@ -70,14 +70,14 @@ jobs:
           field: 'tool.poetry.version'
 
       - name: Get current date
-#        if: ${{ steps.extract_branch.outputs.branch == 'main' }}
+        if: ${{ steps.extract_branch.outputs.branch == 'main' }}
         id: current_date
         env:
           TZ: Europe/Paris
         run: echo "CURRENT_DATE=$(date '+%Y%m%d%H%M%S')" >> $GITHUB_OUTPUT
 
       - name: "Python client: set dev version"
-#        if: ${{ steps.extract_branch.outputs.branch == 'main' }}
+        if: ${{ steps.extract_branch.outputs.branch == 'main' }}
         uses: ciiiii/toml-editor@1.0.0
         with:
           file: "python-client/pyproject.toml"
@@ -101,8 +101,8 @@ jobs:
         run: ./gradlew build --info --parallel
 
       - name:  "Python client: archive built artifacts"
-#        if: ${{ steps.extract_branch.outputs.branch == 'main' }}
+        if: ${{ steps.extract_branch.outputs.branch == 'main' }}
         uses: actions/upload-artifact@v3
         with:
-          name: giskard-dev-${{ matrix.python-version }}.whl
+          name: giskard-dev.whl
           path: python-client/dist/*whl
