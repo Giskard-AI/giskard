@@ -204,7 +204,7 @@ dependencies {
     runtimeOnly("io.jsonwebtoken:jjwt-jackson")
 
     implementation("org.springdoc:springdoc-openapi-webmvc-core")
-    implementation(group = "org.springdoc", name = "springdoc-openapi-ui", version = "1.6.11")
+    implementation(group = "org.springdoc", name = "springdoc-openapi-ui", version = "1.6.13")
     implementation("org.postgresql:postgresql")
 
     implementation("com.h2database:h2")
