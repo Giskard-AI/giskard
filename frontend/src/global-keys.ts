@@ -27,10 +27,11 @@ export function copyToClipboard(textToCopy) {
     }
 }
 
-Mousetrap.bind('@ j j', async () => {
+Mousetrap.bind('@ j j', () => {
     let localToken = getLocalToken();
     if (localToken) {
-        await copyToClipboard(localToken);
-        commitAddNotification(store, {content: 'Copied JWT token to clipboard', color: '#262a2d'});
+        copyToClipboard(localToken).then(_ => {
+            commitAddNotification(store, {content: 'Copied JWT token to clipboard', color: '#262a2d'});
+        })
     }
 });
