@@ -54,9 +54,4 @@ class MLWorkerClientTest {
         long elapsed = Instant.now().toEpochMilli() - start.toEpochMilli();
         System.out.printf("All: %s, one %s%n", elapsed, elapsed / runs);
     }
-
-    @Test
-    void testClientUpload() {
-    }
-
 }
