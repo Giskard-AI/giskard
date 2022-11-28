@@ -13,17 +13,10 @@ jobs:
     name: Build
     runs-on: ubuntu-latest
     steps:
-      - name: Extract source branch name
-        id: extract_source_branch
+      - name: Extract branch name
         shell: bash
-        run: echo "##[set-output name=branch;]$(echo ${GITHUB_HEAD_REF})"
-
-      - name: Print branch name
-        shell: bash
-        run: env
-      - name: Print dependabot
-        shell: bash
-        run: echo ${{ startsWith(steps.extract_source_branch.outputs.branch, 'dependabot/') }}
+        run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
+        id: extract_branch
 
       - name: Checkout code
         uses: actions/checkout@v3.1.0
@@ -42,7 +35,7 @@ jobs:
 
       - name: Cache SonarQube packages
         uses: actions/cache@v3
-        if: ${{ !startsWith(steps.extract_source_branch.outputs.branch, 'dependabot/') }}
+        if: ${{ github.actor != 'dependabot[bot]' }}
         with:
           path: ~/.sonar/cache
           key: ${{ runner.os }}-sonar
@@ -85,7 +78,7 @@ jobs:
           value: '${{ steps.read_toml.outputs.value }}.dev${{ steps.current_date.outputs.CURRENT_DATE }}'
 
       - name: Build and analyze with sonar
-        if: ${{ !startsWith(steps.extract_source_branch.outputs.branch, 'dependabot/') }}
+        if: ${{ github.actor != 'dependabot[bot]' }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
@@ -93,7 +86,7 @@ jobs:
         run: ./gradlew build :python-client:package jacocoTestReport sonarqube --info --parallel
 
       - name: Build and analyze without sonar
-        if: ${{ startsWith(steps.extract_source_branch.outputs.branch, 'dependabot/') }}
+        if: ${{ github.actor == 'dependabot[bot]' }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
