@@ -4,69 +4,98 @@ on:
     branches:
       - main
   pull_request:
+    branches:
+      - main
+  workflow_dispatch:
 
 jobs:
   build:
     name: Build
     runs-on: ubuntu-latest
     steps:
-      - name: Extract source branch name
-        id: extract_source_branch
+      - name: Extract branch name
         shell: bash
-        run: echo "##[set-output name=branch;]$(echo ${GITHUB_HEAD_REF})"
+        run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
+        id: extract_branch
 
-      - name: Print branch name
-        shell: bash
-        run: env
-      - name: Print dependabot
-        shell: bash
-        run: echo ${{ startsWith(steps.extract_source_branch.outputs.branch, 'dependabot/') }}
+      - name: Checkout code
+        uses: actions/checkout@v3.1.0
 
-      - uses: actions/checkout@v3.1.0
-        with:
-          submodules: recursive
       - name: Set up JDK 17
         uses: actions/setup-java@v3
         with:
-          distribution: 'temurin'
+          distribution: temurin
           java-version: 17
+          cache: gradle
+
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.7'
+          python-version: 3.9
 
       - name: Cache SonarQube packages
         uses: actions/cache@v3
-        if: ${{ !startsWith(steps.extract_source_branch.outputs.branch, 'dependabot/') }}
+        if: ${{ github.actor != 'dependabot[bot]' }}
         with:
           path: ~/.sonar/cache
           key: ${{ runner.os }}-sonar
 
-      - name: Cache Gradle packages
-        uses: actions/cache@v3
-        with:
-          path: ~/.gradle/caches
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle') }}
-          restore-keys: ${{ runner.os }}-gradle
       - name: Cache Frontend dependencies
         uses: actions/cache@v3
         with:
-          path: giskard-frontend/node_modules
-          key: ${{ runner.os }}-frontend-${{ hashFiles('giskard-frontend/package-lock.json')}}
+          path: frontend/node_modules
+          key: ${{ runner.os }}-frontend-${{ hashFiles('frontend/package-lock.json')}}
           restore-keys: ${{ runner.os }}-frontend
 
+      - name: Cache Python dependencies
+        uses: actions/cache@v3
+        with:
+          path: python-client/.venv
+          key: ${{ runner.os }}-client-${{ hashFiles('python-client/poetry.lock')}}
+          restore-keys: ${{ runner.os }}-client
+
+      - name: "Python client: extract current package version"
+        if: ${{ steps.extract_branch.outputs.branch == 'main' }}
+        uses: SebRollen/toml-action@v1.0.2
+        id: read_toml
+        with:
+          file: 'python-client/pyproject.toml'
+          field: 'tool.poetry.version'
+
+      - name: Get current date
+        if: ${{ steps.extract_branch.outputs.branch == 'main' }}
+        id: current_date
+        env:
+          TZ: Europe/Paris
+        run: echo "CURRENT_DATE=$(date '+%Y%m%d%H%M%S')" >> $GITHUB_OUTPUT
+
+      - name: "Python client: set dev version"
+        if: ${{ steps.extract_branch.outputs.branch == 'main' }}
+        uses: ciiiii/toml-editor@1.0.0
+        with:
+          file: "python-client/pyproject.toml"
+          key: "tool.poetry.version"
+          value: '${{ steps.read_toml.outputs.value }}.dev${{ steps.current_date.outputs.CURRENT_DATE }}'
+
       - name: Build and analyze with sonar
-        if: ${{ !startsWith(steps.extract_source_branch.outputs.branch, 'dependabot/') }}
+        if: ${{ github.actor != 'dependabot[bot]' }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-        run: ./gradlew build jacocoTestReport sonarqube --info --parallel
+        run: ./gradlew build :python-client:package jacocoTestReport sonarqube --info --parallel
 
       - name: Build and analyze without sonar
-        if: ${{ startsWith(steps.extract_source_branch.outputs.branch, 'dependabot/') }}
+        if: ${{ github.actor == 'dependabot[bot]' }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-        run: ./gradlew build --parallel
+        run: ./gradlew build --info --parallel
+
+      - name:  "Python client: archive built artifacts"
+        if: ${{ steps.extract_branch.outputs.branch == 'main' }}
+        uses: actions/upload-artifact@v3
+        with:
+          name: giskard-dev.whl
+          path: python-client/dist/*whl
