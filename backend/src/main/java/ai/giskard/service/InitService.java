@@ -380,7 +380,7 @@ public class InitService {
             );
         } catch (IOException e) {
             logger.warn("Failed to upload dataset for demo project {}", projectKey);
-            throw new GiskardRuntimeException(e);
+            throw new RuntimeException(e);
         }
     }
 
@@ -410,7 +410,7 @@ public class InitService {
             }
         } catch (IOException e) {
             logger.warn("Failed to upload model for demo project {}", projectKey);
-            throw new GiskardRuntimeException(e);
+            throw new RuntimeException(e);
         }
     }
 
