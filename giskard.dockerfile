@@ -113,12 +113,13 @@ ENV SPRING_PROFILES_ACTIVE=prod
 
 ARG DEBIAN_FRONTEND=noninteractive
 
-RUN apt-get update
-RUN apt-get install -y postgresql
-RUN apt-get install -y lsof
-RUN apt-get -y install nginx
-RUN apt-get -y install openjdk-17-jre
-RUN apt-get -y install supervisor
+RUN apt-get update && \
+    apt-get install -y \
+    postgresql \
+    lsof \
+    nginx \
+    openjdk-17-jre \
+    supervisor
 
 ENV PYSETUP_PATH="/opt/pysetup" \
     VENV_PATH="/opt/pysetup/.venv" \ 
