@@ -11,8 +11,6 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v3.1.0
-        with:
-          submodules: recursive
 
       - name: Set up Docker Buildx
         id: builder
@@ -48,7 +46,7 @@ jobs:
           --platform linux/amd64,linux/arm64 \
           --tag $IMAGE:latest \
           --tag $IMAGE:${{ steps.tag.outputs.version }} \
-          --file giskard-server/src/main/docker/app/app.dockerfile \
+          --file backend/src/main/docker/app/app.dockerfile \
           --push \
           .
 
@@ -60,7 +58,7 @@ jobs:
           docker buildx build \
           --platform linux/amd64,linux/arm64 \
           --tag $IMAGE:${{ steps.tag.outputs.version }} \
-          --file giskard-server/src/main/docker/app/app.dockerfile \
+          --file backend/src/main/docker/app/app.dockerfile \
           --push \
           .
 
@@ -74,7 +72,7 @@ jobs:
           --tag $IMAGE:latest \
           --tag $IMAGE:${{ steps.tag.outputs.version }} \
           --push \
-          giskard-frontend
+          frontend
 
       - name: Build <current version> frontend image
         if: ${{ steps.tag.outputs.name != steps.tag.outputs.latest_version }}
@@ -85,7 +83,7 @@ jobs:
           --platform linux/amd64,linux/arm64 \
           --tag $IMAGE:${{ steps.tag.outputs.version }} \
           --push \
-          giskard-frontend
+          frontend
 
       - name: Invoke deployment hook
         if: ${{ steps.tag.outputs.name == steps.tag.outputs.latest_version }}
