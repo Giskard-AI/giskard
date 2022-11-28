@@ -198,7 +198,7 @@ dependencies {
     implementation("org.springframework.security:spring-security-web")
     implementation("io.jsonwebtoken:jjwt-api")
     implementation(group = "tech.tablesaw", name = "tablesaw-core", version = "0.43.1")
-    implementation(group = "tech.tablesaw", name = "tablesaw-json", version = "0.34.2")
+    implementation(group = "tech.tablesaw", name = "tablesaw-json", version = "0.43.1")
     implementation(group = "org.apache.commons", name = "commons-compress", version = "1.21")
     runtimeOnly("io.jsonwebtoken:jjwt-impl")
     runtimeOnly("io.jsonwebtoken:jjwt-jackson")
