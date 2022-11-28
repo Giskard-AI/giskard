@@ -63,7 +63,7 @@ jobs:
 
       - name: "Python client: extract current package version"
         if: ${{ steps.extract_branch.outputs.branch == 'main' }}
-        uses: SebRollen/toml-action@v1.0.1
+        uses: SebRollen/toml-action@v1.0.2
         id: read_toml
         with:
           file: 'python-client/pyproject.toml'
