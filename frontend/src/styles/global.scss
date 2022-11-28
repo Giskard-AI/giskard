@@ -1,0 +1,86 @@
+$color-pack: false;
+
+@import '~vuetify/src/styles/main.sass';
+@import "./font-awesome/scss/fontawesome.scss";
+@import "./font-awesome/scss/solid.scss";
+@import "./font-awesome/scss/brands.scss";
+
+.w100 {
+  width: 100%;
+  max-width: 100%;
+}
+
+.v-data-table.row-pointer tr {
+  cursor: pointer;
+}
+
+.v-dialog-wrapper {
+  background-color: white;
+}
+
+$notification-spinner-size: 20px;
+.notification-spinner {
+  width: $notification-spinner-size !important;
+  height: $notification-spinner-size !important;
+  font-size: $notification-spinner-size !important;
+}
+
+.Vue-Toastification__container.bottom-center {
+  width: 900px !important;
+  transform: translateX(-50%);
+  margin-left: 0 !important;
+
+  .Vue-Toastification__toast.Vue-Toastification__toast--error.bottom-center {
+    max-width: 100% !important;
+    margin: 0;
+  }
+}
+
+.vertical-container {
+  @extend .d-flex;
+  @extend .flex-grow-1;
+  @extend .flex-column;
+
+  & > .v-tabs,
+  & > .v-toolbar,
+  & > .row {
+    flex-grow: 0;
+    margin-bottom: 0;
+  }
+}
+
+.vertical-container .v-main__wrap {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
+
+$vt-color-error: white !default;
+$vt-text-color-error: #bb0000 !default;
+
+.Vue-Toastification__toast--error {
+  border: 2px solid $vt-text-color-error;
+  border-left: 10px solid $vt-text-color-error;
+  .Vue-Toastification__close-button{
+    color: black;
+  }
+
+}
+
+@import "vue-toastification/src/scss/index.scss";
+
+
+.error-toast {
+  [role=alert] {
+    color: black;
+    overflow: hidden;
+  }
+}
+
+// fix for https://github.com/yariksav/vuetify-dialog/issues/139
+.v-dialog--scrollable{
+  .v-dialog-wrapper{
+    overflow: auto;
+  }
+}
