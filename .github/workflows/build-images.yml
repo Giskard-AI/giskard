@@ -8,7 +8,6 @@ on:
 
 jobs:
   build-images:
-    if: ${{ github.actor != 'dependabot[bot]' }}
     runs-on: self-hosted
     steps:
       - name: Checkout code
