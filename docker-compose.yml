@@ -11,11 +11,19 @@ services:
       - PGDATA=/var/lib/postgresql/data/pgdata
 
   ml-worker:
-    image: '${DOCKER_REGISTRY}/ml-worker:${TAG-latest}'
+    image: 'docker.io/giskardai/ml-worker:${TAG-latest}'
     hostname: giskard-embedded-docker-worker
+    build:
+      dockerfile: python-client/docker/Dockerfile
+      context: .
 
   backend:
-    image: '${DOCKER_REGISTRY}/backend:${TAG-latest}'
+    image: 'docker.io/giskardai/backend:${TAG-latest}'
+    build:
+      dockerfile: ./backend/src/main/docker/app/app.dockerfile
+      context: .
+      args:
+        RUN_TESTS: ${RUN_TESTS-false}
     depends_on:
       - db
     env_file:
@@ -41,9 +49,13 @@ services:
     volumes:
       - giskard-home:/giskard-home
 
-
   frontend:
-    image: '${DOCKER_REGISTRY}/frontend:${TAG-latest}'
+    image: 'docker.io/giskardai/frontend:${TAG-latest}'
+    build:
+      context: frontend
+      dockerfile: Dockerfile
+      args:
+        FRONTEND_ENV: ${FRONTEND_ENV-production}
     ports:
       - "${GISKARD_PORT-19000}:80"
     expose:
