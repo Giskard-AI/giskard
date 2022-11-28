@@ -13,11 +13,14 @@ services:
   ml-worker:
     image: 'docker.io/giskardai/ml-worker:${TAG-latest}'
     hostname: giskard-embedded-docker-worker
+    build:
+      dockerfile: python-client/docker/Dockerfile
+      context: .
 
   backend:
     image: 'docker.io/giskardai/backend:${TAG-latest}'
     build:
-      dockerfile: ./giskard-server/src/main/docker/app/app.dockerfile
+      dockerfile: ./backend/src/main/docker/app/app.dockerfile
       context: .
       args:
         RUN_TESTS: ${RUN_TESTS-false}
@@ -46,11 +49,10 @@ services:
     volumes:
       - giskard-home:/giskard-home
 
-
   frontend:
     image: 'docker.io/giskardai/frontend:${TAG-latest}'
     build:
-      context: giskard-frontend
+      context: frontend
       dockerfile: Dockerfile
       args:
         FRONTEND_ENV: ${FRONTEND_ENV-production}
