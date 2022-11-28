@@ -106,7 +106,6 @@ RUN make generate-proto
 
 # >>> FINAL CONFIGURATION
 
-# FROM ubuntu:latest
 FROM python-base as production
 
 ENV SPRING_PROFILES_ACTIVE=prod
@@ -141,7 +140,10 @@ COPY giskard-frontend/packaging/nginx_single_dockerfile.conf /etc/nginx/sites-en
 RUN rm /etc/nginx/sites-enabled/default 
 
 ENV GSK_HOST=0.0.0.0
-ENV PYTHONPATH=.
+ENV PYTHONPATH=$PYSETUP_PATH
+
+
+VOLUME /root/giskard-home
 
 ENTRYPOINT ["supervisord", "-c", "/etc/supervisord.conf"]
 
