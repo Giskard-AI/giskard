@@ -98,7 +98,7 @@ public class GiskardApp {
             \tTotal: %s MB
             \tMax: %s MB
             \tFree: %s MB""", totalMemory, maxMemory, freeMemory);
-        String swaggerURL = hasApiDocsProfile ? String.format("Swagger UI: %s://localhost:%s%sswagger-ui/index.html\t\n\t", protocol, serverPort, contextPath) : "";
+        String swaggerURL = hasApiDocsProfile ? String.format("Swagger UI: %s://localhost:%s%sswagger-ui/index.html\t%n\t", protocol, serverPort, contextPath) : "";
         log.info(
             "\n----------------------------------------------------------\n\t" +
                 memoryStatusLine +

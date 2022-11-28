@@ -227,7 +227,7 @@ class AdminProjectControllerIT {
         restUserMockMvc.perform(delete(url).accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk());
         Project updatedProject = projectRepository.findOneWithGuestsById(project.getId()).orElseThrow(() -> new EntityNotFoundException(Entity.PROJECT, project.getId()));
-        assertThat(updatedProject.getGuests()).doesNotContain(user);
+        assertThat(updatedProject.getGuests()).isEmpty();
     }
 
 }

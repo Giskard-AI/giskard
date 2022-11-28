@@ -126,6 +126,6 @@ class AICreatorProjectControllerIT extends AdminProjectControllerIT {
         restUserMockMvc.perform(put(url).accept(MediaType.APPLICATION_JSON))
             .andExpect(status().is4xxClientError());
         Project updatedProject = projectRepository.getOneByName(PROJECTKEY);
-        assertThat(updatedProject.getGuests()).doesNotContain(user);
+        assertThat(updatedProject.getGuests()).isEmpty();
     }
 }
