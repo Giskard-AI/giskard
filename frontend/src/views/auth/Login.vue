@@ -8,8 +8,8 @@
       <v-btn block 
             @click="submit()"
             color="primary"
-            :disabled="searchingUser"
-            :loading='searchingUser'>Login</v-btn>
+            :disabled="isLoggingIn"
+            :loading='isLoggingIn'>Login</v-btn>
     </div>
     <div v-if="loginError" class="text-body-2 error--text mt-2">
       {{loginError}}
@@ -30,7 +30,7 @@ import { commitAddNotification } from '@/store/main/mutations';
 export default class Login extends Vue {
   public login: string = '';
   public password: string = '';
-  public searchingUser = false;
+  public isLoggingIn = false;
 
   public get loginError() {
     return readLoginError(this.$store);
@@ -38,9 +38,9 @@ export default class Login extends Vue {
 
   public async submit() {
     if (this.login && this.password) {
-      this.searchingUser = true;
+      this.isLoggingIn = true;
       await dispatchLogIn(this.$store, {username: this.login, password: this.password});
-      this.searchingUser = false;
+      this.isLoggingIn = false;
     } else {
         commitAddNotification(this.$store, {
           content: 'Please enter credentials',
