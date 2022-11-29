@@ -13,9 +13,7 @@ import h2o
 from h2o.automl import H2OAutoML
 import os
 
-@pytest.mark.skip(
-    reason="GSK-388 H2O models unable to unpickle on Giskard"
-)
+@pytest.mark.skip(reason="GSK-388 H2O models unable to unpickle on Giskard")
 def test_upload_H2O():
 
     h2o.init()
