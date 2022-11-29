@@ -5,7 +5,11 @@
       <v-text-field @keyup.enter="submit" v-model="password" prepend-inner-icon="lock" name="password" label="Password" id="password" type="password" autocomplete="current-password" dense outlined></v-text-field>
     </v-form>
     <div class="d-flex justify-space-between align-center">
-      <v-btn block @click.prevent="submit" color="primary">Login</v-btn>
+      <v-btn block 
+            @click="submit()"
+            color="primary"
+            :disabled="isLoggingIn"
+            :loading='isLoggingIn'>Login</v-btn>
     </div>
     <div v-if="loginError" class="text-body-2 error--text mt-2">
       {{loginError}}
@@ -26,14 +30,17 @@ import { commitAddNotification } from '@/store/main/mutations';
 export default class Login extends Vue {
   public login: string = '';
   public password: string = '';
+  public isLoggingIn = false;
 
   public get loginError() {
     return readLoginError(this.$store);
   }
 
-  public submit() {
+  public async submit() {
     if (this.login && this.password) {
-      dispatchLogIn(this.$store, {username: this.login, password: this.password});
+      this.isLoggingIn = true;
+      await dispatchLogIn(this.$store, {username: this.login, password: this.password});
+      this.isLoggingIn = false;
     } else {
         commitAddNotification(this.$store, {
           content: 'Please enter credentials',
