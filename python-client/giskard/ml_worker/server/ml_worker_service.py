@@ -15,7 +15,6 @@ import giskard
 from giskard.ml_worker.core.giskard_dataset import GiskardDataset
 from giskard.ml_worker.core.model_explanation import (
     explain,
-    parse_text_explainer_response,
     explain_text,
 )
 from giskard.ml_worker.exceptions.IllegalArgumentError import IllegalArgumentError
@@ -179,8 +178,8 @@ class MLWorkerServiceImpl(MLWorkerServicer):
         if model.feature_names:
             input_df = input_df[model.feature_names]
 
-        html_response = explain_text(model, input_df, text_column, text_document, n_samples)._repr_html_()
-        return ExplainTextResponse(explanations=parse_text_explainer_response(html_response))
+        html_response = explain_text(model, input_df, text_column, text_document, n_samples)
+        return ExplainTextResponse(explanations=dict(zip(model.classification_labels, html_response)))
 
     def runModelForDataFrame(self, request: RunModelForDataFrameRequest, context):
         model = deserialize_model(request.model)

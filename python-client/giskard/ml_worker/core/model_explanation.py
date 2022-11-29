@@ -2,6 +2,7 @@ import logging
 import re
 from typing import Callable, Dict, List, Any
 
+import eli5
 import numpy as np
 import pandas as pd
 import shap
@@ -65,7 +66,8 @@ def explain_text(model: GiskardModel, input_df: pd.DataFrame,
     )
     try:
         text_explainer.fit(text_document, prediction_function)
-        return text_explainer.show_prediction(target_names=model.classification_labels)
+        exp = text_explainer.explain_prediction(target_names=model.classification_labels)
+        return eli5.formatters.html.render_targets_weighted_spans(exp.targets, False)
     except Exception as e:
         logger.exception(f"Failed to explain text: {text_document}", e)
         raise Exception("Failed to create text explanation") from e
