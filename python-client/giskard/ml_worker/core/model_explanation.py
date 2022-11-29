@@ -1,12 +1,10 @@
 import logging
-import re
 from typing import Callable, Dict, List, Any
 
 import eli5
 import numpy as np
 import pandas as pd
 import shap
-from bs4 import BeautifulSoup
 from eli5.lime import TextExplainer
 
 from giskard.ml_worker.core.giskard_dataset import GiskardDataset
@@ -132,16 +130,3 @@ def text_explanation_prediction_wrapper(
         return prediction_function(df_with_text_documents)
 
     return text_predict
-
-
-def parse_text_explainer_response(response: str) -> Dict[str, str]:
-    text_explanation_soup = BeautifulSoup(response, "html.parser")
-    labels = []
-    explanations_html = []
-    for i, paragraph in enumerate(text_explanation_soup.find_all("p")):
-        if (i % 2) == 0:
-            label = re.findall(r"\by=.*\b", str(paragraph.find("b")))[0][2:]
-            labels.append(label)
-        else:
-            explanations_html.append(str(paragraph))
-    return dict(zip(labels, explanations_html))
