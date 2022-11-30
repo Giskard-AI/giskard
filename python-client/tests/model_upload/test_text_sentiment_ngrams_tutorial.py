@@ -173,13 +173,16 @@ def test_text_sentiment_ngrams_tutorial():
     raw_data = { "text": [value[1] for value in test_dataset], "label": [ag_news_label[value[0]] for value in test_dataset]}
     df = pd.DataFrame(raw_data, columns=["text", "label"])
 
+    def softmax(x):
+        """Compute softmax values for each sets of scores in x."""
+        return np.exp(x) / np.sum(np.exp(x), axis=0)
+
     def predict_proba(text):
         with torch.no_grad():
             text = torch.tensor(text_pipeline(text))
             output = model(text, torch.tensor([0]))
             np_output = output.numpy()[0]
-            return np_output
-
+            return softmax(np_output)
     def prediction_function(df):
         series = df["text"].apply(predict_proba)
         return np.array(series.tolist())
