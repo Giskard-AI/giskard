@@ -97,6 +97,8 @@ catboost = "^1.1"
 tensorflow = "2.11.0"
 h2o = "^3.38.0"
 torch = "^1.13.0"
+torchtext = "0.14.0"
+torchdata = "0.5.0"
 
 [tool.black]
 # https://github.com/psf/black
