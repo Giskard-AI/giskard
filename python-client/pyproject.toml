@@ -94,6 +94,7 @@ deptry = "^0.5.13"
 pytest-cov = "^3.0.0"
 pytest = "^7.1.2"
 catboost = "^1.1"
+h2o = "^3.38.0.3"
 
 [tool.black]
 # https://github.com/psf/black
