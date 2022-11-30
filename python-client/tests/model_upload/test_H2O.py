@@ -1,12 +1,3 @@
-import os
-import shutil
-import tensorflow as tf
-import pandas as pd
-from tensorflow.keras import layers
-import pytest
-
-## initiate Giskard project
-from giskard.client.giskard_client import GiskardClient
 from giskard.client.project import GiskardProject
 
 import h2o
