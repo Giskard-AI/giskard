@@ -95,7 +95,8 @@ pytest-cov = "^3.0.0"
 pytest = "^7.1.2"
 catboost = "^1.1"
 tensorflow = "2.11.0"
-h2o = "3.38.0.3"
+h2o = "^3.38.0"
+torch = "^1.13.0"
 
 [tool.black]
 # https://github.com/psf/black
