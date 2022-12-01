@@ -96,10 +96,10 @@ pytest = "^7.1.2"
 catboost = "^1.1"
 h2o = "^3.38.0.3"
 tensorflow = "2.11.0"
-torch = "1.12.0"
 transformers = "^4.24.0"
-torchtext = "0.12.0"
-torchdata = "0.4.0"
+torchtext = "0.13.1"
+torchdata = "0.4.1"
+torch = "1.12.1"
 
 [tool.black]
 # https://github.com/psf/black
