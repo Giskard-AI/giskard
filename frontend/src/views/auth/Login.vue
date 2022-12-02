@@ -7,7 +7,12 @@
                     id="password" type="password" autocomplete="current-password" dense outlined></v-text-field>
     </v-form>
     <div class="d-flex justify-space-between align-center">
-      <v-btn block @click.prevent="submit" color="primary">Login</v-btn>
+      <v-btn block
+             @click="submit()"
+             color="primary"
+             :disabled="isLoggingIn"
+             :loading='isLoggingIn'>Login
+      </v-btn>
     </div>
     <div v-if="loginError" class="text-body-2 error--text mt-2">
       {{ loginError }}
@@ -25,15 +30,24 @@ import {commitAddNotification} from '@/store/main/mutations';
 import store from '@/store';
 import {computed, ref} from "vue";
 
+public
+isLoggingIn = ref<boolean>(false);
 const login = ref<string>('');
 const password = ref<string>('');
 const loginError = computed(() => {
   return readLoginError(store);
 });
+public
+isLoggingIn = false;
 
 function submit() {
   if (login.value && password.value) {
-    dispatchLogIn(store, {username: login.value, password: password.value});
+    try {
+      this.isLoggingIn = true;
+      dispatchLogIn(store, {username: login.value, password: password.value});
+    } finally {
+      this.isLoggingIn = true;
+    }
   } else {
     commitAddNotification(store, {
       content: 'Please enter credentials',
