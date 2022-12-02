@@ -30,23 +30,21 @@ import {commitAddNotification} from '@/store/main/mutations';
 import store from '@/store';
 import {computed, ref} from "vue";
 
-public
-isLoggingIn = ref<boolean>(false);
+
+const isLoggingIn = ref<boolean>(false);
 const login = ref<string>('');
 const password = ref<string>('');
 const loginError = computed(() => {
   return readLoginError(store);
 });
-public
-isLoggingIn = false;
 
 function submit() {
   if (login.value && password.value) {
     try {
-      this.isLoggingIn = true;
+      isLoggingIn.value = true;
       dispatchLogIn(store, {username: login.value, password: password.value});
     } finally {
-      this.isLoggingIn = true;
+      isLoggingIn.value = true;
     }
   } else {
     commitAddNotification(store, {

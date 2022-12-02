@@ -34,16 +34,16 @@ const loggedIn = computed(() => {
   return readIsLoggedIn(store);
 });
 
+let monacoOptions: IEditorOptions = {
+  automaticLayout: true,
+  minimap: {
+    enabled: false
+  },
+  renderLineHighlight: "none"
+};
+provide('monacoOptions', monacoOptions);
+
 onBeforeMount(async () => {
   await dispatchCheckLoggedIn(store);
-
-  let monacoOptions: IEditorOptions = {
-    automaticLayout: true,
-    minimap: {
-      enabled: false
-    },
-    renderLineHighlight: "none"
-  };
-  provide('monacoOptions', monacoOptions);
 });
 </script>
