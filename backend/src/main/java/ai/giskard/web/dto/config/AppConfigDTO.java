@@ -11,8 +11,9 @@ import java.util.List;
 
 @NoArgsConstructor
 @AllArgsConstructor
-@UIModel
+@Setter
 @Builder
+@UIModel
 public class AppConfigDTO {
     @Getter
     @Setter
@@ -24,8 +25,8 @@ public class AppConfigDTO {
     @NoArgsConstructor
     @AllArgsConstructor
     @Builder
-    @Getter
     @Setter
+    @Getter
     public static class AppInfoDTO {
         private String planCode;
         private String planName;
