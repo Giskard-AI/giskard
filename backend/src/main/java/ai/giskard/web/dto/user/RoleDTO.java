@@ -2,7 +2,9 @@ package ai.giskard.web.dto.user;
 
 import com.dataiku.j2ts.annotations.UIModel;
 import lombok.AllArgsConstructor;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
@@ -12,15 +14,17 @@ import javax.validation.constraints.Size;
  */
 @NoArgsConstructor
 @AllArgsConstructor
+@Setter
+@Getter
 @UIModel
 public class RoleDTO {
 
-    @lombok.Setter
-    @lombok.Getter
+    @Setter
+    @Getter
     private String id;
 
-    @lombok.Setter
-    @lombok.Getter
+    @Setter
+    @Getter
     @NotNull
     @Size(max = 50)
     private String name;

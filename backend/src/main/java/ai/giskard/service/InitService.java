@@ -214,9 +214,7 @@ public class InitService {
                     .projectKey(ENRON_PROJECT_KEY)
                     .target("Target")
                     .build(),
-                InspectionSettings.builder()
-                    .limeNumberSamples(5)
-                    .build()
+                new InspectionSettings(5)
             ),
             GERMAN_CREDIT_PROJECT_KEY, new ProjectConfig("Credit Scoring Classification", "admin",
                 ModelUploadParamsDTO.builder().modelType("classification")
