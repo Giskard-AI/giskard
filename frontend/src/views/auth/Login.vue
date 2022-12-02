@@ -38,11 +38,11 @@ const loginError = computed(() => {
   return readLoginError(store);
 });
 
-function submit() {
+async function submit() {
   if (login.value && password.value) {
     try {
       isLoggingIn.value = true;
-      dispatchLogIn(store, {username: login.value, password: password.value});
+      await dispatchLogIn(store, {username: login.value, password: password.value});
     } finally {
       isLoggingIn.value = false;
     }
