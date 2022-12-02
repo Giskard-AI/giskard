@@ -44,7 +44,7 @@ function submit() {
       isLoggingIn.value = true;
       dispatchLogIn(store, {username: login.value, password: password.value});
     } finally {
-      isLoggingIn.value = true;
+      isLoggingIn.value = false;
     }
   } else {
     commitAddNotification(store, {
