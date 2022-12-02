@@ -1,14 +1,16 @@
 package ai.giskard.web.dto.ml;
 
 import com.dataiku.j2ts.annotations.UIModel;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import javax.validation.constraints.NotNull;
 
 @Getter
 @UIModel
-@AllArgsConstructor
+@Setter
+@NoArgsConstructor
 public class TestSuiteDTO {
     private Long id;
     @NotNull
