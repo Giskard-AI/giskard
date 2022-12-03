@@ -12,8 +12,11 @@ import ai.giskard.web.rest.errors.Entity;
 import ai.giskard.web.rest.errors.EntityNotFoundException;
 import ai.giskard.web.rest.errors.NotInDatabaseException;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.FileSystemUtils;
 
 import javax.validation.constraints.NotNull;
 import java.util.List;
@@ -24,9 +27,11 @@ import java.util.regex.Pattern;
 @Transactional
 @RequiredArgsConstructor
 public class ProjectService {
+    private final Logger log = LoggerFactory.getLogger(ProjectService.class);
 
     final UserRepository userRepository;
     final ProjectRepository projectRepository;
+    final FileLocationService locationService;
     final GiskardMapper giskardMapper;
 
     public static final Pattern PROJECT_KEY_PATTERN = Pattern.compile("^[a-z\\d_]+$");
@@ -89,7 +94,16 @@ public class ProjectService {
      * @return boolean success
      */
     public void delete(Long id) {
-        projectRepository.deleteById(id);
+        Project project = projectRepository.getById(id);
+        try {
+            projectRepository.deleteById(id);
+            projectRepository.flush();
+            FileSystemUtils.deleteRecursively(locationService.resolvedProjectHome(project.getKey()));
+        } catch (Exception e) {
+            log.error("Failed to delete project {}", project.getKey(), e);
+            throw new GiskardRuntimeException("Failed to delete project %s".formatted(project.getKey()));
+        }
+
     }
 
     /**
