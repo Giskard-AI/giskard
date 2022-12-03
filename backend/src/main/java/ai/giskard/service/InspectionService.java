@@ -10,8 +10,11 @@ import ai.giskard.repository.ml.ModelRepository;
 import ai.giskard.security.PermissionEvaluator;
 import ai.giskard.web.rest.errors.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.FileSystemUtils;
 import tech.tablesaw.api.*;
 import tech.tablesaw.io.csv.CsvReadOptions;
 import tech.tablesaw.selection.Selection;
@@ -31,6 +34,8 @@ import static ai.giskard.web.rest.errors.Entity.INSPECTION;
 @Transactional
 @RequiredArgsConstructor
 public class InspectionService {
+    private final Logger log = LoggerFactory.getLogger(InspectionService.class);
+
 
     final UserRepository userRepository;
     final DatasetRepository datasetRepository;
@@ -211,4 +216,21 @@ public class InspectionService {
     }
 
 
+    public void deleteInspections(List<Inspection> inspections) {
+        inspectionRepository.deleteAll(inspections);
+        try {
+            List<Path> paths = inspections.stream().map(inspection -> {
+                // TODO: we should have a project key directly on inspection
+                String projectKey = inspection.getModel().getProject().getKey();
+                return fileLocationService.resolvedInspectionPath(projectKey, inspection.getId());
+            }).toList();
+            inspectionRepository.flush();
+            for (Path path : paths) {
+                FileSystemUtils.deleteRecursively(path);
+            }
+        } catch (Exception e) {
+            log.error("Failed to delete inspections", e);
+            throw new GiskardRuntimeException("Failed to delete inspections", e);
+        }
+    }
 }
