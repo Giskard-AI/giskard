@@ -37,10 +37,10 @@
 </template>
 
 <script setup lang="ts">
-import {PrepareDatasetDeleteDTO} from "@/generated-sources";
 import {onMounted, ref} from "vue";
 import {api} from "@/api";
 import {capitalize} from "@vue/shared";
+import {PrepareDeleteDTO} from "@/generated-sources";
 
 const props = defineProps<{
   type: "dataset" | "model"
@@ -48,7 +48,7 @@ const props = defineProps<{
   id: number
 }>();
 
-const usage = ref<PrepareDatasetDeleteDTO | null>(null);
+const usage = ref<PrepareDeleteDTO | null>(null);
 
 
 onMounted(async () => {
