@@ -24,6 +24,7 @@ import {
     PasswordResetRequest,
     PredictionDTO,
     PredictionInputDTO,
+    PrepareDatasetDeleteDTO,
     ProjectDTO,
     ProjectPostDTO,
     RoleDTO,
@@ -265,6 +266,12 @@ export const api = {
     },
     async deleteDatasetFile(datasetId: number) {
         return apiV2.delete<unknown, MessageDTO>(`/dataset/${datasetId}`);
+    },
+    async prepareDeleteDataset(datasetId: number) {
+        return apiV2.get<unknown, PrepareDatasetDeleteDTO>(`/dataset/prepare-delete/${datasetId}`);
+    },
+    async prepareDeleteModel(modelId: number) {
+        return apiV2.get<unknown, PrepareDatasetDeleteDTO>(`/models/prepare-delete/${modelId}`);
     },
     async deleteModelFiles(modelId: number) {
         return apiV2.delete<unknown, MessageDTO>(`/models/${modelId}`);
