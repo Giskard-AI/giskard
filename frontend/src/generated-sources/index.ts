@@ -54,6 +54,8 @@ export const GENERATED_MAPPING = {
     'ai.giskard.web.dto.PasswordResetRequest' : 'PasswordResetRequest',
     'ai.giskard.web.dto.PredictionDTO' : 'PredictionDTO',
     'ai.giskard.web.dto.PredictionInputDTO' : 'PredictionInputDTO',
+    'ai.giskard.web.dto.PrepareDeleteDTO$LightTestSuite' : 'PrepareDeleteDTO.LightTestSuite',
+    'ai.giskard.web.dto.PrepareDeleteDTO$LightFeedback' : 'PrepareDeleteDTO.LightFeedback',
     'ai.giskard.web.dto.PrepareDeleteDTO' : 'PrepareDeleteDTO',
     'ai.giskard.web.dto.TestSuiteCreateDTO' : 'TestSuiteCreateDTO',
     'ai.giskard.web.dto.TestTemplatesResponse' : 'TestTemplatesResponse',

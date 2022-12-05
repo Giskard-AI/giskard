@@ -8,13 +8,17 @@
             entities that will also be deleted:
           </v-col>
         </v-row>
-        <v-row v-if="usage.suiteCount" dense>
+        <v-row v-if="usage.suites?.length">
           <v-col cols="4">Test suites:</v-col>
-          <v-col>{{ usage.suiteCount }}</v-col>
+          <v-col class="usage-container">
+            <a v-for="s in usage.suites" @click="openSuite(s)">{{ s.name }}</a>
+          </v-col>
         </v-row>
-        <v-row v-if="usage.feedbackCount" dense>
+        <v-row v-if="usage.feedbacks?.length">
           <v-col cols="4">Inspection feedback:</v-col>
-          <v-col>{{ usage.feedbackCount }}</v-col>
+          <v-col class="usage-container">
+            <a v-for="f in usage.feedbacks" @click="openFeedback(f)">{{ f.message }}</a>
+          </v-col>
         </v-row>
       </v-container>
       <v-row class="pt-2">
@@ -41,6 +45,9 @@ import {onMounted, ref} from "vue";
 import {api} from "@/api";
 import {capitalize} from "@vue/shared";
 import {PrepareDeleteDTO} from "@/generated-sources";
+import router from "@/router";
+
+const emit = defineEmits(['submit'])
 
 const props = defineProps<{
   type: "dataset" | "model"
@@ -50,6 +57,27 @@ const props = defineProps<{
 
 const usage = ref<PrepareDeleteDTO | null>(null);
 
+function openSuite(suite: PrepareDeleteDTO.LightTestSuite) {
+  router.push({
+    name: "suite-details",
+    params: {
+      suiteId: suite.id.toString(),
+      projectId: suite.projectId.toString()
+    }
+  });
+  emit('submit', false);
+}
+
+function openFeedback(feedback: PrepareDeleteDTO.LightFeedback) {
+  router.push({
+    name: "feedback-detail",
+    params: {
+      feedbackId: feedback.id.toString(),
+      projectId: feedback.projectId.toString()
+    }
+  });
+  emit('submit', false);
+}
 
 onMounted(async () => {
   switch (props.type) {
@@ -62,3 +90,19 @@ onMounted(async () => {
   }
 })
 </script>
+
+<style lang="scss">
+.usage-container {
+  max-height: 100px;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+
+  a {
+    white-space: nowrap;
+    min-height: 22px;
+    overflow-x: hidden;
+    text-overflow: ellipsis;
+  }
+}
+</style>
