@@ -4,10 +4,6 @@ import ai.giskard.config.ApplicationProperties;
 import ai.giskard.domain.ml.Inspection;
 import ai.giskard.domain.ml.table.Filter;
 import ai.giskard.repository.InspectionRepository;
-import ai.giskard.repository.UserRepository;
-import ai.giskard.repository.ml.DatasetRepository;
-import ai.giskard.repository.ml.ModelRepository;
-import ai.giskard.security.PermissionEvaluator;
 import ai.giskard.web.rest.errors.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -32,14 +28,10 @@ import static ai.giskard.web.rest.errors.Entity.INSPECTION;
 @RequiredArgsConstructor
 public class InspectionService {
 
-    final UserRepository userRepository;
-    final DatasetRepository datasetRepository;
-    final ModelRepository modelRepository;
-    final InspectionRepository inspectionRepository;
-    final DatasetService datasetService;
-    final ApplicationProperties applicationProperties;
-    final PermissionEvaluator permissionEvaluator;
-    final FileLocationService fileLocationService;
+    private final InspectionRepository inspectionRepository;
+    private final DatasetService datasetService;
+    private final ApplicationProperties applicationProperties;
+    private final FileLocationService fileLocationService;
 
     public Table getTableFromBucketFile(String location) throws FileNotFoundException {
         InputStreamReader reader = new InputStreamReader(new FileInputStream(location));
@@ -115,7 +107,8 @@ public class InspectionService {
                         selection = selection.and(diffPercent.isGreaterThanOrEqualTo(filter.getMinDiffThreshold() / 100));
                     }
                 }
-                default -> selection = null;
+                default -> {
+                }
             }
         } else if (filter.getType() == CUSTOM) {
             DoubleColumn prediction = calculatedTable.doubleColumn(0);
