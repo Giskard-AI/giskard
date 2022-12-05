@@ -28,10 +28,10 @@ import java.util.Map;
 @Transactional
 @RequiredArgsConstructor
 public class ModelService {
-    final DatasetRepository datasetRepository;
-    final ModelRepository modelRepository;
-    final PermissionEvaluator permissionEvaluator;
-    final InspectionRepository inspectionRepository;
+    private final DatasetRepository datasetRepository;
+    private final ModelRepository modelRepository;
+    private final PermissionEvaluator permissionEvaluator;
+    private final InspectionRepository inspectionRepository;
     private final Logger log = LoggerFactory.getLogger(ModelService.class);
     private final MLWorkerService mlWorkerService;
     private final FileLocationService locationService;
