@@ -112,7 +112,8 @@ public class InspectionService {
                         selection = selection.and(diffPercent.isGreaterThanOrEqualTo(filter.getMinDiffThreshold() / 100));
                     }
                 }
-                default -> selection = null;
+                default -> {
+                }
             }
         } else if (filter.getType() == CUSTOM) {
             DoubleColumn prediction = calculatedTable.doubleColumn(0);

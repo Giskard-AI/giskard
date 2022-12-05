@@ -165,12 +165,11 @@ public class InitService {
         zillowFeatureTypes.put("OverallQual", FeatureType.CATEGORY);
     }
 
-    final UserRepository userRepository;
-    final RoleRepository roleRepository;
-    final UserService userService;
-    final ProjectRepository projectRepository;
-    final ProjectService projectService;
-    final PasswordEncoder passwordEncoder;
+    private final UserRepository userRepository;
+    private final RoleRepository roleRepository;
+    private final ProjectRepository projectRepository;
+    private final ProjectService projectService;
+    private final PasswordEncoder passwordEncoder;
     private final Logger logger = LoggerFactory.getLogger(InitService.class);
     private final GeneralSettingsService generalSettingsService;
     private final ResourceLoader resourceLoader;
