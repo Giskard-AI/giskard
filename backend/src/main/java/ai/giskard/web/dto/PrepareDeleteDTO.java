@@ -6,17 +6,39 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.List;
+
 @Getter
 @Setter
 @NoArgsConstructor
 @UIModel
 public class PrepareDeleteDTO {
-    @JsonProperty("totalUsage")
-    private int totalUsage() {
-        return feedbackCount + suiteCount;
+
+    public static class LightFeedback {
+        public long id;
+        public long projectId;
+        public String message;
     }
 
-    private int feedbackCount;
-    private int suiteCount;
+    public static class LightTestSuite {
+        public long id;
+        public long projectId;
+        public String name;
+    }
 
+
+    @JsonProperty("totalUsage")
+    private int totalUsage() {
+        int res = 0;
+        if (feedbacks != null) {
+            res += feedbacks.size();
+        }
+        if (suites != null) {
+            res += suites.size();
+        }
+        return res;
+    }
+
+    private List<LightFeedback> feedbacks;
+    private List<LightTestSuite> suites;
 }
