@@ -6,7 +6,7 @@ RUN apt-get update
 RUN apt -y install openjdk-17-jdk
 
 ENV _JAVA_OPTIONS="-Xmx4048m -Xms512m" \
-    SPRING_PROFILES_ACTIVE=prod \ 
+    SPRING_PROFILES_ACTIVE=prod \
     MANAGEMENT_METRICS_EXPORT_PROMETHEUS_ENABLED=true \
     SPRING_DATASOURCE_USERNAME=postgres
 
@@ -40,7 +40,7 @@ RUN bash -c " \
 
 WORKDIR /app/frontend
 
-COPY frontend/package*.json .
+COPY frontend/package*.json ./
 
 RUN apt-get update -y && apt-get install -y libxml2-dev libgcrypt-dev npm
 RUN npm install
@@ -100,9 +100,19 @@ FROM builder-base as proto-builder
 WORKDIR $PYSETUP_PATH
 
 RUN poetry install --only main,dev
-
+COPY ./common/proto ./proto
 COPY ./python-client/giskard ./giskard
 COPY ./python-client/scripts ./scripts
+
+RUN mkdir -p giskard/ml_worker/generated && \
+    python -m grpc_tools.protoc \
+      -Iproto \
+      --python_out=giskard/ml_worker/generated \
+      --grpc_python_out=giskard/ml_worker/generated \
+      --mypy_out=giskard/ml_worker/generated \
+      --mypy_grpc_out=giskard/ml_worker/generated \
+      proto/ml-worker.proto && \
+    python scripts/fix_grpc_generated_imports.py giskard/ml_worker/generated giskard.ml_worker.generated
 
 # <<< ML-WORKER
 
@@ -139,7 +149,7 @@ COPY --from=build /etc/supervisord.conf /etc/
 
 COPY --from=build /app/frontend/dist /usr/share/nginx/html
 COPY frontend/packaging/nginx_single_dockerfile.conf /etc/nginx/sites-enabled/default.conf
-RUN rm /etc/nginx/sites-enabled/default 
+RUN rm /etc/nginx/sites-enabled/default
 
 ENV GSK_HOST=0.0.0.0
 ENV PYTHONPATH=$PYSETUP_PATH
