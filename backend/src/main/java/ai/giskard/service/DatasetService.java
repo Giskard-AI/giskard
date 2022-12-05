@@ -1,12 +1,8 @@
 package ai.giskard.service;
 
-import ai.giskard.config.ApplicationProperties;
 import ai.giskard.domain.FeatureType;
 import ai.giskard.domain.ml.Dataset;
-import ai.giskard.repository.InspectionRepository;
-import ai.giskard.repository.UserRepository;
 import ai.giskard.repository.ml.DatasetRepository;
-import ai.giskard.repository.ml.ModelRepository;
 import ai.giskard.security.PermissionEvaluator;
 import ai.giskard.web.dto.DatasetMetadataDTO;
 import ai.giskard.web.dto.FeatureMetadataDTO;
@@ -38,12 +34,7 @@ import java.util.stream.Collectors;
 public class DatasetService {
     public static final String GISKARD_DATASET_INDEX_COLUMN_NAME = "_GISKARD_INDEX_";
     private final Logger log = LoggerFactory.getLogger(DatasetService.class);
-
-    final UserRepository userRepository;
-    final DatasetRepository datasetRepository;
-    final ModelRepository modelRepository;
-    final InspectionRepository inspectionRepository;
-    private final ApplicationProperties applicationProperties;
+    private final DatasetRepository datasetRepository;
     private final FileLocationService locationService;
     private final FileUploadService fileUploadService;
     private final PermissionEvaluator permissionEvaluator;

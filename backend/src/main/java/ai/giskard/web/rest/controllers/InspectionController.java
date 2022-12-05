@@ -35,7 +35,7 @@ public class InspectionController {
     private final ModelService modelService;
     private final InspectionRepository inspectionRepository;
     private final GiskardMapper giskardMapper;
-    final PermissionEvaluator permissionEvaluator;
+    private final PermissionEvaluator permissionEvaluator;
 
 
     /**
@@ -48,7 +48,6 @@ public class InspectionController {
      * @param rangeMax     maximum range
      * @param isRandom     is selection random
      * @return list of filtered rows
-     * @throws Exception
      */
     @PostMapping("/inspection/{inspectionId}/rowsFiltered")
     @Transactional
