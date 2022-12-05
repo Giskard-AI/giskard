@@ -2,16 +2,13 @@ package ai.giskard.domain.ml;
 
 import ai.giskard.domain.ProjectFile;
 import ai.giskard.utils.SimpleJSONStringAttributeConverter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.Setter;
 
 import javax.persistence.*;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 
 @Entity(name = "project_models")
@@ -41,8 +38,4 @@ public class ProjectModel extends ProjectFile {
 
     @NonNull
     private String requirementsFileName;
-
-    @OneToMany(mappedBy = "model", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    @JsonIgnore
-    private Set<Inspection> inspections = new HashSet<>();
 }
