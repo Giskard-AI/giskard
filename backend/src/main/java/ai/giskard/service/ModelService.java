@@ -30,12 +30,12 @@ import java.util.Map;
 @Transactional
 @RequiredArgsConstructor
 public class ModelService {
-    final DatasetRepository datasetRepository;
-    final TestSuiteRepository testSuiteRepository;
+    private final DatasetRepository datasetRepository;
+    private final TestSuiteRepository testSuiteRepository;
     final FeedbackRepository feedbackRepository;
     final ModelRepository modelRepository;
-    final PermissionEvaluator permissionEvaluator;
-    final InspectionRepository inspectionRepository;
+    private final PermissionEvaluator permissionEvaluator;
+    private final InspectionRepository inspectionRepository;
     private final Logger log = LoggerFactory.getLogger(ModelService.class);
     private final MLWorkerService mlWorkerService;
     private final FileLocationService locationService;

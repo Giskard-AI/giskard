@@ -29,9 +29,9 @@ import java.util.regex.Pattern;
 public class ProjectService {
     private final Logger log = LoggerFactory.getLogger(ProjectService.class);
 
-    final UserRepository userRepository;
-    final ProjectRepository projectRepository;
-    final FileLocationService locationService;
+    private final UserRepository userRepository;
+    private final ProjectRepository projectRepository;
+    private final FileLocationService locationService;
     final GiskardMapper giskardMapper;
 
     public static final Pattern PROJECT_KEY_PATTERN = Pattern.compile("^[a-z\\d_]+$");
@@ -61,10 +61,6 @@ public class ProjectService {
 
     /**
      * Create project
-     *
-     * @param project
-     * @param ownerLogin
-     * @return project saved
      */
     public Project create(Project project, String ownerLogin) {
         String projectKey = project.getKey();
@@ -91,7 +87,6 @@ public class ProjectService {
      * Delete the project
      *
      * @param id id of the project to delete
-     * @return boolean success
      */
     public void delete(Long id) {
         Project project = projectRepository.getById(id);
