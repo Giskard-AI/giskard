@@ -57,7 +57,7 @@
     "@vue/cli-service": "~5.0.6",
     "@vue/eslint-config-typescript": "^11.0.2",
     "@vue/test-utils": "^1.2.2",
-    "babel-loader": "^8.2.5",
+    "babel-loader": "^9.1.0",
     "eslint": "^8.21.0",
     "eslint-plugin-vue": "^9.6.0",
     "monaco-editor-webpack-plugin": "~7.0.1",
