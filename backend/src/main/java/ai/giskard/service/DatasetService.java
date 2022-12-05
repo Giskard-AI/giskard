@@ -29,9 +29,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class DatasetService {
     public static final String GISKARD_DATASET_INDEX_COLUMN_NAME = "_GISKARD_INDEX_";
-    private final Logger log = LoggerFactory.getLogger(DatasetService.class);
 
-    private final DatasetRepository datasetRepository;
     private final DatasetRepository datasetRepository;
     private final FileLocationService locationService;
     private final FileUploadService fileUploadService;
