@@ -2218,7 +2218,7 @@ cffi = ["cffi (>=1.11)"]
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.7.5,<3.11"
-content-hash = "d02ec7dadcde20531cf862a9d9d3004d42e30f93d60d407c2edb76562aeda98f"
+content-hash = "39fd5779e77e33ffcf99de296927b459fbb2a1b3cf887653bc9dea467740f676"
 
 [metadata.files]
 anyio = [
