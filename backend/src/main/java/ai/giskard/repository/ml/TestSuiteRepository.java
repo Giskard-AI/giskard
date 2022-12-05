@@ -15,7 +15,6 @@ public interface TestSuiteRepository extends JpaRepository<TestSuite, Long> {
 
     List<TestSuite> findAllByModelId(long modelId);
 
-    @Modifying
     @Query("FROM TestSuite where actualDataset.id = :id or referenceDataset.id = :id")
     List<TestSuite> findByDatasetId(@Param("id") long datasetId);
 
