@@ -75,7 +75,6 @@ black = "^22.8.0"
 bandit = "^1.7.4"
 darglint = "^1.8.1"
 flake8 = "^3.9.2"
-httpretty = "^1.1.4"
 isort = { extras = ["colors"], version = "^5.10.1" }
 jupyter = "^1.0.0"
 jupyterlab = "^3.4.2"

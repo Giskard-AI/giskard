@@ -15,6 +15,11 @@ updates:
     schedule:
       interval: "weekly"
 
+  - package-ecosystem: "pip"
+    directory: "/python-client"
+    schedule:
+      interval: "weekly"
+
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
