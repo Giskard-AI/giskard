@@ -12,8 +12,6 @@ import ai.giskard.web.rest.errors.Entity;
 import ai.giskard.web.rest.errors.EntityNotFoundException;
 import ai.giskard.web.rest.errors.NotInDatabaseException;
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.FileSystemUtils;
@@ -27,8 +25,6 @@ import java.util.regex.Pattern;
 @Transactional
 @RequiredArgsConstructor
 public class ProjectService {
-    private final Logger log = LoggerFactory.getLogger(ProjectService.class);
-
     private final UserRepository userRepository;
     private final ProjectRepository projectRepository;
     private final FileLocationService locationService;
@@ -95,7 +91,6 @@ public class ProjectService {
             projectRepository.flush();
             FileSystemUtils.deleteRecursively(locationService.resolvedProjectHome(project.getKey()));
         } catch (Exception e) {
-            log.error("Failed to delete project {}", project.getKey(), e);
             throw new GiskardRuntimeException("Failed to delete project %s".formatted(project.getKey()));
         }
 
