@@ -4,10 +4,6 @@ import ai.giskard.config.ApplicationProperties;
 import ai.giskard.domain.ml.Inspection;
 import ai.giskard.domain.ml.table.Filter;
 import ai.giskard.repository.InspectionRepository;
-import ai.giskard.repository.UserRepository;
-import ai.giskard.repository.ml.DatasetRepository;
-import ai.giskard.repository.ml.ModelRepository;
-import ai.giskard.security.PermissionEvaluator;
 import ai.giskard.web.rest.errors.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -37,14 +33,10 @@ public class InspectionService {
     private final Logger log = LoggerFactory.getLogger(InspectionService.class);
 
 
-    final UserRepository userRepository;
-    final DatasetRepository datasetRepository;
-    final ModelRepository modelRepository;
-    final InspectionRepository inspectionRepository;
-    final DatasetService datasetService;
-    final ApplicationProperties applicationProperties;
-    final PermissionEvaluator permissionEvaluator;
-    final FileLocationService fileLocationService;
+    private final InspectionRepository inspectionRepository;
+    private final DatasetService datasetService;
+    private final ApplicationProperties applicationProperties;
+    private final FileLocationService fileLocationService;
 
     public Table getTableFromBucketFile(String location) throws FileNotFoundException {
         InputStreamReader reader = new InputStreamReader(new FileInputStream(location));
@@ -229,7 +221,6 @@ public class InspectionService {
                 FileSystemUtils.deleteRecursively(path);
             }
         } catch (Exception e) {
-            log.error("Failed to delete inspections", e);
             throw new GiskardRuntimeException("Failed to delete inspections", e);
         }
     }

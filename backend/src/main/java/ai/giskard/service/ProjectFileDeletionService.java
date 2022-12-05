@@ -56,8 +56,7 @@ public class ProjectFileDeletionService {
             log.info("Removing dataset file: {}", datasetPath.getFileName());
             Files.deleteIfExists(datasetPath);
         } catch (Exception e) {
-            log.error("Failed to delete a dataset {}", dataset.getFileName(), e);
-            throw new RuntimeException(String.format("Failed to remove dataset %s", dataset.getFileName()), e);
+            throw new GiskardRuntimeException(String.format("Failed to remove dataset %s", dataset.getFileName()), e);
         }
 
     }
