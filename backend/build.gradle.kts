@@ -228,7 +228,7 @@ dependencies {
 
     implementation(files("$projectDir/src/main/resources/third-party/j2ts-api.jar"))
     implementation(group = "com.fasterxml.jackson.dataformat", name = "jackson-dataformat-yaml", version = "2.13.3")
-    implementation(group = "com.github.luben", name = "zstd-jni", version = "1.5.2-3")
+    implementation(group = "com.github.luben", name = "zstd-jni", version = "1.5.2-5")
     implementation("org.apache.commons:commons-compress:1.21")
 
     implementation("commons-codec:commons-codec:1.15")
