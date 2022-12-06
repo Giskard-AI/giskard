@@ -55,6 +55,9 @@ export const GENERATED_MAPPING = {
     'ai.giskard.web.dto.PasswordResetRequest' : 'PasswordResetRequest',
     'ai.giskard.web.dto.PredictionDTO' : 'PredictionDTO',
     'ai.giskard.web.dto.PredictionInputDTO' : 'PredictionInputDTO',
+    'ai.giskard.web.dto.PrepareDeleteDTO$LightTestSuite' : 'PrepareDeleteDTO.LightTestSuite',
+    'ai.giskard.web.dto.PrepareDeleteDTO$LightFeedback' : 'PrepareDeleteDTO.LightFeedback',
+    'ai.giskard.web.dto.PrepareDeleteDTO' : 'PrepareDeleteDTO',
     'ai.giskard.web.dto.RunAdhocTestRequest' : 'RunAdhocTestRequest',
     'ai.giskard.web.dto.TestSuiteCreateDTO' : 'TestSuiteCreateDTO',
     'ai.giskard.web.dto.TestTemplatesResponse' : 'TestTemplatesResponse',
@@ -124,6 +127,7 @@ export * from './ai/giskard/web/dto/password-reset-request';
 export * from './ai/giskard/web/dto/prediction-dto';
 export * from './ai/giskard/web/dto/prediction-input-dto';
 export * from './ai/giskard/web/dto/run-adhoc-test-request';
+export * from './ai/giskard/web/dto/prepare-delete-dto';
 export * from './ai/giskard/web/dto/test-suite-create-dto';
 export * from './ai/giskard/web/dto/test-templates-response';
 export * from './ai/giskard/web/dto/user/admin-user-dto';
