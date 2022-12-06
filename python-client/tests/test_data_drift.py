@@ -30,7 +30,7 @@ def test_drift_data_psi(data, threshold, expected_metric, column_name, request):
     ],
 )
 def test_drift_data_psi_max_categories(
-    data, threshold, expected_metric, column_name, max_categories, request
+        data, threshold, expected_metric, column_name, max_categories, request
 ):
     tests = GiskardTestFunctions()
     data = request.getfixturevalue(data)
@@ -72,7 +72,7 @@ def test_drift_data_chi_square(data, threshold, expected_metric, column_name, re
     ],
 )
 def test_drift_data_chi_square_max_categories(
-    data, threshold, expected_metric, column_name, max_categories, request
+        data, threshold, expected_metric, column_name, max_categories, request
 ):
     tests = GiskardTestFunctions()
     data = request.getfixturevalue(data)
@@ -253,7 +253,7 @@ def test_drift_clf_prob_ks(data, model, threshold, expected_metric, classificati
     ],
 )
 def test_drift_clf_prob_ks_small_dataset(
-    data, model, threshold, expected_metric, classification_label, num_rows, request
+        data, model, threshold, expected_metric, classification_label, num_rows, request
 ):
     tests = GiskardTestFunctions()
     data = request.getfixturevalue(data)
@@ -273,8 +273,9 @@ def test_drift_clf_prob_ks_small_dataset(
     "data,model,threshold,expected_metric,classification_label",
     [("german_credit_data", "german_credit_model", 0.05, 0.29, "Default")],
 )
+@pytest.mark.skip(reason="#585")
 def test_drift_clf_prob_ks_small_unique_dataset(
-    data, model, threshold, expected_metric, classification_label, request
+        data, model, threshold, expected_metric, classification_label, request
 ):
     tests = GiskardTestFunctions()
     data = request.getfixturevalue(data)
@@ -316,7 +317,7 @@ def test_drift_reg_output_earth_movers_distance(data, model, threshold, expected
     ],
 )
 def test_drift_clf_prob_earth_movers_distance(
-    data, model, threshold, expected_metric, classification_label, request
+        data, model, threshold, expected_metric, classification_label, request
 ):
     tests = GiskardTestFunctions()
     data = request.getfixturevalue(data)
