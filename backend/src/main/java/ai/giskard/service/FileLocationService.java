@@ -51,7 +51,7 @@ public class FileLocationService {
         return modelsDirectory(projectKey).resolve(Paths.get("inspections", inspectionId.toString()));
     }
 
-    private Path resolvedProjectHome(String projectKey) {
+    public Path resolvedProjectHome(String projectKey) {
         return giskardHome().resolve(projectHome(projectKey));
     }
 
