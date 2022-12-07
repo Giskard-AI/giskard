@@ -18,12 +18,12 @@
             <p class="caption secondary--text text--lighten-2 my-1">
               Classification Label
             </p>
-            <v-select
+            <v-autocomplete
                 dense
                 solo
                 v-model="selectedLabel"
                 :items="classificationLabels"
-            ></v-select>
+            ></v-autocomplete>
           </v-col>
           <v-col cols="2" class="d-flex align-center">
             <v-btn
