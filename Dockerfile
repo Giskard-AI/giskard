@@ -119,7 +119,6 @@ RUN mkdir -p giskard/ml_worker/generated && \
 # >>> FINAL CONFIGURATION
 
 FROM python-base as production
-
 ENV SPRING_PROFILES_ACTIVE=prod
 
 
@@ -154,8 +153,27 @@ RUN rm /etc/nginx/sites-enabled/default
 ENV GSK_HOST=0.0.0.0
 ENV PYTHONPATH=$PYSETUP_PATH
 
+RUN mkdir /home/giskard \
+	  /var/lib/postgresql/data \
+	  /giskard-home && \
+    touch /supervisord.log
 
-VOLUME /root/giskard-home
+RUN useradd -u 1000 postgres; exit 0
+RUN usermod -u 1000 postgres
+
+RUN chown -R 1000:1000 /supervisord.log && \
+    chown -R 1000:1000 /giskard && \
+    chown -R 1000:1000 /opt/pysetup/ && \
+    chown -R 1000:1000 /home/giskard && \
+    chown -R 1000:1000 /var/run/postgresql && \
+    chown -R 1000:1000 /var/log/nginx && \
+    chown -R 1000:1000 /var/lib/nginx && \
+    chown -R 1000:1000 /etc/nginx && \
+    chown -R 1000:1000 /giskard-home && \
+    chown -R 1000:1000 /var/lib/postgresql/data && \
+    chown -R 1000:1000 /run && \
+    chown -R 1000:1000 /etc/supervisord.conf && \
+    chown -R 1000:1000 /root
 
 ENTRYPOINT ["supervisord", "-c", "/etc/supervisord.conf"]
 
