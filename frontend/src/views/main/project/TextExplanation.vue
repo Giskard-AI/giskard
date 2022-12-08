@@ -76,9 +76,9 @@ const errorMsg = ref<string>("");
 const result = ref<{ [key: string]: string }>({});
 const submitted = ref<boolean>(false);
 
-watch(() => props.classificationResult, (old, newVal) => {
-  if (newVal && props.classificationLabels.includes(newVal)) {
-    selectedLabel.value = newVal;
+watch(() => props.classificationResult, (value, oldValue) => {
+  if (value && props.classificationLabels.includes(value)) {
+    selectedLabel.value = value;
   } else {
     selectedLabel.value = props.classificationLabels[0];
   }
