@@ -9,6 +9,8 @@ import ai.giskard.repository.ml.DatasetRepository;
 import ai.giskard.repository.ml.ModelRepository;
 import ai.giskard.security.PermissionEvaluator;
 import ai.giskard.service.ModelService;
+import ai.giskard.service.ProjectFileDeletionService;
+import ai.giskard.service.UsageService;
 import ai.giskard.web.dto.*;
 import ai.giskard.web.dto.mapper.GiskardMapper;
 import ai.giskard.web.dto.ml.ModelDTO;
@@ -35,9 +37,11 @@ public class ModelController {
     private final ModelRepository modelRepository;
     private final DatasetRepository datasetRepository;
     private final ProjectRepository projectRepository;
+    private final UsageService usageService;
     private final GiskardMapper giskardMapper;
     private final PermissionEvaluator permissionEvaluator;
     private final ModelService modelService;
+    private final ProjectFileDeletionService deletionService;
 
 
     /**
@@ -90,7 +94,7 @@ public class ModelController {
 
     @DeleteMapping("models/{modelId}")
     public MessageDTO deleteModel(@PathVariable @NotNull Long modelId) {
-        modelService.deleteModel(modelId);
+        deletionService.deleteModel(modelId);
         return new MessageDTO("Model {} has been deleted", modelId);
     }
 
@@ -110,4 +114,8 @@ public class ModelController {
         return new PredictionDTO(result.getPrediction(0), allPredictions);
     }
 
+    @GetMapping("models/prepare-delete/{modelId}")
+    public PrepareDeleteDTO prepareModelDelete(@PathVariable @NotNull Long modelId) {
+        return usageService.prepareDeleteModel(modelId);
+    }
 }
