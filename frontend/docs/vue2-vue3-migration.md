@@ -78,7 +78,7 @@ class X { // ignore this class, it's just to it renders nicely
 
 Vue 3
 ```ts
-watch(() => myData, (oldValue, newValue) => {
+watch(() => myData, (value, oldValue) => {
   loading.value = false;
 })
 ```
