@@ -66,7 +66,7 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  inputData: () => {}
+  inputData: () => ({})
 });
 
 const loading = ref<boolean>(false);
@@ -76,7 +76,7 @@ const errorMsg = ref<string>("");
 const result = ref<{ [key: string]: string }>({});
 const submitted = ref<boolean>(false);
 
-watch(() => props.classificationResult, (value, oldValue) => {
+watch(() => props.classificationResult, (value) => {
   if (value && props.classificationLabels.includes(value)) {
     selectedLabel.value = value;
   } else {
