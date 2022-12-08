@@ -126,3 +126,23 @@ const myRef = ref<MyType | null>(null);
 The [documentation](https://vuejs.org/guide/typescript/composition-api.html#typing-template-refs) notes:
 > Note that for strict type safety, it is necessary to use optional chaining or type guards when accessing el.value. This is because the initial ref value is null until the component is mounted, and it can also be set to null if the referenced element is unmounted by v-if.
 
+### Migrating store, router
+
+Vue 2
+```ts
+// In vue 2 you would use the store or router using
+this.$store/*.commit ... */;
+this.$route/*.query ...*/;
+```
+
+Vue 3
+```ts
+// However in Vue 3, `this` is not available so we declare references at the top of the file.
+import store from "@/store"; // this unlocks using the store later in the file
+import {useRoute, useRouter} from "vue-router/composables";
+
+const route = useRoute();
+const router = useRouter();
+
+// route.query... 
+```
