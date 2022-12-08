@@ -92,90 +92,96 @@
   </div>
 </template>
 
-<script lang="ts">
-import {Component, Vue, Watch} from 'vue-property-decorator';
-import {ValidationObserver} from 'vee-validate'
-import {readAllProjects, readHasAdminAccess, readUserProfile} from '@/store/main/getters';
-import {Role} from '@/enums';
-import {dispatchCreateProject, dispatchGetProjects} from '@/store/main/actions';
-import {ProjectPostDTO} from '@/generated-sources';
+<script setup lang="ts">
+import {computed, onMounted, ref, watch} from "vue";
+import {ValidationObserver} from "vee-validate";
+import {dispatchCreateProject, dispatchGetProjects} from "@/store/main/actions";
+import {readAllProjects, readHasAdminAccess, readUserProfile} from "@/store/main/getters";
+import {Role} from "@/enums";
+import {ProjectPostDTO} from "@/generated-sources";
+import {toSlug} from "@/utils";
+import store from "@/store";
+import {useRoute, useRouter} from "vue-router/composables";
 import moment from "moment";
-import {toSlug} from '@/utils';
 
-@Component
-export default class ProjectsHome extends Vue {
+const route = useRoute();
+const router = useRouter();
 
-  private openCreateDialog = false; // toggle for edit or create dialog
-  private newProjectName = "";
-  private newProjectKey = "";
-  private newProjectDesc = "";
-  private creatorFilter = 0;
-  private projectCreateError = "";
+const openCreateDialog = ref<boolean>(false); // toggle for edit or create dialog
+const newProjectName = ref<string>("");
+const newProjectKey = ref<string>("");
+const newProjectDesc = ref<string>("");
+const creatorFilter = ref<number>(0);
+const projectCreateError = ref<string>("");
 
-  $refs!: {
-    dialogForm: InstanceType<typeof ValidationObserver>;
+
+// template ref
+const dialogForm = ref<ValidationObserver | null>(null);
+
+onMounted(async () => {
+  const f = route.query.f ? route.query.f[0] || '' : '';
+  creatorFilter.value = parseInt(f) || 0;
+  await loadProjects();
+})
+
+// computed
+const userProfile = computed(() => {
+  return readUserProfile(store);
+});
+
+const isAdmin = computed(() => {
+  return readHasAdminAccess(store);
+});
+
+const isCreator = computed(() => {
+  return this.userProfile?.roles?.includes(Role.AICREATOR);
+});
+
+const projects = computed(() => {
+  return readAllProjects(store)
+      .sort((a, b) => moment(b.createdDate).diff(moment(a.createdDate)));
+})
+
+// functions
+async function loadProjects() {
+  await dispatchGetProjects(store);
+}
+
+function clearAndCloseDialog() {
+  dialogForm.value?.reset();
+  openCreateDialog.value = false;
+  newProjectName.value = '';
+  newProjectKey.value = '';
+  newProjectDesc.value = '';
+  projectCreateError.value = '';
+}
+
+async function submitNewProject() {
+  if (!newProjectName.value) {
+    return;
+  }
+
+  const proj: ProjectPostDTO = {
+    name: newProjectName.value.trim(),
+    key: newProjectKey.value.trim(),
+    description: newProjectDesc.value.trim(),
+    inspectionSettings: {
+      limeNumberSamples: 500
+    }
   };
 
-  public async mounted() {
-    const f = this.$route.query.f ? this.$route.query.f[0] || "" : ""
-    this.creatorFilter = parseInt(f) || 0;
-    await this.loadProjects();
+  try {
+    await dispatchCreateProject(store, proj);
+    clearAndCloseDialog();
+  } catch (e) {
+    console.error(e.message);
+    projectCreateError.value = e.message;
   }
-
-  private async loadProjects() {
-    await dispatchGetProjects(this.$store);
-  }
-
-  get userProfile() {
-    return readUserProfile(this.$store);
-  }
-
-  public get isAdmin() {
-    return readHasAdminAccess(this.$store);
-  }
-
-  public get isCreator() {
-    return this.userProfile?.roles?.includes(Role.AICREATOR);
-  }
-
-  get projects() {
-    return readAllProjects(this.$store)
-        .sort((a, b) => moment(b.createdDate).diff(moment(a.createdDate)));
-  }
-
-  public clearAndCloseDialog() {
-    this.$refs.dialogForm.reset();
-    this.openCreateDialog = false;
-    this.newProjectName = "";
-    this.newProjectKey = "";
-    this.newProjectDesc = "";
-    this.projectCreateError = "";
-  }
-
-  public async submitNewProject() {
-    if (this.newProjectName) {
-      const proj: ProjectPostDTO = {
-        name: this.newProjectName.trim(),
-        key: this.newProjectKey.trim(),
-        description: this.newProjectDesc.trim(),
-        inspectionSettings: {
-          limeNumberSamples: 500
-        }
-      }
-      try {
-        await dispatchCreateProject(this.$store, proj)
-        this.clearAndCloseDialog();
-      } catch (e) {
-        console.error(e.message);
-        this.projectCreateError = e.message;
-      }
-    }
-  }
-
-  @Watch("newProjectName")
-  public syncProjectKeyWithName() {
-    this.newProjectKey = toSlug(this.newProjectName);
-  }
-
 }
+
+// watchers
+watch(() => newProjectName.value, (value, oldValue, onCleanup) => {
+  newProjectKey.value = toSlug(value);
+})
+
 </script>
