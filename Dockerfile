@@ -140,41 +140,37 @@ ENV PYSETUP_PATH="/opt/pysetup" \
 
 ENV PATH="$VENV_PATH/bin:$POETRY_HOME/bin:$PATH"
 
-COPY --from=build /app/backend/build/libs/backend*.jar /giskard/lib/giskard.jar
+WORKDIR /app
 
-COPY --from=proto-builder $PYSETUP_PATH/giskard $PYSETUP_PATH/giskard
 COPY --from=builder-base $VENV_PATH $VENV_PATH
-COPY --from=build /etc/supervisord.conf /etc/
-
+COPY --from=proto-builder $PYSETUP_PATH/giskard $PYSETUP_PATH/giskard
+COPY --from=build /app/backend/build/libs/backend*.jar /app/backend/lib/giskard.jar
+COPY --from=build /etc/supervisord.conf /app/
 COPY --from=build /app/frontend/dist /usr/share/nginx/html
+COPY supervisord.conf /app/supervisord.conf
+
 COPY frontend/packaging/nginx_single_dockerfile.conf /etc/nginx/sites-enabled/default.conf
+
 RUN rm /etc/nginx/sites-enabled/default
 
 ENV GSK_HOST=0.0.0.0
 ENV PYTHONPATH=$PYSETUP_PATH
 
-RUN mkdir /home/giskard \
-	  /var/lib/postgresql/data \
-	  /giskard-home && \
-    touch /supervisord.log
+RUN mkdir /var/lib/postgresql/data /root/giskard-home
 
 RUN useradd -u 1000 postgres; exit 0
-RUN usermod -u 1000 postgres
+RUN usermod -u 1000 postgres; exit 0
 
-RUN chown -R 1000:1000 /supervisord.log && \
-    chown -R 1000:1000 /giskard && \
-    chown -R 1000:1000 /opt/pysetup/ && \
-    chown -R 1000:1000 /home/giskard && \
-    chown -R 1000:1000 /var/run/postgresql && \
+RUN chown -R 1000:1000 /var/run/postgresql && \
     chown -R 1000:1000 /var/log/nginx && \
     chown -R 1000:1000 /var/lib/nginx && \
     chown -R 1000:1000 /etc/nginx && \
-    chown -R 1000:1000 /giskard-home && \
+    chown -R 1000:1000 /root/giskard-home && \
     chown -R 1000:1000 /var/lib/postgresql/data && \
     chown -R 1000:1000 /run && \
-    chown -R 1000:1000 /etc/supervisord.conf && \
-    chown -R 1000:1000 /root
+    chown -R 1000:1000 $PYSETUP_PATH && \
+    chown -R 1000:1000 /app
 
-ENTRYPOINT ["supervisord", "-c", "/etc/supervisord.conf"]
+ENTRYPOINT ["supervisord", "-c", "/app/supervisord.conf"]
 
 # <<< FINAL CONFIGURATION
