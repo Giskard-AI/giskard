@@ -65,10 +65,37 @@ def explain_text(model: GiskardModel, input_df: pd.DataFrame,
     try:
         text_explainer.fit(text_document, prediction_function)
         exp = text_explainer.explain_prediction(target_names=model.classification_labels)
-        return eli5.formatters.html.render_targets_weighted_spans(exp.targets, False)
+        exp = eli5.formatters.html.prepare_weighted_spans(exp.targets)
+        res = prepared_data_to_array(exp)
+        return res
+
     except Exception as e:
         logger.exception(f"Failed to explain text: {text_document}", e)
         raise Exception("Failed to create text explanation") from e
+
+
+def prepared_data_to_array(exp):
+    res = []
+    for target in exp:
+        current_state = []
+        t = target[0]
+        document = t.doc_weighted_spans.document
+        current_word = ''
+        current_weight = 0
+        for i in range(len(document)):
+            if document[i].isalnum():
+                current_word += document[i]
+                current_weight = t.char_weights[i] if current_weight == 0 else current_weight
+            else:
+                if current_word == '':
+                    current_word = document[i]
+                current_state.append({current_word: current_weight})
+                current_word = ''
+                current_weight = 0
+        if current_word != '':
+            current_state.append({current_word: current_weight})
+        res.append(current_state)
+    return res
 
 
 def background_example(df: pd.DataFrame, input_types: Dict[str, str]) -> pd.DataFrame:

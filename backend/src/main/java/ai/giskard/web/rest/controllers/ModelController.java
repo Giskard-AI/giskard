@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 @RequiredArgsConstructor
@@ -74,13 +75,17 @@ public class ModelController {
 
     @PostMapping("models/explain-text/{featureName}")
     @Transactional
-    public Map<String, String> explainText(@RequestParam @NotNull Long modelId, @RequestParam @NotNull Long datasetId, @PathVariable @NotNull String featureName, @RequestBody @NotNull PredictionInputDTO data) throws IOException {
+    public Map<String, List<Map<String, Float>>> explainText(@RequestParam @NotNull Long modelId, @RequestParam @NotNull Long datasetId, @PathVariable @NotNull String featureName, @RequestBody @NotNull PredictionInputDTO data) throws IOException {
         ProjectModel model = modelRepository.getById(modelId);
         Dataset dataset = datasetRepository.getById(datasetId);
         long projectId = model.getProject().getId();
         InspectionSettings inspectionSettings = projectRepository.getById(projectId).getInspectionSettings();
         permissionEvaluator.validateCanReadProject(model.getProject().getId());
-        return modelService.explainText(model, dataset, inspectionSettings, featureName, data.getFeatures()).getExplanationsMap();
+        Map<String, List<Map<String, Float>>> explanationRes = new HashMap<>();
+        modelService.explainText(model, dataset, inspectionSettings, featureName, data.getFeatures()).getExplanationTextMap().forEach((label, perFeatureExplanation) ->
+            explanationRes.put(label, perFeatureExplanation.getExplanationsList().stream().map((x) -> x.getExplanationMap()).collect(Collectors.toList()))
+        );
+        return explanationRes;
     }
 
     @DeleteMapping("models/{modelId}")

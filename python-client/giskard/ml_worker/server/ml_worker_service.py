@@ -178,8 +178,13 @@ class MLWorkerServiceImpl(MLWorkerServicer):
         if model.feature_names:
             input_df = input_df[model.feature_names]
 
-        html_response = explain_text(model, input_df, text_column, text_document, n_samples)
-        return ExplainTextResponse(explanations=dict(zip(model.classification_labels, html_response)))
+        response = dict(zip(model.classification_labels, explain_text(model, input_df, text_column, text_document, n_samples)))
+        return ExplainTextResponse(
+            explanationText={
+                k: ExplainTextResponse.Explanations(explanations=[ExplainTextResponse.Explanation(explanation=x) for x in response[k]])
+                for k in response
+            }
+        )
 
     def runModelForDataFrame(self, request: RunModelForDataFrameRequest, context):
         model = deserialize_model(request.model)

@@ -95,7 +95,13 @@ message ExplainResponse{
 
 
 message ExplainTextResponse{
-    map<string, string> explanations = 1;
+    message Explanation{
+        map<string, float> explanation = 1;
+    }
+    message Explanations{
+        repeated Explanation explanations = 1;
+    }
+    map<string, Explanations> explanationText = 1;
 }
 
 message RunModelForDataFrameResponse{
