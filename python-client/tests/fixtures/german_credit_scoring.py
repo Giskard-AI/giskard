@@ -1,9 +1,11 @@
 import logging
 
+import numpy as np
 import pandas as pd
 import pytest
 from sklearn import model_selection
 from sklearn.compose import ColumnTransformer
+from sklearn.dummy import DummyClassifier
 from sklearn.impute import SimpleImputer
 from sklearn.linear_model import LogisticRegression
 from sklearn.pipeline import Pipeline
@@ -141,4 +143,19 @@ def german_credit_model(german_credit_data) -> GiskardModel:
         feature_names=list(input_types),
         classification_threshold=0.5,
         classification_labels=clf.classes_,
+    )
+
+
+@pytest.fixture()
+def german_credit_always_default_model() -> GiskardModel:
+    X = np.array([0])
+    y = np.array(["Default"])
+
+    dummy = DummyClassifier(strategy="constant", constant=np.array(["Default"]))
+    dummy.fit(X, y)
+
+    return GiskardModel(
+        prediction_function=dummy.predict,
+        model_type='regression',
+        feature_names=list(input_types)
     )

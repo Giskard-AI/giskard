@@ -219,11 +219,10 @@ def test_diff_f1(data, model, threshold, expected_metric, request):
 
 
 @pytest.mark.parametrize(
-    "data,model,threshold,expected_metric,should_pass",
-    [("german_credit_data", "german_credit_model", 0.2, 0.04, True),
-     ("always_wrong_data", "always_wrong_model", 0, 0, False)],
+    "data,model,threshold,expected_metric",
+    [("german_credit_data", "german_credit_model", 0.2, 0.04)],
 )
-def test_diff_accuracy(data, model, threshold, expected_metric, should_pass, request):
+def test_diff_accuracy(data, model, threshold, expected_metric, request):
     tests = GiskardTestFunctions()
     data = request.getfixturevalue(data)
     result = tests.performance.test_diff_accuracy(
@@ -234,7 +233,26 @@ def test_diff_accuracy(data, model, threshold, expected_metric, should_pass, req
     )
     assert round(result.metric, 2) == expected_metric
     assert type(result.output_df) is bytes
-    assert result.passed == should_pass
+    assert result.passed
+
+
+@pytest.mark.parametrize(
+    "data,model,threshold,expected_metric",
+    [("german_credit_data", "german_credit_always_default_model", 0, 0)],
+)
+def test_diff_accuracy_fail(data, model, threshold, expected_metric, request):
+    tests = GiskardTestFunctions()
+    data = request.getfixturevalue(data)
+    result = tests.performance.test_diff_accuracy(
+        actual_slice=data.slice(lambda df: df[df.sex == "male"]),
+        reference_slice=data.slice(lambda df: df[(df.sex == "female") & (df.default == "Not default")]),
+        model=request.getfixturevalue(model),
+        threshold=threshold,
+    )
+    assert round(result.metric, 2) == expected_metric
+    assert type(result.output_df) is bytes
+    assert not result.passed
+    assert result.messages
 
 
 @pytest.mark.parametrize(
