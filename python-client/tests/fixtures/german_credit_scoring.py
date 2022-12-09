@@ -147,15 +147,17 @@ def german_credit_model(german_credit_data) -> GiskardModel:
 
 
 @pytest.fixture()
-def german_credit_always_default_model() -> GiskardModel:
-    X = np.array([0])
-    y = np.array(["Default"])
+def german_credit_always_default_model(german_credit_data) -> GiskardModel:
+    X = german_credit_data.df.drop(columns="default")
+    y = german_credit_data.df["default"]
 
-    dummy = DummyClassifier(strategy="constant", constant=np.array(["Default"]))
+    dummy = DummyClassifier(strategy="constant", constant="Default")
     dummy.fit(X, y)
 
     return GiskardModel(
-        prediction_function=dummy.predict,
-        model_type='regression',
-        feature_names=list(input_types)
+        prediction_function=dummy.predict_proba,
+        model_type='classification',
+        feature_names=list(input_types),
+        classification_threshold=0.5,
+        classification_labels=dummy.classes_
     )
