@@ -219,10 +219,11 @@ def test_diff_f1(data, model, threshold, expected_metric, request):
 
 
 @pytest.mark.parametrize(
-    "data,model,threshold,expected_metric",
-    [("german_credit_data", "german_credit_model", 0.2, 0.04)],
+    "data,model,threshold,expected_metric,should_pass",
+    [("german_credit_data", "german_credit_model", 0.2, 0.04, True),
+     ("always_wrong_data", "always_wrong_model", 0, 0, False)],
 )
-def test_diff_accuracy(data, model, threshold, expected_metric, request):
+def test_diff_accuracy(data, model, threshold, expected_metric, should_pass, request):
     tests = GiskardTestFunctions()
     data = request.getfixturevalue(data)
     result = tests.performance.test_diff_accuracy(
@@ -233,7 +234,7 @@ def test_diff_accuracy(data, model, threshold, expected_metric, request):
     )
     assert round(result.metric, 2) == expected_metric
     assert type(result.output_df) is bytes
-    assert result.passed
+    assert result.passed == should_pass
 
 
 @pytest.mark.parametrize(
