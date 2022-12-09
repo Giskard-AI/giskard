@@ -1,3 +1,5 @@
+import re
+
 import pytest
 
 from giskard.ml_worker.testing.functions import GiskardTestFunctions
@@ -237,22 +239,32 @@ def test_diff_accuracy(data, model, threshold, expected_metric, request):
 
 
 @pytest.mark.parametrize(
-    "data,model,threshold,expected_metric",
-    [("german_credit_data", "german_credit_always_default_model", 0, 0)],
+    "test_fn_name,data,model,threshold,expected_metric",
+    [("test_diff_accuracy", "german_credit_data", "german_credit_always_default_model", 0, 0),
+     ("test_diff_f1", "german_credit_data", "german_credit_always_default_model", 0, 0),
+     ("test_diff_precision", "german_credit_data", "german_credit_always_default_model", 0, 0),
+     ("test_diff_recall", "german_credit_data", "german_credit_always_default_model", 0, 0),
+     ("test_diff_reference_actual_f1", "german_credit_data", "german_credit_always_default_model", 0, 0)],
 )
-def test_diff_accuracy_fail(data, model, threshold, expected_metric, request):
+def test_diff_always_default(test_fn_name, data, model, threshold, expected_metric, request):
     tests = GiskardTestFunctions()
     data = request.getfixturevalue(data)
-    result = tests.performance.test_diff_accuracy(
+
+    test_fn = getattr(tests.performance, test_fn_name)
+
+    result = test_fn(
         actual_slice=data.slice(lambda df: df[df.sex == "male"]),
         reference_slice=data.slice(lambda df: df[(df.sex == "female") & (df.default == "Not default")]),
         model=request.getfixturevalue(model),
         threshold=threshold,
     )
+
     assert round(result.metric, 2) == expected_metric
     assert type(result.output_df) is bytes
     assert not result.passed
-    assert result.messages
+    assert len(result.messages) == 1
+    assert re.match("^Unable to calculate performance difference: the."
+                    "*inside the reference_slice is equal to zero$", result.messages[0].text)
 
 
 @pytest.mark.parametrize(
