@@ -116,7 +116,7 @@ const projectCreateError = ref<string>("");
 
 
 // template ref
-const dialogForm = ref<ValidationObserver | null>(null);
+const dialogForm = ref<InstanceType<typeof ValidationObserver> | null>(null);
 
 onMounted(async () => {
   const f = route.query.f ? route.query.f[0] || '' : '';
@@ -126,7 +126,11 @@ onMounted(async () => {
 
 // computed
 const userProfile = computed(() => {
-  return readUserProfile(store);
+  const userProfile = readUserProfile(store);
+  if (userProfile == null) {
+    throw Error("User is not defined.")
+  }
+  return userProfile;
 });
 
 const isAdmin = computed(() => {
