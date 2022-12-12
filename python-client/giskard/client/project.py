@@ -622,6 +622,10 @@ class GiskardProject:
 
     @staticmethod
     def _validate_column_categorization(df: pd.DataFrame, feature_types, target=None):
+        """
+        Validates if features_types is declared accurately by verifying the number of unique values for each column
+        in feature_types
+        """
         nuniques = df.nunique()
         nuniques_category = 2
         nuniques_numeric = 100
