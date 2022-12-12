@@ -38,9 +38,9 @@
             </v-btn>
           </v-col>
         </v-row>
-        <div v-if="result">
+        <div v-if="result != null">
           <p class="caption text-center">Word contribution (LIME values)</p>
-          <p class="result-paragraph" v-html="result[selectedLabel]"></p>
+          <p class="result-paragraph" v-if="(Object.keys(result.explanations).length !== 0)"> <TextExplanationParagraph :weights="result.explanations[selectedLabel]"></TextExplanationParagraph> </p>
         </div>
       </div>
       <p v-if="errorMsg" class="error--text">
@@ -55,9 +55,11 @@ import {Component, Prop, Vue, Watch} from 'vue-property-decorator';
 import OverlayLoader from '@/components/OverlayLoader.vue';
 import {api} from '@/api';
 import mixpanel from "mixpanel-browser";
+import { ExplainTextResponseDTO } from '@/generated-sources'
+import TextExplanationParagraph from './TextExplanationParagraph.vue';
 
 @Component({
-  components: {OverlayLoader},
+  components: {OverlayLoader, TextExplanationParagraph},
 })
 export default class TextExplanation extends Vue {
   @Prop({required: true}) modelId!: number;
@@ -72,7 +74,7 @@ export default class TextExplanation extends Vue {
   selectedFeature = "";
   selectedLabel = this.classificationResult || this.classificationLabels[0];
   errorMsg: string = "";
-  result: { [key: string]: string } = {};
+  result: ExplainTextResponseDTO | null = null;
   submitted = false;
 
   mounted() {
@@ -103,10 +105,11 @@ export default class TextExplanation extends Vue {
             this.inputData,
             this.selectedFeature
         );
+        console.log(response.explanations)
         this.result = response;
         this.submitted = true;
       } catch (error) {
-        this.result = {};
+        this.result = null;
         this.errorMsg = error.response.data.detail;
       } finally {
         this.loading = false;
@@ -114,7 +117,7 @@ export default class TextExplanation extends Vue {
     } else {
       // reset
       this.errorMsg = "";
-      this.result = {};
+      this.result = null;
     }
   }
 
@@ -122,7 +125,7 @@ export default class TextExplanation extends Vue {
   @Watch("inputData", {deep: true})
   reset() {
     this.submitted = false;
-    this.result = {};
+    this.result = null;
     this.errorMsg = "";
   }
 }

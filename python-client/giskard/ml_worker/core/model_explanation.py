@@ -87,9 +87,8 @@ def prepared_data_to_array(exp):
                 current_word += document[i]
                 current_weight = t.char_weights[i] if current_weight == 0 else current_weight
             else:
-                if current_word == '':
-                    current_word = document[i]
                 current_state.append({current_word: current_weight})
+                current_state.append({document[i]: 0})
                 current_word = ''
                 current_weight = 0
         if current_word != '':

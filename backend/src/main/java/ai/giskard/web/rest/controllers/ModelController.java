@@ -79,15 +79,15 @@ public class ModelController {
 
     @PostMapping("models/explain-text/{featureName}")
     @Transactional
-    public Map<String, List<Map<String, Float>>> explainText(@RequestParam @NotNull Long modelId, @RequestParam @NotNull Long datasetId, @PathVariable @NotNull String featureName, @RequestBody @NotNull PredictionInputDTO data) throws IOException {
+    public ExplainTextResponseDTO explainText(@RequestParam @NotNull Long modelId, @RequestParam @NotNull Long datasetId, @PathVariable @NotNull String featureName, @RequestBody @NotNull PredictionInputDTO data) throws IOException {
         ProjectModel model = modelRepository.getById(modelId);
         Dataset dataset = datasetRepository.getById(datasetId);
         long projectId = model.getProject().getId();
         InspectionSettings inspectionSettings = projectRepository.getById(projectId).getInspectionSettings();
         permissionEvaluator.validateCanReadProject(model.getProject().getId());
-        Map<String, List<Map<String, Float>>> explanationRes = new HashMap<>();
+        ExplainTextResponseDTO explanationRes = new ExplainTextResponseDTO();
         modelService.explainText(model, dataset, inspectionSettings, featureName, data.getFeatures()).getExplanationTextMap().forEach((label, perFeatureExplanation) ->
-            explanationRes.put(label, perFeatureExplanation.getExplanationsList().stream().map((x) -> x.getExplanationMap()).collect(Collectors.toList()))
+            explanationRes.getExplanations().put(label, perFeatureExplanation.getExplanationsList().stream().map((x) -> x.getExplanationMap()).collect(Collectors.toList()))
         );
         return explanationRes;
     }
