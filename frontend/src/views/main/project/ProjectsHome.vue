@@ -138,7 +138,7 @@ const isAdmin = computed(() => {
 });
 
 const isCreator = computed(() => {
-  return this.userProfile?.roles?.includes(Role.AICREATOR);
+  return userProfile.value.roles?.includes(Role.AICREATOR);
 });
 
 const projects = computed(() => {
@@ -184,7 +184,7 @@ async function submitNewProject() {
 }
 
 // watchers
-watch(() => newProjectName.value, (value, oldValue, onCleanup) => {
+watch(() => newProjectName.value, (value) => {
   newProjectKey.value = toSlug(value);
 })
 
