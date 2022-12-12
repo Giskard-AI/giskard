@@ -26,7 +26,7 @@ import java.util.stream.Collectors;
 @UIModel
 public class AdminUserDTO {
     @NoArgsConstructor
-    @AllArgsConstructor
+    @Setter
     @UIModel
     public static class AdminUserDTOWithPassword extends AdminUserDTO {
         @Setter

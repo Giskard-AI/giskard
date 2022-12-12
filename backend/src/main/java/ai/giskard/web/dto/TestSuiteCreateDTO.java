@@ -2,12 +2,12 @@ package ai.giskard.web.dto;
 
 import com.dataiku.j2ts.annotations.UIModel;
 import com.dataiku.j2ts.annotations.UINullable;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Getter
-@AllArgsConstructor
+@Setter
 @NoArgsConstructor
 @UIModel
 public class TestSuiteCreateDTO {
