@@ -87,7 +87,7 @@ public class ModelController {
         permissionEvaluator.validateCanReadProject(model.getProject().getId());
         ExplainTextResponseDTO explanationRes = new ExplainTextResponseDTO();
         modelService.explainText(model, dataset, inspectionSettings, featureName, data.getFeatures()).getExplanationTextMap().forEach((label, perFeatureExplanation) ->
-            explanationRes.getExplanations().put(label, perFeatureExplanation.getExplanationsList().stream().map((x) -> x.getExplanationMap()).collect(Collectors.toList()))
+            explanationRes.getExplanations().put(label, perFeatureExplanation.getExplanationsList().stream().map(x -> x.getExplanationMap()).collect(Collectors.toList()))
         );
         return explanationRes;
     }

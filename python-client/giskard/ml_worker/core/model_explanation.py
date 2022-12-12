@@ -85,7 +85,7 @@ def prepared_data_to_array(exp):
         for i in range(len(document)):
             if document[i].isalnum():
                 current_word += document[i]
-                current_weight = t.char_weights[i] if current_weight == 0 else current_weight
+                current_weight = max(abs(t.char_weights[i]), abs(current_weight))
             else:
                 current_state.append({current_word: current_weight})
                 current_state.append({document[i]: 0})
