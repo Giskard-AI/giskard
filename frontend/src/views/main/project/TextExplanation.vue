@@ -40,7 +40,7 @@
         </v-row>
         <div v-if="result != null">
           <p class="caption text-center">Word contribution (LIME values)</p>
-          <p class="result-paragraph" v-if="(Object.keys(result.explanations).length !== 0)"> <TextExplanationParagraph :weights="result.explanations[selectedLabel]"></TextExplanationParagraph> </p>
+          <p class="result-paragraph" v-if="(Object.keys(result.explanations).length !== 0)"> <TextExplanationParagraph :weights="result.explanations[selectedLabel]" :max_weight="max_weight"></TextExplanationParagraph> </p>
         </div>
       </div>
       <p v-if="errorMsg" class="error--text">
@@ -57,6 +57,7 @@ import { ExplainTextResponseDTO } from '@/generated-sources'
 import TextExplanationParagraph from './TextExplanationParagraph.vue';
 import {api} from "@/api";
 import OverlayLoader from "@/components/OverlayLoader.vue";
+import { max_value } from "vee-validate/dist/rules";
 
 interface Props {
   modelId: number,
@@ -75,9 +76,9 @@ const loading = ref<boolean>(false);
 const selectedFeature = ref<string>(props.textFeatureNames[0]);
 const selectedLabel = ref<string>(props.classificationResult || props.classificationLabels[0]);
 const errorMsg = ref<string>("");
-const result: ref<ExplainTextResponseDTO | null>(null);
-const result = ref<{ [key: string]: string }>({});
+const result = ref<ExplainTextResponseDTO | null>(null);
 const submitted = ref<boolean>(false);
+const max_weight = ref<number>(0);
 
 watch(() => props.classificationResult, (value) => {
   if (value && props.classificationLabels.includes(value)) {
@@ -109,6 +110,7 @@ async function getExplanation() {
           selectedFeature.value
       );
       submitted.value = true;
+      max_weight.value = Math.max(...Object.values(result.value.explanations).map(elt => Math.max(...elt.map(elt => Math.abs(Object.values(elt)[0])))))
     } catch (error) {
       result.value = null;
       errorMsg.value = error.response.data.detail;

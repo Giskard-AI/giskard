@@ -64,6 +64,7 @@ def explain_text(model: GiskardModel, input_df: pd.DataFrame,
     )
     try:
         text_explainer.fit(text_document, prediction_function)
+        text_explainer.show_prediction(target_names=model.classification_labels)
         exp = text_explainer.explain_prediction(target_names=model.classification_labels)
         exp = eli5.formatters.html.prepare_weighted_spans(exp.targets)
         res = prepared_data_to_array(exp)
@@ -85,7 +86,7 @@ def prepared_data_to_array(exp):
         for i in range(len(document)):
             if document[i].isalnum():
                 current_word += document[i]
-                current_weight = max(abs(t.char_weights[i]), abs(current_weight))
+                current_weight = t.char_weights[i] if current_weight == 0 else current_weight
             else:
                 current_state.append({current_word: current_weight})
                 current_state.append({document[i]: 0})

@@ -177,7 +177,6 @@ class MLWorkerServiceImpl(MLWorkerServicer):
         input_df = pd.DataFrame({k: [v] for k, v in request.columns.items()})
         if model.feature_names:
             input_df = input_df[model.feature_names]
-
         response = dict(zip(model.classification_labels, explain_text(model, input_df, text_column, text_document, n_samples)))
         return ExplainTextResponse(
             explanationText={
