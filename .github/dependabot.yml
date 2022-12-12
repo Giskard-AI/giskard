@@ -8,14 +8,19 @@ updates:
   - package-ecosystem: "gradle"
     directory: "/backend"
     schedule:
-      interval: "weekly"
+      interval: "monthly"
 
   - package-ecosystem: "npm"
     directory: "/frontend"
     schedule:
-      interval: "weekly"
+      interval: "monthly"
+
+  - package-ecosystem: "pip"
+    directory: "/python-client"
+    schedule:
+      interval: "monthly"
 
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
-      interval: "weekly"
+      interval: "monthly"

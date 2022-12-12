@@ -1,5 +1,6 @@
 package ai.giskard.web.dto.mapper;
 
+import ai.giskard.domain.Feedback;
 import ai.giskard.domain.Project;
 import ai.giskard.domain.Role;
 import ai.giskard.domain.User;
@@ -12,6 +13,7 @@ import ai.giskard.repository.ml.DatasetRepository;
 import ai.giskard.repository.ml.ModelRepository;
 import ai.giskard.utils.JSON;
 import ai.giskard.web.dto.ModelMetadataDTO;
+import ai.giskard.web.dto.PrepareDeleteDTO;
 import ai.giskard.web.dto.TestSuiteCreateDTO;
 import ai.giskard.web.dto.ml.*;
 import ai.giskard.web.dto.user.AdminUserDTO;
@@ -145,4 +147,16 @@ public interface GiskardMapper {
     @Mapping(target = "lastModifiedBy", ignore = true)
     @Mapping(target = "lastModifiedDate", ignore = true)
     TestSuite fromDTO(TestSuiteCreateDTO dto);
+
+
+    @Mapping(target = "message", source = "feedbackMessage")
+    @Mapping(target = "projectId", source = "project.id")
+    PrepareDeleteDTO.LightFeedback toDTO(Feedback obj);
+
+    @Mapping(target = "projectId", source = "project.id")
+    PrepareDeleteDTO.LightTestSuite toDTO(TestSuite obj);
+
+    List<PrepareDeleteDTO.LightFeedback> toLightFeedbacks(List<Feedback> obj);
+
+    List<PrepareDeleteDTO.LightTestSuite> toLightTestSuites(List<TestSuite> obj);
 }

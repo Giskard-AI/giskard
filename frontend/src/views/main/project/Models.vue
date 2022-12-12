@@ -2,11 +2,13 @@
   <div>
     <v-container class="mt-2 mb-0" v-if="isProjectOwnerOrAdmin">
       <div class="d-flex justify-end align-center">
-        <v-btn tile small class="mx-2" href="https://docs.giskard.ai/start/guides/upload-your-model" target="_blank">Upload with API</v-btn>
+        <v-btn tile small class="mx-2" href="https://docs.giskard.ai/start/guides/upload-your-model" target="_blank">
+          Upload with API
+        </v-btn>
         <v-btn text @click="loadModelPickles()" color="secondary">Reload
           <v-icon right>refresh</v-icon>
         </v-btn>
-    </div>
+      </div>
     </v-container>
     <v-container v-if="models.length > 0">
       <v-card flat>
@@ -84,10 +86,11 @@
 <script lang="ts">
 import {Component, Prop, Vue} from 'vue-property-decorator';
 import {api} from '@/api';
-import {performApiActionWithNotif} from '@/api-commons';
 import InspectorLauncher from './InspectorLauncher.vue';
 import {ModelDTO} from '@/generated-sources';
 import mixpanel from "mixpanel-browser";
+import DeleteModal from "@/views/main/project/modals/DeleteModal.vue";
+import {commitAddNotification} from "@/store/main/mutations";
 
 @Component({
   components: {InspectorLauncher}
@@ -111,13 +114,17 @@ export default class Models extends Vue {
 
   public async deleteModelPickle(id: number, fileName: string) {
     mixpanel.track('Delete model', {id});
-    if (await this.$dialog.confirm({
-      text: `Are you sure you want to delete model <strong>${fileName}</strong>?`,
-      title: 'Delete model'
+
+    if (await this.$dialog.showAndWait(DeleteModal, {
+      width: 600,
+      id: id,
+      fileName: fileName,
+      type: "model",
+      scrollable: true
     })) {
-      await performApiActionWithNotif(this.$store,
-          () => api.deleteModelFiles(id),
-          this.loadModelPickles)
+      let messageDTO = await api.deleteModelFiles(id);
+      commitAddNotification(this.$store, {content: messageDTO.message});
+      await this.loadModelPickles();
     }
   }
 
