@@ -50,6 +50,14 @@
                   </template>
                 <span>Delete</span>
               </v-tooltip>
+              <v-tooltip bottom dense>
+                <template v-slot:activator="{ on, attrs}">
+                  <v-btn icon color="info" v-if="isProjectOwnerOrAdmin" @click.stop="openSliceDialog(f.id, f.name)" v-bind="attrs" v-on="on">
+                    <v-icon>mdi-filter</v-icon>
+                  </v-btn>
+                </template>
+                <span>Slice</span>
+              </v-tooltip>
             </span>
               </v-col>
             </v-row>
@@ -68,10 +76,47 @@
     <v-container v-else class="font-weight-light font-italic secondary--text">
       No files uploaded yet.
     </v-container>
+
+    <v-dialog v-model="sliceDialog" width="800" persistent>
+      <v-card>
+        <ValidationObserver ref="dialogForm">
+          <v-form @submit.prevent="sliceDataset()">
+            <v-card-title>Slicing: {{sliceDatasetName}}</v-card-title>
+            <v-card-text>
+              <ValidationProvider name="Name" mode="eager" rules="required" v-slot="{errors}">
+                <v-text-field label="Slice Name*" type="text" v-model="sliceDatasetName"
+                              :error-messages="errors"></v-text-field>
+              </ValidationProvider>
+              <span>Python function</span>
+              <MonacoEditor
+                  ref="editor"
+                  v-model='sliceCode'
+                  class='editor'
+                  language='python'
+                  style="height: 300px"
+                  :options="$root.monacoOptions"
+              />
+              <div v-if="projectCreateError" class="caption error--text">{{ projectCreateError }}</div>
+            </v-card-text>
+            <v-card-actions>
+              <v-spacer></v-spacer>
+              <v-btn color="secondary" text @click="closeSliceDialog()">Cancel</v-btn>
+              <v-btn color="primary" text type="submit">Slice</v-btn>
+            </v-card-actions>
+          </v-form>
+        </ValidationObserver>
+      </v-card>
+    </v-dialog>
   </div>
 </template>
 
 <script lang="ts">
+
+// @ts-ignore
+import MonacoEditor from 'vue-monaco';
+import * as monaco from 'monaco-editor';
+import {editor} from 'monaco-editor';
+
 import {Component, Prop, Vue} from "vue-property-decorator";
 import {api} from '@/api';
 import {performApiActionWithNotif} from '@/api-commons';
@@ -83,7 +128,11 @@ import DeleteModal from "@/views/main/project/modals/DeleteModal.vue";
 const GISKARD_INDEX_COLUMN_NAME = '_GISKARD_INDEX_';
 
 
-@Component
+@Component({
+  components: {
+    MonacoEditor
+  }
+})
 export default class Datasets extends Vue {
   @Prop({type: Number, required: true}) projectId!: number;
   @Prop({type: Boolean, default: false}) isProjectOwnerOrAdmin!: boolean;
@@ -93,6 +142,12 @@ export default class Datasets extends Vue {
   public lastVisitedFileId;
   public filePreviewHeader: { text: string, value: string, sortable: boolean }[] = [];
   public filePreviewData: any[] = [];
+
+  // Slice dialog data
+  sliceDialog = false;
+  sliceDatasetId: number = 0;
+  sliceDatasetName: string = "";
+  sliceCode: string = "def filter_row(row):\n    return True;";
 
   activated() {
     this.loadDatasets()
@@ -158,6 +213,27 @@ export default class Datasets extends Vue {
       }
     }
   }
+
+  openSliceDialog(datasetId, datasetName) {
+    this.sliceDatasetId = datasetId;
+    this.sliceDatasetName = datasetName;
+    this.sliceDialog = true;
+  }
+
+  closeSliceDialog() {
+    this.sliceDatasetId = 0;
+    this.sliceDatasetName = "";
+    this.sliceCode = "def filter_row(row):\n    return True;";
+    this.sliceDialog = false;
+  }
+
+  async sliceDataset() {
+    // Call backend
+    let res = await api.filterDataset(this.sliceDatasetId, this.sliceDatasetName, this.sliceCode);
+    console.log(res);
+  }
+
+  // sliceDataFile(f.id, f.name)
 }
 </script>
 
@@ -176,5 +252,15 @@ export default class Datasets extends Vue {
 
 div.v-input {
   width: 400px;
+}
+
+.editor {
+  height: 100%;
+  border: 1px solid grey;
+
+  ::v-deep .suggest-widget {
+    display: none;
+  }
+
 }
 </style>

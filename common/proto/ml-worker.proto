@@ -21,6 +21,7 @@ service MLWorker {
     rpc echo(EchoMsg) returns (EchoMsg){}
     rpc upload(stream FileUploadRequest) returns (stream UploadStatus) {}
     rpc getTestRegistry(google.protobuf.Empty) returns (TestRegistryResponse) {}
+    rpc filterDataset(stream FilterDatasetRequest) returns (stream FilterDatasetResponse) {}
 }
 
 message MLWorkerInfoRequest{
@@ -225,14 +226,18 @@ message SerializedGiskardModel{
 message Chunk {
     bytes content = 1;
 }
-enum UploadStatusCode {
+
+enum StatusCode {
     Unknown = 0;
     Ok = 1;
     Failed = 2;
     CacheMiss = 3;
+    Ready = 4;
+    Next = 5;
 }
+
 message UploadStatus {
-    UploadStatusCode code = 1;
+    StatusCode code = 1;
 }
 
 
@@ -261,4 +266,19 @@ message TestRegistryResponse{
 message MLWorkerErrorInfo{
     string error = 1;
     string stack = 2;
+}
+
+message FilterDatasetRequest {
+    FilterDatasetMetadata meta = 1;
+    Chunk data = 2;
+}
+
+message FilterDatasetMetadata {
+    string function = 1;
+    string headers = 2; // Since we are going to stream the CSV rows, we store the headers first
+}
+
+message FilterDatasetResponse {
+    StatusCode code = 1;
+    Chunk filteredData = 2;
 }

@@ -4,10 +4,7 @@ import ai.giskard.repository.ml.DatasetRepository;
 import ai.giskard.service.DatasetService;
 import ai.giskard.service.ProjectFileDeletionService;
 import ai.giskard.service.UsageService;
-import ai.giskard.web.dto.DatasetMetadataDTO;
-import ai.giskard.web.dto.FeatureMetadataDTO;
-import ai.giskard.web.dto.MessageDTO;
-import ai.giskard.web.dto.PrepareDeleteDTO;
+import ai.giskard.web.dto.*;
 import ai.giskard.web.dto.mapper.GiskardMapper;
 import ai.giskard.web.dto.ml.DatasetDTO;
 import ai.giskard.web.dto.ml.DatasetDetailsDTO;
@@ -89,5 +86,10 @@ public class DatasetsController {
     @GetMapping("/dataset/{datasetId}/features")
     public List<FeatureMetadataDTO> datasetFeaturesMetadata(@PathVariable @NotNull Long datasetId) {
         return datasetService.getFeaturesWithDistinctValues(datasetId);
+    }
+
+    @PostMapping("/dataset/{datasetId}/filter")
+    public String filterDataset(@PathVariable @NotNull Long datasetId, @RequestBody FilterDatasetDTO filter) throws IOException {
+        return datasetService.filterOn(datasetId, filter.getSliceName(), filter.getCode()).toString();
     }
 }
