@@ -65,3 +65,5 @@ it will use the default `pip` available in the environment. To install `giskard`
 ```shell
 sh -c "$(curl -fsSL https://raw.githubusercontent.com/Giskard-AI/giskard-client/main/scripts/install-giskard-client-dev.sh)" - /path/to/pip
 ```
+
+test2
