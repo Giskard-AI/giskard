@@ -113,6 +113,5 @@ def test_validate_columns_columntypes(german_credit_data, german_credit_test_dat
                       match=r"Feature 'sex' is declared as 'numeric' but has 2 .* Are you sure it is not a 'category' feature?") as w:
         GiskardProject._validate_column_categorization(
             german_credit_test_data.df,
-            broken_types,
-            german_credit_test_data.target
+            broken_types
         )
