@@ -289,6 +289,9 @@ export const api = {
     async getFeaturesMetadata(datasetId: number) {
         return apiV2.get<unknown, FeatureMetadataDTO[]>(`/dataset/${datasetId}/features`);
     },
+    async filterDataset(datasetId: number, sliceName: string, code: string) {
+        return apiV2.post<unknown, unknown>(`/dataset/${datasetId}/filter`, { sliceName: sliceName, code: code});
+    },
     async getDataFilteredByRange(inspectionId, props, filter) {
         return apiV2.post<unknown, any>(`/inspection/${inspectionId}/rowsFiltered`, filter, {params: props});
     },
