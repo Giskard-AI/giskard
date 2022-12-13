@@ -87,6 +87,12 @@ def test_validate_columns_columntypes(german_credit_data, german_credit_test_dat
         german_credit_data.feature_types,
         german_credit_data.target
     )
+    # To test validation of dataframe with target, but target is not declared in feature_types
+    GiskardProject._validate_column_categorization(
+        german_credit_data.df,
+        german_credit_test_data.feature_types,
+        german_credit_data.target
+    )
     with pytest.raises(ValueError) as e:
         GiskardProject.validate_columns_columntypes(
             german_credit_data.df,
