@@ -13,7 +13,7 @@ from sklearn.metrics import (
 
 from giskard.ml_worker.core.giskard_dataset import GiskardDataset
 from giskard.ml_worker.core.model import GiskardModel
-from giskard.ml_worker.generated.ml_worker_pb2 import SingleTestResult
+from giskard.ml_worker.generated.ml_worker_pb2 import SingleTestResult, TestMessage, TestMessageType
 from giskard.ml_worker.testing.abstract_test_collection import AbstractTestCollection
 
 
@@ -301,13 +301,21 @@ class PerformanceTests(AbstractTestCollection):
         metric_1 = test_fn(reference_slice, model).metric
         metric_2 = test_fn(actual_slice, model).metric
         self.do_save_results = True
-        try:
-            change_pct = abs(metric_1 - metric_2) / metric_1
-        except ZeroDivisionError:
-            raise ZeroDivisionError(
-                f"Unable to calculate performance difference: the {test_name} inside the"
-                f" reference_slice is equal to zero"
-            )
+
+        if metric_1 == 0:
+            return self.save_results(SingleTestResult(
+                actual_slices_size=[len(actual_slice)],
+                reference_slices_size=[len(reference_slice)],
+                metric=0,
+                passed=False,
+                messages=[TestMessage(
+                    type=TestMessageType.ERROR,
+                    text=f"Unable to calculate performance difference: the {test_name} inside the"
+                         " reference_slice is equal to zero"
+                )]
+            ))
+
+        change_pct = abs(metric_1 - metric_2) / metric_1
 
         return self.save_results(
             SingleTestResult(
