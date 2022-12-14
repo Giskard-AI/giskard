@@ -248,6 +248,7 @@ message TestFunction{
     string module_doc = 5;
     map<string, TestFunctionArgument> arguments = 6;
     repeated string tags = 7;
+    string code = 8;
 }
 
 message TestRegistryResponse{
