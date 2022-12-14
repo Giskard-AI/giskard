@@ -2,5 +2,6 @@
  * Generated from ai.giskard.web.dto.ExplainTextResponseDTO
  */
 export interface ExplainTextResponseDTO {
-    explanations: {[key: string]: {[key: string]: number}[]};
+    weights: {[key: string]: number[]};
+    words: string[];
 }

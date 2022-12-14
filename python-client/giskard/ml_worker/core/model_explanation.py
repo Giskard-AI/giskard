@@ -5,6 +5,7 @@ import eli5
 import numpy as np
 import pandas as pd
 import shap
+from itertools import groupby
 from eli5.lime import TextExplainer
 
 from giskard.ml_worker.core.giskard_dataset import GiskardDataset
@@ -67,8 +68,7 @@ def explain_text(model: GiskardModel, input_df: pd.DataFrame,
         text_explainer.show_prediction(target_names=model.classification_labels)
         exp = text_explainer.explain_prediction(target_names=model.classification_labels)
         exp = eli5.formatters.html.prepare_weighted_spans(exp.targets)
-        res = prepared_data_to_array(exp)
-        return res
+        return prepared_data_to_array(exp) 
 
     except Exception as e:
         logger.exception(f"Failed to explain text: {text_document}", e)
@@ -76,26 +76,21 @@ def explain_text(model: GiskardModel, input_df: pd.DataFrame,
 
 
 def prepared_data_to_array(exp):
-    res = []
+    list_words = []
+    document = exp[0][0].doc_weighted_spans.document
+    for k, g in groupby(document, str.isalnum):
+        list_words.append(''.join(g))
+    list_weights = []
     for target in exp:
-        current_state = []
+        current_weights = []
         t = target[0]
-        document = t.doc_weighted_spans.document
-        current_word = ''
-        current_weight = 0
-        for i in range(len(document)):
-            if document[i].isalnum():
-                current_word += document[i]
-                current_weight = t.char_weights[i] if current_weight == 0 else current_weight
-            else:
-                current_state.append({current_word: current_weight})
-                current_state.append({document[i]: 0})
-                current_word = ''
-                current_weight = 0
-        if current_word != '':
-            current_state.append({current_word: current_weight})
-        res.append(current_state)
-    return res
+        i = 0
+        for word in list_words:
+            weight = t.char_weights[i]
+            current_weights.append(weight)
+            i += len(word)
+        list_weights.append(current_weights)
+    return (list_words, list_weights)
 
 
 def background_example(df: pd.DataFrame, input_types: Dict[str, str]) -> pd.DataFrame:

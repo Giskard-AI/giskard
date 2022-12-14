@@ -15,7 +15,9 @@ import ai.giskard.web.dto.*;
 import ai.giskard.web.dto.mapper.GiskardMapper;
 import ai.giskard.web.dto.ml.ModelDTO;
 import ai.giskard.worker.ExplainResponse;
+import ai.giskard.worker.ExplainTextResponse;
 import ai.giskard.worker.RunModelForDataFrameResponse;
+import liquibase.pro.packaged.p;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -86,9 +88,11 @@ public class ModelController {
         InspectionSettings inspectionSettings = projectRepository.getById(projectId).getInspectionSettings();
         permissionEvaluator.validateCanReadProject(model.getProject().getId());
         ExplainTextResponseDTO explanationRes = new ExplainTextResponseDTO();
-        modelService.explainText(model, dataset, inspectionSettings, featureName, data.getFeatures()).getExplanationTextMap().forEach((label, perFeatureExplanation) ->
-            explanationRes.getExplanations().put(label, perFeatureExplanation.getExplanationsList().stream().map(x -> x.getExplanationMap()).collect(Collectors.toList()))
+        ExplainTextResponse textResponse = modelService.explainText(model, dataset, inspectionSettings, featureName, data.getFeatures());
+        textResponse.getWeightsMap().forEach((label, weightPerFeature) ->
+            explanationRes.getWeights().put(label, weightPerFeature.getWeightsList())
         );
+        explanationRes.setWords(textResponse.getWordsList());
         return explanationRes;
     }
 

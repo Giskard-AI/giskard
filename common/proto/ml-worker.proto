@@ -95,13 +95,11 @@ message ExplainResponse{
 
 
 message ExplainTextResponse{
-    message Explanation{
-        map<string, float> explanation = 1;
+    message WeightsPerFeature{
+        repeated float weights = 1;
     }
-    message Explanations{
-        repeated Explanation explanations = 1;
-    }
-    map<string, Explanations> explanationText = 1;
+    repeated string words = 1;
+    map<string, WeightsPerFeature> weights = 2;
 }
 
 message RunModelForDataFrameResponse{

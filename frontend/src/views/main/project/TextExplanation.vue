@@ -40,7 +40,7 @@
         </v-row>
         <div v-if="result != null">
           <p class="caption text-center">Word contribution (LIME values)</p>
-          <p class="result-paragraph" v-if="(Object.keys(result.explanations).length !== 0)"> <TextExplanationParagraph :weights="result.explanations[selectedLabel]" :max_weight="max_weight"></TextExplanationParagraph> </p>
+          <p class="result-paragraph">  <TextExplanationParagraph :weights="result.weights[selectedLabel]" :words="result.words" :max_weight="max_weight" :min_weight="min_weight"></TextExplanationParagraph></p>
         </div>
       </div>
       <p v-if="errorMsg" class="error--text">
@@ -57,7 +57,8 @@ import { ExplainTextResponseDTO } from '@/generated-sources'
 import TextExplanationParagraph from './TextExplanationParagraph.vue';
 import {api} from "@/api";
 import OverlayLoader from "@/components/OverlayLoader.vue";
-import { max_value } from "vee-validate/dist/rules";
+
+
 
 interface Props {
   modelId: number,
@@ -79,6 +80,7 @@ const errorMsg = ref<string>("");
 const result = ref<ExplainTextResponseDTO | null>(null);
 const submitted = ref<boolean>(false);
 const max_weight = ref<number>(0);
+const min_weight = ref<number>(0);
 
 watch(() => props.classificationResult, (value) => {
   if (value && props.classificationLabels.includes(value)) {
@@ -110,7 +112,9 @@ async function getExplanation() {
           selectedFeature.value
       );
       submitted.value = true;
-      max_weight.value = Math.max(...Object.values(result.value.explanations).map(elt => Math.max(...elt.map(elt => Math.abs(Object.values(elt)[0])))))
+      max_weight.value = Math.max(...Object.values(result.value.weights).map(elt => Math.max(...elt)))
+      min_weight.value = Math.min(...Object.values(result.value.weights).map(elt => Math.min(...elt))) 
+
     } catch (error) {
       result.value = null;
       errorMsg.value = error.response.data.detail;
@@ -120,6 +124,7 @@ async function getExplanation() {
   } else {
     // reset
     errorMsg.value = "";
+    result.value = null;
   }
 }
 </script>

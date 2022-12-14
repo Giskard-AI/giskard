@@ -1,5 +1,6 @@
 package ai.giskard.web.dto;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -16,5 +17,6 @@ import java.util.List;
 @NoArgsConstructor
 @UIModel
 public class ExplainTextResponseDTO {
-    Map<String, List<Map<String, Float>>> explanations = new HashMap<>(); 
+    List<String> words = new ArrayList<String>();
+    Map<String, List<Float>> weights = new HashMap<>();
 }

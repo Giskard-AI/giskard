@@ -177,12 +177,13 @@ class MLWorkerServiceImpl(MLWorkerServicer):
         input_df = pd.DataFrame({k: [v] for k, v in request.columns.items()})
         if model.feature_names:
             input_df = input_df[model.feature_names]
-        response = dict(zip(model.classification_labels, explain_text(model, input_df, text_column, text_document, n_samples)))
+        (list_words, list_weights) = explain_text(model, input_df, text_column, text_document, n_samples)
+        map_features_weight = dict(zip(model.classification_labels, list_weights))
         return ExplainTextResponse(
-            explanationText={
-                k: ExplainTextResponse.Explanations(explanations=[ExplainTextResponse.Explanation(explanation=x) for x in response[k]])
-                for k in response
-            }
+            weights={
+                k: ExplainTextResponse.WeightsPerFeature(weights=[weight for weight in map_features_weight[k]])
+                for k in map_features_weight },
+            words=list_words
         )
 
     def runModelForDataFrame(self, request: RunModelForDataFrameRequest, context):
