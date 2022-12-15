@@ -14,6 +14,7 @@ import ai.giskard.web.rest.errors.NotInDatabaseException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.FileSystemUtils;
 
 import javax.validation.constraints.NotNull;
 import java.util.List;
@@ -24,10 +25,10 @@ import java.util.regex.Pattern;
 @Transactional
 @RequiredArgsConstructor
 public class ProjectService {
-
     private final UserRepository userRepository;
     private final ProjectRepository projectRepository;
-    private final GiskardMapper giskardMapper;
+    private final FileLocationService locationService;
+    final GiskardMapper giskardMapper;
 
     public static final Pattern PROJECT_KEY_PATTERN = Pattern.compile("^[a-z\\d_]+$");
 
@@ -84,7 +85,15 @@ public class ProjectService {
      * @param id id of the project to delete
      */
     public void delete(Long id) {
-        projectRepository.deleteById(id);
+        Project project = projectRepository.getById(id);
+        try {
+            projectRepository.deleteById(id);
+            projectRepository.flush();
+            FileSystemUtils.deleteRecursively(locationService.resolvedProjectHome(project.getKey()));
+        } catch (Exception e) {
+            throw new GiskardRuntimeException("Failed to delete project %s".formatted(project.getKey()));
+        }
+
     }
 
     /**

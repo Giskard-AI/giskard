@@ -11,8 +11,6 @@ import ai.giskard.web.rest.errors.Entity;
 import ai.giskard.web.rest.errors.EntityNotFoundException;
 import com.univocity.parsers.common.TextParsingException;
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import tech.tablesaw.api.ColumnType;
@@ -21,8 +19,6 @@ import tech.tablesaw.api.Table;
 import tech.tablesaw.io.csv.CsvReadOptions;
 
 import javax.validation.constraints.NotNull;
-import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
@@ -33,14 +29,14 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class DatasetService {
     public static final String GISKARD_DATASET_INDEX_COLUMN_NAME = "_GISKARD_INDEX_";
-    private final Logger log = LoggerFactory.getLogger(DatasetService.class);
+
     private final DatasetRepository datasetRepository;
     private final FileLocationService locationService;
     private final FileUploadService fileUploadService;
     private final PermissionEvaluator permissionEvaluator;
 
     /**
-     *  Read table from file
+     * Read table from file
      *
      * @param datasetId id of the dataset
      * @return the table
@@ -81,7 +77,7 @@ public class DatasetService {
         return details;
     }
 
-    public DatasetMetadataDTO getMetadata(@NotNull Long id){
+    public DatasetMetadataDTO getMetadata(@NotNull Long id) {
         Dataset dataset = this.datasetRepository.getById(id);
         DatasetMetadataDTO metadata = new DatasetMetadataDTO();
         metadata.setId(id);
@@ -90,6 +86,7 @@ public class DatasetService {
         metadata.setFeatureTypes(dataset.getFeatureTypes());
         return metadata;
     }
+
     /**
      * Get filtered rows
      *
@@ -102,23 +99,6 @@ public class DatasetService {
         Table table = readTableByDatasetId(id);
         table.addColumns(IntColumn.indexColumn(GISKARD_DATASET_INDEX_COLUMN_NAME, table.rowCount(), 0));
         return table.inRange(rangeMin, rangeMax);
-    }
-
-    public void deleteDataset(Long datasetId) {
-        Dataset dataset = datasetRepository.getById(datasetId);
-        permissionEvaluator.validateCanWriteProject(dataset.getProject().getId());
-
-        log.info("Deleting dataset from the database: {}", dataset.getId());
-        datasetRepository.delete(dataset);
-
-        Path datasetPath = locationService.datasetsDirectory(dataset.getProject().getKey()).resolve(dataset.getFileName());
-        try {
-            log.info("Removing dataset file: {}", datasetPath.getFileName());
-            Files.deleteIfExists(datasetPath);
-        } catch (IOException e) {
-            throw new RuntimeException(String.format("Failed to remove dataset file %s", datasetPath.getFileName()), e);
-        }
-
     }
 
     @Transactional
@@ -141,4 +121,5 @@ public class DatasetService {
 
         }).toList();
     }
+
 }
