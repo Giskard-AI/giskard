@@ -39,7 +39,7 @@
           </v-col>
         </v-row>
         <div v-if="result != null">
-          <p class="caption text-center">Word contribution (LIME values)</p>
+          <p class="caption text-center mb-0">Word contribution (LIME values)</p>
           <p class="result-paragraph">  <TextExplanationParagraph :weights="result.weights[selectedLabel]" :words="result.words" :max_weight="max_weight" :min_weight="min_weight"></TextExplanationParagraph></p>
         </div>
       </div>
@@ -90,7 +90,7 @@ watch(() => props.classificationResult, (value) => {
   }
 });
 
-watch([selectedFeature, props.inputData], () => {
+watch(() => [props.inputData, selectedFeature.value], () => {
   submitted.value = false;
   result.value = null;
   errorMsg.value = "";
