@@ -68,14 +68,14 @@ def explain_text(model: GiskardModel, input_df: pd.DataFrame,
         text_explainer.show_prediction(target_names=model.classification_labels)
         exp = text_explainer.explain_prediction(target_names=model.classification_labels)
         exp = eli5.formatters.html.prepare_weighted_spans(exp.targets)
-        return prepared_data_to_array(exp) 
+        return get_list_words_weigths(exp) 
 
     except Exception as e:
         logger.exception(f"Failed to explain text: {text_document}", e)
         raise Exception("Failed to create text explanation") from e
 
 
-def prepared_data_to_array(exp):
+def get_list_words_weigths(exp):
     list_words = []
     document = exp[0][0].doc_weighted_spans.document
     for k, g in groupby(document, str.isalnum):
