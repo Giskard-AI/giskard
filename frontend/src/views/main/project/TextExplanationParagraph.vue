@@ -39,15 +39,8 @@ const x = ref<number>(0)
 const y = ref<number>(0)
 const classificationMinWeight = ref<number>(Math.min(...props.weights));
 const classificationMaxWeight = ref<number>(Math.max(...props.weights));
-const absoluteMaxWeight = ref<number>(Math.max(Math.abs(props.max_weight), Math.max(props.min_weight)))
+const absoluteMaxWeight = ref<number>(Math.max(Math.abs(props.max_weight), Math.abs(props.min_weight)))
 const items =  ref<object[]>(createItems())
-
-// Changement of Feature or datapoint
-watch(() => [...props.words], () => {
-    absoluteMaxWeight.value = Math.max(Math.abs(props.max_weight), Math.max(props.min_weight));
-    if (absoluteMaxWeight.value === 0)
-        absoluteMaxWeight.value = 1; 
-})
 
 // Changement of Classification Label
 watch(() => [...props.weights], () => {
@@ -70,9 +63,9 @@ function updateTextColor(){
 }
 
 function calculateBackgroundColor(weight: number){
-    let multiplicatior = (weight < 0) ? weight / classificationMinWeight.value : weight / classificationMaxWeight.value
+    let multiplicatior = (weight < 0) ? weight / classificationMinWeight.value : weight / classificationMaxWeight.value;
     multiplicatior *= 100;
-    if (multiplicatior < range.value){
+    if (multiplicatior < range.value || absoluteMaxWeight.value === 0){
         return 'transparent';
     }
     else {
@@ -84,8 +77,6 @@ function calculateBackgroundColor(weight: number){
 
 
 onMounted(() => {
-    if (absoluteMaxWeight.value === 0)
-        absoluteMaxWeight.value = 1;
     window.addEventListener('resize', () => {
         x.value = 0;
         y.value = 0;

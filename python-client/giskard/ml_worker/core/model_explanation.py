@@ -64,7 +64,13 @@ def explain_text(model: GiskardModel, input_df: pd.DataFrame,
         model.prediction_function, input_df, text_column
     )
     try:
-        text_explainer.fit(text_document, prediction_function)
+        for i in range(10):
+            try:
+                text_explainer.fit(text_document, prediction_function)
+                break
+            except ZeroDivisionError as e:
+                logger.warning(f"Failed to fit text explainer {i}", e)
+
         text_explainer.show_prediction(target_names=model.classification_labels)
         exp = text_explainer.explain_prediction(target_names=model.classification_labels)
         exp = eli5.formatters.html.prepare_weighted_spans(exp.targets)
@@ -145,6 +151,7 @@ def text_explanation_prediction_wrapper(
 ) -> Callable:
     def text_predict(text_documents: List[str]):
         num_documents = len(text_documents)
+
         df_with_text_documents = input_example.append(
             [input_example] * (num_documents - 1), ignore_index=True
         )
