@@ -11,16 +11,18 @@
 import {computed} from "vue";
 
 interface Props {
-  size: number,
-  solid: boolean,
   show: boolean,
-  absolute: boolean,
-  noFade: boolean
+  size?: number,
+  solid?: boolean,
+  absolute?: boolean,
+  noFade?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
   size: 50,
-  noFade: false
+  solid: false,
+  noFade: false,
+  absolute: false
 });
 
 const classes = computed(() => {
