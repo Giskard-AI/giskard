@@ -1,37 +1,27 @@
-import httpretty
-gsk_url = "http://giskard-host:12345"
-token = "SECRET_TOKEN"
-auth = "Bearer SECRET_TOKEN"
-content_type = "multipart/form-data; boundary="
-model_name = "uploaded model"
-b_content_type = b"application/json"
-
 """
+Issue: https://github.com/Giskard-AI/giskard/issues/402
 problem seen in https://github.com/Giskard-AI/giskard-examples/blob/main/Text_classification_Using_Tensorflow_Neural_Network.ipynb
 with tensorflow==2.11.0
+
+# in _validate_model_is_pickleable
+#     raise ValueError("Unable to pickle or unpickle model on Giskard")
+# E   ValueError: Unable to pickle or unpickle model on Giskard
 """
+
 import pytest
 import os
 import shutil
 import tensorflow as tf
 import pandas as pd
 from tensorflow.keras import layers
-import pytest
 
 ## initiate Giskard project
 from giskard.client.giskard_client import GiskardClient
 from giskard.client.project import GiskardProject
 
-@pytest.mark.skip(reason="GSK-382 BadZipFile upon inspect of tensorflow model with python3.10")
-@httpretty.activate(verbose=True, allow_net_connect=False)
-def test_upload_tensorflow():
-    print("tensorflow version: ", tf.__version__)
-
-    httpretty.register_uri(httpretty.POST, "http://giskard-host:12345/api/v2/project/models/upload")
-
-    client = GiskardClient(gsk_url, token)
-    project = GiskardProject(client.session, "test-project", 1)
-
+@pytest.mark.skipif(tf.__version__ != '2.11.0',
+                    reason="tensorflow=="+tf.__version__ +" but this test is made to be tested with tensorflow==2.11.0 (where it was failing)")
+def test_tf_version_2_11_0():
     max_features = 10000
     sequence_length = 250
     embedding_dim = 16
@@ -151,11 +141,21 @@ def test_upload_tensorflow():
 
     print(export_model.predict(examples))
 
-    project.upload_model(
-        prediction_function=predict, # Python function which takes pandas dataframe as input and returns probabilities for classification model OR returns predictions for regression model
-        model_type='classification', # "classification" for classification model OR "regression" for regression model
-        feature_names=['Review'], # List of the feature names of prediction_function
-        name="Tensorflow", # Name of the model
-        target="Label", # Optional. target sshould be a column of validate_df. Pass this parameter only if validate_df is being passed
-        classification_labels=[0, 1] # List of the classification labels of your prediction
+    prediction_function=predict
+    model_type='classification'
+    feature_names=['Review']
+    target="Label"
+    classification_labels=[0, 1]
+    classification_threshold=0.5
+    validate_df=val_ds
+
+    classification_labels, model = GiskardProject._validate_model(
+        classification_labels = classification_labels,
+        classification_threshold = classification_threshold,
+        feature_names = feature_names,
+        model_type = model_type,
+        prediction_function = prediction_function,
+        target = target,
+        validate_df = validate_df
     )
+
