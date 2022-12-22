@@ -273,6 +273,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
                 logger.info(f"Filtering dataset with {meta}")
                 yield FilterDatasetResponse(code=StatusCode.Ready)
             elif filter_msg.HasField("data"):
+                logger.info("Got chunk " + str(filter_msg.idx))
                 time_start = time.perf_counter()
                 data_as_string = filter_msg.data.content.decode('utf-8')
                 data_as_string = meta.headers + "\n" + data_as_string
@@ -280,14 +281,11 @@ class MLWorkerServiceImpl(MLWorkerServicer):
                 data = StringIO(data_as_string)  # Wrap using StringIO to avoid creating file
                 df = pd.read_csv(data)
                 # Iterate over rows, applying filter_row func
-                rows_to_del = df.apply(filterfunc["filter_row"], axis=1)[lambda x: x == False].index.array
-                df = df.drop(rows_to_del)
-                # Dataframe => CSV
-                result = df.to_csv(None, index=False, header=False)
+                rows_to_keep = df.apply(filterfunc["filter_row"], axis=1)[lambda x: x == True].index.array
                 time_end = time.perf_counter()
                 times.append(time_end - time_start)
                 # Send NEXT code
-                yield FilterDatasetResponse(code=StatusCode.Next, filteredData=Chunk(content=result.encode('utf-8')))
+                yield FilterDatasetResponse(code=StatusCode.Next, idx=filter_msg.idx, rows=rows_to_keep)
 
         logger.info(f"Filter dataset finished. Avg chunk time: {sum(times) / len(times)}")
         yield FilterDatasetResponse(code=StatusCode.Ok)

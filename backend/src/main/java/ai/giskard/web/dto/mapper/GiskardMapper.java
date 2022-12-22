@@ -4,16 +4,15 @@ import ai.giskard.domain.Feedback;
 import ai.giskard.domain.Project;
 import ai.giskard.domain.Role;
 import ai.giskard.domain.User;
-import ai.giskard.domain.ml.Dataset;
-import ai.giskard.domain.ml.Inspection;
-import ai.giskard.domain.ml.ProjectModel;
-import ai.giskard.domain.ml.TestSuite;
+import ai.giskard.domain.ml.*;
 import ai.giskard.repository.ProjectRepository;
 import ai.giskard.repository.ml.DatasetRepository;
 import ai.giskard.repository.ml.ModelRepository;
+import ai.giskard.repository.ml.SliceRepository;
 import ai.giskard.utils.JSON;
 import ai.giskard.web.dto.ModelMetadataDTO;
 import ai.giskard.web.dto.PrepareDeleteDTO;
+import ai.giskard.web.dto.SliceCreateDTO;
 import ai.giskard.web.dto.TestSuiteCreateDTO;
 import ai.giskard.web.dto.ml.*;
 import ai.giskard.web.dto.user.AdminUserDTO;
@@ -84,6 +83,8 @@ public interface GiskardMapper {
     ProjectPostDTO projectToProjectPostDTO(Project project);
 
     ProjectDTO projectToProjectDTO(Project project);
+    SliceDTO sliceToSliceDTO(Slice slice);
+    List<SliceDTO> slicesToSlicesDTO(List<Slice> slice);
 
     List<ProjectDTO> projectsToProjectDTOs(List<Project> projects);
 
@@ -147,6 +148,14 @@ public interface GiskardMapper {
     @Mapping(target = "lastModifiedBy", ignore = true)
     @Mapping(target = "lastModifiedDate", ignore = true)
     TestSuite fromDTO(TestSuiteCreateDTO dto);
+
+    @Mapping(source = "projectId", target = "project")
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "createdBy", ignore = true)
+    @Mapping(target = "createdDate", ignore = true)
+    @Mapping(target = "lastModifiedBy", ignore = true)
+    @Mapping(target = "lastModifiedDate", ignore = true)
+    Slice fromDTO(SliceCreateDTO dto);
 
 
     @Mapping(target = "message", source = "feedbackMessage")

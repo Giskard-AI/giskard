@@ -271,6 +271,7 @@ message MLWorkerErrorInfo{
 message FilterDatasetRequest {
     FilterDatasetMetadata meta = 1;
     Chunk data = 2;
+    uint32 idx = 3;
 }
 
 message FilterDatasetMetadata {
@@ -280,5 +281,6 @@ message FilterDatasetMetadata {
 
 message FilterDatasetResponse {
     StatusCode code = 1;
-    Chunk filteredData = 2;
+    uint32 idx = 2;
+    repeated uint32 rows = 3; // Will we ever have >4 billion rows in a chunk?
 }

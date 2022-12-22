@@ -29,13 +29,17 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class MLWorkerService {
     public static final int UPLOAD_FILE_CHUNK_KB = 256;
+    public static final int FILTER_CHUNK_SIZE_ROWS = 5000; // TODO: Compute dynamically...
     private final Logger log = LoggerFactory.getLogger(MLWorkerService.class);
     private final ApplicationProperties applicationProperties;
     private final MLWorkerTunnelService mlWorkerTunnelService;
@@ -124,12 +128,12 @@ public class MLWorkerService {
         return result.get();
     }
 
-    public synchronized FilterDatasetResponse filterDataset(MLWorkerClient client, Dataset dataset, String function) throws IOException {
+    public List<Integer> filterDataset(MLWorkerClient client, Dataset dataset, String function) throws IOException {
         log.info("Filtering dataset {}", dataset.getName());
         Path path = locationService.resolveFilePath(dataset);
 
         AtomicReference<StreamObserver<FilterDatasetRequest>> requestObserverRef = new AtomicReference<>();
-        AtomicReference<FilterDatasetResponse> result = new AtomicReference<>();
+        List<Integer> validRows = new ArrayList<>();
         CountDownLatch finishedLatch = new CountDownLatch(1);
         try (InputStream inputStream = fileUploadService.decompressFileToStream(path)) { // Maybe decompressFileToStream should go in some utils?
             // Read headers
@@ -137,7 +141,7 @@ public class MLWorkerService {
             String headers = reader.readLine();
 
             StreamObserver<FilterDatasetRequest> observer = client.getNonBlockingStub().filterDataset(
-                new FilterDatasetResponseStreamObserver(requestObserverRef, result, finishedLatch, reader)
+                new FilterDatasetResponseStreamObserver(requestObserverRef, finishedLatch, reader, validRows)
             );
             requestObserverRef.set(observer);
 
@@ -146,6 +150,7 @@ public class MLWorkerService {
                     .setHeaders(headers)
                     .setFunction(function)
                     .build())
+                .setIdx(0)
                 .build();
 
             observer.onNext(metadata);
@@ -159,7 +164,7 @@ public class MLWorkerService {
             }
         }
 
-        return result.get();
+        return validRows;
     }
 
     private static FileType determineFileType(ProjectFile file) {
@@ -232,9 +237,9 @@ public class MLWorkerService {
     @RequiredArgsConstructor
     private class FilterDatasetResponseStreamObserver implements StreamObserver<FilterDatasetResponse> {
         private final AtomicReference<StreamObserver<FilterDatasetRequest>> requestObserverRef;
-        private final AtomicReference<FilterDatasetResponse> result;
         private final CountDownLatch finishedLatch;
         private final BufferedReader reader;
+        private final List<Integer> result;
 
         @SneakyThrows
         @Override
@@ -243,20 +248,23 @@ public class MLWorkerService {
                 log.info("Got READY from slicing!");
                 // Start streaming requests. For now, use arbitrary chunk size of 100 lines
                 int linesRead = 0;
+                int idx = 0;
                 String line;
                 StringBuilder sb = new StringBuilder();
                 while ((line = reader.readLine()) != null) { // Will read every line...
                     linesRead++;
                     sb.append(line).append("\n");
 
-                    if (linesRead == 5000) {
+                    if (linesRead == FILTER_CHUNK_SIZE_ROWS) {
                         requestObserverRef.get().onNext(
                             FilterDatasetRequest.newBuilder()
                                 .setData(Chunk.newBuilder().setContent(ByteString.copyFrom(sb.toString(), "utf-8")).build())
+                                .setIdx(idx)
                                 .build()
                         );
                         linesRead = 0;
                         sb = new StringBuilder();
+                        idx++;
                     }
                 }
 
@@ -264,16 +272,22 @@ public class MLWorkerService {
                     requestObserverRef.get().onNext(
                         FilterDatasetRequest.newBuilder()
                             .setData(Chunk.newBuilder().setContent(ByteString.copyFrom(sb.toString(), "utf-8")).build())
+                            .setIdx(idx)
                             .build()
                     );
                 }
 
                 requestObserverRef.get().onCompleted();
             } else if (StatusCode.Next.equals(value.getCode())) {
-                log.info("Got NEXT from slicing!");
+                log.info("Got rows for request idx {}", value.getIdx());
+                result.addAll(value.getRowsList()
+                    .stream()
+                    .map(x -> x + (value.getIdx() * FILTER_CHUNK_SIZE_ROWS)) // We add because the outgoing row IDs are 0 based...
+                    .toList());
             } else if (StatusCode.Ok.equals(value.getCode())) {
                 // Consider complete, close reader/writer.
                 log.info("Slicing done!");
+                log.info("Slicing resulted with {}", result.size());
             }
         }
 

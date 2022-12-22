@@ -3,9 +3,11 @@ package ai.giskard.web.rest.controllers;
 import ai.giskard.domain.ml.Inspection;
 import ai.giskard.domain.ml.table.Filter;
 import ai.giskard.repository.InspectionRepository;
+import ai.giskard.repository.ml.SliceRepository;
 import ai.giskard.security.PermissionEvaluator;
 import ai.giskard.service.InspectionService;
 import ai.giskard.service.ModelService;
+import ai.giskard.service.SliceService;
 import ai.giskard.web.dto.InspectionCreateDTO;
 import ai.giskard.web.dto.mapper.GiskardMapper;
 import ai.giskard.web.dto.ml.InspectionDTO;
@@ -36,6 +38,8 @@ public class InspectionController {
     private final InspectionRepository inspectionRepository;
     private final GiskardMapper giskardMapper;
     private final PermissionEvaluator permissionEvaluator;
+    private final SliceRepository sliceRepository;
+    private final SliceService sliceService;
 
 
     /**
@@ -67,6 +71,32 @@ public class InspectionController {
             .sortOn(RandomUtils.nextInt(0, 3) - 1) : filteredTable.inRange(rangeMin, rangeMax); //NOSONAR
         ObjectMapper objectMapper = new ObjectMapper();
         String jsonTable = filteredMTable.write().toString("json");
+        JsonNode jsonNode = objectMapper.readTree(jsonTable);
+        JsonNode result = objectMapper.createObjectNode().set("data", jsonNode);
+        ((ObjectNode) result).put("rowNb", filteredTable.rowCount());
+        ((ObjectNode) result).set("columns", objectMapper.valueToTree(filteredTable.columnNames()));
+        return result;
+    }
+
+    /**
+     * This function asks for a slice ID and an inspection ID and returns the list of rows filtered thru that slice.
+     * It streams data to the ML worker and is a bit more complex in its execution
+     * @param inspectionId
+     * @param sliceId
+     * @return
+     */
+    @PostMapping("/inspection/{inspectionId}/slice/{sliceId}")
+    @Transactional
+    public JsonNode getRowsSliced(@PathVariable @NotNull Long inspectionId, @PathVariable @NotNull Long sliceId) throws IOException {
+        Inspection inspection = inspectionRepository.getById(inspectionId);
+        permissionEvaluator.validateCanReadProject(inspection.getDataset().getProject().getId());
+
+        List<Integer> filteredRowIds = sliceService.getSlicedRowsForDataset(sliceId, inspection.getDataset());
+
+        Table filteredTable = inspectionService.getRowsFiltered(inspectionId, filteredRowIds);
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        String jsonTable = filteredTable.write().toString("json");
         JsonNode jsonNode = objectMapper.readTree(jsonTable);
         JsonNode result = objectMapper.createObjectNode().set("data", jsonNode);
         ((ObjectNode) result).put("rowNb", filteredTable.rowCount());
