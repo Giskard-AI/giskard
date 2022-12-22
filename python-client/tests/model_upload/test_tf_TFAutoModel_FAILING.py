@@ -101,7 +101,6 @@ def get_inputs(tokenizer, sentences, max_length):
 
     return inputs
 
-@pytest.mark.skip(reason="GSK-285 TFAutoModel has issues while unpickling")
 def test_TFAutoModel():
     # fairness
     data_dict = {
