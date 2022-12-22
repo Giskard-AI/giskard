@@ -1,37 +1,58 @@
-import email
-import glob
-import time
-import math
-from collections import defaultdict, namedtuple
+"""
+2022-12-22 14:20:34.114523: I tensorflow/core/platform/cpu_feature_guard.cc:193] This TensorFlow binary is optimized with oneAPI Deep Neural Network Library (oneDNN) to use the following CPU instructions in performance-critical operations:  AVX2 FMA
+To enable them in other operations, rebuild TensorFlow with the appropriate compiler flags.
 
-import matplotlib.pyplot as plt
-import nltk
+tests/model_upload/test_TF_cloudpickle_crashes.py:38 (test_tf_cloudpickle)
+../giskard/client/project.py:675: in _validate_model_is_pickleable
+    pickled_model = cloudpickle.dumps(prediction_function)
+../.venv/lib/python3.8/site-packages/cloudpickle/cloudpickle_fast.py:73: in dumps
+    cp.dump(obj)
+../.venv/lib/python3.8/site-packages/cloudpickle/cloudpickle_fast.py:632: in dump
+    return Pickler.dump(self, obj)
+../.venv/lib/python3.8/site-packages/keras/engine/training.py:367: in __reduce__
+    (pickle_utils.serialize_model_as_bytecode(self),),
+../.venv/lib/python3.8/site-packages/keras/saving/pickle_utils.py:73: in serialize_model_as_bytecode
+    raise e
+../.venv/lib/python3.8/site-packages/keras/saving/pickle_utils.py:69: in serialize_model_as_bytecode
+    saving_lib.save_model(model, filepath)
+../.venv/lib/python3.8/site-packages/keras/saving/experimental/saving_lib.py:117: in save_model
+    serialized_model_dict = serialize_keras_object(model)
+../.venv/lib/python3.8/site-packages/keras/saving/experimental/serialization_lib.py:116: in serialize_keras_object
+    "config": _get_class_or_fn_config(obj),
+../.venv/lib/python3.8/site-packages/keras/saving/experimental/serialization_lib.py:135: in _get_class_or_fn_config
+    config = obj.get_config()
+../.venv/lib/python3.8/site-packages/keras/engine/functional.py:782: in get_config
+    return copy.deepcopy(get_network_config(self, config=config))
+../.venv/lib/python3.8/site-packages/keras/engine/functional.py:1564: in get_network_config
+    layer_config = serialize_layer_fn(layer)
+../.venv/lib/python3.8/site-packages/keras/saving/legacy/serialization.py:330: in serialize_keras_object
+    raise e
+../.venv/lib/python3.8/site-packages/keras/saving/legacy/serialization.py:324: in serialize_keras_object
+    config = instance.get_config()
+../.venv/lib/python3.8/site-packages/tensorflow_hub/keras_layer.py:329: in get_config
+    raise NotImplementedError(
+E   NotImplementedError: Can only generate a valid config for `hub.KerasLayer(handle, ...)`that uses a string `handle`.
+E
+E   Got `type(handle)`: <class 'tensorflow_hub.keras_layer.KerasLayer'>
+
+During handling of the above exception, another exception occurred:
+model_upload/test_TF_cloudpickle_crashes.py:138: in test_tf_cloudpickle
+    GiskardProject._validate_model_is_pickleable(classifier_model)
+../giskard/client/project.py:678: in _validate_model_is_pickleable
+    raise ValueError("Unable to pickle or unpickle model on Giskard")
+E   ValueError: Unable to pickle or unpickle model on Giskard
+"""
 from nltk.corpus import stopwords
 from nltk.stem import PorterStemmer
 from string import punctuation
-
-import numpy as np
-
 import pandas as pd
-import datetime
-from dateutil import parser
-
 import tensorflow as tf
 import tensorflow_hub as hub
-import tensorflow_text as text
 from official.nlp import optimization  # to create AdamW optimizer
-from sklearn import preprocessing
 from sklearn.pipeline import Pipeline
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.feature_extraction.text import TfidfTransformer
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import StandardScaler
-from sklearn.preprocessing import OneHotEncoder
-from sklearn.impute import SimpleImputer
 from sklearn.compose import ColumnTransformer
-from sklearn.model_selection import GridSearchCV
-from sklearn.decomposition import TruncatedSVD
 from sklearn import model_selection
 
 from giskard.client.project import GiskardProject
@@ -80,8 +101,7 @@ def test_tf_cloudpickle():
     Y_train = to_categorical(Y_train)
     Y_test = to_categorical(Y_test)
 
-    tfhub_handle_preprocess = hub.load(
-        "https://tfhub.dev/tensorflow/bert_en_uncased_preprocess/3")
+    tfhub_handle_preprocess = hub.load("https://tfhub.dev/tensorflow/bert_en_uncased_preprocess/3")
 
 
     #tfhub_handle_encoder = 'https://tfhub.dev/tensorflow/small_bert/bert_en_uncased_L-4_H-512_A-8/1'
