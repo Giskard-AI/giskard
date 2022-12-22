@@ -36,7 +36,7 @@ from sklearn import model_selection
 
 from giskard.client.project import GiskardProject
 
-def test():
+def test_tf_cloudpickle():
 
     column_types={
         'Target': "category",
@@ -93,7 +93,6 @@ def test():
         trainable=True)
 
     def build_classifier_model():
-        import tensorflow_text as text
 
         text_input = tf.keras.layers.Input(shape=(), dtype=tf.string, name='text')
         preprocessing_layer = hub.KerasLayer(tfhub_handle_preprocess, name='preprocessing')

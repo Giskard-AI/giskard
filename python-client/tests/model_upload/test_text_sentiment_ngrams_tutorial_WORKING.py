@@ -40,9 +40,6 @@ class TextClassificationModel(nn.Module):
     def forward(self, text, offsets):
         embedded = self.embedding(text, offsets)
         return self.fc(embedded)
-
-#@httpretty.activate(verbose=True, allow_net_connect=False)
-@pytest.mark.skip(reason="temp")
 def test_text_sentiment_ngrams_tutorial():
 
     train_iter = AG_NEWS(split='train')
@@ -193,18 +190,9 @@ def test_text_sentiment_ngrams_tutorial():
     classification_labels, model = GiskardProject._validate_model(
         list(ag_news_label.values()),
         0.5,
-        ['test'],
+        ['text'],
         'classification',
         prediction_function,
         'label',
         df,
     )
-
-    """project.upload_model(
-        prediction_function=prediction_function, # Python function which takes pandas dataframe as input and returns probabilities for classification model OR returns predictions for regression model
-        model_type='classification', # "classification" for classification model OR "regression" for regression model
-        feature_names=['text'], # List of the feature names of prediction_function
-        name="Pytorch", # Name of the model
-        target="label", # Optional. target should be a column of validate_df. Pass this parameter only if validate_df is being passed
-        classification_labels=list(ag_news_label.values()) # List of the classification labels of your prediction
-    )"""
