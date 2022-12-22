@@ -52,8 +52,8 @@
       </v-toolbar>
       <v-spacer/>
 
+      <SliceDropdown :project-id="projectId" @onSelect="applySlice" @onClear="clearSlice" :loading="loadingSlice" class="mr-3 " />
 
-      <SliceDropdown :project-id="projectId" @onSelect="applySlice" />
       <InspectionFilter
           :is-target-available="isDefined(inspection.dataset.target)"
           :labels="labels"
@@ -167,6 +167,7 @@ export default class InspectorWrapper extends Vue {
   inspection: InspectionDTO | null = null;
   mouseTrap = new Mousetrap();
   loadingData = false;
+  loadingSlice = false; // specific boolean for slice loading because it can take a while...
   inputData = {};
   originalData = {};
   rowNb: number = 0;
@@ -384,10 +385,18 @@ export default class InspectorWrapper extends Vue {
   }
 
   private async applySlice(slice: SliceDTO) {
+    this.loadingSlice = true;
     const response = await api.getDataFilteredBySlice(this.inspectionId, slice.id);
     this.rows = response.data;
     this.numberOfRows = response.rowNb;
     this.assignCurrentRow(false);
+    this.loadingSlice = false;
+  }
+
+  private async clearSlice() {
+    this.loadingSlice = true;
+    await this.updateRow(true);
+    this.loadingSlice = false;
   }
 
 }

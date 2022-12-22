@@ -113,14 +113,14 @@ const sliceName = ref<string>("");
 const sliceCode = ref<string>("def filter_row(row):\n    return True;");
 const createDialog = ref<boolean>(false);
 
-// sliceCode: string = "def filter_row(row):\n    return True;";
-
 onActivated(() => {
   loadSlices();
 })
 
-function createSlice() {
-  api.createSlice(props.projectId, sliceName.value, sliceCode.value);
+async function createSlice() {
+  const newSlice = await api.createSlice(props.projectId, sliceName.value, sliceCode.value);
+  slices.value.push(newSlice);
+  closeCreateDialog();
 }
 
 function deleteSlice(id: number) {

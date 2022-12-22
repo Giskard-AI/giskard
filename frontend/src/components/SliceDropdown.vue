@@ -1,5 +1,10 @@
 <template>
-  <v-autocomplete label="Slice to apply" :items="items" v-model="slice" placeholder="Select a slice..." clearable></v-autocomplete>
+  <v-autocomplete label="Slice to apply"
+                  :items="items"
+                  v-model="slice"
+                  placeholder="Select a slice..."
+                  :loading="loading"
+                  clearable></v-autocomplete>
 </template>
 
 <script setup lang="ts">
@@ -8,11 +13,13 @@ import {SliceDTO} from "@/generated-sources";
 import {api} from "@/api";
 
 interface Props {
-  projectId: number
+  projectId: number,
+  loading?: boolean,
+  create?: boolean
 }
 
 const props = defineProps<Props>();
-const emit = defineEmits(["onSelect"])
+const emit = defineEmits(["onSelect", "onClear"])
 
 const slices = ref<SliceDTO[]>([])
 const slice = ref<SliceDTO | null>(null);
@@ -30,15 +37,16 @@ const items = computed(() => {
 })
 
 watch(() => slice.value, (value) => {
-  emit('onSelect', value);
+  if (value !== null) {
+    emit('onSelect', value);
+  } else {
+    emit('onClear');
+  }
 })
 
 async function loadSlices() {
   slices.value = await api.getProjectSlices(props.projectId)
 }
-
-// TODO: Emit an on select slice event that can tell the parent we selected a slice and what to do with it ?
-
 </script>
 
 <style scoped>
