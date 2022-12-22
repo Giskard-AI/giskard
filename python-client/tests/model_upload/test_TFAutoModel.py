@@ -8,12 +8,12 @@ import pandas as pd
 import tensorflow as tf
 import numpy as np
 import logging
-
+import pytest
 logging.basicConfig(level=logging.INFO)
 
 pd.set_option('display.max_colwidth', None)
 
-#@pytest.mark.skip(reason="GSK-285 TFAutoModel has issues while unpickling")
+
 def load_transformer_models(bert, special_tokens):
     """
     Objective: load the tokenizer we'll use and also the transfomer model
@@ -101,6 +101,7 @@ def get_inputs(tokenizer, sentences, max_length):
 
     return inputs
 
+@pytest.mark.skip(reason="GSK-285 TFAutoModel has issues while unpickling")
 def test_TFAutoModel():
     # fairness
     data_dict = {

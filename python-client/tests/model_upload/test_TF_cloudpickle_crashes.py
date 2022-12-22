@@ -138,3 +138,4 @@ def test():
     print(f'Accuracy: {accuracy}')
 
     GiskardProject._validate_model_is_pickleable(classifier_model)
+    GiskardProject._validate_model_is_pickleable(classifier_model.predict)

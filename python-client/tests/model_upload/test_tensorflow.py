@@ -10,7 +10,7 @@ b_content_type = b"application/json"
 problem seen in https://github.com/Giskard-AI/giskard-examples/blob/main/Text_classification_Using_Tensorflow_Neural_Network.ipynb
 with tensorflow==2.11.0
 """
-
+import pytest
 import os
 import shutil
 import tensorflow as tf
@@ -22,7 +22,7 @@ import pytest
 from giskard.client.giskard_client import GiskardClient
 from giskard.client.project import GiskardProject
 
-#@pytest.mark.skip(reason="GSK-382 BadZipFile upon inspect of tensorflow model with python3.10")
+@pytest.mark.skip(reason="GSK-382 BadZipFile upon inspect of tensorflow model with python3.10")
 @httpretty.activate(verbose=True, allow_net_connect=False)
 def test_upload_tensorflow():
     print("tensorflow version: ", tf.__version__)

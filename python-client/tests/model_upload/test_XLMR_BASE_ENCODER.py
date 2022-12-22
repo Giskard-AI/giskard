@@ -2,7 +2,8 @@ from giskard.client.project import GiskardProject
 import torch, torchtext
 from torchtext.functional import to_tensor
 import pandas as pd
-
+import pytest
+@pytest.mark.skip(reason="temp")
 def test_XLMR_BASE_ENCODER():
 
     xlmr_base = torchtext.models.XLMR_BASE_ENCODER
