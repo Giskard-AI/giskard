@@ -19,7 +19,7 @@ def create_model():
     return model
 
 
-def test_tf_cloudpickle_WORKING():
+def test_tf_cloudpickle():
 
     # Create a basic model instance
     model = create_model()
