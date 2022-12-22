@@ -1,10 +1,18 @@
+"""
+Issue :https://github.com/Giskard-AI/giskard/issues/374
+Error:
+# ../giskard/client/project.py:676: in _validate_model_is_pickleable
+#     unpickled_model = cloudpickle.loads(pickled_model)
+# E   TypeError: __new__() missing 1 required positional argument: 'keyvals'
+"""
+
+
 from giskard.client.project import GiskardProject
-import pytest
 import h2o
 from h2o.automl import H2OAutoML
 import os
 
-@pytest.mark.skip(reason="GSK-388 H2O models unable to unpickle on Giskard")
+
 def test_upload_H2O():
 
     h2o.init()
