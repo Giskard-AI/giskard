@@ -5,6 +5,7 @@ import ai.giskard.domain.ml.Inspection;
 import ai.giskard.domain.ml.table.Filter;
 import ai.giskard.repository.InspectionRepository;
 import ai.giskard.web.rest.errors.EntityNotFoundException;
+import com.google.common.primitives.Ints;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -195,6 +196,15 @@ public class InspectionService {
         table.addColumns(IntColumn.indexColumn(GISKARD_DATASET_INDEX_COLUMN_NAME, table.rowCount(), 0));
         Selection selection = inspection.getModel().getModelType().isClassification() ? getSelection(inspection, filter) : getSelectionRegression(inspection, filter);
         return selection == null ? table : table.where(selection);
+    }
+
+    @Transactional
+    public Table getRowsFiltered(@NotNull Long inspectionId, @NotNull List<Integer> indices) {
+        Inspection inspection = inspectionRepository.findById(inspectionId).orElseThrow(() -> new EntityNotFoundException(INSPECTION, inspectionId));
+        Table table = datasetService.readTableByDatasetId(inspection.getDataset().getId());
+        table.addColumns(IntColumn.indexColumn(GISKARD_DATASET_INDEX_COLUMN_NAME, table.rowCount(), 0));
+        Selection selection = Selection.with(Ints.toArray(indices));
+        return table.where(selection);
     }
 
     /**

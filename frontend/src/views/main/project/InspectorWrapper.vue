@@ -52,6 +52,8 @@
       </v-toolbar>
       <v-spacer/>
 
+
+      <SliceDropdown :project-id="projectId" @onSelect="applySlice" />
       <InspectionFilter
           :is-target-available="isDefined(inspection.dataset.target)"
           :labels="labels"
@@ -132,10 +134,11 @@ import {api} from '@/api';
 import FeedbackPopover from '@/components/FeedbackPopover.vue';
 import Inspector from './Inspector.vue';
 import Mousetrap from 'mousetrap';
-import {CreateFeedbackDTO, Filter, InspectionDTO, ModelType, RowFilterType} from '@/generated-sources';
+import {CreateFeedbackDTO, Filter, InspectionDTO, ModelType, RowFilterType, SliceDTO} from '@/generated-sources';
 import mixpanel from "mixpanel-browser";
 import _ from "lodash";
 import InspectionFilter from './InspectionFilter.vue';
+import SliceDropdown from "@/components/SliceDropdown.vue";
 
 type CreatedFeedbackCommonDTO = {
   targetFeature?: string | null;
@@ -147,6 +150,7 @@ type CreatedFeedbackCommonDTO = {
 };
 @Component({
   components: {
+    SliceDropdown,
     OverlayLoader,
     Inspector,
     PredictionResults,
@@ -158,6 +162,8 @@ type CreatedFeedbackCommonDTO = {
 })
 export default class InspectorWrapper extends Vue {
   @Prop() inspectionId!: number;
+  @Prop() projectId!: number;
+
   inspection: InspectionDTO | null = null;
   mouseTrap = new Mousetrap();
   loadingData = false;
@@ -377,6 +383,12 @@ export default class InspectorWrapper extends Vue {
     await api.submitFeedback(payload, payload.projectId);
   }
 
+  private async applySlice(slice: SliceDTO) {
+    const response = await api.getDataFilteredBySlice(this.inspectionId, slice.id);
+    this.rows = response.data;
+    this.numberOfRows = response.rowNb;
+    this.assignCurrentRow(false);
+  }
 
 }
 </script>

@@ -47,6 +47,7 @@
     "ai.giskard.web.dto.PrepareDeleteDTO$LightFeedback": "PrepareDeleteDTO.LightFeedback",
     "ai.giskard.web.dto.PredictionDTO": "PredictionDTO",
     "ai.giskard.web.dto.user.AdminUserDTO$AdminUserDTOWithPassword": "AdminUserDTO.AdminUserDTOWithPassword",
+    "ai.giskard.web.dto.FilterDatasetDTO": "FilterDatasetDTO",
     "ai.giskard.web.dto.ml.TestResultMessageDTO": "TestResultMessageDTO",
     "ai.giskard.domain.InspectionSettings": "InspectionSettings",
     "ai.giskard.web.dto.DataUploadParamsDTO": "DataUploadParamsDTO",
@@ -68,8 +69,10 @@
     "ai.giskard.web.dto.ml.InspectionDTO": "InspectionDTO",
     "ai.giskard.domain.GeneralSettings": "GeneralSettings",
     "ai.giskard.domain.ml.table.RegressionUnit": "RegressionUnit",
+    "ai.giskard.web.dto.ml.SliceDTO": "SliceDTO",
     "ai.giskard.web.dto.ml.TestEditorConfigDTO": "TestEditorConfigDTO",
     "ai.giskard.domain.ml.TestResult": "TestResult",
-    "ai.giskard.web.dto.user.UserDTO": "UserDTO"
+    "ai.giskard.web.dto.user.UserDTO": "UserDTO",
+    "ai.giskard.web.dto.SliceCreateDTO": "SliceCreateDTO"
   }
 }

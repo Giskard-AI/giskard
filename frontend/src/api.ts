@@ -28,7 +28,7 @@ import {
     PrepareDeleteDTO,
     ProjectDTO,
     ProjectPostDTO,
-    RoleDTO,
+    RoleDTO, SliceDTO,
     TestDTO,
     TestExecutionResultDTO,
     TestSuiteCreateDTO,
@@ -295,11 +295,17 @@ export const api = {
     async getDataFilteredByRange(inspectionId, props, filter) {
         return apiV2.post<unknown, any>(`/inspection/${inspectionId}/rowsFiltered`, filter, {params: props});
     },
+    async getDataFilteredBySlice(inspectionId, sliceId) {
+        return apiV2.post<unknown, any>(`/inspection/${inspectionId}/slice/${sliceId}`);
+    },
     async getLabelsForTarget(inspectionId: number) {
         return apiV2.get<unknown, string[]>(`/inspection/${inspectionId}/labels`);
     },
     async getProjectDatasets(id: number) {
         return axiosProject.get<unknown, DatasetDTO[]>(`/${id}/datasets`);
+    },
+    async getProjectSlices(id: number) {
+        return axiosProject.get<unknown, SliceDTO[]>(`/${id}/slices`);
     },
     async getInspection(inspectionId: number) {
         return apiV2.get<unknown, InspectionDTO>(`/inspection/${inspectionId}`);
@@ -397,4 +403,11 @@ export const api = {
     async executeTestSuite(suiteId: number) {
         return apiV2.post<unknown, Array<TestExecutionResultDTO>>(`/testing/suites/execute`, {suiteId});
     },
+    async createSlice(projectId: number, name: string, code: string) {
+        return apiV2.post<unknown, SliceDTO>(`/slices`, {
+            name: name,
+            projectId: projectId,
+            code: code
+        })
+    }
 };
