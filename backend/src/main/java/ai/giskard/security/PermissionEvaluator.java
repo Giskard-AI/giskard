@@ -36,6 +36,11 @@ public class PermissionEvaluator {
         return (isCurrentUser(project.getOwner().getLogin()) || SecurityUtils.isCurrentUserAdmin());
     }
 
+    public boolean canWriteProjectKey(@NotNull String projectKey) {
+        Project project = this.projectRepository.findOneByKey(projectKey).orElseThrow(() -> new EntityNotFoundException(Entity.PROJECT, projectKey));
+        return (isCurrentUser(project.getOwner().getLogin()) || SecurityUtils.isCurrentUserAdmin());
+    }
+
     /**
      * Determine if a user can write, ie has AICreator or Admin authorities
      */
@@ -57,11 +62,18 @@ public class PermissionEvaluator {
     }
 
     @Transactional
+    public boolean canReadProjectKey(@NotNull String projectKey) {
+        Project project = this.projectRepository.findOneWithGuestsByKey(projectKey).orElseThrow(() -> new EntityNotFoundException(Entity.PROJECT, projectKey));
+        return (projectService.isUserInGuestList(project.getGuests()) || isCurrentUser(project.getOwner().getLogin()) || SecurityUtils.isCurrentUserAdmin());
+    }
+
+    @Transactional
     public void validateCanReadProject(@NotNull Long id) {
         if (!canReadProject(id)) {
             throw new AccessDeniedException("Access denied to project id " + id);
         }
     }
+
     @Transactional
     public void validateCanWriteProject(@NotNull Long id) {
         if (!canWriteProject(id)) {

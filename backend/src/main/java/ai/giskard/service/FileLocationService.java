@@ -1,9 +1,6 @@
 package ai.giskard.service;
 
 import ai.giskard.config.ApplicationProperties;
-import ai.giskard.domain.ProjectFile;
-import ai.giskard.domain.ml.Dataset;
-import ai.giskard.domain.ml.ProjectModel;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -27,25 +24,13 @@ public class FileLocationService {
         return resolvedProjectHome(projectKey).resolve("datasets");
     }
 
-    public Path resolvedDatasetPath(String projectKey, Long datasetId) {
-        return resolvedProjectHome(projectKey).resolve("datasets").resolve(createZSTname("data_", datasetId));
+    public Path resolvedDatasetPath(String projectKey, String datasetId) {
+        return resolvedProjectHome(projectKey).resolve("datasets").resolve(createZSTname("data_", datasetId.toString()));
     }
 
-    public Path resolvedModelPath(String projectKey, Long modelId) {
+    public Path resolvedModelPath(String projectKey, String modelId) {
         return modelsDirectory(projectKey).resolve(createZSTname("model_", modelId));
     }
-
-    public Path resolveFilePath(ProjectFile file) {
-        String projectKey = file.getProject().getKey();
-        if (file instanceof ProjectModel) {
-            return resolvedModelPath(projectKey, file.getId());
-        } else if (file instanceof Dataset) {
-            return resolvedDatasetPath(projectKey, file.getId());
-        } else {
-            throw new IllegalArgumentException("Unknown file type");
-        }
-    }
-
 
     public Path resolvedInspectionPath(String projectKey, Long inspectionId) {
         return modelsDirectory(projectKey).resolve(Paths.get("inspections", inspectionId.toString()));
@@ -55,11 +40,11 @@ public class FileLocationService {
         return giskardHome().resolve(projectHome(projectKey));
     }
 
-    private Path giskardHome() {
+    public Path giskardHome() {
         return applicationProperties.getHome();
     }
 
-    public static String createZSTname(String prefix, Long id) {
-        return prefix + id.toString() + ".zst";
+    public static String createZSTname(String prefix, String id) {
+        return prefix + id + ".zst";
     }
 }

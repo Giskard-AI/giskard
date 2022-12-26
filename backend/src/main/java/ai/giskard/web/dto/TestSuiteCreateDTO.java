@@ -13,10 +13,10 @@ import lombok.Setter;
 public class TestSuiteCreateDTO {
     private Long projectId;
     @UINullable
-    private Long referenceDatasetId;
+    private String referenceDatasetId;
     @UINullable
-    private Long actualDatasetId;
-    private Long modelId;
+    private String actualDatasetId;
+    private String modelId;
     private String name;
     private boolean shouldGenerateTests;
 }

@@ -309,13 +309,13 @@ public class InitService {
      */
     public void initProjects() {
         logger.info("Creating demo projects");
-        projects.forEach((key, config) -> {
-            try {
-                saveProject(key, config.creator);
-            } catch (IOException e) {
-                logger.error("Project with key %s not saved".formatted(key), e);
-            }
-        });
+        //projects.forEach((key, config) -> {
+        //    try {
+        //        saveProject(key, config.creator);
+        //    } catch (IOException e) {
+        //        logger.error("Project with key %s not saved".formatted(key), e);
+        //    }
+        //});
     }
 
     /**

@@ -80,18 +80,14 @@ public class TestService {
         try (MLWorkerClient client = mlWorkerService.createClient(test.getTestSuite().getProject().isUsingInternalWorker())) {
             TestResultMessage testResult;
 
-            mlWorkerService.upload(client, model);
-
             RunTestRequest.Builder requestBuilder = RunTestRequest.newBuilder()
                 .setCode(test.getCode())
-                .setModel(grpcMapper.serialize(model));
+                .setModel(grpcMapper.createRef(model));
             if (referenceDS != null) {
-                mlWorkerService.upload(client, referenceDS);
-                requestBuilder.setReferenceDs(grpcMapper.serialize(referenceDS));
+                requestBuilder.setReferenceDs(grpcMapper.createRef(referenceDS));
             }
             if (actualDS != null) {
-                mlWorkerService.upload(client, actualDS);
-                requestBuilder.setActualDs(grpcMapper.serialize(actualDS));
+                requestBuilder.setActualDs(grpcMapper.createRef(actualDS));
             }
             RunTestRequest request = requestBuilder.build();
             logger.debug("Sending requiest to ML Worker: {}", request);

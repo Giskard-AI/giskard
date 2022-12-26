@@ -1,15 +1,18 @@
 import asyncio
 import logging
+from os import environ
 
 import grpc
+from pydantic import AnyHttpUrl
 
+from giskard.client.giskard_client import GiskardClient
 from giskard.ml_worker.utils.error_interceptor import ErrorInterceptor
 from giskard.settings import settings
 
 logger = logging.getLogger(__name__)
 
 
-async def _start_grpc_server(is_server=False):
+async def _start_grpc_server(client: GiskardClient, is_server=False):
     from giskard.ml_worker.generated.ml_worker_pb2_grpc import add_MLWorkerServicer_to_server
     from giskard.ml_worker.server.ml_worker_service import MLWorkerServiceImpl
     from giskard.ml_worker.utils.network import find_free_port
@@ -23,7 +26,7 @@ async def _start_grpc_server(is_server=False):
     )
 
     port = settings.port if settings.port and is_server else find_free_port()
-    add_MLWorkerServicer_to_server(MLWorkerServiceImpl(port, not is_server), server)
+    add_MLWorkerServicer_to_server(MLWorkerServiceImpl(client, port, not is_server), server)
     server.add_insecure_port(f"{settings.host}:{port}")
     await server.start()
     logger.info(f"Started ML Worker server on port {port}")
@@ -31,16 +34,25 @@ async def _start_grpc_server(is_server=False):
     return server, port
 
 
-async def start_ml_worker(is_server=False, remote_host=None, remote_port=None):
+async def start_ml_worker(is_server=False, backend_url: AnyHttpUrl = None, api_key=None):
     from giskard.ml_worker.bridge.ml_worker_bridge import MLWorkerBridge
 
     tasks = []
-    server, grpc_server_port = await _start_grpc_server(is_server)
+
+    client = GiskardClient(backend_url, api_key)
+
+    server, grpc_server_port = await _start_grpc_server(client, is_server)
     if not is_server:
         logger.info(
             "Remote server host and port are specified, connecting as an external ML Worker"
         )
-        tunnel = MLWorkerBridge(grpc_server_port, remote_host, remote_port)
+        info = client.get_server_info()
+        app_settings = info.get("app")
+        remote_worker_host = app_settings.get("externalMlWorkerEntrypointHost") or environ.get(
+            'GSK_EXTERNAL_ML_WORKER_HOST', backend_url.host)
+        remote_worker_port = app_settings.get("externalMlWorkerEntrypointPort") or environ.get(
+            'GSK_EXTERNAL_ML_WORKER_PORT', 40051)
+        tunnel = MLWorkerBridge(grpc_server_port, remote_worker_host, remote_worker_port)
         tasks.append(asyncio.create_task(tunnel.start()))
 
     tasks.append(asyncio.create_task(server.wait_for_termination()))

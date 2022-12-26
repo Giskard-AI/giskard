@@ -16,13 +16,13 @@
               autoresize
           />
           <v-chart
-              v-if="predictionTask === ModelType.BINARY_CLASSIFICATION"
+              v-if="predictionTask === ModelType.CLASSIFICATION && classificationLabels.length === 2"
               class="chart"
               :option="chartOptionsBinaryClassification"
               autoresize
           />
           <v-chart
-              v-if="predictionTask === ModelType.MULTICLASS_CLASSIFICATION"
+              v-if="predictionTask === ModelType.CLASSIFICATION && classificationLabels.length > 2"
               class="chart"
               :option="chartOptionsMultiClassification"
               autoresize
@@ -57,8 +57,8 @@ Vue.component("v-chart", ECharts);
   components: {OverlayLoader},
 })
 export default class PredictionExplanations extends Vue {
-  @Prop({required: true}) modelId!: number;
-  @Prop({required: true}) datasetId!: number;
+  @Prop({required: true}) modelId!: string;
+  @Prop({required: true}) datasetId!: string;
   @Prop({required: true}) predictionTask!: string;
   @Prop() targetFeature!: string;
   @Prop() classificationLabels!: string[];
