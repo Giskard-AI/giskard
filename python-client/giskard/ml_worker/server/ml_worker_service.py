@@ -265,11 +265,13 @@ class MLWorkerServiceImpl(MLWorkerServicer):
         meta = None
 
         times = []  # This is an array of chunk execution times for performance stats
+        column_types = []
 
         for filter_msg in request_iterator:
             if filter_msg.HasField("meta"):
                 meta = filter_msg.meta
                 exec(meta.function, None, filterfunc)
+                column_types = meta.column_types
                 logger.info(f"Filtering dataset with {meta}")
                 yield FilterDatasetResponse(code=StatusCode.Ready)
             elif filter_msg.HasField("data"):
@@ -280,6 +282,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
                 # CSV => Dataframe
                 data = StringIO(data_as_string)  # Wrap using StringIO to avoid creating file
                 df = pd.read_csv(data)
+                df = df.astype(column_types)
                 # Iterate over rows, applying filter_row func
                 rows_to_keep = df.apply(filterfunc["filter_row"], axis=1)[lambda x: x == True].index.array
                 time_end = time.perf_counter()

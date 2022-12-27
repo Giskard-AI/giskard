@@ -149,6 +149,7 @@ public class MLWorkerService {
                 .setMeta(FilterDatasetMetadata.newBuilder()
                     .setHeaders(headers)
                     .setFunction(function)
+                    .putAllColumnTypes(dataset.getColumnTypes())
                     .build())
                 .setIdx(0)
                 .build();
