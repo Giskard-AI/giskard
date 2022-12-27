@@ -110,10 +110,23 @@ class Model:
             raise ValueError('Unsupported model type')
 
         mlflow.sklearn.save_model(self.model, path=local_path, pyfunc_predict_fn=pyfunc_predict_fn)
-        with open(Path(local_path) / 'giskard-model-meta.yaml', 'w') as f:
-            yaml.dump(self.meta.__dict__, f, default_flow_style=False)
+        info = mlflow.models.Model.load(local_path)
 
-        return mlflow.models.Model.load(local_path)
+        with open(Path(local_path) / 'giskard-model-meta.yaml', 'w') as f:
+            yaml.dump(
+                {
+                    "language_version": info.flavors['python_function']['python_version'],
+                    "language": "PYTHON",
+                    "model_type": self.meta.model_type.name.upper(),
+                    "threshold": self.meta.classification_threshold,
+                    "feature_names": self.meta.feature_names,
+                    "classification_labels": self.meta.classification_labels,
+                    "id": info.model_uuid,
+                    "name": self.meta.name,
+                    "size": get_size(local_path),
+                }, f, default_flow_style=False)
+
+        return info
 
     @classmethod
     def read_model_from_local_dir(cls, local_path: str):
@@ -126,7 +139,14 @@ class Model:
             # internal worker case, no token based http client
             assert local_dir.exists(), f"Cannot find existing model {project_key}.{model_id}"
             with open(Path(local_dir) / 'giskard-model-meta.yaml') as f:
-                meta = ModelMeta(**yaml.load(f, Loader=yaml.Loader))
+                saved_meta = yaml.load(f, Loader=yaml.Loader)
+                meta = ModelMeta(
+                    name=saved_meta['name'],
+                    model_type=SupportedModelTypes[saved_meta['model_type']],
+                    feature_names=saved_meta['feature_names'],
+                    classification_labels=saved_meta['classification_labels'],
+                    classification_threshold=saved_meta['threshold'],
+                )
         else:
             client.load_artifact(local_dir, posixpath.join(project_key, "models", model_id))
             meta = client.load_model_meta(project_key, model_id)
