@@ -29,7 +29,7 @@ def create_pid_file_path(is_server, url):
     return run_dir / f"ml-worker-{hash_value}.pid"
 
 
-def validate_url(ctx, param, value) -> AnyHttpUrl:
+def validate_url(_ctx, _param, value) -> AnyHttpUrl:
     return parse_obj_as(AnyHttpUrl, value)
 
 

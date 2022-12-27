@@ -5,41 +5,21 @@ import ai.giskard.grpc.MLWorkerClientErrorInterceptor;
 import ai.giskard.ml.MLWorkerClient;
 import ai.giskard.ml.tunnel.MLWorkerTunnelService;
 import ai.giskard.service.GiskardRuntimeException;
-import ai.giskard.worker.Chunk;
-import ai.giskard.worker.FileUploadRequest;
-import com.google.protobuf.ByteString;
 import io.grpc.ClientInterceptor;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
-import io.grpc.stub.StreamObserver;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.util.unit.DataSize;
 
-import java.io.IOException;
-import java.io.InputStream;
-
 @Service
 @RequiredArgsConstructor
 public class MLWorkerService {
-    public static final int UPLOAD_FILE_CHUNK_KB = 256;
     private final Logger log = LoggerFactory.getLogger(MLWorkerService.class);
     private final ApplicationProperties applicationProperties;
     private final MLWorkerTunnelService mlWorkerTunnelService;
-
-    private static void streamFile(InputStream inputStream, StreamObserver<FileUploadRequest> streamObserver) throws IOException {
-        byte[] bytes = new byte[1024 * UPLOAD_FILE_CHUNK_KB];
-        int size;
-        while ((size = inputStream.read(bytes)) > 0) {
-            streamObserver.onNext(
-                FileUploadRequest.newBuilder()
-                    .setChunk(Chunk.newBuilder().setContent(ByteString.copyFrom(bytes, 0, size)).build())
-                    .build()
-            );
-        }
-    }
 
     public MLWorkerClient createClient(boolean isInternal) {
         return createClient(isInternal, true);

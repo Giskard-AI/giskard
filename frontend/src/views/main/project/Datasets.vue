@@ -73,9 +73,8 @@
 <script lang="ts">
 import {Component, Prop, Vue} from "vue-property-decorator";
 import {api} from '@/api';
-import {performApiActionWithNotif} from '@/api-commons';
 import {commitAddNotification} from '@/store/main/mutations';
-import {DatasetDTO, ProjectDTO} from '@/generated-sources';
+import {DatasetDTO} from '@/generated-sources';
 import mixpanel from "mixpanel-browser";
 import DeleteModal from "@/views/main/project/modals/DeleteModal.vue";
 

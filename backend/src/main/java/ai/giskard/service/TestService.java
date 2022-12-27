@@ -63,7 +63,7 @@ public class TestService {
         return runTest(testId, false);
     }
 
-    private TestExecutionResultDTO runTest(Long testId, boolean throwExceptionOnError) throws IOException {
+    private TestExecutionResultDTO runTest(Long testId, boolean throwExceptionOnError) {
         TestExecutionResultDTO res = new TestExecutionResultDTO(testId);
         Test test = testRepository.findById(testId).orElseThrow(() -> new EntityNotFoundException(Entity.TEST, testId));
         res.setTestName(test.getName());

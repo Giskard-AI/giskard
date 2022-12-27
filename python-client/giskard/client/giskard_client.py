@@ -251,7 +251,7 @@ class GiskardClient:
             augmented_raise_for_status(resp)
 
     def save_dataset_meta(self, project_key, dataset_id, meta: DatasetMeta, original_size_bytes, compressed_size_bytes):
-        ds_res = self._session.post(f"project/{project_key}/datasets", json={
+        self._session.post(f"project/{project_key}/datasets", json={
             "project": project_key,
             "id": dataset_id,
             "name": meta.name,

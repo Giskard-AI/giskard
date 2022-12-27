@@ -37,6 +37,7 @@ import org.springframework.util.Assert;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -56,8 +57,6 @@ public class InitService {
     private static final Map<String, String> enronColumnTypes = new HashMap<>();
     private static final Map<String, FeatureType> zillowFeatureTypes = new HashMap<>();
     private static final Map<String, String> zillowColumnTypes = new HashMap<>();
-    private static final String CLASSPATH = "classpath:";
-    private static final String PROJECTDIR = "demo_projects/";
     public static final String ZILLOW_PROJECT_KEY = "zillow";
     public static final String ENRON_PROJECT_KEY = "enron";
     public static final String GERMAN_CREDIT_PROJECT_KEY = "credit";
@@ -265,7 +264,8 @@ public class InitService {
     }
 
     private Stream<Resource> getArtifactResouceStream(Project project, String artifactType) throws IOException {
-        String path = CLASSPATH + PROJECTDIR + project.getKey() + "/" + artifactType + "/*";
+        String path = "classpath:" + Paths.get("demo_projects", project.getKey(), artifactType, "*");
+
         PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
         return Arrays.stream(resolver.getResources(path)).filter(resource -> {
             try {
