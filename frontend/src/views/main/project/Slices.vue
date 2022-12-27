@@ -81,7 +81,8 @@
             </v-card-text>
             <v-card-actions>
               <v-spacer></v-spacer>
-              <v-btn color="secondary" text @click="closeCreateDialog()">Cancel</v-btn>
+              <v-btn color="error" text @click="closeCreateDialog()">Cancel</v-btn>
+              <v-btn color="secondary" text>Validate</v-btn>
               <v-btn color="primary" text type="submit">Create</v-btn>
             </v-card-actions>
           </v-form>

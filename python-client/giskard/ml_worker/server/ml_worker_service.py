@@ -281,7 +281,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
                 data_as_string = meta.headers + "\n" + data_as_string
                 # CSV => Dataframe
                 data = StringIO(data_as_string)  # Wrap using StringIO to avoid creating file
-                df = pd.read_csv(data)
+                df = pd.read_csv(data, keep_default_na=False, na_values=["_GSK_NA_"])
                 df = df.astype(column_types)
                 # Iterate over rows, applying filter_row func
                 rows_to_keep = df.apply(filterfunc["filter_row"], axis=1)[lambda x: x == True].index.array
