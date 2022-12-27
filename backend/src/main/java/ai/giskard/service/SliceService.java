@@ -13,7 +13,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.io.IOException;
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -24,6 +26,7 @@ public class SliceService {
     private final GiskardMapper giskardMapper;
     private final SliceRepository sliceRepository;
     private final MLWorkerService mlWorkerService;
+    private final FileLocationService fileLocationService;
 
     public SliceDTO createSlice(Slice slice) {
         Slice sl = sliceRepository.save(slice);
@@ -32,11 +35,30 @@ public class SliceService {
 
     public List<Integer> getSlicedRowsForDataset(Long sliceId, Dataset dataset) throws IOException {
         Slice slice = sliceRepository.getById(sliceId);
+        Path cachedSliceFile = fileLocationService.resolvedSlicePath(slice.getProject().getKey(), dataset.getId(),
+            slice.getCode().hashCode());
+        List<Integer> result = new ArrayList<>();
 
-        try (MLWorkerClient client = mlWorkerService.createClient(true)) {
-            return mlWorkerService.filterDataset(client, dataset, slice.getCode());
-        } catch (Exception e) {
-            return null; // todo exception?
+        if (Files.exists(cachedSliceFile)) {
+            try (DataInputStream inputStream = new DataInputStream(Files.newInputStream(cachedSliceFile))) {
+                while (inputStream.available() > 0) {
+                    result.add(inputStream.readInt());
+                }
+                return result;
+            }
+        } else {
+            try (MLWorkerClient client = mlWorkerService.createClient(true)) {
+                result = mlWorkerService.filterDataset(client, dataset, slice.getCode());
+                Files.createDirectories(cachedSliceFile.getParent());
+                Files.createFile(cachedSliceFile);
+                try (DataOutputStream outputStream = new DataOutputStream(Files.newOutputStream(cachedSliceFile))) {
+                    for (Integer i : result) {
+                        outputStream.writeInt(i);
+                    }
+                }
+            }
         }
+
+        return result;
     }
 }

@@ -27,12 +27,20 @@ public class FileLocationService {
         return resolvedProjectHome(projectKey).resolve("datasets");
     }
 
+    public Path slicesDirectory(String projectKey) {
+        return resolvedProjectHome(projectKey).resolve("slices");
+    }
+
     public Path resolvedDatasetPath(String projectKey, Long datasetId) {
         return resolvedProjectHome(projectKey).resolve("datasets").resolve(createZSTname("data_", datasetId));
     }
 
     public Path resolvedModelPath(String projectKey, Long modelId) {
         return modelsDirectory(projectKey).resolve(createZSTname("model_", modelId));
+    }
+
+    public Path resolvedSlicePath(String projectKey, Long datasetId, Integer sliceHash) {
+        return slicesDirectory(projectKey).resolve("slice_" + datasetId.toString() + "_" + sliceHash.toString() + ".slice");
     }
 
     public Path resolveFilePath(ProjectFile file) {

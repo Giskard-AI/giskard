@@ -87,9 +87,4 @@ public class DatasetsController {
     public List<FeatureMetadataDTO> datasetFeaturesMetadata(@PathVariable @NotNull Long datasetId) {
         return datasetService.getFeaturesWithDistinctValues(datasetId);
     }
-
-    @PostMapping("/dataset/{datasetId}/filter")
-    public String filterDataset(@PathVariable @NotNull Long datasetId, @RequestBody FilterDatasetDTO filter) throws IOException {
-        return datasetService.filterOn(datasetId, filter.getSliceName(), filter.getCode()).toString();
-    }
 }
