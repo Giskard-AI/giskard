@@ -277,6 +277,7 @@ message FilterDatasetRequest {
 message FilterDatasetMetadata {
     string function = 1;
     string headers = 2; // Since we are going to stream the CSV rows, we store the headers first
+    map<string, string> column_types = 3;
 }
 
 message FilterDatasetResponse {
