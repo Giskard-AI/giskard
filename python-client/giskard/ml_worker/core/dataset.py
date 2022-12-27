@@ -6,9 +6,9 @@ from pathlib import Path
 from typing import Callable, Dict, Optional
 
 import pandas as pd
+import yaml
 from zstandard import ZstdDecompressor
 
-import giskard
 from giskard.client.giskard_client import GiskardClient
 from giskard.client.io_utils import save_df, compress
 from giskard.core.core import DatasetMeta
@@ -44,20 +44,22 @@ class Dataset:
         validate_dataset(dataset=self)
 
         dataset_id = uuid.uuid4().hex
-        with tempfile.TemporaryDirectory(prefix="giskard-dataset-") as f:
-            original_size_bytes, compressed_size_bytes = self._save_to_local_dir(Path(f))
-            client.log_artifacts(f, posixpath.join(project_key, "datasets", dataset_id))
+        with tempfile.TemporaryDirectory(prefix="giskard-dataset-") as local_path:
+            original_size_bytes, compressed_size_bytes = self._save_to_local_dir(Path(local_path))
+            client.log_artifacts(local_path, posixpath.join(project_key, "datasets", dataset_id))
             client.save_dataset_meta(project_key,
                                      dataset_id,
-                                     DatasetMeta(
-                                         name=self.name,
-                                         target=self.target,
-                                         feature_types=self.feature_types,
-                                         column_types=self.column_types
-                                     ),
+                                     self.meta,
                                      original_size_bytes=original_size_bytes,
                                      compressed_size_bytes=compressed_size_bytes)
         return dataset_id
+
+    @property
+    def meta(self):
+        return DatasetMeta(name=self.name,
+                           target=self.target,
+                           feature_types=self.feature_types,
+                           column_types=self.column_types)
 
     @staticmethod
     def cast_column_to_types(df, column_types):
@@ -81,9 +83,18 @@ class Dataset:
 
     @classmethod
     def load(cls, client: GiskardClient, project_key, dataset_id):
-        local_dir = settings.home_dir / "cache" / project_key / "datasets" / dataset_id
-        client.load_artifact(local_dir, posixpath.join(project_key, "datasets", dataset_id))
-        meta: DatasetMeta = client.load_dataset_meta(project_key, dataset_id)
+        local_dir = settings.home_dir / settings.cache_dir / project_key / "datasets" / dataset_id
+
+        if client is None:
+            # internal worker case, no token based http client
+            assert local_dir.exists(), f"Cannot find existing model {project_key}.{dataset_id}"
+            with open(Path(local_dir) / 'giskard-dataset-meta.yaml') as f:
+                meta = DatasetMeta(**yaml.load(f, Loader=yaml.Loader))
+        else:
+            client.load_artifact(local_dir, posixpath.join(project_key, "datasets", dataset_id))
+            meta: DatasetMeta = client.load_dataset_meta(project_key, dataset_id)
+
+
         df = cls._read_dataset_from_local_dir(local_dir / "data.csv.zst")
         df = cls.cast_column_to_types(df, meta.column_types)
         return cls(
@@ -96,6 +107,9 @@ class Dataset:
             uncompressed_bytes = save_df(self.df)
             compressed_bytes = compress(uncompressed_bytes)
             f.write(compressed_bytes)
+
+            with open(Path(local_path) / 'giskard-dataset-meta.yaml', 'w') as meta_f:
+                yaml.dump(self.meta.__dict__, meta_f, default_flow_style=False)
             return len(uncompressed_bytes), len(compressed_bytes)
 
     @property
