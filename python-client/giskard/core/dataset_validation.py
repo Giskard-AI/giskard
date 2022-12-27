@@ -14,7 +14,7 @@ def validate_dataset(dataset: Dataset):
         validate_target(dataset.target, df.keys())
 
     validate_feature_types(dataset.df, dataset.feature_types, dataset.target)
-    validate_column_categorization(df, dataset.feature_types)
+    validate_column_categorization(df, dataset.feature_types, dataset.target)
 
 
 def validate_feature_types(df, feature_types, target):
@@ -55,13 +55,15 @@ def validate_feature_types(df, feature_types, target):
             )
 
 
-def validate_column_categorization(df: pd.DataFrame, feature_types):
+def validate_column_categorization(df: pd.DataFrame, feature_types, target):
     nuniques = df.nunique()
     nuniques_category = 2
     nuniques_numeric = 100
     nuniques_text = 1000
 
     for column in df.columns:
+        if column == target:
+            continue
         if nuniques[column] <= nuniques_category and \
                 (feature_types[column] == SupportedFeatureTypes.NUMERIC.value or
                  feature_types[column] == SupportedFeatureTypes.TEXT.value):
