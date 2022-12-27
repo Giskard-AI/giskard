@@ -70,46 +70,33 @@ def test_validate_deterministic_model():
 
 
 def test_validate_feature_types(german_credit_data, german_credit_test_data):
+    test_ds = german_credit_test_data
+    ds = german_credit_data
+
     with pytest.warns(UserWarning,
                       match=r"Feature 'people_under_maintenance' is declared as 'numeric' but has 2 .* Are you sure it is not a 'category' feature?"):
-        validate_column_categorization(
-            german_credit_test_data.df,
-            german_credit_test_data.feature_types
-        )
-    validate_column_categorization(
-        german_credit_test_data.df,
-        {c: german_credit_test_data.feature_types[c] for c in german_credit_test_data.feature_types if
-         c != german_credit_test_data.target}
-    )
-    validate_column_categorization(
-        german_credit_test_data.df,
-        german_credit_test_data.feature_types
-    )
+        validate_column_categorization(test_ds)
+
+    test_ds.feature_types = {c: test_ds.feature_types[c] for c in test_ds.feature_types if c != test_ds.target}
+    validate_column_categorization(ds)
+    original_feature_types = ds.feature_types
+
     with pytest.raises(ValueError) as e:
-        validate_feature_types(
-            german_credit_data.df,
-            {c: german_credit_data.feature_types[c] for c in german_credit_data.feature_types if
-             c not in {german_credit_data.target, "sex"}},
-            german_credit_data.target
-        )
+        ds.feature_types = {c: original_feature_types[c] for c in original_feature_types if c not in {ds.target, "sex"}}
+        validate_feature_types(ds)
     assert e.match(r"Invalid feature_types parameter: Please declare the type for {'sex'} columns")
 
     with pytest.raises(ValueError) as e:
-        new_ct = dict(german_credit_data.feature_types)
-        new_ct["non-existing-column"] = "int64"
-        validate_feature_types(
-            german_credit_data.df,
-            new_ct,
-            german_credit_data.target
-        )
-    assert e.match(r"Missing columns in dataframe according to column_types: {'non-existing-column'}")
+        new_ft = dict(original_feature_types)
+        new_ft["non-existing-column"] = SupportedFeatureTypes.CATEGORY.value
+        ds.feature_types = new_ft
+        validate_feature_types(ds)
+    assert e.match(r"Missing columns in dataframe according to feature_types: {'non-existing-column'}")
 
-    broken_types = dict(german_credit_test_data.feature_types)
+    broken_types = dict(test_ds.feature_types)
     broken_types['people_under_maintenance'] = SupportedFeatureTypes.CATEGORY.value
     broken_types['sex'] = SupportedFeatureTypes.NUMERIC.value
     with pytest.warns(UserWarning,
                       match=r"Feature 'sex' is declared as 'numeric' but has 2 .* Are you sure it is not a 'category' feature?") as w:
-        validate_column_categorization(
-            german_credit_test_data.df,
-            broken_types
-        )
+        test_ds.feature_types = broken_types
+        validate_column_categorization(test_ds)
