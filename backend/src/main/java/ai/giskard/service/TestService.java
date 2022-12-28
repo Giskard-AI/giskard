@@ -54,7 +54,7 @@ public class TestService {
     }
 
     @Transactional(noRollbackFor = StatusRuntimeException.class)
-    public TestExecutionResultDTO runTest(Long testId) throws IOException {
+    public TestExecutionResultDTO runTest(Long testId) {
         return runTest(testId, true);
     }
 

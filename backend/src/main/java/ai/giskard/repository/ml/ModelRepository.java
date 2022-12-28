@@ -20,8 +20,4 @@ public interface ModelRepository extends JpaRepository<ProjectModel, String> {
     @Override
     @Named("_noop_")
     ProjectModel getOne(String s);
-
-    //@Override
-    //@Named("_noop_")
-    //ProjectModel findOneByNullableId(String id);
 }
