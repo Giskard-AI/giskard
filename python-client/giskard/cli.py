@@ -93,6 +93,10 @@ def start_command(url: AnyHttpUrl, is_server, api_key, is_daemon):
     - client: ML Worker acts as a client and should connect to a running Giskard instance
         by specifying this instance's host and port.
     """
+
+    if 'GSK_API_KEY' in os.environ:
+        # delete API key environment variable so that it doesn't get leaked when the test code is executed
+        del os.environ['GSK_API_KEY']
     _start_command(is_server, url, api_key, is_daemon)
 
 
