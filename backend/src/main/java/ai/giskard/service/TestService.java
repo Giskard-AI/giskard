@@ -23,7 +23,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -59,7 +58,7 @@ public class TestService {
     }
 
     @Transactional()
-    public TestExecutionResultDTO runTestNoError(Long testId) throws IOException {
+    public TestExecutionResultDTO runTestNoError(Long testId) {
         return runTest(testId, false);
     }
 
@@ -130,7 +129,7 @@ public class TestService {
                 try {
                     TestExecutionResultDTO res = runTestNoError(testId);
                     result.add(res);
-                } catch (IOException e) {
+                } catch (Exception e) {
                     logger.error("Failed to run test {} in suite {}", testId, test.getTestSuite().getId(), e);
                 }
             }));
