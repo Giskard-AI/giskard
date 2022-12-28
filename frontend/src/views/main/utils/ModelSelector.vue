@@ -30,7 +30,7 @@ export default class ModelSelector extends Vue {
   @Prop() value?: ModelDTO | number;
 
   extractModelName(model: ModelDTO) {
-    return model.name || model.fileName;
+    return model.name || model.id;
   }
 
   onInput(value) {

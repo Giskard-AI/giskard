@@ -9,7 +9,7 @@ import java.util.List;
  * Inspection repository
  */
 public interface InspectionRepository extends JpaRepository<Inspection, Long> {
-    List<Inspection> findAllByModelId(long modelId);
+    List<Inspection> findAllByModelId(String modelId);
 
-    List<Inspection> findAllByDatasetId(long datasetId);
+    List<Inspection> findAllByDatasetId(String datasetId);
 }

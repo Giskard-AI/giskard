@@ -1,148 +1,129 @@
-import json
-from io import BytesIO
+import re
 
 import httpretty
-import numpy as np
-import pandas as pd
 import pytest
-from requests_toolbelt.multipart import decoder
 
+from giskard import Dataset
+from giskard import Model
 from giskard.client.giskard_client import GiskardClient
-from giskard.client.io_utils import decompress, load_decompress
-from giskard.client.model import GiskardModel
-from giskard.client.project import GiskardProject
-from giskard.ml_worker.core.giskard_dataset import GiskardDataset
 
 url = "http://giskard-host:12345"
 token = "SECRET_TOKEN"
 auth = "Bearer SECRET_TOKEN"
-content_type = "multipart/form-data; boundary="
+content_type = "application/json"
 model_name = "uploaded model"
 b_content_type = b"application/json"
 
 
 @httpretty.activate(verbose=True, allow_net_connect=False)
-def test_upload_df(diabetes_dataset: GiskardDataset):
-    httpretty.register_uri(httpretty.POST, "http://giskard-host:12345/api/v2/project/data/upload")
-    dataset_name = "diabetes dataset"
+def test_upload_df(diabetes_dataset: Dataset, diabetes_dataset_with_target: Dataset):
+    artifact_url_pattern = re.compile(
+        r"http://giskard-host:12345/api/v2/artifacts/test-project/datasets/[a-z0-9]{32}/[data.csv.zst|giskard\-dataset\-meta.yaml]")
+    datasets_url_pattern = re.compile("http://giskard-host:12345/api/v2/project/test-project/datasets")
+
+    httpretty.register_uri(
+        httpretty.POST,
+        artifact_url_pattern)
+    httpretty.register_uri(
+        httpretty.POST,
+        datasets_url_pattern)
+
     client = GiskardClient(url, token)
-    project = GiskardProject(client.session, "test-project", 1)
 
-    with pytest.raises(Exception):  # Error Scenario
-        project.upload_df(
-            df=diabetes_dataset.df,
-            column_types=diabetes_dataset.feature_types,
-            target=diabetes_dataset.target,
-            name=dataset_name,
-        )
-    with pytest.raises(Exception):  # Error Scenario
-        project.upload_df(df=diabetes_dataset.df, column_types={"test": "test"}, name=dataset_name)
+    saved_id = diabetes_dataset_with_target.save(client, "test-project")
+    assert re.match("^[a-z0-9]{32}$", saved_id)
 
-    project.upload_df(
-        df=diabetes_dataset.df, column_types=diabetes_dataset.feature_types, name=dataset_name
-    )
+    artifact_requests = [i for i in httpretty.latest_requests() if artifact_url_pattern.match(i.url)]
+    assert len(artifact_requests) > 0
+    for req in artifact_requests:
+        assert req.headers.get("Authorization") == auth
+        assert int(req.headers.get("Content-Length")) > 0
 
-    req = httpretty.last_request()
-    assert req.headers.get("Authorization") == auth
-    assert int(req.headers.get("Content-Length")) > 0
-    assert req.headers.get("Content-Type").startswith(content_type)
+    artifact_requests = [i for i in httpretty.latest_requests() if datasets_url_pattern.match(i.url)]
+    assert len(artifact_requests) > 0
+    for req in artifact_requests:
+        assert req.headers.get("Authorization") == auth
+        assert int(req.headers.get("Content-Length")) > 0
+        assert req.headers.get("Content-Type") == "application/json"
 
-    multipart_data = decoder.MultipartDecoder(req.body, req.headers.get("Content-Type"))
-    assert len(multipart_data.parts) == 2
-    meta, upload_file = multipart_data.parts
-    assert meta.headers.get(b"Content-Type") == b_content_type
-    pd.testing.assert_frame_equal(
-        diabetes_dataset.df, pd.read_csv(BytesIO(decompress(upload_file.content)))
-    )
+    with pytest.raises(Exception) as e:
+        diabetes_dataset.save(client, "test-project")
+    assert e.match("target column is not present in the dataset")
+
+    with pytest.raises(Exception) as e:
+        diabetes_dataset.feature_types = {"test": "test"}
+        diabetes_dataset.save(client, "test-project")
+    assert e.match("target column is not present in the dataset")
 
 
 @httpretty.activate(verbose=True, allow_net_connect=False)
-def _test_upload_model(model: GiskardModel, ds: GiskardDataset):
-    httpretty.register_uri(httpretty.POST, "http://giskard-host:12345/api/v2/project/models/upload")
+def _test_upload_model(model: Model, ds: Dataset):
+    artifact_url_pattern = re.compile(
+        "http://giskard-host:12345/api/v2/artifacts/test-project/models/[a-z0-9]{32}/.*")
+    models_url_pattern = re.compile("http://giskard-host:12345/api/v2/project/test-project/models")
+
+    httpretty.register_uri(httpretty.POST, artifact_url_pattern)
+    httpretty.register_uri(httpretty.POST, models_url_pattern)
 
     client = GiskardClient(url, token)
-    project = GiskardProject(client.session, "test-project", 1)
-    if model.model_type == "regression":
+    if model.is_regression:
         # Warning Scenario: classification_labels is sent for regression model
         with pytest.warns(UserWarning):
-            project.upload_model(
-                prediction_function=model.prediction_function,
-                model_type=model.model_type,
-                feature_names=model.feature_names,
-                name=model_name,
-                validate_df=ds.df,
-                classification_labels=model.classification_labels
-            )
+            model_id = model.save(client, 'test-project', ds)
     else:
-        project.upload_model(
-            prediction_function=model.prediction_function,
-            model_type=model.model_type,
-            feature_names=model.feature_names,
-            name=model_name,
-            validate_df=ds.df,
-            classification_labels=model.classification_labels,
-        )
+        model_id = model.save(client, 'test-project', ds)
 
-    req = httpretty.last_request()
-    assert req.headers.get("Authorization") == auth
-    assert int(req.headers.get("Content-Length")) > 0
-    assert req.headers.get("Content-Type").startswith(content_type)
+    assert re.match("^[a-z0-9]{32}$", model_id)
 
-    multipart_data = decoder.MultipartDecoder(req.body, req.headers.get("Content-Type"))
-    assert len(multipart_data.parts) == 3
-    meta, model_file, requirements_file = multipart_data.parts
+    artifact_requests = [i for i in httpretty.latest_requests() if artifact_url_pattern.match(i.url)]
+    assert len(artifact_requests) > 0
+    for req in artifact_requests:
+        assert req.headers.get("Authorization") == auth
+        assert int(req.headers.get("Content-Length")) > 0
 
-    if model.model_type == "classification":
-        metadata = json.loads(meta.content)
-        assert np.array_equal(model.classification_labels, metadata.get("classificationLabels"))
-
-    assert meta.headers.get(b'Content-Type') == b_content_type
-    loaded_model = load_decompress(model_file.content)
-
-    assert np.array_equal(loaded_model(ds.df), model.prediction_function(ds.df))
-    assert requirements_file.content.decode()
+    artifact_requests = [i for i in httpretty.latest_requests() if models_url_pattern.match(i.url)]
+    assert len(artifact_requests) > 0
+    for req in artifact_requests:
+        assert req.headers.get("Authorization") == auth
+        assert int(req.headers.get("Content-Length")) > 0
+        assert req.headers.get("Content-Type") == "application/json"
 
 
-def _test_upload_model_exceptions(model: GiskardModel, ds: GiskardDataset):
+def _test_upload_model_exceptions(model: Model, ds: Dataset):
     client = GiskardClient(url, token)
-    project = GiskardProject(client.session, "test-project", 1)
 
-    # Error Scenario : Column_types dictionary sent as feature_names
-    with pytest.raises(Exception):
-        project.upload_model(
-            prediction_function=model.prediction_function,
-            model_type=model.model_type,
-            feature_names=model.feature_names,
+    # Error Scenario : invalid feature_names
+    with pytest.raises(Exception) as e:
+        Model(
+            clf=model.clf,
+            model_type=model.meta.model_type,
+            feature_names=["some"],
             name=model_name,
-            validate_df=ds.df,
-            classification_labels=model.classification_labels
-        )
+            classification_labels=model.meta.classification_labels
+        ).save(client, 'test-project', ds)
+    assert e.match('Value mentioned in  feature_names is  not available in validate_df')
 
-    if model.model_type == 'classification':
+    if model.is_classification:
         # Error Scenario: Classification model sent without classification_labels
-        with pytest.raises(Exception):
-            project.upload_model_and_df(
-                prediction_function=model.prediction_function,
-                model_type=model.model_type,
-                df=ds.df,
-                column_types=ds.feature_types,
-                feature_names=model.feature_names,
-                model_name=model_name,
-                target='default'
-            )
+        with pytest.raises(Exception) as e:
+            Model(
+                clf=model.clf,
+                model_type=model.meta.model_type,
+                feature_names=model.meta.feature_names,
+                name=model_name
+            ).save(client, 'test-project', ds)
+        assert e.match('Invalid classification_labels parameter: None. Please specify valid list of strings')
 
         # Error Scenario: Target has values not declared in Classification Label
-        with pytest.raises(Exception):
-            project.upload_model_and_df(
-                prediction_function=model.prediction_function,
-                model_type=model.model_type,
-                target='default',
-                df=ds.df,
-                column_types=ds.feature_types,
-                feature_names=model.feature_names,
-                model_name=model_name,
+        with pytest.raises(Exception) as e:
+            Model(
+                clf=model.clf,
+                model_type=model.meta.model_type,
+                feature_names=model.meta.feature_names,
+                name=model_name,
                 classification_labels=[0, 1]
-            )
+            ).save(client, 'test-project', ds)
+        assert e.match('Values in default column are not declared in classification_labels parameter')
 
 
 @pytest.mark.parametrize(
@@ -159,8 +140,9 @@ def test_upload_models(data, model, request):
 
 
 @pytest.mark.parametrize('data,model,',
-                         [('german_credit_data', 'german_credit_model'),
-                          ('diabetes_dataset', 'linear_regression_diabetes')])
+                         [
+                             ('german_credit_data', 'german_credit_model'),
+                             ('diabetes_dataset', 'linear_regression_diabetes')])
 def test_upload_models_exceptions(data, model, request):
     data = request.getfixturevalue(data)
     model = request.getfixturevalue(model)

@@ -1,10 +1,10 @@
 import pytest
 
-from giskard.ml_worker.core.giskard_dataset import GiskardDataset
+from giskard.ml_worker.core.dataset import Dataset
 from giskard.ml_worker.testing.functions import GiskardTestFunctions
 
 
-def _test_metamorphic_increasing_regression(ds: GiskardDataset, model, threshold):
+def _test_metamorphic_increasing_regression(ds: Dataset, model, threshold):
     tests = GiskardTestFunctions()
     perturbation = {"bmi": lambda x: x.bmi + x.bmi * 0.1}
     results = tests.metamorphic.test_metamorphic_increasing(
@@ -16,7 +16,7 @@ def _test_metamorphic_increasing_regression(ds: GiskardDataset, model, threshold
     return results.passed
 
 
-def _test_metamorphic_decreasing_regression(ds: GiskardDataset, model, threshold):
+def _test_metamorphic_decreasing_regression(ds: Dataset, model, threshold):
     tests = GiskardTestFunctions()
     perturbation = {"age": lambda x: x.age - x.age * 0.1}
     results = tests.metamorphic.test_metamorphic_decreasing(
@@ -33,7 +33,7 @@ def _test_metamorphic_increasing_classification(df, model, threshold):
     results = tests.metamorphic.test_metamorphic_increasing(
         df=df,
         model=model,
-        classification_label=model.classification_labels[0],
+        classification_label=model.meta.classification_labels[0],
         perturbation_dict=perturbation,
         threshold=threshold,
     )
@@ -49,7 +49,7 @@ def _test_metamorphic_decreasing_classification(df, model, threshold):
     results = tests.metamorphic.test_metamorphic_decreasing(
         df=df,
         model=model,
-        classification_label=model.classification_labels[0],
+        classification_label=model.meta.classification_labels[0],
         perturbation_dict=perturbation,
         threshold=threshold,
     )

@@ -1,7 +1,6 @@
 package ai.giskard.service;
 
 import ai.giskard.config.ApplicationProperties;
-import ai.giskard.domain.ProjectFile;
 import ai.giskard.domain.ml.Dataset;
 import ai.giskard.domain.ml.ProjectModel;
 import lombok.RequiredArgsConstructor;
@@ -27,25 +26,21 @@ public class FileLocationService {
         return resolvedProjectHome(projectKey).resolve("datasets");
     }
 
-    public Path resolvedDatasetPath(String projectKey, Long datasetId) {
-        return resolvedProjectHome(projectKey).resolve("datasets").resolve(createZSTname("data_", datasetId));
+    public Path resolvedDatasetPath(Dataset dataset) {
+        return resolvedDatasetPath(dataset.getProject().getKey(), dataset.getId());
     }
 
-    public Path resolvedModelPath(String projectKey, Long modelId) {
-        return modelsDirectory(projectKey).resolve(createZSTname("model_", modelId));
+    public Path resolvedDatasetPath(String projectKey, String datasetId) {
+        return datasetsDirectory(projectKey).resolve(datasetId);
     }
 
-    public Path resolveFilePath(ProjectFile file) {
-        String projectKey = file.getProject().getKey();
-        if (file instanceof ProjectModel) {
-            return resolvedModelPath(projectKey, file.getId());
-        } else if (file instanceof Dataset) {
-            return resolvedDatasetPath(projectKey, file.getId());
-        } else {
-            throw new IllegalArgumentException("Unknown file type");
-        }
+    public Path resolvedModelPath(ProjectModel model) {
+        return resolvedModelPath(model.getProject().getKey(), model.getId());
     }
 
+    public Path resolvedModelPath(String projectKey, String modelId) {
+        return modelsDirectory(projectKey).resolve(modelId);
+    }
 
     public Path resolvedInspectionPath(String projectKey, Long inspectionId) {
         return modelsDirectory(projectKey).resolve(Paths.get("inspections", inspectionId.toString()));
@@ -55,11 +50,7 @@ public class FileLocationService {
         return giskardHome().resolve(projectHome(projectKey));
     }
 
-    private Path giskardHome() {
+    public Path giskardHome() {
         return applicationProperties.getHome();
-    }
-
-    public static String createZSTname(String prefix, Long id) {
-        return prefix + id.toString() + ".zst";
     }
 }

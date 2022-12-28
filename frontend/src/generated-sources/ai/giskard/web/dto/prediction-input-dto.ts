@@ -2,6 +2,6 @@
  * Generated from ai.giskard.web.dto.PredictionInputDTO
  */
 export interface PredictionInputDTO {
-    datasetId: number;
+    datasetId: string;
     features: {[key: string]: string};
 }

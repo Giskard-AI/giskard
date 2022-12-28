@@ -23,7 +23,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -54,16 +53,16 @@ public class TestService {
     }
 
     @Transactional(noRollbackFor = StatusRuntimeException.class)
-    public TestExecutionResultDTO runTest(Long testId) throws IOException {
+    public TestExecutionResultDTO runTest(Long testId) {
         return runTest(testId, true);
     }
 
     @Transactional()
-    public TestExecutionResultDTO runTestNoError(Long testId) throws IOException {
+    public TestExecutionResultDTO runTestNoError(Long testId) {
         return runTest(testId, false);
     }
 
-    private TestExecutionResultDTO runTest(Long testId, boolean throwExceptionOnError) throws IOException {
+    private TestExecutionResultDTO runTest(Long testId, boolean throwExceptionOnError) {
         TestExecutionResultDTO res = new TestExecutionResultDTO(testId);
         Test test = testRepository.findById(testId).orElseThrow(() -> new EntityNotFoundException(Entity.TEST, testId));
         res.setTestName(test.getName());
@@ -80,18 +79,14 @@ public class TestService {
         try (MLWorkerClient client = mlWorkerService.createClient(test.getTestSuite().getProject().isUsingInternalWorker())) {
             TestResultMessage testResult;
 
-            mlWorkerService.upload(client, model);
-
             RunTestRequest.Builder requestBuilder = RunTestRequest.newBuilder()
                 .setCode(test.getCode())
-                .setModel(grpcMapper.serialize(model));
+                .setModel(grpcMapper.createRef(model));
             if (referenceDS != null) {
-                mlWorkerService.upload(client, referenceDS);
-                requestBuilder.setReferenceDs(grpcMapper.serialize(referenceDS));
+                requestBuilder.setReferenceDs(grpcMapper.createRef(referenceDS));
             }
             if (actualDS != null) {
-                mlWorkerService.upload(client, actualDS);
-                requestBuilder.setActualDs(grpcMapper.serialize(actualDS));
+                requestBuilder.setActualDs(grpcMapper.createRef(actualDS));
             }
             RunTestRequest request = requestBuilder.build();
             logger.debug("Sending requiest to ML Worker: {}", request);
@@ -134,7 +129,7 @@ public class TestService {
                 try {
                     TestExecutionResultDTO res = runTestNoError(testId);
                     result.add(res);
-                } catch (IOException e) {
+                } catch (Exception e) {
                     logger.error("Failed to run test {} in suite {}", testId, test.getTestSuite().getId(), e);
                 }
             }));
