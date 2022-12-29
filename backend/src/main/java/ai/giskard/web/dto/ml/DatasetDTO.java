@@ -13,6 +13,7 @@ import lombok.Setter;
 import javax.validation.constraints.NotNull;
 import java.time.Instant;
 import java.util.Map;
+import java.util.UUID;
 
 @Getter
 @Setter
@@ -27,7 +28,7 @@ public class DatasetDTO {
     private ProjectDTO project;
     @JsonProperty("id")
     @NotNull
-    private String id;
+    private UUID id;
     private String name;
     @JsonAlias("column_types")
     private Map<String, String> columnTypes;
