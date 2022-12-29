@@ -1,9 +1,6 @@
 <template>
   <div>
     <v-toolbar flat dense light>
-      <v-toolbar-title class="text-h6 font-weight-regular secondary--text text--lighten-1">
-        Users
-      </v-toolbar-title>
       <v-spacer></v-spacer>
       <v-text-field
         v-model="searchTerm"
