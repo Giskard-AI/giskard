@@ -32,7 +32,6 @@ interface State {
     appSettings: AppInfoDTO | null;
     coworkers: IUserProfileMinimal[];
     notifications: AppNotification[];
-    projects: ProjectDTO[];
 }
 
 export const useMainStore = defineStore('main', {
@@ -44,7 +43,6 @@ export const useMainStore = defineStore('main', {
         appSettings: null,
         coworkers: [],
         notifications: [],
-        projects: [],
     }),
     getters: {
         hasAdminAccess: (state: State) => {
@@ -54,12 +52,6 @@ export const useMainStore = defineStore('main', {
                 state.userProfile.enabled);
         },
         loginError: (state: State) => state.logInError,
-        allProjects: (state: State) => state.projects,
-        project: (state: State) => (id: number) => {
-            const filtered = state.projects.filter((p) => p.id === id);
-            if (filtered.length > 0) return filtered[0];
-            else return undefined;
-        },
     },
     actions: {
         setAppSettings(payload: AppInfoDTO) {
@@ -92,11 +84,6 @@ export const useMainStore = defineStore('main', {
                     }
                 }
             });
-        },
-        setProject(payload: ProjectDTO) {
-            const projects = this.projects.filter((p: ProjectDTO) => p.id !== payload.id);
-            projects.push(payload);
-            this.projects = projects;
         },
         addNotification(payload: AppNotification) {
             Vue.$toast(payload.content, {
@@ -204,6 +191,34 @@ export const useMainStore = defineStore('main', {
             if (router.currentRoute.path === '/auth/login' || router.currentRoute.path === '/') {
                 await router.push('/main');
             }
+        },
+        async passwordRecovery(payload: { userId: string }) {
+            const loadingNotification = {content: 'Sending password recovery email', showProgress: true};
+            try {
+                this.addNotification(loadingNotification);
+                await api.passwordRecovery(payload.userId);
+                this.removeNotification(loadingNotification);
+                this.addNotification({color: 'success', content: 'Password recovery link has been sent'});
+                await this.logout();
+            } catch (error) {
+                this.removeNotification(loadingNotification);
+                let data = error.response.data;
+                let errMessage = "";
+                if (data.message === 'error.validation') {
+                    errMessage = data.fieldErrors.map(e => `${e.field}: ${e.message}`).join('\n');
+                } else {
+                    errMessage = data.detail;
+                }
+                this.addNotification({color: 'error', content: errMessage});
+            }
+        },
+        async resetPassword(payload: { password: string, token: string }) {
+            const loadingNotification = {content: 'Resetting password', showProgress: true};
+            this.addNotification(loadingNotification);
+            await api.resetPassword(payload.password);
+            this.removeNotification(loadingNotification);
+            this.addNotification({color: 'success', content: 'Password successfully changed'});
+            await this.logout();
         }
     }
 })
