@@ -17,7 +17,6 @@ import ai.giskard.web.dto.ml.ModelDTO;
 import ai.giskard.worker.ExplainResponse;
 import ai.giskard.worker.ExplainTextResponse;
 import ai.giskard.worker.RunModelForDataFrameResponse;
-import liquibase.pro.packaged.p;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,7 +28,6 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @RestController
 @RequiredArgsConstructor
