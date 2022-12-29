@@ -284,4 +284,4 @@ class GiskardClient:
         return self._session.get("settings").json()
 
     def save_test_suite(self, dto: TestSuiteNewDTO):
-        return self._session.post(f"testing/project/{dto.project_key}/suite", json=dto.dict()).json()
+        return self._session.post(f"testing/project/{dto.project_key}/suites-new", json=dto.dict()).json()

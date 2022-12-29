@@ -68,12 +68,19 @@ public class TestSuiteController {
     }
 
 
-    @PostMapping("project/{projectKey}/suite")
+    @PostMapping("project/{projectKey}/suites-new")
     @PreAuthorize("@permissionEvaluator.canWriteProjectKey(#projectKey)")
     @Transactional
     public Long saveTestSuite(@PathVariable("projectKey") @NotNull String projectKey, @Valid @RequestBody TestSuiteNewDTO dto) {
         TestSuiteNew savedSuite = testSuiteNewRepository.save(giskardMapper.fromDTO(dto));
         return savedSuite.getId();
+    }
+
+    @GetMapping("project/{projectId}/suites-new")
+    @PreAuthorize("@permissionEvaluator.canReadProject(#projectId)")
+    @Transactional
+    public List<TestSuiteNewDTO> listTestSuitesNew(@PathVariable("projectId") @NotNull Long projectId) {
+        return giskardMapper.toDTO(testSuiteNewRepository.findAllByProjectId(projectId));
     }
 
     @PostMapping("project/{projectKey}/suites")
