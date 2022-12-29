@@ -81,9 +81,10 @@ export const useMainStore = defineStore('main', {
                 }
             );
             mixpanel.track("Read App Settings")
+            const self = this;
             Vue.filter('roleName', function (value) {
-                if (this.appSettings) {
-                    let roles = Object.assign({}, ...this.appSettings.roles.map((x) => ({[x.id]: x.name})));
+                if (self.appSettings) {
+                    let roles = Object.assign({}, ...self.appSettings.roles.map((x) => ({[x.id]: x.name})));
                     if (value in roles) {
                         return roles[value];
                     } else {
