@@ -23,6 +23,7 @@ import _ from "lodash";
 
 import './styles/global.scss';
 import './styles/colors.scss';
+import pinia from "@/stores";
 
 Vue.config.productionTip = false;
 
@@ -30,6 +31,7 @@ new Vue({
     router,
     store,
     vuetify,
+    pinia,
     render: (h) => h(App)
 }).$mount('#app');
 
