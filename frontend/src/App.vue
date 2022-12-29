@@ -29,10 +29,13 @@ import {computed, onBeforeMount, provide} from "vue";
 import store from "@/store";
 import {editor} from "monaco-editor";
 import IEditorOptions = editor.IEditorOptions;
+import {useMainStore} from "@/stores/main";
 
 const loggedIn = computed(() => {
   return readIsLoggedIn(store);
 });
+
+const mainStore = useMainStore();
 
 let monacoOptions: IEditorOptions = {
   automaticLayout: true,
