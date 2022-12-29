@@ -18,12 +18,6 @@ body:
     attributes:
       value: |
         Please make sure that this fits our [GitHub Issues Policy](https://github.com/Giskard-AI/giskard/blob/main/ISSUES.md) as we only address code/doc bugs, performance issues, feature requests and build/installation issues on GitHub.
-
-  # - type: markdown
-  #   attributes:
-      # value: | 
-      #   You can collect some of this information using our environment capture [script](https://github.com/tensorflow/tensorflow/tree/master/tools/tf_env_collect.sh)  You can also obtain the TensorFlow version with: <br> 1. TF 1.0: `python -c "import tensorflow as tf; print(tf.GIT_VERSION, tf.VERSION)"` <br>2. TF 2.0: `python -c "import giskard ; print(tf.version.GIT_VERSION, tf.version.VERSION)"`
-
   - type: dropdown
     id: source
     attributes:
@@ -31,83 +25,42 @@ body:
       description: Giskard installed from
       options:
         - source
-        - binary
+        - docker
     validations:
       required: true
   - type: input
     id: giskardversion
     attributes:
       label: Giskard Version
-      description: 
-      placeholder: ex,. giskard 1.3
-    validations:
-      required: true
-  - type: dropdown
-    id: Code
-    attributes:
-      label: Custom Code
-      description: 
-      options:
-        - "Yes"
-        - "No"
+      description: You can also obtain the Giskard version with `python -c "import giskard ; print(giskard.__version__)"` or logon to http://localhost:19000 using admin credentials. Navigate to admin page on left bottom. Giskard version is available under "Application"
+      placeholder: e.g., 1.3.0
     validations:
       required: true
   - type: input
-    id: OS
+    id: os
     attributes:
       label: OS Platform and Distribution
       description: 
       placeholder: e.g., Linux Ubuntu 16.04
     validations:
       required: false
-  # - type: input
-  #   id: Mobile
-  #   attributes:
-  #     label: Mobile device
-  #     description: 
-  #     placeholder: e.g., Linux Ubuntu 16.04
-  #   validations:
-  #     required: false
   - type: input
-    id: Python
+    id: python
     attributes:
       label: Python version
       description: 
       placeholder: e.g., 3.9
     validations:
       required: false
-  # - type: input
-  #   id: Bazel
-  #   attributes:
-  #     label: Bazel version
-  #     description: if compiling from source
-  #     placeholder: 
-  #   validations:
-  #     required: false
-  # - type: input
-  #   id: Compiler
-  #   attributes:
-  #     label: GCC/Compiler version
-  #     description: if compiling from source
-  #     placeholder: 
-  #   validations:
-  #     required: false
-  # - type: input
-  #   id: Cuda
-  #   attributes:
-  #     label: CUDA/cuDNN version
-  #     description:
-  #     placeholder: 
-  #   validations:
-  #     required: false
-  # - type: input
-  #   id: Gpu
-  #   attributes:
-  #     label: GPU model and memory
-  #     description: if compiling from source
-  #     placeholder: 
-  #   validations:
-  #     required: false
+   - type: textarea
+     id: packages
+     attributes:
+       label: Installed python packages
+       description: You can list the currently installed python packages in the environment by running `pip list --format freeze`
+       placeholder:
+       render: shell
+     validations:
+       required: true
   - type: textarea
     id: what-happened
     attributes:
