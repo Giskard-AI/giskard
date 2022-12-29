@@ -48,5 +48,6 @@ provide('monacoOptions', monacoOptions);
 
 onBeforeMount(async () => {
   await dispatchCheckLoggedIn(store);
+  await mainStore.checkLoggedIn();
 });
 </script>
