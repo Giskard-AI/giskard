@@ -54,7 +54,7 @@
     "@vue/cli": "~5.0.6",
     "@vue/cli-plugin-pwa": "~5.0.6",
     "@vue/cli-plugin-typescript": "~5.0.6",
-    "@vue/cli-service": "~5.0.6",
+    "@vue/cli-service": "~5.0.8",
     "@vue/eslint-config-typescript": "^11.0.2",
     "@vue/test-utils": "^1.2.2",
     "babel-loader": "^8.2.5",
@@ -65,7 +65,7 @@
     "sass-loader": "^13.0.0",
     "typescript": "^4.7.4",
     "vue-cli-plugin-vuetify": "^2.5.1",
-    "vue-loader": "^15.10.0",
+    "vue-loader": "^17.0.1",
     "vuetify-loader": "^1.9.2"
   },
   "browserslist": [
