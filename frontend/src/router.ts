@@ -180,6 +180,11 @@ export default new Router({
                             redirect: 'admin/users/all',
                             children: [
                                 {
+                                    path: 'general',
+                                    component: () => import(
+                                        /* webpackChunkName: "main-admin" */ './views/main/admin/settings/SettingsGeneral.vue'),
+                                },
+                                {
                                     path: 'users',
                                     redirect: 'users/all',
                                 },
