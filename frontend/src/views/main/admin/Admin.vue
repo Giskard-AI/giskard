@@ -1,11 +1,12 @@
 <template>
-    <router-view></router-view>
+  <Settings/>
 </template>
 
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator';
 import { store } from '@/store';
 import { readHasAdminAccess } from '@/store/main/getters';
+import Settings from "@/views/main/admin/settings/Settings.vue";
 
 const routeGuardAdmin = async (to, from, next) => {
   if (!readHasAdminAccess(store)) {
@@ -15,7 +16,9 @@ const routeGuardAdmin = async (to, from, next) => {
   }
 };
 
-@Component
+@Component({
+  components: {Settings}
+})
 export default class Admin extends Vue {
   public beforeRouteEnter(to, from, next) {
     routeGuardAdmin(to, from, next);
