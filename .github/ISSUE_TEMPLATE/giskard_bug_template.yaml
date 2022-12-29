@@ -29,10 +29,18 @@ body:
     validations:
       required: true
   - type: input
-    id: giskardversion
+    id: giskard-lib-version
     attributes:
-      label: Giskard Version
-      description: You can also obtain the Giskard version with `python -c "import giskard ; print(giskard.__version__)"` or logon to http://localhost:19000 using admin credentials. Navigate to admin page on left bottom. Giskard version is available under "Application"
+      label: Giskard Library Version
+      description: You can  obtain the Giskard library version with `python -c "import giskard ; print(giskard.__version__)"`
+      placeholder: e.g., 1.3.0
+    validations:
+      required: true
+  - type: input
+    id: giskard-server-version
+    attributes:
+      label: Giskard Server Version
+      description: You can obtain the Giskard Server version by logging to http://localhost:19000 (if running on docker) or http://localhost:9000 (if running on local) using admin credentials. Navigate to admin page on left bottom. Giskard server version is available under "Application"
       placeholder: e.g., 1.3.0
     validations:
       required: true
@@ -60,7 +68,7 @@ body:
        placeholder:
        render: shell
      validations:
-       required: true
+       required: false
   - type: textarea
     id: what-happened
     attributes:
