@@ -23,7 +23,7 @@ feature_names:
 - people_under_maintenance
 - telephone
 - foreign_worker
-id: 931123877bce4b71826e933cfb235a65
+id: 93112387-7bce-4b71-826e-933cfb235a65
 language: PYTHON
 model_type: CLASSIFICATION
 name: Credit Scoring Model logistic_regression

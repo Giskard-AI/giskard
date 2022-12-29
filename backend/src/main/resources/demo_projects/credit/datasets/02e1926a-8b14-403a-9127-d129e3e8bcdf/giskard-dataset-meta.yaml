@@ -23,7 +23,7 @@ feature_types:
   savings: category
   sex: category
   telephone: category
-id: 02e1926a8b14403a9127d129e3e8bcdf
+id: 02e1926a-8b14-403a-9127-d129e3e8bcdf
 name: Credit Scoring data test
 original_size_bytes: 53607
 target: default
