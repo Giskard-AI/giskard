@@ -34,7 +34,7 @@ const props = defineProps<{
 
 const paragraph = ref(null)
 const range = ref<number>(0)
-const widthParagraph = ref<number>(getCurrentInstance()?.proxy.$parent?.$el.clientWidth - 40);
+const widthParagraph = ref<number>(getCurrentInstance()?.proxy.$parent?.$el.clientWidth! - 40);
 const x = ref<number>(0)
 const y = ref<number>(0)
 const classificationMinWeight = ref<number>(Math.min(...props.weights));
@@ -80,7 +80,7 @@ onMounted(() => {
     window.addEventListener('resize', () => {
         x.value = 0;
         y.value = 0;
-        widthParagraph.value = paragraph.value.clientWidth; 
+        widthParagraph.value = paragraph.value.clientWidth;
         items.value = createItems()
     });
 })
