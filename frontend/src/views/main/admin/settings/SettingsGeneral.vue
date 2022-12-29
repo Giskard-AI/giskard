@@ -292,6 +292,20 @@ function epochToDate(epoch: number) {
 }
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
+.worker-tab {
+  display: flex;
+  justify-content: space-between;
+  width: 120px;
+}
 
+.giskard-address {
+  border: 1px lightgrey dashed;
+  padding: 2px;
+}
+
+.worker-tabs {
+  width: auto;
+  flex-grow: 0;
+}
 </style>
