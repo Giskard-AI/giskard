@@ -41,10 +41,10 @@ import {
 import {TYPE} from "vue-toastification";
 import ErrorToast from "@/views/main/utils/ErrorToast.vue";
 import router from "@/router";
-import {commitSetLoggedIn, commitSetToken} from "@/store/main/mutations";
 import store from "@/store";
 import mixpanel from "mixpanel-browser";
 import AdminUserDTOWithPassword = AdminUserDTO.AdminUserDTOWithPassword;
+import {useUserStore} from "@/stores/user";
 
 function jwtRequestInterceptor(config) {
     // Do something before request is sent
@@ -101,12 +101,12 @@ async function errorInterceptor(error) {
         trackError(error);
     }
 
-
     if (error.response) {
         if (error.response.status === 401) {
+            const userStore = useUserStore();
             removeLocalToken();
-            commitSetToken(store, '');
-            commitSetLoggedIn(store, false);
+            userStore.token = '';
+            userStore.isLoggedIn = false;
             if (router.currentRoute.path !== '/auth/login') {
                 await router.push('/auth/login');
             }

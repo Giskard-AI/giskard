@@ -76,13 +76,13 @@ export const mutations = {
 
 const {commit} = getStoreAccessors<MainState | any, State>('');
 
-export const commitSetLoggedIn = commit(mutations.setLoggedIn);
-export const commitSetLogInError = commit(mutations.setLogInError);
-export const commitSetToken = commit(mutations.setToken);
-export const commitSetUserProfile = commit(mutations.setUserProfile);
-export const commitSetAppSettings = commit(mutations.setAppSettings);
-export const commitSetCoworkers = commit(mutations.setCoworkers);
-export const commitSetProjects = commit(mutations.setProjects);
-export const commitSetProject = commit(mutations.setProject);
-export const commitAddNotification = commit(mutations.addNotification);
-export const commitRemoveNotification = commit(mutations.removeNotification);
+// export const commitSetLoggedIn = commit(mutations.setLoggedIn);
+// export const commitSetLogInError = commit(mutations.setLogInError);
+// export const commitSetToken = commit(mutations.setToken);
+// export const commitSetUserProfile = commit(mutations.setUserProfile);
+// export const commitSetAppSettings = commit(mutations.setAppSettings);
+// export const commitSetCoworkers = commit(mutations.setCoworkers);
+// export const commitSetProjects = commit(mutations.setProjects);
+// export const commitSetProject = commit(mutations.setProject);
+// export const commitAddNotification = commit(mutations.addNotification);
+// export const commitRemoveNotification = commit(mutations.removeNotification);
