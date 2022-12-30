@@ -4,19 +4,18 @@
 
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator';
-import { store } from '@/store';
-import { dispatchCheckLoggedIn } from '@/store/main/actions';
-import { readIsLoggedIn } from '@/store/main/getters';
+import {useUserStore} from "@/stores/user";
 
 const startRouteGuard = async (to, from, next) => {
-  await dispatchCheckLoggedIn(store);
-  if (readIsLoggedIn(store)) {
+  const userStore = useUserStore();
+  await userStore.checkLoggedIn();
+  if (userStore.isLoggedIn) {
     if (to.path === '/auth/login' || to.path === '/') {
       next('/main/dashboard');
     } else {
       next();
     }
-  } else if (readIsLoggedIn(store) === false) {
+  } else if (userStore.isLoggedIn === false) {
     if (to.path === '/' || (to.path as string).startsWith('/main')) {
       next('/auth/login');
     } else {
