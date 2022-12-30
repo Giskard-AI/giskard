@@ -4,12 +4,12 @@
 
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator';
-import { store } from '@/store';
-import { readHasAdminAccess } from '@/store/main/getters';
 import Settings from "@/views/main/admin/settings/Settings.vue";
+import {useUserStore} from "@/stores/user";
 
 const routeGuardAdmin = async (to, from, next) => {
-  if (!readHasAdminAccess(store)) {
+  const userStore = useUserStore();
+  if (!userStore.hasAdminAccess) {
     next('/main');
   } else {
     next();

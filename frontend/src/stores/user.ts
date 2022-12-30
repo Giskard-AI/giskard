@@ -1,6 +1,6 @@
 import {defineStore} from "pinia";
 import {computed, ref} from "vue";
-import {AdminUserDTO, UpdateMeDTO} from "@/generated-sources";
+import {AdminUserDTO, ManagedUserVM, UpdateMeDTO} from "@/generated-sources";
 import {Role} from "@/enums";
 import {api} from "@/api";
 import {getLocalToken, removeLocalToken, saveLocalToken} from "@/utils";
@@ -16,13 +16,6 @@ interface State {
 }
 
 export const useUserStore = defineStore('user', {
-    // const mainStore = useMainStore();
-    // // const router = useRouter();
-    //
-    // const token = ref<string>('');
-    // const isLoggedIn = ref<boolean | null>(null);
-    // const loginError = ref<string | null>(null);
-    // const userProfile = ref<AdminUserDTO | null>(null);
     state: (): State => ({
         token: '',
         isLoggedIn: null,
@@ -148,6 +141,19 @@ export const useUserStore = defineStore('user', {
             mainStore.removeNotification(loadingNotification);
             mainStore.addNotification({color: 'success', content: 'Password successfully changed'});
             await this.logout();
+        },
+        async signupUser(payload: {userData: ManagedUserVM}) {
+            const mainStore = useMainStore();
+            const loadingNotification = {content: 'saving', showProgress: true};
+            try {
+                mainStore.addNotification(loadingNotification);
+                await api.signupUser(payload.userData);
+                mainStore.removeNotification(loadingNotification);
+                mainStore.addNotification({content: 'Success! Please proceed to login', color: 'success'});
+                await this.logout();
+            } catch (error) {
+                throw new Error(error.response.data.detail);
+            }
         }
     }
 })

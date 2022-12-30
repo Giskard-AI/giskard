@@ -59,21 +59,22 @@
   </div>
 </template>
 
-<script lang="ts">
-import { Component, Vue } from 'vue-property-decorator';
-import { readAdminUsers } from '@/store/admin/getters';
-import { dispatchGetUsers, dispatchDeleteUser } from '@/store/admin/actions';
-import {readAppSettings} from "@/store/main/getters";
+<script setup lang="ts">
+import {computed, onMounted, ref} from "vue";
+import {useAdminStore} from "@/stores/admin";
+import {useMainStore} from "@/stores/main";
+import {AdminUserDTO} from "@/generated-sources";
+import AdminUserDTOWithPassword = AdminUserDTO.AdminUserDTOWithPassword;
 
-@Component
-export default class AdminUsers extends Vue {
+const adminStore = useAdminStore();
+const mainStore = useMainStore();
 
-  public searchTerm: string = "";
-  public showInactive: boolean = false;
-  public canAddUsers: boolean = true;
+const searchTerm = ref<string>("");
+const showInactive = ref<boolean>(false);
+const canAddUsers = ref<boolean>(true);
 
-  get headers() {
-    return [
+const headers = computed(() => {
+  return [
     {
       text: 'id',
       sortable: true,
@@ -102,7 +103,7 @@ export default class AdminUsers extends Vue {
       text: 'Enabled',
       value: 'enabled',
       align: 'left',
-      filter: value => this.showInactive || value
+      filter: value => showInactive.value || value
     },
     {
       text: 'Role',
@@ -117,26 +118,26 @@ export default class AdminUsers extends Vue {
       text: 'Actions',
       value: 'action'
     }
-    ]
-  }
+  ]
+});
 
-  get users() {
-    return readAdminUsers(this.$store);
-  }
+const users = computed(() => {
+  return adminStore.users;
+});
 
-  public async mounted() {
-    await dispatchGetUsers(this.$store);
-    const appSettings = await readAppSettings(this.$store);
-    this.canAddUsers = !appSettings || !appSettings.seatsAvailable || appSettings.seatsAvailable > 0;
-  }
+onMounted(async () => {
+  await adminStore.getUsers();
+  const appSettings = mainStore.appSettings;
+  canAddUsers.value = !appSettings || !appSettings.seatsAvailable || appSettings.seatsAvailable > 0;
+})
 
-  public async deleteUser(user) {
-    if (await this.$dialog.confirm({
-      text: `Are you sure you want to delete user <strong>${user.user_id}</strong>?`,
-      title: 'Delete user'
-    })) {
-      await dispatchDeleteUser(this.$store, {id: user.user_id});
-    }
+async function deleteUser(user: AdminUserDTOWithPassword) {
+  // TODO: This needs fixing
+  if (await this.$dialog.confirm({
+    text: `Are you sure you want to delete user <strong>${user.user_id}</strong>?`,
+    title: 'Delete user'
+  })) {
+    await adminStore.deleteUser(user)
   }
 }
 </script>
