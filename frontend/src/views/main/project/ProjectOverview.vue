@@ -55,7 +55,6 @@ import Datasets from '@/views/main/project/Datasets.vue';
 import FeedbackList from '@/views/main/project/FeedbackList.vue';
 import {IUserProfileMinimal} from '@/interfaces';
 import mixpanel from "mixpanel-browser";
-import {DatasetDTO, ProjectDTO} from "@/generated-sources";
 
 @Component({
   components: {
@@ -66,7 +65,6 @@ export default class ProjectOverview extends Vue {
 
   @Prop({required: true}) projectId!: number;
   @Prop({type: Boolean, required: true, default: false}) isProjectOwnerOrAdmin!: boolean;
-  projectOverview: ProjectDTO[] = [];
   get project() {
     return readProject(this.$store)(this.projectId)
   }
