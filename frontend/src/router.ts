@@ -58,7 +58,7 @@ export default new Router({
                             },
                             children: [
                                 {
-                                    path: 'projectOverview',
+                                    path: 'overview',
                                     name: 'project-overview',
                                     component: () => import('./views/main/project/ProjectOverview.vue'),
                                     props: (route) => {
