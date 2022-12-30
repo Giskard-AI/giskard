@@ -52,7 +52,7 @@
                           <v-list-item-title>{{ a.name }}</v-list-item-title>
                           <v-list-item-subtitle class="text-caption">{{ a.type }}</v-list-item-subtitle>
                           <v-list-item-action-text v-show="!!a.optional">Optional. Default: <code>{{
-                              a.default
+                              a.defaultValue
                             }}</code>
                           </v-list-item-action-text>
                         </v-list-item-content>
@@ -94,7 +94,7 @@
                     <v-expansion-panels flat @change="resizeEditor">
                       <v-expansion-panel>
                         <v-expansion-panel-header class="pa-0">Code</v-expansion-panel-header>
-                        <v-expansion-panel-content class="pa-0" >
+                        <v-expansion-panel-content class="pa-0">
                           <MonacoEditor
                               ref="editor"
                               v-model='selected.code'
@@ -128,6 +128,7 @@ import DatasetSelector from "@/views/main/utils/DatasetSelector.vue";
 import MonacoEditor from 'vue-monaco';
 import TestExecutionResultBadge from "@/views/main/project/TestExecutionResultBadge.vue";
 import {editor} from "monaco-editor";
+import {TestCatalogDTO, TestDefinitionDTO, TestExecutionResultDTO, TestFunctionArgumentDTO} from "@/generated-sources";
 import IEditorOptions = editor.IEditorOptions;
 
 const l = MonacoEditor;
@@ -137,11 +138,11 @@ let props = defineProps<{
 
 const editor = ref(null)
 
-let registry = ref(null);
-let selected = ref(null);
+let registry = ref<TestCatalogDTO | null>(null);
+let selected = ref<TestDefinitionDTO | null>(null);
 let tryMode = ref(true)
 let testArguments = ref({})
-let testResult = ref(null);
+let testResult = ref<TestExecutionResultDTO | null>(null);
 
 let openFeedbackDetail = false
 
@@ -149,7 +150,7 @@ const monacoOptions: IEditorOptions = inject('monacoOptions');
 monacoOptions.readOnly = true;
 
 async function runTest() {
-  testResult.value = await api.runAdHocTest(props.projectId, selected.value.id, testArguments.value);
+  testResult.value = await api.runAdHocTest(props.projectId, selected.value!.id, testArguments.value);
 }
 
 
@@ -159,14 +160,14 @@ function resizeEditor() {
   })
 }
 
-function castDefaultValueToType(arg) {
+function castDefaultValueToType(arg: TestFunctionArgumentDTO) {
   switch (arg.type) {
     case 'float':
-      return parseFloat(arg.default)
+      return parseFloat(arg.defaultValue)
     case 'int':
-      return parseInt(arg.default)
+      return parseInt(arg.defaultValue)
     default:
-      return arg.default;
+      return arg.defaultValue;
   }
 }
 
@@ -187,12 +188,14 @@ function sorted(arr: any[]) {
 }
 
 const testFunctions = computed(() => {
-  // @ts-ignore
-  return _.sortBy(registry.value?.functions, 'name');
+  if (!registry.value) {
+    return [];
+  }
+  return _.sortBy(_.values(registry.value?.tests), 'name');
 })
 
 onActivated(async () => {
-  registry.value = await api.getTestsRegistry(props.projectId);
+  registry.value = await api.getTestsCatalog(props.projectId);
   if (testFunctions) {
     selected.value = testFunctions[0];
   }
@@ -218,7 +221,7 @@ onActivated(async () => {
   min-height: 0; /* new */
 }
 
-::v-deep .v-expansion-panel-content__wrap{
+::v-deep .v-expansion-panel-content__wrap {
   padding: 0;
 }
 

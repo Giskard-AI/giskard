@@ -10,4 +10,8 @@ import java.util.List;
 public interface TestSuiteNewRepository extends JpaRepository<TestSuiteNew, Long> {
     List<TestSuiteNew> findAllByProjectKey(String projectKey);
     List<TestSuiteNew> findAllByProjectId(Long projectId);
+
+    TestSuiteNew findOneByProjectIdAndId(Long projectId, Long id);
+
+
 }

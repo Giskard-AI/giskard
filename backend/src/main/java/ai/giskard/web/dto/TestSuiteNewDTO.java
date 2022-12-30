@@ -9,6 +9,7 @@ import java.util.List;
 @Data
 @UIModel
 public class TestSuiteNewDTO {
+    private Long id;
     private String name;
     @JsonAlias("project_key")
     private String projectKey;
