@@ -65,6 +65,7 @@ export default class ProjectOverview extends Vue {
 
   @Prop({required: true}) projectId!: number;
   @Prop({type: Boolean, required: true, default: false}) isProjectOwnerOrAdmin!: boolean;
+
   get project() {
     return readProject(this.$store)(this.projectId)
   }
