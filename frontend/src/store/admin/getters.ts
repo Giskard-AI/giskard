@@ -14,7 +14,7 @@ export const getters = {
 };
 
 const { read } = getStoreAccessors<AdminState, State>('');
-
-export const readAdminOneUser = read(getters.adminOneUser);
-export const readAdminUsers = read(getters.adminUsers);
-export const readAdminRoles = read(getters.adminRoles);
+//
+// export const readAdminOneUser = read(getters.adminOneUser);
+// export const readAdminUsers = read(getters.adminUsers);
+// export const readAdminRoles = read(getters.adminRoles);

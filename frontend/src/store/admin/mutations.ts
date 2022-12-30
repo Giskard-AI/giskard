@@ -18,7 +18,7 @@ export const mutations = {
 };
 
 const { commit } = getStoreAccessors<AdminState, State>('');
-
-export const commitSetUser = commit(mutations.setUser);
-export const commitSetUsers = commit(mutations.setUsers);
-export const commitSetRoles = commit(mutations.setRoles);
+//
+// export const commitSetUser = commit(mutations.setUser);
+// export const commitSetUsers = commit(mutations.setUsers);
+// export const commitSetRoles = commit(mutations.setRoles);

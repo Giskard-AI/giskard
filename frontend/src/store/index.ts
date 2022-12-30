@@ -19,7 +19,7 @@ Vue.use(VuetifyDialog, {
 
 const storeOptions: StoreOptions<State> = {
   modules: {
-    main: mainModule,
+    // main: mainModule,
     admin: adminModule,
   },
 };

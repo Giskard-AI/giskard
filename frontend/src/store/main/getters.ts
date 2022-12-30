@@ -26,12 +26,12 @@ export const getters = {
 
 const {read} = getStoreAccessors<MainState, State>('');
 
-export const readHasAdminAccess = read(getters.hasAdminAccess);
-export const readIsLoggedIn = read(getters.isLoggedIn);
-export const readLoginError = read(getters.loginError);
-export const readToken = read(getters.token);
-export const readUserProfile = read(getters.userProfile);
-export const readAppSettings = read(getters.appSettings);
-export const readCoworkers = read(getters.coworkers);
-export const readAllProjects = read(getters.allProjects);
-export const readProject = read(getters.project);
+// export const readHasAdminAccess = read(getters.hasAdminAccess);
+// export const readIsLoggedIn = read(getters.isLoggedIn);
+// export const readLoginError = read(getters.loginError);
+// export const readToken = read(getters.token);
+// export const readUserProfile = read(getters.userProfile);
+// export const readAppSettings = read(getters.appSettings);
+// export const readCoworkers = read(getters.coworkers);
+// export const readAllProjects = read(getters.allProjects);
+// export const readProject = read(getters.project);
