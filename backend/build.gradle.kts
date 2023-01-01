@@ -21,7 +21,7 @@ plugins {
     id("org.springframework.boot")
     id("org.sonarqube")
     id("com.gorylenko.gradle-git-properties") version "2.4.0"
-    id("io.freefair.lombok") version "6.5.0.3"
+    id("io.freefair.lombok") version "6.6.1"
     id("org.liquibase.gradle") version "2.1.1"
     id("com.github.andygoossens.gradle-modernizer-plugin") version "1.6.2"
     id("com.google.protobuf") version "0.8.18"
