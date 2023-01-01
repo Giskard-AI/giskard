@@ -63,7 +63,7 @@
     "monaco-editor-webpack-plugin": "~7.0.1",
     "sass": "^1.43.2",
     "sass-loader": "^13.0.0",
-    "typescript": "^4.7.4",
+    "typescript": "^4.9.4",
     "vue-cli-plugin-vuetify": "^2.5.1",
     "vue-loader": "^15.10.0",
     "vuetify-loader": "^1.9.2"
