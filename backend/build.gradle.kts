@@ -232,7 +232,7 @@ dependencies {
     implementation("org.apache.commons:commons-compress:1.21")
 
     implementation("commons-codec:commons-codec:1.15")
-    implementation("com.google.protobuf:protobuf-java-util:3.21.9")
+    implementation("com.google.protobuf:protobuf-java-util:3.21.12")
     implementation("com.github.blagerweij:liquibase-sessionlock:1.6.0")
 }
 
