@@ -62,8 +62,7 @@
 import {Component, Vue} from "vue-property-decorator";
 
 import {appName} from "@/env";
-import {readHasAdminAccess, readUserProfile} from "@/store/main/getters";
-import {dispatchUserLogOut} from "@/store/main/actions";
+import {useUserStore} from "@/stores/user";
 
 const routeGuardMain = async (to, _from, next) => {
   if (to.path === "/main") {
@@ -87,11 +86,12 @@ export default class Main extends Vue {
   }
 
   public get hasAdminAccess() {
-    return readHasAdminAccess(this.$store);
+    const userStore = useUserStore();
+    return userStore.hasAdminAccess;
   }
 
   get userId() {
-    const userProfile = readUserProfile(this.$store);
+    const userProfile = useUserStore().userProfile;
     if (userProfile) {
       return userProfile.user_id;
     } else {
@@ -100,7 +100,7 @@ export default class Main extends Vue {
   }
 
   public async logout() {
-    await dispatchUserLogOut(this.$store);
+    await useUserStore().userLogout();
   }
 }
 </script>

@@ -95,17 +95,20 @@
 <script setup lang="ts">
 import {computed, onMounted, ref, watch} from "vue";
 import {ValidationObserver} from "vee-validate";
-import {dispatchCreateProject, dispatchGetProjects} from "@/store/main/actions";
-import {readAllProjects, readHasAdminAccess, readUserProfile} from "@/store/main/getters";
 import {Role} from "@/enums";
 import {ProjectPostDTO} from "@/generated-sources";
 import {toSlug} from "@/utils";
 import store from "@/store";
 import {useRoute, useRouter} from "vue-router/composables";
 import moment from "moment";
+import {useUserStore} from "@/stores/user";
+import {useProjectStore} from "@/stores/project";
 
 const route = useRoute();
 const router = useRouter();
+
+const userStore = useUserStore();
+const projectStore = useProjectStore();
 
 const openCreateDialog = ref<boolean>(false); // toggle for edit or create dialog
 const newProjectName = ref<string>("");
@@ -126,7 +129,7 @@ onMounted(async () => {
 
 // computed
 const userProfile = computed(() => {
-  const userProfile = readUserProfile(store);
+  const userProfile = userStore.userProfile;
   if (userProfile == null) {
     throw Error("User is not defined.")
   }
@@ -134,7 +137,7 @@ const userProfile = computed(() => {
 });
 
 const isAdmin = computed(() => {
-  return readHasAdminAccess(store);
+  return userStore.hasAdminAccess;
 });
 
 const isCreator = computed(() => {
@@ -142,13 +145,13 @@ const isCreator = computed(() => {
 });
 
 const projects = computed(() => {
-  return readAllProjects(store)
+  return projectStore.projects
       .sort((a, b) => moment(b.createdDate).diff(moment(a.createdDate)));
 })
 
 // functions
 async function loadProjects() {
-  await dispatchGetProjects(store);
+  await projectStore.getProjects();
 }
 
 function clearAndCloseDialog() {
@@ -175,7 +178,7 @@ async function submitNewProject() {
   };
 
   try {
-    await dispatchCreateProject(store, proj);
+    await projectStore.createProject(proj);
     clearAndCloseDialog();
   } catch (e) {
     console.error(e.message);

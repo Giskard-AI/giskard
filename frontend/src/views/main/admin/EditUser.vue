@@ -82,6 +82,7 @@ import {useAdminStore} from "@/stores/admin";
 import {computed, onMounted, ref} from "vue";
 import {AdminUserDTO} from "@/generated-sources";
 import AdminUserDTOWithPassword = AdminUserDTO.AdminUserDTOWithPassword;
+import ButtonModalConfirmation from "@/components/ButtonModalConfirmation.vue";
 
 const router = useRouter();
 const adminStore = useAdminStore();
@@ -107,7 +108,7 @@ const allRoles = computed(() => {
 })
 
 const user = computed(() => {
-  return adminStore.getUser(parseInt(this.$router.currentRoute.params.id));
+  return adminStore.getUser(parseInt(router.currentRoute.params.id));
 })
 
 function reset() {

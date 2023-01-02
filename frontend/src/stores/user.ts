@@ -101,13 +101,15 @@ export const useUserStore = defineStore('user', {
             mainStore.addNotification({content: 'Logged out', color: 'success'});
         },
         async routeLogout() {
-            const router = useRouter();
+            // @ts-ignore
+            const router = this.$router;
             if (router.currentRoute.path !== '/auth/login') {
                 await router.push('/auth/login');
             }
         },
         async routeLoggedIn() {
-            const router = useRouter();
+            // @ts-ignore
+            const router = this.$router;
             if (router.currentRoute.path === '/auth/login' || router.currentRoute.path === '/') {
                 await router.push('/main');
             }

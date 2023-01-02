@@ -1,7 +1,6 @@
 import {defineStore} from "pinia";
 import {AdminUserDTO, AppConfigDTO, ProjectDTO, UpdateMeDTO} from "@/generated-sources";
 import {IUserProfileMinimal} from "@/interfaces";
-import {AppNotification, MainState} from "@/store/main/state";
 import AppInfoDTO = AppConfigDTO.AppInfoDTO;
 import mixpanel from "mixpanel-browser";
 import {anonymize, getLocalToken, removeLocalToken, saveLocalToken} from "@/utils";
@@ -9,6 +8,12 @@ import Vue, {ref} from "vue";
 import {api} from "@/api";
 import {AxiosError} from "axios";
 import {useUserStore} from "@/stores/user";
+
+export interface AppNotification {
+    content: string;
+    color?: string;
+    showProgress?: boolean;
+}
 
 interface State {
     appSettings: AppInfoDTO | null;

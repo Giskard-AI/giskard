@@ -40,7 +40,7 @@
     <v-data-table height="75vh" fixed-header :headers="headers" :items="users" sort-by="id" :search="searchTerm">
       <!-- eslint-disable vue/valid-v-slot vue/no-unused-vars-->
       <template v-slot:item.roles="{ item }">
-        <span v-for='r in item.roles'>{{r | roleName}}</span>
+        <v-chip small v-for='r in item.roles'>{{r | roleName}}</v-chip>
       </template>
       <template v-slot:item.enabled="{item}">
         <v-icon v-if="item.enabled">checkmark</v-icon>
@@ -106,7 +106,7 @@ const headers = computed(() => {
       filter: value => showInactive.value || value
     },
     {
-      text: 'Role',
+      text: 'Roles',
       sortable: true,
       filterable: false,
       value: 'roles',

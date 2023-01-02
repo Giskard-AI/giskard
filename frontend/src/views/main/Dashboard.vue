@@ -39,60 +39,58 @@
   </div>
 </template>
 
-<script lang="ts">
-import {Component, Vue} from 'vue-property-decorator';
-import {readUserProfile, readAllProjects, readHasAdminAccess} from '@/store/main/getters';
-import {readAdminUsers} from '@/store/admin/getters';
-import {dispatchGetUsers} from '@/store/admin/actions';
-import {dispatchGetProjects} from '@/store/main/actions';
-import {Role} from '@/enums';
-import {isAdmin} from "@/utils";
+<script setup lang="ts">
+import {computed, onMounted} from "vue";
+import {useProjectStore} from "@/stores/project";
+import {useUserStore} from "@/stores/user";
+import {useAdminStore} from "@/stores/admin";
+import {readAllProjects, readHasAdminAccess, readUserProfile} from "@/store/main/getters";
+import {Role} from "@/enums";
+import {readAdminUsers} from "@/store/admin/getters";
 
-@Component
-export default class Dashboard extends Vue {
+const projectStore = useProjectStore();
+const userStore = useUserStore();
+const adminStore = useAdminStore();
 
-  public async mounted() {
-    await dispatchGetProjects(this.$store);
-    if (isAdmin(this.$store)) {
-      await dispatchGetUsers(this.$store);
+
+onMounted(async () => {
+    await projectStore.getProjects();
+    if (userStore.hasAdminAccess) {
+      await adminStore.getUsers();
     }
-  }
+});
 
-  get userProfile() {
-    return readUserProfile(this.$store);
-  }
+const userProfile = computed(() => {
+  return userStore.userProfile;
+});
 
-  get isAdmin() {
-    return readHasAdminAccess(this.$store);
-  }
+const isAdmin = computed(() => {
+  return userStore.hasAdminAccess;
+});
 
-  get isCreator() {
-    return this.userProfile?.roles?.includes(Role.AICREATOR)
-  }
+const isCreator = computed(() => {
+  return userProfile.value?.roles?.includes(Role.AICREATOR)
+});
 
-  get projects() {
-    return readAllProjects(this.$store);
-  }
+const projects = computed(() => {
+  return projectStore.projects;
+});
 
-  get users() {
-    if (this.isAdmin) {
-      return readAdminUsers(this.$store);
-    } else return []
-  }
+const users = computed(() => {
+  if (isAdmin.value) {
+    return adminStore.users;
+  } else return []
+});
 
-  get greetedUser() {
-    const userProfile = this.userProfile;
-    if (userProfile) {
-      if (userProfile.displayName) {
-        return userProfile.displayName;
-      } else if (userProfile.user_id) {
-        return userProfile.user_id;
-      } else {
-        return userProfile.email;
-      }
-    } else return "guest"
-  }
-
-
-}
+const greetedUser = computed(() => {
+  if (userProfile.value) {
+    if (userProfile.value?.displayName) {
+      return userProfile.value?.displayName;
+    } else if (userProfile.value?.user_id) {
+      return userProfile.value?.user_id;
+    } else {
+      return userProfile.value?.email;
+    }
+  } else return "guest"
+});
 </script>

@@ -89,8 +89,6 @@
 <script lang="ts">
 import {Component, Prop, Vue, Watch} from "vue-property-decorator";
 import {api} from "@/api";
-import {readToken} from "@/store/main/getters";
-import {commitAddNotification} from '@/store/main/mutations';
 import FeedbackDetail from './FeedbackDetail.vue';
 import {FeedbackMinimalDTO} from "@/generated-sources";
 
