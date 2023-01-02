@@ -41,7 +41,6 @@ import {
 import {TYPE} from "vue-toastification";
 import ErrorToast from "@/views/main/utils/ErrorToast.vue";
 import router from "@/router";
-import store from "@/store";
 import mixpanel from "mixpanel-browser";
 import AdminUserDTOWithPassword = AdminUserDTO.AdminUserDTOWithPassword;
 import {useUserStore} from "@/stores/user";

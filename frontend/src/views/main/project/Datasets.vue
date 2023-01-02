@@ -75,10 +75,11 @@
 import {Component, Prop, Vue} from "vue-property-decorator";
 import {api} from '@/api';
 import {performApiActionWithNotif} from '@/api-commons';
-import {commitAddNotification} from '@/store/main/mutations';
+// import {commitAddNotification} from '@/store/main/mutations';
 import {FileDTO, ProjectDTO} from '@/generated-sources';
 import mixpanel from "mixpanel-browser";
 import DeleteModal from "@/views/main/project/modals/DeleteModal.vue";
+import {useMainStore} from "@/stores/main";
 
 const GISKARD_INDEX_COLUMN_NAME = '_GISKARD_INDEX_';
 
@@ -106,8 +107,7 @@ export default class Datasets extends Vue {
   public async upload_data() {
     mixpanel.track('Upload dataset');
     let project: ProjectDTO = await api.getProject(this.projectId);
-    await performApiActionWithNotif(this.$store,
-        () => api.uploadDataFile(project.key, this.fileData),
+    await performApiActionWithNotif(() => api.uploadDataFile(project.key, this.fileData),
         () => {
           this.loadDatasets()
           this.fileData = null;
@@ -124,7 +124,7 @@ export default class Datasets extends Vue {
       scrollable: true
     })) {
       let messageDTO = await api.deleteDatasetFile(id);
-      commitAddNotification(this.$store, {content: messageDTO.message});
+      useMainStore().addNotification({content: messageDTO.message});
       await this.loadDatasets();
     }
   }
@@ -152,7 +152,7 @@ export default class Datasets extends Vue {
         }
         this.filePreviewData = response
       } catch (error) {
-        commitAddNotification(this.$store, {content: error.response.statusText, color: 'error'});
+        useMainStore().addNotification({content: error.response.statusText, color: 'error'});
         this.filePreviewHeader = [];
         this.filePreviewData = [];
       }

@@ -1,6 +1,4 @@
 import {AxiosResponse} from 'axios';
-import {State} from './store/state';
-import {Store} from 'vuex';
 import {useMainStore} from "@/stores/main";
 
 export function dialogDownloadFile(response: AxiosResponse, fileName: string) {
@@ -12,8 +10,7 @@ export function dialogDownloadFile(response: AxiosResponse, fileName: string) {
   fileLink.click();
 }
 
-export async function performApiActionWithNotif(store: Store<State>,
-  apiAction: () => any,
+export async function performApiActionWithNotif(apiAction: () => any,
   callbackFn: () => any,
 ) {
   const mainStore = useMainStore();

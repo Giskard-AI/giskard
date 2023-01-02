@@ -215,13 +215,14 @@
 import {computed, onBeforeMount, onMounted, ref, watch} from "vue";
 import {AppConfigDTO, GeneralSettings, MLWorkerInfoDTO} from "@/generated-sources";
 import AppInfoDTO = AppConfigDTO.AppInfoDTO;
-import {readAppSettings} from "@/store/main/getters";
 import store from "@/store";
 import mixpanel from "mixpanel-browser";
 import {api} from "@/api";
 import moment from "moment/moment";
 import {copyToClipboard} from "@/global-keys";
-import {commitAddNotification} from "@/store/main/mutations";
+import {useMainStore} from "@/stores/main";
+
+const mainStore = useMainStore();
 
 
 const appSettings = ref<AppInfoDTO | null>(null);
@@ -241,7 +242,7 @@ const installedPackagesHeaders = [{text: 'Name', value: 'name', width: '70%'}, {
 
 onBeforeMount(async () => {
   // TODO: Vue 2 does not support top level await in <script setup>, this can be moved when we migrate to Vue 3
-  appSettings.value = readAppSettings(store);
+  appSettings.value = mainStore.appSettings;
   await initMLWorkerInfo();
 })
 
@@ -284,7 +285,7 @@ async function initMLWorkerInfo() {
 
 async function copyMLWorkerCommand() {
   await copyToClipboard('giskard worker start -h ' + giskardAddress);
-  commitAddNotification(store, {content: 'Copied', color: '#262a2d'});
+  mainStore.addNotification({content: 'Copied', color: '#262a2d'});
 }
 
 function epochToDate(epoch: number) {

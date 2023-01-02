@@ -101,93 +101,83 @@
   </div>
 </template>
 
-<script lang="ts">
-import {Component, Vue, Watch} from 'vue-property-decorator';
-import {readAppSettings, readUserProfile} from '@/store/main/getters';
-import {api} from '@/api';
-import {commitAddNotification, commitRemoveNotification} from '@/store/main/mutations';
-import {dispatchUpdateUserProfile} from '@/store/main/actions';
-import ButtonModalConfirmation from '@/components/ButtonModalConfirmation.vue';
-import {copyToClipboard} from '@/global-keys';
-import {AppConfigDTO, GeneralSettings, JWTToken, MLWorkerInfoDTO, UpdateMeDTO} from "@/generated-sources";
-import mixpanel from "mixpanel-browser";
+<script setup lang="ts">
+import {computed, ref} from "vue";
+import {JWTToken, UpdateMeDTO} from "@/generated-sources";
 import {Role} from "@/enums";
-import moment from "moment";
-import AppInfoDTO = AppConfigDTO.AppInfoDTO;
-import store from "@/store";
+import {api} from "@/api";
+import {copyToClipboard} from "@/global-keys";
+import {useUserStore} from "@/stores/user";
+import {useMainStore} from "@/stores/main";
 
-@Component({
-  components: {
-    ButtonModalConfirmation,
-  },
-})
-export default class UserProfile extends Vue {
+const userStore = useUserStore();
+const mainStore = useMainStore();
 
-  private displayName: string = '';
-  private email: string = '';
-  private editModeToggle = false;
-  private apiAccessToken: JWTToken | null = null;
-  private isAdmin: boolean = false;
+const displayName = ref<string>("");
+const email = ref<string>("");
+const editModeToggle = ref<boolean>(false);
+const apiAccessToken = ref<JWTToken | null>(null);
+const isAdmin = ref<boolean>(false);
 
-  private resetFormData() {
-    const userProfile = readUserProfile(this.$store);
-    if (userProfile) {
-      if (userProfile.displayName) {
-        this.displayName = userProfile.displayName;
-      }
-      this.email = userProfile.email;
-      this.isAdmin = userProfile.roles!.includes(Role.ADMIN);
+const observer = ref<any | null>(null);
+
+function resetFormData() {
+  const userProfile = userStore.userProfile;
+  if (userProfile) {
+    if (userProfile.displayName) {
+      displayName.value = userProfile.displayName;
     }
-  }
-
-  public async created() {
-    this.resetFormData();
-  }
-
-  get userProfile() {
-    return readUserProfile(this.$store);
-  }
-
-  public submit() {
-    (this.$refs.observer as any).validate().then(() => {
-      const currentProfile = readUserProfile(this.$store);
-      const updatedProfile: UpdateMeDTO = {};
-      if (this.displayName && this.displayName !== currentProfile?.displayName) {
-        updatedProfile.displayName = this.displayName;
-      }
-      if (this.email && this.email !== currentProfile?.email) {
-        updatedProfile.email = this.email;
-      }
-      if (Object.keys(updatedProfile).length > 0) {
-        dispatchUpdateUserProfile(this.$store, updatedProfile).then(() => {
-          this.editModeToggle = false;
-          this.resetFormData();
-        });
-      } else {
-        this.editModeToggle = false;
-        this.resetFormData();
-      }
-    });
-  }
-
-  public async generateToken() {
-    const loadingNotification = {content: 'Generating...', showProgress: true};
-    try {
-      commitAddNotification(this.$store, loadingNotification);
-      commitRemoveNotification(this.$store, loadingNotification);
-      this.apiAccessToken = await api.getApiAccessToken();
-    } catch (error) {
-      commitRemoveNotification(this.$store, loadingNotification);
-      commitAddNotification(this.$store, {content: 'Could not reach server', color: 'error'});
-    }
-  }
-
-  public async copyToken() {
-    await copyToClipboard(this.apiAccessToken?.id_token);
-    commitAddNotification(this.$store, {content: "Copied to clipboard", color: "success"});
+    email.value = userProfile.email;
+    isAdmin.value = userProfile.roles!.includes(Role.ADMIN);
   }
 }
+
+resetFormData();
+
+const userProfile = computed(() => {
+  return userStore.userProfile;
+});
+
+function submit() {
+  (observer.value as any).validate().then(() => {
+    const currentProfile = userStore.userProfile;
+    const updatedProfile: UpdateMeDTO = {};
+    if (displayName.value && displayName.value !== currentProfile?.displayName) {
+      updatedProfile.displayName = displayName.value;
+    }
+    if (email.value && email.value !== currentProfile?.email) {
+      updatedProfile.email = email.value;
+    }
+    if (Object.keys(updatedProfile).length > 0) {
+      userStore.updateUserProfile(updatedProfile).then(() => {
+        editModeToggle.value = false;
+        resetFormData();
+      });
+    } else {
+      editModeToggle.value = false;
+      resetFormData();
+    }
+  });
+}
+
+async function generateToken() {
+  const loadingNotification = {content: 'Generating...', showProgress: true};
+  try {
+    mainStore.addNotification(loadingNotification);
+    mainStore.removeNotification(loadingNotification);
+    apiAccessToken.value = await api.getApiAccessToken();
+  } catch (error) {
+    mainStore.removeNotification(loadingNotification);
+    mainStore.addNotification({content: 'Could not reach server', color: 'error'});
+  }
+}
+
+async function copyToken() {
+  await copyToClipboard(apiAccessToken.value?.id_token);
+  mainStore.addNotification({content: "Copied to clipboard", color: "success"});
+}
 </script>
+
 <style lang="scss" scoped>
 .worker-tabs {
   width: auto;

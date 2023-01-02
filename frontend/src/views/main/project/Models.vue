@@ -90,7 +90,7 @@ import InspectorLauncher from './InspectorLauncher.vue';
 import {ModelDTO} from '@/generated-sources';
 import mixpanel from "mixpanel-browser";
 import DeleteModal from "@/views/main/project/modals/DeleteModal.vue";
-import {commitAddNotification} from "@/store/main/mutations";
+import {useMainStore} from "@/stores/main";
 
 @Component({
   components: {InspectorLauncher}
@@ -123,7 +123,7 @@ export default class Models extends Vue {
       scrollable: true
     })) {
       let messageDTO = await api.deleteModelFiles(id);
-      commitAddNotification(this.$store, {content: messageDTO.message});
+      useMainStore().addNotification({content: messageDTO.message});
       await this.loadModelPickles();
     }
   }

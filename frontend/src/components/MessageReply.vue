@@ -32,9 +32,8 @@
   </div>
 </template>
 
-<script>
-import {readUserProfile} from '@/store/main/getters';
-import store from "@/store";
+<script lang="ts">
+import {useUserStore} from "@/stores/user";
 
 export default {
   name: 'message-reply',
@@ -54,7 +53,8 @@ export default {
   },
   computed: {
     isCurrentUser: function () {
-      return readUserProfile(store).user_id === this.author.user_id
+      const userStore = useUserStore();
+      return userStore.userProfile!.user_id === this.author.user_id
     },
     openReplyBox: function () {
       return !this.hideableBox || this.replyBoxToggle

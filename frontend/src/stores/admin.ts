@@ -44,7 +44,7 @@ export const useAdminStore = defineStore('admin', {
         async getUsers() {
             const mainStore = useMainStore();
             try {
-                this.roles = await api.getRoles();
+                this.users = await api.getUsers();
             } catch (err) {
                 await mainStore.checkApiError(err);
             }

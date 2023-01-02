@@ -25,20 +25,39 @@
     </v-dialog>
 </template>
 
-<script>
-export default {
-    props: {
-        text: {type: String, default: ''},
-        title: {type: String, default: 'Are you sure?'},
-        disabledButton: {type: Boolean, default: false}
-    },
-    data() {
-        return {
-            opened: false
-        }
-    }
+
+<script setup lang="ts">
+
+import {ref} from "vue";
+
+interface Props {
+  text: string,
+  title: string,
+  disabledButton: boolean
 }
-</script>    
+
+const props = withDefaults(defineProps<Props>(), {
+  text: '', title: 'Are you sure?', disabledButton: false
+});
+
+const opened = ref<boolean>(false);
+
+</script>
+
+<!--<script>-->
+<!--export default {-->
+<!--    props: {-->
+<!--        text: {type: String, default: ''},-->
+<!--        title: {type: String, default: 'Are you sure?'},-->
+<!--        disabledButton: {type: Boolean, default: false}-->
+<!--    },-->
+<!--    data() {-->
+<!--        return {-->
+<!--            opened: false-->
+<!--        }-->
+<!--    }-->
+<!--}-->
+<!--</script>    -->
 <style>
 
 </style>

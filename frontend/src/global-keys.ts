@@ -1,6 +1,5 @@
 import Mousetrap from 'mousetrap';
 import {getLocalToken} from '@/utils';
-import store from '@/store';
 import {useMainStore} from "@/stores/main";
 
 export function copyToClipboard(textToCopy) {

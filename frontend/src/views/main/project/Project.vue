@@ -121,135 +121,134 @@
 	</div>
 </template>
 
-<script lang="ts">
-import { Component, Vue, Prop, Watch } from 'vue-property-decorator';
-import { readProject, readCoworkers, readUserProfile } from '@/store/main/getters';
-import { dispatchGetProject, dispatchGetCoworkers, dispatchInviteUserToProject,
-	dispatchEditProject, dispatchDeleteProject } from '@/store/main/actions';
-import { IUserProfileMinimal } from '@/interfaces';
-import { getUserFullDisplayName } from '@/utils';
-import Models from '@/views/main/project/Models.vue';
-import Datasets from '@/views/main/project/Datasets.vue';
-import FeedbackList from '@/views/main/project/FeedbackList.vue';
-import { Role } from '@/enums';
-import { ProjectPostDTO, InspectionSettings } from '@/generated-sources';
+<script setup lang="ts">
+import {computed, onMounted, ref, watch} from "vue";
+import {IUserProfileMinimal} from "@/interfaces";
+import {Watch} from "vue-property-decorator";
+import {Role} from "@/enums";
 import mixpanel from "mixpanel-browser";
+import {InspectionSettings, ProjectPostDTO} from "@/generated-sources";
+import {useRoute, useRouter} from "vue-router/composables";
+import {useMainStore} from "@/stores/main";
+import {useUserStore} from "@/stores/user";
+import {useProjectStore} from "@/stores/project";
+import {Route} from "vue-router";
+import {getUserFullDisplayName} from "@/utils";
 
-@Component({
-	components: {
-		Models, Datasets, FeedbackList
-	}
+const route = useRoute();
+const router = useRouter();
+
+const mainStore = useMainStore();
+const userStore = useUserStore();
+const projectStore = useProjectStore();
+
+interface Props {
+  id: number
+}
+
+const props = defineProps<Props>();
+
+const userToInvite = ref<Partial<IUserProfileMinimal>>({});
+const openShareDialog = ref<boolean>(false);
+const openEditDialog = ref<boolean>(false);
+const openDeleteDialog = ref<boolean>(false);
+const newLimeSamples = ref<number>(0);
+const newName = ref<string>("");
+const newDescription = ref<string>("");
+const showInspector = ref<boolean>(false);
+const tempInspectorParams = ref<any>({}); // Type this later?
+
+onMounted(async () => {
+  // make sure project is loaded first
+  await projectStore.getProject({id: props.id});
+  await mainStore.getCoworkers();
+
+  setInspector(router.currentRoute);
 })
-export default class Project extends Vue {
+
+watch(() => (route), setInspector, { deep: true });
+
+const userProfile = computed(() => {
+  return userStore.userProfile;
+})
 
 
-	@Prop({ required: true }) id!: number;
+const coworkerNamesAvailable = computed(() => {
+  return mainStore.coworkers
+  // remove users already in guest list
+  // .filter(e => !this.project?.guest_list.map(i => i.user_id).includes(e.user_id));
+});
 
-	userToInvite:Partial<IUserProfileMinimal>={};
-	openShareDialog = false;
-	openEditDialog = false;
-	openDeleteDialog = false;
-	newLimeSamples = 0;
-	newName = "";
-	newDescription = "";
+const project = computed(() => {
+  return projectStore.project(props.id)
+});
 
-	showInspector = false;
-	tempInspectorParams = {}
+const isProjectOwnerOrAdmin = computed(() => {
+  return isUserProjectOwner.value || userProfile.value?.roles?.includes(Role.ADMIN)
+});
 
-	public async mounted() {
-		// make sure project is loaded first
-		await dispatchGetProject(this.$store, {id: this.id});
-    	await dispatchGetCoworkers(this.$store);
+const isUserProjectOwner = computed(() => {
+  return project.value && userProfile.value ? project.value?.owner.id == userProfile.value?.id : false;
+});
 
-		this.setInspector(this.$router.currentRoute);
-	}
-
-	@Watch("$route", { deep: true})
-	setInspector(to) {
-    if (to.name === 'project-inspector') {
-			this.showInspector = true
-			this.tempInspectorParams = to.params
-		}
-	}
-
-	get userProfile() {
-		return readUserProfile(this.$store);
-	}
-
-
-	get coworkerNamesAvailable() {
-		return readCoworkers(this.$store)
-			// remove users already in guest list
-			// .filter(e => !this.project?.guest_list.map(i => i.user_id).includes(e.user_id));
-	}
-
-	get project() {
-		return readProject(this.$store)(this.id)
-	}
-
-	get isProjectOwnerOrAdmin() {
-		return this.isUserProjectOwner || this.userProfile?.roles?.includes(Role.ADMIN)
-	}
-
-	get isUserProjectOwner() {
-		return this.project && this.userProfile? this.project.owner.id == this.userProfile.id : false;
-	}
-
-	private getUserFullDisplayName = getUserFullDisplayName
-
-	public async inviteUser() {
-		if (this.project && this.userToInvite) {
-			try {
-        mixpanel.track('Invite user to project', {projectId: this.project.id, userId: this.userToInvite.id!});
-				await dispatchInviteUserToProject(this.$store, {projectId: this.project.id, userId: this.userToInvite.id!})
-				this.openShareDialog = false
-			}	catch (e) {
-				console.error(e)
-			}
-		}
-	}
-
-	public clickEditButton() {
-		if (!this.project) {
-		  return;
-		}
-		this.newName = this.project.name;
-		this.newLimeSamples = this.project.inspectionSettings.limeNumberSamples;
-		this.newDescription = this.project.description;
-		this.openEditDialog = true;
-	}
-
-	public async submitEditProject() {
-		if (this.project && this.newName) {
-			let inspectionSettings : InspectionSettings = {
-				limeNumberSamples: this.newLimeSamples
-			}
-			const proj: ProjectPostDTO = {
-				name: this.newName,
-				inspectionSettings: inspectionSettings,
-				description: this.newDescription,
-			}
-			try {
-				await dispatchEditProject(this.$store, {id: this.project.id, data: proj})
-				this.openEditDialog = false;
-			} catch (e) {
-				console.error(e.message);
-			}
-		}
+function setInspector(to: Route) {
+  if (to.name === 'project-inspector') {
+    showInspector.value = true;
+    tempInspectorParams.value = to.params;
   }
+}
 
-  public async deleteProject() {
-		if (this.project) {
-			try {
-        mixpanel.track('Delete project', {id: this.project.id});
-				await dispatchDeleteProject(this.$store, {id: this.project.id})
-        await this.$router.push('/main/dashboard');
-			} catch (e) {
-				console.error(e.message);
-			}
-		}
+async function inviteUser() {
+  if (project.value && userToInvite.value) {
+    try {
+      mixpanel.track('Invite user to project', {projectId: project.value?.id, userId: userToInvite.value?.id!});
+      await projectStore.inviteUserToProject({projectId: project.value!.id, userId: userToInvite.value!.id!})
+      openShareDialog.value = false
+    }	catch (e) {
+      console.error(e)
+    }
   }
+}
 
+function clickEditButton() {
+  if (!project.value) {
+    return;
+  }
+  newName.value = project.value!.name;
+  newLimeSamples.value = project.value!.inspectionSettings.limeNumberSamples;
+  newDescription.value = project.value!.description;
+  openEditDialog.value = true;
+}
+
+async function submitEditProject() {
+  if (project.value && newName.value) {
+    let inspectionSettings : InspectionSettings = {
+      limeNumberSamples: newLimeSamples.value
+    }
+    const proj: ProjectPostDTO = {
+      name: newName.value,
+      inspectionSettings: inspectionSettings,
+      description: newDescription.value,
+    }
+    try {
+      await projectStore.editProject({id: project.value!.id, data: proj})
+      openEditDialog.value = false;
+    } catch (e) {
+      console.error(e.message);
+    }
+  }
+}
+
+async function deleteProject() {
+  if (project.value) {
+    try {
+      mixpanel.track('Delete project', {id: project.value!.id});
+      await projectStore.deleteProject({id: project.value!.id})
+      await router.push('/main/dashboard');
+    } catch (e) {
+      console.error(e.message);
+    }
+  }
 }
 </script>
 
