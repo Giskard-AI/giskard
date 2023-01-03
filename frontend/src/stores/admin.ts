@@ -27,7 +27,7 @@ export const useAdminStore = defineStore('admin', {
         },
 
         setUser(user: AdminUserDTO) {
-            const users = this.users.filter((user: AdminUserDTO) => user.id !== user.id);
+            const users = this.users.filter((u: AdminUserDTO) => u.id !== user.id);
             users.push(user);
             this.users = users;
         },

@@ -81,8 +81,8 @@ import {useRouter} from "vue-router/composables";
 import {useAdminStore} from "@/stores/admin";
 import {computed, onMounted, ref} from "vue";
 import {AdminUserDTO} from "@/generated-sources";
-import AdminUserDTOWithPassword = AdminUserDTO.AdminUserDTOWithPassword;
 import ButtonModalConfirmation from "@/components/ButtonModalConfirmation.vue";
+import AdminUserDTOWithPassword = AdminUserDTO.AdminUserDTOWithPassword;
 
 const router = useRouter();
 const adminStore = useAdminStore();
@@ -101,7 +101,6 @@ onMounted(async () => {
   await adminStore.getUsers();
   reset();
 });
-
 
 const allRoles = computed(() => {
   return adminStore.roles;
@@ -129,7 +128,7 @@ function cancel() {
 
 function submit() {
   mixpanel.track('Edit user', {login: user.value!.user_id, roles: roles.value});
-  this.$refs.observer.validate().then(async () => {
+  observer.value.validate().then(async () => {
     const updatedProfile: Partial<AdminUserDTOWithPassword> = {
       id: user.value!.id,
       user_id: user.value!.user_id,

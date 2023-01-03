@@ -1,10 +1,10 @@
 import {defineStore} from "pinia";
-import {AdminUserDTO, AppConfigDTO, ProjectDTO, UpdateMeDTO} from "@/generated-sources";
+import {AppConfigDTO} from "@/generated-sources";
 import {IUserProfileMinimal} from "@/interfaces";
 import AppInfoDTO = AppConfigDTO.AppInfoDTO;
 import mixpanel from "mixpanel-browser";
-import {anonymize, getLocalToken, removeLocalToken, saveLocalToken} from "@/utils";
-import Vue, {ref} from "vue";
+import {anonymize} from "@/utils";
+import Vue from "vue";
 import {api} from "@/api";
 import {AxiosError} from "axios";
 import {useUserStore} from "@/stores/user";
