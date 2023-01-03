@@ -23,6 +23,8 @@ import _ from "lodash";
 import './styles/global.scss';
 import './styles/colors.scss';
 import pinia from "@/stores";
+import VueMoment from "vue-moment";
+import VuetifyDialog from "vuetify-dialog";
 
 Vue.config.productionTip = false;
 
@@ -58,6 +60,12 @@ Vue.use(Toast, {
         return toast;
     }
 });
+Vue.use(VueMoment);
+Vue.use(VuetifyDialog, {
+    context: {
+        vuetify
+    }
+})
 
 export function setupMixpanel() {
     const isDev = process.env.NODE_ENV === 'development';
