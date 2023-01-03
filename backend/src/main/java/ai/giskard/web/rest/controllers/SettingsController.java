@@ -6,6 +6,7 @@ import ai.giskard.ml.MLWorkerClient;
 import ai.giskard.repository.UserRepository;
 import ai.giskard.security.AuthoritiesConstants;
 import ai.giskard.service.GeneralSettingsService;
+import ai.giskard.service.ee.FeatureFlagService;
 import ai.giskard.service.ml.MLWorkerService;
 import ai.giskard.web.dto.config.AppConfigDTO;
 import ai.giskard.web.dto.config.MLWorkerInfoDTO;
@@ -62,6 +63,8 @@ public class SettingsController {
     @Autowired
     private final MLWorkerService mlWorkerService;
 
+    private final FeatureFlagService featureFlagService;
+
 
     @PostMapping("")
     @PreAuthorize("hasAuthority(\"" + ADMIN + "\")")
@@ -98,6 +101,7 @@ public class SettingsController {
                 .buildCommitTime(buildCommitTime)
                 .planCode("open-source")
                 .planName("Open Source")
+                .features(featureFlagService.getAllFeatures())
                 .externalMlWorkerEntrypointPort(applicationProperties.getExternalMlWorkerEntrypointPort())
                 .roles(roles)
                 .build())
