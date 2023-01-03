@@ -1,13 +1,13 @@
 import {defineStore} from "pinia";
 import {AppConfigDTO} from "@/generated-sources";
 import {IUserProfileMinimal} from "@/interfaces";
-import AppInfoDTO = AppConfigDTO.AppInfoDTO;
 import mixpanel from "mixpanel-browser";
 import {anonymize} from "@/utils";
 import Vue from "vue";
 import {api} from "@/api";
 import {AxiosError} from "axios";
 import {useUserStore} from "@/stores/user";
+import AppInfoDTO = AppConfigDTO.AppInfoDTO;
 
 export interface AppNotification {
     content: string;
@@ -28,6 +28,9 @@ export const useMainStore = defineStore('main', {
         notifications: [],
     }),
     getters: {
+        authAvailable(state: State) {
+            return state.appSettings?.features.Auth;
+        }
     },
     actions: {
         setAppSettings(payload: AppInfoDTO) {
