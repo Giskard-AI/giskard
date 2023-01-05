@@ -25,7 +25,7 @@ public class FeatureFlagService {
      */
     public Map<FeatureFlag, Boolean> getAllFeatures() {
         Map<FeatureFlag, Boolean> features = new HashMap<>();
-        features.put(Auth, false);
+        features.put(Auth, true);
         return features;
     }
 
