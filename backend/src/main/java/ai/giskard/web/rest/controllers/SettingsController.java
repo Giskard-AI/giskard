@@ -7,6 +7,7 @@ import ai.giskard.repository.UserRepository;
 import ai.giskard.security.AuthoritiesConstants;
 import ai.giskard.service.GeneralSettingsService;
 import ai.giskard.service.ee.FeatureFlagService;
+import ai.giskard.service.ee.licensing.LicenseService;
 import ai.giskard.service.ml.MLWorkerService;
 import ai.giskard.web.dto.config.AppConfigDTO;
 import ai.giskard.web.dto.config.MLWorkerInfoDTO;
@@ -64,6 +65,7 @@ public class SettingsController {
     private final MLWorkerService mlWorkerService;
 
     private final FeatureFlagService featureFlagService;
+    private final LicenseService licenseService;
 
 
     @PostMapping("")
@@ -92,6 +94,9 @@ public class SettingsController {
         } catch (Exception e) {
             log.warn("Failed to parse gitCommitTime {}", gitCommitTime);
         }
+
+        log.info("License result was: {}", licenseService.checkLicense());
+        
         return AppConfigDTO.builder()
             .app(AppConfigDTO.AppInfoDTO.builder()
                 .generalSettings(settingsService.getSettings())
