@@ -142,7 +142,7 @@ public class FeedbackController {
             feedbackRepository.delete(feedback);
             return ResponseEntity.noContent().build();
         } else {
-            throw new UnauthorizedException("Delete feedback", Entity.FEEDBACK);
+            throw new UnauthorizedException("Delete", Entity.FEEDBACK);
         }
     }
 }

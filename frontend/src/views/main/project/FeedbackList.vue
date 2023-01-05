@@ -123,7 +123,7 @@ const openFeedbackDetail = ref<boolean>(false);
 
 onActivated(() => {
   fetchFeedbacks();
-  openFeedbackDetail.value = route.meta && route.meta.openFeedbackDetail;
+  handleRouteChanged();
 });
 
 async function fetchFeedbacks() {
