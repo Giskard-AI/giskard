@@ -114,12 +114,12 @@ const props = defineProps({
 });
 
 const feedbacks = ref<FeedbackMinimalDTO[]>([]);
-const search = ref<String>('');
-const modelFilter = ref<String>('');
-const datasetFilter = ref<String>('');
-const typeFilter = ref<String>('');
-const groupByFeature = ref<Boolean>(false);
-const openFeedbackDetail = ref<Boolean>(false);
+const search = ref<string>('');
+const modelFilter = ref<string>('');
+const datasetFilter = ref<string>('');
+const typeFilter = ref<string>('');
+const groupByFeature = ref<boolean>(false);
+const openFeedbackDetail = ref<boolean>(false);
 
 onActivated(() => {
   fetchFeedbacks();
