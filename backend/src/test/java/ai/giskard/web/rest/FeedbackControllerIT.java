@@ -75,7 +75,7 @@ class FeedbackControllerIT {
             .perform(delete("/api/v2/feedbacks/{feedbackId}", feedback.getId())
                 .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isBadRequest())
-            .andExpect(jsonPath("$.title").value("Unauthorized: Delete feedback Feedback not possible for your role"));
+            .andExpect(jsonPath("$.title").value("Unauthorized: Delete Feedback not possible for your role"));
 
 
         Assertions.assertThat(feedbackRepository.findOneById(feedback.getId()))
