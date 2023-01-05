@@ -24,7 +24,9 @@
       <v-card outlined tile class="grey lighten-5" v-for="m in models" :key="m.id">
         <v-row class="px-2 py-1 align-center">
           <v-col cols="4">
-            <div class="secondary--text font-weight-bold">
+            <v-text-field v-model="editedModel.name" :hide-details="true" dense single-line v-if="isBeingEdited(m.id)" >
+            </v-text-field>
+            <div class="secondary--text font-weight-bold" v-else>
               {{ m.name }}
             </div>
           </v-col>
@@ -55,15 +57,44 @@
                 </template>
                 <span>Download</span>
               </v-tooltip>
-              <v-tooltip bottom>
-                <template v-slot:activator="{ on, attrs }">
-                  <v-btn icon color="accent" v-if="isProjectOwnerOrAdmin" @click="deleteModelPickle(m.id, m.name)"
-                         v-bind="attrs" v-on="on">
-                    <v-icon>delete</v-icon>
-                  </v-btn>
-                </template>
-                <span>Delete</span>
-              </v-tooltip>
+              <template v-if="isBeingEdited(m.id)">
+                <v-tooltip bottom>
+                  <template v-slot:activator="{ on, attrs }">
+                    <v-btn icon color="accent" @click="cancelEditingModel()" v-bind="attrs" v-on="on">
+                      <v-icon>cancel</v-icon>
+                    </v-btn>
+                  </template>
+                  <span>Cancel</span>
+                </v-tooltip>
+                <v-tooltip bottom>
+                  <template v-slot:activator="{ on, attrs }">
+                    <v-btn icon color="primary" @click="saveModel()"
+                           v-bind="attrs" v-on="on">
+                      <v-icon>save</v-icon>
+                    </v-btn>
+                  </template>
+                  <span>Save</span>
+                </v-tooltip>
+              </template>
+              <template v-else>
+                <v-tooltip bottom>
+                  <template v-slot:activator="{ on, attrs }">
+                    <v-btn icon color="primary" @click="editModel(m)" v-bind="attrs" v-on="on">
+                      <v-icon>edit</v-icon>
+                    </v-btn>
+                  </template>
+                  <span>Rename</span>
+                </v-tooltip>
+                <v-tooltip bottom>
+                  <template v-slot:activator="{ on, attrs }">
+                    <v-btn icon color="accent" v-if="isProjectOwnerOrAdmin" @click="deleteModelPickle(m.id, m.name)"
+                           v-bind="attrs" v-on="on">
+                      <v-icon>delete</v-icon>
+                    </v-btn>
+                  </template>
+                  <span>Delete</span>
+                </v-tooltip>
+              </template>
             </div>
           </v-col>
         </v-row>
@@ -83,61 +114,80 @@
   </div>
 </template>
 
-<script lang="ts">
-import {Component, Prop, Vue} from 'vue-property-decorator';
+<script setup lang="ts">
 import {api} from '@/api';
 import InspectorLauncher from './InspectorLauncher.vue';
 import {ModelDTO} from '@/generated-sources';
 import mixpanel from "mixpanel-browser";
-import DeleteModal from "@/views/main/project/modals/DeleteModal.vue";
-import {commitAddNotification} from "@/store/main/mutations";
+import {computed, onActivated, ref} from 'vue';
 
-@Component({
-  components: {InspectorLauncher}
-})
-export default class Models extends Vue {
-  @Prop({type: Number, required: true}) projectId!: number;
-  @Prop({type: Boolean, required: true, default: false}) isProjectOwnerOrAdmin!: boolean;
+const props = withDefaults(defineProps<{
+  projectId: number,
+  isProjectOwnerOrAdmin: boolean
+}>(), {
+  isProjectOwnerOrAdmin: false
+});
 
-  models: ModelDTO[] = [];
-  showInspectDialog = false;
-  modelToInspect: ModelDTO | null = null;
+const models = ref<ModelDTO[]>([]);
+const showInspectDialog = ref<boolean>(false);
+const modelToInspect = ref<ModelDTO | null>(null);
+const editedModel = ref<ModelDTO | null>(null);
 
-  activated() {
-    this.loadModelPickles()
-  }
+onActivated(() => loadModelPickles());
 
-  private async loadModelPickles() {
-    this.models = await api.getProjectModels(this.projectId)
-    this.models.sort((a, b) => new Date(a.createdDate) < new Date(b.createdDate) ? 1 : -1);
-  }
-
-  public async deleteModelPickle(id: number, fileName: string) {
-    mixpanel.track('Delete model', {id});
-
-    if (await this.$dialog.showAndWait(DeleteModal, {
-      width: 600,
-      id: id,
-      fileName: fileName,
-      type: "model",
-      scrollable: true
-    })) {
-      let messageDTO = await api.deleteModelFiles(id);
-      commitAddNotification(this.$store, {content: messageDTO.message});
-      await this.loadModelPickles();
-    }
-  }
-
-  public downloadModelPickle(id: number) {
-    mixpanel.track('Download model', {id});
-    api.downloadModelFile(id)
-  }
-
-  public cancelLaunchInspector() {
-    this.showInspectDialog = false;
-  }
-
+async function loadModelPickles() {
+  models.value = await api.getProjectModels(props.projectId)
+  models.value.sort((a, b) => new Date(a.createdDate) < new Date(b.createdDate) ? 1 : -1);
 }
+
+async function  deleteModelPickle(id: number, fileName: string) {
+  mixpanel.track('Delete model', {id});
+
+  // TODO
+  //if (await this.$dialog.showAndWait(DeleteModal, {
+  //  width: 600,
+  //  id: id,
+  //  fileName: fileName,
+  //  type: "model",
+  //  scrollable: true
+  //})) {
+  //  let messageDTO = await api.deleteModelFiles(id);
+  //  commitAddNotification(store, {content: messageDTO.message});
+  //  await loadModelPickles();
+  //}
+}
+
+function downloadModelPickle(id: number) {
+  mixpanel.track('Download model', {id});
+  api.downloadModelFile(id)
+}
+
+function cancelLaunchInspector() {
+  showInspectDialog.value = false;
+}
+
+function cancelEditingModel() {
+  editedModel.value = null;
+}
+
+function editModel(model: ModelDTO) {
+  cancelEditingModel();
+  editedModel.value = Object.assign({}, model);
+}
+
+async function saveModel() {
+  if (editedModel.value) {
+    const savedModel = await api.editModelName(editedModel.value.id, editedModel.value.name);
+    const idx = models.value.findIndex(m => m.id === editedModel.value?.id);
+    models.value[idx] = savedModel;
+    cancelEditingModel();
+  }
+}
+
+const isBeingEdited = computed(() => (model: number) => {
+  return model === editedModel.value?.id;
+});
+
 </script>
 
 <style>
