@@ -84,7 +84,7 @@
               openMessage="Delete"
               confirmMessage="Delete"
               title="Delete feedback"
-              :text="`Are you sure that you want to delete the feedback for feature ${ item.featureName } permanantly?`"
+              :text="`Are you sure that you want to delete the feedback for feature ${ item.featureName } permanently?`"
               isWarning
               @dismiss="(confirmed) => handleConfirmDeleteFeedback(item, confirmed)"
           >
