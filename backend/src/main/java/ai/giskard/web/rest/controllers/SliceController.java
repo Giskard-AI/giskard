@@ -35,4 +35,11 @@ public class SliceController {
         Slice slice = giskardMapper.fromDTO(dto);
         return sliceService.createSlice(slice);
     }
+
+    @DeleteMapping("slices/{sliceId}")
+    @Transactional
+    public void deleteSlice(@PathVariable @NotNull Long sliceId) {
+        sliceRepository.deleteById(sliceId);
+    }
+
 }

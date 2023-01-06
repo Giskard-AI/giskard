@@ -7,33 +7,33 @@
     >
 
       <v-toolbar id='data-explorer-toolbar' flat>
-        <v-tooltip bottom> 
+        <v-tooltip bottom>
           <template v-slot:activator="{ on, attrs }">
-            <v-icon v-on="on" class="pr-5" small>info </v-icon>
+            <v-icon v-on="on" class="pr-5" small>info</v-icon>
           </template>
-            <h3> Model </h3>
-            <div class="d-flex">
-              <div> Id </div>
-              <v-spacer/>
-              <div> {{ inspection.model.id }}</div>
-            </div>
-            <div class="d-flex">
-              <div> Name </div>
-              <v-spacer/>
-              <div class="pl-5"> {{ inspection.model.name }}</div>
-            </div>
-            <br/>
-            <h3> Dataset </h3>
-            <div class="d-flex">
-              <div> Id </div>
-              <v-spacer/>
-              <div> {{ inspection.dataset.id }}</div>
-            </div>
-            <div class="d-flex pb-3">
-              <div> Name </div>
-              <v-spacer/>
-              <div class="pl-5"> {{ inspection.dataset.name }}</div>
-            </div>
+          <h3> Model </h3>
+          <div class="d-flex">
+            <div> Id</div>
+            <v-spacer/>
+            <div> {{ inspection.model.id }}</div>
+          </div>
+          <div class="d-flex">
+            <div> Name</div>
+            <v-spacer/>
+            <div class="pl-5"> {{ inspection.model.name }}</div>
+          </div>
+          <br/>
+          <h3> Dataset </h3>
+          <div class="d-flex">
+            <div> Id</div>
+            <v-spacer/>
+            <div> {{ inspection.dataset.id }}</div>
+          </div>
+          <div class="d-flex pb-3">
+            <div> Name</div>
+            <v-spacer/>
+            <div class="pl-5"> {{ inspection.dataset.name }}</div>
+          </div>
         </v-tooltip>
         <span class='subtitle-2 mr-2'>Dataset Explorer</span>
         <v-btn icon @click='shuffleMode = !shuffleMode'>
@@ -52,7 +52,9 @@
       </v-toolbar>
       <v-spacer/>
 
-      <SliceDropdown :project-id="projectId" @onSelect="applySlice" @onClear="clearSlice" :loading="loadingSlice" class="mr-3 " />
+      <SliceDropdown :project-id="projectId" :is-project-owner-or-admin="isProjectOwnerOrAdmin" @onSelect="applySlice"
+                     @onClear="clearSlice" :loading="loadingSlice"
+                     class="mr-3 "/>
 
       <InspectionFilter
           :is-target-available="isDefined(inspection.dataset.target)"
@@ -163,6 +165,7 @@ type CreatedFeedbackCommonDTO = {
 export default class InspectorWrapper extends Vue {
   @Prop() inspectionId!: number;
   @Prop() projectId!: number;
+  @Prop() isProjectOwnerOrAdmin!: boolean;
 
   inspection: InspectionDTO | null = null;
   mouseTrap = new Mousetrap();
@@ -416,9 +419,11 @@ export default class InspectorWrapper extends Vue {
   right: 8px;
   bottom: 80px;
 }
-.zindex-10{
+
+.zindex-10 {
   z-index: 10;
 }
+
 #feedback-card .v-card__title {
   font-size: 1.1rem;
   padding: 8px 12px 0;
