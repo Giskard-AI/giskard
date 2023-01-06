@@ -4,12 +4,13 @@ import ai.giskard.domain.FeatureType;
 import ai.giskard.domain.ml.Dataset;
 import ai.giskard.repository.ml.DatasetRepository;
 import ai.giskard.security.PermissionEvaluator;
+import ai.giskard.security.SecurityUtils;
 import ai.giskard.web.dto.DatasetMetadataDTO;
 import ai.giskard.web.dto.FeatureMetadataDTO;
-import ai.giskard.web.dto.ml.DatasetDTO;
 import ai.giskard.web.dto.ml.DatasetDetailsDTO;
 import ai.giskard.web.rest.errors.Entity;
 import ai.giskard.web.rest.errors.EntityNotFoundException;
+import ai.giskard.web.rest.errors.UnauthorizedException;
 import com.univocity.parsers.common.TextParsingException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -128,7 +129,9 @@ public class DatasetService {
         Dataset dataset = datasetRepository.findById(datasetId)
             .orElseThrow(() -> new EntityNotFoundException(Entity.DATASET, datasetId));
 
-        // TODO: check permissions
+        if (!SecurityUtils.isCurrentUserAdmin() && !SecurityUtils.isCurrentUserInside(dataset.getProject().getOwner())) {
+            throw new UnauthorizedException("Rename", Entity.DATASET);
+        }
 
         dataset.setName(name);
 

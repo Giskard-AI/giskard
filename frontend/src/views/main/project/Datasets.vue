@@ -15,10 +15,10 @@
         <v-row dense no-gutters class="mr-12 ml-2 caption secondary--text text--lighten-3 pb-2">
           <v-col cols="4">Name</v-col>
           <v-col cols="1">Size</v-col>
-          <v-col cols="3">Uploaded on</v-col>
+          <v-col cols="2">Uploaded on</v-col>
           <v-col cols="2">Target</v-col>
           <v-col cols="1">Id</v-col>
-          <v-col>Actions</v-col>
+          <v-col cols="2">Actions</v-col>
         </v-row>
 
         <v-expansion-panel v-for="f in files" :key="f.id">
@@ -39,10 +39,10 @@
                 <span v-else>{{ f.name }}</span>
               </v-col>
               <v-col cols="1">{{ f.size | fileSize }}</v-col>
-              <v-col cols="3">{{ f.createdDate | date }}</v-col>
+              <v-col cols="2">{{ f.createdDate | date }}</v-col>
               <v-col cols="2">{{ f.target }}</v-col>
               <v-col cols="1"> {{ f.id }}</v-col>
-              <v-col>
+              <v-col cols="2">
                 <span>
               <v-tooltip bottom dense>
                 <template v-slot:activator="{ on, attrs }">
@@ -73,7 +73,7 @@
                 </v-tooltip>
               </template>
               <template v-else>
-                <v-tooltip bottom>
+                <v-tooltip bottom v-if="isProjectOwnerOrAdmin">
                   <template v-slot:activator="{ on, attrs }">
                     <v-btn icon color="primary" @click.stop="editDataset(f)" v-bind="attrs" v-on="on">
                       <v-icon>edit</v-icon>

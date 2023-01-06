@@ -82,7 +82,7 @@
                 </v-tooltip>
               </template>
               <template v-else>
-                <v-tooltip bottom>
+                <v-tooltip bottom v-if="isProjectOwnerOrAdmin">
                   <template v-slot:activator="{ on, attrs }">
                     <v-btn icon color="primary" @click="editModel(m)" v-bind="attrs" v-on="on">
                       <v-icon>edit</v-icon>

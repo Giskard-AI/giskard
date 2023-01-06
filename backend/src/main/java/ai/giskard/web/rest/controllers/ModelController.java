@@ -8,15 +8,16 @@ import ai.giskard.repository.ProjectRepository;
 import ai.giskard.repository.ml.DatasetRepository;
 import ai.giskard.repository.ml.ModelRepository;
 import ai.giskard.security.PermissionEvaluator;
+import ai.giskard.security.SecurityUtils;
 import ai.giskard.service.ModelService;
 import ai.giskard.service.ProjectFileDeletionService;
 import ai.giskard.service.UsageService;
 import ai.giskard.web.dto.*;
 import ai.giskard.web.dto.mapper.GiskardMapper;
-import ai.giskard.web.dto.ml.DatasetDTO;
 import ai.giskard.web.dto.ml.ModelDTO;
 import ai.giskard.web.rest.errors.Entity;
 import ai.giskard.web.rest.errors.EntityNotFoundException;
+import ai.giskard.web.rest.errors.UnauthorizedException;
 import ai.giskard.worker.ExplainResponse;
 import ai.giskard.worker.RunModelForDataFrameResponse;
 import lombok.RequiredArgsConstructor;
@@ -125,7 +126,9 @@ public class ModelController {
         ProjectModel model = modelRepository.findById(modelId)
             .orElseThrow(() -> new EntityNotFoundException(Entity.PROJECT_MODEL, modelId));
 
-        // TODO: check permissions
+        if (!SecurityUtils.isCurrentUserAdmin() && !SecurityUtils.isCurrentUserInside(model.getProject().getOwner())) {
+            throw new UnauthorizedException("Rename", Entity.PROJECT_MODEL);
+        }
 
         model.setName(name);
 
