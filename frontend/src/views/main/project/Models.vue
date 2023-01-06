@@ -25,7 +25,11 @@
         <v-row class="px-2 py-1 align-center">
           <v-col cols="4">
             <!-- TODO: prevent click on row -->
-            <v-text-field v-model="editedModel.name" :hide-details="true" dense single-line v-if="isBeingEdited(m.id)">
+            <v-text-field v-model="editedModel.name"
+                          :rules="[
+                            v => '' !== v.trim() || 'Required'
+                          ]"
+                          :hide-details="true" dense single-line v-if="isBeingEdited(m.id)">
             </v-text-field>
             <div class="secondary--text font-weight-bold" v-else>
               {{ m.name }}
@@ -70,6 +74,7 @@
                 <v-tooltip bottom>
                   <template v-slot:activator="{ on, attrs }">
                     <v-btn icon color="primary" @click="saveModel()"
+                           :disabled="editedModel.name.trim() === ''"
                            v-bind="attrs" v-on="on">
                       <v-icon>save</v-icon>
                     </v-btn>

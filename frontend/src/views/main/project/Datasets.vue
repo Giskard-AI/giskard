@@ -27,7 +27,13 @@
             <v-row dense no-gutters align="center">
 
               <v-col cols="4" class="font-weight-bold">
-                <v-text-field v-model="editedDataset.name" :hide-details="true" dense single-line
+                <v-text-field v-model="editedDataset.name"
+                              @click.stop
+                              @keyup.prevent
+                              :rules="[
+                                v => '' !== v.trim() || 'Required'
+                              ]"
+                              :hide-details="true" dense single-line
                               v-if="isBeingEdited(f.id)">
                 </v-text-field>
                 <span v-else>{{ f.name }}</span>
@@ -58,6 +64,7 @@
                 <v-tooltip bottom>
                   <template v-slot:activator="{ on, attrs }">
                     <v-btn icon color="primary" @click.stop="saveDataset()"
+                           :disabled="editedDataset.name.trim() === ''"
                            v-bind="attrs" v-on="on">
                       <v-icon>save</v-icon>
                     </v-btn>
@@ -183,6 +190,7 @@ function editDataset(dataset: FileDTO) {
 
 async function saveDataset() {
   if (editedDataset.value) {
+    mixpanel.track('Update dataset name', {id: editedDataset.value.id});
     const savedDataset = await api.editDatasetName(editedDataset.value.id, editedDataset.value.name);
     const idx = files.value.findIndex(f => f.id === editedDataset.value?.id);
     files.value[idx] = savedDataset;
