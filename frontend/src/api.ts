@@ -28,7 +28,8 @@ import {
     PrepareDeleteDTO,
     ProjectDTO,
     ProjectPostDTO,
-    RoleDTO, SliceDTO,
+    RoleDTO,
+    SliceDTO,
     TestDTO,
     TestExecutionResultDTO,
     TestSuiteCreateDTO,
@@ -290,7 +291,7 @@ export const api = {
         return apiV2.get<unknown, FeatureMetadataDTO[]>(`/dataset/${datasetId}/features`);
     },
     async filterDataset(datasetId: number, sliceName: string, code: string) {
-        return apiV2.post<unknown, unknown>(`/dataset/${datasetId}/filter`, { sliceName: sliceName, code: code});
+        return apiV2.post<unknown, unknown>(`/dataset/${datasetId}/filter`, {sliceName: sliceName, code: code});
     },
     async getDataFilteredByRange(inspectionId, props, filter) {
         return apiV2.post<unknown, any>(`/inspection/${inspectionId}/rowsFiltered`, filter, {params: props});
@@ -409,5 +410,8 @@ export const api = {
             projectId: projectId,
             code: code
         })
+    },
+    async deleteSlice(sliceId: number) {
+        return apiV2.delete(`/slices/${sliceId}`);
     }
 };
