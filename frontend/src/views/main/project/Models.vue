@@ -85,15 +85,13 @@
                   </template>
                   <span>Rename</span>
                 </v-tooltip>
-                <v-tooltip bottom>
-                  <template v-slot:activator="{ on, attrs }">
-                    <v-btn icon color="accent" v-if="isProjectOwnerOrAdmin" @click="deleteModelPickle(m.id, m.name)"
-                           v-bind="attrs" v-on="on">
-                      <v-icon>delete</v-icon>
-                    </v-btn>
-                  </template>
-                  <span>Delete</span>
-                </v-tooltip>
+                <DeleteModal
+                    v-if="isProjectOwnerOrAdmin"
+                    :id="m.id"
+                    :file-name="m.fileName"
+                    type="model"
+                    @submit="deleteModelPickle(m.id)"
+                />
               </template>
             </div>
           </v-col>
@@ -120,6 +118,9 @@ import InspectorLauncher from './InspectorLauncher.vue';
 import {ModelDTO} from '@/generated-sources';
 import mixpanel from "mixpanel-browser";
 import {computed, onActivated, ref} from 'vue';
+import DeleteModal from '@/views/main/project/modals/DeleteModal.vue';
+import {commitAddNotification} from '@/store/main/mutations';
+import store from '@/store';
 
 const props = withDefaults(defineProps<{
   projectId: number,
@@ -140,21 +141,10 @@ async function loadModelPickles() {
   models.value.sort((a, b) => new Date(a.createdDate) < new Date(b.createdDate) ? 1 : -1);
 }
 
-async function  deleteModelPickle(id: number, fileName: string) {
-  mixpanel.track('Delete model', {id});
-
-  // TODO
-  //if (await this.$dialog.showAndWait(DeleteModal, {
-  //  width: 600,
-  //  id: id,
-  //  fileName: fileName,
-  //  type: "model",
-  //  scrollable: true
-  //})) {
-  //  let messageDTO = await api.deleteModelFiles(id);
-  //  commitAddNotification(store, {content: messageDTO.message});
-  //  await loadModelPickles();
-  //}
+async function deleteModelPickle(id: number) {
+  let messageDTO = await api.deleteModelFiles(id);
+  commitAddNotification(store, {content: messageDTO.message});
+  await loadModelPickles();
 }
 
 function downloadModelPickle(id: number) {
