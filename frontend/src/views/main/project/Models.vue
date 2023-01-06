@@ -24,7 +24,6 @@
       <v-card outlined tile class="grey lighten-5" v-for="m in models" :key="m.id">
         <v-row class="px-2 py-1 align-center">
           <v-col cols="4">
-            <!-- TODO: prevent click on row -->
             <v-text-field v-model="editedModel.name"
                           :rules="[
                             v => '' !== v.trim() || 'Required'
