@@ -24,7 +24,8 @@
       <v-card outlined tile class="grey lighten-5" v-for="m in models" :key="m.id">
         <v-row class="px-2 py-1 align-center">
           <v-col cols="4">
-            <v-text-field v-model="editedModel.name" :hide-details="true" dense single-line v-if="isBeingEdited(m.id)" >
+            <!-- TODO: prevent click on row -->
+            <v-text-field v-model="editedModel.name" :hide-details="true" dense single-line v-if="isBeingEdited(m.id)">
             </v-text-field>
             <div class="secondary--text font-weight-bold" v-else>
               {{ m.name }}
@@ -142,6 +143,8 @@ async function loadModelPickles() {
 }
 
 async function deleteModelPickle(id: number) {
+  mixpanel.track('Delete dataset', {id});
+
   let messageDTO = await api.deleteModelFiles(id);
   commitAddNotification(store, {content: messageDTO.message});
   await loadModelPickles();

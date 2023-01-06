@@ -6,6 +6,7 @@ import ai.giskard.repository.ml.DatasetRepository;
 import ai.giskard.security.PermissionEvaluator;
 import ai.giskard.web.dto.DatasetMetadataDTO;
 import ai.giskard.web.dto.FeatureMetadataDTO;
+import ai.giskard.web.dto.ml.DatasetDTO;
 import ai.giskard.web.dto.ml.DatasetDetailsDTO;
 import ai.giskard.web.rest.errors.Entity;
 import ai.giskard.web.rest.errors.EntityNotFoundException;
@@ -122,4 +123,15 @@ public class DatasetService {
         }).toList();
     }
 
+    @Transactional
+    public Dataset renameDataset(long datasetId, String name) {
+        Dataset dataset = datasetRepository.findById(datasetId)
+            .orElseThrow(() -> new EntityNotFoundException(Entity.DATASET, datasetId));
+
+        // TODO: check permissions
+
+        dataset.setName(name);
+
+        return datasetRepository.save(dataset);
+    }
 }

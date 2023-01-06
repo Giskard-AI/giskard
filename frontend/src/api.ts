@@ -13,6 +13,7 @@ import {
     FeatureMetadataDTO,
     FeedbackDTO,
     FeedbackMinimalDTO,
+    FileDTO,
     GeneralSettings,
     InspectionCreateDTO,
     InspectionDTO,
@@ -293,6 +294,9 @@ export const api = {
     },
     async getDataFilteredByRange(inspectionId, props, filter) {
         return apiV2.post<unknown, any>(`/inspection/${inspectionId}/rowsFiltered`, filter, {params: props});
+    },
+    async editDatasetName(datasetId: number, name: string) {
+        return apiV2.patch<unknown, FileDTO>(`/dataset/${datasetId}/name/${encodeURIComponent(name)}`, null)
     },
     async getLabelsForTarget(inspectionId: number) {
         return apiV2.get<unknown, string[]>(`/inspection/${inspectionId}/labels`);

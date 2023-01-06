@@ -25,7 +25,13 @@
           <v-expansion-panel-header @click="peakDataFile(f.id)" class="py-1 pl-2"
                                     :class="{'file-xl': f.name.indexOf('.xls') > 0, 'file-csv': f.name.indexOf('.csv') > 0}">
             <v-row dense no-gutters align="center">
-              <v-col cols="4" class="font-weight-bold">{{ f.name }}</v-col>
+
+              <v-col cols="4" class="font-weight-bold">
+                <v-text-field v-model="editedDataset.name" :hide-details="true" dense single-line
+                              v-if="isBeingEdited(f.id)">
+                </v-text-field>
+                <span v-else>{{ f.name }}</span>
+              </v-col>
               <v-col cols="1">{{ f.size | fileSize }}</v-col>
               <v-col cols="3">{{ f.createdDate | date }}</v-col>
               <v-col cols="2">{{ f.target }}</v-col>
@@ -40,13 +46,42 @@
                   </template>
                 <span>Download</span>
               </v-tooltip>
-              <DeleteModal
-                  v-if="isProjectOwnerOrAdmin"
-                  :id="f.id"
-                  :file-name="f.name"
-                  type="dataset"
-                  @submit="deleteDataFile(f.id)"
-              />
+              <template v-if="isBeingEdited(f.id)">
+                <v-tooltip bottom>
+                  <template v-slot:activator="{ on, attrs }">
+                    <v-btn icon color="accent" @click.stop="cancelEditingDataset()" v-bind="attrs" v-on="on">
+                      <v-icon>cancel</v-icon>
+                    </v-btn>
+                  </template>
+                  <span>Cancel</span>
+                </v-tooltip>
+                <v-tooltip bottom>
+                  <template v-slot:activator="{ on, attrs }">
+                    <v-btn icon color="primary" @click.stop="saveDataset()"
+                           v-bind="attrs" v-on="on">
+                      <v-icon>save</v-icon>
+                    </v-btn>
+                  </template>
+                  <span>Save</span>
+                </v-tooltip>
+              </template>
+              <template v-else>
+                <v-tooltip bottom>
+                  <template v-slot:activator="{ on, attrs }">
+                    <v-btn icon color="primary" @click.stop="editDataset(f)" v-bind="attrs" v-on="on">
+                      <v-icon>edit</v-icon>
+                    </v-btn>
+                  </template>
+                  <span>Rename</span>
+                </v-tooltip>
+                <DeleteModal
+                    v-if="isProjectOwnerOrAdmin"
+                    :id="f.id"
+                    :file-name="f.name"
+                    type="dataset"
+                    @submit="deleteDataFile(f.id)"
+                />
+              </template>
             </span>
               </v-col>
             </v-row>
@@ -68,87 +103,96 @@
   </div>
 </template>
 
-<script lang="ts">
-import {Component, Prop, Vue} from "vue-property-decorator";
+<script setup lang="ts">
 import {api} from '@/api';
-import {performApiActionWithNotif} from '@/api-commons';
 import {commitAddNotification} from '@/store/main/mutations';
-import {FileDTO, ProjectDTO} from '@/generated-sources';
+import {FileDTO} from '@/generated-sources';
 import mixpanel from "mixpanel-browser";
 import DeleteModal from '@/views/main/project/modals/DeleteModal.vue';
+import {computed, onActivated, ref} from 'vue';
+import store from '@/store';
 
 const GISKARD_INDEX_COLUMN_NAME = '_GISKARD_INDEX_';
 
+const props = withDefaults(defineProps<{
+  projectId: number,
+  isProjectOwnerOrAdmin: boolean
+}>(), {
+  isProjectOwnerOrAdmin: false
+});
 
-@Component({
-  components: {DeleteModal}
-})
-export default class Datasets extends Vue {
-  @Prop({type: Number, required: true}) projectId!: number;
-  @Prop({type: Boolean, default: false}) isProjectOwnerOrAdmin!: boolean;
+const files = ref<FileDTO[]>([]);
+const lastVisitedFileId = ref<number | null>(null);
+const filePreviewHeader = ref<{ text: string, value: string, sortable: boolean }[]>([]);
+const filePreviewData = ref<any[]>([]);
+const editedDataset = ref<FileDTO | null>(null);
 
-  public files: FileDTO[] = [];
-  public fileData = null;
-  public lastVisitedFileId;
-  public filePreviewHeader: { text: string, value: string, sortable: boolean }[] = [];
-  public filePreviewData: any[] = [];
+onActivated(() => loadDatasets());
 
-  activated() {
-    this.loadDatasets()
-  }
+async function loadDatasets() {
+  files.value = await api.getProjectDatasets(props.projectId)
+  files.value.sort((a, b) => new Date(a.createdDate) < new Date(b.createdDate) ? 1 : -1);
+}
 
-  private async loadDatasets() {
-    this.files = await api.getProjectDatasets(this.projectId)
-    this.files.sort((a, b) => new Date(a.createdDate) < new Date(b.createdDate) ? 1 : -1);
-  }
+async function deleteDataFile(id: number) {
+  mixpanel.track('Delete model', {id});
 
-  public async upload_data() {
-    mixpanel.track('Upload dataset');
-    let project: ProjectDTO = await api.getProject(this.projectId);
-    await performApiActionWithNotif(this.$store,
-        () => api.uploadDataFile(project.key, this.fileData),
-        () => {
-          this.loadDatasets()
-          this.fileData = null;
-        })
-  }
+  let messageDTO = await api.deleteDatasetFile(id);
+  commitAddNotification(store, {content: messageDTO.message});
+  await loadDatasets();
+}
 
-  public async deleteDataFile(id: number,) {
-    let messageDTO = await api.deleteDatasetFile(id);
-    commitAddNotification(this.$store, {content: messageDTO.message});
-    await this.loadDatasets();
-  }
+function downloadDataFile(id: number) {
+  mixpanel.track('Download dataset file', {id});
+  api.downloadDataFile(id)
+}
 
-  public downloadDataFile(id: number) {
-    mixpanel.track('Download dataset file', {id});
-    api.downloadDataFile(id)
-  }
-
-  public async peakDataFile(id: number) {
-    if (this.lastVisitedFileId != id) {
-      this.lastVisitedFileId = id; // this is a trick to avoid recalling the api every time one panel is opened/closed
-      try {
-        const response = await api.peekDataFile(id)
-        const headers = Object.keys(response[0])
-        this.filePreviewHeader = headers.filter(e => e != GISKARD_INDEX_COLUMN_NAME).map(e => {
-          return {text: e.trim(), value: e, sortable: false}
-        });
-        if (headers.includes(GISKARD_INDEX_COLUMN_NAME)) {
-          this.filePreviewHeader = [{
-            text: '#',
-            value: GISKARD_INDEX_COLUMN_NAME,
-            sortable: false
-          }].concat(this.filePreviewHeader);
-        }
-        this.filePreviewData = response
-      } catch (error) {
-        commitAddNotification(this.$store, {content: error.response.statusText, color: 'error'});
-        this.filePreviewHeader = [];
-        this.filePreviewData = [];
+async function peakDataFile(id: number) {
+  if (lastVisitedFileId.value != id) {
+    lastVisitedFileId.value = id; // this is a trick to avoid recalling the api every time one panel is opened/closed
+    try {
+      const response = await api.peekDataFile(id)
+      const headers = Object.keys(response[0])
+      filePreviewHeader.value = headers.filter(e => e != GISKARD_INDEX_COLUMN_NAME).map(e => {
+        return {text: e.trim(), value: e, sortable: false}
+      });
+      if (headers.includes(GISKARD_INDEX_COLUMN_NAME)) {
+        filePreviewHeader.value = [{
+          text: '#',
+          value: GISKARD_INDEX_COLUMN_NAME,
+          sortable: false
+        }].concat(filePreviewHeader.value);
       }
+      filePreviewData.value = response
+    } catch (error) {
+      commitAddNotification(store, {content: error.response.statusText, color: 'error'});
+      filePreviewHeader.value = [];
+      filePreviewData.value = [];
     }
   }
 }
+
+function cancelEditingDataset() {
+  editedDataset.value = null;
+}
+
+function editDataset(dataset: FileDTO) {
+  cancelEditingDataset();
+  editedDataset.value = Object.assign({}, dataset);
+}
+
+async function saveDataset() {
+  if (editedDataset.value) {
+    const savedDataset = await api.editDatasetName(editedDataset.value.id, editedDataset.value.name);
+    const idx = files.value.findIndex(f => f.id === editedDataset.value?.id);
+    files.value[idx] = savedDataset;
+    cancelEditingDataset();
+  }
+}
+
+const isBeingEdited = computed(() => (model: number) => {
+  return model === editedDataset.value?.id;
+});
 </script>
 
 <style lang="scss" scoped>
