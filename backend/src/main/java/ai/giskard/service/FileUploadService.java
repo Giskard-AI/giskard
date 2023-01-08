@@ -40,21 +40,20 @@ public class FileUploadService {
 
     @Transactional
     public ProjectModel uploadModel(ModelUploadParamsDTO modelParams, InputStream modelStream, InputStream requirementsStream) throws IOException {
-        Project project = projectRepository.getOneByKey(modelParams.getProjectKey());
+        ProjectModel model = createProjectModel(modelParams);
+        return uploadModel2(model, modelStream, requirementsStream);
+    }
+
+    @Transactional public ProjectModel uploadModel2(ProjectModel model, InputStream modelStream, InputStream requirementsStream) throws IOException{
+        Project project = projectRepository.getOneByKey(model.getProject().getKey());
         Path projectModelsPath = locationService.modelsDirectory(project.getKey());
         createOrEnsureOutputDirectory(projectModelsPath);
-
-        ProjectModel model = createProjectModel(modelParams);
-
-        // first save to get ID that will be used in the filenames
         ProjectModel savedModel = modelRepository.save(model);
-
         String modelFilename = createZSTname("model_", savedModel.getId());
         Path modelFilePath = projectModelsPath.resolve(modelFilename);
         long size = modelStream.transferTo(Files.newOutputStream(modelFilePath));
-        model.setSize(size);
+        model.setSize(size); 
         model.setFileName(modelFilename);
-
         String requirementsFilename = String.format("model-requirements_%s.txt", savedModel.getId());
         Path requirementsFilePath = projectModelsPath.resolve(requirementsFilename);
         try {
@@ -63,7 +62,7 @@ public class FileUploadService {
             throw new GiskardRuntimeException("Error writing requirements file: " + requirementsFilePath, e);
         }
         model.setRequirementsFileName(requirementsFilename);
-        return modelRepository.save(model);
+        return modelRepository.save(savedModel);
     }
 
     private ProjectModel createProjectModel(ModelUploadParamsDTO modelParams) {

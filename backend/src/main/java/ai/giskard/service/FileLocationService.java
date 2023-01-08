@@ -1,6 +1,7 @@
 package ai.giskard.service;
 
 import ai.giskard.config.ApplicationProperties;
+import ai.giskard.domain.BaseEntity;
 import ai.giskard.domain.ProjectFile;
 import ai.giskard.domain.ml.Dataset;
 import ai.giskard.domain.ml.ProjectModel;
@@ -35,6 +36,18 @@ public class FileLocationService {
         return modelsDirectory(projectKey).resolve(createZSTname("model_", modelId));
     }
 
+    public Path metadataDirectory(String projectKey){
+        return resolvedProjectHome(projectKey).resolve("metadata");
+    }
+
+    public Path resolvedMetadataPath(String projectKey,  Class<? extends BaseEntity> c){
+        return metadataDirectory(projectKey).resolve(c.getSimpleName().toLowerCase() + "-metadata.yaml");
+    }
+
+    public Path resolvedModelRequirementsPath(String projectKey, Long modelId) {
+        return modelsDirectory(projectKey).resolve(createTXTname("model-requirements_", modelId));
+    }
+
     public Path resolveFilePath(ProjectFile file) {
         String projectKey = file.getProject().getKey();
         if (file instanceof ProjectModel) {
@@ -55,11 +68,19 @@ public class FileLocationService {
         return giskardHome().resolve(projectHome(projectKey));
     }
 
+    public Path resolvedTmpPath(){
+        return giskardHome().resolve("tmp");
+    }
+
     private Path giskardHome() {
         return applicationProperties.getHome();
     }
 
     public static String createZSTname(String prefix, Long id) {
         return prefix + id.toString() + ".zst";
+    }
+
+    public static String createTXTname(String prefix, Long id) {
+        return prefix + id.toString() + ".txt";
     }
 }

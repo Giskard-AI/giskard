@@ -41,6 +41,7 @@ public class Feedback extends BaseEntity{
     private String targetFeature;
 
     @CreatedDate
+    @JsonIgnore
     @Column(name = "created_on", updatable = false)
     private Instant createdOn = Instant.now();
 

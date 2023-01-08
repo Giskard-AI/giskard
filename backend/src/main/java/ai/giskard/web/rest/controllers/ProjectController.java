@@ -4,18 +4,21 @@ import ai.giskard.domain.Project;
 import ai.giskard.repository.ProjectRepository;
 import ai.giskard.security.PermissionEvaluator;
 import ai.giskard.service.ProjectService;
+import ai.giskard.web.dto.mapper.GiskardMapper;
 import ai.giskard.web.dto.ml.ProjectDTO;
 import ai.giskard.web.dto.ml.ProjectPostDTO;
-import ai.giskard.web.dto.mapper.GiskardMapper;
 import ai.giskard.web.rest.errors.NotInDatabaseException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.Valid;
+import java.io.IOException;
 import java.util.List;
 
 /**
@@ -129,6 +132,22 @@ public class ProjectController {
     @Transactional
     public ProjectDTO invite(@PathVariable("id") Long id, @PathVariable("userId") Long userId) {
         Project project = this.projectService.invite(id, userId);
+        return giskardMapper.projectToProjectDTO(project);
+    }
+
+    @PreAuthorize("@permissionEvaluator.canWriteProject( #id)")
+    @GetMapping(
+        value = "/project/{id}/export",
+        produces = MediaType.APPLICATION_OCTET_STREAM_VALUE
+    )
+    @Transactional
+    public @ResponseBody byte[] exportProject(@PathVariable("id") Long id) throws IOException {
+        return this.projectService.export(id);
+    }
+
+    @PostMapping(value = "/project/import", consumes = "multipart/form-data")
+    public ProjectDTO importProject(@RequestParam("file") MultipartFile zipFile, @AuthenticationPrincipal final UserDetails userDetails) throws IOException {
+        Project project = this.projectService.importProject(zipFile, userDetails.getUsername());
         return giskardMapper.projectToProjectDTO(project);
     }
 

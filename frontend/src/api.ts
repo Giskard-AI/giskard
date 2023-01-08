@@ -264,6 +264,15 @@ export const api = {
     async getProjectModels(id: number) {
         return axiosProject.get<unknown, ModelDTO[]>(`/${id}/models`);
     },
+    async exportProjet(id: number){
+        return axiosProject.get<unknown, Blob>(`/${id}/export`, {responseType:'blob'})
+    },
+    async importProject(formData: FormData){
+        const headers = { 'Content-Type': 'multipart/form-data' };
+        return axiosProject.post<unknown, ProjectDTO>(`/import`, formData, {
+            headers: headers
+        });
+    },
     async deleteDatasetFile(datasetId: number) {
         return apiV2.delete<unknown, MessageDTO>(`/dataset/${datasetId}`);
     },

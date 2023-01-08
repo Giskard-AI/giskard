@@ -25,6 +25,7 @@
       </v-simple-table>
     </p>
     <p v-show="project.description">{{ project.description }}</p>
+    <v-btn tile small class="primary" @click="exportProject(project.id)"> Export </v-btn>
     <v-divider class="my-4"></v-divider>
     <div class="subtitle-1">
       Guest Users
@@ -55,6 +56,7 @@ import Datasets from '@/views/main/project/Datasets.vue';
 import FeedbackList from '@/views/main/project/FeedbackList.vue';
 import {IUserProfileMinimal} from '@/interfaces';
 import mixpanel from "mixpanel-browser";
+import { api } from '@/api'
 
 @Component({
   components: {
@@ -69,6 +71,18 @@ export default class ProjectOverview extends Vue {
   get project() {
     return readProject(this.$store)(this.projectId)
   }
+
+  private async exportProject(id: number){
+    api.exportProjet(id).then((response) => {
+      const url = window.URL.createObjectURL(new Blob([response]))
+      const link = document.createElement('a')
+      link.href = url
+      link.setAttribute('download', this.project?.key + ".zip")
+      document.body.appendChild(link)
+      link.click()
+    }).catch(() => console.log("error while downloading"))
+  }
+
 
   private getUserFullDisplayName = getUserFullDisplayName
 

@@ -11,10 +11,6 @@
         <v-btn>Mine</v-btn>
         <v-btn>Others</v-btn>
       </v-btn-toggle>
-      <v-btn tile small class="primary" v-if="isAdmin || isCreator" @click="openCreateDialog = true">
-        <v-icon left>add_circle</v-icon>
-        New
-      </v-btn>
     </v-toolbar>
 
     <!-- Project list -->
@@ -61,6 +57,53 @@
       <div v-else>You have not been invited to any projects yet</div>
     </v-container>
 
+
+    <v-speed-dial
+      :open-on-hover="true"
+      absolute
+      right
+      bottom
+      class="mr-3"
+    >
+      <template v-slot:activator>
+        <v-btn
+        fab
+        class="primary">
+          <v-icon > mdi-plus </v-icon>
+        </v-btn>
+      </template>
+      <v-btn color="primary" v-if="isAdmin || isCreator" @click="openImportDialog = true">
+        Import
+      </v-btn>
+      <v-btn color="primary" v-if="isAdmin || isCreator" @click="openCreateDialog = true">
+        New
+      </v-btn>
+    </v-speed-dial>
+
+    <!-- Modal dialog to import new projects -->
+    <v-dialog v-model="openImportDialog" width="500" persistent>
+      <v-card>
+        <ValidationObserver ref="dialogForm">
+          <v-form @submit.prevent="importProject()">
+            <v-card-title>Import project</v-card-title>
+            <v-card-text>
+              <ValidationProvider name="File" rules="required" :v-slot="{fileNameError}">
+                  <v-file-input ref="file" accept=".zip" label="Select a project to import*"
+                  :error-messages="fileNameError"
+                ></v-file-input>
+              </ValidationProvider> 
+            </v-card-text>
+            <v-card-actions>
+              <v-spacer></v-spacer>
+              <v-btn color="secondary" text @click="clearAndCloseDialog()">Cancel</v-btn>
+              <v-btn color="primary" text type="submit">Save</v-btn>
+            </v-card-actions> 
+          </v-form>
+        </ValidationObserver>
+      </v-card>
+    </v-dialog>
+
+
     <!-- Modal dialog to create new projects -->
     <v-dialog v-model="openCreateDialog" width="500" persistent>
       <v-card>
@@ -103,20 +146,23 @@ import {toSlug} from "@/utils";
 import store from "@/store";
 import {useRoute, useRouter} from "vue-router/composables";
 import moment from "moment";
+import { api } from "@/api";
 
 const route = useRoute();
-const router = useRouter();
 
 const openCreateDialog = ref<boolean>(false); // toggle for edit or create dialog
+const openImportDialog = ref<boolean>(false);
 const newProjectName = ref<string>("");
 const newProjectKey = ref<string>("");
 const newProjectDesc = ref<string>("");
 const creatorFilter = ref<number>(0);
 const projectCreateError = ref<string>("");
+const fileNameError = ref<string>("");
 
 
 // template ref
 const dialogForm = ref<InstanceType<typeof ValidationObserver> | null>(null);
+const file = ref<string>('');
 
 onMounted(async () => {
   const f = route.query.f ? route.query.f[0] || '' : '';
@@ -151,9 +197,31 @@ async function loadProjects() {
   await dispatchGetProjects(store);
 }
 
+async function importProject(){
+  let uploadedFile = file.value.$refs.input.files[0];
+  if (!validateFileName(uploadedFile.name)){
+    fileNameError.value = "The name of the file is incorect.\n It must be a zip file containing only alphanumerical or _ characters"
+    return;
+  }
+  let formData = new FormData();
+  formData.append('file', uploadedFile);
+  await api.importProject(formData);
+  clearAndCloseDialog();
+  loadProjects(); 
+}
+
+function validateFileName(fileName: string){
+  const parts = fileName.split('.')
+  if (parts.length !== 2 || parts[1] != "zip")
+    return false;
+  const re = /^[a-z0-9_]+$/i;
+  return re.test(parts[0]);
+}
+
 function clearAndCloseDialog() {
   dialogForm.value?.reset();
   openCreateDialog.value = false;
+  openImportDialog.value = false;
   newProjectName.value = '';
   newProjectKey.value = '';
   newProjectDesc.value = '';
@@ -189,3 +257,13 @@ watch(() => newProjectName.value, (value) => {
 })
 
 </script>
+
+<style>
+#create .v-speed-dial {
+  position: absolute;
+}
+
+#create .v-btn--floating {
+  position: relative;
+}
+</style>

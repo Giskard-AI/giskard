@@ -27,6 +27,7 @@ public class Test extends AbstractAuditingEntity {
     private CodeLanguage language;
 
     @ManyToOne
+    @JsonIgnore
     private TestSuite testSuite;
 
     @Enumerated(EnumType.STRING)
