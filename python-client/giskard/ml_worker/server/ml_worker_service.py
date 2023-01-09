@@ -15,7 +15,6 @@ import giskard
 from giskard.ml_worker.core.giskard_dataset import GiskardDataset
 from giskard.ml_worker.core.model_explanation import (
     explain,
-    parse_text_explainer_response,
     explain_text,
 )
 from giskard.ml_worker.exceptions.IllegalArgumentError import IllegalArgumentError
@@ -178,9 +177,14 @@ class MLWorkerServiceImpl(MLWorkerServicer):
         input_df = pd.DataFrame({k: [v] for k, v in request.columns.items()})
         if model.feature_names:
             input_df = input_df[model.feature_names]
-
-        html_response = explain_text(model, input_df, text_column, text_document, n_samples)._repr_html_()
-        return ExplainTextResponse(explanations=parse_text_explainer_response(html_response))
+        (list_words, list_weights) = explain_text(model, input_df, text_column, text_document, n_samples)
+        map_features_weight = dict(zip(model.classification_labels, list_weights))
+        return ExplainTextResponse(
+            weights={
+                k: ExplainTextResponse.WeightsPerFeature(weights=[weight for weight in map_features_weight[k]])
+                for k in map_features_weight },
+            words=list_words
+        )
 
     def runModelForDataFrame(self, request: RunModelForDataFrameRequest, context):
         model = deserialize_model(request.model)
