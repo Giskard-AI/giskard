@@ -245,4 +245,18 @@ class PermissionTest {
         assertThat(permissionEvaluator.canWriteProject(project.getId(), AuthoritiesConstants.AICREATOR)).isFalse();
     }
 
+    /**
+     * Check if user can read another project as a guest with the required permission
+     */
+    @Test
+    @WithMockUser(username = AI_TESTER_KEY, authorities = AuthoritiesConstants.AITESTER)
+    void canWriteProjectWithoutBeingGuestWithRequiredPermission() {
+        Project project = projectRepository.getOneByName(initService.getProjectByCreatorLogin(ADMIN_KEY));
+
+        User user = new User();
+        user.setLogin(AI_CREATOR_KEY);
+        project.getGuests().add(user);
+
+        assertThat(permissionEvaluator.canWriteProject(project.getId(), AuthoritiesConstants.AITESTER)).isFalse();
+    }
 }
