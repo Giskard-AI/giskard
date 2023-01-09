@@ -35,7 +35,7 @@ const mainStore = useMainStore();
 mainStore.fetchFeatures();
 
 const loggedIn = computed(() => {
-  return userStore.loggedIn;
+  return userStore.isLoggedIn;
 })
 
 let monacoOptions: IEditorOptions = {
