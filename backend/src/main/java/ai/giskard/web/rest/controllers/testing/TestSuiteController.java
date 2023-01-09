@@ -2,8 +2,6 @@ package ai.giskard.web.rest.controllers.testing;
 
 import ai.giskard.domain.ml.TestSuite;
 import ai.giskard.domain.ml.testing.Test;
-import ai.giskard.repository.ProjectRepository;
-import ai.giskard.repository.ml.ModelRepository;
 import ai.giskard.repository.ml.TestRepository;
 import ai.giskard.repository.ml.TestSuiteRepository;
 import ai.giskard.service.TestService;
@@ -70,7 +68,7 @@ public class TestSuiteController {
     }
 
     @PostMapping("suites")
-    @PreAuthorize("@permissionEvaluator.canWriteProject(#dto.projectId)")
+    @PreAuthorize("@permissionEvaluator.canWriteProject(#dto.projectId, @AuthoritiesConstants.AICREATOR, @AuthoritiesConstants.AITESTER)")
     public TestSuiteDTO createTestSuite(@Valid @RequestBody TestSuiteCreateDTO dto) {
         TestSuite testSuite = giskardMapper.fromDTO(dto);
         return testSuiteService.createTestSuite(testSuite, dto.isShouldGenerateTests());
