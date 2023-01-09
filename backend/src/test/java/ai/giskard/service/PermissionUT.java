@@ -220,14 +220,14 @@ class PermissionTest {
      */
     @Test
     @WithMockUser(username = AI_TESTER_KEY, authorities = AuthoritiesConstants.AITESTER)
-    void canWriteProjectAsGuestWithRequiredPermission() {
+    void isGuestWithAnyRoleAsGuestWithRequiredPermission() {
         Project project = projectRepository.getOneByName(initService.getProjectByCreatorLogin(ADMIN_KEY));
 
         User user = new User();
         user.setLogin(AI_TESTER_KEY);
         project.getGuests().add(user);
 
-        assertThat(permissionEvaluator.canWriteProject(project.getId(), AuthoritiesConstants.AITESTER)).isTrue();
+        assertThat(permissionEvaluator.isGuestWithAnyRole(project.getId(), AuthoritiesConstants.AITESTER)).isTrue();
     }
 
     /**
@@ -235,14 +235,14 @@ class PermissionTest {
      */
     @Test
     @WithMockUser(username = AI_TESTER_KEY, authorities = AuthoritiesConstants.AITESTER)
-    void canWriteProjectProjectAsGuestWithoutRequiredPermission() {
+    void isGuestWithAnyRoleAsGuestWithoutRequiredPermission() {
         Project project = projectRepository.getOneByName(initService.getProjectByCreatorLogin(ADMIN_KEY));
 
         User user = new User();
         user.setLogin(AI_TESTER_KEY);
         project.getGuests().add(user);
 
-        assertThat(permissionEvaluator.canWriteProject(project.getId(), AuthoritiesConstants.AICREATOR)).isFalse();
+        assertThat(permissionEvaluator.isGuestWithAnyRole(project.getId(), AuthoritiesConstants.AICREATOR)).isFalse();
     }
 
     /**
@@ -250,13 +250,13 @@ class PermissionTest {
      */
     @Test
     @WithMockUser(username = AI_TESTER_KEY, authorities = AuthoritiesConstants.AITESTER)
-    void canWriteProjectWithoutBeingGuestWithRequiredPermission() {
+    void isGuestWithAnyRoleWithoutBeingGuestWithRequiredPermission() {
         Project project = projectRepository.getOneByName(initService.getProjectByCreatorLogin(ADMIN_KEY));
 
         User user = new User();
         user.setLogin(AI_CREATOR_KEY);
         project.getGuests().add(user);
 
-        assertThat(permissionEvaluator.canWriteProject(project.getId(), AuthoritiesConstants.AITESTER)).isFalse();
+        assertThat(permissionEvaluator.isGuestWithAnyRole(project.getId(), AuthoritiesConstants.AITESTER)).isFalse();
     }
 }
