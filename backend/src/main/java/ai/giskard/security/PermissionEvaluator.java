@@ -28,18 +28,28 @@ public class PermissionEvaluator {
     }
 
     /**
-     * Determine if a user can write a project, i.e. is admin, is project's owner or is guest with any role
+     * Determine if a user can write a project, i.e. is admin or is project's owner
      *
-     * @param id    id of the project
-     * @param roles list of roles that guests need to have in order to be able to write (if empty guests cannot write)
+     * @param id id of the project
      * @return true if the user can write
      */
-    public boolean canWriteProject(@NotNull Long id, @NotBlank String... roles) {
+    public boolean canWriteProject(@NotNull Long id) {
         Project project = this.projectRepository.findById(id).orElseThrow(() -> new EntityNotFoundException(Entity.PROJECT, id));
 
-        return isCurrentUser(project.getOwner().getLogin())
-            || SecurityUtils.isCurrentUserAdmin()
-            || (roles.length > 0 && SecurityUtils.hasCurrentUserAnyOfAuthorities(roles) && isCurrentUserGuest(project));
+        return isCurrentUser(project.getOwner().getLogin()) || SecurityUtils.isCurrentUserAdmin();
+    }
+
+    /**
+     * Determine if the current user is a guest of a project and is granted any of the required roles
+     *
+     * @param projectId id of the project
+     * @param roles     list of roles that guests need to have in order to be able to write
+     * @return true if the user is guest with the required permissions
+     */
+    public boolean isGuestWithAnyRole(@NotNull Long projectId, @NotBlank String... roles) {
+        Project project = this.projectRepository.findById(projectId).orElseThrow(() -> new EntityNotFoundException(Entity.PROJECT, projectId));
+
+        return SecurityUtils.hasCurrentUserAnyOfAuthorities(roles) && isCurrentUserGuest(project);
     }
 
     /**
