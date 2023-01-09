@@ -28,7 +28,7 @@ public class PermissionEvaluator {
     }
 
     /**
-     * Determine if a user can write a project, i.e. is admin, project's owner or guest with any role
+     * Determine if a user can write a project, i.e. is admin, is project's owner or is guest with any role
      *
      * @param id    id of the project
      * @param roles list of roles that guests need to have in order to be able to write (if empty guests cannot write)
@@ -76,6 +76,12 @@ public class PermissionEvaluator {
         }
     }
 
+    /**
+     * Check if current user is a guest for the project
+     *
+     * @param project The project to check guests from
+     * @return true when current user is inside the guests of the project, false otherwise
+     */
     private boolean isCurrentUserGuest(Project project) {
         return project.getGuests().stream()
             .map(User::getLogin)
