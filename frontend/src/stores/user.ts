@@ -84,6 +84,7 @@ export const useUserStore = defineStore('user', {
                     }
                 }
             } else {
+                await mainStore.fetchFeatures();
                 const response = await api.getUserAndAppSettings();
                 this.isLoggedIn = true;
                 this.userProfile = response.user;

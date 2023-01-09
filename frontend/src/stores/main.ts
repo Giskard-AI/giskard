@@ -7,6 +7,7 @@ import Vue from "vue";
 import {api} from "@/api";
 import {AxiosError} from "axios";
 import {useUserStore} from "@/stores/user";
+import {FeatureFlagService} from "@/generated-sources/ai/giskard/service/ee/feature-flag-service";
 import AppInfoDTO = AppConfigDTO.AppInfoDTO;
 
 export interface AppNotification {
@@ -19,6 +20,7 @@ interface State {
     appSettings: AppInfoDTO | null;
     coworkers: IUserProfileMinimal[];
     notifications: AppNotification[];
+    features: { [key in FeatureFlagService.FeatureFlag]: boolean } | null;
 }
 
 export const useMainStore = defineStore('main', {
@@ -26,10 +28,11 @@ export const useMainStore = defineStore('main', {
         appSettings: null,
         coworkers: [],
         notifications: [],
+        features: null
     }),
     getters: {
         authAvailable(state: State) {
-            return state.appSettings?.features.Auth;
+            return state.features?.Auth;
         }
     },
     actions: {
@@ -73,6 +76,11 @@ export const useMainStore = defineStore('main', {
         },
         removeNotification(payload: AppNotification) {
             Vue.$toast.clear();
+        },
+        async fetchFeatures() {
+            const features = await api.getFeatureFlags();
+            //@ts-ignore
+            this.features = features;
         },
         async getUserProfile() {
             const userStore = useUserStore();

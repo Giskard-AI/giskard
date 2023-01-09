@@ -7,7 +7,6 @@ import ai.giskard.repository.UserRepository;
 import ai.giskard.security.AuthoritiesConstants;
 import ai.giskard.service.GeneralSettingsService;
 import ai.giskard.service.ee.FeatureFlagService;
-import ai.giskard.service.ee.licensing.LicenseService;
 import ai.giskard.service.ml.MLWorkerService;
 import ai.giskard.web.dto.config.AppConfigDTO;
 import ai.giskard.web.dto.config.MLWorkerInfoDTO;
@@ -38,6 +37,7 @@ import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
 import static ai.giskard.security.AuthoritiesConstants.ADMIN;
@@ -65,7 +65,6 @@ public class SettingsController {
     private final MLWorkerService mlWorkerService;
 
     private final FeatureFlagService featureFlagService;
-    private final LicenseService licenseService;
 
 
     @PostMapping("")
@@ -95,8 +94,6 @@ public class SettingsController {
             log.warn("Failed to parse gitCommitTime {}", gitCommitTime);
         }
 
-        log.info("License result was: {}", licenseService.checkLicense());
-
         return AppConfigDTO.builder()
             .app(AppConfigDTO.AppInfoDTO.builder()
                 .generalSettings(settingsService.getSettings())
@@ -106,12 +103,16 @@ public class SettingsController {
                 .buildCommitTime(buildCommitTime)
                 .planCode("open-source")
                 .planName("Open Source")
-                .features(featureFlagService.getAllFeatures())
                 .externalMlWorkerEntrypointPort(applicationProperties.getExternalMlWorkerEntrypointPort())
                 .roles(roles)
                 .build())
             .user(userDTO)
             .build();
+    }
+
+    @GetMapping("/featureFlags")
+    public Map<FeatureFlagService.FeatureFlag, Boolean> getFeatureFlags() {
+        return featureFlagService.getAllFeatures();
     }
 
     @GetMapping("/ml-worker-info")

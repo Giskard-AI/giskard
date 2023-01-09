@@ -3,11 +3,12 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue } from 'vue-property-decorator';
+import {Component, Vue} from 'vue-property-decorator';
 import {useUserStore} from "@/stores/user";
 
 const startRouteGuard = async (to, from, next) => {
   const userStore = useUserStore();
+
   await userStore.checkLoggedIn();
   if (userStore.isLoggedIn) {
     if (to.path === '/auth/login' || to.path === '/') {

@@ -68,7 +68,6 @@
     "ai.giskard.domain.GeneralSettings": "GeneralSettings",
     "ai.giskard.domain.ml.table.RegressionUnit": "RegressionUnit",
     "ai.giskard.web.dto.ml.TestEditorConfigDTO": "TestEditorConfigDTO",
-    "ai.giskard.service.ee.FeatureFlagService$FeatureFlag": "FeatureFlagService.FeatureFlag",
     "ai.giskard.domain.ml.TestResult": "TestResult",
     "ai.giskard.web.dto.user.UserDTO": "UserDTO"
   }
