@@ -10,13 +10,31 @@
       <template v-slot:item="data">
         {{ data.item.text }}
         <v-spacer/>
-        <v-btn icon color="error" v-if="isProjectOwnerOrAdmin && !isCreateSlice(data.item.value)"
-               @click.stop="deleteSlice(data.item)">
-          <v-icon>delete</v-icon>
-        </v-btn>
+        <v-menu bottom left v-if="isProjectOwnerOrAdmin && !isCreateSlice(data.item.value)">
+          <template v-slot:activator="{ on, attrs}">
+            <v-btn icon v-bind="attrs" v-on="on">
+              <v-icon>mdi-dots-vertical</v-icon>
+            </v-btn>
+          </template>
+          <v-list dense>
+            <v-list-item @click.stop="editSlice(data.item)">
+              <v-list-item-title>Edit</v-list-item-title>
+              <v-list-item-icon>
+                <v-icon>edit</v-icon>
+              </v-list-item-icon>
+            </v-list-item>
+            <v-list-item @click.stop="deleteSlice(data.item)">
+              <v-list-item-title>Delete</v-list-item-title>
+              <v-list-item-icon>
+                <v-icon>delete</v-icon>
+              </v-list-item-icon>
+            </v-list-item>
+          </v-list>
+        </v-menu>
       </template>
     </v-autocomplete>
-    <v-dialog v-model="createDialog" width="800" persistent>
+
+    <v-dialog v-model="sliceDialog" width="800" persistent>
       <v-card>
         <ValidationObserver ref="dialogForm">
           <v-form @submit.prevent="createSlice()">
@@ -39,8 +57,7 @@
             </v-card-text>
             <v-card-actions>
               <v-spacer></v-spacer>
-              <v-btn color="error" text @click="closeCreateDialog()">Cancel</v-btn>
-              <v-btn color="secondary" text>Validate</v-btn>
+              <v-btn color="error" text @click="closeSliceDialog()">Cancel</v-btn>
               <v-btn color="primary" text type="submit">Create</v-btn>
             </v-card-actions>
           </v-form>
@@ -70,9 +87,10 @@ const emit = defineEmits(["onSelect", "onClear"])
 const slices = ref<SliceDTO[]>([])
 const slice = ref<SliceDTO | null>(null);
 
-const createDialog = ref<boolean>(false);
+const sliceDialog = ref<boolean>(false);
 const sliceName = ref<string>("");
 const sliceCode = ref<string>("");
+const sliceId = ref<number>(-1);
 
 const autocomplete = ref<any | null>(null);
 
@@ -91,7 +109,7 @@ const items = computed(() => {
   if (props.isProjectOwnerOrAdmin) {
     result.push({text: "Create new slice...", value: "__NEW_SLICE__", name: "__NEW_SLICE__"})
   }
-  
+
   return result;
 })
 
@@ -124,21 +142,31 @@ async function deleteSlice(sliceToDel: SliceDTO) {
   slices.value = slices.value.filter(s => s.id !== sliceToDel.id)
 }
 
+function editSlice(sliceToEdit: SliceDTO) {
+
+}
+
 function openCreateDialog() {
   sliceName.value = '';
   sliceCode.value = 'def filter_row(row):\n    return True';
-  createDialog.value = true;
+  sliceDialog.value = true;
   autocomplete.value.reset();
 }
 
-function closeCreateDialog() {
-  createDialog.value = false;
+function openEditDialog(value: SliceDTO) {
+  sliceName.value = value.name;
+  sliceCode.value = value.code;
+  sliceId.value = value.id;
+}
+
+function closeSliceDialog() {
+  sliceDialog.value = false;
 }
 
 async function createSlice() {
   const newSlice = await api.createSlice(props.projectId, sliceName.value, sliceCode.value);
   slices.value.push(newSlice);
-  closeCreateDialog();
+  closeSliceDialog();
   slice.value = newSlice;
 }
 </script>
