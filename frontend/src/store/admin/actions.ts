@@ -56,7 +56,7 @@ export const actions = {
         const loadingNotification = { content: 'saving', showProgress: true };
         try {
             commitAddNotification(context, loadingNotification);
-            void await api.deleteUser(payload.id);
+            await api.deleteUser(payload.id);
             await dispatchGetUsers(context);
             commitRemoveNotification(context, loadingNotification);
             commitAddNotification(context, {content: 'Successfully deleted', color: 'success'});
@@ -69,7 +69,7 @@ export const actions = {
         const loadingNotification = {content: 'saving', showProgress: true};
         try {
             commitAddNotification(context, loadingNotification);
-            void await api.restoreUser(payload.id);
+            await api.restoreUser(payload.id);
             await dispatchGetUsers(context);
             commitRemoveNotification(context, loadingNotification);
             commitAddNotification(context, {content: 'Successfully restored', color: 'success'});
