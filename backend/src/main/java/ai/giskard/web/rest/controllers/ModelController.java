@@ -16,7 +16,6 @@ import ai.giskard.web.dto.mapper.GiskardMapper;
 import ai.giskard.web.dto.ml.ModelDTO;
 import ai.giskard.web.rest.errors.Entity;
 import ai.giskard.web.rest.errors.EntityNotFoundException;
-import ai.giskard.web.rest.errors.UnauthorizedException;
 import ai.giskard.worker.ExplainResponse;
 import ai.giskard.worker.RunModelForDataFrameResponse;
 import lombok.RequiredArgsConstructor;
@@ -125,9 +124,7 @@ public class ModelController {
         ProjectModel model = modelRepository.findById(modelId)
             .orElseThrow(() -> new EntityNotFoundException(Entity.PROJECT_MODEL, modelId));
 
-        if (!permissionEvaluator.canWriteProject(model.getProject().getId())) {
-            throw new UnauthorizedException("Rename", Entity.PROJECT_MODEL);
-        }
+        permissionEvaluator.validateCanWriteProject(model.getProject().getId());
 
         model.setName(name);
 

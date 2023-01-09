@@ -9,7 +9,6 @@ import ai.giskard.web.dto.FeatureMetadataDTO;
 import ai.giskard.web.dto.ml.DatasetDetailsDTO;
 import ai.giskard.web.rest.errors.Entity;
 import ai.giskard.web.rest.errors.EntityNotFoundException;
-import ai.giskard.web.rest.errors.UnauthorizedException;
 import com.univocity.parsers.common.TextParsingException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -128,9 +127,7 @@ public class DatasetService {
         Dataset dataset = datasetRepository.findById(datasetId)
             .orElseThrow(() -> new EntityNotFoundException(Entity.DATASET, datasetId));
 
-        if (!permissionEvaluator.canWriteProject(dataset.getProject().getId())) {
-            throw new UnauthorizedException("Rename", Entity.DATASET);
-        }
+        permissionEvaluator.validateCanWriteProject(dataset.getProject().getId());
 
         dataset.setName(name);
 
