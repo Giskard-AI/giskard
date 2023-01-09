@@ -80,7 +80,7 @@ public class SettingsController {
     public AppConfigDTO getApplicationSettings(@AuthenticationPrincipal final UserDetails user) {
         log.debug("REST request to get all public User names");
         AdminUserDTO userDTO = userRepository
-            .findOneWithRolesByLogin(user.getUsername())
+            .findOneWithRolesByLogin(featureFlagService.hasFlag(FeatureFlagService.FeatureFlag.Auth) ? user.getUsername() : "admin")
             .map(AdminUserDTO::new)
             .orElseThrow(() -> new RuntimeException("User could not be found"));
 
@@ -96,7 +96,7 @@ public class SettingsController {
         }
 
         log.info("License result was: {}", licenseService.checkLicense());
-        
+
         return AppConfigDTO.builder()
             .app(AppConfigDTO.AppInfoDTO.builder()
                 .generalSettings(settingsService.getSettings())

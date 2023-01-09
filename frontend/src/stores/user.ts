@@ -1,12 +1,9 @@
 import {defineStore} from "pinia";
-import {computed, ref} from "vue";
 import {AdminUserDTO, ManagedUserVM, UpdateMeDTO} from "@/generated-sources";
 import {Role} from "@/enums";
 import {api} from "@/api";
 import {getLocalToken, removeLocalToken, saveLocalToken} from "@/utils";
 import {useMainStore} from "@/stores/main";
-import router from "@/router";
-import {useRouter} from "vue-router/composables";
 
 interface State {
     token: string,
@@ -66,24 +63,32 @@ export const useUserStore = defineStore('user', {
         },
         async checkLoggedIn() {
             const mainStore = useMainStore();
-            if (!this.isLoggedIn) {
-                let token = this.token;
-                if (!token) {
-                    const localToken = getLocalToken();
-                    if (localToken) {
-                        this.token = localToken;
-                        token = localToken;
+            if (mainStore.authAvailable) {
+                if (!this.isLoggedIn) {
+                    let token = this.token;
+                    if (!token) {
+                        const localToken = getLocalToken();
+                        if (localToken) {
+                            this.token = localToken;
+                            token = localToken;
+                        }
+                    }
+                    if (token) {
+                        const response = await api.getUserAndAppSettings();
+                        this.isLoggedIn = true;
+                        this.userProfile = response.user;
+                        let appConfig = response.app;
+                        mainStore.setAppSettings(appConfig);
+                    } else {
+                        this.removeLogin();
                     }
                 }
-                if (token) {
-                    const response = await api.getUserAndAppSettings();
-                    this.isLoggedIn = true;
-                    this.userProfile = response.user;
-                    let appConfig = response.app;
-                    mainStore.setAppSettings(appConfig);
-                } else {
-                    this.removeLogin();
-                }
+            } else {
+                const response = await api.getUserAndAppSettings();
+                this.isLoggedIn = true;
+                this.userProfile = response.user;
+                let appConfig = response.app;
+                mainStore.setAppSettings(appConfig);
             }
         },
         removeLogin() {
@@ -144,7 +149,7 @@ export const useUserStore = defineStore('user', {
             mainStore.addNotification({color: 'success', content: 'Password successfully changed'});
             await this.logout();
         },
-        async signupUser(payload: {userData: ManagedUserVM}) {
+        async signupUser(payload: { userData: ManagedUserVM }) {
             const mainStore = useMainStore();
             const loadingNotification = {content: 'saving', showProgress: true};
             try {
