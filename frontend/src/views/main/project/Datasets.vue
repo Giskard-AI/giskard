@@ -68,9 +68,6 @@
     <v-container v-else class="font-weight-light font-italic secondary--text">
       No files uploaded yet.
     </v-container>
-
-    <h3>Slices</h3>
-    <Slices :projectId="projectId" :is-project-owner-or-admin="isProjectOwnerOrAdmin" />
   </div>
 </template>
 
