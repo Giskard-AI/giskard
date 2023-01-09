@@ -55,7 +55,6 @@ import Datasets from '@/views/main/project/Datasets.vue';
 import FeedbackList from '@/views/main/project/FeedbackList.vue';
 import {IUserProfileMinimal} from '@/interfaces';
 import mixpanel from "mixpanel-browser";
-import { api } from '@/api'
 
 @Component({
   components: {

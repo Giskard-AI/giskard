@@ -10,6 +10,10 @@ import java.nio.file.Path;
 import java.util.Set;
 
 public class YAMLConverter {
+    private YAMLConverter(){
+        throw new IllegalStateException("YAMLConverter is a Utility class. Not meant to be instantiated");
+    }
+
     public static void exportEntityToYAML(BaseEntity a, Path p) throws IOException{
         if (!Files.exists(p)){
             Files.createFile(p);

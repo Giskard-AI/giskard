@@ -144,7 +144,7 @@ import {Role} from "@/enums";
 import {ProjectPostDTO} from "@/generated-sources";
 import {toSlug} from "@/utils";
 import store from "@/store";
-import {useRoute, useRouter} from "vue-router/composables";
+import {useRoute} from "vue-router/composables";
 import moment from "moment";
 import { api } from "@/api";
 

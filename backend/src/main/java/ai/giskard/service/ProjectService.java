@@ -159,9 +159,14 @@ public class ProjectService {
 
     public Project importProject(MultipartFile zipMultipartFile, String userName) throws IOException {
         Path pathToTmp = locationService.resolvedTmpPath();
-        String projectKey = zipMultipartFile.getOriginalFilename().split("[.]")[0];
+        String projectKey;
+        try{
+            projectKey = zipMultipartFile.getOriginalFilename().split("[.]")[0];
+        } catch(NullPointerException e){
+            throw new GiskardRuntimeException("Error in the name of the file you try to upload. It needs to be a zip file with alphanumerical or _ characters ");
+        }
 
-        Files.createDirectories(FileLocationService.projectHome(projectKey));
+        Files.createDirectories(FileLocationService.projectHome(projectKey).normalize());
         Files.createDirectories(pathToTmp);
 
         Path zipPath = pathToTmp.resolve(zipMultipartFile.getOriginalFilename());
