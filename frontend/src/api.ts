@@ -42,8 +42,8 @@ import {TYPE} from "vue-toastification";
 import ErrorToast from "@/views/main/utils/ErrorToast.vue";
 import router from "@/router";
 import mixpanel from "mixpanel-browser";
-import AdminUserDTOWithPassword = AdminUserDTO.AdminUserDTOWithPassword;
 import {useUserStore} from "@/stores/user";
+import AdminUserDTOWithPassword = AdminUserDTO.AdminUserDTOWithPassword;
 
 function jwtRequestInterceptor(config) {
     // Do something before request is sent
@@ -182,6 +182,9 @@ function downloadURL(urlString) {
 export const api = {
     async logInGetToken(username: string, password: string) {
         return apiV2.post<unknown, JWTToken>(`/authenticate`, {username, password});
+    },
+    async getFeatureFlags() {
+        return apiV2.get<unknown, unknown>(`/settings/featureFlags`);
     },
     async getUserAndAppSettings() {
         return apiV2.get<unknown, AppConfigDTO>(`/settings`);

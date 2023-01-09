@@ -25,10 +25,14 @@
 <script lang="ts" setup>
 import {computed, onBeforeMount, provide} from "vue";
 import {editor} from "monaco-editor";
-import IEditorOptions = editor.IEditorOptions;
 import {useUserStore} from "@/stores/user";
+import {useMainStore} from "@/stores/main";
+import IEditorOptions = editor.IEditorOptions;
 
 const userStore = useUserStore();
+const mainStore = useMainStore();
+
+mainStore.fetchFeatures();
 
 const loggedIn = computed(() => {
   return userStore.loggedIn;
