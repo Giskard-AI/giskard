@@ -212,15 +212,14 @@
 </template>
 
 <script setup lang="ts">
-import {computed, onBeforeMount, onMounted, ref, watch} from "vue";
+import {computed, onBeforeMount, ref, watch} from "vue";
 import {AppConfigDTO, GeneralSettings, MLWorkerInfoDTO} from "@/generated-sources";
-import AppInfoDTO = AppConfigDTO.AppInfoDTO;
-import store from "@/store";
 import mixpanel from "mixpanel-browser";
 import {api} from "@/api";
 import moment from "moment/moment";
 import {copyToClipboard} from "@/global-keys";
 import {useMainStore} from "@/stores/main";
+import AppInfoDTO = AppConfigDTO.AppInfoDTO;
 
 const mainStore = useMainStore();
 
@@ -230,7 +229,7 @@ const currentWorker = ref<MLWorkerInfoDTO | null>(null);
 const allMLWorkerSettings = ref<MLWorkerInfoDTO[]>([]);
 const externalWorkerSelected = ref<boolean>(true);
 const mlWorkerSettingsLoading = ref<boolean>(false);
-const installedPackagesData = ref<{name: string, version: string}[]>([]);
+const installedPackagesData = ref<{ name: string, version: string }[]>([]);
 const giskardAddress = computed(() => window.location.hostname);
 const installedPackagesSearch = ref<string>("");
 
