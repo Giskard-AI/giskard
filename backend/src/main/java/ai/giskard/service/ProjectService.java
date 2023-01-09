@@ -12,6 +12,7 @@ import ai.giskard.repository.ProjectRepository;
 import ai.giskard.repository.UserRepository;
 import ai.giskard.repository.ml.DatasetRepository;
 import ai.giskard.repository.ml.ModelRepository;
+import ai.giskard.repository.ml.TestRepository;
 import ai.giskard.repository.ml.TestSuiteRepository;
 import ai.giskard.security.SecurityUtils;
 import ai.giskard.utils.YAMLConverter;
@@ -56,6 +57,7 @@ public class ProjectService {
     private final FileLocationService locationService;
     private final FeedbackRepository feedbackRepository;
     private final TestSuiteRepository testSuiteRepository;
+    private final TestRepository testRepository;
     final GiskardMapper giskardMapper;
 
     public static final Pattern PROJECT_KEY_PATTERN = Pattern.compile("^[a-z\\d_]+$");
@@ -225,7 +227,12 @@ public class ProjectService {
             testSuite.setActualDataset(datasetRepository.getById(mapFormerNewIdModelDataset.get(testSuite.getActualDataset().getId())));
             testSuite.setReferenceDataset(datasetRepository.getById(mapFormerNewIdModelDataset.get(testSuite.getReferenceDataset().getId())));
             testSuite.setModel(modelRepository.getById(mapFormerNewIdModelDataset.get(testSuite.getModel().getId())));
-            testSuiteRepository.save(testSuite);
+            TestSuite savedTs = testSuiteRepository.save(testSuite);
+            testSuite.getTests().forEach(test -> {
+                test.setTestSuite(savedTs);
+                testRepository.save(test);
+            });
+            testSuiteRepository.save(savedTs);
         });
 
         return projectRepository.save(savedProject);

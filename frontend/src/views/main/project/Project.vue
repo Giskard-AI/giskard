@@ -25,6 +25,9 @@
           <v-list-item link @click="clickEditButton()">
 						<v-list-item-title><v-icon dense left>edit</v-icon>Edit</v-list-item-title>
 					</v-list-item>
+			<v-list-item link @click="exportProject(project.id)">
+						<v-list-item-title> <v-icon dense left color="primary"> mdi-application-export </v-icon> Export</v-list-item-title>
+			</v-list-item>
           <v-list-item link @click="openDeleteDialog = true">
 						<v-list-item-title class="accent--text"><v-icon dense left color="accent">delete</v-icon>Delete</v-list-item-title>
 					</v-list-item>
@@ -134,6 +137,7 @@ import FeedbackList from '@/views/main/project/FeedbackList.vue';
 import { Role } from '@/enums';
 import { ProjectPostDTO, InspectionSettings } from '@/generated-sources';
 import mixpanel from "mixpanel-browser";
+import { api  } from "@/api";
 
 @Component({
 	components: {
@@ -207,6 +211,17 @@ export default class Project extends Vue {
 				console.error(e)
 			}
 		}
+	}
+
+	public async exportProject(id: number){
+		api.exportProjet(id).then((response) => {
+		const url = window.URL.createObjectURL(new Blob([response]))
+		const link = document.createElement('a')
+		link.href = url
+		link.setAttribute('download', this.project?.key + ".zip")
+		document.body.appendChild(link)
+		link.click()
+		}).catch(() => console.log("error while downloading"))
 	}
 
 	public clickEditButton() {
