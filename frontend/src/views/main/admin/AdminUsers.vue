@@ -53,8 +53,11 @@
         <v-btn icon slot="activator" :to="{name: 'main-admin-users-edit', params: {id: item.id}}">
           <v-icon color="primary">edit</v-icon>
         </v-btn>
-        <v-btn icon @click="deleteUser(item)">
+        <v-btn v-if="item.enabled" icon @click="deleteUser(item)">
           <v-icon color="accent">delete</v-icon>
+        </v-btn>
+        <v-btn v-else icon @click="restoreUser(item)">
+          <v-icon color="warning">restore</v-icon>
         </v-btn>
       </template>
     </v-data-table>
@@ -63,9 +66,9 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue } from 'vue-property-decorator';
-import { readAdminUsers } from '@/store/admin/getters';
-import { dispatchGetUsers, dispatchDeleteUser } from '@/store/admin/actions';
+import {Component, Vue} from 'vue-property-decorator';
+import {readAdminUsers} from '@/store/admin/getters';
+import {dispatchDeleteUser, dispatchGetUsers, dispatchRestoreUser} from '@/store/admin/actions';
 import {readAppSettings} from "@/store/main/getters";
 
 @Component
@@ -140,6 +143,10 @@ export default class AdminUsers extends Vue {
     })) {
       await dispatchDeleteUser(this.$store, {id: user.user_id});
     }
+  }
+
+  public async restoreUser(user) {
+    await dispatchRestoreUser(this.$store, {id: user.user_id});
   }
 }
 </script>

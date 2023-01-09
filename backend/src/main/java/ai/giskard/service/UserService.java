@@ -198,6 +198,16 @@ public class UserService {
             });
     }
 
+    public void restoreUser(String login) {
+        userRepository
+            .findOneByLogin(login)
+            .ifPresent(user -> {
+                user.setEnabled(true);
+                log.debug("Restored[reactivated] user : {}", user);
+            });
+    }
+
+
     /**
      * Update basic information (first name, last name, email, language) for the current user.
      *
