@@ -5,7 +5,6 @@ import ai.giskard.domain.User;
 import ai.giskard.repository.ProjectRepository;
 import ai.giskard.security.AuthoritiesConstants;
 import ai.giskard.security.PermissionEvaluator;
-import ai.giskard.security.SecurityUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -225,7 +224,7 @@ class PermissionTest {
         Project project = projectRepository.getOneByName(initService.getProjectByCreatorLogin(ADMIN_KEY));
 
         User user = new User();
-        user.setLogin(SecurityUtils.getCurrentUserLogin().orElseThrow());
+        user.setLogin(AI_TESTER_KEY);
         project.getGuests().add(user);
 
         assertThat(permissionEvaluator.canWriteProject(project.getId(), AuthoritiesConstants.AITESTER)).isTrue();
@@ -240,7 +239,7 @@ class PermissionTest {
         Project project = projectRepository.getOneByName(initService.getProjectByCreatorLogin(ADMIN_KEY));
 
         User user = new User();
-        user.setLogin(SecurityUtils.getCurrentUserLogin().orElseThrow());
+        user.setLogin(AI_TESTER_KEY);
         project.getGuests().add(user);
 
         assertThat(permissionEvaluator.canWriteProject(project.getId(), AuthoritiesConstants.AICREATOR)).isFalse();
