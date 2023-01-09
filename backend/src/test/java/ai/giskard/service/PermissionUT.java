@@ -1,9 +1,11 @@
 package ai.giskard.service;
 
 import ai.giskard.domain.Project;
+import ai.giskard.domain.User;
 import ai.giskard.repository.ProjectRepository;
 import ai.giskard.security.AuthoritiesConstants;
 import ai.giskard.security.PermissionEvaluator;
+import ai.giskard.security.SecurityUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -212,6 +214,36 @@ class PermissionTest {
     void canReadAnotherProjectAITESTER() {
         Project project = projectRepository.getOneByName(initService.getProjectByCreatorLogin(ADMIN_KEY));
         assertThat(permissionEvaluator.canWriteProject(project.getId())).isFalse();
+    }
+
+    /**
+     * Check if user can read another project as a guest with the required permission
+     */
+    @Test
+    @WithMockUser(username = AI_TESTER_KEY, authorities = AuthoritiesConstants.AITESTER)
+    void canWriteProjectAsGuestWithRequiredPermission() {
+        Project project = projectRepository.getOneByName(initService.getProjectByCreatorLogin(ADMIN_KEY));
+
+        User user = new User();
+        user.setLogin(SecurityUtils.getCurrentUserLogin().orElseThrow());
+        project.getGuests().add(user);
+
+        assertThat(permissionEvaluator.canWriteProject(project.getId(), AuthoritiesConstants.AITESTER)).isTrue();
+    }
+
+    /**
+     * Verify than current user cannot read another project as a guest without the required permission
+     */
+    @Test
+    @WithMockUser(username = AI_TESTER_KEY, authorities = AuthoritiesConstants.AITESTER)
+    void canWriteProjectProjectAsGuestWithoutRequiredPermission() {
+        Project project = projectRepository.getOneByName(initService.getProjectByCreatorLogin(ADMIN_KEY));
+
+        User user = new User();
+        user.setLogin(SecurityUtils.getCurrentUserLogin().orElseThrow());
+        project.getGuests().add(user);
+
+        assertThat(permissionEvaluator.canWriteProject(project.getId(), AuthoritiesConstants.AICREATOR)).isFalse();
     }
 
 }
