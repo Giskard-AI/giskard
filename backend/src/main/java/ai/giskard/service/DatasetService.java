@@ -4,7 +4,6 @@ import ai.giskard.domain.FeatureType;
 import ai.giskard.domain.ml.Dataset;
 import ai.giskard.repository.ml.DatasetRepository;
 import ai.giskard.security.PermissionEvaluator;
-import ai.giskard.security.SecurityUtils;
 import ai.giskard.web.dto.DatasetMetadataDTO;
 import ai.giskard.web.dto.FeatureMetadataDTO;
 import ai.giskard.web.dto.ml.DatasetDetailsDTO;
@@ -129,7 +128,7 @@ public class DatasetService {
         Dataset dataset = datasetRepository.findById(datasetId)
             .orElseThrow(() -> new EntityNotFoundException(Entity.DATASET, datasetId));
 
-        if (!SecurityUtils.isCurrentUserAdmin() && !SecurityUtils.isCurrentUserInside(dataset.getProject().getOwner())) {
+        if (!permissionEvaluator.canWriteProject(dataset.getProject().getId())) {
             throw new UnauthorizedException("Rename", Entity.DATASET);
         }
 

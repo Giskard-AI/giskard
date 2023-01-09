@@ -113,7 +113,7 @@
 <script setup lang="ts">
 import {api} from '@/api';
 import {commitAddNotification} from '@/store/main/mutations';
-import {FileDTO} from '@/generated-sources';
+import {DatasetDTO, FileDTO} from '@/generated-sources';
 import mixpanel from "mixpanel-browser";
 import DeleteModal from '@/views/main/project/modals/DeleteModal.vue';
 import {computed, onActivated, ref} from 'vue';
@@ -132,7 +132,7 @@ const files = ref<FileDTO[]>([]);
 const lastVisitedFileId = ref<number | null>(null);
 const filePreviewHeader = ref<{ text: string, value: string, sortable: boolean }[]>([]);
 const filePreviewData = ref<any[]>([]);
-const editedDataset = ref<FileDTO | null>(null);
+const editedDataset = ref<DatasetDTO | null>(null);
 
 onActivated(() => loadDatasets());
 

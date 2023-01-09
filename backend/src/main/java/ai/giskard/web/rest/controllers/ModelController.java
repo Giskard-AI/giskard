@@ -8,7 +8,6 @@ import ai.giskard.repository.ProjectRepository;
 import ai.giskard.repository.ml.DatasetRepository;
 import ai.giskard.repository.ml.ModelRepository;
 import ai.giskard.security.PermissionEvaluator;
-import ai.giskard.security.SecurityUtils;
 import ai.giskard.service.ModelService;
 import ai.giskard.service.ProjectFileDeletionService;
 import ai.giskard.service.UsageService;
@@ -126,7 +125,7 @@ public class ModelController {
         ProjectModel model = modelRepository.findById(modelId)
             .orElseThrow(() -> new EntityNotFoundException(Entity.PROJECT_MODEL, modelId));
 
-        if (!SecurityUtils.isCurrentUserAdmin() && !SecurityUtils.isCurrentUserInside(model.getProject().getOwner())) {
+        if (!permissionEvaluator.canWriteProject(model.getProject().getId())) {
             throw new UnauthorizedException("Rename", Entity.PROJECT_MODEL);
         }
 
