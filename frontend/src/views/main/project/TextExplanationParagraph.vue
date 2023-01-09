@@ -3,6 +3,7 @@
         <div style="width: 95%;">
             <v-slider
                 v-model="range"
+                thumb-size="10"
                 min="0"
                 max="100"
                 label="Importance"
@@ -13,8 +14,11 @@
             :collection="items"
             :height="200"
             :width="widthParagraph"
+            class="overflow-x-hidden"
         >
-            <span slot="cell" slot-scope="props"  :style="{ backgroundColor: props.data.color }">{{props.data.text}}</span>
+        <template v-slot:cell="item">
+            <span  :style="{ backgroundColor: item.data.color }">{{item.data.text}}</span>
+        </template>
         </VirtualCollection>
     </div>
 </template>
@@ -32,7 +36,7 @@ const props = defineProps<{
     min_weight: number
 }>();
 
-const paragraph = ref(null)
+const paragraph = ref<HTMLDivElement>()
 const range = ref<number>(0)
 const widthParagraph = ref<number>(getCurrentInstance()?.proxy.$parent?.$el.clientWidth! - 40);
 const x = ref<number>(0)
@@ -75,24 +79,25 @@ function calculateBackgroundColor(weight: number){
     }
 }
 
-
 onMounted(() => {
     window.addEventListener('resize', () => {
         x.value = 0;
         y.value = 0;
-        widthParagraph.value = paragraph.value.clientWidth;
+        widthParagraph.value = paragraph.value!.clientWidth;
         items.value = createItems()
     });
 })
 
 // Called when mounted and when window resized 
 function createItems(){
+    const canvas = document.createElement("canvas") as HTMLCanvasElement;
+    const wordHorizontalPadding = 3;
+    const lineHeight = 20;
     return Array.from({length: props.words.length}, (_, index) => {
-        let c = document.createElement("canvas") as HTMLCanvasElement;
-        let widthText = getTextWidth(props.words[index], c) + 3;
+        let widthText = getTextWidth(props.words[index], canvas) + wordHorizontalPadding;
         if (x.value + widthText >= widthParagraph.value){
             x.value = 0;
-            y.value += 20; 
+            y.value += lineHeight; 
         }
         let res = { 
             data: {
@@ -110,10 +115,10 @@ function createItems(){
     })
 }
 
-function getTextWidth(text, c : HTMLCanvasElement) {
-    var ctx = c.getContext("2d")!;
+function getTextWidth(text, c: HTMLCanvasElement) {
+    let ctx = c.getContext("2d")!;
     ctx.font = "14px Roboto, sans-serif";
-    var txt = text;
+    let txt = text;
     return ctx.measureText(txt).width;
 };
 

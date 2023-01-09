@@ -63,13 +63,14 @@ def explain_text(model: GiskardModel, input_df: pd.DataFrame,
     prediction_function = text_explanation_prediction_wrapper(
         model.prediction_function, input_df, text_column
     )
+    text_explain_attempts = 10
     try:
-        for i in range(10):
+        for i in range(text_explain_attempts):
             try:
                 text_explainer.fit(text_document, prediction_function)
                 break
-            except ZeroDivisionError as e:
-                logger.warning(f"Failed to fit text explainer {i}", e)
+            except ZeroDivisionError:
+                logger.warning(f"Failed to fit text explainer {i}")
 
         text_explainer.show_prediction(target_names=model.classification_labels)
         exp = text_explainer.explain_prediction(target_names=model.classification_labels)
