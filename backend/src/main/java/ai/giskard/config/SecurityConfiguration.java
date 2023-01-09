@@ -3,6 +3,7 @@ package ai.giskard.config;
 import ai.giskard.security.AuthoritiesConstants;
 import ai.giskard.security.jwt.JWTConfigurer;
 import ai.giskard.security.jwt.TokenProvider;
+import ai.giskard.service.ee.FeatureFlagService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
@@ -33,6 +34,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
     private final CorsFilter corsFilter;
     private final SecurityProblemSupport problemSupport;
+    private final FeatureFlagService featureFlagService;
 
     @Autowired
     private FilterChainExceptionHandler filterChainExceptionHandler;
@@ -42,12 +44,14 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
         TokenProvider tokenProvider,
         CorsFilter corsFilter,
         JHipsterProperties jHipsterProperties,
-        SecurityProblemSupport problemSupport
+        SecurityProblemSupport problemSupport,
+        FeatureFlagService featureFlagService
     ) {
         this.tokenProvider = tokenProvider;
         this.corsFilter = corsFilter;
         this.problemSupport = problemSupport;
         this.jHipsterProperties = jHipsterProperties;
+        this.featureFlagService = featureFlagService;
     }
 
     @Bean
@@ -72,22 +76,22 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             .disable()
             .addFilterBefore(corsFilter, UsernamePasswordAuthenticationFilter.class)
             .exceptionHandling()
-                .authenticationEntryPoint(problemSupport)
-                .accessDeniedHandler(problemSupport)
-        .and()
+            .authenticationEntryPoint(problemSupport)
+            .accessDeniedHandler(problemSupport)
+            .and()
             .headers()
             .contentSecurityPolicy(jHipsterProperties.getSecurity().getContentSecurityPolicy())
-        .and()
+            .and()
             .referrerPolicy(ReferrerPolicyHeaderWriter.ReferrerPolicy.STRICT_ORIGIN_WHEN_CROSS_ORIGIN)
-        .and()
+            .and()
             .permissionsPolicy().policy("camera=(), fullscreen=(self), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), midi=(), payment=(), sync-xhr=()")
-        .and()
+            .and()
             .frameOptions()
             .sameOrigin()
-        .and()
+            .and()
             .sessionManagement()
             .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-        .and()
+            .and()
             .authorizeRequests()
             .antMatchers("/api/v2/authenticate").permitAll()
             .antMatchers("/api/v2/register").permitAll()
@@ -101,11 +105,16 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             .antMatchers("/management/info").permitAll()
             .antMatchers("/management/prometheus").permitAll()
             .antMatchers("/management/**").hasAuthority(AuthoritiesConstants.ADMIN)
-        .and()
+            .and()
             .httpBasic()
-        .and()
+            .and()
             .apply(securityConfigurerAdapter());
         // @formatter:on
+
+        if (!featureFlagService.hasFlag(FeatureFlagService.FeatureFlag.Auth)) {
+            http.anonymous().principal("admin").authorities(AuthoritiesConstants.ADMIN);
+            http.authorizeRequests().antMatchers("/api/**").permitAll();
+        }
     }
 
     private JWTConfigurer securityConfigurerAdapter() {

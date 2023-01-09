@@ -25,19 +25,11 @@ public class FeatureFlagService {
      */
     public Map<FeatureFlag, Boolean> getAllFeatures() {
         Map<FeatureFlag, Boolean> features = new HashMap<>();
-        features.put(Auth, true);
+        features.put(Auth, false);
         return features;
     }
 
-    /**
-     * THIS METHOD IS CURRENTLY A STUB AND DOES NOT FUNCTION FOR REAL
-     *
-     * @param flag
-     * @return
-     */
-    public boolean hasFeature(FeatureFlag flag) {
-        //RestTemplate
-        // TODO: External API call to 3rd party?
-        return flag != Auth;
+    public boolean hasFlag(FeatureFlag flag) {
+        return getAllFeatures().get(flag);
     }
 }

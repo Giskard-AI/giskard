@@ -7,7 +7,6 @@ import org.springframework.stereotype.Service;
 public class LicenseService {
 
     public String checkLicense() {
-
-        return licenseResult;
+        return "";
     }
 }
