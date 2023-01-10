@@ -131,7 +131,7 @@
                       </v-tab>
                     </div>  
                   </template>
-                  <span>Text explanation is deactivated because your model doesn't contain any textual variable</span>
+                  <span>Text explanation is not available because your model does not contain any text features</span>
                 </v-tooltip>
                 
                   
