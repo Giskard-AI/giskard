@@ -39,7 +39,7 @@ const props = withDefaults((defineProps<{
   isWarning: false
 });
 
-const emit = defineEmits(['input']);
+const emit = defineEmits(['confirm']);
 
 const buttonColor = computed<string>(() => {
   return props.isWarning ? 'accent' : 'primary';
