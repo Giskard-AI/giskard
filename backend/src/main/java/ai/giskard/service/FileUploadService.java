@@ -52,8 +52,8 @@ public class FileUploadService {
         String modelFilename = createZSTname("model_", savedModel.getId());
         Path modelFilePath = projectModelsPath.resolve(modelFilename);
         long size = modelStream.transferTo(Files.newOutputStream(modelFilePath));
-        model.setSize(size);
-        model.setFileName(modelFilename);
+        savedModel.setSize(size);
+        savedModel.setFileName(modelFilename);
         String requirementsFilename = String.format("model-requirements_%s.txt", savedModel.getId());
         Path requirementsFilePath = projectModelsPath.resolve(requirementsFilename);
         try {
@@ -61,7 +61,7 @@ public class FileUploadService {
         } catch (IOException e) {
             throw new GiskardRuntimeException("Error writing requirements file: " + requirementsFilePath, e);
         }
-        model.setRequirementsFileName(requirementsFilename);
+        savedModel.setRequirementsFileName(requirementsFilename);
         return modelRepository.save(savedModel);
     }
 

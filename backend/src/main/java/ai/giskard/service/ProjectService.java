@@ -198,10 +198,6 @@ public class ProjectService {
 
         // Save the project in the db (verify that key is not already used)
         Project savedProject = create(project, userName);
-        String projectKey = savedProject.getKey();
-
-        // Create a new folder for the new models and data files
-        Path newProjectHome = locationService.resolvedProjectHome(projectKey);
 
         // Storage of each element in the db
          models.forEach(model -> {
@@ -223,10 +219,10 @@ public class ProjectService {
              Long formerId = dataset.getId();
              Path formerDatasetPath = temporaryExportDir.resolve("datasets").resolve(FileLocationService.createZSTname("data_", formerId));
              try{
+                 dataset.setProject(savedProject);
                  FileInputStream datasetStream = new FileInputStream(formerDatasetPath.toFile());
                  Dataset savedDataset = fileUploadService.uploadDataset(savedProject, dataset.getName(), dataset.getFeatureTypes(), dataset.getColumnTypes(), dataset.getTarget(), datasetStream);
                  mapFormerNewIdModelDataset.put(formerId, savedDataset.getId());
-                 Files.delete(formerDatasetPath);
              }
              catch(IOException e){
                  throw new GiskardRuntimeException("Couldn't upload the datasets");
