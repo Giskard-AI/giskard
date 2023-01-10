@@ -17,7 +17,7 @@
             </v-btn>
           </template>
           <v-list dense>
-            <v-list-item @click.stop="editSlice(data.item)">
+            <v-list-item @click.stop="openEditDialog(data.item)">
               <v-list-item-title>Edit</v-list-item-title>
               <v-list-item-icon>
                 <v-icon>edit</v-icon>
@@ -37,8 +37,9 @@
     <v-dialog v-model="sliceDialog" width="800" persistent>
       <v-card>
         <ValidationObserver ref="dialogForm">
-          <v-form @submit.prevent="createSlice()">
-            <v-card-title>Create new slice</v-card-title>
+          <v-form @submit.prevent="submit()">
+            <v-card-title v-if="isUpdateDialog">Edit slice {{ sliceName }}</v-card-title>
+            <v-card-title v-else>Create new slice</v-card-title>
             <v-card-text>
               <ValidationProvider name="Name" mode="eager" rules="required" v-slot="{errors}">
                 <v-text-field label="Slice Name*" type="text" v-model="sliceName"
@@ -58,7 +59,10 @@
             <v-card-actions>
               <v-spacer></v-spacer>
               <v-btn color="error" text @click="closeSliceDialog()">Cancel</v-btn>
-              <v-btn color="primary" text type="submit">Create</v-btn>
+              <v-btn color="primary" text type="submit">
+                <div v-if="isUpdateDialog">Update</div>
+                <div v-else>Create</div>
+              </v-btn>
             </v-card-actions>
           </v-form>
         </ValidationObserver>
@@ -113,6 +117,10 @@ const items = computed(() => {
   return result;
 })
 
+const isUpdateDialog = computed(() => {
+  return sliceId.value >= 0
+})
+
 watch(() => slice.value, (value, oldValue) => {
   if (value !== null) {
     if (isCreateSlice(value)) {
@@ -142,10 +150,6 @@ async function deleteSlice(sliceToDel: SliceDTO) {
   slices.value = slices.value.filter(s => s.id !== sliceToDel.id)
 }
 
-function editSlice(sliceToEdit: SliceDTO) {
-
-}
-
 function openCreateDialog() {
   sliceName.value = '';
   sliceCode.value = 'def filter_row(row):\n    return True';
@@ -157,17 +161,26 @@ function openEditDialog(value: SliceDTO) {
   sliceName.value = value.name;
   sliceCode.value = value.code;
   sliceId.value = value.id;
+  sliceDialog.value = true;
 }
 
 function closeSliceDialog() {
+  sliceId.value = -1;
   sliceDialog.value = false;
 }
 
-async function createSlice() {
-  const newSlice = await api.createSlice(props.projectId, sliceName.value, sliceCode.value);
-  slices.value.push(newSlice);
+async function submit() {
+  if (isUpdateDialog.value) {
+    const editedSlice = await api.editSlice(props.projectId, sliceName.value, sliceCode.value, sliceId.value);
+    slices.value = slices.value.filter(s => s.id !== editedSlice.id);
+    slices.value.push(editedSlice);
+  } else {
+    const newSlice = await api.createSlice(props.projectId, sliceName.value, sliceCode.value);
+    slices.value.push(newSlice);
+    slice.value = newSlice;
+  }
+
   closeSliceDialog();
-  slice.value = newSlice;
 }
 </script>
 

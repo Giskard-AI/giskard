@@ -9,8 +9,9 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @UIModel
-public class SliceCreateDTO {
+public class SlicePutDTO {
     private Long projectId;
     private String name;
     private String code;
+    private Long id;
 }

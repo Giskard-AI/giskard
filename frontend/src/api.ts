@@ -411,6 +411,14 @@ export const api = {
             code: code
         })
     },
+    async editSlice(projectId: number, name: string, code: string, id: number) {
+        return apiV2.put<unknown, SliceDTO>(`/slices`, {
+            name: name,
+            projectId: projectId,
+            code: code,
+            id: id
+        })
+    },
     async deleteSlice(sliceId: number) {
         return apiV2.delete(`/slices/${sliceId}`);
     }
