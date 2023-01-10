@@ -1,11 +1,11 @@
-import type {FeatureType} from './../../domain/feature-type';
+import type {ColumnMeaning} from './../../domain/column-meaning';
 
 /**
  * Generated from ai.giskard.web.dto.DataUploadParamsDTO
  */
 export interface DataUploadParamsDTO {
     columnTypes: {[key: string]: string};
-    featureTypes: {[key: string]: FeatureType};
+    columnMeanings: {[key: string]: ColumnMeaning};
     name: string;
     projectKey: string;
     target: string;

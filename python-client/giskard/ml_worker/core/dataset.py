@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 class Dataset:
     name: str
     target: str
-    feature_types: Dict[str, str]
+    column_meanings: Dict[str, str]
     column_types: Dict[str, str]
     df: pd.DataFrame
 
@@ -29,13 +29,13 @@ class Dataset:
             df: pd.DataFrame,
             name: Optional[str] = None,
             target: Optional[str] = None,
-            feature_types: Dict[str, str] = None,
+            column_meanings: Dict[str, str] = None,
             column_types: Dict[str, str] = None,
     ) -> None:
         self.name = name
         self.df = df
         self.target = target
-        self.feature_types = feature_types
+        self.column_meanings = column_meanings
         self.column_types = column_types
 
     def save(self, client: GiskardClient, project_key: str):
@@ -57,7 +57,7 @@ class Dataset:
     def meta(self):
         return DatasetMeta(name=self.name,
                            target=self.target,
-                           feature_types=self.feature_types,
+                           column_meanings=self.column_meanings,
                            column_types=self.column_types)
 
     @staticmethod
@@ -92,7 +92,7 @@ class Dataset:
                 meta = DatasetMeta(
                     name=saved_meta["name"],
                     target=saved_meta["target"],
-                    feature_types=saved_meta["feature_types"],
+                    column_meanings=saved_meta["column_meanings"],
                     column_types=saved_meta["column_types"],
                 )
         else:
@@ -118,7 +118,7 @@ class Dataset:
                     "id": dataset_id,
                     "name": self.meta.name,
                     "target": self.meta.target,
-                    "feature_types": self.meta.feature_types,
+                    "column_meanings": self.meta.column_meanings,
                     "column_types": self.meta.column_types,
                     "original_size_bytes": original_size_bytes,
                     "compressed_size_bytes": compressed_size_bytes,
@@ -136,7 +136,7 @@ class Dataset:
             df=slice_fn(self.df),
             name=self.name,
             target=self.target,
-            feature_types=self.feature_types,
+            column_meanings=self.column_meanings,
             column_types=self.column_types)
 
     def __len__(self):
