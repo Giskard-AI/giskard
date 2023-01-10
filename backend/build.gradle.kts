@@ -152,7 +152,7 @@ dependencies {
     implementation("io.grpc:grpc-protobuf:$grpcVersion")
     implementation("io.grpc:grpc-stub:$grpcVersion")
     testImplementation("io.grpc:grpc-testing:$grpcVersion")
-
+    implementation("commons-io:commons-io")
     implementation(platform("tech.jhipster:jhipster-dependencies:${jhipsterDependenciesVersion}"))
     implementation(group = "tech.jhipster", name = "jhipster-framework")
     implementation("javax.annotation:javax.annotation-api")

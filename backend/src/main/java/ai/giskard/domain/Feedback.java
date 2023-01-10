@@ -34,7 +34,6 @@ public class Feedback extends BaseEntity{
 
     @Setter
     @OneToMany(mappedBy = "feedback", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    @JsonIgnore
     private Set<FeedbackReply> feedbackReplies = new HashSet<>();
 
     @Setter

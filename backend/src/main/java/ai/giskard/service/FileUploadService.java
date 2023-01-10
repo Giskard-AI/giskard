@@ -41,10 +41,10 @@ public class FileUploadService {
     @Transactional
     public ProjectModel uploadModel(ModelUploadParamsDTO modelParams, InputStream modelStream, InputStream requirementsStream) throws IOException {
         ProjectModel model = createProjectModel(modelParams);
-        return uploadModel2(model, modelStream, requirementsStream);
+        return uploadModel(model, modelStream, requirementsStream);
     }
 
-    @Transactional public ProjectModel uploadModel2(ProjectModel model, InputStream modelStream, InputStream requirementsStream) throws IOException{
+    @Transactional public ProjectModel uploadModel(ProjectModel model, InputStream modelStream, InputStream requirementsStream) throws IOException{
         Project project = projectRepository.getOneByKey(model.getProject().getKey());
         Path projectModelsPath = locationService.modelsDirectory(project.getKey());
         createOrEnsureOutputDirectory(projectModelsPath);
@@ -52,7 +52,7 @@ public class FileUploadService {
         String modelFilename = createZSTname("model_", savedModel.getId());
         Path modelFilePath = projectModelsPath.resolve(modelFilename);
         long size = modelStream.transferTo(Files.newOutputStream(modelFilePath));
-        model.setSize(size); 
+        model.setSize(size);
         model.setFileName(modelFilename);
         String requirementsFilename = String.format("model-requirements_%s.txt", savedModel.getId());
         Path requirementsFilePath = projectModelsPath.resolve(requirementsFilename);

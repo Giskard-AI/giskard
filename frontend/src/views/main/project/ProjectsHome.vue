@@ -87,11 +87,11 @@
           <v-form @submit.prevent="importProject()">
             <v-card-title>Import project</v-card-title>
             <v-card-text>
-              <ValidationProvider name="File" rules="required" :v-slot="{fileNameError}">
+              <ValidationProvider name="File" rules="required" v-slot="{errors}">
                   <v-file-input ref="file" accept=".zip" label="Select a project to import*"
-                  :error-messages="fileNameError"
+                  :error-messages="errors"
                 ></v-file-input>
-              </ValidationProvider> 
+              </ValidationProvider>
             </v-card-text>
             <v-card-actions>
               <v-spacer></v-spacer>
@@ -157,7 +157,6 @@ const newProjectKey = ref<string>("");
 const newProjectDesc = ref<string>("");
 const creatorFilter = ref<number>(0);
 const projectCreateError = ref<string>("");
-const fileNameError = ref<string>("");
 
 
 // template ref
@@ -199,23 +198,11 @@ async function loadProjects() {
 
 async function importProject(){
   let uploadedFile = file.value.$refs.input.files[0];
-  if (!validateFileName(uploadedFile.name)){
-    fileNameError.value = "The name of the file is incorect.\n It must be a zip file containing only alphanumerical or _ characters"
-    return;
-  }
   let formData = new FormData();
   formData.append('file', uploadedFile);
   await api.importProject(formData);
   clearAndCloseDialog();
   loadProjects(); 
-}
-
-function validateFileName(fileName: string){
-  const parts = fileName.split('.')
-  if (parts.length !== 2 || parts[1] != "zip")
-    return false;
-  const re = /^[a-z0-9_]+$/i;
-  return re.test(parts[0]);
 }
 
 function clearAndCloseDialog() {
