@@ -17,13 +17,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -124,27 +121,6 @@ public class FileUploadService {
             final InputStream compressedInputStream = Files.newInputStream(compressedInputPath);
             return new CompressorStreamFactory()
                 .createCompressorInputStream(CompressorStreamFactory.ZSTANDARD, compressedInputStream);
-        } catch (IOException e) {
-            throw new GiskardRuntimeException(String.format("Failed to read file to %s", compressedInputPath), e);
-        } catch (CompressorException e) {
-            throw new GiskardRuntimeException(String.format("Failed to decompress input when reading %s", compressedInputPath), e);
-        }
-    }
-
-    /** TODO: This will be used later in PoC1
-     * Decompresses the input path into the output path.
-     * @param compressedInputPath
-     * @param decompressOutputPath
-     * @return
-     */
-    public File decompressFileToFile(Path compressedInputPath, Path decompressOutputPath) {
-        log.info("Decompressing file {}", compressedInputPath);
-        try {
-            final InputStream inputStream = new CompressorStreamFactory()
-                .createCompressorInputStream(CompressorStreamFactory.ZSTANDARD, Files.newInputStream(compressedInputPath));
-            File file = decompressOutputPath.toFile();
-            Files.copy(inputStream, file.toPath(), StandardCopyOption.REPLACE_EXISTING);
-            return file;
         } catch (IOException e) {
             throw new GiskardRuntimeException(String.format("Failed to read file to %s", compressedInputPath), e);
         } catch (CompressorException e) {

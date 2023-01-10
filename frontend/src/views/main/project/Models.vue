@@ -91,10 +91,9 @@ import {ModelDTO} from '@/generated-sources';
 import mixpanel from "mixpanel-browser";
 import DeleteModal from "@/views/main/project/modals/DeleteModal.vue";
 import {commitAddNotification} from "@/store/main/mutations";
-import SliceDropdown from "@/components/SliceDropdown.vue";
 
 @Component({
-  components: {SliceDropdown, InspectorLauncher}
+  components: {InspectorLauncher}
 })
 export default class Models extends Vue {
   @Prop({type: Number, required: true}) projectId!: number;
