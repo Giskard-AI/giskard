@@ -39,7 +39,7 @@ from giskard.ml_worker.generated.ml_worker_pb2 import (
     RunTestRequest,
     TestResultMessage,
     UploadStatus,
-    FileUploadMetadata, FileType, StatusCode, FilterDatasetResponse, Chunk, )
+    FileUploadMetadata, FileType, StatusCode, FilterDatasetResponse, )
 from giskard.ml_worker.generated.ml_worker_pb2_grpc import MLWorkerServicer
 from giskard.ml_worker.utils.grpc_mapper import deserialize_dataset, deserialize_model
 from giskard.ml_worker.utils.logging import Timer
@@ -284,7 +284,10 @@ class MLWorkerServiceImpl(MLWorkerServicer):
                 df = pd.read_csv(data, keep_default_na=False, na_values=["_GSK_NA_"])
                 df = df.astype(column_types)
                 # Iterate over rows, applying filter_row func
-                rows_to_keep = df.apply(filterfunc["filter_row"], axis=1)[lambda x: x == True].index.array
+                try:
+                    rows_to_keep = df.apply(filterfunc["filter_row"], axis=1)[lambda x: x == True].index.array
+                except Exception as e:
+                    yield FilterDatasetResponse(code=StatusCode.Failed)
                 time_end = time.perf_counter()
                 times.append(time_end - time_start)
                 # Send NEXT code

@@ -79,16 +79,11 @@ import {commitAddNotification} from '@/store/main/mutations';
 import {FileDTO, ProjectDTO} from '@/generated-sources';
 import mixpanel from "mixpanel-browser";
 import DeleteModal from "@/views/main/project/modals/DeleteModal.vue";
-import Slices from "@/views/main/project/Slices.vue";
 
 const GISKARD_INDEX_COLUMN_NAME = '_GISKARD_INDEX_';
 
 
-@Component({
-  components: {
-    Slices
-  }
-})
+@Component
 export default class Datasets extends Vue {
   @Prop({type: Number, required: true}) projectId!: number;
   @Prop({type: Boolean, default: false}) isProjectOwnerOrAdmin!: boolean;
