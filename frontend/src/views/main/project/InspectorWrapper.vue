@@ -392,6 +392,7 @@ export default class InspectorWrapper extends Vue {
     const response = await api.getDataFilteredBySlice(this.inspectionId, slice.id);
     this.rows = response.data;
     this.numberOfRows = response.rowNb;
+    this.rowNb = 0;
     this.assignCurrentRow(false);
     this.loadingSlice = false;
   }
