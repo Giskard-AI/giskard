@@ -1,15 +1,12 @@
 <template>
-  <div class="text-center">
-    <v-btn
-        icon
-        @click.stop="opened = true"
-        @click.stop.prevent
-    >
-      <slot></slot>
-    </v-btn>
-    <v-dialog
-        v-model="opened"
-    >
+  <vue-final-modal
+      v-slot="{ close }"
+      v-bind="$attrs"
+      classes="modal-container"
+      content-class="modal-content"
+      v-on="$listeners"
+  >
+    <div class="text-center">
       <v-card>
         <v-card-title>
           {{ props.title }}
@@ -18,17 +15,17 @@
           {{ props.text }}
         </v-card-text>
         <v-card-actions>
-          <v-btn color="primary" @click="handleActionsClick(false)">{{ props.cancelMessage }}</v-btn>
-          <v-btn :color=buttonColor @click="handleActionsClick(true)">{{ props.confirmMessage }}</v-btn>
+          <v-btn color="primary" @click="close">{{ props.cancelMessage }}</v-btn>
+          <v-btn :color=buttonColor @click="emit('confirm', close)">{{ props.confirmMessage }}</v-btn>
         </v-card-actions>
       </v-card>
-    </v-dialog>
-  </div>
+    </div>
+  </vue-final-modal>
 </template>
 
 <script setup lang="ts">
 
-import {computed, ref} from 'vue';
+import {computed} from 'vue';
 
 const props = withDefaults((defineProps<{
   confirmMessage?: string,
@@ -42,18 +39,27 @@ const props = withDefaults((defineProps<{
   isWarning: false
 });
 
-const opened = ref<Boolean>(false);
-
-const emit = defineEmits(['dismiss']);
-
+const emit = defineEmits(['input']);
 
 const buttonColor = computed<string>(() => {
   return props.isWarning ? 'accent' : 'primary';
 });
 
-function handleActionsClick(confirm: boolean) {
-  opened.value = false;
-  emit('dismiss', confirm);
+</script>
+
+<style scoped>
+::v-deep(.modal-container) {
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
-</script>
+::v-deep(.modal-content) {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  margin: 0 1rem;
+  padding: 1rem;
+}
+
+</style>

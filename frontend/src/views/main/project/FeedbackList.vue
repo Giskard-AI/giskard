@@ -80,16 +80,13 @@
         </template>
         <template v-slot:item.action="{item}"
                   v-slot:item.id="{item}">
-          <ConfirmModal
-              openMessage="Delete"
-              confirmMessage="Delete"
-              title="Delete feedback"
-              :text="`Are you sure that you want to delete the feedback for feature ${ item.featureName } permanently?`"
-              isWarning
-              @dismiss="(confirmed) => handleConfirmDeleteFeedback(item, confirmed)"
+          <v-btn
+              icon
+              @click.stop="deleteFeedback(item)"
+              @click.stop.prevent
           >
             <v-icon color="accent">delete</v-icon>
-          </ConfirmModal>
+          </v-btn>
         </template>
       </v-data-table>
     </v-container>
@@ -101,16 +98,17 @@
 
 <script setup lang="ts">
 import {api} from "@/api";
-import ConfirmModal from '@/views/main/project/modals/ConfirmModal.vue';
 import {FeedbackMinimalDTO} from "@/generated-sources";
 import {computed, onActivated, ref, watch} from 'vue';
 import {useRoute, useRouter} from 'vue-router/composables';
+import {$vfm} from 'vue-final-modal';
+import ConfirmModal from '@/views/main/project/modals/ConfirmModal.vue';
 
 const route = useRoute();
 const router = useRouter();
 
 const props = defineProps({
-  projectId: {type: Number, required: true },
+  projectId: {type: Number, required: true},
 });
 
 const feedbacks = ref<FeedbackMinimalDTO[]>([]);
@@ -211,11 +209,22 @@ const existingModels = computed(() => feedbacks.value.map((e) => e.modelName));
 const existingDatasets = computed(() => feedbacks.value.map((e) => e.datasetName));
 const existingTypes = computed(() => feedbacks.value.map((e) => e.feedbackType));
 
-async function handleConfirmDeleteFeedback(feedback: FeedbackMinimalDTO, confirmed: boolean) {
-  if (confirmed) {
-    await api.deleteFeedback(feedback.id);
-    await fetchFeedbacks();
-  }
+function deleteFeedback(feedback: FeedbackMinimalDTO) {
+  $vfm.show({
+    component: ConfirmModal,
+    bind: {
+      title: 'Delete feedback',
+      text: `Are you sure that you want to delete the feedback for feature '${feedback.featureName}' permanently?`,
+      isWarning: true
+    },
+    on: {
+      async confirm(close) {
+        await api.deleteFeedback(feedback.id);
+        await fetchFeedbacks();
+        close();
+      }
+    }
+  });
 }
 
 </script>
