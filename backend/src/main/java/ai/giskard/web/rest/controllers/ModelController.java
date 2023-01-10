@@ -17,6 +17,7 @@ import ai.giskard.web.dto.ml.ModelDTO;
 import ai.giskard.web.rest.errors.Entity;
 import ai.giskard.web.rest.errors.EntityNotFoundException;
 import ai.giskard.worker.ExplainResponse;
+import ai.giskard.worker.ExplainTextResponse;
 import ai.giskard.worker.RunModelForDataFrameResponse;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -82,13 +83,19 @@ public class ModelController {
 
     @PostMapping("models/explain-text/{featureName}")
     @Transactional
-    public Map<String, String> explainText(@RequestParam @NotNull Long modelId, @RequestParam @NotNull Long datasetId, @PathVariable @NotNull String featureName, @RequestBody @NotNull PredictionInputDTO data) throws IOException {
+    public ExplainTextResponseDTO explainText(@RequestParam @NotNull Long modelId, @RequestParam @NotNull Long datasetId, @PathVariable @NotNull String featureName, @RequestBody @NotNull PredictionInputDTO data) throws IOException {
         ProjectModel model = modelRepository.getById(modelId);
         Dataset dataset = datasetRepository.getById(datasetId);
         long projectId = model.getProject().getId();
         InspectionSettings inspectionSettings = projectRepository.getById(projectId).getInspectionSettings();
         permissionEvaluator.validateCanReadProject(model.getProject().getId());
-        return modelService.explainText(model, dataset, inspectionSettings, featureName, data.getFeatures()).getExplanationsMap();
+        ExplainTextResponseDTO explanationRes = new ExplainTextResponseDTO();
+        ExplainTextResponse textResponse = modelService.explainText(model, dataset, inspectionSettings, featureName, data.getFeatures());
+        textResponse.getWeightsMap().forEach((label, weightPerFeature) ->
+            explanationRes.getWeights().put(label, weightPerFeature.getWeightsList())
+        );
+        explanationRes.setWords(textResponse.getWordsList());
+        return explanationRes;
     }
 
     @DeleteMapping("models/{modelId}")
