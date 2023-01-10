@@ -4,6 +4,7 @@ import ai.giskard.domain.ml.Slice;
 import ai.giskard.repository.ml.SliceRepository;
 import ai.giskard.service.SliceService;
 import ai.giskard.web.dto.SliceCreateDTO;
+import ai.giskard.web.dto.SlicePutDTO;
 import ai.giskard.web.dto.mapper.GiskardMapper;
 import ai.giskard.web.dto.ml.SliceDTO;
 import lombok.RequiredArgsConstructor;
@@ -35,6 +36,14 @@ public class SliceController {
         Slice slice = giskardMapper.fromDTO(dto);
         return sliceService.createSlice(slice);
     }
+
+    @PutMapping("slices")
+    @Transactional
+    @PreAuthorize("@permissionEvaluator.canWriteProject(#dto.projectId)")
+    public SliceDTO updateSlice(@Valid @RequestBody SlicePutDTO dto) {
+        return giskardMapper.sliceToSliceDTO(sliceService.updateSlice(dto));
+    }
+
 
     @DeleteMapping("slices/{sliceId}")
     @Transactional

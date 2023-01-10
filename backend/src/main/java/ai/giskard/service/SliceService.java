@@ -2,18 +2,19 @@ package ai.giskard.service;
 
 import ai.giskard.domain.ml.Dataset;
 import ai.giskard.domain.ml.Slice;
-import ai.giskard.domain.ml.TestSuite;
 import ai.giskard.ml.MLWorkerClient;
 import ai.giskard.repository.ml.SliceRepository;
 import ai.giskard.service.ml.MLWorkerService;
+import ai.giskard.web.dto.SlicePutDTO;
 import ai.giskard.web.dto.mapper.GiskardMapper;
 import ai.giskard.web.dto.ml.SliceDTO;
-import ai.giskard.web.dto.ml.TestSuiteDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.io.*;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -31,6 +32,12 @@ public class SliceService {
     public SliceDTO createSlice(Slice slice) {
         Slice sl = sliceRepository.save(slice);
         return giskardMapper.sliceToSliceDTO(sl);
+    }
+
+    public Slice updateSlice(SlicePutDTO sliceDTO) {
+        Slice slice = sliceRepository.getById(sliceDTO.getId());
+        giskardMapper.updateSliceFromDto(sliceDTO, slice);
+        return sliceRepository.save(slice);
     }
 
     public List<Integer> getSlicedRowsForDataset(Long sliceId, Dataset dataset) throws IOException {
