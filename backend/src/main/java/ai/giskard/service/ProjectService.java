@@ -157,7 +157,7 @@ public class ProjectService {
     }
 
 
-    public Project importProject(MultipartFile zipMultipartFile, String userName) throws IOException {
+    public Project importProject(MultipartFile zipMultipartFile, String userName) throws IOException, NullPointerException {
         Path pathToTmp = locationService.resolvedTmpPath();
         String projectKey;
         try{
