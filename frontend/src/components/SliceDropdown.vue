@@ -54,7 +54,6 @@
                   style="height: 300px"
                   :options="$root.monacoOptions"
               />
-              <!--              <div v-if="projectCreateError" class="caption error&#45;&#45;text">{{ projectCreateError }}</div>-->
             </v-card-text>
             <v-card-actions>
               <v-spacer></v-spacer>
@@ -174,6 +173,11 @@ async function submit() {
     const editedSlice = await api.editSlice(props.projectId, sliceName.value, sliceCode.value, sliceId.value);
     slices.value = slices.value.filter(s => s.id !== editedSlice.id);
     slices.value.push(editedSlice);
+    // This check is in place because we remove the original slice instance from the list.
+    // This also triggers a change, which is helpful if the code changed.
+    if (slice.value?.id == editedSlice.id) {
+      slice.value = editedSlice;
+    }
   } else {
     const newSlice = await api.createSlice(props.projectId, sliceName.value, sliceCode.value);
     slices.value.push(newSlice);
