@@ -24,15 +24,11 @@
       <v-card outlined tile class="grey lighten-5" v-for="m in models" :key="m.id">
         <v-row class="px-2 py-1 align-center">
           <v-col cols="4">
-            <v-text-field v-model="editedModel.name"
-                          :rules="[
-                            v => '' !== v.trim() || 'Required'
-                          ]"
-                          :hide-details="true" dense single-line v-if="isBeingEdited(m.id)">
-            </v-text-field>
-            <div class="secondary--text font-weight-bold" v-else>
-              {{ m.name }}
-            </div>
+            <InlineEditText
+                :text="m.name"
+                :can-edit="isProjectOwnerOrAdmin"
+                @save="(name) => renameModel(m.id, name)">
+            </InlineEditText>
           </v-col>
           <v-col cols="1">
             <div>{{ m.languageVersion }}</div>
@@ -61,43 +57,13 @@
                 </template>
                 <span>Download</span>
               </v-tooltip>
-              <template v-if="isBeingEdited(m.id)">
-                <v-tooltip bottom>
-                  <template v-slot:activator="{ on, attrs }">
-                    <v-btn icon color="accent" @click="cancelEditingModel()" v-bind="attrs" v-on="on">
-                      <v-icon>cancel</v-icon>
-                    </v-btn>
-                  </template>
-                  <span>Cancel</span>
-                </v-tooltip>
-                <v-tooltip bottom>
-                  <template v-slot:activator="{ on, attrs }">
-                    <v-btn icon color="primary" @click="saveModel()"
-                           :disabled="editedModel.name.trim() === ''"
-                           v-bind="attrs" v-on="on">
-                      <v-icon>save</v-icon>
-                    </v-btn>
-                  </template>
-                  <span>Save</span>
-                </v-tooltip>
-              </template>
-              <template v-else>
-                <v-tooltip bottom v-if="isProjectOwnerOrAdmin">
-                  <template v-slot:activator="{ on, attrs }">
-                    <v-btn icon color="primary" @click="editModel(m)" v-bind="attrs" v-on="on">
-                      <v-icon>edit</v-icon>
-                    </v-btn>
-                  </template>
-                  <span>Rename</span>
-                </v-tooltip>
-                <DeleteModal
-                    v-if="isProjectOwnerOrAdmin"
-                    :id="m.id"
-                    :file-name="m.fileName"
-                    type="model"
-                    @submit="deleteModelPickle(m.id)"
-                />
-              </template>
+              <DeleteModal
+                  v-if="isProjectOwnerOrAdmin"
+                  :id="m.id"
+                  :file-name="m.fileName"
+                  type="model"
+                  @submit="deleteModelPickle(m.id)"
+              />
             </div>
           </v-col>
         </v-row>
@@ -122,10 +88,11 @@ import {api} from '@/api';
 import InspectorLauncher from './InspectorLauncher.vue';
 import {ModelDTO} from '@/generated-sources';
 import mixpanel from "mixpanel-browser";
-import {computed, onActivated, ref} from 'vue';
+import {onActivated, ref} from 'vue';
 import DeleteModal from '@/views/main/project/modals/DeleteModal.vue';
 import {commitAddNotification} from '@/store/main/mutations';
 import store from '@/store';
+import InlineEditText from '@/components/InlineEditText.vue';
 
 const props = withDefaults(defineProps<{
   projectId: number,
@@ -137,7 +104,6 @@ const props = withDefaults(defineProps<{
 const models = ref<ModelDTO[]>([]);
 const showInspectDialog = ref<boolean>(false);
 const modelToInspect = ref<ModelDTO | null>(null);
-const editedModel = ref<ModelDTO | null>(null);
 
 onActivated(() => loadModelPickles());
 
@@ -163,27 +129,13 @@ function cancelLaunchInspector() {
   showInspectDialog.value = false;
 }
 
-function cancelEditingModel() {
-  editedModel.value = null;
+async function renameModel(id: number, name: string) {
+  mixpanel.track('Update model name', {id});
+  const savedDataset = await api.editModelName(id, name);
+  const idx = models.value.findIndex(f => f.id === id);
+  models.value[idx] = savedDataset;
+  models.value = [...models.value];
 }
-
-function editModel(model: ModelDTO) {
-  cancelEditingModel();
-  editedModel.value = Object.assign({}, model);
-}
-
-async function saveModel() {
-  if (editedModel.value) {
-    const savedModel = await api.editModelName(editedModel.value.id, editedModel.value.name);
-    const idx = models.value.findIndex(m => m.id === editedModel.value?.id);
-    models.value[idx] = savedModel;
-    cancelEditingModel();
-  }
-}
-
-const isBeingEdited = computed(() => (model: number) => {
-  return model === editedModel.value?.id;
-});
 
 </script>
 

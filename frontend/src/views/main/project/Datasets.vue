@@ -20,23 +20,16 @@
           <v-col cols="1">Id</v-col>
           <v-col cols="2">Actions</v-col>
         </v-row>
-
         <v-expansion-panel v-for="f in files" :key="f.id">
           <v-expansion-panel-header @click="peakDataFile(f.id)" class="py-1 pl-2"
                                     :class="{'file-xl': f.name.indexOf('.xls') > 0, 'file-csv': f.name.indexOf('.csv') > 0}">
             <v-row dense no-gutters align="center">
-
               <v-col cols="4" class="font-weight-bold">
-                <v-text-field v-model="editedDataset.name"
-                              @click.stop
-                              @keyup.prevent
-                              :rules="[
-                                v => '' !== v.trim() || 'Required'
-                              ]"
-                              :hide-details="true" dense single-line
-                              v-if="isBeingEdited(f.id)">
-                </v-text-field>
-                <span v-else>{{ f.name }}</span>
+                <InlineEditText
+                    :text="f.name"
+                    :can-edit="isProjectOwnerOrAdmin"
+                    @save="(name) => renameDataset(f.id, name)">
+                </InlineEditText>
               </v-col>
               <v-col cols="1">{{ f.size | fileSize }}</v-col>
               <v-col cols="2">{{ f.createdDate | date }}</v-col>
@@ -52,43 +45,13 @@
                   </template>
                 <span>Download</span>
               </v-tooltip>
-              <template v-if="isBeingEdited(f.id)">
-                <v-tooltip bottom>
-                  <template v-slot:activator="{ on, attrs }">
-                    <v-btn icon color="accent" @click.stop="cancelEditingDataset()" v-bind="attrs" v-on="on">
-                      <v-icon>cancel</v-icon>
-                    </v-btn>
-                  </template>
-                  <span>Cancel</span>
-                </v-tooltip>
-                <v-tooltip bottom>
-                  <template v-slot:activator="{ on, attrs }">
-                    <v-btn icon color="primary" @click.stop="saveDataset()"
-                           :disabled="editedDataset.name.trim() === ''"
-                           v-bind="attrs" v-on="on">
-                      <v-icon>save</v-icon>
-                    </v-btn>
-                  </template>
-                  <span>Save</span>
-                </v-tooltip>
-              </template>
-              <template v-else>
-                <v-tooltip bottom v-if="isProjectOwnerOrAdmin">
-                  <template v-slot:activator="{ on, attrs }">
-                    <v-btn icon color="primary" @click.stop="editDataset(f)" v-bind="attrs" v-on="on">
-                      <v-icon>edit</v-icon>
-                    </v-btn>
-                  </template>
-                  <span>Rename</span>
-                </v-tooltip>
-                <DeleteModal
-                    v-if="isProjectOwnerOrAdmin"
-                    :id="f.id"
-                    :file-name="f.name"
-                    type="dataset"
-                    @submit="deleteDataFile(f.id)"
-                />
-              </template>
+              <DeleteModal
+                  v-if="isProjectOwnerOrAdmin"
+                  :id="f.id"
+                  :file-name="f.name"
+                  type="dataset"
+                  @submit="deleteDataFile(f.id)"
+              />
             </span>
               </v-col>
             </v-row>
@@ -113,11 +76,12 @@
 <script setup lang="ts">
 import {api} from '@/api';
 import {commitAddNotification} from '@/store/main/mutations';
-import {DatasetDTO, FileDTO} from '@/generated-sources';
+import {FileDTO} from '@/generated-sources';
 import mixpanel from "mixpanel-browser";
 import DeleteModal from '@/views/main/project/modals/DeleteModal.vue';
-import {computed, onActivated, ref} from 'vue';
+import {onActivated, ref} from 'vue';
 import store from '@/store';
+import InlineEditText from '@/components/InlineEditText.vue';
 
 const GISKARD_INDEX_COLUMN_NAME = '_GISKARD_INDEX_';
 
@@ -132,7 +96,6 @@ const files = ref<FileDTO[]>([]);
 const lastVisitedFileId = ref<number | null>(null);
 const filePreviewHeader = ref<{ text: string, value: string, sortable: boolean }[]>([]);
 const filePreviewData = ref<any[]>([]);
-const editedDataset = ref<DatasetDTO | null>(null);
 
 onActivated(() => loadDatasets());
 
@@ -179,28 +142,13 @@ async function peakDataFile(id: number) {
   }
 }
 
-function cancelEditingDataset() {
-  editedDataset.value = null;
+async function renameDataset(id: number, name: string) {
+  mixpanel.track('Update dataset name', {id});
+  const savedDataset = await api.editDatasetName(id, name);
+  const idx = files.value.findIndex(f => f.id === id);
+  files.value[idx] = savedDataset;
+  files.value = [...files.value];
 }
-
-function editDataset(dataset: FileDTO) {
-  cancelEditingDataset();
-  editedDataset.value = Object.assign({}, dataset);
-}
-
-async function saveDataset() {
-  if (editedDataset.value) {
-    mixpanel.track('Update dataset name', {id: editedDataset.value.id});
-    const savedDataset = await api.editDatasetName(editedDataset.value.id, editedDataset.value.name);
-    const idx = files.value.findIndex(f => f.id === editedDataset.value?.id);
-    files.value[idx] = savedDataset;
-    cancelEditingDataset();
-  }
-}
-
-const isBeingEdited = computed(() => (model: number) => {
-  return model === editedDataset.value?.id;
-});
 </script>
 
 <style lang="scss" scoped>
