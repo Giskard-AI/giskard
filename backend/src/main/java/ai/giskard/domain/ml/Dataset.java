@@ -2,7 +2,7 @@ package ai.giskard.domain.ml;
 
 
 import ai.giskard.domain.AbstractAuditingEntity;
-import ai.giskard.domain.FeatureType;
+import ai.giskard.domain.ColumnMeaning;
 import ai.giskard.domain.Project;
 import ai.giskard.utils.JSONStringAttributeConverter;
 import ai.giskard.utils.SimpleJSONStringAttributeConverter;
@@ -28,9 +28,9 @@ public class Dataset extends AbstractAuditingEntity {
     private UUID id;
 
     @Converter
-    public static class FeatureTypesConverter extends JSONStringAttributeConverter<Map<String, FeatureType>> {
+    public static class ColumnMeaningsConverter extends JSONStringAttributeConverter<Map<String, ColumnMeaning>> {
         @Override
-        public TypeReference<Map<String, FeatureType>> getValueTypeRef() {
+        public TypeReference<Map<String, ColumnMeaning>> getValueTypeRef() {
             return new TypeReference<>() {
             };
         }
@@ -39,8 +39,8 @@ public class Dataset extends AbstractAuditingEntity {
     private String name;
 
     @Column(columnDefinition = "VARCHAR")
-    @Convert(converter = FeatureTypesConverter.class)
-    private Map<String, FeatureType> featureTypes;
+    @Convert(converter = ColumnMeaningsConverter.class)
+    private Map<String, ColumnMeaning> columnMeanings;
 
     @Column(columnDefinition = "VARCHAR")
     @Convert(converter = SimpleJSONStringAttributeConverter.class)
