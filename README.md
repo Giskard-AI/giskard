@@ -140,7 +140,7 @@ Follow our handy guides to get started on the basics as quickly as possible:
 3. <a href="https://docs.giskard.ai/start/guides/upload-your-model"><b>Upload your ML model & data</b></a>
 4. <a href="https://docs.giskard.ai/start/guides/review-your-model"><b>Evaluate your ML model</b></a>
 5. <a href="https://docs.giskard.ai/start/guides/create-tests-from-your-review"><b>Test your ML model</b></a>
-<br />
+   <br />
 
 # How to contribute
 We welcome contributions from the Machine Learning community!
