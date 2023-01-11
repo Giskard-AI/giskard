@@ -1,0 +1,26 @@
+name: Check safe to build
+on:
+  pull_request_target:
+    branches:
+      - main
+
+jobs:
+  build:
+    name: Build
+    runs-on: self-hosted
+    steps:
+      - name: Ask to add the 'safe for build' label
+        if: ${{ github.actor != 'dependabot[bot]' && !contains(github.event.*.labels.*.name, 'safe for build') }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to comment on PR
+        run: |
+          var fs = require('fs');
+          var issue_number = Number(fs.readFileSync('./NR'));
+          await github.issues.createComment({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            issue_number: issue_number,
+            body: 'Please add the 'safe for build' label in order to perform the sonar analysis!'
+          });
+          exit 1
+
