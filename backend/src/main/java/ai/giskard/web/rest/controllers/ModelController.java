@@ -14,6 +14,8 @@ import ai.giskard.service.UsageService;
 import ai.giskard.web.dto.*;
 import ai.giskard.web.dto.mapper.GiskardMapper;
 import ai.giskard.web.dto.ml.ModelDTO;
+import ai.giskard.web.rest.errors.Entity;
+import ai.giskard.web.rest.errors.EntityNotFoundException;
 import ai.giskard.worker.ExplainResponse;
 import ai.giskard.worker.ExplainTextResponse;
 import ai.giskard.worker.RunModelForDataFrameResponse;
@@ -23,6 +25,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.io.IOException;
 import java.util.HashMap;
@@ -120,4 +124,18 @@ public class ModelController {
     public PrepareDeleteDTO prepareModelDelete(@PathVariable @NotNull Long modelId) {
         return usageService.prepareDeleteModel(modelId);
     }
+
+    @PatchMapping("models/{modelId}/name/{name}")
+    @Transactional
+    public ModelDTO renameModel(@PathVariable long modelId, @PathVariable @Valid @NotBlank String name) {
+        ProjectModel model = modelRepository.findById(modelId)
+            .orElseThrow(() -> new EntityNotFoundException(Entity.PROJECT_MODEL, modelId));
+
+        permissionEvaluator.validateCanWriteProject(model.getProject().getId());
+
+        model.setName(name);
+
+        return giskardMapper.modelToModelDTO(modelRepository.save(model));
+    }
+
 }
