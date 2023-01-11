@@ -184,7 +184,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
         return ExplainTextResponse(
             weights={
                 k: ExplainTextResponse.WeightsPerFeature(weights=[weight for weight in map_features_weight[k]])
-                for k in map_features_weight },
+                for k in map_features_weight},
             words=list_words
         )
 
@@ -287,7 +287,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
                 try:
                     rows_to_keep = df.apply(filterfunc["filter_row"], axis=1)[lambda x: x == True].index.array
                 except Exception as e:
-                    yield FilterDatasetResponse(code=StatusCode.Failed)
+                    yield FilterDatasetResponse(code=StatusCode.Failed, error_message=str(e))
                 time_end = time.perf_counter()
                 times.append(time_end - time_start)
                 # Send NEXT code

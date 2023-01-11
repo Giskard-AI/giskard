@@ -38,8 +38,9 @@
       <v-card>
         <ValidationObserver ref="dialogForm">
           <v-form @submit.prevent="submit()">
-            <v-card-title v-if="isUpdateDialog">Edit slice {{ sliceName }}</v-card-title>
-            <v-card-title v-else>Create new slice</v-card-title>
+            <v-card-title v-if="isUpdateDialog">Editing slice</v-card-title>
+            <v-card-title v-else>Creating new slice</v-card-title>
+            <v-card-subtitle>{{ sliceName }}</v-card-subtitle>
             <v-card-text>
               <ValidationProvider name="Name" mode="eager" rules="required" v-slot="{errors}">
                 <v-text-field label="Slice Name*" type="text" v-model="sliceName"
