@@ -1,6 +1,8 @@
 package ai.giskard.config;
 
+import ai.giskard.repository.UserRepository;
 import ai.giskard.security.AuthoritiesConstants;
+import ai.giskard.security.ee.NoAuthConfigurer;
 import ai.giskard.security.jwt.JWTConfigurer;
 import ai.giskard.security.jwt.TokenProvider;
 import ai.giskard.service.ee.FeatureFlagService;
@@ -8,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.config.annotation.SecurityConfigurerAdapter;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
@@ -16,6 +19,7 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.DefaultSecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.logout.LogoutFilter;
 import org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter;
@@ -38,6 +42,8 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
     @Autowired
     private FilterChainExceptionHandler filterChainExceptionHandler;
+    @Autowired
+    private UserRepository userRepository;
 
 
     public SecurityConfiguration(
@@ -111,14 +117,13 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             .and()
             .apply(securityConfigurerAdapter());
         // @formatter:on
-
-        if (!featureFlagService.hasFlag(FeatureFlagService.FeatureFlag.Auth)) {
-            http.anonymous().principal("admin").authorities(AuthoritiesConstants.ADMIN);
-            http.authorizeRequests().antMatchers("/api/**").permitAll();
-        }
     }
 
-    private JWTConfigurer securityConfigurerAdapter() {
+    private SecurityConfigurerAdapter<DefaultSecurityFilterChain, HttpSecurity> securityConfigurerAdapter() {
+        if (!featureFlagService.hasFlag(FeatureFlagService.FeatureFlag.Auth)) {
+            return new NoAuthConfigurer(userRepository);
+        }
+        
         return new JWTConfigurer(tokenProvider);
     }
 }

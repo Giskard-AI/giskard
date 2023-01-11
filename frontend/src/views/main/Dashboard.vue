@@ -1,6 +1,6 @@
 <template>
   <div>
-    <v-toolbar flat light>
+    <v-toolbar flat light v-if="mainStore.authAvailable">
       <v-toolbar-title class="text-h5 font-weight-light">Welcome, {{ greetedUser }}!</v-toolbar-title>
     </v-toolbar>
 
@@ -25,7 +25,7 @@
             <v-card-subtitle class="text-h5">projects invited to</v-card-subtitle>
           </v-card>
         </v-col>
-        <v-col sm=4 lg=3 v-if="isAdmin">
+        <v-col sm=4 lg=3 v-if="isAdmin && mainStore.authAvailable">
           <v-card dark tile color="warning" to="/main/admin/users">
             <v-card-title class="text-h2">{{ users.length }}
               <v-spacer></v-spacer>
@@ -47,17 +47,19 @@ import {useAdminStore} from "@/stores/admin";
 import {readAllProjects, readHasAdminAccess, readUserProfile} from "@/store/main/getters";
 import {Role} from "@/enums";
 import {readAdminUsers} from "@/store/admin/getters";
+import {useMainStore} from "@/stores/main";
 
 const projectStore = useProjectStore();
+const mainStore = useMainStore();
 const userStore = useUserStore();
 const adminStore = useAdminStore();
 
 
 onMounted(async () => {
-    await projectStore.getProjects();
-    if (userStore.hasAdminAccess) {
-      await adminStore.getUsers();
-    }
+  await projectStore.getProjects();
+  if (userStore.hasAdminAccess) {
+    await adminStore.getUsers();
+  }
 });
 
 const userProfile = computed(() => {

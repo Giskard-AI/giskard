@@ -79,7 +79,7 @@ public class SettingsController {
     public AppConfigDTO getApplicationSettings(@AuthenticationPrincipal final UserDetails user) {
         log.debug("REST request to get all public User names");
         AdminUserDTO userDTO = userRepository
-            .findOneWithRolesByLogin(featureFlagService.hasFlag(FeatureFlagService.FeatureFlag.Auth) ? user.getUsername() : "admin")
+            .findOneWithRolesByLogin(user.getUsername())
             .map(AdminUserDTO::new)
             .orElseThrow(() -> new RuntimeException("User could not be found"));
 
