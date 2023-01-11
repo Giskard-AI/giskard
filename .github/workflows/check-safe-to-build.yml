@@ -19,16 +19,19 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
       - name: Ask to add the 'safe for build' label
         if: ${{ github.actor != 'dependabot[bot]' && !steps.is_organization_member.outputs.result && !contains(github.event.*.labels.*.name, 'safe for build') }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to comment on PR
-        run: |
-          var fs = require('fs');
-          var issue_number = Number(fs.readFileSync('./NR'));
-          await github.issues.createComment({
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            issue_number: issue_number,
-            body: 'Please add the 'safe for build' label in order to perform the sonar analysis!'
-          });
-          exit 1
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            var fs = require('fs');
+            var issue_number = Number(fs.readFileSync('./NR'));
+            await github.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issue_number,
+              body: 'Please add the 'safe for build' label in order to perform the sonar analysis!'
+            });
+            exit 1
+      - name: Perform build
+        if: ${{ github.actor == 'dependabot[bot]' || contains(github.event.*.labels.*.name, 'safe for build') }}
+        needs: [ Build ]
 
