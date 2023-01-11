@@ -16,6 +16,7 @@ jobs:
     runs-on: self-hosted
     steps:
       - name: Stop on failure
+        if: ${{ github.event.workflow_run.conclusion == 'failure' }}
         shell: bash
         run: |
           echo "Build interrupted due to previous failure"
