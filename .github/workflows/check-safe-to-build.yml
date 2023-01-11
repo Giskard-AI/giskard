@@ -14,7 +14,7 @@ jobs:
         uses: JamesSingleton/is-organization-member@1.0.0
         with:
           organization: Giskard-AI
-          username: ${{ github.event.issue.user.login }}
+          username: ${{ github.actor }}
           token: ${{ secrets.GITHUB_TOKEN }}
       - name: Ask to add the 'safe for build' label
         if: ${{ github.actor != 'dependabot[bot]' && !steps.is_organization_member.outputs.result && !contains(github.event.*.labels.*.name, 'safe for build') }}
