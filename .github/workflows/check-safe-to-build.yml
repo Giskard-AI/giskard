@@ -25,9 +25,6 @@ jobs:
       - name: Interrupt job
         if: ${{ github.actor != 'dependabot[bot]' && !contains(github.event.*.labels.*.name, 'safe for build') && steps.is_organization_member.outputs.result == 'false' }}
         shell: bash
-        env:
-          PREVIOUS_RESULT: ${{ steps.is_organization_member.outputs.result }}
         run: |
-          echo "Build interrupted due to previous failure"
-          echo $PREVIOUS_RESULT
+          echo "Job failed due to user not being a member of Giskard-AI organization and the 'safe for build' label not being set on the PR"
           exit 1
