@@ -191,7 +191,6 @@ class MLWorkerServiceImpl(MLWorkerServicer):
             pd.DataFrame([r.columns for r in request.dataframe.rows]),
             target=request.target,
             column_meanings=request.column_meanings,
-            column_types=request.column_types,
         )
         predictions = model.predict(ds)
         if model.is_classification:

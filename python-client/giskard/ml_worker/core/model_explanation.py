@@ -24,7 +24,6 @@ def explain(model: Model, dataset: Dataset, input_data: Dict):
                 df=df,
                 target=dataset.target,
                 column_meanings=dataset.column_meanings,
-                column_types=dataset.column_types,
             )
         )
 

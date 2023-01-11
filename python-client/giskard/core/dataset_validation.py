@@ -23,11 +23,11 @@ def validate_column_meanings(ds: Dataset):
     """
     if ds.column_meanings and isinstance(ds.column_meanings, dict):
         if not set(ds.column_meanings.values()).issubset(
-                set(column_type.value for column_type in SupportedColumnMeanings)
+                set(column_meaning.value for column_meaning in SupportedColumnMeanings)
         ):
             raise ValueError(
                 f"Invalid column_meanings parameter: {ds.column_meanings}"
-                + f"Please choose types among {[column_type.value for column_type in SupportedColumnMeanings]}."
+                + f"Please choose types among {[column_meaning.value for column_meaning in SupportedColumnMeanings]}."
             )
     else:
         raise ValueError(f"Invalid column_meanings parameter: {ds.column_meanings}. Please specify non-empty dictionary.")

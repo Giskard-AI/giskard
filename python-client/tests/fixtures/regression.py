@@ -67,6 +67,5 @@ def diabetes_dataset_with_target():
     return Dataset(
         df=data,
         column_meanings={feature: "numeric" for feature in list(data.columns)},
-        column_types=data.dtypes.apply(lambda x: x.name).to_dict(),
         target="target",
     )
