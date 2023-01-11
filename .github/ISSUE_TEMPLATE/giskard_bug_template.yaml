@@ -48,7 +48,7 @@ body:
     id: os
     attributes:
       label: OS Platform and Distribution
-      description: 
+      description:
       placeholder: e.g., Linux Ubuntu 16.04
     validations:
       required: false
@@ -56,19 +56,19 @@ body:
     id: python
     attributes:
       label: Python version
-      description: 
+      description:
       placeholder: e.g., 3.9
     validations:
       required: false
-   - type: textarea
-     id: packages
-     attributes:
-       label: Installed python packages
-       description: You can list the currently installed python packages in the environment by running `pip list --format freeze`
-       placeholder:
-       render: shell
-     validations:
-       required: false
+  - type: textarea
+    id: packages
+    attributes:
+      label: Installed python packages
+      description: You can list the currently installed python packages in the environment by running `pip list --format freeze`
+      placeholder:
+      render: shell
+    validations:
+      required: false
   - type: textarea
     id: what-happened
     attributes:
@@ -85,7 +85,7 @@ body:
       label: Standalone code OR list down the steps to reproduce the issue
       description: Provide a reproducible test case OR the list of steps that is the bare minimum necessary to generate the problem. If possible, please share a link to Colab/Jupyter/any notebook.
       placeholder: Tell us what you see!
-      value: 
+      value:
       render: shell
     validations:
       required: true
