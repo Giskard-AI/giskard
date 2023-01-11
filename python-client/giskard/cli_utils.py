@@ -59,6 +59,5 @@ def follow_file(filename):
             if not line:
                 skip_existing = False
                 sleep(wait)
-                continue
             elif not skip_existing:
                 print(line, end="")
