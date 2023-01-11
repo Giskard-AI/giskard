@@ -9,8 +9,16 @@ jobs:
     name: Build
     runs-on: self-hosted
     steps:
+      - name: Check if organization member
+        id: is_organization_member
+        if: github.event.action == 'opened'
+        uses: jamessingleton/is-organization-member@v1
+        with:
+          organization: Giskard-AI
+          username: ${{ github.event.issue.user.login }}
+          token: ${{ secrets.GITHUB_TOKEN }}
       - name: Ask to add the 'safe for build' label
-        if: ${{ github.actor != 'dependabot[bot]' && !contains(github.event.*.labels.*.name, 'safe for build') }}
+        if: ${{ github.actor != 'dependabot[bot]' && !steps.is_organization_member.outputs.result && !contains(github.event.*.labels.*.name, 'safe for build') }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to comment on PR
         run: |
