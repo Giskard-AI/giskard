@@ -10,6 +10,7 @@ import {
     CreateFeedbackReplyDTO,
     DatasetDTO,
     ExplainResponseDTO,
+    ExplainTextResponseDTO,
     FeatureMetadataDTO,
     FeedbackDTO,
     FeedbackMinimalDTO,
@@ -337,7 +338,7 @@ export const api = {
             {signal: controller.signal});
     },
     async explainText(modelId: number, datasetId: number, inputData: object, featureName: string) {
-        return apiV2.post<unknown, { [key: string]: string }>(`/models/explain-text/${featureName}`,
+        return apiV2.post<unknown, ExplainTextResponseDTO>(`/models/explain-text/${featureName}`,
             {
                 features: inputData
             }, {params: {modelId, datasetId}});
