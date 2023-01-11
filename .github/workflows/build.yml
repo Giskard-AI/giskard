@@ -4,7 +4,6 @@ on:
     branches:
       - main
   pull_request_target:
-    types: [ labeled ]
     branches:
       - main
   workflow_dispatch:
@@ -85,22 +84,36 @@ jobs:
           value: '${{ steps.read_toml.outputs.value }}.dev${{ steps.current_date.outputs.CURRENT_DATE }}'
 
       - name: Build and analyze with sonar
-        if: ${{ github.actor != 'dependabot[bot]' }}
+        if: ${{ github.actor != 'dependabot[bot]' && contains(github.event.*.labels.*.name, 'safe for build') }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
         run: ./gradlew build :python-client:package jacocoTestReport sonar --info --parallel
 
+      - name: Ask to add the 'safe for build' label
+        if: ${{ github.actor != 'dependabot[bot]' && !contains(github.event.*.labels.*.name, 'safe for build') }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to comment on PR
+        run: |
+          var fs = require('fs');
+          var issue_number = Number(fs.readFileSync('./NR'));
+          await github.issues.createComment({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            issue_number: issue_number,
+            body: 'Please add the 'safe for build' label in order to perform sonar analysis!'
+          });
+
       - name: Build and analyze without sonar
-        if: ${{ github.actor == 'dependabot[bot]' }}
+        if: ${{ github.actor == 'dependabot[bot]' || contains(github.event.*.labels.*.name, 'safe for build') }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
         run: ./gradlew build --info --parallel
 
-      - name:  "Python client: archive built artifacts"
+      - name: "Python client: archive built artifacts"
         if: ${{ steps.extract_branch.outputs.branch == 'main' }}
         uses: actions/upload-artifact@v3
         with:
