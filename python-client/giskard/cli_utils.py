@@ -49,6 +49,10 @@ def tail(filename, n=100):
 
 
 def follow_file(filename):
+    if not os.path.exists(filename):
+        print(f"{filename} does not exists")
+        return
+
     wait = 1
     with open(filename) as fp:
         exit_pooling = False

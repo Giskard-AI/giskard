@@ -187,29 +187,17 @@ def _find_and_stop(is_server, host, port):
     remove_existing_pidfile(pid_file_path)
 
 
-def logs_options(fn):
-    fn = click.option(
-        "--lines",
-        "-n",
-        type=INT,
-        default=10,
-        help="Output the last N lines of the log file, 10 lines are displayed by default",
-    )(fn)
-    fn = click.option(
-        "--follow",
-        "-f",
-        "is_follow",
-        is_flag=True,
-        default=False,
-        help="Output appended data as new logs are being generated",
-    )(fn)
-    return fn
-
-
 @worker.command("logs")
-@logs_options
-def start_command(lines, is_follow):
+@click.option("--lines", "-n", type=INT, default=10,
+              help="Output the last N lines of the log file, 10 lines are displayed by default")
+@click.option("--follow", "-f", "is_follow", is_flag=True, default=False,
+              help="Output appended data as new logs are being generated")
+def read_logs(lines, is_follow):
     log_path = get_log_path()
+
+    if not os.path.exists(log_path):
+        print(f"Unable to find any logfile!\n{log_path} does not exists")
+        exit(-1)
 
     for line in tail(log_path, lines):
         print(line, end="")
