@@ -1,17 +1,17 @@
 <template>
-  <div>
+  <div v-if="mainStore.authAvailable">
     <v-toolbar flat dense light>
       <v-spacer></v-spacer>
       <v-text-field
-        v-model="searchTerm"
-        label="Search"
-        single-line
-        hide-details
-        outlined
-        dense
-        clearable
-        class="shrink"
-        append-icon="mdi-magnify"
+          v-model="searchTerm"
+          label="Search"
+          single-line
+          hide-details
+          outlined
+          dense
+          clearable
+          class="shrink"
+          append-icon="mdi-magnify"
       ></v-text-field>
       <v-checkbox dense v-model="showInactive" label="Show inactive" class="pt-4 mx-1"></v-checkbox>
 
@@ -37,24 +37,24 @@
     </v-toolbar>
 
     <v-container fluid>
-    <v-data-table height="75vh" fixed-header :headers="headers" :items="users" sort-by="id" :search="searchTerm">
-      <!-- eslint-disable vue/valid-v-slot vue/no-unused-vars-->
-      <template v-slot:item.roles="{ item }">
-        <v-chip small v-for='r in item.roles'>{{r | roleName}}</v-chip>
-      </template>
-      <template v-slot:item.enabled="{item}">
-        <v-icon v-if="item.enabled">checkmark</v-icon>
-        <v-icon v-else>close</v-icon>
-      </template>
-      <template v-slot:item.action="{item}" v-slot:item.id="{item}">
-        <v-btn icon slot="activator" :to="{name: 'main-admin-users-edit', params: {id: item.id}}">
-          <v-icon color="primary">edit</v-icon>
-        </v-btn>
-        <v-btn icon @click="deleteUser(item)">
-          <v-icon color="accent">delete</v-icon>
-        </v-btn>
-      </template>
-    </v-data-table>
+      <v-data-table height="75vh" fixed-header :headers="headers" :items="users" sort-by="id" :search="searchTerm">
+        <!-- eslint-disable vue/valid-v-slot vue/no-unused-vars-->
+        <template v-slot:item.roles="{ item }">
+          <v-chip small v-for='r in item.roles'>{{ r | roleName }}</v-chip>
+        </template>
+        <template v-slot:item.enabled="{item}">
+          <v-icon v-if="item.enabled">checkmark</v-icon>
+          <v-icon v-else>close</v-icon>
+        </template>
+        <template v-slot:item.action="{item}" v-slot:item.id="{item}">
+          <v-btn icon slot="activator" :to="{name: 'main-admin-users-edit', params: {id: item.id}}">
+            <v-icon color="primary">edit</v-icon>
+          </v-btn>
+          <v-btn icon @click="deleteUser(item)">
+            <v-icon color="accent">delete</v-icon>
+          </v-btn>
+        </template>
+      </v-data-table>
     </v-container>
   </div>
 </template>

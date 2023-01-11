@@ -22,7 +22,8 @@ public class FeatureFlagService {
      */
     public Map<FeatureFlag, Boolean> getAllFeatures() {
         Map<FeatureFlag, Boolean> features = new EnumMap<>(FeatureFlag.class);
-        features.put(Auth, false);
+        String giskardAuth = System.getenv("GISKARD_AUTH");
+        features.put(Auth, giskardAuth != null && giskardAuth.equals("true"));
         return features;
     }
 
