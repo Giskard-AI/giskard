@@ -31,8 +31,4 @@ jobs:
               body: 'Please add the 'safe for build' label in order to perform the sonar analysis!'
             });
             exit 1
-      - name: Perform build
-        if: ${{ github.actor == 'dependabot[bot]' || contains(github.event.*.labels.*.name, 'safe for build') }}
-        needs: [ Build ]
-        run: echo 'Build workflow finished'
 
