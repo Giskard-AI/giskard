@@ -3,10 +3,7 @@ on:
   push:
     branches:
       - main
-  workflow_run:
-    workflows: [ "Check safe to build" ]
-    types:
-      - completed
+  workflow_call:
   workflow_dispatch:
 
 jobs:
