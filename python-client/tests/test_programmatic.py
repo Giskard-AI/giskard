@@ -37,17 +37,17 @@ def test_a_greater_b_pass():
 
 
 def test_missing_arg():
-    with pytest.raises(Exception, match="Missing required parameters: {'b': <class 'int'>}"):
+    with pytest.raises(Exception, match="Missing 1 required parameters: {'b': <class 'int'>}"):
         Suite().add_test(_test_a_greater_b, a=2).run()
 
 
 def test_missing_args():
-    with pytest.raises(Exception, match="Missing required parameters: {'a': <class 'int'>, 'b': <class 'int'>}"):
+    with pytest.raises(Exception, match="Missing 2 required parameters: {'a': <class 'int'>, 'b': <class 'int'>}"):
         Suite().add_test(_test_a_greater_b).run()
 
 
 def test_missing_arg_one_global():
-    with pytest.raises(Exception, match="Missing required parameters: {'b': <class 'int'>}"):
+    with pytest.raises(Exception, match="Missing 1 required parameters: {'b': <class 'int'>}"):
         Suite().add_test(_test_a_greater_b).run(a=2)
 
 
@@ -108,11 +108,11 @@ def test_save_suite(german_credit_data: Dataset, german_credit_model: Model):
         .save(client, 'test_project_key')
 
 
-def test_save_suite_real(german_credit_data: Dataset, german_credit_model: Model):
-
-    client = GiskardClient("http://localhost:9000", "")
-
-    Suite(name="Test Suite 1") \
-        .add_test(test_auc, threshold=0.2, actual_slice=german_credit_data) \
-        .add_test(test_f1, threshold=0.2, actual_slice=german_credit_data) \
-        .save(client, 'credit')
+# def test_save_suite_real(german_credit_data: Dataset, german_credit_model: Model):
+#
+#     client = GiskardClient("http://localhost:9000", "")
+#
+#     Suite(name="Test Suite 1") \
+#         .add_test(test_auc, threshold=0.2, actual_slice=german_credit_data) \
+#         .add_test(test_f1, threshold=0.2, actual_slice=german_credit_data) \
+#         .save(client, 'credit')
