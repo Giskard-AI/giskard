@@ -151,3 +151,6 @@ Read this [guide](CONTRIBUTING.md) to get started.
 
 # Like what we're doing?
 🌟 [Leave us a star](https://github.com/Giskard-AI/giskard), it helps the project to get discovered by others and keeps us motivated to build awesome open-source tools! 🌟
+
+
+
