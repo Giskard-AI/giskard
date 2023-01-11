@@ -27,4 +27,5 @@ jobs:
       - name: Perform build
         if: ${{ github.actor == 'dependabot[bot]' || contains(github.event.*.labels.*.name, 'safe for build') }}
         needs: [ Build ]
+        run: echo 'Build workflow finished'
 
