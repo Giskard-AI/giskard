@@ -14,7 +14,10 @@ import ai.giskard.service.UsageService;
 import ai.giskard.web.dto.*;
 import ai.giskard.web.dto.mapper.GiskardMapper;
 import ai.giskard.web.dto.ml.ModelDTO;
+import ai.giskard.web.rest.errors.Entity;
+import ai.giskard.web.rest.errors.EntityNotFoundException;
 import ai.giskard.worker.ExplainResponse;
+import ai.giskard.worker.ExplainTextResponse;
 import ai.giskard.worker.RunModelForDataFrameResponse;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -22,6 +25,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.io.IOException;
 import java.util.HashMap;
@@ -78,13 +83,19 @@ public class ModelController {
 
     @PostMapping("models/explain-text/{featureName}")
     @Transactional
-    public Map<String, String> explainText(@RequestParam @NotNull Long modelId, @RequestParam @NotNull Long datasetId, @PathVariable @NotNull String featureName, @RequestBody @NotNull PredictionInputDTO data) throws IOException {
+    public ExplainTextResponseDTO explainText(@RequestParam @NotNull Long modelId, @RequestParam @NotNull Long datasetId, @PathVariable @NotNull String featureName, @RequestBody @NotNull PredictionInputDTO data) throws IOException {
         ProjectModel model = modelRepository.getById(modelId);
         Dataset dataset = datasetRepository.getById(datasetId);
         long projectId = model.getProject().getId();
         InspectionSettings inspectionSettings = projectRepository.getById(projectId).getInspectionSettings();
         permissionEvaluator.validateCanReadProject(model.getProject().getId());
-        return modelService.explainText(model, dataset, inspectionSettings, featureName, data.getFeatures()).getExplanationsMap();
+        ExplainTextResponseDTO explanationRes = new ExplainTextResponseDTO();
+        ExplainTextResponse textResponse = modelService.explainText(model, dataset, inspectionSettings, featureName, data.getFeatures());
+        textResponse.getWeightsMap().forEach((label, weightPerFeature) ->
+            explanationRes.getWeights().put(label, weightPerFeature.getWeightsList())
+        );
+        explanationRes.setWords(textResponse.getWordsList());
+        return explanationRes;
     }
 
     @DeleteMapping("models/{modelId}")
@@ -113,4 +124,18 @@ public class ModelController {
     public PrepareDeleteDTO prepareModelDelete(@PathVariable @NotNull Long modelId) {
         return usageService.prepareDeleteModel(modelId);
     }
+
+    @PatchMapping("models/{modelId}/name/{name}")
+    @Transactional
+    public ModelDTO renameModel(@PathVariable long modelId, @PathVariable @Valid @NotBlank String name) {
+        ProjectModel model = modelRepository.findById(modelId)
+            .orElseThrow(() -> new EntityNotFoundException(Entity.PROJECT_MODEL, modelId));
+
+        permissionEvaluator.validateCanWriteProject(model.getProject().getId());
+
+        model.setName(name);
+
+        return giskardMapper.modelToModelDTO(modelRepository.save(model));
+    }
+
 }

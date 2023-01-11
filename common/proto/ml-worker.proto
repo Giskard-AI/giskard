@@ -95,7 +95,11 @@ message ExplainResponse{
 
 
 message ExplainTextResponse{
-    map<string, string> explanations = 1;
+    message WeightsPerFeature{
+        repeated float weights = 1;
+    }
+    repeated string words = 1;
+    map<string, WeightsPerFeature> weights = 2;
 }
 
 message RunModelForDataFrameResponse{
