@@ -33,7 +33,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -277,7 +276,7 @@ public class MLWorkerService {
                             .build()
                     );
                 }
-
+                
                 requestObserverRef.get().onCompleted();
             } else if (StatusCode.Next.equals(value.getCode())) {
                 log.info("Got rows for request idx {}", value.getIdx());
@@ -289,6 +288,8 @@ public class MLWorkerService {
                 // Consider complete, close reader/writer.
                 log.info("Slicing done!");
                 log.info("Slicing resulted with {}", result.size());
+            } else if (StatusCode.Failed.equals(value.getCode())) {
+                throw new GiskardRuntimeException(value.getErrorMessage());
             }
         }
 

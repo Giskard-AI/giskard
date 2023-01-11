@@ -1,5 +1,7 @@
 <?xml version="1.1" encoding="UTF-8" standalone="no"?>
-<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext" xmlns:pro="http://www.liquibase.org/xml/ns/pro" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-4.1.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.1.xsd">
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.1.xsd">
     <changeSet author="hugoviallon (generated)" id="1671113997239-5">
         <createTable tableName="slices">
             <column autoIncrement="true" name="id" type="BIGINT">
@@ -16,22 +18,10 @@
             <column name="project_id" type="BIGINT"/>
         </createTable>
     </changeSet>
-    <changeSet author="hugoviallon (generated)" id="1671113997239-6">
-        <addUniqueConstraint columnNames="key" constraintName="UC_PROJECTSKEY_COL" tableName="projects"/>
-    </changeSet>
     <changeSet author="hugoviallon (generated)" id="1671113997239-7">
-        <addForeignKeyConstraint baseColumnNames="project_id" baseTableName="slices" constraintName="FKokt2ov2hcs1k02321mcxjfvhh" deferrable="false" initiallyDeferred="false" referencedColumnNames="id" referencedTableName="projects" validate="true"/>
-    </changeSet>
-    <changeSet author="hugoviallon (generated)" id="1671113997239-1">
-        <dropUniqueConstraint constraintName="UC_PROJECTSKEY_COL" tableName="projects"/>
-    </changeSet>
-    <changeSet author="hugoviallon (generated)" id="1671113997239-2">
-        <addUniqueConstraint columnNames="key" constraintName="UC_PROJECTSKEY_COL" tableName="projects"/>
-    </changeSet>
-    <changeSet author="hugoviallon (generated)" id="1671113997239-3">
-        <dropPrimaryKey tableName="projects"/>
-    </changeSet>
-    <changeSet author="hugoviallon (generated)" id="1671113997239-4">
-        <addPrimaryKey columnNames="id" constraintName="projectsPK" tableName="projects"/>
+        <addForeignKeyConstraint baseColumnNames="project_id" baseTableName="slices"
+                                 constraintName="FKokt2ov2hcs1k02321mcxjfvhh" deferrable="false"
+                                 initiallyDeferred="false" referencedColumnNames="id" referencedTableName="projects"
+                                 validate="true"/>
     </changeSet>
 </databaseChangeLog>

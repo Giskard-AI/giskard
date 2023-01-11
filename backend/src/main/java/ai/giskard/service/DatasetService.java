@@ -2,10 +2,8 @@ package ai.giskard.service;
 
 import ai.giskard.domain.FeatureType;
 import ai.giskard.domain.ml.Dataset;
-import ai.giskard.ml.MLWorkerClient;
 import ai.giskard.repository.ml.DatasetRepository;
 import ai.giskard.security.PermissionEvaluator;
-import ai.giskard.service.ml.MLWorkerService;
 import ai.giskard.web.dto.DatasetMetadataDTO;
 import ai.giskard.web.dto.FeatureMetadataDTO;
 import ai.giskard.web.dto.ml.DatasetDetailsDTO;
@@ -21,7 +19,6 @@ import tech.tablesaw.api.Table;
 import tech.tablesaw.io.csv.CsvReadOptions;
 
 import javax.validation.constraints.NotNull;
-import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
@@ -37,7 +34,6 @@ public class DatasetService {
     private final FileLocationService locationService;
     private final FileUploadService fileUploadService;
     private final PermissionEvaluator permissionEvaluator;
-    private final MLWorkerService mlWorkerService;
 
     /**
      * Read table from file
