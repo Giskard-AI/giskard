@@ -19,6 +19,7 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
       - name: Ask to add the 'safe for build' label
         if: ${{ github.actor != 'dependabot[bot]' && !steps.is_organization_member.outputs.result && !contains(github.event.*.labels.*.name, 'safe for build') }}
+        uses: actions/github-script@v3
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
