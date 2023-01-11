@@ -8,13 +8,12 @@ import click
 import lockfile
 import psutil
 from click import INT, STRING
-from lockfile.pidlockfile import PIDLockFile, read_pid_from_pidfile, remove_existing_pidfile
-
 from giskard.cli_utils import create_pid_file_path, remove_stale_pid_file, run_daemon, get_log_path, tail, follow_file
 from giskard.client.analytics_collector import GiskardAnalyticsCollector, anonymize
 from giskard.ml_worker.ml_worker import start_ml_worker
 from giskard.path_utils import run_dir
 from giskard.settings import settings
+from lockfile.pidlockfile import PIDLockFile, read_pid_from_pidfile, remove_existing_pidfile
 
 run_dir.mkdir(parents=True, exist_ok=True)
 
@@ -202,7 +201,7 @@ def logs_options(fn):
         "is_follow",
         is_flag=True,
         default=False,
-        help="Output appended data as the file grows",
+        help="Output appended data as new logs are being generated",
     )(fn)
     return fn
 
