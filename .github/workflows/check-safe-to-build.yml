@@ -17,13 +17,13 @@ jobs:
           username: ${{ github.actor }}
           token: ${{ secrets.GITHUB_TOKEN }}
       - name: Ask to add the 'safe for build' label
-        if: ${{ github.actor != 'dependabot[bot]' && steps.is_organization_member.outputs.result == false && !contains(github.event.*.labels.*.name, 'safe for build') }}
+        if: ${{ github.actor != 'dependabot[bot]' && steps.is_organization_member.outputs.result == false && contains(github.event.*.labels.*.name, 'safe for build') == false }}
         uses: mshick/add-pr-comment@v2
         with:
           message: |
             Please add the 'safe for build' label in order to perform the sonar analysis!
       - name: Ask to add the 'safe for build' label
-        if: ${{ github.actor != 'dependabot[bot]' && steps.is_organization_member.outputs.result == false && !contains(github.event.*.labels.*.name, 'safe for build') }}
+        if: ${{ github.actor != 'dependabot[bot]' && steps.is_organization_member.outputs.result == false && contains(github.event.*.labels.*.name, 'safe for build') == false }}
         shell: bash
         run: |
           echo "Build interrupted due to previous failure"
