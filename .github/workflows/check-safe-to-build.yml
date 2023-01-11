@@ -22,9 +22,12 @@ jobs:
         with:
           message: |
             Please add the 'safe for build' label in order to perform the sonar analysis!
-      - name: Ask to add the 'safe for build' label
+      - name: Interrupt job
         if: ${{ github.actor != 'dependabot[bot]' && !contains(github.event.*.labels.*.name, 'safe for build') }}
         shell: bash
+        env:
+          PREVIOUS_RESULT: ${{ steps.is_organization_member.outputs.result }}
         run: |
           echo "Build interrupted due to previous failure"
+          echo $PREVIOUS_RESULT
           exit 1
