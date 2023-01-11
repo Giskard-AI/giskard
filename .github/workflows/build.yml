@@ -3,9 +3,10 @@ on:
   push:
     branches:
       - main
-  pull_request:
-    branches:
-      - main
+  workflow_run:
+    workflows: [ "Check safe to build" ]
+    types:
+      - completed
   workflow_dispatch:
 
 jobs:
@@ -99,7 +100,7 @@ jobs:
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
         run: ./gradlew build --info --parallel
 
-      - name:  "Python client: archive built artifacts"
+      - name: "Python client: archive built artifacts"
         if: ${{ steps.extract_branch.outputs.branch == 'main' }}
         uses: actions/upload-artifact@v3
         with:
