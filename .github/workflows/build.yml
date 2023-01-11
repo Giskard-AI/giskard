@@ -13,7 +13,7 @@ jobs:
   build:
 
     name: Build
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     steps:
       - name: Stop on security check failure
         if: ${{ github.event.workflow_run.conclusion == 'failure' }}
