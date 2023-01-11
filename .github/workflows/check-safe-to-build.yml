@@ -11,7 +11,6 @@ jobs:
     steps:
       - name: Check if organization member
         id: is_organization_member
-        if: github.event.action == 'opened'
         uses: JamesSingleton/is-organization-member@1.0.0
         with:
           organization: Giskard-AI
@@ -19,18 +18,10 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
       - name: Ask to add the 'safe for build' label
         if: ${{ github.actor != 'dependabot[bot]' && !steps.is_organization_member.outputs.result && !contains(github.event.*.labels.*.name, 'safe for build') }}
-        uses: actions/github-script@v3
+        uses: mshick/add-pr-comment@v2
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            var fs = require('fs');
-            var issue_number = Number(fs.readFileSync('./NR'));
-            await github.issues.createComment({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: issue_number,
-              body: 'Please add the 'safe for build' label in order to perform the sonar analysis!'
-            });
+          message: |
+            Please add the 'safe for build' label in order to perform the sonar analysis!
       - name: Ask to add the 'safe for build' label
         if: ${{ github.actor != 'dependabot[bot]' && !steps.is_organization_member.outputs.result && !contains(github.event.*.labels.*.name, 'safe for build') }}
         shell: bash
