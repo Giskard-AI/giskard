@@ -1,5 +1,5 @@
-name: Giskard Bug Template
-description: Use this template to report any bugs
+name: 🐛 Bug report
+description: If something isn't working 🔧
 body:
   - type: dropdown
     id: issue-type
