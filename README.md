@@ -3,6 +3,9 @@
 </p>
 <h1 align="center" weight='300' >Quality Assurance for AI models</h1>
 <h3 align="center" weight='300' >Eliminate AI bias in production. Deliver ML products, better & faster</h3>
+
+
+
 <p align="center">
    <a href="https://github.com/Giskard-AI/giskard/releases">
       <img alt="GitHub release" src="https://img.shields.io/github/v/release/Giskard-AI/giskard">
