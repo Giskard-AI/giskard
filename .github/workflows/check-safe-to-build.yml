@@ -6,7 +6,7 @@ on:
 
 jobs:
   build:
-    name: Build
+    name: Check safe to build
     runs-on: self-hosted
     steps:
       - name: Check if organization member
@@ -31,5 +31,9 @@ jobs:
               issue_number: issue_number,
               body: 'Please add the 'safe for build' label in order to perform the sonar analysis!'
             });
-            core.setFailed('Not safe to build');
-
+      - name: Ask to add the 'safe for build' label
+        if: ${{ github.actor != 'dependabot[bot]' && !steps.is_organization_member.outputs.result && !contains(github.event.*.labels.*.name, 'safe for build') }}
+        shell: bash
+        run: |
+          echo "Build interrupted due to previous failure"
+          exit 1
