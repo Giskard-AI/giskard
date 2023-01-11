@@ -15,11 +15,11 @@ jobs:
     name: Build
     runs-on: self-hosted
     steps:
-      - name: Stop on failure
+      - name: Stop on security check failure
         if: ${{ github.event.workflow_run.conclusion == 'failure' }}
         shell: bash
         run: |
-          echo "Build interrupted due to previous failure"
+          echo "Job failed due to user not being a member of Giskard-AI organization and the 'safe for build' label not being set on the PR"
           exit 1
 
       - name: Extract branch name
