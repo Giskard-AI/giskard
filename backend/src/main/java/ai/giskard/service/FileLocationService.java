@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.sql.Timestamp;
 
 @Service
 @RequiredArgsConstructor
@@ -36,16 +37,14 @@ public class FileLocationService {
         return modelsDirectory(projectKey).resolve(createZSTname("model_", modelId));
     }
 
-    public Path metadataDirectory(String projectKey){
-        return resolvedProjectHome(projectKey).resolve("metadata");
+    public Path timestampMetadataDirectory(){
+        Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+        String strTimeStamp = Long.toString(timestamp.getTime());
+        return resolvedTmpPath().resolve(strTimeStamp);
     }
 
-    public Path resolvedMetadataPath(String projectKey,  Class<? extends BaseEntity> c){
-        return metadataDirectory(projectKey).resolve(c.getSimpleName().toLowerCase() + "-metadata.yaml");
-    }
-
-    public Path resolvedModelRequirementsPath(String projectKey, Long modelId) {
-        return modelsDirectory(projectKey).resolve(createTXTname("model-requirements_", modelId));
+    public Path resolvedMetadataPath(Path timestampMetadataDir,  Class<? extends BaseEntity> c){
+        return timestampMetadataDir.resolve(c.getSimpleName().toLowerCase() + "-metadata.yaml");
     }
 
     public Path resolveFilePath(ProjectFile file) {
@@ -83,4 +82,5 @@ public class FileLocationService {
     public static String createTXTname(String prefix, Long id) {
         return prefix + id.toString() + ".txt";
     }
+
 }
