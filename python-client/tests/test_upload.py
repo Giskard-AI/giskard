@@ -18,7 +18,7 @@ b_content_type = b"application/json"
 @httpretty.activate(verbose=True, allow_net_connect=False)
 def test_upload_df(diabetes_dataset: Dataset, diabetes_dataset_with_target: Dataset):
     artifact_url_pattern = re.compile(
-        r"http://giskard-host:12345/api/v2/artifacts/test-project/datasets/[a-z0-9]{32}/[data.csv.zst|giskard\-dataset\-meta.yaml]")
+        r"http://giskard-host:12345/api/v2/artifacts/test-project/datasets/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/[data.csv.zst|giskard\-dataset\-meta.yaml]")
     datasets_url_pattern = re.compile("http://giskard-host:12345/api/v2/project/test-project/datasets")
 
     httpretty.register_uri(
@@ -31,7 +31,7 @@ def test_upload_df(diabetes_dataset: Dataset, diabetes_dataset_with_target: Data
     client = GiskardClient(url, token)
 
     saved_id = diabetes_dataset_with_target.save(client, "test-project")
-    assert re.match("^[a-z0-9]{32}$", saved_id)
+    assert re.match("^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$", saved_id)
 
     artifact_requests = [i for i in httpretty.latest_requests() if artifact_url_pattern.match(i.url)]
     assert len(artifact_requests) > 0
@@ -59,7 +59,7 @@ def test_upload_df(diabetes_dataset: Dataset, diabetes_dataset_with_target: Data
 @httpretty.activate(verbose=True, allow_net_connect=False)
 def _test_upload_model(model: Model, ds: Dataset):
     artifact_url_pattern = re.compile(
-        "http://giskard-host:12345/api/v2/artifacts/test-project/models/[a-z0-9]{32}/.*")
+        "http://giskard-host:12345/api/v2/artifacts/test-project/models/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/.*")
     models_url_pattern = re.compile("http://giskard-host:12345/api/v2/project/test-project/models")
 
     httpretty.register_uri(httpretty.POST, artifact_url_pattern)
@@ -73,7 +73,7 @@ def _test_upload_model(model: Model, ds: Dataset):
     else:
         model_id = model.save(client, 'test-project', ds)
 
-    assert re.match("^[a-z0-9]{32}$", model_id)
+    assert re.match("^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$", model_id)
 
     artifact_requests = [i for i in httpretty.latest_requests() if artifact_url_pattern.match(i.url)]
     assert len(artifact_requests) > 0
