@@ -3,9 +3,10 @@ on:
   push:
     branches:
       - main
-  pull_request_target:
-    branches:
-      - main
+  workflow_run:
+    workflows: [ "Check safe to build" ]
+    types:
+      - completed
   workflow_dispatch:
 
 jobs:
@@ -84,29 +85,15 @@ jobs:
           value: '${{ steps.read_toml.outputs.value }}.dev${{ steps.current_date.outputs.CURRENT_DATE }}'
 
       - name: Build and analyze with sonar
-        if: ${{ github.actor != 'dependabot[bot]' && contains(github.event.*.labels.*.name, 'safe for build') }}
+        if: ${{ github.actor != 'dependabot[bot]' }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
         run: ./gradlew build :python-client:package jacocoTestReport sonar --info --parallel
 
-      - name: Ask to add the 'safe for build' label
-        if: ${{ github.actor != 'dependabot[bot]' && !contains(github.event.*.labels.*.name, 'safe for build') }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to comment on PR
-        run: |
-          var fs = require('fs');
-          var issue_number = Number(fs.readFileSync('./NR'));
-          await github.issues.createComment({
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            issue_number: issue_number,
-            body: 'Please add the 'safe for build' label in order to perform sonar analysis!'
-          });
-
       - name: Build and analyze without sonar
-        if: ${{ github.actor == 'dependabot[bot]' || contains(github.event.*.labels.*.name, 'safe for build') }}
+        if: ${{ github.actor == 'dependabot[bot]' }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
