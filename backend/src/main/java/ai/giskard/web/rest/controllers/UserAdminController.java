@@ -185,15 +185,15 @@ public class UserAdminController {
     }
 
     /**
-     * {@code PATCH /admin/users/:login/restore} : restore the "login" User.
+     * {@code PATCH /admin/users/:login/enable} : restore the "login" User.
      *
      * @param login the login of the user to be restored.
      */
-    @PatchMapping("/{login}/restore")
+    @PatchMapping("/{login}/enable")
     @PreAuthorize("hasAuthority(\"" + ADMIN + "\")")
-    public ResponseEntity<Void> restoreUser(@PathVariable @Pattern(regexp = Constants.LOGIN_REGEX) String login) {
+    public ResponseEntity<Void> enableUser(@PathVariable @Pattern(regexp = Constants.LOGIN_REGEX) String login) {
         log.debug("REST request to restore User: {}", login);
-        userService.restoreUser(login);
+        userService.enableUser(login);
         return ResponseEntity.noContent().build();
     }
 }

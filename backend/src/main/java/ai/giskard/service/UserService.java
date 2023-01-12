@@ -198,13 +198,14 @@ public class UserService {
             });
     }
 
-    public void restoreUser(String login) {
+    public void enableUser(String login) {
         userRepository
             .findOneByLogin(login)
-            .ifPresent(user -> {
-                user.setEnabled(true);
-                log.debug("Restored[reactivated] user : {}", user);
-            });
+            .ifPresentOrElse(user -> {
+                    user.setEnabled(true);
+                    log.info("Enable user : {}", user);
+                },
+                () -> log.warn("Cannot enable user because its login wasn't found : {}", login));
     }
 
 

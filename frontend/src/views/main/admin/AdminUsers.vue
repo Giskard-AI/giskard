@@ -56,7 +56,7 @@
         <v-btn v-if="item.enabled" icon @click="deleteUser(item)">
           <v-icon color="accent">delete</v-icon>
         </v-btn>
-        <v-btn v-else icon @click="restoreUser(item)">
+        <v-btn v-else icon @click="enableUser(item)">
           <v-icon color="warning">restore</v-icon>
         </v-btn>
       </template>
@@ -68,7 +68,7 @@
 <script lang="ts">
 import {Component, Vue} from 'vue-property-decorator';
 import {readAdminUsers} from '@/store/admin/getters';
-import {dispatchDeleteUser, dispatchGetUsers, dispatchRestoreUser} from '@/store/admin/actions';
+import {dispatchDeleteUser, dispatchEnableUser, dispatchGetUsers} from '@/store/admin/actions';
 import {readAppSettings} from "@/store/main/getters";
 
 @Component
@@ -145,8 +145,8 @@ export default class AdminUsers extends Vue {
     }
   }
 
-  public async restoreUser(user) {
-    await dispatchRestoreUser(this.$store, {id: user.user_id});
+  public async enableUser(user) {
+    await dispatchEnableUser(this.$store, {id: user.user_id});
   }
 }
 </script>

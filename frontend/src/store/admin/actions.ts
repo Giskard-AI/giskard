@@ -65,11 +65,11 @@ export const actions = {
             throw new Error(error.response.data.detail);
         }
     },
-    async actionRestoreUser(context: MainContext, payload: { id: number }) {
+    async actionEnableUser(context: MainContext, payload: { id: number }) {
         const loadingNotification = {content: 'saving', showProgress: true};
         try {
             commitAddNotification(context, loadingNotification);
-            await api.restoreUser(payload.id);
+            await api.enableUser(payload.id);
             await dispatchGetUsers(context);
             commitRemoveNotification(context, loadingNotification);
             commitAddNotification(context, {content: 'Successfully restored', color: 'success'});
@@ -86,5 +86,5 @@ export const dispatchCreateUser = dispatch(actions.actionCreateUser);
 export const dispatchGetUsers = dispatch(actions.actionGetUsers);
 export const dispatchUpdateUser = dispatch(actions.actionUpdateUser);
 export const dispatchDeleteUser = dispatch(actions.actionDeleteUser);
-export const dispatchRestoreUser = dispatch(actions.actionRestoreUser);
+export const dispatchEnableUser = dispatch(actions.actionEnableUser);
 export const dispatchGetRoles = dispatch(actions.actionGetRoles);
