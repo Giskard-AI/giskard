@@ -216,6 +216,9 @@ export const api = {
     async deleteUser(userId: number) {
         return apiV2.delete<unknown, void>(`/admin/users/${userId}`);
     },
+    async enableUser(userId: number) {
+        return apiV2.patch<unknown, void>(`/admin/users/${userId}/enable`);
+    },
     async passwordRecovery(email: string) {
         return apiV2.post<unknown, void>(`/account/password-recovery`, <PasswordResetRequest>{email});
     },
