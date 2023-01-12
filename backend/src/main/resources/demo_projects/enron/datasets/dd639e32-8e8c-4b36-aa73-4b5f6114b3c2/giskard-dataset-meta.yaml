@@ -1,0 +1,23 @@
+column_meanings:
+  Content: text
+  Hour: numeric
+  Month: category
+  Nb_of_forwarded_msg: numeric
+  Subject: text
+  Target: category
+  Week_day: category
+  Year: numeric
+column_types:
+  Content: object
+  Hour: object
+  Month: object
+  Nb_of_forwarded_msg: object
+  Subject: object
+  Target: object
+  Week_day: object
+  Year: object
+compressed_size_bytes: 1814786
+id: dd639e32-8e8c-4b36-aa73-4b5f6114b3c2
+name: train dataset
+original_size_bytes: 7285426
+target: Target

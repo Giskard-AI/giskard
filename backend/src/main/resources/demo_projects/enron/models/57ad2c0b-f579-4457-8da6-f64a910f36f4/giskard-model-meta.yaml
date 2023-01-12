@@ -1,0 +1,20 @@
+classification_labels:
+- CALIFORNIA CRISIS
+- INFLUENCE
+- INTERNAL
+- REGULATION
+feature_names:
+- Subject
+- Content
+- Week_day
+- Year
+- Month
+- Hour
+- Nb_of_forwarded_msg
+id: 57ad2c0b-f579-4457-8da6-f64a910f36f4
+language: PYTHON
+language_version: 3.7.16
+model_type: CLASSIFICATION
+name: SKLearnModel
+size: 1802021
+threshold: 0.5

@@ -1,0 +1,23 @@
+column_meanings:
+  Content: text
+  Hour: numeric
+  Month: category
+  Nb_of_forwarded_msg: numeric
+  Subject: text
+  Target: category
+  Week_day: category
+  Year: numeric
+column_types:
+  Content: object
+  Hour: object
+  Month: object
+  Nb_of_forwarded_msg: object
+  Subject: object
+  Target: object
+  Week_day: object
+  Year: object
+compressed_size_bytes: 715636
+id: e6ed7837-ff1a-4ffc-b848-aeb4f637c18b
+name: test dataset
+original_size_bytes: 2572416
+target: Target

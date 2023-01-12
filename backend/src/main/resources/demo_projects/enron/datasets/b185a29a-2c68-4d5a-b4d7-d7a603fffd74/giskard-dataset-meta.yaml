@@ -1,0 +1,21 @@
+column_meanings:
+  Content: text
+  Hour: numeric
+  Month: category
+  Nb_of_forwarded_msg: numeric
+  Subject: text
+  Week_day: category
+  Year: numeric
+column_types:
+  Content: object
+  Hour: object
+  Month: object
+  Nb_of_forwarded_msg: object
+  Subject: object
+  Week_day: object
+  Year: object
+compressed_size_bytes: 2655348
+id: b185a29a-2c68-4d5a-b4d7-d7a603fffd74
+name: prod dataset
+original_size_bytes: 11586659
+target: null
