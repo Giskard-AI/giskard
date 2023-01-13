@@ -19,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.util.List;
 import java.util.Map;
@@ -98,6 +99,15 @@ public class TestSuiteController {
     public Map<String, String> getSuiteInputs(@PathVariable("projectId") @NotNull Long projectId,
                                               @PathVariable("suiteId") @NotNull Long suiteId) {
         return testSuiteService.getSuiteInputs(projectId, suiteId);
+    }
+
+    @PostMapping("project/{projectId}/suite-new/{suiteId}/execute")
+    @PreAuthorize("@permissionEvaluator.canReadProject(#projectId)")
+    @Transactional
+    public Map<String, String> executeTestSuite(@PathVariable("projectId") @NotNull Long projectId,
+                                                @PathVariable("suiteId") @NotNull Long suiteId,
+                                                @Valid @RequestBody Map<@NotBlank String, @NotNull Object> inputs) {
+        return testSuiteService.executeTestSuite(projectId, suiteId, inputs);
     }
 
     @PostMapping("project/{projectKey}/suites")

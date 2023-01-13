@@ -6,8 +6,8 @@
     >
       <template v-slot:activator="{ on, attrs }">
         <v-btn small tile class='mx-1' @click='openPopup'
-               :loading='isTestSuiteRunning'
-               :disabled='isTestSuiteRunning'
+               :loading='running'
+               :disabled='running'
                v-bind="attrs"
                v-on="on">
           <v-icon>arrow_right</v-icon>
@@ -58,7 +58,7 @@
           <v-btn
               color="primary"
               text
-              @click="dialog = false"
+              @click="executeTestSuite()"
               :disabled="!isAllParamsSet()"
           >
             <v-icon>arrow_right</v-icon>
@@ -75,15 +75,20 @@
 import {computed, ref} from 'vue';
 import DatasetSelector from '@/views/main/utils/DatasetSelector.vue';
 import ModelSelector from '@/views/main/utils/ModelSelector.vue';
+import {api} from '@/api';
+import mixpanel from 'mixpanel-browser';
 
 const props = defineProps<{
-  projectId: number
+  projectId: number,
+  suiteId: number,
   inputs: {
     [name: string]: string
   }
 }>();
 
 const dialog = ref<boolean>(false);
+const running = ref<boolean>(false);
+
 const testSuiteInputs = ref<{
   [name: string]: any
 }>({});
@@ -99,7 +104,6 @@ function isAllParamsSet() {
       .findIndex(param => param === null || param === undefined) === -1;
 }
 
-const isTestSuiteRunning = computed(() => false);
 
 function openPopup() {
   if (Object.keys(props.inputs).length === 0) {
@@ -110,7 +114,14 @@ function openPopup() {
   }
 }
 
-function executeTestSuite() {
+async function executeTestSuite() {
+  mixpanel.track('Run test suite', {suiteId: props.suiteId});
+  running.value = true;
 
+  try {
+    await api.executeTestSuiteNew(props.projectId, props.suiteId, testSuiteInputs.value)
+  } finally {
+    running.value = false;
+  }
 }
 </script>
