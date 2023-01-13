@@ -104,9 +104,9 @@ public class TestSuiteController {
     @PostMapping("project/{projectId}/suite-new/{suiteId}/execute")
     @PreAuthorize("@permissionEvaluator.canReadProject(#projectId)")
     @Transactional
-    public Map<String, String> executeTestSuite(@PathVariable("projectId") @NotNull Long projectId,
-                                                @PathVariable("suiteId") @NotNull Long suiteId,
-                                                @Valid @RequestBody Map<@NotBlank String, @NotNull Object> inputs) {
+    public TestSuiteExecutionDTO executeTestSuite(@PathVariable("projectId") @NotNull Long projectId,
+                                                  @PathVariable("suiteId") @NotNull Long suiteId,
+                                                  @Valid @RequestBody Map<@NotBlank String, @NotNull Object> inputs) {
         return testSuiteService.executeTestSuite(projectId, suiteId, inputs);
     }
 
