@@ -15,6 +15,7 @@ import {
     FeedbackDTO,
     FeedbackMinimalDTO,
     GeneralSettings,
+    ImportProjectDTO,
     InspectionCreateDTO,
     InspectionDTO,
     JWTToken,
@@ -270,9 +271,12 @@ export const api = {
     },
     async importProject(formData: FormData){
         const headers = { 'Content-Type': 'multipart/form-data' };
-        return axiosProject.post<unknown, ProjectDTO>(`/import`, formData, {
+        return axiosProject.post<unknown, ImportProjectDTO>(`/import`, formData, {
             headers: headers
         });
+    },
+    async importConflictedProject(newKey: String, pathToTmpDirectory: String){
+        return axiosProject.post<unknown, ImportProjectDTO>(`/import/conflict`,  {newKey: newKey, pathToTmpDirectory:  pathToTmpDirectory});
     },
     async deleteDatasetFile(datasetId: number) {
         return apiV2.delete<unknown, MessageDTO>(`/dataset/${datasetId}`);

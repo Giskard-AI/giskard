@@ -4,6 +4,7 @@ import ai.giskard.domain.Project;
 import ai.giskard.repository.ProjectRepository;
 import ai.giskard.security.PermissionEvaluator;
 import ai.giskard.service.ProjectService;
+import ai.giskard.web.dto.ImportProjectDTO;
 import ai.giskard.web.dto.mapper.GiskardMapper;
 import ai.giskard.web.dto.ml.ProjectDTO;
 import ai.giskard.web.dto.ml.ProjectPostDTO;
@@ -18,8 +19,11 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
+
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Controller for the {@link Project} resource
@@ -146,9 +150,14 @@ public class ProjectController {
     }
 
     @PostMapping(value = "/project/import", consumes = "multipart/form-data")
-    public ProjectDTO importProject(@RequestParam("file") MultipartFile zipFile, @AuthenticationPrincipal final UserDetails userDetails) throws IOException {
-        Project project = this.projectService.importProject(zipFile, userDetails.getUsername());
-        return giskardMapper.projectToProjectDTO(project);
+    @Transactional
+    public ImportProjectDTO importProject(@RequestParam("file") MultipartFile zipFile, @AuthenticationPrincipal final UserDetails userDetails) throws IOException {
+       return this.projectService.importProject(zipFile, userDetails.getUsername());
     }
 
+    @PostMapping(value = "/project/import/conflict")
+    @Transactional
+    public ImportProjectDTO importConflictProject(@RequestBody @NotNull Map<String, String> json,  @AuthenticationPrincipal final UserDetails userDetails) throws IOException{
+        return this.projectService.importConflictProject(json.get("newKey"), userDetails.getUsername(), json.get("pathToTmpDirectory"));
+    }
 }

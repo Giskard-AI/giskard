@@ -27,6 +27,7 @@ export const GENERATED_MAPPING = {
     'ai.giskard.web.dto.FeedbackDTO' : 'FeedbackDTO',
     'ai.giskard.web.dto.FeedbackMinimalDTO' : 'FeedbackMinimalDTO',
     'ai.giskard.web.dto.FeedbackReplyDTO' : 'FeedbackReplyDTO',
+    'ai.giskard.web.dto.ImportProjectDTO' : 'ImportProjectDTO',
     'ai.giskard.web.dto.InspectionCreateDTO' : 'InspectionCreateDTO',
     'ai.giskard.web.dto.JWTToken' : 'JWTToken',
     'ai.giskard.web.dto.MessageDTO' : 'MessageDTO',
@@ -97,6 +98,7 @@ export * from './ai/giskard/web/dto/feature-metadata-dto';
 export * from './ai/giskard/web/dto/feedback-dto';
 export * from './ai/giskard/web/dto/feedback-minimal-dto';
 export * from './ai/giskard/web/dto/feedback-reply-dto';
+export * from './ai/giskard/web/dto/import-project-dto';
 export * from './ai/giskard/web/dto/inspection-create-dto';
 export * from './ai/giskard/web/dto/jwttoken';
 export * from './ai/giskard/web/dto/message-dto';

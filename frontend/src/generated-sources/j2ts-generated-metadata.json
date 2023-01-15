@@ -60,6 +60,7 @@
     "ai.giskard.web.dto.ExplainResponseDTO": "ExplainResponseDTO",
     "ai.giskard.web.dto.ModelMetadataDTO": "ModelMetadataDTO",
     "ai.giskard.web.dto.MessageDTO": "MessageDTO",
+    "ai.giskard.web.dto.ImportProjectDTO": "ImportProjectDTO",
     "ai.giskard.domain.ml.CodeTestCollection": "CodeTestCollection",
     "ai.giskard.domain.MLWorkerType": "MLWorkerType",
     "ai.giskard.domain.ml.CodeTestTemplate": "CodeTestTemplate",

@@ -19,6 +19,7 @@ import ai.giskard.repository.ml.TestSuiteRepository;
 import ai.giskard.security.SecurityUtils;
 import ai.giskard.utils.YAMLConverter;
 import ai.giskard.utils.ZipUtils;
+import ai.giskard.web.dto.ImportProjectDTO;
 import ai.giskard.web.dto.mapper.GiskardMapper;
 import ai.giskard.web.dto.ml.ProjectPostDTO;
 import ai.giskard.web.rest.errors.Entity;
@@ -42,6 +43,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -171,39 +173,63 @@ public class ProjectService {
         YAMLConverter.exportEntitiesToYAML(project.getTestSuites(), testSuitesMetadataPath);
     }
 
+    public ImportProjectDTO importConflictProject(String newKey, String userName, String pathToTmpDir) throws IOException {
+        Path tmpDir = Paths.get(pathToTmpDir);
+        // Get each element thanks to the metadata files
+        ObjectMapper mapper = new ObjectMapper(new YAMLFactory())
+            .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        Project project = mapper.readValue(locationService.resolvedMetadataPath(tmpDir, Project.class).toFile(), Project.class);
+        project.setKey(newKey);
+        return importProject(project, tmpDir, userName);
+    }
 
-    public Project importProject(MultipartFile zipMultipartFile, String userName) throws IOException, NullPointerException {
+
+    public ImportProjectDTO importProject(MultipartFile zipMultipartFile, String userName) throws IOException {
         // Create a tmp folder
-        Path temporaryExportDir = locationService.timestampMetadataDirectory();
-        Files.createDirectories(temporaryExportDir);
+        Path tmpDir = locationService.timestampMetadataDirectory();
+        Files.createDirectories(tmpDir);
 
         // Unzip the received file into the created folder
-        Path zipFilePath = temporaryExportDir.resolve("project.zip");
+        Path zipFilePath = tmpDir.resolve("project.zip");
         Files.createFile(zipFilePath);
         try (OutputStream os = new FileOutputStream(zipFilePath.toFile())) {
             os.write(zipMultipartFile.getBytes());
         }
-        ZipUtils.unzip(zipFilePath, temporaryExportDir);
+        ZipUtils.unzip(zipFilePath, tmpDir);
 
         // Get each element thanks to the metadata files
         ObjectMapper mapper = new ObjectMapper(new YAMLFactory())
             .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-        Project project = mapper.readValue(locationService.resolvedMetadataPath(temporaryExportDir, Project.class).toFile(), Project.class);
-        List<ProjectModel> models = mapper.readValue(locationService.resolvedMetadataPath(temporaryExportDir, ProjectModel.class).toFile(), new TypeReference<>(){} );
-        List<Dataset> datasets = mapper.readValue(locationService.resolvedMetadataPath(temporaryExportDir, Dataset.class).toFile(), new TypeReference<>(){} );
-        List<Feedback> feedbacks = mapper.readValue(locationService.resolvedMetadataPath(temporaryExportDir, Feedback.class).toFile(), new TypeReference<>(){} );
-        List<TestSuite> testSuites = mapper.readValue(locationService.resolvedMetadataPath(temporaryExportDir, TestSuite.class).toFile(), new TypeReference<>(){} );
+        Project project = mapper.readValue(locationService.resolvedMetadataPath(tmpDir, Project.class).toFile(), Project.class);
+        return importProject(project, tmpDir, userName);
+
+    }
+
+    public ImportProjectDTO importProject(Project project, Path pathToTmpDirectory, String userName) throws IOException{
+        Project savedProject;
+        // Save the project in the db (verify that key is not already used)
+        try{
+            savedProject = create(project, userName);
+        } catch (EntityAlreadyExistsException e){
+            return new ImportProjectDTO(true, null, pathToTmpDirectory.toString());
+        }
+
+        ObjectMapper mapper = new ObjectMapper(new YAMLFactory())
+            .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
+        // If there is not any conflict, we continue the deserialisation
+        List<ProjectModel> models = mapper.readValue(locationService.resolvedMetadataPath(pathToTmpDirectory, ProjectModel.class).toFile(), new TypeReference<>(){} );
+        List<Dataset> datasets = mapper.readValue(locationService.resolvedMetadataPath(pathToTmpDirectory, Dataset.class).toFile(), new TypeReference<>(){} );
+        List<Feedback> feedbacks = mapper.readValue(locationService.resolvedMetadataPath(pathToTmpDirectory, Feedback.class).toFile(), new TypeReference<>(){} );
+        List<TestSuite> testSuites = mapper.readValue(locationService.resolvedMetadataPath(pathToTmpDirectory, TestSuite.class).toFile(), new TypeReference<>(){} );
 
         Map<Long, Long> mapFormerNewIdModelDataset = new HashMap<>();
 
-        // Save the project in the db (verify that key is not already used)
-        Project savedProject = create(project, userName);
-
         // Storage of each element in the db
          models.forEach(model -> {
-             Long formerId = model.getId();
-             Path formerModelPath = temporaryExportDir.resolve("models").resolve(FileLocationService.createZSTname("model_", formerId));
-             Path formerRequirementsModelPath = temporaryExportDir.resolve("models").resolve(FileLocationService.createTXTname("model-requirements_", formerId));
+             Long formerId = Long.parseLong(trimPrefixSuffix(model.getFileName(), "model_", ".zst"));
+             Path formerModelPath = pathToTmpDirectory.resolve("models").resolve(FileLocationService.createZSTname("model_", formerId));
+             Path formerRequirementsModelPath = pathToTmpDirectory.resolve("models").resolve(FileLocationService.createTXTname("model-requirements_", formerId));
              try {
                  model.setProject(savedProject);
                  FileInputStream modelStream = new FileInputStream(formerModelPath.toFile());
@@ -216,8 +242,9 @@ public class ProjectService {
          });
 
          datasets.forEach(dataset -> {
-             Long formerId = dataset.getId();
-             Path formerDatasetPath = temporaryExportDir.resolve("datasets").resolve(FileLocationService.createZSTname("data_", formerId));
+            // Mod
+            Long formerId = Long.parseLong(trimPrefixSuffix(dataset.getFileName(), "data_", ".zst"));
+             Path formerDatasetPath = pathToTmpDirectory.resolve("datasets").resolve(FileLocationService.createZSTname("data_", formerId));
              try{
                  dataset.setProject(savedProject);
                  FileInputStream datasetStream = new FileInputStream(formerDatasetPath.toFile());
@@ -253,8 +280,12 @@ public class ProjectService {
              });
              testSuiteRepository.save(savedTs);
          });
+         projectRepository.save(savedProject);
+         return new ImportProjectDTO(false, giskardMapper.projectToProjectDTO(savedProject), "");
+    }
 
-         return projectRepository.save(savedProject);
+    public String trimPrefixSuffix(String s, String prefix, String suffix){
+        return s.replaceFirst(prefix, "").replaceFirst(suffix, "");
     }
 
     /**

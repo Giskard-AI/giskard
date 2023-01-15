@@ -4,7 +4,6 @@
 export interface PrepareDeleteDTO {
     feedbacks: PrepareDeleteDTO.LightFeedback[];
     suites: PrepareDeleteDTO.LightTestSuite[];
-    totalUsage: number;
 }
 
 export namespace PrepareDeleteDTO {

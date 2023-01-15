@@ -24,7 +24,7 @@ import java.util.Set;
 @Getter
 @Setter
 @NotNull
-@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
+@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "login")
 public class User extends AbstractAuditingEntity {
     @Pattern(regexp = Constants.LOGIN_REGEX)
     @Size(min = 1, max = 50)

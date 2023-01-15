@@ -1,6 +1,6 @@
 <template>
   <div>
-    <v-toolbar flat dense>
+    <v-toolbar flat>
       <v-toolbar-title class="text-h6 font-weight-regular secondary--text text--lighten-1">Projects</v-toolbar-title>
       <v-spacer></v-spacer>
       <v-btn text small @click="loadProjects()" color="secondary">Reload
@@ -11,6 +11,33 @@
         <v-btn>Mine</v-btn>
         <v-btn>Others</v-btn>
       </v-btn-toggle>
+      <v-menu>
+        <template v-slot:activator="{ on, attrs }">
+          <v-btn
+            small
+            color="primary"
+            dark
+            v-bind="attrs"
+            v-on="on"
+          >
+            Add Project
+          </v-btn>
+        </template>
+        <v-list>
+          <v-list-item-group>
+            <v-list-item @click="openCreateDialog=true">
+              <v-list-item-content>
+               New
+              </v-list-item-content>
+            </v-list-item>
+            <v-list-item @click="openImportDialog=true">
+              <v-list-item-content>
+               Import
+              </v-list-item-content>
+            </v-list-item>
+          </v-list-item-group>
+        </v-list>
+      </v-menu>
     </v-toolbar>
 
     <!-- Project list -->
@@ -56,29 +83,7 @@
       <div v-if="isAdmin || isCreator">None created, none invited</div>
       <div v-else>You have not been invited to any projects yet</div>
     </v-container>
-
-
-    <v-speed-dial
-      :open-on-hover="true"
-      absolute
-      right
-      bottom
-      class="mr-3"
-    >
-      <template v-slot:activator>
-        <v-btn
-        fab
-        class="primary">
-          <v-icon > mdi-plus </v-icon>
-        </v-btn>
-      </template>
-      <v-btn color="primary" v-if="isAdmin || isCreator" @click="openImportDialog = true">
-        Import
-      </v-btn>
-      <v-btn color="primary" v-if="isAdmin || isCreator" @click="openCreateDialog = true">
-        New
-      </v-btn>
-    </v-speed-dial>
+    
 
     <!-- Modal dialog to import new projects -->
     <v-dialog v-model="openImportDialog" width="500" persistent>
@@ -91,6 +96,28 @@
                   <v-file-input ref="file" accept=".zip" label="Select a project to import*"
                   :error-messages="errors"
                 ></v-file-input>
+              </ValidationProvider>
+            </v-card-text>
+            <v-card-actions>
+              <v-spacer></v-spacer>
+              <v-btn color="secondary" text @click="clearAndCloseDialog()">Cancel</v-btn>
+              <v-btn color="primary" text type="submit">Save</v-btn>
+            </v-card-actions> 
+          </v-form>
+        </ValidationObserver>
+      </v-card>
+    </v-dialog>
+
+    <!-- Modal dialog to set the project key in case of conflict key while importing -->
+    <v-dialog v-model="openConflictImportDialog" width="500" persistent>
+      <v-card>
+        <ValidationObserver ref="dialogForm">
+          <v-form @submit.prevent="importConflictedProject()">
+            <v-card-title>Set new key for the imported project</v-card-title>
+            <v-card-text>
+              <ValidationProvider ref="validatorNewKey" name="Name" mode="eager" rules="required" v-slot="{errors}">
+                <v-text-field label="Project Key*" type="text" v-model="newProjectKey"
+                              :error-messages="errors"></v-text-field>
               </ValidationProvider>
             </v-card-text>
             <v-card-actions>
@@ -152,12 +179,14 @@ const route = useRoute();
 
 const openCreateDialog = ref<boolean>(false); // toggle for edit or create dialog
 const openImportDialog = ref<boolean>(false);
+const openConflictImportDialog = ref<boolean>(false);
 const newProjectName = ref<string>("");
 const newProjectKey = ref<string>("");
 const newProjectDesc = ref<string>("");
 const creatorFilter = ref<number>(0);
 const projectCreateError = ref<string>("");
-
+const pathToTmpDirectory = ref<string>("");
+const validatorNewKey = ref();
 
 // template ref
 const dialogForm = ref<InstanceType<typeof ValidationObserver> | null>(null);
@@ -196,19 +225,50 @@ async function loadProjects() {
   await dispatchGetProjects(store);
 }
 
+async function importConflictedProject(){
+  if (!newProjectKey.value) {
+    return;
+  }
+  api.importConflictedProject(newProjectKey.value, pathToTmpDirectory.value).then(response =>{
+    if (response.conflict){
+      openConflictImportDialog.value = true;
+      validatorNewKey.value.applyResult({
+      errors: ["A project with this key already exist, please change key"],
+      valid: false,
+      failedRules: {} 
+    });
+    }
+    else {
+      clearAndCloseDialog();
+      loadProjects(); 
+      // TODO GO TO THE GOOD PROJECT
+    }
+  })
+
+}
+
 async function importProject(){
   let uploadedFile = file.value.$refs.input.files[0];
   let formData = new FormData();
   formData.append('file', uploadedFile);
-  await api.importProject(formData);
-  clearAndCloseDialog();
-  loadProjects(); 
+  api.importProject(formData).then(response => {
+    if (response.conflict){
+      openConflictImportDialog.value = true;
+      pathToTmpDirectory.value = response.pathImportTmp;
+    }
+    else {
+      clearAndCloseDialog();
+      loadProjects(); 
+      // TODO GO TO THE GOOD PROJECT
+    }
+  });
 }
 
 function clearAndCloseDialog() {
   dialogForm.value?.reset();
   openCreateDialog.value = false;
   openImportDialog.value = false;
+  openConflictImportDialog.value = false;
   newProjectName.value = '';
   newProjectKey.value = '';
   newProjectDesc.value = '';
