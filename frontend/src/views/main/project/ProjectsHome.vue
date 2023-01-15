@@ -13,13 +13,14 @@
       </v-btn-toggle>
       <v-menu>
         <template v-slot:activator="{ on, attrs }">
+         
           <v-btn
             small
             color="primary"
             dark
             v-bind="attrs"
             v-on="on"
-          >
+          > <v-icon left>add</v-icon>
             Add Project
           </v-btn>
         </template>
