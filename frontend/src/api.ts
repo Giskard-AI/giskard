@@ -215,11 +215,11 @@ export const api = {
     async signupUser(userData: ManagedUserVM) {
         return apiV2.post<unknown, void>(`/register`, userData);
     },
-    async deleteUser(userId: number) {
-        return apiV2.delete<unknown, void>(`/admin/users/${userId}`);
+    async deleteUser(login: string) {
+        return apiV2.delete<unknown, void>(`/admin/users/${login}`);
     },
-    async enableUser(userId: number) {
-        return apiV2.patch<unknown, void>(`/admin/users/${userId}/enable`);
+    async enableUser(login: string) {
+        return apiV2.patch<unknown, void>(`/admin/users/${login}/enable`);
     },
     async passwordRecovery(email: string) {
         return apiV2.post<unknown, void>(`/account/password-recovery`, <PasswordResetRequest>{email});

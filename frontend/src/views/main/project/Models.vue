@@ -90,8 +90,6 @@ import {ModelDTO} from '@/generated-sources';
 import mixpanel from "mixpanel-browser";
 import {onActivated, ref} from 'vue';
 import DeleteModal from '@/views/main/project/modals/DeleteModal.vue';
-import {commitAddNotification} from '@/store/main/mutations';
-import store from '@/store';
 import InlineEditText from '@/components/InlineEditText.vue';
 import {useMainStore} from "@/stores/main";
 
