@@ -163,6 +163,7 @@ public class TestSuiteService {
         TestSuiteExecution execution = new TestSuiteExecution(testSuite);
         execution.setInputs(inputs.entrySet().stream()
             .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)));
+        execution.setMlWorkerType(testSuite.getProject().getMlWorkerType());
 
         Map<String, String> suiteInputs = getSuiteInputs(projectId, suiteId);
 
