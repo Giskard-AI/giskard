@@ -45,10 +45,10 @@ public class SliceController {
     }
 
 
-    @DeleteMapping("slices/{sliceId}")
+    @DeleteMapping("project/{projectId}/slices/{sliceId}")
     @Transactional
-    @PreAuthorize("@permissionEvaluator.canWriteProject(#dto.projectId)")
-    public void deleteSlice(@PathVariable @NotNull Long sliceId) {
+    @PreAuthorize("@permissionEvaluator.canWriteProject(#projectId)")
+    public void deleteSlice(@PathVariable @NotNull Long projectId, @PathVariable @NotNull Long sliceId) {
         sliceRepository.deleteById(sliceId);
     }
 

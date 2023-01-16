@@ -27,6 +27,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -38,7 +39,7 @@ import java.util.concurrent.atomic.AtomicReference;
 @RequiredArgsConstructor
 public class MLWorkerService {
     public static final int UPLOAD_FILE_CHUNK_KB = 256;
-    public static final int FILTER_CHUNK_SIZE_ROWS = 5000; // TODO: Compute dynamically...
+    public static final int FILTER_CHUNK_SIZE_ROWS = 5000; // TODO: https://github.com/Giskard-AI/giskard/issues/660
     private final Logger log = LoggerFactory.getLogger(MLWorkerService.class);
     private final ApplicationProperties applicationProperties;
     private final MLWorkerTunnelService mlWorkerTunnelService;
@@ -246,7 +247,7 @@ public class MLWorkerService {
         public void onNext(FilterDatasetResponse value) {
             if (StatusCode.Ready.equals(value.getCode())) {
                 log.info("Got READY from slicing!");
-                // Start streaming requests. For now, use arbitrary chunk size of 100 lines
+                // Start streaming requests. For now, use arbitrary chunk size of FILTER_CHUNK_SIZE_ROWS lines
                 int linesRead = 0;
                 int idx = 0;
                 String line;
@@ -258,7 +259,7 @@ public class MLWorkerService {
                     if (linesRead == FILTER_CHUNK_SIZE_ROWS) {
                         requestObserverRef.get().onNext(
                             FilterDatasetRequest.newBuilder()
-                                .setData(Chunk.newBuilder().setContent(ByteString.copyFrom(sb.toString(), "utf-8")).build())
+                                .setData(Chunk.newBuilder().setContent(ByteString.copyFrom(sb.toString(), StandardCharsets.UTF_8)).build())
                                 .setIdx(idx)
                                 .build()
                         );
@@ -276,7 +277,7 @@ public class MLWorkerService {
                             .build()
                     );
                 }
-                
+
                 requestObserverRef.get().onCompleted();
             } else if (StatusCode.Next.equals(value.getCode())) {
                 log.info("Got rows for request idx {}", value.getIdx());

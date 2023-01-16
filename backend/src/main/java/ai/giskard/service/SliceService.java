@@ -9,6 +9,7 @@ import ai.giskard.web.dto.SlicePutDTO;
 import ai.giskard.web.dto.mapper.GiskardMapper;
 import ai.giskard.web.dto.ml.SliceDTO;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,11 +31,13 @@ public class SliceService {
     private final FileLocationService fileLocationService;
 
     public SliceDTO createSlice(Slice slice) {
+        validateSliceName(slice.getName());
         Slice sl = sliceRepository.save(slice);
         return giskardMapper.sliceToSliceDTO(sl);
     }
 
     public Slice updateSlice(SlicePutDTO sliceDTO) {
+        validateSliceName(sliceDTO.getName());
         Slice slice = sliceRepository.getById(sliceDTO.getId());
         giskardMapper.updateSliceFromDto(sliceDTO, slice);
         return sliceRepository.save(slice);
@@ -42,8 +45,8 @@ public class SliceService {
 
     public List<Integer> getSlicedRowsForDataset(Long sliceId, Dataset dataset) throws IOException {
         Slice slice = sliceRepository.getById(sliceId);
-        Path cachedSliceFile = fileLocationService.resolvedSlicePath(slice.getProject().getKey(), dataset.getId(),
-            slice.getCode().hashCode());
+        String hash = DigestUtils.md5Hex(slice.getCode());
+        Path cachedSliceFile = fileLocationService.resolvedSlicePath(slice.getProject().getKey(), dataset.getId(), hash);
         List<Integer> result = new ArrayList<>();
 
         if (Files.exists(cachedSliceFile)) {
@@ -67,5 +70,11 @@ public class SliceService {
         }
 
         return result;
+    }
+
+    private void validateSliceName(String sliceName) {
+        if (sliceName.length() > 30) {
+            throw new IllegalArgumentException(String.format("Slice name %s is too long. Slice names should not be longer than 30 characters.", sliceName));
+        }
     }
 }

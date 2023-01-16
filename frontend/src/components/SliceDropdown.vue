@@ -10,27 +10,14 @@
       <template v-slot:item="data">
         {{ data.item.text }}
         <v-spacer/>
-        <v-menu bottom left v-if="isProjectOwnerOrAdmin && !isCreateSlice(data.item.value)">
-          <template v-slot:activator="{ on, attrs}">
-            <v-btn icon v-bind="attrs" v-on="on">
-              <v-icon>mdi-dots-vertical</v-icon>
-            </v-btn>
-          </template>
-          <v-list dense>
-            <v-list-item @click.stop="openEditDialog(data.item)">
-              <v-list-item-title>Edit</v-list-item-title>
-              <v-list-item-icon>
-                <v-icon>edit</v-icon>
-              </v-list-item-icon>
-            </v-list-item>
-            <v-list-item @click.stop="deleteSlice(data.item)">
-              <v-list-item-title>Delete</v-list-item-title>
-              <v-list-item-icon>
-                <v-icon>delete</v-icon>
-              </v-list-item-icon>
-            </v-list-item>
-          </v-list>
-        </v-menu>
+        <template v-if="isProjectOwnerOrAdmin && !isCreateSlice(data.item.value)">
+          <v-btn icon @click.stop="openEditDialog(data.item)">
+            <v-icon>edit</v-icon>
+          </v-btn>
+          <v-btn icon @click.stop="deleteSlice(data.item)">
+            <v-icon>delete</v-icon>
+          </v-btn>
+        </template>
       </template>
     </v-autocomplete>
 
@@ -44,7 +31,7 @@
             <v-card-text>
               <ValidationProvider name="Name" mode="eager" rules="required" v-slot="{errors}">
                 <v-text-field label="Slice Name*" type="text" v-model="sliceName"
-                              :error-messages="errors"></v-text-field>
+                              :error-messages="errors" :autofocus="!isUpdateDialog" counter="30"></v-text-field>
               </ValidationProvider>
               <span>Python function</span>
               <MonacoEditor
@@ -53,7 +40,7 @@
                   class='editor'
                   language='python'
                   style="height: 300px"
-                  :options="$root.monacoOptions"
+                  :options="editorOptions"
               />
             </v-card-text>
             <v-card-actions>
@@ -74,9 +61,11 @@
 <script setup lang="ts">
 // @ts-ignore
 import MonacoEditor from 'vue-monaco';
-import {computed, onMounted, ref, watch} from "vue";
+import {computed, getCurrentInstance, onMounted, ref, watch} from "vue";
 import {SliceDTO} from "@/generated-sources";
 import {api} from "@/api";
+import {editor} from "monaco-editor";
+import IEditorOptions = editor.IEditorOptions;
 
 interface Props {
   projectId: number,
@@ -97,10 +86,19 @@ const sliceCode = ref<string>("");
 const sliceId = ref<number>(-1);
 
 const autocomplete = ref<any | null>(null);
+const editor = ref<any | null>(null);
 
 onMounted(() => {
   loadSlices();
 })
+
+
+const editorOptions: IEditorOptions = {
+  // @ts-ignore
+  ...getCurrentInstance()?.proxy.$root.monacoOptions,
+  minimap: {enabled: false},
+  suggest: {preview: false}
+}
 
 const items = computed(() => {
   // TODO: Find a solution for this typing issue
@@ -146,7 +144,7 @@ async function deleteSlice(sliceToDel: SliceDTO) {
     autocomplete.value.reset();
   }
 
-  await api.deleteSlice(sliceToDel.id);
+  await api.deleteSlice(props.projectId, sliceToDel.id);
   slices.value = slices.value.filter(s => s.id !== sliceToDel.id)
 }
 
@@ -189,6 +187,9 @@ async function submit() {
 }
 </script>
 
-<style scoped>
-
+<style>
+.monaco-editor .suggest-widget {
+  display: none !important;
+  visibility: hidden !important;
+}
 </style>

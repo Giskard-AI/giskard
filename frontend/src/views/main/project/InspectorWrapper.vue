@@ -389,16 +389,19 @@ export default class InspectorWrapper extends Vue {
 
   private async applySlice(slice: SliceDTO) {
     this.loadingSlice = true;
-    const response = await api.getDataFilteredBySlice(this.inspectionId, slice.id);
-    this.rows = response.data;
-    this.numberOfRows = response.rowNb;
-    this.rowNb = 0;
-    this.assignCurrentRow(false);
+    this.filter.sliceId = slice.id;
+    //const response = await api.getDataFilteredBySlice(this.inspectionId, slice.id);
+    //this.rows = response.data;
+    //this.numberOfRows = response.rowNb;
+    //this.rowNb = 0;
+    //this.assignCurrentRow(false);
+    await this.updateRow(true);
     this.loadingSlice = false;
   }
 
   private async clearSlice() {
     this.loadingSlice = true;
+    this.filter.sliceId = 0;
     await this.updateRow(true);
     this.loadingSlice = false;
   }

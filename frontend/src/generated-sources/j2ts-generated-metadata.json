@@ -64,6 +64,7 @@
     "ai.giskard.domain.ml.CodeTestCollection": "CodeTestCollection",
     "ai.giskard.domain.MLWorkerType": "MLWorkerType",
     "ai.giskard.domain.ml.CodeTestTemplate": "CodeTestTemplate",
+    "ai.giskard.web.dto.SlicePutDTO": "SlicePutDTO",
     "ai.giskard.web.dto.PredictionInputDTO": "PredictionInputDTO",
     "ai.giskard.web.dto.config.AppConfigDTO": "AppConfigDTO",
     "ai.giskard.web.dto.ml.InspectionDTO": "InspectionDTO",
