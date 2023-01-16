@@ -10,7 +10,9 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.persistence.*;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 
 @Entity
@@ -39,10 +41,8 @@ public class TestSuiteExecution extends BaseEntity {
     @Enumerated(EnumType.STRING)
     TestResult result;
 
-    @Column(columnDefinition = "VARCHAR")
-    @Convert(converter = SingleTestResultConverter.class)
-    // TODO @OneToMany to another entity + save for catalog too
-    private Map<String, SingleTestResultDTO> results;
+    @OneToMany(mappedBy = "execution", cascade = CascadeType.ALL)
+    private List<SuiteTestExecution> results = new ArrayList<>();
 
     // TODO: add status for job in progress
 
