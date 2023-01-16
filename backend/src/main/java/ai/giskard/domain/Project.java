@@ -2,6 +2,7 @@ package ai.giskard.domain;
 
 import ai.giskard.domain.ml.Dataset;
 import ai.giskard.domain.ml.ProjectModel;
+import ai.giskard.domain.ml.Slice;
 import ai.giskard.domain.ml.TestSuite;
 import ai.giskard.utils.JSONStringAttributeConverter;
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
@@ -80,6 +81,10 @@ public class Project extends AbstractAuditingEntity {
     @Getter
     @OneToMany(mappedBy = "project", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private final Set<Feedback> feedbacks = new HashSet<>();
+    
+    @Getter
+    @OneToMany(mappedBy = "project", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private final Set<Slice> slices = new HashSet<>();
 
     @Getter
     @Setter

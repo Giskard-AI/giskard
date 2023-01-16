@@ -116,7 +116,16 @@
                   </tr>
                   <tr>
                     <td>Plan</td>
-                    <td>{{ appSettings.planName }}</td>
+                    <td>{{ appSettings.planName }}
+                      <v-tooltip bottom>
+                        <template v-slot:activator="{on, attrs}">
+                          <v-btn v-bind="attrs" v-on="on" icon color="green" large>
+                            <v-icon>mdi-arrow-up-bold</v-icon>
+                          </v-btn>
+                        </template>
+                        <span>Upgrade</span>
+                      </v-tooltip>
+                    </td>
                   </tr>
                   <tr>
                     <td colspan="2">
@@ -323,8 +332,8 @@ import {AppConfigDTO, GeneralSettings, JWTToken, MLWorkerInfoDTO, UpdateMeDTO} f
 import mixpanel from "mixpanel-browser";
 import {Role} from "@/enums";
 import moment from "moment";
-import AppInfoDTO = AppConfigDTO.AppInfoDTO;
 import store from "@/store";
+import AppInfoDTO = AppConfigDTO.AppInfoDTO;
 
 @Component({
   components: {

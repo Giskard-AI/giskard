@@ -419,7 +419,7 @@ export const api = {
             id: id
         })
     },
-    async deleteSlice(sliceId: number) {
-        return apiV2.delete(`/slices/${sliceId}`);
+    async deleteSlice(projectId: number, sliceId: number) {
+        return apiV2.delete(`/project/${projectId}/slices/${sliceId}`);
     }
 };

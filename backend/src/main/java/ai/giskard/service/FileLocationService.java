@@ -39,8 +39,8 @@ public class FileLocationService {
         return modelsDirectory(projectKey).resolve(createZSTname("model_", modelId));
     }
 
-    public Path resolvedSlicePath(String projectKey, Long datasetId, Integer sliceHash) {
-        return slicesDirectory(projectKey).resolve("slice_" + datasetId.toString() + "_" + sliceHash.toString() + ".slice");
+    public Path resolvedSlicePath(String projectKey, Long datasetId, String sliceHash) {
+        return slicesDirectory(projectKey).resolve("slice_" + datasetId.toString() + "_" + sliceHash + ".slice");
     }
 
     public Path resolveFilePath(ProjectFile file) {

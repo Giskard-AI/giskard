@@ -13,7 +13,6 @@ import ai.giskard.web.dto.mapper.GiskardMapper;
 import ai.giskard.web.dto.ml.InspectionDTO;
 import ai.giskard.web.rest.errors.Entity;
 import ai.giskard.web.rest.errors.EntityNotFoundException;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -24,7 +23,6 @@ import org.springframework.web.bind.annotation.*;
 import tech.tablesaw.api.Table;
 
 import javax.validation.constraints.NotNull;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.List;
 
@@ -55,11 +53,12 @@ public class InspectionController {
      */
     @PostMapping("/inspection/{inspectionId}/rowsFiltered")
     @Transactional
-    public JsonNode getRowsFiltered(@PathVariable @NotNull Long inspectionId, @RequestBody Filter filter, @RequestParam("minRange") @NotNull int rangeMin, @RequestParam("maxRange") @NotNull int rangeMax, @RequestParam("isRandom") @NotNull boolean isRandom) throws JsonProcessingException, FileNotFoundException {
+    public JsonNode getRowsFiltered(@PathVariable @NotNull Long inspectionId, @RequestBody Filter filter, @RequestParam("minRange") @NotNull int rangeMin, @RequestParam("maxRange") @NotNull int rangeMax, @RequestParam("isRandom") @NotNull boolean isRandom) throws IOException {
         Inspection inspection = inspectionRepository.getById(inspectionId);
         permissionEvaluator.validateCanReadProject(inspection.getDataset().getProject().getId());
 
         Table filteredTable = inspectionService.getRowsFiltered(inspectionId, filter);
+
         if (rangeMax > filteredTable.rowCount()) {
             rangeMax = filteredTable.rowCount();
         }
@@ -69,34 +68,9 @@ public class InspectionController {
 
         Table filteredMTable = isRandom ? filteredTable.sampleN(rangeMax - rangeMin - 1)
             .sortOn(RandomUtils.nextInt(0, 3) - 1) : filteredTable.inRange(rangeMin, rangeMax); //NOSONAR
+
         ObjectMapper objectMapper = new ObjectMapper();
         String jsonTable = filteredMTable.write().toString("json");
-        JsonNode jsonNode = objectMapper.readTree(jsonTable);
-        JsonNode result = objectMapper.createObjectNode().set("data", jsonNode);
-        ((ObjectNode) result).put("rowNb", filteredTable.rowCount());
-        ((ObjectNode) result).set("columns", objectMapper.valueToTree(filteredTable.columnNames()));
-        return result;
-    }
-
-    /**
-     * This function asks for a slice ID and an inspection ID and returns the list of rows filtered thru that slice.
-     * It streams data to the ML worker and is a bit more complex in its execution
-     * @param inspectionId
-     * @param sliceId
-     * @return
-     */
-    @PostMapping("/inspection/{inspectionId}/slice/{sliceId}")
-    @Transactional
-    public JsonNode getRowsSliced(@PathVariable @NotNull Long inspectionId, @PathVariable @NotNull Long sliceId) throws IOException {
-        Inspection inspection = inspectionRepository.getById(inspectionId);
-        permissionEvaluator.validateCanReadProject(inspection.getDataset().getProject().getId());
-
-        List<Integer> filteredRowIds = sliceService.getSlicedRowsForDataset(sliceId, inspection.getDataset());
-
-        Table filteredTable = inspectionService.getRowsFiltered(inspectionId, filteredRowIds);
-
-        ObjectMapper objectMapper = new ObjectMapper();
-        String jsonTable = filteredTable.write().toString("json");
         JsonNode jsonNode = objectMapper.readTree(jsonTable);
         JsonNode result = objectMapper.createObjectNode().set("data", jsonNode);
         ((ObjectNode) result).put("rowNb", filteredTable.rowCount());
