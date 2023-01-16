@@ -24,9 +24,11 @@
       <v-card outlined tile class="grey lighten-5" v-for="m in models" :key="m.id">
         <v-row class="px-2 py-1 align-center">
           <v-col cols="4">
-            <div class="secondary--text font-weight-bold">
-              {{ m.name }}
-            </div>
+            <InlineEditText
+                :text="m.name"
+                :can-edit="isProjectOwnerOrAdmin"
+                @save="(name) => renameModel(m.id, name)">
+            </InlineEditText>
           </v-col>
           <v-col cols="1">
             <div>{{ m.languageVersion }}</div>
@@ -55,15 +57,13 @@
                 </template>
                 <span>Download</span>
               </v-tooltip>
-              <v-tooltip bottom>
-                <template v-slot:activator="{ on, attrs }">
-                  <v-btn icon color="accent" v-if="isProjectOwnerOrAdmin" @click="deleteModelPickle(m.id, m.name)"
-                         v-bind="attrs" v-on="on">
-                    <v-icon>delete</v-icon>
-                  </v-btn>
-                </template>
-                <span>Delete</span>
-              </v-tooltip>
+              <DeleteModal
+                  v-if="isProjectOwnerOrAdmin"
+                  :id="m.id"
+                  :file-name="m.fileName"
+                  type="model"
+                  @submit="deleteModelPickle(m.id)"
+              />
             </div>
           </v-col>
         </v-row>
@@ -83,61 +83,61 @@
   </div>
 </template>
 
-<script lang="ts">
-import {Component, Prop, Vue} from 'vue-property-decorator';
+<script setup lang="ts">
 import {api} from '@/api';
 import InspectorLauncher from './InspectorLauncher.vue';
 import {ModelDTO} from '@/generated-sources';
 import mixpanel from "mixpanel-browser";
-import DeleteModal from "@/views/main/project/modals/DeleteModal.vue";
+import {onActivated, ref} from 'vue';
+import DeleteModal from '@/views/main/project/modals/DeleteModal.vue';
+import {commitAddNotification} from '@/store/main/mutations';
+import store from '@/store';
+import InlineEditText from '@/components/InlineEditText.vue';
 import {useMainStore} from "@/stores/main";
 
-@Component({
-  components: {InspectorLauncher}
-})
-export default class Models extends Vue {
-  @Prop({type: Number, required: true}) projectId!: number;
-  @Prop({type: Boolean, required: true, default: false}) isProjectOwnerOrAdmin!: boolean;
+const props = withDefaults(defineProps<{
+  projectId: number,
+  isProjectOwnerOrAdmin: boolean
+}>(), {
+  isProjectOwnerOrAdmin: false
+});
 
-  models: ModelDTO[] = [];
-  showInspectDialog = false;
-  modelToInspect: ModelDTO | null = null;
+const models = ref<ModelDTO[]>([]);
+const showInspectDialog = ref<boolean>(false);
+const modelToInspect = ref<ModelDTO | null>(null);
 
-  activated() {
-    this.loadModelPickles()
-  }
+onActivated(() => loadModelPickles());
 
-  private async loadModelPickles() {
-    this.models = await api.getProjectModels(this.projectId)
-    this.models.sort((a, b) => new Date(a.createdDate) < new Date(b.createdDate) ? 1 : -1);
-  }
-
-  public async deleteModelPickle(id: number, fileName: string) {
-    mixpanel.track('Delete model', {id});
-
-    if (await this.$dialog.showAndWait(DeleteModal, {
-      width: 600,
-      id: id,
-      fileName: fileName,
-      type: "model",
-      scrollable: true
-    })) {
-      let messageDTO = await api.deleteModelFiles(id);
-      useMainStore().addNotification({content: messageDTO.message});
-      await this.loadModelPickles();
-    }
-  }
-
-  public downloadModelPickle(id: number) {
-    mixpanel.track('Download model', {id});
-    api.downloadModelFile(id)
-  }
-
-  public cancelLaunchInspector() {
-    this.showInspectDialog = false;
-  }
-
+async function loadModelPickles() {
+  models.value = await api.getProjectModels(props.projectId)
+  models.value.sort((a, b) => new Date(a.createdDate) < new Date(b.createdDate) ? 1 : -1);
 }
+
+async function deleteModelPickle(id: number) {
+  mixpanel.track('Delete dataset', {id});
+
+  let messageDTO = await api.deleteModelFiles(id);
+  useMainStore().addNotification({content: messageDTO.message});
+  await loadModelPickles();
+}
+
+function downloadModelPickle(id: number) {
+  mixpanel.track('Download model', {id});
+  api.downloadModelFile(id)
+}
+
+function cancelLaunchInspector() {
+  showInspectDialog.value = false;
+}
+
+async function renameModel(id: number, name: string) {
+  mixpanel.track('Update model name', {id});
+  const savedDataset = await api.editModelName(id, name);
+  const idx = models.value.findIndex(f => f.id === id);
+  models.value[idx] = savedDataset;
+  models.value = [...models.value];
+}
+
 </script>
 
 <style>

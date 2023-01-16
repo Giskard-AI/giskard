@@ -50,9 +50,12 @@
           <v-btn icon slot="activator" :to="{name: 'main-admin-users-edit', params: {id: item.id}}">
             <v-icon color="primary">edit</v-icon>
           </v-btn>
-          <v-btn icon @click="deleteUser(item)">
+        <v-btn v-if="item.enabled" icon @click="deleteUser(item)">
             <v-icon color="accent">delete</v-icon>
           </v-btn>
+        <v-btn v-else icon @click="enableUser(item)">
+          <v-icon color="warning">restore</v-icon>
+        </v-btn>
         </template>
       </v-data-table>
     </v-container>
@@ -138,6 +141,10 @@ async function deleteUser(user: AdminUserDTOWithPassword) {
     title: 'Delete user'
   })) {
     await adminStore.deleteUser(user)
+  }
+
+  public async enableUser(user) {
+    await dispatchEnableUser(this.$store, {id: user.user_id});
   }
 }
 </script>
