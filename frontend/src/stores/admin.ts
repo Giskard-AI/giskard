@@ -82,13 +82,28 @@ export const useAdminStore = defineStore('admin', {
 
         async deleteUser(user: AdminUserDTOWithPassword) {
             const mainStore = useMainStore();
+            const loadingNotification = {content: 'saving', showProgress: true};
+            try {
+                mainStore.addNotification(loadingNotification);
+                const response = await api.deleteUser(user.user_id!);
+                await this.getUsers();
+                mainStore.removeNotification(loadingNotification);
+                mainStore.addNotification({content: 'Successfully deleted', color: 'success'});
+            } catch (error) {
+                await mainStore.checkApiError(error);
+                throw new Error(error.response.data.detail);
+            }
+        },
+
+        async enableUser(user: AdminUserDTOWithPassword) {
+            const mainStore = useMainStore();
             const loadingNotification = { content: 'saving', showProgress: true };
             try {
                 mainStore.addNotification(loadingNotification);
-                const response = await api.deleteUser(user.id!);
+                const response = await api.enableUser(user.user_id!);
                 await this.getUsers();
                 mainStore.removeNotification(loadingNotification);
-                mainStore.addNotification({ content: 'Successfully deleted', color: 'success' });
+                mainStore.addNotification({ content: 'Successfully restored', color: 'success' });
             } catch (error) {
                 await mainStore.checkApiError(error);
                 throw new Error(error.response.data.detail);

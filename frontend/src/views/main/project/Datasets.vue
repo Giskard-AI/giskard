@@ -75,13 +75,12 @@
 
 <script setup lang="ts">
 import {api} from '@/api';
-import {commitAddNotification} from '@/store/main/mutations';
 import {FileDTO} from '@/generated-sources';
 import mixpanel from "mixpanel-browser";
 import DeleteModal from '@/views/main/project/modals/DeleteModal.vue';
 import {onActivated, ref} from 'vue';
-import store from '@/store';
 import InlineEditText from '@/components/InlineEditText.vue';
+import {useMainStore} from "@/stores/main";
 
 const GISKARD_INDEX_COLUMN_NAME = '_GISKARD_INDEX_';
 
