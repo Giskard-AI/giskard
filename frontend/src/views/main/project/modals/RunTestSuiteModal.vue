@@ -119,8 +119,7 @@ async function executeTestSuite() {
   running.value = true;
 
   try {
-    const results = await api.executeTestSuiteNew(props.projectId, props.suiteId, testSuiteInputs.value);
-    // TODO: Do in background and allow multiple run concurrently
+    await api.executeTestSuiteNew(props.projectId, props.suiteId, testSuiteInputs.value);
     // TODO: Add UI to see job running in settings
   } finally {
     running.value = false;
