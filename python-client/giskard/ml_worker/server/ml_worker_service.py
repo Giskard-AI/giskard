@@ -270,7 +270,10 @@ class MLWorkerServiceImpl(MLWorkerServicer):
         for filter_msg in request_iterator:
             if filter_msg.HasField("meta"):
                 meta = filter_msg.meta
-                exec(meta.function, None, filterfunc)
+                try:
+                    exec(meta.function, None, filterfunc)
+                except Exception as e:
+                    yield FilterDatasetResponse(code=StatusCode.Failed, error_message=str(e))
                 column_types = meta.column_types
                 logger.info(f"Filtering dataset with {meta}")
                 yield FilterDatasetResponse(code=StatusCode.Ready)

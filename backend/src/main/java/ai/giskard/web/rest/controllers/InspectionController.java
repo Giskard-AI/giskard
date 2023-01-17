@@ -3,11 +3,9 @@ package ai.giskard.web.rest.controllers;
 import ai.giskard.domain.ml.Inspection;
 import ai.giskard.domain.ml.table.Filter;
 import ai.giskard.repository.InspectionRepository;
-import ai.giskard.repository.ml.SliceRepository;
 import ai.giskard.security.PermissionEvaluator;
 import ai.giskard.service.InspectionService;
 import ai.giskard.service.ModelService;
-import ai.giskard.service.SliceService;
 import ai.giskard.web.dto.InspectionCreateDTO;
 import ai.giskard.web.dto.mapper.GiskardMapper;
 import ai.giskard.web.dto.ml.InspectionDTO;
@@ -36,8 +34,6 @@ public class InspectionController {
     private final InspectionRepository inspectionRepository;
     private final GiskardMapper giskardMapper;
     private final PermissionEvaluator permissionEvaluator;
-    private final SliceRepository sliceRepository;
-    private final SliceService sliceService;
 
 
     /**

@@ -128,7 +128,7 @@ public class MLWorkerService {
         return result.get();
     }
 
-    public List<Integer> filterDataset(MLWorkerClient client, Dataset dataset, String function) throws IOException {
+    public List<Integer> filterDataset(MLWorkerClient client, Dataset dataset, String function, Integer limit) throws IOException {
         log.info("Filtering dataset {}", dataset.getName());
         Path path = locationService.resolveFilePath(dataset);
 
@@ -139,9 +139,10 @@ public class MLWorkerService {
             // Read headers
             BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
             String headers = reader.readLine();
+            AtomicReference<String> error = new AtomicReference<>();
 
             StreamObserver<FilterDatasetRequest> observer = client.getNonBlockingStub().filterDataset(
-                new FilterDatasetResponseStreamObserver(requestObserverRef, finishedLatch, reader, validRows)
+                new FilterDatasetResponseStreamObserver(requestObserverRef, finishedLatch, reader, validRows, limit, error)
             );
             requestObserverRef.set(observer);
 
@@ -158,6 +159,9 @@ public class MLWorkerService {
 
             try {
                 finishedLatch.await();
+                if (error.get() != null) {
+                    throw new GiskardRuntimeException(error.get());
+                }
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 log.warn("Interrupted while filtering a dataset: {}", dataset.getName());
@@ -241,12 +245,14 @@ public class MLWorkerService {
         private final CountDownLatch finishedLatch;
         private final BufferedReader reader;
         private final List<Integer> result;
+        private final Integer limit;
+        private final AtomicReference<String> error;
 
         @SneakyThrows
         @Override
         public void onNext(FilterDatasetResponse value) {
             if (StatusCode.Ready.equals(value.getCode())) {
-                log.info("Got READY from slicing!");
+                log.info("Sending data for slicing.");
                 // Start streaming requests. For now, use arbitrary chunk size of FILTER_CHUNK_SIZE_ROWS lines
                 int linesRead = 0;
                 int idx = 0;
@@ -255,6 +261,11 @@ public class MLWorkerService {
                 while ((line = reader.readLine()) != null) { // Will read every line...
                     linesRead++;
                     sb.append(line).append("\n");
+
+                    // If our limit is set, and we hit it, we stop reading the file.
+                    if (limit > 0 && linesRead > limit) {
+                        break;
+                    }
 
                     if (linesRead == FILTER_CHUNK_SIZE_ROWS) {
                         requestObserverRef.get().onNext(
@@ -280,17 +291,16 @@ public class MLWorkerService {
 
                 requestObserverRef.get().onCompleted();
             } else if (StatusCode.Next.equals(value.getCode())) {
-                log.info("Got rows for request idx {}", value.getIdx());
                 result.addAll(value.getRowsList()
                     .stream()
                     .map(x -> x + (value.getIdx() * FILTER_CHUNK_SIZE_ROWS)) // We add because the outgoing row IDs are 0 based...
                     .toList());
             } else if (StatusCode.Ok.equals(value.getCode())) {
                 // Consider complete, close reader/writer.
-                log.info("Slicing done!");
-                log.info("Slicing resulted with {}", result.size());
+                log.info("Slicing done, {} results returned.", result.size());
             } else if (StatusCode.Failed.equals(value.getCode())) {
-                throw new GiskardRuntimeException(value.getErrorMessage());
+                error.set(value.getErrorMessage());
+                requestObserverRef.get().onError(new GiskardRuntimeException(value.getErrorMessage()));
             }
         }
 

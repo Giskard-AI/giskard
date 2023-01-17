@@ -140,7 +140,7 @@ import {CreateFeedbackDTO, Filter, InspectionDTO, ModelType, RowFilterType, Slic
 import mixpanel from "mixpanel-browser";
 import _ from "lodash";
 import InspectionFilter from './InspectionFilter.vue';
-import SliceDropdown from "@/components/SliceDropdown.vue";
+import SliceDropdown from "@/components/slice/SliceDropdown.vue";
 
 type CreatedFeedbackCommonDTO = {
   targetFeature?: string | null;
