@@ -147,13 +147,7 @@ class GiskardClient:
 
     def load_model_meta(self, project_key: str, uuid: str) -> ModelMeta:
         res = self._session.get(f"project/{project_key}/models/{uuid}").json()
-        return ModelMeta(
-            name=res['name'],
-            feature_names=res['featureNames'],
-            model_type=SupportedModelTypes[res['modelType']],
-            classification_labels=res['classificationLabels'],
-            classification_threshold=res['threshold']
-        )
+        return res
 
     def load_dataset_meta(self, project_key: str, uuid: str) -> DatasetMeta:
         res = self._session.get(f"project/{project_key}/datasets/{uuid}").json()
@@ -179,6 +173,8 @@ class GiskardClient:
             "threshold": meta.classification_threshold,
             "featureNames": meta.feature_names,
             "classificationLabels": meta.classification_labels,
+            "loader_module": meta.loader_module,
+            "loader_class": meta.loader_class,
             "id": model_id,
             "project": project_key,
             "name": meta.name,
@@ -195,6 +191,8 @@ class GiskardClient:
                 "featureNames": anonymize(meta.feature_names),
                 "language": "PYTHON",
                 "classificationLabels": anonymize(meta.classification_labels),
+                "loader_module": meta.loader_module,
+                "loader_class": meta.loader_class,
                 "size": size,
             },
         )
