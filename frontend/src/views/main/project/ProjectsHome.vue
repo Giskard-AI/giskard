@@ -98,7 +98,6 @@ import {ValidationObserver} from "vee-validate";
 import {Role} from "@/enums";
 import {ProjectPostDTO} from "@/generated-sources";
 import {toSlug} from "@/utils";
-import store from "@/store";
 import {useRoute, useRouter} from "vue-router/composables";
 import moment from "moment";
 import {useUserStore} from "@/stores/user";

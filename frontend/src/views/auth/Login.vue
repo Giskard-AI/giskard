@@ -24,7 +24,6 @@
 </template>
 
 <script lang="ts" setup>
-import store from '@/store';
 import {computed, ref} from "vue";
 import {useUserStore} from "@/stores/user";
 import {useMainStore} from "@/stores/main";
