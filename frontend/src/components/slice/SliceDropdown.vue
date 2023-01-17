@@ -44,6 +44,20 @@
               />
             </v-card-text>
             <v-card-actions>
+              <v-autocomplete label="Try on" :items="datasets" item-text="name" item-value="id"
+                              v-model="selectedDatasetId" style="max-width: 300px">
+                <template v-slot:append-outer>
+
+                  <v-tooltip bottom>
+                    <template v-slot:activator="{ on, attrs }">
+                      <v-btn icon v-on="on" v-bind="attrs" @click="validateCode">
+                        <v-icon>mdi-play</v-icon>
+                      </v-btn>
+                    </template>
+                    <span>Runs the function on a few rows from the selected dataset to validate it.</span>
+                  </v-tooltip>
+                </template>
+              </v-autocomplete>
               <v-spacer></v-spacer>
               <v-btn color="error" text @click="closeSliceDialog()">Cancel</v-btn>
               <v-btn color="primary" text type="submit">
@@ -62,7 +76,7 @@
 // @ts-ignore
 import MonacoEditor from 'vue-monaco';
 import {computed, getCurrentInstance, onMounted, ref, watch} from "vue";
-import {SliceDTO} from "@/generated-sources";
+import {DatasetDTO, SliceDTO} from "@/generated-sources";
 import {api} from "@/api";
 import {editor} from "monaco-editor";
 import IEditorOptions = editor.IEditorOptions;
@@ -84,6 +98,8 @@ const sliceDialog = ref<boolean>(false);
 const sliceName = ref<string>("");
 const sliceCode = ref<string>("");
 const sliceId = ref<number>(-1);
+const datasets = ref<DatasetDTO[]>([]);
+const selectedDatasetId = ref<number>(-1);
 
 const autocomplete = ref<any | null>(null);
 const editor = ref<any | null>(null);
@@ -148,18 +164,20 @@ async function deleteSlice(sliceToDel: SliceDTO) {
   slices.value = slices.value.filter(s => s.id !== sliceToDel.id)
 }
 
-function openCreateDialog() {
+async function openCreateDialog() {
   sliceName.value = '';
   sliceCode.value = 'def filter_row(row):\n    return True';
   sliceDialog.value = true;
   autocomplete.value.reset();
+  datasets.value = await api.getProjectDatasets(props.projectId)
 }
 
-function openEditDialog(value: SliceDTO) {
+async function openEditDialog(value: SliceDTO) {
   sliceName.value = value.name;
   sliceCode.value = value.code;
   sliceId.value = value.id;
   sliceDialog.value = true;
+  datasets.value = await api.getProjectDatasets(props.projectId)
 }
 
 function closeSliceDialog() {
@@ -184,6 +202,10 @@ async function submit() {
   }
 
   closeSliceDialog();
+}
+
+async function validateCode() {
+  await api.validateSlice(selectedDatasetId.value, sliceCode.value);
 }
 </script>
 

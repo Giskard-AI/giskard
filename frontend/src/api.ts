@@ -421,5 +421,11 @@ export const api = {
     },
     async deleteSlice(projectId: number, sliceId: number) {
         return apiV2.delete(`/project/${projectId}/slices/${sliceId}`);
+    },
+    async validateSlice(datasetId: number, code: string) {
+        return apiV2.post("/slices/validate", {
+            datasetId: datasetId,
+            code: code
+        });
     }
 };

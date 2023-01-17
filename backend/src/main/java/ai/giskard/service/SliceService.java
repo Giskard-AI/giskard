@@ -47,29 +47,47 @@ public class SliceService {
         Slice slice = sliceRepository.getById(sliceId);
         String hash = DigestUtils.md5Hex(slice.getCode());
         Path cachedSliceFile = fileLocationService.resolvedSlicePath(slice.getProject().getKey(), dataset.getId(), hash);
-        List<Integer> result = new ArrayList<>();
+        List<Integer> result;
 
         if (Files.exists(cachedSliceFile)) {
-            try (DataInputStream inputStream = new DataInputStream(Files.newInputStream(cachedSliceFile))) {
-                while (inputStream.available() > 0) {
-                    result.add(inputStream.readInt());
-                }
-                return result;
-            }
+            return readSliceResultFromCacheFile(cachedSliceFile);
         } else {
             try (MLWorkerClient client = mlWorkerService.createClient(true)) {
-                result = mlWorkerService.filterDataset(client, dataset, slice.getCode());
-                Files.createDirectories(cachedSliceFile.getParent());
-                Files.createFile(cachedSliceFile);
-                try (DataOutputStream outputStream = new DataOutputStream(Files.newOutputStream(cachedSliceFile))) {
-                    for (Integer i : result) {
-                        outputStream.writeInt(i);
-                    }
-                }
+                result = mlWorkerService.filterDataset(client, dataset, slice.getCode(), -1);
+                writeSliceResultToCacheFile(cachedSliceFile, result);
             }
         }
 
         return result;
+    }
+
+    public boolean validateCodeOverDataset(String code, Dataset dataset) throws IOException {
+        try (MLWorkerClient client = mlWorkerService.createClient(true)) {
+            mlWorkerService.filterDataset(client, dataset, code, 10);
+            return true;
+        }
+    }
+
+    private List<Integer> readSliceResultFromCacheFile(Path cachedSliceFile) throws IOException {
+        List<Integer> result = new ArrayList<>();
+
+        try (DataInputStream inputStream = new DataInputStream(Files.newInputStream(cachedSliceFile))) {
+            while (inputStream.available() > 0) {
+                result.add(inputStream.readInt());
+            }
+
+            return result;
+        }
+    }
+
+    private static void writeSliceResultToCacheFile(Path cachedSliceFile, List<Integer> result) throws IOException {
+        Files.createDirectories(cachedSliceFile.getParent());
+        Files.createFile(cachedSliceFile);
+        try (DataOutputStream outputStream = new DataOutputStream(Files.newOutputStream(cachedSliceFile))) {
+            for (Integer i : result) {
+                outputStream.writeInt(i);
+            }
+        }
     }
 
     private void validateSliceName(String sliceName) {
