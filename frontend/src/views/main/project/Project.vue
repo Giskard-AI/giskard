@@ -124,7 +124,6 @@
 <script setup lang="ts">
 import {computed, onMounted, ref, watch} from "vue";
 import {IUserProfileMinimal} from "@/interfaces";
-import {Watch} from "vue-property-decorator";
 import {Role} from "@/enums";
 import mixpanel from "mixpanel-browser";
 import {InspectionSettings, ProjectPostDTO} from "@/generated-sources";

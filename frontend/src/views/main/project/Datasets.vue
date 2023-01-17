@@ -15,22 +15,27 @@
         <v-row dense no-gutters class="mr-12 ml-2 caption secondary--text text--lighten-3 pb-2">
           <v-col cols="4">Name</v-col>
           <v-col cols="1">Size</v-col>
-          <v-col cols="3">Uploaded on</v-col>
+          <v-col cols="2">Uploaded on</v-col>
           <v-col cols="2">Target</v-col>
           <v-col cols="1">Id</v-col>
-          <v-col>Actions</v-col>
+          <v-col cols="2">Actions</v-col>
         </v-row>
-
         <v-expansion-panel v-for="f in files" :key="f.id">
           <v-expansion-panel-header @click="peakDataFile(f.id)" class="py-1 pl-2"
                                     :class="{'file-xl': f.name.indexOf('.xls') > 0, 'file-csv': f.name.indexOf('.csv') > 0}">
             <v-row dense no-gutters align="center">
-              <v-col cols="4" class="font-weight-bold">{{ f.name }}</v-col>
+              <v-col cols="4" class="font-weight-bold">
+                <InlineEditText
+                    :text="f.name"
+                    :can-edit="isProjectOwnerOrAdmin"
+                    @save="(name) => renameDataset(f.id, name)">
+                </InlineEditText>
+              </v-col>
               <v-col cols="1">{{ f.size | fileSize }}</v-col>
-              <v-col cols="3">{{ f.createdDate | date }}</v-col>
+              <v-col cols="2">{{ f.createdDate | date }}</v-col>
               <v-col cols="2">{{ f.target }}</v-col>
               <v-col cols="1"> {{ f.id }}</v-col>
-              <v-col>
+              <v-col cols="2">
                 <span>
               <v-tooltip bottom dense>
                 <template v-slot:activator="{ on, attrs }">
@@ -40,16 +45,13 @@
                   </template>
                 <span>Download</span>
               </v-tooltip>
-              <v-tooltip bottom dense>
-                <template v-slot:activator="{ on, attrs }">
-                    <v-btn icon color="accent" v-if="isProjectOwnerOrAdmin"
-                           @click.stop="deleteDataFile(f.id, f.name)"
-                           v-bind="attrs" v-on="on">
-                      <v-icon>delete</v-icon>
-                    </v-btn>
-                  </template>
-                <span>Delete</span>
-              </v-tooltip>
+              <DeleteModal
+                  v-if="isProjectOwnerOrAdmin"
+                  :id="f.id"
+                  :file-name="f.name"
+                  type="dataset"
+                  @submit="deleteDataFile(f.id)"
+              />
             </span>
               </v-col>
             </v-row>
@@ -71,93 +73,80 @@
   </div>
 </template>
 
-<script lang="ts">
-import {Component, Prop, Vue} from "vue-property-decorator";
+<script setup lang="ts">
 import {api} from '@/api';
-import {performApiActionWithNotif} from '@/api-commons';
-// import {commitAddNotification} from '@/store/main/mutations';
-import {FileDTO, ProjectDTO} from '@/generated-sources';
+import {FileDTO} from '@/generated-sources';
 import mixpanel from "mixpanel-browser";
-import DeleteModal from "@/views/main/project/modals/DeleteModal.vue";
+import DeleteModal from '@/views/main/project/modals/DeleteModal.vue';
+import {onActivated, ref} from 'vue';
+import InlineEditText from '@/components/InlineEditText.vue';
 import {useMainStore} from "@/stores/main";
 
 const GISKARD_INDEX_COLUMN_NAME = '_GISKARD_INDEX_';
 
+const props = withDefaults(defineProps<{
+  projectId: number,
+  isProjectOwnerOrAdmin: boolean
+}>(), {
+  isProjectOwnerOrAdmin: false
+});
 
-@Component
-export default class Datasets extends Vue {
-  @Prop({type: Number, required: true}) projectId!: number;
-  @Prop({type: Boolean, default: false}) isProjectOwnerOrAdmin!: boolean;
+const files = ref<FileDTO[]>([]);
+const lastVisitedFileId = ref<number | null>(null);
+const filePreviewHeader = ref<{ text: string, value: string, sortable: boolean }[]>([]);
+const filePreviewData = ref<any[]>([]);
 
-  public files: FileDTO[] = [];
-  public fileData = null;
-  public lastVisitedFileId;
-  public filePreviewHeader: { text: string, value: string, sortable: boolean }[] = [];
-  public filePreviewData: any[] = [];
+onActivated(() => loadDatasets());
 
-  activated() {
-    this.loadDatasets()
-  }
+async function loadDatasets() {
+  files.value = await api.getProjectDatasets(props.projectId)
+  files.value.sort((a, b) => new Date(a.createdDate) < new Date(b.createdDate) ? 1 : -1);
+}
 
-  private async loadDatasets() {
-    this.files = await api.getProjectDatasets(this.projectId)
-    this.files.sort((a, b) => new Date(a.createdDate) < new Date(b.createdDate) ? 1 : -1);
-  }
+async function deleteDataFile(id: number) {
+  mixpanel.track('Delete model', {id});
 
-  public async upload_data() {
-    mixpanel.track('Upload dataset');
-    let project: ProjectDTO = await api.getProject(this.projectId);
-    await performApiActionWithNotif(() => api.uploadDataFile(project.key, this.fileData),
-        () => {
-          this.loadDatasets()
-          this.fileData = null;
-        })
-  }
+  let messageDTO = await api.deleteDatasetFile(id);
+  useMainStore().addNotification({content: messageDTO.message});
+  await loadDatasets();
+}
 
-  public async deleteDataFile(id: number, fileName: string) {
-    mixpanel.track('Delete dataset', {id});
-    if (await this.$dialog.showAndWait(DeleteModal, {
-      width: 600,
-      id: id,
-      fileName: fileName,
-      type: "dataset",
-      scrollable: true
-    })) {
-      let messageDTO = await api.deleteDatasetFile(id);
-      useMainStore().addNotification({content: messageDTO.message});
-      await this.loadDatasets();
-    }
-  }
+function downloadDataFile(id: number) {
+  mixpanel.track('Download dataset file', {id});
+  api.downloadDataFile(id)
+}
 
-  public downloadDataFile(id: number) {
-    mixpanel.track('Download dataset file', {id});
-    api.downloadDataFile(id)
-  }
-
-  public async peakDataFile(id: number) {
-    if (this.lastVisitedFileId != id) {
-      this.lastVisitedFileId = id; // this is a trick to avoid recalling the api every time one panel is opened/closed
-      try {
-        const response = await api.peekDataFile(id)
-        const headers = Object.keys(response[0])
-        this.filePreviewHeader = headers.filter(e => e != GISKARD_INDEX_COLUMN_NAME).map(e => {
-          return {text: e.trim(), value: e, sortable: false}
-        });
-        if (headers.includes(GISKARD_INDEX_COLUMN_NAME)) {
-          this.filePreviewHeader = [{
-            text: '#',
-            value: GISKARD_INDEX_COLUMN_NAME,
-            sortable: false
-          }].concat(this.filePreviewHeader);
-        }
-        this.filePreviewData = response
-      } catch (error) {
-        useMainStore().addNotification({content: error.response.statusText, color: 'error'});
-        this.filePreviewHeader = [];
-        this.filePreviewData = [];
+async function peakDataFile(id: number) {
+  if (lastVisitedFileId.value != id) {
+    lastVisitedFileId.value = id; // this is a trick to avoid recalling the api every time one panel is opened/closed
+    try {
+      const response = await api.peekDataFile(id)
+      const headers = Object.keys(response[0])
+      filePreviewHeader.value = headers.filter(e => e != GISKARD_INDEX_COLUMN_NAME).map(e => {
+        return {text: e.trim(), value: e, sortable: false}
+      });
+      if (headers.includes(GISKARD_INDEX_COLUMN_NAME)) {
+        filePreviewHeader.value = [{
+          text: '#',
+          value: GISKARD_INDEX_COLUMN_NAME,
+          sortable: false
+        }].concat(filePreviewHeader.value);
       }
+      filePreviewData.value = response
+    } catch (error) {
+      useMainStore().addNotification({content: error.response.statusText, color: 'error'});
+      filePreviewHeader.value = [];
+      filePreviewData.value = [];
     }
   }
+}
+
+async function renameDataset(id: number, name: string) {
+  mixpanel.track('Update dataset name', {id});
+  const savedDataset = await api.editDatasetName(id, name);
+  const idx = files.value.findIndex(f => f.id === id);
+  files.value[idx] = savedDataset;
+  files.value = [...files.value];
 }
 </script>
 
