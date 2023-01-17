@@ -70,31 +70,7 @@
           </v-card>
         </v-col>
         <v-col>
-          <v-card height="100%">
-            <v-card-title class="font-weight-light secondary--text">API Access Token</v-card-title>
-            <v-card-text>
-              <div class="mb-2">
-                <v-btn small tile color="primary" @click="generateToken">Generate</v-btn>
-                <v-btn v-if="apiAccessToken && apiAccessToken.id_token" small tile color="secondary" class="ml-2"
-                       @click="copyToken">
-                  Copy
-                  <v-icon right dark>mdi-content-copy</v-icon>
-                </v-btn>
-              </div>
-              <v-row>
-                <v-col>
-                  <div class="token-area-wrapper" v-if="apiAccessToken && apiAccessToken.id_token">
-                    <span class="token-area" ref="apiAccessToken">{{ apiAccessToken.id_token }}</span>
-                  </div>
-                </v-col>
-              </v-row>
-              <v-row v-if="apiAccessToken && apiAccessToken.id_token">
-                <v-col class="text-right">
-                  Expires on <span>{{ apiAccessToken.expiryDate | date }}</span>
-                </v-col>
-              </v-row>
-            </v-card-text>
-          </v-card>
+          <ApiTokenCard/>
         </v-col>
       </v-row>
     </v-container>
@@ -103,12 +79,11 @@
 
 <script setup lang="ts">
 import {computed, ref} from "vue";
-import {JWTToken, UpdateMeDTO} from "@/generated-sources";
+import {UpdateMeDTO} from "@/generated-sources";
 import {Role} from "@/enums";
-import {api} from "@/api";
-import {copyToClipboard} from "@/global-keys";
 import {useUserStore} from "@/stores/user";
 import {useMainStore} from "@/stores/main";
+import ApiTokenCard from "@/components/ApiTokenCard.vue";
 
 const userStore = useUserStore();
 const mainStore = useMainStore();
@@ -116,7 +91,6 @@ const mainStore = useMainStore();
 const displayName = ref<string>("");
 const email = ref<string>("");
 const editModeToggle = ref<boolean>(false);
-const apiAccessToken = ref<JWTToken | null>(null);
 const isAdmin = ref<boolean>(false);
 
 const observer = ref<any | null>(null);
@@ -158,23 +132,6 @@ function submit() {
       resetFormData();
     }
   });
-}
-
-async function generateToken() {
-  const loadingNotification = {content: 'Generating...', showProgress: true};
-  try {
-    mainStore.addNotification(loadingNotification);
-    mainStore.removeNotification(loadingNotification);
-    apiAccessToken.value = await api.getApiAccessToken();
-  } catch (error) {
-    mainStore.removeNotification(loadingNotification);
-    mainStore.addNotification({content: 'Could not reach server', color: 'error'});
-  }
-}
-
-async function copyToken() {
-  await copyToClipboard(apiAccessToken.value?.id_token);
-  mainStore.addNotification({content: "Copied to clipboard", color: "success"});
 }
 </script>
 
