@@ -63,6 +63,11 @@
         </v-card>
       </v-col>
     </v-row>
+    <v-row v-if="!mainStore.authAvailable">
+      <v-col>
+        <ApiTokenCard/>
+      </v-col>
+    </v-row>
     <v-row>
       <v-col>
         <v-card height="100%">
@@ -219,6 +224,7 @@ import {api} from "@/api";
 import moment from "moment/moment";
 import {copyToClipboard} from "@/global-keys";
 import {useMainStore} from "@/stores/main";
+import ApiTokenCard from "@/components/ApiTokenCard.vue";
 import AppInfoDTO = AppConfigDTO.AppInfoDTO;
 
 const mainStore = useMainStore();
