@@ -1,6 +1,5 @@
 package ai.giskard.config;
 
-import ai.giskard.repository.UserRepository;
 import ai.giskard.security.AuthoritiesConstants;
 import ai.giskard.security.ee.NoAuthConfigurer;
 import ai.giskard.security.jwt.JWTConfigurer;
@@ -42,8 +41,6 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
     @Autowired
     private FilterChainExceptionHandler filterChainExceptionHandler;
-    @Autowired
-    private UserRepository userRepository;
 
 
     public SecurityConfiguration(
@@ -121,9 +118,9 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
     private SecurityConfigurerAdapter<DefaultSecurityFilterChain, HttpSecurity> securityConfigurerAdapter() {
         if (!featureFlagService.hasFlag(FeatureFlagService.FeatureFlag.Auth)) {
-            return new NoAuthConfigurer(userRepository);
+            return new NoAuthConfigurer();
         }
-        
+
         return new JWTConfigurer(tokenProvider);
     }
 }

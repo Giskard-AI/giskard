@@ -18,14 +18,6 @@ import java.util.stream.Stream;
 
 public class NoAuthFilter extends GenericFilterBean {
 
-    private final Long userId;
-    private final String userName;
-
-    public NoAuthFilter(Long userId, String userName) {
-        this.userId = userId;
-        this.userName = userName;
-    }
-
     /**
      * Generates a dummy authentication object that is admin.
      *
@@ -36,7 +28,7 @@ public class NoAuthFilter extends GenericFilterBean {
             .map(SimpleGrantedAuthority::new)
             .toList();
 
-        GiskardUser principal = new GiskardUser(this.userId, this.userName, "", authorities);
+        GiskardUser principal = new GiskardUser(0L, "admin", "", authorities);
 
         return new UsernamePasswordAuthenticationToken(principal, "default", authorities);
     }
