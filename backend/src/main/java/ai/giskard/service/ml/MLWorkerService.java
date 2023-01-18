@@ -16,6 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nullable;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 
@@ -26,11 +27,18 @@ public class MLWorkerService {
     private final ApplicationProperties applicationProperties;
     private final MLWorkerTunnelService mlWorkerTunnelService;
 
-    public MLWorkerClient createClient(boolean isInternal) {
-        return createClient(isInternal, true);
+
+    @Nullable
+    public MLWorkerClient createClientNoError(boolean isInternal) {
+        try {
+            return createClient(isInternal);
+        } catch (Exception e) {
+            log.error("Failed to create ML Worker client", e);
+            return null;
+        }
     }
 
-    public MLWorkerClient createClient(boolean isInternal, boolean raiseExceptionOnFailure) {
+    public MLWorkerClient createClient(boolean isInternal) {
         try {
             ClientInterceptor clientInterceptor = new MLWorkerClientErrorInterceptor();
             SocketAddress address = getMLWorkerAddress(isInternal);
@@ -46,12 +54,9 @@ public class MLWorkerService {
             return new MLWorkerClient(channel);
         } catch (Exception e) {
             log.warn("Failed to create ML Worker client", e);
-            if (raiseExceptionOnFailure) {
-                String workerType = isInternal ? "internal" : "external";
-                String fix = isInternal ? "docker-compose up -d ml-worker" : "giskard worker start -h GISKARD_ADDRESS in the environment that can execute the specified model";
-                throw new GiskardRuntimeException(String.format("Failed to establish a connection with %s ML Worker. Start it with \"%s\"", workerType, fix), e);
-            }
-            throw new GiskardRuntimeException("Failed to create ML Worker client", e);
+            String workerType = isInternal ? "internal" : "external";
+            String fix = isInternal ? "docker-compose up -d ml-worker" : "giskard worker start -h GISKARD_ADDRESS in the environment that can execute the specified model";
+            throw new GiskardRuntimeException(String.format("Failed to establish a connection with %s ML Worker. Start it with \"%s\"", workerType, fix), e);
         }
     }
 
