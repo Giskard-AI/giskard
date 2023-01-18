@@ -45,9 +45,9 @@ def file_already_exists(meta: FileUploadMetadata):
 
 
 class MLWorkerServiceImpl(MLWorkerServicer):
-    def __init__(self, client: GiskardClient, port=None, remote=None) -> None:
+    def __init__(self, client: GiskardClient, address=None, remote=None) -> None:
         super().__init__()
-        self.port = port
+        self.address = address
         self.remote = remote
         self.client = client
 
@@ -113,7 +113,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
             interpreter=sys.executable,
             interpreter_version=platform.python_version(),
             installed_packages=installed_packages,
-            internal_grpc_port=self.port,
+            internal_grpc_address=self.address,
             is_remote=self.remote,
         )
 

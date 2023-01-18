@@ -7,12 +7,17 @@ import ai.giskard.ml.tunnel.MLWorkerTunnelService;
 import ai.giskard.service.GiskardRuntimeException;
 import io.grpc.ClientInterceptor;
 import io.grpc.ManagedChannel;
-import io.grpc.ManagedChannelBuilder;
+import io.grpc.netty.NettyChannelBuilder;
+import io.netty.channel.local.LocalChannel;
+import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.socket.nio.NioSocketChannel;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-import org.springframework.util.unit.DataSize;
+
+import java.net.InetSocketAddress;
+import java.net.SocketAddress;
 
 @Service
 @RequiredArgsConstructor
@@ -21,10 +26,6 @@ public class MLWorkerService {
     private final ApplicationProperties applicationProperties;
     private final MLWorkerTunnelService mlWorkerTunnelService;
 
-    public MLWorkerClient createClient() {
-        return createClient(true);
-    }
-
     public MLWorkerClient createClient(boolean isInternal) {
         return createClient(isInternal, true);
     }
@@ -32,16 +33,15 @@ public class MLWorkerService {
     public MLWorkerClient createClient(boolean isInternal, boolean raiseExceptionOnFailure) {
         try {
             ClientInterceptor clientInterceptor = new MLWorkerClientErrorInterceptor();
-            String host = getMlWorkerHost(isInternal);
-            int port = getMlWorkerPort(isInternal);
-            log.info("Creating MLWorkerClient for {}:{}", host, port);
+            SocketAddress address = getMLWorkerAddress(isInternal);
+            log.info("Creating MLWorkerClient for {}", address.toString());
 
-            ManagedChannel channel = ManagedChannelBuilder.forAddress(host, port)
+            ManagedChannel channel = NettyChannelBuilder.forAddress(address)
                 .intercept(clientInterceptor)
+                .channelType(isInternal ? NioSocketChannel.class : LocalChannel.class)
+                .eventLoopGroup(isInternal ? new NioEventLoopGroup() : mlWorkerTunnelService.getInnerServerDetails().get().group())
                 .usePlaintext()
-                .maxInboundMessageSize((int) DataSize.ofMegabytes(applicationProperties.getMaxInboundMLWorkerMessageMB()).toBytes())
                 .build();
-
 
             return new MLWorkerClient(channel);
         } catch (Exception e) {
@@ -51,28 +51,17 @@ public class MLWorkerService {
                 String fix = isInternal ? "docker-compose up -d ml-worker" : "giskard worker start -h GISKARD_ADDRESS in the environment that can execute the specified model";
                 throw new GiskardRuntimeException(String.format("Failed to establish a connection with %s ML Worker. Start it with \"%s\"", workerType, fix), e);
             }
-            return null;
+            throw new GiskardRuntimeException("Failed to create ML Worker client", e);
         }
     }
 
-    private int getMlWorkerPort(boolean isInternal) {
-        if (!isInternal && mlWorkerTunnelService.getTunnelPort().isEmpty()) {
+    private SocketAddress getMLWorkerAddress(boolean isInternal) {
+        if (!isInternal && mlWorkerTunnelService.getInnerServerDetails().isEmpty()) {
             throw new GiskardRuntimeException("No external worker is connected");
         }
         if (isInternal || !applicationProperties.isExternalMlWorkerEnabled()) {
-            return applicationProperties.getMlWorkerPort();
+            return new InetSocketAddress(applicationProperties.getMlWorkerHost(), applicationProperties.getMlWorkerPort());
         }
-        return mlWorkerTunnelService.getTunnelPort().get();
+        return mlWorkerTunnelService.getInnerServerDetails().get().localAddress();
     }
-
-    private String getMlWorkerHost(boolean isInternal) {
-        if (!isInternal && mlWorkerTunnelService.getTunnelPort().isEmpty()) {
-            throw new GiskardRuntimeException("No external worker is connected");
-        }
-        if (isInternal || !applicationProperties.isExternalMlWorkerEnabled()) {
-            return applicationProperties.getMlWorkerHost();
-        }
-        return "localhost";
-    }
-
 }
