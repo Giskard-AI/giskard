@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div v-if="mainStore.authAvailable">
     <v-toolbar flat light v-if="mainStore.authAvailable">
       <v-toolbar-title class="text-h5 font-weight-light">Welcome, {{ greetedUser }}!</v-toolbar-title>
     </v-toolbar>
@@ -44,11 +44,11 @@ import {computed, onMounted} from "vue";
 import {useProjectStore} from "@/stores/project";
 import {useUserStore} from "@/stores/user";
 import {useAdminStore} from "@/stores/admin";
-import {readAllProjects, readHasAdminAccess, readUserProfile} from "@/store/main/getters";
 import {Role} from "@/enums";
-import {readAdminUsers} from "@/store/admin/getters";
 import {useMainStore} from "@/stores/main";
+import {useRouter} from "vue-router/composables";
 
+const router = useRouter();
 const projectStore = useProjectStore();
 const mainStore = useMainStore();
 const userStore = useUserStore();
@@ -56,6 +56,11 @@ const adminStore = useAdminStore();
 
 
 onMounted(async () => {
+  // Route guard: If auth is disabled, the dashboard makes no sense!
+  if (!mainStore.authAvailable) {
+    await router.push("/main/projects");
+  }
+
   await projectStore.getProjects();
   if (userStore.hasAdminAccess) {
     await adminStore.getUsers();
