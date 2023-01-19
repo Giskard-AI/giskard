@@ -47,6 +47,8 @@
                     <TestSuiteTestDetails
                         :project-id="projectId"
                         :test="registry.tests[selectedTest.testId]"
+                        :models="allModels"
+                        :datasets="allDatasets"
                         :inputs="selectedTest.testInputs"/>
                   </v-col>
                 </v-row>
@@ -57,7 +59,12 @@
 
           </v-tab-item>
           <v-tab-item :transition="false">
-            <TestSuiteExecutions :project-id="props.projectId" :suite-id="props.suiteId" :registry="registry"/>
+            <TestSuiteExecutions :project-id="props.projectId"
+                                 :suite-id="props.suiteId"
+                                 :registry="registry"
+                                 :models="allModels"
+                                 :datasets="allDatasets"
+                                 :inputs="inputs"/>
           </v-tab-item>
         </v-tabs-items>
       </v-col>
@@ -69,7 +76,7 @@
 
 import {api} from "@/api";
 import {onMounted, ref} from "vue";
-import {SuiteTestDTO, TestCatalogDTO, TestSuiteNewDTO} from "@/generated-sources";
+import {DatasetDTO, ModelDTO, SuiteTestDTO, TestCatalogDTO, TestSuiteNewDTO} from "@/generated-sources";
 import TestSuiteTestDetails from "@/views/main/project/TestSuiteTestDetails.vue";
 import RunTestSuiteModal from '@/views/main/project/modals/RunTestSuiteModal.vue';
 import TestSuiteExecutions from '@/views/main/project/TestSuiteExecutions.vue';
@@ -86,11 +93,31 @@ let selectedTest = ref<SuiteTestDTO | null>(null);
 let inputs = ref<{
   [name: string]: string
 }>({});
+const allDatasets = ref<{ [key: string]: DatasetDTO }>({});
+const allModels = ref<{ [key: string]: ModelDTO }>({});
 
 onMounted(async () => {
-  inputs.value = await api.getTestSuiteNewInputs(props.projectId, props.suiteId);
-  suite.value = await api.getTestSuiteNew(props.projectId, props.suiteId);
-  registry.value = await api.getTestsCatalog(props.projectId);
+  // Call api in parallel to shorten loading time
+  const [
+    inputResults,
+    suiteResults,
+    registryResult,
+    datasets,
+    models
+  ] = await Promise.all([
+    api.getTestSuiteNewInputs(props.projectId, props.suiteId),
+    api.getTestSuiteNew(props.projectId, props.suiteId),
+    api.getTestsCatalog(props.projectId),
+    api.getProjectDatasets(props.projectId),
+    api.getProjectModels(props.projectId)
+  ]);
+
+  inputs.value = inputResults;
+  suite.value = suiteResults;
+  registry.value = registryResult
+
+  allDatasets.value = Object.fromEntries(datasets.map(x => [x.id, x]));
+  allModels.value = Object.fromEntries(models.map(x => [x.id, x]));
 })
 
 </script>
