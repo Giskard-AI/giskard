@@ -57,7 +57,7 @@
 
           </v-tab-item>
           <v-tab-item :transition="false">
-            <TestSuiteExecutions :project-id="props.projectId" :suite-id="props.suiteId"/>
+            <TestSuiteExecutions :project-id="props.projectId" :suite-id="props.suiteId" :registry="registry"/>
           </v-tab-item>
         </v-tabs-items>
       </v-col>

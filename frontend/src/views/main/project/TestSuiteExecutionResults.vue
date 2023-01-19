@@ -5,7 +5,7 @@
       <v-chip class="mr-2" x-small :color="result.passed ? '#4caf50' : '#f44336'">
         {{ result.passed ? 'pass' : 'fail' }}
       </v-chip>
-      <p>{{ result.test.testId }}</p>
+      <p>{{ registry.tests[result.test.testId].name }}</p>
     </v-tab>
     <v-tabs-items v-model="tab">
       <v-tab-item v-for="result in props.execution.results" :transition="false">
@@ -18,10 +18,11 @@
 <script setup lang="ts">
 
 import {ref} from 'vue';
-import {TestResult, TestSuiteExecutionDTO} from '@/generated-sources';
+import {TestCatalogDTO, TestResult, TestSuiteExecutionDTO} from '@/generated-sources';
 
 const props = defineProps<{
-  execution: TestSuiteExecutionDTO
+  execution: TestSuiteExecutionDTO,
+  registry: TestCatalogDTO
 }>();
 
 const tab = ref<any>(null);
