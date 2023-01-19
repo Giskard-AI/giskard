@@ -33,6 +33,7 @@ import {
     TestExecutionResultDTO,
     TestSuiteCreateDTO,
     TestSuiteDTO,
+    TestSuiteExecutionDTO,
     TestSuiteNewDTO,
     TestTemplatesResponse,
     TokenAndPasswordVM,
@@ -308,6 +309,9 @@ export const api = {
     },
     async getTestSuiteNew(projectId: number, suiteId: number) {
         return apiV2.get<unknown, TestSuiteNewDTO>(`testing/project/${projectId}/suite-new/${suiteId}`);
+    },
+    async listTestSuiteExecutions(projectId: number, suiteId: number) {
+        return apiV2.get<unknown, TestSuiteExecutionDTO[]>(`testing/project/${projectId}/suite-new/${suiteId}/execution`);
     },
     async getTestSuiteNewInputs(projectId: number, suiteId: number) {
         return apiV2.get<unknown, any>(`testing/project/${projectId}/suite-new/${suiteId}/inputs`);
