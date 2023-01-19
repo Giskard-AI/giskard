@@ -18,7 +18,6 @@ from giskard.core.model import Model
 from giskard.ml_worker.core.dataset import Dataset
 from giskard.ml_worker.core.model_explanation import (
     explain,
-    parse_text_explainer_response,
     explain_text,
 )
 from giskard.ml_worker.exceptions.IllegalArgumentError import IllegalArgumentError
@@ -91,6 +90,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
         yield UploadStatus(code=UploadStatusCode.Ok)
 
     def getInfo(self, request: MLWorkerInfoRequest, context):
+        logger.info("Collecting ML Worker info")
         installed_packages = (
             {p.project_name: p.version for p in pkg_resources.working_set}
             if request.list_packages
@@ -186,9 +186,14 @@ class MLWorkerServiceImpl(MLWorkerServicer):
         input_df = pd.DataFrame({k: [v] for k, v in request.columns.items()})
         if model.feature_names:
             input_df = input_df[model.feature_names]
-
-        html_response = explain_text(model, input_df, text_column, text_document, n_samples)._repr_html_()
-        return ExplainTextResponse(explanations=parse_text_explainer_response(html_response))
+        (list_words, list_weights) = explain_text(model, input_df, text_column, text_document, n_samples)
+        map_features_weight = dict(zip(model.classification_labels, list_weights))
+        return ExplainTextResponse(
+            weights={
+                k: ExplainTextResponse.WeightsPerFeature(weights=[weight for weight in map_features_weight[k]])
+                for k in map_features_weight },
+            words=list_words
+        )
 
     def runModelForDataFrame(self, request: RunModelForDataFrameRequest, context):
         model = Model.load(self.client, request.model.project_key, request.model.id)
