@@ -287,7 +287,7 @@ export const api = {
         downloadURL(`${API_V2_ROOT}/download/model/${id}`);
     },
     async editModelName(modelId: number, name: string) {
-      return apiV2.patch<unknown, ModelDTO>(`/models/${modelId}/name/${encodeURIComponent(name)}`, null)
+        return apiV2.patch<unknown, ModelDTO>(`/models/${modelId}/name/${encodeURIComponent(name)}`, null)
     },
     downloadDataFile(id: number) {
         downloadURL(`${API_V2_ROOT}/download/dataset/${id}`);
@@ -406,4 +406,11 @@ export const api = {
     async executeTestSuite(suiteId: number) {
         return apiV2.post<unknown, Array<TestExecutionResultDTO>>(`/testing/suites/execute`, {suiteId});
     },
+    async uploadLicense(form: FormData) {
+        return apiV2.post<unknown, unknown>(`/ee/license`, form, {
+            headers: {
+                'Content-Type': 'multipart/form-data'
+            }
+        })
+    }
 };
