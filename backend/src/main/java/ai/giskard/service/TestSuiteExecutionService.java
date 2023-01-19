@@ -41,7 +41,7 @@ public class TestSuiteExecutionService {
 
     @Transactional(readOnly = true)
     public List<TestSuiteExecutionDTO> listAllExecution(long suiteId) {
-        return giskardMapper.testSuiteExecutionToDTOs(testSuiteExecutionRepository.findAllBySuiteId(suiteId));
+        return giskardMapper.testSuiteExecutionToDTOs(testSuiteExecutionRepository.findAllBySuiteIdOrderByExecutionDateDesc(suiteId));
     }
 
     @Async

@@ -6,7 +6,7 @@
       class="mt-2"
   ></v-progress-linear>
   <p v-else-if="executions.length === 0">No execution has been performed yet!</p>
-  <v-tabs v-else vertical icons-and-text
+  <v-tabs v-else vertical icons-and-text v-model="tab"
   >
     <v-tab v-for="execution in executions">
       <v-chip class="mr-2" x-small :color="executionStatusColor(execution)">
@@ -14,6 +14,20 @@
       </v-chip>
       <p>{{ execution.executionDate }}</p>
     </v-tab>
+    <v-tabs-items v-model="tab">
+      <v-tab-item v-for="execution in executions" :transition="false">
+        <div class="pt-5">
+          <span class="text-h6">Inputs</span>
+        </div>
+        <p v-for="[input, value] in Object.entries(execution.inputs)">
+          {{ input }} -> {{ value }}
+        </p>
+        <div class="pt-5">
+          <span class="text-h6">Results</span>
+        </div>
+        <TestSuiteExecutionResults :execution="execution"/>
+      </v-tab-item>
+    </v-tabs-items>
   </v-tabs>
 </template>
 
@@ -22,12 +36,14 @@
 import {onMounted, ref} from 'vue';
 import {TestResult, TestSuiteExecutionDTO} from '@/generated-sources';
 import {api} from '@/api';
+import TestSuiteExecutionResults from '@/views/main/project/TestSuiteExecutionResults.vue';
 
 const props = defineProps<{
   projectId: number,
   suiteId: number
 }>();
 
+const tab = ref<any>(null);
 const executions = ref<TestSuiteExecutionDTO[] | null>(null);
 
 onMounted(() => loadExecutions());
