@@ -116,7 +116,7 @@ public class DatasetsController {
     }
 
     @PatchMapping("/dataset/{datasetId}/name/{name}")
-    public DatasetDTO renameDataset(@PathVariable long datasetId, @PathVariable @Valid @NotBlank String name) {
+    public DatasetDTO renameDataset(@PathVariable UUID datasetId, @PathVariable @Valid @NotBlank String name) {
         return giskardMapper.datasetToDatasetDTO(datasetService.renameDataset(datasetId, name));
     }
 }
