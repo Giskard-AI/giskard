@@ -56,6 +56,7 @@ public class Project extends AbstractAuditingEntity {
 
     @Getter
     @Setter
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.EAGER)
     private User owner;
 

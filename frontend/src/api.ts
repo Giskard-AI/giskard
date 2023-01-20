@@ -15,7 +15,6 @@ import {
     FeedbackDTO,
     FeedbackMinimalDTO,
     GeneralSettings,
-    ImportProjectDTO,
     InspectionCreateDTO,
     InspectionDTO,
     JWTToken,
@@ -27,6 +26,7 @@ import {
     PredictionDTO,
     PredictionInputDTO,
     PrepareDeleteDTO,
+    PrepareImportProjectDTO,
     ProjectDTO,
     ProjectPostDTO,
     RoleDTO,
@@ -269,14 +269,14 @@ export const api = {
     async exportProjet(id: number){
         return axiosProject.get<unknown, Blob>(`/${id}/export`, {responseType:'blob'})
     },
-    async importProject(formData: FormData){
+    async prepareImport(formData: FormData, timestamp: string, projectKey){
         const headers = { 'Content-Type': 'multipart/form-data' };
-        return axiosProject.post<unknown, ImportProjectDTO>(`/import`, formData, {
+        return axiosProject.post<unknown, PrepareImportProjectDTO>(`/import/${timestamp}/${projectKey}/prepare`, formData, {
             headers: headers
         });
     },
-    async importConflictedProject(newKey: String, pathToTmpDirectory: String){
-        return axiosProject.post<unknown, ImportProjectDTO>(`/import/conflict`,  {newKey: newKey, pathToTmpDirectory:  pathToTmpDirectory});
+    async importProject(timestampDirectory: string, projectKey: string, map: object){
+        return axiosProject.post<unknown, ProjectDTO>(`/import/${timestampDirectory}/${projectKey}`, map);
     },
     async deleteDatasetFile(datasetId: number) {
         return apiV2.delete<unknown, MessageDTO>(`/dataset/${datasetId}`);

@@ -27,7 +27,6 @@ export const GENERATED_MAPPING = {
     'ai.giskard.web.dto.FeedbackDTO' : 'FeedbackDTO',
     'ai.giskard.web.dto.FeedbackMinimalDTO' : 'FeedbackMinimalDTO',
     'ai.giskard.web.dto.FeedbackReplyDTO' : 'FeedbackReplyDTO',
-    'ai.giskard.web.dto.ImportProjectDTO' : 'ImportProjectDTO',
     'ai.giskard.web.dto.InspectionCreateDTO' : 'InspectionCreateDTO',
     'ai.giskard.web.dto.JWTToken' : 'JWTToken',
     'ai.giskard.web.dto.MessageDTO' : 'MessageDTO',
@@ -68,6 +67,7 @@ export const GENERATED_MAPPING = {
     'ai.giskard.web.dto.user.UpdateMeDTO' : 'UpdateMeDTO',
     'ai.giskard.web.dto.user.UserDTO' : 'UserDTO',
     'ai.giskard.web.dto.user.UserMinimalDTO' : 'UserMinimalDTO',
+    'ai.giskard.web.rest.controllers.PrepareImportProjectDTO' : 'PrepareImportProjectDTO',
     'ai.giskard.web.rest.vm.ManagedUserVM' : 'ManagedUserVM',
     'ai.giskard.web.rest.vm.TokenAndPasswordVM' : 'TokenAndPasswordVM'
 
@@ -98,7 +98,6 @@ export * from './ai/giskard/web/dto/feature-metadata-dto';
 export * from './ai/giskard/web/dto/feedback-dto';
 export * from './ai/giskard/web/dto/feedback-minimal-dto';
 export * from './ai/giskard/web/dto/feedback-reply-dto';
-export * from './ai/giskard/web/dto/import-project-dto';
 export * from './ai/giskard/web/dto/inspection-create-dto';
 export * from './ai/giskard/web/dto/jwttoken';
 export * from './ai/giskard/web/dto/message-dto';
@@ -136,5 +135,6 @@ export * from './ai/giskard/web/dto/user/role-dto';
 export * from './ai/giskard/web/dto/user/update-me-dto';
 export * from './ai/giskard/web/dto/user/user-dto';
 export * from './ai/giskard/web/dto/user/user-minimal-dto';
+export * from './ai/giskard/web/rest/controllers/prepare-import-project-dto';
 export * from './ai/giskard/web/rest/vm/managed-user-vm';
 export * from './ai/giskard/web/rest/vm/token-and-password-vm';

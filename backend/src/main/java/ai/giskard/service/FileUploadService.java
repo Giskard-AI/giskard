@@ -127,11 +127,7 @@ public class FileUploadService {
         }
     }
 
-    @Transactional
-    public Dataset uploadDataset(Project project, String datasetName, Map<String, FeatureType> featureTypes, Map<String, String> columnTypes, String target, InputStream inputStream) throws IOException {
-        Path datasetPath = locationService.datasetsDirectory(project.getKey());
-        createOrEnsureOutputDirectory(datasetPath);
-
+    public Dataset uploadDataset(Project project, String datasetName, Map<String, FeatureType> featureTypes, Map<String, String> columnTypes, String target, InputStream inputStream) throws IOException{
         Dataset dataset = new Dataset();
         dataset.setName(nameOrDefault(datasetName, "Dataset"));
         dataset.setProject(project);
@@ -140,11 +136,19 @@ public class FileUploadService {
         dataset.setTarget(target);
         dataset = datasetRepository.save(dataset);
 
-        String fileName = createZSTname("data_", dataset.getId());
-        dataset.setFileName(fileName);
-        long size = inputStream.transferTo(Files.newOutputStream(datasetPath.resolve(fileName)));
-        dataset.setSize(size);
+        return uploadDataset(project, dataset, inputStream);
+    }
 
-        return datasetRepository.save(dataset);
+    @Transactional
+    public Dataset uploadDataset(Project project, Dataset dataset, InputStream inputStream) throws IOException {
+        Path datasetPath = locationService.datasetsDirectory(project.getKey());
+        createOrEnsureOutputDirectory(datasetPath);
+        Dataset savedDs = datasetRepository.save(dataset);
+        String fileName = createZSTname("data_", savedDs.getId());
+        savedDs.setFileName(fileName);
+        long size = inputStream.transferTo(Files.newOutputStream(datasetPath.resolve(fileName)));
+        savedDs.setSize(size);
+
+        return datasetRepository.save(savedDs);
     }
 }

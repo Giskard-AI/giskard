@@ -1,12 +1,16 @@
 package ai.giskard.domain;
+
 import ai.giskard.config.Constants;
+
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
+
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.annotations.BatchSize;
+
 import javax.persistence.*;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotNull;
@@ -65,6 +69,7 @@ public class User extends AbstractAuditingEntity {
     private String resetKey;
 
     @Column(name = "reset_date")
+    @JsonIgnore
     private Instant resetDate = null;
 
     @JsonIgnore

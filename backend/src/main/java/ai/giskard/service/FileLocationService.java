@@ -1,7 +1,6 @@
 package ai.giskard.service;
 
 import ai.giskard.config.ApplicationProperties;
-import ai.giskard.domain.BaseEntity;
 import ai.giskard.domain.ProjectFile;
 import ai.giskard.domain.ml.Dataset;
 import ai.giskard.domain.ml.ProjectModel;
@@ -43,8 +42,8 @@ public class FileLocationService {
         return resolvedTmpPath().resolve(strTimeStamp);
     }
 
-    public Path resolvedMetadataPath(Path timestampMetadataDir,  Class<? extends BaseEntity> c){
-        return timestampMetadataDir.resolve(c.getSimpleName().toLowerCase() + "-metadata.yaml");
+    public Path resolvedMetadataPath(Path timestampMetadataDir,  String entityName){
+        return timestampMetadataDir.resolve(entityName.toLowerCase() + "-metadata.yaml");
     }
 
     public Path resolveFilePath(ProjectFile file) {

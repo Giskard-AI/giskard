@@ -1,11 +1,9 @@
 package ai.giskard.utils;
 
 import ai.giskard.service.GiskardRuntimeException;
+import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.stream.Stream;
@@ -35,7 +33,7 @@ public class ZipUtils {
         }
     }
 
-    public static void unzip(Path zipFilePath, Path sourceDirectory) throws IOException {
+    public static void unzip(Path zipFilePath, Path sourceDirectory) {
         byte[] buffer = new byte[1024];
         try (FileInputStream fis = new FileInputStream(zipFilePath.toString());
              ZipInputStream zis = new ZipInputStream(fis)){
@@ -57,5 +55,24 @@ public class ZipUtils {
         } catch (IOException e) {
             throw new GiskardRuntimeException("Error while unzipping your file");
         }
+    }
+
+    /**
+     * Unzip project into tmpDir, a temporary folder
+     *
+     * @param zipMultipartFile the file to unzip
+     * @param tmpDir the folder in which the file will unzip
+     */
+    public static void unzipProjectFile(MultipartFile zipMultipartFile, Path tmpDir) throws IOException{
+        // Create a tmp folder
+        Files.createDirectories(tmpDir);
+
+        // Unzip the received file into the created folder
+        Path zipFilePath = tmpDir.resolve("project.zip");
+        Files.createFile(zipFilePath);
+        try (OutputStream os = new FileOutputStream(zipFilePath.toFile())) {
+            os.write(zipMultipartFile.getBytes());
+        }
+        unzip(zipFilePath, tmpDir);
     }
 }

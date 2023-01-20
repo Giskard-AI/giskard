@@ -2,6 +2,8 @@ package ai.giskard.domain;
 
 import ai.giskard.domain.ml.Dataset;
 import ai.giskard.domain.ml.ProjectModel;
+
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.Setter;
@@ -18,6 +20,7 @@ import java.util.Set;
 public class Feedback extends BaseEntity{
     @Setter
     @ManyToOne
+    @JsonBackReference
     private Project project;
 
     @Setter

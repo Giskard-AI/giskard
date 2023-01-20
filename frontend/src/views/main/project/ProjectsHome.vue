@@ -90,7 +90,7 @@
     <v-dialog v-model="openImportDialog" width="500" persistent>
       <v-card>
         <ValidationObserver ref="dialogForm">
-          <v-form @submit.prevent="importProject()">
+          <v-form @submit.prevent="prepareImportAndTimestamp()">
             <v-card-title>Import project</v-card-title>
             <v-card-text>
               <ValidationProvider name="File" rules="required" v-slot="{errors}">
@@ -102,7 +102,7 @@
             <v-card-actions>
               <v-spacer></v-spacer>
               <v-btn color="secondary" text @click="clearAndCloseDialog()">Cancel</v-btn>
-              <v-btn color="primary" text type="submit">Save</v-btn>
+              <v-btn color="primary" text type="submit">Next</v-btn>
             </v-card-actions> 
           </v-form>
         </ValidationObserver>
@@ -110,21 +110,43 @@
     </v-dialog>
 
     <!-- Modal dialog to set the project key in case of conflict key while importing -->
-    <v-dialog v-model="openConflictImportDialog" width="500" persistent>
+    <v-dialog v-model="openPrepareDialog" width="500" persistent>
       <v-card>
         <ValidationObserver ref="dialogForm">
-          <v-form @submit.prevent="importConflictedProject()">
-            <v-card-title>Set new key for the imported project</v-card-title>
+          <v-form @submit.prevent="prepareAndUploadIfNoConflict()">
             <v-card-text>
+              <div class="title">Set new key for the imported project</div>
               <ValidationProvider ref="validatorNewKey" name="Name" mode="eager" rules="required" v-slot="{errors}">
                 <v-text-field label="Project Key*" type="text" v-model="newProjectKey"
                               :error-messages="errors"></v-text-field>
               </ValidationProvider>
+              <div v-if="loginsImportedProject.length !== 0">
+                <div class="title"> Map users of the imported project to the new one </div>
+                <v-list
+                        style="max-height: 600px"
+                        class="overflow-y-auto overflow-x-hidden">
+                  <template v-for="item in loginsImportedProject">
+                      <v-row align="center" justify="center">
+                        <v-col cols="4" align="center">
+                          <div >
+                            {{ item }}
+                          </div>
+                        </v-col>
+                        <v-col cols="2" align="center">
+                          <v-icon> mdi-arrow-right </v-icon>
+                        </v-col>
+                        <v-col cols="6">
+                          <v-select  :items="loginsCurrentInstance" v-model="mapLogins[item]"></v-select>
+                        </v-col>
+                      </v-row>
+                    </template>
+                </v-list>
+              </div>
             </v-card-text>
             <v-card-actions>
               <v-spacer></v-spacer>
               <v-btn color="secondary" text @click="clearAndCloseDialog()">Cancel</v-btn>
-              <v-btn color="primary" text type="submit">Save</v-btn>
+              <v-btn color="primary" text type="submit">Import</v-btn>
             </v-card-actions> 
           </v-form>
         </ValidationObserver>
@@ -169,7 +191,7 @@ import {ValidationObserver} from "vee-validate";
 import {dispatchCreateProject, dispatchGetProjects} from "@/store/main/actions";
 import {readAllProjects, readHasAdminAccess, readUserProfile} from "@/store/main/getters";
 import {Role} from "@/enums";
-import {ProjectPostDTO} from "@/generated-sources";
+import {ProjectPostDTO, PrepareImportObjectDTO} from "@/generated-sources";
 import {toSlug} from "@/utils";
 import store from "@/store";
 import {useRoute} from "vue-router/composables";
@@ -179,15 +201,18 @@ import { api } from "@/api";
 const route = useRoute();
 
 const openCreateDialog = ref<boolean>(false); // toggle for edit or create dialog
+const openPrepareDialog = ref<boolean>(false);
 const openImportDialog = ref<boolean>(false);
-const openConflictImportDialog = ref<boolean>(false);
 const newProjectName = ref<string>("");
-const newProjectKey = ref<string>("");
+const newProjectKey = ref<string | null>("");
 const newProjectDesc = ref<string>("");
 const creatorFilter = ref<number>(0);
 const projectCreateError = ref<string>("");
-const pathToTmpDirectory = ref<string>("");
 const validatorNewKey = ref();
+const timestamp = ref<string>("");
+const loginsCurrentInstance = ref<string[]>([]);
+const loginsImportedProject = ref<string[]>([]);
+const mapLogins = ref<object>({});
 
 // template ref
 const dialogForm = ref<InstanceType<typeof ValidationObserver> | null>(null);
@@ -226,50 +251,59 @@ async function loadProjects() {
   await dispatchGetProjects(store);
 }
 
-async function importConflictedProject(){
-  if (!newProjectKey.value) {
-    return;
+async function prepareImportAndTimestamp(){
+  timestamp.value = Date.now().toString();
+  newProjectKey.value = null;
+  if (newProjectKey.value == ""){
+    return; 
   }
-  api.importConflictedProject(newProjectKey.value, pathToTmpDirectory.value).then(response =>{
-    if (response.conflict){
-      openConflictImportDialog.value = true;
-      validatorNewKey.value.applyResult({
-      errors: ["A project with this key already exist, please change key"],
-      valid: false,
-      failedRules: {} 
-    });
-    }
-    else {
-      clearAndCloseDialog();
-      loadProjects(); 
-      // TODO GO TO THE GOOD PROJECT
-    }
-  })
-
-}
-
-async function importProject(){
   let uploadedFile = file.value.$refs.input.files[0];
   let formData = new FormData();
   formData.append('file', uploadedFile);
-  api.importProject(formData).then(response => {
-    if (response.conflict){
-      openConflictImportDialog.value = true;
-      pathToTmpDirectory.value = response.pathImportTmp;
+  return await api.prepareImport(formData, timestamp.value, newProjectKey.value)
+  .then(response => {
+    loginsCurrentInstance.value = response.loginsCurrentInstance;
+    loginsImportedProject.value = response.loginsImportedProject;
+    openImportDialog.value = false;
+    openPrepareDialog.value = true;
+    loginsImportedProject.value.forEach((item, index) => {
+    if (index >= loginsCurrentInstance.value.length){
+      mapLogins.value[item] = loginsCurrentInstance.value[0];
     }
-    else {
-      clearAndCloseDialog();
-      loadProjects(); 
-      // TODO GO TO THE GOOD PROJECT
-    }
-  });
+    else{
+        mapLogins.value[item] = loginsCurrentInstance.value[index];
+    }});
+  })
+}
+
+async function prepareAndUploadIfNoConflict(){
+  if (newProjectKey.value == ""){
+    return; 
+  }
+  let uploadedFile = file.value.$refs.input.files[0];
+  let formData = new FormData();
+  formData.append('file', uploadedFile);
+  await api.prepareImport(formData, timestamp.value, newProjectKey.value).then(response =>{
+    if (response!.conflict){
+      validatorNewKey.value.applyResult({
+      errors: ["A project with this key already exist, please change key"],
+      valid: false,
+      failedRules: {}})
+    } else {
+      api.importProject(timestamp.value, newProjectKey.value!, mapLogins.value)
+        .then(() => {
+          clearAndCloseDialog();
+          loadProjects();
+        })
+  }});
+
 }
 
 function clearAndCloseDialog() {
   dialogForm.value?.reset();
   openCreateDialog.value = false;
   openImportDialog.value = false;
-  openConflictImportDialog.value = false;
+  openPrepareDialog.value = false;
   newProjectName.value = '';
   newProjectKey.value = '';
   newProjectDesc.value = '';
@@ -283,7 +317,7 @@ async function submitNewProject() {
 
   const proj: ProjectPostDTO = {
     name: newProjectName.value.trim(),
-    key: newProjectKey.value.trim(),
+    key: newProjectKey.value!.trim(),
     description: newProjectDesc.value.trim(),
     inspectionSettings: {
       limeNumberSamples: 500

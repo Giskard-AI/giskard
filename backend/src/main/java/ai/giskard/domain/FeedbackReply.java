@@ -18,7 +18,7 @@ public class FeedbackReply extends BaseEntity{
     private Feedback feedback;
 
     @Setter
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     private User user;
 
     @Setter
