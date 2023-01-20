@@ -1,41 +1,60 @@
 <template>
-  <v-progress-linear
-      indeterminate
-      v-if="executions === null"
-      color="primary"
-      class="mt-2"
-  ></v-progress-linear>
-  <p v-else-if="executions.length === 0">No execution has been performed yet!</p>
-  <v-tabs v-else vertical icons-and-text v-model="tab"
-  >
-    <v-tab v-for="execution in executions" :track-by="execution.executionDate" :disabled="!execution.completionDate">
-      <v-chip class="mr-2" x-small :color="executionStatusColor(execution)">
-        {{ executionStatusMessage(execution) }}
-      </v-chip>
-      <p>{{ execution.executionDate }}</p>
-    </v-tab>
-    <v-tabs-items v-model="tab">
-      <v-tab-item v-for="execution in executions" :track-by="execution.executionDate" :transition="false">
+  <div>
+    <div class="d-flex justify-space-between">
+      <v-breadcrumbs
+          :items="executionBreadcrumbs"
+      ></v-breadcrumbs>
+      <v-btn text @click="loadExecutions()" color="secondary">Reload
+        <v-icon right>refresh</v-icon>
+      </v-btn>
+    </div>
+    <v-progress-linear
+        indeterminate
+        v-if="executions === null"
+        color="primary"
+        class="mt-2"
+    ></v-progress-linear>
+    <p v-else-if="executions.length === 0">No execution has been performed yet!</p>
+    <v-row v-else>
+      <v-col cols="3">
+        <v-list three-line>
+          <v-list-item-group v-model="selectedExecution" color="primary" mandatory>
+            <template v-for="execution in executions">
+              <v-divider/>
+              <v-list-item :value="execution" :disabled="!execution.completionDate">
+                <v-list-item-content>
+                  <v-list-item-title v-text="execution.executionDate"></v-list-item-title>
+                  <v-list-item-subtitle>
+                    <v-chip class="mr-2" x-small :color="executionStatusColor(execution)">
+                      {{ executionStatusMessage(execution) }}
+                    </v-chip>
+                  </v-list-item-subtitle>
+                </v-list-item-content>
+              </v-list-item>
+            </template>
+          </v-list-item-group>
+        </v-list>
+      </v-col>
+      <v-col v-if="selectedExecution">
         <div class="pl-4">
-          <div class="pt-5">
-            <span class="text-h6">Inputs</span>
-          </div>
-          <p v-for="[input, value] in Object.entries(execution.inputs)">
-            {{ input }} -> {{ formatInputValue(input, value) }}
-          </p>
-          <div class="pt-5">
-            <span class="text-h6">Results</span>
-          </div>
-          <TestSuiteExecutionResults :execution="execution" :registry="props.registry"/>
+          <p class="text-h6">Inputs</p>
+          <v-list-item v-for="[input, value] in Object.entries(selectedExecution.inputs)" :track-by="input">
+            <v-list-item-content>
+              <v-list-item-title>{{ input }}</v-list-item-title>
+              <v-list-item-subtitle> {{ formatInputValue(input, value) }}</v-list-item-subtitle>
+            </v-list-item-content>
+          </v-list-item>
+          <p class="pt-4 text-h6">Results</p>
+          <TestSuiteExecutionResults :execution="selectedExecution" :registry="props.registry"/>
         </div>
-      </v-tab-item>
-    </v-tabs-items>
-  </v-tabs>
+      </v-col>
+    </v-row>
+  </div>
 </template>
 
 <script setup lang="ts">
 
-import {onMounted, ref} from 'vue';
+import {computed, onMounted, ref} from 'vue';
 import {DatasetDTO, ModelDTO, TestCatalogDTO, TestResult, TestSuiteExecutionDTO} from '@/generated-sources';
 import {api} from '@/api';
 import TestSuiteExecutionResults from '@/views/main/project/TestSuiteExecutionResults.vue';
@@ -49,7 +68,7 @@ const props = defineProps<{
   inputs: { [name: string]: string }
 }>();
 
-const tab = ref<any>(null);
+const selectedExecution = ref<TestSuiteExecutionDTO | null>(null);
 const executions = ref<TestSuiteExecutionDTO[] | null>(null);
 
 onMounted(() => loadExecutions());
@@ -94,5 +113,19 @@ function formatInputValue(input: string, value: string): string {
       return value;
   }
 }
+
+const executionItem = {
+  text: 'Executions',
+  disabled: true
+};
+
+const executionBreadcrumbs = computed(() =>
+    selectedExecution.value === null ? [executionItem] : [
+      executionItem,
+      {
+        text: selectedExecution.value.executionDate,
+        disabled: false
+      }
+    ]);
 
 </script>
