@@ -15,6 +15,9 @@
 <script setup lang="ts">
 import {ref} from "vue";
 import {api} from "@/api";
+import {useMainStore} from "@/stores/main";
+
+const mainStore = useMainStore();
 
 const fileInput = ref<any | null>(null);
 
@@ -27,6 +30,7 @@ async function onFileUpdate(event) {
   formData.append('file', event.target.files[0]);
 
   await api.uploadLicense(formData);
+  await mainStore.fetchAppSettings();
 }
 
 </script>

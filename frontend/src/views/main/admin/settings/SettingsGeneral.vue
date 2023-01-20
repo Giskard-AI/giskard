@@ -231,12 +231,11 @@ import {copyToClipboard} from "@/global-keys";
 import {useMainStore} from "@/stores/main";
 import ApiTokenCard from "@/components/ApiTokenCard.vue";
 import PlanUpgradeCard from "@/components/ee/PlanUpgradeCard.vue";
-import AppInfoDTO = AppConfigDTO.AppInfoDTO;
 
 const mainStore = useMainStore();
 
 
-const appSettings = ref<AppInfoDTO | null>(null);
+const appSettings = computed(() => mainStore.appSettings);
 const currentWorker = ref<MLWorkerInfoDTO | null>(null);
 const allMLWorkerSettings = ref<MLWorkerInfoDTO[]>([]);
 const externalWorkerSelected = ref<boolean>(true);
@@ -255,7 +254,6 @@ const installedPackagesHeaders = [{text: 'Name', value: 'name', width: '70%'}, {
 
 onBeforeMount(async () => {
   // TODO: Vue 2 does not support top level await in <script setup>, this can be moved when we migrate to Vue 3
-  appSettings.value = mainStore.appSettings;
   await initMLWorkerInfo();
 })
 
