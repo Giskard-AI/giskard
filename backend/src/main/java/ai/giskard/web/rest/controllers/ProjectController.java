@@ -11,7 +11,6 @@ import ai.giskard.web.dto.ml.ProjectDTO;
 import ai.giskard.web.dto.ml.ProjectPostDTO;
 import ai.giskard.web.rest.errors.NotInDatabaseException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -140,16 +139,6 @@ public class ProjectController {
     public ProjectDTO invite(@PathVariable("id") Long id, @PathVariable("userId") Long userId) {
         Project project = this.projectService.invite(id, userId);
         return giskardMapper.projectToProjectDTO(project);
-    }
-
-    @GetMapping(
-        value = "/project/{id}/export",
-        produces = MediaType.APPLICATION_OCTET_STREAM_VALUE
-    )
-    @Transactional
-    public @ResponseBody byte[] exportProject(@PathVariable("id") Long id) throws IOException {
-        permissionEvaluator.canReadProject(id);
-        return this.projectService.export(id);
     }
 
     @PostMapping(value = "/project/import/{timestampDirectory}/{projectKey}/prepare", consumes = "multipart/form-data")

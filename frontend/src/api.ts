@@ -270,9 +270,6 @@ export const api = {
     async getProjectModels(id: number) {
         return axiosProject.get<unknown, ModelDTO[]>(`/${id}/models`);
     },
-    async exportProjet(id: number){
-        return axiosProject.get<unknown, Blob>(`/${id}/export`, {responseType:'blob'})
-    },
     async prepareImport(formData: FormData, timestamp: string, projectKey){
         const headers = { 'Content-Type': 'multipart/form-data' };
         return axiosProject.post<unknown, PrepareImportProjectDTO>(`/import/${timestamp}/${projectKey}/prepare`, formData, {
@@ -302,6 +299,9 @@ export const api = {
     },
     downloadDataFile(id: number) {
         downloadURL(`${API_V2_ROOT}/download/dataset/${id}`);
+    },
+    downloadExportedProject(id: number){
+        downloadURL(`${API_V2_ROOT}/download/project/${id}/export`);
     },
     async peekDataFile(datasetId: number) { //TODO
         return apiV2.get<unknown, any>(`/dataset/${datasetId}/rows`, {params: {offset: 0, size: 10}});

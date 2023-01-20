@@ -213,15 +213,9 @@ export default class Project extends Vue {
 		}
 	}
 
-	public async exportProject(id: number){
-		api.exportProjet(id).then((response) => {
-		const url = window.URL.createObjectURL(new Blob([response]))
-		const link = document.createElement('a')
-		link.href = url
-		link.setAttribute('download', this.project?.key + ".zip")
-		document.body.appendChild(link)
-		link.click()
-		}).catch(() => console.log("error while downloading"))
+	public exportProject(id: number){
+		mixpanel.track('Export project', {id});
+		api.downloadExportedProject(id);
 	}
 
 	public clickEditButton() {
