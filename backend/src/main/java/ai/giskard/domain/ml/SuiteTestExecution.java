@@ -15,6 +15,8 @@ import javax.persistence.Convert;
 import javax.persistence.Entity;
 import javax.persistence.ManyToOne;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Entity
 @NoArgsConstructor
@@ -28,6 +30,10 @@ public class SuiteTestExecution extends BaseEntity {
     @ManyToOne
     @JsonIgnore
     private TestSuiteExecution execution;
+
+    @Column(columnDefinition = "VARCHAR")
+    @Convert(converter = SimpleJSONStringAttributeConverter.class)
+    private Map<String, String> inputs;
 
     @Column(columnDefinition = "VARCHAR")
     @Convert(converter = SimpleJSONStringAttributeConverter.class)
@@ -66,7 +72,9 @@ public class SuiteTestExecution extends BaseEntity {
     @Column(nullable = false)
     private float metric;
 
-    public SuiteTestExecution(SuiteTest test, TestSuiteExecution execution, SingleTestResult message) {
+    public SuiteTestExecution(SuiteTest test,
+                              TestSuiteExecution execution,
+                              SingleTestResult message) {
         this.test = test;
         this.execution = execution;
         this.missingCount = GRPCUtils.convertType(message.getMissingCount());
@@ -83,6 +91,8 @@ public class SuiteTestExecution extends BaseEntity {
         this.referenceSlicesSize = message.getReferenceSlicesSizeList();
         this.messages = message.getMessagesList().stream().map(
             msg -> new TestResultMessageDTO(msg.getType(), msg.getText())).toList();
+        this.inputs = test.getTestInputs().stream()
+            .collect(Collectors.toMap(TestInput::getName, TestInput::getValue));
     }
 
 }
