@@ -148,13 +148,14 @@ public class ProjectController {
     )
     @Transactional
     public @ResponseBody byte[] exportProject(@PathVariable("id") Long id) throws IOException {
+        permissionEvaluator.canReadProject(id);
         return this.projectService.export(id);
     }
 
     @PostMapping(value = "/project/import/{timestampDirectory}/{projectKey}/prepare", consumes = "multipart/form-data")
     public PrepareImportProjectDTO PrepareImport(@RequestParam("file") MultipartFile zipFile, @PathVariable("timestampDirectory") @NotNull String timestampDirectory, @PathVariable("projectKey") String projectKey, @AuthenticationPrincipal final UserDetails userDetails) throws IOException {
-        permissionEvaluator.canWrite();
         Path pathToTimestampDirectory;
+        permissionEvaluator.canWrite();
         pathToTimestampDirectory = projectService.unzip(timestampDirectory, zipFile);
         try {
             return projectService.prepareImport(pathToTimestampDirectory, projectKey, userDetails.getUsername());
@@ -167,6 +168,7 @@ public class ProjectController {
     @PostMapping(value = "/project/import/{timestampDirectory}/{projectKey}")
     @Transactional
     public ProjectDTO importProject(@RequestBody Map<String, String> mappedUsers, @PathVariable("projectKey") @NotNull String projectKey, @PathVariable("timestampDirectory") @NotNull String timestampDirectory, @AuthenticationPrincipal final UserDetails userDetails) throws IOException {
+        permissionEvaluator.canWrite();
         try {
             return projectService.importProject(mappedUsers, timestampDirectory, projectKey, userDetails.getUsername());
         } catch (IOException e){

@@ -129,7 +129,7 @@ public class ProjectService {
         Files.createDirectories(temporaryExportDir);
 
         // Get the project from repository
-        Project project = projectRepository.getById(id);
+        Project project = this.projectRepository.findById(id).orElseThrow(() -> new EntityNotFoundException(Entity.PROJECT, id));
         Path homeProject = locationService.resolvedProjectHome(project.getKey());
 
         createMetadataYamlFiles(temporaryExportDir, project);
