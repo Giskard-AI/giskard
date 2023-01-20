@@ -13,7 +13,7 @@ import java.util.Date;
 @NoArgsConstructor
 public class WorkerJobDTO {
 
-    private Date executionDate = new Date();
+    private Date executionDate;
     @UINullable
     private Date completionDate;
     private MLWorkerType mlWorkerType;

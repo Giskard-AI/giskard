@@ -36,8 +36,9 @@ public class TestArgumentService {
     public TestArgument buildTestArgument(Map<String, String> testInputTypes,
                                           String inputName,
                                           String inputValue) {
-        TestArgument.Builder argumentBuilder = TestArgument.newBuilder();
-        argumentBuilder.setName(inputName);
+        TestArgument.Builder argumentBuilder = TestArgument.newBuilder()
+            .setName(inputName);
+
         switch (testInputTypes.get(inputName)) {
             case "Dataset" -> {
                 String projectKey = datasetRepository.getById(UUID.fromString(inputValue)).getProject().getKey();
@@ -57,11 +58,12 @@ public class TestArgumentService {
                         .build()
                 );
             }
-            case "float" -> argumentBuilder.setFloat(Float.parseFloat(String.valueOf(inputValue)));
+            case "float" -> argumentBuilder.setFloat(Float.parseFloat(inputValue));
             case "string" -> argumentBuilder.setString(inputValue);
             default ->
                 throw new IllegalArgumentException(String.format("Unknown test execution input type %s", testInputTypes.get(inputName)));
         }
+        
         return argumentBuilder.build();
     }
 

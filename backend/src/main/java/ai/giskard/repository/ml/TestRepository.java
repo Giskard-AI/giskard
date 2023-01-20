@@ -10,5 +10,4 @@ import java.util.List;
 public interface TestRepository extends JpaRepository<Test, Long> {
     List<Test> findAllByTestSuiteId(long suiteId);
     List<Test> deleteAllByTestSuiteId(long suiteId);
-
 }

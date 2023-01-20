@@ -149,5 +149,4 @@ public class TestService {
             return convertGRPCObject(response, TestCatalogDTO.class);
         }
     }
-
 }

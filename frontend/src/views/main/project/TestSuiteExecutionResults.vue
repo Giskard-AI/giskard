@@ -1,14 +1,14 @@
 <template>
   <v-tabs vertical icons-and-text v-model="tab"
   >
-    <v-tab v-for="result in props.execution.results">
+    <v-tab v-for="result in props.execution.results" :track-by="result.test.testId">
       <v-chip class="mr-2" x-small :color="result.passed ? '#4caf50' : '#f44336'">
         {{ result.passed ? 'pass' : 'fail' }}
       </v-chip>
       <p>{{ registry.tests[result.test.testId].name }}</p>
     </v-tab>
     <v-tabs-items v-model="tab">
-      <v-tab-item v-for="result in props.execution.results" :transition="false">
+      <v-tab-item v-for="result in props.execution.results" :track-by="result.test.testId" :transition="false">
         <p>metric: {{ result.metric }} </p>
       </v-tab-item>
     </v-tabs-items>
