@@ -84,12 +84,6 @@ public class OuterChannelHandler extends ChannelInboundHandlerAdapter {
                 handleServiceChannelInput(ctx, outerChannel, in);
             }
         }
-        try {
-            in.release();
-        } catch (IllegalReferenceCountException e) {
-            // TODO: dirty hack, investigate why number of references = 0
-            //    writeAndFlush closes channel itself, but we don't always send "in" buffer to writeAndFlush
-        }
     }
 
     private void handleServiceChannelInput(ChannelHandlerContext ctx, SocketChannel outerChannel, ByteBuf in) {
@@ -106,10 +100,6 @@ public class OuterChannelHandler extends ChannelInboundHandlerAdapter {
         }
 
         handleServiceCommand(outerChannel, messageType, payload);
-        in.release();
-        if (payload != null) {
-            payload.release();
-        }
     }
 
     private void handleServiceCommand(SocketChannel outerChannel, byte messageType, ByteBuf payload) {
