@@ -82,6 +82,10 @@ export const useMainStore = defineStore('main', {
             //@ts-ignore
             this.features = features;
         },
+        async fetchAppSettings() {
+            const response = await api.getUserAndAppSettings();
+            this.setAppSettings(response.app);
+        },
         async getUserProfile() {
             const userStore = useUserStore();
             const response = await api.getUserAndAppSettings();

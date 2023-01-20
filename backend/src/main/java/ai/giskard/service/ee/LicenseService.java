@@ -4,19 +4,50 @@ import ai.giskard.service.GiskardRuntimeException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.Getter;
+import lombok.Setter;
 import org.bouncycastle.crypto.params.Ed25519PublicKeyParameters;
 import org.bouncycastle.crypto.signers.Ed25519Signer;
 import org.bouncycastle.util.encoders.Hex;
 import org.springframework.stereotype.Service;
 
-import java.util.Base64;
+import java.util.*;
 
 @Service
 public class LicenseService {
 
     private static final String SIGNATURE_KEY = "c947f66224d465b50004c327fc831cff672fc07b540b0613d6f661d0e72d455d";
 
-    private class License {
+    @Getter
+    @Setter
+    public class License {
+        private String planName;
+        private String planCode;
+        private List<String> features;
+
+        public Map<FeatureFlagService.FeatureFlag, Boolean> getFeatures() {
+            Map<FeatureFlagService.FeatureFlag, Boolean> map = new HashMap<>();
+
+            for (FeatureFlagService.FeatureFlag featureFlag : FeatureFlagService.FeatureFlag.values()) {
+                map.put(featureFlag, false);
+            }
+
+            if (features != null) {
+                for (String feat : features) {
+                    map.put(FeatureFlagService.FeatureFlag.valueOf(feat), true);
+                }
+            }
+
+            return map;
+        }
+    }
+
+    private License license;
+
+    public License getCurrentLicense() {
+        License defaultLicense = new License();
+        defaultLicense.setPlanName("Open Source");
+        return license == null ? defaultLicense : license;
     }
 
     /**
@@ -71,8 +102,33 @@ public class LicenseService {
         }
 
         // 5. Decode license and parse it into a License object
-        
+        String decodedLicense = new String(Base64.getDecoder().decode(encodedData));
+        JsonNode licenseJson = mapper.readTree(decodedLicense);
 
-        return null;
+        JsonNode attributes = licenseJson.get("data").get("attributes");
+        JsonNode included = licenseJson.get("included");
+        if (!"ACTIVE".equals(attributes.get("status").asText())) {
+            throw new GiskardRuntimeException("License file is invalid.");
+        }
+
+        // TODO: Check expiration
+
+        License newLicense = new License();
+        newLicense.setPlanName(attributes.get("metadata").get("planName").asText());
+        newLicense.setPlanCode(attributes.get("metadata").get("planCode").asText());
+
+        List<String> feats = new ArrayList<>();
+        for (JsonNode include : included) {
+            if (!"entitlements".equals(include.get("type").asText())) {
+                continue;
+            }
+
+            feats.add(include.get("attributes").get("code").asText());
+        }
+
+        newLicense.setFeatures(feats);
+
+        this.license = newLicense;
+        return newLicense;
     }
 }

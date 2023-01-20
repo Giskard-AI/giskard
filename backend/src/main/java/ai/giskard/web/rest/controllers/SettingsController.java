@@ -7,6 +7,7 @@ import ai.giskard.repository.UserRepository;
 import ai.giskard.security.AuthoritiesConstants;
 import ai.giskard.service.GeneralSettingsService;
 import ai.giskard.service.ee.FeatureFlagService;
+import ai.giskard.service.ee.LicenseService;
 import ai.giskard.service.ml.MLWorkerService;
 import ai.giskard.web.dto.config.AppConfigDTO;
 import ai.giskard.web.dto.config.MLWorkerInfoDTO;
@@ -65,6 +66,7 @@ public class SettingsController {
     private final MLWorkerService mlWorkerService;
 
     private final FeatureFlagService featureFlagService;
+    private final LicenseService licenseService;
 
 
     @PostMapping("")
@@ -94,6 +96,8 @@ public class SettingsController {
             log.warn("Failed to parse gitCommitTime {}", gitCommitTime);
         }
 
+        LicenseService.License currentLicense = licenseService.getCurrentLicense();
+
         return AppConfigDTO.builder()
             .app(AppConfigDTO.AppInfoDTO.builder()
                 .generalSettings(settingsService.getSettings())
@@ -101,8 +105,8 @@ public class SettingsController {
                 .buildBranch(gitBuildBranch)
                 .buildCommitId(gitBuildCommitId)
                 .buildCommitTime(buildCommitTime)
-                .planCode("open-source")
-                .planName("Open Source")
+                .planCode(currentLicense.getPlanCode())
+                .planName(currentLicense.getPlanName())
                 .externalMlWorkerEntrypointPort(applicationProperties.getExternalMlWorkerEntrypointPort())
                 .roles(roles)
                 .build())
@@ -112,7 +116,7 @@ public class SettingsController {
 
     @GetMapping("/featureFlags")
     public Map<FeatureFlagService.FeatureFlag, Boolean> getFeatureFlags() {
-        return featureFlagService.getAllFeatures();
+        return licenseService.getCurrentLicense().getFeatures();
     }
 
     @GetMapping("/ml-worker-info")
