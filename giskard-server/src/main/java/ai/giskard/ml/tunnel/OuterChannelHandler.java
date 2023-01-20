@@ -9,8 +9,8 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.logging.ByteBufFormat;
-import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
+import io.netty.util.IllegalReferenceCountException;
 import lombok.Getter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -83,7 +83,12 @@ public class OuterChannelHandler extends ChannelInboundHandlerAdapter {
                 handleServiceChannelInput(ctx, outerChannel, in);
             }
         }
-
+        try {
+            in.release();
+        } catch (IllegalReferenceCountException e) {
+            // TODO: dirty hack, investigate why number of references = 0
+            //    writeAndFlush closes channel itself, but we don't always send "in" buffer to writeAndFlush
+        }
     }
 
     private void handleServiceChannelInput(ChannelHandlerContext ctx, SocketChannel outerChannel, ByteBuf in) {
@@ -100,6 +105,10 @@ public class OuterChannelHandler extends ChannelInboundHandlerAdapter {
         }
 
         handleServiceCommand(outerChannel, messageType, payload);
+        in.release();
+        if (payload != null) {
+            payload.release();
+        }
     }
 
     private void handleServiceCommand(SocketChannel outerChannel, byte messageType, ByteBuf payload) {
