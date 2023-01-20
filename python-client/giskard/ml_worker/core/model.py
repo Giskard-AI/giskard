@@ -1,7 +1,6 @@
-from typing import Any, Callable, Iterable, List, Optional, Union
-
 import logging
 from builtins import Exception
+from typing import Any, Callable, Iterable, List, Optional, Union
 
 import numpy
 import pandas as pd
@@ -22,12 +21,12 @@ class ModelPredictionResults(BaseModel):
 
 class GiskardModel:
     def __init__(
-        self,
-        prediction_function: Callable[[pd.DataFrame], Iterable[Union[str, float, int]]],
-        model_type: str,
-        feature_names: Optional[List[str]],
-        classification_threshold: float = None,
-        classification_labels: List[str] = None,
+            self,
+            prediction_function: Callable[[pd.DataFrame], Iterable[Union[str, float, int]]],
+            model_type: str,
+            feature_names: Optional[List[str]],
+            classification_threshold: float = None,
+            classification_labels: List[str] = None,
     ) -> None:
         self.prediction_function = prediction_function
         self.model_type = model_type
@@ -86,6 +85,10 @@ class GiskardModel:
             df = df[self.feature_names]
             if column_types:
                 column_types = {k: v for k, v in column_types.items() if k in self.feature_names}
+
+        for cname, ctype in column_types.items():
+            if cname not in df:
+                df[cname] = None
 
         if column_types:
             df = self.cast_column_to_types(df, column_types)
