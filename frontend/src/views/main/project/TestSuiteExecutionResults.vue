@@ -22,6 +22,7 @@
     <v-col v-if="selectedResult">
       <div class="pl-4">
         <p>metric: {{ selectedResult.metric }}</p>
+        <p v-for="message in selectedResult.messages">{{ message }}</p>
       </div>
     </v-col>
   </v-row>
