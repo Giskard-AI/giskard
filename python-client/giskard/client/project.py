@@ -328,7 +328,7 @@ class GiskardProject:
             self._validate_target(target, df.keys())
         self.validate_columns_columntypes(df, column_types, target)
         self._validate_column_types(column_types)
-        self._validate_column_categorization(df, column_types)
+        self._validate_column_categorization(df, column_types, target)
         raw_column_types = df.dtypes.apply(lambda x: x.name).to_dict()
         data = compress(save_df(df))
         return data, raw_column_types
@@ -622,11 +622,16 @@ class GiskardProject:
             return df
 
     @staticmethod
-    def _validate_column_categorization(df: pd.DataFrame, feature_types):
+    def _validate_column_categorization(df: pd.DataFrame, feature_types, target=None):
+        """
+        Validates if features_types is declared accurately by verifying the number of unique values for each column
+        in feature_types
+        """
         nuniques = df.nunique()
         nuniques_category = 2
         nuniques_numeric = 100
         nuniques_text = 1000
+        df = df.drop(target, axis=1) if target is not None and target not in feature_types.keys() else df
 
         for column in df.columns:
             if nuniques[column] <= nuniques_category and \

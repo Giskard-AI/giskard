@@ -3,16 +3,25 @@ on:
   push:
     branches:
       - main
-  pull_request_target:
-    branches:
-      - main
+  workflow_run:
+    workflows: [ "Check safe to build" ]
+    types:
+      - completed
   workflow_dispatch:
 
 jobs:
   build:
+
     name: Build
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     steps:
+      - name: Stop on security check failure
+        if: ${{ github.event.workflow_run.conclusion == 'failure' }}
+        shell: bash
+        run: |
+          echo "Job failed due to user not being a member of Giskard-AI organization and the 'safe for build' label not being set on the PR"
+          exit 1
+
       - name: Extract branch name
         shell: bash
         run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
@@ -20,8 +29,8 @@ jobs:
 
       - name: Checkout code
         uses: actions/checkout@v3.1.0
-#        with:
-#          ref: ${{ github.event.pull_request.head.sha }}
+      #        with:
+      #          ref: ${{ github.event.pull_request.head.sha }}
 
       - uses: actions/setup-node@v3
         with:
@@ -99,7 +108,7 @@ jobs:
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
         run: ./gradlew build --info --parallel
 
-      - name:  "Python client: archive built artifacts"
+      - name: "Python client: archive built artifacts"
         if: ${{ steps.extract_branch.outputs.branch == 'main' }}
         uses: actions/upload-artifact@v3
         with:

@@ -1,6 +1,8 @@
+import asyncio
 import functools
 import logging
 import traceback
+from concurrent.futures import ThreadPoolExecutor
 from typing import Callable, Iterable, Union, Awaitable
 
 import grpc
@@ -17,6 +19,8 @@ from giskard.ml_worker.generated.ml_worker_pb2 import MLWorkerErrorInfo
 MESSAGE_TYPE = Union[Message, Iterable[Message]]
 
 logger = logging.getLogger(__name__)
+
+pool = ThreadPoolExecutor()
 
 
 class ErrorInterceptor(grpc.aio.ServerInterceptor):
@@ -40,7 +44,8 @@ class ErrorInterceptor(grpc.aio.ServerInterceptor):
             @functools.wraps(behavior)
             async def wrapper(request, context: aio.ServicerContext):
                 try:
-                    res = behavior(request, context)
+                    loop = asyncio.get_running_loop()
+                    res = await loop.run_in_executor(pool, behavior, request, context)
                     return res
                 except CodedError as e:
                     logger.exception(e)
