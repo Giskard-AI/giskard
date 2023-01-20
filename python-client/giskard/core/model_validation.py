@@ -22,14 +22,14 @@ def validate_model(
     loader_class = getattr(importlib.import_module(model.meta.loader_module), model.meta.loader_class)
     model = loader_class(
         clf=loaded_model,
-        data_preparation_function=loaded_data_prep_fn,
+        data_preprocessing_function=loaded_data_prep_fn,
         model_type=model.meta.model_type,
         feature_names=model.meta.feature_names,
         classification_labels=model.meta.classification_labels,
         classification_threshold=model.meta.classification_threshold
     )
-    if model.data_preparation_function is not None:
-        validate_data_preparation_function(model.data_preparation_function)
+    if model.data_preprocessing_function is not None:
+        validate_data_preprocessing_function(model.data_preprocessing_function)
 
     validate_classification_labels(model.meta.classification_labels, model_type)
 
@@ -88,15 +88,15 @@ def validate_model_save_load(model: Model):
     try:
         with tempfile.TemporaryDirectory(prefix="giskard-model-") as f:
             model.save_to_local_dir(f)
-            model.save_data_preparation_function(f)
+            model.save_data_preprocessing_function(f)
             loaded_model = model.read_model_from_local_dir(f)
-            loaded_data_prep_fn = model.read_data_preparation_function_from_artifact(f)
+            loaded_data_prep_fn = model.read_data_preprocessing_function_from_artifact(f)
             return loaded_model, loaded_data_prep_fn
     except Exception as e:
         raise ValueError("Failed to validate model saving and loading from local disk") from e
 
 
-def validate_data_preparation_function(prediction_function):
+def validate_data_preprocessing_function(prediction_function):
     if not callable(prediction_function):
         raise ValueError(
             f"Invalid prediction_function parameter: {prediction_function}. Please specify Python function."
