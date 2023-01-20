@@ -6,6 +6,7 @@ import ai.giskard.domain.ml.TestSuite;
 import ai.giskard.utils.JSONStringAttributeConverter;
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.fasterxml.jackson.core.type.TypeReference;
 import lombok.Getter;
@@ -87,6 +88,7 @@ public class Project extends AbstractAuditingEntity {
     @Getter
     @Setter
     @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @JsonProperty(value = "guestlist")
     @JoinTable(
         name = "projects_guests",
         joinColumns = @JoinColumn(name = "project_id"),

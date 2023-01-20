@@ -71,8 +71,9 @@ public class DownloadController {
 
             return new ResponseEntity<>(zFile, resHeaders ,HttpStatus.OK);
         }catch (IOException e){
-            FileSystemUtils.deleteRecursively(fileLocationService.resolvedTmpPath());
             throw new GiskardRuntimeException("Error while exporting your project", e);
+        } finally {
+            FileSystemUtils.deleteRecursively(fileLocationService.resolvedTmpPath());
         }
 
     }
