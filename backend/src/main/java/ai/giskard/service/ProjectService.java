@@ -30,7 +30,6 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import lombok.RequiredArgsConstructor;
-import org.apache.commons.io.FileUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.FileSystemUtils;
@@ -136,7 +135,8 @@ public class ProjectService {
 
         // Copy content of the /giskard-home/projects/{projecKey} into the temporary newly created folder
         try {
-            FileUtils.copyDirectory(homeProject.toFile(), temporaryExportDir.toFile());
+            
+            FileSystemUtils.copyRecursively(homeProject, temporaryExportDir);
         } catch (IOException e){
             throw new GiskardRuntimeException("Error while copying your project for export", e);
         }
