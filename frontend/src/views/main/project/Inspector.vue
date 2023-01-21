@@ -238,7 +238,7 @@ export default class Inspector extends Vue {
 
   async onValuePerturbation(featureMeta: FeatureMetadataDTO) {
     mixpanel.track("Feature perturbation", {
-      featureType: featureMeta.type,
+      columnMeaning: featureMeta.type,
       featureName: anonymize(featureMeta.name),
       modelId: this.model.id,
       datasetId: this.dataset.id

@@ -1,6 +1,6 @@
 package ai.giskard.utils;
 
-import ai.giskard.domain.FeatureType;
+import ai.giskard.domain.ColumnMeaning;
 import ai.giskard.domain.ml.Dataset;
 import org.junit.jupiter.api.Test;
 
@@ -8,16 +8,16 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import static ai.giskard.domain.FeatureType.CATEGORY;
-import static ai.giskard.domain.FeatureType.NUMERIC;
+import static ai.giskard.domain.ColumnMeaning.CATEGORY;
+import static ai.giskard.domain.ColumnMeaning.NUMERIC;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class JSONStringAttributeConvertersTest {
 
     @Test
-    void FeatureTypesConverterDeserializeTest() {
-        Dataset.FeatureTypesConverter converter = new Dataset.FeatureTypesConverter();
-        Map<String, FeatureType> map = Map.of("category_key", CATEGORY, "numeric_key", NUMERIC);
+    void ColumnMeaningsConverterDeserializeTest() {
+        Dataset.ColumnMeaningsConverter converter = new Dataset.ColumnMeaningsConverter();
+        Map<String, ColumnMeaning> map = Map.of("category_key", CATEGORY, "numeric_key", NUMERIC);
         String serialized = converter.convertToDatabaseColumn(map);
 
         assertEquals(map, converter.convertToEntityAttribute(serialized));
