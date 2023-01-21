@@ -81,6 +81,6 @@ class TestControllerIT {
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(jsonPath("$.id").isNotEmpty())
             .andExpect(jsonPath("$.target").isString())
-            .andExpect(jsonPath("$.columnMeanings").isNotEmpty());
+            .andExpect(jsonPath("$.featureTypes").isNotEmpty());
     }
 }
