@@ -104,6 +104,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
         yield UploadStatus(code=UploadStatusCode.Ok)
 
     def getInfo(self, request: MLWorkerInfoRequest, context):
+        logger.info("Collecting ML Worker info")
         installed_packages = (
             {p.project_name: p.version for p in pkg_resources.working_set}
             if request.list_packages
