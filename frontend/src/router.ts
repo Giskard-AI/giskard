@@ -158,7 +158,6 @@ export default new Router({
                                         {
                                             path: 'inputs',
                                             name: 'test-suite-new-inputs',
-                                            component: () => import('./views/main/project/TestSuiteNew.vue'),
                                             props: (route) => {
                                                 return {
                                                     projectId: Number(route.params.id),
@@ -169,7 +168,6 @@ export default new Router({
                                         {
                                             path: 'test',
                                             name: 'test-suite-new-test',
-                                            component: () => import('./views/main/project/TestSuiteNew.vue'),
                                             props: (route) => {
                                                 return {
                                                     projectId: Number(route.params.id),
@@ -180,11 +178,21 @@ export default new Router({
                                         {
                                             path: 'configuration',
                                             name: 'test-suite-new-configuration',
-                                            component: () => import('./views/main/project/TestSuiteNew.vue'),
                                             props: (route) => {
                                                 return {
                                                     projectId: Number(route.params.id),
                                                     suiteId: Number(route.params.suiteId),
+                                                }
+                                            }
+                                        },
+                                        {
+                                            path: 'execution/compare',
+                                            name: 'test-suite-new-compare-executions',
+                                            component: () => import('./views/main/project/TestSuiteCompareExecutions.vue'),
+                                            props: (route) => {
+                                                return {
+                                                    suiteId: Number(route.params.suiteId),
+                                                    projectId: Number(route.params.id)
                                                 }
                                             }
                                         },
