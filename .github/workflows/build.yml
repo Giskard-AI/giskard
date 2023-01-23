@@ -123,14 +123,6 @@ jobs:
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
         run: ./gradlew sonar --info --parallel
 
-      - name: Build and analyze without sonar
-        if: ${{ github.actor == 'dependabot[bot]' }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-        run: ./gradlew build --info --parallel
-
       - name: "Python client: archive built artifacts"
         if: ${{ steps.extract_branch.outputs.branch == 'main' }}
         uses: actions/upload-artifact@v3
