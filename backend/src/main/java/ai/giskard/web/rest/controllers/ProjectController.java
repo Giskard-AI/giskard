@@ -6,6 +6,7 @@ import ai.giskard.security.PermissionEvaluator;
 import ai.giskard.service.FileLocationService;
 import ai.giskard.service.GiskardRuntimeException;
 import ai.giskard.service.ProjectService;
+import ai.giskard.web.dto.PrepareImportProjectDTO;
 import ai.giskard.web.dto.mapper.GiskardMapper;
 import ai.giskard.web.dto.ml.ProjectDTO;
 import ai.giskard.web.dto.ml.ProjectPostDTO;

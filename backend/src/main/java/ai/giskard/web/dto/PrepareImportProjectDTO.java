@@ -1,4 +1,4 @@
-package ai.giskard.web.rest.controllers;
+package ai.giskard.web.dto;
 
 import com.dataiku.j2ts.annotations.UIModel;
 import lombok.AllArgsConstructor;
