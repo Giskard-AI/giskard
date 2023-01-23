@@ -112,21 +112,16 @@ jobs:
           key: "tool.poetry.version"
           value: '${{ steps.read_toml.outputs.value }}.dev${{ steps.current_date.outputs.CURRENT_DATE }}'
 
-      - name: Build and analyze with sonar
+      - name: Build
+        run: ./gradlew build jacocoTestReport --info --parallel
+
+      - name: Analyze with Sonar
         if: ${{ github.actor != 'dependabot[bot]' }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-        run: ./gradlew build :python-client:package jacocoTestReport sonar --info --parallel
-
-      - name: Build and analyze without sonar
-        if: ${{ github.actor == 'dependabot[bot]' }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-        run: ./gradlew build --info --parallel
+        run: ./gradlew sonar --info --parallel
 
       - name: "Python client: archive built artifacts"
         if: ${{ steps.extract_branch.outputs.branch == 'main' }}
