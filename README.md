@@ -30,7 +30,7 @@
  </h3>
 <br />
 
-# About Giskard
+#  About Giskard
 **Giskard creates interfaces for humans to inspect & test AI models. It is  open-source and self-hosted.**
 
 Giskard lets you instantly see your model's prediction for a given set of feature values. You can set the values directly in Giskard and see the prediction change.
