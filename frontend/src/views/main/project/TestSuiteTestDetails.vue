@@ -30,13 +30,26 @@
       </v-list>
     </div>
 
+    <div v-if="props.executions?.length > 0">
+      <div>Results</div>
+      <TestResultTimeline :executions="props.executions"/>
+    </div>
+
   </div>
 </template>
 
 <script lang="ts" setup>
 
-import {DatasetDTO, ModelDTO, TestDefinitionDTO, TestFunctionArgumentDTO, TestInputDTO} from "@/generated-sources";
+import {
+  DatasetDTO,
+  ModelDTO,
+  SuiteTestExecutionDTO,
+  TestDefinitionDTO,
+  TestFunctionArgumentDTO,
+  TestInputDTO
+} from "@/generated-sources";
 import _ from "lodash";
+import TestResultTimeline from '@/components/TestResultTimeline.vue';
 
 const props = defineProps<{
   projectId: number,
@@ -44,6 +57,7 @@ const props = defineProps<{
   inputs: { [key: string]: TestInputDTO },
   models: { [key: string]: ModelDTO },
   datasets: { [key: string]: DatasetDTO },
+  executions: SuiteTestExecutionDTO[]
 }>();
 
 function sortedArguments(args: { [key: string]: TestFunctionArgumentDTO }) {

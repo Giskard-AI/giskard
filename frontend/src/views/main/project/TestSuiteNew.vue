@@ -2,7 +2,13 @@
   <v-container fluid class="vc">
     <v-row>
       <v-col :align="'right'">
-        <RunTestSuiteModal :inputs="inputs" :suite-id="suiteId" :project-id="projectId"/>
+        <div class="d-flex flex-row-reverse">
+          <RunTestSuiteModal :inputs="inputs" :suite-id="suiteId" :project-id="projectId"/>
+          <v-btn text @click="loadData()" color="secondary">Reload
+            <v-icon right>refresh</v-icon>
+          </v-btn>
+        </div>
+
       </v-col>
     </v-row>
     <v-row>
@@ -49,7 +55,8 @@
                         :test="registry.tests[selectedTest.testId]"
                         :models="allModels"
                         :datasets="allDatasets"
-                        :inputs="selectedTest.testInputs"/>
+                        :inputs="selectedTest.testInputs"
+                        :executions="testSuiteResults[selectedTest.testId]"/>
                   </v-col>
                 </v-row>
               </v-col>
@@ -64,7 +71,8 @@
                                  :registry="registry"
                                  :models="allModels"
                                  :datasets="allDatasets"
-                                 :inputTypes="inputs"/>
+                                 :inputTypes="inputs"
+                                 :executions="executions"/>
           </v-tab-item>
         </v-tabs-items>
       </v-col>
@@ -75,11 +83,21 @@
 <script lang="ts" setup>
 
 import {api} from "@/api";
-import {onMounted, ref} from "vue";
-import {DatasetDTO, ModelDTO, SuiteTestDTO, TestCatalogDTO, TestSuiteNewDTO} from "@/generated-sources";
+import {computed, onMounted, ref, watch} from "vue";
+import {
+  DatasetDTO,
+  ModelDTO,
+  SuiteTestDTO,
+  SuiteTestExecutionDTO,
+  TestCatalogDTO,
+  TestSuiteExecutionDTO,
+  TestSuiteNewDTO
+} from "@/generated-sources";
 import TestSuiteTestDetails from "@/views/main/project/TestSuiteTestDetails.vue";
 import RunTestSuiteModal from '@/views/main/project/modals/RunTestSuiteModal.vue';
 import TestSuiteExecutions from '@/views/main/project/TestSuiteExecutions.vue';
+import {groupBy} from '@/utils/array-utils';
+import {useRoute} from 'vue-router/composables';
 
 const props = defineProps<{
   projectId: number,
@@ -95,29 +113,67 @@ let inputs = ref<{
 }>({});
 const allDatasets = ref<{ [key: string]: DatasetDTO }>({});
 const allModels = ref<{ [key: string]: ModelDTO }>({});
+const executions = ref<TestSuiteExecutionDTO[] | null>(null);
 
 onMounted(async () => {
+  await loadData();
+  onRouteUpdate();
+});
+
+async function loadData() {
+  executions.value = null;
+
   // Call api in parallel to shorten loading time
   const [
     inputResults,
     suiteResults,
     registryResult,
     datasets,
-    models
+    models,
+    executionResults
   ] = await Promise.all([
     api.getTestSuiteNewInputs(props.projectId, props.suiteId),
     api.getTestSuiteNew(props.projectId, props.suiteId),
     api.getTestsCatalog(props.projectId),
     api.getProjectDatasets(props.projectId),
-    api.getProjectModels(props.projectId)
+    api.getProjectModels(props.projectId),
+    api.listTestSuiteExecutions(props.projectId, props.suiteId)
   ]);
 
   inputs.value = inputResults;
   suite.value = suiteResults;
   registry.value = registryResult
+  executions.value = executionResults;
 
   allDatasets.value = Object.fromEntries(datasets.map(x => [x.id, x]));
   allModels.value = Object.fromEntries(models.map(x => [x.id, x]));
+}
+
+const testSuiteResults = computed(() => {
+  if (!executions.value) {
+    return {};
+  }
+
+  return executions.value
+      .map(execution => (execution.results ?? []).map(
+          result => ({
+            testResult: result,
+            testSuiteResult: execution
+          })
+      ))
+      .reduce((flattened, results) => flattened.concat(results), [])
+      .reduce(groupBy<{
+        testResult: SuiteTestExecutionDTO,
+        testSuiteResult: TestSuiteExecutionDTO
+      }>(result => result.testResult.test.testId), {})
 })
 
+const route = useRoute();
+watch(() => [route.name, route.params], () => onRouteUpdate());
+
+function onRouteUpdate() {
+  if (route.name === 'test-suite-new-execution') {
+    tab.value = 3;
+  }
+}
 </script>
