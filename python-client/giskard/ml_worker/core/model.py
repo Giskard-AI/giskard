@@ -71,9 +71,10 @@ class GiskardModel:
         df = dataset.df.copy()
         column_types = dict(dataset.column_types) if dataset.column_types else None
 
-        for cname, ctype in column_types.items():
-            if cname not in df:
-                df[cname] = None
+        if column_types:
+            for cname, ctype in column_types.items():
+                if cname not in df:
+                    df[cname] = None
 
         if dataset.target:
             if dataset.target in df.columns:
