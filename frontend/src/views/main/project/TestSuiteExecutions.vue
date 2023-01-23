@@ -23,7 +23,12 @@
               <v-divider/>
               <v-list-item :value="execution" :disabled="!execution.completionDate">
                 <v-list-item-content>
-                  <v-list-item-title v-text="execution.executionDate"></v-list-item-title>
+                  <v-list-item-title>
+                    <div class="d-flex justify-space-between">
+                      <span>{{ execution.executionDate }}</span>
+                      <TestResultHeatmap :results="executionResults(execution)"/>
+                    </div>
+                  </v-list-item-title>
                   <v-list-item-subtitle>
                     <v-chip class="mr-2" x-small :color="executionStatusColor(execution)">
                       {{ executionStatusMessage(execution) }}
@@ -37,7 +42,7 @@
       </v-col>
       <v-col v-if="selectedExecution">
         <div class="pl-4">
-          <p class="text-h6">Inputs</p>
+          <p class="text-h6">Global inputs</p>
           <TestInputList :models="props.models" :inputs="selectedExecution.inputs"
                          :input-types="props.inputTypes" :datasets="props.datasets"/>
           <p class="pt-4 text-h6">Results</p>
@@ -56,6 +61,7 @@ import {DatasetDTO, ModelDTO, TestCatalogDTO, TestResult, TestSuiteExecutionDTO}
 import {api} from '@/api';
 import TestSuiteExecutionResults from '@/views/main/project/TestSuiteExecutionResults.vue';
 import TestInputList from '@/components/TestInputList.vue';
+import TestResultHeatmap from '@/components/TestResultHeatmap.vue';
 
 const props = defineProps<{
   projectId: number,
@@ -114,5 +120,9 @@ const executionBreadcrumbs = computed(() =>
         disabled: false
       }
     ]);
+
+function executionResults(execution: TestSuiteExecutionDTO): boolean[] {
+  return execution.results?.map(result => result.passed);
+}
 
 </script>
