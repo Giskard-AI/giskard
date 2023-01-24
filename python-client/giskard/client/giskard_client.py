@@ -96,7 +96,11 @@ class GiskardClient:
                 The giskard project that belongs to the project key
         """
         self.analytics.track("Get Project", {"project_key": anonymize(project_key)})
-        response = self._session.get(f"project", params={"key": project_key}).json()
+        try:
+            response = self._session.get(f"project", params={"key": project_key}).json()
+        except GiskardError as e:
+            warning(f"No project found with the provided key")
+            raise e
         return GiskardProject(self._session, response["key"], response["id"], analytics=self.analytics)
 
     def create_project(self, project_key: str, name: str, description: str = None):
