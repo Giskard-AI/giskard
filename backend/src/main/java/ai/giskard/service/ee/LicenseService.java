@@ -1,20 +1,31 @@
 package ai.giskard.service.ee;
 
+import ai.giskard.service.FileLocationService;
 import ai.giskard.service.GiskardRuntimeException;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import org.bouncycastle.crypto.params.Ed25519PublicKeyParameters;
 import org.bouncycastle.crypto.signers.Ed25519Signer;
 import org.bouncycastle.util.encoders.Hex;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.PostConstruct;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.util.*;
 
 @Service
+@RequiredArgsConstructor
 public class LicenseService {
+
+    private final Logger log = LoggerFactory.getLogger(LicenseService.class);
+
+    private final FileLocationService fileLocationService;
 
     private static final String SIGNATURE_KEY = "c947f66224d465b50004c327fc831cff672fc07b540b0613d6f661d0e72d455d";
 
@@ -40,6 +51,10 @@ public class LicenseService {
 
             return map;
         }
+
+        public boolean hasFeature(FeatureFlagService.FeatureFlag flag) {
+            return this.getFeatures().get(flag);
+        }
     }
 
     private License license;
@@ -53,8 +68,12 @@ public class LicenseService {
     /**
      * Checks if there currently is a license. If yes, parses and loads it.
      */
-    public void loadLicense() {
-
+    @PostConstruct
+    public void loadLicense() throws IOException {
+        if (Files.exists(fileLocationService.licensePath())) {
+            String licenseFile = Files.readString(fileLocationService.licensePath());
+            decodeLicense(licenseFile);
+        }
     }
 
     /**
@@ -63,11 +82,12 @@ public class LicenseService {
      *
      * @param licenseFile
      */
-    public void uploadLicense(String licenseFile) throws JsonProcessingException {
+    public void uploadLicense(String licenseFile) throws IOException {
         decodeLicense(licenseFile);
+        Files.write(fileLocationService.licensePath(), licenseFile.getBytes());
     }
 
-    private License decodeLicense(String lic) throws JsonProcessingException {
+    private License decodeLicense(String lic) throws IOException {
         // 1. Remove start/end decorators
         String encodedPayload = lic.replaceAll("(^-----BEGIN LICENSE FILE-----\\n|\\n|-----END LICENSE FILE-----\\n$)", "");
 
@@ -127,6 +147,8 @@ public class LicenseService {
         }
 
         newLicense.setFeatures(feats);
+
+        log.info("License file loaded. Plan: {}", newLicense.getPlanName());
 
         this.license = newLicense;
         return newLicense;
