@@ -99,7 +99,7 @@ class GiskardClient:
         try:
             response = self._session.get(f"project", params={"key": project_key}).json()
         except GiskardError as e:
-            warning(f"No project found with the provided key")
+            warning("No project found with the provided key")
             raise e
         return GiskardProject(self._session, response["key"], response["id"], analytics=self.analytics)
 
