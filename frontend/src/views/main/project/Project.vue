@@ -137,7 +137,8 @@ import FeedbackList from '@/views/main/project/FeedbackList.vue';
 import { Role } from '@/enums';
 import { ProjectPostDTO, InspectionSettings } from '@/generated-sources';
 import mixpanel from "mixpanel-browser";
-import { api  } from "@/api";
+import store from '@/store';
+import { dispatchExportProject } from '@/store/main/actions';
 
 @Component({
 	components: {
@@ -215,7 +216,7 @@ export default class Project extends Vue {
 
 	public exportProject(id: number){
 		mixpanel.track('Export project', {id});
-		api.downloadExportedProject(id);
+		dispatchExportProject(store, id)
 	}
 
 	public clickEditButton() {
