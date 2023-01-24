@@ -148,7 +148,7 @@ public class ProjectController {
         permissionEvaluator.canWrite();
         pathToTimestampDirectory = projectService.unzip(timestampDirectory, zipFile);
         try {
-            return projectService.prepareImport(pathToTimestampDirectory, projectKey, userDetails.getUsername());
+            return projectService.prepareImport(pathToTimestampDirectory, projectKey);
         } catch (IOException e ) {
             FileSystemUtils.deleteRecursively(pathToTimestampDirectory);
             throw new GiskardRuntimeException("Error while preparing your project import", e);
