@@ -1,10 +1,9 @@
 package ai.giskard.config;
 
 import ai.giskard.security.AuthoritiesConstants;
-import ai.giskard.security.ee.NoAuthConfigurer;
-import ai.giskard.security.jwt.JWTConfigurer;
+import ai.giskard.security.ee.GiskardAuthConfigurer;
 import ai.giskard.security.jwt.TokenProvider;
-import ai.giskard.service.ee.FeatureFlagService;
+import ai.giskard.service.ee.LicenseService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
@@ -37,7 +36,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
     private final CorsFilter corsFilter;
     private final SecurityProblemSupport problemSupport;
-    private final FeatureFlagService featureFlagService;
+    private final LicenseService licenseService;
 
     @Autowired
     private FilterChainExceptionHandler filterChainExceptionHandler;
@@ -48,13 +47,13 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
         CorsFilter corsFilter,
         JHipsterProperties jHipsterProperties,
         SecurityProblemSupport problemSupport,
-        FeatureFlagService featureFlagService
+        LicenseService licenseService
     ) {
         this.tokenProvider = tokenProvider;
         this.corsFilter = corsFilter;
         this.problemSupport = problemSupport;
         this.jHipsterProperties = jHipsterProperties;
-        this.featureFlagService = featureFlagService;
+        this.licenseService = licenseService;
     }
 
     @Bean
@@ -117,10 +116,6 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     }
 
     private SecurityConfigurerAdapter<DefaultSecurityFilterChain, HttpSecurity> securityConfigurerAdapter() {
-        if (!featureFlagService.hasFlag(FeatureFlagService.FeatureFlag.Auth)) {
-            return new NoAuthConfigurer();
-        }
-
-        return new JWTConfigurer(tokenProvider);
+        return new GiskardAuthConfigurer(licenseService, tokenProvider);
     }
 }

@@ -20,7 +20,11 @@
                   </tr>
                   <tr>
                     <td>Plan</td>
-                    <td>{{ appSettings.planName }}</td>
+                    <td>{{ appSettings.planName }}
+                      <v-btn icon @click="upgradeModal = true">
+                        <v-icon>mdi-arrow-up</v-icon>
+                      </v-btn>
+                    </td>
                   </tr>
                   <tr>
                     <td colspan="2">
@@ -223,7 +227,7 @@
 
 <script setup lang="ts">
 import {computed, onBeforeMount, ref, watch} from "vue";
-import {AppConfigDTO, GeneralSettings, MLWorkerInfoDTO} from "@/generated-sources";
+import {GeneralSettings, MLWorkerInfoDTO} from "@/generated-sources";
 import mixpanel from "mixpanel-browser";
 import {api} from "@/api";
 import moment from "moment/moment";
@@ -244,7 +248,7 @@ const installedPackagesData = ref<{ name: string, version: string }[]>([]);
 const giskardAddress = computed(() => window.location.hostname);
 const installedPackagesSearch = ref<string>("");
 
-const upgradeModal = ref<boolean>(true);
+const upgradeModal = ref<boolean>(false);
 
 const installedPackagesHeaders = [{text: 'Name', value: 'name', width: '70%'}, {
   text: 'Version',
