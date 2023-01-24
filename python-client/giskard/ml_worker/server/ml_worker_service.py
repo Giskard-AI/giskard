@@ -182,7 +182,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
         if model.meta.feature_names:
             input_df = input_df[model.meta.feature_names]
         (list_words, list_weights) = explain_text(model, input_df, text_column, text_document, n_samples)
-        map_features_weight = dict(zip(model.classification_labels, list_weights))
+        map_features_weight = dict(zip(model.meta.classification_labels, list_weights))
         return ExplainTextResponse(
             weights={
                 k: ExplainTextResponse.WeightsPerFeature(weights=[weight for weight in map_features_weight[k]])
