@@ -194,6 +194,7 @@ import {Role} from "@/enums";
 import {ProjectPostDTO} from "@/generated-sources";
 import {toSlug} from "@/utils";
 import store from "@/store";
+import router from "@/router"
 import {useRoute} from "vue-router/composables";
 import moment from "moment";
 import { api } from "@/api";
@@ -296,9 +297,8 @@ async function prepareAndUploadIfNoConflict(){
     } else {
       mixpanel.track('Import project', {projectkey: newProjectKey.value});
       api.importProject(timestamp.value, newProjectKey.value!, mapLogins.value)
-        .then(() => {
-          clearAndCloseDialog();
-          loadProjects();
+        .then((p) => {
+          router.push({name: 'project-overview', params: {id: p.id}})
         })
   }});
 

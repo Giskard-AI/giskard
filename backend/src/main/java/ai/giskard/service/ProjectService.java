@@ -135,7 +135,7 @@ public class ProjectService {
 
         // Copy content of the /giskard-home/projects/{projecKey} into the temporary newly created folder
         try {
-            
+
             FileSystemUtils.copyRecursively(homeProject, temporaryExportDir);
         } catch (IOException e){
             throw new GiskardRuntimeException("Error while copying your project for export", e);
@@ -192,9 +192,8 @@ public class ProjectService {
         });
 
         // Get the set of every user in the instance of giskard
-        List<User> currentUsers = userRepository.getAllWithRolesByLoginNot(userName);
+        List<User> currentUsers = userRepository.findAllByEnabled(true);
         Set<String> loginsCurrentInstance = new TreeSet<>();
-        loginsCurrentInstance.add(userName);
         currentUsers.forEach(user -> loginsCurrentInstance.add(user.getLogin()));
 
         return new PrepareImportProjectDTO(isConflict, loginsImportedProject, loginsCurrentInstance);
