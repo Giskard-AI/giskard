@@ -197,6 +197,7 @@ import store from "@/store";
 import {useRoute} from "vue-router/composables";
 import moment from "moment";
 import { api } from "@/api";
+import mixpanel from "mixpanel-browser";
 
 const route = useRoute();
 
@@ -290,6 +291,7 @@ async function prepareAndUploadIfNoConflict(){
       valid: false,
       failedRules: {}})
     } else {
+      mixpanel.track('Import project', newProjectKey.value);
       api.importProject(timestamp.value, newProjectKey.value!, mapLogins.value)
         .then(() => {
           clearAndCloseDialog();
