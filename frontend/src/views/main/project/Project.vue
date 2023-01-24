@@ -128,7 +128,7 @@
 import { Component, Vue, Prop, Watch } from 'vue-property-decorator';
 import { readProject, readCoworkers, readUserProfile } from '@/store/main/getters';
 import { dispatchGetProject, dispatchGetCoworkers, dispatchInviteUserToProject,
-	dispatchEditProject, dispatchDeleteProject } from '@/store/main/actions';
+	dispatchEditProject, dispatchDeleteProject, dispatchExportProject } from '@/store/main/actions';
 import { IUserProfileMinimal } from '@/interfaces';
 import { getUserFullDisplayName } from '@/utils';
 import Models from '@/views/main/project/Models.vue';
@@ -138,7 +138,6 @@ import { Role } from '@/enums';
 import { ProjectPostDTO, InspectionSettings } from '@/generated-sources';
 import mixpanel from "mixpanel-browser";
 import store from '@/store';
-import { dispatchExportProject } from '@/store/main/actions';
 
 @Component({
 	components: {
