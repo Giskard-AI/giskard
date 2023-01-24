@@ -274,11 +274,14 @@ async function prepareImportAndTimestamp(){
     else{
         mapLogins.value[item] = loginsCurrentInstance.value[index];
     }});
+    newProjectKey.value = "";
   })
 }
 
 async function prepareAndUploadIfNoConflict(){
+  console.log(newProjectKey.value)
   if (newProjectKey.value == ""){
+    console.log(validatorNewKey.value)
     return; 
   }
   let uploadedFile = file.value.$refs.input.files[0];
@@ -291,7 +294,7 @@ async function prepareAndUploadIfNoConflict(){
       valid: false,
       failedRules: {}})
     } else {
-      mixpanel.track('Import project', newProjectKey.value);
+      mixpanel.track('Import project', {projectkey: newProjectKey.value});
       api.importProject(timestamp.value, newProjectKey.value!, mapLogins.value)
         .then(() => {
           clearAndCloseDialog();
