@@ -111,7 +111,7 @@ class Dataset:
 
     @staticmethod
     def _cat_columns(meta):
-        return [fname for (fname, ftype) in meta.feature_types.items() if
+        return [fname for (fname, ftype) in meta.column_meanings.items() if
                 ftype == SupportedColumnMeanings.CATEGORY]
 
     @property
