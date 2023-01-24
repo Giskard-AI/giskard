@@ -127,6 +127,7 @@ public class FileUploadService {
         }
     }
 
+    @Transactional
     public Dataset uploadDataset(Project project, String datasetName, Map<String, FeatureType> featureTypes, Map<String, String> columnTypes, String target, InputStream inputStream) throws IOException{
         Dataset dataset = new Dataset();
         dataset.setName(nameOrDefault(datasetName, "Dataset"));

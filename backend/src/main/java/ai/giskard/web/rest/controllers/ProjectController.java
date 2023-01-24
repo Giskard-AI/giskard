@@ -143,7 +143,7 @@ public class ProjectController {
     }
 
     @PostMapping(value = "/project/import/{timestampDirectory}/{projectKey}/prepare", consumes = "multipart/form-data")
-    public PrepareImportProjectDTO PrepareImport(@RequestParam("file") MultipartFile zipFile, @PathVariable("timestampDirectory") @NotNull String timestampDirectory, @PathVariable("projectKey") String projectKey, @AuthenticationPrincipal final UserDetails userDetails) throws IOException {
+    public PrepareImportProjectDTO prepareImport(@RequestParam("file") MultipartFile zipFile, @PathVariable("timestampDirectory") @NotNull String timestampDirectory, @PathVariable("projectKey") String projectKey, @AuthenticationPrincipal final UserDetails userDetails) throws IOException {
         Path pathToTimestampDirectory;
         permissionEvaluator.canWrite();
         pathToTimestampDirectory = projectService.unzip(timestampDirectory, zipFile);

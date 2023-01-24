@@ -62,7 +62,7 @@ public class DownloadController {
     @Transactional
     public @ResponseBody ResponseEntity<byte[]> exportProject(@PathVariable("id") Long id) throws IOException {
         try{
-            Project project = this.projectRepository.findById(id).get();
+            Project project = this.projectRepository.findById(id).orElseThrow(() -> new GiskardRuntimeException("Could not find your project in the database"));
             permissionEvaluator.canReadProject(id);
             byte[] zFile = this.projectService.export(id);
             HttpHeaders resHeaders = new HttpHeaders();

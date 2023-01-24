@@ -191,7 +191,7 @@ import {ValidationObserver} from "vee-validate";
 import {dispatchCreateProject, dispatchGetProjects} from "@/store/main/actions";
 import {readAllProjects, readHasAdminAccess, readUserProfile} from "@/store/main/getters";
 import {Role} from "@/enums";
-import {ProjectPostDTO, PrepareImportObjectDTO} from "@/generated-sources";
+import {ProjectPostDTO} from "@/generated-sources";
 import {toSlug} from "@/utils";
 import store from "@/store";
 import {useRoute} from "vue-router/composables";
@@ -284,7 +284,7 @@ async function prepareAndUploadIfNoConflict(){
   let formData = new FormData();
   formData.append('file', uploadedFile);
   await api.prepareImport(formData, timestamp.value, newProjectKey.value).then(response =>{
-    if (response!.conflict){
+    if (response.conflict){
       validatorNewKey.value.applyResult({
       errors: ["A project with this key already exist, please change key"],
       valid: false,
