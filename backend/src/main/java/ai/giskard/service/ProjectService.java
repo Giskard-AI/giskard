@@ -173,7 +173,7 @@ public class ProjectService {
         return pathToTimestampDirectory;
     }
 
-    public PrepareImportProjectDTO prepareImport(Path pathToTimestampDirectory, String projectKey, String userName) throws IOException{
+    public PrepareImportProjectDTO prepareImport(Path pathToTimestampDirectory, String projectKey) throws IOException{
         ObjectMapper mapper = new ObjectMapper(new YAMLFactory())
             .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         if (projectKey.equals("null")){
