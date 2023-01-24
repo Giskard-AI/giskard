@@ -104,7 +104,7 @@ import {
 import TestSuiteTestDetails from "@/views/main/project/TestSuiteTestDetails.vue";
 import RunTestSuiteModal from '@/views/main/project/modals/RunTestSuiteModal.vue';
 import TestSuiteExecutions from '@/views/main/project/TestSuiteExecutions.vue';
-import {groupBy} from '@/utils/array-utils';
+import {groupBy} from '@/utils/array-reducers';
 import useRouterTabsSynchronization from '@/utils/use-router-tabs-synchronization';
 import TestSuiteCompareExecutions from '@/views/main/project/TestSuiteCompareExecutions.vue';
 
