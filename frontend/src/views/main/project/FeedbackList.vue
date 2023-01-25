@@ -80,7 +80,7 @@
         </template>
       </v-data-table>
     </v-container>
-    <v-dialog width="90vw" v-model="openFeedbackDetail" @click:outside="$router.push({name: 'project-feedbacks'})">
+    <v-dialog width="90vw" v-model="openFeedbackDetail">
       <router-view/>
     </v-dialog>
   </div>
@@ -89,8 +89,6 @@
 <script lang="ts">
 import {Component, Prop, Vue, Watch} from "vue-property-decorator";
 import {api} from "@/api";
-import {readToken} from "@/store/main/getters";
-import {commitAddNotification} from '@/store/main/mutations';
 import FeedbackDetail from './FeedbackDetail.vue';
 import {FeedbackMinimalDTO} from "@/generated-sources";
 
@@ -117,6 +115,13 @@ export default class FeedbackList extends Vue {
   @Watch("$route", {deep: true})
   setOpenFeedbackDetail(to) {
     this.openFeedbackDetail = to.meta && to.meta.openFeedbackDetail
+  }
+
+  @Watch("openFeedbackDetail")
+  handleFeedbackDetailDialogClosed(isOpen) {
+    if (!isOpen && this.$route.name !== 'project-feedbacks') {
+      this.$router.push({name: 'project-feedbacks'});
+    }
   }
 
   get tableHeaders() {
