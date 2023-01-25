@@ -6,7 +6,6 @@ import ai.giskard.repository.FeedbackRepository;
 import ai.giskard.repository.InspectionRepository;
 import ai.giskard.repository.ml.DatasetRepository;
 import ai.giskard.repository.ml.ModelRepository;
-import ai.giskard.repository.ml.TestSuiteRepository;
 import ai.giskard.security.PermissionEvaluator;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -28,7 +27,6 @@ public class ProjectFileDeletionService {
     final InspectionService inspectionService;
     final DatasetRepository datasetRepository;
     final ModelRepository modelRepository;
-    final TestSuiteRepository testSuiteRepository;
     final InspectionRepository inspectionRepository;
     final FeedbackRepository feedbackRepository;
     final PermissionEvaluator permissionEvaluator;
@@ -37,9 +35,6 @@ public class ProjectFileDeletionService {
     public void deleteDataset(UUID datasetId) {
         Dataset dataset = datasetRepository.getById(datasetId);
         permissionEvaluator.validateCanWriteProject(dataset.getProject().getId());
-
-        log.info("Deleting test suites linked to dataset {}", datasetId);
-        testSuiteRepository.deleteAll(testSuiteRepository.findByDatasetId(datasetId));
 
         log.info("Deleting inspections linked to dataset {}", datasetId);
         inspectionService.deleteInspections(inspectionRepository.findAllByDatasetId(datasetId));
@@ -66,9 +61,6 @@ public class ProjectFileDeletionService {
     public void deleteModel(UUID modelId) {
         ProjectModel model = modelRepository.getById(modelId);
         permissionEvaluator.validateCanWriteProject(model.getProject().getId());
-
-        log.info("Deleting test suites for model: {}", model.getId());
-        testSuiteRepository.deleteAll(testSuiteRepository.findAllByModelId(modelId));
 
         log.info("Deleting feedbacks for model: {}", model.getId());
         feedbackRepository.deleteAll(feedbackRepository.findAllByModelId(modelId));

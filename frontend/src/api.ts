@@ -30,16 +30,11 @@ import {
     ProjectPostDTO,
     RoleDTO,
     TestCatalogDTO,
-    TestDTO,
     TestExecutionResultDTO,
-    TestSuiteCreateDTO,
-    TestSuiteDTO,
     TestSuiteExecutionDTO,
     TestSuiteNewDTO,
-    TestTemplatesResponse,
     TokenAndPasswordVM,
     UpdateMeDTO,
-    UpdateTestSuiteDTO,
     UserDTO,
     WorkerJobDTO
 } from './generated-sources';
@@ -370,46 +365,6 @@ export const api = {
                 content,
                 replyToReply: replyToId
             });
-    },
-    async getTestSuites(projectId: number) {
-        return apiV2.get<unknown, Array<TestSuiteDTO>>(`/testing/suites/${projectId}`);
-    },
-    async getTests(suiteId: number) {
-        return apiV2.get<unknown, Array<TestDTO>>(`/testing/tests`, {params: {suiteId}});
-    },
-    async getTestSuite(suiteId: number) {
-        return apiV2.get<unknown, TestSuiteDTO>(`/testing/suite/${suiteId}`);
-    },
-    async deleteTestSuite(suiteId: number) {
-        return apiV2.delete<unknown, TestSuiteDTO>(`/testing/suite/${suiteId}`);
-    },
-    async createTestSuite(data: TestSuiteCreateDTO) {
-        return apiV2.post<unknown, TestSuiteDTO>(`/testing/suites`, data);
-    },
-    async saveTestSuite(testSuite: UpdateTestSuiteDTO) {
-        return apiV2.put<unknown, TestSuiteDTO>(`/testing/suites`, testSuite);
-    },
-    async getTestDetails(testId: number) {
-        return apiV2.get<unknown, TestDTO>(`/testing/tests/${testId}`);
-    },
-    async getCodeTestTemplates(suiteId: number) {
-        return apiV2.get<unknown, TestTemplatesResponse>(`/testing/tests/code-test-templates`, {params: {suiteId}});
-    },
-
-    async deleteTest(testId: number) {
-        return apiV2.delete<unknown, TestSuiteDTO>(`/testing/tests/${testId}`);
-    },
-    async saveTest(testDetails: TestDTO) {
-        return apiV2.put<unknown, TestDTO>(`/testing/tests`, testDetails);
-    },
-    async runTest(testId: number) {
-        return apiV2.post<unknown, TestExecutionResultDTO>(`/testing/tests/${testId}/run`);
-    },
-    async createTest(suiteId: number, name: string) {
-        return apiV2.post<unknown, TestDTO>(`/testing/tests`, {
-            name: name,
-            suiteId: suiteId
-        });
     },
     async executeTestSuite(suiteId: number) {
         return apiV2.post<unknown, Array<TestExecutionResultDTO>>(`/testing/suites/execute`, {suiteId});

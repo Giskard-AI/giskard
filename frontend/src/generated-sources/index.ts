@@ -11,7 +11,6 @@ export const GENERATED_MAPPING = {
     'ai.giskard.domain.ml.table.RegressionUnit' : 'RegressionUnit',
     'ai.giskard.domain.ml.table.RowFilterType' : 'RowFilterType',
     'ai.giskard.domain.ml.TestResult' : 'TestResult',
-    'ai.giskard.domain.ml.TestType' : 'TestType',
     'ai.giskard.domain.MLWorkerType' : 'MLWorkerType',
     'ai.giskard.web.dto.config.AppConfigDTO$AppInfoDTO' : 'AppConfigDTO.AppInfoDTO',
     'ai.giskard.web.dto.config.AppConfigDTO' : 'AppConfigDTO',
@@ -40,12 +39,10 @@ export const GENERATED_MAPPING = {
     'ai.giskard.web.dto.ml.ProjectPostDTO' : 'ProjectPostDTO',
     'ai.giskard.web.dto.ml.SingleTestResultDTO' : 'SingleTestResultDTO',
     'ai.giskard.web.dto.ml.SuiteTestExecutionDTO' : 'SuiteTestExecutionDTO',
-    'ai.giskard.web.dto.ml.TestDTO' : 'TestDTO',
     'ai.giskard.web.dto.ml.TestEditorConfigDTO' : 'TestEditorConfigDTO',
     'ai.giskard.web.dto.ml.TestExecutionResultDTO' : 'TestExecutionResultDTO',
     'ai.giskard.web.dto.ml.TestExecutionStatusDTO' : 'TestExecutionStatusDTO',
     'ai.giskard.web.dto.ml.TestResultMessageDTO' : 'TestResultMessageDTO',
-    'ai.giskard.web.dto.ml.TestSuiteDTO' : 'TestSuiteDTO',
     'ai.giskard.web.dto.ml.TestSuiteExecutionDTO' : 'TestSuiteExecutionDTO',
     'ai.giskard.web.dto.ml.TestTemplateExecutionResultDTO' : 'TestTemplateExecutionResultDTO',
     'ai.giskard.web.dto.ml.UpdateTestSuiteDTO' : 'UpdateTestSuiteDTO',
@@ -93,7 +90,6 @@ export * from './ai/giskard/domain/ml/table/filter';
 export * from './ai/giskard/domain/ml/table/regression-unit';
 export * from './ai/giskard/domain/ml/table/row-filter-type';
 export * from './ai/giskard/domain/ml/test-result';
-export * from './ai/giskard/domain/ml/test-type';
 export * from './ai/giskard/domain/mlworker-type';
 export * from './ai/giskard/web/dto/config/app-config-dto';
 export * from './ai/giskard/web/dto/config/mlworker-info-dto';
@@ -120,12 +116,10 @@ export * from './ai/giskard/web/dto/ml/project-dto';
 export * from './ai/giskard/web/dto/ml/project-post-dto';
 export * from './ai/giskard/web/dto/ml/single-test-result-dto';
 export * from './ai/giskard/web/dto/ml/suite-test-execution-dto';
-export * from './ai/giskard/web/dto/ml/test-dto';
 export * from './ai/giskard/web/dto/ml/test-editor-config-dto';
 export * from './ai/giskard/web/dto/ml/test-execution-result-dto';
 export * from './ai/giskard/web/dto/ml/test-execution-status-dto';
 export * from './ai/giskard/web/dto/ml/test-result-message-dto';
-export * from './ai/giskard/web/dto/ml/test-suite-dto';
 export * from './ai/giskard/web/dto/ml/test-suite-execution-dto';
 export * from './ai/giskard/web/dto/ml/test-template-execution-result-dto';
 export * from './ai/giskard/web/dto/ml/update-test-suite-dto';

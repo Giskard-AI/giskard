@@ -111,7 +111,6 @@
 				<v-tab :to="{name: 'project-models'}"><v-icon left>settings_suggest</v-icon>Models</v-tab>
 				<v-tab :to="{name: 'project-inspector', params: tempInspectorParams}" v-if="showInspector"><v-icon left>model_training</v-icon>Inspector</v-tab>
 				<v-tab :to="{name: 'project-feedbacks'}"><v-icon left small>mdi-comment-multiple-outline</v-icon>Feedback</v-tab>
-				<v-tab :to="{name: 'project-test-suites'}"><v-icon left small>mdi-list-status</v-icon>Test suites</v-tab>
 				<v-tab :to="{name: 'project-test-suites-new'}"><v-icon left small>mdi-list-status</v-icon>Test suites NEW ⭐️</v-tab>
 				<v-tab :to="{name: 'project-tests-catalog'}"><v-icon left small>mdi-list-status</v-icon>Test catalog</v-tab>
 			</v-tabs>
@@ -124,17 +123,22 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue, Prop, Watch } from 'vue-property-decorator';
-import { readProject, readCoworkers, readUserProfile } from '@/store/main/getters';
-import { dispatchGetProject, dispatchGetCoworkers, dispatchInviteUserToProject,
-	dispatchEditProject, dispatchDeleteProject } from '@/store/main/actions';
-import { IUserProfileMinimal } from '@/interfaces';
-import { getUserFullDisplayName } from '@/utils';
+import {Component, Prop, Vue, Watch} from 'vue-property-decorator';
+import {readCoworkers, readProject, readUserProfile} from '@/store/main/getters';
+import {
+  dispatchDeleteProject,
+  dispatchEditProject,
+  dispatchGetCoworkers,
+  dispatchGetProject,
+  dispatchInviteUserToProject
+} from '@/store/main/actions';
+import {IUserProfileMinimal} from '@/interfaces';
+import {getUserFullDisplayName} from '@/utils';
 import Models from '@/views/main/project/Models.vue';
 import Datasets from '@/views/main/project/Datasets.vue';
 import FeedbackList from '@/views/main/project/FeedbackList.vue';
-import { Role } from '@/enums';
-import { ProjectPostDTO, InspectionSettings } from '@/generated-sources';
+import {Role} from '@/enums';
+import {InspectionSettings, ProjectPostDTO} from '@/generated-sources';
 import mixpanel from "mixpanel-browser";
 
 @Component({

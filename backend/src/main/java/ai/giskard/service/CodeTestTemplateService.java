@@ -1,8 +1,7 @@
 package ai.giskard.service;
 
-import ai.giskard.domain.ml.*;
-import ai.giskard.repository.ml.TestSuiteRepository;
-import ai.giskard.web.dto.TestTemplatesResponse;
+import ai.giskard.domain.ml.CodeTestCollection;
+import ai.giskard.domain.ml.CodeTestTemplate;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
@@ -17,7 +16,10 @@ import org.springframework.stereotype.Service;
 import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -25,7 +27,6 @@ public class CodeTestTemplateService {
     private final Logger log = LoggerFactory.getLogger(CodeTestTemplateService.class);
     public static final String TEMPLATES_LOCATION = "classpath*:aitest/code_test_templates/**yml";
     private final ResourceLoader resourceLoader;
-    private final TestSuiteRepository suiteRepository;
 
     ObjectMapper mapper = new ObjectMapper(new YAMLFactory())
         .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
@@ -58,41 +59,6 @@ public class CodeTestTemplateService {
         } catch (IOException e) {
             log.error("Failed to read test template: {}", resource.getFilename(), e);
         }
-    }
-
-    public TestTemplatesResponse getTemplates(Long suiteId) {
-        TestSuite suite = suiteRepository.getById(suiteId);
-        Map<String, Boolean> testAvailability = new HashMap<>();
-        TESTS_BY_ID.forEach((name, template) -> testAvailability.put(name, doesTestTemplateSuiteTestSuite(suite, template)));
-        return new TestTemplatesResponse(CODE_TEST_TEMPLATES, testAvailability);
-    }
-
-    public Collection<CodeTestTemplate> getAllTemplates() {
-        return TESTS_BY_ID.values();
-    }
-
-    public boolean doesTestTemplateSuiteTestSuite(TestSuite suite, CodeTestTemplate template) {
-        ModelType modelType = suite.getModel().getModelType();
-        Dataset actualDS = suite.getActualDataset();
-        Dataset referenceDS = suite.getReferenceDataset();
-        if (template.isMultipleDatasets && (actualDS == null || referenceDS == null)) {
-            log.info("Skipping test template '{}' for suite '{}' because not both datasets are specified", template.id, suite.getId());
-            return false;
-        }
-        if (template.isGroundTruthRequired) {
-            boolean hasActualTarget = actualDS != null && actualDS.getTarget() != null;
-            boolean hasReferenceTarget = referenceDS != null && referenceDS.getTarget() != null;
-            if (!hasActualTarget && !hasReferenceTarget) {
-                log.info("Skipping test template '{}' for suite '{}' because no ground truth is specified", template.id, suite.getId());
-                return false;
-            }
-        }
-        Set<ModelType> templateModelTypes = template.modelTypes;
-        if (templateModelTypes != null && !templateModelTypes.contains(modelType)) {
-            log.info("Skipping test template '{}' for suite '{}' because it's not suitable for selected model type", template.id, suite.getId());
-            return false;
-        }
-        return true;
     }
 
 
