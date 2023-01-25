@@ -1,20 +1,19 @@
-import sys
-
 import asyncio
-import click
-import lockfile
 import logging
 import os
 import platform
+import sys
+
+import click
+import lockfile
 import psutil
 from click import INT, STRING
-from lockfile.pidlockfile import PIDLockFile, read_pid_from_pidfile, remove_existing_pidfile
-
-from giskard.cli_utils import create_pid_file_path, remove_stale_pid_file, run_daemon
+from giskard.cli_utils import create_pid_file_path, remove_stale_pid_file, run_daemon, get_log_path, tail, follow_file
 from giskard.client.analytics_collector import GiskardAnalyticsCollector, anonymize
 from giskard.ml_worker.ml_worker import start_ml_worker
 from giskard.path_utils import run_dir
 from giskard.settings import settings
+from lockfile.pidlockfile import PIDLockFile, read_pid_from_pidfile, remove_existing_pidfile
 
 run_dir.mkdir(parents=True, exist_ok=True)
 
@@ -68,7 +67,6 @@ def start_stop_options(fn):
         help="Enable verbose logging",
     )(fn)
     return fn
-
 
 @worker.command("start")
 @start_stop_options
@@ -187,6 +185,25 @@ def _find_and_stop(is_server, host, port):
     else:
         logger.info(f"ML Worker {_ml_worker_description(is_server, host, port)} is not running")
     remove_existing_pidfile(pid_file_path)
+
+
+@worker.command("logs")
+@click.option("--lines", "-n", type=INT, default=10,
+              help="Output the last N lines of the log file, 10 lines are displayed by default")
+@click.option("--follow", "-f", "is_follow", is_flag=True, default=False,
+              help="Output appended data as new logs are being generated")
+def read_logs(lines, is_follow):
+    log_path = get_log_path()
+
+    if not os.path.exists(log_path):
+        print(f"Unable to find any logfile!\n{log_path} does not exists")
+        exit(-1)
+
+    for line in tail(log_path, lines):
+        print(line, end="")
+
+    if is_follow:
+        follow_file(log_path)
 
 
 if __name__ == "__main__":

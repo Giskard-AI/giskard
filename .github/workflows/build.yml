@@ -3,7 +3,7 @@ on:
   push:
     branches:
       - main
-  pull_request_target:
+  pull_request:
     branches:
       - main
   workflow_dispatch:
@@ -11,8 +11,37 @@ on:
 jobs:
   build:
     name: Build
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     steps:
+      - name: Check if organization member
+        id: is_organization_member
+        uses: JamesSingleton/is-organization-member@1.0.0
+        with:
+          organization: Giskard-AI
+          username: ${{ github.actor }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Ask to add the 'safe for build' label
+        if: ${{ github.actor != 'dependabot[bot]' && !contains(github.event.*.labels.*.name, 'safe for build') && steps.is_organization_member.outputs.result == 'false' }}
+        uses: mshick/add-pr-comment@v2
+        with:
+          message: |
+            Please add the 'safe for build' label in order to perform the sonar analysis!
+
+      - name: Interrupt job
+        if: ${{ github.actor != 'dependabot[bot]' && !contains(github.event.*.labels.*.name, 'safe for build') && steps.is_organization_member.outputs.result == 'false' }}
+        shell: bash
+        run: |
+          echo "Job failed due to user not being a member of Giskard-AI organization and the 'safe for build' label not being set on the PR"
+          exit 1
+
+      - name: Stop on security check failure
+        if: ${{ github.event.workflow_run.conclusion == 'failure' }}
+        shell: bash
+        run: |
+          echo "Job failed due to user not being a member of Giskard-AI organization and the 'safe for build' label not being set on the PR"
+          exit 1
+
       - name: Extract branch name
         shell: bash
         run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
@@ -20,8 +49,8 @@ jobs:
 
       - name: Checkout code
         uses: actions/checkout@v3.1.0
-#        with:
-#          ref: ${{ github.event.pull_request.head.sha }}
+      #        with:
+      #          ref: ${{ github.event.pull_request.head.sha }}
 
       - uses: actions/setup-node@v3
         with:
@@ -83,23 +112,18 @@ jobs:
           key: "tool.poetry.version"
           value: '${{ steps.read_toml.outputs.value }}.dev${{ steps.current_date.outputs.CURRENT_DATE }}'
 
-      - name: Build and analyze with sonar
+      - name: Build
+        run: ./gradlew build jacocoTestReport --info --parallel
+
+      - name: Analyze with Sonar
         if: ${{ github.actor != 'dependabot[bot]' }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-        run: ./gradlew build :python-client:package jacocoTestReport sonar --info --parallel
+        run: ./gradlew sonar --info --parallel
 
-      - name: Build and analyze without sonar
-        if: ${{ github.actor == 'dependabot[bot]' }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-        run: ./gradlew build --info --parallel
-
-      - name:  "Python client: archive built artifacts"
+      - name: "Python client: archive built artifacts"
         if: ${{ steps.extract_branch.outputs.branch == 'main' }}
         uses: actions/upload-artifact@v3
         with:
