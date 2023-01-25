@@ -58,6 +58,7 @@ export const GENERATED_MAPPING = {
     'ai.giskard.web.dto.PrepareDeleteDTO$LightTestSuite' : 'PrepareDeleteDTO.LightTestSuite',
     'ai.giskard.web.dto.PrepareDeleteDTO$LightFeedback' : 'PrepareDeleteDTO.LightFeedback',
     'ai.giskard.web.dto.PrepareDeleteDTO' : 'PrepareDeleteDTO',
+    'ai.giskard.web.dto.PrepareImportProjectDTO' : 'PrepareImportProjectDTO',
     'ai.giskard.web.dto.TestSuiteCreateDTO' : 'TestSuiteCreateDTO',
     'ai.giskard.web.dto.TestTemplatesResponse' : 'TestTemplatesResponse',
     'ai.giskard.web.dto.user.AdminUserDTO$AdminUserDTOWithPassword' : 'AdminUserDTO.AdminUserDTOWithPassword',
@@ -67,7 +68,6 @@ export const GENERATED_MAPPING = {
     'ai.giskard.web.dto.user.UpdateMeDTO' : 'UpdateMeDTO',
     'ai.giskard.web.dto.user.UserDTO' : 'UserDTO',
     'ai.giskard.web.dto.user.UserMinimalDTO' : 'UserMinimalDTO',
-    'ai.giskard.web.rest.controllers.PrepareImportProjectDTO' : 'PrepareImportProjectDTO',
     'ai.giskard.web.rest.vm.ManagedUserVM' : 'ManagedUserVM',
     'ai.giskard.web.rest.vm.TokenAndPasswordVM' : 'TokenAndPasswordVM'
 
@@ -127,6 +127,7 @@ export * from './ai/giskard/web/dto/password-reset-request';
 export * from './ai/giskard/web/dto/prediction-dto';
 export * from './ai/giskard/web/dto/prediction-input-dto';
 export * from './ai/giskard/web/dto/prepare-delete-dto';
+export * from './ai/giskard/web/dto/prepare-import-project-dto';
 export * from './ai/giskard/web/dto/test-suite-create-dto';
 export * from './ai/giskard/web/dto/test-templates-response';
 export * from './ai/giskard/web/dto/user/admin-user-dto';
@@ -135,6 +136,5 @@ export * from './ai/giskard/web/dto/user/role-dto';
 export * from './ai/giskard/web/dto/user/update-me-dto';
 export * from './ai/giskard/web/dto/user/user-dto';
 export * from './ai/giskard/web/dto/user/user-minimal-dto';
-export * from './ai/giskard/web/rest/controllers/prepare-import-project-dto';
 export * from './ai/giskard/web/rest/vm/managed-user-vm';
 export * from './ai/giskard/web/rest/vm/token-and-password-vm';

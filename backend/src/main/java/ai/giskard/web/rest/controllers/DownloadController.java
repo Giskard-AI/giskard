@@ -19,7 +19,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.FileSystemUtils;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
@@ -61,21 +60,13 @@ public class DownloadController {
     @GetMapping("/project/{id}/export")
     @Transactional
     public @ResponseBody ResponseEntity<byte[]> exportProject(@PathVariable("id") Long id) throws IOException {
-        try{
             Project project = this.projectRepository.findById(id).orElseThrow(() -> new GiskardRuntimeException("Could not find your project in the database"));
             permissionEvaluator.canReadProject(id);
             byte[] zFile = this.projectService.export(id);
             HttpHeaders resHeaders = new HttpHeaders();
             resHeaders.setContentType(MediaType.APPLICATION_OCTET_STREAM);
             resHeaders.setContentDispositionFormData("attachment", GiskardStringUtils.toSlug(project.getKey()) + ".zip");
-
             return new ResponseEntity<>(zFile, resHeaders ,HttpStatus.OK);
-        }catch (IOException e){
-            throw new GiskardRuntimeException("Error while exporting your project", e);
-        } finally {
-            FileSystemUtils.deleteRecursively(fileLocationService.resolvedTmpPath());
-        }
-
     }
 
     private ResponseEntity<InputStreamResource> createDecompressedStreamResponse(Path path, String dataset, String extension) {

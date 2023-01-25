@@ -4,7 +4,6 @@ import ai.giskard.domain.Project;
 import ai.giskard.repository.ProjectRepository;
 import ai.giskard.security.PermissionEvaluator;
 import ai.giskard.service.FileLocationService;
-import ai.giskard.service.GiskardRuntimeException;
 import ai.giskard.service.ProjectService;
 import ai.giskard.web.dto.PrepareImportProjectDTO;
 import ai.giskard.web.dto.mapper.GiskardMapper;
@@ -16,7 +15,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.FileSystemUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -147,24 +145,14 @@ public class ProjectController {
         Path pathToTimestampDirectory;
         permissionEvaluator.canWrite();
         pathToTimestampDirectory = projectService.unzip(timestampDirectory, zipFile);
-        try {
-            return projectService.prepareImport(pathToTimestampDirectory, projectKey);
-        } catch (IOException e ) {
-            FileSystemUtils.deleteRecursively(pathToTimestampDirectory);
-            throw new GiskardRuntimeException("Error while preparing your project import", e);
-        }
+        return projectService.prepareImport(pathToTimestampDirectory, projectKey);
     }
 
     @PostMapping(value = "/project/import/{timestampDirectory}/{projectKey}")
     @Transactional
     public ProjectDTO importProject(@RequestBody Map<String, String> mappedUsers, @PathVariable("projectKey") @NotNull String projectKey, @PathVariable("timestampDirectory") @NotNull String timestampDirectory, @AuthenticationPrincipal final UserDetails userDetails) throws IOException {
         permissionEvaluator.canWrite();
-        try {
-            return projectService.importProject(mappedUsers, timestampDirectory, projectKey, userDetails.getUsername());
-        } catch (IOException e){
-            throw new GiskardRuntimeException("Error while importing the project", e);
-        }finally {
-            FileSystemUtils.deleteRecursively(locationService.resolvedTmpPath());
-        }
+        Project project = projectService.importProject(mappedUsers, timestampDirectory, projectKey, userDetails.getUsername());
+        return giskardMapper.projectToProjectDTO(project);
     }
 }

@@ -5,11 +5,11 @@ import ai.giskard.domain.ProjectFile;
 import ai.giskard.domain.ml.Dataset;
 import ai.giskard.domain.ml.ProjectModel;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.stereotype.Service;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.sql.Timestamp;
 
 @Service
 @RequiredArgsConstructor
@@ -37,9 +37,8 @@ public class FileLocationService {
     }
 
     public Path timestampMetadataDirectory(){
-        Timestamp timestamp = new Timestamp(System.currentTimeMillis());
-        String strTimeStamp = Long.toString(timestamp.getTime());
-        return resolvedTmpPath().resolve(strTimeStamp);
+        String randomDirName = RandomStringUtils.randomAlphanumeric(8);
+        return resolvedTmpPath().resolve(randomDirName);
     }
 
     public Path resolvedMetadataPath(Path timestampMetadataDir,  String entityName){

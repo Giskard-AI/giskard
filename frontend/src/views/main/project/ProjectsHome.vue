@@ -280,16 +280,14 @@ async function prepareImportAndTimestamp(){
 }
 
 async function prepareAndUploadIfNoConflict(){
-  console.log(newProjectKey.value)
   if (newProjectKey.value == ""){
-    console.log(validatorNewKey.value)
     return; 
   }
   let uploadedFile = file.value.$refs.input.files[0];
   let formData = new FormData();
   formData.append('file', uploadedFile);
   await api.prepareImport(formData, timestamp.value, newProjectKey.value).then(response =>{
-    if (response.conflict){
+    if (response.projectKeyAlreadyExists){
       validatorNewKey.value.applyResult({
       errors: ["A project with this key already exist, please change key"],
       valid: false,

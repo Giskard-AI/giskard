@@ -234,7 +234,7 @@ class AdminProjectControllerIT {
         restUserMockMvc.perform(multipart(unzipUrl).file(new MockMultipartFile("file", res)))
             .andExpect(status().isOk())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-            .andExpect(jsonPath("$.conflict").value(true));
+            .andExpect(jsonPath("$.projectKeyAlreadyExists").value(true));
         String nonConflictKey = "imported_credit";
         String urlImport = String.format("/api/v2/project/import/%s/%s", timestamp,nonConflictKey);
         restUserMockMvc.perform(post(urlImport).content(new ObjectMapper().writeValueAsString(new HashMap<String, String>())).contentType(MediaType.APPLICATION_JSON))

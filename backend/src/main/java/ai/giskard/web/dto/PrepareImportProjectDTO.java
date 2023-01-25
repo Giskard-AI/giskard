@@ -12,7 +12,7 @@ import java.util.Set;
 @Setter
 @AllArgsConstructor
 public class PrepareImportProjectDTO {
-    private boolean conflict;
+    private boolean projectKeyAlreadyExists;
     private Set<String> loginsImportedProject;
     private Set<String> loginsCurrentInstance;
 }
