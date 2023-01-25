@@ -18,7 +18,8 @@
           <v-tab>Tests</v-tab>
           <v-tab>Configuration</v-tab>
           <v-tab>Execution</v-tab>
-          <v-tab class="d-none">Compare</v-tab>
+          <v-tab class="d-none">Compare executions</v-tab>
+          <v-tab class="d-none">Compare tests</v-tab>
         </v-tabs>
       </v-col>
       <v-col cols="10">
@@ -83,6 +84,11 @@
                 :inputTypes="inputs"
                 :registry="registry"/>
           </v-tab-item>
+          <v-tab-item :transition="false">
+            <TestSuiteCompareTest
+                :executions="executions"
+                :registry="registry"/>
+          </v-tab-item>
         </v-tabs-items>
       </v-col>
     </v-row>
@@ -97,7 +103,6 @@ import {
   DatasetDTO,
   ModelDTO,
   SuiteTestDTO,
-  SuiteTestExecutionDTO,
   TestCatalogDTO,
   TestSuiteExecutionDTO,
   TestSuiteNewDTO
@@ -105,22 +110,21 @@ import {
 import TestSuiteTestDetails from "@/views/main/project/TestSuiteTestDetails.vue";
 import RunTestSuiteModal from '@/views/main/project/modals/RunTestSuiteModal.vue';
 import TestSuiteExecutions from '@/views/main/project/TestSuiteExecutions.vue';
-import {groupBy} from '@/utils/array-reducers';
+import {ArrayReducers} from '@/utils/array-reducers';
 import useRouterTabsSynchronization from '@/utils/use-router-tabs-synchronization';
 import TestSuiteCompareExecutions from '@/views/main/project/TestSuiteCompareExecutions.vue';
+import TestSuiteCompareTest from '@/views/main/project/TestSuiteCompareTest.vue';
 
 const props = defineProps<{
   projectId: number,
-  suiteId: number,
+  suiteId: number
 }>();
 
 let suite = ref<TestSuiteNewDTO | null>(null);
 let registry = ref<TestCatalogDTO | null>(null);
 let tab = ref<any>(null);
 let selectedTest = ref<SuiteTestDTO | null>(null);
-let inputs = ref<{
-  [name: string]: string
-}>({});
+let inputs = ref<{ [name: string]: string }>({});
 const allDatasets = ref<{ [key: string]: DatasetDTO }>({});
 const allModels = ref<{ [key: string]: ModelDTO }>({});
 const executions = ref<TestSuiteExecutionDTO[]>();
@@ -169,18 +173,15 @@ const testSuiteResults = computed(() => {
           })
       ))
       .reduce((flattened, results) => flattened.concat(results), [])
-      .reduce(groupBy<{
-        testResult: SuiteTestExecutionDTO,
-        testSuiteResult: TestSuiteExecutionDTO
-      }>(result => result.testResult.test.testId), {})
-})
-
+      .reduce(ArrayReducers.groupBy(result => result.testResult.test.testId), {})
+});
 
 useRouterTabsSynchronization([
   'test-suite-new-inputs',
   'test-suite-new-test',
   'test-suite-new-configuration',
   'test-suite-new-execution',
-  'test-suite-new-compare-executions'
+  'test-suite-new-compare-executions',
+  'test-suite-new-compare-test'
 ], tab);
 </script>

@@ -3,7 +3,7 @@
     <div class="text-h5">{{ props.test.name }}</div>
     <pre class="text-caption">{{ props.test.doc }}</pre>
 
-    <div>Inputs</div>
+    <p class="text-h6">Inputs</p>
     <div>
       <v-list v-if="props.test.arguments">
         <v-list-item v-for="a in sortedArguments(props.test.arguments)" class="pl-0 pr-0">
@@ -31,7 +31,13 @@
     </div>
 
     <div v-if="props.executions?.length > 0">
-      <div>Results</div>
+      <div class="d-flex align-content-space-between">
+        <p class="text-h6">Results</p>
+        <v-btn text color="secondary" :to="{name: 'test-suite-new-compare-test', params: { testId: props.test.id}}">
+          Compare executions
+          <v-icon>compare</v-icon>
+        </v-btn>
+      </div>
       <TestResultTimeline :executions="props.executions"/>
     </div>
 
