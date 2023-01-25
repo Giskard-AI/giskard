@@ -231,16 +231,11 @@ public class ProjectService {
 
         ObjectMapper mapper = new ObjectMapper(new YAMLFactory())
             .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-        Project project;
-        List<ProjectModel> models;
-        List<Dataset> datasets;
-        List<Feedback> feedbacks;
-        List<TestSuite> testSuites;
-        project = mapper.readValue(locationService.resolvedMetadataPath(pathToTimestampDirectory, Project.class.getSimpleName()).toFile(), new TypeReference<>(){});
-        models = mapper.readValue(locationService.resolvedMetadataPath(pathToTimestampDirectory, ProjectModel.class.getSimpleName()).toFile(), new TypeReference<>(){} );
-        datasets = mapper.readValue(locationService.resolvedMetadataPath(pathToTimestampDirectory, Dataset.class.getSimpleName()).toFile(), new TypeReference<>(){} );
-        feedbacks = mapper.readValue(locationService.resolvedMetadataPath(pathToTimestampDirectory, Feedback.class.getSimpleName()).toFile(), new TypeReference<>(){} );
-        testSuites = mapper.readValue(locationService.resolvedMetadataPath(pathToTimestampDirectory, TestSuite.class.getSimpleName()).toFile(), new TypeReference<>(){} );
+        Project project = mapper.readValue(locationService.resolvedMetadataPath(pathToTimestampDirectory, Project.class.getSimpleName()).toFile(), new TypeReference<>(){});
+        List<ProjectModel> models = mapper.readValue(locationService.resolvedMetadataPath(pathToTimestampDirectory, ProjectModel.class.getSimpleName()).toFile(), new TypeReference<>(){} );
+        List<Dataset> datasets = mapper.readValue(locationService.resolvedMetadataPath(pathToTimestampDirectory, Dataset.class.getSimpleName()).toFile(), new TypeReference<>(){} );
+        List<Feedback> feedbacks = mapper.readValue(locationService.resolvedMetadataPath(pathToTimestampDirectory, Feedback.class.getSimpleName()).toFile(), new TypeReference<>(){} );
+        List<TestSuite> testSuites = mapper.readValue(locationService.resolvedMetadataPath(pathToTimestampDirectory, TestSuite.class.getSimpleName()).toFile(), new TypeReference<>(){} );
 
 
         Map<Long, Long> mapFormerNewIdModelDataset = new HashMap<>();
