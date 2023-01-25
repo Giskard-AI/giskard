@@ -37,7 +37,7 @@ public class FileLocationService {
     }
 
     public Path timestampMetadataDirectory(){
-        String randomDirName = RandomStringUtils.randomAlphanumeric(8);
+        String randomDirName = RandomStringUtils.randomAlphanumeric(8); // NOSONAR: no security risk here
         return resolvedTmpPath().resolve(randomDirName);
     }
 
