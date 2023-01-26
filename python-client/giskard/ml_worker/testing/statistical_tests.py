@@ -211,8 +211,8 @@ class StatisticalTests(AbstractTestCollection):
         protected_predictions = np.squeeze(model.run_predict(protected_ds).raw_prediction == positive_idx)
         unprotected_predictions = np.squeeze(model.run_predict(unprotected_ds).raw_prediction == positive_idx)
 
-        protected_proba = np.count_nonzero(protected_predictions)/len(protected_ds.df)
-        unprotected_proba = np.count_nonzero(unprotected_predictions)/len(unprotected_ds.df)
+        protected_proba = np.count_nonzero(protected_predictions)
+        unprotected_proba = np.count_nonzero(unprotected_predictions)
         disparate_impact_score = protected_proba/unprotected_proba
 
         messages = [TestMessage(
