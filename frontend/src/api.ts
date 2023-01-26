@@ -366,9 +366,6 @@ export const api = {
                 replyToReply: replyToId
             });
     },
-    async executeTestSuite(suiteId: number) {
-        return apiV2.post<unknown, Array<TestExecutionResultDTO>>(`/testing/suites/execute`, {suiteId});
-    },
     async getTestsCatalog(projectId: number) {
         return apiV2.get<unknown, TestCatalogDTO>(`/testing/tests/test-catalog`, {params: {projectId}});
     },
