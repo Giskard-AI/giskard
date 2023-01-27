@@ -62,7 +62,7 @@ class Suite:
 
         for test_partial in self.tests:
             test_params = self.create_test_params(test_partial, suite_run_args)
-            res.append(run_test(test_partial.test_func, **test_params))
+            res.append(run_test(test_partial.test_func, test_params))
 
         return single_binary_result(res), res
 
