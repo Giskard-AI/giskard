@@ -80,133 +80,121 @@
         </template>
       </v-data-table>
     </v-container>
-    <v-dialog width="90vw" v-model="openFeedbackDetail">
+    <v-dialog width="90vw" v-model="openFeedbackDetail" @input="handleFeedbackDetailDialogClosed">
       <router-view/>
     </v-dialog>
   </div>
 </template>
 
-<script lang="ts">
-import {Component, Prop, Vue, Watch} from "vue-property-decorator";
-import {api} from "@/api";
-import FeedbackDetail from './FeedbackDetail.vue';
-import {FeedbackMinimalDTO} from "@/generated-sources";
+<script setup lang="ts">
 
-@Component({
-  components: {FeedbackDetail}
-})
-export default class FeedbackList extends Vue {
-  @Prop({required: true}) projectId!: number;
+import {FeedbackMinimalDTO} from '@/generated-sources';
+import {computed, onActivated, ref, watch} from 'vue';
+import {useRoute, useRouter} from 'vue-router/composables';
+import {api} from '@/api';
 
-  feedbacks: FeedbackMinimalDTO[] = [];
-  search = "";
-  modelFilter = "";
-  datasetFilter = "";
-  typeFilter = "";
-  groupByFeature = false
+const { projectId } = defineProps<{ projectId: number }>();
 
-  openFeedbackDetail = false
+const feedbacks = ref<FeedbackMinimalDTO[]>([]);
+const search = ref<string>("");
+const modelFilter = ref<string>("");
+const datasetFilter = ref<string>("");
+const typeFilter = ref<string>("");
+const groupByFeature = ref<boolean>(false);
+const openFeedbackDetail = ref<boolean>(false);
 
-  activated() {
-    this.fetchFeedbacks();
-    this.setOpenFeedbackDetail(this.$route)
+const route = useRoute();
+const router = useRouter();
+
+onActivated(() => {
+  fetchFeedbacks();
+  setOpenFeedbackDetail(route);
+});
+
+watch(() => route, (to) => setOpenFeedbackDetail(to), { deep: true })
+
+function setOpenFeedbackDetail(to) {
+  openFeedbackDetail.value = to.meta && to.meta.openFeedbackDetail
+}
+
+function handleFeedbackDetailDialogClosed(isOpen) {
+  if (!isOpen && route.name !== 'project-feedbacks') {
+    router.push({name: 'project-feedbacks'});
   }
+}
 
-  @Watch("$route", {deep: true})
-  setOpenFeedbackDetail(to) {
-    this.openFeedbackDetail = to.meta && to.meta.openFeedbackDetail
-  }
 
-  @Watch("openFeedbackDetail")
-  handleFeedbackDetailDialogClosed(isOpen) {
-    if (!isOpen && this.$route.name !== 'project-feedbacks') {
-      this.$router.push({name: 'project-feedbacks'});
-    }
-  }
+const tableHeaders = computed(() => [
+    {
+      text: "Model",
+      sortable: true,
+      value: "modelName",
+      align: "left",
+      filter: (value) => !modelFilter.value ? true : value == modelFilter.value,
+    },
+    {
+      text: "Dataset",
+      sortable: true,
+      value: "datasetName",
+      align: "left",
+      filter: (value) => !datasetFilter.value ? true : value == datasetFilter.value,
+    },
+    {
+      text: "User ID",
+      sortable: true,
+      value: "userLogin",
+      align: "left",
+    },
+    {
+      text: 'On',
+      value: 'createdOn',
+      sortable: true,
+      filterable: false,
+      align: 'left'
+    },
+    {
+      text: "Type",
+      sortable: true,
+      value: "feedbackType",
+      align: "left",
+      filter: (value) => !typeFilter.value ? true : value == typeFilter.value,
+    },
+    {
+      text: "Feature name",
+      sortable: true,
+      value: "featureName",
+      align: "left",
+    },
+    {
+      text: "Feature value",
+      sortable: true,
+      value: "featureValue",
+      align: "left",
+    },
+    {
+      text: "Choice",
+      sortable: true,
+      value: "feedbackChoice",
+      align: "left",
+    },
+    {
+      text: "Message",
+      sortable: true,
+      value: "feedbackMessage",
+      align: "left",
+    },
+  ]);
 
-  get tableHeaders() {
-    return [
-      {
-        text: "Model",
-        sortable: true,
-        value: "modelName",
-        align: "left",
-        filter: (value) => !this.modelFilter ? true : value == this.modelFilter,
-      },
-      {
-        text: "Dataset",
-        sortable: true,
-        value: "datasetName",
-        align: "left",
-        filter: (value) => !this.datasetFilter ? true : value == this.datasetFilter,
-      },
-      {
-        text: "User ID",
-        sortable: true,
-        value: "userLogin",
-        align: "left",
-      },
-      {
-        text: 'On',
-        value: 'createdOn',
-        sortable: true,
-        filterable: false,
-        align: 'left'
-      },
-      {
-        text: "Type",
-        sortable: true,
-        value: "feedbackType",
-        align: "left",
-        filter: (value) => !this.typeFilter ? true : value == this.typeFilter,
-      },
-      {
-        text: "Feature name",
-        sortable: true,
-        value: "featureName",
-        align: "left",
-      },
-      {
-        text: "Feature value",
-        sortable: true,
-        value: "featureValue",
-        align: "left",
-      },
-      {
-        text: "Choice",
-        sortable: true,
-        value: "feedbackChoice",
-        align: "left",
-      },
-      {
-        text: "Message",
-        sortable: true,
-        value: "feedbackMessage",
-        align: "left",
-      },
-    ];
-  }
+const existingModels = computed(() => feedbacks.value.map((e) => e.modelName));
+const existingDatasets = computed(() => feedbacks.value.map((e) => e.datasetName));
+const existingTypes = computed(() => feedbacks.value.map((e) => e.feedbackType));
 
-  get existingModels() {
-    return this.feedbacks.map((e) => e.modelName);
-  }
+async function fetchFeedbacks() {
+  feedbacks.value = await api.getProjectFeedbacks(projectId);
+}
 
-  get existingDatasets() {
-    return this.feedbacks.map((e) => e.datasetName);
-  }
-
-  get existingTypes() {
-    return this.feedbacks.map((e) => e.feedbackType);
-  }
-
-  public async fetchFeedbacks() {
-    this.feedbacks = await api.getProjectFeedbacks(this.projectId);
-  }
-
-  public async openFeedback(obj) {
-    await this.$router.push({name: 'feedback-detail', params: {feedbackId: obj.id}})
-  }
-
+async function openFeedback(obj) {
+  await router.push({name: 'feedback-detail', params: {feedbackId: obj.id}})
 }
 </script>
 
