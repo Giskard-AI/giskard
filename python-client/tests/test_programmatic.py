@@ -92,18 +92,11 @@ def test_shared_input(german_credit_data: Dataset, german_credit_model: Model):
              )[0]
 
 def test_giskard_test_class(german_credit_data: Dataset, german_credit_model: Model):
-    first_half = german_credit_data.slice(lambda df: df.head(len(df) // 2))
-    last_half = german_credit_data.slice(lambda df: df.tail(len(df) // 2))
-
     shared_input = SuiteInput("dataset", Dataset)
 
     assert Suite() \
-          .add_test(AucTest(actual_slice=shared_input, threshold=0.2), actual_slice=shared_input, threshold=0.2) \
-          .run(model=german_credit_model,
-               dataset=german_credit_data,
-               actual_slice=first_half,
-               reference_slice=last_half
-               )[0]
+          .add_test(AucTest(actual_slice=shared_input, threshold=0.2)) \
+          .run(model=german_credit_model)[0]
 
 @httpretty.activate(verbose=True, allow_net_connect=False)
 def test_save_suite(german_credit_data: Dataset, german_credit_model: Model):
