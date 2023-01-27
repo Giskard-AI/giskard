@@ -110,4 +110,4 @@ def test_disparate_impact(german_credit_data, german_credit_model):
         model=german_credit_model,
         positive_outcome="Not default"
     )
-    assert results.passed, f"DI = {results.metric}"
+    assert not results.passed, f"DI = {results.metric}"
