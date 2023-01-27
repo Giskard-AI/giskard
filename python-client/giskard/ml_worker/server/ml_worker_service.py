@@ -21,6 +21,7 @@ from giskard.ml_worker.core.model_explanation import (
     explain_text,
 )
 from giskard.ml_worker.core.suite import Suite
+from giskard.ml_worker.core.test_runner import run_test
 from giskard.ml_worker.exceptions.IllegalArgumentError import IllegalArgumentError
 from giskard.ml_worker.exceptions.giskard_exception import GiskardException
 from giskard.ml_worker.generated.ml_worker_pb2 import *
@@ -125,7 +126,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
         arguments = self.parse_test_arguments(request.arguments)
 
         logger.info(f"Executing {test.name}")
-        test_result = test.fn(**arguments)
+        test_result = run_test(test.fn, arguments)
         return TestResultMessage(results=[NamedSingleTestResult(name=test.id, result=test_result)])
 
     def runTestSuite(self, request: RunTestSuiteRequest,
