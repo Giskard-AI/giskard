@@ -99,6 +99,23 @@ def _test_diff_prediction(
     )
 
 
+@test(name="AUC test class", tags=["performance"])
+class AucTest(GiskardTest):
+    actual_slice: Dataset
+    model: Model
+    threshold: float = 1.0
+
+    def __init__(self,
+                 actual_slice: Dataset,
+                 model: Model,
+                 threshold: float = 0.5):
+        self.actual_slice = actual_slice
+        self.model = model
+        self.threshold = threshold
+
+    def execute(self) -> SingleTestResult:
+        return test_auc(self.actual_slice, self.model, self.threshold)
+
 
 @test(name='AUC', tags=['performance'])
 def test_auc(actual_slice: Dataset, model: Model, threshold: float = 1.0):
