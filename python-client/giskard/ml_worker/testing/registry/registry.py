@@ -156,7 +156,8 @@ class GiskardTestRegistry:
                     name: TestFunctionArgument(
                         name=name,
                         type=parameters[name].annotation.__qualname__,
-                        optional=parameters[name].default != inspect.Parameter.empty,
+                        optional=parameters[name].default != inspect.Parameter.empty
+                                 and parameters[name].default is not None,
                         default=None if parameters[name].default == inspect.Parameter.empty else parameters[
                             name].default
                     )
