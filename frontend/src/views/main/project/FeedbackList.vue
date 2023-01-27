@@ -109,7 +109,6 @@ const router = useRouter();
 
 const { projectId } = defineProps<{ projectId: number }>();
 
-
 const feedbacks = ref<FeedbackMinimalDTO[]>([]);
 const search = ref<string>('');
 const modelFilter = ref<string>('');
@@ -230,8 +229,6 @@ function deleteFeedback(feedback: FeedbackMinimalDTO) {
       }
     }
   });
-}
-
 }
 </script>
 
