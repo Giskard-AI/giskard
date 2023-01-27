@@ -46,7 +46,6 @@ public class TestSuiteService {
     private final TestService testService;
     private final TestSuiteExecutionService testSuiteExecutionService;
     private final TestSuiteExecutionRepository testSuiteExecutionRepository;
-    private final SuiteTestRepository suiteTestRepository;
 
     public TestSuite updateTestSuite(UpdateTestSuiteDTO dto) {
         TestSuite suite = testSuiteRepository.getById(dto.getId());
