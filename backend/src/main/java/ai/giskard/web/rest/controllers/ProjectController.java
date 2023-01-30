@@ -5,6 +5,7 @@ import ai.giskard.repository.ProjectRepository;
 import ai.giskard.security.PermissionEvaluator;
 import ai.giskard.service.FileLocationService;
 import ai.giskard.service.ProjectService;
+import ai.giskard.web.dto.PostImportProjectDTO;
 import ai.giskard.web.dto.PrepareImportProjectDTO;
 import ai.giskard.web.dto.mapper.GiskardMapper;
 import ai.giskard.web.dto.ml.ProjectDTO;
@@ -19,11 +20,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
 import java.io.IOException;
-import java.nio.file.Path;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Controller for the {@link Project} resource
@@ -140,19 +138,17 @@ public class ProjectController {
         return giskardMapper.projectToProjectDTO(project);
     }
 
-    @PostMapping(value = "/project/import/{timestampDirectory}/{projectKey}/prepare", consumes = "multipart/form-data")
-    public PrepareImportProjectDTO prepareImport(@RequestParam("file") MultipartFile zipFile, @PathVariable("timestampDirectory") @NotNull String timestampDirectory, @PathVariable("projectKey") String projectKey, @AuthenticationPrincipal final UserDetails userDetails) throws IOException {
-        Path pathToTimestampDirectory;
+    @PostMapping(value = "/project/import/prepare", consumes = "multipart/form-data")
+    public PrepareImportProjectDTO prepareImport(@RequestParam("file") MultipartFile zipFile) throws IOException {
         permissionEvaluator.canWrite();
-        pathToTimestampDirectory = projectService.unzip(timestampDirectory, zipFile);
-        return projectService.prepareImport(pathToTimestampDirectory, projectKey);
+        return projectService.prepareImport(zipFile);
     }
 
-    @PostMapping(value = "/project/import/{timestampDirectory}/{projectKey}")
+    @PostMapping(value = "/project/import")
     @Transactional
-    public ProjectDTO importProject(@RequestBody Map<String, String> mappedUsers, @PathVariable("projectKey") @NotNull String projectKey, @PathVariable("timestampDirectory") @NotNull String timestampDirectory, @AuthenticationPrincipal final UserDetails userDetails) throws IOException {
+    public ProjectDTO importProject(@RequestBody PostImportProjectDTO postImportProject, @AuthenticationPrincipal final UserDetails userDetails) throws IOException {
         permissionEvaluator.canWrite();
-        Project project = projectService.importProject(mappedUsers, timestampDirectory, projectKey, userDetails.getUsername());
+        Project project = projectService.importProject(postImportProject.getMappedUsers(), postImportProject.getPathToMetadataDirectory(), postImportProject.getProjectKey(), userDetails.getUsername());
         return giskardMapper.projectToProjectDTO(project);
     }
 }

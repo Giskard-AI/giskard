@@ -90,7 +90,7 @@
     <v-dialog v-model="openImportDialog" width="500" persistent>
       <v-card>
         <ValidationObserver ref="dialogForm">
-          <v-form @submit.prevent="prepareImportAndTimestamp()">
+          <v-form @submit.prevent="prepareImport()">
             <v-card-title>Import project</v-card-title>
             <v-card-text>
               <ValidationProvider name="File" rules="required" v-slot="{errors}">
@@ -113,7 +113,7 @@
     <v-dialog v-model="openPrepareDialog" width="500" persistent>
       <v-card>
         <ValidationObserver ref="dialogForm">
-          <v-form @submit.prevent="prepareAndUploadIfNoConflict()">
+          <v-form @submit.prevent="ImportIfNoConflictKey()">
             <v-card-text>
               <div class="title">Set new key for the imported project</div>
               <ValidationProvider ref="validatorNewKey" name="Name" mode="eager" rules="required" v-slot="{errors}">
@@ -191,7 +191,7 @@ import {ValidationObserver} from "vee-validate";
 import {dispatchCreateProject, dispatchGetProjects} from "@/store/main/actions";
 import {readAllProjects, readHasAdminAccess, readUserProfile} from "@/store/main/getters";
 import {Role} from "@/enums";
-import {ProjectPostDTO} from "@/generated-sources";
+import {PostImportProjectDTO, ProjectPostDTO} from "@/generated-sources";
 import {toSlug} from "@/utils";
 import store from "@/store";
 import router from "@/router"
@@ -206,15 +206,15 @@ const openCreateDialog = ref<boolean>(false); // toggle for edit or create dialo
 const openPrepareDialog = ref<boolean>(false);
 const openImportDialog = ref<boolean>(false);
 const newProjectName = ref<string>("");
-const newProjectKey = ref<string | null>("");
+const newProjectKey = ref<string>("");
 const newProjectDesc = ref<string>("");
 const creatorFilter = ref<number>(0);
 const projectCreateError = ref<string>("");
 const validatorNewKey = ref();
-const timestamp = ref<string>("");
+const metadataDirectoryPath = ref<string>("");
 const loginsCurrentInstance = ref<string[]>([]);
 const loginsImportedProject = ref<string[]>([]);
-const mapLogins = ref<object>({});
+const mapLogins = ref<{[key: string]: string}>({});
 
 // template ref
 const dialogForm = ref<InstanceType<typeof ValidationObserver> | null>(null);
@@ -253,19 +253,15 @@ async function loadProjects() {
   await dispatchGetProjects(store);
 }
 
-async function prepareImportAndTimestamp(){
-  timestamp.value = Date.now().toString();
-  newProjectKey.value = null;
-  if (newProjectKey.value == ""){
-    return; 
-  }
+async function prepareImport(){
   let uploadedFile = file.value.$refs.input.files[0];
   let formData = new FormData();
   formData.append('file', uploadedFile);
-  return await api.prepareImport(formData, timestamp.value, newProjectKey.value)
+  return await api.prepareImport(formData)
   .then(response => {
     loginsCurrentInstance.value = response.loginsCurrentInstance;
     loginsImportedProject.value = response.loginsImportedProject;
+    metadataDirectoryPath.value = response.temporaryMetadataDirectory;
     openImportDialog.value = false;
     openPrepareDialog.value = true;
     loginsImportedProject.value.forEach((item, index) => {
@@ -275,31 +271,38 @@ async function prepareImportAndTimestamp(){
     else{
         mapLogins.value[item] = loginsCurrentInstance.value[index];
     }});
-    newProjectKey.value = "";
+    newProjectKey.value = response.projectKey;
   })
 }
 
-async function prepareAndUploadIfNoConflict(){
-  if (newProjectKey.value == ""){
-    return; 
-  }
-  let uploadedFile = file.value.$refs.input.files[0];
-  let formData = new FormData();
-  formData.append('file', uploadedFile);
-  await api.prepareImport(formData, timestamp.value, newProjectKey.value).then(response =>{
-    if (response.projectKeyAlreadyExists){
+async function ImportIfNoConflictKey(){
+  let projects = readAllProjects(store);
+  let keyAlreadyExist : boolean = false;
+  projects.forEach(project => {
+    if (project.key == newProjectKey.value) keyAlreadyExist = true;
+  })
+
+  if (keyAlreadyExist){
       validatorNewKey.value.applyResult({
       errors: ["A project with this key already exist, please change key"],
       valid: false,
       failedRules: {}})
-    } else {
-      mixpanel.track('Import project', {projectkey: newProjectKey.value});
-      api.importProject(timestamp.value, newProjectKey.value!, mapLogins.value)
+  }
+  else {
+    let uploadedFile = file.value.$refs.input.files[0];
+    let formData = new FormData();
+    formData.append('file', uploadedFile);
+    mixpanel.track('Import project', {projectkey: newProjectKey.value});
+    const postImportProject : PostImportProjectDTO = {
+      mappedUsers: mapLogins.value,
+      projectKey: newProjectKey.value,
+      pathToMetadataDirectory: metadataDirectoryPath.value 
+    }
+    api.importProject(postImportProject)
         .then((p) => {
           router.push({name: 'project-overview', params: {id: p.id}})
-        })
-  }});
-
+      })
+  }
 }
 
 function clearAndCloseDialog() {

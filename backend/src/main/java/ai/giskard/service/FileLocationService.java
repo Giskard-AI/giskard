@@ -36,13 +36,13 @@ public class FileLocationService {
         return modelsDirectory(projectKey).resolve(createZSTname("model_", modelId));
     }
 
-    public Path timestampMetadataDirectory(){
+    public Path temporaryMetadataDirectory(){
         String randomDirName = RandomStringUtils.randomAlphanumeric(8); // NOSONAR: no security risk here
         return resolvedTmpPath().resolve(randomDirName);
     }
 
-    public Path resolvedMetadataPath(Path timestampMetadataDir,  String entityName){
-        return timestampMetadataDir.resolve(entityName.toLowerCase() + "-metadata.yaml");
+    public Path resolvedMetadataPath(Path temporaryMetadataDir,  String entityName){
+        return temporaryMetadataDir.resolve(entityName.toLowerCase() + "-metadata.yaml");
     }
 
     public Path resolveFilePath(ProjectFile file) {

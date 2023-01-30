@@ -53,6 +53,7 @@ export const GENERATED_MAPPING = {
     'ai.giskard.web.dto.ModelMetadataDTO' : 'ModelMetadataDTO',
     'ai.giskard.web.dto.ModelUploadParamsDTO' : 'ModelUploadParamsDTO',
     'ai.giskard.web.dto.PasswordResetRequest' : 'PasswordResetRequest',
+    'ai.giskard.web.dto.PostImportProjectDTO' : 'PostImportProjectDTO',
     'ai.giskard.web.dto.PredictionDTO' : 'PredictionDTO',
     'ai.giskard.web.dto.PredictionInputDTO' : 'PredictionInputDTO',
     'ai.giskard.web.dto.PrepareDeleteDTO$LightTestSuite' : 'PrepareDeleteDTO.LightTestSuite',
@@ -124,6 +125,7 @@ export * from './ai/giskard/web/dto/ml/write/test-suite-post-dto';
 export * from './ai/giskard/web/dto/model-metadata-dto';
 export * from './ai/giskard/web/dto/model-upload-params-dto';
 export * from './ai/giskard/web/dto/password-reset-request';
+export * from './ai/giskard/web/dto/post-import-project-dto';
 export * from './ai/giskard/web/dto/prediction-dto';
 export * from './ai/giskard/web/dto/prediction-input-dto';
 export * from './ai/giskard/web/dto/prepare-delete-dto';

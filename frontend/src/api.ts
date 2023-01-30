@@ -41,6 +41,7 @@ import {
     UpdateTestSuiteDTO,
     UserDTO
 } from './generated-sources';
+import { PostImportProjectDTO } from './generated-sources/ai/giskard/web/dto/post-import-project-dto';
 import {TYPE} from "vue-toastification";
 import ErrorToast from "@/views/main/utils/ErrorToast.vue";
 import router from "@/router";
@@ -270,14 +271,14 @@ export const api = {
     async getProjectModels(id: number) {
         return axiosProject.get<unknown, ModelDTO[]>(`/${id}/models`);
     },
-    async prepareImport(formData: FormData, timestamp: string, projectKey){
+    async prepareImport(formData: FormData){
         const headers = { 'Content-Type': 'multipart/form-data' };
-        return axiosProject.post<unknown, PrepareImportProjectDTO>(`/import/${timestamp}/${projectKey}/prepare`, formData, {
+        return axiosProject.post<unknown, PrepareImportProjectDTO>(`/import/prepare`, formData, {
             headers: headers
         });
     },
-    async importProject(timestampDirectory: string, projectKey: string, map: object){
-        return axiosProject.post<unknown, ProjectDTO>(`/import/${timestampDirectory}/${projectKey}`, map);
+    async importProject(postImportProject: PostImportProjectDTO){
+        return axiosProject.post<unknown, ProjectDTO>(`/import`, postImportProject);
     },
     async deleteDatasetFile(datasetId: number) {
         return apiV2.delete<unknown, MessageDTO>(`/dataset/${datasetId}`);
