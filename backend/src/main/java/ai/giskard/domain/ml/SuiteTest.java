@@ -27,7 +27,7 @@ public class SuiteTest {
     @NotNull
     private TestSuiteNew suite;
 
-    @OneToMany(mappedBy = "test", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "test", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<TestInput> testInputs = new java.util.ArrayList<>();
 
     @OneToMany(mappedBy = "test", fetch = FetchType.LAZY, cascade = CascadeType.ALL)

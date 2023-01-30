@@ -12,7 +12,7 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @UIModel
-public class TestExecutionDto {
+public class SuiteTestExecutionDTO {
 
     private SuiteTestDTO test;
     private List<TestResultMessageDTO> messages;
