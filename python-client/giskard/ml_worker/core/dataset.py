@@ -34,7 +34,10 @@ class Dataset:
         self.df = pd.DataFrame(df)
         self.target = target
         self.column_types = self.extract_column_types(self.df)
-        self.column_meanings = {f: SupportedColumnMeanings.CATEGORY for f in cat_columns}
+        if cat_columns:
+            self.column_meanings = {f: SupportedColumnMeanings.CATEGORY for f in cat_columns}
+        else:
+            self.column_meanings = None
 
     @staticmethod
     def extract_column_types(df):
