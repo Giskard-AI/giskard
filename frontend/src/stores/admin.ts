@@ -2,6 +2,7 @@ import {defineStore} from "pinia";
 import {AdminUserDTO, RoleDTO} from "@/generated-sources";
 import {api} from "@/api";
 import {useMainStore} from "@/stores/main";
+import {useUserStore} from "@/stores/user";
 import AdminUserDTOWithPassword = AdminUserDTO.AdminUserDTOWithPassword;
 
 
@@ -15,14 +16,12 @@ export const useAdminStore = defineStore('admin', {
         users: [],
         roles: []
     }),
-    getters: {
-
-    },
+    getters: {},
     actions: {
         getUser(id: number) {
             const filteredUsers = this.users.filter((user) => user.id === id);
             if (filteredUsers.length > 0) {
-                return { ...filteredUsers[0] };
+                return {...filteredUsers[0]};
             }
         },
 
@@ -52,13 +51,13 @@ export const useAdminStore = defineStore('admin', {
 
         async updateUser(payload: { user: Partial<AdminUserDTOWithPassword> }) {
             const mainStore = useMainStore();
-            const loadingNotification = { content: 'saving', showProgress: true };
+            const loadingNotification = {content: 'Saving', showProgress: true};
             try {
                 mainStore.addNotification(loadingNotification);
-                const response = await api.updateUser( payload.user);
+                const response = await api.updateUser(payload.user);
                 this.setUser(response);
                 mainStore.removeNotification(loadingNotification);
-                mainStore.addNotification({ content: 'User successfully updated', color: 'success' });
+                mainStore.addNotification({content: 'User successfully updated', color: 'success'});
             } catch (error) {
                 await mainStore.checkApiError(error);
                 throw new Error(error.response.data.detail);
@@ -67,13 +66,13 @@ export const useAdminStore = defineStore('admin', {
 
         async createUser(user: AdminUserDTOWithPassword) {
             const mainStore = useMainStore();
-            const loadingNotification = { content: 'saving', showProgress: true };
+            const loadingNotification = {content: 'Saving', showProgress: true};
             try {
                 mainStore.addNotification(loadingNotification);
                 const response = await api.createUser(user);
                 this.setUser(response);
                 mainStore.removeNotification(loadingNotification);
-                mainStore.addNotification({ content: 'User successfully created', color: 'success' });
+                mainStore.addNotification({content: 'User successfully created', color: 'success'});
             } catch (error) {
                 await mainStore.checkApiError(error);
                 throw new Error(error.response.data.detail);
@@ -82,13 +81,19 @@ export const useAdminStore = defineStore('admin', {
 
         async deleteUser(user: AdminUserDTOWithPassword) {
             const mainStore = useMainStore();
-            const loadingNotification = {content: 'saving', showProgress: true};
+            const userStore = useUserStore();
+            const loadingNotification = {content: 'Saving', showProgress: true};
             try {
                 mainStore.addNotification(loadingNotification);
-                const response = await api.deleteUser(user.user_id!);
+                await api.deleteUser(user.user_id!);
                 await this.getUsers();
                 mainStore.removeNotification(loadingNotification);
                 mainStore.addNotification({content: 'Successfully deleted', color: 'success'});
+
+                // If we deleted ourselves, we want to logout as our user no longer exists.
+                if (userStore.userProfile?.id === user.id) {
+                    await userStore.logout();
+                }
             } catch (error) {
                 await mainStore.checkApiError(error);
                 throw new Error(error.response.data.detail);
@@ -97,13 +102,13 @@ export const useAdminStore = defineStore('admin', {
 
         async enableUser(user: AdminUserDTOWithPassword) {
             const mainStore = useMainStore();
-            const loadingNotification = { content: 'saving', showProgress: true };
+            const loadingNotification = {content: 'Saving', showProgress: true};
             try {
                 mainStore.addNotification(loadingNotification);
-                const response = await api.enableUser(user.user_id!);
+                await api.enableUser(user.user_id!);
                 await this.getUsers();
                 mainStore.removeNotification(loadingNotification);
-                mainStore.addNotification({ content: 'Successfully restored', color: 'success' });
+                mainStore.addNotification({content: 'Successfully restored', color: 'success'});
             } catch (error) {
                 await mainStore.checkApiError(error);
                 throw new Error(error.response.data.detail);

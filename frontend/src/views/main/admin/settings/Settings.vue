@@ -26,7 +26,6 @@ interface Tab {
 
 const tabs = ref<Tab[]>([]);
 
-// TODO: Check featureflags?
 onMounted(() => {
   tabs.value = [
     {to: "/main/admin/general", icon: "mdi-cog", text: "General"}
@@ -38,7 +37,3 @@ onMounted(() => {
 })
 
 </script>
-
-<style scoped>
-
-</style>

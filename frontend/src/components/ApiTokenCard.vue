@@ -54,7 +54,3 @@ async function copyToken() {
   mainStore.addNotification({content: "Copied to clipboard", color: "success"});
 }
 </script>
-
-<style scoped>
-
-</style>
