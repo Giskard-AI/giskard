@@ -1,6 +1,6 @@
 package ai.giskard.domain.ml;
 
-import ai.giskard.domain.WorkerJob;
+import ai.giskard.domain.BaseEntity;
 import ai.giskard.utils.SimpleJSONStringAttributeConverter;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -8,6 +8,7 @@ import lombok.Setter;
 
 import javax.persistence.*;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -15,7 +16,7 @@ import java.util.Map;
 @NoArgsConstructor
 @Getter
 @Setter
-public class TestSuiteExecution extends WorkerJob {
+public class TestSuiteExecution extends BaseEntity {
 
 
     @ManyToOne
@@ -30,6 +31,9 @@ public class TestSuiteExecution extends WorkerJob {
 
     @OneToMany(mappedBy = "execution", cascade = CascadeType.ALL)
     private List<SuiteTestExecution> results = new ArrayList<>();
+
+    private Date executionDate = new Date();
+    private Date completionDate;
 
     public TestSuiteExecution(TestSuiteNew suite) {
         this.suite = suite;

@@ -17,6 +17,7 @@ import {
     GeneralSettings,
     InspectionCreateDTO,
     InspectionDTO,
+    JobDTO,
     JWTToken,
     ManagedUserVM,
     MessageDTO,
@@ -40,8 +41,7 @@ import {
     TokenAndPasswordVM,
     UpdateMeDTO,
     UpdateTestSuiteDTO,
-    UserDTO,
-    WorkerJobDTO
+    UserDTO
 } from './generated-sources';
 import {TYPE} from "vue-toastification";
 import ErrorToast from "@/views/main/utils/ErrorToast.vue";
@@ -196,7 +196,10 @@ export const api = {
         return apiV2.get<unknown, MLWorkerInfoDTO[]>(`/settings/ml-worker-info`);
     },
     async getRunningWorkerJobs() {
-        return apiV2.get<unknown, WorkerJobDTO[]>(`/worker/jobs/running`);
+        return apiV2.get<unknown, JobDTO[]>(`/jobs/running`);
+    },
+    async trackJob(jobUuid: string) {
+        return apiV2.get<unknown, JobDTO>(`/jobs/${jobUuid}`);
     },
     async saveGeneralSettings(settings: GeneralSettings) {
         return apiV2.post<unknown, GeneralSettings>(`/settings`, settings);
@@ -423,4 +426,5 @@ export const api = {
     async runAdHocTest(projectId: number, testId: string, inputs: { [key: string]: string }) {
         return apiV2.post<unknown, TestExecutionResultDTO>(`/testing/tests/run-test`, {projectId, testId, inputs});
     },
+
 };
