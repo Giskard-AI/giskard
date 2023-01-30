@@ -14,6 +14,7 @@ import {
     FeatureMetadataDTO,
     FeedbackDTO,
     FeedbackMinimalDTO,
+    FileDTO,
     GeneralSettings,
     InspectionCreateDTO,
     InspectionDTO,
@@ -216,6 +217,9 @@ export const api = {
     async deleteUser(userId: number) {
         return apiV2.delete<unknown, void>(`/admin/users/${userId}`);
     },
+    async enableUser(userId: number) {
+        return apiV2.patch<unknown, void>(`/admin/users/${userId}/enable`);
+    },
     async passwordRecovery(email: string) {
         return apiV2.post<unknown, void>(`/account/password-recovery`, <PasswordResetRequest>{email});
     },
@@ -281,6 +285,9 @@ export const api = {
     downloadModelFile(id: number) {
         downloadURL(`${API_V2_ROOT}/download/model/${id}`);
     },
+    async editModelName(modelId: number, name: string) {
+      return apiV2.patch<unknown, ModelDTO>(`/models/${modelId}/name/${encodeURIComponent(name)}`, null)
+    },
     downloadDataFile(id: number) {
         downloadURL(`${API_V2_ROOT}/download/dataset/${id}`);
     },
@@ -295,6 +302,9 @@ export const api = {
     },
     async getDataFilteredByRange(inspectionId, props, filter) {
         return apiV2.post<unknown, any>(`/inspection/${inspectionId}/rowsFiltered`, filter, {params: props});
+    },
+    async editDatasetName(datasetId: number, name: string) {
+        return apiV2.patch<unknown, FileDTO>(`/dataset/${datasetId}/name/${encodeURIComponent(name)}`, null)
     },
     async getDataFilteredBySlice(inspectionId, sliceId) {
         return apiV2.post<unknown, any>(`/inspection/${inspectionId}/slice/${sliceId}`);
@@ -360,6 +370,9 @@ export const api = {
                 content,
                 replyToReply: replyToId
             });
+    },
+    async deleteFeedback(id: number) {
+        return apiV2.delete<unknown, void>(`/feedbacks/${id}`);
     },
     async getTestSuites(projectId: number) {
         return apiV2.get<unknown, Array<TestSuiteDTO>>(`/testing/suites/${projectId}`);
