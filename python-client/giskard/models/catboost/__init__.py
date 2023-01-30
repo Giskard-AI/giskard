@@ -20,5 +20,8 @@ class CatboostModel(Model):
     def read_model_from_local_dir(local_path):
         return mlflow.catboost.load_model(local_path)
 
+    def _save_model_to_local_dir(self, local_path, **kwargs):
+        return mlflow.catboost.save_model(self.clf, path=local_path, **kwargs)
+
     def _raw_predict(self, data):
         return self.clf.predict_proba(data)
