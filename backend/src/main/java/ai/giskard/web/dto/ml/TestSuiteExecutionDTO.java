@@ -16,11 +16,13 @@ import java.util.Map;
 @Setter
 @NoArgsConstructor
 public class TestSuiteExecutionDTO {
-    Long id;
-    Long suiteId;
+    private Long id;
+    private Long suiteId;
     private Map<String, String> inputs;
     @UINullable
-    TestResult result;
+    private TestResult result;
+    @UINullable
+    private String message;
     @UINullable
     private List<SuiteTestExecutionDTO> results;
 
