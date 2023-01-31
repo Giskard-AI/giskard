@@ -1,6 +1,6 @@
 package ai.giskard.security.ee;
 
-import ai.giskard.security.jwt.TokenProvider;
+import ai.giskard.security.ee.jwt.TokenProvider;
 import ai.giskard.service.ee.LicenseService;
 import org.springframework.security.config.annotation.SecurityConfigurerAdapter;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;

@@ -1,18 +1,15 @@
 package ai.giskard.security.jwt;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 import ai.giskard.config.ApplicationProperties;
 import ai.giskard.management.SecurityMetersService;
 import ai.giskard.security.AuthoritiesConstants;
 import ai.giskard.security.GiskardUser;
+import ai.giskard.security.ee.jwt.JWTFilter;
+import ai.giskard.security.ee.jwt.TokenProvider;
 import ai.giskard.web.dto.JWTToken;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
-
-import java.util.Collections;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
@@ -24,6 +21,10 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.util.ReflectionTestUtils;
 import tech.jhipster.config.JHipsterProperties;
+
+import java.util.Collections;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 class JWTFilterTest {
 

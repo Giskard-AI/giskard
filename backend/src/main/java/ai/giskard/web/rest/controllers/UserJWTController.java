@@ -1,7 +1,7 @@
 package ai.giskard.web.rest.controllers;
 
-import ai.giskard.security.jwt.JWTFilter;
-import ai.giskard.security.jwt.TokenProvider;
+import ai.giskard.security.ee.jwt.JWTFilter;
+import ai.giskard.security.ee.jwt.TokenProvider;
 import ai.giskard.web.dto.JWTToken;
 import ai.giskard.web.rest.vm.LoginVM;
 import org.springframework.http.HttpHeaders;
