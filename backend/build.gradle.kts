@@ -1,5 +1,4 @@
 import com.google.protobuf.gradle.*
-import org.gradle.api.JavaVersion
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -191,7 +190,6 @@ dependencies {
     }
     implementation("org.springframework.boot:spring-boot-starter-undertow")
     implementation("org.springframework.boot:spring-boot-starter-thymeleaf")
-    implementation("org.springframework.boot:spring-boot-starter-webflux")
     implementation("org.zalando:problem-spring-web")
     implementation("org.springframework.cloud:spring-cloud-starter-bootstrap")
     implementation("org.springframework.security:spring-security-config")
@@ -269,7 +267,7 @@ sourceSets {
 }
 
 tasks {
-    withType<Test>() {
+    withType<Test> {
         useJUnitPlatform()
         maxParallelForks = Runtime.getRuntime().availableProcessors()
     }
