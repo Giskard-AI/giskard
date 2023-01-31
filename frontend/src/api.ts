@@ -29,6 +29,7 @@ import {
     ProjectDTO,
     ProjectPostDTO,
     RoleDTO,
+    SuiteTestDTO,
     TestCatalogDTO,
     TestDTO,
     TestExecutionResultDTO,
@@ -325,6 +326,10 @@ export const api = {
     },
     async getTestSuiteNewInputs(projectId: number, suiteId: number) {
         return apiV2.get<unknown, any>(`testing/project/${projectId}/suite-new/${suiteId}/inputs`);
+    },
+    async addTestToSuite(projectId: number, suiteId: number, suiteTest: SuiteTestDTO) {
+        return apiV2.post<unknown, TestSuiteNewDTO>(`testing/project/${projectId}/suite-new/${suiteId}/test`,
+            suiteTest);
     },
     async getInspection(inspectionId: number) {
         return apiV2.get<unknown, InspectionDTO>(`/inspection/${inspectionId}`);

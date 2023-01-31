@@ -8,6 +8,7 @@ import ai.giskard.repository.ml.TestSuiteNewRepository;
 import ai.giskard.repository.ml.TestSuiteRepository;
 import ai.giskard.service.TestService;
 import ai.giskard.service.TestSuiteService;
+import ai.giskard.web.dto.SuiteTestDTO;
 import ai.giskard.web.dto.TestSuiteCreateDTO;
 import ai.giskard.web.dto.TestSuiteNewDTO;
 import ai.giskard.web.dto.mapper.GiskardMapper;
@@ -105,6 +106,15 @@ public class TestSuiteController {
     public Map<String, String> getSuiteInputs(@PathVariable("projectId") @NotNull Long projectId,
                                               @PathVariable("suiteId") @NotNull Long suiteId) {
         return testSuiteService.getSuiteInputs(projectId, suiteId);
+    }
+
+    @PostMapping("project/{projectId}/suite-new/{suiteId}/test")
+    @PreAuthorize("@permissionEvaluator.canWriteProject(#projectId)")
+    @Transactional
+    public TestSuiteNewDTO addTestToSuite(@PathVariable("projectId") long projectId,
+                                          @PathVariable("suiteId") long suiteId,
+                                          @Valid @RequestBody SuiteTestDTO suiteTest) {
+        return testSuiteService.addTestToSuite(suiteId, suiteTest);
     }
 
     @PostMapping("project/{projectKey}/suites")
