@@ -139,7 +139,7 @@ public class ImportService {
         return projectRepository.save(savedProject);
     }
 
-    public Long getIdFromFileName(BaseEntity b){
+    private Long getIdFromFileName(BaseEntity b){
         if (b.getClass() == Dataset.class){
             return Long.parseLong(((Dataset) b).getFileName().replaceFirst("data_", "").replaceFirst(".zst", ""));
         } else if (b.getClass() == ProjectModel.class){
