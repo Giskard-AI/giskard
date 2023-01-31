@@ -1,18 +1,11 @@
 <template>
-  <v-dialog
-      v-model="dialog"
-      width="500"
+  <vue-final-modal
+      v-slot="{ close }"
+      v-bind="$attrs"
+      classes="modal-container"
+      content-class="modal-content"
+      v-on="$listeners"
   >
-    <template v-slot:activator="{ on, attrs }">
-      <v-btn
-          color="primary"
-          v-bind="attrs"
-          v-on="on"
-      >
-        New test suite
-      </v-btn>
-    </template>
-
     <v-form @submit.prevent="">
       <ValidationObserver ref="observer" v-slot="{ invalid }">
         <v-card>
@@ -38,7 +31,7 @@
             <v-btn
                 color="primary"
                 text
-                @click="submit"
+                @click="submit(close)"
                 :disabled="invalid"
             >
               Create
@@ -47,48 +40,60 @@
         </v-card>
       </ValidationObserver>
     </v-form>
-  </v-dialog>
+  </vue-final-modal>
 </template>
 
 <script setup lang="ts">
 
-import {onMounted, ref} from 'vue';
+import {ref} from 'vue';
 import mixpanel from 'mixpanel-browser';
 import {api} from '@/api';
-import {ProjectDTO, TestSuiteNewDTO} from '@/generated-sources';
+import {TestSuiteNewDTO} from '@/generated-sources';
 import {useRouter} from 'vue-router/composables';
 
-const { projectId } = defineProps<{
-  projectId: number
+const { projectKey } = defineProps<{
+  projectKey: string
 }>();
 
 const dialog = ref<boolean>(false);
 const name = ref<string>('');
 const shouldCreateAutoTests = ref<boolean>(false);
-const project = ref<ProjectDTO | null>(null);
-
-onMounted(async () => project.value = await api.getProject(projectId));
 
 const router = useRouter();
 
-async function submit() {
-  if (project.value === null) {
-    return;
-  }
-
+async function submit(close) {
   mixpanel.track('Create test suite v2', {
-    projectId,
+    projectKey,
     shouldGenerateTests: shouldCreateAutoTests.value
   });
 
-  const createdTestSuiteId = await api.createTestSuitesNew(project.value.key, {
+  const createdTestSuiteId = await api.createTestSuitesNew(projectKey, {
     id: null,
     name: name.value,
     tests: [],
-    projectKey: project.value.key
+    projectKey: projectKey
   } as TestSuiteNewDTO, shouldCreateAutoTests.value);
 
   dialog.value = false;
   await router.push({name: 'test-suite-new', params: {suiteId: createdTestSuiteId.toString()}});
+
+  close();
 }
 </script>
+
+<style scoped>
+::v-deep(.modal-container) {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+::v-deep(.modal-content) {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  margin: 0 1rem;
+  padding: 1rem;
+}
+
+</style>
