@@ -261,17 +261,16 @@ onBeforeMount(async () => {
   await initMLWorkerInfo();
 })
 
-// TODO: Check if the array is deeply watched
 watch(() => [externalWorkerSelected.value, allMLWorkerSettings.value], () => {
   if (allMLWorkerSettings.value.length) {
     currentWorker.value = allMLWorkerSettings.value.find(value => value.isRemote === externalWorkerSelected.value) || null;
     installedPackagesData.value = currentWorker.value !== null ?
-        Object.entries(currentWorker.value!.installedPackages).map(([key, value]) => ({
+        Object.entries(currentWorker.value?.installedPackages).map(([key, value]) => ({
           name: key,
           version: value
         })) : [];
   }
-})
+}, {deep: true})
 
 function isWorkerAvailable(isInternal: boolean): boolean {
   return allMLWorkerSettings.value.find(value => value.isRemote === !isInternal) !== undefined;

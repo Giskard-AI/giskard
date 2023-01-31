@@ -1,7 +1,6 @@
 import {ProjectDTO, ProjectPostDTO} from "@/generated-sources";
 import {defineStore} from "pinia";
 import {useMainStore} from "@/stores/main";
-import {ref} from "vue";
 import {api} from "@/api";
 
 interface State {
@@ -14,7 +13,7 @@ export const useProjectStore = defineStore('project', {
     }),
     getters: {},
     actions: {
-        project(id) : ProjectDTO | undefined {
+        project(id): ProjectDTO | undefined {
             const filtered = this.projects.filter((p) => p.id === id);
             if (filtered.length > 0) return filtered[0];
             else return undefined;
