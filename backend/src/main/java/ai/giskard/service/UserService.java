@@ -195,11 +195,12 @@ public class UserService {
      * @param login
      */
     public void deleteUser(String login) {
-        Role adminRole = roleRepository.findByName(AuthoritiesConstants.ADMIN).get();
         userRepository.findOneWithRolesByLogin(login).ifPresent(user -> {
-            if (user.getRoles().contains(adminRole) && userRepository.findByRoles_NameIn(Collections.singletonList(adminRole.getName())).size() < 2) {
-                throw new GiskardRuntimeException("You must have at least one other admin user before deleting an admin user.");
-            }
+            roleRepository.findByName(AuthoritiesConstants.ADMIN).ifPresent(adminRole -> {
+                if (user.getRoles().contains(adminRole) && userRepository.findByRoles_NameIn(Collections.singletonList(adminRole.getName())).size() < 2) {
+                    throw new GiskardRuntimeException("You must have at least one other admin user before deleting an admin user.");
+                }
+            });
 
             user.setEnabled(false);
             userRepository.save(user);

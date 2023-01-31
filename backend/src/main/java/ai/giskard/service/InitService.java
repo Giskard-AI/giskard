@@ -271,12 +271,12 @@ public class InitService {
 
         if (!featureFlagService.hasFlag(FeatureFlagService.FeatureFlag.Auth)) {
             // Given the loop above, we can safely assume that the user at least exists.
-            User admin = userRepository.findOneByLogin("admin").get();
-
-            if (!admin.isEnabled()) {
-                admin.setEnabled(true);
-                userRepository.save(admin);
-            }
+            userRepository.findOneByLogin("admin").ifPresent(admin -> {
+                if (!admin.isEnabled()) {
+                    admin.setEnabled(true);
+                    userRepository.save(admin);
+                }
+            });
         }
     }
 
