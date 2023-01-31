@@ -28,7 +28,7 @@
                       {{ e.date | moment('MMM Do YY, h:mm:ss a') }}
                   </v-list-item-title>
                   <v-list-item-subtitle>
-                    <v-chip class="mr-2" x-small :color="e.state">
+                    <v-chip class="mr-2" x-small :color="e.color">
                       {{ e.state }}
                     </v-chip>
                   </v-list-item-subtitle>
@@ -44,8 +44,8 @@
                     </div>
                   </v-list-item-title>
                   <v-list-item-subtitle>
-                    <v-chip class="mr-2" x-small :color="executionStatusColor(e.execution)">
-                      {{ executionStatusMessage(e.execution) }}
+                    <v-chip class="mr-2" x-small :color="e.color">
+                      {{ e.state }}
                     </v-chip>
                   </v-list-item-subtitle>
                 </v-list-item-content>
@@ -71,13 +71,22 @@
 <script setup lang="ts">
 
 import {computed, ref, toRef} from 'vue';
-import {DatasetDTO, JobDTO, ModelDTO, TestCatalogDTO, TestResult, TestSuiteExecutionDTO} from '@/generated-sources';
+import {
+  DatasetDTO,
+  JobDTO,
+  JobState,
+  ModelDTO,
+  TestCatalogDTO,
+  TestResult,
+  TestSuiteExecutionDTO
+} from '@/generated-sources';
 import TestSuiteExecutionResults from '@/views/main/project/TestSuiteExecutionResults.vue';
 import TestInputList from '@/components/TestInputList.vue';
 import TestResultHeatmap from '@/components/TestResultHeatmap.vue';
 import moment from 'moment';
 import {Colors} from '@/utils/colors';
 import useRouterParamSynchronization from '@/utils/use-router-param-synchronization';
+import {Comparators} from '@/utils/comparators';
 
 const props = defineProps<{
   projectId: number,
@@ -105,6 +114,17 @@ function executionStatusMessage(execution: TestSuiteExecutionDTO): string {
   }
 }
 
+function jobStatusMessage(job: JobDTO): string {
+  switch (job.state) {
+    case JobState.SCHEDULED:
+      return "scheduled";
+    case JobState.RUNNING:
+      return "running";
+    default:
+      return "N/A";
+  }
+}
+
 function executionStatusColor(execution: TestSuiteExecutionDTO): string {
   switch (execution.result) {
     case TestResult.PASSED:
@@ -112,6 +132,17 @@ function executionStatusColor(execution: TestSuiteExecutionDTO): string {
     case TestResult.ERROR:
     case TestResult.FAILED:
       return Colors.FAIL;
+    default:
+      return "#607d8b";
+  }
+}
+
+function jobStatusColor(job: JobDTO): string {
+  switch (job.state) {
+    case JobState.SCHEDULED:
+      return "#607d8b";
+    case JobState.RUNNING:
+      return "#009688";
     default:
       return "#607d8b";
   }
@@ -142,6 +173,7 @@ type ExecutionTabItem = {
   date: any,
   disabled: boolean,
   state: string,
+  color: string,
   execution?: TestSuiteExecutionDTO
 }
 
@@ -150,9 +182,7 @@ const executionsAndJobs = computed<ExecutionTabItem[] | undefined>(() => {
     return undefined;
   }
 
-  const res: ExecutionTabItem[] = [];
-
-  return  res
+  return  ([] as ExecutionTabItem[])
       .concat(props.executions
           .map(e => ({
             date: e.executionDate,
@@ -165,10 +195,11 @@ const executionsAndJobs = computed<ExecutionTabItem[] | undefined>(() => {
           .map(j => ({
             date: j.scheduledDate,
             disabled: true,
-            state: 'todo',
-            color: 'todo'
+            state: jobStatusMessage(j),
+            color: jobStatusColor(j)
           })))
-      // TODO check why not working
-      .sort((l, r) => l.date - r.date);
-})
+      .sort(Comparators.comparing(e => e.date))
+      .reverse();
+});
+
 </script>
