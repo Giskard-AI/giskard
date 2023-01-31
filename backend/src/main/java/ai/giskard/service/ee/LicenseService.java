@@ -1,12 +1,12 @@
 package ai.giskard.service.ee;
 
+import ai.giskard.config.ApplicationProperties;
+import ai.giskard.config.SpringContext;
 import ai.giskard.service.FileLocationService;
 import ai.giskard.service.GiskardRuntimeException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import lombok.Setter;
 import org.bouncycastle.crypto.params.Ed25519PublicKeyParameters;
 import org.bouncycastle.crypto.signers.Ed25519Signer;
 import org.bouncycastle.util.encoders.Hex;
@@ -17,7 +17,9 @@ import org.springframework.stereotype.Service;
 import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.util.*;
+import java.time.Instant;
+import java.time.ZonedDateTime;
+import java.util.Base64;
 
 @Service
 @RequiredArgsConstructor
@@ -27,53 +29,30 @@ public class LicenseService {
 
     private final FileLocationService fileLocationService;
 
-    private static final String SIGNATURE_KEY = "c947f66224d465b50004c327fc831cff672fc07b540b0613d6f661d0e72d455d";
+    private String licensePublicKey;
 
-    @Getter
-    @Setter
-    public class License {
-        private String planName;
-        private String planCode;
-        private List<String> features;
+    private License currentLicense;
 
-        public Map<FeatureFlagService.FeatureFlag, Boolean> getFeatures() {
-            Map<FeatureFlagService.FeatureFlag, Boolean> map = new HashMap<>();
-
-            for (FeatureFlagService.FeatureFlag featureFlag : FeatureFlagService.FeatureFlag.values()) {
-                map.put(featureFlag, false);
-            }
-
-            if (features != null) {
-                for (String feat : features) {
-                    map.put(FeatureFlagService.FeatureFlag.valueOf(feat), true);
-                }
-            }
-
-            return map;
-        }
-
-        public boolean hasFeature(FeatureFlagService.FeatureFlag flag) {
-            return this.getFeatures().get(flag);
-        }
-    }
-
-    private License license;
-
-    public License getCurrentLicense() {
-        License defaultLicense = new License();
-        defaultLicense.setPlanName("Open Source");
-        return license == null ? defaultLicense : license;
-    }
+    private License defaultLicense;
 
     /**
-     * Checks if there currently is a license. If yes, parses and loads it.
+     * On service init, load the stored license if it exists
+     * Also initialize default license (for now)
      */
     @PostConstruct
-    public void loadLicense() throws IOException {
+    public void init() throws IOException {
+        defaultLicense = new License();
+        defaultLicense.setPlanName("Open Source");
+
         if (Files.exists(fileLocationService.licensePath())) {
             String licenseFile = Files.readString(fileLocationService.licensePath());
             decodeLicense(licenseFile);
         }
+    }
+
+    public License getCurrentLicense() {
+        licensePublicKey = SpringContext.getBean(ApplicationProperties.class).getLicensePublicKey();
+        return currentLicense == null ? defaultLicense : currentLicense;
     }
 
     /**
@@ -107,7 +86,33 @@ public class LicenseService {
         }
 
         // 4. Decode signing bytes and use signature to validate
-        byte[] publicKeyBytes = Hex.decode(SIGNATURE_KEY);
+        if (!verifySignature(encodedData, encodedSig)) {
+            throw new GiskardRuntimeException("License file is invalid.");
+        }
+
+        // 5. Decode license and parse it into a License object
+        String decodedLicense = new String(Base64.getDecoder().decode(encodedData));
+        JsonNode licenseJson = mapper.readTree(decodedLicense);
+
+        JsonNode meta = licenseJson.get("meta");
+        if (!verifyExpired(meta)) {
+            throw new GiskardRuntimeException("License file is expired.");
+        }
+
+        License newLicense = License.fromJson(licenseJson);
+        if (!newLicense.isActive()) {
+            throw new GiskardRuntimeException("License file is invalid.");
+        }
+
+        log.info("License file loaded. Plan: {}", newLicense.getPlanName());
+
+        this.currentLicense = newLicense;
+        return newLicense;
+    }
+
+
+    private boolean verifySignature(String encodedData, String encodedSig) {
+        byte[] publicKeyBytes = Hex.decode(licensePublicKey);
         byte[] signatureBytes = Base64.getDecoder().decode(encodedSig);
         byte[] encDataBytes = String.format("license/%s", encodedData).getBytes();
 
@@ -117,40 +122,14 @@ public class LicenseService {
         verifier.init(false, verifierParams);
         verifier.update(encDataBytes, 0, encDataBytes.length);
 
-        if (!verifier.verifySignature(signatureBytes)) {
-            throw new GiskardRuntimeException("License file is invalid.");
-        }
+        return verifier.verifySignature(signatureBytes);
+    }
 
-        // 5. Decode license and parse it into a License object
-        String decodedLicense = new String(Base64.getDecoder().decode(encodedData));
-        JsonNode licenseJson = mapper.readTree(decodedLicense);
+    private boolean verifyExpired(JsonNode licenseMetadata) {
+        Instant now = Instant.now();
+        Instant issued = ZonedDateTime.parse(licenseMetadata.get("issued").asText()).toInstant();
+        Instant expiry = ZonedDateTime.parse(licenseMetadata.get("expiry").asText()).toInstant();
 
-        JsonNode attributes = licenseJson.get("data").get("attributes");
-        JsonNode included = licenseJson.get("included");
-        if (!"ACTIVE".equals(attributes.get("status").asText())) {
-            throw new GiskardRuntimeException("License file is invalid.");
-        }
-
-        // TODO: Check expiration
-
-        License newLicense = new License();
-        newLicense.setPlanName(attributes.get("metadata").get("planName").asText());
-        newLicense.setPlanCode(attributes.get("metadata").get("planCode").asText());
-
-        List<String> feats = new ArrayList<>();
-        for (JsonNode include : included) {
-            if (!"entitlements".equals(include.get("type").asText())) {
-                continue;
-            }
-
-            feats.add(include.get("attributes").get("code").asText());
-        }
-
-        newLicense.setFeatures(feats);
-
-        log.info("License file loaded. Plan: {}", newLicense.getPlanName());
-
-        this.license = newLicense;
-        return newLicense;
+        return issued.isBefore(now) && expiry.isAfter(now);
     }
 }

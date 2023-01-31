@@ -1,7 +1,7 @@
 package ai.giskard.security.ee;
 
-import ai.giskard.security.jwt.JWTFilter;
-import ai.giskard.security.jwt.TokenProvider;
+import ai.giskard.security.ee.jwt.JWTFilter;
+import ai.giskard.security.ee.jwt.TokenProvider;
 import ai.giskard.service.ee.FeatureFlagService;
 import ai.giskard.service.ee.LicenseService;
 import org.springframework.web.filter.GenericFilterBean;

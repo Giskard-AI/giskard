@@ -1,4 +1,4 @@
-package ai.giskard.security.jwt;
+package ai.giskard.security.ee.jwt;
 
 import ai.giskard.config.ApplicationProperties;
 import ai.giskard.management.SecurityMetersService;

@@ -3,8 +3,8 @@ package ai.giskard.web.rest.controllers;
 import ai.giskard.domain.User;
 import ai.giskard.repository.UserRepository;
 import ai.giskard.security.SecurityUtils;
-import ai.giskard.security.jwt.JWTTokenType;
-import ai.giskard.security.jwt.TokenProvider;
+import ai.giskard.security.ee.jwt.JWTTokenType;
+import ai.giskard.security.ee.jwt.TokenProvider;
 import ai.giskard.service.MailService;
 import ai.giskard.service.UserService;
 import ai.giskard.web.dto.PasswordResetRequest;
@@ -174,7 +174,7 @@ public class AccountController {
      *
      * @param keyAndPassword the generated key and the new password.
      * @throws InvalidPasswordException {@code 400 (Bad Request)} if the password is incorrect.
-     * @throws RuntimeException {@code 500 (Internal Server Error)} if the password could not be reset.
+     * @throws RuntimeException         {@code 500 (Internal Server Error)} if the password could not be reset.
      */
     @PostMapping(path = "/account/reset-password")
     public void finishPasswordReset(@RequestBody TokenAndPasswordVM keyAndPassword) {
@@ -191,8 +191,8 @@ public class AccountController {
     private static boolean isPasswordLengthInvalid(String password) {
         return (
             StringUtils.isEmpty(password) ||
-            password.length() < ManagedUserVM.PASSWORD_MIN_LENGTH ||
-            password.length() > ManagedUserVM.PASSWORD_MAX_LENGTH
+                password.length() < ManagedUserVM.PASSWORD_MIN_LENGTH ||
+                password.length() > ManagedUserVM.PASSWORD_MAX_LENGTH
         );
     }
 }

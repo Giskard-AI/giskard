@@ -2,7 +2,7 @@ package ai.giskard.config;
 
 import ai.giskard.security.AuthoritiesConstants;
 import ai.giskard.security.ee.GiskardAuthConfigurer;
-import ai.giskard.security.jwt.TokenProvider;
+import ai.giskard.security.ee.jwt.TokenProvider;
 import ai.giskard.service.ee.LicenseService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
