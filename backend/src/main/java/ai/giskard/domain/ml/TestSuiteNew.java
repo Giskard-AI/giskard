@@ -25,4 +25,6 @@ public class TestSuiteNew extends AbstractAuditingEntity {
 
     @OneToMany(mappedBy = "suite", cascade = CascadeType.ALL)
     private List<SuiteTest> tests = new java.util.ArrayList<>();
+
+
 }

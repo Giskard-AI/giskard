@@ -43,7 +43,8 @@ async function createTestSuite() {
   $vfm.show({
     component: CreateTestSuiteModal,
     bind: {
-      projectKey: project.key
+      projectKey: project.key,
+      projectId: project.id
     }
   });
 }
