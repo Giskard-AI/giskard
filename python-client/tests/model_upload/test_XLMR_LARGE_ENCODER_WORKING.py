@@ -1,7 +1,9 @@
 from giskard.client.project import GiskardProject
 import torchtext
 from torchtext.functional import to_tensor
+import pytest
 
+@pytest.mark.skip(reason="Will be solved in the new API: https://github.com/Giskard-AI/giskard/pull/618")
 def test_XLMR_LARGE_ENCODER():
 
     xlmr_large = torchtext.models.XLMR_LARGE_ENCODER

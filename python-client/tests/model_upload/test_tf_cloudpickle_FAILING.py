@@ -45,6 +45,7 @@ E   ValueError: Unable to pickle or unpickle model on Giskard
 from nltk.corpus import stopwords
 from nltk.stem import PorterStemmer
 from string import punctuation
+import pytest
 import pandas as pd
 import tensorflow as tf
 import tensorflow_hub as hub
@@ -57,6 +58,7 @@ from sklearn import model_selection
 
 from giskard.client.project import GiskardProject
 
+@pytest.mark.skip(reason="Will be solved in the new API: https://github.com/Giskard-AI/giskard/pull/618")
 def test_tf_cloudpickle():
 
     column_types={

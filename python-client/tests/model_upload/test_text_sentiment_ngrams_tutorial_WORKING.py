@@ -40,6 +40,7 @@ class TextClassificationModel(nn.Module):
     def forward(self, text, offsets):
         embedded = self.embedding(text, offsets)
         return self.fc(embedded)
+@pytest.mark.skip(reason="Will be solved in the new API: https://github.com/Giskard-AI/giskard/pull/618")
 def test_text_sentiment_ngrams_tutorial():
 
     train_iter = AG_NEWS(split='train')

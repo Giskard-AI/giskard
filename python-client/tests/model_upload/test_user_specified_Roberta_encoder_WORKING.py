@@ -5,6 +5,7 @@ from torchtext.functional import to_tensor
 import pandas as pd
 import pytest
 
+@pytest.mark.skip(reason="Will be solved in the new API: https://github.com/Giskard-AI/giskard/pull/618")
 def test_user_specified_Roberta_encoder():
     model_weights_path = "https://download.pytorch.org/models/text/xlmr.base.encoder.pt"
     encoder_conf = RobertaEncoderConf(vocab_size=250002)

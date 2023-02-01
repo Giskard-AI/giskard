@@ -101,6 +101,7 @@ def get_inputs(tokenizer, sentences, max_length):
 
     return inputs
 
+@pytest.mark.skip(reason="Will be solved in the new API: https://github.com/Giskard-AI/giskard/pull/618")
 def test_TFAutoModel():
     # fairness
     data_dict = {

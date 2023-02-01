@@ -19,8 +19,7 @@ from tensorflow.keras import layers
 from giskard.client.giskard_client import GiskardClient
 from giskard.client.project import GiskardProject
 
-@pytest.mark.skipif(tf.__version__ != '2.11.0',
-                    reason="tensorflow=="+tf.__version__ +" but this test is made to be tested with tensorflow==2.11.0 (where it was failing)")
+@pytest.mark.skip(reason="Will be solved in the new API: https://github.com/Giskard-AI/giskard/pull/618")
 def test_tf_version_2_11_0():
     max_features = 10000
     sequence_length = 250

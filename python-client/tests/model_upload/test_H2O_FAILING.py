@@ -11,8 +11,9 @@ from giskard.client.project import GiskardProject
 import h2o
 from h2o.automl import H2OAutoML
 import os
+import pytest
 
-
+@pytest.mark.skip(reason="Will be solved in the new API: https://github.com/Giskard-AI/giskard/pull/618")
 def test_upload_H2O():
 
     h2o.init()

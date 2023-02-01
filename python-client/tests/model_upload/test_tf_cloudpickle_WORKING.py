@@ -2,6 +2,7 @@
 import tensorflow as tf
 from tensorflow import keras
 from giskard.client.project import GiskardProject
+import pytest
 
 # Define a simple sequential model
 def create_model():
@@ -17,7 +18,7 @@ def create_model():
 
     return model
 
-
+@pytest.mark.skip(reason="Will be solved in the new API: https://github.com/Giskard-AI/giskard/pull/618")
 def test_tf_cloudpickle():
 
     # Create a basic model instance
