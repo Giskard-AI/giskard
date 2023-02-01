@@ -152,9 +152,10 @@ public class ProjectService {
         ZipUtils.zip(temporaryExportDir, projectZipPath);
 
         FileSystemUtils.deleteRecursively(temporaryExportDir);
-        FileSystemUtils.deleteRecursively(projectZipPath);
 
-        return Files.readAllBytes(projectZipPath);
+        byte[] res = Files.readAllBytes(projectZipPath);
+        FileSystemUtils.deleteRecursively(projectZipPath);
+        return res;
     }
 
     public void createMetadataYamlFiles(Path temporaryExportDirectory, Project project) throws IOException {
