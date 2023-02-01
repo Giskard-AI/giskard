@@ -174,7 +174,7 @@ dependencies {
 
     liquibaseRuntime("org.liquibase:liquibase-core")
     liquibaseRuntime("org.liquibase.ext:liquibase-hibernate5:${liquibaseHibernate5Version}")
-    liquibaseRuntime("org.postgresql:postgresql:42.5.0")
+    liquibaseRuntime("org.postgresql:postgresql:42.5.2")
 //    liquibaseRuntime("info.picocli:picocli:4.7.0")
     liquibaseRuntime(sourceSets.main.get().compileClasspath)
 
