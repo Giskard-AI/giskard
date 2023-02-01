@@ -206,6 +206,15 @@ export const actions = {
             throw new Error(error.response.data.detail);
         }
     },
+    async actionExportProject(context: MainContext, id: number ){
+        try {
+            api.downloadExportedProject(id);
+            commitAddNotification(context, {content: 'Project is exporting', color: 'success', showProgress: true});
+        } catch (error) {
+            await dispatchCheckApiError(context, error);
+            throw new Error(error.response.data.detail);
+        }
+    },
     async actionDeleteProject(context: MainContext, payload: { id: number }) {
         const loadingNotification = {content: 'Deleting...', showProgress: true};
         try {
@@ -285,3 +294,4 @@ export const dispatchDeleteProject = dispatch(actions.actionDeleteProject);
 export const dispatchEditProject = dispatch(actions.actionEditProject);
 export const dispatchInviteUserToProject = dispatch(actions.actionInviteUserToProject);
 export const dispatchUninviteUser = dispatch(actions.actionUninviteUserFromProject);
+export const dispatchExportProject = dispatch(actions.actionExportProject);
