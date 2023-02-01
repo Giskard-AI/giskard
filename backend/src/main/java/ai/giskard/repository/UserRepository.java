@@ -24,6 +24,9 @@ public interface UserRepository extends JpaRepository<User, Long> {
     @EntityGraph(attributePaths = "roles")
     List<User> getAllWithRolesByLoginNot(String login);
 
+    List<User> findAllByEnabled(boolean enabled);
+
+
     Optional<User> findOneByResetKey(String resetKey);
 
     Optional<User> findOneByEmailIgnoreCase(String email);
