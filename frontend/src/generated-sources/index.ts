@@ -64,6 +64,7 @@ export const GENERATED_MAPPING = {
     'ai.giskard.web.dto.PrepareImportProjectDTO' : 'PrepareImportProjectDTO',
     'ai.giskard.web.dto.SliceCreateDTO' : 'SliceCreateDTO',
     'ai.giskard.web.dto.SlicePutDTO' : 'SlicePutDTO',
+    'ai.giskard.web.dto.SliceValidateDTO' : 'SliceValidateDTO',
     'ai.giskard.web.dto.TestSuiteCreateDTO' : 'TestSuiteCreateDTO',
     'ai.giskard.web.dto.TestTemplatesResponse' : 'TestTemplatesResponse',
     'ai.giskard.web.dto.user.AdminUserDTO$AdminUserDTOWithPassword' : 'AdminUserDTO.AdminUserDTOWithPassword',
@@ -138,6 +139,7 @@ export * from './ai/giskard/web/dto/prepare-delete-dto';
 export * from './ai/giskard/web/dto/prepare-import-project-dto';
 export * from './ai/giskard/web/dto/slice-create-dto';
 export * from './ai/giskard/web/dto/slice-put-dto';
+export * from './ai/giskard/web/dto/slice-validate-dto';
 export * from './ai/giskard/web/dto/test-suite-create-dto';
 export * from './ai/giskard/web/dto/test-templates-response';
 export * from './ai/giskard/web/dto/user/admin-user-dto';

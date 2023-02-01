@@ -59,6 +59,7 @@
     "ai.giskard.domain.ml.ModelType": "ModelType",
     "ai.giskard.web.dto.ml.ProjectPostDTO": "ProjectPostDTO",
     "ai.giskard.web.dto.config.MLWorkerInfoDTO$PlatformInfoDTO": "MLWorkerInfoDTO.PlatformInfoDTO",
+    "ai.giskard.web.dto.SliceValidateDTO": "SliceValidateDTO",
     "ai.giskard.domain.ml.CodeLanguage": "CodeLanguage",
     "ai.giskard.web.dto.ExplainResponseDTO": "ExplainResponseDTO",
     "ai.giskard.web.dto.ModelMetadataDTO": "ModelMetadataDTO",
