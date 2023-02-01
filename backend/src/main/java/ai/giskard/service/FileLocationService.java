@@ -36,12 +36,12 @@ public class FileLocationService {
         return modelsDirectory(projectKey).resolve(createZSTname("model_", modelId));
     }
 
-    public Path temporaryMetadataDirectory(){
-        String randomDirName = RandomStringUtils.randomAlphanumeric(8); // NOSONAR: no security risk here
-        return resolvedTmpPath().resolve(randomDirName);
+    public Path temporaryMetadataDirectory(String prefix) {
+        String randomDirName = RandomStringUtils.randomAlphanumeric(8).toLowerCase(); // NOSONAR: no security risk here
+        return resolvedTmpPath().resolve(prefix + "-" + randomDirName);
     }
 
-    public Path resolvedMetadataPath(Path temporaryMetadataDir,  String entityName){
+    public Path resolvedMetadataPath(Path temporaryMetadataDir, String entityName) {
         return temporaryMetadataDir.resolve(entityName.toLowerCase() + "-metadata.yaml");
     }
 
@@ -65,7 +65,7 @@ public class FileLocationService {
         return giskardHome().resolve(projectHome(projectKey));
     }
 
-    public Path resolvedTmpPath(){
+    public Path resolvedTmpPath() {
         return giskardHome().resolve("tmp");
     }
 

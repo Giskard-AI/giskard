@@ -24,6 +24,9 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.FileSystemUtils;
@@ -33,6 +36,9 @@ import javax.validation.constraints.NotNull;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -46,8 +52,11 @@ public class ProjectService {
     private final UserRepository userRepository;
     private final ProjectRepository projectRepository;
     private final FileLocationService locationService;
+    private final ThreadPoolTaskScheduler taskScheduler;
     private final ImportService importService;
     final GiskardMapper giskardMapper;
+
+    private final Logger log = LoggerFactory.getLogger(ProjectService.class);
 
     public static final Pattern PROJECT_KEY_PATTERN = Pattern.compile("^[a-z\\d_]+$");
 
@@ -115,36 +124,42 @@ public class ProjectService {
     }
 
     public byte[] export(Long id) throws IOException {
+        Path projectZipPath = null;
+        Path temporaryExportDir = null;
+        Project project = this.projectRepository.findById(id).orElseThrow(() -> new EntityNotFoundException(Entity.PROJECT, id));
         // Create a tmp folder
-        Path temporaryExportDir = locationService.temporaryMetadataDirectory();
-        Files.createDirectories(temporaryExportDir);
 
         // Get the project from repository
-        Project project = this.projectRepository.findById(id).orElseThrow(() -> new EntityNotFoundException(Entity.PROJECT, id));
         Path homeProject = locationService.resolvedProjectHome(project.getKey());
-
-        createMetadataYamlFiles(temporaryExportDir, project);
-
-        // Copy content of the /giskard-home/projects/{projecKey} into the temporary newly created folder
         try {
+            temporaryExportDir = locationService.temporaryMetadataDirectory("project_export-" + project.getKey());
+            Files.createDirectories(temporaryExportDir);
+            createMetadataYamlFiles(temporaryExportDir, project);
 
-            FileSystemUtils.copyRecursively(homeProject, temporaryExportDir);
-        } catch (IOException e) {
-            throw new GiskardRuntimeException("Error while copying your project for export", e);
+            // Copy content of the /giskard-home/projects/{projecKey} into the temporary newly created folder
+            try {
+
+                FileSystemUtils.copyRecursively(homeProject, temporaryExportDir);
+            } catch (IOException e) {
+                throw new GiskardRuntimeException("Error while copying your project for export", e);
+            }
+
+            // Zip the project and send it as bytes to the Frontend
+            projectZipPath = locationService.resolvedTmpPath().resolve(String.format("%s.zip", project.getKey()));
+            if (!Files.exists(projectZipPath)) {
+                Files.createFile(projectZipPath);
+            }
+            ZipUtils.zip(temporaryExportDir, projectZipPath);
+
+            return Files.readAllBytes(projectZipPath);
+        } finally {
+            if (projectZipPath != null) {
+                FileSystemUtils.deleteRecursively(projectZipPath);
+            }
+            if (temporaryExportDir != null) {
+                FileSystemUtils.deleteRecursively(temporaryExportDir);
+            }
         }
-
-        // Zip the project and send it as bytes to the Frontend
-        Path projectZipPath = locationService.resolvedTmpPath().resolve(String.format("%s.zip", project.getKey()));
-        if (!Files.exists(projectZipPath)) {
-            Files.createFile(projectZipPath);
-        }
-        ZipUtils.zip(temporaryExportDir, projectZipPath);
-
-        FileSystemUtils.deleteRecursively(temporaryExportDir);
-
-        byte[] res = Files.readAllBytes(projectZipPath);
-        FileSystemUtils.deleteRecursively(projectZipPath);
-        return res;
     }
 
     public void createMetadataYamlFiles(Path temporaryExportDirectory, Project project) throws IOException {
@@ -162,11 +177,26 @@ public class ProjectService {
     }
 
     public Path unzipProject(MultipartFile zipFile) throws IOException {
-        Path pathToTimestampDirectory = locationService.temporaryMetadataDirectory();
+        Path pathToTimestampDirectory = locationService.temporaryMetadataDirectory("project_import-" + zipFile.getOriginalFilename());
         if (!Files.exists(pathToTimestampDirectory)) {
             ZipUtils.unzipProjectFile(zipFile, pathToTimestampDirectory);
         }
+        scheduleTemporaryDirectoryDeletion(pathToTimestampDirectory);
         return pathToTimestampDirectory;
+    }
+
+    private void scheduleTemporaryDirectoryDeletion(Path pathToTimestampDirectory) {
+        taskScheduler.schedule(() -> {
+            if (!Files.exists(pathToTimestampDirectory)) {
+                return;
+            }
+            log.info("Deleting a temporary directory for an abandoned project import: {}", pathToTimestampDirectory);
+            try {
+                FileSystemUtils.deleteRecursively(pathToTimestampDirectory);
+            } catch (IOException e) {
+                log.error("Failed to delete temporary directory {}", pathToTimestampDirectory, e);
+            }
+        }, Instant.now().plus(1, ChronoUnit.HOURS));
     }
 
     public PrepareImportProjectDTO prepareImport(MultipartFile zipFile) throws IOException {
@@ -205,12 +235,16 @@ public class ProjectService {
     }
 
     public Project importProject(Map<String, String> importedUsersToCurrent, String metadataDirectory, String projectKey, String userNameOwner) throws IOException {
+        Path tmpDir = Paths.get(metadataDirectory);
+        if (!Files.exists(tmpDir)) {
+            throw new GiskardRuntimeException("Temporary directory containing the project contents not found. Try re-importing it.");
+        }
         try {
             return importService.importProject(importedUsersToCurrent, metadataDirectory, projectKey, userNameOwner);
         } catch (Exception e) {
             throw new GiskardRuntimeException("Error while importing the project", e);
         } finally {
-            FileSystemUtils.deleteRecursively(locationService.resolvedTmpPath());
+            FileSystemUtils.deleteRecursively(tmpDir);
         }
     }
 
