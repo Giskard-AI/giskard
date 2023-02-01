@@ -71,8 +71,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
         globals()["echo_count"] += 1
         return EchoMsg(msg=f"Response {echo_count}: {request.msg}")
 
-    @Generator
-    def upload(self, request_iterator, context: grpc.ServicerContext):
+    def upload(self, request_iterator, context: grpc.ServicerContext) -> Generator[UploadStatus]:
         meta = None
         path = None
         progress = None
@@ -263,8 +262,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
             results_csv=results.to_csv(index=False), calculated_csv=calculated.to_csv(index=False)
         )
 
-    @Generator
-    def filterDataset(self, request_iterator, context: grpc.ServicerContext) -> FilterDatasetResponse:
+    def filterDataset(self, request_iterator, context: grpc.ServicerContext) -> Generator[FilterDatasetResponse]:
         filterfunc = {}
         meta = None
 
