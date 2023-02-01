@@ -13,14 +13,14 @@
       </v-btn-toggle>
       <v-menu>
         <template v-slot:activator="{ on, attrs }">
-         
           <v-btn
-            small
-            color="primary"
-            dark
-            v-bind="attrs"
-            v-on="on"
-          > <v-icon left>add</v-icon>
+              small
+              color="primary"
+              dark
+              v-bind="attrs"
+              v-on="on"
+          >
+            <v-icon left>add</v-icon>
             Add Project
           </v-btn>
         </template>
@@ -28,12 +28,12 @@
           <v-list-item-group>
             <v-list-item @click="openCreateDialog=true">
               <v-list-item-content>
-               New
+                New
               </v-list-item-content>
             </v-list-item>
             <v-list-item @click="openImportDialog=true">
               <v-list-item-content>
-               Import
+                Import
               </v-list-item-content>
             </v-list-item>
           </v-list-item-group>
@@ -84,7 +84,7 @@
       <div v-if="isAdmin || isCreator">None created, none invited</div>
       <div v-else>You have not been invited to any projects yet</div>
     </v-container>
-    
+
 
     <!-- Modal dialog to import new projects -->
     <v-dialog v-model="openImportDialog" width="500" persistent>
@@ -94,16 +94,18 @@
             <v-card-title>Import project</v-card-title>
             <v-card-text>
               <ValidationProvider name="File" rules="required" v-slot="{errors}">
-                  <v-file-input ref="file" accept=".zip" label="Select a project to import*"
-                  :error-messages="errors"
+                <v-file-input accept=".zip"
+                              label="Select a project to import"
+                              @change="file = $event"
+                              :error-messages="errors"
                 ></v-file-input>
               </ValidationProvider>
             </v-card-text>
             <v-card-actions>
               <v-spacer></v-spacer>
               <v-btn color="secondary" text @click="clearAndCloseDialog()">Cancel</v-btn>
-              <v-btn color="primary" text type="submit">Next</v-btn>
-            </v-card-actions> 
+              <v-btn color="primary" text type="submit" :disabled="!file">Next</v-btn>
+            </v-card-actions>
           </v-form>
         </ValidationObserver>
       </v-card>
@@ -121,25 +123,25 @@
                               :error-messages="errors"></v-text-field>
               </ValidationProvider>
               <div v-if="loginsImportedProject.length !== 0">
-                <div class="title"> Map users of the imported project to the new one </div>
+                <div class="title">Map users</div>
                 <v-list
-                        style="max-height: 600px"
-                        class="overflow-y-auto overflow-x-hidden">
+                    style="max-height: 1200px"
+                    class="overflow-y-auto overflow-x-hidden">
                   <template v-for="item in loginsImportedProject">
-                      <v-row align="center" justify="center">
-                        <v-col cols="4" align="center">
-                          <div >
-                            {{ item }}
-                          </div>
-                        </v-col>
-                        <v-col cols="2" align="center">
-                          <v-icon> mdi-arrow-right </v-icon>
-                        </v-col>
-                        <v-col cols="6">
-                          <v-select  :items="loginsCurrentInstance" v-model="mapLogins[item]"></v-select>
-                        </v-col>
-                      </v-row>
-                    </template>
+                    <v-row align="center" justify="center" dense>
+                      <v-col cols="4">
+                        <div>
+                          {{ item }}
+                        </div>
+                      </v-col>
+                      <v-col cols="2" align="center">
+                        <v-icon> mdi-arrow-right</v-icon>
+                      </v-col>
+                      <v-col cols="6">
+                        <v-select hide-details dense :items="loginsCurrentInstance" v-model="mapLogins[item]"></v-select>
+                      </v-col>
+                    </v-row>
+                  </template>
                 </v-list>
               </div>
             </v-card-text>
@@ -147,7 +149,7 @@
               <v-spacer></v-spacer>
               <v-btn color="secondary" text @click="clearAndCloseDialog()">Cancel</v-btn>
               <v-btn color="primary" text type="submit">Import</v-btn>
-            </v-card-actions> 
+            </v-card-actions>
           </v-form>
         </ValidationObserver>
       </v-card>
@@ -197,7 +199,7 @@ import store from "@/store";
 import router from "@/router"
 import {useRoute} from "vue-router/composables";
 import moment from "moment";
-import { api } from "@/api";
+import {api} from "@/api";
 import mixpanel from "mixpanel-browser";
 
 const route = useRoute();
@@ -214,11 +216,11 @@ const validatorNewKey = ref();
 const metadataDirectoryPath = ref<string>("");
 const loginsCurrentInstance = ref<string[]>([]);
 const loginsImportedProject = ref<string[]>([]);
-const mapLogins = ref<{[key: string]: string}>({});
+const mapLogins = ref<{ [key: string]: string }>({});
 
 // template ref
 const dialogForm = ref<InstanceType<typeof ValidationObserver> | null>(null);
-const file = ref<string>('');
+const file = ref<File | null>(null);
 
 onMounted(async () => {
   const f = route.query.f ? route.query.f[0] || '' : '';
@@ -253,55 +255,61 @@ async function loadProjects() {
   await dispatchGetProjects(store);
 }
 
-async function prepareImport(){
-  let uploadedFile = file.value.$refs.input.files[0];
+async function prepareImport() {
+  if (!file.value){
+    return;
+  }
   let formData = new FormData();
-  formData.append('file', uploadedFile);
+  formData.append('file', file.value);
   return await api.prepareImport(formData)
-  .then(response => {
-    loginsCurrentInstance.value = response.loginsCurrentInstance;
-    loginsImportedProject.value = response.loginsImportedProject;
-    metadataDirectoryPath.value = response.temporaryMetadataDirectory;
-    openImportDialog.value = false;
-    openPrepareDialog.value = true;
-    loginsImportedProject.value.forEach((item, index) => {
-    if (index >= loginsCurrentInstance.value.length){
-      mapLogins.value[item] = loginsCurrentInstance.value[0];
-    }
-    else{
-        mapLogins.value[item] = loginsCurrentInstance.value[index];
-    }});
-    newProjectKey.value = response.projectKey;
-  })
+      .then(response => {
+        loginsCurrentInstance.value = response.loginsCurrentInstance;
+        loginsImportedProject.value = response.loginsImportedProject;
+        metadataDirectoryPath.value = response.temporaryMetadataDirectory;
+        openImportDialog.value = false;
+        openPrepareDialog.value = true;
+        loginsImportedProject.value.forEach((item, index) => {
+          if (index >= loginsCurrentInstance.value.length) {
+            mapLogins.value[item] = loginsCurrentInstance.value[0];
+          } else {
+            mapLogins.value[item] = loginsCurrentInstance.value[index];
+          }
+        });
+        newProjectKey.value = response.projectKey;
+      })
 }
 
-async function ImportIfNoConflictKey(){
+async function ImportIfNoConflictKey() {
+  if (!file.value){
+    return;
+  }
   let projects = readAllProjects(store);
-  let keyAlreadyExist : boolean = false;
+  let keyAlreadyExist: boolean = false;
   projects.forEach(project => {
     if (project.key == newProjectKey.value) keyAlreadyExist = true;
   })
 
-  if (keyAlreadyExist){
-      validatorNewKey.value.applyResult({
+  if (keyAlreadyExist) {
+    validatorNewKey.value.applyResult({
       errors: ["A project with this key already exist, please change key"],
       valid: false,
-      failedRules: {}})
-  }
-  else {
-    let uploadedFile = file.value.$refs.input.files[0];
+      failedRules: {}
+    })
+  } else {
     let formData = new FormData();
-    formData.append('file', uploadedFile);
+    if (file) {
+      formData.append('file', file.value);
+    }
     mixpanel.track('Import project', {projectkey: newProjectKey.value});
-    const postImportProject : PostImportProjectDTO = {
+    const postImportProject: PostImportProjectDTO = {
       mappedUsers: mapLogins.value,
       projectKey: newProjectKey.value,
-      pathToMetadataDirectory: metadataDirectoryPath.value 
+      pathToMetadataDirectory: metadataDirectoryPath.value
     }
     api.importProject(postImportProject)
         .then((p) => {
           router.push({name: 'project-overview', params: {id: p.id}})
-      })
+        })
   }
 }
 
