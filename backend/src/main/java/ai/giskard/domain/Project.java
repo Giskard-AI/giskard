@@ -25,7 +25,7 @@ import java.util.Set;
 @Entity(name = "projects")
 @NoArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
-@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
+@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "key")
 public class Project extends AbstractAuditingEntity {
     @Converter
     public static class InspectionSettingsConverter extends JSONStringAttributeConverter<InspectionSettings> {
@@ -58,6 +58,7 @@ public class Project extends AbstractAuditingEntity {
 
     @Getter
     @Setter
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.EAGER)
     private User owner;
 
@@ -70,15 +71,18 @@ public class Project extends AbstractAuditingEntity {
 
     @Getter
     @Setter
+    @JsonIgnore
     @OneToMany(mappedBy = "project", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private Set<Dataset> datasets = new HashSet<>();
 
     @Getter
     @Setter
+    @JsonIgnore
     @OneToMany(mappedBy = "project", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private Set<TestSuite> testSuites = new HashSet<>();
 
     @Getter
+    @JsonIgnore
     @OneToMany(mappedBy = "project", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private final Set<Feedback> feedbacks = new HashSet<>();
     
