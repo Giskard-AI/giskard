@@ -60,7 +60,7 @@
     "@vue/eslint-config-typescript": "^11.0.2",
     "@vue/test-utils": "^1.2.2",
     "babel-loader": "^8.2.5",
-    "eslint": "^8.21.0",
+    "eslint": "^8.33.0",
     "eslint-plugin-vue": "^9.6.0",
     "monaco-editor-webpack-plugin": "~7.0.1",
     "sass": "^1.43.2",
