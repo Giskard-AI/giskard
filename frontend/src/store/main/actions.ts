@@ -209,7 +209,7 @@ export const actions = {
     async actionExportProject(context: MainContext, id: number ){
         try {
             api.downloadExportedProject(id);
-            commitAddNotification(context, {content: 'Project is exporting', color: 'success', showProgress: true});
+            commitAddNotification(context, {content: 'Project is being exported', color: 'success', showProgress: true});
         } catch (error) {
             await dispatchCheckApiError(context, error);
             throw new Error(error.response.data.detail);
