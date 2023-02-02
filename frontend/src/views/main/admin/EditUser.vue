@@ -73,82 +73,75 @@
   </div>
 </template>
 
-<script lang="ts">
-import {Component, Vue} from 'vue-property-decorator';
-import {dispatchGetRoles, dispatchGetUsers} from '@/store/admin/actions';
-import {readAdminOneUser, readAdminRoles} from '@/store/admin/getters';
-import ButtonModalConfirmation from '@/components/ButtonModalConfirmation.vue';
-import {AdminUserDTO} from '@/generated-sources';
-import {Role} from '@/enums';
-import {api} from "@/api";
-import AdminUserDTOWithPassword = AdminUserDTO.AdminUserDTOWithPassword;
+<script setup lang="ts">
+import {Role} from "@/enums";
 import mixpanel from "mixpanel-browser";
+import {api} from "@/api";
+import {useRouter} from "vue-router/composables";
+import {useAdminStore} from "@/stores/admin";
+import {computed, onMounted, ref} from "vue";
+import {AdminUserDTO} from "@/generated-sources";
+import ButtonModalConfirmation from "@/components/ButtonModalConfirmation.vue";
+import AdminUserDTOWithPassword = AdminUserDTO.AdminUserDTOWithPassword;
 
-@Component({
-  components: {
-    ButtonModalConfirmation,
-  },
+const router = useRouter();
+const adminStore = useAdminStore();
+
+const displayName = ref<string>('');
+const email = ref<string>('');
+const roles = ref<string[] | null>([Role.AITESTER]);
+const setPassword = ref<boolean>(false);
+const password1 = ref<string>('');
+const password2 = ref<string>('');
+
+const observer = ref<any | null>(null);
+
+onMounted(async () => {
+  await adminStore.getRoles();
+  await adminStore.getUsers();
+  reset();
+});
+
+const allRoles = computed(() => {
+  return adminStore.roles;
 })
-export default class EditUser extends Vue {
-  public displayName: string = '';
-  public email: string = '';
-  public roles?: string[] | null = [Role.AITESTER];
-  public setPassword = false;
-  public password1: string = '';
-  public password2: string = '';
 
-  $refs!: {
-    observer
+const user = computed(() => {
+  return adminStore.getUser(parseInt(router.currentRoute.params.id));
+})
+
+function reset() {
+  setPassword.value = false;
+  password1.value = '';
+  password2.value = '';
+  observer.value.reset();
+  if (user.value) {
+    displayName.value = user.value.displayName!;
+    email.value = user.value.email;
+    roles.value = user.value.roles!;
   }
+}
 
-  public async mounted() {
-    await dispatchGetRoles(this.$store);
-    await dispatchGetUsers(this.$store);
-    this.reset();
-  }
+function cancel() {
+  router.back();
+}
 
-  get allRoles() {
-    return readAdminRoles(this.$store);
-  }
-
-  get user() {
-    return readAdminOneUser(this.$store)(parseInt(this.$router.currentRoute.params.id));
-  }
-
-  public reset() {
-    this.setPassword = false;
-    this.password1 = '';
-    this.password2 = '';
-    this.$refs.observer.reset();
-    if (this.user) {
-      this.displayName = this.user.displayName!;
-      this.email = this.user.email;
-      this.roles = this.user.roles;
+function submit() {
+  mixpanel.track('Edit user', {login: user.value!.user_id, roles: roles.value});
+  observer.value.validate().then(async () => {
+    const updatedProfile: Partial<AdminUserDTOWithPassword> = {
+      id: user.value!.id,
+      user_id: user.value!.user_id,
+      displayName: displayName.value,
+      email: email.value,
+      roles: roles.value,
+    };
+    if (setPassword.value && password1.value) {
+      updatedProfile.password = password1.value;
     }
-  }
+    await api.updateUser(updatedProfile);
 
-  public cancel() {
-    this.$router.back();
-  }
-
-  public submit() {
-    mixpanel.track('Edit user', {login: this.user!.user_id, roles: this.roles});
-    this.$refs.observer.validate().then(async () => {
-      const updatedProfile: Partial<AdminUserDTOWithPassword> = {
-        id: this.user!.id,
-        user_id: this.user!.user_id,
-        displayName: this.displayName,
-        email: this.email,
-        roles: this.roles,
-      };
-      if (this.setPassword && this.password1) {
-        updatedProfile.password = this.password1;
-      }
-      await api.updateUser(updatedProfile);
-
-      await this.$router.push('/main/admin/users');
-    });
-  }
-
+    await router.push('/main/admin/users');
+  });
 }
 </script>
