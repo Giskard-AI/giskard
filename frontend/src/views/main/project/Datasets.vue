@@ -75,13 +75,12 @@
 
 <script setup lang="ts">
 import {api} from '@/api';
-import {commitAddNotification} from '@/store/main/mutations';
 import {FileDTO} from '@/generated-sources';
 import mixpanel from "mixpanel-browser";
 import DeleteModal from '@/views/main/project/modals/DeleteModal.vue';
 import {onActivated, ref} from 'vue';
-import store from '@/store';
 import InlineEditText from '@/components/InlineEditText.vue';
+import {useMainStore} from "@/stores/main";
 
 const GISKARD_INDEX_COLUMN_NAME = '_GISKARD_INDEX_';
 
@@ -108,7 +107,7 @@ async function deleteDataFile(id: number) {
   mixpanel.track('Delete model', {id});
 
   let messageDTO = await api.deleteDatasetFile(id);
-  commitAddNotification(store, {content: messageDTO.message});
+  useMainStore().addNotification({content: messageDTO.message});
   await loadDatasets();
 }
 
@@ -135,7 +134,7 @@ async function peakDataFile(id: number) {
       }
       filePreviewData.value = response
     } catch (error) {
-      commitAddNotification(store, {content: error.response.statusText, color: 'error'});
+      useMainStore().addNotification({content: error.response.statusText, color: 'error'});
       filePreviewHeader.value = [];
       filePreviewData.value = [];
     }
