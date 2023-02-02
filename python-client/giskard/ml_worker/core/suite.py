@@ -218,6 +218,11 @@ class Suite:
                 if model_arg.type == 'Dataset':
                     args[model_arg.name] = actual_dataset
 
+        if contains_tag(test_func, 'classification') and any(model.arg.meta.classification_labels):
+            for model_arg in test_func.args.values():
+                if model_arg.name == 'classification_label':
+                    args[model_arg.name] = model.arg.meta.classification_labels[0]
+
         self.add_test(test_func.fn, **args)
 
     def _contains_test(self, test: TestFunction):
