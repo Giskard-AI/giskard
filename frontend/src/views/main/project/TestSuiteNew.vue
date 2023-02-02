@@ -75,7 +75,7 @@
 <script lang="ts" setup>
 
 import {api} from "@/api";
-import {onMounted, ref} from "vue";
+import {onMounted, ref, watch} from "vue";
 import {DatasetDTO, ModelDTO, SuiteTestDTO, TestCatalogDTO, TestSuiteNewDTO} from "@/generated-sources";
 import TestSuiteTestDetails from "@/views/main/project/TestSuiteTestDetails.vue";
 import RunTestSuiteModal from '@/views/main/project/modals/RunTestSuiteModal.vue';
@@ -96,7 +96,10 @@ let inputs = ref<{
 const allDatasets = ref<{ [key: string]: DatasetDTO }>({});
 const allModels = ref<{ [key: string]: ModelDTO }>({});
 
-onMounted(async () => {
+onMounted(() => loadData());
+watch(() => props.suiteId, () => loadData());
+
+async function loadData() {
   // Call api in parallel to shorten loading time
   const [
     inputResults,
@@ -118,6 +121,6 @@ onMounted(async () => {
 
   allDatasets.value = Object.fromEntries(datasets.map(x => [x.id, x]));
   allModels.value = Object.fromEntries(models.map(x => [x.id, x]));
-})
+}
 
 </script>
