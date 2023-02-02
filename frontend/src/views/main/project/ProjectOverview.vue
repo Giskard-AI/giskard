@@ -47,14 +47,13 @@
 
 <script lang="ts">
 import {Component, Prop, Vue} from 'vue-property-decorator';
-import {readProject} from '@/store/main/getters';
-import {dispatchUninviteUser} from '@/store/main/actions';
 import {getUserFullDisplayName} from '@/utils';
 import Models from '@/views/main/project/Models.vue';
 import Datasets from '@/views/main/project/Datasets.vue';
 import FeedbackList from '@/views/main/project/FeedbackList.vue';
 import {IUserProfileMinimal} from '@/interfaces';
 import mixpanel from "mixpanel-browser";
+import {useProjectStore} from "@/stores/project";
 
 @Component({
   components: {
@@ -67,7 +66,7 @@ export default class ProjectOverview extends Vue {
   @Prop({type: Boolean, required: true, default: false}) isProjectOwnerOrAdmin!: boolean;
 
   get project() {
-    return readProject(this.$store)(this.projectId)
+    return useProjectStore().project(this.projectId);
   }
 
   private getUserFullDisplayName = getUserFullDisplayName
@@ -80,7 +79,7 @@ export default class ProjectOverview extends Vue {
     if (this.project && confirm) {
       try {
         mixpanel.track('Cancel user invitation to project', {projectId: this.project.id, userId: user.id});
-        await dispatchUninviteUser(this.$store, {projectId: this.project.id, userId: user.id})
+        await useProjectStore().uninviteUserFromProject({projectId: this.project.id, userId: user.id})
       } catch (e) {
         console.error(e)
       }

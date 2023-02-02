@@ -64,77 +64,74 @@
   </div>
 </template>
 
-<script lang="ts">
-import {Component, Vue} from 'vue-property-decorator';
-import {dispatchCreateUser, dispatchGetRoles, dispatchGetUsers} from '@/store/admin/actions';
-import {readAdminRoles} from '@/store/admin/getters';
-import {readAppSettings} from "@/store/main/getters";
-import {AdminUserDTO} from '@/generated-sources';
-import AdminUserDTOWithPassword = AdminUserDTO.AdminUserDTOWithPassword;
-import {Role} from '@/enums';
+<script setup lang="ts">
+import {Role} from "@/enums";
 import mixpanel from "mixpanel-browser";
+import {computed, onMounted, ref} from "vue";
+import {useRouter} from "vue-router/composables";
+import {AdminUserDTO} from "@/generated-sources";
+import AdminUserDTOWithPassword = AdminUserDTO.AdminUserDTOWithPassword;
+import {useMainStore} from "@/stores/main";
+import {useAdminStore} from "@/stores/admin";
 
-@Component
-export default class CreateUser extends Vue {
+const router = useRouter();
+const mainStore = useMainStore();
+const adminStore = useAdminStore();
 
-  $refs!: {
-    observer
-  }
+const observer = ref<any | null>(null);
 
-  public userId: string = '';
-  public displayName: string = '';
-  public email: string = '';
-  public roles: string[] = [Role.AICREATOR];
-  public password1: string = '';
-  public password2: string = '';
-  public canAddUsers: boolean = true;
+const userId = ref<string>('');
+const displayName = ref<string>('');
+const email = ref<string>('');
+const roles = ref<string[]>([Role.AICREATOR]);
+const password1 = ref<string>('');
+const password2 = ref<string>('');
+const canAddUsers = ref<boolean>(true);
 
-  public async mounted() {
-    await dispatchGetRoles(this.$store);
-    await dispatchGetUsers(this.$store);
-    const appSettings = await readAppSettings(this.$store);
-    this.canAddUsers = !appSettings || !appSettings.seatsAvailable || appSettings.seatsAvailable > 0;
-    this.reset();
+onMounted(async () => {
+  await adminStore.getRoles();
+  await adminStore.getUsers();
+  const appSettings = await mainStore.appSettings;
+  canAddUsers.value = !appSettings || !appSettings.seatsAvailable || appSettings.seatsAvailable > 0;
+  reset();
+})
 
-  }
+const allRoles = computed(()=> {
+  return adminStore.roles;
+})
 
-  get allRoles() {
-    return readAdminRoles(this.$store);
-  }
+function reset() {
+  userId.value = '';
+  displayName.value = '';
+  email.value = '';
+  roles.value = [Role.AICREATOR];
+  password1.value = '';
+  password2.value = '';
+  observer.value.reset();
+}
 
-  public reset() {
-    this.userId = '';
-    this.displayName = '';
-    this.email = '';
-    this.roles = [Role.AICREATOR];
-    this.password1 = '';
-    this.password2 = '';
-    this.$refs.observer.reset();
-  }
+function cancel() {
+  router.back();
+}
 
-  public cancel() {
-    this.$router.back();
-  }
-
-  public async submit() {
-    mixpanel.track('Create user', {login: this.userId, roles: this.roles});
-    this.$refs.observer.validate().then(async () => {
-      const profileCreate: AdminUserDTOWithPassword = {
-        email: this.email,
-        user_id: this.userId,
-        roles: this.roles,
-        password: this.password1
-      };
-      if (this.displayName) {
-        profileCreate.displayName = this.displayName;
-      }
-      try {
-        await dispatchCreateUser(this.$store, profileCreate);
-        await this.$router.push('/main/admin/users');
-      } catch (e) {
-        console.error(e.message);
-      }
-    });
-  }
+async function submit() {
+  mixpanel.track('Create user', {login: userId.value, roles: roles.value});
+  observer.value.validate().then(async () => {
+    const profileCreate: AdminUserDTOWithPassword = {
+      email: email.value,
+      user_id: userId.value,
+      roles: roles.value,
+      password: password1.value
+    };
+    if (displayName.value) {
+      profileCreate.displayName = displayName.value;
+    }
+    try {
+      await adminStore.createUser(profileCreate);
+      await router.push('/main/admin/users');
+    } catch (e) {
+      console.error(e.message);
+    }
+  });
 }
 </script>
