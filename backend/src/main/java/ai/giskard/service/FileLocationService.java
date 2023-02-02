@@ -5,6 +5,7 @@ import ai.giskard.domain.ProjectFile;
 import ai.giskard.domain.ml.Dataset;
 import ai.giskard.domain.ml.ProjectModel;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.stereotype.Service;
 
 import java.nio.file.Path;
@@ -35,6 +36,15 @@ public class FileLocationService {
         return modelsDirectory(projectKey).resolve(createZSTname("model_", modelId));
     }
 
+    public Path temporaryMetadataDirectory(String prefix) {
+        String randomDirName = RandomStringUtils.randomAlphanumeric(8).toLowerCase(); // NOSONAR: no security risk here
+        return resolvedTmpPath().resolve(prefix + "-" + randomDirName);
+    }
+
+    public Path resolvedMetadataPath(Path temporaryMetadataDir, String entityName) {
+        return temporaryMetadataDir.resolve(entityName.toLowerCase() + "-metadata.yaml");
+    }
+
     public Path resolveFilePath(ProjectFile file) {
         String projectKey = file.getProject().getKey();
         if (file instanceof ProjectModel) {
@@ -55,6 +65,10 @@ public class FileLocationService {
         return giskardHome().resolve(projectHome(projectKey));
     }
 
+    public Path resolvedTmpPath() {
+        return giskardHome().resolve("tmp");
+    }
+
     private Path giskardHome() {
         return applicationProperties.getHome();
     }
@@ -62,4 +76,9 @@ public class FileLocationService {
     public static String createZSTname(String prefix, Long id) {
         return prefix + id.toString() + ".zst";
     }
+
+    public static String createTXTname(String prefix, Long id) {
+        return prefix + id.toString() + ".txt";
+    }
+
 }

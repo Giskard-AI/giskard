@@ -40,21 +40,20 @@ public class FileUploadService {
 
     @Transactional
     public ProjectModel uploadModel(ModelUploadParamsDTO modelParams, InputStream modelStream, InputStream requirementsStream) throws IOException {
-        Project project = projectRepository.getOneByKey(modelParams.getProjectKey());
+        ProjectModel model = createProjectModel(modelParams);
+        return uploadModel(model, modelStream, requirementsStream);
+    }
+
+    @Transactional public ProjectModel uploadModel(ProjectModel model, InputStream modelStream, InputStream requirementsStream) throws IOException{
+        Project project = projectRepository.getOneByKey(model.getProject().getKey());
         Path projectModelsPath = locationService.modelsDirectory(project.getKey());
         createOrEnsureOutputDirectory(projectModelsPath);
-
-        ProjectModel model = createProjectModel(modelParams);
-
-        // first save to get ID that will be used in the filenames
         ProjectModel savedModel = modelRepository.save(model);
-
         String modelFilename = createZSTname("model_", savedModel.getId());
         Path modelFilePath = projectModelsPath.resolve(modelFilename);
         long size = modelStream.transferTo(Files.newOutputStream(modelFilePath));
-        model.setSize(size);
-        model.setFileName(modelFilename);
-
+        savedModel.setSize(size);
+        savedModel.setFileName(modelFilename);
         String requirementsFilename = String.format("model-requirements_%s.txt", savedModel.getId());
         Path requirementsFilePath = projectModelsPath.resolve(requirementsFilename);
         try {
@@ -62,8 +61,8 @@ public class FileUploadService {
         } catch (IOException e) {
             throw new GiskardRuntimeException("Error writing requirements file: " + requirementsFilePath, e);
         }
-        model.setRequirementsFileName(requirementsFilename);
-        return modelRepository.save(model);
+        savedModel.setRequirementsFileName(requirementsFilename);
+        return modelRepository.save(savedModel);
     }
 
     private ProjectModel createProjectModel(ModelUploadParamsDTO modelParams) {
@@ -129,10 +128,7 @@ public class FileUploadService {
     }
 
     @Transactional
-    public Dataset uploadDataset(Project project, String datasetName, Map<String, FeatureType> featureTypes, Map<String, String> columnTypes, String target, InputStream inputStream) throws IOException {
-        Path datasetPath = locationService.datasetsDirectory(project.getKey());
-        createOrEnsureOutputDirectory(datasetPath);
-
+    public Dataset uploadDataset(Project project, String datasetName, Map<String, FeatureType> featureTypes, Map<String, String> columnTypes, String target, InputStream inputStream) throws IOException{
         Dataset dataset = new Dataset();
         dataset.setName(nameOrDefault(datasetName, "Dataset"));
         dataset.setProject(project);
@@ -141,11 +137,19 @@ public class FileUploadService {
         dataset.setTarget(target);
         dataset = datasetRepository.save(dataset);
 
-        String fileName = createZSTname("data_", dataset.getId());
-        dataset.setFileName(fileName);
-        long size = inputStream.transferTo(Files.newOutputStream(datasetPath.resolve(fileName)));
-        dataset.setSize(size);
+        return uploadDataset(project, dataset, inputStream);
+    }
 
-        return datasetRepository.save(dataset);
+    @Transactional
+    public Dataset uploadDataset(Project project, Dataset dataset, InputStream inputStream) throws IOException {
+        Path datasetPath = locationService.datasetsDirectory(project.getKey());
+        createOrEnsureOutputDirectory(datasetPath);
+        Dataset savedDs = datasetRepository.save(dataset);
+        String fileName = createZSTname("data_", savedDs.getId());
+        savedDs.setFileName(fileName);
+        long size = inputStream.transferTo(Files.newOutputStream(datasetPath.resolve(fileName)));
+        savedDs.setSize(size);
+
+        return datasetRepository.save(savedDs);
     }
 }
