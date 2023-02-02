@@ -200,7 +200,8 @@ public class InspectionService {
 
         if (filter.getSliceId() != null && filter.getSliceId() > 0) {
             List<Integer> filteredRowIds = sliceService.getSlicedRowsForDataset(filter.getSliceId(), inspection.getDataset());
-            selection = selection.and(Selection.with(Ints.toArray(filteredRowIds)));
+            Selection withFilteredRowIds = Selection.with(Ints.toArray(filteredRowIds));
+            selection = selection != null ? selection.and(Selection.with(Ints.toArray(filteredRowIds))) : withFilteredRowIds;
         }
 
         return selection == null ? table : table.where(selection);
