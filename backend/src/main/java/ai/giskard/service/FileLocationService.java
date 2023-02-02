@@ -28,6 +28,10 @@ public class FileLocationService {
         return resolvedProjectHome(projectKey).resolve("datasets");
     }
 
+    public Path slicesDirectory(String projectKey) {
+        return resolvedProjectHome(projectKey).resolve("slices");
+    }
+
     public Path resolvedDatasetPath(String projectKey, Long datasetId) {
         return resolvedProjectHome(projectKey).resolve("datasets").resolve(createZSTname("data_", datasetId));
     }
@@ -43,6 +47,10 @@ public class FileLocationService {
 
     public Path resolvedMetadataPath(Path temporaryMetadataDir, String entityName) {
         return temporaryMetadataDir.resolve(entityName.toLowerCase() + "-metadata.yaml");
+    }
+
+    public Path resolvedSlicePath(String projectKey, Long datasetId, String sliceHash) {
+        return slicesDirectory(projectKey).resolve("slice_" + datasetId.toString() + "_" + sliceHash + ".slice");
     }
 
     public Path resolveFilePath(ProjectFile file) {

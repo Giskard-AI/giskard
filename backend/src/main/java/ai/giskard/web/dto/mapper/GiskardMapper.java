@@ -4,17 +4,12 @@ import ai.giskard.domain.Feedback;
 import ai.giskard.domain.Project;
 import ai.giskard.domain.Role;
 import ai.giskard.domain.User;
-import ai.giskard.domain.ml.Dataset;
-import ai.giskard.domain.ml.Inspection;
-import ai.giskard.domain.ml.ProjectModel;
-import ai.giskard.domain.ml.TestSuite;
+import ai.giskard.domain.ml.*;
 import ai.giskard.repository.ProjectRepository;
 import ai.giskard.repository.ml.DatasetRepository;
 import ai.giskard.repository.ml.ModelRepository;
 import ai.giskard.utils.JSON;
-import ai.giskard.web.dto.ModelMetadataDTO;
-import ai.giskard.web.dto.PrepareDeleteDTO;
-import ai.giskard.web.dto.TestSuiteCreateDTO;
+import ai.giskard.web.dto.*;
 import ai.giskard.web.dto.ml.*;
 import ai.giskard.web.dto.user.AdminUserDTO;
 import ai.giskard.web.dto.user.UserDTO;
@@ -59,6 +54,7 @@ public interface GiskardMapper {
     @Mapping(target = "lastModifiedDate", ignore = true)
     @Mapping(target = "datasets", ignore = true)
     @Mapping(target = "feedbacks", ignore = true)
+    @Mapping(target = "slices", ignore = true)
     @Mapping(target = "guests", ignore = true)
     @Mapping(target = "models", ignore = true)
     @Mapping(target = "owner", ignore = true)
@@ -66,12 +62,21 @@ public interface GiskardMapper {
     @Mapping(target = "mlWorkerType", ignore = true)
     void updateProjectFromDto(ProjectPostDTO dto, @MappingTarget Project entity);
 
+    @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
+    @Mapping(target = "createdBy", ignore = true)
+    @Mapping(target = "createdDate", ignore = true)
+    @Mapping(target = "lastModifiedBy", ignore = true)
+    @Mapping(target = "lastModifiedDate", ignore = true)
+    @Mapping(target = "project", ignore = true)
+    void updateSliceFromDto(SlicePutDTO dto, @MappingTarget Slice entity);
+
     @Mapping(target = "createdBy", ignore = true)
     @Mapping(target = "createdDate", ignore = true)
     @Mapping(target = "lastModifiedBy", ignore = true)
     @Mapping(target = "lastModifiedDate", ignore = true)
     @Mapping(target = "datasets", ignore = true)
     @Mapping(target = "feedbacks", ignore = true)
+    @Mapping(target = "slices", ignore = true)
     @Mapping(target = "guests", ignore = true)
     @Mapping(target = "models", ignore = true)
     @Mapping(target = "owner", ignore = true)
@@ -84,6 +89,10 @@ public interface GiskardMapper {
     ProjectPostDTO projectToProjectPostDTO(Project project);
 
     ProjectDTO projectToProjectDTO(Project project);
+
+    SliceDTO sliceToSliceDTO(Slice slice);
+
+    List<SliceDTO> slicesToSlicesDTO(List<Slice> slice);
 
     List<ProjectDTO> projectsToProjectDTOs(List<Project> projects);
 
@@ -147,6 +156,14 @@ public interface GiskardMapper {
     @Mapping(target = "lastModifiedBy", ignore = true)
     @Mapping(target = "lastModifiedDate", ignore = true)
     TestSuite fromDTO(TestSuiteCreateDTO dto);
+
+    @Mapping(source = "projectId", target = "project")
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "createdBy", ignore = true)
+    @Mapping(target = "createdDate", ignore = true)
+    @Mapping(target = "lastModifiedBy", ignore = true)
+    @Mapping(target = "lastModifiedDate", ignore = true)
+    Slice fromDTO(SliceCreateDTO dto);
 
 
     @Mapping(target = "message", source = "feedbackMessage")
