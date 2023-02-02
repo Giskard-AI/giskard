@@ -137,6 +137,7 @@ const allModels = ref<{ [key: string]: ModelDTO }>({});
 const executions = ref<TestSuiteExecutionDTO[]>();
 
 onMounted(() => loadData());
+watch(() => props.suiteId, () => loadData());
 
 async function loadData() {
   // Call api in parallel to shorten loading time
