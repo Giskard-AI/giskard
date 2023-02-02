@@ -117,7 +117,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     }
 
     private SecurityConfigurerAdapter<DefaultSecurityFilterChain, HttpSecurity> securityConfigurerAdapter() {
-        if (!featureFlagService.hasFlag(FeatureFlagService.FeatureFlag.Auth)) {
+        if (!featureFlagService.hasFlag(FeatureFlagService.FeatureFlag.AUTH)) {
             return new NoAuthConfigurer();
         }
 

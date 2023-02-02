@@ -32,7 +32,7 @@ export const useMainStore = defineStore('main', {
     }),
     getters: {
         authAvailable(state: State) {
-            return state.features?.Auth;
+            return state.features?.AUTH;
         }
     },
     actions: {
