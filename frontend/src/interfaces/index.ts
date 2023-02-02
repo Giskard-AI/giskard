@@ -3,7 +3,3 @@ export interface IUserProfileMinimal {
     user_id: string,
     display_name?: string
 }
-
-export enum FeatureFlags {
-    Auth
-}

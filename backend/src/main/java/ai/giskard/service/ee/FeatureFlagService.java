@@ -5,13 +5,13 @@ import org.springframework.stereotype.Service;
 import java.util.EnumMap;
 import java.util.Map;
 
-import static ai.giskard.service.ee.FeatureFlagService.FeatureFlag.Auth;
+import static ai.giskard.service.ee.FeatureFlagService.FeatureFlag.AUTH;
 
 @Service
 public class FeatureFlagService {
 
     public enum FeatureFlag {
-        Auth
+        AUTH
     }
 
     /**
@@ -23,7 +23,7 @@ public class FeatureFlagService {
     public Map<FeatureFlag, Boolean> getAllFeatures() {
         Map<FeatureFlag, Boolean> features = new EnumMap<>(FeatureFlag.class);
         String giskardAuth = System.getenv("GISKARD_AUTH");
-        features.put(Auth, giskardAuth != null && giskardAuth.equals("true"));
+        features.put(AUTH, giskardAuth != null && giskardAuth.equals("true"));
         return features;
     }
 

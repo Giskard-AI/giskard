@@ -269,7 +269,7 @@ public class InitService {
             }
         });
 
-        if (!featureFlagService.hasFlag(FeatureFlagService.FeatureFlag.Auth)) {
+        if (!featureFlagService.hasFlag(FeatureFlagService.FeatureFlag.AUTH)) {
             // Given the loop above, we can safely assume that the user at least exists.
             userRepository.findOneByLogin("admin").ifPresent(admin -> {
                 if (!admin.isEnabled()) {
