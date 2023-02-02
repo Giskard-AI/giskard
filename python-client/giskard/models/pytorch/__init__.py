@@ -30,14 +30,14 @@ class PyTorchModel(Model):
                  device='cpu',
                  name: str = None,
                  data_preprocessing_function=None,
-                 output_processing_function=None,
+                 model_postprocessing_function=None,
                  feature_names=None,
                  classification_threshold=0.5,
                  classification_labels=None,
                  loader_module:str = 'giskard.models.pytorch',
                  loader_class:str = 'PyTorchModel') -> None:
 
-        super().__init__(clf, model_type, name, data_preprocessing_function, output_processing_function,
+        super().__init__(clf, model_type, name, data_preprocessing_function, model_postprocessing_function,
                          feature_names, classification_threshold, classification_labels, loader_module, loader_class)
         self.device=device
 
@@ -87,11 +87,11 @@ class PyTorchModel(Model):
         if not predictions:
             with torch.no_grad():
                 for entry in data:
-                    predictions.append(self.clf(*entry).detach().numpy())
+                    predictions.append(self.clf(*entry).detach().numpy()[0])
             predictions = np.array(predictions)
 
-            if self.output_processing_function:
-                predictions = self.output_processing_function(predictions)
+        if self.model_postprocessing_function:
+            predictions = self.model_postprocessing_function(predictions)
 
         return predictions.squeeze()
 
