@@ -2,7 +2,6 @@ package ai.giskard.domain.ml;
 
 import ai.giskard.domain.AbstractAuditingEntity;
 import ai.giskard.domain.Project;
-import com.fasterxml.jackson.annotation.JsonBackReference;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
