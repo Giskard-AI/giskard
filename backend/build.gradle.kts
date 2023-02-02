@@ -1,5 +1,4 @@
 import com.google.protobuf.gradle.*
-import org.gradle.api.JavaVersion
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -268,7 +267,7 @@ sourceSets {
 }
 
 tasks {
-    withType<Test>() {
+    withType<Test> {
         useJUnitPlatform()
         maxParallelForks = Runtime.getRuntime().availableProcessors()
     }

@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -17,6 +18,7 @@ import java.util.Optional;
  */
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
+
     default Optional<User> findOneByActivationKey(String activationKey) {
         return Optional.empty();
     }
@@ -55,4 +57,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
     Page<User> findAllByIdNotNullAndActivatedIsTrue(Pageable pageable);
 
     List<User> findAllByIdNotNullAndEnabledIsTrue();
+
+    List<User> findByRolesNameIn(Collection<String> names);
+
 }

@@ -138,7 +138,8 @@
                         <v-icon> mdi-arrow-right</v-icon>
                       </v-col>
                       <v-col cols="6">
-                        <v-select hide-details dense :items="loginsCurrentInstance" v-model="mapLogins[item]"></v-select>
+                        <v-select hide-details dense :items="loginsCurrentInstance"
+                                  v-model="mapLogins[item]"></v-select>
                       </v-col>
                     </v-row>
                   </template>
@@ -190,19 +191,21 @@
 <script setup lang="ts">
 import {computed, onMounted, ref, watch} from "vue";
 import {ValidationObserver} from "vee-validate";
-import {dispatchCreateProject, dispatchGetProjects} from "@/store/main/actions";
-import {readAllProjects, readHasAdminAccess, readUserProfile} from "@/store/main/getters";
 import {Role} from "@/enums";
 import {PostImportProjectDTO, ProjectPostDTO} from "@/generated-sources";
 import {toSlug} from "@/utils";
-import store from "@/store";
-import router from "@/router"
-import {useRoute} from "vue-router/composables";
+import {useRoute, useRouter} from "vue-router/composables";
 import moment from "moment";
+import {useUserStore} from "@/stores/user";
+import {useProjectStore} from "@/stores/project";
 import {api} from "@/api";
 import mixpanel from "mixpanel-browser";
 
 const route = useRoute();
+const router = useRouter();
+
+const userStore = useUserStore();
+const projectStore = useProjectStore();
 
 const openCreateDialog = ref<boolean>(false); // toggle for edit or create dialog
 const openPrepareDialog = ref<boolean>(false);
@@ -230,7 +233,7 @@ onMounted(async () => {
 
 // computed
 const userProfile = computed(() => {
-  const userProfile = readUserProfile(store);
+  const userProfile = userStore.userProfile;
   if (userProfile == null) {
     throw Error("User is not defined.")
   }
@@ -238,7 +241,7 @@ const userProfile = computed(() => {
 });
 
 const isAdmin = computed(() => {
-  return readHasAdminAccess(store);
+  return userStore.hasAdminAccess;
 });
 
 const isCreator = computed(() => {
@@ -246,17 +249,17 @@ const isCreator = computed(() => {
 });
 
 const projects = computed(() => {
-  return readAllProjects(store)
+  return projectStore.projects
       .sort((a, b) => moment(b.createdDate).diff(moment(a.createdDate)));
 })
 
 // functions
 async function loadProjects() {
-  await dispatchGetProjects(store);
+  await projectStore.getProjects();
 }
 
 async function prepareImport() {
-  if (!file.value){
+  if (!file.value) {
     return;
   }
   let formData = new FormData();
@@ -280,10 +283,10 @@ async function prepareImport() {
 }
 
 async function ImportIfNoConflictKey() {
-  if (!file.value){
+  if (!file.value) {
     return;
   }
-  let projects = readAllProjects(store);
+  let projects = projectStore.projects;
   let keyAlreadyExist: boolean = false;
   projects.forEach(project => {
     if (project.key == newProjectKey.value) keyAlreadyExist = true;
@@ -339,7 +342,7 @@ async function submitNewProject() {
   };
 
   try {
-    await dispatchCreateProject(store, proj);
+    await projectStore.createProject(proj);
     clearAndCloseDialog();
   } catch (e) {
     console.error(e.message);
