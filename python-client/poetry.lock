@@ -2651,21 +2651,22 @@ email = ["email-validator (>=1.0.3)"]
 
 [[package]]
 name = "pydocstyle"
-version = "6.1.1"
+version = "6.3.0"
 description = "Python docstring style checker"
 category = "dev"
 optional = false
 python-versions = ">=3.6"
 files = [
-    {file = "pydocstyle-6.1.1-py3-none-any.whl", hash = "sha256:6987826d6775056839940041beef5c08cc7e3d71d63149b48e36727f70144dc4"},
-    {file = "pydocstyle-6.1.1.tar.gz", hash = "sha256:1d41b7c459ba0ee6c345f2eb9ae827cab14a7533a88c5c6f7e94923f72df92dc"},
+    {file = "pydocstyle-6.3.0-py3-none-any.whl", hash = "sha256:118762d452a49d6b05e194ef344a55822987a462831ade91ec5c06fd2169d019"},
+    {file = "pydocstyle-6.3.0.tar.gz", hash = "sha256:7ce43f0c0ac87b07494eb9c0b462c0b73e6ff276807f204d6b53edc72b7e44e1"},
 ]
 
 [package.dependencies]
-snowballstemmer = "*"
+importlib-metadata = {version = ">=2.0.0,<5.0.0", markers = "python_version < \"3.8\""}
+snowballstemmer = ">=2.2.0"
 
 [package.extras]
-toml = ["toml"]
+toml = ["tomli (>=1.2.3)"]
 
 [[package]]
 name = "pyflakes"
