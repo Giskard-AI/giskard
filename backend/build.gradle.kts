@@ -24,7 +24,7 @@ plugins {
     id("io.freefair.lombok") version "6.5.0.3"
     id("org.liquibase.gradle") version "2.1.1"
     id("com.github.andygoossens.gradle-modernizer-plugin") version "1.6.2"
-    id("com.google.protobuf") version "0.8.18"
+    id("com.google.protobuf") version "0.9.2"
 }
 
 group = "ai.giskard"
