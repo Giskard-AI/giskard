@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="vertical-container">
     <v-container class="mt-2 mb-0" v-if="isProjectOwnerOrAdmin">
       <div class="d-flex justify-end align-center">
         <v-btn tile small class="mx-2" href="https://docs.giskard.ai/start/guides/upload-your-model" target="_blank">
@@ -21,8 +21,7 @@
           <v-col cols="2">Actions</v-col>
         </v-row>
         <v-expansion-panel v-for="f in files" :key="f.id">
-          <v-expansion-panel-header @click="peakDataFile(f.id)" class="py-1 pl-2"
-                                    :class="{'file-xl': f.name.indexOf('.xls') > 0, 'file-csv': f.name.indexOf('.csv') > 0}">
+          <v-expansion-panel-header @click="peakDataFile(f.id)" class="py-1 pl-2">
             <v-row dense no-gutters align="center">
               <v-col cols="4" class="font-weight-bold">
                 <InlineEditText
@@ -31,10 +30,10 @@
                     @save="(name) => renameDataset(f.id, name)">
                 </InlineEditText>
               </v-col>
-              <v-col cols="1">{{ f.size | fileSize }}</v-col>
+              <v-col cols="1">{{ f.originalSizeBytes | fileSize }}</v-col>
               <v-col cols="2">{{ f.createdDate | date }}</v-col>
               <v-col cols="2">{{ f.target }}</v-col>
-              <v-col cols="1"> {{ f.id }}</v-col>
+              <v-col cols="1" class="id-container" :title="f.id"> {{ f.id }}</v-col>
               <v-col cols="2">
                 <span>
               <v-tooltip bottom dense>
@@ -76,7 +75,7 @@
 <script setup lang="ts">
 import {api} from '@/api';
 import {commitAddNotification} from '@/store/main/mutations';
-import {FileDTO} from '@/generated-sources';
+import {DatasetDTO} from '@/generated-sources';
 import mixpanel from "mixpanel-browser";
 import DeleteModal from '@/views/main/project/modals/DeleteModal.vue';
 import {onActivated, ref} from 'vue';
@@ -92,8 +91,8 @@ const props = withDefaults(defineProps<{
   isProjectOwnerOrAdmin: false
 });
 
-const files = ref<FileDTO[]>([]);
-const lastVisitedFileId = ref<number | null>(null);
+const files = ref<DatasetDTO[]>([]);
+const lastVisitedFileId = ref<string | null>(null);
 const filePreviewHeader = ref<{ text: string, value: string, sortable: boolean }[]>([]);
 const filePreviewData = ref<any[]>([]);
 
@@ -104,20 +103,20 @@ async function loadDatasets() {
   files.value.sort((a, b) => new Date(a.createdDate) < new Date(b.createdDate) ? 1 : -1);
 }
 
-async function deleteDataFile(id: number) {
-  mixpanel.track('Delete model', {id});
+async function deleteDataFile(id: string) {
+  mixpanel.track('Delete dataset', {id});
 
   let messageDTO = await api.deleteDatasetFile(id);
   commitAddNotification(store, {content: messageDTO.message});
   await loadDatasets();
 }
 
-function downloadDataFile(id: number) {
+function downloadDataFile(id: string) {
   mixpanel.track('Download dataset file', {id});
   api.downloadDataFile(id)
 }
 
-async function peakDataFile(id: number) {
+async function peakDataFile(id: string) {
   if (lastVisitedFileId.value != id) {
     lastVisitedFileId.value = id; // this is a trick to avoid recalling the api every time one panel is opened/closed
     try {
@@ -142,7 +141,7 @@ async function peakDataFile(id: number) {
   }
 }
 
-async function renameDataset(id: number, name: string) {
+async function renameDataset(id: string, name: string) {
   mixpanel.track('Update dataset name', {id});
   const savedDataset = await api.editDatasetName(id, name);
   const idx = files.value.findIndex(f => f.id === id);
@@ -166,5 +165,10 @@ async function renameDataset(id: number, name: string) {
 
 div.v-input {
   width: 400px;
+}
+
+.id-container {
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 </style>

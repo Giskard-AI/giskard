@@ -1,67 +1,64 @@
 import logging
+from itertools import groupby
 from typing import Callable, Dict, List, Any
 
 import eli5
 import numpy as np
 import pandas as pd
 import shap
-from itertools import groupby
 from eli5.lime import TextExplainer
 
-from giskard.ml_worker.core.giskard_dataset import GiskardDataset
-from giskard.ml_worker.core.model import GiskardModel
+from giskard.core.model import Model
+from giskard.ml_worker.core.dataset import Dataset
 from giskard.ml_worker.utils.logging import timer
 
 logger = logging.getLogger(__name__)
 
 
 @timer()
-def explain(model: GiskardModel, dataset: GiskardDataset, input_data: Dict):
+def explain(model: Model, dataset: Dataset, input_data: Dict):
     def prepare_df(df):
         return model.prepare_dataframe(
-            GiskardDataset(
+            Dataset(
                 df=df,
                 target=dataset.target,
-                feature_types=dataset.feature_types,
-                column_types=dataset.column_types,
+                column_meanings=dataset.column_meanings,
             )
         )
 
     df = model.prepare_dataframe(dataset)
     feature_names = list(df.columns)
 
-    # Make sure column order is that column order is the same as in df
-    input_df = pd.DataFrame([input_data])
-    input_df = prepare_df(input_df)
+    input_df = prepare_df(pd.DataFrame([input_data]))
 
     def predict_array(array):
-        return model.prediction_function(prepare_df(pd.DataFrame(array, columns=list(df.columns))))
+        return model.prepare_data_and_predict(prepare_df(pd.DataFrame(array, columns=list(df.columns))))
 
-    example = background_example(df, dataset.feature_types)
+    example = background_example(df, dataset.column_meanings)
     kernel = shap.KernelExplainer(predict_array, example)
     shap_values = kernel.shap_values(input_df)
 
-    if model.model_type == "regression":
+    if model.is_regression:
         explanation_chart_data = summary_shap_regression(
             shap_values=shap_values, feature_names=feature_names
         )
-    elif model.model_type == "classification":
+    elif model.is_classification:
         explanation_chart_data = summary_shap_classification(
             shap_values=shap_values,
             feature_names=feature_names,
-            class_names=model.classification_labels,
+            class_names=model.meta.classification_labels,
         )
     else:
-        raise ValueError(f"Prediction task is not supported: {model.model_type}")
+        raise ValueError(f"Prediction task is not supported: {model.meta.model_type}")
     return explanation_chart_data
 
 
 @timer()
-def explain_text(model: GiskardModel, input_df: pd.DataFrame,
+def explain_text(model: Model, input_df: pd.DataFrame,
                  text_column: str, text_document: str, n_samples: int):
     text_explainer = TextExplainer(random_state=42, n_samples=n_samples)
     prediction_function = text_explanation_prediction_wrapper(
-        model.prediction_function, input_df, text_column
+        model.prepare_data_and_predict, input_df, text_column
     )
     text_explain_attempts = 10
     try:
@@ -72,11 +69,10 @@ def explain_text(model: GiskardModel, input_df: pd.DataFrame,
             except ZeroDivisionError:
                 logger.warning(f"Failed to fit text explainer {i}")
 
-        text_explainer.show_prediction(target_names=model.classification_labels)
-        exp = text_explainer.explain_prediction(target_names=model.classification_labels)
+        text_explainer.show_prediction(target_names=model.meta.classification_labels)
+        exp = text_explainer.explain_prediction(target_names=model.meta.classification_labels)
         exp = eli5.formatters.html.prepare_weighted_spans(exp.targets)
-        return get_list_words_weigths(exp) 
-
+        return get_list_words_weigths(exp)
     except Exception as e:
         logger.exception(f"Failed to explain text: {text_document}", e)
         raise Exception("Failed to create text explanation") from e

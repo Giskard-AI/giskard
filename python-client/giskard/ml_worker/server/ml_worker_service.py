@@ -6,6 +6,7 @@ import sys
 import time
 from io import StringIO
 
+import google.protobuf
 import grpc
 import numpy as np
 import pandas as pd
@@ -14,34 +15,18 @@ import psutil
 import tqdm
 
 import giskard
-from giskard.ml_worker.core.giskard_dataset import GiskardDataset
+from giskard.client.giskard_client import GiskardClient
+from giskard.core.model import Model
+from giskard.ml_worker.core.dataset import Dataset
 from giskard.ml_worker.core.model_explanation import (
     explain,
     explain_text,
 )
 from giskard.ml_worker.exceptions.IllegalArgumentError import IllegalArgumentError
 from giskard.ml_worker.exceptions.giskard_exception import GiskardException
-from giskard.ml_worker.generated.ml_worker_pb2 import (
-    DataFrame,
-    DataRow,
-    EchoMsg,
-    ExplainRequest,
-    ExplainResponse,
-    ExplainTextRequest,
-    ExplainTextResponse,
-    MLWorkerInfo,
-    MLWorkerInfoRequest,
-    PlatformInfo,
-    RunModelForDataFrameRequest,
-    RunModelForDataFrameResponse,
-    RunModelRequest,
-    RunModelResponse,
-    RunTestRequest,
-    TestResultMessage,
-    UploadStatus,
-    FileUploadMetadata, FileType, StatusCode, FilterDatasetResponse, )
+from giskard.ml_worker.generated.ml_worker_pb2 import *
 from giskard.ml_worker.generated.ml_worker_pb2_grpc import MLWorkerServicer
-from giskard.ml_worker.utils.grpc_mapper import deserialize_dataset, deserialize_model
+from giskard.ml_worker.testing.registry.registry import tests_registry
 from giskard.ml_worker.utils.logging import Timer
 from giskard.path_utils import model_path, dataset_path
 
@@ -61,12 +46,13 @@ def file_already_exists(meta: FileUploadMetadata):
 
 
 class MLWorkerServiceImpl(MLWorkerServicer):
-    def __init__(self, port=None, remote=None) -> None:
+    def __init__(self, client: GiskardClient, port=None, remote=None) -> None:
         super().__init__()
         self.port = port
         self.remote = remote
+        self.client = client
 
-    def echo(self, request, context):
+    def echo_orig(self, request, context):
         globals()["echo_count"] += 1
         return EchoMsg(msg=f"Response {echo_count}: {request.msg}")
 
@@ -132,17 +118,39 @@ class MLWorkerServiceImpl(MLWorkerServicer):
             is_remote=self.remote,
         )
 
+    def runAdHocTest(self, request: RunAdHocTestRequest,
+                     context: grpc.ServicerContext) -> TestResultMessage:
+
+        test = tests_registry.get_test(request.testId)
+        arguments = {}
+        for arg in request.arguments:
+            if arg.HasField('dataset'):
+                value = Dataset.load(self.client, arg.dataset.project_key, arg.dataset.id)
+            elif arg.HasField('model'):
+                value = Model.load(self.client, arg.model.project_key, arg.model.id)
+            elif arg.HasField('float'):
+                value = float(arg.float)
+            elif arg.HasField('string'):
+                value = str(arg.string)
+            else:
+                raise IllegalArgumentError("Unknown argument type")
+            arguments[arg.name] = value
+        logger.info(f"Executing {test.name}")
+        test_result = test.fn(**arguments)
+        return TestResultMessage(results=[NamedSingleTestResult(name=test.id, result=test_result)])
+
     def runTest(self, request: RunTestRequest, context: grpc.ServicerContext) -> TestResultMessage:
         from giskard.ml_worker.testing.functions import GiskardTestFunctions
-
-        model = deserialize_model(request.model)
+        model = Model.load(self.client, request.model.project_key, request.model.id)
 
         tests = GiskardTestFunctions()
         _globals = {"model": model, "tests": tests}
-        if request.reference_ds.file_name:
-            _globals["reference_ds"] = deserialize_dataset(request.reference_ds)
-        if request.actual_ds.file_name:
-            _globals["actual_ds"] = deserialize_dataset(request.actual_ds)
+        if request.reference_ds.id:
+            _globals["reference_ds"] = \
+                Dataset.load(self.client, request.reference_ds.project_key, request.reference_ds.id)
+        if request.actual_ds.id:
+            _globals["actual_ds"] = \
+                Dataset.load(self.client, request.actual_ds.project_key, request.actual_ds.id)
         try:
             timer = Timer()
             exec(request.code, _globals)
@@ -158,8 +166,8 @@ class MLWorkerServiceImpl(MLWorkerServicer):
         return TestResultMessage(results=tests.tests_results)
 
     def explain(self, request: ExplainRequest, context) -> ExplainResponse:
-        model = deserialize_model(request.model)
-        dataset = deserialize_dataset(request.dataset)
+        model = Model.load(self.client, request.model.project_key, request.model.id)
+        dataset = Dataset.load(self.client, request.dataset.project_key, request.dataset.id)
         explanations = explain(model, dataset, request.columns)
 
         return ExplainResponse(
@@ -171,17 +179,17 @@ class MLWorkerServiceImpl(MLWorkerServicer):
 
     def explainText(self, request: ExplainTextRequest, context) -> ExplainTextResponse:
         n_samples = 500 if request.n_samples <= 0 else request.n_samples
-        model = deserialize_model(request.model)
+        model = Model.load(self.client, request.model.project_key, request.model.id)
         text_column = request.feature_name
 
-        if request.feature_types[text_column] != "text":
+        if request.column_meanings[text_column] != "text":
             raise ValueError(f"Column {text_column} is not of type text")
         text_document = request.columns[text_column]
         input_df = pd.DataFrame({k: [v] for k, v in request.columns.items()})
         if model.feature_names:
             input_df = input_df[model.feature_names]
         (list_words, list_weights) = explain_text(model, input_df, text_column, text_document, n_samples)
-        map_features_weight = dict(zip(model.classification_labels, list_weights))
+        map_features_weight = dict(zip(model.meta.classification_labels, list_weights))
         return ExplainTextResponse(
             weights={
                 k: ExplainTextResponse.WeightsPerFeature(weights=[weight for weight in map_features_weight[k]])
@@ -190,15 +198,14 @@ class MLWorkerServiceImpl(MLWorkerServicer):
         )
 
     def runModelForDataFrame(self, request: RunModelForDataFrameRequest, context):
-        model = deserialize_model(request.model)
-        ds = GiskardDataset(
+        model = Model.load(self.client, request.model.project_key, request.model.id)
+        ds = Dataset(
             pd.DataFrame([r.columns for r in request.dataframe.rows]),
             target=request.target,
-            feature_types=request.feature_types,
-            column_types=request.column_types,
+            column_meanings=request.column_meanings,
         )
-        predictions = model.run_predict(ds)
-        if model.model_type == "classification":
+        predictions = model.predict(ds)
+        if model.is_classification:
             return RunModelForDataFrameResponse(
                 all_predictions=self.pandas_df_to_proto_df(predictions.all_predictions),
                 prediction=predictions.prediction.astype(str),
@@ -210,8 +217,8 @@ class MLWorkerServiceImpl(MLWorkerServicer):
 
     def runModel(self, request: RunModelRequest, context) -> RunModelResponse:
         try:
-            model = deserialize_model(request.model)
-            dataset = deserialize_dataset(request.dataset)
+            model = Model.load(self.client, request.model.project_key, request.model.id)
+            dataset = Dataset.load(self.client, request.dataset.project_key, request.dataset.id)
         except ValueError as e:
             if "unsupported pickle protocol" in str(e):
                 raise ValueError('Unable to unpickle object, '
@@ -223,13 +230,13 @@ class MLWorkerServiceImpl(MLWorkerServicer):
             raise GiskardException(f"Failed to import '{e.name}'. "
                                    f"Make sure it's installed in the ML Worker environment."
                                    "To install it, refer to https://docs.giskard.ai/start/guides/configuration") from e
-        prediction_results = model.run_predict(dataset)
+        prediction_results = model.predict(dataset)
 
-        if model.model_type == "classification":
+        if model.is_classification:
             results = prediction_results.all_predictions
-            labels = {k: v for k, v in enumerate(model.classification_labels)}
+            labels = {k: v for k, v in enumerate(model.meta.classification_labels)}
             label_serie = dataset.df[dataset.target] if dataset.target else None
-            if len(model.classification_labels) > 2 or model.classification_threshold is None:
+            if len(model.meta.classification_labels) > 2 or model.meta.classification_threshold is None:
                 preds_serie = prediction_results.all_predictions.idxmax(axis="columns")
                 sorted_predictions = np.sort(prediction_results.all_predictions.values)
                 abs_diff = pd.Series(
@@ -237,7 +244,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
                 )
             else:
                 diff = (
-                        prediction_results.all_predictions.iloc[:, 1] - model.classification_threshold
+                        prediction_results.all_predictions.iloc[:, 1] - model.meta.classification_threshold
                 )
                 preds_serie = (diff >= 0).astype(int).map(labels).rename("predictions")
                 abs_diff = pd.Series(diff.abs(), name="absDiff")
@@ -299,6 +306,31 @@ class MLWorkerServiceImpl(MLWorkerServicer):
 
         logger.info(f"Filter dataset finished. Avg chunk time: {sum(times) / len(times)}")
         yield FilterDatasetResponse(code=StatusCode.Ok)
+
+    def getTestRegistry(self, request: google.protobuf.empty_pb2.Empty,
+                        context: grpc.ServicerContext) -> TestRegistryResponse:
+        globals()["echo_count"] += 1
+        return TestRegistryResponse(tests={
+            test.id: TestFunction(
+                id=test.id,
+                name=test.name,
+                module=test.module,
+                doc=test.doc,
+                code=test.code,
+                module_doc=test.module_doc,
+                tags=test.tags,
+                arguments={
+                    a.name: TestFunctionArgument(
+                        name=a.name,
+                        type=a.type,
+                        optional=a.optional,
+                        default=str(a.default)
+                    ) for a
+                    in test.args.values()}
+
+            )
+            for test in tests_registry.get_all().values()
+        })
 
     @staticmethod
     def pandas_df_to_proto_df(df):

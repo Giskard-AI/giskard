@@ -1,17 +1,18 @@
 package ai.giskard.service;
 
-import ai.giskard.domain.FeatureType;
+import ai.giskard.domain.ColumnMeaning;
 import ai.giskard.domain.ml.*;
 import ai.giskard.domain.ml.testing.Test;
-import ai.giskard.repository.ml.DatasetRepository;
-import ai.giskard.repository.ml.ModelRepository;
-import ai.giskard.repository.ml.TestRepository;
-import ai.giskard.repository.ml.TestSuiteRepository;
+import ai.giskard.repository.ml.*;
+import ai.giskard.web.dto.TestCatalogDTO;
+import ai.giskard.web.dto.TestFunctionArgumentDTO;
 import ai.giskard.web.dto.mapper.GiskardMapper;
 import ai.giskard.web.dto.ml.TestSuiteDTO;
 import ai.giskard.web.dto.ml.UpdateTestSuiteDTO;
 import ai.giskard.web.rest.errors.Entity;
 import ai.giskard.web.rest.errors.EntityNotFoundException;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.text.StringSubstitutor;
 import org.slf4j.Logger;
@@ -33,6 +34,8 @@ public class TestSuiteService {
     private final ModelRepository modelRepository;
     private final GiskardMapper giskardMapper;
     private final CodeTestTemplateService testTemplateService;
+    private final TestSuiteNewRepository testSuiteNewRepository;
+    private final TestService testService;
 
 
     public TestSuite updateTestSuite(UpdateTestSuiteDTO dto) {
@@ -88,25 +91,25 @@ public class TestSuiteService {
 
         ProjectModel model = suite.getModel();
 
-        if (model.getModelType().isClassification()) {
+        if (model.getModelType() == ModelType.CLASSIFICATION) {
             model.getClassificationLabels().stream().findFirst().ifPresent(label -> {
                 substitutions.putIfAbsent("CLASSIFICATION LABEL", label);
             });
         }
         Dataset ds = suite.getReferenceDataset() != null ? suite.getReferenceDataset() : suite.getActualDataset();
         if (ds != null) {
-            ds.getFeatureTypes().forEach((fName, fType) -> {
+            ds.getColumnMeanings().forEach((fName, fType) -> {
                 if (fName.equals(ds.getTarget())) {
                     substitutions.putIfAbsent("TARGET NAME", fName);
                 } else {
                     substitutions.putIfAbsent("FEATURE NAME", fName);
-                    if (fType == FeatureType.CATEGORY) {
+                    if (fType == ColumnMeaning.CATEGORY) {
                         substitutions.putIfAbsent("CATEGORICAL FEATURE NAME", fName);
                     }
-                    if (fType == FeatureType.NUMERIC) {
+                    if (fType == ColumnMeaning.NUMERIC) {
                         substitutions.putIfAbsent("NUMERIC FEATURE NAME", fName);
                     }
-                    if (fType == FeatureType.TEXT) {
+                    if (fType == ColumnMeaning.TEXT) {
                         substitutions.putIfAbsent("TEXTUAL FEATURE NAME", fName);
                     }
                 }
@@ -115,5 +118,35 @@ public class TestSuiteService {
 
         StringSubstitutor sub = new StringSubstitutor(substitutions, "{{", "}}");
         return sub.replace(code);
+    }
+
+    public Map<String, String> getSuiteInputs(Long projectId, Long suiteId) {
+        TestSuiteNew suite = testSuiteNewRepository.findOneByProjectIdAndId(projectId, suiteId);
+        TestCatalogDTO catalog = testService.listTestsFromRegistry(projectId);
+
+        Map<String, String> res = new HashMap<>();
+
+        suite.getTests().forEach(test -> {
+            Collection<TestFunctionArgumentDTO> signatureArgs = catalog.getTests().get(test.getTestId()).getArguments().values();
+            ImmutableMap<String, TestInput> providedInputs = Maps.uniqueIndex(test.getTestInputs(), TestInput::getName);
+
+            signatureArgs.stream()
+                .filter(a -> !a.isOptional())
+                .forEach(a -> {
+                    String name = null;
+                    if (!providedInputs.containsKey(a.getName())) {
+                        name = a.getName();
+                    } else if (providedInputs.get(a.getName()).isAlias()) {
+                        name = providedInputs.get(a.getName()).getValue();
+                    }
+                    if (name != null) {
+                        if (res.containsKey(name) && !a.getType().equals(res.get(name))) {
+                            throw new IllegalArgumentException("Variable with name %s is declared as %s and %s at the same time".formatted(a.getName(), res.get(a.getName()), a.getType()));
+                        }
+                        res.put(name, a.getType());
+                    }
+                });
+        });
+        return res;
     }
 }

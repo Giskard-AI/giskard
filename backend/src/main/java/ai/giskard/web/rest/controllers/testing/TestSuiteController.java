@@ -1,12 +1,15 @@
 package ai.giskard.web.rest.controllers.testing;
 
 import ai.giskard.domain.ml.TestSuite;
+import ai.giskard.domain.ml.TestSuiteNew;
 import ai.giskard.domain.ml.testing.Test;
 import ai.giskard.repository.ml.TestRepository;
+import ai.giskard.repository.ml.TestSuiteNewRepository;
 import ai.giskard.repository.ml.TestSuiteRepository;
 import ai.giskard.service.TestService;
 import ai.giskard.service.TestSuiteService;
 import ai.giskard.web.dto.TestSuiteCreateDTO;
+import ai.giskard.web.dto.TestSuiteNewDTO;
 import ai.giskard.web.dto.mapper.GiskardMapper;
 import ai.giskard.web.dto.ml.*;
 import ai.giskard.web.rest.errors.EntityNotFoundException;
@@ -16,7 +19,9 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 import java.util.List;
+import java.util.Map;
 
 import static ai.giskard.web.rest.errors.Entity.TEST_SUITE;
 
@@ -30,13 +35,14 @@ public class TestSuiteController {
     private final TestSuiteService testSuiteService;
     private final TestService testService;
     private final GiskardMapper giskardMapper;
+    private final TestSuiteNewRepository testSuiteNewRepository;
 
 
     @PutMapping("suites/update_params")
     @Transactional
     public TestSuiteDTO updateTestSuiteParams(@Valid @RequestBody UpdateTestSuiteParamsDTO dto) {
         TestSuite suite;
-        if (dto.getTestId()!=null){
+        if (dto.getTestId() != null) {
             Test test = testRepository.getById(dto.getTestId());
             suite = test.getTestSuite();
         } else if (dto.getTestSuiteId() != null) {
@@ -62,7 +68,39 @@ public class TestSuiteController {
         return giskardMapper.testSuiteToTestSuiteDTO(testSuite);
     }
 
-    @PostMapping("suites/execute")
+
+    @PostMapping("project/{projectKey}/suites-new")
+    @PreAuthorize("@permissionEvaluator.canWriteProjectKey(#projectKey)")
+    @Transactional
+    public Long saveTestSuite(@PathVariable("projectKey") @NotNull String projectKey, @Valid @RequestBody TestSuiteNewDTO dto) {
+        TestSuiteNew savedSuite = testSuiteNewRepository.save(giskardMapper.fromDTO(dto));
+        return savedSuite.getId();
+    }
+
+    @GetMapping("project/{projectId}/suites-new")
+    @PreAuthorize("@permissionEvaluator.canReadProject(#projectId)")
+    @Transactional
+    public List<TestSuiteNewDTO> listTestSuitesNew(@PathVariable("projectId") @NotNull Long projectId) {
+        return giskardMapper.toDTO(testSuiteNewRepository.findAllByProjectId(projectId));
+    }
+
+    @GetMapping("project/{projectId}/suite-new/{suiteId}")
+    @PreAuthorize("@permissionEvaluator.canReadProject(#projectId)")
+    @Transactional
+    public TestSuiteNewDTO listTestSuiteNew(@PathVariable("projectId") @NotNull Long projectId,
+                                            @PathVariable("suiteId") @NotNull Long suiteId) {
+        return giskardMapper.toDTO(testSuiteNewRepository.findOneByProjectIdAndId(projectId, suiteId));
+    }
+
+    @GetMapping("project/{projectId}/suite-new/{suiteId}/inputs")
+    @PreAuthorize("@permissionEvaluator.canReadProject(#projectId)")
+    @Transactional
+    public Map<String, String> getSuiteInputs(@PathVariable("projectId") @NotNull Long projectId,
+                                              @PathVariable("suiteId") @NotNull Long suiteId) {
+        return testSuiteService.getSuiteInputs(projectId, suiteId);
+    }
+
+    @PostMapping("project/{projectKey}/suites")
     public List<TestExecutionResultDTO> executeTestSuite(@Valid @RequestBody ExecuteTestSuiteRequest request) {
         return testService.executeTestSuite(request.getSuiteId());
     }

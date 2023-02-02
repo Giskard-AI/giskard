@@ -15,10 +15,7 @@ import ai.giskard.web.dto.user.AdminUserDTO;
 import ai.giskard.web.dto.user.UserDTO;
 import org.mapstruct.*;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Mapper(
@@ -104,7 +101,7 @@ public interface GiskardMapper {
 
     List<DatasetDTO> datasetsToDatasetDTOs(List<Dataset> datasets);
 
-    @Mapping(source = "featureTypes", target = "featureTypes")
+    @Mapping(source = "columnMeanings", target = "columnMeanings")
     DatasetDTO datasetToDatasetDTO(Dataset dataset);
 
     List<TestSuiteDTO> testSuitesToTestSuiteDTOs(List<TestSuite> testSuites);
@@ -165,6 +162,16 @@ public interface GiskardMapper {
     @Mapping(target = "lastModifiedDate", ignore = true)
     Slice fromDTO(SliceCreateDTO dto);
 
+    ProjectModel fromDTO(ModelDTO dto);
+
+    @Mapping(source = "columnMeanings", target = "columnMeanings")
+    @Mapping(target = "inspections", ignore = true)
+    @Mapping(target = "project", ignore = true)
+    @Mapping(target = "createdBy", ignore = true)
+    @Mapping(target = "createdDate", ignore = true)
+    @Mapping(target = "lastModifiedBy", ignore = true)
+    @Mapping(target = "lastModifiedDate", ignore = true)
+    Dataset fromDTO(DatasetDTO dto);
 
     @Mapping(target = "message", source = "feedbackMessage")
     @Mapping(target = "projectId", source = "project.id")
@@ -176,4 +183,49 @@ public interface GiskardMapper {
     List<PrepareDeleteDTO.LightFeedback> toLightFeedbacks(List<Feedback> obj);
 
     List<PrepareDeleteDTO.LightTestSuite> toLightTestSuites(List<TestSuite> obj);
+
+
+    @Mapping(target = "createdBy", ignore = true)
+    @Mapping(target = "createdDate", ignore = true)
+    @Mapping(target = "lastModifiedBy", ignore = true)
+    @Mapping(target = "lastModifiedDate", ignore = true)
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "project", source = "projectKey")
+    TestSuiteNew fromDTO(TestSuiteNewDTO dto);
+
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "suite", ignore = true)
+    SuiteTest fromDTO(SuiteTestDTO dto);
+
+    @AfterMapping
+    default void afterMapping(@MappingTarget TestSuiteNew suite) {
+        suite.getTests().forEach(e -> e.setSuite(suite));
+    }
+
+    @AfterMapping
+    default void afterMapping(@MappingTarget SuiteTest test) {
+        test.getTestInputs().forEach(e -> e.setTest(test));
+    }
+
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "test", ignore = true)
+    @Mapping(target = "alias", source = "alias")
+    TestInput fromDTO(TestInputDTO dto);
+
+    TestInputDTO toDTO(TestInput obj);
+
+
+    List<TestSuiteNewDTO> toDTO(List<TestSuiteNew> suites);
+
+    @Mapping(target = "projectKey", source = "project.key")
+    TestSuiteNewDTO toDTO(TestSuiteNew suite);
+
+    default Map<String, TestInputDTO> map(List<TestInput> value) {
+        return value.stream().collect(Collectors.toMap(TestInput::getName, this::toDTO));
+    }
+
+    default List<TestInput> map(Map<String, TestInputDTO> value) {
+        return value.values().stream().map(this::fromDTO).toList();
+    }
+
 }

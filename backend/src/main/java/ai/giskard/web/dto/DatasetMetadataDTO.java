@@ -1,24 +1,30 @@
 package ai.giskard.web.dto;
 
-import java.util.Map;
-
+import ai.giskard.domain.ColumnMeaning;
 import com.dataiku.j2ts.annotations.UIModel;
 import com.dataiku.j2ts.annotations.UINullable;
-
-import ai.giskard.domain.FeatureType;
+import com.fasterxml.jackson.annotation.JsonAlias;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.Setter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+import java.util.Map;
+import java.util.UUID;
 
 @Getter
 @Setter
 @NoArgsConstructor
 @UIModel
+@AllArgsConstructor
 public class DatasetMetadataDTO {
-    Long id;
+    private String name;
+    private UUID id;
     @UINullable
     private String target;
-    private Map<String, FeatureType> featureTypes;
+    @JsonAlias("column_meanings")
+    private Map<String, ColumnMeaning> columnMeanings;
     @UINullable
+    @JsonAlias("column_types")
     private Map<String, String> columnTypes;
 }

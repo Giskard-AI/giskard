@@ -114,7 +114,7 @@ Vue.component("v-chart", ECharts);
 })
 export default class PredictionResults extends Vue {
   @Prop({required: true}) model!: ModelDTO;
-  @Prop({required: true}) datasetId!: number;
+  @Prop({required: true}) datasetId!: string;
   @Prop({required: true}) predictionTask!: ModelType;
   @Prop() targetFeature!: string;
   @Prop() modelFeatures!: string[];

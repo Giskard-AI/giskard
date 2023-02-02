@@ -19,6 +19,9 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Test extends AbstractAuditingEntity {
+    @Id
+    @GeneratedValue
+    private Long id;
     private String name;
 
     @Column(columnDefinition = "VARCHAR")

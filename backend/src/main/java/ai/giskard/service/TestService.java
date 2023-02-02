@@ -7,26 +7,31 @@ import ai.giskard.domain.ml.TestSuite;
 import ai.giskard.domain.ml.testing.Test;
 import ai.giskard.domain.ml.testing.TestExecution;
 import ai.giskard.ml.MLWorkerClient;
+import ai.giskard.repository.ProjectRepository;
 import ai.giskard.repository.ml.TestExecutionRepository;
 import ai.giskard.repository.ml.TestRepository;
 import ai.giskard.service.ml.MLWorkerService;
+import ai.giskard.web.dto.TestCatalogDTO;
 import ai.giskard.web.dto.ml.TestDTO;
 import ai.giskard.web.dto.ml.TestExecutionResultDTO;
 import ai.giskard.web.rest.errors.Entity;
 import ai.giskard.web.rest.errors.EntityNotFoundException;
 import ai.giskard.worker.RunTestRequest;
+import ai.giskard.worker.TestRegistryResponse;
 import ai.giskard.worker.TestResultMessage;
 import com.google.common.collect.Lists;
+import com.google.protobuf.Empty;
 import io.grpc.StatusRuntimeException;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+
+import static ai.giskard.utils.GRPCUtils.convertGRPCObject;
 
 @Service
 @Transactional
@@ -40,6 +45,7 @@ public class TestService {
     private final TestExecutionRepository testExecutionRepository;
 
     private final TestRepository testRepository;
+    private final ProjectRepository projectRepository;
 
     private final GRPCMapper grpcMapper;
 
@@ -54,16 +60,16 @@ public class TestService {
     }
 
     @Transactional(noRollbackFor = StatusRuntimeException.class)
-    public TestExecutionResultDTO runTest(Long testId) throws IOException {
+    public TestExecutionResultDTO runTest(Long testId) {
         return runTest(testId, true);
     }
 
     @Transactional()
-    public TestExecutionResultDTO runTestNoError(Long testId) throws IOException {
+    public TestExecutionResultDTO runTestNoError(Long testId) {
         return runTest(testId, false);
     }
 
-    private TestExecutionResultDTO runTest(Long testId, boolean throwExceptionOnError) throws IOException {
+    private TestExecutionResultDTO runTest(Long testId, boolean throwExceptionOnError) {
         TestExecutionResultDTO res = new TestExecutionResultDTO(testId);
         Test test = testRepository.findById(testId).orElseThrow(() -> new EntityNotFoundException(Entity.TEST, testId));
         res.setTestName(test.getName());
@@ -80,18 +86,14 @@ public class TestService {
         try (MLWorkerClient client = mlWorkerService.createClient(test.getTestSuite().getProject().isUsingInternalWorker())) {
             TestResultMessage testResult;
 
-            mlWorkerService.upload(client, model);
-
             RunTestRequest.Builder requestBuilder = RunTestRequest.newBuilder()
                 .setCode(test.getCode())
-                .setModel(grpcMapper.serialize(model));
+                .setModel(grpcMapper.createRef(model));
             if (referenceDS != null) {
-                mlWorkerService.upload(client, referenceDS);
-                requestBuilder.setReferenceDs(grpcMapper.serialize(referenceDS));
+                requestBuilder.setReferenceDs(grpcMapper.createRef(referenceDS));
             }
             if (actualDS != null) {
-                mlWorkerService.upload(client, actualDS);
-                requestBuilder.setActualDs(grpcMapper.serialize(actualDS));
+                requestBuilder.setActualDs(grpcMapper.createRef(actualDS));
             }
             RunTestRequest request = requestBuilder.build();
             logger.debug("Sending requiest to ML Worker: {}", request);
@@ -134,10 +136,17 @@ public class TestService {
                 try {
                     TestExecutionResultDTO res = runTestNoError(testId);
                     result.add(res);
-                } catch (IOException e) {
+                } catch (Exception e) {
                     logger.error("Failed to run test {} in suite {}", testId, test.getTestSuite().getId(), e);
                 }
             }));
         return result;
+    }
+
+    public TestCatalogDTO listTestsFromRegistry(Long projectId) {
+        try (MLWorkerClient client = mlWorkerService.createClient(projectRepository.getById(projectId).isUsingInternalWorker())) {
+            TestRegistryResponse response = client.getBlockingStub().getTestRegistry(Empty.newBuilder().build());
+            return convertGRPCObject(response, TestCatalogDTO.class);
+        }
     }
 }

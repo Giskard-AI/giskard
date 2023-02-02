@@ -1,0 +1,32 @@
+classification_labels:
+- Default
+- Not default
+feature_names:
+- account_check_status
+- duration_in_month
+- credit_history
+- purpose
+- credit_amount
+- savings
+- present_employment_since
+- installment_as_income_perc
+- sex
+- personal_status
+- other_debtors
+- present_residence_since
+- property
+- age
+- other_installment_plans
+- housing
+- credits_this_bank
+- job
+- people_under_maintenance
+- telephone
+- foreign_worker
+id: 93112387-7bce-4b71-826e-933cfb235a65
+language: PYTHON
+model_type: CLASSIFICATION
+name: Credit Scoring Model logistic_regression
+language_version: 3.7.14
+size: 8043
+threshold: 0.5

@@ -104,7 +104,7 @@
 			</v-card>
 		</v-dialog>
 
-		<v-container fluid id="container-project-tab" class="vertical-container">
+		<v-container fluid id="container-project-tab" class="vertical-container overflow-hidden pb-0">
 			<v-tabs>
 				<v-tab :to="{name: 'project-overview'}"><v-icon left>notes</v-icon>Overview</v-tab>
 				<v-tab :to="{name: 'project-datasets'}"><v-icon left>stacked_bar_chart</v-icon>Datasets</v-tab>
@@ -112,6 +112,8 @@
 				<v-tab :to="{name: 'project-inspector', params: tempInspectorParams}" v-if="showInspector"><v-icon left>model_training</v-icon>Inspector</v-tab>
 				<v-tab :to="{name: 'project-feedbacks'}"><v-icon left small>mdi-comment-multiple-outline</v-icon>Feedback</v-tab>
 				<v-tab :to="{name: 'project-test-suites'}"><v-icon left small>mdi-list-status</v-icon>Test suites</v-tab>
+				<v-tab :to="{name: 'project-test-suites-new'}"><v-icon left small>mdi-list-status</v-icon>Test suites NEW ⭐️</v-tab>
+				<v-tab :to="{name: 'project-tests-catalog'}"><v-icon left small>mdi-list-status</v-icon>Test catalog</v-tab>
 			</v-tabs>
       <keep-alive>
         <router-view :isProjectOwnerOrAdmin="isProjectOwnerOrAdmin"></router-view>

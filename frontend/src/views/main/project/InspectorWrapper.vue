@@ -145,8 +145,8 @@ import SliceDropdown from "@/components/slice/SliceDropdown.vue";
 type CreatedFeedbackCommonDTO = {
   targetFeature?: string | null;
   userData: string;
-  modelId: number;
-  datasetId: number;
+  modelId: string;
+  datasetId: string;
   originalData: string;
   projectId: number
 };

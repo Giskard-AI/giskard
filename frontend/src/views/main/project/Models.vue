@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="vertical-container">
     <v-container class="mt-2 mb-0" v-if="isProjectOwnerOrAdmin">
       <div class="d-flex justify-end align-center">
         <v-btn tile small class="mx-2" href="https://docs.giskard.ai/start/guides/upload-your-model" target="_blank">
@@ -39,8 +39,8 @@
           <v-col cols="2">
             <div>{{ m.createdDate | date }}</div>
           </v-col>
-          <v-col cols="1">
-            <div>{{ m.id }}</div>
+          <v-col cols="1" class="id-container" :title="m.id">
+            {{ m.id }}
           </v-col>
           <v-col cols="3">
             <div>
@@ -112,8 +112,8 @@ async function loadModelPickles() {
   models.value.sort((a, b) => new Date(a.createdDate) < new Date(b.createdDate) ? 1 : -1);
 }
 
-async function deleteModelPickle(id: number) {
-  mixpanel.track('Delete dataset', {id});
+async function deleteModelPickle(id: string) {
+  mixpanel.track('Delete model', {id});
 
   let messageDTO = await api.deleteModelFiles(id);
   commitAddNotification(store, {content: messageDTO.message});
@@ -129,7 +129,7 @@ function cancelLaunchInspector() {
   showInspectDialog.value = false;
 }
 
-async function renameModel(id: number, name: string) {
+async function renameModel(id: string, name: string) {
   mixpanel.track('Update model name', {id});
   const savedDataset = await api.editModelName(id, name);
   const idx = models.value.findIndex(f => f.id === id);
@@ -142,5 +142,11 @@ async function renameModel(id: number, name: string) {
 <style>
 div.v-dialog {
   overflow-y: hidden;
+}
+
+.id-container {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 </style>

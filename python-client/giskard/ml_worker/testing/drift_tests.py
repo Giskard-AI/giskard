@@ -10,8 +10,9 @@ import pandas as pd
 from scipy.stats import chi2, ks_2samp
 from scipy.stats.stats import Ks_2sampResult, wasserstein_distance
 
-from giskard.ml_worker.core.giskard_dataset import GiskardDataset
-from giskard.ml_worker.core.model import GiskardModel
+from giskard.core.core import SupportedModelTypes
+from giskard.ml_worker.core.dataset import Dataset
+from giskard.core.model import Model
 from giskard.ml_worker.generated.ml_worker_pb2 import SingleTestResult, TestMessage, TestMessageType
 from giskard.ml_worker.testing.abstract_test_collection import AbstractTestCollection
 
@@ -151,9 +152,9 @@ class DriftTests(AbstractTestCollection):
         return chi_square, p_value, output_data
 
     @staticmethod
-    def _validate_column_type(gsk_dataset, column_name, column_type):
-        assert gsk_dataset.feature_types[column_name] == column_type, (
-            f'Column "{column_name}" is not of type "{column_type}"'
+    def _validate_column_meaning(gsk_dataset, column_name, column_meaning):
+        assert gsk_dataset.column_meanings[column_name] == column_meaning, (
+            f'Column "{column_name}" is not of type "{column_meaning}"'
         )
 
     @staticmethod
@@ -172,12 +173,12 @@ class DriftTests(AbstractTestCollection):
         if reference_series.empty:
             raise ValueError("Reference Series computed from the column is empty")
 
-    def _extract_series(self, actual_ds, reference_ds, column_name, column_type):
+    def _extract_series(self, actual_ds, reference_ds, column_name, column_meaning):
         actual_ds.df.reset_index(drop=True, inplace=True)
         reference_ds.df.reset_index(drop=True, inplace=True)
         self._validate_column_name(actual_ds, reference_ds, column_name)
-        self._validate_column_type(actual_ds, column_name, column_type)
-        self._validate_column_type(reference_ds, column_name, column_type)
+        self._validate_column_meaning(actual_ds, column_name, column_meaning)
+        self._validate_column_meaning(reference_ds, column_name, column_meaning)
         actual_series = actual_ds.df[column_name]
         reference_series = reference_ds.df[column_name]
         self._validate_series_notempty(actual_series, reference_series)
@@ -185,8 +186,8 @@ class DriftTests(AbstractTestCollection):
 
     def test_drift_psi(
         self,
-        reference_ds: GiskardDataset,
-        actual_ds: GiskardDataset,
+        reference_ds: Dataset,
+        actual_ds: Dataset,
         column_name: str,
         threshold=0.2,
         max_categories: int = 20,
@@ -199,9 +200,9 @@ class DriftTests(AbstractTestCollection):
         Example : The test is passed when the  PSI score of gender between reference and actual sets is below 0.2
 
         Args:
-            actual_ds(GiskardDataset):
+            actual_ds(Dataset):
                 Actual dataset to compute the test
-            reference_ds(GiskardDataset):
+            reference_ds(Dataset):
                 Reference dataset to compute the test
             column_name(str):
                 Name of column with categorical feature
@@ -249,8 +250,8 @@ class DriftTests(AbstractTestCollection):
 
     def test_drift_chi_square(
         self,
-        reference_ds: GiskardDataset,
-        actual_ds: GiskardDataset,
+        reference_ds: Dataset,
+        actual_ds: Dataset,
         column_name: str,
         threshold=0.05,
         max_categories: int = 20,
@@ -265,9 +266,9 @@ class DriftTests(AbstractTestCollection):
          and that we cannot assume drift for this variable.
 
         Args:
-            actual_ds(GiskardDataset):
+            actual_ds(Dataset):
                 Actual dataset to compute the test
-            reference_ds(GiskardDataset):
+            reference_ds(Dataset):
                 Reference dataset to compute the test
             column_name(str):
                 Name of column with categorical feature
@@ -315,8 +316,8 @@ class DriftTests(AbstractTestCollection):
 
     def test_drift_ks(
         self,
-        reference_ds: GiskardDataset,
-        actual_ds: GiskardDataset,
+        reference_ds: Dataset,
+        actual_ds: Dataset,
         column_name: str,
         threshold=0.05,
     ) -> SingleTestResult:
@@ -329,9 +330,9 @@ class DriftTests(AbstractTestCollection):
         cannot be rejected at 5% level and that we cannot assume drift for this variable.
 
         Args:
-            actual_ds(GiskardDataset):
+            actual_ds(Dataset):
                Actual dataset to compute the test
-            reference_ds(GiskardDataset):
+            reference_ds(Dataset):
                 Reference dataset to compute the test
             column_name(str):
                 Name of column with numerical feature
@@ -370,8 +371,8 @@ class DriftTests(AbstractTestCollection):
 
     def test_drift_earth_movers_distance(
         self,
-        reference_ds: GiskardDataset,
-        actual_ds: GiskardDataset,
+        reference_ds: Dataset,
+        actual_ds: Dataset,
         column_name: str,
         threshold: float = 0.2,
     ) -> SingleTestResult:
@@ -384,9 +385,9 @@ class DriftTests(AbstractTestCollection):
          It means that we cannot assume drift for this variable.
 
         Args:
-            actual_ds(GiskardDataset):
+            actual_ds(Dataset):
                 Actual dataset to compute the test
-            reference_ds(GiskardDataset):
+            reference_ds(Dataset):
                 Reference dataset to compute the test
             column_name(str):
                 Name of column with numerical feature
@@ -432,9 +433,9 @@ class DriftTests(AbstractTestCollection):
 
     def test_drift_prediction_psi(
         self,
-        reference_slice: GiskardDataset,
-        actual_slice: GiskardDataset,
-        model: GiskardModel,
+        reference_slice: Dataset,
+        actual_slice: Dataset,
+        model: Model,
         max_categories: int = 10,
         threshold: float = 0.2,
         psi_contribution_percent: float = 0.2,
@@ -447,11 +448,11 @@ class DriftTests(AbstractTestCollection):
         for females between reference and actual sets is below 0.2
 
         Args:
-            actual_slice(GiskardDataset):
+            actual_slice(Dataset):
                 Slice of the actual dataset
-            reference_slice(GiskardDataset):
+            reference_slice(Dataset):
                 Slice of the reference dataset
-            model(GiskardModel):
+            model(Model):
                 Model used to compute the test
             threshold(float):
                 Threshold value for PSI
@@ -476,8 +477,8 @@ class DriftTests(AbstractTestCollection):
         """
         actual_slice.df.reset_index(drop=True, inplace=True)
         reference_slice.df.reset_index(drop=True, inplace=True)
-        prediction_reference = pd.Series(model.run_predict(reference_slice).prediction)
-        prediction_actual = pd.Series(model.run_predict(actual_slice).prediction)
+        prediction_reference = pd.Series(model.predict(reference_slice).prediction)
+        prediction_actual = pd.Series(model.predict(actual_slice).prediction)
         messages, passed, total_psi = self._test_series_drift_psi(
             prediction_actual,
             prediction_reference,
@@ -534,9 +535,9 @@ class DriftTests(AbstractTestCollection):
 
     def test_drift_prediction_chi_square(
         self,
-        reference_slice: GiskardDataset,
-        actual_slice: GiskardDataset,
-        model: GiskardModel,
+        reference_slice: Dataset,
+        actual_slice: Dataset,
+        model: Model,
         max_categories: int = 10,
         threshold: float = 0.05,
         chi_square_contribution_percent: float = 0.2,
@@ -549,11 +550,11 @@ class DriftTests(AbstractTestCollection):
         for females between reference and actual sets is below 0.05
 
         Args:
-            actual_slice(GiskardDataset):
+            actual_slice(Dataset):
                 Slice of the actual dataset
-            reference_slice(GiskardDataset):
+            reference_slice(Dataset):
                 Slice of the reference dataset
-            model(GiskardModel):
+            model(Model):
                 Model used to compute the test
             threshold(float):
                 Threshold value of p-value of Chi-Square
@@ -578,8 +579,8 @@ class DriftTests(AbstractTestCollection):
         """
         actual_slice.df.reset_index(drop=True, inplace=True)
         reference_slice.df.reset_index(drop=True, inplace=True)
-        prediction_reference = pd.Series(model.run_predict(reference_slice).prediction)
-        prediction_actual = pd.Series(model.run_predict(actual_slice).prediction)
+        prediction_reference = pd.Series(model.predict(reference_slice).prediction)
+        prediction_actual = pd.Series(model.predict(actual_slice).prediction)
 
         messages, p_value, passed = self._test_series_drift_chi(
             prediction_actual,
@@ -623,9 +624,9 @@ class DriftTests(AbstractTestCollection):
 
     def test_drift_prediction_ks(
         self,
-        reference_slice: GiskardDataset,
-        actual_slice: GiskardDataset,
-        model: GiskardModel,
+        reference_slice: Dataset,
+        actual_slice: Dataset,
+        model: Model,
         classification_label=None,
         threshold=None,
     ) -> SingleTestResult:
@@ -638,11 +639,11 @@ class DriftTests(AbstractTestCollection):
          rejected at 5% level and that we cannot assume drift for this variable.
 
         Args:
-            actual_slice(GiskardDataset):
+            actual_slice(Dataset):
                 Slice of the actual dataset
-            reference_slice(GiskardDataset):
+            reference_slice(Dataset):
                 Slice of the reference dataset
-            model(GiskardModel):
+            model(Model):
                 Model used to compute the test
             threshold(float):
                 Threshold for p-value of Kolmogorov-Smirnov test
@@ -665,21 +666,21 @@ class DriftTests(AbstractTestCollection):
         reference_slice.df.reset_index(drop=True, inplace=True)
 
         assert (
-            model.model_type != "classification"
-            or classification_label in model.classification_labels
-        ), f'"{classification_label}" is not part of model labels: {",".join(model.classification_labels)}'
+            model.meta.model_type != SupportedModelTypes.CLASSIFICATION
+            or classification_label in model.meta.classification_labels
+        ), f'"{classification_label}" is not part of model labels: {",".join(model.meta.classification_labels)}'
 
         prediction_reference = (
             pd.Series(
-                model.run_predict(reference_slice).all_predictions[classification_label].values
+                model.predict(reference_slice).all_predictions[classification_label].values
             )
-            if model.model_type == "classification"
-            else pd.Series(model.run_predict(reference_slice).prediction)
+            if model.is_classification
+            else pd.Series(model.predict(reference_slice).prediction)
         )
         prediction_actual = (
-            pd.Series(model.run_predict(actual_slice).all_predictions[classification_label].values)
-            if model.model_type == "classification"
-            else pd.Series(model.run_predict(actual_slice).prediction)
+            pd.Series(model.predict(actual_slice).all_predictions[classification_label].values)
+            if model.is_classification
+            else pd.Series(model.predict(actual_slice).prediction)
         )
 
         result: Ks_2sampResult = self._calculate_ks(prediction_reference, prediction_actual)
@@ -713,9 +714,9 @@ class DriftTests(AbstractTestCollection):
 
     def test_drift_prediction_earth_movers_distance(
         self,
-        reference_slice: GiskardDataset,
-        actual_slice: GiskardDataset,
-        model: GiskardModel,
+        reference_slice: Dataset,
+        actual_slice: Dataset,
+        model: Model,
         classification_label=None,
         threshold=0.2,
     ) -> SingleTestResult:
@@ -732,11 +733,11 @@ class DriftTests(AbstractTestCollection):
         for females between reference and actual sets is below 0.2
 
         Args:
-            reference_slice(GiskardDataset):
+            reference_slice(Dataset):
                 slice of the reference dataset
-            actual_slice(GiskardDataset):
+            actual_slice(Dataset):
                 slice of the actual dataset
-            model(GiskardModel):
+            model(Model):
                 uploaded model
             classification_label:
                 one specific label value from the target column for classification model
@@ -754,14 +755,14 @@ class DriftTests(AbstractTestCollection):
         reference_slice.df.reset_index(drop=True, inplace=True)
 
         prediction_reference = (
-            model.run_predict(reference_slice).all_predictions[classification_label].values
-            if model.model_type == "classification"
-            else model.run_predict(reference_slice).prediction
+            model.predict(reference_slice).all_predictions[classification_label].values
+            if model.is_classification
+            else model.predict(reference_slice).prediction
         )
         prediction_actual = (
-            model.run_predict(actual_slice).all_predictions[classification_label].values
-            if model.model_type == "classification"
-            else model.run_predict(actual_slice).prediction
+            model.predict(actual_slice).all_predictions[classification_label].values
+            if model.is_classification
+            else model.predict(actual_slice).prediction
         )
 
         metric = self._calculate_earth_movers_distance(prediction_reference, prediction_actual)

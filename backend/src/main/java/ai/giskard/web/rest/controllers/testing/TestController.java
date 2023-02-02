@@ -1,27 +1,35 @@
 package ai.giskard.web.rest.controllers.testing;
 
+import ai.giskard.domain.ml.TestResult;
 import ai.giskard.domain.ml.testing.Test;
 import ai.giskard.domain.ml.testing.TestExecution;
-import ai.giskard.repository.ml.TestExecutionRepository;
-import ai.giskard.repository.ml.TestRepository;
-import ai.giskard.repository.ml.TestSuiteRepository;
+import ai.giskard.ml.MLWorkerClient;
+import ai.giskard.repository.ProjectRepository;
+import ai.giskard.repository.ml.*;
 import ai.giskard.service.CodeTestTemplateService;
+import ai.giskard.service.GRPCMapper;
 import ai.giskard.service.TestService;
+import ai.giskard.service.ml.MLWorkerService;
+import ai.giskard.web.dto.RunAdhocTestRequest;
+import ai.giskard.web.dto.TestCatalogDTO;
 import ai.giskard.web.dto.TestTemplatesResponse;
 import ai.giskard.web.dto.mapper.GiskardMapper;
 import ai.giskard.web.dto.ml.TestDTO;
 import ai.giskard.web.dto.ml.TestExecutionResultDTO;
 import ai.giskard.web.dto.ml.TestSuiteDTO;
+import ai.giskard.web.dto.ml.TestTemplateExecutionResultDTO;
 import ai.giskard.web.rest.errors.Entity;
 import ai.giskard.web.rest.errors.EntityNotFoundException;
+import ai.giskard.worker.*;
+import com.google.common.collect.Maps;
+import com.google.protobuf.Empty;
 import lombok.RequiredArgsConstructor;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.io.IOException;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 import static ai.giskard.web.rest.errors.Entity.TEST_SUITE;
 
@@ -35,12 +43,16 @@ public class TestController {
     private final TestSuiteRepository testSuiteRepository;
     private final TestExecutionRepository testExecutionRepository;
     private final CodeTestTemplateService codeTestTemplateService;
+    private final MLWorkerService mlWorkerService;
+    private final ProjectRepository projectRepository;
+    private final DatasetRepository datasetRepository;
+    private final ModelRepository modelRepository;
+    private final GRPCMapper grpcMapper;
+
     private final GiskardMapper giskardMapper;
 
     @GetMapping("")
-    public List<TestDTO> getTests(
-        @RequestParam Long suiteId
-    ) {
+    public List<TestDTO> getTests(@RequestParam Long suiteId) {
         return testRepository.findAllByTestSuiteId(suiteId).stream().map(test -> {
             TestDTO res = new TestDTO(test);
             Optional<TestExecution> exec = testExecutionRepository.findFirstByTestIdOrderByExecutionDateDesc(test.getId());
@@ -53,9 +65,7 @@ public class TestController {
     }
 
     @GetMapping("/{testId}")
-    public TestDTO getTest(
-        @PathVariable() Long testId
-    ) {
+    public TestDTO getTest(@PathVariable() Long testId) {
         Optional<Test> test = testRepository.findById(testId);
         if (test.isPresent()) {
             return new TestDTO(test.get());
@@ -65,9 +75,7 @@ public class TestController {
     }
 
     @DeleteMapping("/{testId}")
-    public TestSuiteDTO deleteTest(
-        @PathVariable() Long testId
-    ) {
+    public TestSuiteDTO deleteTest(@PathVariable() Long testId) {
         return giskardMapper.testSuiteToTestSuiteDTO(testService.deleteTest(testId));
     }
 
@@ -90,9 +98,7 @@ public class TestController {
     }
 
     @PutMapping("")
-    public Optional<TestDTO> saveTest(
-        @RequestBody TestDTO dto
-    ) {
+    public Optional<TestDTO> saveTest(@RequestBody TestDTO dto) {
         return testService.saveTest(dto);
     }
 
@@ -102,4 +108,71 @@ public class TestController {
         return codeTestTemplateService.getTemplates(suiteId);
     }
 
+    @GetMapping("/test-catalog")
+    @Transactional
+    public TestCatalogDTO getTestTemplates(@RequestParam Long projectId) {
+        return testService.listTestsFromRegistry(projectId);
+    }
+
+    @PostMapping("/run-test")
+    @Transactional
+    public TestTemplateExecutionResultDTO runAdHocTest(@RequestBody RunAdhocTestRequest request) {
+        try (MLWorkerClient client = mlWorkerService.createClient(projectRepository.getById(request.getProjectId()).isUsingInternalWorker())) {
+            TestRegistryResponse response = client.getBlockingStub().getTestRegistry(Empty.newBuilder().build());
+            Map<String, TestFunction> registry = new HashMap<>();
+            response.getTestsMap().values().forEach((TestFunction fn) -> {
+                registry.put(fn.getId(), fn);
+            });
+            TestFunction test = registry.get(request.getTestId());
+            Map<String, String> argumentTypes = Maps.transformValues(test.getArgumentsMap(), TestFunctionArgument::getType);
+
+            RunAdHocTestRequest.Builder builder = RunAdHocTestRequest.newBuilder().setTestId(request.getTestId());
+
+            for (Map.Entry<String, Object> entry : request.getInputs().entrySet()) {
+                String inputName = entry.getKey();
+                Object inputValue = entry.getValue();
+                TestArgument.Builder argumentBuilder = TestArgument.newBuilder();
+                argumentBuilder.setName(inputName);
+                switch (argumentTypes.get(inputName)) {
+                    case "Dataset" -> {
+                        String projectKey = datasetRepository.getById(UUID.fromString((String) inputValue)).getProject().getKey();
+                        argumentBuilder.setDataset(
+                            ArtifactRef.newBuilder()
+                                .setProjectKey(projectKey)
+                                .setId((String) inputValue)
+                                .build()
+                        );
+                    }
+                    case "Model" -> {
+                        String projectKey = modelRepository.getById(UUID.fromString((String) inputValue)).getProject().getKey();
+                        argumentBuilder.setModel(
+                            ArtifactRef.newBuilder()
+                                .setProjectKey(projectKey)
+                                .setId((String) inputValue)
+                                .build()
+                        );
+                    }
+                    case "float" -> argumentBuilder.setFloat(Float.parseFloat(String.valueOf(inputValue)));
+                    case "string" -> argumentBuilder.setString((String) inputValue);
+                    default ->
+                        throw new IllegalArgumentException(String.format("Unknown test execution input type %s", argumentTypes.get(inputName)));
+                }
+                builder.addArguments(argumentBuilder.build());
+            }
+
+            TestResultMessage testResultMessage = client.getBlockingStub().runAdHocTest(builder.build());
+            TestTemplateExecutionResultDTO res = new TestTemplateExecutionResultDTO(test.getId());
+            res.setResult(testResultMessage);
+            if (testResultMessage.getResultsList().stream().anyMatch(r -> !r.getResult().getPassed())) {
+                res.setStatus(TestResult.FAILED);
+            } else {
+                res.setStatus(TestResult.PASSED);
+            }
+            return res;
+        }
+
+        //TestRegistryResponse response = mlWorkerService.createClient().getBlockingStub().getTestRegistry(Empty.newBuilder().build());
+
+        //return JsonFormat.printer().print(response);
+    }
 }

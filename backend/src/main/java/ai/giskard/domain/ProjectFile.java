@@ -5,10 +5,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import javax.persistence.Index;
-import javax.persistence.ManyToOne;
-import javax.persistence.MappedSuperclass;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 
 @MappedSuperclass
@@ -17,6 +14,9 @@ import javax.persistence.Table;
 @Getter
 @Setter
 public abstract class ProjectFile extends AbstractAuditingEntity {
+    @Id
+    @GeneratedValue
+    private Long id;
     private String fileName;
 
     @ManyToOne

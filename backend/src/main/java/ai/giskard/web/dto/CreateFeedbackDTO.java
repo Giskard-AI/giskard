@@ -6,14 +6,16 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.UUID;
+
 @Getter
 @Setter
 @UIModel
 @NoArgsConstructor
 public class CreateFeedbackDTO {
     private Long projectId;
-    private Long modelId;
-    private Long datasetId;
+    private UUID modelId;
+    private UUID datasetId;
     @UINullable
     private String targetFeature;
     private String feedbackType;

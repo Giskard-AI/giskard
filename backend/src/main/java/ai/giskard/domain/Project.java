@@ -27,6 +27,11 @@ import java.util.Set;
 @EntityListeners(AuditingEntityListener.class)
 @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
 public class Project extends AbstractAuditingEntity {
+    @Id
+    @Getter
+    @GeneratedValue
+    private Long id;
+
     @Converter
     public static class InspectionSettingsConverter extends JSONStringAttributeConverter<InspectionSettings> {
         @Override

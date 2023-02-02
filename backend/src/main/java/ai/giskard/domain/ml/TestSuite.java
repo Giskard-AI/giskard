@@ -16,6 +16,9 @@ import java.util.Set;
 @Getter
 @Setter
 public class TestSuite extends AbstractAuditingEntity {
+    @Id
+    @GeneratedValue
+    private Long id;
     @NotNull
     private String name;
 

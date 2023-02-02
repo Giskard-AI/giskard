@@ -1,6 +1,6 @@
 package ai.giskard.service;
 
-import ai.giskard.domain.FeatureType;
+import ai.giskard.domain.ColumnMeaning;
 import ai.giskard.domain.ml.Dataset;
 import ai.giskard.repository.ml.DatasetRepository;
 import ai.giskard.security.PermissionEvaluator;
@@ -22,6 +22,7 @@ import javax.validation.constraints.NotNull;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -41,11 +42,12 @@ public class DatasetService {
      * @param datasetId id of the dataset
      * @return the table
      */
-    public Table readTableByDatasetId(@NotNull Long datasetId) {
-        Dataset dataset = datasetRepository.findById(datasetId).orElseThrow(() -> new EntityNotFoundException(Entity.DATASET, datasetId));
-        Map<String, ColumnType> columnTypes = dataset.getFeatureTypes().entrySet().stream()
-            .collect(Collectors.toMap(Map.Entry::getKey, e -> FeatureType.featureToColumn.get(e.getValue())));
-        Path filePath = locationService.datasetsDirectory(dataset.getProject().getKey()).resolve(dataset.getFileName());
+    public Table readTableByDatasetId(@NotNull UUID datasetId) {
+        Dataset dataset = datasetRepository.findById(datasetId).orElseThrow(() -> new EntityNotFoundException(Entity.DATASET, datasetId.toString()));
+        Map<String, ColumnType> columnTypes = dataset.getColumnMeanings().entrySet().stream()
+            .collect(Collectors.toMap(Map.Entry::getKey, e -> ColumnMeaning.featureToColumn.get(e.getValue())));
+        Path filePath = locationService.datasetsDirectory(dataset.getProject().getKey())
+            .resolve(dataset.getId().toString()).resolve("data.csv.zst");
         String filePathName = filePath.toAbsolutePath().toString().replace(".zst", "");
         Table table;
         try {
@@ -69,7 +71,7 @@ public class DatasetService {
      * @param id dataset's id
      * @return details dto of the dataset
      */
-    public DatasetDetailsDTO getDetails(@NotNull Long id) {
+    public DatasetDetailsDTO getDetails(@NotNull UUID id) {
         Table table = readTableByDatasetId(id);
         DatasetDetailsDTO details = new DatasetDetailsDTO();
         details.setNumberOfRows(table.rowCount());
@@ -77,13 +79,13 @@ public class DatasetService {
         return details;
     }
 
-    public DatasetMetadataDTO getMetadata(@NotNull Long id) {
+    public DatasetMetadataDTO getMetadata(@NotNull UUID id) {
         Dataset dataset = this.datasetRepository.getById(id);
         DatasetMetadataDTO metadata = new DatasetMetadataDTO();
         metadata.setId(id);
         metadata.setColumnTypes(dataset.getColumnTypes());
         metadata.setTarget(dataset.getTarget());
-        metadata.setFeatureTypes(dataset.getFeatureTypes());
+        metadata.setColumnMeanings(dataset.getColumnMeanings());
         return metadata;
     }
 
@@ -95,26 +97,26 @@ public class DatasetService {
      * @param rangeMax max range of the dataset
      * @return filtered table
      */
-    public Table getRows(@NotNull Long id, @NotNull int rangeMin, @NotNull int rangeMax) {
+    public Table getRows(@NotNull UUID id, @NotNull int rangeMin, @NotNull int rangeMax) {
         Table table = readTableByDatasetId(id);
         table.addColumns(IntColumn.indexColumn(GISKARD_DATASET_INDEX_COLUMN_NAME, table.rowCount(), 0));
         return table.inRange(rangeMin, rangeMax);
     }
 
     @Transactional
-    public List<FeatureMetadataDTO> getFeaturesWithDistinctValues(Long datasetId) {
+    public List<FeatureMetadataDTO> getFeaturesWithDistinctValues(UUID datasetId) {
         Dataset dataset = datasetRepository.getById(datasetId);
         permissionEvaluator.validateCanReadProject(dataset.getProject().getId());
 
         Table data = readTableByDatasetId(datasetId);
 
-        return dataset.getFeatureTypes().entrySet().stream().map(featureAndType -> {
+        return dataset.getColumnMeanings().entrySet().stream().map(featureAndType -> {
             String featureName = featureAndType.getKey();
-            FeatureType type = featureAndType.getValue();
+            ColumnMeaning type = featureAndType.getValue();
             FeatureMetadataDTO meta = new FeatureMetadataDTO();
             meta.setType(type);
             meta.setName(featureName);
-            if (type == FeatureType.CATEGORY) {
+            if (type == ColumnMeaning.CATEGORY) {
                 meta.setValues(data.column(featureName).unique().asStringColumn().asSet());
             }
             return meta;
@@ -123,9 +125,9 @@ public class DatasetService {
     }
 
     @Transactional
-    public Dataset renameDataset(long datasetId, String name) {
+    public Dataset renameDataset(UUID datasetId, String name) {
         Dataset dataset = datasetRepository.findById(datasetId)
-            .orElseThrow(() -> new EntityNotFoundException(Entity.DATASET, datasetId));
+            .orElseThrow(() -> new EntityNotFoundException(Entity.DATASET, datasetId.toString()));
 
         permissionEvaluator.validateCanWriteProject(dataset.getProject().getId());
 

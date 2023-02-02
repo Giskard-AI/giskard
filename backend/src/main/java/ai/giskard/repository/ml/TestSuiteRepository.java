@@ -7,15 +7,16 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.UUID;
 
 @Repository
 public interface TestSuiteRepository extends JpaRepository<TestSuite, Long> {
     List<TestSuite> findAllByProjectId(long projectId);
 
-    List<TestSuite> findAllByModelId(long modelId);
+    List<TestSuite> findAllByModelId(UUID modelId);
 
     @Query("FROM TestSuite where actualDataset.id = :id or referenceDataset.id = :id")
-    List<TestSuite> findByDatasetId(@Param("id") long datasetId);
+    List<TestSuite> findByDatasetId(@Param("id") UUID datasetId);
 
-    List<TestSuite> findByModelId(long modelId);
+    List<TestSuite> findByModelId(UUID modelId);
 }

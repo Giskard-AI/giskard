@@ -238,7 +238,7 @@ export default class Inspector extends Vue {
 
   async onValuePerturbation(featureMeta: FeatureMetadataDTO) {
     mixpanel.track("Feature perturbation", {
-      featureType: featureMeta.type,
+      columnMeaning: featureMeta.type,
       featureName: anonymize(featureMeta.name),
       modelId: this.model.id,
       datasetId: this.dataset.id
@@ -253,11 +253,13 @@ export default class Inspector extends Vue {
     }
     return this.model.featureNames.includes(featureName)
   }
-  get modelFeatures(){
+
+  get modelFeatures() {
     return this.inputMetaData
         .filter(x => (x.name !== this.dataset.target) && (!this.model.featureNames || this.model.featureNames.includes(x.name)))
         .map(x => x.name);
   }
+
   get datasetNonTargetColumns() {
     return _.sortBy(this.inputMetaData.filter(x => x.name !== this.dataset.target),
         e => !this.model.featureNames?.includes(e.name),
