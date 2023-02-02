@@ -33,7 +33,6 @@ jobs:
 
       - name: Login to Docker registry
         uses: docker/login-action@v2
-        if: ${{ steps.extract_branch.outputs.branch == 'main' }}
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
@@ -43,13 +42,12 @@ jobs:
         env:
           TAG: dev
         with:
-          push: ${{ steps.extract_branch.outputs.branch == 'main' }}
+          push: true
           set: |
             *.platform=linux/amd64
             *.platform=linux/arm64
 
       - name: Invoke deployment hook
-        if: ${{ steps.extract_branch.outputs.branch == 'main' }}
         run: |
           curl -L --silent --max-time 900 ${{ secrets.TEST_SERVER_WEBHOOK_URL_BASE }}/redeploy-dev
 
