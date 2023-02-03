@@ -16,8 +16,6 @@ jobs:
       - name: Set up Docker Buildx
         id: builder
         uses: docker/setup-buildx-action@master
-        with:
-          version: v0.10.2
 
 
       - name: "Append ARM buildx builder from AWS"
@@ -46,6 +44,7 @@ jobs:
         with:
           push: true
           set: |
+            *.attest=type=provenance,enabled=false
             *.platform=linux/amd64
             *.platform=linux/arm64
 
