@@ -65,6 +65,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
         self.remote = remote
 
     def echo(self, request, context):
+        logger.debug(f"echo: {request.msg}")
         return EchoMsg(msg=request.msg)
 
     def upload(self, request_iterator, context: grpc.ServicerContext):
