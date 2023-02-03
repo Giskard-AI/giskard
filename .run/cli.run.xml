@@ -5,9 +5,12 @@
     <option name="PARENT_ENVS" value="true" />
     <envs>
       <env name="PYTHONUNBUFFERED" value="1" />
+      <env name="GIT_REPOSITORY" value="http://localhost:19000/git/udf.git" />
+      <env name="GIT_USER" value="giskard" />
+      <env name="GIT_PASSWORD" value="giskard123!" />
     </envs>
     <option name="SDK_HOME" value="$PROJECT_DIR$/python-client/.venv/bin/python" />
-    <option name="SDK_NAME" value="Python (giskard)" />
+    <option name="SDK_NAME" value="Python 3.7 (giskard)" />
     <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/python-client/giskard" />
     <option name="IS_MODULE_SDK" value="true" />
     <option name="ADD_CONTENT_ROOTS" value="true" />
@@ -22,6 +25,11 @@
       <ENTRIES>
         <ENTRY IS_ENABLED="true" PARSER="runconfig" IS_EXECUTABLE="false" />
       </ENTRIES>
+    </EXTENSION>
+    <EXTENSION ID="software.aws.toolkits.jetbrains.core.execution.PythonAwsConnectionExtension">
+      <option name="credential" />
+      <option name="region" />
+      <option name="useCurrentConnection" value="false" />
     </EXTENSION>
     <option name="SCRIPT_NAME" value="$PROJECT_DIR$/python-client/giskard/cli.py" />
     <option name="PARAMETERS" value="worker start -s -u http://localhost:9000" />
