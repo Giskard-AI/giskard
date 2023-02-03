@@ -20,6 +20,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.util.unit.DataSize;
 
@@ -33,6 +34,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
 @Service
@@ -40,6 +42,7 @@ import java.util.concurrent.atomic.AtomicReference;
 public class MLWorkerService {
     public static final int UPLOAD_FILE_CHUNK_KB = 256;
     public static final int FILTER_CHUNK_SIZE_ROWS = 5000; // TODO: https://github.com/Giskard-AI/giskard/issues/660
+    public static final String HEARTBEAT_MESSAGE = "hb";
     private final Logger log = LoggerFactory.getLogger(MLWorkerService.class);
     private final ApplicationProperties applicationProperties;
     private final MLWorkerTunnelService mlWorkerTunnelService;
@@ -50,11 +53,7 @@ public class MLWorkerService {
         byte[] bytes = new byte[1024 * UPLOAD_FILE_CHUNK_KB];
         int size;
         while ((size = inputStream.read(bytes)) > 0) {
-            streamObserver.onNext(
-                FileUploadRequest.newBuilder()
-                    .setChunk(Chunk.newBuilder().setContent(ByteString.copyFrom(bytes, 0, size)).build())
-                    .build()
-            );
+            streamObserver.onNext(FileUploadRequest.newBuilder().setChunk(Chunk.newBuilder().setContent(ByteString.copyFrom(bytes, 0, size)).build()).build());
         }
     }
 
@@ -69,11 +68,7 @@ public class MLWorkerService {
             int port = getMlWorkerPort(isInternal);
             log.info("Creating MLWorkerClient for {}:{}", host, port);
 
-            ManagedChannel channel = ManagedChannelBuilder.forAddress(host, port)
-                .intercept(clientInterceptor)
-                .usePlaintext()
-                .maxInboundMessageSize((int) DataSize.ofMegabytes(applicationProperties.getMaxInboundMLWorkerMessageMB()).toBytes())
-                .build();
+            ManagedChannel channel = ManagedChannelBuilder.forAddress(host, port).intercept(clientInterceptor).usePlaintext().maxInboundMessageSize((int) DataSize.ofMegabytes(applicationProperties.getMaxInboundMLWorkerMessageMB()).toBytes()).build();
 
 
             return new MLWorkerClient(channel);
@@ -98,22 +93,12 @@ public class MLWorkerService {
         AtomicReference<UploadStatus> result = new AtomicReference<>();
         CountDownLatch finishedLatch = new CountDownLatch(1);
         try (InputStream inputStream = Files.newInputStream(path)) {
-            StreamObserver<FileUploadRequest> observer = client.getNonBlockingStub().upload(
-                new UploadStatusStreamObserver(file, inputStream, requestObserverRef, result, finishedLatch)
-            );
+            StreamObserver<FileUploadRequest> observer = client.getNonBlockingStub().upload(new UploadStatusStreamObserver(file, inputStream, requestObserverRef, result, finishedLatch));
             requestObserverRef.set(observer);
 
             FileType fileType = determineFileType(file);
 
-            FileUploadRequest metadata = FileUploadRequest.newBuilder()
-                .setMetadata(
-                    FileUploadMetadata.newBuilder()
-                        .setId(file.getId())
-                        .setFileType(fileType)
-                        .setName(file.getFileName())
-                        .setProjectKey(file.getProject().getKey())
-                        .build())
-                .build();
+            FileUploadRequest metadata = FileUploadRequest.newBuilder().setMetadata(FileUploadMetadata.newBuilder().setId(file.getId()).setFileType(fileType).setName(file.getFileName()).setProjectKey(file.getProject().getKey()).build()).build();
 
             observer.onNext(metadata);
 
@@ -141,19 +126,10 @@ public class MLWorkerService {
             String headers = reader.readLine();
             AtomicReference<String> error = new AtomicReference<>();
 
-            StreamObserver<FilterDatasetRequest> observer = client.getNonBlockingStub().filterDataset(
-                new FilterDatasetResponseStreamObserver(requestObserverRef, finishedLatch, reader, validRows, limit, error)
-            );
+            StreamObserver<FilterDatasetRequest> observer = client.getNonBlockingStub().filterDataset(new FilterDatasetResponseStreamObserver(requestObserverRef, finishedLatch, reader, validRows, limit, error));
             requestObserverRef.set(observer);
 
-            FilterDatasetRequest metadata = FilterDatasetRequest.newBuilder()
-                .setMeta(FilterDatasetMetadata.newBuilder()
-                    .setHeaders(headers)
-                    .setFunction(function)
-                    .putAllColumnTypes(dataset.getColumnTypes())
-                    .build())
-                .setIdx(0)
-                .build();
+            FilterDatasetRequest metadata = FilterDatasetRequest.newBuilder().setMeta(FilterDatasetMetadata.newBuilder().setHeaders(headers).setFunction(function).putAllColumnTypes(dataset.getColumnTypes()).build()).setIdx(0).build();
 
             observer.onNext(metadata);
 
@@ -188,19 +164,22 @@ public class MLWorkerService {
         if (isInternal || !applicationProperties.isExternalMlWorkerEnabled()) {
             return applicationProperties.getMlWorkerPort();
         } else {
-            return mlWorkerTunnelService.getTunnelPort()
-                .orElseThrow(() -> new GiskardRuntimeException("No external worker is connected"));
+            return mlWorkerTunnelService.getTunnelPort().orElseThrow(() -> new GiskardRuntimeException("No external worker is connected"));
         }
     }
 
     private String getMlWorkerHost(boolean isInternal) {
-        if (!isInternal && mlWorkerTunnelService.getTunnelPort().isEmpty()) {
+        if (!isInternal && !isExternalWorkerConnected()) {
             throw new GiskardRuntimeException("No external worker is connected");
         }
         if (isInternal || !applicationProperties.isExternalMlWorkerEnabled()) {
             return applicationProperties.getMlWorkerHost();
         }
         return "localhost";
+    }
+
+    private boolean isExternalWorkerConnected() {
+        return mlWorkerTunnelService.getTunnelPort().isPresent();
     }
 
     @RequiredArgsConstructor
@@ -267,12 +246,7 @@ public class MLWorkerService {
                     }
 
                     if (linesRead == FILTER_CHUNK_SIZE_ROWS) {
-                        requestObserverRef.get().onNext(
-                            FilterDatasetRequest.newBuilder()
-                                .setData(Chunk.newBuilder().setContent(ByteString.copyFrom(sb.toString(), StandardCharsets.UTF_8)).build())
-                                .setIdx(idx)
-                                .build()
-                        );
+                        requestObserverRef.get().onNext(FilterDatasetRequest.newBuilder().setData(Chunk.newBuilder().setContent(ByteString.copyFrom(sb.toString(), StandardCharsets.UTF_8)).build()).setIdx(idx).build());
                         linesRead = 0;
                         sb = new StringBuilder();
                         idx++;
@@ -280,19 +254,12 @@ public class MLWorkerService {
                 }
 
                 if (linesRead > 0) { // We still had some in the buffer, send em
-                    requestObserverRef.get().onNext(
-                        FilterDatasetRequest.newBuilder()
-                            .setData(Chunk.newBuilder().setContent(ByteString.copyFrom(sb.toString(), "utf-8")).build())
-                            .setIdx(idx)
-                            .build()
-                    );
+                    requestObserverRef.get().onNext(FilterDatasetRequest.newBuilder().setData(Chunk.newBuilder().setContent(ByteString.copyFrom(sb.toString(), "utf-8")).build()).setIdx(idx).build());
                 }
 
                 requestObserverRef.get().onCompleted();
             } else if (StatusCode.Next.equals(value.getCode())) {
-                result.addAll(value.getRowsList()
-                    .stream()
-                    .map(x -> x + (value.getIdx() * FILTER_CHUNK_SIZE_ROWS)) // We add because the outgoing row IDs are 0 based...
+                result.addAll(value.getRowsList().stream().map(x -> x + (value.getIdx() * FILTER_CHUNK_SIZE_ROWS)) // We add because the outgoing row IDs are 0 based...
                     .toList());
             } else if (StatusCode.Ok.equals(value.getCode())) {
                 // Consider complete, close reader/writer.
@@ -311,6 +278,21 @@ public class MLWorkerService {
         @Override
         public void onCompleted() {
             finishedLatch.countDown();
+        }
+    }
+
+    @Scheduled(fixedRateString = "${giskard.external-worker-heartbeat-interval-seconds:60}", timeUnit = TimeUnit.SECONDS)
+    public void sendHeartbeatToConnectedWorkers() {
+        if (isExternalWorkerConnected()) {
+            log.debug("Executing ML Worker heartbeat");
+            try (MLWorkerClient client = createClient(false)) {
+                EchoMsg echo = client.getBlockingStub().echo(EchoMsg.newBuilder().setMsg(HEARTBEAT_MESSAGE).build());
+                if (!HEARTBEAT_MESSAGE.equals(echo.getMsg())) {
+                    log.warn("ML Worker heartbeat returned unexpected result: {}", echo.getMsg());
+                }
+            } catch (Exception e) {
+                log.warn("Failed to perform ML Worker heartbeat", e);
+            }
         }
     }
 }

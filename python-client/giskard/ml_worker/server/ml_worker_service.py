@@ -47,8 +47,6 @@ from giskard.path_utils import model_path, dataset_path
 
 logger = logging.getLogger(__name__)
 
-echo_count = 1
-
 
 def file_already_exists(meta: FileUploadMetadata):
     if meta.file_type == FileType.MODEL:
@@ -67,8 +65,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
         self.remote = remote
 
     def echo(self, request, context):
-        globals()["echo_count"] += 1
-        return EchoMsg(msg=f"Response {echo_count}: {request.msg}")
+        return EchoMsg(msg=request.msg)
 
     def upload(self, request_iterator, context: grpc.ServicerContext):
         meta = None
