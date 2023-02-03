@@ -132,13 +132,12 @@ public class MLWorkerService {
     }
 
     private int getMlWorkerPort(boolean isInternal) {
-        if (!isInternal && mlWorkerTunnelService.getTunnelPort().isEmpty()) {
-            throw new GiskardRuntimeException("No external worker is connected");
-        }
         if (isInternal || !applicationProperties.isExternalMlWorkerEnabled()) {
             return applicationProperties.getMlWorkerPort();
+        } else {
+            return mlWorkerTunnelService.getTunnelPort()
+                .orElseThrow(() -> new GiskardRuntimeException("No external worker is connected"));
         }
-        return mlWorkerTunnelService.getTunnelPort().get();
     }
 
     private String getMlWorkerHost(boolean isInternal) {
