@@ -31,6 +31,7 @@ import {
     ProjectDTO,
     ProjectPostDTO,
     RoleDTO,
+    SliceDTO,
     TestDTO,
     TestExecutionResultDTO,
     TestSuiteCreateDTO,
@@ -312,17 +313,26 @@ export const api = {
     async getFeaturesMetadata(datasetId: number) {
         return apiV2.get<unknown, FeatureMetadataDTO[]>(`/dataset/${datasetId}/features`);
     },
+    async filterDataset(datasetId: number, sliceName: string, code: string) {
+        return apiV2.post<unknown, unknown>(`/dataset/${datasetId}/filter`, {sliceName: sliceName, code: code});
+    },
     async getDataFilteredByRange(inspectionId, props, filter) {
         return apiV2.post<unknown, any>(`/inspection/${inspectionId}/rowsFiltered`, filter, {params: props});
     },
     async editDatasetName(datasetId: number, name: string) {
         return apiV2.patch<unknown, FileDTO>(`/dataset/${datasetId}/name/${encodeURIComponent(name)}`, null)
     },
+    async getDataFilteredBySlice(inspectionId, sliceId) {
+        return apiV2.post<unknown, any>(`/inspection/${inspectionId}/slice/${sliceId}`);
+    },
     async getLabelsForTarget(inspectionId: number) {
         return apiV2.get<unknown, string[]>(`/inspection/${inspectionId}/labels`);
     },
     async getProjectDatasets(id: number) {
         return axiosProject.get<unknown, DatasetDTO[]>(`/${id}/datasets`);
+    },
+    async getProjectSlices(id: number) {
+        return axiosProject.get<unknown, SliceDTO[]>(`/${id}/slices`);
     },
     async getInspection(inspectionId: number) {
         return apiV2.get<unknown, InspectionDTO>(`/inspection/${inspectionId}`);
@@ -423,4 +433,28 @@ export const api = {
     async executeTestSuite(suiteId: number) {
         return apiV2.post<unknown, Array<TestExecutionResultDTO>>(`/testing/suites/execute`, {suiteId});
     },
+    async createSlice(projectId: number, name: string, code: string) {
+        return apiV2.post<unknown, SliceDTO>(`/slices`, {
+            name: name,
+            projectId: projectId,
+            code: code
+        })
+    },
+    async editSlice(projectId: number, name: string, code: string, id: number) {
+        return apiV2.put<unknown, SliceDTO>(`/slices`, {
+            name: name,
+            projectId: projectId,
+            code: code,
+            id: id
+        })
+    },
+    async deleteSlice(projectId: number, sliceId: number) {
+        return apiV2.delete(`/project/${projectId}/slices/${sliceId}`);
+    },
+    async validateSlice(datasetId: number, code: string) {
+        return apiV2.post("/slices/validate", {
+            datasetId: datasetId,
+            code: code
+        });
+    }
 };
