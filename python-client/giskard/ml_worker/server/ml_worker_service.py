@@ -5,7 +5,6 @@ import re
 import sys
 import time
 from io import StringIO
-from typing import Generator
 
 import grpc
 import numpy as np
@@ -71,7 +70,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
         globals()["echo_count"] += 1
         return EchoMsg(msg=f"Response {echo_count}: {request.msg}")
 
-    def upload(self, request_iterator, context: grpc.ServicerContext) -> Generator[UploadStatus]:
+    def upload(self, request_iterator, context: grpc.ServicerContext):
         meta = None
         path = None
         progress = None
@@ -262,7 +261,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
             results_csv=results.to_csv(index=False), calculated_csv=calculated.to_csv(index=False)
         )
 
-    def filterDataset(self, request_iterator, context: grpc.ServicerContext) -> Generator[FilterDatasetResponse]:
+    def filterDataset(self, request_iterator, context: grpc.ServicerContext):
         filterfunc = {}
         meta = None
 
