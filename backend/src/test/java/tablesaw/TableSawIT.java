@@ -1,7 +1,6 @@
 package tablesaw;
 
 import ai.giskard.IntegrationTest;
-import ai.giskard.config.ApplicationProperties;
 import lombok.NonNull;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Value;
