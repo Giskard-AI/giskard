@@ -1,3 +1,4 @@
+#TODO: Move to a new PR
 import pandas as pd
 import numpy as np
 from scipy import special
@@ -167,11 +168,10 @@ def test_text_sentiment_ngrams_tutorial():
     df = pd.DataFrame(raw_data, columns=["text", "label"])
 
 
-    #=== original implementation
     def softmax(x):
-        """Compute softmax values for each sets of scores in x."""
         return np.exp(x) / np.sum(np.exp(x), axis=0)
-
+    #=== original implementation
+    """
     def predict_proba(text):
         with torch.no_grad():
             text = torch.tensor(text_pipeline(text))
@@ -181,21 +181,12 @@ def test_text_sentiment_ngrams_tutorial():
 
     def prediction_function(df):
         series = df["text"].apply(predict_proba)
-        return np.array(series.tolist())
-    
-    #===
-    
-    #TODO: generalize the PyTorchModel by taking properly the case where data_preprocessing_function returns a dataloader
-    #TODO: Only cases that are spotable by running an if check (like dataloader for instance) should be implemented. Is
-    #TODO: the **data a spottable one? What other options could be present?
-
-    #TODO: It doesn't make sense to have 2 solutions for 2 notebooks.
+        return np.array(series.tolist())"""
 
 
     #=== new implementation
     feature_names = ['text']
-    
-    #--- one way of doing things (giskard.PyTorchModel wrapping)
+
     class my_PyTorchModel(PyTorchModel):
         def _raw_predict(self, df):
             def predict_proba(text):
@@ -218,40 +209,13 @@ def test_text_sentiment_ngrams_tutorial():
                             model_type = "classification",
                             classification_labels = list(ag_news_label.values()))
 
-    #--- Another way of doing things (taking clf and preprocessing_function)
-    class PandasToTorch(torch_dataset):
-        def __init__(self, df: pd.DataFrame):
-            # copy original df
-            self.entries = df.copy()
-            # transformation step
-            self.entries['text'] = df['text'].apply(text_pipeline)
-
-        def __len__(self):
-            return len(self.entries)
-
-        def __getitem__(self, idx):
-            return torch.tensor(self.entries['text'].iloc[idx]), torch.tensor([0])
-
-    def my_softmax(x):
-        return special.softmax(x,axis=1)
-
-    my_model = PyTorchModel(name="my_BertForSequenceClassification",
-                            clf=model,
-                            feature_names=feature_names,
-                            model_type="classification",
-                            classification_labels= list(ag_news_label.values()),
-                            data_preprocessing_function=PandasToTorch,
-                            model_postprocessing_function=my_softmax)
-
     # defining the giskard dataset
     my_test_dataset = Dataset(df.head(), name="test dataset", target="label")
 
-    #print(my_model._raw_predict(preprocessing_function(df.head())))
     my_output = my_model.predict(my_test_dataset)
-    #print(my_wrapped_model.predict(my_test_dataset))
+    print(my_wrapped_model.predict(my_test_dataset))
 
-    #validate_model(my_wrapped_model, validate_ds=my_test_dataset)
-    validate_model(my_model, validate_ds=my_test_dataset)
+    validate_model(my_wrapped_model, validate_ds=my_test_dataset)
 
 if __name__=="__main__":
     test_text_sentiment_ngrams_tutorial()
