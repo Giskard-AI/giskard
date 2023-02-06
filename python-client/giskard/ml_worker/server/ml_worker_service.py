@@ -5,7 +5,6 @@ import re
 import sys
 import time
 from io import StringIO
-from typing import Generator
 
 import grpc
 import numpy as np
@@ -49,8 +48,6 @@ from giskard.path_utils import model_path, dataset_path
 
 logger = logging.getLogger(__name__)
 
-echo_count = 1
-
 
 def file_already_exists(meta: FileUploadMetadata):
     if meta.file_type == FileType.MODEL:
@@ -70,8 +67,8 @@ class MLWorkerServiceImpl(MLWorkerServicer):
         self.client = client
 
     def echo(self, request, context):
-        globals()["echo_count"] += 1
-        return EchoMsg(msg=f"Response {echo_count}: {request.msg}")
+        logger.debug(f"echo: {request.msg}")
+        return EchoMsg(msg=request.msg)
 
     def upload(self, request_iterator, context: grpc.ServicerContext):
         meta = None
