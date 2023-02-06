@@ -238,7 +238,7 @@ class AdminProjectControllerIT {
         ObjectMapper objectMapper = new ObjectMapper();
         PrepareImportProjectDTO prepareImportProjectDTO = objectMapper.readValue(resultActions.andReturn().getResponse().getContentAsString(), PrepareImportProjectDTO.class);
         String nonConflictKey = "imported_credit";
-        PostImportProjectDTO projectDTO = new PostImportProjectDTO(new HashMap<String, String>(), nonConflictKey, prepareImportProjectDTO.getTemporaryMetadataDirectory());
+        PostImportProjectDTO projectDTO = new PostImportProjectDTO(new HashMap<>(), nonConflictKey, prepareImportProjectDTO.getTemporaryMetadataDirectory());
         String urlImport = "/api/v2/project/import";
         restUserMockMvc.perform(post(urlImport).content(new ObjectMapper().writeValueAsString(projectDTO)).contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
