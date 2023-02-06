@@ -44,14 +44,14 @@
               />
             </v-card-text>
             <v-card-actions>
-              <v-autocomplete label="Try on" :items="datasets" item-text="name" item-value="id"
+              <v-autocomplete label="Validate with" :items="datasets" item-text="name" item-value="id"
                               v-model="selectedDatasetId" style="max-width: 300px">
                 <template v-slot:append-outer>
 
                   <v-tooltip bottom>
                     <template v-slot:activator="{ on, attrs }">
-                      <v-btn icon v-on="on" v-bind="attrs" @click="validateCode">
-                        <v-icon>mdi-play</v-icon>
+                      <v-btn text v-on="on" v-bind="attrs" @click="validateCode">
+                        Validate
                       </v-btn>
                     </template>
                     <span>Runs the function on a few rows from the selected dataset to validate it.</span>
@@ -79,7 +79,10 @@ import {computed, getCurrentInstance, onMounted, ref, watch} from "vue";
 import {DatasetDTO, SliceDTO} from "@/generated-sources";
 import {api} from "@/api";
 import {editor} from "monaco-editor";
+import {useMainStore} from "@/stores/main";
 import IEditorOptions = editor.IEditorOptions;
+
+const mainStore = useMainStore();
 
 interface Props {
   projectId: number,
@@ -206,6 +209,7 @@ async function submit() {
 
 async function validateCode() {
   await api.validateSlice(selectedDatasetId.value, sliceCode.value);
+  await mainStore.addNotification({content: "Slice code is valid", color: "success"})
 }
 </script>
 
