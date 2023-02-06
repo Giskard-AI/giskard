@@ -5,6 +5,7 @@ import pytest
 import time
 import torch
 from torchtext.datasets import AG_NEWS
+
 train_iter = iter(AG_NEWS(split='train'))
 
 from torchtext.data.utils import get_tokenizer
@@ -22,12 +23,14 @@ from giskard import PyTorchModel, Dataset
 
 import re
 import httpretty
+
 url = "http://giskard-host:12345"
 token = "SECRET_TOKEN"
 auth = "Bearer SECRET_TOKEN"
 content_type = "application/json"
 model_name = "uploaded model"
 b_content_type = b"application/json"
+
 
 class TextClassificationModel(nn.Module):
 
@@ -47,10 +50,10 @@ class TextClassificationModel(nn.Module):
         embedded = self.embedding(text, offsets)
         return self.fc(embedded)
 
-#@pytest.mark.skip(reason="WIP")
+
+# @pytest.mark.skip(reason="WIP")
 @httpretty.activate(verbose=True, allow_net_connect=False)
 def test_text_sentiment_ngrams_tutorial():
-
     train_iter = AG_NEWS(split='train')
     num_class = len(set([label for (label, text) in train_iter]))
 
@@ -85,7 +88,6 @@ def test_text_sentiment_ngrams_tutorial():
     train_iter = AG_NEWS(split='train')
     dataloader = DataLoader(train_iter, batch_size=8, shuffle=False, collate_fn=collate_batch)
 
-
     vocab_size = len(vocab)
     emsize = 64
     model = TextClassificationModel(vocab_size, emsize, num_class).to(device)
@@ -100,7 +102,7 @@ def test_text_sentiment_ngrams_tutorial():
                 loss = criterion(predicted_label, label)
                 total_acc += (predicted_label.argmax(1) == label).sum().item()
                 total_count += label.size(0)
-        return total_acc/total_count
+        return total_acc / total_count
 
     def train(dataloader):
         model.train()
@@ -121,14 +123,14 @@ def test_text_sentiment_ngrams_tutorial():
                 elapsed = time.time() - start_time
                 print('| epoch {:3d} | {:5d}/{:5d} batches '
                       '| accuracy {:8.3f}'.format(epoch, idx, len(dataloader),
-                                                  total_acc/total_count))
+                                                  total_acc / total_count))
                 total_acc, total_count = 0, 0
                 start_time = time.time()
 
     # Hyperparameters
-    EPOCHS = 1 # epoch
+    EPOCHS = 1  # epoch
     LR = 5  # learning rate
-    BATCH_SIZE = 64 # batch size for training
+    BATCH_SIZE = 64  # batch size for training
 
     criterion = torch.nn.CrossEntropyLoss()
     optimizer = torch.optim.SGD(model.parameters(), lr=LR)
@@ -148,7 +150,7 @@ def test_text_sentiment_ngrams_tutorial():
     test_dataloader = DataLoader(test_dataset, batch_size=BATCH_SIZE,
                                  shuffle=True, collate_fn=collate_batch)
 
-    #--- training
+    # --- training
     """for epoch in range(1, EPOCHS + 1):
         epoch_start_time = time.time()
         train(train_dataloader)
@@ -174,11 +176,11 @@ def test_text_sentiment_ngrams_tutorial():
                      4: "Sci/Tec"}
 
     test_dataset = to_map_style_dataset(test_iter)
-    raw_data = { "text": [value[1] for value in test_dataset], "label": [ag_news_label[value[0]] for value in test_dataset]}
+    raw_data = {"text": [value[1] for value in test_dataset],
+                "label": [ag_news_label[value[0]] for value in test_dataset]}
     df = pd.DataFrame(raw_data, columns=["text", "label"])
 
-
-    #=== original implementation
+    # === original implementation
     """def softmax(x):
         return np.exp(x) / np.sum(np.exp(x), axis=0)
 
@@ -209,13 +211,13 @@ def test_text_sentiment_ngrams_tutorial():
             return torch.tensor(self.entries['text'].iloc[idx]), torch.tensor([0])
 
     def my_softmax(x):
-        return special.softmax(x,axis=1)
+        return special.softmax(x, axis=1)
 
     my_model = PyTorchModel(name="my_BertForSequenceClassification",
                             clf=model,
                             feature_names=feature_names,
                             model_type="classification",
-                            classification_labels= list(ag_news_label.values()),
+                            classification_labels=list(ag_news_label.values()),
                             data_preprocessing_function=PandasToTorch,
                             model_postprocessing_function=my_softmax)
 
@@ -236,7 +238,7 @@ def test_text_sentiment_ngrams_tutorial():
     httpretty.register_uri(httpretty.POST, models_url_pattern)
 
     client = GiskardClient(url, token)
-    #enron = client.create_project('test-project', "Email Classification", "Email Classification")
+    # enron = client.create_project('test-project', "Email Classification", "Email Classification")
     model_id = my_model.save(client, 'test-project', my_test_dataset)
 
     assert re.match("^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$", model_id)
