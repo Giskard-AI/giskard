@@ -3,6 +3,8 @@ import os
 import platform
 import re
 import sys
+import time
+from io import StringIO
 from typing import Optional
 
 import google.protobuf
@@ -26,15 +28,31 @@ from giskard.ml_worker.core.suite import Suite, InputRef
 from giskard.ml_worker.core.test_runner import run_test
 from giskard.ml_worker.exceptions.IllegalArgumentError import IllegalArgumentError
 from giskard.ml_worker.exceptions.giskard_exception import GiskardException
-from giskard.ml_worker.generated.ml_worker_pb2 import *
+from giskard.ml_worker.generated.ml_worker_pb2 import (
+    DataFrame,
+    DataRow,
+    EchoMsg,
+    ExplainRequest,
+    ExplainResponse,
+    ExplainTextRequest,
+    ExplainTextResponse,
+    MLWorkerInfo,
+    MLWorkerInfoRequest,
+    PlatformInfo,
+    RunModelForDataFrameRequest,
+    RunModelForDataFrameResponse,
+    RunModelRequest,
+    RunModelResponse,
+    RunTestRequest,
+    TestResultMessage,
+    UploadStatus,
+    FileUploadMetadata, FileType, StatusCode, FilterDatasetResponse, )
 from giskard.ml_worker.generated.ml_worker_pb2_grpc import MLWorkerServicer
 from giskard.ml_worker.testing.registry.registry import tests_registry
 from giskard.ml_worker.utils.logging import Timer
 from giskard.path_utils import model_path, dataset_path
 
 logger = logging.getLogger(__name__)
-
-echo_count = 1
 
 
 def file_already_exists(meta: FileUploadMetadata):
@@ -55,8 +73,8 @@ class MLWorkerServiceImpl(MLWorkerServicer):
         self.client = client
 
     def echo_orig(self, request, context):
-        globals()["echo_count"] += 1
-        return EchoMsg(msg=f"Response {echo_count}: {request.msg}")
+        logger.debug(f"echo: {request.msg}")
+        return EchoMsg(msg=request.msg)
 
     def upload(self, request_iterator, context: grpc.ServicerContext):
         meta = None
@@ -73,7 +91,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
                         unit_scale=True,
                         unit_divisor=1024,
                     )
-                    yield UploadStatus(code=UploadStatusCode.CacheMiss)
+                    yield UploadStatus(code=StatusCode.CacheMiss)
                 else:
                     logger.info(f"File already exists: {path}")
                     break
@@ -87,11 +105,11 @@ class MLWorkerServiceImpl(MLWorkerServicer):
                     if progress is not None:
                         progress.close()
                     logger.exception(f"Failed to upload file {meta.name}", e)
-                    yield UploadStatus(code=UploadStatusCode.Failed)
+                    yield UploadStatus(code=StatusCode.Failed)
 
         if progress is not None:
             progress.close()
-        yield UploadStatus(code=UploadStatusCode.Ok)
+        yield UploadStatus(code=StatusCode.Ok)
 
     def getInfo(self, request: MLWorkerInfoRequest, context):
         logger.info("Collecting ML Worker info")
@@ -297,6 +315,45 @@ class MLWorkerServiceImpl(MLWorkerServicer):
         return RunModelResponse(
             results_csv=results.to_csv(index=False), calculated_csv=calculated.to_csv(index=False)
         )
+
+    def filterDataset(self, request_iterator, context: grpc.ServicerContext):
+        filterfunc = {}
+        meta = None
+
+        times = []  # This is an array of chunk execution times for performance stats
+        column_types = []
+
+        for filter_msg in request_iterator:
+            if filter_msg.HasField("meta"):
+                meta = filter_msg.meta
+                try:
+                    exec(meta.function, None, filterfunc)
+                except Exception as e:
+                    yield FilterDatasetResponse(code=StatusCode.Failed, error_message=str(e))
+                column_types = meta.column_types
+                logger.info(f"Filtering dataset with {meta}")
+                yield FilterDatasetResponse(code=StatusCode.Ready)
+            elif filter_msg.HasField("data"):
+                logger.info("Got chunk " + str(filter_msg.idx))
+                time_start = time.perf_counter()
+                data_as_string = filter_msg.data.content.decode('utf-8')
+                data_as_string = meta.headers + "\n" + data_as_string
+                # CSV => Dataframe
+                data = StringIO(data_as_string)  # Wrap using StringIO to avoid creating file
+                df = pd.read_csv(data, keep_default_na=False, na_values=["_GSK_NA_"])
+                df = df.astype(column_types)
+                # Iterate over rows, applying filter_row func
+                try:
+                    rows_to_keep = df.apply(filterfunc["filter_row"], axis=1)[lambda x: x == True].index.array
+                except Exception as e:
+                    yield FilterDatasetResponse(code=StatusCode.Failed, error_message=str(e))
+                time_end = time.perf_counter()
+                times.append(time_end - time_start)
+                # Send NEXT code
+                yield FilterDatasetResponse(code=StatusCode.Next, idx=filter_msg.idx, rows=rows_to_keep)
+
+        logger.info(f"Filter dataset finished. Avg chunk time: {sum(times) / len(times)}")
+        yield FilterDatasetResponse(code=StatusCode.Ok)
 
     def getTestRegistry(self, request: google.protobuf.empty_pb2.Empty,
                         context: grpc.ServicerContext) -> TestRegistryResponse:
