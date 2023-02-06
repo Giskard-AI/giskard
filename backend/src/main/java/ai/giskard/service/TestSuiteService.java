@@ -1,7 +1,10 @@
 package ai.giskard.service;
 
 import ai.giskard.domain.FeatureType;
-import ai.giskard.domain.ml.*;
+import ai.giskard.domain.ml.CodeTestTemplate;
+import ai.giskard.domain.ml.Dataset;
+import ai.giskard.domain.ml.ProjectModel;
+import ai.giskard.domain.ml.TestSuite;
 import ai.giskard.domain.ml.testing.Test;
 import ai.giskard.repository.ml.DatasetRepository;
 import ai.giskard.repository.ml.ModelRepository;
@@ -19,7 +22,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Service
 @Transactional
