@@ -8,7 +8,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
-import static ai.giskard.web.rest.errors.EntityNotFoundException.*;
+import static ai.giskard.web.rest.errors.EntityNotFoundException.By;
 
 @Repository
 public interface DatasetRepository extends MappableJpaRepository<Dataset, Long> {

@@ -55,6 +55,3 @@ async function submit() {
   }
 }
 </script>
-
-<style scoped>
-</style>
