@@ -1,10 +1,7 @@
 package ai.giskard.service;
 
 import ai.giskard.domain.ColumnMeaning;
-import ai.giskard.domain.ml.CodeTestTemplate;
-import ai.giskard.domain.ml.Dataset;
-import ai.giskard.domain.ml.ProjectModel;
-import ai.giskard.domain.ml.TestSuite;
+import ai.giskard.domain.ml.*;
 import ai.giskard.domain.ml.testing.Test;
 import ai.giskard.repository.ml.DatasetRepository;
 import ai.giskard.repository.ml.ModelRepository;
