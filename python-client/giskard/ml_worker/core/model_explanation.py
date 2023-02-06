@@ -18,20 +18,19 @@ logger = logging.getLogger(__name__)
 @timer()
 def explain(model: Model, dataset: Dataset, input_data: Dict):
     def prepare_df(df):
-        return model.prepare_dataframe(
-            Dataset(
-                df=df,
-                target=dataset.target,
-                column_meanings=dataset.column_meanings,
-            )
-        )
+        prepared_df = model.prepare_dataframe(GiskardDataset(df=df,
+                                                             target=dataset.target,
+                                                             column_meanings=dataset.column_meanings,
+                                                             column_types=dataset.column_types))
+        columns_in_original_order = model.feature_names if model.feature_names else \
+            [c for c in dataset.df.columns if c in prepared_df.columns]
+        # Make sure column order is the same as in df
+        return prepared_df[columns_in_original_order]
 
     df = model.prepare_dataframe(dataset)
     feature_names = list(df.columns)
 
-    # Make sure column order is that column order is the same as in df
-    input_data_df = pd.DataFrame([input_data])[df.columns]
-    input_df = prepare_df(input_data_df)
+    input_df = prepare_df(pd.DataFrame([input_data]))
 
     def predict_array(array):
         return model.prepare_data_and_predict(prepare_df(pd.DataFrame(array, columns=list(df.columns))))
@@ -72,7 +71,7 @@ def explain_text(model: Model, input_df: pd.DataFrame,
                 logger.warning(f"Failed to fit text explainer {i}")
 
         text_explainer.show_prediction(target_names=model.meta.classification_labels)
-        exp = text_explainer.explain_prediction(target_names=model.classification_labels)
+        exp = text_explainer.explain_prediction(target_names=model.meta.classification_labels)
         exp = eli5.formatters.html.prepare_weighted_spans(exp.targets)
         return get_list_words_weigths(exp)
     except Exception as e:

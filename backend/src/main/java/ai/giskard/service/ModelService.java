@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 
 @Service
@@ -44,6 +45,8 @@ public class ModelService {
     public RunModelForDataFrameResponse predict(ProjectModel model, Dataset dataset, Map<String, String> features) {
         RunModelForDataFrameResponse response;
         try (MLWorkerClient client = mlWorkerService.createClient(model.getProject().isUsingInternalWorker())) {
+            //UploadStatus modelUploadStatus = mlWorkerService.upload(client, model);
+            //assert modelUploadStatus.getCode().equals(StatusCode.Ok) : "Failed to upload model";
             response = getRunModelForDataFrameResponse(model, dataset, features, client);
         }
         return response;
@@ -53,7 +56,11 @@ public class ModelService {
         RunModelForDataFrameResponse response;
         RunModelForDataFrameRequest.Builder requestBuilder = RunModelForDataFrameRequest.newBuilder()
             .setModel(grpcMapper.createRef(model))
-            .setDataframe(DataFrame.newBuilder().addRows(DataRow.newBuilder().putAllColumns(features)).build());
+            .setDataframe(
+                DataFrame.newBuilder()
+                    .addRows(DataRow.newBuilder().putAllColumns(Maps.filterValues(features, Objects::nonNull)))
+                    .build()
+            );
         if (dataset.getTarget() != null) {
             requestBuilder.setTarget(dataset.getTarget());
         }
@@ -72,7 +79,7 @@ public class ModelService {
             ExplainRequest request = ExplainRequest.newBuilder()
                 .setModel(grpcMapper.createRef(model))
                 .setDataset(grpcMapper.createRef(dataset))
-                .putAllColumns(features)
+                .putAllColumns(Maps.filterValues(features, Objects::nonNull))
                 .build();
 
             return client.getBlockingStub().explain(request);
