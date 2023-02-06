@@ -117,6 +117,16 @@ export const useProjectStore = defineStore('project', {
                 await mainStore.checkApiError(error);
                 throw new Error(error.response.data.detail);
             }
+        },
+        async exportProject(id: number) {
+            const mainStore = useMainStore();
+            try {
+                api.downloadExportedProject(id);
+                mainStore.addNotification({content: 'Project is being exported', color: 'success', showProgress: true});
+            } catch (err) {
+                await mainStore.checkApiError(err);
+                throw new Error(err.response.data.detail);
+            }
         }
     }
 });

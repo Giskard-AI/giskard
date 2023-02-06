@@ -66,7 +66,3 @@ export default class MultiSelector extends Vue {
   }
 }
 </script>
-
-<style scoped>
-
-</style>

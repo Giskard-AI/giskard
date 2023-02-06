@@ -1,4 +1,5 @@
 package ai.giskard.domain;
+
 import ai.giskard.config.Constants;
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -7,6 +8,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.annotations.BatchSize;
+
 import javax.persistence.*;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotNull;
@@ -24,7 +26,7 @@ import java.util.Set;
 @Getter
 @Setter
 @NotNull
-@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
+@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "login")
 public class User extends AbstractAuditingEntity {
     @Pattern(regexp = Constants.LOGIN_REGEX)
     @Size(min = 1, max = 50)
@@ -65,6 +67,7 @@ public class User extends AbstractAuditingEntity {
     private String resetKey;
 
     @Column(name = "reset_date")
+    @JsonIgnore
     private Instant resetDate = null;
 
     @JsonIgnore

@@ -1,6 +1,5 @@
 package ai.giskard.repository;
 
-import ai.giskard.domain.Role;
 import ai.giskard.domain.User;
 import ai.giskard.web.rest.errors.Entity;
 import ai.giskard.web.rest.errors.EntityNotFoundException;
@@ -26,6 +25,9 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     @EntityGraph(attributePaths = "roles")
     List<User> getAllWithRolesByLoginNot(String login);
+
+    List<User> findAllByEnabled(boolean enabled);
+
 
     Optional<User> findOneByResetKey(String resetKey);
 
@@ -56,8 +58,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     List<User> findAllByIdNotNullAndEnabledIsTrue();
 
-    List<User> findByRolesIn(Collection<Role> roles);
-
-    List<User> findByRoles_NameIn(Collection<String> names);
+    List<User> findByRolesNameIn(Collection<String> names);
 
 }

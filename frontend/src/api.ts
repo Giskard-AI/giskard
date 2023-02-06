@@ -27,9 +27,11 @@ import {
     PredictionDTO,
     PredictionInputDTO,
     PrepareDeleteDTO,
+    PrepareImportProjectDTO,
     ProjectDTO,
     ProjectPostDTO,
     RoleDTO,
+    SliceDTO,
     TestDTO,
     TestExecutionResultDTO,
     TestSuiteCreateDTO,
@@ -40,6 +42,7 @@ import {
     UpdateTestSuiteDTO,
     UserDTO
 } from './generated-sources';
+import {PostImportProjectDTO} from './generated-sources/ai/giskard/web/dto/post-import-project-dto';
 import {TYPE} from "vue-toastification";
 import ErrorToast from "@/views/main/utils/ErrorToast.vue";
 import router from "@/router";
@@ -271,6 +274,15 @@ export const api = {
     async getProjectModels(id: number) {
         return axiosProject.get<unknown, ModelDTO[]>(`/${id}/models`);
     },
+    async prepareImport(formData: FormData) {
+        const headers = {'Content-Type': 'multipart/form-data'};
+        return axiosProject.post<unknown, PrepareImportProjectDTO>(`/import/prepare`, formData, {
+            headers: headers
+        });
+    },
+    async importProject(postImportProject: PostImportProjectDTO) {
+        return axiosProject.post<unknown, ProjectDTO>(`/import`, postImportProject);
+    },
     async deleteDatasetFile(datasetId: number) {
         return apiV2.delete<unknown, MessageDTO>(`/dataset/${datasetId}`);
     },
@@ -292,11 +304,17 @@ export const api = {
     downloadDataFile(id: number) {
         downloadURL(`${API_V2_ROOT}/download/dataset/${id}`);
     },
+    downloadExportedProject(id: number) {
+        downloadURL(`${API_V2_ROOT}/download/project/${id}/export`);
+    },
     async peekDataFile(datasetId: number) { //TODO
         return apiV2.get<unknown, any>(`/dataset/${datasetId}/rows`, {params: {offset: 0, size: 10}});
     },
     async getFeaturesMetadata(datasetId: number) {
         return apiV2.get<unknown, FeatureMetadataDTO[]>(`/dataset/${datasetId}/features`);
+    },
+    async filterDataset(datasetId: number, sliceName: string, code: string) {
+        return apiV2.post<unknown, unknown>(`/dataset/${datasetId}/filter`, {sliceName: sliceName, code: code});
     },
     async getDataFilteredByRange(inspectionId, props, filter) {
         return apiV2.post<unknown, any>(`/inspection/${inspectionId}/rowsFiltered`, filter, {params: props});
@@ -304,11 +322,17 @@ export const api = {
     async editDatasetName(datasetId: number, name: string) {
         return apiV2.patch<unknown, FileDTO>(`/dataset/${datasetId}/name/${encodeURIComponent(name)}`, null)
     },
+    async getDataFilteredBySlice(inspectionId, sliceId) {
+        return apiV2.post<unknown, any>(`/inspection/${inspectionId}/slice/${sliceId}`);
+    },
     async getLabelsForTarget(inspectionId: number) {
         return apiV2.get<unknown, string[]>(`/inspection/${inspectionId}/labels`);
     },
     async getProjectDatasets(id: number) {
         return axiosProject.get<unknown, DatasetDTO[]>(`/${id}/datasets`);
+    },
+    async getProjectSlices(id: number) {
+        return axiosProject.get<unknown, SliceDTO[]>(`/${id}/slices`);
     },
     async getInspection(inspectionId: number) {
         return apiV2.get<unknown, InspectionDTO>(`/inspection/${inspectionId}`);
@@ -408,6 +432,30 @@ export const api = {
     },
     async executeTestSuite(suiteId: number) {
         return apiV2.post<unknown, Array<TestExecutionResultDTO>>(`/testing/suites/execute`, {suiteId});
+    },
+    async createSlice(projectId: number, name: string, code: string) {
+        return apiV2.post<unknown, SliceDTO>(`/slices`, {
+            name: name,
+            projectId: projectId,
+            code: code
+        })
+    },
+    async editSlice(projectId: number, name: string, code: string, id: number) {
+        return apiV2.put<unknown, SliceDTO>(`/slices`, {
+            name: name,
+            projectId: projectId,
+            code: code,
+            id: id
+        })
+    },
+    async deleteSlice(projectId: number, sliceId: number) {
+        return apiV2.delete(`/project/${projectId}/slices/${sliceId}`);
+    },
+    async validateSlice(datasetId: number, code: string) {
+        return apiV2.post("/slices/validate", {
+            datasetId: datasetId,
+            code: code
+        });
     },
     async uploadLicense(form: FormData) {
         return apiV2.post<unknown, unknown>(`/ee/license`, form, {
