@@ -137,9 +137,7 @@ class GiskardTestRegistry:
             elif full_name.startswith('__main__'):
                 tags.append("pickle")
                 reference = cloudpickle.dumps(func)
-                print(reference)
                 full_name += hashlib.sha1(reference).hexdigest()
-                print(full_name)
             else:
                 tags.append("custom")
 

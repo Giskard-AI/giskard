@@ -42,48 +42,46 @@ class TestFunction:
             # equivalent to adding @test decorator
             test(func)
             meta = tests_registry.get_test(func_uuid)
-            print(meta)
 
         return cls(func, meta)
 
-    def save(self, client: GiskardClient, project_key) -> str:
+    def save(self, client: GiskardClient) -> str:
         if self.meta.version is not None:
             return self.meta.uuid
 
         if self.meta.module is '__main__':
-            local_dir = settings.home_dir / settings.cache_dir / project_key / "tests" / self.meta.uuid
+            local_dir = settings.home_dir / settings.cache_dir / "global" / "tests" / self.meta.uuid
 
             if not local_dir.exists():
                 os.makedirs(local_dir)
                 with open(Path(local_dir) / 'giskard-function.pkl', 'wb') as f:
                     cloudpickle.dump(self.func, f)
                     if client is not None:
-                        client.log_artifacts(local_dir, posixpath.join(project_key, "tests", self.meta.uuid))
+                        client.log_artifacts(local_dir, posixpath.join("global", "tests", self.meta.uuid))
 
-        client.save_test_function_meta(project_key,
-                                       self.meta.uuid,
+        client.save_test_function_meta(self.meta.uuid,
                                        self.meta)
 
         return self.meta.uuid
 
     @classmethod
-    def load(cls, client: GiskardClient, project_key: str, func_uuid: str):
+    def load(cls, client: GiskardClient, func_uuid: str):
         meta = tests_registry.get_test(func_uuid)
         if meta is not None:
             return cls(meta.fn, meta)
 
-        meta = client.load_test_function_meta(project_key, func_uuid)
+        meta = client.load_test_function_meta("global", func_uuid)
 
         if meta.module is '__main__':
             func = getattr(sys.modules[meta.module], meta.name)
         else:
-            local_dir = settings.home_dir / settings.cache_dir / project_key / "tests" / func_uuid
+            local_dir = settings.home_dir / settings.cache_dir / "global" / "tests" / func_uuid
 
             if client is None:
                 # internal worker case, no token based http client
-                assert local_dir.exists(), f"Cannot find existing function {project_key}.{func_uuid}"
+                assert local_dir.exists(), f"Cannot find existing function {func_uuid}"
             else:
-                client.load_artifact(local_dir, posixpath.join(project_key, "tests", meta.uuid))
+                client.load_artifact(local_dir, posixpath.join("global", "tests", meta.uuid))
 
             with open(Path(local_dir) / 'giskard-function.pkl', 'rb') as f:
                 func = pickle.load(f)
