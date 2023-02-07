@@ -93,7 +93,7 @@ class Suite:
                     inputs[pname] = TestInputDTO(name=pname, value=p)
 
             suite_tests.append(SuiteTestDTO(
-                testId=t.function_reference.save(client, project_key),
+                testId=t.function_reference.save(client),
                 testInputs=inputs
             ))
         self.id = client.save_test_suite(TestSuiteNewDTO(name=self.name, project_key=project_key, tests=suite_tests))
