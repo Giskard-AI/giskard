@@ -32,7 +32,7 @@ public class TestFunctionController {
         return giskardMapper.toDTO(testFunctionRepository.getById(modelId));
     }
 
-    @PostMapping("project/{projectKey}/test-functions}")
+    @PostMapping("project/{projectKey}/test-functions")
     @PreAuthorize("@permissionEvaluator.canWriteProjectKey(#projectKey)")
     @Transactional
     public TestFunctionDTO getTestFunction(@PathVariable("projectKey") @NotNull String projectKey,

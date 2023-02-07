@@ -1,6 +1,7 @@
 package ai.giskard.domain;
 
 import ai.giskard.utils.SimpleJSONStringAttributeConverter;
+import ai.giskard.web.dto.TestFunctionArgumentDTO;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -20,6 +21,9 @@ public class TestFunction {
     private UUID uuid;
     @Column(nullable = false)
     private String name;
+
+    @Column(nullable = false)
+    private String displayName;
     @Column(nullable = false)
     private int version;
     private String module;
@@ -30,4 +34,8 @@ public class TestFunction {
     @Column(columnDefinition = "VARCHAR")
     @Convert(converter = SimpleJSONStringAttributeConverter.class)
     private List<String> tags;
+
+    @OneToMany(mappedBy = "testFunction", cascade = CascadeType.ALL)
+    private List<TestFunctionArgument> args;
+
 }

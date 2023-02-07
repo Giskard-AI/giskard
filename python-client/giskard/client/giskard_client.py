@@ -291,14 +291,14 @@ class GiskardClient:
             "code": meta.code,
             "tags": meta.tags,
             "args":
-                {
-                    arg.name: {
+                [
+                    {
                         "name": arg.name,
                         "type": arg.type,
                         "default": arg.default,
                         "optional": arg.optional
                     } for arg in meta.args.values()
-                 }
+                 ]
         })
 
         self.analytics.track(
@@ -321,10 +321,10 @@ class GiskardClient:
         return TestFunctionMeta(
             uuid=res["uuid"],
             name=res["name"],
-            display_name=res["display_name"],
+            display_name=res["displayName"],
             module=res["module"],
             doc=res["doc"],
-            module_doc=res["module_doc"],
+            module_doc=res["moduleDoc"],
             code=res["code"],
             tags=res["tags"],
             version=res["version"],
