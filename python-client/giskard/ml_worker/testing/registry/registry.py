@@ -1,14 +1,20 @@
+import hashlib
 import importlib.util
 import inspect
 import logging
 import os
+import random
 import re
 import sys
 import types
+import uuid
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Optional, List, Dict
 
+import cloudpickle
+
+from giskard.core.core import TestFunctionMeta, TestFunctionArgument
 from giskard.ml_worker.testing.registry.udf_repository import udf_repo_available, udf_root
 from giskard.settings import expand_env_var, settings
 
@@ -41,6 +47,13 @@ def _get_plugin_method_full_name(func):
         path_parts.remove('__init__')
     path_parts.append(func.__name__)
     return ".".join(path_parts)
+
+
+def generate_func_id(name) -> str:
+    rd = random.Random()
+    rd.seed(hashlib.sha1(name.encode('utf-8')).hexdigest())
+    func_id = str(uuid.UUID(int=rd.getrandbits(128), version=4))
+    return str(func_id)
 
 
 def load_plugins():
@@ -87,27 +100,6 @@ def import_plugin(import_path, root=None):
         print(e)
 
 
-@dataclass
-class TestFunctionArgument:
-    name: str
-    type: str
-    default: any
-    optional: bool
-
-
-@dataclass
-class TestFunction:
-    code: str
-    id: str
-    name: str
-    module: str
-    doc: str
-    module_doc: str
-    fn: types.FunctionType
-    args: Dict[str, TestFunctionArgument]
-    tags: List[str]
-
-
 def create_test_function_id(func):
     try:
         # is_relative_to is only available from python 3.9
@@ -122,7 +114,7 @@ def create_test_function_id(func):
 
 
 class GiskardTestRegistry:
-    _tests: Dict[str, TestFunction] = {}
+    _tests: Dict[str, TestFunctionMeta] = {}
 
     def register(self, func: types.FunctionType, name=None, tags=None):
         full_name = create_test_function_id(func)
@@ -142,6 +134,10 @@ class GiskardTestRegistry:
             tags = [] if not tags else tags
             if full_name.partition(".")[0] == 'giskard':
                 tags.append("giskard")
+            elif full_name.startswith('__main__'):
+                tags.append("pickle")
+                reference = cloudpickle.dumps(func)
+                full_name += hashlib.sha1(reference).hexdigest()
             else:
                 tags.append("custom")
 
@@ -151,10 +147,13 @@ class GiskardTestRegistry:
             except Exception as e:
                 logger.debug(f"Failed to extract test function code {full_name}", e)
 
-            self._tests[full_name] = TestFunction(
-                id=full_name,
+            func_uuid = generate_func_id(full_name)
+
+            self._tests[func_uuid] = TestFunctionMeta(
+                uuid=func_uuid,
                 code=code,
-                name=name or func.__name__,
+                name=name,
+                display_name=name or func.__name__,
                 tags=tags,
                 module=func.__module__,
                 doc=func_doc,
@@ -168,7 +167,8 @@ class GiskardTestRegistry:
                         default=None if parameters[name].default == inspect.Parameter.empty else parameters[
                             name].default
                     )
-                    for name in parameters}
+                    for name in parameters},
+                version=None
             )
             logger.debug(f"Registered test function: {full_name}")
 
