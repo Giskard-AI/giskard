@@ -266,6 +266,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
             results_csv=results.to_csv(index=False), calculated_csv=calculated.to_csv(index=False)
         )
 
+    # TODO: remove
     def getTestRegistry(self, request: google.protobuf.empty_pb2.Empty,
                         context: grpc.ServicerContext) -> TestRegistryResponse:
         globals()["echo_count"] += 1
