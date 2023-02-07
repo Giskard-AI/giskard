@@ -288,7 +288,7 @@ async function initMLWorkerInfo() {
 }
 
 async function copyMLWorkerCommand() {
-  await copyToClipboard('giskard worker start -h ' + giskardAddress);
+  await copyToClipboard('giskard worker start -h ' + giskardAddress.value);
   mainStore.addNotification({content: 'Copied', color: '#262a2d'});
 }
 
