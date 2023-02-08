@@ -74,8 +74,10 @@ class TestControllerIT {
     @Transactional
     void testDatasetMetadata() throws Exception {
         Project project = projectRepository.getOneByName(initService.getProjectByCreatorLogin("admin"));
-        Optional<Dataset> dataset = project.getDatasets().stream().findFirst();
-        Assertions.assertFalse(dataset.isEmpty(), "demo dataset not found");
+        Optional<Dataset> dataset = project.getDatasets().stream()
+            .filter(d -> d.getTarget() != null)
+            .findFirst();
+        Assertions.assertFalse(dataset.isEmpty(), "demo dataset with target not found");
         restUserMockMvc.perform(get(String.format("/api/v2/datasets/%s/metadata", dataset.get().getId())).accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
