@@ -74,15 +74,15 @@
           <v-card-title class="font-weight-light secondary--text d-flex">
             <span>ML Worker</span>
             <v-spacer/>
-            <v-tabs class="worker-tabs">
-              <v-tab @change="externalWorkerSelected=true" :disabled="mlWorkerSettingsLoading" class="worker-tab">
+            <v-tabs class="worker-tabs" v-model="selectedWorkerTab">
+              <v-tab :disabled="mlWorkerSettingsLoading" class="worker-tab">
                 <span>external</span>
                 <v-icon v-show="!mlWorkerSettingsLoading" size="10"
                         :color="isWorkerAvailable(false) ? 'green': 'red'">mdi-circle
                 </v-icon>
                 <v-progress-circular size="20" indeterminate v-show="mlWorkerSettingsLoading"/>
               </v-tab>
-              <v-tab @change="externalWorkerSelected=false" :disabled="mlWorkerSettingsLoading" class="worker-tab">
+              <v-tab :disabled="mlWorkerSettingsLoading" class="worker-tab">
                 <span>internal</span>
                 <v-icon v-show="!mlWorkerSettingsLoading" size="10" :color="isWorkerAvailable(true) ? 'green': 'red'">
                   mdi-circle
@@ -233,7 +233,7 @@ const mainStore = useMainStore();
 const appSettings = ref<AppInfoDTO | null>(null);
 const currentWorker = ref<MLWorkerInfoDTO | null>(null);
 const allMLWorkerSettings = ref<MLWorkerInfoDTO[]>([]);
-const externalWorkerSelected = ref<boolean>(true);
+const selectedWorkerTab = ref<number>(0);
 const mlWorkerSettingsLoading = ref<boolean>(false);
 const installedPackagesData = ref<{ name: string, version: string }[]>([]);
 const giskardAddress = computed(() => window.location.hostname);
@@ -245,11 +245,14 @@ const installedPackagesHeaders = [{text: 'Name', value: 'name', width: '70%'}, {
   width: '30%'
 }];
 
+
 onBeforeMount(async () => {
   // TODO: Vue 2 does not support top level await in <script setup>, this can be moved when we migrate to Vue 3
   appSettings.value = mainStore.appSettings;
   await initMLWorkerInfo();
 })
+
+const externalWorkerSelected = computed(() => selectedWorkerTab.value == 0);
 
 watch(() => [externalWorkerSelected.value, allMLWorkerSettings.value], () => {
   if (allMLWorkerSettings.value.length) {
