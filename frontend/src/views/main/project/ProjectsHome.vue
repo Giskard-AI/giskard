@@ -104,8 +104,7 @@
             <v-card-actions>
               <v-spacer></v-spacer>
               <v-btn color="secondary" text @click="clearAndCloseDialog()">Cancel</v-btn>
-              <v-btn color="primary" text type="submit" :disabled="!file || preparingImport">Next</v-btn>
-              <v-progress-circular v-if="preparingImport" size="20" indeterminate color="primary"></v-progress-circular>
+              <v-btn color="primary" text type="submit" :disabled="!file" :loading="preparingImport">Next</v-btn>
             </v-card-actions>
           </v-form>
         </ValidationObserver>
