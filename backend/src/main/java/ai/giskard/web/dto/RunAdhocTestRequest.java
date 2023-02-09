@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.util.Map;
+import java.util.UUID;
 
 @Getter
 @AllArgsConstructor
@@ -13,6 +14,6 @@ import java.util.Map;
 @UIModel
 public class RunAdhocTestRequest {
     private Long projectId;
-    private String testId;
+    private UUID testUuid;
     private Map<String, Object> inputs;
 }

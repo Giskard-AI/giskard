@@ -210,6 +210,7 @@ public interface GiskardMapper {
     @Mapping(target = "testFunction", ignore = true)
     TestFunctionArgument fromDTO(TestFunctionArgumentDTO testFunctionArgument);
     TestFunctionDTO toDTO(TestFunction testFunction);
+    @Mapping(target = "suiteTests", ignore = true)
     TestFunction fromDTO(TestFunctionDTO testFunction);
 
 }
