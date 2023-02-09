@@ -1,17 +1,19 @@
-import mlflow
-import torch
-from torch.utils.data import Dataset as torch_dataset
-from torch.utils.data import DataLoader
 from pathlib import Path
-import yaml
 from typing import Union
-import pandas as pd
-import scipy
+
+import mlflow
 import numpy as np
+import pandas as pd
+import torch
+import yaml
+from torch.utils.data import DataLoader
+from torch.utils.data import Dataset as torch_dataset
 
 from giskard.core.core import SupportedModelTypes
 from giskard.core.model import Model
 from giskard.path_utils import get_size
+
+
 class TorchMinimalDataset(torch_dataset):
     def __init__(self, df: pd.DataFrame, torch_dtype=torch.float32):
         self.entries = df
@@ -25,29 +27,29 @@ class TorchMinimalDataset(torch_dataset):
 
 
 class PyTorchModel(Model):
+    loader_module = 'giskard.models.pytorch'
+    loader_class = 'PyTorchModel'
+
     def __init__(self,
                  clf,
                  model_type: Union[SupportedModelTypes, str],
-                 torch_dtype= torch.float32,
+                 torch_dtype=torch.float32,
                  device='cpu',
                  name: str = None,
                  data_preprocessing_function=None,
                  model_postprocessing_function=None,
                  feature_names=None,
                  classification_threshold=0.5,
-                 classification_labels=None,
-                 loader_module:str = 'giskard.models.pytorch',
-                 loader_class:str = 'PyTorchModel') -> None:
+                 classification_labels=None) -> None:
 
         super().__init__(clf, model_type, name, data_preprocessing_function, model_postprocessing_function,
                          feature_names, classification_threshold, classification_labels, loader_module, loader_class)
-        self.device=device
-        self.torch_dtype=torch_dtype
+        self.device = device
+        self.torch_dtype = torch_dtype
 
     @classmethod
     def read_model_from_local_dir(cls, local_path):
         return mlflow.pytorch.load_model(local_path)
-
 
     def save_to_local_dir(self, local_path):
 
@@ -88,12 +90,12 @@ class PyTorchModel(Model):
                             - torch.Dataset \n \
                             - torch.DataLoader")
 
-        predictions=[]
+        predictions = []
         with torch.no_grad():
             for entry in data:
-                try: # for the case of 1 input
+                try:  # for the case of 1 input
                     predictions.append(self.clf(entry).detach().numpy())
-                except: # for the case of 2 inputs or more, like (input1, offset) or (input1, input2)
+                except:  # for the case of 2 inputs or more, like (input1, offset) or (input1, input2)
                     predictions.append(self.clf(*entry).detach().numpy())
 
         predictions = np.squeeze(np.array(predictions))
@@ -102,7 +104,3 @@ class PyTorchModel(Model):
             predictions = self.model_postprocessing_function(predictions)
 
         return predictions.squeeze()
-
-
-
-
