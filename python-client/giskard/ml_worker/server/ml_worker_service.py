@@ -6,7 +6,6 @@ import sys
 import time
 from io import StringIO
 
-import google.protobuf
 import grpc
 import numpy as np
 import pandas as pd
@@ -23,6 +22,9 @@ from giskard.ml_worker.core.model_explanation import (
     explain_text,
 )
 from giskard.ml_worker.core.suite import Suite
+
+from giskard.ml_worker.core.test_function import TestFunction
+from giskard.ml_worker.core.test_result import TestResult, TestMessageLevel
 from giskard.ml_worker.exceptions.IllegalArgumentError import IllegalArgumentError
 from giskard.ml_worker.exceptions.giskard_exception import GiskardException
 from giskard.ml_worker.generated import ml_worker_pb2
@@ -381,3 +383,45 @@ class MLWorkerServiceImpl(MLWorkerServicer):
     @staticmethod
     def pandas_series_to_proto_series(self, series):
         return
+
+
+def map_result_to_single_test_result(result) -> SingleTestResult:
+    if isinstance(result, SingleTestResult):
+        return result
+    elif isinstance(result, TestResult):
+        return SingleTestResult(
+            passed=result.passed,
+            messages=[
+                TestMessage(
+                    type=TestMessageType.ERROR if message.type == TestMessageLevel.ERROR else TestMessageType.INFO,
+                    text=message.text
+                )
+                for message
+                in result.messages
+            ],
+            props=result.props,
+            metric=result.metric,
+            missing_count=result.missing_count,
+            missing_percent=result.missing_percent,
+            unexpected_count=result.unexpected_count,
+            unexpected_percent=result.unexpected_percent,
+            unexpected_percent_total=result.unexpected_percent_total,
+            unexpected_percent_nonmissing=result.unexpected_percent_nonmissing,
+            partial_unexpected_index_list=[
+                Partial_unexpected_counts(
+                    value=puc.value,
+                    count=puc.count
+                )
+                for puc
+                in result.partial_unexpected_index_list
+            ],
+            unexpected_index_list=result.unexpected_index_list,
+            output_df=result.output_df,
+            number_of_perturbed_rows=result.number_of_perturbed_rows,
+            actual_slices_size=result.actual_slices_size,
+            reference_slices_size=result.reference_slices_size,
+        )
+    elif isinstance(result, bool):
+        return SingleTestResult(passed=result)
+    else:
+        raise ValueError("Result of test can only be 'GiskardTestResult' or 'bool'")
