@@ -4,7 +4,6 @@ import platform
 import re
 import sys
 
-import google.protobuf
 import grpc
 import numpy as np
 import pandas as pd
@@ -21,7 +20,7 @@ from giskard.ml_worker.core.model_explanation import (
     explain_text,
 )
 from giskard.ml_worker.core.test_function import TestFunction
-from giskard.ml_worker.core.test_result import GiskardTestResult, GiskardTestMessageType
+from giskard.ml_worker.core.test_result import TestResult, TestMessageLevel
 from giskard.ml_worker.exceptions.IllegalArgumentError import IllegalArgumentError
 from giskard.ml_worker.exceptions.giskard_exception import GiskardException
 from giskard.ml_worker.generated.ml_worker_pb2 import *
@@ -282,12 +281,12 @@ class MLWorkerServiceImpl(MLWorkerServicer):
 def map_result_to_single_test_result(result) -> SingleTestResult:
     if isinstance(result, SingleTestResult):
         return result
-    elif isinstance(result, GiskardTestResult):
+    elif isinstance(result, TestResult):
         return SingleTestResult(
             passed=result.passed,
             messages=[
                 TestMessage(
-                    type=TestMessageType.ERROR if message.type == GiskardTestMessageType.ERROR else TestMessageType.INFO,
+                    type=TestMessageType.ERROR if message.type == TestMessageLevel.ERROR else TestMessageType.INFO,
                     text=message.text
                 )
                 for message

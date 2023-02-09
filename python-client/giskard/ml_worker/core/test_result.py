@@ -4,14 +4,14 @@ from enum import Enum
 from typing import List, Dict
 
 
-class GiskardTestMessageType(Enum):
+class TestMessageLevel(Enum):
     ERROR = 1,
     INFO = 2
 
 
 @dataclass
-class GiskardTestMessage:
-    type: GiskardTestMessageType
+class TestMessage:
+    type: TestMessageLevel
     text: str
 
 
@@ -22,9 +22,9 @@ class PartialUnexpectedCounts:
 
 
 @dataclass
-class GiskardTestResult:
+class TestResult:
     passed: bool = False
-    messages: List[GiskardTestMessage] = field(default_factory=list, repr=False)
+    messages: List[TestMessage] = field(default_factory=list, repr=False)
     props: Dict[str, str] = field(default_factory=dict, repr=False)
     metric: float = 0
     missing_count: int = 0
