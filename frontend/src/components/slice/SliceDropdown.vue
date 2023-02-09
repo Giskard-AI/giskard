@@ -122,6 +122,15 @@ const rules = {
   required: (value) => !!value || 'Required'
 }
 
+const exampleSliceCode: string = `
+# Define a function 'filter_row' that will run over every single row of your dataset.
+# This function should return a boolean if the row is part of your slice.
+def filter_row(row):
+    # For example, a dataset that contains a numeric column "age" could be filtered with the following expression:
+    # return row['age'] > 60
+    return True;
+`;
+
 const items = computed(() => {
   // TODO: Find a solution for this typing issue
   let result: any[] = slices.value.map(slice => ({
@@ -172,7 +181,7 @@ async function deleteSlice(sliceToDel: SliceDTO) {
 
 async function openCreateDialog() {
   sliceName.value = '';
-  sliceCode.value = 'def filter_row(row):\n    return True';
+  sliceCode.value = exampleSliceCode;
   sliceDialog.value = true;
   autocomplete.value.reset();
   datasets.value = await api.getProjectDatasets(props.projectId)
