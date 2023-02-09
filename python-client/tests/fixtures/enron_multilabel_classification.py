@@ -37,7 +37,7 @@ def enron_data() -> Dataset:
             path("test_data/enron_data.csv"), keep_default_na=False, na_values=["_GSK_NA_"]
         ),
         target="Target",
-        column_meanings=input_types,
+        feature_types=input_types,
     )
 
 
@@ -45,7 +45,7 @@ def enron_data() -> Dataset:
 def enron_test_data(enron_data):
     return Dataset(
         df=pd.DataFrame(enron_data.df).drop(columns=["Target"]),
-        column_meanings=input_types,
+        feature_types=input_types,
         target=None,
     )
 

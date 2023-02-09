@@ -18,11 +18,10 @@ logger = logging.getLogger(__name__)
 @timer()
 def explain(model: Model, dataset: Dataset, input_data: Dict):
     def prepare_df(df):
-        prepared_df = model.prepare_dataframe(GiskardDataset(df=df,
-                                                             target=dataset.target,
-                                                             column_meanings=dataset.column_meanings,
-                                                             column_types=dataset.column_types))
-        columns_in_original_order = model.feature_names if model.feature_names else \
+        prepared_df = model.prepare_dataframe(Dataset(df=df,
+                                                      target=dataset.target,
+                                                      feature_types=dataset.feature_types))
+        columns_in_original_order = model.meta.feature_names if model.meta.feature_names else \
             [c for c in dataset.df.columns if c in prepared_df.columns]
         # Make sure column order is the same as in df
         return prepared_df[columns_in_original_order]
@@ -35,7 +34,7 @@ def explain(model: Model, dataset: Dataset, input_data: Dict):
     def predict_array(array):
         return model.prepare_data_and_predict(prepare_df(pd.DataFrame(array, columns=list(df.columns))))
 
-    example = background_example(df, dataset.column_meanings)
+    example = background_example(df, dataset.feature_types)
     kernel = shap.KernelExplainer(predict_array, example)
     shap_values = kernel.shap_values(input_df)
 
