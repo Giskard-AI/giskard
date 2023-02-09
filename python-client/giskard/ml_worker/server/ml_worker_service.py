@@ -138,7 +138,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
         logger.info(f"Executing {test.meta.display_name or f'{test.meta.module}.{test.meta.name}' }")
         test_result = test.func(**arguments)
         return TestResultMessage(results=[
-            NamedSingleTestResult(name=test.meta.uuid, result=giskard_test_result_to_single_test_result(test_result))
+            NamedSingleTestResult(name=test.meta.uuid, result=map_result_to_single_test_result(test_result))
         ])
 
     def runTest(self, request: RunTestRequest, context: grpc.ServicerContext) -> TestResultMessage:
@@ -279,36 +279,43 @@ class MLWorkerServiceImpl(MLWorkerServicer):
         return
 
 
-def giskard_test_result_to_single_test_result(result: GiskardTestResult) -> SingleTestResult:
-    return SingleTestResult(
-        passed=result.passed,
-        messages=[
-            TestMessage(
-                type=TestMessageType.ERROR if message.type == GiskardTestMessageType.ERROR else TestMessageType.INFO,
-                text=message.text
-            )
-            for message
-            in result.messages
-        ],
-        props=result.props,
-        metric=result.metric,
-        missing_count=result.missing_count,
-        missing_percent=result.missing_percent,
-        unexpected_count=result.unexpected_count,
-        unexpected_percent=result.unexpected_percent,
-        unexpected_percent_total=result.unexpected_percent_total,
-        unexpected_percent_nonmissing=result.unexpected_percent_nonmissing,
-        partial_unexpected_index_list=[
-            Partial_unexpected_counts(
-                value=puc.value,
-                count=puc.count
-            )
-            for puc
-            in result.partial_unexpected_index_list
-        ],
-        unexpected_index_list=result.unexpected_index_list,
-        output_df=result.output_df,
-        number_of_perturbed_rows=result.number_of_perturbed_rows,
-        actual_slices_size=result.actual_slices_size,
-        reference_slices_size=result.reference_slices_size,
-    )
+def map_result_to_single_test_result(result) -> SingleTestResult:
+    if isinstance(result, SingleTestResult):
+        return result
+    elif isinstance(result, GiskardTestResult):
+        return SingleTestResult(
+            passed=result.passed,
+            messages=[
+                TestMessage(
+                    type=TestMessageType.ERROR if message.type == GiskardTestMessageType.ERROR else TestMessageType.INFO,
+                    text=message.text
+                )
+                for message
+                in result.messages
+            ],
+            props=result.props,
+            metric=result.metric,
+            missing_count=result.missing_count,
+            missing_percent=result.missing_percent,
+            unexpected_count=result.unexpected_count,
+            unexpected_percent=result.unexpected_percent,
+            unexpected_percent_total=result.unexpected_percent_total,
+            unexpected_percent_nonmissing=result.unexpected_percent_nonmissing,
+            partial_unexpected_index_list=[
+                Partial_unexpected_counts(
+                    value=puc.value,
+                    count=puc.count
+                )
+                for puc
+                in result.partial_unexpected_index_list
+            ],
+            unexpected_index_list=result.unexpected_index_list,
+            output_df=result.output_df,
+            number_of_perturbed_rows=result.number_of_perturbed_rows,
+            actual_slices_size=result.actual_slices_size,
+            reference_slices_size=result.reference_slices_size,
+        )
+    elif isinstance(result, bool):
+        return SingleTestResult(passed=result)
+    else:
+        raise ValueError("Result of test can only be 'GiskardTestResult' or 'bool'")
