@@ -25,7 +25,7 @@
     "ai.giskard.domain.ml.TestType": "TestType",
     "ai.giskard.web.dto.ml.TestSuiteDTO": "TestSuiteDTO",
     "ai.giskard.web.dto.config.AppConfigDTO$AppInfoDTO": "AppConfigDTO.AppInfoDTO",
-    "ai.giskard.domain.ColumnMeaning": "ColumnMeaning",
+    "ai.giskard.domain.FeatureType": "FeatureType",
     "ai.giskard.domain.ml.table.Filter": "Filter",
     "ai.giskard.web.dto.user.UpdateMeDTO": "UpdateMeDTO",
     "ai.giskard.web.dto.user.AdminUserDTO": "AdminUserDTO",
