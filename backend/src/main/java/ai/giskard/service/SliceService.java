@@ -91,8 +91,11 @@ public class SliceService {
     }
 
     private void validateSliceName(String sliceName) {
-        if (sliceName.length() > 30) {
-            throw new IllegalArgumentException(String.format("Slice name %s is too long. Slice names should not be longer than 30 characters.", sliceName));
+        if (sliceName.length() < 1) {
+            throw new IllegalArgumentException("Slice name cannot be empty.");
+        }
+        if (sliceName.length() > 50) {
+            throw new IllegalArgumentException(String.format("Slice name %s is too long. Slice names should not be longer than 50 characters.", sliceName));
         }
     }
 }

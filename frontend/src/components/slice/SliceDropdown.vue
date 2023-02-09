@@ -31,7 +31,8 @@
             <v-card-text>
               <ValidationProvider name="Name" mode="eager" rules="required" v-slot="{errors}">
                 <v-text-field label="Slice Name*" type="text" v-model="sliceName"
-                              :error-messages="errors" :autofocus="!isUpdateDialog" counter="30"></v-text-field>
+                              :rules="[rules.required, rules.counter]"
+                              :error-messages="errors" :autofocus="!isUpdateDialog" counter="50"></v-text-field>
               </ValidationProvider>
               <span>Python function</span>
               <MonacoEditor
@@ -46,18 +47,15 @@
             <v-card-actions>
               <v-autocomplete label="Validate with" :items="datasets" item-text="name" item-value="id"
                               v-model="selectedDatasetId" style="max-width: 300px">
-                <template v-slot:append-outer>
-
-                  <v-tooltip bottom>
-                    <template v-slot:activator="{ on, attrs }">
-                      <v-btn text v-on="on" v-bind="attrs" @click="validateCode">
-                        Validate
-                      </v-btn>
-                    </template>
-                    <span>Runs the function on a few rows from the selected dataset to validate it.</span>
-                  </v-tooltip>
-                </template>
               </v-autocomplete>
+              <v-tooltip bottom>
+                <template v-slot:activator="{ on, attrs }">
+                  <v-btn text v-on="on" v-bind="attrs" @click="validateCode" :disabled="selectedDatasetId === -1">
+                    Validate
+                  </v-btn>
+                </template>
+                <span>Runs the function on a few rows from the selected dataset to validate it.</span>
+              </v-tooltip>
               <v-spacer></v-spacer>
               <v-btn color="error" text @click="closeSliceDialog()">Cancel</v-btn>
               <v-btn color="primary" text type="submit">
@@ -117,6 +115,11 @@ const editorOptions: IEditorOptions = {
   ...getCurrentInstance()?.proxy.$root.monacoOptions,
   minimap: {enabled: false},
   suggest: {preview: false}
+}
+
+const rules = {
+  counter: (value) => value.length <= 50 || 'Max 50 characters',
+  required: (value) => !!value || 'Required'
 }
 
 const items = computed(() => {
