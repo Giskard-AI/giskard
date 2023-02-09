@@ -1,6 +1,6 @@
 package ai.giskard.service;
 
-import ai.giskard.domain.ColumnMeaning;
+import ai.giskard.domain.FeatureType;
 import ai.giskard.domain.InspectionSettings;
 import ai.giskard.domain.ml.Dataset;
 import ai.giskard.domain.ml.Inspection;
@@ -45,6 +45,8 @@ public class ModelService {
     public RunModelForDataFrameResponse predict(ProjectModel model, Dataset dataset, Map<String, String> features) {
         RunModelForDataFrameResponse response;
         try (MLWorkerClient client = mlWorkerService.createClient(model.getProject().isUsingInternalWorker())) {
+            //UploadStatus modelUploadStatus = mlWorkerService.upload(client, model);
+            //assert modelUploadStatus.getCode().equals(StatusCode.Ok) : "Failed to upload model";
             response = getRunModelForDataFrameResponse(model, dataset, features, client);
         }
         return response;
@@ -62,8 +64,8 @@ public class ModelService {
         if (dataset.getTarget() != null) {
             requestBuilder.setTarget(dataset.getTarget());
         }
-        if (dataset.getColumnMeanings() != null) {
-            requestBuilder.putAllColumnMeanings(Maps.transformValues(dataset.getColumnMeanings(), ColumnMeaning::getName));
+        if (dataset.getFeatureTypes() != null) {
+            requestBuilder.putAllFeatureTypes(Maps.transformValues(dataset.getFeatureTypes(), FeatureType::getName));
         }
         if (dataset.getColumnTypes() != null) {
             requestBuilder.putAllColumnTypes(dataset.getColumnTypes());
@@ -92,7 +94,7 @@ public class ModelService {
                     .setModel(grpcMapper.createRef(model))
                     .setFeatureName(featureName)
                     .putAllColumns(features)
-                    .putAllColumnMeanings(Maps.transformValues(dataset.getColumnMeanings(), ColumnMeaning::getName))
+                    .putAllFeatureTypes(Maps.transformValues(dataset.getFeatureTypes(), FeatureType::getName))
                     .setNSamples(inspectionSettings.getLimeNumberSamples())
                     .build()
             );

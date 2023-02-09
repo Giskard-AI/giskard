@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3.1.0
+        uses: actions/checkout@v3.3.0
 
       - name: Set up Docker Buildx
         id: builder
@@ -33,9 +33,8 @@ jobs:
 
       - name: Login to Docker registry
         uses: docker/login-action@v2
-        if: ${{ steps.extract_branch.outputs.branch == 'main' }}
         with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          username: giskardai
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Build and push
@@ -43,13 +42,13 @@ jobs:
         env:
           TAG: dev
         with:
-          push: ${{ steps.extract_branch.outputs.branch == 'main' }}
+          push: true
           set: |
+            *.attest=type=provenance,enabled=false
             *.platform=linux/amd64
             *.platform=linux/arm64
 
       - name: Invoke deployment hook
-        if: ${{ steps.extract_branch.outputs.branch == 'main' }}
         run: |
           curl -L --silent --max-time 900 ${{ secrets.TEST_SERVER_WEBHOOK_URL_BASE }}/redeploy-dev
 

@@ -2,14 +2,12 @@ package ai.giskard.web.dto.user;
 
 import com.dataiku.j2ts.annotations.UIModel;
 import com.dataiku.j2ts.annotations.UINullable;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.validation.constraints.Email;
 import javax.validation.constraints.Size;
-import java.util.Set;
 
 /**
  * A DTO representing a user, with his authorities.

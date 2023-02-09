@@ -24,36 +24,34 @@
 </template>
 
 <script lang="ts" setup>
-import {readLoginError} from '@/store/main/getters';
-import {dispatchLogIn} from '@/store/main/actions';
-import {commitAddNotification} from '@/store/main/mutations';
-import store from '@/store';
 import {computed, ref} from "vue";
+import {useUserStore} from "@/stores/user";
+import {useMainStore} from "@/stores/main";
+
+const userStore = useUserStore();
+const mainStore = useMainStore();
 
 
 const isLoggingIn = ref<boolean>(false);
 const login = ref<string>('');
 const password = ref<string>('');
 const loginError = computed(() => {
-  return readLoginError(store);
+  return userStore.loginError;
 });
 
 async function submit() {
   if (login.value && password.value) {
     try {
       isLoggingIn.value = true;
-      await dispatchLogIn(store, {username: login.value, password: password.value});
+      await userStore.login({username: login.value, password: password.value});
     } finally {
       isLoggingIn.value = false;
     }
   } else {
-    commitAddNotification(store, {
+    mainStore.addNotification({
       content: 'Please enter credentials',
       color: 'error',
     });
   }
 }
 </script>
-
-<style scoped>
-</style>

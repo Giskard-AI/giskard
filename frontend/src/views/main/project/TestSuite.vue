@@ -99,7 +99,3 @@ export default class TestSuite extends Vue {
   }
 }
 </script>
-
-<style scoped>
-
-</style>
