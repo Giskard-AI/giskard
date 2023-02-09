@@ -53,7 +53,7 @@
       <v-spacer/>
 
       <SliceDropdown :project-id="projectId" :is-project-owner-or-admin="isProjectOwnerOrAdmin" @onSelect="applySlice"
-                     @onClear="clearSlice" :loading="loadingSlice"
+                     @onClear="clearSlice" :loading="loadingSlice" :default-dataset-id="inspection.dataset.id"
                      class="mr-3 "/>
 
       <InspectionFilter
