@@ -34,7 +34,7 @@
         </v-btn>
     </div>
     <div>
-      <v-text-field v-if="link" v-model="link" ref="link" readonly dense outlined hide-details class="my-0"></v-text-field>
+      <v-text-field v-if="link" v-model="link" readonly dense outlined hide-details class="my-0"></v-text-field>
       <span v-if="link" class="caption"><em>Note: link will be valid 72 hours</em></span>
     </div>
     </v-card-text>
