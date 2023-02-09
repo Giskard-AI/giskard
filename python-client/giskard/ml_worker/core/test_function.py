@@ -7,7 +7,7 @@ import pickle
 import posixpath
 import sys
 from pathlib import Path
-from typing import Any
+from typing import Any, List
 
 from giskard import test
 from giskard.client.giskard_client import GiskardClient
@@ -59,10 +59,14 @@ class TestFunction:
                 if client is not None:
                     client.log_artifacts(local_dir, posixpath.join("global", "tests", self.meta.uuid))
 
-        client.save_test_function_meta(self.meta.uuid,
-                                       self.meta)
+        client.save_test_function_meta(self.meta)
 
         return self.meta.uuid
+
+    @classmethod
+    def save_all(cls, client: GiskardClient, test_function_metas: List[TestFunctionMeta]):
+        client.save_test_function_registry(test_function_metas)
+
 
     @classmethod
     def load(cls, client: GiskardClient, func_uuid: str):
