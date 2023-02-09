@@ -86,7 +86,8 @@ interface Props {
   projectId: number,
   loading?: boolean,
   create?: boolean,
-  isProjectOwnerOrAdmin?: boolean
+  isProjectOwnerOrAdmin?: boolean,
+  defaultDatasetId?: number
 }
 
 const props = defineProps<Props>();
@@ -107,6 +108,9 @@ const editor = ref<any | null>(null);
 
 onMounted(() => {
   loadSlices();
+  if (props.defaultDatasetId) {
+    selectedDatasetId.value = props.defaultDatasetId;
+  }
 })
 
 
