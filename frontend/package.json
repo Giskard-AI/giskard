@@ -27,10 +27,10 @@
     "monaco-editor": "^0.34.0",
     "mousetrap": "^1.6.5",
     "numeral": "^2.0.6",
+    "pinia": "^2.0.28",
     "postcss": "^8",
     "register-service-worker": "^1.7.2",
     "rrweb-snapshot": "^1.1.14",
-    "typesafe-vuex": "^3.2.2",
     "vee-validate": "^3.4.13",
     "vue": "^2.7.0",
     "vue-class-component": "^7.2.6",
@@ -44,7 +44,7 @@
     "vue-virtual-collection": "1.5.0",
     "vuetify": "^2.6.13",
     "vuetify-dialog": "^2.0.17",
-    "vuex": "^3.6.2"
+    "vue-virtual-collection": "1.5.0"
   },
   "devDependencies": {
     "@babel/core": "^7.19.3",

@@ -1,11 +1,7 @@
 name: Build
 on:
   push:
-    branches:
-      - main
   pull_request:
-    branches:
-      - main
   workflow_dispatch:
 
 jobs:
@@ -15,7 +11,7 @@ jobs:
     steps:
       - name: Check if organization member
         id: is_organization_member
-        uses: JamesSingleton/is-organization-member@1.0.0
+        uses: JamesSingleton/is-organization-member@1.0.1
         with:
           organization: Giskard-AI
           username: ${{ github.actor }}
@@ -48,7 +44,7 @@ jobs:
         id: extract_branch
 
       - name: Checkout code
-        uses: actions/checkout@v3.1.0
+        uses: actions/checkout@v3.3.0
       #        with:
       #          ref: ${{ github.event.pull_request.head.sha }}
 
@@ -113,7 +109,7 @@ jobs:
           value: '${{ steps.read_toml.outputs.value }}.dev${{ steps.current_date.outputs.CURRENT_DATE }}'
 
       - name: Build
-        run: ./gradlew build jacocoTestReport --info --parallel
+        run: ./gradlew build test integrationTest :python-client:package jacocoTestReport --info --parallel
 
       - name: Analyze with Sonar
         if: ${{ github.actor != 'dependabot[bot]' }}
