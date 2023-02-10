@@ -15,6 +15,7 @@ import psutil
 import tqdm
 
 import giskard
+import ml_worker_pb2
 from giskard.client.giskard_client import GiskardClient
 from giskard.core.model import Model
 from giskard.ml_worker.core.dataset import Dataset
@@ -24,25 +25,7 @@ from giskard.ml_worker.core.model_explanation import (
 )
 from giskard.ml_worker.exceptions.IllegalArgumentError import IllegalArgumentError
 from giskard.ml_worker.exceptions.giskard_exception import GiskardException
-from giskard.ml_worker.generated.ml_worker_pb2 import (
-    DataFrame,
-    DataRow,
-    EchoMsg,
-    ExplainRequest,
-    ExplainResponse,
-    ExplainTextRequest,
-    ExplainTextResponse,
-    MLWorkerInfo,
-    MLWorkerInfoRequest,
-    PlatformInfo,
-    RunModelForDataFrameRequest,
-    RunModelForDataFrameResponse,
-    RunModelRequest,
-    RunModelResponse,
-    RunTestRequest,
-    TestResultMessage,
-    UploadStatus,
-    FileUploadMetadata, FileType, StatusCode, FilterDatasetResponse, )
+from giskard.ml_worker.generated.ml_worker_pb2 import *
 from giskard.ml_worker.generated.ml_worker_pb2_grpc import MLWorkerServicer
 from giskard.ml_worker.testing.registry.registry import tests_registry
 from giskard.ml_worker.utils.logging import Timer
@@ -133,6 +116,9 @@ class MLWorkerServiceImpl(MLWorkerServicer):
             internal_grpc_address=self.address,
             is_remote=self.remote,
         )
+
+    def echo(self, request: ml_worker_pb2.EchoMsg, context: grpc.ServicerContext) -> ml_worker_pb2.EchoMsg:
+        return request
 
     def runAdHocTest(self, request: RunAdHocTestRequest,
                      context: grpc.ServicerContext) -> TestResultMessage:
