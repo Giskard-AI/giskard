@@ -7,7 +7,7 @@ from giskard.client.giskard_client import GiskardClient
 from giskard.core.model import Model
 from giskard.ml_worker.core.dataset import Dataset
 from giskard.ml_worker.core.suite import Suite, SuiteInput
-from giskard.ml_worker.testing.tests.performance import test_auc, test_f1, test_diff_f1
+from giskard.ml_worker.testing.tests.performance import test_auc, test_f1, test_diff_f1, AucTest
 
 url = "http://giskard-host:12345"
 token = "SECRET_TOKEN"
@@ -92,6 +92,14 @@ def test_shared_input(german_credit_data: Dataset, german_credit_model: Model):
              )[0]
 
 
+def test_giskard_test_class(german_credit_data: Dataset, german_credit_model: Model):
+    shared_input = SuiteInput("dataset", Dataset)
+
+    assert Suite() \
+        .add_test(AucTest(actual_slice=shared_input, threshold=0.2)) \
+        .run(model=german_credit_model)[0]
+
+
 @httpretty.activate(verbose=True, allow_net_connect=False)
 def test_save_suite(german_credit_data: Dataset, german_credit_model: Model):
     api_pattern = re.compile(r"http://giskard-host:12345/api/v2/.*")
@@ -106,7 +114,6 @@ def test_save_suite(german_credit_data: Dataset, german_credit_model: Model):
         .add_test(test_auc, threshold=0.2, actual_slice=german_credit_data) \
         .add_test(test_f1, threshold=0.2, actual_slice=german_credit_data) \
         .save(client, 'test_project_key')
-
 
 # def test_save_suite_real(german_credit_data: Dataset, german_credit_model: Model):
 #

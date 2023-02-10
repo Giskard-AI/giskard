@@ -3,6 +3,8 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import Optional, Dict, List
 
+from giskard.ml_worker.core.savable import SavableMeta
+
 
 class SupportedModelTypes(Enum):
     CLASSIFICATION = "classification"
@@ -41,9 +43,8 @@ class TestFunctionArgument:
 
 
 @dataclass
-class TestFunctionMeta:
+class TestFunctionMeta(SavableMeta):
     code: str
-    uuid: str
     name: str
     display_name: str
     module: str

@@ -14,12 +14,12 @@ service MLWorker {
   rpc getInfo(MLWorkerInfoRequest) returns (MLWorkerInfo){}
   rpc runTest (RunTestRequest) returns (TestResultMessage) {}
   rpc runAdHocTest (RunAdHocTestRequest) returns (TestResultMessage) {}
+  rpc runTestSuite (RunTestSuiteRequest) returns (TestSuiteResultMessage) {}
   rpc runModel(RunModelRequest) returns (RunModelResponse) {}
   rpc runModelForDataFrame(RunModelForDataFrameRequest) returns (RunModelForDataFrameResponse) {}
   rpc explain(ExplainRequest) returns (ExplainResponse) {}
   rpc explainText(ExplainTextRequest) returns (ExplainTextResponse) {}
   rpc echo(EchoMsg) returns (EchoMsg){}
-  rpc getTestRegistry(google.protobuf.Empty) returns (TestRegistryResponse) {}
   rpc filterDataset(stream FilterDatasetRequest) returns (stream FilterDatasetResponse) {}
 }
 
@@ -140,6 +140,17 @@ message RunAdHocTestRequest {
   repeated TestArgument arguments = 2;
 }
 
+message RunTestSuiteRequest {
+  repeated string testId = 1;
+  repeated TestArgument globalArguments = 2;
+  repeated FixedTestArgument fixedArguments = 3;
+}
+
+message FixedTestArgument {
+  string testId = 1;
+  repeated TestArgument arguments = 2;
+}
+
 message TestArgument{
   string name = 1;
   oneof argument{
@@ -169,7 +180,6 @@ message Partial_unexpected_counts {
 message NamedSingleTestResult{
   string name = 1;
   SingleTestResult result = 2;
-
 }
 
 
@@ -205,6 +215,11 @@ message SingleTestResult{
 
 message TestResultMessage {
   repeated NamedSingleTestResult results = 1;
+}
+
+message TestSuiteResultMessage {
+  bool is_pass = 1;
+  repeated NamedSingleTestResult results = 2;
 }
 
 message ArtifactRef{
