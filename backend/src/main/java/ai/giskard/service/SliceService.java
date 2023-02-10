@@ -91,7 +91,7 @@ public class SliceService {
     }
 
     private void validateSliceName(String sliceName) {
-        if (sliceName.length() < 1) {
+        if (sliceName == null || sliceName.trim().isEmpty()) {
             throw new IllegalArgumentException("Slice name cannot be empty.");
         }
         if (sliceName.length() > 50) {
