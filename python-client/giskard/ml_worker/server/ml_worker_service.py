@@ -24,7 +24,7 @@ from giskard.ml_worker.core.model_explanation import (
 )
 from giskard.ml_worker.core.suite import Suite
 from giskard.ml_worker.core.test_runner import run_test
-from giskard.ml_worker.core.test_function import TestFunction
+from giskard.ml_worker.core.test_function import GiskardTestReference
 from giskard.ml_worker.core.test_result import TestResult, TestMessageLevel
 from giskard.ml_worker.exceptions.IllegalArgumentError import IllegalArgumentError
 from giskard.ml_worker.exceptions.giskard_exception import GiskardException
