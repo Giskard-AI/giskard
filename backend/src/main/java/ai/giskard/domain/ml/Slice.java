@@ -23,8 +23,7 @@ public class Slice extends AbstractAuditingEntity {
     // Later on this will probably depend on the slice type: From a file, from the interface, from the API ?
 
     @NotNull
-    @Lob
-    @Column
+    @Column(columnDefinition = "VARCHAR")
     private String code;
 
     @ManyToOne
