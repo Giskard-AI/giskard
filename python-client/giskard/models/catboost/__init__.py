@@ -17,8 +17,13 @@ class CatboostModel(MLFlowBasedModel):
         if feature_names is None and hasattr(clf, 'feature_names_'):
             feature_names = list(getattr(clf, 'feature_names_'))
 
-        super().__init__(clf, model_type, data_preprocessing_function, name, feature_names, classification_threshold,
-                         classification_labels)
+        super().__init__(clf=clf,
+                         model_type=model_type,
+                         data_preprocessing_function=data_preprocessing_function,
+                         name=name,
+                         feature_names=feature_names,
+                         classification_threshold=classification_threshold,
+                         classification_labels=classification_labels)
 
     def save_with_mflow(self, local_path, mlflow_meta: mlflow.models.Model):
         if self.is_classification:

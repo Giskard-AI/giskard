@@ -146,7 +146,7 @@ class GiskardClient:
             print(f"Project created with a key : {actual_project_key}")
         return Project(self._session, actual_project_key, actual_project_id, analytics=self.analytics)
 
-    def load_model_meta(self, project_key: str, uuid: str) -> ModelMeta:
+    def load_model_meta(self, project_key: str, uuid: str):
         res = self._session.get(f"project/{project_key}/models/{uuid}").json()
         return res
 
