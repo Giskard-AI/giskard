@@ -173,7 +173,9 @@ class GiskardTestRegistry:
                         default=None if parameters[name].default == inspect.Parameter.empty else parameters[
                             name].default
                     )
-                    for name in parameters},
+                    for name in parameters
+                    if name != 'self'
+                },
                 version=None
             )
             logger.info(f"Registered test function: {full_name}")
