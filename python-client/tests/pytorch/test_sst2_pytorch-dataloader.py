@@ -57,9 +57,12 @@ model = XLMR_BASE_ENCODER.get_model(head=classifier_head).to(device)
 def apply_transform(x):
     return text_transform(x[0]), x[1]
 
-@httpretty.activate(verbose=True, allow_net_connect=False)
-@pytest.mark.skip(reason="WIP")
+@httpretty.activate(verbose=True, allow_net_connect=True)
+#@pytest.mark.skip(reason="WIP")
 def test_sst2_pytorch_dataloader():
+
+    httpretty.register_uri(httpretty.GET, xlmr_vocab_path)
+    httpretty.register_uri(httpretty.GET, xlmr_spm_model_path)
 
     def collate_batch(batch):
         input = F.to_tensor(batch["token_ids"], padding_value=padding_idx).to(device)
