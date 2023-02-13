@@ -58,7 +58,7 @@ def apply_transform(x):
     return text_transform(x[0]), x[1]
 
 @httpretty.activate(verbose=True, allow_net_connect=False)
-@pytest.mark.skip(reason="WIP")
+#@pytest.mark.skip(reason="WIP")
 def test_sst2_pytorch_dataloader():
 
     def collate_batch(batch):
