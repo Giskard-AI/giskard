@@ -133,7 +133,7 @@ const exampleSliceCode: string = `
 def filter_row(row):
     # For example, a dataset that contains a numeric column "age" could be filtered with the following expression:
     # return row['age'] > 60
-    return True;
+    return True
 `;
 
 const items = computed(() => {
