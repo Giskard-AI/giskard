@@ -42,7 +42,7 @@ public class ImportService {
     private final ProjectRepository projectRepository;
 
 
-    private Map<UUID, UUID> saveImportDataset(List<Dataset> datasets, Path pathToMetadataDirectory, Project savedProject) {
+    private Map<UUID, UUID> saveImportDataset(List<Dataset> datasets, Project savedProject) {
         Map<UUID, UUID> mapFormerNewIdDataset = new HashMap<>();
         datasets.forEach(dataset -> {
             UUID formerId = dataset.getId();
@@ -55,7 +55,7 @@ public class ImportService {
         return mapFormerNewIdDataset;
     }
 
-    private Map<UUID, UUID> saveImportModel(List<ProjectModel> models, Path pathToMetadataDirectory, Project savedProject) {
+    private Map<UUID, UUID> saveImportModel(List<ProjectModel> models, Project savedProject) {
         Map<UUID, UUID> mapFormerNewIdModel = new HashMap<>();
         models.forEach(model -> {
             UUID formerId = model.getId();
@@ -107,14 +107,9 @@ public class ImportService {
     }
 
     /**
-     * Copies a folder inside the temporary directory provided into the project's directory, then iterates over subfolders
+     * Copies a folder inside the temporary directory provided into the project's directory,
+     * then iterates over subfolders
      * to rename them according to the provided idMap
-     *
-     * @param newProject
-     * @param metadataTmpDirectory
-     * @param idMap
-     * @param folderName
-     * @throws IOException
      */
     private void copyFilesToProjectFolder(Project newProject, Path metadataTmpDirectory, Map<UUID, UUID> idMap, String folderName) throws IOException {
         Path projectDir = locationService.resolvedProjectHome(newProject.getKey());
@@ -147,8 +142,8 @@ public class ImportService {
         Project savedProject = saveImportProject(project, userNameOwner, projectKey, importedUsersToCurrent);
 
         // Save new objects in memory
-        Map<UUID, UUID> mapFormerNewIdModel = saveImportModel(models, pathMetadataDirectory, savedProject);
-        Map<UUID, UUID> mapFormerNewIdDataset = saveImportDataset(datasets, pathMetadataDirectory, savedProject);
+        Map<UUID, UUID> mapFormerNewIdModel = saveImportModel(models, savedProject);
+        Map<UUID, UUID> mapFormerNewIdDataset = saveImportDataset(datasets, savedProject);
         saveImportFeedback(feedbacks, savedProject, mapFormerNewIdModel, mapFormerNewIdDataset, importedUsersToCurrent);
         saveImportTestSuites(testSuites, savedProject, mapFormerNewIdModel, mapFormerNewIdDataset);
 
