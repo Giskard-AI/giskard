@@ -8,10 +8,9 @@ from giskard.client.dtos import TestSuiteNewDTO, SuiteTestDTO, TestInputDTO
 from giskard.client.giskard_client import GiskardClient
 from giskard.core.model import Model
 from giskard.ml_worker.core.dataset import Dataset
-from giskard.ml_worker.core.test_runner import run_test
-from giskard.ml_worker.testing.registry.giskard_test import GiskardTest
-from giskard.ml_worker.testing.registry.registry import create_test_function_id
-from giskard.ml_worker.core.test_function import GiskardTestReference
+from giskard.ml_worker.core.test_result import TestResult, TestMessageLevel
+from giskard.ml_worker.testing.registry.giskard_test import GiskardTest, Test, GiskardTestMethod
+from ml_worker_pb2 import SingleTestResult, TestMessageType, Partial_unexpected_counts, TestMessage
 
 logger = logging.getLogger(__name__)
 
@@ -27,7 +26,7 @@ class SuiteInput:
 
 @dataclass
 class TestPartial:
-    function_reference: GiskardTestReference
+    giskard_test: GiskardTest
     provided_inputs: Mapping[str, Any]
 
 
@@ -64,14 +63,19 @@ class Suite:
 
         for test_partial in self.tests:
             test_params = self.create_test_params(test_partial, suite_run_args)
-            res.append(run_test(test_partial.function_reference.func, test_params))
+            res.append(map_result_to_single_test_result(test_partial.giskard_test.set_params(**test_params).execute()))
 
         return single_binary_result(res), res
 
     @staticmethod
     def create_test_params(test_partial, kwargs):
+        if isinstance(test_partial.giskard_test, GiskardTestMethod):
+            available_params = test_partial.giskard_test.params.items()
+        else:
+            available_params = inspect.signature(test_partial.giskard_test.set_params).parameters.items()
+
         test_params = {}
-        for pname, p in inspect.signature(test_partial.function_reference.func).parameters.items():
+        for pname, p in available_params:
             if pname in test_partial.provided_inputs:
                 if isinstance(test_partial.provided_inputs[pname], SuiteInput):
                     test_params[pname] = kwargs[test_partial.provided_inputs[pname].name]
@@ -95,13 +99,13 @@ class Suite:
                     inputs[pname] = TestInputDTO(name=pname, value=p)
 
             suite_tests.append(SuiteTestDTO(
-                testUuid=t.function_reference.save(client),
+                testUuid=t.giskard_test.upload(client),
                 testInputs=inputs
             ))
         self.id = client.save_test_suite(TestSuiteNewDTO(name=self.name, project_key=project_key, tests=suite_tests))
         return self
 
-    def add_test(self, test_fn: Union[Callable[[Any], Union[bool]], GiskardTestReference, GiskardTest], **params):
+    def add_test(self, test_fn: Test, **params):
         """
         Add a test to the Suite
         :param test_fn: A test method that will be executed or an instance of a GiskardTest class
@@ -109,42 +113,80 @@ class Suite:
           will be ignored if test_fn is an instance of GiskardTest
         :return: The current instance of the test Suite to allow chained call
         """
-        # TODO fixme
-        func_ref = test_fn
-        if isinstance(test_fn, GiskardTest):
-            params = {k: v for k, v in test_fn.__dict__.items() if v is not None}
-            test_fn = type(test_fn)
+        if isinstance(test_fn, GiskardTestMethod):
+            params = test_fn.params
+        elif isinstance(test_fn, GiskardTest):
+            params = {
+                k: test_fn.__dict__[k] for k, v
+                in inspect.signature(test_fn.set_params).parameters.items()
+                if test_fn.__dict__[k] is not None
+            }
+        else:
+            test_fn = GiskardTestMethod(test_fn)
 
-        if not isinstance(test_fn, GiskardTestReference):
-            func_ref = GiskardTestReference.of(test_fn)
-
-        self.tests.append(TestPartial(func_ref, params))
+        self.tests.append(TestPartial(test_fn, params))
         return self
 
     def find_required_params(self):
         res = {}
+
         for test_partial in self.tests:
-            for p in inspect.signature(test_partial.function_reference.func).parameters.values():
+            if isinstance(test_partial.giskard_test, GiskardTestMethod):
+                available_params = test_partial.giskard_test.params.values()
+            else:
+                available_params = inspect.signature(test_partial.giskard_test.set_params).parameters.values()
+
+            for p in available_params:
                 if p.default == inspect.Signature.empty:
                     if p.name not in test_partial.provided_inputs:
                         res[p.name] = p.annotation
                     elif isinstance(test_partial.provided_inputs[p.name], SuiteInput):
                         if test_partial.provided_inputs[p.name].type != p.annotation:
                             raise ValueError(
-                                f'Test {test_partial.function_reference.func.__name__} requires {p.name} input to '
+                                f'Test {test_partial.giskard_test.func.__name__} requires {p.name} input to '
                                 f'be {p.annotation.__name__} '
                                 f'but {test_partial.provided_inputs[p.name].type.__name__} was provided')
                         res[test_partial.provided_inputs[p.name].name] = p.annotation
         return res
 
 
-class GiskardMethodTest(GiskardTest):
-    test_fn: Any # <- save as pickle or reference
-    params: Any
-
-
-    def __init__(self, test_fn, **kwarg):
-        self.test
-
-    def run:
-        test_fn
+def map_result_to_single_test_result(result) -> SingleTestResult:
+    if isinstance(result, SingleTestResult):
+        return result
+    elif isinstance(result, TestResult):
+        return SingleTestResult(
+            passed=result.passed,
+            messages=[
+                TestMessage(
+                    type=TestMessageType.ERROR if message.type == TestMessageLevel.ERROR else TestMessageType.INFO,
+                    text=message.text
+                )
+                for message
+                in result.messages
+            ],
+            props=result.props,
+            metric=result.metric,
+            missing_count=result.missing_count,
+            missing_percent=result.missing_percent,
+            unexpected_count=result.unexpected_count,
+            unexpected_percent=result.unexpected_percent,
+            unexpected_percent_total=result.unexpected_percent_total,
+            unexpected_percent_nonmissing=result.unexpected_percent_nonmissing,
+            partial_unexpected_index_list=[
+                Partial_unexpected_counts(
+                    value=puc.value,
+                    count=puc.count
+                )
+                for puc
+                in result.partial_unexpected_index_list
+            ],
+            unexpected_index_list=result.unexpected_index_list,
+            output_df=result.output_df,
+            number_of_perturbed_rows=result.number_of_perturbed_rows,
+            actual_slices_size=result.actual_slices_size,
+            reference_slices_size=result.reference_slices_size,
+        )
+    elif isinstance(result, bool):
+        return SingleTestResult(passed=result)
+    else:
+        raise ValueError("Result of test can only be 'GiskardTestResult' or 'bool'")
