@@ -111,7 +111,7 @@ class TestFunctionMeta(SavableMeta):
 
     @classmethod
     def from_json(cls, json):
-        cls(
+        return cls(
             uuid=json["uuid"],
             name=json["name"],
             display_name=json["displayName"],

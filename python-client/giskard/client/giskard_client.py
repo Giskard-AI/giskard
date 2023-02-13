@@ -282,13 +282,13 @@ class GiskardClient:
         )
 
     def save_meta(self, endpoint: str, meta: SMT) -> SMT:
-        return meta.from_json(self._session.post(endpoint, json=meta.to_json()).json())
+        return meta.from_json(self._session.put(endpoint, json=meta.to_json()).json())
 
     def load_meta(self, endpoint: str, meta_class: SMT) -> TestFunctionMeta:
         return meta_class.from_json(self._session.get(endpoint).json())
 
     def save_test_function_registry(self, metas: List[TestFunctionMeta]):
-        self._session.post("test-functions/registry", json=[meta.to_json() for meta in metas])
+        self._session.post("tests/registry", json=[meta.to_json() for meta in metas])
 
         print(
             f"Functions successfully uploaded = {len(metas)} functions"
