@@ -108,4 +108,3 @@ class GiskardTestMethod(GiskardTest):
 
     def execute(self) -> Result:
         return self.data(**self.params)
-

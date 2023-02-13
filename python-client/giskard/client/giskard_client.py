@@ -1,9 +1,10 @@
 """API Client to interact with the Giskard app"""
+import inspect
 import logging
 import os
 import posixpath
 from pathlib import Path
-from typing import List
+from typing import List, Any
 from urllib.parse import urljoin
 
 from mlflow.store.artifact.artifact_repo import verify_artifact_path
@@ -18,7 +19,7 @@ from giskard.client.analytics_collector import GiskardAnalyticsCollector, anonym
 from giskard.client.dtos import TestSuiteNewDTO
 from giskard.client.project import Project
 from giskard.client.python_utils import warning
-from giskard.core.core import ModelMeta, DatasetMeta, TestFunctionMeta, TestFunctionArgument, test_function_meta_to_json
+from giskard.core.core import ModelMeta, DatasetMeta, TestFunctionMeta, TestFunctionArgument, SMT
 from giskard.core.core import SupportedModelTypes
 
 logger = logging.getLogger(__name__)
@@ -280,49 +281,14 @@ class GiskardClient:
             f"Dataset successfully uploaded to project key '{project_key}' with ID = {dataset_id}"
         )
 
-    def save_test_function_meta(self, meta: TestFunctionMeta):
-        self._session.post("test-functions", json=test_function_meta_to_json(meta))
+    def save_meta(self, endpoint: str, meta: SMT) -> SMT:
+        return meta.from_json(self._session.post(endpoint, json=meta.to_json()).json())
 
-        self.analytics.track(
-            "Upload test function",
-            {
-                "uuid": anonymize(meta.uuid),
-                "name": anonymize(meta.name),
-                "module": anonymize(meta.module),
-                "tags": anonymize(meta.tags)
-            },
-        )
-
-        print(
-            f"Function successfully uploaded with UUID = {meta.uuid}"
-        )
-
-    def load_test_function_meta(self, uuid: str) -> TestFunctionMeta:
-        res = self._session.get(f"test-functions/{uuid}").json()
-        return TestFunctionMeta(
-            uuid=res["uuid"],
-            name=res["name"],
-            display_name=res["displayName"],
-            module=res["module"],
-            doc=res["doc"],
-            module_doc=res["moduleDoc"],
-            code=res["code"],
-            tags=res["tags"],
-            version=res["version"],
-            fn=None,
-            args=
-            {
-                arg["name"]: TestFunctionArgument(
-                    name=arg["name"],
-                    type=arg["type"],
-                    default=arg["defaultValue"],
-                    optional=arg["optional"]
-                ) for arg in res["args"]
-            }
-        )
+    def load_meta(self, endpoint: str, meta_class: SMT) -> TestFunctionMeta:
+        return meta_class.from_json(self._session.get(endpoint).json())
 
     def save_test_function_registry(self, metas: List[TestFunctionMeta]):
-        self._session.post("test-functions/registry", json=[test_function_meta_to_json(meta) for meta in metas])
+        self._session.post("test-functions/registry", json=[meta.to_json() for meta in metas])
 
         print(
             f"Functions successfully uploaded = {len(metas)} functions"
