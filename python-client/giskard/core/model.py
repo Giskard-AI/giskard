@@ -39,6 +39,7 @@ class ModelPredictionResults(BaseModel):
 
 class Model(ABC):
     should_save_model_class = False
+    id: uuid.UUID = None
 
     def __init__(self,
                  model_type: Union[SupportedModelTypes, str],
@@ -83,7 +84,7 @@ class Model(ABC):
         else:
             return cls
 
-    def save_meta(self, model_uuid, local_path):
+    def save_meta(self, local_path):
         with open(Path(local_path) / 'giskard-model-meta.yaml', 'w') as f:
             yaml.dump(
                 {
@@ -93,19 +94,17 @@ class Model(ABC):
                     "threshold": self.meta.classification_threshold,
                     "feature_names": self.meta.feature_names,
                     "classification_labels": self.meta.classification_labels,
-                    "id": model_uuid,
+                    "id": self.id,
                     "name": self.meta.name,
                     "size": get_size(local_path),
                 }, f, default_flow_style=False)
 
-    def save(self, local_path, model_uuid: Optional[uuid.UUID] = None) -> uuid.UUID:
-        if model_uuid is None:
-            model_uuid = uuid.uuid4()
+    def save(self, local_path: Union[str, Path]) -> None:
+        if self.id is None:
+            self.id = uuid.uuid4()
         if self.should_save_model_class:
             self.save_model_class(local_path)
-        self.save_meta(model_uuid, local_path)
-
-        return model_uuid
+        self.save_meta(local_path)
 
     def save_model_class(self, local_path):
         class_file = Path(local_path) / MODEL_CLASS_PKL
@@ -220,21 +219,20 @@ class WrapperModel(Model, ABC):
     def clf_predict(self, df):
         ...
 
-    def upload(self, client: GiskardClient, project_key, validate_ds=None):
+    def upload(self, client: GiskardClient, project_key, validate_ds=None) -> None:
         from giskard.core.model_validation import validate_model
 
         validate_model(model=self, validate_ds=validate_ds)
         with tempfile.TemporaryDirectory(prefix="giskard-model-") as f:
-            model_uuid = self.save(f)
+            self.save(f)
 
             if client is not None:
-                client.log_artifacts(f, posixpath.join(project_key, "models", str(model_uuid)))
+                client.log_artifacts(f, posixpath.join(project_key, "models", str(self.id)))
                 client.save_model_meta(project_key,
-                                       model_uuid,
+                                       self.id,
                                        self.meta,
                                        platform.python_version(),
                                        get_size(f))
-        return model_uuid
 
     @classmethod
     def download(cls, client: GiskardClient, project_key, model_id):
@@ -261,12 +259,11 @@ class WrapperModel(Model, ABC):
             **meta.__dict__
         )
 
-    def save(self, local_path, model_uuid: Optional[uuid.UUID] = None) -> uuid.UUID:
-        model_uuid = super().save(local_path)
+    def save(self, local_path: Union[str, Path]) -> None:
+        super().save(local_path)
 
         if self.data_preprocessing_function:
             self.save_data_preprocessing_function(local_path)
-        return model_uuid
 
     def save_data_preprocessing_function(self, local_path: Union[str, Path]):
         with open(Path(local_path) / "giskard-data-prep.pkl", 'wb') as f:
@@ -282,14 +279,15 @@ class WrapperModel(Model, ABC):
 
 
 class MLFlowBasedModel(WrapperModel, ABC):
-    def save(self, local_path, model_uuid: Optional[uuid.UUID] = None) -> uuid.UUID:
+    def save(self, local_path: Union[str, Path]) -> None:
         """
         MLFlow requires a target directory to be empty before the model is saved, thus we have to call
         save_with_mflow first and then save the rest of the metadata
         """
-        model_uuid = uuid.uuid4()
-        self.save_with_mflow(local_path, mlflow.models.Model(model_uuid=str(model_uuid)))
-        return super().save(local_path, model_uuid)
+        if not self.id:
+            self.id = uuid.uuid4()
+        self.save_with_mflow(local_path, mlflow.models.Model(model_uuid=str(self.id)))
+        super().save(local_path)
 
     @abstractmethod
     def save_with_mflow(self, local_path, mlflow_meta: mlflow.models.Model):

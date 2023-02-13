@@ -1,6 +1,6 @@
 import re
-import uuid
-from typing import Optional
+from pathlib import Path
+from typing import Union
 
 import httpretty
 
@@ -30,8 +30,8 @@ def test_custom_model(linear_regression_diabetes: Model):
         def clf_predict(self, df):
             pass
 
-        def save(self, local_path, model_uuid: Optional[uuid.UUID] = None) -> uuid.UUID:
-            return super().save(local_path, model_uuid)
+        def save(self, local_path: Union[str, Path]) -> None:
+            super().save(local_path)
 
         should_save_model_class = True
 
