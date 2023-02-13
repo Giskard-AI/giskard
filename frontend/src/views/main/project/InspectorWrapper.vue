@@ -397,6 +397,7 @@ export default class InspectorWrapper extends Vue {
     //this.assignCurrentRow(false);
     await this.updateRow(true);
     this.loadingSlice = false;
+    mixpanel.track('Apply slice', {sliceId: this.filter.sliceId});
   }
 
   private async clearSlice() {

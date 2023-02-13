@@ -78,6 +78,7 @@ import {DatasetDTO, SliceDTO} from "@/generated-sources";
 import {api} from "@/api";
 import {editor} from "monaco-editor";
 import {useMainStore} from "@/stores/main";
+import mixpanel from "mixpanel-browser";
 import IEditorOptions = editor.IEditorOptions;
 
 const mainStore = useMainStore();
@@ -218,6 +219,7 @@ async function submit() {
     const newSlice = await api.createSlice(props.projectId, sliceName.value, sliceCode.value);
     slices.value.push(newSlice);
     slice.value = newSlice;
+    mixpanel.track('Create slice', {sliceName: newSlice.name, sliceId: newSlice.id});
   }
 
   closeSliceDialog();
