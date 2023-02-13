@@ -6,7 +6,6 @@ import grpc
 from pydantic import AnyHttpUrl
 
 from giskard.client.giskard_client import GiskardClient
-from giskard.ml_worker.core.test_function import GiskardTestReference
 from giskard.ml_worker.utils.error_interceptor import ErrorInterceptor
 from giskard.ml_worker.testing.registry.registry import load_plugins, tests_registry
 from giskard.settings import settings
@@ -44,7 +43,7 @@ async def start_ml_worker(is_server=False, backend_url: AnyHttpUrl = None, api_k
 
     client = GiskardClient(backend_url, api_key) if api_key != 'INTERNAL_ML_WORKER' else None
 
-    GiskardTestReference.save_all(client, tests_registry.get_all().values())
+    client.save_test_function_registry(tests_registry.get_all().values())
 
     server, grpc_server_port = await _start_grpc_server(client, is_server)
     if not is_server:
