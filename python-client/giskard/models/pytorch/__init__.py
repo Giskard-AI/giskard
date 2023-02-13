@@ -43,7 +43,7 @@ class PyTorchModel(Model):
                  classification_labels=None) -> None:
 
         super().__init__(clf, model_type, name, data_preprocessing_function, model_postprocessing_function,
-                         feature_names, classification_threshold, classification_labels, loader_module, loader_class)
+                         feature_names, classification_threshold, classification_labels)
         self.device = device
         self.torch_dtype = torch_dtype
 
