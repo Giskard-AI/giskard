@@ -147,7 +147,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
         arguments = self.parse_test_arguments(request.arguments)
 
         logger.info(f"Executing {test.meta.display_name or f'{test.meta.module}.{test.meta.name}'}")
-        test_result = test.set_params(arguments).execute()
+        test_result = test.set_params(**arguments).execute()
 
         return TestResultMessage(results=[
             NamedSingleTestResult(name=test.meta.uuid, result=map_result_to_single_test_result(test_result))
@@ -180,9 +180,9 @@ class MLWorkerServiceImpl(MLWorkerServicer):
 
         return TestSuiteResultMessage(is_pass=is_pass, results=named_single_test_result)
 
-    def parse_test_arguments(self, request):
+    def parse_test_arguments(self, request_arguments):
         arguments = {}
-        for arg in request.arguments:
+        for arg in request_arguments:
             if arg.HasField('dataset'):
                 value = Dataset.load(self.client, arg.dataset.project_key, arg.dataset.id)
             elif arg.HasField('model'):

@@ -66,7 +66,7 @@ class GiskardTest(Savable[Any, TestFunctionMeta]):
         return get_test_uuid(type(self))
 
     def _should_save_locally(self) -> bool:
-        return self.__module__.startswith('__main__')
+        return self.data.__module__.startswith('__main__')
 
     def _should_upload(self) -> bool:
         return self.meta.version is None
