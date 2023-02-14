@@ -134,8 +134,8 @@
                   <td>{{ epochToDate(currentWorker.processStartTime) }}</td>
                 </tr>
                 <tr>
-                  <td>Internal ML Worker port</td>
-                  <td>{{ currentWorker.internalGrpcPort }}</td>
+                  <td>Internal ML Worker address</td>
+                  <td>{{ currentWorker.internalGrpcAddress }}</td>
                 </tr>
                 <tr>
                   <td>Architecture</td>

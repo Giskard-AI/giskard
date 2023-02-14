@@ -51,7 +51,7 @@ def enron_test_data(enron_data):
 
 
 @pytest.fixture()
-def enron_model(enron_data) -> Model:
+def enron_model(enron_data) -> SKLearnModel:
     timer = Timer()
 
     columns_to_scale = [key for key in input_types.keys() if input_types[key] == "numeric"]
