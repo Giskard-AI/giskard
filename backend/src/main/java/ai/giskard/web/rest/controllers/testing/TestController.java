@@ -7,9 +7,11 @@ import ai.giskard.domain.ml.testing.Test;
 import ai.giskard.domain.ml.testing.TestExecution;
 import ai.giskard.ml.MLWorkerClient;
 import ai.giskard.repository.ProjectRepository;
-import ai.giskard.repository.ml.*;
+import ai.giskard.repository.ml.TestExecutionRepository;
+import ai.giskard.repository.ml.TestRepository;
+import ai.giskard.repository.ml.TestSuiteRepository;
 import ai.giskard.service.CodeTestTemplateService;
-import ai.giskard.service.GRPCMapper;
+import ai.giskard.service.TestArgumentService;
 import ai.giskard.service.TestService;
 import ai.giskard.service.ml.MLWorkerService;
 import ai.giskard.web.dto.RunAdhocTestRequest;
@@ -28,8 +30,11 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.io.IOException;
-import java.util.*;
 import java.util.stream.Collectors;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 import static ai.giskard.web.rest.errors.Entity.TEST_FUNCTION;
 import static ai.giskard.web.rest.errors.Entity.TEST_SUITE;
@@ -50,7 +55,7 @@ public class TestController {
     private final ModelRepository modelRepository;
     private final TestFunctionRepository testFunctionRepository;
     private final GRPCMapper grpcMapper;
-
+    private final TestArgumentService testArgumentService;
     private final GiskardMapper giskardMapper;
 
     @GetMapping("")
@@ -123,36 +128,8 @@ public class TestController {
             RunAdHocTestRequest.Builder builder = RunAdHocTestRequest.newBuilder()
                 .setTestUuid(request.getTestUuid().toString());
 
-            for (Map.Entry<String, Object> entry : request.getInputs().entrySet()) {
-                String inputName = entry.getKey();
-                Object inputValue = entry.getValue();
-                TestArgument.Builder argumentBuilder = TestArgument.newBuilder();
-                argumentBuilder.setName(inputName);
-                switch (argumentTypes.get(inputName)) {
-                    case "Dataset" -> {
-                        String projectKey = datasetRepository.getById(UUID.fromString((String) inputValue)).getProject().getKey();
-                        argumentBuilder.setDataset(
-                            ArtifactRef.newBuilder()
-                                .setProjectKey(projectKey)
-                                .setId((String) inputValue)
-                                .build()
-                        );
-                    }
-                    case "Model" -> {
-                        String projectKey = modelRepository.getById(UUID.fromString((String) inputValue)).getProject().getKey();
-                        argumentBuilder.setModel(
-                            ArtifactRef.newBuilder()
-                                .setProjectKey(projectKey)
-                                .setId((String) inputValue)
-                                .build()
-                        );
-                    }
-                    case "float" -> argumentBuilder.setFloat(Float.parseFloat(String.valueOf(inputValue)));
-                    case "string" -> argumentBuilder.setString((String) inputValue);
-                    default ->
-                        throw new IllegalArgumentException(String.format("Unknown test execution input type %s", argumentTypes.get(inputName)));
-                }
-                builder.addArguments(argumentBuilder.build());
+            for (Map.Entry<String, String> entry : request.getInputs().entrySet()) {
+                builder.addArguments(testArgumentService.buildTestArgument(argumentTypes, entry.getKey(), entry.getValue()));
             }
 
             TestResultMessage testResultMessage = client.getBlockingStub().runAdHocTest(builder.build());
