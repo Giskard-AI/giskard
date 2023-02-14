@@ -1,11 +1,12 @@
 package ai.giskard.service;
 
-import ai.giskard.domain.TestFunctionArgument;
 import ai.giskard.domain.FeatureType;
 import ai.giskard.domain.ml.*;
 import ai.giskard.domain.ml.testing.Test;
 import ai.giskard.jobs.JobType;
 import ai.giskard.repository.ml.*;
+import ai.giskard.web.dto.TestFunctionArgumentDTO;
+import ai.giskard.web.dto.TestSuiteNewDTO;
 import ai.giskard.web.dto.mapper.GiskardMapper;
 import ai.giskard.web.dto.ml.TestSuiteDTO;
 import ai.giskard.web.dto.ml.UpdateTestSuiteDTO;
@@ -23,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static ai.giskard.web.rest.errors.Entity.TEST;
 import static ai.giskard.web.rest.errors.Entity.TEST_SUITE;
 
 @Service
@@ -179,6 +181,43 @@ public class TestSuiteService {
         if (!missingInputs.isEmpty()) {
             throw new IllegalArgumentException("Inputs '%s' required to execute test suite %s"
                 .formatted(String.join(", ", missingInputs), testSuite.getName()));
+        }
+    }
+
+    public TestSuiteNewDTO updateTestInputs(long suiteId, String testId, Map<String, String> inputs) {
+        TestSuiteNew testSuite = testSuiteNewRepository.findById(suiteId)
+            .orElseThrow(() -> new EntityNotFoundException(TEST_SUITE, suiteId));
+
+        SuiteTest test = testSuite.getTests().stream()
+            .filter(t -> testId.equals(t.getTestId()))
+            .findFirst().orElseThrow(() -> new EntityNotFoundException(TEST, testId));
+
+        verifyAllInputExists(inputs, test);
+
+        test.getTestInputs().clear();
+        test.getTestInputs().addAll(inputs.entrySet().stream()
+                .filter(entry -> entry.getValue() != null)
+            .map(entry -> new TestInput(entry.getKey(), entry.getValue(), test))
+            .toList());
+
+        return giskardMapper.toDTO(testSuiteNewRepository.save(testSuite));
+    }
+
+    private void verifyAllInputExists(Map<String, String> providedInputs,
+                                      SuiteTest test ) {
+        TestCatalogDTO catalog = testService.listTestsFromRegistry(test.getSuite().getProject().getId());
+        TestDefinitionDTO testDefinition = catalog.getTests().get(test.getTestId());
+
+        Map<String, String> requiredInputs = testDefinition.getArguments().entrySet().stream()
+            .collect(Collectors.toMap(Map.Entry::getKey, entry -> entry.getValue().getType()));
+
+        List<String> nonExistingInputs = providedInputs.keySet().stream()
+            .filter(providedInput -> !requiredInputs.containsKey(providedInput))
+            .toList();
+
+        if (!nonExistingInputs.isEmpty()) {
+            throw new IllegalArgumentException("Inputs '%s' does not exists for test %s"
+                .formatted(String.join(", ", nonExistingInputs), testDefinition.getName()));
         }
     }
 }
