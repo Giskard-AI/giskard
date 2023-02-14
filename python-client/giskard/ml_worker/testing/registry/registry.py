@@ -6,7 +6,6 @@ import os
 import random
 import re
 import sys
-import types
 import uuid
 from dataclasses import dataclass
 from pathlib import Path
@@ -15,7 +14,6 @@ from typing import Optional, Dict, Any
 import cloudpickle
 
 from giskard.core.core import TestFunctionMeta, TestFunctionArgument
-from giskard.ml_worker.core.savable import Savable
 from giskard.ml_worker.testing.registry.udf_repository import udf_repo_available, udf_root
 from giskard.settings import expand_env_var, settings
 
@@ -55,6 +53,16 @@ def generate_func_id(name) -> str:
     rd.seed(hashlib.sha1(name.encode('utf-8')).hexdigest())
     func_id = str(uuid.UUID(int=rd.getrandbits(128), version=4))
     return str(func_id)
+
+
+def get_test_uuid(func) -> str:
+    func_name = f"{func.__module__}.{func.__name__}"
+
+    if func_name.startswith('__main__'):
+        reference = cloudpickle.dumps(func)
+        func_name += hashlib.sha1(reference).hexdigest()
+
+    return generate_func_id(func_name)
 
 
 def load_plugins():
@@ -119,8 +127,9 @@ class GiskardTestRegistry:
 
     def register(self, func: Any, name=None, tags=None):
         full_name = create_test_function_id(func)
+        func_uuid = get_test_uuid(func)
 
-        if full_name not in self._tests:
+        if func_uuid not in self._tests:
             if inspect.isclass(func):
                 parameters = inspect.signature(func.set_params).parameters
             else:
@@ -142,8 +151,6 @@ class GiskardTestRegistry:
                 tags.append("giskard")
             elif full_name.startswith('__main__'):
                 tags.append("pickle")
-                reference = cloudpickle.dumps(func)
-                full_name += hashlib.sha1(reference).hexdigest()
             else:
                 tags.append("custom")
 
@@ -153,9 +160,7 @@ class GiskardTestRegistry:
             except Exception as e:
                 logger.info(f"Failed to extract test function code {full_name}", e)
 
-            func_uuid = generate_func_id(full_name)
-
-            self._tests[func_uuid] = TestFunctionMeta(
+            self.add_func(TestFunctionMeta(
                 uuid=func_uuid,
                 code=code,
                 name=func.__name__,
@@ -177,8 +182,11 @@ class GiskardTestRegistry:
                     if name != 'self'
                 },
                 version=None
-            )
+            ))
             logger.info(f"Registered test function: {full_name}")
+
+    def add_func(self, meta: TestFunctionMeta):
+        self._tests[meta.uuid] = meta
 
     @staticmethod
     def _extract_doc(func):
