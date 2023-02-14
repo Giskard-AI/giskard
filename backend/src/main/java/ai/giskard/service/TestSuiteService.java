@@ -1,11 +1,11 @@
 package ai.giskard.service;
 
 import ai.giskard.domain.FeatureType;
+import ai.giskard.domain.TestFunctionArgument;
 import ai.giskard.domain.ml.*;
 import ai.giskard.domain.ml.testing.Test;
 import ai.giskard.jobs.JobType;
 import ai.giskard.repository.ml.*;
-import ai.giskard.web.dto.TestFunctionArgumentDTO;
 import ai.giskard.web.dto.TestSuiteNewDTO;
 import ai.giskard.web.dto.mapper.GiskardMapper;
 import ai.giskard.web.dto.ml.TestSuiteDTO;
@@ -184,13 +184,13 @@ public class TestSuiteService {
         }
     }
 
-    public TestSuiteNewDTO updateTestInputs(long suiteId, String testId, Map<String, String> inputs) {
+    public TestSuiteNewDTO updateTestInputs(long suiteId, String testUuid, Map<String, String> inputs) {
         TestSuiteNew testSuite = testSuiteNewRepository.findById(suiteId)
             .orElseThrow(() -> new EntityNotFoundException(TEST_SUITE, suiteId));
 
         SuiteTest test = testSuite.getTests().stream()
-            .filter(t -> testId.equals(t.getTestId()))
-            .findFirst().orElseThrow(() -> new EntityNotFoundException(TEST, testId));
+            .filter(t -> testUuid.equals(t.getTestFunction().getUuid().toString()))
+            .findFirst().orElseThrow(() -> new EntityNotFoundException(TEST, testUuid));
 
         verifyAllInputExists(inputs, test);
 
@@ -204,20 +204,19 @@ public class TestSuiteService {
     }
 
     private void verifyAllInputExists(Map<String, String> providedInputs,
-                                      SuiteTest test ) {
-        TestCatalogDTO catalog = testService.listTestsFromRegistry(test.getSuite().getProject().getId());
-        TestDefinitionDTO testDefinition = catalog.getTests().get(test.getTestId());
-
-        Map<String, String> requiredInputs = testDefinition.getArguments().entrySet().stream()
-            .collect(Collectors.toMap(Map.Entry::getKey, entry -> entry.getValue().getType()));
+                                      SuiteTest test) {
+        Set<String> requiredInputs = test.getTestFunction().getArgs().stream()
+            .map(TestFunctionArgument::getName)
+            .collect(Collectors.toSet());
 
         List<String> nonExistingInputs = providedInputs.keySet().stream()
-            .filter(providedInput -> !requiredInputs.containsKey(providedInput))
+            .filter(providedInput -> !requiredInputs.contains(providedInput))
             .toList();
 
         if (!nonExistingInputs.isEmpty()) {
             throw new IllegalArgumentException("Inputs '%s' does not exists for test %s"
-                .formatted(String.join(", ", nonExistingInputs), testDefinition.getName()));
+                .formatted(String.join(", ", nonExistingInputs),
+                    Objects.requireNonNullElse(test.getTestFunction().getDisplayName(), test.getTestFunction().getName())));
         }
     }
 }
