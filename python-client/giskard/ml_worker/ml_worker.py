@@ -8,8 +8,8 @@ from pydantic import AnyHttpUrl
 from giskard import cli_utils
 from giskard.client.giskard_client import GiskardClient
 from giskard.ml_worker.bridge.ml_worker_bridge import MLWorkerBridge
+from giskard.ml_worker.testing.registry.registry import load_plugins
 from giskard.ml_worker.utils.error_interceptor import ErrorInterceptor
-from giskard.ml_worker.testing.registry.registry import load_plugins, tests_registry
 from giskard.settings import settings
 
 logger = logging.getLogger(__name__)
@@ -61,6 +61,7 @@ class MLWorker:
 
     async def start(self):
         load_plugins()
+
         await self.grpc_server.start()
         if self.tunnel:
             await self.tunnel.start()
