@@ -7,10 +7,9 @@ import ai.giskard.domain.ml.testing.Test;
 import ai.giskard.domain.ml.testing.TestExecution;
 import ai.giskard.ml.MLWorkerClient;
 import ai.giskard.repository.ProjectRepository;
-import ai.giskard.repository.ml.TestExecutionRepository;
-import ai.giskard.repository.ml.TestRepository;
-import ai.giskard.repository.ml.TestSuiteRepository;
+import ai.giskard.repository.ml.*;
 import ai.giskard.service.CodeTestTemplateService;
+import ai.giskard.service.GRPCMapper;
 import ai.giskard.service.TestArgumentService;
 import ai.giskard.service.TestService;
 import ai.giskard.service.ml.MLWorkerService;
@@ -23,18 +22,19 @@ import ai.giskard.web.dto.ml.TestSuiteDTO;
 import ai.giskard.web.dto.ml.TestTemplateExecutionResultDTO;
 import ai.giskard.web.rest.errors.Entity;
 import ai.giskard.web.rest.errors.EntityNotFoundException;
-import ai.giskard.worker.*;
+import ai.giskard.worker.RunAdHocTestRequest;
+import ai.giskard.worker.TestResultMessage;
 import lombok.RequiredArgsConstructor;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.io.IOException;
-import java.util.stream.Collectors;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 import static ai.giskard.web.rest.errors.Entity.TEST_FUNCTION;
 import static ai.giskard.web.rest.errors.Entity.TEST_SUITE;
@@ -118,7 +118,7 @@ public class TestController {
     @PostMapping("/run-test")
     @Transactional
     public TestTemplateExecutionResultDTO runAdHocTest(@RequestBody RunAdhocTestRequest request) {
-        TestFunction testFunction = testFunctionRepository.findById(request.getTestUuid())
+        TestFunction testFunction = testFunctionRepository.findById(UUID.fromString(request.getTestUuid()))
             .orElseThrow(() -> new EntityNotFoundException(TEST_FUNCTION, request.getTestUuid().toString()));
 
         try (MLWorkerClient client = mlWorkerService.createClient(projectRepository.getById(request.getProjectId()).isUsingInternalWorker())) {
