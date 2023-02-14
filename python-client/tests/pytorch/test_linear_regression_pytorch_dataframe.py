@@ -64,7 +64,7 @@ def make_train_step(model, loss_fn, optimizer):
 
 
 @httpretty.activate(verbose=True, allow_net_connect=False)
-def test_linear_regression_pytorch_dataloader():
+def test_linear_regression_pytorch_dataframe():
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
     np.random.seed(42)

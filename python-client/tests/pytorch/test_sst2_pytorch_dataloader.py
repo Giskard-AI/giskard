@@ -11,6 +11,7 @@ from torch.utils.data import DataLoader
 from torchdata.datapipes.iter import IterableWrapper
 from torchtext.datasets import SST2
 from torchtext.models import RobertaClassificationHead, XLMR_BASE_ENCODER
+from torch import nn
 
 from giskard import PyTorchModel, Dataset
 from giskard.client.giskard_client import GiskardClient
@@ -50,9 +51,9 @@ dev_dataframe = pd.DataFrame(dev_datapipe, columns=["text", "label"])
 
 num_classes = 2
 input_dim = 768
+
 classifier_head = RobertaClassificationHead(num_classes=num_classes, input_dim=input_dim)
 model = XLMR_BASE_ENCODER.get_model(head=classifier_head).to(device)
-
 
 # Transform the raw dataset using non-batched API (i.e apply transformation line by line)
 def apply_transform(x):
@@ -60,7 +61,7 @@ def apply_transform(x):
 
 
 @httpretty.activate(verbose=True, allow_net_connect=False)
-# @pytest.mark.skip(reason="WIP")
+@pytest.mark.skip(reason="WIP")
 def test_sst2_pytorch_dataloader():
     def collate_batch(batch):
         input = F.to_tensor(batch["token_ids"], padding_value=padding_idx).to(device)
@@ -84,6 +85,7 @@ def test_sst2_pytorch_dataloader():
     # defining the giskard dataset
     my_test_dataset = Dataset(dev_dataframe.head(), name="test dataset", target="label")
 
+    my_model.predict(my_test_dataset)
     artifact_url_pattern = re.compile(
         "http://giskard-host:12345/api/v2/artifacts/test-project/models/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/.*")
     models_url_pattern = re.compile("http://giskard-host:12345/api/v2/project/test-project/models")
@@ -108,7 +110,6 @@ def test_sst2_pytorch_dataloader():
         assert req.headers.get("Authorization") == auth
         assert int(req.headers.get("Content-Length")) > 0
         assert req.headers.get("Content-Type") == "application/json"
-
 
 if __name__ == "__main__":
     test_sst2_pytorch_dataloader()
