@@ -43,7 +43,8 @@ from giskard.ml_worker.generated.ml_worker_pb2 import (
     RunTestRequest,
     TestResultMessage,
     UploadStatus,
-    FileUploadMetadata, FileType, StatusCode, FilterDatasetResponse, )
+    FileUploadMetadata, FileType, StatusCode, FilterDatasetResponse, RunAdHocTestRequest, NamedSingleTestResult,
+    RunTestSuiteRequest, TestSuiteResultMessage, TestRegistryResponse, TestFunction, TestFunctionArgument, )
 from giskard.ml_worker.generated.ml_worker_pb2_grpc import MLWorkerServicer
 from giskard.ml_worker.testing.registry.registry import tests_registry
 from giskard.ml_worker.utils.logging import Timer
@@ -174,7 +175,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
             if arg.HasField('dataset'):
                 value = Dataset.load(self.client, arg.dataset.project_key, arg.dataset.id)
             elif arg.HasField('model'):
-                value = Model.load(self.client, arg.model.project_key, arg.model.id)
+                value = Model.download(self.client, arg.model.project_key, arg.model.id)
             elif arg.HasField('float'):
                 value = float(arg.float)
             elif arg.HasField('string'):
@@ -354,7 +355,6 @@ class MLWorkerServiceImpl(MLWorkerServicer):
 
     def getTestRegistry(self, request: google.protobuf.empty_pb2.Empty,
                         context: grpc.ServicerContext) -> TestRegistryResponse:
-        globals()["echo_count"] += 1
         return TestRegistryResponse(tests={
             test.id: TestFunction(
                 id=test.id,
