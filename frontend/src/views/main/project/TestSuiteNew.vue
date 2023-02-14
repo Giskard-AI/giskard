@@ -87,7 +87,7 @@ import {
   DatasetDTO,
   ModelDTO,
   SuiteTestDTO,
-  TestCatalogDTO,
+  TestFunctionDTO,
   TestSuiteExecutionDTO,
   TestSuiteNewDTO
 } from "@/generated-sources";
@@ -95,14 +95,14 @@ import TestSuiteTestDetails from "@/views/main/project/TestSuiteTestDetails.vue"
 import RunTestSuiteModal from '@/views/main/project/modals/RunTestSuiteModal.vue';
 import TestSuiteExecutions from '@/views/main/project/TestSuiteExecutions.vue';
 import {useTrackJob} from '@/utils/use-track-job';
-import store from '@/store';
-import {commitAddNotification} from '@/store/main/mutations';
+import {useMainStore} from '@/stores/main';
 
 const props = defineProps<{
   projectId: number,
   suiteId: number
 }>();
 
+const mainStore = useMainStore();
 const suite = ref<TestSuiteNewDTO | null>(null);
 const registry = ref<TestCatalogDTO | null>(null);
 const tab = ref<any>(null);
@@ -149,9 +149,9 @@ const {
 async function onExecutionScheduled(jobUuid: string) {
   const result = await addJob(jobUuid);
   if (result) {
-    commitAddNotification(store, {content: 'Test suite execution has been executed successfully', color: 'success'});
+    mainStore.addNotification({content: 'Test suite execution has been executed successfully', color: 'success'});
   } else {
-    commitAddNotification(store, {content: 'An error has happened during the test suite execution', color: 'error'});
+    mainStore.addNotification({content: 'An error has happened during the test suite execution', color: 'error'});
   }
   await loadData();
 }
