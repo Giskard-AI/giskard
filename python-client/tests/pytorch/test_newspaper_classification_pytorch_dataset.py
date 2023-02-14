@@ -14,13 +14,7 @@ from torchtext.vocab import build_vocab_from_iterator
 
 from giskard import PyTorchModel, Dataset
 from giskard.client.giskard_client import GiskardClient
-
-url = "http://giskard-host:12345"
-token = "SECRET_TOKEN"
-auth = "Bearer SECRET_TOKEN"
-content_type = "application/json"
-model_name = "uploaded model"
-b_content_type = b"application/json"
+import tests.utils
 
 train_iter = AG_NEWS(split='train')
 test_iter = AG_NEWS(split='test')
@@ -111,27 +105,19 @@ def test_newspaper_classification_pytorch_dataset():
     artifact_url_pattern = re.compile(
         "http://giskard-host:12345/api/v2/artifacts/test-project/models/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/.*")
     models_url_pattern = re.compile("http://giskard-host:12345/api/v2/project/test-project/models")
+    settings_url_pattern = re.compile("http://giskard-host:12345/api/v2/settings")
 
     httpretty.register_uri(httpretty.POST, artifact_url_pattern)
     httpretty.register_uri(httpretty.POST, models_url_pattern)
+    httpretty.register_uri(httpretty.GET, settings_url_pattern)
 
+    url = "http://giskard-host:12345"
+    token = "SECRET_TOKEN"
     client = GiskardClient(url, token)
-    # enron = client.create_project('test-project', "Email Classification", "Email Classification")
     my_model.upload(client, 'test-project', my_test_dataset)
 
-    assert re.match("^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$", str(my_model.id))
-
-    artifact_requests = [i for i in httpretty.latest_requests() if artifact_url_pattern.match(i.url)]
-    assert len(artifact_requests) > 0
-    for req in artifact_requests:
-        assert req.headers.get("Authorization") == auth
-        assert int(req.headers.get("Content-Length")) > 0
-
-    artifact_requests = [i for i in httpretty.latest_requests() if models_url_pattern.match(i.url)]
-    assert len(artifact_requests) > 0
-    for req in artifact_requests:
-        assert req.headers.get("Authorization") == auth
-        assert int(req.headers.get("Content-Length")) > 0
-        assert req.headers.get("Content-Type") == "application/json"
+    tests.utils.match_model_id(my_model.id)
+    tests.utils.match_url_patterns(httpretty.latest_requests(), artifact_url_pattern)
+    tests.utils.match_url_patterns(httpretty.latest_requests(), models_url_pattern)
 
     os.system("rm -r output enron_with_categories")
