@@ -31,7 +31,8 @@
             <v-card-text>
               <ValidationProvider name="Name" mode="eager" rules="required" v-slot="{errors}">
                 <v-text-field label="Slice Name*" type="text" v-model="sliceName"
-                              :error-messages="errors" :autofocus="!isUpdateDialog" counter="30"></v-text-field>
+                              :rules="[rules.required, rules.counter]"
+                              :error-messages="errors" :autofocus="!isUpdateDialog" counter="50"></v-text-field>
               </ValidationProvider>
               <span>Python function</span>
               <MonacoEditor
@@ -46,18 +47,15 @@
             <v-card-actions>
               <v-autocomplete label="Validate with" :items="datasets" item-text="name" item-value="id"
                               v-model="selectedDatasetId" style="max-width: 300px">
-                <template v-slot:append-outer>
-
-                  <v-tooltip bottom>
-                    <template v-slot:activator="{ on, attrs }">
-                      <v-btn text v-on="on" v-bind="attrs" @click="validateCode">
-                        Validate
-                      </v-btn>
-                    </template>
-                    <span>Runs the function on a few rows from the selected dataset to validate it.</span>
-                  </v-tooltip>
-                </template>
               </v-autocomplete>
+              <v-tooltip bottom>
+                <template v-slot:activator="{ on, attrs }">
+                  <v-btn text v-on="on" v-bind="attrs" @click="validateCode" :disabled="selectedDatasetId === -1">
+                    Validate
+                  </v-btn>
+                </template>
+                <span>Runs the function on a few rows from the selected dataset to validate it.</span>
+              </v-tooltip>
               <v-spacer></v-spacer>
               <v-btn color="error" text @click="closeSliceDialog()">Cancel</v-btn>
               <v-btn color="primary" text type="submit">
@@ -80,6 +78,7 @@ import {DatasetDTO, SliceDTO} from "@/generated-sources";
 import {api} from "@/api";
 import {editor} from "monaco-editor";
 import {useMainStore} from "@/stores/main";
+import mixpanel from "mixpanel-browser";
 import IEditorOptions = editor.IEditorOptions;
 
 const mainStore = useMainStore();
@@ -88,7 +87,8 @@ interface Props {
   projectId: number,
   loading?: boolean,
   create?: boolean,
-  isProjectOwnerOrAdmin?: boolean
+  isProjectOwnerOrAdmin?: boolean,
+  defaultDatasetId?: number
 }
 
 const props = defineProps<Props>();
@@ -109,6 +109,9 @@ const editor = ref<any | null>(null);
 
 onMounted(() => {
   loadSlices();
+  if (props.defaultDatasetId) {
+    selectedDatasetId.value = props.defaultDatasetId;
+  }
 })
 
 
@@ -118,6 +121,20 @@ const editorOptions: IEditorOptions = {
   minimap: {enabled: false},
   suggest: {preview: false}
 }
+
+const rules = {
+  counter: (value) => value.length <= 50 || 'Max 50 characters',
+  required: (value) => !!value || 'Required'
+}
+
+const exampleSliceCode: string = `
+# Define a function 'filter_row' that will run over every single row of your dataset.
+# This function should return a boolean if the row is part of your slice.
+def filter_row(row):
+    # For example, a dataset that contains a numeric column "age" could be filtered with the following expression:
+    # return row['age'] > 60
+    return True
+`;
 
 const items = computed(() => {
   // TODO: Find a solution for this typing issue
@@ -169,7 +186,7 @@ async function deleteSlice(sliceToDel: SliceDTO) {
 
 async function openCreateDialog() {
   sliceName.value = '';
-  sliceCode.value = 'def filter_row(row):\n    return True';
+  sliceCode.value = exampleSliceCode;
   sliceDialog.value = true;
   autocomplete.value.reset();
   datasets.value = await api.getProjectDatasets(props.projectId)
@@ -202,6 +219,7 @@ async function submit() {
     const newSlice = await api.createSlice(props.projectId, sliceName.value, sliceCode.value);
     slices.value.push(newSlice);
     slice.value = newSlice;
+    mixpanel.track('Create slice', {sliceName: newSlice.name, sliceId: newSlice.id});
   }
 
   closeSliceDialog();
