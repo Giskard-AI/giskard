@@ -24,25 +24,7 @@ from giskard.ml_worker.core.model_explanation import (
 )
 from giskard.ml_worker.exceptions.IllegalArgumentError import IllegalArgumentError
 from giskard.ml_worker.exceptions.giskard_exception import GiskardException
-from giskard.ml_worker.generated.ml_worker_pb2 import (
-    DataFrame,
-    DataRow,
-    EchoMsg,
-    ExplainRequest,
-    ExplainResponse,
-    ExplainTextRequest,
-    ExplainTextResponse,
-    MLWorkerInfo,
-    MLWorkerInfoRequest,
-    PlatformInfo,
-    RunModelForDataFrameRequest,
-    RunModelForDataFrameResponse,
-    RunModelRequest,
-    RunModelResponse,
-    RunTestRequest,
-    TestResultMessage,
-    UploadStatus,
-    FileUploadMetadata, FileType, StatusCode, FilterDatasetResponse, )
+from giskard.ml_worker.generated import ml_worker_pb2
 from giskard.ml_worker.generated.ml_worker_pb2_grpc import MLWorkerServicer
 from giskard.ml_worker.testing.registry.registry import tests_registry
 from giskard.ml_worker.utils.logging import Timer
@@ -51,10 +33,10 @@ from giskard.path_utils import model_path, dataset_path
 logger = logging.getLogger(__name__)
 
 
-def file_already_exists(meta: FileUploadMetadata):
-    if meta.file_type == FileType.MODEL:
+def file_already_exists(meta: ml_worker_pb2.FileUploadMetadata):
+    if meta.file_type == ml_worker_pb2.FileType.MODEL:
         path = model_path(meta.project_key, meta.name)
-    elif meta.file_type == FileType.DATASET:
+    elif meta.file_type == ml_worker_pb2.FileType.DATASET:
         path = dataset_path(meta.project_key, meta.name)
     else:
         raise ValueError(f"Illegal file type: {meta.file_type}")
@@ -62,15 +44,15 @@ def file_already_exists(meta: FileUploadMetadata):
 
 
 class MLWorkerServiceImpl(MLWorkerServicer):
-    def __init__(self, client: GiskardClient, port=None, remote=None) -> None:
+    def __init__(self, client: GiskardClient, address=None, remote=None) -> None:
         super().__init__()
-        self.port = port
+        self.address = address
         self.remote = remote
         self.client = client
 
     def echo_orig(self, request, context):
         logger.debug(f"echo: {request.msg}")
-        return EchoMsg(msg=request.msg)
+        return ml_worker_pb2.EchoMsg(msg=request.msg)
 
     def upload(self, request_iterator, context: grpc.ServicerContext):
         meta = None
@@ -87,7 +69,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
                         unit_scale=True,
                         unit_divisor=1024,
                     )
-                    yield UploadStatus(code=StatusCode.CacheMiss)
+                    yield ml_worker_pb2.UploadStatus(code=ml_worker_pb2.StatusCode.CacheMiss)
                 else:
                     logger.info(f"File already exists: {path}")
                     break
@@ -101,13 +83,13 @@ class MLWorkerServiceImpl(MLWorkerServicer):
                     if progress is not None:
                         progress.close()
                     logger.exception(f"Failed to upload file {meta.name}", e)
-                    yield UploadStatus(code=StatusCode.Failed)
+                    yield ml_worker_pb2.UploadStatus(code=ml_worker_pb2.StatusCode.Failed)
 
         if progress is not None:
             progress.close()
-        yield UploadStatus(code=StatusCode.Ok)
+        yield ml_worker_pb2.UploadStatus(code=ml_worker_pb2.StatusCode.Ok)
 
-    def getInfo(self, request: MLWorkerInfoRequest, context):
+    def getInfo(self, request: ml_worker_pb2.MLWorkerInfoRequest, context):
         logger.info("Collecting ML Worker info")
         installed_packages = (
             {p.project_name: p.version for p in pkg_resources.working_set}
@@ -115,8 +97,8 @@ class MLWorkerServiceImpl(MLWorkerServicer):
             else None
         )
         current_process = psutil.Process(os.getpid())
-        return MLWorkerInfo(
-            platform=PlatformInfo(
+        return ml_worker_pb2.MLWorkerInfo(
+            platform=ml_worker_pb2.PlatformInfo(
                 machine=platform.uname().machine,
                 node=platform.uname().node,
                 processor=platform.uname().processor,
@@ -130,12 +112,15 @@ class MLWorkerServiceImpl(MLWorkerServicer):
             interpreter=sys.executable,
             interpreter_version=platform.python_version(),
             installed_packages=installed_packages,
-            internal_grpc_port=self.port,
+            internal_grpc_address=self.address,
             is_remote=self.remote,
         )
 
-    def runAdHocTest(self, request: RunAdHocTestRequest,
-                     context: grpc.ServicerContext) -> TestResultMessage:
+    def echo(self, request: ml_worker_pb2.EchoMsg, context: grpc.ServicerContext) -> ml_worker_pb2.EchoMsg:
+        return request
+
+    def runAdHocTest(self, request: ml_worker_pb2.RunAdHocTestRequest,
+                     context: grpc.ServicerContext) -> ml_worker_pb2.TestResultMessage:
 
         test = tests_registry.get_test(request.testId)
         arguments = {}
@@ -153,9 +138,11 @@ class MLWorkerServiceImpl(MLWorkerServicer):
             arguments[arg.name] = value
         logger.info(f"Executing {test.name}")
         test_result = test.fn(**arguments)
-        return TestResultMessage(results=[NamedSingleTestResult(name=test.id, result=test_result)])
+        return ml_worker_pb2.TestResultMessage(
+            results=[ml_worker_pb2.NamedSingleTestResult(name=test.id, result=test_result)])
 
-    def runTest(self, request: RunTestRequest, context: grpc.ServicerContext) -> TestResultMessage:
+    def runTest(self, request: ml_worker_pb2.RunTestRequest,
+                context: grpc.ServicerContext) -> ml_worker_pb2.TestResultMessage:
         from giskard.ml_worker.testing.functions import GiskardTestFunctions
         model = Model.download(self.client, request.model.project_key, request.model.id)
 
@@ -179,21 +166,21 @@ class MLWorkerServiceImpl(MLWorkerServicer):
                 raise IllegalArgumentError("Actual Dataset is not specified")
             raise e
 
-        return TestResultMessage(results=tests.tests_results)
+        return ml_worker_pb2.TestResultMessage(results=tests.tests_results)
 
-    def explain(self, request: ExplainRequest, context) -> ExplainResponse:
+    def explain(self, request: ml_worker_pb2.ExplainRequest, context) -> ml_worker_pb2.ExplainResponse:
         model = Model.download(self.client, request.model.project_key, request.model.id)
         dataset = Dataset.load(self.client, request.dataset.project_key, request.dataset.id)
         explanations = explain(model, dataset, request.columns)
 
-        return ExplainResponse(
+        return ml_worker_pb2.ExplainResponse(
             explanations={
-                k: ExplainResponse.Explanation(per_feature=v)
+                k: ml_worker_pb2.ExplainResponse.Explanation(per_feature=v)
                 for k, v in explanations["explanations"].items()
             }
         )
 
-    def explainText(self, request: ExplainTextRequest, context) -> ExplainTextResponse:
+    def explainText(self, request: ml_worker_pb2.ExplainTextRequest, context) -> ml_worker_pb2.ExplainTextResponse:
         n_samples = 500 if request.n_samples <= 0 else request.n_samples
         model = Model.download(self.client, request.model.project_key, request.model.id)
         text_column = request.feature_name
@@ -206,14 +193,15 @@ class MLWorkerServiceImpl(MLWorkerServicer):
             input_df = input_df[model.feature_names]
         (list_words, list_weights) = explain_text(model, input_df, text_column, text_document, n_samples)
         map_features_weight = dict(zip(model.meta.classification_labels, list_weights))
-        return ExplainTextResponse(
+        return ml_worker_pb2.ExplainTextResponse(
             weights={
-                k: ExplainTextResponse.WeightsPerFeature(weights=[weight for weight in map_features_weight[k]])
+                k: ml_worker_pb2.ExplainTextResponse.WeightsPerFeature(
+                    weights=[weight for weight in map_features_weight[k]])
                 for k in map_features_weight},
             words=list_words
         )
 
-    def runModelForDataFrame(self, request: RunModelForDataFrameRequest, context):
+    def runModelForDataFrame(self, request: ml_worker_pb2.RunModelForDataFrameRequest, context):
         model = Model.download(self.client, request.model.project_key, request.model.id)
         ds = Dataset(
             pd.DataFrame([r.columns for r in request.dataframe.rows]),
@@ -222,16 +210,16 @@ class MLWorkerServiceImpl(MLWorkerServicer):
         )
         predictions = model.predict(ds)
         if model.is_classification:
-            return RunModelForDataFrameResponse(
+            return ml_worker_pb2.RunModelForDataFrameResponse(
                 all_predictions=self.pandas_df_to_proto_df(predictions.all_predictions),
                 prediction=predictions.prediction.astype(str),
             )
         else:
-            return RunModelForDataFrameResponse(
+            return ml_worker_pb2.RunModelForDataFrameResponse(
                 prediction=predictions.prediction.astype(str), raw_prediction=predictions.prediction
             )
 
-    def runModel(self, request: RunModelRequest, context) -> RunModelResponse:
+    def runModel(self, request: ml_worker_pb2.RunModelRequest, context) -> ml_worker_pb2.RunModelResponse:
         try:
             model = Model.download(self.client, request.model.project_key, request.model.id)
             dataset = Dataset.load(self.client, request.dataset.project_key, request.dataset.id)
@@ -280,7 +268,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
             else:
                 calculated = pd.concat([preds_serie], axis=1)
 
-        return RunModelResponse(
+        return ml_worker_pb2.RunModelResponse(
             results_csv=results.to_csv(index=False), calculated_csv=calculated.to_csv(index=False)
         )
 
@@ -297,10 +285,11 @@ class MLWorkerServiceImpl(MLWorkerServicer):
                 try:
                     exec(meta.function, None, filterfunc)
                 except Exception as e:
-                    yield FilterDatasetResponse(code=StatusCode.Failed, error_message=str(e))
+                    yield ml_worker_pb2.FilterDatasetResponse(code=ml_worker_pb2.StatusCode.Failed,
+                                                              error_message=str(e))
                 column_types = meta.column_types
                 logger.info(f"Filtering dataset with {meta}")
-                yield FilterDatasetResponse(code=StatusCode.Ready)
+                yield ml_worker_pb2.FilterDatasetResponse(code=ml_worker_pb2.StatusCode.Ready)
             elif filter_msg.HasField("data"):
                 logger.info("Got chunk " + str(filter_msg.idx))
                 time_start = time.perf_counter()
@@ -314,20 +303,22 @@ class MLWorkerServiceImpl(MLWorkerServicer):
                 try:
                     rows_to_keep = df.apply(filterfunc["filter_row"], axis=1)[lambda x: x == True].index.array
                 except Exception as e:
-                    yield FilterDatasetResponse(code=StatusCode.Failed, error_message=str(e))
+                    yield ml_worker_pb2.FilterDatasetResponse(code=ml_worker_pb2.StatusCode.Failed,
+                                                              error_message=str(e))
                 time_end = time.perf_counter()
                 times.append(time_end - time_start)
                 # Send NEXT code
-                yield FilterDatasetResponse(code=StatusCode.Next, idx=filter_msg.idx, rows=rows_to_keep)
+                yield ml_worker_pb2.FilterDatasetResponse(code=ml_worker_pb2.StatusCode.Next, idx=filter_msg.idx,
+                                                          rows=rows_to_keep)
 
         logger.info(f"Filter dataset finished. Avg chunk time: {sum(times) / len(times)}")
-        yield FilterDatasetResponse(code=StatusCode.Ok)
+        yield ml_worker_pb2.FilterDatasetResponse(code=ml_worker_pb2.StatusCode.Ok)
 
     def getTestRegistry(self, request: google.protobuf.empty_pb2.Empty,
-                        context: grpc.ServicerContext) -> TestRegistryResponse:
+                        context: grpc.ServicerContext) -> ml_worker_pb2.TestRegistryResponse:
         globals()["echo_count"] += 1
-        return TestRegistryResponse(tests={
-            test.id: TestFunction(
+        return ml_worker_pb2.TestRegistryResponse(tests={
+            test.id: ml_worker_pb2.TestFunction(
                 id=test.id,
                 name=test.name,
                 module=test.module,
@@ -336,7 +327,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
                 module_doc=test.module_doc,
                 tags=test.tags,
                 arguments={
-                    a.name: TestFunctionArgument(
+                    a.name: ml_worker_pb2.TestFunctionArgument(
                         name=a.name,
                         type=a.type,
                         optional=a.optional,
@@ -350,7 +341,8 @@ class MLWorkerServiceImpl(MLWorkerServicer):
 
     @staticmethod
     def pandas_df_to_proto_df(df):
-        return DataFrame(rows=[DataRow(columns=r.astype(str).to_dict()) for _, r in df.iterrows()])
+        return ml_worker_pb2.DataFrame(
+            rows=[ml_worker_pb2.DataRow(columns=r.astype(str).to_dict()) for _, r in df.iterrows()])
 
     @staticmethod
     def pandas_series_to_proto_series(self, series):
