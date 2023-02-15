@@ -71,8 +71,7 @@ class Suite:
         logger.info(f"result: {'success' if result else 'failed'}")
         for (test_name, r) in res.items():
             logger.info(f"{test_name}: {format_test_result(r)}")
-
-        return result, list(res.values())
+        return result, res
 
     @staticmethod
     def create_test_params(test_partial, kwargs):
