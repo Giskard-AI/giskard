@@ -275,9 +275,7 @@ message MLWorkerErrorInfo{
 
 message GenerateTestSuiteRequest{
   string project_key = 1;
-  optional ArtifactRef model = 2;
-  optional ArtifactRef actual_dataset = 3;
-  optional ArtifactRef reference_dataset = 4;
+  repeated TestArgument arguments = 2;
 }
 
 message GenerateTestSuiteResponse{
