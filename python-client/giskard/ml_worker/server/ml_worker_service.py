@@ -162,8 +162,12 @@ class MLWorkerServiceImpl(MLWorkerServicer):
                 value = Model.download(self.client, arg.model.project_key, arg.model.id)
             elif arg.HasField('float'):
                 value = float(arg.float)
-            elif arg.HasField('string'):
-                value = str(arg.string)
+            elif arg.HasField('int'):
+                value = int(arg.int)
+            elif arg.HasField('str'):
+                value = str(arg.str)
+            elif arg.HasField('bool'):
+                value = bool(arg.bool)
             else:
                 raise IllegalArgumentError("Unknown argument type")
             arguments[arg.name] = value
