@@ -51,12 +51,13 @@ class Dataset:
         dataset_id = str(uuid.uuid4())
         with tempfile.TemporaryDirectory(prefix="giskard-dataset-") as local_path:
             original_size_bytes, compressed_size_bytes = self._save_to_local_dir(Path(local_path), dataset_id)
-            client.log_artifacts(local_path, posixpath.join(project_key, "datasets", dataset_id))
-            client.save_dataset_meta(project_key,
-                                     dataset_id,
-                                     self.meta,
-                                     original_size_bytes=original_size_bytes,
-                                     compressed_size_bytes=compressed_size_bytes)
+            if client is not None:
+                client.log_artifacts(local_path, posixpath.join(project_key, "datasets", dataset_id))
+                client.save_dataset_meta(project_key,
+                                         dataset_id,
+                                         self.meta,
+                                         original_size_bytes=original_size_bytes,
+                                         compressed_size_bytes=compressed_size_bytes)
         return dataset_id
 
     @property
