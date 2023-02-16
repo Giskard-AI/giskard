@@ -20,7 +20,7 @@ class SKLearnModel(MLFlowBasedModel):
                          classification_threshold=classification_threshold,
                          classification_labels=classification_labels)
 
-    def save_with_mflow(self, local_path, mlflow_meta):
+    def save_with_mlflow(self, local_path, mlflow_meta):
         if self.is_classification:
             pyfunc_predict_fn = 'predict_proba'
         elif self.is_regression:
