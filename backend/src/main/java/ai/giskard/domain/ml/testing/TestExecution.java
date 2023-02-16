@@ -16,6 +16,7 @@ import java.util.Date;
 @NoArgsConstructor
 @Getter
 @Setter
+@Deprecated
 public class TestExecution extends BaseEntity {
     @ManyToOne
     Test test;
