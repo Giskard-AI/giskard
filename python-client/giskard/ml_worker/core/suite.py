@@ -88,14 +88,24 @@ class Suite:
 
     def to_dto(self, client: GiskardClient, project_key: str):
         suite_tests: List[SuiteTestDTO] = list()
+
+        # Avoid to upload the same artifacts several times
+        uploaded_uuids: List[str] = []
+
         for t in self.tests:
             inputs = {}
             for pname, p in t.provided_inputs.items():
                 if issubclass(type(p), Dataset):
-                    saved_id = p.save(client, project_key)
-                    inputs[pname] = TestInputDTO(name=pname, value=saved_id)
+                    if str(p.id) not in uploaded_uuids:
+                        p.save(client, project_key)
+                        uploaded_uuids.append(str(p.id))
+
+                    inputs[pname] = TestInputDTO(name=pname, value=str(p.id))
                 if issubclass(type(p), Model):
-                    p.upload(client, project_key)
+                    if str(p.id) not in uploaded_uuids:
+                        p.upload(client, project_key)
+                        uploaded_uuids.append(str(p.id))
+
                     inputs[pname] = TestInputDTO(name=pname, value=str(p.id))
                 elif isinstance(p, SuiteInput):
                     inputs[pname] = TestInputDTO(name=pname, value=p.name, is_alias=True)
