@@ -47,6 +47,17 @@
             <v-expansion-panel>
               <v-expansion-panel-header class="pa-0 text-h6">Logs</v-expansion-panel-header>
               <v-expansion-panel-content class="pa-0">
+                <v-tooltip bottom>
+                  <template v-slot:activator="{ on, attrs }">
+                    <v-btn icon color="primary"
+                           @click=copyLogs
+                           v-bind="attrs"
+                           v-on="on">
+                      <v-icon>content_copy</v-icon>
+                    </v-btn>
+                  </template>
+                  <span>Copy logs</span>
+                </v-tooltip>
                 <pre class="log-viewer">{{ selectedExecution.logs }}</pre>
               </v-expansion-panel-content>
             </v-expansion-panel>
@@ -75,6 +86,7 @@ import TestSuiteExecutionResults from '@/views/main/project/TestSuiteExecutionRe
 import moment from 'moment';
 import {Colors} from '@/utils/colors';
 import {Comparators} from '@/utils/comparators';
+import {useMainStore} from '@/stores/main';
 
 const props = defineProps<{
   projectId: number,
@@ -88,6 +100,7 @@ const props = defineProps<{
 }>();
 
 const selectedExecution = ref<TestSuiteExecutionDTO | null>(null);
+const mainStore = useMainStore();
 
 function executionStatusMessage(execution: TestSuiteExecutionDTO): string {
   switch (execution.result) {
@@ -195,6 +208,13 @@ const executionsAndJobs = computed<ExecutionTabItem[] | undefined>(() => {
       .sort(Comparators.comparing(e => e.date))
       .reverse();
 });
+
+function copyLogs() {
+  if (selectedExecution.value?.logs) {
+    navigator.clipboard.writeText(selectedExecution.value.logs);
+    mainStore.addNotification({content: 'Copied logs to clipboard', color: '#262a2d'});
+  }
+}
 
 </script>
 
