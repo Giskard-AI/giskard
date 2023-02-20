@@ -1,6 +1,7 @@
 from typing import Union
-
+from pathlib import Path
 import mlflow
+import yaml
 import numpy as np
 import pandas as pd
 import torch
@@ -50,8 +51,8 @@ class PyTorchModel(MLFlowBasedModel):
         self.torch_dtype = torch_dtype
 
     @classmethod
-    def read_model_from_local_dir(cls, local_path):
-        return mlflow.pytorch.load_model(local_path)
+    def load_clf(cls, local_dir):
+        return mlflow.pytorch.load_model(local_dir)
 
     def save_with_mflow(self, local_path, mlflow_meta: mlflow.models.Model):
         mlflow.pytorch.save_model(self.clf,
@@ -87,3 +88,31 @@ class PyTorchModel(MLFlowBasedModel):
             predictions = self.model_postprocessing_function(predictions)
 
         return predictions.squeeze()
+
+    def save_pytorch_meta(self, local_path):
+        with open(Path(local_path) / 'giskard-model-pytorch-meta.yaml', 'w') as f:
+            yaml.dump(
+                {
+                    "device": self.device,
+                    "torch_dtype": self.torch_dtype,
+                }, f, default_flow_style=False)
+
+    def save(self, local_path: Union[str, Path]) -> None:
+        super().save(local_path)
+
+        if self.torch_dtype != torch.float32 or self.device != 'cpu':
+            self.save_pytorch_meta(local_path)
+
+    @classmethod
+    def load(cls, local_dir, **kwargs):
+        pytorch_meta_file = Path(local_dir) / 'giskard-model-pytorch-meta.yaml'
+        if pytorch_meta_file.exists():
+            with open(pytorch_meta_file) as f:
+                pytorch_meta = yaml.load(f, Loader=yaml.Loader)
+                kwargs['device']=pytorch_meta.device
+                kwargs['torch_dtype']=pytorch_meta.torch_dtype
+                super().load(local_dir, **kwargs)
+        else:
+            raise ValueError(
+                f"Cannot load model ({cls.__module__}.{cls.__name__}), "
+                f"{pytorch_meta_file} file not found")
