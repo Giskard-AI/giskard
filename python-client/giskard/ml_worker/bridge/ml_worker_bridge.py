@@ -22,11 +22,11 @@ readers = set()
 
 class MLWorkerBridge:
     def __init__(
-            self,
-            local_port: int,
-            remote_host: str,
-            remote_port: int,
-            execution_loop=asyncio.get_event_loop(),
+        self,
+        local_port: int,
+        remote_host: str,
+        remote_port: int,
+        execution_loop=asyncio.get_event_loop(),
     ) -> None:
         self.loop = execution_loop
 
@@ -48,12 +48,18 @@ class MLWorkerBridge:
             self.loop.create_task(self.listen_remote_server_service_socket())
         except Exception as e:
             await self.close_service_channel()
-            logger.error(f"Failed to connect to a remote host: {self.remote_host}:{self.remote_port} : {str(e)}")
-            analytics.track("Start ML Worker Bridge error", {
-                "host": anonymize(self.remote_host),
-                "port": anonymize(self.remote_port),
-                "error": str(e)
-            }, force=True)
+            logger.error(
+                f"Failed to connect to a remote host: {self.remote_host}:{self.remote_port} : {str(e)}"
+            )
+            analytics.track(
+                "Start ML Worker Bridge error",
+                {
+                    "host": anonymize(self.remote_host),
+                    "port": anonymize(self.remote_port),
+                    "error": str(e),
+                },
+                force=True,
+            )
             raise e
 
     async def close_service_channel(self):
@@ -90,7 +96,9 @@ class MLWorkerBridge:
                 logger.debug("Created remote server listener task")
                 while True:
                     logger.debug("waiting for a service command")
-                    data = await self.service_channel_reader.read(9)  # command payload is 1 byte by design
+                    data = await self.service_channel_reader.read(
+                        9
+                    )  # command payload is 1 byte by design
                     if len(data):
                         client = data[:8]
                         command = int.from_bytes(data[8:], "big")
@@ -107,9 +115,11 @@ class MLWorkerBridge:
         except BaseException as e:  # NOSONAR
             logger.exception(e)
 
-    @retry(stop=stop_after_attempt(5),
-           wait=wait_exponential(multiplier=1, min=1, max=15),
-           after=after_log(logger, logging.WARNING))
+    @retry(
+        stop=stop_after_attempt(5),
+        wait=wait_exponential(multiplier=1, min=1, max=15),
+        after=after_log(logger, logging.WARNING),
+    )
     async def handle_server_command(self, client, command):
         if command == CREATE_CLIENT_CHANNEL:
             remote_reader, remote_writer = await asyncio.open_connection(
@@ -130,10 +140,16 @@ class MLWorkerBridge:
                 self.local_host, self.local_port
             )
             readers.add(grpc_reader)
-            logger.debug(f"Connected client {client} to grpc host {(self.local_host, self.local_port)}")
+            logger.debug(
+                f"Connected client {client} to grpc host {(self.local_host, self.local_port)}"
+            )
 
-            await self.create_sync_task(client, grpc_reader, remote_writer, f"{client.decode()}: grpc->remote")
-            await self.create_sync_task(client, remote_reader, grpc_writer, f"{client.decode()}: remote->grpc")
+            await self.create_sync_task(
+                client, grpc_reader, remote_writer, f"{client.decode()}: grpc->remote"
+            )
+            await self.create_sync_task(
+                client, remote_reader, grpc_writer, f"{client.decode()}: remote->grpc"
+            )
 
     async def create_sync_task(self, client, reader, writer, task_name=""):
         task = self.sync_data(client, reader, writer, task_name)

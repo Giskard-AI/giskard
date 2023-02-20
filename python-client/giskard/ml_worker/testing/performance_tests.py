@@ -71,7 +71,7 @@ class PerformanceTests(AbstractTestCollection):
         )
 
     def _test_classification_score(
-        self, score_fn, gsk_dataset: GiskardDataset, model: GiskardModel, threshold=1.0
+            self, score_fn, gsk_dataset: GiskardDataset, model: GiskardModel, threshold=1.0
     ):
         self._verify_target_availability(gsk_dataset)
         is_binary_classification = len(model.classification_labels) == 2
@@ -104,7 +104,7 @@ class PerformanceTests(AbstractTestCollection):
         )
 
     def _test_regression_score(
-        self, score_fn, giskard_ds, model: GiskardModel, threshold=1.0, r2=False
+            self, score_fn, giskard_ds, model: GiskardModel, threshold=1.0, r2=False
     ):
         results_df = pd.DataFrame()
         giskard_ds.df.reset_index(drop=True, inplace=True)
@@ -295,7 +295,7 @@ class PerformanceTests(AbstractTestCollection):
         return self._test_regression_score(r2_score, actual_slice, model, threshold, r2=True)
 
     def _test_diff_prediction(
-        self, test_fn, model, actual_slice, reference_slice, threshold=0.5, test_name=None
+            self, test_fn, model, actual_slice, reference_slice, threshold=0.5, test_name=None
     ):
         self.do_save_results = False
         metric_1 = test_fn(reference_slice, model).metric
@@ -303,17 +303,21 @@ class PerformanceTests(AbstractTestCollection):
         self.do_save_results = True
 
         if metric_1 == 0:
-            return self.save_results(SingleTestResult(
-                actual_slices_size=[len(actual_slice)],
-                reference_slices_size=[len(reference_slice)],
-                metric=0,
-                passed=False,
-                messages=[TestMessage(
-                    type=TestMessageType.ERROR,
-                    text=f"Unable to calculate performance difference: the {test_name} inside the"
-                         " reference_slice is equal to zero"
-                )]
-            ))
+            return self.save_results(
+                SingleTestResult(
+                    actual_slices_size=[len(actual_slice)],
+                    reference_slices_size=[len(reference_slice)],
+                    metric=0,
+                    passed=False,
+                    messages=[
+                        TestMessage(
+                            type=TestMessageType.ERROR,
+                            text=f"Unable to calculate performance difference: the {test_name} inside the"
+                                 " reference_slice is equal to zero",
+                        )
+                    ],
+                )
+            )
 
         change_pct = abs(metric_1 - metric_2) / metric_1
 
@@ -500,7 +504,7 @@ class PerformanceTests(AbstractTestCollection):
         )
 
     def test_diff_reference_actual_accuracy(
-        self, reference_slice, actual_slice, model, threshold=0.1
+            self, reference_slice, actual_slice, model, threshold=0.1
     ):
         """
         Test if the absolute percentage change in model Accuracy between reference and actual data

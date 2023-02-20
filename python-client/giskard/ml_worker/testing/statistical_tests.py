@@ -7,6 +7,7 @@ from giskard.ml_worker.core.model import GiskardModel
 from giskard.ml_worker.generated.ml_worker_pb2 import SingleTestResult, TestMessage, TestMessageType
 from giskard.ml_worker.testing.abstract_test_collection import AbstractTestCollection
 
+
 class StatisticalTests(AbstractTestCollection):
     def test_right_label(
             self,
@@ -137,14 +138,16 @@ class StatisticalTests(AbstractTestCollection):
             )
         )
 
-    def test_disparate_impact(self,
-                              gsk_dataset: GiskardDataset,
-                              protected_slice: Callable[[pd.DataFrame], pd.DataFrame],
-                              unprotected_slice: Callable[[pd.DataFrame], pd.DataFrame],
-                              model: GiskardModel,
-                              positive_outcome,
-                              min_threshold=0.8,
-                              max_threshold=1.25) -> SingleTestResult:
+    def test_disparate_impact(
+            self,
+            gsk_dataset: GiskardDataset,
+            protected_slice: Callable[[pd.DataFrame], pd.DataFrame],
+            unprotected_slice: Callable[[pd.DataFrame], pd.DataFrame],
+            model: GiskardModel,
+            positive_outcome,
+            min_threshold=0.8,
+            max_threshold=1.25,
+    ) -> SingleTestResult:
 
         """
         Summary: Tests if the model is biased more towards an unprotected slice of the dataset over a protected slice.
@@ -190,40 +193,44 @@ class StatisticalTests(AbstractTestCollection):
                   TRUE if the disparate impact ratio > min_threshold && disparate impact ratio < max_threshold
         """
 
-        testing = gsk_dataset.df[gsk_dataset.target]
-
         if positive_outcome not in gsk_dataset.df[gsk_dataset.target].values:
             raise ValueError(
                 f"The positive outcome chosen {positive_outcome} is not part of the dataset columns {gsk_dataset.columns}."
             )
 
         gsk_dataset.df.reset_index(drop=True, inplace=True)
-        protected_ds=gsk_dataset.slice(protected_slice)
-        unprotected_ds=gsk_dataset.slice(unprotected_slice)
+        protected_ds = gsk_dataset.slice(protected_slice)
+        unprotected_ds = gsk_dataset.slice(unprotected_slice)
 
         if protected_ds.df.equals(unprotected_ds.df):
             raise ValueError(
-                f"The protected and unprotected datasets are equal. Please check that you chose different slices."
+                "The protected and unprotected datasets are equal. Please check that you chose different slices."
             )
 
         positive_idx = list(model.classification_labels).index(positive_outcome)
 
-        protected_predictions = np.squeeze(model.run_predict(protected_ds).raw_prediction == positive_idx)
-        unprotected_predictions = np.squeeze(model.run_predict(unprotected_ds).raw_prediction == positive_idx)
+        protected_predictions = np.squeeze(
+            model.run_predict(protected_ds).raw_prediction == positive_idx
+        )
+        unprotected_predictions = np.squeeze(
+            model.run_predict(unprotected_ds).raw_prediction == positive_idx
+        )
 
-        protected_proba = np.count_nonzero(protected_predictions)/len(protected_ds.df)
-        unprotected_proba = np.count_nonzero(unprotected_predictions)/len(unprotected_ds.df)
-        disparate_impact_score = protected_proba/unprotected_proba
+        protected_proba = np.count_nonzero(protected_predictions) / len(protected_ds.df)
+        unprotected_proba = np.count_nonzero(unprotected_predictions) / len(unprotected_ds.df)
+        disparate_impact_score = protected_proba / unprotected_proba
 
-        messages = [TestMessage(
-            type=TestMessageType.INFO,
-            text=f"min_threshold = {min_threshold}, max_threshold = {max_threshold}"
-        )]
+        messages = [
+            TestMessage(
+                type=TestMessageType.INFO,
+                text=f"min_threshold = {min_threshold}, max_threshold = {max_threshold}",
+            )
+        ]
 
         return self.save_results(
             SingleTestResult(
                 metric=disparate_impact_score,
-                passed=(disparate_impact_score > min_threshold)*(disparate_impact_score < max_threshold),
-                messages = messages
+                passed=(disparate_impact_score > min_threshold) * (disparate_impact_score < max_threshold),
+                messages=messages,
             )
         )

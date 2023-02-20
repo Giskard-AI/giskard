@@ -18,12 +18,19 @@ logger = logging.getLogger(__name__)
 @timer()
 def explain(model: GiskardModel, dataset: GiskardDataset, input_data: Dict):
     def prepare_df(df):
-        prepared_df = model.prepare_dataframe(GiskardDataset(df=df,
-                                                             target=dataset.target,
-                                                             feature_types=dataset.feature_types,
-                                                             column_types=dataset.column_types))
-        columns_in_original_order = model.feature_names if model.feature_names else \
-            [c for c in dataset.df.columns if c in prepared_df.columns]
+        prepared_df = model.prepare_dataframe(
+            GiskardDataset(
+                df=df,
+                target=dataset.target,
+                feature_types=dataset.feature_types,
+                column_types=dataset.column_types,
+            )
+        )
+        columns_in_original_order = (
+            model.feature_names
+            if model.feature_names
+            else [c for c in dataset.df.columns if c in prepared_df.columns]
+        )
         # Make sure column order is the same as in df
         return prepared_df[columns_in_original_order]
 
@@ -55,8 +62,13 @@ def explain(model: GiskardModel, dataset: GiskardDataset, input_data: Dict):
 
 
 @timer()
-def explain_text(model: GiskardModel, input_df: pd.DataFrame,
-                 text_column: str, text_document: str, n_samples: int):
+def explain_text(
+        model: GiskardModel,
+        input_df: pd.DataFrame,
+        text_column: str,
+        text_document: str,
+        n_samples: int,
+):
     text_explainer = TextExplainer(random_state=42, n_samples=n_samples)
     prediction_function = text_explanation_prediction_wrapper(
         model.prediction_function, input_df, text_column
@@ -84,7 +96,7 @@ def get_list_words_weigths(exp):
     list_words = []
     document = exp[0][0].doc_weighted_spans.document
     for k, g in groupby(document, str.isalnum):
-        list_words.append(''.join(g))
+        list_words.append("".join(g))
     list_weights = []
     for target in exp:
         current_weights = []
@@ -136,12 +148,14 @@ def summary_shap_regression(
     feature_inds = feature_order[:max_display]
     global_shap_values = np.abs(shap_values).mean(0)
 
-    chart_data = {"explanations": {
-        "default": {
-            feature_names[feature_ind]: global_shap_values[feature_ind]
-            for feature_ind in feature_inds
+    chart_data = {
+        "explanations": {
+            "default": {
+                feature_names[feature_ind]: global_shap_values[feature_ind]
+                for feature_ind in feature_inds
+            }
         }
-    }}
+    }
     return chart_data
 
 
