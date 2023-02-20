@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3.1.0
+        uses: actions/checkout@v3.3.0
 
       - name: Set up Docker Buildx
         id: builder
@@ -34,7 +34,7 @@ jobs:
       - name: Login to Docker registry
         uses: docker/login-action@v2
         with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          username: giskardai
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Build <current version>+latest backend image
@@ -81,6 +81,7 @@ jobs:
         run: |
           docker buildx build \
           --platform linux/amd64,linux/arm64 \
+          --tag $IMAGE:latest \
           --tag $IMAGE:${{ steps.tag.outputs.version }} \
           --push \
           frontend

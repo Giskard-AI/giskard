@@ -8,12 +8,14 @@ import click
 import lockfile
 import psutil
 from click import INT, STRING
+from lockfile.pidlockfile import PIDLockFile, read_pid_from_pidfile, remove_existing_pidfile
+
+import giskard
 from giskard.cli_utils import create_pid_file_path, remove_stale_pid_file, run_daemon, get_log_path, tail, follow_file
 from giskard.client.analytics_collector import GiskardAnalyticsCollector, anonymize
 from giskard.ml_worker.ml_worker import start_ml_worker
 from giskard.path_utils import run_dir
 from giskard.settings import settings
-from lockfile.pidlockfile import PIDLockFile, read_pid_from_pidfile, remove_existing_pidfile
 
 run_dir.mkdir(parents=True, exist_ok=True)
 
@@ -27,6 +29,7 @@ def set_verbose(_ctx, _param, value):
 
 
 @click.group("cli")
+@click.version_option(f"{giskard.__version__} (Python {platform.python_version()})")
 def cli():
     """
     Giskard Command Line
@@ -67,6 +70,7 @@ def start_stop_options(fn):
         help="Enable verbose logging",
     )(fn)
     return fn
+
 
 @worker.command("start")
 @start_stop_options

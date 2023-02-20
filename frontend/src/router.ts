@@ -86,7 +86,8 @@ export default new Router({
                                     name: 'project-inspector',
                                     component: () => import('./views/main/project/InspectorWrapper.vue'),
                                     props: route => ({
-                                        inspectionId: Number(route.params.inspectionId)
+                                        inspectionId: Number(route.params.inspectionId),
+                                        projectId: Number(route.params.id)
                                     })
                                 },
                                 {
@@ -177,8 +178,13 @@ export default new Router({
                         {
                             path: 'admin',
                             component: () => import(/* webpackChunkName: "main-admin" */ './views/main/admin/Admin.vue'),
-                            redirect: 'admin/users/all',
+                            redirect: 'admin/general',
                             children: [
+                                {
+                                    path: 'general',
+                                    component: () => import(
+                                        /* webpackChunkName: "main-admin" */ './views/main/admin/settings/SettingsGeneral.vue'),
+                                },
                                 {
                                     path: 'users',
                                     redirect: 'users/all',

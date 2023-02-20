@@ -5,6 +5,7 @@ import ai.giskard.domain.ml.Inspection;
 import ai.giskard.domain.ml.table.Filter;
 import ai.giskard.repository.InspectionRepository;
 import ai.giskard.web.rest.errors.EntityNotFoundException;
+import com.google.common.primitives.Ints;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,6 +19,7 @@ import tech.tablesaw.selection.Selection;
 import javax.validation.constraints.NotNull;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.file.Path;
 import java.util.List;
@@ -37,6 +39,7 @@ public class InspectionService {
     private final DatasetService datasetService;
     private final ApplicationProperties applicationProperties;
     private final FileLocationService fileLocationService;
+    private final SliceService sliceService;
 
     public Table getTableFromBucketFile(String location) throws FileNotFoundException {
         InputStreamReader reader = new InputStreamReader(new FileInputStream(location));
@@ -189,11 +192,18 @@ public class InspectionService {
      * @return filtered table
      */
     @Transactional
-    public Table getRowsFiltered(@NotNull Long inspectionId, @NotNull Filter filter) throws FileNotFoundException {
+    public Table getRowsFiltered(@NotNull Long inspectionId, @NotNull Filter filter) throws IOException {
         Inspection inspection = inspectionRepository.findById(inspectionId).orElseThrow(() -> new EntityNotFoundException(INSPECTION, inspectionId));
         Table table = datasetService.readTableByDatasetId(inspection.getDataset().getId());
         table.addColumns(IntColumn.indexColumn(GISKARD_DATASET_INDEX_COLUMN_NAME, table.rowCount(), 0));
         Selection selection = inspection.getModel().getModelType().isClassification() ? getSelection(inspection, filter) : getSelectionRegression(inspection, filter);
+
+        if (filter.getSliceId() != null && filter.getSliceId() > 0) {
+            List<Integer> filteredRowIds = sliceService.getSlicedRowsForDataset(filter.getSliceId(), inspection.getDataset());
+            Selection withFilteredRowIds = Selection.with(Ints.toArray(filteredRowIds));
+            selection = selection != null ? selection.and(Selection.with(Ints.toArray(filteredRowIds))) : withFilteredRowIds;
+        }
+
         return selection == null ? table : table.where(selection);
     }
 

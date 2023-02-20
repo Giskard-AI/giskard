@@ -31,77 +31,73 @@
   </div>
 </template>
 
-<script lang="ts">
-import {Component, Vue} from 'vue-property-decorator';
-import {dispatchSignupUser} from '@/store/main/actions';
-import {commitAddNotification} from '@/store/main/mutations';
-import {AdminUserDTO, ManagedUserVM} from '@/generated-sources';
+<script setup lang="ts">
+import {ManagedUserVM} from "@/generated-sources";
+import {onMounted, ref} from "vue";
+import {useRouter} from "vue-router/composables";
+import {useUserStore} from "@/stores/user";
+import {useMainStore} from "@/stores/main";
 
-@Component
-export default class Login extends Vue {
-  $refs!: {
-    observer
+const router = useRouter();
+const userStore = useUserStore();
+const mainStore = useMainStore();
+
+const userId = ref<string>('');
+const displayName = ref<string>('');
+const email = ref<string>('');
+const password = ref<string>('');
+const passwordConfirm = ref<string>('');
+const errorMsg = ref<string>('');
+const hasTokenParam = ref<boolean>(false);
+const hasEmailParam = ref<boolean>(false);
+
+const observer = ref<any | null>(null);
+
+onMounted(() => {
+  checkToken();
+  if (router.currentRoute.query.to) {
+    email.value = (router.currentRoute.query.to as string);
+    hasEmailParam.value = true;
   }
+})
 
-  public userId: string = '';
-  public displayName: string = '';
-  public email: string = '';
-  public password: string = '';
-  public passwordConfirm: string = '';
-
-  private errorMsg: string = '';
-  private hasTokenParam: boolean = false;
-  private hasEmailParam: boolean = false;
-
-  public mounted() {
-    this.checkToken();
-    if (this.$router.currentRoute.query.to) {
-      this.email = (this.$router.currentRoute.query.to as string);
-      this.hasEmailParam = true;
-    }
-  }
-
-  public checkToken() {
-    const token = (this.$router.currentRoute.query.token as string);
-    if (!token) {
-      this.errorMsg = "Disabled because no token is provided in the URL"
-      this.hasTokenParam = false;
-    } else {
-      this.errorMsg = ""
-      this.hasTokenParam = true;
-      return token;
-    }
-  }
-
-  public async submit() {
-    this.$refs.observer.validate().then(async () => {
-      const token = this.checkToken();
-      if (token) {
-        const profileCreate: ManagedUserVM = {
-          email: this.email,
-          user_id: this.userId,
-          password: this.password,
-          token: token
-        };
-        if (this.displayName) {
-          profileCreate.displayName = this.displayName;
-        }
-        try {
-          await dispatchSignupUser(this.$store, {userData: profileCreate});
-          await this.$router.push('/');
-        } catch (e) {
-          this.errorMsg = e.message;
-        }
-      } else {
-        commitAddNotification(this.$store, {
-          content: 'No token provided in the URL',
-          color: 'error',
-        });
-      }
-    });
+function checkToken() {
+  const token = (router.currentRoute.query.token as string);
+  if (!token) {
+    errorMsg.value = "Disabled because no token is provided in the URL"
+    hasTokenParam.value = false;
+  } else {
+    errorMsg.value = ""
+    hasTokenParam.value = true;
+    return token;
   }
 }
-</script>
 
-<style scoped>
-</style>
+async function submit() {
+  observer.value.validate().then(async () => {
+    const token = checkToken();
+    if (token) {
+      const profileCreate: ManagedUserVM = {
+        email: email.value,
+        user_id: userId.value,
+        password: password.value,
+        token: token
+      };
+      if (displayName.value) {
+        profileCreate.displayName = displayName.value;
+      }
+      try {
+        await userStore.signupUser({userData: profileCreate});
+        await router.push('/');
+      } catch (e) {
+        errorMsg.value = e.message;
+      }
+    } else {
+      mainStore.addNotification({
+        content: 'No token provided in the URL',
+        color: 'error',
+      });
+    }
+  });
+}
+</script>

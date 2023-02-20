@@ -1,6 +1,7 @@
 package ai.giskard.service;
 
 import ai.giskard.domain.Project;
+import ai.giskard.domain.User;
 import ai.giskard.repository.ProjectRepository;
 import ai.giskard.security.AuthoritiesConstants;
 import ai.giskard.security.PermissionEvaluator;
@@ -214,4 +215,48 @@ class PermissionTest {
         assertThat(permissionEvaluator.canWriteProject(project.getId())).isFalse();
     }
 
+    /**
+     * Check if user can read another project as a guest with the required permission
+     */
+    @Test
+    @WithMockUser(username = AI_TESTER_KEY, authorities = AuthoritiesConstants.AITESTER)
+    void isGuestWithAnyRoleAsGuestWithRequiredPermission() {
+        Project project = projectRepository.getOneByName(initService.getProjectByCreatorLogin(ADMIN_KEY));
+
+        User user = new User();
+        user.setLogin(AI_TESTER_KEY);
+        project.getGuests().add(user);
+
+        assertThat(permissionEvaluator.isGuestWithAnyRole(project.getId(), AuthoritiesConstants.AITESTER)).isTrue();
+    }
+
+    /**
+     * Verify than current user cannot read another project as a guest without the required permission
+     */
+    @Test
+    @WithMockUser(username = AI_TESTER_KEY, authorities = AuthoritiesConstants.AITESTER)
+    void isGuestWithAnyRoleAsGuestWithoutRequiredPermission() {
+        Project project = projectRepository.getOneByName(initService.getProjectByCreatorLogin(ADMIN_KEY));
+
+        User user = new User();
+        user.setLogin(AI_TESTER_KEY);
+        project.getGuests().add(user);
+
+        assertThat(permissionEvaluator.isGuestWithAnyRole(project.getId(), AuthoritiesConstants.AICREATOR)).isFalse();
+    }
+
+    /**
+     * Check if user can read another project as a guest with the required permission
+     */
+    @Test
+    @WithMockUser(username = AI_TESTER_KEY, authorities = AuthoritiesConstants.AITESTER)
+    void isGuestWithAnyRoleWithoutBeingGuestWithRequiredPermission() {
+        Project project = projectRepository.getOneByName(initService.getProjectByCreatorLogin(ADMIN_KEY));
+
+        User user = new User();
+        user.setLogin(AI_CREATOR_KEY);
+        project.getGuests().add(user);
+
+        assertThat(permissionEvaluator.isGuestWithAnyRole(project.getId(), AuthoritiesConstants.AITESTER)).isFalse();
+    }
 }

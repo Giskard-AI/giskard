@@ -1,10 +1,13 @@
 package ai.giskard.security;
 
+import org.springframework.stereotype.Component;
+
 import java.util.Map;
 
 /**
  * Constants for Spring Security authorities.
  */
+@Component("AuthoritiesConstants")
 public final class AuthoritiesConstants {
 
     public static final String ADMIN = "ROLE_ADMIN";

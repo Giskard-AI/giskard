@@ -90,9 +90,8 @@ import {ModelDTO} from '@/generated-sources';
 import mixpanel from "mixpanel-browser";
 import {onActivated, ref} from 'vue';
 import DeleteModal from '@/views/main/project/modals/DeleteModal.vue';
-import {commitAddNotification} from '@/store/main/mutations';
-import store from '@/store';
 import InlineEditText from '@/components/InlineEditText.vue';
+import {useMainStore} from "@/stores/main";
 
 const props = withDefaults(defineProps<{
   projectId: number,
@@ -116,7 +115,7 @@ async function deleteModelPickle(id: number) {
   mixpanel.track('Delete dataset', {id});
 
   let messageDTO = await api.deleteModelFiles(id);
-  commitAddNotification(store, {content: messageDTO.message});
+  useMainStore().addNotification({content: messageDTO.message});
   await loadModelPickles();
 }
 

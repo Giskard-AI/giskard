@@ -78,61 +78,59 @@
   <div v-else>Feedback #{{ id }} non existent</div>
 </template>
 
-<script lang="ts">
-import {Component, Prop, Vue} from "vue-property-decorator";
+<script setup lang="ts">
 import {api} from "@/api";
 import Inspector from "./Inspector.vue";
 import MessageReply from "@/components/MessageReply.vue";
-import {FeedbackDTO} from "@/generated-sources";
+import {FeedbackDTO, FeedbackReplyDTO} from "@/generated-sources";
 import mixpanel from "mixpanel-browser";
+import {computed, onMounted, ref} from 'vue';
 
-@Component({
-  components: {Inspector, MessageReply}
+const props = defineProps({
+  id: {type: Number, required: true },
+});
+
+const data = ref<FeedbackDTO | null>(null);
+const userData = ref<{[key: string]: string} | null>(null);
+const originalData = ref<object | null>(null);
+
+onMounted(() => {
+  reloadFeedback();
 })
-export default class FeedbackDetail extends Vue {
-  @Prop({required: true}) id!: number;
 
-  data: FeedbackDTO | null = null;
-  userData: {[key: string]: string} | null = null;
-  originalData: object | null = null;
+async function reloadFeedback() {
+  data.value = (await api.getFeedback(props.id));
+  userData.value = JSON.parse(data.value.userData);
+  originalData.value = JSON.parse(data.value.originalData);
+}
 
-  async mounted() {
-    await this.reloadFeedback()
-  }
+function onInspectorActivated() {
+  mixpanel.track('Open inspector from feedback', {
+    modelId: data.value?.model.id,
+    datasetId: data.value?.dataset.id
+  });
+}
 
-  async reloadFeedback() {
-    this.data = (await api.getFeedback(this.id));
-    this.userData = JSON.parse(this.data.userData);
-    this.originalData = JSON.parse(this.data.originalData);
-  }
-
-  onInspectorActivated() {
-    mixpanel.track('Open inspector from feedback', {
-      modelId: this.data?.model.id,
-      datasetId: this.data?.dataset.id
-    });
-  }
-
-  resetInput() {
-    if (this.data) {
-      this.userData = {...this.originalData}
-    }
-  }
-
-  get firstLevelReplies() {
-    return !this.data ? [] : this.data.feedbackReplies.filter(r => !r.replyToReply)
-  }
-
-  get secondLevelReplies() {
-    return (replyId) => !this.data ? [] : this.data.feedbackReplies.filter(r => r.replyToReply == replyId)
-  }
-
-  async doSendReply(content: string, replyToId: number | null = null) {
-    mixpanel.track('Reply to feedback', {replyTo: replyToId});
-    await api.replyToFeedback(this.id, content, replyToId)
-    await this.reloadFeedback()
+function resetInput() {
+  if (data.value) {
+    userData.value = {...originalData.value}
   }
 }
+
+async function doSendReply(content: string, replyToId: number | null = null) {
+  mixpanel.track('Reply to feedback', {replyTo: replyToId});
+  await api.replyToFeedback(props.id, content, replyToId);
+  await reloadFeedback();
+}
+
+const firstLevelReplies = computed<FeedbackReplyDTO[]>(() => {
+  return !data.value ? [] : data.value.feedbackReplies.filter(r => !r.replyToReply);
+});
+
+function secondLevelReplies(replyId: number) {
+  return !data.value ? [] : data.value.feedbackReplies.filter(r => r.replyToReply === replyId);
+}
+
 </script>
 
 <style lang="scss" scoped>

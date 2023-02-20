@@ -1,14 +1,13 @@
 package ai.giskard.web.dto;
 
-import java.util.Map;
-
+import ai.giskard.domain.FeatureType;
 import com.dataiku.j2ts.annotations.UIModel;
 import com.dataiku.j2ts.annotations.UINullable;
-
-import ai.giskard.domain.FeatureType;
 import lombok.Getter;
-import lombok.Setter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+import java.util.Map;
 
 @Getter
 @Setter

@@ -12,6 +12,7 @@ export interface Filter {
     minThreshold?: number | null;
     predictedLabel?: string[] | null;
     regressionUnit?: string | null;
+    sliceId?: number | null;
     targetLabel?: string[] | null;
     thresholdLabel?: string | null;
     type: RowFilterType;

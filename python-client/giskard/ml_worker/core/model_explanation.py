@@ -1,11 +1,11 @@
 import logging
+from itertools import groupby
 from typing import Callable, Dict, List, Any
 
 import eli5
 import numpy as np
 import pandas as pd
 import shap
-from itertools import groupby
 from eli5.lime import TextExplainer
 
 from giskard.ml_worker.core.giskard_dataset import GiskardDataset
@@ -18,21 +18,19 @@ logger = logging.getLogger(__name__)
 @timer()
 def explain(model: GiskardModel, dataset: GiskardDataset, input_data: Dict):
     def prepare_df(df):
-        return model.prepare_dataframe(
-            GiskardDataset(
-                df=df,
-                target=dataset.target,
-                feature_types=dataset.feature_types,
-                column_types=dataset.column_types,
-            )
-        )
+        prepared_df = model.prepare_dataframe(GiskardDataset(df=df,
+                                                             target=dataset.target,
+                                                             feature_types=dataset.feature_types,
+                                                             column_types=dataset.column_types))
+        columns_in_original_order = model.feature_names if model.feature_names else \
+            [c for c in dataset.df.columns if c in prepared_df.columns]
+        # Make sure column order is the same as in df
+        return prepared_df[columns_in_original_order]
 
     df = model.prepare_dataframe(dataset)
     feature_names = list(df.columns)
 
-    # Make sure column order is that column order is the same as in df
-    input_df = pd.DataFrame([input_data])
-    input_df = prepare_df(input_df)
+    input_df = prepare_df(pd.DataFrame([input_data]))
 
     def predict_array(array):
         return model.prediction_function(prepare_df(pd.DataFrame(array, columns=list(df.columns))))
@@ -75,7 +73,7 @@ def explain_text(model: GiskardModel, input_df: pd.DataFrame,
         text_explainer.show_prediction(target_names=model.classification_labels)
         exp = text_explainer.explain_prediction(target_names=model.classification_labels)
         exp = eli5.formatters.html.prepare_weighted_spans(exp.targets)
-        return get_list_words_weigths(exp) 
+        return get_list_words_weigths(exp)
 
     except Exception as e:
         logger.exception(f"Failed to explain text: {text_document}", e)

@@ -46,6 +46,7 @@ services:
       - SPRING_MAIL_USERNAME
       - SPRING_MAIL_PASSWORD
       - JHIPSTER_MAIL_BASEURL
+      - GISKARD_AUTH=${GISKARD_AUTH-}
     volumes:
       - giskard-home:/giskard-home
 

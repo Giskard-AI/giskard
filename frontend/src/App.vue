@@ -18,21 +18,26 @@
         </v-container>
       </v-main>
       <router-view v-else/>
+      <modals-container></modals-container>
     </v-app>
   </div>
 </template>
 
 <script lang="ts" setup>
-import {readIsLoggedIn} from '@/store/main/getters';
-import {dispatchCheckLoggedIn} from '@/store/main/actions';
 import {computed, onBeforeMount, provide} from "vue";
-import store from "@/store";
 import {editor} from "monaco-editor";
+import {useUserStore} from "@/stores/user";
+import {useMainStore} from "@/stores/main";
 import IEditorOptions = editor.IEditorOptions;
 
+const userStore = useUserStore();
+const mainStore = useMainStore();
+
+mainStore.fetchFeatures();
+
 const loggedIn = computed(() => {
-  return readIsLoggedIn(store);
-});
+  return userStore.isLoggedIn;
+})
 
 let monacoOptions: IEditorOptions = {
   automaticLayout: true,
@@ -44,6 +49,6 @@ let monacoOptions: IEditorOptions = {
 provide('monacoOptions', monacoOptions);
 
 onBeforeMount(async () => {
-  await dispatchCheckLoggedIn(store);
+  await userStore.checkLoggedIn();
 });
 </script>

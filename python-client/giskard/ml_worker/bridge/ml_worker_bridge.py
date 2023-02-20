@@ -4,7 +4,7 @@ import sys
 from asyncio import StreamReader, StreamWriter
 from random import random
 
-from tenacity import retry, wait_exponential
+from tenacity import retry, wait_exponential, stop_after_attempt, after_log
 
 from giskard.cli import analytics
 from giskard.client.analytics_collector import anonymize
@@ -107,6 +107,9 @@ class MLWorkerBridge:
         except BaseException as e:  # NOSONAR
             logger.exception(e)
 
+    @retry(stop=stop_after_attempt(5),
+           wait=wait_exponential(multiplier=1, min=1, max=15),
+           after=after_log(logger, logging.WARNING))
     async def handle_server_command(self, client, command):
         if command == CREATE_CLIENT_CHANNEL:
             remote_reader, remote_writer = await asyncio.open_connection(

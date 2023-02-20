@@ -27,6 +27,7 @@ export const GENERATED_MAPPING = {
     'ai.giskard.web.dto.FeedbackDTO' : 'FeedbackDTO',
     'ai.giskard.web.dto.FeedbackMinimalDTO' : 'FeedbackMinimalDTO',
     'ai.giskard.web.dto.FeedbackReplyDTO' : 'FeedbackReplyDTO',
+    'ai.giskard.web.dto.FilterDatasetDTO' : 'FilterDatasetDTO',
     'ai.giskard.web.dto.InspectionCreateDTO' : 'InspectionCreateDTO',
     'ai.giskard.web.dto.JWTToken' : 'JWTToken',
     'ai.giskard.web.dto.MessageDTO' : 'MessageDTO',
@@ -40,6 +41,7 @@ export const GENERATED_MAPPING = {
     'ai.giskard.web.dto.ml.ProjectDTO' : 'ProjectDTO',
     'ai.giskard.web.dto.ml.ProjectPostDTO' : 'ProjectPostDTO',
     'ai.giskard.web.dto.ml.SingleTestResultDTO' : 'SingleTestResultDTO',
+    'ai.giskard.web.dto.ml.SliceDTO' : 'SliceDTO',
     'ai.giskard.web.dto.ml.TestDTO' : 'TestDTO',
     'ai.giskard.web.dto.ml.TestEditorConfigDTO' : 'TestEditorConfigDTO',
     'ai.giskard.web.dto.ml.TestExecutionResultDTO' : 'TestExecutionResultDTO',
@@ -53,11 +55,16 @@ export const GENERATED_MAPPING = {
     'ai.giskard.web.dto.ModelMetadataDTO' : 'ModelMetadataDTO',
     'ai.giskard.web.dto.ModelUploadParamsDTO' : 'ModelUploadParamsDTO',
     'ai.giskard.web.dto.PasswordResetRequest' : 'PasswordResetRequest',
+    'ai.giskard.web.dto.PostImportProjectDTO' : 'PostImportProjectDTO',
     'ai.giskard.web.dto.PredictionDTO' : 'PredictionDTO',
     'ai.giskard.web.dto.PredictionInputDTO' : 'PredictionInputDTO',
     'ai.giskard.web.dto.PrepareDeleteDTO$LightTestSuite' : 'PrepareDeleteDTO.LightTestSuite',
     'ai.giskard.web.dto.PrepareDeleteDTO$LightFeedback' : 'PrepareDeleteDTO.LightFeedback',
     'ai.giskard.web.dto.PrepareDeleteDTO' : 'PrepareDeleteDTO',
+    'ai.giskard.web.dto.PrepareImportProjectDTO' : 'PrepareImportProjectDTO',
+    'ai.giskard.web.dto.SliceCreateDTO' : 'SliceCreateDTO',
+    'ai.giskard.web.dto.SlicePutDTO' : 'SlicePutDTO',
+    'ai.giskard.web.dto.SliceValidateDTO' : 'SliceValidateDTO',
     'ai.giskard.web.dto.TestSuiteCreateDTO' : 'TestSuiteCreateDTO',
     'ai.giskard.web.dto.TestTemplatesResponse' : 'TestTemplatesResponse',
     'ai.giskard.web.dto.user.AdminUserDTO$AdminUserDTOWithPassword' : 'AdminUserDTO.AdminUserDTOWithPassword',
@@ -97,6 +104,7 @@ export * from './ai/giskard/web/dto/feature-metadata-dto';
 export * from './ai/giskard/web/dto/feedback-dto';
 export * from './ai/giskard/web/dto/feedback-minimal-dto';
 export * from './ai/giskard/web/dto/feedback-reply-dto';
+export * from './ai/giskard/web/dto/filter-dataset-dto';
 export * from './ai/giskard/web/dto/inspection-create-dto';
 export * from './ai/giskard/web/dto/jwttoken';
 export * from './ai/giskard/web/dto/message-dto';
@@ -110,6 +118,7 @@ export * from './ai/giskard/web/dto/ml/named-single-test-result-dto';
 export * from './ai/giskard/web/dto/ml/project-dto';
 export * from './ai/giskard/web/dto/ml/project-post-dto';
 export * from './ai/giskard/web/dto/ml/single-test-result-dto';
+export * from './ai/giskard/web/dto/ml/slice-dto';
 export * from './ai/giskard/web/dto/ml/test-dto';
 export * from './ai/giskard/web/dto/ml/test-editor-config-dto';
 export * from './ai/giskard/web/dto/ml/test-execution-result-dto';
@@ -123,9 +132,14 @@ export * from './ai/giskard/web/dto/ml/write/test-suite-post-dto';
 export * from './ai/giskard/web/dto/model-metadata-dto';
 export * from './ai/giskard/web/dto/model-upload-params-dto';
 export * from './ai/giskard/web/dto/password-reset-request';
+export * from './ai/giskard/web/dto/post-import-project-dto';
 export * from './ai/giskard/web/dto/prediction-dto';
 export * from './ai/giskard/web/dto/prediction-input-dto';
 export * from './ai/giskard/web/dto/prepare-delete-dto';
+export * from './ai/giskard/web/dto/prepare-import-project-dto';
+export * from './ai/giskard/web/dto/slice-create-dto';
+export * from './ai/giskard/web/dto/slice-put-dto';
+export * from './ai/giskard/web/dto/slice-validate-dto';
 export * from './ai/giskard/web/dto/test-suite-create-dto';
 export * from './ai/giskard/web/dto/test-templates-response';
 export * from './ai/giskard/web/dto/user/admin-user-dto';

@@ -85,7 +85,3 @@ export default class TestSuiteSettings extends Vue {
   }
 }
 </script>
-
-<style scoped>
-
-</style>

@@ -13,7 +13,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -189,13 +188,22 @@ public class UserService {
             .map(AdminUserDTO::new);
     }
 
+    /***
+     * Tries to delete a user.
+     * User cannot be the only admin (ie there must be one admin left after deletion)
+     * @param login
+     */
     public void deleteUser(String login) {
-        userRepository
-            .findOneByLogin(login)
-            .ifPresent(user -> {
-                user.setEnabled(false);
-                log.debug("Deleted[deactivated] user : {}", user);
+        userRepository.findOneWithRolesByLogin(login).ifPresent(user -> {
+            roleRepository.findByName(AuthoritiesConstants.ADMIN).ifPresent(adminRole -> {
+                if (user.getRoles().contains(adminRole) && userRepository.findByRolesNameIn(Collections.singletonList(adminRole.getName())).size() < 2) {
+                    throw new GiskardRuntimeException("You must have at least one other admin user before deleting an admin user.");
+                }
             });
+
+            user.setEnabled(false);
+            userRepository.save(user);
+        });
     }
 
     public void enableUser(String login) {
@@ -259,20 +267,6 @@ public class UserService {
         return userRepository.getOneByLogin(login);
     }
 
-    /**
-     * Not activated users should be automatically deleted after 3 days.
-     * <p>
-     * This is scheduled to get fired everyday, at 01:00 (am).
-     */
-    @Scheduled(cron = "0 0 1 * * ?")
-    public void removeNotActivatedUsers() {
-        //userRepository
-        //    .findAllByActivatedIsFalseAndActivationKeyIsNotNullAndCreatedDateBefore(Instant.now().minus(3, ChronoUnit.DAYS))
-        //    .forEach(user -> {
-        //        log.debug("Deleting not activated user {}", user.getLogin());
-        //        userRepository.delete(user);
-        //    });
-    }
 
     /**
      * Gets a list of all the authorities.

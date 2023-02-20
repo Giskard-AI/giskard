@@ -4,6 +4,7 @@ import ai.giskard.domain.AbstractAuditingEntity;
 import ai.giskard.domain.ml.CodeLanguage;
 import ai.giskard.domain.ml.TestSuite;
 import ai.giskard.domain.ml.TestType;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
 
@@ -27,6 +28,7 @@ public class Test extends AbstractAuditingEntity {
     private CodeLanguage language;
 
     @ManyToOne
+    @JsonBackReference
     private TestSuite testSuite;
 
     @Enumerated(EnumType.STRING)
