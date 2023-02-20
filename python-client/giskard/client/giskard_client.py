@@ -30,7 +30,9 @@ def explain_error(err_resp):
         message = "Access token is invalid or expired. Please generate a new one"
 
     if message is None:
-        message = f"{err_resp.get('title', 'Unknown error')}: {err_resp.get('detail', 'no details')}"
+        message = (
+            f"{err_resp.get('title', 'Unknown error')}: {err_resp.get('detail', 'no details')}"
+        )
     return GiskardError(status=status, code=code, message=message)
 
 
@@ -44,7 +46,7 @@ class ErrorHandlingAdapter(HTTPAdapter):
                 err_resp = response.json()
 
                 giskard_error = explain_error(err_resp)
-            except:  # NOSONAR
+            except:  # noqa
                 response.raise_for_status()
             raise giskard_error
         return response
@@ -57,7 +59,7 @@ class BearerAuth(AuthBase):
         self.token = token
 
     def __call__(self, r):
-        r.headers['Authorization'] = f"Bearer {self.token}"
+        r.headers["Authorization"] = f"Bearer {self.token}"
         return r
 
 
@@ -70,10 +72,9 @@ class GiskardClient:
         self.analytics = GiskardAnalyticsCollector()
         try:
             server_settings = self._session.get("settings").json()
-            self.analytics. \
-                init(server_settings)
-        except Exception:
-            logger.warning(f"Failed to fetch server settings", exc_info=True)
+            self.analytics.init(server_settings)
+        except:  # noqa
+            logger.warning("Failed to fetch server settings", exc_info=True)
         self.analytics.track("Init GiskardClient", {"client version": giskard.__version__})
 
     @property
@@ -83,7 +84,10 @@ class GiskardClient:
     def list_projects(self) -> List[GiskardProject]:
         self.analytics.track("List Projects")
         response = self._session.get("projects").json()
-        return [GiskardProject(self._session, p["key"], p["id"], analytics=self.analytics) for p in response]
+        return [
+            GiskardProject(self._session, p["key"], p["id"], analytics=self.analytics)
+            for p in response
+        ]
 
     def get_project(self, project_key: str):
         """
@@ -96,8 +100,10 @@ class GiskardClient:
                 The giskard project that belongs to the project key
         """
         self.analytics.track("Get Project", {"project_key": anonymize(project_key)})
-        response = self._session.get(f"project", params={"key": project_key}).json()
-        return GiskardProject(self._session, response["key"], response["id"], analytics=self.analytics)
+        response = self._session.get("project", params={"key": project_key}).json()
+        return GiskardProject(
+            self._session, response["key"], response["id"], analytics=self.analytics
+        )
 
     def create_project(self, project_key: str, name: str, description: str = None):
         """
@@ -136,4 +142,6 @@ class GiskardClient:
         actual_project_id = response.get("id")
         if actual_project_key != project_key:
             print(f"Project created with a key : {actual_project_key}")
-        return GiskardProject(self._session, actual_project_key, actual_project_id, analytics=self.analytics)
+        return GiskardProject(
+            self._session, actual_project_key, actual_project_id, analytics=self.analytics
+        )
