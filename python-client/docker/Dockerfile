@@ -109,5 +109,5 @@ ENV PYTHONPATH=.
 ENV GSK_CACHE_DIR=projects
 ENV GSK_HOME=/giskard-home
 
-CMD ["python", "giskard/cli.py", "worker", "start", "-s", "-k", "INTERNAL_ML_WORKER"]
+CMD ["python", "giskard/cli.py", "worker", "start", "-s"]
 EXPOSE 50051

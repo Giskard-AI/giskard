@@ -151,6 +151,8 @@ dependencies {
     implementation("io.grpc:grpc-census:$grpcVersion")
     implementation("io.grpc:grpc-protobuf:$grpcVersion")
     implementation("io.grpc:grpc-stub:$grpcVersion")
+
+
     testImplementation("io.grpc:grpc-testing:$grpcVersion")
 
     implementation(platform("tech.jhipster:jhipster-dependencies:${jhipsterDependenciesVersion}"))
