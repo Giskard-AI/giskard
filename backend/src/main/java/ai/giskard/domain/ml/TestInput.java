@@ -31,6 +31,12 @@ public class TestInput {
     @NotNull
     private SuiteTest test;
 
+    public TestInput(String name, String value, SuiteTest test) {
+        this.name = name;
+        this.value = value;
+        this.test = test;
+    }
+
     public TestInput(SuiteTest test, GeneratedTestInput testInput) {
         this.name = testInput.getName();
         this.value = testInput.getValue();

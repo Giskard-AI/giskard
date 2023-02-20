@@ -73,6 +73,11 @@
           <ApiTokenCard/>
         </v-col>
       </v-row>
+      <v-row v-if="isAdmin">
+        <v-col>
+          <RunningWorkerJobs/>
+        </v-col>
+      </v-row>
     </v-container>
   </div>
 </template>
@@ -81,9 +86,11 @@
 import {computed, ref} from "vue";
 import {UpdateMeDTO} from "@/generated-sources";
 import {Role} from "@/enums";
+import ApiTokenCard from "@/components/ApiTokenCard.vue";
+import RunningWorkerJobs from '@/views/main/profile/RunningWorkerJobs.vue';
+
 import {useUserStore} from "@/stores/user";
 import {useMainStore} from "@/stores/main";
-import ApiTokenCard from "@/components/ApiTokenCard.vue";
 
 const userStore = useUserStore();
 const mainStore = useMainStore();

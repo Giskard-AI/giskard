@@ -18,6 +18,7 @@ import {
     GenerateTestSuiteDTO,
     InspectionCreateDTO,
     InspectionDTO,
+    JobDTO,
     JWTToken,
     ManagedUserVM,
     MessageDTO,
@@ -38,6 +39,7 @@ import {
     TestExecutionResultDTO,
     TestSuiteCreateDTO,
     TestSuiteDTO,
+    TestSuiteExecutionDTO,
     TestSuiteNewDTO,
     TestTemplatesResponse,
     TokenAndPasswordVM,
@@ -200,6 +202,12 @@ export const api = {
     async getMLWorkerSettings() {
         return apiV2.get<unknown, MLWorkerInfoDTO[]>(`/settings/ml-worker-info`);
     },
+    async getRunningWorkerJobs() {
+        return apiV2.get<unknown, JobDTO[]>(`/jobs/running`);
+    },
+    async trackJob(jobUuid: string) {
+        return apiV2.get<unknown, JobDTO>(`/jobs/${jobUuid}`);
+    },
     async saveGeneralSettings(settings: GeneralSettings) {
         return apiV2.post<unknown, GeneralSettings>(`/settings`, settings);
     },
@@ -343,6 +351,9 @@ export const api = {
     async getTestSuiteNew(projectId: number, suiteId: number) {
         return apiV2.get<unknown, TestSuiteNewDTO>(`testing/project/${projectId}/suite-new/${suiteId}`);
     },
+    async listTestSuiteExecutions(projectId: number, suiteId: number) {
+        return apiV2.get<unknown, TestSuiteExecutionDTO[]>(`testing/project/${projectId}/suite-new/${suiteId}/execution`);
+    },
     async getTestSuiteNewInputs(projectId: number, suiteId: number) {
         return apiV2.get<unknown, any>(`testing/project/${projectId}/suite-new/${suiteId}/inputs`);
     },
@@ -352,6 +363,9 @@ export const api = {
     },
     async getProjectSlices(id: number) {
         return axiosProject.get<unknown, SliceDTO[]>(`/${id}/slices`);
+    },
+    async executeTestSuiteNew(projectId: number, suiteId: number, inputs: { [key: string]: string }) {
+        return apiV2.post<unknown, any>(`testing/project/${projectId}/suite-new/${suiteId}/schedule-execution`, inputs);
     },
     async getInspection(inspectionId: number) {
         return apiV2.get<unknown, InspectionDTO>(`/inspection/${inspectionId}`);
