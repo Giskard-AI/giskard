@@ -62,7 +62,8 @@ class Suite:
 
         for test_partial in self.tests:
             test_params = self.create_test_params(test_partial, suite_run_args)
-            res[f'{test_partial.giskard_test.meta.module}.{test_partial.giskard_test.meta.name}'] = test_partial.giskard_test.set_params(**test_params).execute()
+            res[f'{test_partial.giskard_test.meta.module}.{test_partial.giskard_test.meta.name}'] = \
+                test_partial.giskard_test.set_params(**test_params).execute()
 
         result = single_binary_result(list(res.values()))
 
@@ -75,7 +76,7 @@ class Suite:
     @staticmethod
     def create_test_params(test_partial, kwargs):
         if isinstance(test_partial.giskard_test, GiskardTestMethod):
-            available_params = test_partial.giskard_test.params.items()
+            available_params = inspect.signature(test_partial.giskard_test.data).parameters.items()
         else:
             available_params = inspect.signature(test_partial.giskard_test.set_params).parameters.items()
 

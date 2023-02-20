@@ -2,7 +2,7 @@ import inspect
 import pickle
 import sys
 from pathlib import Path
-from typing import Union, Callable, Any
+from typing import Union, Callable, Any, Optional
 
 from giskard import test
 from giskard.core.core import TestFunctionMeta, SMT
@@ -78,6 +78,12 @@ class GiskardTest(Savable[Any, TestFunctionMeta]):
 
         return giskard_test
 
+    @classmethod
+    def _read_meta_from_loca_dir(cls, uuid: str, project_key: Optional[str]) -> TestFunctionMeta:
+        meta = tests_registry.get_test(uuid)
+        if meta is None:
+            assert f"Cannot find test function {uuid}"
+        return meta
 
 Function = Callable[..., Result]
 
