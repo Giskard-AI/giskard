@@ -17,9 +17,9 @@ async def _start_grpc_server(is_server=False):
     server = grpc.aio.server(
         interceptors=[ErrorInterceptor()],
         options=[
-            ("grpc.max_send_message_length", settings.max_send_message_length_mb * 1024 ** 2),
-            ("grpc.max_receive_message_length", settings.max_receive_message_length_mb * 1024 ** 2),
-        ]
+            ("grpc.max_send_message_length", settings.max_send_message_length_mb * 1024**2),
+            ("grpc.max_receive_message_length", settings.max_receive_message_length_mb * 1024**2),
+        ],
     )
 
     port = settings.port if settings.port and is_server else find_free_port()
