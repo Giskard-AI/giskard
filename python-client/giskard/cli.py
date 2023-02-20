@@ -11,7 +11,14 @@ from click import INT, STRING
 from lockfile.pidlockfile import PIDLockFile, read_pid_from_pidfile, remove_existing_pidfile
 
 import giskard
-from giskard.cli_utils import create_pid_file_path, remove_stale_pid_file, run_daemon, get_log_path, tail, follow_file
+from giskard.cli_utils import (
+    create_pid_file_path,
+    remove_stale_pid_file,
+    run_daemon,
+    get_log_path,
+    tail,
+    follow_file,
+)
 from giskard.client.analytics_collector import GiskardAnalyticsCollector, anonymize
 from giskard.ml_worker.ml_worker import start_ml_worker
 from giskard.path_utils import run_dir
@@ -45,12 +52,20 @@ def worker() -> None:
 
 def start_stop_options(fn):
     fn = click.option(
-        "--host", "-h", type=STRING, default='localhost', help="Remote Giskard host address to connect to"
+        "--host",
+        "-h",
+        type=STRING,
+        default="localhost",
+        help="Remote Giskard host address to connect to",
     )(fn)
 
     fn = click.option(
-        "--server", "-s", "is_server", is_flag=True, default=False,
-        help="Server mode. Used by Giskard embedded ML Worker"
+        "--server",
+        "-s",
+        "is_server",
+        is_flag=True,
+        default=False,
+        help="Server mode. Used by Giskard embedded ML Worker",
     )(fn)
     fn = click.option(
         "--port",
@@ -98,12 +113,16 @@ def start_command(host, port, is_server, is_daemon):
 
 
 def _start_command(is_server, host, port, is_daemon):
-    analytics.track("Start ML Worker", {
-        "is_server": is_server,
-        "host": anonymize(host),
-        "port": anonymize(port),
-        "is_daemon": is_daemon
-    }, force=True)
+    analytics.track(
+        "Start ML Worker",
+        {
+            "is_server": is_server,
+            "host": anonymize(host),
+            "port": anonymize(port),
+            "is_daemon": is_daemon,
+        },
+        force=True,
+    )
     start_msg = "Starting ML Worker"
     start_msg += " server" if is_server else " client"
     if is_daemon:
@@ -192,10 +211,21 @@ def _find_and_stop(is_server, host, port):
 
 
 @worker.command("logs")
-@click.option("--lines", "-n", type=INT, default=10,
-              help="Output the last N lines of the log file, 10 lines are displayed by default")
-@click.option("--follow", "-f", "is_follow", is_flag=True, default=False,
-              help="Output appended data as new logs are being generated")
+@click.option(
+    "--lines",
+    "-n",
+    type=INT,
+    default=10,
+    help="Output the last N lines of the log file, 10 lines are displayed by default",
+)
+@click.option(
+    "--follow",
+    "-f",
+    "is_follow",
+    is_flag=True,
+    default=False,
+    help="Output appended data as new logs are being generated",
+)
 def read_logs(lines, is_follow):
     log_path = get_log_path()
 

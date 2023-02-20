@@ -39,7 +39,11 @@ from giskard.ml_worker.generated.ml_worker_pb2 import (
     RunTestRequest,
     TestResultMessage,
     UploadStatus,
-    FileUploadMetadata, FileType, StatusCode, FilterDatasetResponse, )
+    FileUploadMetadata,
+    FileType,
+    StatusCode,
+    FilterDatasetResponse,
+)
 from giskard.ml_worker.generated.ml_worker_pb2_grpc import MLWorkerServicer
 from giskard.ml_worker.utils.grpc_mapper import deserialize_dataset, deserialize_model
 from giskard.ml_worker.utils.logging import Timer
@@ -90,7 +94,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
             elif upload_msg.HasField("chunk"):
                 try:
                     path.parent.mkdir(exist_ok=True, parents=True)
-                    with open(path, 'ab') as f:
+                    with open(path, "ab") as f:
                         f.write(upload_msg.chunk.content)
                     progress.update(len(upload_msg.chunk.content))
                 except Exception as e:
@@ -178,13 +182,18 @@ class MLWorkerServiceImpl(MLWorkerServicer):
         input_df = pd.DataFrame({k: [v] for k, v in request.columns.items()})
         if model.feature_names:
             input_df = input_df[model.feature_names]
-        (list_words, list_weights) = explain_text(model, input_df, text_column, text_document, n_samples)
+        (list_words, list_weights) = explain_text(
+            model, input_df, text_column, text_document, n_samples
+        )
         map_features_weight = dict(zip(model.classification_labels, list_weights))
         return ExplainTextResponse(
             weights={
-                k: ExplainTextResponse.WeightsPerFeature(weights=[weight for weight in map_features_weight[k]])
-                for k in map_features_weight},
-            words=list_words
+                k: ExplainTextResponse.WeightsPerFeature(
+                    weights=[weight for weight in map_features_weight[k]]
+                )
+                for k in map_features_weight
+            },
+            words=list_words,
         )
 
     def runModelForDataFrame(self, request: RunModelForDataFrameRequest, context):
@@ -212,15 +221,19 @@ class MLWorkerServiceImpl(MLWorkerServicer):
             dataset = deserialize_dataset(request.dataset)
         except ValueError as e:
             if "unsupported pickle protocol" in str(e):
-                raise ValueError('Unable to unpickle object, '
-                                 'Make sure that Python version of client code is the same as the Python version in ML Worker.'
-                                 'To change Python version, please refer to https://docs.giskard.ai/start/guides/configuration'
-                                 f'\nOriginal Error: {e}') from e
+                raise ValueError(
+                    "Unable to unpickle object, "
+                    "Make sure that Python version of client code is the same as the Python version in ML Worker."
+                    "To change Python version, please refer to https://docs.giskard.ai/start/guides/configuration"
+                    f"\nOriginal Error: {e}"
+                ) from e
             raise e
         except ModuleNotFoundError as e:
-            raise GiskardException(f"Failed to import '{e.name}'. "
-                                   f"Make sure it's installed in the ML Worker environment."
-                                   "To install it, refer to https://docs.giskard.ai/start/guides/configuration") from e
+            raise GiskardException(
+                f"Failed to import '{e.name}'. "
+                f"Make sure it's installed in the ML Worker environment."
+                "To install it, refer to https://docs.giskard.ai/start/guides/configuration"
+            ) from e
         prediction_results = model.run_predict(dataset)
 
         if model.model_type == "classification":
@@ -279,7 +292,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
             elif filter_msg.HasField("data"):
                 logger.info("Got chunk " + str(filter_msg.idx))
                 time_start = time.perf_counter()
-                data_as_string = filter_msg.data.content.decode('utf-8')
+                data_as_string = filter_msg.data.content.decode("utf-8")
                 data_as_string = meta.headers + "\n" + data_as_string
                 # CSV => Dataframe
                 data = StringIO(data_as_string)  # Wrap using StringIO to avoid creating file
@@ -287,13 +300,15 @@ class MLWorkerServiceImpl(MLWorkerServicer):
                 df = df.astype(column_types)
                 # Iterate over rows, applying filter_row func
                 try:
-                    rows_to_keep = df.apply(filterfunc["filter_row"], axis=1)[lambda x: x == True].index.array
+                    rows_to_keep = df.apply(filterfunc["filter_row"], axis=1)[lambda x: x is True].index.array
                 except Exception as e:
                     yield FilterDatasetResponse(code=StatusCode.Failed, error_message=str(e))
                 time_end = time.perf_counter()
                 times.append(time_end - time_start)
                 # Send NEXT code
-                yield FilterDatasetResponse(code=StatusCode.Next, idx=filter_msg.idx, rows=rows_to_keep)
+                yield FilterDatasetResponse(
+                    code=StatusCode.Next, idx=filter_msg.idx, rows=rows_to_keep
+                )
 
         logger.info(f"Filter dataset finished. Avg chunk time: {sum(times) / len(times)}")
         yield FilterDatasetResponse(code=StatusCode.Ok)

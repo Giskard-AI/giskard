@@ -56,9 +56,9 @@ tasks {
 
     }
 
-    create<PythonTask>("test") {
-        module = "pytest"
-        command = "-c ${file("pyproject.toml")} --cov=giskard tests --cov-report=xml"
+    create<PythonTask>("lint") {
+        module = "flake8"
+        command = "giskard"
     }
 
 

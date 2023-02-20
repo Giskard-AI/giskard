@@ -17,8 +17,11 @@ from giskard.client.python_utils import get_python_requirements, get_python_vers
 
 class GiskardProject:
     def __init__(
-            self, session: BaseUrlSession, project_key: str, project_id: int,
-            analytics: GiskardAnalyticsCollector = None
+            self,
+            session: BaseUrlSession,
+            project_key: str,
+            project_id: int,
+            analytics: GiskardAnalyticsCollector = None,
     ) -> None:
         self.project_key = project_key
         self._session = session
@@ -96,15 +99,22 @@ class GiskardProject:
             classification_labels, classification_threshold, feature_names, model, model_type, name
         )
 
-    def _update_test_suite_params(self, actual_ds_id, reference_ds_id, model_id, test_id=None, test_suite_id=None):
-        assert test_id is not None or test_suite_id is not None, "Either test_id or test_suite_id should be specified"
-        res = self._session.put("testing/suites/update_params", json={
-            "testSuiteId": test_suite_id,
-            "testId": test_id,
-            "referenceDatasetId": reference_ds_id,
-            "actualDatasetId": actual_ds_id,
-            "modelId": model_id
-        })
+    def _update_test_suite_params(
+            self, actual_ds_id, reference_ds_id, model_id, test_id=None, test_suite_id=None
+    ):
+        assert (
+                test_id is not None or test_suite_id is not None
+        ), "Either test_id or test_suite_id should be specified"
+        res = self._session.put(
+            "testing/suites/update_params",
+            json={
+                "testSuiteId": test_suite_id,
+                "testId": test_id,
+                "referenceDatasetId": reference_ds_id,
+                "actualDatasetId": actual_ds_id,
+                "modelId": model_id,
+            },
+        )
         assert res.status_code == 200, "Failed to update test suite"
 
     def list_tests_in_suite(self, suite_id):
@@ -118,15 +128,14 @@ class GiskardProject:
 
     def _execution_dto_filter(self, answer_json):
         res = {
-            "id": answer_json['testId'],
-            "name": answer_json['testName'],
-            "status": answer_json['status'],
-
-            "executionDate": answer_json['executionDate'],
-            "message": answer_json['message']
+            "id": answer_json["testId"],
+            "name": answer_json["testName"],
+            "status": answer_json["status"],
+            "executionDate": answer_json["executionDate"],
+            "message": answer_json["message"],
         }
-        if answer_json['status'] != 'ERROR':
-            res["metric"] = answer_json['result'][0]['result']['metric']
+        if answer_json["status"] != "ERROR":
+            res["metric"] = answer_json["result"][0]["result"]["metric"]
         return res
 
     def execute_test(self, test_id, actual_ds_id=None, reference_ds_id=None, model_id=None):
@@ -141,14 +150,13 @@ class GiskardProject:
         )
         assert test_id is not None, "test_id should be specified"
 
-        self._update_test_suite_params(
-            actual_ds_id, reference_ds_id, model_id, test_id=test_id
-        )
+        self._update_test_suite_params(actual_ds_id, reference_ds_id, model_id, test_id=test_id)
         answer_json = self._session.post(f"testing/tests/{test_id}/run").json()
         return self._execution_dto_filter(answer_json)
 
-
-    def execute_test_suite(self, test_suite_id, actual_ds_id=None, reference_ds_id=None, model_id=None):
+    def execute_test_suite(
+            self, test_suite_id, actual_ds_id=None, reference_ds_id=None, model_id=None
+    ):
         self.analytics.track(
             "execute_test_suite",
             {
@@ -160,9 +168,12 @@ class GiskardProject:
         )
         assert test_suite_id is not None, "test_suite_id should be specified"
         self._update_test_suite_params(
-            actual_ds_id, reference_ds_id, model_id, test_suite_id=test_suite_id,
+            actual_ds_id,
+            reference_ds_id,
+            model_id,
+            test_suite_id=test_suite_id,
         )
-        answer_json =  self._session.post(f"testing/suites/execute", json={"suiteId": test_suite_id}).json()
+        answer_json = self._session.post("testing/suites/execute", json={"suiteId": test_suite_id}).json()
         return [self._execution_dto_filter(test) for test in answer_json]
 
     def _post_model(
@@ -205,7 +216,7 @@ class GiskardProject:
             },
         )
 
-        model_id = model_res.json().get('id')
+        model_id = model_res.json().get("id")
         print(
             f"Model successfully uploaded to project key '{self.project_key}' with ID = {model_id}. It is available at {self.url} "
         )
@@ -307,7 +318,7 @@ class GiskardProject:
         }
         files = [("metadata", (None, json.dumps(params), "application/json")), ("file", data)]
         result = self._session.post("project/data/upload", data={}, files=files)
-        ds_id = result.json().get('id')
+        ds_id = result.json().get("id")
         print(
             f"Dataset successfully uploaded to project key '{self.project_key}' with ID = {ds_id}. It is available at {self.url} "
         )
@@ -423,7 +434,7 @@ class GiskardProject:
                     set(column_type.value for column_type in SupportedColumnType)
             ):
                 raise ValueError(
-                    f"Invalid column_types parameter: "
+                    "Invalid column_types parameter: "
                     + f"Please choose types among {[column_type.value for column_type in SupportedColumnType]}."
                 )
         else:
@@ -470,7 +481,7 @@ class GiskardProject:
             classification_labels, classification_threshold=None
     ):
         if classification_labels is None:
-            raise ValueError(f"Missing classification_labels parameter for classification model.")
+            raise ValueError("Missing classification_labels parameter for classification model.")
         if classification_threshold is not None and not isinstance(
                 classification_threshold, (int, float)
         ):
@@ -530,16 +541,24 @@ class GiskardProject:
             res = None
         return res
 
-    def _validate_model_execution(self, prediction_function, df: pd.DataFrame, model_type,
-                                  classification_labels=None, target=None) -> None:
+    def _validate_model_execution(
+            self,
+            prediction_function,
+            df: pd.DataFrame,
+            model_type,
+            classification_labels=None,
+            target=None,
+    ) -> None:
         if target is not None and target in df.columns:
             df = df.drop(target, axis=1)
         try:
             prediction_function(df.head(1))
         except Exception:
-            raise ValueError("Invalid prediction_function input.\n"
-                             "Please make sure that prediction_function(df.head(1)) does not return an error "
-                             "message before uploading in Giskard")
+            raise ValueError(
+                "Invalid prediction_function input.\n"
+                "Please make sure that prediction_function(df.head(1)) does not return an error "
+                "message before uploading in Giskard"
+            )
         try:
             prediction = prediction_function(df)
         except Exception:
@@ -549,9 +568,9 @@ class GiskardProject:
                 "message before uploading in Giskard"
             )
         min_num_rows = min(len(df), 5)
-        GiskardProject._validate_deterministic_model(df.head(min_num_rows),
-                                                     prediction[:min_num_rows],
-                                                     prediction_function)
+        GiskardProject._validate_deterministic_model(
+            df.head(min_num_rows), prediction[:min_num_rows], prediction_function
+        )
         GiskardProject._validate_prediction_output(df, model_type, prediction)
         if model_type == SupportedModelTypes.CLASSIFICATION.value:
             GiskardProject._validate_classification_prediction(classification_labels, prediction)
@@ -575,11 +594,15 @@ class GiskardProject:
     @staticmethod
     def _validate_classification_prediction(classification_labels, prediction):
         if not np.all(np.logical_and(prediction >= 0, prediction <= 1)):
-            warning("Output of the prediction_function returns values out of range [0,1]. "
-                    "The output of Multiclass and Binary classifications should be within the range [0,1]")
+            warning(
+                "Output of the prediction_function returns values out of range [0,1]. "
+                "The output of Multiclass and Binary classifications should be within the range [0,1]"
+            )
         if not np.all(np.isclose(np.sum(prediction, axis=1), 1, atol=0.0000001)):
-            warning("Sum of output values of prediction_function is not equal to 1."
-                    " For Multiclass and Binary classifications, the sum of probabilities should be 1")
+            warning(
+                "Sum of output values of prediction_function is not equal to 1."
+                " For Multiclass and Binary classifications, the sum of probabilities should be 1"
+            )
         if prediction.shape[1] != len(classification_labels):
             raise ValueError(
                 "Prediction output label shape and classification_labels shape do not match"
@@ -610,10 +633,7 @@ class GiskardProject:
 
         pandas_inferred_column_types = df.dtypes.to_dict()
         for column, dtype in pandas_inferred_column_types.items():
-            if (
-                    feature_types.get(column) == SupportedColumnType.NUMERIC.value
-                    and dtype == "object"
-            ):
+            if feature_types.get(column) == SupportedColumnType.NUMERIC.value and dtype == "object":
                 try:
                     df[column] = df[column].astype(float)
                 except Exception as e:
@@ -630,26 +650,41 @@ class GiskardProject:
         nuniques_category = 2
         nuniques_numeric = 100
         nuniques_text = 1000
-        df = df.drop(target, axis=1) if target is not None and target not in feature_types.keys() else df
+        df = (
+            df.drop(target, axis=1)
+            if target is not None and target not in feature_types.keys()
+            else df
+        )
 
         for column in df.columns:
-            if nuniques[column] <= nuniques_category and \
-                    (feature_types[column] == SupportedColumnType.NUMERIC.value or \
-                     feature_types[column] == SupportedColumnType.TEXT.value):
+            if nuniques[column] <= nuniques_category and (
+                    feature_types[column] == SupportedColumnType.NUMERIC.value
+                    or feature_types[column] == SupportedColumnType.TEXT.value
+            ):
                 warning(
                     f"Feature '{column}' is declared as '{feature_types[column]}' but has {nuniques[column]} (<= nuniques_category={nuniques_category}) distinct values. Are "
                     f"you sure it is not a 'category' feature?"
                 )
-            elif nuniques[column] > nuniques_text and is_string_dtype(df[column]) and \
-                    (feature_types[column] == SupportedColumnType.CATEGORY.value or \
-                     feature_types[column] == SupportedColumnType.NUMERIC.value):
+            elif (
+                    nuniques[column] > nuniques_text
+                    and is_string_dtype(df[column])
+                    and (
+                            feature_types[column] == SupportedColumnType.CATEGORY.value
+                            or feature_types[column] == SupportedColumnType.NUMERIC.value
+                    )
+            ):
                 warning(
                     f"Feature '{column}' is declared as '{feature_types[column]}' but has {nuniques[column]} (> nuniques_text={nuniques_text}) distinct values. Are "
                     f"you sure it is not a 'text' feature?"
                 )
-            elif nuniques[column] > nuniques_numeric and is_numeric_dtype(df[column]) and \
-                    (feature_types[column] == SupportedColumnType.CATEGORY.value or \
-                     feature_types[column] == SupportedColumnType.TEXT.value):
+            elif (
+                    nuniques[column] > nuniques_numeric
+                    and is_numeric_dtype(df[column])
+                    and (
+                            feature_types[column] == SupportedColumnType.CATEGORY.value
+                            or feature_types[column] == SupportedColumnType.TEXT.value
+                    )
+            ):
                 warning(
                     f"Feature '{column}' is declared as '{feature_types[column]}' but has {nuniques[column]} (> nuniques_numeric={nuniques_numeric}) distinct values. Are "
                     f"you sure it is not a 'numeric' feature?"
@@ -667,8 +702,10 @@ class GiskardProject:
         new_prediction = prediction_function(sample_df)
 
         if not np.allclose(prev_prediction, new_prediction):
-            warning("Model is stochastic and not deterministic. Prediction function returns different results"
-                    "after being invoked for the same data multiple times.")
+            warning(
+                "Model is stochastic and not deterministic. Prediction function returns different results"
+                "after being invoked for the same data multiple times."
+            )
 
     @staticmethod
     def _validate_model_is_pickleable(prediction_function):
