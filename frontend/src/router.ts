@@ -110,6 +110,14 @@ export default new Router({
                                     ]
                                 },
                                 {
+                                    path: 'project-tests-catalog',
+                                    name: 'project-tests-catalog',
+                                    component: () => import('./views/main/project/TestsCatalog.vue'),
+                                    props: (route) => {
+                                        return {projectId: Number(route.params.id)}
+                                    },
+                                },
+                                {
                                     path: 'test-suites',
                                     name: 'project-test-suites',
                                     component: () => import('./views/main/project/TestSuites.vue'),
@@ -117,6 +125,36 @@ export default new Router({
                                         return {projectId: Number(route.params.id)}
                                     },
                                     children: []
+                                },
+                                {
+                                    path: 'test-suites-new',
+                                    name: 'project-test-suites-new',
+                                    component: () => import('./views/main/project/TestSuitesNew.vue'),
+                                    props: (route) => {
+                                        return {projectId: Number(route.params.id)}
+                                    },
+                                    children: []
+                                }, {
+                                    path: 'test-suite-new/:suiteId',
+                                    name: 'test-suite-new',
+                                    component: () => import('./views/main/project/TestSuiteNew.vue'),
+                                    props: (route) => {
+                                        return {
+                                            projectId: Number(route.params.id),
+                                            suiteId: Number(route.params.suiteId)
+                                        }
+                                    },
+                                    children: [{
+                                        path: 'tests',
+                                        name: 'test-suite-new-tests',
+                                        component: () => import('./views/main/project/TestSuiteNewTests.vue'),
+                                        props: (route) => {
+                                            return {
+                                                suiteId: Number(route.params.suiteId),
+                                                projectId: Number(route.params.id)
+                                            }
+                                        }
+                                    }]
                                 },
                                 {
                                     path: 'test-suites/:suiteId',
