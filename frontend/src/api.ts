@@ -17,6 +17,7 @@ import {
     GeneralSettings,
     InspectionCreateDTO,
     InspectionDTO,
+    JobDTO,
     JWTToken,
     ManagedUserVM,
     MessageDTO,
@@ -31,17 +32,20 @@ import {
     ProjectPostDTO,
     RoleDTO,
     SliceDTO,
+    TestCatalogDTO,
     TestDTO,
     TestExecutionResultDTO,
     TestSuiteCreateDTO,
     TestSuiteDTO,
+    TestSuiteExecutionDTO,
+    TestSuiteNewDTO,
     TestTemplatesResponse,
     TokenAndPasswordVM,
     UpdateMeDTO,
     UpdateTestSuiteDTO,
     UserDTO
 } from './generated-sources';
-import { PostImportProjectDTO } from './generated-sources/ai/giskard/web/dto/post-import-project-dto';
+import {PostImportProjectDTO} from './generated-sources/ai/giskard/web/dto/post-import-project-dto';
 import {TYPE} from "vue-toastification";
 import ErrorToast from "@/views/main/utils/ErrorToast.vue";
 import router from "@/router";
@@ -196,6 +200,12 @@ export const api = {
     async getMLWorkerSettings() {
         return apiV2.get<unknown, MLWorkerInfoDTO[]>(`/settings/ml-worker-info`);
     },
+    async getRunningWorkerJobs() {
+        return apiV2.get<unknown, JobDTO[]>(`/jobs/running`);
+    },
+    async trackJob(jobUuid: string) {
+        return apiV2.get<unknown, JobDTO>(`/jobs/${jobUuid}`);
+    },
     async saveGeneralSettings(settings: GeneralSettings) {
         return apiV2.post<unknown, GeneralSettings>(`/settings`, settings);
     },
@@ -273,13 +283,13 @@ export const api = {
     async getProjectModels(id: number) {
         return axiosProject.get<unknown, ModelDTO[]>(`/${id}/models`);
     },
-    async prepareImport(formData: FormData){
-        const headers = { 'Content-Type': 'multipart/form-data' };
+    async prepareImport(formData: FormData) {
+        const headers = {'Content-Type': 'multipart/form-data'};
         return axiosProject.post<unknown, PrepareImportProjectDTO>(`/import/prepare`, formData, {
             headers: headers
         });
     },
-    async importProject(postImportProject: PostImportProjectDTO){
+    async importProject(postImportProject: PostImportProjectDTO) {
         return axiosProject.post<unknown, ProjectDTO>(`/import`, postImportProject);
     },
     async deleteDatasetFile(datasetId: string) {
@@ -303,7 +313,7 @@ export const api = {
     downloadDataFile(id: string) {
         downloadURL(`${API_V2_ROOT}/download/dataset/${id}`);
     },
-    downloadExportedProject(id: number){
+    downloadExportedProject(id: number) {
         downloadURL(`${API_V2_ROOT}/download/project/${id}/export`);
     },
     async peekDataFile(datasetId: string) { //TODO
@@ -327,11 +337,26 @@ export const api = {
     async getLabelsForTarget(inspectionId: number) {
         return apiV2.get<unknown, string[]>(`/inspection/${inspectionId}/labels`);
     },
-    async getProjectDatasets(id: number) {
-        return axiosProject.get<unknown, DatasetDTO[]>(`/${id}/datasets`);
+    async getProjectDatasets(projectId: number) {
+        return axiosProject.get<unknown, DatasetDTO[]>(`/${projectId}/datasets`);
+    },
+    async getTestSuitesNew(projectId: number) {
+        return apiV2.get<unknown, TestSuiteNewDTO[]>(`testing/project/${projectId}/suites-new`);
+    },
+    async getTestSuiteNew(projectId: number, suiteId: number) {
+        return apiV2.get<unknown, TestSuiteNewDTO>(`testing/project/${projectId}/suite-new/${suiteId}`);
+    },
+    async listTestSuiteExecutions(projectId: number, suiteId: number) {
+        return apiV2.get<unknown, TestSuiteExecutionDTO[]>(`testing/project/${projectId}/suite-new/${suiteId}/execution`);
+    },
+    async getTestSuiteNewInputs(projectId: number, suiteId: number) {
+        return apiV2.get<unknown, any>(`testing/project/${projectId}/suite-new/${suiteId}/inputs`);
     },
     async getProjectSlices(id: number) {
         return axiosProject.get<unknown, SliceDTO[]>(`/${id}/slices`);
+    },
+    async executeTestSuiteNew(projectId: number, suiteId: number, inputs: { [key: string]: string }) {
+        return apiV2.post<unknown, any>(`testing/project/${projectId}/suite-new/${suiteId}/schedule-execution`, inputs);
     },
     async getInspection(inspectionId: number) {
         return apiV2.get<unknown, InspectionDTO>(`/inspection/${inspectionId}`);
@@ -444,5 +469,11 @@ export const api = {
             datasetId: datasetId,
             code: code
         });
-    }
+    },
+    async getTestsCatalog(projectId: number) {
+        return apiV2.get<unknown, TestCatalogDTO>(`/testing/tests/test-catalog`, {params: {projectId}});
+    },
+    async runAdHocTest(projectId: number, testId: string, inputs: { [key: string]: string }) {
+        return apiV2.post<unknown, TestExecutionResultDTO>(`/testing/tests/run-test`, {projectId, testId, inputs});
+    },
 };

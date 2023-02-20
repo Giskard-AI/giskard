@@ -27,6 +27,10 @@ def test_custom_model(linear_regression_diabetes: Model):
     client = GiskardClient(url, token)
 
     class MyModel(WrapperModel):
+        @classmethod
+        def load_clf(cls, local_dir):
+            pass
+
         def clf_predict(self, df):
             pass
 
