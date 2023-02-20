@@ -61,6 +61,10 @@ tasks {
         command = "giskard"
     }
 
+    create<PythonTask>("test") {
+        module = "pytest"
+        command = "-c ${file("pyproject.toml")} --cov=giskard tests --cov-report=xml"
+    }
 
     idea {
         module {
