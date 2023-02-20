@@ -94,17 +94,11 @@ httpretty = "^1.1.4"
 pytest-cov = "^3.0.0"
 pytest = "^7.1.2"
 catboost = "^1.1"
-h2o = "^3.38.0.3"
-tensorflow = "2.11.0"
-transformers = "^4.24.0"
-torchtext = "0.13.1"
-torchdata = "0.4.1"
-torch = "1.12.1"
 
 [tool.black]
 # https://github.com/psf/black
-target-version = ["py37"]
-line-length = 100
+target-version = ['py37', 'py38', 'py39', 'py310']
+line-length = 120
 color = true
 
 exclude = '''
@@ -120,6 +114,7 @@ exclude = '''
     | dist
     | env
     | venv
+    | giskard/ml_worker/generated
 )/
 '''
 
