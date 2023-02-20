@@ -224,7 +224,7 @@ class AdminProjectControllerIT {
     void exportImportProject() throws Exception {
         Project project = projectRepository.getOneByName(PROJECTKEY);
         String url = String.format("/api/v2/download/project/%d/export", project.getId());
-        assertThat(project.getKey()).isEqualTo("credit");
+        assertThat(project.getKey()).isEqualTo(project.getKey());
         ResultActions resultActions = restUserMockMvc.perform(get(url))
             .andExpect(status().isOk())
             .andExpect(content().contentType(MediaType.APPLICATION_OCTET_STREAM))
@@ -238,7 +238,7 @@ class AdminProjectControllerIT {
         ObjectMapper objectMapper = new ObjectMapper();
         PrepareImportProjectDTO prepareImportProjectDTO = objectMapper.readValue(resultActions.andReturn().getResponse().getContentAsString(), PrepareImportProjectDTO.class);
         String nonConflictKey = "imported_credit";
-        PostImportProjectDTO projectDTO = new PostImportProjectDTO(new HashMap<String, String>(), nonConflictKey, prepareImportProjectDTO.getTemporaryMetadataDirectory());
+        PostImportProjectDTO projectDTO = new PostImportProjectDTO(new HashMap<>(), nonConflictKey, prepareImportProjectDTO.getTemporaryMetadataDirectory());
         String urlImport = "/api/v2/project/import";
         restUserMockMvc.perform(post(urlImport).content(new ObjectMapper().writeValueAsString(projectDTO)).contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())

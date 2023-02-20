@@ -152,9 +152,9 @@ class DriftTests(AbstractTestCollection):
 
     @staticmethod
     def _validate_column_type(gsk_dataset, column_name, column_type):
-        assert gsk_dataset.feature_types[column_name] == column_type, (
-            f'Column "{column_name}" is not of type "{column_type}"'
-        )
+        assert (
+            gsk_dataset.feature_types[column_name] == column_type
+        ), f'Column "{column_name}" is not of type "{column_type}"'
 
     @staticmethod
     def _validate_column_name(actual_ds, reference_ds, column_name):

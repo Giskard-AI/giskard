@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.ManyToOne;
 import javax.validation.constraints.NotNull;
@@ -21,6 +22,7 @@ public class Slice extends AbstractAuditingEntity {
     // Later on this will probably depend on the slice type: From a file, from the interface, from the API ?
 
     @NotNull
+    @Column(columnDefinition = "VARCHAR")
     private String code;
 
     @ManyToOne

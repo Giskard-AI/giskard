@@ -46,14 +46,16 @@
         <v-btn :disabled='!canNext()' icon @click='next'>
           <v-icon>mdi-skip-next</v-icon>
         </v-btn>
-        <span class='caption grey--text'>Entry #{{ totalRows === 0 ? 0 : rowNb + 1 }} / {{ totalRows }}</span>
+        <span class='caption grey--text' v-if="totalRows > 0">
+          Entry #{{ totalRows === 0 ? 0 : rowNb + 1 }} / {{ totalRows }}
+        </span>
         <span v-show="originalData && isDefined(originalData.Index)" class='caption grey--text'
               style='margin-left: 15px'>Row Index {{ originalData.Index + 1 }}</span>
       </v-toolbar>
       <v-spacer/>
 
       <SliceDropdown :project-id="projectId" :is-project-owner-or-admin="isProjectOwnerOrAdmin" @onSelect="applySlice"
-                     @onClear="clearSlice" :loading="loadingSlice"
+                     @onClear="clearSlice" :loading="loadingSlice" :default-dataset-id="inspection.dataset.id"
                      class="mr-3 "/>
 
       <InspectionFilter
@@ -71,7 +73,17 @@
                @reset='resetInput'
                @submitValueFeedback='submitValueFeedback'
                @submitValueVariationFeedback='submitValueVariationFeedback'
+               v-if="totalRows > 0"
     />
+    <v-alert v-else border="bottom"
+             colored-border
+             type="warning"
+             class="mt-8"
+             elevation="2">
+      No data matches the selected filter.<br/>
+      In order to show data, please refine the filter's criteria.
+    </v-alert>
+
 
     <!-- For general feedback -->
     <v-tooltip left>
@@ -390,13 +402,9 @@ export default class InspectorWrapper extends Vue {
   private async applySlice(slice: SliceDTO) {
     this.loadingSlice = true;
     this.filter.sliceId = slice.id;
-    //const response = await api.getDataFilteredBySlice(this.inspectionId, slice.id);
-    //this.rows = response.data;
-    //this.numberOfRows = response.rowNb;
-    //this.rowNb = 0;
-    //this.assignCurrentRow(false);
     await this.updateRow(true);
     this.loadingSlice = false;
+    mixpanel.track('Apply slice', {sliceId: this.filter.sliceId});
   }
 
   private async clearSlice() {

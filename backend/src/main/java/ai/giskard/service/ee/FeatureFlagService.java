@@ -1,5 +1,7 @@
 package ai.giskard.service.ee;
 
+import ai.giskard.config.ApplicationProperties;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.EnumMap;
@@ -8,7 +10,9 @@ import java.util.Map;
 import static ai.giskard.service.ee.FeatureFlagService.FeatureFlag.AUTH;
 
 @Service
+@RequiredArgsConstructor
 public class FeatureFlagService {
+    private final ApplicationProperties applicationProperties;
 
     public enum FeatureFlag {
         AUTH
@@ -22,7 +26,11 @@ public class FeatureFlagService {
      */
     public Map<FeatureFlag, Boolean> getAllFeatures() {
         Map<FeatureFlag, Boolean> features = new EnumMap<>(FeatureFlag.class);
-        String giskardAuth = System.getenv("GISKARD_AUTH");
+        String giskardAuth;
+        giskardAuth = applicationProperties.getAuth();
+        if (giskardAuth == null) {
+            giskardAuth = System.getenv("GISKARD_AUTH");
+        }
         features.put(AUTH, giskardAuth != null && giskardAuth.equals("true"));
         return features;
     }

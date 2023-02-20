@@ -1,12 +1,13 @@
 """Various utility functions to manage Python environments"""
 
 import os
+import sys
 import warnings
 from platform import python_version
 
 
 def get_python_requirements() -> str:
-    pip_requirements = os.popen("pip list --format freeze").read()
+    pip_requirements = os.popen(f"{sys.executable} -m pip list --format freeze").read()
     if pip_requirements:
         return pip_requirements
     else:
