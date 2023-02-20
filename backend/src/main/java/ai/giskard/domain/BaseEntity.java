@@ -12,6 +12,6 @@ import java.io.Serializable;
 public abstract class BaseEntity implements Serializable {
     @Id
     @JsonIgnore
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue
     private Long id;
 }

@@ -69,6 +69,7 @@ scipy = ">=1.7.2,<1.8"
 shap = "^0.41.0"
 ipython = "^7.0.0"
 mlflow = {git = "https://github.com/Giskard-AI/mlflow.git"}
+pycryptodome = "^3.17"
 
 [tool.poetry.group.dev.dependencies]
 typing-extensions = "^4.1.0"
@@ -103,8 +104,8 @@ tensorflow = "^2.11.0"
 
 [tool.black]
 # https://github.com/psf/black
-target-version = ["py37"]
-line-length = 100
+target-version = ['py37', 'py38', 'py39', 'py310']
+line-length = 120
 color = true
 
 exclude = '''
@@ -120,6 +121,7 @@ exclude = '''
     | dist
     | env
     | venv
+    | giskard/ml_worker/generated
 )/
 '''
 
