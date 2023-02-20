@@ -42,6 +42,8 @@ model_upload/test_TF_cloudpickle_crashes.py:138: in test_tf_cloudpickle
     raise ValueError("Unable to pickle or unpickle model on Giskard")
 E   ValueError: Unable to pickle or unpickle model on Giskard
 """
+import nltk
+nltk.download('stopwords')
 from nltk.corpus import stopwords
 from nltk.stem import PorterStemmer
 from string import punctuation
