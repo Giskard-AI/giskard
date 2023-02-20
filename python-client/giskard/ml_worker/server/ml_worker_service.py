@@ -1,3 +1,4 @@
+import asyncio
 import logging
 import os
 import platform
@@ -46,8 +47,9 @@ def file_already_exists(meta: ml_worker_pb2.FileUploadMetadata):
 
 
 class MLWorkerServiceImpl(MLWorkerServicer):
-    def __init__(self, client: GiskardClient, address=None, remote=None) -> None:
+    def __init__(self, ml_worker, client: GiskardClient, address=None, remote=None) -> None:
         super().__init__()
+        self.ml_worker = ml_worker
         self.address = address
         self.remote = remote
         self.client = client
@@ -380,6 +382,12 @@ class MLWorkerServiceImpl(MLWorkerServicer):
             )
             for test in tests_registry.get_all().values()
         })
+
+    def stopWorker(self, request: google.protobuf.empty_pb2.Empty,
+                   context: grpc.ServicerContext) -> ml_worker_pb2.TestRegistryResponse:
+        logger.info('Received request to stop the worker')
+        asyncio.run(self.ml_worker.stop())
+        return google.protobuf.empty_pb2.Empty()
 
     @staticmethod
     def pandas_df_to_proto_df(df):
