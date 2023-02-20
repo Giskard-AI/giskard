@@ -14,9 +14,8 @@ from sklearn.metrics import (
 
 from giskard import test
 from giskard.core.model import Model
-from giskard.ml_worker.core.dataset import Dataset
 from giskard.ml_worker.core.test_result import TestResult
-from giskard.ml_worker.generated.ml_worker_pb2 import SingleTestResult
+from giskard.ml_worker.core.dataset import Dataset
 from giskard.ml_worker.testing.registry.giskard_test import GiskardTest
 
 
@@ -42,7 +41,7 @@ def _test_classification_score(
     else:
         metric = score_fn(actual_target, prediction, average="macro")
 
-    return SingleTestResult(
+    return TestResult(
         actual_slices_size=[len(gsk_dataset)], metric=metric, passed=metric >= threshold
     )
 
@@ -55,7 +54,7 @@ def _test_accuracy_score(gsk_dataset: Dataset, model: Model, threshold: float = 
 
     metric = accuracy_score(actual_target, prediction)
 
-    return SingleTestResult(
+    return TestResult(
         actual_slices_size=[len(gsk_dataset)], metric=metric, passed=metric >= threshold
     )
 
@@ -72,7 +71,7 @@ def _test_regression_score(
 
     metric = score_fn(results_df["actual_target"], results_df["prediction"])
 
-    return SingleTestResult(
+    return TestResult(
         actual_slices_size=[len(giskard_ds)],
         metric=metric,
         passed=metric >= threshold if r2 else metric <= threshold,
@@ -92,7 +91,7 @@ def _test_diff_prediction(
             f" reference_slice is equal to zero"
         )
 
-    return SingleTestResult(
+    return TestResult(
         actual_slices_size=[len(actual_slice)],
         reference_slices_size=[len(reference_slice)],
         metric=change_pct,
