@@ -56,10 +56,23 @@ export const actions = {
         const loadingNotification = { content: 'saving', showProgress: true };
         try {
             commitAddNotification(context, loadingNotification);
-            const response = await api.deleteUser( payload.id);
-            await this.actionGetUsers(context)
+            await api.deleteUser(payload.id);
+            await dispatchGetUsers(context);
             commitRemoveNotification(context, loadingNotification);
-            commitAddNotification(context, { content: 'Successfully deleted', color: 'success' });
+            commitAddNotification(context, {content: 'Successfully deleted', color: 'success'});
+        } catch (error) {
+            await dispatchCheckApiError(context, error);
+            throw new Error(error.response.data.detail);
+        }
+    },
+    async actionEnableUser(context: MainContext, payload: { id: number }) {
+        const loadingNotification = {content: 'saving', showProgress: true};
+        try {
+            commitAddNotification(context, loadingNotification);
+            await api.enableUser(payload.id);
+            await dispatchGetUsers(context);
+            commitRemoveNotification(context, loadingNotification);
+            commitAddNotification(context, {content: 'Successfully restored', color: 'success'});
         } catch (error) {
             await dispatchCheckApiError(context, error);
             throw new Error(error.response.data.detail);
@@ -73,4 +86,5 @@ export const dispatchCreateUser = dispatch(actions.actionCreateUser);
 export const dispatchGetUsers = dispatch(actions.actionGetUsers);
 export const dispatchUpdateUser = dispatch(actions.actionUpdateUser);
 export const dispatchDeleteUser = dispatch(actions.actionDeleteUser);
+export const dispatchEnableUser = dispatch(actions.actionEnableUser);
 export const dispatchGetRoles = dispatch(actions.actionGetRoles);

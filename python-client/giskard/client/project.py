@@ -83,7 +83,7 @@ class GiskardProject:
                     - Make sure the labels have the same order as the output of prediction_function
                     - Prefer using categorical values instead of numeric values in classification_labels
         """
-        classification_labels, model = self._validate_model(
+        classification_labels, model = GiskardProject._validate_model(
             classification_labels,
             classification_threshold,
             feature_names,
@@ -211,8 +211,8 @@ class GiskardProject:
         )
         return model_id
 
+    @staticmethod
     def _validate_model(
-            self,
             classification_labels,
             classification_threshold,
             feature_names,
@@ -221,19 +221,19 @@ class GiskardProject:
             target,
             validate_df,
     ):
-        prediction_function = self._validate_model_is_pickleable(prediction_function)
-        transformed_pred_func = self.transform_prediction_function(
+        prediction_function = GiskardProject._validate_model_is_pickleable(prediction_function)
+        transformed_pred_func = GiskardProject.transform_prediction_function(
             prediction_function, feature_names
         )
 
-        self._validate_prediction_function(prediction_function)
-        self._validate_model_type(model_type)
-        classification_labels = self._validate_classification_labels(
+        GiskardProject._validate_prediction_function(prediction_function)
+        GiskardProject._validate_model_type(model_type)
+        classification_labels = GiskardProject._validate_classification_labels(
             classification_labels, model_type
         )
 
         if model_type == SupportedModelTypes.CLASSIFICATION.value:
-            self._validate_classification_threshold_label(
+            GiskardProject._validate_classification_threshold_label(
                 classification_labels, classification_threshold
             )
 
@@ -242,18 +242,18 @@ class GiskardProject:
         ), "Invalid feature_names parameter. Please provide the feature names as a list."
 
         if validate_df is not None:
-            self._validate_is_pandasdataframe(validate_df)
-            self._validate_features(feature_names=feature_names, validate_df=validate_df)
+            GiskardProject._validate_is_pandasdataframe(validate_df)
+            GiskardProject._validate_features(feature_names=feature_names, validate_df=validate_df)
 
             if model_type == SupportedModelTypes.REGRESSION.value:
-                self._validate_model_execution(
+                GiskardProject._validate_model_execution(
                     transformed_pred_func, validate_df, model_type, target=target
                 )
             elif target is not None and model_type == SupportedModelTypes.CLASSIFICATION.value:
-                self._validate_target(target, validate_df.keys())
+                GiskardProject._validate_target(target, validate_df.keys())
                 target_values = validate_df[target].unique()
-                self._validate_label_with_target(classification_labels, target_values, target)
-                self._validate_model_execution(
+                GiskardProject._validate_label_with_target(classification_labels, target_values, target)
+                GiskardProject._validate_model_execution(
                     transformed_pred_func,
                     validate_df,
                     model_type,
@@ -261,7 +261,7 @@ class GiskardProject:
                     target=target,
                 )
             else:  # Classification with target = None
-                self._validate_model_execution(
+                GiskardProject._validate_model_execution(
                     transformed_pred_func,
                     validate_df,
                     model_type,
@@ -269,7 +269,7 @@ class GiskardProject:
                     target=target,
                 )
 
-        model = self._serialize(transformed_pred_func)
+        model = GiskardProject._serialize(transformed_pred_func)
         return classification_labels, model
 
     def upload_df(
@@ -328,7 +328,7 @@ class GiskardProject:
             self._validate_target(target, df.keys())
         self.validate_columns_columntypes(df, column_types, target)
         self._validate_column_types(column_types)
-        self._validate_column_categorization(df, column_types)
+        self._validate_column_categorization(df, column_types, target)
         raw_column_types = df.dtypes.apply(lambda x: x.name).to_dict()
         data = compress(save_df(df))
         return data, raw_column_types
@@ -530,7 +530,8 @@ class GiskardProject:
             res = None
         return res
 
-    def _validate_model_execution(self, prediction_function, df: pd.DataFrame, model_type,
+    @staticmethod
+    def _validate_model_execution(prediction_function, df: pd.DataFrame, model_type,
                                   classification_labels=None, target=None) -> None:
         if target is not None and target in df.columns:
             df = df.drop(target, axis=1)
@@ -621,11 +622,16 @@ class GiskardProject:
             return df
 
     @staticmethod
-    def _validate_column_categorization(df: pd.DataFrame, feature_types):
+    def _validate_column_categorization(df: pd.DataFrame, feature_types, target=None):
+        """
+        Validates if features_types is declared accurately by verifying the number of unique values for each column
+        in feature_types
+        """
         nuniques = df.nunique()
         nuniques_category = 2
         nuniques_numeric = 100
         nuniques_text = 1000
+        df = df.drop(target, axis=1) if target is not None and target not in feature_types.keys() else df
 
         for column in df.columns:
             if nuniques[column] <= nuniques_category and \
@@ -673,7 +679,7 @@ class GiskardProject:
         try:
             pickled_model = cloudpickle.dumps(prediction_function)
             unpickled_model = cloudpickle.loads(pickled_model)
-        except Exception:
+        except Exception as e:
             raise ValueError("Unable to pickle or unpickle model on Giskard")
         return unpickled_model
 

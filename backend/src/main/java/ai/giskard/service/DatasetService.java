@@ -122,4 +122,15 @@ public class DatasetService {
         }).toList();
     }
 
+    @Transactional
+    public Dataset renameDataset(long datasetId, String name) {
+        Dataset dataset = datasetRepository.findById(datasetId)
+            .orElseThrow(() -> new EntityNotFoundException(Entity.DATASET, datasetId));
+
+        permissionEvaluator.validateCanWriteProject(dataset.getProject().getId());
+
+        dataset.setName(name);
+
+        return datasetRepository.save(dataset);
+    }
 }

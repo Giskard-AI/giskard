@@ -198,6 +198,17 @@ public class UserService {
             });
     }
 
+    public void enableUser(String login) {
+        userRepository
+            .findOneByLogin(login)
+            .ifPresentOrElse(user -> {
+                    user.setEnabled(true);
+                    log.info("Enable user : {}", user);
+                },
+                () -> log.warn("Cannot enable user because its login wasn't found : {}", login));
+    }
+
+
     /**
      * Update basic information (first name, last name, email, language) for the current user.
      *

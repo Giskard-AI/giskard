@@ -1,11 +1,11 @@
 import logging
-import re
 from typing import Callable, Dict, List, Any
 
+import eli5
 import numpy as np
 import pandas as pd
 import shap
-from bs4 import BeautifulSoup
+from itertools import groupby
 from eli5.lime import TextExplainer
 
 from giskard.ml_worker.core.giskard_dataset import GiskardDataset
@@ -31,8 +31,8 @@ def explain(model: GiskardModel, dataset: GiskardDataset, input_data: Dict):
     feature_names = list(df.columns)
 
     # Make sure column order is that column order is the same as in df
-    input_data_df = pd.DataFrame([input_data])[df.columns]
-    input_df = prepare_df(input_data_df)
+    input_df = pd.DataFrame([input_data])
+    input_df = prepare_df(input_df)
 
     def predict_array(array):
         return model.prediction_function(prepare_df(pd.DataFrame(array, columns=list(df.columns))))
@@ -63,12 +63,41 @@ def explain_text(model: GiskardModel, input_df: pd.DataFrame,
     prediction_function = text_explanation_prediction_wrapper(
         model.prediction_function, input_df, text_column
     )
+    text_explain_attempts = 10
     try:
-        text_explainer.fit(text_document, prediction_function)
-        return text_explainer.show_prediction(target_names=model.classification_labels)
+        for i in range(text_explain_attempts):
+            try:
+                text_explainer.fit(text_document, prediction_function)
+                break
+            except ZeroDivisionError:
+                logger.warning(f"Failed to fit text explainer {i}")
+
+        text_explainer.show_prediction(target_names=model.classification_labels)
+        exp = text_explainer.explain_prediction(target_names=model.classification_labels)
+        exp = eli5.formatters.html.prepare_weighted_spans(exp.targets)
+        return get_list_words_weigths(exp) 
+
     except Exception as e:
         logger.exception(f"Failed to explain text: {text_document}", e)
         raise Exception("Failed to create text explanation") from e
+
+
+def get_list_words_weigths(exp):
+    list_words = []
+    document = exp[0][0].doc_weighted_spans.document
+    for k, g in groupby(document, str.isalnum):
+        list_words.append(''.join(g))
+    list_weights = []
+    for target in exp:
+        current_weights = []
+        t = target[0]
+        i = 0
+        for word in list_words:
+            weight = t.char_weights[i]
+            current_weights.append(weight)
+            i += len(word)
+        list_weights.append(current_weights)
+    return (list_words, list_weights)
 
 
 def background_example(df: pd.DataFrame, input_types: Dict[str, str]) -> pd.DataFrame:
@@ -123,6 +152,7 @@ def text_explanation_prediction_wrapper(
 ) -> Callable:
     def text_predict(text_documents: List[str]):
         num_documents = len(text_documents)
+
         df_with_text_documents = input_example.append(
             [input_example] * (num_documents - 1), ignore_index=True
         )
@@ -130,16 +160,3 @@ def text_explanation_prediction_wrapper(
         return prediction_function(df_with_text_documents)
 
     return text_predict
-
-
-def parse_text_explainer_response(response: str) -> Dict[str, str]:
-    text_explanation_soup = BeautifulSoup(response, "html.parser")
-    labels = []
-    explanations_html = []
-    for i, paragraph in enumerate(text_explanation_soup.find_all("p")):
-        if (i % 2) == 0:
-            label = re.findall(r"\by=.*\b", str(paragraph.find("b")))[0][2:]
-            labels.append(label)
-        else:
-            explanations_html.append(str(paragraph))
-    return dict(zip(labels, explanations_html))

@@ -15,6 +15,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import tech.tablesaw.api.Table;
 
+import javax.validation.Valid;
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.io.IOException;
 import java.util.List;
@@ -89,5 +91,10 @@ public class DatasetsController {
     @GetMapping("/dataset/{datasetId}/features")
     public List<FeatureMetadataDTO> datasetFeaturesMetadata(@PathVariable @NotNull Long datasetId) {
         return datasetService.getFeaturesWithDistinctValues(datasetId);
+    }
+
+    @PatchMapping("/dataset/{datasetId}/name/{name}")
+    public DatasetDTO renameDataset(@PathVariable long datasetId, @PathVariable @Valid @NotBlank String name) {
+        return giskardMapper.datasetToDatasetDTO(datasetService.renameDataset(datasetId, name));
     }
 }
