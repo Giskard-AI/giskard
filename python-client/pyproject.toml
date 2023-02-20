@@ -103,8 +103,8 @@ requests-mock = "^1.10.0"
 
 [tool.black]
 # https://github.com/psf/black
-target-version = ["py37"]
-line-length = 100
+target-version = ['py37', 'py38', 'py39', 'py310']
+line-length = 120
 color = true
 
 exclude = '''
@@ -120,6 +120,7 @@ exclude = '''
     | dist
     | env
     | venv
+    | giskard/ml_worker/generated
 )/
 '''
 
