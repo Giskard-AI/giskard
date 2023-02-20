@@ -29,4 +29,10 @@ public class TestInput {
     @JoinColumn(name = "test_id")
     @NotNull
     private SuiteTest test;
+
+    public TestInput(String name, String value, SuiteTest test) {
+        this.name = name;
+        this.value = value;
+        this.test = test;
+    }
 }

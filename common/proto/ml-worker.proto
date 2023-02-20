@@ -156,7 +156,10 @@ message TestArgument{
     ArtifactRef model = 2;
     ArtifactRef dataset = 3;
     float float = 4;
-    string string = 5;
+    int32 int = 5;
+    string str = 6;
+    bool bool = 7;
+
   }
 }
 
