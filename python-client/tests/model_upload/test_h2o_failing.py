@@ -14,7 +14,7 @@ import os
 import pytest
 
 @pytest.mark.skip(reason="Will be solved in the new API: https://github.com/Giskard-AI/giskard/pull/618")
-def test_upload_H2O():
+def test_h2o_failing():
 
     h2o.init()
 
