@@ -1,14 +1,15 @@
 import inspect
 import logging
 from dataclasses import dataclass
-from typing import *
-from typing import List, Any
+from typing import List, Any, Union, Dict, Mapping, Callable
 
 from giskard.client.dtos import TestSuiteNewDTO, SuiteTestDTO, TestInputDTO
 from giskard.client.giskard_client import GiskardClient
 from giskard.core.model import Model
 from giskard.ml_worker.core.dataset import Dataset
-from giskard.ml_worker.generated.ml_worker_pb2 import SingleTestResult
+from giskard.ml_worker.core.test_result import TestResult
+from giskard.ml_worker.core.test_runner import run_test
+from giskard.ml_worker.testing.registry.giskard_test import GiskardTest
 from giskard.ml_worker.testing.registry.registry import create_test_function_id
 
 logger = logging.getLogger(__name__)
@@ -34,7 +35,7 @@ def single_binary_result(test_results: List):
     for r in test_results:
         if type(r) == bool:
             passed = passed and r
-        elif hasattr(r, 'passed'):
+        elif hasattr(r, "passed"):
             passed = passed and r.passed
         else:
             logger.error(f"Invalid test result: {r.__class__.__name__}")
@@ -54,7 +55,7 @@ class Suite:
         self.name = name
 
     def run(self, **suite_run_args):
-        res: Dict[str, Union[bool, SingleTestResult]] = dict()
+        res: Dict[str, Union[bool, TestResult]] = dict()
         required_params = self.find_required_params()
         undefined_params = {k: v for k, v in required_params.items() if k not in suite_run_args}
         if len(undefined_params):
@@ -62,8 +63,9 @@ class Suite:
 
         for test_partial in self.tests:
             test_params = self.create_test_params(test_partial, suite_run_args)
-            res[f'{test_partial.test_func.__module__}.{test_partial.test_func.__name__}'] = test_partial.test_func(
-                **test_params)
+            res[f"{test_partial.test_func.__module__}.{test_partial.test_func.__name__}"] = run_test(
+                test_partial.test_func, test_params
+            )
 
         result = single_binary_result(list(res.values()))
 
@@ -99,15 +101,22 @@ class Suite:
                 else:
                     inputs[pname] = TestInputDTO(name=pname, value=p)
 
-            suite_tests.append(SuiteTestDTO(
-                testId=create_test_function_id(t.test_func),
-                testInputs=inputs
-            ))
+            suite_tests.append(SuiteTestDTO(testId=create_test_function_id(t.test_func), testInputs=inputs))
         self.id = client.save_test_suite(TestSuiteNewDTO(name=self.name, project_key=project_key, tests=suite_tests))
         return self
 
-    def add_test(self, test_fn: Callable[[Any], Union[bool]], **params):
-        self.tests.append(TestPartial(test_fn, params))
+    def add_test(self, test_fn: Union[Callable[[Any], Union[bool]], GiskardTest], **params):
+        """
+        Add a test to the Suite
+        :param test_fn: A test method that will be executed or an instance of a GiskardTest class
+        :param params: default params to be passed to the test method,
+          will be ignored if test_fn is an instance of GiskardTest
+        :return: The current instance of the test Suite to allow chained call
+        """
+        if isinstance(test_fn, GiskardTest):
+            self.tests.append(TestPartial(type(test_fn), {k: v for k, v in test_fn.__dict__.items() if v is not None}))
+        else:
+            self.tests.append(TestPartial(test_fn, params))
         return self
 
     def find_required_params(self):
@@ -120,15 +129,16 @@ class Suite:
                     elif isinstance(test_partial.provided_inputs[p.name], SuiteInput):
                         if test_partial.provided_inputs[p.name].type != p.annotation:
                             raise ValueError(
-                                f'Test {test_partial.test_func.__name__} requires {p.name} input to '
-                                f'be {p.annotation.__name__} '
-                                f'but {test_partial.provided_inputs[p.name].type.__name__} was provided')
+                                f"Test {test_partial.test_func.__name__} requires {p.name} input to "
+                                f"be {p.annotation.__name__} "
+                                f"but {test_partial.provided_inputs[p.name].type.__name__} was provided"
+                            )
                         res[test_partial.provided_inputs[p.name].name] = p.annotation
         return res
 
 
-def format_test_result(result: Union[bool, SingleTestResult]) -> str:
-    if isinstance(result, SingleTestResult):
+def format_test_result(result: Union[bool, TestResult]) -> str:
+    if isinstance(result, TestResult):
         return f"{{{'passed' if result.passed else 'failed'}, metric={result.metric}}}"
     else:
-        return 'passed' if result else 'failed'
+        return "passed" if result else "failed"

@@ -45,9 +45,7 @@ class GiskardAnalyticsCollector:
     @nofail
     def init(self, server_settings):
         giskard_instance_id = server_settings.get("app").get("generalSettings").get("instanceId")
-        self.is_enabled = (
-            server_settings.get("app").get("generalSettings").get("isAnalyticsEnabled")
-        )
+        self.is_enabled = server_settings.get("app").get("generalSettings").get("isAnalyticsEnabled")
         user_login = server_settings.get("user").get("user_id")
         anonymous_login = anonymize(user_login)
         self.distinct_user_id = f"{giskard_instance_id}-{anonymous_login}"
