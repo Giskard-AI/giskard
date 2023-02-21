@@ -109,8 +109,8 @@ class PyTorchModel(MLFlowBasedModel):
         if pytorch_meta_file.exists():
             with open(pytorch_meta_file) as f:
                 pytorch_meta = yaml.load(f, Loader=yaml.Loader)
-                kwargs['device']=pytorch_meta.device
-                kwargs['torch_dtype']=pytorch_meta.torch_dtype
+                kwargs['device'] = pytorch_meta.device
+                kwargs['torch_dtype'] =     pytorch_meta.torch_dtype
                 super().load(local_dir, **kwargs)
         else:
             raise ValueError(
