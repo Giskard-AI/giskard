@@ -16,7 +16,7 @@
           <v-tab :to="{name:'test-suite-new-inputs'}">Inputs & parameters</v-tab>
           <v-tab :to="{name:'test-suite-new-tests'}">Tests</v-tab>
           <v-tab :to="{name:'test-suite-new-configuration'}">Configuration</v-tab>
-          <v-tab :to="{name:'test-suite-new-execution'}">Execution</v-tab>
+          <v-tab :to="{name:'test-suite-new-executions'}">Execution</v-tab>
         </v-tabs>
       </v-col>
       <v-col cols="10">
