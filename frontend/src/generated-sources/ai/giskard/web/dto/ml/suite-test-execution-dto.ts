@@ -6,7 +6,6 @@ import type {TestResultMessageDTO} from './test-result-message-dto';
  */
 export interface SuiteTestExecutionDTO {
     actualSlicesSize: number[];
-    inputs: {[key: string]: string};
     messages: TestResultMessageDTO[];
     metric: number;
     missingCount: number;

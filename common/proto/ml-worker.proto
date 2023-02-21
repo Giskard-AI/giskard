@@ -276,9 +276,24 @@ message MLWorkerErrorInfo{
   string stack = 2;
 }
 
+message SuiteInput{
+  string name = 1;
+  string type = 2;
+  optional ModelMeta model_meta = 3;
+  optional DatasetMeta dataset_meta = 4;
+}
+
+message ModelMeta{
+  optional string model_type = 1;
+}
+
+message DatasetMeta {
+  optional string target = 1;
+}
+
 message GenerateTestSuiteRequest{
   string project_key = 1;
-  repeated TestArgument arguments = 2;
+  repeated SuiteInput inputs = 2;
 }
 
 message GenerateTestSuiteResponse{
