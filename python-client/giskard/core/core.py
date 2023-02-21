@@ -21,6 +21,8 @@ class ModelMeta:
     feature_names: List[str]
     classification_labels: List[str]
     classification_threshold: float
+    loader_module: str
+    loader_class: str
 
 
 @dataclass
