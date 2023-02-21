@@ -37,13 +37,14 @@ class TensorFlowModel(MLFlowBasedModel):
                                      mlflow_model=mlflow_meta)
 
     def clf_predict(self, data):
-        if self.is_regression:
-            return self.clf.predict(data)
-        else:
-            predictions = self.clf.predict(data)
-            predictions = np.squeeze(np.array(predictions))
+        predictions = self.clf.predict(data)
 
-            if predictions.shape[1] == 1:
+        if self.is_classification and predictions.shape[1] == 1:
                 predictions = np.insert(predictions, 1, 1 - predictions[:, 0], axis=1)
 
-            return predictions
+        predictions = np.squeeze(np.array(predictions))
+
+        if self.model_postprocessing_function:
+            predictions = self.model_postprocessing_function(predictions)
+
+        return predictions
