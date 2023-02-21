@@ -18,7 +18,7 @@ dataset = tf.keras.utils.get_file("aclImdb_v1", data_url,
                                   cache_subdir='')
 
 @httpretty.activate(verbose=True, allow_net_connect=False)
-def test_text_classification_using_tf_NN():
+def test_text_classification():
 
 
     dataset_dir = os.path.join(os.path.dirname(dataset), 'aclImdb')
