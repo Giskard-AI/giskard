@@ -25,8 +25,7 @@ def get_version() -> str:
 
 __version__: str = get_version()
 __all__ = [
-    GiskardClient,
-    configure_logging,
-    SingleTestResult,
-    AbstractTestCollection,
+    'GiskardClient',
+    'SingleTestResult',
+    'AbstractTestCollection',
 ]
