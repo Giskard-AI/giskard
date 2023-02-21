@@ -181,6 +181,7 @@ export default new Router({
                                         {
                                             path: 'execution/compare',
                                             name: 'test-suite-new-compare-executions',
+                                            component: () => import('./views/main/project/TestSuiteCompareExecutions.vue'),
                                             props: (route) => {
                                                 return {
                                                     suiteId: Number(route.params.suiteId),
@@ -191,6 +192,7 @@ export default new Router({
                                         {
                                             path: 'test/:testId/compare',
                                             name: 'test-suite-new-compare-test',
+                                            component: () => import('./views/main/project/TestSuiteCompareTest.vue'),
                                             props: (route) => {
                                                 return {
                                                     suiteId: Number(route.params.suiteId),
@@ -202,7 +204,7 @@ export default new Router({
                                         {
                                             path: 'execution/:executionId?',
                                             name: 'test-suite-new-execution',
-                                            component: () => import('./views/main/project/TestSuiteNew.vue'),
+                                            component: () => import('./views/main/project/TestSuiteExecutions.vue'),
                                             props: (route) => {
                                                 return {
                                                     suiteId: Number(route.params.suiteId),
