@@ -115,7 +115,6 @@ def test_text_classification():
     url = "http://giskard-host:12345"
     token = "SECRET_TOKEN"
     client = GiskardClient(url, token)
-    # enron = client.create_project('test-project', "Email Classification", "Email Classification")
     my_model.upload(client, 'test-project', my_test_dataset)
 
     tests.utils.match_model_id(my_model.id)
