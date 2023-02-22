@@ -146,19 +146,9 @@ export default new Router({
                                     },
                                     children: [
                                         {
-                                            path: 'tests',
-                                            name: 'test-suite-new-tests',
-                                            component: () => import('./views/main/project/TestSuiteNewTests.vue'),
-                                            props: (route) => {
-                                                return {
-                                                    suiteId: Number(route.params.suiteId),
-                                                    projectId: Number(route.params.id)
-                                                }
-                                            }
-                                        },
-                                        {
                                             path: 'inputs',
                                             name: 'test-suite-new-inputs',
+                                            component: () => import('./views/main/project/TestSuiteNewInputs.vue'),
                                             props: (route) => {
                                                 return {
                                                     projectId: Number(route.params.id),
@@ -168,7 +158,8 @@ export default new Router({
                                         },
                                         {
                                             path: 'test',
-                                            name: 'test-suite-new-test',
+                                            name: 'test-suite-new-tests',
+                                            component: () => import('./views/main/project/TestSuiteNewTests.vue'),
                                             props: (route) => {
                                                 return {
                                                     projectId: Number(route.params.id),
@@ -179,6 +170,7 @@ export default new Router({
                                         {
                                             path: 'configuration',
                                             name: 'test-suite-new-configuration',
+                                            component: () => import('./views/main/project/TestSuiteNewConfiguration.vue'),
                                             props: (route) => {
                                                 return {
                                                     projectId: Number(route.params.id),
@@ -189,6 +181,7 @@ export default new Router({
                                         {
                                             path: 'execution/compare',
                                             name: 'test-suite-new-compare-executions',
+                                            component: () => import('./views/main/project/TestSuiteCompareExecutions.vue'),
                                             props: (route) => {
                                                 return {
                                                     suiteId: Number(route.params.suiteId),
@@ -199,6 +192,7 @@ export default new Router({
                                         {
                                             path: 'test/:testId/compare',
                                             name: 'test-suite-new-compare-test',
+                                            component: () => import('./views/main/project/TestSuiteCompareTest.vue'),
                                             props: (route) => {
                                                 return {
                                                     suiteId: Number(route.params.suiteId),
@@ -208,16 +202,29 @@ export default new Router({
                                             }
                                         },
                                         {
-                                            path: 'execution/:executionId?',
-                                            name: 'test-suite-new-execution',
-                                            component: () => import('./views/main/project/TestSuiteNew.vue'),
+                                            path: 'execution',
+                                            name: 'test-suite-new-executions',
+                                            component: () => import('./views/main/project/TestSuiteExecutions.vue'),
                                             props: (route) => {
                                                 return {
                                                     suiteId: Number(route.params.suiteId),
                                                     projectId: Number(route.params.id),
-                                                    executionDate: Number(route.params.executionId)
                                                 }
-                                            }
+                                            },
+                                            children: [
+                                                {
+                                                    path: ':executionId',
+                                                    name: 'test-suite-new-execution',
+                                                    component: () => import('./views/main/project/TestSuiteExecution.vue'),
+                                                    props: (route) => {
+                                                        return {
+                                                            suiteId: Number(route.params.suiteId),
+                                                            projectId: Number(route.params.id),
+                                                            executionId: Number(route.params.executionId)
+                                                        }
+                                                    }
+                                                }
+                                            ]
                                         }
                                     ]
                                 },

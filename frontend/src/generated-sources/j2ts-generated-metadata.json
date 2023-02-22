@@ -33,6 +33,7 @@
     "ai.giskard.web.dto.PostImportProjectDTO": "PostImportProjectDTO",
     "ai.giskard.web.dto.DatasetMetadataDTO": "DatasetMetadataDTO",
     "ai.giskard.web.dto.ml.CodeBasedTestPresetDTO": "CodeBasedTestPresetDTO",
+    "ai.giskard.web.dto.TestSuiteCompleteDTO": "TestSuiteCompleteDTO",
     "ai.giskard.web.dto.SuiteTestDTO": "SuiteTestDTO",
     "ai.giskard.domain.FeatureType": "FeatureType",
     "ai.giskard.jobs.JobState": "JobState",

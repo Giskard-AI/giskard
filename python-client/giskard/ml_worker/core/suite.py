@@ -1,15 +1,15 @@
 import inspect
 import logging
 from dataclasses import dataclass
-from typing import *
-from typing import List, Any
+from typing import List, Any, Union, Dict, Mapping, Callable
 
 from giskard.client.dtos import TestSuiteNewDTO, SuiteTestDTO, TestInputDTO
 from giskard.client.giskard_client import GiskardClient
 from giskard.core.model import Model
 from giskard.ml_worker.core.dataset import Dataset
 from giskard.ml_worker.core.test_result import TestResult
-from giskard.ml_worker.testing.registry.giskard_test import GiskardTestMethod, GiskardTest, Test
+from giskard.ml_worker.testing.registry.giskard_test import GiskardTest
+from giskard.ml_worker.testing.registry.registry import create_test_function_id
 
 logger = logging.getLogger(__name__)
 
@@ -34,7 +34,7 @@ def single_binary_result(test_results: List):
     for r in test_results:
         if type(r) == bool:
             passed = passed and r
-        elif hasattr(r, 'passed'):
+        elif hasattr(r, "passed"):
             passed = passed and r.passed
         else:
             logger.error(f"Invalid test result: {r.__class__.__name__}")

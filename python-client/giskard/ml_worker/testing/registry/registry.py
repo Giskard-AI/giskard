@@ -41,9 +41,9 @@ plugins_root = find_plugin_location()
 
 def _get_plugin_method_full_name(func):
     path_parts = list(Path(inspect.getfile(func)).relative_to(plugins_root).with_suffix("").parts)
-    path_parts.insert(0, 'giskard_plugins')
-    if '__init__' in path_parts:
-        path_parts.remove('__init__')
+    path_parts.insert(0, "giskard_plugins")
+    if "__init__" in path_parts:
+        path_parts.remove("__init__")
     path_parts.append(func.__name__)
     return ".".join(path_parts)
 
@@ -85,11 +85,11 @@ def create_module_name(import_path: Path, root: Optional[Path]):
     if root is None:
         return "giskard_plugins"
     else:
-        return "giskard_plugins." + '.'.join(import_path.with_suffix("").relative_to(root).parts)
+        return "giskard_plugins." + ".".join(import_path.with_suffix("").relative_to(root).parts)
 
 
 def import_plugin(import_path, root=None):
-    if not import_path.is_dir() or not os.path.exists((import_path / '__init__.py')) or import_path in sys.path:
+    if not import_path.is_dir() or not os.path.exists((import_path / "__init__.py")) or import_path in sys.path:
         return
     try:
         logger.info(f"Importing plugin: {import_path.name}")
@@ -103,7 +103,7 @@ def import_plugin(import_path, root=None):
             sys.modules[module_name] = module
             spec.loader.exec_module(module)
         else:
-            importlib.import_module('.'.join(import_path.relative_to(root).parts))
+            importlib.import_module(".".join(import_path.relative_to(root).parts))
 
     except Exception as e:
         print(e)
@@ -141,13 +141,14 @@ class GiskardTestRegistry:
 
             if len(args_without_type):
                 logger.warning(
-                    f'Test function definition "{func.__module__}.{func.__name__}" is missing argument type: {", ".join(args_without_type)}')
+                    f'Test function definition "{func.__module__}.{func.__name__}" is missing argument type: {", ".join(args_without_type)}'
+                )
                 return
             func.__module__.rpartition(".")
             func_doc = self._extract_doc(func)
 
             tags = [] if not tags else tags
-            if full_name.partition(".")[0] == 'giskard':
+            if full_name.partition(".")[0] == "giskard":
                 tags.append("giskard")
             elif full_name.startswith('__main__'):
                 tags.append("pickle")
@@ -174,9 +175,10 @@ class GiskardTestRegistry:
                         name=name,
                         type=parameters[name].annotation.__qualname__,
                         optional=parameters[name].default != inspect.Parameter.empty
-                                 and parameters[name].default is not None,
-                        default=None if parameters[name].default == inspect.Parameter.empty else parameters[
-                            name].default
+                        and parameters[name].default is not None,
+                        default=None
+                        if parameters[name].default == inspect.Parameter.empty
+                        else parameters[name].default,
                     )
                     for name in parameters
                     if name != 'self'
@@ -192,7 +194,7 @@ class GiskardTestRegistry:
     def _extract_doc(func):
         if func.__doc__:
             func_doc, _, args_doc = func.__doc__.partition("\n\n\n")
-            func_doc = re.sub(r'\n[ \t\n]+', r'\n', func_doc.strip())
+            func_doc = re.sub(r"\n[ \t\n]+", r"\n", func_doc.strip())
         else:
             func_doc = None
         return func_doc

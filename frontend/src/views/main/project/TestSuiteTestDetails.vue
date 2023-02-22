@@ -29,8 +29,11 @@
                   <span v-if="props.inputs[a.name]?.isAlias">
                     {{ props.inputs[a.name].value }}
                   </span>
+                  <span v-else-if="a.name in props.inputs && a.type === 'Model'">
+                    {{ models[props.inputs[a.name].value].name ?? models[props.inputs[a.name].value].id }}
+                  </span>
                   <span v-else-if="a.name in props.inputs && a.type === 'Dataset'">
-                    {{ props.datasets[props.inputs[a.name].value] }}
+                    {{ datasets[props.inputs[a.name].value].name ?? datasets[props.inputs[a.name].value].id }}
                   </span>
                   <span v-else-if="a && a.name in props.inputs">{{ props.inputs[a.name].value }}</span>
                 </v-list-item-avatar>
@@ -44,7 +47,7 @@
       </v-list>
       <TestInputListSelector v-else-if="props.test.args"
                              :model-value="editedInputs"
-                             :project-id="props.projectId"
+                             :project-id="projectId"
                              :inputs="inputType"/>
     </div>
 
@@ -70,20 +73,19 @@ import TestResultTimeline from '@/components/TestResultTimeline.vue';
 import {computed, ref, watch} from 'vue';
 import TestInputListSelector from '@/components/TestInputListSelector.vue';
 import {api} from '@/api';
+import {useTestSuiteStore} from '@/stores/test-suite';
+import {storeToRefs} from 'pinia';
 
 const props = defineProps<{
-  projectId: number,
-  suiteId: number,
-  test: TestFunctionDTO,
+  test: TestDefinitionDTO
   inputs: { [key: string]: TestInputDTO },
-  models: { [key: string]: ModelDTO },
-  datasets: { [key: string]: DatasetDTO },
   executions?: SuiteTestExecutionDTO[]
 }>();
 
-const editedInputs = ref<{ [input: string]: string} | null>(null);
+const {reload} = useTestSuiteStore();
+const {projectId, models, datasets, suiteId} = storeToRefs(useTestSuiteStore());
 
-const emit = defineEmits(['updateTestSuite']);
+const editedInputs = ref<{ [input: string]: string } | null>(null);
 
 const sortedArguments = computed(() => {
   if (!props.test) {
@@ -108,10 +110,10 @@ async function saveEditedInputs() {
     return;
   }
 
-  const saved = await api.updateTestInputs(props.projectId, props.suiteId, props.test.uuid, editedInputs.value)
+  await api.updateTestInputs(projectId.value!, suiteId.value!, props.test.id, editedInputs.value)
   editedInputs.value = null;
 
-  emit('updateTestSuite', saved);
+  await reload();
 }
 
 watch(() => props.test, () => editedInputs.value = null);
