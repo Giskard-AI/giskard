@@ -13,7 +13,6 @@ import pandas as pd
 import pkg_resources
 import psutil
 import tqdm
-from google.protobuf.empty_pb2 import Empty
 from google.protobuf.wrappers_pb2 import Int32Value, DoubleValue
 
 import giskard
