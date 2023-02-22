@@ -33,16 +33,16 @@ def test_explain(ds_name: str, model_name: str, include_feature_names: bool, req
     assert explanations and explanations.get("explanations")
 
     if model.model_type == "classification":
-        for l in model.classification_labels:
-            label_explanation = explanations.get("explanations").get(l)
+        for label in model.classification_labels:
+            label_explanation = explanations.get("explanations").get(label)
             assert label_explanation
-            for l, e in label_explanation.items():
-                assert np.issubdtype(type(e), np.floating), f"'{l}' explanation value isn't float"
+            for i, e in label_explanation.items():
+                assert np.issubdtype(type(e), np.floating), f"'{i}' explanation value isn't float"
     elif model.model_type == "regression":
         assert "default" in explanations.get("explanations")
         exp = explanations.get("explanations").get("default")
-        for l, e in exp.items():
-            assert np.issubdtype(type(e), np.floating), f"'{l}' explanation value isn't float"
+        for i, e in exp.items():
+            assert np.issubdtype(type(e), np.floating), f"'{i}' explanation value isn't float"
 
 
 def test_explain_shuffle_columns(german_credit_test_data, german_credit_model):
@@ -56,6 +56,7 @@ def test_explain_shuffle_columns(german_credit_test_data, german_credit_model):
 def test_explain_text(enron_test_data, enron_model):
     df = enron_test_data.df.dropna()
     sample = df.head(1)
-    result = explain_text(model=enron_model, input_df=sample, text_column='Content',
-                          text_document=sample['Content'].iloc[0], n_samples=10)
+    result = explain_text(
+        model=enron_model, input_df=sample, text_column="Content", text_document=sample["Content"].iloc[0], n_samples=10
+    )
     assert result

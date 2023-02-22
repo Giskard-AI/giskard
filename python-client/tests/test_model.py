@@ -8,9 +8,7 @@ def test_catboost(german_credit_test_data, german_credit_catboost):
     assert (res.probabilities >= 0).all() and (res.probabilities <= 1).all()
 
 
-@pytest.mark.skip(
-    reason="GSK-230 enable test once model upload API is changed from functional to class based"
-)
+@pytest.mark.skip(reason="GSK-230 enable test once model upload API is changed from functional to class based")
 def test_catboost_changed_column_order(german_credit_test_data, german_credit_catboost):
     original_predictions = german_credit_catboost.run_predict(german_credit_test_data).probabilities
 
