@@ -25,9 +25,7 @@ class MLWorker:
 
         server, address = self._create_grpc_server(client, is_server)
         if not is_server:
-            logger.info(
-                "Remote server host and port are specified, connecting as an external ML Worker"
-            )
+            logger.info("Remote server host and port are specified, connecting as an external ML Worker")
             self.tunnel = MLWorkerBridge(address, client)
 
         self.grpc_server = server
@@ -40,9 +38,9 @@ class MLWorker:
         server = grpc.aio.server(
             interceptors=[ErrorInterceptor()],
             options=[
-                ("grpc.max_send_message_length", settings.max_send_message_length_mb * 1024 ** 2),
-                ("grpc.max_receive_message_length", settings.max_receive_message_length_mb * 1024 ** 2),
-            ]
+                ("grpc.max_send_message_length", settings.max_send_message_length_mb * 1024**2),
+                ("grpc.max_receive_message_length", settings.max_receive_message_length_mb * 1024**2),
+            ],
         )
 
         if is_server:
