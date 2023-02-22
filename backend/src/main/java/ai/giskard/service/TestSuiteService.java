@@ -191,7 +191,7 @@ public class TestSuiteService {
         }
     }
 
-    public TestSuiteNewDTO addTestToSuite(long suiteId, SuiteTestDTO suiteTestDTO) {
+    public TestSuiteNew addTestToSuite(long suiteId, SuiteTestDTO suiteTestDTO) {
         TestSuiteNew suite = testSuiteNewRepository.findById(suiteId)
             .orElseThrow(() -> new EntityNotFoundException(Entity.TEST_SUITE, suiteId));
 
@@ -203,7 +203,7 @@ public class TestSuiteService {
         suiteTest.setSuite(suite);
         suite.getTests().add(suiteTest);
 
-        return giskardMapper.toDTO(testSuiteNewRepository.save(suite));
+        return testSuiteNewRepository.save(suite);
     }
 
     @Transactional
