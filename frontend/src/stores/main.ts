@@ -1,5 +1,5 @@
 import {defineStore} from "pinia";
-import {AppConfigDTO} from "@/generated-sources";
+import {AppConfigDTO, LicenseDTO} from "@/generated-sources";
 import {IUserProfileMinimal} from "@/interfaces";
 import mixpanel from "mixpanel-browser";
 import {anonymize} from "@/utils";
@@ -18,6 +18,7 @@ export interface AppNotification {
 
 interface State {
     appSettings: AppInfoDTO | null;
+    license: LicenseDTO | null;
     coworkers: IUserProfileMinimal[];
     notifications: AppNotification[];
     features: { [key in FeatureFlagService.FeatureFlag]: boolean } | null;
@@ -26,6 +27,7 @@ interface State {
 export const useMainStore = defineStore('main', {
     state: (): State => ({
         appSettings: null,
+        license: null,
         coworkers: [],
         notifications: [],
         features: null
@@ -85,6 +87,9 @@ export const useMainStore = defineStore('main', {
         async fetchAppSettings() {
             const response = await api.getUserAndAppSettings();
             this.setAppSettings(response.app);
+        },
+        async fetchLicense() {
+            this.license = await api.getLicense();
         },
         async getUserProfile() {
             const userStore = useUserStore();

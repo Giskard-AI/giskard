@@ -2,7 +2,7 @@
   <v-card>
     <v-card-title>Plan upgrade</v-card-title>
     <v-card-text>
-      <span>TODO: Put an iframe here</span>
+      // TODO?
     </v-card-text>
     <v-card-actions>
       <v-spacer/>

@@ -14,6 +14,10 @@ export default new Router({
             component: () => import(/* webpackChunkName: "start" */ './views/main/Start.vue'),
             children: [
                 {
+                    path: 'setup',
+                    component: () => import(/* webpackChunkName: "setup" */ './views/setup/Setup.vue')
+                },
+                {
                     path: 'auth',
                     component: () => import(/* webpackChunkName: "login" */ './views/auth/AuthPortal.vue'),
                     redirect: '/auth/login',

@@ -17,6 +17,11 @@ public class License {
     private String planCode;
     private List<String> features;
 
+    // Do i want another structure to store these limits?
+    private Integer modelLimit;
+    private Integer projectLimit;
+    private Integer userLimit;
+
     public Map<FeatureFlagService.FeatureFlag, Boolean> getFeatures() {
         Map<FeatureFlagService.FeatureFlag, Boolean> map = new HashMap<>();
 
@@ -40,10 +45,18 @@ public class License {
     public static License fromJson(JsonNode licenseJson) {
         JsonNode attributes = licenseJson.get("data").get("attributes");
         JsonNode included = licenseJson.get("included");
+        JsonNode metadata = attributes.get("metadata");
 
         License newLicense = new License();
-        newLicense.setPlanName(attributes.get("metadata").get("planName").asText());
-        newLicense.setPlanCode(attributes.get("metadata").get("planCode").asText());
+        newLicense.setPlanName(metadata.get("planName").asText());
+        newLicense.setPlanCode(metadata.get("planCode").asText());
+
+        if (metadata.has("modelLimit"))
+            newLicense.setModelLimit(metadata.get("modelLimit").asInt(0));
+        if (metadata.has("projectLimit"))
+            newLicense.setProjectLimit(metadata.get("projectLimit").asInt(0));
+        if (metadata.has("userLimit"))
+            newLicense.setUserLimit(metadata.get("userLimit").asInt(0));
 
         List<String> feats = new ArrayList<>();
         for (JsonNode include : included) {

@@ -3,8 +3,11 @@ package ai.giskard.web.rest.controllers;
 import ai.giskard.config.Constants;
 import ai.giskard.domain.User;
 import ai.giskard.repository.UserRepository;
+import ai.giskard.service.GiskardRuntimeException;
 import ai.giskard.service.MailService;
 import ai.giskard.service.UserService;
+import ai.giskard.service.ee.LicenseService;
+import ai.giskard.utils.LicenseUtils;
 import ai.giskard.web.dto.mapper.GiskardMapper;
 import ai.giskard.web.dto.user.AdminUserDTO;
 import ai.giskard.web.rest.errors.BadRequestAlertException;
@@ -28,6 +31,7 @@ import tech.jhipster.web.util.ResponseUtil;
 
 import javax.validation.Valid;
 import javax.validation.constraints.Pattern;
+import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
@@ -84,6 +88,7 @@ public class UserAdminController {
     private final UserRepository userRepository;
 
     private final MailService mailService;
+    private final LicenseService licenseService;
     private final GiskardMapper giskardMapper;
 
 
@@ -99,7 +104,7 @@ public class UserAdminController {
      */
     @PostMapping("")
     @PreAuthorize("hasAuthority(\"" + ADMIN + "\")")
-    public ResponseEntity<AdminUserDTO> createUser(@Valid @RequestBody AdminUserDTO.AdminUserDTOWithPassword userDTO) {
+    public ResponseEntity<AdminUserDTO> createUser(@Valid @RequestBody AdminUserDTO.AdminUserDTOWithPassword userDTO) throws IOException {
         log.debug("REST request to save User : {}", userDTO);
 
         if (userDTO.getId() != null) {
@@ -109,6 +114,8 @@ public class UserAdminController {
             throw new LoginAlreadyUsedException();
         } else if (userRepository.findOneByEmailIgnoreCase(userDTO.getEmail()).isPresent()) {
             throw new EmailAlreadyUsedException();
+        } else if (LicenseUtils.isLimitReached(licenseService.getCurrentLicense().getUserLimit(), (int) userRepository.count())) {
+            throw new GiskardRuntimeException("User limit is reached. You can upgrade your plan to create more.");
         } else {
             User newUser = userService.createUser(userDTO);
             mailService.sendCreationEmail(newUser);

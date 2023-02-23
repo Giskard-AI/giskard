@@ -15,6 +15,7 @@ export const GENERATED_MAPPING = {
     'ai.giskard.domain.MLWorkerType' : 'MLWorkerType',
     'ai.giskard.web.dto.config.AppConfigDTO$AppInfoDTO' : 'AppConfigDTO.AppInfoDTO',
     'ai.giskard.web.dto.config.AppConfigDTO' : 'AppConfigDTO',
+    'ai.giskard.web.dto.config.LicenseDTO' : 'LicenseDTO',
     'ai.giskard.web.dto.config.MLWorkerInfoDTO$PlatformInfoDTO' : 'MLWorkerInfoDTO.PlatformInfoDTO',
     'ai.giskard.web.dto.config.MLWorkerInfoDTO' : 'MLWorkerInfoDTO',
     'ai.giskard.web.dto.CreateFeedbackDTO' : 'CreateFeedbackDTO',
@@ -93,6 +94,7 @@ export * from './ai/giskard/domain/ml/test-result';
 export * from './ai/giskard/domain/ml/test-type';
 export * from './ai/giskard/domain/mlworker-type';
 export * from './ai/giskard/web/dto/config/app-config-dto';
+export * from './ai/giskard/web/dto/config/license-dto';
 export * from './ai/giskard/web/dto/config/mlworker-info-dto';
 export * from './ai/giskard/web/dto/create-feedback-dto';
 export * from './ai/giskard/web/dto/create-feedback-reply-dto';

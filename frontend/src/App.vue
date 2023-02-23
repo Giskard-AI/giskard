@@ -49,6 +49,7 @@ let monacoOptions: IEditorOptions = {
 provide('monacoOptions', monacoOptions);
 
 onBeforeMount(async () => {
+  await mainStore.fetchLicense();
   await userStore.checkLoggedIn();
 });
 </script>

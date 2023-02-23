@@ -19,6 +19,7 @@ import {
     InspectionCreateDTO,
     InspectionDTO,
     JWTToken,
+    LicenseDTO,
     ManagedUserVM,
     MessageDTO,
     MLWorkerInfoDTO,
@@ -190,6 +191,9 @@ export const api = {
     },
     async getFeatureFlags() {
         return apiV2.get<unknown, unknown>(`/settings/featureFlags`);
+    },
+    async getLicense() {
+        return apiV2.get<unknown, LicenseDTO>(`/settings/license`);
     },
     async getUserAndAppSettings() {
         return apiV2.get<unknown, AppConfigDTO>(`/settings`);

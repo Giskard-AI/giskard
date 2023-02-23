@@ -7,6 +7,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 
+import java.io.IOException;
 import java.util.Collections;
 
 @Configuration
@@ -14,7 +15,7 @@ public class LicenseTestConfig {
 
     @Bean
     @Primary
-    public LicenseService licenseService() {
+    public LicenseService licenseService() throws IOException {
         License mockLicense = new License();
         mockLicense.setFeatures(Collections.singletonList("AUTH"));
 
