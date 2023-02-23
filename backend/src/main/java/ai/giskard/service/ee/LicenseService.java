@@ -33,26 +33,27 @@ public class LicenseService {
 
     private License currentLicense;
 
-    private License defaultLicense;
-
     /**
      * On service init, load the stored license if it exists
      * Also initialize default license (for now)
      */
     @PostConstruct
     public void init() throws IOException {
-        defaultLicense = new License();
-        defaultLicense.setPlanName("Open Source");
-
-        if (Files.exists(fileLocationService.licensePath())) {
-            String licenseFile = Files.readString(fileLocationService.licensePath());
-            decodeLicense(licenseFile);
-        }
     }
 
-    public License getCurrentLicense() {
+    public License getCurrentLicense() throws IOException {
         licensePublicKey = SpringContext.getBean(ApplicationProperties.class).getLicensePublicKey();
-        return currentLicense == null ? defaultLicense : currentLicense;
+        
+        if (currentLicense == null) {
+            if (Files.exists(fileLocationService.licensePath())) {
+                String licenseFile = Files.readString(fileLocationService.licensePath());
+                decodeLicense(licenseFile);
+            } else {
+                currentLicense = new License();
+            }
+        }
+
+        return currentLicense;
     }
 
     /**

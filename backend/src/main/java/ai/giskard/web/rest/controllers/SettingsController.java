@@ -11,6 +11,7 @@ import ai.giskard.service.ee.License;
 import ai.giskard.service.ee.LicenseService;
 import ai.giskard.service.ml.MLWorkerService;
 import ai.giskard.web.dto.config.AppConfigDTO;
+import ai.giskard.web.dto.config.LicenseDTO;
 import ai.giskard.web.dto.config.MLWorkerInfoDTO;
 import ai.giskard.web.dto.user.AdminUserDTO;
 import ai.giskard.web.dto.user.RoleDTO;
@@ -34,6 +35,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
@@ -65,8 +67,6 @@ public class SettingsController {
 
     @Autowired
     private final MLWorkerService mlWorkerService;
-
-    private final FeatureFlagService featureFlagService;
     private final LicenseService licenseService;
 
 
@@ -79,7 +79,7 @@ public class SettingsController {
 
     @GetMapping("")
     @Transactional
-    public AppConfigDTO getApplicationSettings(@AuthenticationPrincipal final UserDetails user) {
+    public AppConfigDTO getApplicationSettings(@AuthenticationPrincipal final UserDetails user) throws IOException {
         log.debug("REST request to get all public User names");
         AdminUserDTO userDTO = userRepository
             .findOneWithRolesByLogin(user.getUsername())
@@ -116,8 +116,22 @@ public class SettingsController {
     }
 
     @GetMapping("/featureFlags")
-    public Map<FeatureFlagService.FeatureFlag, Boolean> getFeatureFlags() {
+    public Map<FeatureFlagService.FeatureFlag, Boolean> getFeatureFlags() throws IOException {
         return licenseService.getCurrentLicense().getFeatures();
+    }
+
+    @GetMapping("/license")
+    public LicenseDTO getLicense() throws IOException {
+        License currentLicense = licenseService.getCurrentLicense();
+
+        return LicenseDTO.builder()
+            .planName(currentLicense.getPlanName())
+            .planCode(currentLicense.getPlanCode())
+            .userLimit(currentLicense.getUserLimit())
+            .projectLimit(currentLicense.getProjectLimit())
+            .modelLimit(currentLicense.getModelLimit())
+            .active(currentLicense.isActive())
+            .build();
     }
 
     @GetMapping("/ml-worker-info")

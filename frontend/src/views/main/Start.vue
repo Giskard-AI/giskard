@@ -5,12 +5,21 @@
 <script lang="ts">
 import {Component, Vue} from 'vue-property-decorator';
 import {useUserStore} from "@/stores/user";
+import {useMainStore} from "@/stores/main";
 
 const startRouteGuard = async (to, from, next) => {
   const userStore = useUserStore();
+  const mainStore = useMainStore();
 
   await userStore.checkLoggedIn();
-  if (userStore.isLoggedIn) {
+
+  if (!mainStore.license?.active) {
+    if (to.path !== '/setup') {
+      next('/setup');
+    } else {
+      next();
+    }
+  } else if (userStore.isLoggedIn) {
     if (to.path === '/auth/login' || to.path === '/') {
       next('/main/dashboard');
     } else {
