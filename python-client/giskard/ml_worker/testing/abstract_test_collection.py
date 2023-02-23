@@ -1,8 +1,7 @@
-from typing import List
-
 import inspect
 import logging
 from abc import ABC
+from typing import List
 
 from giskard.ml_worker.generated.ml_worker_pb2 import NamedSingleTestResult, SingleTestResult
 
@@ -30,5 +29,5 @@ class AbstractTestCollection(ABC):
         if test_name is None:
             test_name = self._find_caller_test_name()
 
-        self.tests_results.append(NamedSingleTestResult(name=test_name, result=result))
+        self.tests_results.append(NamedSingleTestResult(testUuid=test_name, result=result))
         return result

@@ -97,7 +97,7 @@ def test_giskard_test_class(german_credit_data: Dataset, german_credit_model: Mo
 
     assert (
         Suite()
-        .add_test(AucTest(actual_slice=shared_input, threshold=0.2))
+        .add_test(AucTest().set_params(actual_slice=shared_input, threshold=0.2))
         .run(model=german_credit_model, dataset=german_credit_data)[0]
     )
 
@@ -106,7 +106,9 @@ def test_giskard_test_class(german_credit_data: Dataset, german_credit_model: Mo
 def test_save_suite(german_credit_data: Dataset, german_credit_model: Model):
     api_pattern = re.compile(r"http://giskard-host:12345/api/v2/.*")
 
+    httpretty.register_uri(httpretty.GET, api_pattern)
     httpretty.register_uri(httpretty.POST, api_pattern)
+    httpretty.register_uri(httpretty.PUT, api_pattern)
 
     client = GiskardClient(url, token)
 
