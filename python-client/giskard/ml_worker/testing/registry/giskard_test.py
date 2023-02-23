@@ -85,6 +85,7 @@ class GiskardTest(Savable[Any, TestFunctionMeta]):
             assert f"Cannot find test function {uuid}"
         return meta
 
+
 Function = Callable[..., Result]
 
 Test = Union[GiskardTest, Function]

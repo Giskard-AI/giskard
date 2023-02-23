@@ -123,8 +123,7 @@ class TestFunctionMeta(SavableMeta):
             code=json["code"],
             tags=json["tags"],
             version=json["version"],
-            args=
-            {
+            args={
                 arg["name"]: TestFunctionArgument(
                     name=arg["name"],
                     type=arg["type"],
@@ -132,6 +131,7 @@ class TestFunctionMeta(SavableMeta):
                     optional=arg["optional"]
                 ) for arg in json["args"]
             }
+
         )
 
 
