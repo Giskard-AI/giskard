@@ -22,14 +22,16 @@ class Dataset:
     target: str
     feature_types: Dict[str, str]
     df: pd.DataFrame
+    id: uuid.UUID
 
     def __init__(
-        self,
-        df: pd.DataFrame,
-        name: Optional[str] = None,
-        target: Optional[str] = None,
-        cat_columns: Optional[List[str]] = None,
-        feature_types: Optional[Dict[str, str]] = None,
+            self,
+            df: pd.DataFrame,
+            name: Optional[str] = None,
+            target: Optional[str] = None,
+            cat_columns: Optional[List[str]] = None,
+            feature_types: Optional[Dict[str, str]] = None,
+            id: Optional[uuid.UUID] = None
     ) -> None:
         self.name = name
         self.df = pd.DataFrame(df)
@@ -39,6 +41,10 @@ class Dataset:
             self.feature_types = {f: SupportedFeatureTypes.CATEGORY for f in cat_columns}
         else:
             self.feature_types = feature_types
+        if id is None:
+            self.id = uuid.uuid4()
+        else:
+            self.id = id
 
     @staticmethod
     def extract_column_types(df):
@@ -49,10 +55,12 @@ class Dataset:
 
         validate_dataset(self)
 
-        dataset_id = str(uuid.uuid4())
+        dataset_id = str(self.id)
+
         with tempfile.TemporaryDirectory(prefix="giskard-dataset-") as local_path:
             original_size_bytes, compressed_size_bytes = self._save_to_local_dir(Path(local_path), dataset_id)
-            client.log_artifacts(local_path, posixpath.join(project_key, "datasets", dataset_id))
+            if client is not None:
+                client.log_artifacts(local_path, posixpath.join(project_key, "datasets", dataset_id))
             client.save_dataset_meta(
                 project_key,
                 dataset_id,
@@ -109,7 +117,9 @@ class Dataset:
 
         df = cls._read_dataset_from_local_dir(local_dir / "data.csv.zst")
         df = cls.cast_column_to_types(df, meta.column_types)
-        return cls(df=df, name=meta.name, target=meta.target, feature_types=meta.feature_types)
+        return cls(df=df, name=meta.name, target=meta.target, feature_types=meta.feature_types,
+                   id=uuid.UUID(dataset_id)
+                   )
 
     @staticmethod
     def _cat_columns(meta):

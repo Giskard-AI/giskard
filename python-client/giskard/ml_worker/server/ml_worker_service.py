@@ -22,7 +22,7 @@ from giskard.ml_worker.core.model_explanation import (
     explain,
     explain_text,
 )
-from giskard.ml_worker.core.suite import Suite
+from giskard.ml_worker.core.suite import Suite, ModelInput, DatasetInput, SuiteInput
 from giskard.ml_worker.core.test_result import TestResult, TestMessageLevel
 from giskard.ml_worker.exceptions.IllegalArgumentError import IllegalArgumentError
 from giskard.ml_worker.exceptions.giskard_exception import GiskardException
@@ -136,34 +136,31 @@ class MLWorkerServiceImpl(MLWorkerServicer):
 
     def runTestSuite(self, request: ml_worker_pb2.RunTestSuiteRequest,
                      context: grpc.ServicerContext) -> ml_worker_pb2.TestSuiteResultMessage:
-        tests: List[GiskardTest] = list(
-            map(lambda test_uuid: GiskardTest.load(test_uuid, self.client, None), request.testUuid)
-        )
+        tests = [{
+            'test': GiskardTest.load(t.testUuid, self.client, None),
+            'arguments': self.parse_test_arguments(t.arguments),
+            'id': t.id
+        } for t in request.tests]
 
         global_arguments = self.parse_test_arguments(request.globalArguments)
 
-        logger.info(
-            f"Executing test suite: {list(map(lambda t: t.meta.display_name or f'{t.meta.module}.{t.meta.name}', tests))}")
+        logger.info(f"Executing test suite: {list(map(lambda t: t['test'].meta.display_name or (t['test'].meta.module + '.' + t['test'].meta.name, tests)))}")
 
         suite = Suite()
-        for test in tests:
-            fixed_arguments = self.parse_test_arguments(
-                next(x for x in request.fixedArguments if x.testUuid == test.meta.uuid).arguments
-            )
-            suite.add_test(test.set_params(**fixed_arguments))
+        for t in tests:
+            suite.add_test(t['test'].set_params(**t['arguments']), t['id'])
 
         is_pass, results = suite.run(**global_arguments)
 
-        result_list = list(results.values())
-
-        named_single_test_result = []
-        for i in range(len(tests)):
-            named_single_test_result.append(
-                ml_worker_pb2.NamedSingleTestResult(name=tests[i].uuid,
-                                                    result=map_result_to_single_test_result(result_list[i]))
+        identifier_single_test_results = []
+        for identifier, result in results:
+            identifier_single_test_results.append(
+                ml_worker_pb2.IdentifierSingleTestResult(
+                    id=identifier, result=map_result_to_single_test_result(result)
+                )
             )
 
-        return ml_worker_pb2.TestSuiteResultMessage(is_pass=is_pass, results=named_single_test_result)
+        return ml_worker_pb2.TestSuiteResultMessage(is_pass=is_pass, results=identifier_single_test_results)
 
     def parse_test_arguments(self, request_arguments):
         arguments = {}
@@ -362,6 +359,65 @@ class MLWorkerServiceImpl(MLWorkerServicer):
 
         logger.info(f"Filter dataset finished. Avg chunk time: {sum(times) / len(times)}")
         yield ml_worker_pb2.FilterDatasetResponse(code=ml_worker_pb2.StatusCode.Ok)
+
+    def getTestRegistry(
+            self, request: google.protobuf.empty_pb2.Empty, context: grpc.ServicerContext
+    ) -> ml_worker_pb2.TestRegistryResponse:
+        return ml_worker_pb2.TestRegistryResponse(
+            tests={
+                test.id: ml_worker_pb2.TestFunction(
+                    id=test.id,
+                    name=test.name,
+                    module=test.module,
+                    doc=test.doc,
+                    code=test.code,
+                    module_doc=test.module_doc,
+                    tags=test.tags,
+                    arguments={
+                        a.name: ml_worker_pb2.TestFunctionArgument(
+                            name=a.name, type=a.type, optional=a.optional, default=str(a.default)
+                        )
+                        for a in test.args.values()
+                    },
+                )
+                for test in tests_registry.get_all().values()
+            }
+        )
+
+    @staticmethod
+    def map_suite_input(i: ml_worker_pb2.SuiteInput):
+        if i.type == 'Model' and i.model_meta is not None:
+            return ModelInput(i.name, i.model_meta.model_type)
+        elif i.type == 'Dataset' and i.dataset_meta is not None:
+            return DatasetInput(i.name, i.dataset_meta.target)
+        else:
+            return SuiteInput(i.name, i.type)
+
+    def generateTestSuite(
+            self,
+            request: ml_worker_pb2.GenerateTestSuiteRequest,
+            context: grpc.ServicerContext,
+    ) -> ml_worker_pb2.GenerateTestSuiteResponse:
+        inputs = [self.map_suite_input(i) for i in request.inputs]
+
+        suite = Suite().generate_tests(inputs).to_dto(self.client, request.project_key)
+
+        return ml_worker_pb2.GenerateTestSuiteResponse(
+            tests=[
+                ml_worker_pb2.GeneratedTest(
+                    test_id=test.testId,
+                    inputs=[
+                        ml_worker_pb2.GeneratedTestInput(
+                            name=i.name,
+                            value=i.value,
+                            is_alias=i.is_alias
+                        )
+                        for i in test.testInputs.values()
+                    ]
+                )
+                for test in suite.tests
+            ]
+        )
 
     @staticmethod
     def pandas_df_to_proto_df(df):
