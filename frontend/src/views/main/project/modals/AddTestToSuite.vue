@@ -21,7 +21,7 @@
                       outlined
                       label="Test suite"
                       v-model="selectedSuite"
-                      :items="testSuitesWithoutTest"
+                      :items="testSuites"
                       :item-text="'name'"
                       :item-value="'id'"
                       dense
@@ -80,9 +80,6 @@ async function loadData() {
   testSuites.value = await api.getTestSuitesNew(projectId);
 }
 
-const testSuitesWithoutTest = computed(() =>
-  testSuites.value.filter(suite => suite.tests.findIndex(t => t.testId === test.id) === -1)
-);
 
 const inputs = computed(() =>
     chain(test.arguments)

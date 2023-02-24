@@ -9,6 +9,7 @@ import java.util.Map;
 
 @Data
 public class SuiteTestDTO {
+    private long id;
     @JsonAlias("test_id")
     @NotBlank
     private String testId;
