@@ -20,15 +20,12 @@ b_content_type = b"application/json"
 @httpretty.activate(verbose=True, allow_net_connect=False)
 def test_upload_df(diabetes_dataset: Dataset, diabetes_dataset_with_target: Dataset):
     artifact_url_pattern = re.compile(
-        r"http://giskard-host:12345/api/v2/artifacts/test-project/datasets/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/[data.csv.zst|giskard\-dataset\-meta.yaml]")
+        r"http://giskard-host:12345/api/v2/artifacts/test-project/datasets/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/[data.csv.zst|giskard\-dataset\-meta.yaml]"
+    )
     datasets_url_pattern = re.compile("http://giskard-host:12345/api/v2/project/test-project/datasets")
 
-    httpretty.register_uri(
-        httpretty.POST,
-        artifact_url_pattern)
-    httpretty.register_uri(
-        httpretty.POST,
-        datasets_url_pattern)
+    httpretty.register_uri(httpretty.POST, artifact_url_pattern)
+    httpretty.register_uri(httpretty.POST, datasets_url_pattern)
 
     client = GiskardClient(url, token)
 
@@ -50,7 +47,8 @@ def test_upload_df(diabetes_dataset: Dataset, diabetes_dataset_with_target: Data
 @httpretty.activate(verbose=True, allow_net_connect=False)
 def _test_upload_model(model: SKLearnModel, ds: Dataset):
     artifact_url_pattern = re.compile(
-        "http://giskard-host:12345/api/v2/artifacts/test-project/models/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/.*")
+        "http://giskard-host:12345/api/v2/artifacts/test-project/models/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/.*"
+    )
     models_url_pattern = re.compile("http://giskard-host:12345/api/v2/project/test-project/models")
 
     httpretty.register_uri(httpretty.POST, artifact_url_pattern)
@@ -60,9 +58,9 @@ def _test_upload_model(model: SKLearnModel, ds: Dataset):
     if model.is_regression:
         # Warning Scenario: classification_labels is sent for regression model
         with pytest.warns(UserWarning):
-            model.upload(client, 'test-project', ds)
+            model.upload(client, "test-project", ds)
     else:
-        model.upload(client, 'test-project', ds)
+        model.upload(client, "test-project", ds)
 
     tests.utils.match_model_id(model.id)
     tests.utils.match_url_patterns(httpretty.latest_requests(), artifact_url_pattern)
@@ -79,9 +77,9 @@ def _test_upload_model_exceptions(model: SKLearnModel, ds: Dataset):
             model_type=model.meta.model_type,
             feature_names=["some"],
             name=model_name,
-            classification_labels=model.meta.classification_labels
-        ).upload(client, 'test-project', ds)
-    assert e.match('Value mentioned in  feature_names is  not available in validate_df')
+            classification_labels=model.meta.classification_labels,
+        ).upload(client, "test-project", ds)
+    assert e.match("Value mentioned in  feature_names is  not available in validate_df")
 
     if model.is_classification:
         # Error Scenario: Target has values not declared in Classification Label
@@ -91,9 +89,9 @@ def _test_upload_model_exceptions(model: SKLearnModel, ds: Dataset):
                 model_type=model.meta.model_type,
                 feature_names=model.meta.feature_names,
                 name=model_name,
-                classification_labels=[0, 1]
-            ).upload(client, 'test-project', ds)
-        assert e.match('Values in default column are not declared in classification_labels parameter')
+                classification_labels=[0, 1],
+            ).upload(client, "test-project", ds)
+        assert e.match("Values in default column are not declared in classification_labels parameter")
 
 
 @pytest.mark.parametrize(
@@ -109,10 +107,9 @@ def test_upload_models(data, model, request):
     _test_upload_model(model, data)
 
 
-@pytest.mark.parametrize('data,model,',
-                         [
-                             ('german_credit_data', 'german_credit_model'),
-                             ('diabetes_dataset', 'linear_regression_diabetes')])
+@pytest.mark.parametrize(
+    "data,model,", [("german_credit_data", "german_credit_model"), ("diabetes_dataset", "linear_regression_diabetes")]
+)
 def test_upload_models_exceptions(data, model, request):
     data = request.getfixturevalue(data)
     model = request.getfixturevalue(model)
