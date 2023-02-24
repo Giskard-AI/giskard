@@ -172,7 +172,7 @@ class Suite:
             test_fn = GiskardTestMethod(test_fn)
 
         if test_identifier is None:
-            test_identifier = f"{test_fn.__module__}.{test_fn.__name__}"
+            test_identifier = f"{test_fn.meta.module}.{test_fn.meta.name}"
             if any([test for test in self.tests if test.test_identifier == test_identifier]):
                 test_identifier = f"{test_identifier}-{str(uuid.uuid4())}"
         elif any([test for test in self.tests if test.test_identifier == test_identifier]):
