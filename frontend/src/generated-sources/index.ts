@@ -78,6 +78,7 @@ export const GENERATED_MAPPING = {
     'ai.giskard.web.dto.TestDefinitionDTO' : 'TestDefinitionDTO',
     'ai.giskard.web.dto.TestFunctionArgumentDTO' : 'TestFunctionArgumentDTO',
     'ai.giskard.web.dto.TestInputDTO' : 'TestInputDTO',
+    'ai.giskard.web.dto.TestSuiteCompleteDTO' : 'TestSuiteCompleteDTO',
     'ai.giskard.web.dto.TestSuiteCreateDTO' : 'TestSuiteCreateDTO',
     'ai.giskard.web.dto.TestSuiteNewDTO' : 'TestSuiteNewDTO',
     'ai.giskard.web.dto.TestTemplatesResponse' : 'TestTemplatesResponse',
@@ -167,6 +168,7 @@ export * from './ai/giskard/web/dto/test-catalog-dto';
 export * from './ai/giskard/web/dto/test-definition-dto';
 export * from './ai/giskard/web/dto/test-function-argument-dto';
 export * from './ai/giskard/web/dto/test-input-dto';
+export * from './ai/giskard/web/dto/test-suite-complete-dto';
 export * from './ai/giskard/web/dto/test-suite-create-dto';
 export * from './ai/giskard/web/dto/test-suite-new-dto';
 export * from './ai/giskard/web/dto/test-templates-response';
