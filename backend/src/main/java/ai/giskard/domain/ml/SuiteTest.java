@@ -35,8 +35,7 @@ public class SuiteTest {
     @JsonIgnore
     private List<SuiteTestExecution> executions = new java.util.ArrayList<>();
 
-    public SuiteTest(TestSuiteNew suite, GeneratedTest test) {
-        this.testUuid = test.getTestUuidd();
+    public SuiteTest(TestSuiteNew suite, GeneratedTest test, TestFunction testFunction) {
         this.suite = suite;
         this.testInputs.addAll(test.getInputsList().stream()
             .map(testInput -> new TestInput(this, testInput))
