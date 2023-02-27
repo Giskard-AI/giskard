@@ -299,7 +299,7 @@ class WrapperModel(Model, ABC):
                               "We automatically inferred the second class prediction but please make sure that \n" + \
                               "the probability output of your model corresponds to the first label of the \n" + \
                               f"classification_labels ({self.meta.classification_labels}) you provided us with."
-            
+
             if len(raw_prediction.shape) < 1:
                 logger.warning(warning_message, exc_info=True)
                 raw_prediction = np.stack([raw_prediction, 1 - raw_prediction], axis=1)
