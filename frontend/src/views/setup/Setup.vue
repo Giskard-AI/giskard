@@ -18,9 +18,8 @@
               <v-text-field label="Last name" v-model="lastName"></v-text-field>
               <v-text-field label="Email" v-model="email"></v-text-field>
               <v-text-field label="Company name" v-model="companyName"></v-text-field>
+              <v-btn text @click="submit">Submit</v-btn>
             </v-form>
-
-            <v-btn text @click="submit">Submit</v-btn>
           </v-card-text>
         </v-card>
       </v-col>
@@ -41,10 +40,12 @@
 <script setup lang="ts">
 
 import {ref} from "vue";
-import axios from "axios";
+import axios, {AxiosError} from "axios";
 import {useMainStore} from "@/stores/main";
 import {api} from "@/api";
 
+
+const loading = ref<boolean>(true);
 
 const mainStore = useMainStore();
 
@@ -57,13 +58,26 @@ const email = ref<string>("");
 const companyName = ref<string>("");
 
 async function submit() {
-  // TODO: While waiting for the email template to be done, submitting automatically inputs the license ....
-  const license = await axios.post('https://hook.eu1.make.com/g81venzbf3ausl6b8xitgudtqo4ev39q', {
-    firstName: firstName.value,
-    lastName: lastName.value,
-    email: email.value,
-    companyName: companyName.value
-  })
+  // TODO: While waiting for the email template to be done, submitting automatically downloads the license ....
+  try {
+    const license = await axios.post('https://hook.eu1.make.com/g81venzbf3ausl6b8xitgudtqo4ev39q', {
+      firstName: firstName.value,
+      lastName: lastName.value,
+      email: email.value,
+      companyName: companyName.value
+    });
+
+    const elem = document.createElement('a');
+    elem.setAttribute('href', 'data:text/plain;charset=utf-8,' + license.data)
+    elem.setAttribute('download', 'license.lic')
+
+    elem.style.display = 'none';
+    document.body.appendChild(elem);
+    elem.click();
+    document.body.removeChild(elem);
+  } catch (e: AxiosError) {
+    mainStore.addNotification({color: 'error', content: e.response?.data.toString()});
+  }
 }
 
 function openFileInput() {
@@ -71,11 +85,15 @@ function openFileInput() {
 }
 
 async function onFileUpdate(event) {
+  loading.value = true;
+
   let formData = new FormData();
   formData.append('file', event.target.files[0]);
 
   await api.uploadLicense(formData);
   await mainStore.fetchAppSettings();
+
+  loading.value = false;
 }
 
 </script>

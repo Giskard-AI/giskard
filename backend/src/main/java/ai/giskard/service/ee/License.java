@@ -44,7 +44,6 @@ public class License {
 
     public static License fromJson(JsonNode licenseJson) {
         JsonNode attributes = licenseJson.get("data").get("attributes");
-        JsonNode included = licenseJson.get("included");
         JsonNode metadata = attributes.get("metadata");
 
         License newLicense = new License();
@@ -59,16 +58,21 @@ public class License {
             newLicense.setUserLimit(metadata.get("userLimit").asInt(0));
 
         List<String> feats = new ArrayList<>();
-        for (JsonNode include : included) {
-            if (!"entitlements".equals(include.get("type").asText())) {
-                continue;
-            }
 
-            feats.add(include.get("attributes").get("code").asText());
+        if (licenseJson.has("included")) {
+            JsonNode included = licenseJson.get("included");
+            for (JsonNode include : included) {
+                if (!"entitlements".equals(include.get("type").asText())) {
+                    continue;
+                }
+
+                feats.add(include.get("attributes").get("code").asText());
+            }
         }
 
         newLicense.setFeatures(feats);
         newLicense.setActive("ACTIVE".equals(attributes.get("status").asText()));
+        
         return newLicense;
     }
 }
