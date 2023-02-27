@@ -57,22 +57,22 @@ def test_all_global():
 
 
 def test_multiple(german_credit_data: Dataset, german_credit_model: Model):
-    assert Suite() \
-        .add_test(test_auc, threshold=0.2) \
-        .add_test(test_f1, threshold=0.2) \
+    assert (
+        Suite()
+        .add_test(test_auc, threshold=0.2)
+        .add_test(test_f1, threshold=0.2)
         .run(actual_slice=german_credit_data, model=german_credit_model)[0]
+    )
 
 
 def test_all_inputs_exposed_and_shared(german_credit_data, german_credit_model):
-    assert Suite() \
-        .add_test(test_auc) \
-        .add_test(test_f1) \
-        .add_test(_test_a_greater_b) \
-        .run(actual_slice=german_credit_data,
-             model=german_credit_model,
-             threshold=0.2,
-             a=2,
-             b=1)[0]
+    assert (
+        Suite()
+        .add_test(test_auc)
+        .add_test(test_f1)
+        .add_test(_test_a_greater_b)
+        .run(actual_slice=german_credit_data, model=german_credit_model, threshold=0.2, a=2, b=1)[0]
+    )
 
 
 def test_shared_input(german_credit_data: Dataset, german_credit_model: Model):
@@ -81,45 +81,44 @@ def test_shared_input(german_credit_data: Dataset, german_credit_model: Model):
 
     shared_input = SuiteInput("dataset", Dataset)
 
-    assert Suite() \
-        .add_test(test_auc, actual_slice=shared_input, threshold=0.2) \
-        .add_test(test_f1, actual_slice=shared_input, threshold=0.2) \
-        .add_test(test_diff_f1, threshold=0.2) \
-        .run(model=german_credit_model,
-             dataset=german_credit_data,
-             actual_slice=first_half,
-             reference_slice=last_half
-             )[0]
+    assert (
+        Suite()
+        .add_test(test_auc, actual_slice=shared_input, threshold=0.2)
+        .add_test(test_f1, actual_slice=shared_input, threshold=0.2)
+        .add_test(test_diff_f1, threshold=0.2)
+        .run(model=german_credit_model, dataset=german_credit_data, actual_slice=first_half, reference_slice=last_half)[
+            0
+        ]
+    )
 
 
 def test_giskard_test_class(german_credit_data: Dataset, german_credit_model: Model):
     shared_input = SuiteInput("dataset", Dataset)
 
-    assert Suite() \
-        .add_test(AucTest(actual_slice=shared_input, threshold=0.2)) \
+    assert (
+        Suite()
+        .add_test(AucTest(actual_slice=shared_input, threshold=0.2))
         .run(model=german_credit_model, dataset=german_credit_data)[0]
+    )
 
 
 @httpretty.activate(verbose=True, allow_net_connect=False)
 def test_save_suite(german_credit_data: Dataset, german_credit_model: Model):
     api_pattern = re.compile(r"http://giskard-host:12345/api/v2/.*")
 
-    httpretty.register_uri(
-        httpretty.POST,
-        api_pattern)
+    httpretty.register_uri(httpretty.POST, api_pattern)
 
     client = GiskardClient(url, token)
 
-    Suite() \
-        .add_test(test_auc, threshold=0.2, actual_slice=german_credit_data) \
-        .add_test(test_f1, threshold=0.2, actual_slice=german_credit_data) \
-        .save(client, 'test_project_key')
+    Suite().add_test(test_auc, threshold=0.2, actual_slice=german_credit_data).add_test(
+        test_f1, threshold=0.2, actual_slice=german_credit_data
+    ).save(client, "test_project_key")
+
 
 # def test_save_suite_real(german_credit_data: Dataset, german_credit_model: Model):
+#    client = GiskardClient("http://localhost:9000", "")
 #
-#     client = GiskardClient("http://localhost:9000", "")
-#
-#     Suite(name="Test Suite 1") \
-#         .add_test(test_auc, threshold=0.2, actual_slice=german_credit_data) \
-#         .add_test(test_f1, threshold=0.2, actual_slice=german_credit_data) \
-#         .save(client, 'credit')
+#    Suite(name="Test Suite 1") \
+#        .add_test(test_auc, threshold=0.2, actual_slice=german_credit_data) \
+#        .add_test(test_f1, threshold=0.2, actual_slice=german_credit_data) \
+#        .save(client, 'credit')
