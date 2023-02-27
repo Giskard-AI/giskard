@@ -286,7 +286,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
             raise GiskardException(
                 f"Failed to import '{e.name}'. "
                 f"Make sure it's installed in the ML Worker environment."
-                "To install it, refer to https://docs.giskard.ai/start/guides/configuration"
+                "To have more information on ML Worker, please see: https://docs.giskard.ai/start/guides/installation/ml-worker"
             ) from e
         prediction_results = model.predict(dataset)
 
