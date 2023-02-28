@@ -44,7 +44,7 @@ def explain(model: GiskardModel, dataset: GiskardDataset, input_data: Dict):
 
     example = background_example(df, dataset.feature_types)
     kernel = shap.KernelExplainer(predict_array, example)
-    shap_values = kernel.shap_values(input_df)
+    shap_values = kernel.shap_values(input_df, silent=True)
 
     if model.model_type == "regression":
         explanation_chart_data = summary_shap_regression(

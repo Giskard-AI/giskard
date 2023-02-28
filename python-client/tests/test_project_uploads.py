@@ -10,23 +10,20 @@ from giskard.client.project import GiskardProject
 data = np.array(["g", "e", "e", "k", "s"])
 
 
-@pytest.mark.parametrize('pred', [
-    [[0.81, 0.32]],
-    [[0.9, 0.21]],
-    [[1.5, 1]],
-    [[-1, 2]],
-    [[0.9, -0.1]],
-    [[0, -1], [0.8, 0.5]]
-])
+@pytest.mark.parametrize(
+    "pred", [[[0.81, 0.32]], [[0.9, 0.21]], [[1.5, 1]], [[-1, 2]], [[0.9, -0.1]], [[0, -1], [0.8, 0.5]]]
+)
 def test__validate_classification_prediction_warn(pred):
     with pytest.warns():
-        GiskardProject._validate_classification_prediction(['one', 'two'],
-                                                           np.array(pred))
+        GiskardProject._validate_classification_prediction(["one", "two"], np.array(pred))
 
 
-@pytest.mark.parametrize('pred', [
-    [[0.1, 0.2, 0.7]],
-])
+@pytest.mark.parametrize(
+    "pred",
+    [
+        [[0.1, 0.2, 0.7]],
+    ],
+)
 def test__validate_classification_prediction_fail(pred):
     with pytest.raises(ValueError):
         GiskardProject._validate_classification_prediction(["one", "two"], np.array(pred))
@@ -70,54 +67,46 @@ def test_validate_deterministic_model():
 
 
 def test_validate_columns_columntypes(german_credit_data, german_credit_test_data):
-    with pytest.warns(UserWarning,
-                      match=r"Feature 'people_under_maintenance' is declared as 'numeric' but has 2 .* Are you sure it is not a 'category' feature?"):
+    with pytest.warns(
+            UserWarning,
+            match=r"Feature 'people_under_maintenance' is declared as 'numeric' but has 2 .* Are you sure it is not a 'category' feature?",
+    ):
         GiskardProject._validate_column_categorization(
-            german_credit_test_data.df,
-            german_credit_test_data.feature_types
+            german_credit_test_data.df, german_credit_test_data.feature_types
         )
     # To test validation of dataframe with no target
-    GiskardProject._validate_column_categorization(
-        german_credit_test_data.df,
-        german_credit_test_data.feature_types
-    )
+    GiskardProject._validate_column_categorization(german_credit_test_data.df, german_credit_test_data.feature_types)
     # To test validation of dataframe with target
     GiskardProject._validate_column_categorization(
-        german_credit_data.df,
-        german_credit_data.feature_types,
-        german_credit_data.target
+        german_credit_data.df, german_credit_data.feature_types, german_credit_data.target
     )
     # To test validation of dataframe with target, but target is not declared in feature_types
     GiskardProject._validate_column_categorization(
-        german_credit_data.df,
-        german_credit_test_data.feature_types,
-        german_credit_data.target
+        german_credit_data.df, german_credit_test_data.feature_types, german_credit_data.target
     )
     with pytest.raises(ValueError) as e:
         GiskardProject.validate_columns_columntypes(
             german_credit_data.df,
-            {c: german_credit_data.feature_types[c] for c in german_credit_data.feature_types if
-             c not in {german_credit_data.target, "sex"}},
-            german_credit_data.target
+            {
+                c: german_credit_data.feature_types[c]
+                for c in german_credit_data.feature_types
+                if c not in {german_credit_data.target, "sex"}
+            },
+            german_credit_data.target,
         )
     assert e.match(r"Invalid column_types parameter: Please declare the type for {'sex'} columns")
 
     with pytest.raises(ValueError) as e:
         new_ct = dict(german_credit_data.feature_types)
         new_ct["non-existing-column"] = "int64"
-        GiskardProject.validate_columns_columntypes(
-            german_credit_data.df,
-            new_ct,
-            german_credit_data.target
-        )
+        GiskardProject.validate_columns_columntypes(german_credit_data.df, new_ct, german_credit_data.target)
     assert e.match(r"Missing columns in dataframe according to column_types: {'non-existing-column'}")
 
     broken_types = dict(german_credit_test_data.feature_types)
-    broken_types['people_under_maintenance'] = SupportedColumnType.CATEGORY.value
-    broken_types['sex'] = SupportedColumnType.NUMERIC.value
-    with pytest.warns(UserWarning,
-                      match=r"Feature 'sex' is declared as 'numeric' but has 2 .* Are you sure it is not a 'category' feature?") as w:
-        GiskardProject._validate_column_categorization(
-            german_credit_test_data.df,
-            broken_types
-        )
+    broken_types["people_under_maintenance"] = SupportedColumnType.CATEGORY.value
+    broken_types["sex"] = SupportedColumnType.NUMERIC.value
+    with pytest.warns(
+            UserWarning,
+            match=r"Feature 'sex' is declared as 'numeric' but has 2 .* Are you sure it is not a 'category' feature?",
+    ):
+        GiskardProject._validate_column_categorization(german_credit_test_data.df, broken_types)
