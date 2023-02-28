@@ -270,7 +270,6 @@ public class InitService {
             }
         });
 
-        // DO NOT COMMIT WITHOUT FIXING
         if (!licenseService.getCurrentLicense().hasFeature(FeatureFlag.AUTH)) {
             //Given the loop above, we can safely assume that the user at least exists.
             userRepository.findOneByLogin("admin").ifPresent(admin -> {
