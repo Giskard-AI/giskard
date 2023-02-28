@@ -2,7 +2,8 @@
   <v-card>
     <v-card-title>Plan upgrade</v-card-title>
     <v-card-text>
-      // TODO?
+      If you bought an upgraded license plan, you can upload your new license file here.
+      <!-- This is where an embed with available license plans could go ? -->
     </v-card-text>
     <v-card-actions>
       <v-spacer/>
