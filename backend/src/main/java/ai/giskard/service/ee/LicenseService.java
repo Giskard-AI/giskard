@@ -56,7 +56,9 @@ public class LicenseService {
     }
 
     public License getCurrentLicense() {
-        return currentLicense;
+        synchronized (this) {
+            return currentLicense;
+        }
     }
 
     /**
@@ -66,8 +68,10 @@ public class LicenseService {
      * @param licenseFile
      */
     public void uploadLicense(String licenseFile) throws IOException {
-        decodeLicense(licenseFile);
-        Files.write(fileLocationService.licensePath(), licenseFile.getBytes());
+        synchronized (this) {
+            decodeLicense(licenseFile);
+            Files.write(fileLocationService.licensePath(), licenseFile.getBytes());
+        }
     }
 
     private License decodeLicense(String lic) throws IOException {
