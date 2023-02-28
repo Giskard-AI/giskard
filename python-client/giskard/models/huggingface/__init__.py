@@ -54,7 +54,7 @@ class HuggingFaceModel(MLFlowBasedModel):
                 with torch.no_grad():
                     logits = predictions.logits.detach().numpy()
             else:
-                 logits = predictions.logits
+                logits = predictions.logits
 
             if self.model_postprocessing_function:
                 logger.warning("Your model output is logits. In Giskard, we expect the output to be probabilities."
