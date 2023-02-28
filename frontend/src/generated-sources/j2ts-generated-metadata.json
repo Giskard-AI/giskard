@@ -76,6 +76,7 @@
     "ai.giskard.domain.ml.table.RegressionUnit": "RegressionUnit",
     "ai.giskard.web.dto.ml.SliceDTO": "SliceDTO",
     "ai.giskard.web.dto.ml.TestEditorConfigDTO": "TestEditorConfigDTO",
+    "ai.giskard.service.ee.FeatureFlag": "FeatureFlag",
     "ai.giskard.domain.ml.TestResult": "TestResult",
     "ai.giskard.web.dto.user.UserDTO": "UserDTO",
     "ai.giskard.web.dto.SliceCreateDTO": "SliceCreateDTO"

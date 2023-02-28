@@ -20,23 +20,23 @@ public class License {
     private Integer projectLimit;
     private Integer userLimit;
 
-    public Map<FeatureFlagService.FeatureFlag, Boolean> getFeatures() {
-        Map<FeatureFlagService.FeatureFlag, Boolean> map = new HashMap<>();
+    public Map<FeatureFlag, Boolean> getFeatures() {
+        Map<FeatureFlag, Boolean> map = new HashMap<>();
 
-        for (FeatureFlagService.FeatureFlag featureFlag : FeatureFlagService.FeatureFlag.values()) {
+        for (FeatureFlag featureFlag : FeatureFlag.values()) {
             map.put(featureFlag, false);
         }
 
         if (features != null) {
             for (String feat : features) {
-                map.put(FeatureFlagService.FeatureFlag.valueOf(feat), true);
+                map.put(FeatureFlag.valueOf(feat), true);
             }
         }
 
         return map;
     }
 
-    public boolean hasFeature(FeatureFlagService.FeatureFlag flag) {
+    public boolean hasFeature(FeatureFlag flag) {
         return this.getFeatures().get(flag);
     }
 
@@ -51,7 +51,7 @@ public class License {
         if (metadata.has("projectLimit")) {
             newLicense.setProjectLimit(metadata.get("projectLimit").asInt(0));
         }
-        
+
         if (metadata.has("userLimit")) {
             newLicense.setUserLimit(metadata.get("userLimit").asInt(0));
         }

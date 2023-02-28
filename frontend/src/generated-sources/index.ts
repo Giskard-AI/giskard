@@ -13,6 +13,7 @@ export const GENERATED_MAPPING = {
     'ai.giskard.domain.ml.TestResult' : 'TestResult',
     'ai.giskard.domain.ml.TestType' : 'TestType',
     'ai.giskard.domain.MLWorkerType' : 'MLWorkerType',
+    'ai.giskard.service.ee.FeatureFlag' : 'FeatureFlag',
     'ai.giskard.web.dto.config.AppConfigDTO$AppInfoDTO' : 'AppConfigDTO.AppInfoDTO',
     'ai.giskard.web.dto.config.AppConfigDTO' : 'AppConfigDTO',
     'ai.giskard.web.dto.config.LicenseDTO' : 'LicenseDTO',
@@ -93,6 +94,7 @@ export * from './ai/giskard/domain/ml/table/row-filter-type';
 export * from './ai/giskard/domain/ml/test-result';
 export * from './ai/giskard/domain/ml/test-type';
 export * from './ai/giskard/domain/mlworker-type';
+export * from './ai/giskard/service/ee/feature-flag';
 export * from './ai/giskard/web/dto/config/app-config-dto';
 export * from './ai/giskard/web/dto/config/license-dto';
 export * from './ai/giskard/web/dto/config/mlworker-info-dto';

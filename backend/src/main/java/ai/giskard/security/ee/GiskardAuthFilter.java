@@ -2,7 +2,7 @@ package ai.giskard.security.ee;
 
 import ai.giskard.security.ee.jwt.JWTFilter;
 import ai.giskard.security.ee.jwt.TokenProvider;
-import ai.giskard.service.ee.FeatureFlagService;
+import ai.giskard.service.ee.FeatureFlag;
 import ai.giskard.service.ee.LicenseService;
 import org.springframework.web.filter.GenericFilterBean;
 
@@ -32,7 +32,7 @@ public class GiskardAuthFilter extends GenericFilterBean {
 
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
-        if (this.licenseService.getCurrentLicense().hasFeature(FeatureFlagService.FeatureFlag.AUTH)) {
+        if (this.licenseService.getCurrentLicense().hasFeature(FeatureFlag.AUTH)) {
             this.jwtFilter.doFilter(request, response, chain);
         } else {
             this.noAuthFilter.doFilter(request, response, chain);
