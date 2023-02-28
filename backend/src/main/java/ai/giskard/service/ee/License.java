@@ -17,8 +17,6 @@ public class License {
     private String planCode;
     private List<String> features;
 
-    // Do i want another structure to store these limits?
-    private Integer modelLimit;
     private Integer projectLimit;
     private Integer userLimit;
 
@@ -50,12 +48,13 @@ public class License {
         newLicense.setPlanName(metadata.get("planName").asText());
         newLicense.setPlanCode(metadata.get("planCode").asText());
 
-        if (metadata.has("modelLimit"))
-            newLicense.setModelLimit(metadata.get("modelLimit").asInt(0));
-        if (metadata.has("projectLimit"))
+        if (metadata.has("projectLimit")) {
             newLicense.setProjectLimit(metadata.get("projectLimit").asInt(0));
-        if (metadata.has("userLimit"))
+        }
+        
+        if (metadata.has("userLimit")) {
             newLicense.setUserLimit(metadata.get("userLimit").asInt(0));
+        }
 
         List<String> feats = new ArrayList<>();
 
@@ -72,7 +71,7 @@ public class License {
 
         newLicense.setFeatures(feats);
         newLicense.setActive("ACTIVE".equals(attributes.get("status").asText()));
-        
+
         return newLicense;
     }
 }

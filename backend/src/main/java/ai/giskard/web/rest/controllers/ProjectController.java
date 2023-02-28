@@ -69,7 +69,7 @@ public class ProjectController {
      */
     @PostMapping(value = "/project")
     @PreAuthorize("@permissionEvaluator.canWrite()")
-    public ProjectDTO create(@RequestBody @Valid ProjectPostDTO projectPostDTO, @AuthenticationPrincipal final UserDetails userDetails) throws IOException {
+    public ProjectDTO create(@RequestBody @Valid ProjectPostDTO projectPostDTO, @AuthenticationPrincipal final UserDetails userDetails) {
         Project project = this.giskardMapper.projectPostDTOToProject(projectPostDTO);
         Project savedProject = this.projectService.create(project, userDetails.getUsername());
         return giskardMapper.projectToProjectDTO(savedProject);

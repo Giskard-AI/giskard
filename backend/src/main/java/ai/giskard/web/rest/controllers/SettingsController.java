@@ -35,7 +35,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.IOException;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
@@ -79,7 +78,7 @@ public class SettingsController {
 
     @GetMapping("")
     @Transactional
-    public AppConfigDTO getApplicationSettings(@AuthenticationPrincipal final UserDetails user) throws IOException {
+    public AppConfigDTO getApplicationSettings(@AuthenticationPrincipal final UserDetails user) {
         log.debug("REST request to get all public User names");
         AdminUserDTO userDTO = userRepository
             .findOneWithRolesByLogin(user.getUsername())
@@ -116,12 +115,12 @@ public class SettingsController {
     }
 
     @GetMapping("/featureFlags")
-    public Map<FeatureFlagService.FeatureFlag, Boolean> getFeatureFlags() throws IOException {
+    public Map<FeatureFlagService.FeatureFlag, Boolean> getFeatureFlags() {
         return licenseService.getCurrentLicense().getFeatures();
     }
 
     @GetMapping("/license")
-    public LicenseDTO getLicense() throws IOException {
+    public LicenseDTO getLicense() {
         License currentLicense = licenseService.getCurrentLicense();
 
         return LicenseDTO.builder()
@@ -129,7 +128,6 @@ public class SettingsController {
             .planCode(currentLicense.getPlanCode())
             .userLimit(currentLicense.getUserLimit())
             .projectLimit(currentLicense.getProjectLimit())
-            .modelLimit(currentLicense.getModelLimit())
             .active(currentLicense.isActive())
             .build();
     }
