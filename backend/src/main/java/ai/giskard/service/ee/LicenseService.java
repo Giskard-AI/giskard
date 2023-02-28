@@ -1,7 +1,6 @@
 package ai.giskard.service.ee;
 
 import ai.giskard.config.ApplicationProperties;
-import ai.giskard.config.SpringContext;
 import ai.giskard.service.FileLocationService;
 import ai.giskard.service.GiskardRuntimeException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -12,6 +11,7 @@ import org.bouncycastle.crypto.signers.Ed25519Signer;
 import org.bouncycastle.util.encoders.Hex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
@@ -33,26 +33,29 @@ public class LicenseService {
 
     private License currentLicense;
 
+    @Autowired
+    private ApplicationProperties properties;
+
     /**
      * On service init, load the stored license if it exists
      * Also initialize default license (for now)
      */
     @PostConstruct
     public void init() throws IOException {
-    }
+        licensePublicKey = properties.getLicensePublicKey();
 
-    public License getCurrentLicense() throws IOException {
-        licensePublicKey = SpringContext.getBean(ApplicationProperties.class).getLicensePublicKey();
-        
         if (currentLicense == null) {
             if (Files.exists(fileLocationService.licensePath())) {
                 String licenseFile = Files.readString(fileLocationService.licensePath());
                 decodeLicense(licenseFile);
             } else {
+                // The default license has "active" set to false -> it will go back to the setup page
                 currentLicense = new License();
             }
         }
+    }
 
+    public License getCurrentLicense() {
         return currentLicense;
     }
 

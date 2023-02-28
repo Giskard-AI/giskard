@@ -89,7 +89,7 @@ public class ProjectService {
     /**
      * Create project
      */
-    public Project create(Project project, String ownerLogin) throws IOException {
+    public Project create(Project project, String ownerLogin) {
         String projectKey = project.getKey();
         validateProjectKey(projectKey);
 

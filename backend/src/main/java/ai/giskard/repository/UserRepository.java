@@ -18,7 +18,6 @@ import java.util.Optional;
  */
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
-    long countById(Long id);
 
     default Optional<User> findOneByActivationKey(String activationKey) {
         return Optional.empty();

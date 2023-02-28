@@ -3,7 +3,6 @@
  */
 export interface LicenseDTO {
     active: boolean;
-    modelLimit: number;
     planCode: string;
     planName: string;
     projectLimit: number;

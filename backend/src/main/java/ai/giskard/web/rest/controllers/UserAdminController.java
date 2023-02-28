@@ -31,7 +31,6 @@ import tech.jhipster.web.util.ResponseUtil;
 
 import javax.validation.Valid;
 import javax.validation.constraints.Pattern;
-import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
@@ -104,7 +103,7 @@ public class UserAdminController {
      */
     @PostMapping("")
     @PreAuthorize("hasAuthority(\"" + ADMIN + "\")")
-    public ResponseEntity<AdminUserDTO> createUser(@Valid @RequestBody AdminUserDTO.AdminUserDTOWithPassword userDTO) throws IOException {
+    public ResponseEntity<AdminUserDTO> createUser(@Valid @RequestBody AdminUserDTO.AdminUserDTOWithPassword userDTO) {
         log.debug("REST request to save User : {}", userDTO);
 
         if (userDTO.getId() != null) {

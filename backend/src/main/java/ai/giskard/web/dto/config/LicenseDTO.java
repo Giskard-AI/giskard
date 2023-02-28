@@ -12,7 +12,6 @@ import lombok.*;
 public class LicenseDTO {
     private String planCode;
     private String planName;
-    private Integer modelLimit;
     private Integer projectLimit;
     private Integer userLimit;
     private boolean active;
