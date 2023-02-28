@@ -1,5 +1,5 @@
 import {defineStore} from "pinia";
-import {AppConfigDTO, LicenseDTO} from "@/generated-sources";
+import {AppConfigDTO, FeatureFlag, LicenseDTO} from "@/generated-sources";
 import {IUserProfileMinimal} from "@/interfaces";
 import mixpanel from "mixpanel-browser";
 import {anonymize} from "@/utils";
@@ -7,7 +7,6 @@ import Vue from "vue";
 import {api} from "@/api";
 import {AxiosError} from "axios";
 import {useUserStore} from "@/stores/user";
-import {FeatureFlagService} from "@/generated-sources/ai/giskard/service/ee/feature-flag-service";
 import AppInfoDTO = AppConfigDTO.AppInfoDTO;
 
 export interface AppNotification {
@@ -21,7 +20,7 @@ interface State {
     license: LicenseDTO | null;
     coworkers: IUserProfileMinimal[];
     notifications: AppNotification[];
-    features: { [key in FeatureFlagService.FeatureFlag]: boolean } | null;
+    features: { [key in FeatureFlag]: boolean } | null;
 }
 
 export const useMainStore = defineStore('main', {

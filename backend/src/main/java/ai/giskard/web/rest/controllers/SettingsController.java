@@ -6,7 +6,7 @@ import ai.giskard.ml.MLWorkerClient;
 import ai.giskard.repository.UserRepository;
 import ai.giskard.security.AuthoritiesConstants;
 import ai.giskard.service.GeneralSettingsService;
-import ai.giskard.service.ee.FeatureFlagService;
+import ai.giskard.service.ee.FeatureFlag;
 import ai.giskard.service.ee.License;
 import ai.giskard.service.ee.LicenseService;
 import ai.giskard.service.ml.MLWorkerService;
@@ -115,7 +115,7 @@ public class SettingsController {
     }
 
     @GetMapping("/featureFlags")
-    public Map<FeatureFlagService.FeatureFlag, Boolean> getFeatureFlags() {
+    public Map<FeatureFlag, Boolean> getFeatureFlags() {
         return licenseService.getCurrentLicense().getFeatures();
     }
 
