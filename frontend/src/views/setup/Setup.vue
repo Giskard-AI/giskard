@@ -8,11 +8,13 @@
     <v-row v-if="!done">
       <v-col>
         <v-card>
-          <v-card-title>I need a license</v-card-title>
+          <v-card-title>Request a license</v-card-title>
           <v-card-text>
-            Giskard requires a license to use its UI. You can get a FREE open source license mailed to you via the form
-            below. If you already have one, you can upload it on the right hand side of this page.
-
+            <p>
+              Giskard server requires a license. A <span class="font-weight-bold">free</span> license can be obtained by
+              registered using the form below. The license will be sent by email.
+            </p>
+            <p>If you already have one, you can upload it on the right hand side of this page.</p>
             <v-form>
               <v-text-field label="First name" v-model="firstName"></v-text-field>
               <v-text-field label="Last name" v-model="lastName"></v-text-field>
@@ -26,7 +28,7 @@
       <v-divider vertical></v-divider>
       <v-col>
         <v-card>
-          <v-card-title>I have a license</v-card-title>
+          <v-card-title>Use existing license</v-card-title>
           <v-card-text>
             If you already have a license, you can upload your license file by pressing the button below.
           </v-card-text>
