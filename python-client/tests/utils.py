@@ -19,6 +19,7 @@ def match_url_patterns(httpretty_requests, url_pattern):
             if header_name in dict(req.headers).keys():
                 assert req.headers.get(header_name) == headers_to_match[header_name]
 
+
 def verify_model_upload(my_model, my_data):
     artifact_url_pattern = re.compile(
         "http://giskard-host:12345/api/v2/artifacts/test-project/models/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/.*"
