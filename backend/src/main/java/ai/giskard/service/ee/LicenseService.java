@@ -76,7 +76,11 @@ public class LicenseService {
 
     private License decodeLicense(String lic) throws IOException {
         // 1. Remove start/end decorators
-        String encodedPayload = lic.replaceAll("(^-----BEGIN LICENSE FILE-----\\n|\\n|-----END LICENSE FILE-----\\n$)", "");
+        String encodedPayload = lic.replaceAll(
+            "(?:^-----BEGIN LICENSE FILE-----\\n)|" +
+                "\\n|" +
+                "(?:-----END LICENSE FILE-----\\n$)",
+            "");
 
         // 2. Decode base64 => json
         byte[] payloadBytes = Base64.getDecoder().decode(encodedPayload);
