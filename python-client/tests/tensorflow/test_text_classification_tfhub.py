@@ -1,22 +1,26 @@
 import pandas as pd
+import pytest
 import tensorflow as tf
-import tensorflow_hub as hub
+
 from sklearn import model_selection
-import tensorflow_text # noqa
 
 from giskard import TensorFlowModel, Dataset
 
 import tests.utils
 
-tfhub_handle_preprocess = hub.load("https://tfhub.dev/tensorflow/bert_en_uncased_preprocess/3")
-tfhub_handle_preprocess = hub.KerasLayer(
-    "https://tfhub.dev/tensorflow/bert_en_uncased_preprocess/3")
-tfhub_handle_encoder = hub.KerasLayer(
-    "https://tfhub.dev/tensorflow/small_bert/bert_en_uncased_L-2_H-128_A-2/2",
-    trainable=True)
+
 
 
 def test_text_classification_tfhub():
+    hub = pytest.importorskip("tensorflow_hub")
+    pytest.importorskip("tensorflow_text")
+
+    tfhub_handle_preprocess = hub.load("https://tfhub.dev/tensorflow/bert_en_uncased_preprocess/3")
+    tfhub_handle_preprocess = hub.KerasLayer(
+        "https://tfhub.dev/tensorflow/bert_en_uncased_preprocess/3")
+    tfhub_handle_encoder = hub.KerasLayer(
+        "https://tfhub.dev/tensorflow/small_bert/bert_en_uncased_L-2_H-128_A-2/2",
+        trainable=True)
 
     data_filtered = pd.read_csv('tests/tensorflow/test_text_classification_tfhub.csv').dropna(axis=0)
 

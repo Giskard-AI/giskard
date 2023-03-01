@@ -100,10 +100,11 @@ torch = "^1.13.1"
 torchdata = "^0.5.1"
 torchtext = "^0.14.1"
 requests-mock = "^1.10.0"
-tensorflow = "^2.11.0"
 tensorflow-hub = "^0.12.0"
-tensorflow-text = "^2.11.0"
 transformers = "^4.26.1"
+tensorflow-macos = {version = "2.8.0", platform = "darwin"}
+tensorflow = {version = "2.8.0", platform = "linux"}
+tensorflow-text = {version = "2.8.1", markers = "sys_platform != 'darwin' or platform_machine != 'arm64'"}
 
 [tool.black]
 # https://github.com/psf/black
