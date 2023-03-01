@@ -139,10 +139,6 @@
           <v-icon left small>mdi-comment-multiple-outline</v-icon>
           Feedback
         </v-tab>
-        <v-tab :to="{name: 'project-test-suites'}">
-          <v-icon left small>mdi-list-status</v-icon>
-          Test suites
-        </v-tab>
 				<v-tab :to="{name: 'project-test-suites-new'}"><v-icon left small>mdi-list-status</v-icon>Test suites NEW ⭐️</v-tab>
 				<v-tab :to="{name: 'project-tests-catalog'}"><v-icon left small>mdi-list-status</v-icon>Test catalog</v-tab>
       </v-tabs>
