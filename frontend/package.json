@@ -34,7 +34,7 @@
     "vee-validate": "^3.4.13",
     "vue": "^2.7.0",
     "vue-class-component": "^7.2.6",
-    "vue-echarts": "^6.2.3",
+    "vue-echarts": "^6.5.4",
     "vue-final-modal": "^2.4.3",
     "vue-moment": "^4.1.0",
     "vue-monaco": "^1.2.2",
