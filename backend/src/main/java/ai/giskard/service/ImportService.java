@@ -5,13 +5,13 @@ import ai.giskard.domain.Project;
 import ai.giskard.domain.User;
 import ai.giskard.domain.ml.Dataset;
 import ai.giskard.domain.ml.ProjectModel;
-import ai.giskard.domain.ml.TestSuite;
+import ai.giskard.domain.ml.TestSuiteNew;
 import ai.giskard.repository.FeedbackRepository;
 import ai.giskard.repository.ProjectRepository;
 import ai.giskard.repository.UserRepository;
 import ai.giskard.repository.ml.DatasetRepository;
 import ai.giskard.repository.ml.ModelRepository;
-import ai.giskard.repository.ml.TestSuiteRepository;
+import ai.giskard.repository.ml.TestSuiteNewRepository;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -32,14 +32,14 @@ import java.util.*;
 @RequiredArgsConstructor
 public class ImportService {
 
-    private final FileUploadService fileUploadService;
     private final FeedbackRepository feedbackRepository;
     private final DatasetRepository datasetRepository;
     private final ModelRepository modelRepository;
     private final UserRepository userRepository;
-    private final TestSuiteRepository testSuiteRepository;
     private final FileLocationService locationService;
+    private final TestSuiteService testSuiteService;
     private final ProjectRepository projectRepository;
+    private final TestSuiteNewRepository testSuiteNewRepository;
 
 
     private Map<UUID, UUID> saveImportDataset(List<Dataset> datasets, Project savedProject) {
@@ -82,15 +82,11 @@ public class ImportService {
         });
     }
 
-    private void saveImportTestSuites(List<TestSuite> testSuites, Project savedProject, Map<UUID, UUID> mapFormerNewIdModel, Map<UUID, UUID> mapFormerNewIdDataset) {
+    private void saveImportTestSuites(List<TestSuiteNew> testSuites, Project savedProject) {
         testSuites.forEach(testSuite -> {
             testSuite.setProject(savedProject);
-            testSuite.setActualDataset(datasetRepository.getById(mapFormerNewIdDataset.get(testSuite.getActualDataset().getId())));
-            testSuite.setReferenceDataset(datasetRepository.getById(mapFormerNewIdDataset.get(testSuite.getReferenceDataset().getId())));
-            testSuite.setModel(modelRepository.getById(mapFormerNewIdModel.get(testSuite.getModel().getId())));
-            TestSuite savedTs = testSuiteRepository.save(testSuite);
-            testSuite.getTests().forEach(test -> test.setTestSuite(savedTs));
-            testSuiteRepository.save(savedTs);
+            // TODO: check if working
+            testSuiteNewRepository.save(testSuite);
         });
     }
 
@@ -137,7 +133,7 @@ public class ImportService {
         });
         List<Feedback> feedbacks = mapper.readValue(locationService.resolvedMetadataPath(pathMetadataDirectory, Feedback.class.getSimpleName()).toFile(), new TypeReference<>() {
         });
-        List<TestSuite> testSuites = mapper.readValue(locationService.resolvedMetadataPath(pathMetadataDirectory, TestSuite.class.getSimpleName()).toFile(), new TypeReference<>() {
+        List<TestSuiteNew> testSuiteNews = mapper.readValue(testSuiteService.resolvedMetadataPath(pathMetadataDirectory, TestSuiteNew.class.getSimpleName()).toFile(), new TypeReference<>() {
         });
         Project savedProject = saveImportProject(project, userNameOwner, projectKey, importedUsersToCurrent);
 
@@ -145,7 +141,7 @@ public class ImportService {
         Map<UUID, UUID> mapFormerNewIdModel = saveImportModel(models, savedProject);
         Map<UUID, UUID> mapFormerNewIdDataset = saveImportDataset(datasets, savedProject);
         saveImportFeedback(feedbacks, savedProject, mapFormerNewIdModel, mapFormerNewIdDataset, importedUsersToCurrent);
-        saveImportTestSuites(testSuites, savedProject, mapFormerNewIdModel, mapFormerNewIdDataset);
+        saveImportTestSuites(testSuiteNews, savedProject);
 
         // Once everything is remapped, at this stage we want to save the files into appropriate folders
         copyFilesToProjectFolder(savedProject, pathMetadataDirectory, mapFormerNewIdModel, "models");

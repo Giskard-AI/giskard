@@ -404,40 +404,76 @@ export const api = {
     async deleteFeedback(id: number) {
         return apiV2.delete<unknown, void>(`/feedbacks/${id}`);
     },
+    /**
+     * @deprecated
+     */
     async getTestSuites(projectId: number) {
         return apiV2.get<unknown, Array<TestSuiteDTO>>(`/testing/suites/${projectId}`);
     },
+    /**
+     * @deprecated
+     */
     async getTests(suiteId: number) {
         return apiV2.get<unknown, Array<TestDTO>>(`/testing/tests`, {params: {suiteId}});
     },
+    /**
+     * @deprecated
+     */
     async getTestSuite(suiteId: number) {
         return apiV2.get<unknown, TestSuiteDTO>(`/testing/suite/${suiteId}`);
     },
+    /**
+     * @deprecated
+     * @param projectId
+     */
     async deleteTestSuite(suiteId: number) {
         return apiV2.delete<unknown, TestSuiteDTO>(`/testing/suite/${suiteId}`);
     },
+    /**
+     * @deprecated The method should not be used
+     */
     async createTestSuite(data: TestSuiteCreateDTO) {
         return apiV2.post<unknown, TestSuiteDTO>(`/testing/suites`, data);
     },
+    /**
+     * @deprecated The method should not be used
+     */
     async saveTestSuite(testSuite: UpdateTestSuiteDTO) {
         return apiV2.put<unknown, TestSuiteDTO>(`/testing/suites`, testSuite);
     },
+    /**
+     * @deprecated
+     */
     async getTestDetails(testId: number) {
         return apiV2.get<unknown, TestDTO>(`/testing/tests/${testId}`);
     },
+    /**
+     * @deprecated
+     */
     async getCodeTestTemplates(suiteId: number) {
         return apiV2.get<unknown, TestTemplatesResponse>(`/testing/tests/code-test-templates`, {params: {suiteId}});
     },
-
+    /**
+     * @deprecated
+     */
     async deleteTest(testId: number) {
         return apiV2.delete<unknown, TestSuiteDTO>(`/testing/tests/${testId}`);
     },
+    /**
+     * @deprecated
+     */
     async saveTest(testDetails: TestDTO) {
         return apiV2.put<unknown, TestDTO>(`/testing/tests`, testDetails);
     },
+    /**
+     * @deprecated The method should not be used
+     */
     async runTest(testId: number) {
         return apiV2.post<unknown, TestExecutionResultDTO>(`/testing/tests/${testId}/run`);
     },
+    /**
+     * @deprecated
+     */
     async createTest(suiteId: number, name: string) {
         return apiV2.post<unknown, TestDTO>(`/testing/tests`, {
             name: name,
