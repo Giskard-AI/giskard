@@ -100,4 +100,3 @@ def test_newspaper_classification_pytorch_custom_model():
     my_model.predict(my_test_dataset)
 
     tests.utils.verify_model_upload(my_model, my_test_dataset)
-
