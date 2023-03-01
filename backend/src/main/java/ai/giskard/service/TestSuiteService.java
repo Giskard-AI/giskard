@@ -138,13 +138,9 @@ public class TestSuiteService {
         Map<String, String> res = new HashMap<>();
 
         suite.getTests().forEach(test -> {
-            Collection<TestFunctionArgument> signatureArgs = suite.getTests().stream()
-                .flatMap(t -> t.getTestFunction().getArgs().stream())
-                .toList();
-
             ImmutableMap<String, TestInput> providedInputs = Maps.uniqueIndex(test.getTestInputs(), TestInput::getName);
 
-            signatureArgs.stream()
+            test.getTestFunction().getArgs().stream()
                 .filter(a -> !a.isOptional())
                 .forEach(a -> {
                     String name = null;
