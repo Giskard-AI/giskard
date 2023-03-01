@@ -9,8 +9,6 @@ from giskard import TensorFlowModel, Dataset
 import tests.utils
 
 
-
-
 def test_text_classification_tfhub():
     hub = pytest.importorskip("tensorflow_hub")
     pytest.importorskip("tensorflow_text")
@@ -34,7 +32,6 @@ def test_text_classification_tfhub():
     test_df = pd.DataFrame(list(zip(list(x_test), list(y_test))), columns=["Content", "Target"])
 
     def build_classifier_model():
-
         text_input = tf.keras.layers.Input(shape=(), dtype=tf.string, name='text')
         preprocessing_layer = hub.KerasLayer(tfhub_handle_preprocess, name='preprocessing')
         encoder_inputs = preprocessing_layer(text_input)
