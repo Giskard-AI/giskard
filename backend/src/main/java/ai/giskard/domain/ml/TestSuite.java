@@ -12,7 +12,7 @@ import java.util.List;
 @Entity
 @Getter
 @Setter
-public class TestSuiteNew extends AbstractAuditingEntity {
+public class TestSuite extends AbstractAuditingEntity {
     @Id
     @GeneratedValue
     private Long id;

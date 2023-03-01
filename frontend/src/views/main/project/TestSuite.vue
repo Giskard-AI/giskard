@@ -15,10 +15,10 @@
         <v-row class="vc">
           <v-col cols="2">
             <v-tabs vertical>
-              <v-tab :to="{name:'test-suite-new-inputs'}">Inputs & parameters</v-tab>
-              <v-tab :to="{name:'test-suite-new-tests'}">Tests</v-tab>
-              <v-tab :to="{name:'test-suite-new-configuration'}">Configuration</v-tab>
-              <v-tab :to="{name:'test-suite-new-executions'}">Execution</v-tab>
+              <v-tab :to="{name:'test-suite-inputs'}">Inputs & parameters</v-tab>
+              <v-tab :to="{name:'test-suite-tests'}">Tests</v-tab>
+              <v-tab :to="{name:'test-suite-configuration'}">Configuration</v-tab>
+              <v-tab :to="{name:'test-suite-executions'}">Execution</v-tab>
             </v-tabs>
           </v-col>
           <v-col cols="10" class="vc">

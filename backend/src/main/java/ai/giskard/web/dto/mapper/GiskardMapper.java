@@ -55,7 +55,7 @@ public interface GiskardMapper {
     @Mapping(target = "guests", ignore = true)
     @Mapping(target = "models", ignore = true)
     @Mapping(target = "owner", ignore = true)
-    @Mapping(target = "testSuiteNews", ignore = true)
+    @Mapping(target = "testSuites", ignore = true)
     @Mapping(target = "mlWorkerType", ignore = true)
     void updateProjectFromDto(ProjectPostDTO dto, @MappingTarget Project entity);
 
@@ -77,7 +77,7 @@ public interface GiskardMapper {
     @Mapping(target = "guests", ignore = true)
     @Mapping(target = "models", ignore = true)
     @Mapping(target = "owner", ignore = true)
-    @Mapping(target = "testSuiteNews", ignore = true)
+    @Mapping(target = "testSuites", ignore = true)
     @Mapping(target = "mlWorkerType", ignore = true)
     Project projectPostDTOToProject(ProjectPostDTO projectPostDto);
 
@@ -164,7 +164,7 @@ public interface GiskardMapper {
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "project", source = "projectKey")
     @Mapping(target = "executions", ignore = true)
-    TestSuiteNew fromDTO(TestSuiteNewDTO dto);
+    TestSuite fromDTO(TestSuiteDTO dto);
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "suite", ignore = true)
@@ -172,7 +172,7 @@ public interface GiskardMapper {
     SuiteTest fromDTO(SuiteTestDTO dto);
 
     @AfterMapping
-    default void afterMapping(@MappingTarget TestSuiteNew suite) {
+    default void afterMapping(@MappingTarget TestSuite suite) {
         suite.getTests().forEach(e -> e.setSuite(suite));
     }
 
@@ -188,10 +188,10 @@ public interface GiskardMapper {
     TestInputDTO toDTO(TestInput obj);
 
 
-    List<TestSuiteNewDTO> toDTO(List<TestSuiteNew> suites);
+    List<TestSuiteDTO> toDTO(List<TestSuite> suites);
 
     @Mapping(target = "projectKey", source = "project.key")
-    TestSuiteNewDTO toDTO(TestSuiteNew suite);
+    TestSuiteDTO toDTO(TestSuite suite);
 
     default Map<String, TestInputDTO> map(List<TestInput> value) {
         return value.stream().collect(Collectors.toMap(TestInput::getName, this::toDTO));

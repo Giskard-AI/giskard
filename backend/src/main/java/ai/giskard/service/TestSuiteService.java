@@ -2,14 +2,14 @@ package ai.giskard.service;
 
 import ai.giskard.domain.ml.SuiteTest;
 import ai.giskard.domain.ml.TestInput;
+import ai.giskard.domain.ml.TestSuite;
 import ai.giskard.domain.ml.TestSuiteExecution;
-import ai.giskard.domain.ml.TestSuiteNew;
 import ai.giskard.jobs.JobType;
-import ai.giskard.repository.ml.TestSuiteNewRepository;
+import ai.giskard.repository.ml.TestSuiteRepository;
 import ai.giskard.web.dto.TestCatalogDTO;
 import ai.giskard.web.dto.TestDefinitionDTO;
 import ai.giskard.web.dto.TestFunctionArgumentDTO;
-import ai.giskard.web.dto.TestSuiteNewDTO;
+import ai.giskard.web.dto.TestSuiteDTO;
 import ai.giskard.web.dto.mapper.GiskardMapper;
 import ai.giskard.web.rest.errors.EntityNotFoundException;
 import com.google.common.collect.ImmutableMap;
@@ -29,13 +29,13 @@ import static ai.giskard.web.rest.errors.Entity.TEST;
 @RequiredArgsConstructor
 public class TestSuiteService {
     private final GiskardMapper giskardMapper;
-    private final TestSuiteNewRepository testSuiteNewRepository;
+    private final TestSuiteRepository testSuiteRepository;
     private final TestService testService;
     private final TestSuiteExecutionService testSuiteExecutionService;
     private final JobService jobService;
 
     public Map<String, String> getSuiteInputs(Long projectId, Long suiteId) {
-        TestSuiteNew suite = testSuiteNewRepository.findOneByProjectIdAndId(projectId, suiteId);
+        TestSuite suite = testSuiteRepository.findOneByProjectIdAndId(projectId, suiteId);
         TestCatalogDTO catalog = testService.listTestsFromRegistry(projectId);
 
         Map<String, String> res = new HashMap<>();
@@ -67,7 +67,7 @@ public class TestSuiteService {
 
     @Transactional
     public UUID scheduleTestSuiteExecution(Long projectId, Long suiteId, Map<String, String> inputs) {
-        TestSuiteNew testSuite = testSuiteNewRepository.getById(suiteId);
+        TestSuite testSuite = testSuiteRepository.getById(suiteId);
 
         TestSuiteExecution execution = new TestSuiteExecution(testSuite);
         execution.setInputs(inputs.entrySet().stream()
@@ -83,7 +83,7 @@ public class TestSuiteService {
     }
 
     private static void verifyAllInputProvided(Map<String, String> providedInputs,
-                                               TestSuiteNew testSuite,
+                                               TestSuite testSuite,
                                                Map<String, String> requiredInputs) {
         List<String> missingInputs = requiredInputs.keySet().stream()
             .filter(requiredInput -> !providedInputs.containsKey(requiredInput))
@@ -94,8 +94,8 @@ public class TestSuiteService {
         }
     }
 
-    public TestSuiteNewDTO updateTestInputs(long suiteId, String testId, Map<String, String> inputs) {
-        TestSuiteNew testSuite = testSuiteNewRepository.getById(suiteId);
+    public TestSuiteDTO updateTestInputs(long suiteId, String testId, Map<String, String> inputs) {
+        TestSuite testSuite = testSuiteRepository.getById(suiteId);
 
         SuiteTest test = testSuite.getTests().stream()
             .filter(t -> testId.equals(t.getTestId()))
@@ -105,11 +105,11 @@ public class TestSuiteService {
 
         test.getTestInputs().clear();
         test.getTestInputs().addAll(inputs.entrySet().stream()
-                .filter(entry -> entry.getValue() != null)
+            .filter(entry -> entry.getValue() != null)
             .map(entry -> new TestInput(entry.getKey(), entry.getValue(), test))
             .toList());
 
-        return giskardMapper.toDTO(testSuiteNewRepository.save(testSuite));
+        return giskardMapper.toDTO(testSuiteRepository.save(testSuite));
     }
 
     private void verifyAllInputExists(Map<String, String> providedInputs,

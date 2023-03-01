@@ -1,9 +1,9 @@
 import type {SuiteTestDTO} from './suite-test-dto';
 
 /**
- * Generated from ai.giskard.web.dto.TestSuiteNewDTO
+ * Generated from ai.giskard.web.dto.TestSuiteDTO
  */
-export interface TestSuiteNewDTO {
+export interface TestSuiteDTO {
     id: number;
     name: string;
     projectKey: string;
