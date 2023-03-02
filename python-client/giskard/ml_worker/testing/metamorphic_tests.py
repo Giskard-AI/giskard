@@ -159,7 +159,7 @@ class MetamorphicTests(AbstractTestCollection):
             SingleTestResult(
                 actual_slices_size=[len(actual_slice)],
                 metric=passed_ratio,
-                passed=passed_ratio > threshold,
+                passed=bool(passed_ratio > threshold),
                 messages=messages,
             )
         )
@@ -350,7 +350,7 @@ class MetamorphicTests(AbstractTestCollection):
             SingleTestResult(
                 actual_slices_size=[len(actual_slice)],
                 metric=p_value,
-                passed=p_value < critical_quantile,
+                passed=bool(p_value < critical_quantile),
                 messages=messages,
             )
         )
@@ -536,7 +536,7 @@ class MetamorphicTests(AbstractTestCollection):
             SingleTestResult(
                 actual_slices_size=[len(actual_slice)],
                 metric=p_value,
-                passed=p_value < critical_quantile,
+                passed=bool(p_value < critical_quantile),
                 messages=messages,
             )
         )
