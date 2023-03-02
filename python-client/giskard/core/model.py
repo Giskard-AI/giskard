@@ -289,7 +289,9 @@ class WrapperModel(Model, ABC):
         self.data_preprocessing_function = data_preprocessing_function
         self.model_postprocessing_function = model_postprocessing_function
 
-    def _post_processing(self, raw_prediction):
+    def _postprocess(self, raw_prediction):
+
+        raw_prediction = np.array(raw_prediction)
 
         is_binary_classification = self.is_classification and len(self.meta.classification_labels) == 2
 
@@ -300,14 +302,19 @@ class WrapperModel(Model, ABC):
                               "the probability output of your model corresponds to the first label of the \n" + \
                               f"classification_labels ({self.meta.classification_labels}) you provided us with."
 
-            if len(raw_prediction.shape) < 1:
-                logger.warning(warning_message, exc_info=True)
-                raw_prediction = np.stack([raw_prediction, 1 - raw_prediction], axis=1)
+            is_not_one_data_entry = raw_prediction.shape[0] != len(self.meta.classification_labels)
 
-            elif raw_prediction.shape[1] == 1:
-                logger.warning(warning_message, exc_info=True)
-                squeezed_raw_prediction = np.squeeze(raw_prediction)
-                raw_prediction = np.stack([squeezed_raw_prediction, 1 - squeezed_raw_prediction], axis=1)
+            if is_not_one_data_entry:
+                if len(raw_prediction.shape) == 0:
+                    logger.warning(warning_message, exc_info=True)
+                    raw_prediction = np.stack([raw_prediction, 1 - raw_prediction], axis=1)
+
+                elif raw_prediction.shape[1] == 1:
+                    logger.warning(warning_message, exc_info=True)
+                    squeezed_raw_prediction = np.squeeze(raw_prediction)
+                    raw_prediction = np.stack([squeezed_raw_prediction, 1 - squeezed_raw_prediction], axis=1)
+            else:  # to be compliant with calling of raw_prediction[:, 1]
+                raw_prediction = np.expand_dims(raw_prediction, axis=0)
 
         if self.model_postprocessing_function:
             raw_prediction = self.model_postprocessing_function(raw_prediction)
@@ -319,7 +326,7 @@ class WrapperModel(Model, ABC):
             df = self.data_preprocessing_function(df)
 
         raw_prediction = self.clf_predict(df)
-        raw_prediction = self._post_processing(raw_prediction)
+        raw_prediction = self._postprocess(raw_prediction)
 
         return raw_prediction
 
