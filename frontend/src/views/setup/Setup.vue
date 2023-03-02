@@ -15,19 +15,27 @@
               registered using the form below. The license will be sent by email.
             </p>
             <p>If you already have one, you can upload it on the right hand side of this page.</p>
-            <v-form>
-              <v-text-field label="First name" v-model="firstName"></v-text-field>
-              <v-text-field label="Last name" v-model="lastName"></v-text-field>
-              <v-text-field label="Email" v-model="email"></v-text-field>
-              <v-text-field label="Company name" v-model="companyName"></v-text-field>
-              <v-btn :loading="loading" text @click="submit">Submit</v-btn>
-            </v-form>
+            <ValidationObserver ref="observer" v-slot="{ invalid }">
+              <v-form @keyup.enter="submit">
+                <ValidationProvider name="First name" mode="eager" rules="required" v-slot="{errors}">
+                  <v-text-field label="First name" v-model="firstName" :error-messages="errors"></v-text-field>
+                </ValidationProvider>
+                <ValidationProvider name="Last name" mode="eager" rules="required" v-slot="{errors}">
+                  <v-text-field label="Last name" v-model="lastName" :error-messages="errors"></v-text-field>
+                </ValidationProvider>
+                <ValidationProvider name="Email" mode="eager" rules="required|email" v-slot="{errors}">
+                  <v-text-field label="Email" v-model="email" :error-messages="errors"></v-text-field>
+                </ValidationProvider>
+                <v-text-field label="Company name" v-model="companyName"></v-text-field>
+                <v-btn :loading="loading" text @click.prevent="submit">Submit</v-btn>
+              </v-form>
+            </ValidationObserver>
           </v-card-text>
         </v-card>
       </v-col>
       <v-divider vertical class="ma-10"></v-divider>
       <v-col>
-        <v-card class="fill-height" >
+        <v-card class="fill-height">
           <v-card-title>Use existing license</v-card-title>
           <v-card-text class="flex-grow-1">
             If you already have a license, you can upload your license file by pressing the button below.
@@ -73,20 +81,29 @@ const lastName = ref<string>("");
 const email = ref<string>("");
 const companyName = ref<string>("");
 
+const observer = ref<any | null>(null);
+
 async function submit() {
-  try {
-    loading.value = true;
-    await axios.post('https://hook.eu1.make.com/g81venzbf3ausl6b8xitgudtqo4ev39q', {
-      firstName: firstName.value,
-      lastName: lastName.value,
-      email: email.value,
-      companyName: companyName.value
-    });
-    loading.value = false;
-    mainStore.addNotification({color: 'success', content: "License request submitted, please check your email!"});
-  } catch (e: AxiosError) {
-    mainStore.addNotification({color: 'error', content: e.response?.data.toString()});
-  }
+  observer.value.validate().then(async (passed) => {
+    if (!passed) {
+      return;
+    }
+
+    try {
+      loading.value = true;
+      await axios.post('https://hook.eu1.make.com/g81venzbf3ausl6b8xitgudtqo4ev39q', {
+        firstName: firstName.value,
+        lastName: lastName.value,
+        email: email.value,
+        companyName: companyName.value
+      });
+      mainStore.addNotification({color: 'success', content: "License request submitted, please check your email!"});
+    } catch (e: AxiosError) {
+      mainStore.addNotification({color: 'error', content: e.response?.data.toString()});
+    } finally {
+      loading.value = false;
+    }
+  });
 }
 
 function openFileInput() {
@@ -99,12 +116,13 @@ async function onFileUpdate(event) {
 
   await api.uploadLicense(formData);
   await mainStore.fetchAppSettings();
+  await mainStore.fetchLicense();
   done.value = true;
   setTimeout(() => redirectToMain(), 3000);
 }
 
 function redirectToMain() {
-  router.push("/");
+  router.push("/main/dashboard");
 }
 
 </script>

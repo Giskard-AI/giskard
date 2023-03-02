@@ -2,7 +2,6 @@ package ai.giskard.service.ee;
 
 import ai.giskard.config.ApplicationProperties;
 import ai.giskard.service.FileLocationService;
-import ai.giskard.service.GiskardRuntimeException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -11,7 +10,6 @@ import org.bouncycastle.crypto.signers.Ed25519Signer;
 import org.bouncycastle.util.encoders.Hex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
@@ -29,12 +27,9 @@ public class LicenseService {
 
     private final FileLocationService fileLocationService;
 
-    private String licensePublicKey;
+    private final ApplicationProperties properties;
 
     private License currentLicense;
-
-    @Autowired
-    private ApplicationProperties properties;
 
     /**
      * On service init, load the stored license if it exists
@@ -42,12 +37,10 @@ public class LicenseService {
      */
     @PostConstruct
     public void init() throws IOException {
-        licensePublicKey = properties.getLicensePublicKey();
-
         if (currentLicense == null) {
             if (Files.exists(fileLocationService.licensePath())) {
                 String licenseFile = Files.readString(fileLocationService.licensePath());
-                decodeLicense(licenseFile);
+                initializeLicense(licenseFile);
             } else {
                 // The default license has "active" set to false -> it will go back to the setup page
                 currentLicense = new License();
@@ -55,10 +48,18 @@ public class LicenseService {
         }
     }
 
-    public License getCurrentLicense() {
-        synchronized (this) {
-            return currentLicense;
-        }
+    /**
+     * Shorthand for LicenseService.getCurrentLicense().hasFeature(flag) since it's a very common call
+     *
+     * @param flag FeatureFlag we want to check
+     * @return whether the provided flag is enabled or not
+     */
+    public boolean hasFeature(FeatureFlag flag) {
+        return this.currentLicense.hasFeature(flag);
+    }
+
+    public synchronized License getCurrentLicense() {
+        return currentLicense;
     }
 
     /**
@@ -67,14 +68,12 @@ public class LicenseService {
      *
      * @param licenseFile
      */
-    public void uploadLicense(String licenseFile) throws IOException {
-        synchronized (this) {
-            decodeLicense(licenseFile);
-            Files.write(fileLocationService.licensePath(), licenseFile.getBytes());
-        }
+    public synchronized void uploadLicense(String licenseFile) throws IOException {
+        initializeLicense(licenseFile);
+        Files.write(fileLocationService.licensePath(), licenseFile.getBytes());
     }
 
-    private License decodeLicense(String lic) throws IOException {
+    private void initializeLicense(String lic) throws IOException {
         // 1. Remove start/end decorators
         String encodedPayload = lic.replaceAll(
             "(?:^-----BEGIN LICENSE FILE-----\\n)|" +
@@ -94,12 +93,12 @@ public class LicenseService {
         String algorithm = payloadJson.get("alg").asText();
 
         if (!"base64+ed25519".equals(algorithm)) {
-            throw new GiskardRuntimeException("License file is invalid.");
+            throw new LicenseValidationException();
         }
 
         // 4. Decode signing bytes and use signature to validate
         if (!verifySignature(encodedData, encodedSig)) {
-            throw new GiskardRuntimeException("License file is invalid.");
+            throw new LicenseValidationException();
         }
 
         // 5. Decode license and parse it into a License object
@@ -108,23 +107,22 @@ public class LicenseService {
 
         JsonNode meta = licenseJson.get("meta");
         if (!verifyExpired(meta)) {
-            throw new GiskardRuntimeException("License file is expired.");
+            throw new LicenseExpiredException();
         }
 
         License newLicense = License.fromJson(licenseJson);
         if (!newLicense.isActive()) {
-            throw new GiskardRuntimeException("License file is invalid.");
+            throw new LicenseValidationException();
         }
 
         log.info("License file loaded. Plan: {}", newLicense.getPlanName());
 
         this.currentLicense = newLicense;
-        return newLicense;
     }
 
 
     private boolean verifySignature(String encodedData, String encodedSig) {
-        byte[] publicKeyBytes = Hex.decode(licensePublicKey);
+        byte[] publicKeyBytes = Hex.decode(properties.getLicensePublicKey());
         byte[] signatureBytes = Base64.getDecoder().decode(encodedSig);
         byte[] encDataBytes = String.format("license/%s", encodedData).getBytes();
 

@@ -270,7 +270,7 @@ public class InitService {
             }
         });
 
-        if (!licenseService.getCurrentLicense().hasFeature(FeatureFlag.AUTH)) {
+        if (!licenseService.hasFeature(FeatureFlag.AUTH)) {
             //Given the loop above, we can safely assume that the user at least exists.
             userRepository.findOneByLogin("admin").ifPresent(admin -> {
                 if (!admin.isEnabled()) {

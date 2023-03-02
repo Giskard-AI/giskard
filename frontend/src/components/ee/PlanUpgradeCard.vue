@@ -20,6 +20,7 @@ import {useMainStore} from "@/stores/main";
 
 const mainStore = useMainStore();
 
+const emit = defineEmits(['done']);
 const fileInput = ref<any | null>(null);
 
 function openFileInput() {
@@ -32,6 +33,9 @@ async function onFileUpdate(event) {
 
   await api.uploadLicense(formData);
   await mainStore.fetchAppSettings();
+  await mainStore.fetchLicense();
+  mainStore.addSimpleNotification("License file uploaded. You may need to refresh the page to see new features.")
+  emit('done');
 }
 
 </script>

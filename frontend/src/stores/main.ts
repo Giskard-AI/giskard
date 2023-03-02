@@ -69,6 +69,9 @@ export const useMainStore = defineStore('main', {
                 }
             });
         },
+        addSimpleNotification(text: string) {
+            this.addNotification({content: text, color: 'success'})
+        },
         addNotification(payload: AppNotification) {
             Vue.$toast(payload.content, {
                 closeButton: false,
