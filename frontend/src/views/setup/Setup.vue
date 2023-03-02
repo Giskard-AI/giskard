@@ -7,7 +7,7 @@
     </v-row>
     <v-row v-if="!done">
       <v-col>
-        <v-card>
+        <v-card class="fill-height">
           <v-card-title>Request a license</v-card-title>
           <v-card-text>
             <p>
@@ -25,15 +25,15 @@
           </v-card-text>
         </v-card>
       </v-col>
-      <v-divider vertical></v-divider>
+      <v-divider vertical class="ma-10"></v-divider>
       <v-col>
-        <v-card>
+        <v-card class="fill-height" >
           <v-card-title>Use existing license</v-card-title>
-          <v-card-text>
+          <v-card-text class="flex-grow-1">
             If you already have a license, you can upload your license file by pressing the button below.
           </v-card-text>
-          <v-card-actions class="ml-2 mb-2">
-            <v-btn small color="primary" @click="openFileInput">Upload license file</v-btn>
+          <v-card-actions class="ml-2 mb-2 justify-center">
+            <v-btn color="primary" @click="openFileInput">Upload license file</v-btn>
             <input type="file" ref="fileInput" style="display: none;" @change="onFileUpdate"/>
           </v-card-actions>
         </v-card>
