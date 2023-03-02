@@ -79,15 +79,15 @@
             <v-card-title class="font-weight-light secondary--text d-flex">
               <span>ML Worker</span>
               <v-spacer/>
-            <v-tabs class="worker-tabs" v-model="selectedWorkerTab">
-              <v-tab :disabled="mlWorkerSettingsLoading" class="worker-tab">
+              <v-tabs class="worker-tabs" v-model="selectedWorkerTab">
+                <v-tab :disabled="mlWorkerSettingsLoading" class="worker-tab">
                   <span>external</span>
                   <v-icon v-show="!mlWorkerSettingsLoading" size="10"
                           :color="isWorkerAvailable(false) ? 'green': 'red'">mdi-circle
                   </v-icon>
                   <v-progress-circular size="20" indeterminate v-show="mlWorkerSettingsLoading"/>
                 </v-tab>
-              <v-tab :disabled="mlWorkerSettingsLoading" class="worker-tab">
+                <v-tab :disabled="mlWorkerSettingsLoading" class="worker-tab">
                   <span>internal</span>
                   <v-icon v-show="!mlWorkerSettingsLoading" size="10" :color="isWorkerAvailable(true) ? 'green': 'red'">
                     mdi-circle
@@ -220,7 +220,7 @@
       </v-row>
     </v-container>
     <v-dialog v-model="upgradeModal" width="700">
-      <PlanUpgradeCard/>
+      <PlanUpgradeCard @done="upgradeModal = false"/>
     </v-dialog>
   </div>
 </template>

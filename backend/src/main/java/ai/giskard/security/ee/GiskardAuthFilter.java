@@ -32,7 +32,7 @@ public class GiskardAuthFilter extends GenericFilterBean {
 
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
-        if (this.licenseService.getCurrentLicense().hasFeature(FeatureFlag.AUTH)) {
+        if (this.licenseService.hasFeature(FeatureFlag.AUTH)) {
             this.jwtFilter.doFilter(request, response, chain);
         } else {
             this.noAuthFilter.doFilter(request, response, chain);
