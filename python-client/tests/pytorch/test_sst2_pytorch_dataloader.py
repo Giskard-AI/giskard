@@ -1,7 +1,4 @@
-import re
-
 import pandas as pd
-import requests_mock
 import torch
 import torchtext.functional as F
 import torchtext.transforms as T
@@ -14,14 +11,13 @@ from torchtext.models import RobertaClassificationHead, XLMR_BASE_ENCODER
 
 import tests.utils
 from giskard import PyTorchModel, Dataset
-from giskard.client.giskard_client import GiskardClient
 
 
 def my_softmax(x):
     return special.softmax(x, axis=1)
 
 
-device = 'cuda' if torch.cuda.is_available() else 'cpu'
+device = "cuda" if torch.cuda.is_available() else "cpu"
 
 padding_idx = 1
 bos_idx = 0
@@ -59,38 +55,23 @@ def test_sst2_pytorch_dataloader():
         return F.to_tensor(batch["token_ids"], padding_value=padding_idx).to(device)
 
     def pandas_to_torch(test_df):
-        test_datapipe_transformed = IterableWrapper(test_df['text']).map(apply_transform)
+        test_datapipe_transformed = IterableWrapper(test_df["text"]).map(apply_transform)
         test_datapipe_transformed = test_datapipe_transformed.batch(batch_size)
         test_datapipe_transformed = test_datapipe_transformed.rows2columnar(["token_ids", "target"])
         return DataLoader(test_datapipe_transformed, batch_size=None, collate_fn=collate_batch)
 
-    classification_labels = ['0', '1']
-    my_model = PyTorchModel(name='SST2-XLMR_BASE_ENCODER',
-                            clf=model,
-                            feature_names=['text'],
-                            model_type="classification",
-                            classification_labels=classification_labels,
-                            data_preprocessing_function=pandas_to_torch,
-                            model_postprocessing_function=my_softmax)
+    classification_labels = ["0", "1"]
+    my_model = PyTorchModel(
+        name="SST2-XLMR_BASE_ENCODER",
+        clf=model,
+        feature_names=["text"],
+        model_type="classification",
+        classification_labels=classification_labels,
+        data_preprocessing_function=pandas_to_torch,
+        model_postprocessing_function=my_softmax,
+    )
 
     # defining the giskard dataset
     my_test_dataset = Dataset(dev_dataframe.head(), name="test dataset", target="label")
 
-    artifact_url_pattern = re.compile(
-        "http://giskard-host:12345/api/v2/artifacts/test-project/models/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/.*")
-    models_url_pattern = re.compile("http://giskard-host:12345/api/v2/project/test-project/models")
-    settings_url_pattern = re.compile("http://giskard-host:12345/api/v2/settings")
-
-    with requests_mock.Mocker() as m:
-        m.register_uri(requests_mock.POST, artifact_url_pattern)
-        m.register_uri(requests_mock.POST, models_url_pattern)
-        m.register_uri(requests_mock.GET, settings_url_pattern)
-
-        url = "http://giskard-host:12345"
-        token = "SECRET_TOKEN"
-        client = GiskardClient(url, token)
-        my_model.upload(client, 'test-project', my_test_dataset)
-
-        tests.utils.match_model_id(my_model.id)
-        tests.utils.match_url_patterns(m.request_history, artifact_url_pattern)
-        tests.utils.match_url_patterns(m.request_history, models_url_pattern)
+    tests.utils.verify_model_upload(my_model, my_test_dataset)
