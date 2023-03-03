@@ -110,7 +110,7 @@ class GiskardClient:
         Function to create a project in Giskard
         Args:
             project_key:
-                The unique value of the project which will be used to identify  and fetch teh project in future
+                The unique value of the project which will be used to identify  and fetch the project in future
             name:
                 The name of the project
             description:
