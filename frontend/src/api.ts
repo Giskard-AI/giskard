@@ -332,6 +332,9 @@ export const api = {
     async editDatasetName(datasetId: string, name: string) {
         return apiV2.patch<unknown, DatasetDTO>(`/dataset/${datasetId}/name/${encodeURIComponent(name)}`, null)
     },
+    async updateDataset(dataset: DatasetDTO) {
+        return apiV2.put<unknown, DatasetDTO>(`/dataset/${dataset.id}`, dataset)
+    },
     async getDataFilteredBySlice(inspectionId, sliceId) {
         return apiV2.post<unknown, any>(`/inspection/${inspectionId}/slice/${sliceId}`);
     },

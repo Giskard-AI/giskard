@@ -36,22 +36,30 @@
               <v-col cols="1" class="id-container" :title="f.id"> {{ f.id }}</v-col>
               <v-col cols="2">
                 <span>
-              <v-tooltip bottom dense>
-                <template v-slot:activator="{ on, attrs }">
-                  <v-btn icon color="info" @click.stop="downloadDataFile(f.id)" v-bind="attrs" v-on="on">
-                    <v-icon>download</v-icon>
-                  </v-btn>
-                  </template>
-                <span>Download</span>
-              </v-tooltip>
-              <DeleteModal
-                  v-if="isProjectOwnerOrAdmin"
-                  :id="f.id"
-                  :file-name="f.name"
-                  type="dataset"
-                  @submit="deleteDataFile(f.id)"
-              />
-            </span>
+                  <v-tooltip bottom dense>
+                    <template v-slot:activator="{ on, attrs }">
+                      <v-btn icon color="info" @click.stop="downloadDataFile(f.id)" v-bind="attrs" v-on="on">
+                        <v-icon>download</v-icon>
+                      </v-btn>
+                      </template>
+                    <span>Download</span>
+                  </v-tooltip>
+                  <v-tooltip bottom dense>
+                    <template v-slot:activator="{ on, attrs }">
+                      <v-btn icon color="info" @click.stop="editDataset(f)" v-bind="attrs" v-on="on">
+                        <v-icon>settings</v-icon>
+                      </v-btn>
+                      </template>
+                    <span>Settings</span>
+                  </v-tooltip>
+                  <DeleteModal
+                      v-if="isProjectOwnerOrAdmin"
+                      :id="f.id"
+                      :file-name="f.name"
+                      type="dataset"
+                      @submit="deleteDataFile(f.id)"
+                  />
+                </span>
               </v-col>
             </v-row>
 
@@ -80,6 +88,8 @@ import DeleteModal from '@/views/main/project/modals/DeleteModal.vue';
 import {onActivated, ref} from 'vue';
 import InlineEditText from '@/components/InlineEditText.vue';
 import {useMainStore} from "@/stores/main";
+import {$vfm} from 'vue-final-modal';
+import EditDatasetModal from '@/views/main/project/modals/EditDatasetModal.vue';
 
 const GISKARD_INDEX_COLUMN_NAME = '_GISKARD_INDEX_';
 
@@ -146,6 +156,21 @@ async function renameDataset(id: string, name: string) {
   const idx = files.value.findIndex(f => f.id === id);
   files.value[idx] = savedDataset;
   files.value = [...files.value];
+}
+
+function editDataset(dataset: DatasetDTO) {
+  $vfm.show({
+    component: EditDatasetModal,
+    bind: {
+      dataset
+    },
+    on: {
+      async saved(saved: DatasetDTO) {
+        const index = files.value.findIndex(d => d.id === saved.id);
+        files.value[index] = saved;
+      }
+    }
+  });
 }
 </script>
 

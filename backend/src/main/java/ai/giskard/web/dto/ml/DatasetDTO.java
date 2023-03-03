@@ -36,7 +36,12 @@ public class DatasetDTO {
     private int originalSizeBytes;
     @JsonAlias("compressed_size_bytes")
     private int compressedSizeBytes;
-
     @JsonAlias("created_date")
     private Instant createdDate;
+    @UINullable
+    @JsonAlias("business_names")
+    private Map<String, String> businessNames;
+    @UINullable
+    @JsonAlias("category_business_names")
+    private Map<String, Map<String, String>> categoryBusinessNames;
 }

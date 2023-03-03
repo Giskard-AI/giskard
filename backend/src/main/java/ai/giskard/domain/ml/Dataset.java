@@ -45,6 +45,15 @@ public class Dataset extends AbstractAuditingEntity {
     @Column(columnDefinition = "VARCHAR")
     @Convert(converter = SimpleJSONStringAttributeConverter.class)
     private Map<String, String> columnTypes;
+
+    @Column(columnDefinition = "VARCHAR")
+    @Convert(converter = SimpleJSONStringAttributeConverter.class)
+    private Map<String, String> businessNames;
+
+    @Column(columnDefinition = "VARCHAR")
+    @Convert(converter = SimpleJSONStringAttributeConverter.class)
+    private Map<String, Map<String, String>> categoryBusinessNames;
+
     private String target;
 
     @OneToMany(mappedBy = "dataset", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
@@ -58,4 +67,6 @@ public class Dataset extends AbstractAuditingEntity {
     private Long originalSizeBytes;
 
     private Long compressedSizeBytes;
+
+
 }

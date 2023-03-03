@@ -240,7 +240,9 @@ class GiskardClient:
             resp = self._session.post(endpoint, data=f)
             augmented_raise_for_status(resp)
 
-    def save_dataset_meta(self, project_key, dataset_id, meta: DatasetMeta, original_size_bytes, compressed_size_bytes):
+    def save_dataset_meta(self, project_key, dataset_id, meta: DatasetMeta,
+                          original_size_bytes, compressed_size_bytes,
+                          business_names, category_business_names):
         self._session.post(
             f"project/{project_key}/datasets",
             json={
@@ -252,6 +254,8 @@ class GiskardClient:
                 "columnTypes": meta.column_types,
                 "originalSizeBytes": original_size_bytes,
                 "compressedSizeBytes": compressed_size_bytes,
+                "business_names": business_names,
+                "category_business_names": category_business_names
             },
         )
         self.analytics.track(
@@ -265,6 +269,8 @@ class GiskardClient:
                 "columnTypes": anonymize(meta.column_types),
                 "original_size_bytes": original_size_bytes,
                 "compressed_size_bytes": compressed_size_bytes,
+                "business_names": anonymize(business_names),
+                "category_business_names": anonymize(category_business_names)
             },
         )
 

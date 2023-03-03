@@ -21,15 +21,19 @@ class Dataset:
     name: str
     target: str
     feature_types: Dict[str, str]
+    business_names: Dict[str, str]
+    category_business_names: Dict[str, Dict[str, str]]
     df: pd.DataFrame
 
     def __init__(
-        self,
-        df: pd.DataFrame,
-        name: Optional[str] = None,
-        target: Optional[str] = None,
-        cat_columns: Optional[List[str]] = None,
-        feature_types: Optional[Dict[str, str]] = None,
+            self,
+            df: pd.DataFrame,
+            name: Optional[str] = None,
+            target: Optional[str] = None,
+            cat_columns: Optional[List[str]] = None,
+            feature_types: Optional[Dict[str, str]] = None,
+            business_names: Dict[str, str] = None,
+            category_business_names: Dict[str, Dict[str, str]] = None
     ) -> None:
         self.name = name
         self.df = pd.DataFrame(df)
@@ -39,6 +43,8 @@ class Dataset:
             self.feature_types = {f: SupportedFeatureTypes.CATEGORY for f in cat_columns}
         else:
             self.feature_types = feature_types
+        self.business_names = business_names
+        self.category_business_names = category_business_names
 
     @staticmethod
     def extract_column_types(df):
@@ -59,6 +65,8 @@ class Dataset:
                 self.meta,
                 original_size_bytes=original_size_bytes,
                 compressed_size_bytes=compressed_size_bytes,
+                business_names=self.business_names,
+                category_business_names=self.category_business_names
             )
         return dataset_id
 

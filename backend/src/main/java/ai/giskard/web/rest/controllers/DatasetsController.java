@@ -119,4 +119,9 @@ public class DatasetsController {
     public DatasetDTO renameDataset(@PathVariable UUID datasetId, @PathVariable @Valid @NotBlank String name) {
         return giskardMapper.datasetToDatasetDTO(datasetService.renameDataset(datasetId, name));
     }
+
+    @PutMapping("/dataset/{datasetId}")
+    public DatasetDTO updateDataset(@PathVariable UUID datasetId, @RequestBody @Valid DatasetDTO dataset) {
+        return giskardMapper.datasetToDatasetDTO(datasetRepository.save(giskardMapper.fromDTO(dataset)));
+    }
 }

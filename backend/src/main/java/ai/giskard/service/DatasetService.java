@@ -76,6 +76,8 @@ public class DatasetService {
         DatasetDetailsDTO details = new DatasetDetailsDTO();
         details.setNumberOfRows(table.rowCount());
         details.setColumns(table.columnNames());
+
+
         return details;
     }
 

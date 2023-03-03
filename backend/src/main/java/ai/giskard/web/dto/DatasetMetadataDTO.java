@@ -27,4 +27,10 @@ public class DatasetMetadataDTO {
     @UINullable
     @JsonAlias("column_types")
     private Map<String, String> columnTypes;
+    @UINullable
+    @JsonAlias("business_names")
+    private Map<String, String> businessNames;
+    @UINullable
+    @JsonAlias("category_business_names")
+    private Map<String, Map<String, String>> categoryBusinessNames;
 }
