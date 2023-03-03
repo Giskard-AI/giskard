@@ -353,6 +353,8 @@ class WrapperModel(Model, ABC):
 
     @classmethod
     def load(cls, local_dir, **kwargs):
+        kwargs["data_preprocessing_function"] = cls.load_data_preprocessing_function(local_dir)
+        kwargs["model_postprocessing_function"] = cls.load_model_postprocessing_function(local_dir)
         return cls(clf=cls.load_clf(local_dir), **kwargs)
 
     @classmethod
@@ -360,21 +362,25 @@ class WrapperModel(Model, ABC):
     def load_clf(cls, local_dir):
         ...
 
-    @staticmethod
-    def load_data_preprocessing_function(local_path: Union[str, Path]):
+    @classmethod
+    def load_data_preprocessing_function(cls, local_path: Union[str, Path]):
         local_path = Path(local_path)
         file_path = local_path / "giskard-data-preprocessing.pkl"
         if file_path.exists():
             with open(file_path, "rb") as f:
                 return cloudpickle.load(f)
+        else:
+            return None
 
-    @staticmethod
-    def load_model_postprocessing_function(local_path: Union[str, Path]):
+    @classmethod
+    def load_model_postprocessing_function(cls, local_path: Union[str, Path]):
         local_path = Path(local_path)
         file_path = local_path / "giskard-data-postprocessing.pkl"
         if file_path.exists():
             with open(file_path, 'rb') as f:
                 return cloudpickle.load(f)
+        else:
+            return None
 
 
 class MLFlowBasedModel(WrapperModel, ABC):
