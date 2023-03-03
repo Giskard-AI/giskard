@@ -83,10 +83,17 @@ public class ImportService {
     }
 
     private void saveImportTestSuites(List<TestSuite> testSuites, Project savedProject) {
-        testSuites.forEach(testSuite -> {
-            testSuite.setProject(savedProject);
-            // TODO: check if working
-            testSuiteRepository.save(testSuite);
+        testSuites.forEach(suite -> {
+            suite.setProject(savedProject);
+
+            suite.getTests().forEach(test -> {
+                test.setSuite(suite);
+                test.getTestInputs().forEach(input -> input.setTest(test));
+            });
+            
+            suite.getExecutions().forEach(execution -> execution.setSuite(suite));
+
+            testSuiteRepository.save(suite);
         });
     }
 
