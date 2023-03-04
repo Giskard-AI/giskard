@@ -31,9 +31,7 @@ input_types = {
 def enron_data() -> GiskardDataset:
     logger.info("Fetching Enron Data")
     return GiskardDataset(
-        df=pd.read_csv(
-            path("test_data/enron_data.csv"), keep_default_na=False, na_values=["_GSK_NA_"]
-        ),
+        df=pd.read_csv(path("test_data/enron_data.csv"), keep_default_na=False, na_values=["_GSK_NA_"]),
         target="Target",
         feature_types=input_types,
     )
@@ -54,9 +52,7 @@ def enron_model(enron_data) -> GiskardModel:
 
     columns_to_scale = [key for key in input_types.keys() if input_types[key] == "numeric"]
 
-    numeric_transformer = Pipeline(
-        [("imputer", SimpleImputer(strategy="median")), ("scaler", StandardScaler())]
-    )
+    numeric_transformer = Pipeline([("imputer", SimpleImputer(strategy="median")), ("scaler", StandardScaler())])
 
     columns_to_encode = [key for key in input_types.keys() if input_types[key] == "category"]
 
@@ -76,9 +72,7 @@ def enron_model(enron_data) -> GiskardModel:
             ("text_Mail", text_transformer, "Content"),
         ]
     )
-    clf = Pipeline(
-        steps=[("preprocessor", preprocessor), ("classifier", LogisticRegression(max_iter=100))]
-    )
+    clf = Pipeline(steps=[("preprocessor", preprocessor), ("classifier", LogisticRegression(max_iter=100))])
 
     Y = enron_data.df["Target"]
     X = enron_data.df.drop(columns="Target")

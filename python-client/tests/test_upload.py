@@ -38,9 +38,7 @@ def test_upload_df(diabetes_dataset: GiskardDataset):
     with pytest.raises(Exception):  # Error Scenario
         project.upload_df(df=diabetes_dataset.df, column_types={"test": "test"}, name=dataset_name)
 
-    project.upload_df(
-        df=diabetes_dataset.df, column_types=diabetes_dataset.feature_types, name=dataset_name
-    )
+    project.upload_df(df=diabetes_dataset.df, column_types=diabetes_dataset.feature_types, name=dataset_name)
 
     req = httpretty.last_request()
     assert req.headers.get("Authorization") == auth
@@ -51,9 +49,7 @@ def test_upload_df(diabetes_dataset: GiskardDataset):
     assert len(multipart_data.parts) == 2
     meta, upload_file = multipart_data.parts
     assert meta.headers.get(b"Content-Type") == b_content_type
-    pd.testing.assert_frame_equal(
-        diabetes_dataset.df, pd.read_csv(BytesIO(decompress(upload_file.content)))
-    )
+    pd.testing.assert_frame_equal(diabetes_dataset.df, pd.read_csv(BytesIO(decompress(upload_file.content))))
 
 
 @httpretty.activate(verbose=True, allow_net_connect=False)
@@ -71,7 +67,7 @@ def _test_upload_model(model: GiskardModel, ds: GiskardDataset):
                 feature_names=model.feature_names,
                 name=model_name,
                 validate_df=ds.df,
-                classification_labels=model.classification_labels
+                classification_labels=model.classification_labels,
             )
     else:
         project.upload_model(
@@ -96,7 +92,7 @@ def _test_upload_model(model: GiskardModel, ds: GiskardDataset):
         metadata = json.loads(meta.content)
         assert np.array_equal(model.classification_labels, metadata.get("classificationLabels"))
 
-    assert meta.headers.get(b'Content-Type') == b_content_type
+    assert meta.headers.get(b"Content-Type") == b_content_type
     loaded_model = load_decompress(model_file.content)
 
     assert np.array_equal(loaded_model(ds.df), model.prediction_function(ds.df))
@@ -115,10 +111,10 @@ def _test_upload_model_exceptions(model: GiskardModel, ds: GiskardDataset):
             feature_names=model.feature_names,
             name=model_name,
             validate_df=ds.df,
-            classification_labels=model.classification_labels
+            classification_labels=model.classification_labels,
         )
 
-    if model.model_type == 'classification':
+    if model.model_type == "classification":
         # Error Scenario: Classification model sent without classification_labels
         with pytest.raises(Exception):
             project.upload_model_and_df(
@@ -128,7 +124,7 @@ def _test_upload_model_exceptions(model: GiskardModel, ds: GiskardDataset):
                 column_types=ds.feature_types,
                 feature_names=model.feature_names,
                 model_name=model_name,
-                target='default'
+                target="default",
             )
 
         # Error Scenario: Target has values not declared in Classification Label
@@ -136,12 +132,12 @@ def _test_upload_model_exceptions(model: GiskardModel, ds: GiskardDataset):
             project.upload_model_and_df(
                 prediction_function=model.prediction_function,
                 model_type=model.model_type,
-                target='default',
+                target="default",
                 df=ds.df,
                 column_types=ds.feature_types,
                 feature_names=model.feature_names,
                 model_name=model_name,
-                classification_labels=[0, 1]
+                classification_labels=[0, 1],
             )
 
 
@@ -158,9 +154,9 @@ def test_upload_models(data, model, request):
     _test_upload_model(model, data)
 
 
-@pytest.mark.parametrize('data,model,',
-                         [('german_credit_data', 'german_credit_model'),
-                          ('diabetes_dataset', 'linear_regression_diabetes')])
+@pytest.mark.parametrize(
+    "data,model,", [("german_credit_data", "german_credit_model"), ("diabetes_dataset", "linear_regression_diabetes")]
+)
 def test_upload_models_exceptions(data, model, request):
     data = request.getfixturevalue(data)
     model = request.getfixturevalue(model)

@@ -1,6 +1,5 @@
 import logging
 
-import numpy as np
 import pandas as pd
 import pytest
 from sklearn import model_selection
@@ -45,7 +44,11 @@ input_types = {
 @pytest.fixture()
 def german_credit_data() -> GiskardDataset:
     logger.info("Reading german_credit_prepared.csv")
-    df = pd.read_csv(path("test_data/german_credit_prepared.csv"), keep_default_na=False, na_values=["_GSK_NA_"], )
+    df = pd.read_csv(
+        path("test_data/german_credit_prepared.csv"),
+        keep_default_na=False,
+        na_values=["_GSK_NA_"],
+    )
     return GiskardDataset(
         df=df,
         column_types=df.dtypes.apply(lambda x: x.name).to_dict(),
@@ -93,7 +96,7 @@ def german_credit_test_data(german_credit_data):
     return GiskardDataset(
         df=df,
         feature_types=input_types,
-        column_types={c: column_types[c] for c in column_types if c != 'default'},
+        column_types={c: column_types[c] for c in column_types if c != "default"},
         target=None,
     )
 
@@ -104,9 +107,7 @@ def german_credit_model(german_credit_data) -> GiskardModel:
 
     columns_to_scale = [key for key in input_types.keys() if input_types[key] == "numeric"]
 
-    numeric_transformer = Pipeline(
-        [("imputer", SimpleImputer(strategy="median")), ("scaler", StandardScaler())]
-    )
+    numeric_transformer = Pipeline([("imputer", SimpleImputer(strategy="median")), ("scaler", StandardScaler())])
 
     columns_to_encode = [key for key in input_types.keys() if input_types[key] == "category"]
 
@@ -123,9 +124,7 @@ def german_credit_model(german_credit_data) -> GiskardModel:
             ("cat", categorical_transformer, columns_to_encode),
         ]
     )
-    clf = Pipeline(
-        steps=[("preprocessor", preprocessor), ("classifier", LogisticRegression(max_iter=100))]
-    )
+    clf = Pipeline(steps=[("preprocessor", preprocessor), ("classifier", LogisticRegression(max_iter=100))])
 
     Y = german_credit_data.df["default"]
     X = german_credit_data.df.drop(columns="default")
@@ -156,8 +155,8 @@ def german_credit_always_default_model(german_credit_data) -> GiskardModel:
 
     return GiskardModel(
         prediction_function=dummy.predict_proba,
-        model_type='classification',
+        model_type="classification",
         feature_names=list(input_types),
         classification_threshold=0.5,
-        classification_labels=dummy.classes_
+        classification_labels=dummy.classes_,
     )
