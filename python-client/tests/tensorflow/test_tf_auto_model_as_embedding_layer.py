@@ -99,7 +99,7 @@ tokenizer, transformer_model = load_transformer_models("distilbert-base-multilin
 model = get_model(max_length.get(intent), transformer_model, num_labels=1, name_model=models.get(intent))
 
 
-@pytest.mark.skip(reason="Check why loading is failing")
+@pytest.mark.skip(reason="Loading must be customised to take care of loading the TF and embedded huggingFace model correctly")
 def test_tf_auto_model_as_embedding_layer():
     data_dict = {
         "I’m not buying from this online shop ever again": 1,
