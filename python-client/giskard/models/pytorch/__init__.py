@@ -152,7 +152,7 @@ class PyTorchModel(MLFlowBasedModel):
                 pytorch_meta = yaml.load(f, Loader=yaml.Loader)
                 kwargs['device'] = pytorch_meta['device']
                 kwargs['torch_dtype'] = pytorch_meta['torch_dtype']
-                super().load(local_dir, **kwargs)
+                return super().load(local_dir, **kwargs)
         else:
             raise ValueError(
                 f"Cannot load model ({cls.__module__}.{cls.__name__}), "
