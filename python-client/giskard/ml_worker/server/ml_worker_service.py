@@ -145,9 +145,9 @@ class MLWorkerServiceImpl(MLWorkerServicer):
                 'id': t.id
             } for t in request.tests]
 
-                logger.info(f"Executing test suite: {list(map(lambda t: t.name, tests))}")
+            logger.info(f"Executing test suite: {list(map(lambda t: t.name, tests))}")
 
-                global_arguments = self.parse_test_arguments(request.globalArguments)
+            global_arguments = self.parse_test_arguments(request.globalArguments)
 
             test_names = list(
                 map(lambda t: t['test'].meta.display_name or f"{t['test'].meta.module + '.' + t['test'].meta.name}", tests)
