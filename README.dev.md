@@ -65,3 +65,12 @@ it will use the default `pip` available in the environment. To install `giskard`
 ```shell
 sh -c "$(curl -fsSL https://raw.githubusercontent.com/Giskard-AI/giskard-client/main/scripts/install-giskard-client-dev.sh)" - /path/to/pip
 ```
+
+
+## Windows caveats
+
+There are some extra steps required to use Giskard on Windows.
+
+If you get this error: `'EntryPoints' object has no attribute 'get'`
+Then please run:
+> pip install importlib-metadata==4.1F3.0
