@@ -14,7 +14,7 @@ class SuiteTestDTO(BaseModel):
     testInputs: Dict[str, TestInputDTO]
 
 
-class TestSuiteNewDTO(BaseModel):
+class TestSuiteDTO(BaseModel):
     name: Optional[str]
     project_key: str
     tests: List[SuiteTestDTO]

@@ -13,5 +13,5 @@ export interface TestSuiteCompleteDTO {
     inputs: {[key: string]: string};
     models: ModelDTO[];
     registry: TestFunctionDTO[];
-    suite: TestSuiteNewDTO;
+    suite: TestSuiteDTO;
 }
