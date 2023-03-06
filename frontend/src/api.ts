@@ -15,6 +15,7 @@ import {
     FeedbackDTO,
     FeedbackMinimalDTO,
     GeneralSettings,
+    GenerateTestSuiteDTO,
     InspectionCreateDTO,
     InspectionDTO,
     JobDTO,
@@ -32,6 +33,7 @@ import {
     ProjectPostDTO,
     RoleDTO,
     SliceDTO,
+    SuiteTestDTO,
     TestCatalogDTO,
     TestSuiteCompleteDTO,
     TestSuiteDTO,
@@ -339,11 +341,18 @@ export const api = {
     async getTestSuites(projectId: number) {
         return apiV2.get<unknown, TestSuiteDTO[]>(`testing/project/${projectId}/suites`);
     },
+    async generateTestSuite(projectId: string, generateTestSuite: GenerateTestSuiteDTO) {
+        return apiV2.post<unknown, number>(`testing/project/${projectId}/suites-new/generate`, generateTestSuite);
+    },
     async getTestSuite(projectId: number, suiteId: number) {
         return apiV2.get<unknown, TestSuiteDTO>(`testing/project/${projectId}/suite/${suiteId}`);
     },
     async getTestSuiteComplete(projectId: number, suiteId: number) {
         return apiV2.get<unknown, TestSuiteCompleteDTO>(`testing/project/${projectId}/suite/${suiteId}/complete`);
+    },
+    async addTestToSuite(projectId: number, suiteId: number, suiteTest: SuiteTestDTO) {
+        return apiV2.post<unknown, TestSuiteDTO>(`testing/project/${projectId}/suite/${suiteId}/test`,
+            suiteTest);
     },
     async getProjectSlices(id: number) {
         return axiosProject.get<unknown, SliceDTO[]>(`/${id}/slices`);

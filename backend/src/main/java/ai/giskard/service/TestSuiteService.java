@@ -12,6 +12,7 @@ import ai.giskard.web.dto.TestFunctionArgumentDTO;
 import ai.giskard.web.dto.TestSuiteDTO;
 import ai.giskard.web.dto.mapper.GiskardMapper;
 import ai.giskard.web.rest.errors.EntityNotFoundException;
+import ai.giskard.worker.*;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import lombok.RequiredArgsConstructor;
@@ -22,7 +23,8 @@ import java.nio.file.Path;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static ai.giskard.web.rest.errors.Entity.TEST;
+import static ai.giskard.web.rest.errors.Entity.TEST_SUITE;
+
 
 @Service
 @Transactional
@@ -33,6 +35,8 @@ public class TestSuiteService {
     private final TestService testService;
     private final TestSuiteExecutionService testSuiteExecutionService;
     private final JobService jobService;
+    private final ProjectRepository projectRepository;
+    private final MLWorkerService mlWorkerService;
 
     public Map<String, String> getSuiteInputs(Long projectId, Long suiteId) {
         TestSuite suite = testSuiteRepository.findOneByProjectIdAndId(projectId, suiteId);
@@ -133,4 +137,60 @@ public class TestSuiteService {
     public Path resolvedMetadataPath(Path temporaryMetadataDir, String entityName) {
         return temporaryMetadataDir.resolve(entityName.toLowerCase() + "-metadata.yaml");
     }
+
+    public TestSuiteNew addTestToSuite(long suiteId, SuiteTestDTO suiteTestDTO) {
+        TestSuiteNew suite = testSuiteNewRepository.findById(suiteId)
+            .orElseThrow(() -> new EntityNotFoundException(TEST_SUITE, suiteId));
+
+        SuiteTest suiteTest = giskardMapper.fromDTO(suiteTestDTO);
+        suiteTest.setSuite(suite);
+        suite.getTests().add(suiteTest);
+
+        return testSuiteNewRepository.save(suite);
+    }
+
+    @Transactional
+    public Long generateTestSuite(String projectKey, GenerateTestSuiteDTO dto) {
+
+        Project project = projectRepository.getOneByKey(projectKey);
+        try (MLWorkerClient client = mlWorkerService.createClient(project.isUsingInternalWorker())) {
+            GenerateTestSuiteRequest.Builder request = GenerateTestSuiteRequest.newBuilder()
+                .setProjectKey(projectKey);
+
+            request.addAllInputs(dto.getInputs()
+                .stream()
+                .map(TestSuiteService::generateSuiteInput)
+                .toList());
+
+            GenerateTestSuiteResponse response = client.getBlockingStub().generateTestSuite(request.build());
+
+            TestSuiteNew suite = new TestSuiteNew();
+            suite.setProject(project);
+            suite.setName(dto.getName());
+            suite.getTests().addAll(response.getTestsList().stream()
+                .map(test -> new SuiteTest(suite, test))
+                .toList());
+
+            return testSuiteNewRepository.save(suite).getId();
+        }
+    }
+
+    private static SuiteInput generateSuiteInput(GenerateTestSuiteInputDTO input) {
+        SuiteInput.Builder builder = SuiteInput.newBuilder()
+            .setName(input.getName())
+            .setType(input.getType());
+
+        if (input instanceof GenerateTestModelInputDTO) {
+            builder.setModelMeta(ModelMeta.newBuilder()
+                .setModelType(((GenerateTestModelInputDTO) input).getModelType())
+                .build());
+        } else if (input instanceof GenerateTestDatasetInputDTO) {
+            builder.setDatasetMeta(DatasetMeta.newBuilder()
+                .setTarget(((GenerateTestDatasetInputDTO) input).getTarget())
+                .build());
+        }
+
+        return builder.build();
+    }
+
 }
