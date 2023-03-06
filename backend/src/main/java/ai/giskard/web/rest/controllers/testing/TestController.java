@@ -1,34 +1,42 @@
 package ai.giskard.web.rest.controllers.testing;
 
 import ai.giskard.domain.Project;
+import ai.giskard.domain.TestFunction;
+import ai.giskard.domain.TestFunctionArgument;
 import ai.giskard.domain.ml.TestResult;
 import ai.giskard.ml.MLWorkerClient;
 import ai.giskard.repository.ProjectRepository;
+import ai.giskard.repository.ml.TestFunctionRepository;
 import ai.giskard.service.TestArgumentService;
-import ai.giskard.service.TestService;
 import ai.giskard.service.ml.MLWorkerService;
 import ai.giskard.web.dto.RunAdhocTestRequest;
-import ai.giskard.web.dto.TestCatalogDTO;
 import ai.giskard.web.dto.ml.TestTemplateExecutionResultDTO;
-import ai.giskard.worker.*;
-import com.google.common.collect.Maps;
-import com.google.protobuf.Empty;
+import ai.giskard.web.rest.errors.EntityNotFoundException;
+import ai.giskard.worker.RunAdHocTestRequest;
+import ai.giskard.worker.TestResultMessage;
 import lombok.RequiredArgsConstructor;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
+import static ai.giskard.web.rest.errors.Entity.TEST_FUNCTION;
 
 
 @RestController
 @RequestMapping("/api/v2/testing/tests")
 @RequiredArgsConstructor
 public class TestController {
-    private final TestService testService;
     private final MLWorkerService mlWorkerService;
     private final ProjectRepository projectRepository;
     private final TestArgumentService testArgumentService;
+
+    private final TestFunctionRepository testFunctionRepository;
 
     @PostMapping("/run-test")
     @Transactional

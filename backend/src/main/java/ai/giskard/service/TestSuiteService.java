@@ -1,10 +1,7 @@
 package ai.giskard.service;
 
-import ai.giskard.domain.FeatureType;
 import ai.giskard.domain.Project;
 import ai.giskard.domain.TestFunctionArgument;
-import ai.giskard.domain.ml.*;
-import ai.giskard.domain.ml.testing.Test;
 import ai.giskard.domain.ml.SuiteTest;
 import ai.giskard.domain.ml.TestInput;
 import ai.giskard.domain.ml.TestSuite;
@@ -12,6 +9,7 @@ import ai.giskard.domain.ml.TestSuiteExecution;
 import ai.giskard.jobs.JobType;
 import ai.giskard.ml.MLWorkerClient;
 import ai.giskard.repository.ProjectRepository;
+import ai.giskard.repository.ml.TestFunctionRepository;
 import ai.giskard.repository.ml.TestSuiteRepository;
 import ai.giskard.service.ml.MLWorkerService;
 import ai.giskard.web.dto.*;
@@ -37,7 +35,6 @@ import static ai.giskard.web.rest.errors.Entity.TEST_SUITE;
 public class TestSuiteService {
     private final GiskardMapper giskardMapper;
     private final TestSuiteRepository testSuiteRepository;
-    private final TestService testService;
     private final TestSuiteExecutionService testSuiteExecutionService;
     private final JobService jobService;
     private final ProjectRepository projectRepository;
@@ -45,7 +42,7 @@ public class TestSuiteService {
     private final TestFunctionRepository testFunctionRepository;
 
     public Map<String, String> getSuiteInputs(Long projectId, Long suiteId) {
-        TestSuite suite = testSuiteNewRepository.findOneByProjectIdAndId(projectId, suiteId);
+        TestSuite suite = testSuiteRepository.findOneByProjectIdAndId(projectId, suiteId);
 
         Map<String, String> res = new HashMap<>();
 
