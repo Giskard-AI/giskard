@@ -4,5 +4,5 @@
 export interface RunAdhocTestRequest {
     inputs: {[key: string]: string};
     projectId: number;
-    testId: string;
+    testUuid: string;
 }

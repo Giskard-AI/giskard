@@ -7,7 +7,7 @@
             <v-divider/>
             <v-list-item :value="result">
               <v-list-item-content>
-                <v-list-item-title v-text="registry.tests[result.test.testId].name"></v-list-item-title>
+                <v-list-item-title v-text="registryByUuid[result.test.testUuid].name"></v-list-item-title>
                 <v-list-item-subtitle>
                   <v-chip class="mr-2" x-small :color="result.passed ? Colors.PASS : Colors.FAIL">
                     {{ result.passed ? 'pass' : 'fail' }}
@@ -34,25 +34,27 @@
 <script setup lang="ts">
 
 import {computed, ref} from 'vue';
-import {DatasetDTO, ModelDTO, SuiteTestExecutionDTO, TestCatalogDTO, TestSuiteExecutionDTO} from '@/generated-sources';
+import {DatasetDTO, ModelDTO, SuiteTestExecutionDTO, TestFunctionDTO, TestSuiteExecutionDTO} from '@/generated-sources';
 import TestInputList from '@/components/TestInputList.vue';
 import {Colors} from '@/utils/colors';
+import {chain} from 'lodash';
 
 const props = defineProps<{
   execution: TestSuiteExecutionDTO,
-  registry: TestCatalogDTO,
+  registry: { [testUuid: string]: TestFunctionDTO },
   models: { [key: string]: ModelDTO },
   datasets: { [key: string]: DatasetDTO }
 }>();
 
 const selectedResult = ref<SuiteTestExecutionDTO | null>(null);
 
+const registryByUuid = computed(() => chain(props.registry).keyBy('uuid').value());
+
 const inputTypes = computed(() =>
     selectedResult.value === null ? {} :
-        Object.values(props.registry.tests[selectedResult.value.test.testId].arguments)
+        Object.values(registryByUuid.value[selectedResult.value.test.testUuid].args)
             .reduce((accumulator, currentValue) => {
               accumulator[currentValue.name] = currentValue.type;
               return accumulator;
             }, {}));
-
 </script>

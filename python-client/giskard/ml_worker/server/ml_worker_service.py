@@ -6,14 +6,12 @@ import sys
 import time
 from io import StringIO
 
-import google
 import grpc
 import numpy as np
 import pandas as pd
 import pkg_resources
 import psutil
 import tqdm
-from google.protobuf.wrappers_pb2 import Int32Value, DoubleValue
 
 import giskard
 from giskard.client.giskard_client import GiskardClient
@@ -26,12 +24,11 @@ from giskard.ml_worker.core.model_explanation import (
 )
 from giskard.ml_worker.core.suite import Suite, ModelInput, DatasetInput, SuiteInput
 from giskard.ml_worker.core.test_result import TestResult, TestMessageLevel
-from giskard.ml_worker.core.test_runner import run_test
 from giskard.ml_worker.exceptions.IllegalArgumentError import IllegalArgumentError
 from giskard.ml_worker.exceptions.giskard_exception import GiskardException
 from giskard.ml_worker.generated import ml_worker_pb2
 from giskard.ml_worker.generated.ml_worker_pb2_grpc import MLWorkerServicer
-from giskard.ml_worker.testing.registry.registry import tests_registry
+from giskard.ml_worker.testing.registry.giskard_test import GiskardTest
 from giskard.ml_worker.utils.logging import Timer
 from giskard.path_utils import model_path, dataset_path
 
@@ -126,57 +123,59 @@ class MLWorkerServiceImpl(MLWorkerServicer):
             self, request: ml_worker_pb2.RunAdHocTestRequest, context: grpc.ServicerContext
     ) -> ml_worker_pb2.TestResultMessage:
 
-        test = tests_registry.get_test(request.testId)
+        test: GiskardTest = GiskardTest.load(request.testUuid, self.client, None)
 
         arguments = self.parse_test_arguments(request.arguments)
 
-        logger.info(f"Executing {test.name}")
-        test_result = run_test(test.fn, arguments)
+        logger.info(f"Executing {test.meta.display_name or f'{test.meta.module}.{test.meta.name}'}")
+        test_result = test.set_params(**arguments).execute()
 
-        return ml_worker_pb2.TestResultMessage(
-            results=[
-                ml_worker_pb2.NamedSingleTestResult(name=test.id, result=map_result_to_single_test_result(test_result))
-            ]
-        )
+        return ml_worker_pb2.TestResultMessage(results=[
+            ml_worker_pb2.NamedSingleTestResult(testUuid=test.meta.uuid, result=map_result_to_single_test_result(test_result))
+        ])
 
-    def runTestSuite(
-            self, request: ml_worker_pb2.RunTestSuiteRequest, context: grpc.ServicerContext
-    ) -> ml_worker_pb2.TestSuiteResultMessage:
+    def runTestSuite(self, request: ml_worker_pb2.RunTestSuiteRequest,
+                     context: grpc.ServicerContext) -> ml_worker_pb2.TestSuiteResultMessage:
         log_listener = LogListener()
 
         try:
             tests = [{
-            'test': tests_registry.get_test(t.testId),
-            'arguments': self.parse_test_arguments(t.arguments),
-            'id': t.id
-        } for t in request.tests]
+                'test': GiskardTest.load(t.testUuid, self.client, None),
+                'arguments': self.parse_test_arguments(t.arguments),
+                'id': t.id
+            } for t in request.tests]
 
-            logger.info(f"Executing test suite: {list(map(lambda t: t.name, tests))}")
+                logger.info(f"Executing test suite: {list(map(lambda t: t.name, tests))}")
 
-            global_arguments = self.parse_test_arguments(request.globalArguments)
+                global_arguments = self.parse_test_arguments(request.globalArguments)
 
-            logger.info(f"Executing test suite: {list(map(lambda t: t['test'].name, tests))}")
+            test_names = list(
+                map(lambda t: t['test'].meta.display_name or f"{t['test'].meta.module + '.' + t['test'].meta.name}", tests)
+            )
+            logger.info(f"Executing test suite: {test_names}")
 
             suite = Suite()
             for t in tests:
-                suite.add_test(t['test'].fn, t['id'], **t['arguments'])
+                suite.add_test(t['test'].set_params(**t['arguments']), t['id'])
 
-                is_pass, results = suite.run(**global_arguments)
+            is_pass, results = suite.run(**global_arguments)
 
             identifier_single_test_results = []
             for identifier, result in results.items():
                 identifier_single_test_results.append(
                     ml_worker_pb2.IdentifierSingleTestResult(
                         id=identifier, result=map_result_to_single_test_result(result)
-                        )
                     )
+                )
 
             return ml_worker_pb2.TestSuiteResultMessage(
                 is_error=False,
                 is_pass=is_pass,
                 results=identifier_single_test_results,
                 logs=log_listener.close()
+
             )
+
         except Exception as exc:
             logger.error("An unexpected error arose during the test suite execution: %s", exc)
             return ml_worker_pb2.TestSuiteResultMessage(
@@ -391,30 +390,6 @@ class MLWorkerServiceImpl(MLWorkerServicer):
         logger.info(f"Filter dataset finished. Avg chunk time: {sum(times) / len(times)}")
         yield ml_worker_pb2.FilterDatasetResponse(code=ml_worker_pb2.StatusCode.Ok)
 
-    def getTestRegistry(
-            self, request: google.protobuf.empty_pb2.Empty, context: grpc.ServicerContext
-    ) -> ml_worker_pb2.TestRegistryResponse:
-        return ml_worker_pb2.TestRegistryResponse(
-            tests={
-                test.id: ml_worker_pb2.TestFunction(
-                    id=test.id,
-                    name=test.name,
-                    module=test.module,
-                    doc=test.doc,
-                    code=test.code,
-                    module_doc=test.module_doc,
-                    tags=test.tags,
-                    arguments={
-                        a.name: ml_worker_pb2.TestFunctionArgument(
-                            name=a.name, type=a.type, optional=a.optional, default=str(a.default)
-                        )
-                        for a in test.args.values()
-                    },
-                )
-                for test in tests_registry.get_all().values()
-            }
-        )
-
     @staticmethod
     def map_suite_input(i: ml_worker_pb2.SuiteInput):
         if i.type == 'Model' and i.model_meta is not None:
@@ -436,7 +411,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
         return ml_worker_pb2.GenerateTestSuiteResponse(
             tests=[
                 ml_worker_pb2.GeneratedTest(
-                    test_id=test.testId,
+                    test_uuid=test.testUuid,
                     inputs=[
                         ml_worker_pb2.GeneratedTestInput(
                             name=i.name,
@@ -478,12 +453,12 @@ def map_result_to_single_test_result(result) -> ml_worker_pb2.SingleTestResult:
             ],
             props=result.props,
             metric=result.metric,
-            missing_count=Int32Value(value=result.missing_count),
-            missing_percent=DoubleValue(value=result.missing_percent),
-            unexpected_count=Int32Value(value=result.unexpected_count),
-            unexpected_percent=DoubleValue(value=result.unexpected_percent),
-            unexpected_percent_total=DoubleValue(value=result.unexpected_percent_total),
-            unexpected_percent_nonmissing=DoubleValue(value=result.unexpected_percent_nonmissing),
+            missing_count=result.missing_count,
+            missing_percent=result.missing_percent,
+            unexpected_count=result.unexpected_count,
+            unexpected_percent=result.unexpected_percent,
+            unexpected_percent_total=result.unexpected_percent_total,
+            unexpected_percent_nonmissing=result.unexpected_percent_nonmissing,
             partial_unexpected_index_list=[
                 ml_worker_pb2.Partial_unexpected_counts(value=puc.value, count=puc.count)
                 for puc in result.partial_unexpected_index_list
@@ -497,4 +472,4 @@ def map_result_to_single_test_result(result) -> ml_worker_pb2.SingleTestResult:
     elif isinstance(result, bool):
         return ml_worker_pb2.SingleTestResult(passed=result)
     else:
-        raise ValueError("Result of test can only be 'GiskardTestResult' or 'bool'")
+        raise ValueError("Result of test can only be 'TestResult' or 'bool'")
