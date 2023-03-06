@@ -38,8 +38,8 @@ class MLWorker:
         server = grpc.aio.server(
             interceptors=[ErrorInterceptor()],
             options=[
-                ("grpc.max_send_message_length", settings.max_send_message_length_mb * 1024**2),
-                ("grpc.max_receive_message_length", settings.max_receive_message_length_mb * 1024**2),
+                ("grpc.max_send_message_length", settings.max_send_message_length_mb * 1024 ** 2),
+                ("grpc.max_receive_message_length", settings.max_receive_message_length_mb * 1024 ** 2),
             ],
         )
 
@@ -69,6 +69,6 @@ class MLWorker:
                 await t
 
     async def stop(self):
-        await self.grpc_server.stop(5)
         if self.tunnel:
-            self.tunnel.stop()
+            await self.tunnel.stop()
+        await self.grpc_server.stop(3)

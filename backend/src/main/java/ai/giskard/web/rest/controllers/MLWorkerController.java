@@ -12,7 +12,11 @@ import com.google.common.util.concurrent.ListenableFuture;
 import com.google.protobuf.Empty;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.util.JsonFormat;
+import io.grpc.Status;
+import io.grpc.StatusRuntimeException;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -26,7 +30,7 @@ import java.util.concurrent.ExecutionException;
 @RequiredArgsConstructor
 @RequestMapping("/api/v2/ml-workers")
 public class MLWorkerController {
-
+    private final Logger log = LoggerFactory.getLogger(getClass());
     private final MLWorkerService mlWorkerService;
 
     @GetMapping()
@@ -58,8 +62,12 @@ public class MLWorkerController {
     public void stopWorker(boolean internal) {
         try (MLWorkerClient internalClient = mlWorkerService.createClientNoError(internal)) {
             internalClient.getBlockingStub().stopWorker(Empty.newBuilder().build());
-        } catch (Exception ignored) {
-            // TODO: check if there is a cleaner way to stop ML Worker without interrupting the current request
+        } catch (StatusRuntimeException e) {
+            // UNAVAILABLE = ML worker has been stopped (as expected)
+            if (!Status.UNAVAILABLE.getCode().equals(e.getStatus().getCode())) {
+                log.error("Failed to stop ML Worker: {}", internal, e);
+                throw e;
+            }
         }
     }
 
