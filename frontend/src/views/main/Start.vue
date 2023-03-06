@@ -11,7 +11,7 @@ const startRouteGuard = async (to, from, next) => {
   const userStore = useUserStore();
   const mainStore = useMainStore();
 
-  await userStore.checkLoggedIn();
+  await mainStore.fetchLicense();
 
   if (!mainStore.license?.active) {
     if (to.path !== '/setup') {
@@ -19,17 +19,20 @@ const startRouteGuard = async (to, from, next) => {
     } else {
       next();
     }
-  } else if (userStore.isLoggedIn) {
-    if (to.path === '/auth/login' || to.path === '/') {
-      next('/main/dashboard');
-    } else {
-      next();
-    }
-  } else if (userStore.isLoggedIn === false) {
-    if (to.path === '/' || (to.path as string).startsWith('/main')) {
-      next('/auth/login');
-    } else {
-      next();
+  } else {
+    await userStore.checkLoggedIn();
+    if (userStore.isLoggedIn) {
+      if (to.path === '/auth/login' || to.path === '/') {
+        next('/main/dashboard');
+      } else {
+        next();
+      }
+    } else if (userStore.isLoggedIn === false) {
+      if (to.path === '/' || (to.path as string).startsWith('/main') || (to.path as string).startsWith('/setup')) {
+        next('/auth/login');
+      } else {
+        next();
+      }
     }
   }
 };

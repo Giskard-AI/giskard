@@ -22,17 +22,21 @@ public class GiskardAuthFilter extends GenericFilterBean {
 
     private final JWTFilter jwtFilter;
     private final NoAuthFilter noAuthFilter;
+    private final NoLicenseAuthFilter noLicenseAuthFilter;
 
     public GiskardAuthFilter(LicenseService licenseService, TokenProvider tokenProvider) {
         this.licenseService = licenseService;
 
         this.jwtFilter = new JWTFilter(tokenProvider);
         this.noAuthFilter = new NoAuthFilter();
+        this.noLicenseAuthFilter = new NoLicenseAuthFilter();
     }
 
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
-        if (this.licenseService.hasFeature(FeatureFlag.AUTH)) {
+        if (!this.licenseService.getCurrentLicense().isActive()) {
+            this.noLicenseAuthFilter.doFilter(request, response, chain);
+        } else if (this.licenseService.hasFeature(FeatureFlag.AUTH)) {
             this.jwtFilter.doFilter(request, response, chain);
         } else {
             this.noAuthFilter.doFilter(request, response, chain);
