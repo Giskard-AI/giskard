@@ -37,7 +37,7 @@ const router = useRouter();
 
 function showExecution(execution: TestSuiteExecutionDTO) {
   router.push({
-    name: 'test-suite-new-execution', params: {
+    name: 'test-suite-execution', params: {
       suiteId: execution.suiteId.toString(10),
       executionId: execution.id.toString(10)
     }
