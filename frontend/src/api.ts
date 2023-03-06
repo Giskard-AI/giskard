@@ -189,9 +189,6 @@ export const api = {
     async logInGetToken(username: string, password: string) {
         return apiV2.post<unknown, JWTToken>(`/authenticate`, {username, password});
     },
-    async getFeatureFlags() {
-        return apiV2.get<unknown, unknown>(`/settings/featureFlags`);
-    },
     async getLicense() {
         return apiV2.get<unknown, LicenseDTO>(`/settings/license`);
     },

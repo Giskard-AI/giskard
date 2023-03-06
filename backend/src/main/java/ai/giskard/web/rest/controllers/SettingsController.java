@@ -6,7 +6,6 @@ import ai.giskard.ml.MLWorkerClient;
 import ai.giskard.repository.UserRepository;
 import ai.giskard.security.AuthoritiesConstants;
 import ai.giskard.service.GeneralSettingsService;
-import ai.giskard.service.ee.FeatureFlag;
 import ai.giskard.service.ee.License;
 import ai.giskard.service.ee.LicenseService;
 import ai.giskard.service.ml.MLWorkerService;
@@ -40,7 +39,6 @@ import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
 import static ai.giskard.security.AuthoritiesConstants.ADMIN;
@@ -114,11 +112,6 @@ public class SettingsController {
             .build();
     }
 
-    @GetMapping("/featureFlags")
-    public Map<FeatureFlag, Boolean> getFeatureFlags() {
-        return licenseService.getCurrentLicense().getFeatures();
-    }
-
     @GetMapping("/license")
     public LicenseDTO getLicense() {
         License currentLicense = licenseService.getCurrentLicense();
@@ -129,6 +122,7 @@ public class SettingsController {
             .userLimit(currentLicense.getUserLimit())
             .projectLimit(currentLicense.getProjectLimit())
             .active(currentLicense.isActive())
+            .features(currentLicense.getFeatures())
             .build();
     }
 

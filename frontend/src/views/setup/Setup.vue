@@ -27,7 +27,7 @@
                   <v-text-field label="Email" v-model="email" :error-messages="errors"></v-text-field>
                 </ValidationProvider>
                 <v-text-field label="Company name" v-model="companyName"></v-text-field>
-                <v-btn :loading="loading" text @click.prevent="submit">Submit</v-btn>
+                <v-btn :loading="loading" color="primary" @click.prevent="submit">Submit</v-btn>
               </v-form>
             </ValidationObserver>
           </v-card-text>
@@ -115,7 +115,6 @@ async function onFileUpdate(event) {
   formData.append('file', event.target.files[0]);
 
   await api.uploadLicense(formData);
-  await mainStore.fetchAppSettings();
   await mainStore.fetchLicense();
   done.value = true;
   setTimeout(() => redirectToMain(), 3000);

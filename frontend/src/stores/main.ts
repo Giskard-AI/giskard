@@ -1,5 +1,5 @@
 import {defineStore} from "pinia";
-import {AppConfigDTO, FeatureFlag, LicenseDTO} from "@/generated-sources";
+import {AppConfigDTO, LicenseDTO} from "@/generated-sources";
 import {IUserProfileMinimal} from "@/interfaces";
 import mixpanel from "mixpanel-browser";
 import {anonymize} from "@/utils";
@@ -20,7 +20,6 @@ interface State {
     license: LicenseDTO | null;
     coworkers: IUserProfileMinimal[];
     notifications: AppNotification[];
-    features: { [key in FeatureFlag]: boolean } | null;
 }
 
 export const useMainStore = defineStore('main', {
@@ -28,12 +27,11 @@ export const useMainStore = defineStore('main', {
         appSettings: null,
         license: null,
         coworkers: [],
-        notifications: [],
-        features: null
+        notifications: []
     }),
     getters: {
         authAvailable(state: State) {
-            return state.features?.AUTH;
+            return state.license?.features.AUTH;
         }
     },
     actions: {
@@ -80,11 +78,6 @@ export const useMainStore = defineStore('main', {
         },
         removeNotification(payload: AppNotification) {
             Vue.$toast.clear();
-        },
-        async fetchFeatures() {
-            const features = await api.getFeatureFlags();
-            //@ts-ignore
-            this.features = features;
         },
         async fetchAppSettings() {
             const response = await api.getUserAndAppSettings();
