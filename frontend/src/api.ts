@@ -199,7 +199,14 @@ export const api = {
         return apiV2.get<unknown, AppConfigDTO>(`/settings`);
     },
     async getMLWorkerSettings() {
-        return apiV2.get<unknown, MLWorkerInfoDTO[]>(`/settings/ml-worker-info`);
+        return apiV2.get<unknown, MLWorkerInfoDTO[]>(`/ml-workers`);
+    },
+    async stopMLWorker(internal: boolean) {
+        return apiV2.post<unknown, MLWorkerInfoDTO[]>(`/ml-workers/stop`, null, {
+            params: {
+                internal
+            }
+        });
     },
     async getRunningWorkerJobs() {
         return apiV2.get<unknown, JobDTO[]>(`/jobs/running`);
