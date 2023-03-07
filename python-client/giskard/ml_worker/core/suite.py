@@ -128,7 +128,7 @@ class Suite:
             for pname, p in t.provided_inputs.items():
                 if issubclass(type(p), Dataset):
                     if str(p.id) not in uploaded_uuids:
-                        p.save(client, project_key)
+                        p.upload(client, project_key)
                         uploaded_uuids.append(str(p.id))
 
                     inputs[pname] = TestInputDTO(name=pname, value=str(p.id))
