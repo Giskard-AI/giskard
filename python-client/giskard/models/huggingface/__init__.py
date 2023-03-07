@@ -11,7 +11,6 @@ from giskard.core.model import WrapperModel
 
 from transformers import pipeline, pipelines
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -38,7 +37,6 @@ class HuggingFaceModel(WrapperModel):
 
         self.huggingface_module = clf.__class__
         self.pipeline_task = clf.task if isinstance(clf, pipelines.Pipeline) else None
-
 
     @classmethod
     def load_clf(cls, local_path):
@@ -90,7 +88,8 @@ class HuggingFaceModel(WrapperModel):
 
             if self.model_postprocessing_function:
                 logger.warning("Your model output is logits. In Giskard, we expect the output to be probabilities."
-                               "Since you provided a model_postprocessing_function, we assume that you included softmax() yourself.", exc_info=True)
+                               "Since you provided a model_postprocessing_function, we assume that you included softmax() yourself.",
+                               exc_info=True)
             else:
                 predictions = special.softmax(logits, axis=1) if len(logits.shape) == 2 else special.softmax(logits)
 
