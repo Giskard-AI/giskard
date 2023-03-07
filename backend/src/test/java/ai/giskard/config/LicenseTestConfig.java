@@ -1,5 +1,6 @@
 package ai.giskard.config;
 
+import ai.giskard.service.ee.FeatureFlag;
 import ai.giskard.service.ee.License;
 import ai.giskard.service.ee.LicenseService;
 import org.mockito.Mockito;
@@ -18,9 +19,15 @@ public class LicenseTestConfig {
     public LicenseService licenseService() throws IOException {
         License mockLicense = new License();
         mockLicense.setFeatures(Collections.singletonList("AUTH"));
+        mockLicense.setActive(true);
 
         LicenseService mock = Mockito.mock(LicenseService.class);
         Mockito.when(mock.getCurrentLicense()).thenReturn(mockLicense);
+        Mockito.when(mock.hasFeature(Mockito.any(FeatureFlag.class)))
+            .thenAnswer(invocation -> {
+                FeatureFlag flag = invocation.getArgument(0);
+                return mockLicense.hasFeature(flag);
+            });
         return mock;
     }
 
