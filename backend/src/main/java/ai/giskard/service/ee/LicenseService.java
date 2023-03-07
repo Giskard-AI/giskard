@@ -55,7 +55,7 @@ public class LicenseService {
      * @return whether the provided flag is enabled or not
      */
     public boolean hasFeature(FeatureFlag flag) {
-        return this.currentLicense.hasFeature(flag);
+        return this.getCurrentLicense().hasFeature(flag);
     }
 
     public synchronized License getCurrentLicense() {
