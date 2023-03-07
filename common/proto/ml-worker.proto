@@ -22,6 +22,7 @@ service MLWorker {
   rpc echo(EchoMsg) returns (EchoMsg){}
   rpc filterDataset(stream FilterDatasetRequest) returns (stream FilterDatasetResponse) {}
   rpc generateTestSuite(GenerateTestSuiteRequest) returns (GenerateTestSuiteResponse) {}
+  rpc stopWorker(google.protobuf.Empty) returns (google.protobuf.Empty) {}
 }
 
 message MLWorkerInfoRequest{
