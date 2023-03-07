@@ -63,7 +63,8 @@ tasks {
 
     create<PythonTask>("test") {
         module = "pytest"
-        command = "-n auto -c ${file("pyproject.toml")} --cov=giskard tests --cov-report=xml"
+        // add "-n auto" to the pytest command to parallelize the execution
+        command = "-c ${file("pyproject.toml")} --cov=giskard tests --cov-report=xml"
     }
 
     idea {
