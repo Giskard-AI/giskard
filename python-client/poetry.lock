@@ -820,14 +820,6 @@ python-versions = ">=3.7"
 numpy = ">=1.14.5"
 
 [[package]]
-name = "httpretty"
-version = "1.1.4"
-description = "HTTP client mock for Python"
-category = "dev"
-optional = false
-python-versions = ">=3"
-
-[[package]]
 name = "huggingface-hub"
 version = "0.12.1"
 description = "Client library to download and publish models, datasets and other repos on the huggingface.co hub"
@@ -3397,7 +3389,7 @@ cffi = ["cffi (>=1.11)"]
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.7.5,<3.11"
-content-hash = "2ab4bf3b3824c166f9a769e51f21f45576be37e0278a2d4e11360c3a170b42be"
+content-hash = "0186d4fd85f5f169a917bc4b4642a4bb3fa5410380de3c0fc61145feb7de59c5"
 
 [metadata.files]
 absl-py = [
@@ -4089,9 +4081,6 @@ h5py = [
     {file = "h5py-3.8.0-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:49bc857635f935fa30e92e61ac1e87496df8f260a6945a3235e43a9890426866"},
     {file = "h5py-3.8.0-cp39-cp39-win_amd64.whl", hash = "sha256:5fd2252d1fc364ba0e93dd0b7089f4906b66805cb4e6aca7fa8874ac08649647"},
     {file = "h5py-3.8.0.tar.gz", hash = "sha256:6fead82f0c4000cf38d53f9c030780d81bfa0220218aee13b90b7701c937d95f"},
-]
-httpretty = [
-    {file = "httpretty-1.1.4.tar.gz", hash = "sha256:20de0e5dd5a18292d36d928cc3d6e52f8b2ac73daec40d41eb62dee154933b68"},
 ]
 huggingface-hub = [
     {file = "huggingface_hub-0.12.1-py3-none-any.whl", hash = "sha256:867586cc8543fe1bd43a219fedbea7d71690021ad80f0c46f35c4751069278d7"},
