@@ -1,6 +1,6 @@
 <template>
-  <div v-if="registry">
-    <p class="text-h4">{{ registry.tests[route.params.testId].name }}</p>
+  <div v-if="executions.length > 0">
+    <p class="text-h4">{{ registryByUuid[route.params.testUuid].name }}</p>
     <div style="height: 400px">
       <v-chart
           v-if="executions"
@@ -35,6 +35,7 @@ import {CanvasRenderer} from 'echarts/renderers';
 import {GridComponent} from 'echarts/components';
 import ECharts from 'vue-echarts';
 import {formatDate} from '@/filters';
+import {chain} from 'lodash';
 
 use([CanvasRenderer, LineChart, GridComponent]);
 Vue.component("v-chart", ECharts);
@@ -57,7 +58,7 @@ const graphOptions = computed(() => {
       .reverse()
       .map(execution => ({
         execution,
-        test: execution.results?.find(result => result.test.testId === route.params.testId)
+        test: execution.results?.find(result => result.test.testUuid === route.params.testUuid)
       }))
       .filter(execution => execution.test !== undefined) as ComparedTestExecution[];
 
@@ -108,6 +109,8 @@ function getThreshold(globalInput: { [key: string]: string }, fixedInput: { [key
     return '-';
   }
 }
+
+const registryByUuid = computed(() => chain(registry.value).keyBy('uuid').value());
 
 </script>
 

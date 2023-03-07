@@ -2,16 +2,16 @@ import inspect
 import logging
 import uuid
 from dataclasses import dataclass
-from typing import List, Any, Union, Dict, Mapping, Callable, Optional
+from typing import List, Any, Union, Dict, Mapping, Optional
 
 from giskard.client.dtos import TestSuiteDTO, TestInputDTO, SuiteTestDTO
 from giskard.client.giskard_client import GiskardClient
+from giskard.core.core import TestFunctionMeta
 from giskard.core.model import Model
 from giskard.ml_worker.core.dataset import Dataset
 from giskard.ml_worker.core.test_result import TestResult
-from giskard.ml_worker.core.test_runner import run_test
-from giskard.ml_worker.testing.registry.giskard_test import GiskardTest
-from giskard.ml_worker.testing.registry.registry import create_test_function_id, tests_registry, TestFunction
+from giskard.ml_worker.testing.registry.giskard_test import GiskardTest, Test, GiskardTestMethod
+from giskard.ml_worker.testing.registry.registry import tests_registry
 
 logger = logging.getLogger(__name__)
 
@@ -47,7 +47,7 @@ class ModelInput(SuiteInput):
 
 @dataclass
 class TestPartial:
-    test_func: Any
+    giskard_test: GiskardTest
     provided_inputs: Mapping[str, Any]
     test_identifier: Union[int, str]
 
@@ -85,7 +85,7 @@ class Suite:
 
         for test_partial in self.tests:
             test_params = self.create_test_params(test_partial, suite_run_args)
-            res[test_partial.test_identifier] = run_test(test_partial.test_func, test_params)
+            res[test_partial.test_identifier] = test_partial.giskard_test.set_params(**test_params).execute()
 
         result = single_binary_result(list(res.values()))
 
@@ -97,8 +97,13 @@ class Suite:
 
     @staticmethod
     def create_test_params(test_partial, kwargs):
+        if isinstance(test_partial.giskard_test, GiskardTestMethod):
+            available_params = inspect.signature(test_partial.giskard_test.data).parameters.items()
+        else:
+            available_params = inspect.signature(test_partial.giskard_test.set_params).parameters.items()
+
         test_params = {}
-        for pname, p in inspect.signature(test_partial.test_func).parameters.items():
+        for pname, p in available_params:
             if pname in test_partial.provided_inputs:
                 if isinstance(test_partial.provided_inputs[pname], SuiteInput):
                     test_params[pname] = kwargs[test_partial.provided_inputs[pname].name]
@@ -138,10 +143,14 @@ class Suite:
                 else:
                     inputs[pname] = TestInputDTO(name=pname, value=str(p))
 
-            suite_tests.append(SuiteTestDTO(testId=create_test_function_id(t.test_func), testInputs=inputs))
+            suite_tests.append(SuiteTestDTO(
+                testUuid=t.giskard_test.upload(client),
+                testInputs=inputs
+            ))
+
         return TestSuiteDTO(name=self.name, project_key=project_key, tests=suite_tests)
 
-    def add_test(self, test_fn: Union[Callable[[Any], Union[bool]], GiskardTest],
+    def add_test(self, test_fn: Test,
                  test_identifier: Optional[Union[int, str]] = None, **params):
         """
         Add a test to the Suite
@@ -151,12 +160,19 @@ class Suite:
           will be ignored if test_fn is an instance of GiskardTest
         :return: The current instance of the test Suite to allow chained call
         """
-        if isinstance(test_fn, GiskardTest):
-            params = {k: v for k, v in test_fn.__dict__.items() if v is not None}
-            test_fn = type(test_fn)
+        if isinstance(test_fn, GiskardTestMethod):
+            params = {k: v for k, v in test_fn.params.items() if v is not None}
+        elif isinstance(test_fn, GiskardTest):
+            params = {
+                k: test_fn.__dict__[k] for k, v
+                in inspect.signature(test_fn.set_params).parameters.items()
+                if test_fn.__dict__[k] is not None
+            }
+        else:
+            test_fn = GiskardTestMethod(test_fn)
 
         if test_identifier is None:
-            test_identifier = f"{test_fn.__module__}.{test_fn.__name__}"
+            test_identifier = f"{test_fn.meta.module}.{test_fn.meta.name}"
             if any([test for test in self.tests if test.test_identifier == test_identifier]):
                 test_identifier = f"{test_identifier}-{str(uuid.uuid4())}"
         elif any([test for test in self.tests if test.test_identifier == test_identifier]):
@@ -168,18 +184,23 @@ class Suite:
 
     def find_required_params(self):
         res = {}
+
         for test_partial in self.tests:
-            for p in inspect.signature(test_partial.test_func).parameters.values():
+            if isinstance(test_partial.giskard_test, GiskardTestMethod):
+                available_params = inspect.signature(test_partial.giskard_test.data).parameters.values()
+            else:
+                available_params = inspect.signature(test_partial.giskard_test.set_params).parameters.values()
+
+            for p in available_params:
                 if p.default == inspect.Signature.empty:
                     if p.name not in test_partial.provided_inputs:
                         res[p.name] = p.annotation
                     elif isinstance(test_partial.provided_inputs[p.name], SuiteInput):
                         if test_partial.provided_inputs[p.name].type != p.annotation:
                             raise ValueError(
-                                f"Test {test_partial.test_func.__name__} requires {p.name} input to "
-                                f"be {p.annotation.__name__} "
-                                f"but {test_partial.provided_inputs[p.name].type.__name__} was provided"
-                            )
+                                f'Test {test_partial.giskard_test.func.__name__} requires {p.name} input to '
+                                f'be {p.annotation.__name__} '
+                                f'but {test_partial.provided_inputs[p.name].type.__name__} was provided')
                         res[test_partial.provided_inputs[p.name].name] = p.annotation
         return res
 
@@ -192,7 +213,7 @@ class Suite:
 
         return self
 
-    def _add_test_if_suitable(self, test_func: TestFunction, inputs: List[SuiteInput]):
+    def _add_test_if_suitable(self, test_func: TestFunctionMeta, inputs: List[SuiteInput]):
         required_args = [arg for arg in test_func.args.values() if arg.default is None]
         input_dict: Dict[str, SuiteInput] = {
             i.name: i
@@ -222,13 +243,13 @@ class Suite:
                          if isinstance(dataset, DatasetInput) and dataset.target is None and dataset.target != ""]):
             return
 
-        self.add_test(test_func.fn, **suite_args)
+        self.add_test(GiskardTest.load(test_func.uuid, None, None).set_params(**suite_args))
 
-    def _contains_test(self, test: TestFunction):
-        return any(t.test_func == test for t in self.tests)
+    def _contains_test(self, test: TestFunctionMeta):
+        return any(t.giskard_test == test for t in self.tests)
 
 
-def contains_tag(func: TestFunction, tag: str):
+def contains_tag(func: TestFunctionMeta, tag: str):
     return any([t for t in func.tags if t.upper() == tag.upper()])
 
 
@@ -236,4 +257,4 @@ def format_test_result(result: Union[bool, TestResult]) -> str:
     if isinstance(result, TestResult):
         return f"{{{'passed' if result.passed else 'failed'}, metric={result.metric}}}"
     else:
-        return "passed" if result else "failed"
+        return 'passed' if result else 'failed'
