@@ -20,7 +20,7 @@ MESSAGE_TYPE = Union[Message, Iterable[Message]]
 
 logger = logging.getLogger(__name__)
 
-pool = ThreadPoolExecutor()
+pool = ThreadPoolExecutor(thread_name_prefix="ml_worker_thread")
 
 
 class ErrorInterceptor(grpc.aio.ServerInterceptor):
@@ -38,9 +38,9 @@ class ErrorInterceptor(grpc.aio.ServerInterceptor):
         await context.abort_with_status(rpc_status.to_status(rich_status))
 
     async def intercept_service(
-        self,
-        continuation: Callable[[grpc.HandlerCallDetails], Awaitable[grpc.RpcMethodHandler]],
-        handler_call_details: grpc.HandlerCallDetails,
+            self,
+            continuation: Callable[[grpc.HandlerCallDetails], Awaitable[grpc.RpcMethodHandler]],
+            handler_call_details: grpc.HandlerCallDetails,
     ) -> grpc.RpcMethodHandler:
         def _wrapper(behavior):
             @functools.wraps(behavior)
