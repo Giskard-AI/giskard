@@ -1,20 +1,12 @@
 import email
-import glob
-import os
-import requests
-import tarfile
-from pathlib import Path
-
 from collections import defaultdict
 import pandas as pd
 from dateutil import parser
 from transformers import BertTokenizer, BertForSequenceClassification
-
 from giskard import HuggingFaceModel, Dataset
-
 import tests.utils
-
 from scipy import special
+import email_classification_utils
 
 idx_to_cat = {
     1: 'REGULATION',
@@ -53,15 +45,7 @@ def get_labels(filename):
 
 def test_email_classification_bert_custom_model():
 
-    url = "http://bailando.sims.berkeley.edu/enron/enron_with_categories.tar.gz"
-    response = requests.get(url, stream=True)
-    file = tarfile.open(fileobj=response.raw, mode="r|gz")
-    out_path = Path.home() / ".giskard"
-    os.makedirs(out_path, exist_ok=True)
-    file.extractall(path=out_path)
-    enron_path = str(out_path / "enron_with_categories")
-
-    email_files = [f.replace('.cats', '') for f in glob.glob(enron_path+'/*/*.cats')]
+    email_files = email_classification_utils.get_email_files()
 
     columns_name = ['Target', 'Subject', 'Content', 'Week_day', 'Year', 'Month', 'Hour', 'Nb_of_forwarded_msg']
 
