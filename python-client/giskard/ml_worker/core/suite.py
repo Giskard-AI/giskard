@@ -94,7 +94,7 @@ class Suite:
             inputs = {}
             for pname, p in t.provided_inputs.items():
                 if issubclass(type(p), Dataset) or issubclass(type(p), Model):
-                    saved_id = p.save(client, project_key)
+                    saved_id = p.upload(client, project_key)
                     inputs[pname] = TestInputDTO(name=pname, value=saved_id)
                 elif isinstance(p, SuiteInput):
                     inputs[pname] = TestInputDTO(name=pname, value=p.name, is_alias=True)
