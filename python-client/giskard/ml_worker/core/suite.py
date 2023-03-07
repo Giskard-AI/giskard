@@ -127,9 +127,9 @@ class Suite:
             inputs = {}
             for pname, p in t.provided_inputs.items():
                 if issubclass(type(p), Dataset) or issubclass(type(p), Model):
-                    if str(p.uuid) not in uploaded_uuids:
+                    if str(p.id) not in uploaded_uuids:
                         p.upload(client, project_key)
-                    inputs[pname] = TestInputDTO(name=pname, value=p.uuid)
+                    inputs[pname] = TestInputDTO(name=pname, value=p.id)
                 elif isinstance(p, SuiteInput):
                     inputs[pname] = TestInputDTO(name=pname, value=p.name, is_alias=True)
                 else:
