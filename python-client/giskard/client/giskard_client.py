@@ -82,7 +82,7 @@ class GiskardClient:
             server_settings = self._session.get("settings/ml-worker-connect").json()
             self.analytics.init(server_settings)
         except Exception:  # noqa
-            logger.warning("Failed to fetch server settings", exc_info=True)
+            logger.warning("Failed to fetch server settings: ", exc_info=True)
         self.analytics.track("Init GiskardClient", {"client version": giskard.__version__})
 
     @property
