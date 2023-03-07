@@ -60,13 +60,13 @@
 
 import {computed, onMounted, ref} from 'vue';
 import {api} from '@/api';
-import {SuiteTestDTO, TestDefinitionDTO, TestSuiteDTO} from '@/generated-sources';
+import {SuiteTestDTO, TestFunctionDTO, TestSuiteDTO} from '@/generated-sources';
 import TestInputListSelector from '@/components/TestInputListSelector.vue';
 import {chain, isNull} from 'lodash';
 
 const {projectId, test} = defineProps<{
   projectId: number,
-  test: TestDefinitionDTO
+  test: TestFunctionDTO
 }>();
 
 const dialog = ref<boolean>(false);
@@ -82,7 +82,7 @@ async function loadData() {
 
 
 const inputs = computed(() =>
-    chain(test.arguments)
+    chain(test.args)
         .keyBy('name')
         .mapValues('type')
         .value()
@@ -90,14 +90,14 @@ const inputs = computed(() =>
 
 async function submit(close) {
   const suiteTest: SuiteTestDTO = {
-    testId: test.id,
+    testUuid: test.uuid,
     testInputs: chain(testInputs.value)
         .omitBy(isNull)
         .mapValues((value, name) => ({
-            name,
-            value,
-            isAlias: false
-          }))
+          name,
+          value,
+          isAlias: false
+        }))
         .value()
   }
 
