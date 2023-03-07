@@ -29,18 +29,18 @@ def test_upload_df(diabetes_dataset: Dataset, diabetes_dataset_with_target: Data
 
     client = GiskardClient(url, token)
 
-    saved_id = diabetes_dataset_with_target.save(client, "test-project")
+    saved_id = diabetes_dataset_with_target.upload(client, "test-project")
     tests.utils.match_model_id(saved_id)
     tests.utils.match_url_patterns(httpretty.latest_requests(), artifact_url_pattern)
     tests.utils.match_url_patterns(httpretty.latest_requests(), datasets_url_pattern)
 
     with pytest.raises(Exception) as e:
-        diabetes_dataset.save(client, "test-project")
+        diabetes_dataset.upload(client, "test-project")
     assert e.match("target column is not present in the dataset")
 
     with pytest.raises(Exception) as e:
         diabetes_dataset.feature_types = {"test": "test"}
-        diabetes_dataset.save(client, "test-project")
+        diabetes_dataset.upload(client, "test-project")
     assert e.match("target column is not present in the dataset")
 
 
