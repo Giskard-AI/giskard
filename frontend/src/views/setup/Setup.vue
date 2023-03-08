@@ -10,15 +10,14 @@
         <v-stepper v-model="step" vertical>
           <v-stepper-step step="1" :complete="step > 1">
             Request a license
-            <!--            Set green-->
-            <small v-if="licenseRequestSubmitted">Your license request was submitted, please check your email.</small>
+            <small v-if="licenseRequestSubmitted" style="color: green;">Your license request was submitted, please check your email.</small>
           </v-stepper-step>
           <v-stepper-content step="1">
             <p>
               Giskard server requires a license. A <span class="font-weight-bold">free</span> license can be obtained by
               registered using the form below. The license will be sent by email.
             </p>
-            <p>If you already have one, you can press the skip button.</p>
+            <p>If you already have one, you can <a @click="step = 2">click here</a>.</p>
             <ValidationObserver ref="observer" v-slot="{ invalid }">
               <v-form @keyup.enter="submit" style="max-width: 500px">
                 <ValidationProvider name="First name" mode="eager" rules="required" v-slot="{errors}">
@@ -46,8 +45,6 @@
                             label="Add me to your newsletter and keep me updated about Giskard."></v-checkbox>
 
                 <v-btn :loading="loading" color="primary" @click.prevent="submit">Submit</v-btn>
-                <!--                Delete this-->
-                <v-btn text @click="step = 2">Skip</v-btn>
               </v-form>
             </ValidationObserver>
           </v-stepper-content>
@@ -69,7 +66,8 @@
             <p>Your Giskard setup is now complete. You can now refresh this page or click the button below to open
               Giskard.</p>
 
-            <v-checkbox label="Agree to send anonymous analytics to Giskard."></v-checkbox>
+            <v-checkbox dense label="Send anonymous usage reports. This information helps us improve the product and fix
+                  bugs sooner. 🐞" @change="onTrackingChange"></v-checkbox>
             <v-btn color="primary" large @click="redirectToMain()">Launch Giskard</v-btn>
           </v-stepper-content>
         </v-stepper>
@@ -85,6 +83,7 @@ import axios, {AxiosError} from "axios";
 import {useMainStore} from "@/stores/main";
 import {api} from "@/api";
 import {useRouter} from "vue-router/composables";
+import mixpanel from "mixpanel-browser";
 
 const router = useRouter();
 
@@ -152,6 +151,15 @@ async function onFileUpdate(event) {
 
 function redirectToMain() {
   router.push("/main/dashboard");
+}
+
+function onTrackingChange(val: boolean) {
+  // TODO: When we arrive here, the setup is done. As a logged in user, I can't write to the backend to save this setting?
+  if (val) {
+    mixpanel.opt_in_tracking();
+  } else {
+    mixpanel.opt_out_tracking();
+  }
 }
 
 </script>
