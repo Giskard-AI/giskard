@@ -17,9 +17,9 @@
               Giskard server requires a license. A <span class="font-weight-bold">free</span> license can be obtained by
               registered using the form below. The license will be sent by email.
             </p>
-            <p>If you already have one, you can <a @click="step = 2">click here</a>.</p>
+            <p>If you already have one, you can <a @click="step = 2">upload it</a>.</p>
             <ValidationObserver ref="observer" v-slot="{ invalid }">
-              <v-form @keyup.enter="submit" style="max-width: 500px">
+              <v-form @keyup.enter="submit" style="max-width: 500px" class="pl-2">
                 <ValidationProvider name="First name" mode="eager" rules="required" v-slot="{errors}">
                   <v-text-field label="First name*" v-model="firstName" :error-messages="errors"
                                 required></v-text-field>
@@ -28,23 +28,23 @@
                   <v-text-field label="Last name*" v-model="lastName" :error-messages="errors"></v-text-field>
                 </ValidationProvider>
                 <ValidationProvider name="Email" mode="eager" rules="required|email" v-slot="{errors}">
-                  <v-text-field label="Email*" v-model="email" :error-messages="errors"></v-text-field>
+                  <v-text-field label="Email*" v-model="email" :error-messages="errors" type="email"></v-text-field>
                 </ValidationProvider>
                 <v-text-field label="Company name" v-model="companyName"></v-text-field>
                 <ValidationProvider name="Agreement with the privacy policy" mode="eager"
                                     :rules="{ required: { allowFalse: false } }"
                                     v-slot="{errors}">
-                  <v-checkbox v-model="termsOfServiceAgree" dense :error-messages="errors">
+
+                  <v-checkbox v-model="termsOfServiceAgree" dense :error-messages="errors" >
                     <template v-slot:label>
-                      You agree with our&nbsp;<a href="https://giskard-ai.github.io/giskard-privacy/policy.html">privacy
-                      policy</a>.
+                      I agree to the the &nbsp<a @click.stop href="https://giskard-ai.github.io/giskard-privacy/policy.html">privacy
+                      policy</a>
                     </template>
                   </v-checkbox>
                 </ValidationProvider>
                 <v-checkbox v-model="newsLetterAgree" dense
-                            label="Add me to your newsletter and keep me updated about Giskard."></v-checkbox>
-
-                <v-btn :loading="loading" color="primary" @click.prevent="submit">Submit</v-btn>
+                            label="I agree to receive newsletters and updates about Giskard"></v-checkbox>
+                <v-btn :loading="loading" color="primary" @click.prevent="submit" :disabled="invalid">Submit</v-btn>
               </v-form>
             </ValidationObserver>
           </v-stepper-content>
