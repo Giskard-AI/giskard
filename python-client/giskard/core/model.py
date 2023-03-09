@@ -294,33 +294,47 @@ class WrapperModel(Model, ABC):
         self.model_postprocessing_function = model_postprocessing_function
 
     def _postprocess(self, raw_prediction):
-        raw_prediction = np.asarray(raw_prediction)
+        raw_prediction = np.array(raw_prediction)
+
+        if raw_prediction.ndim > 2 and self.is_classification:
+            logger.warning(
+                f"\nThe output of your clf has {raw_prediction.ndim} dimensions but only 2 are expected. \n"
+                "We will attempt to squeeze the inner dimensions just in case of dummy dimensions.",
+                exc_info=True
+            )
+            for i in np.arange(raw_prediction.ndim-2, 0, -1):
+                if raw_prediction.shape[i] == 1:
+                    raw_prediction = raw_prediction.squeeze(i)
+
+            if raw_prediction.ndim > 2:
+                raise ValueError(
+                    f"The squeeze did not resolve the problem, the output of your clf still has {raw_prediction.ndim} dimensions and not 2."
+                )
 
         # Ensure this is 2-dimensional
-        if raw_prediction.ndim <= 1:
+        if raw_prediction.ndim <= 1 and self.is_classification:
             raw_prediction = raw_prediction.reshape(-1, 1)
 
         if self.is_binary_classification and raw_prediction.shape[1] == 1:
-            # E.g. for binary classification, prediction should be of the form `(p, 1 - p)`.
-            # If a binary classifier returns a single prediction `p`, we try to infer the second class
-            # prediction as `1 - p`.
-            raw_prediction = np.stack([raw_prediction, 1 - raw_prediction], axis=1)
-
             logger.warning(
-                f"\nYour binary classification model prediction is of the shape {raw_prediction.shape}. \n" + \
-                f"In Giskard we expect the shape {(raw_prediction.shape[0], 2)} for binary classification models. \n" + \
-                "We automatically inferred the second class prediction but please make sure that \n" + \
-                "the probability output of your model corresponds to the first label of the \n" + \
+                f"\nYour binary classification model prediction is of the shape {raw_prediction.shape}. \n"
+                f"In Giskard we expect the shape {(raw_prediction.shape[0], 2)} for binary classification models. \n"
+                "We automatically inferred the second class prediction but please make sure that \n"
+                "the probability output of your model corresponds to the first label of the \n"
                 f"classification_labels ({self.meta.classification_labels}) you provided us with.",
                 exc_info=True
             )
+
+            # E.g. for binary classification, prediction should be of the form `(p, 1 - p)`.
+            # If a binary classifier returns a single prediction `p`, we try to infer the second class
+            # prediction as `1 - p`.
+            raw_prediction = np.append(raw_prediction, 1-raw_prediction, axis=1)
 
         # User specified a custom postprocessing function
         if self.model_postprocessing_function:
             raw_prediction = self.model_postprocessing_function(raw_prediction)
 
         return raw_prediction
-
 
     def predict_df(self, df):
         if self.data_preprocessing_function:
