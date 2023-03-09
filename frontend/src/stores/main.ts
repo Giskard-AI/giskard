@@ -73,7 +73,7 @@ export const useMainStore = defineStore('main', {
         addNotification(payload: AppNotification) {
             Vue.$toast(payload.content, {
                 closeButton: false,
-                icon: payload.showProgress ? 'notification-spinner fas fa-spinner fa-spin' : true
+                icon: payload.showProgress ? 'notification-spinner fas fa-spinner fa-spin' : true,
             });
         },
         removeNotification(payload: AppNotification) {

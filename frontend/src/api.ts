@@ -50,6 +50,7 @@ import router from "@/router";
 import mixpanel from "mixpanel-browser";
 import {useUserStore} from "@/stores/user";
 import AdminUserDTOWithPassword = AdminUserDTO.AdminUserDTOWithPassword;
+import {SetupDTO} from "@/generated-sources/ai/giskard/web/dto/setup-dto";
 
 function jwtRequestInterceptor(config) {
     // Do something before request is sent
@@ -464,5 +465,11 @@ export const api = {
                 'Content-Type': 'multipart/form-data'
             }
         })
+    },
+    async finalizeSetup(allowAnalytics: boolean, license: string) {
+        return apiV2.post<SetupDTO, unknown>(`/setup`, {
+            allowAnalytics: allowAnalytics,
+            license: license
+        });
     }
 };
