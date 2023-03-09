@@ -38,7 +38,7 @@
 
                   <v-checkbox v-model="termsOfServiceAgree" dense :error-messages="errors">
                     <template v-slot:label>
-                      I agree to the the &nbsp<a @click.stop
+                      I agree to the &nbsp<a @click.stop
                                                  href="https://giskard-ai.github.io/giskard-privacy/policy.html">privacy
                       policy</a>
                     </template>
@@ -68,7 +68,7 @@
             <p>Your Giskard setup is now complete. You can now refresh this page or click the button below to open
               Giskard.</p>
 
-            <v-checkbox dense @change="onTrackingChange" class="pl-2">
+            <v-checkbox dense v-model="analyticsAgree" class="pl-2">
               <template v-slot:label>
                 <div>
                   <div>I agree to send anonymous usage reports</div>
@@ -76,7 +76,7 @@
                 </div>
               </template>
             </v-checkbox>
-            <v-btn color="primary" large @click="redirectToMain()">Launch Giskard</v-btn>
+            <v-btn color="primary" large @click="finalizeSetup()">Launch Giskard</v-btn>
           </v-stepper-content>
         </v-stepper>
       </v-col>
@@ -107,10 +107,13 @@ const email = ref<string>("");
 const companyName = ref<string>("");
 const termsOfServiceAgree = ref<boolean>(false);
 const newsLetterAgree = ref<boolean>(false);
+const analyticsAgree = ref<boolean>(false);
 
 const licenseRequestSubmitted = ref<boolean>(false);
 
 const observer = ref<any | null>(null);
+
+let licenseContents: string = "";
 
 async function submit() {
   observer.value.validate().then(async (passed) => {
@@ -149,25 +152,35 @@ async function onFileUpdate(event) {
     return;
   }
 
-  let formData = new FormData();
-  formData.append('file', event.target.files[0]);
+  const reader = new FileReader();
 
-  await api.uploadLicense(formData);
-  await mainStore.fetchLicense();
-  step.value = 3;
+  reader.onload = (ev) => {
+    licenseContents = <string>ev.target.result;
+
+    // Simple check to make sure the file uploaded is the right one.
+    if (licenseContents.startsWith("-----BEGIN LICENSE FILE-----")) {
+      step.value = 3;
+    } else {
+      debugger;
+      mainStore.addNotification({
+        color: 'error',
+        content: 'License file format is not valid.'
+      });
+    }
+  };
+
+  reader.readAsText(event.target.files[0]);
 }
 
-function redirectToMain() {
-  router.push("/main/dashboard");
-}
-
-function onTrackingChange(val: boolean) {
-  // TODO: When we arrive here, the setup is done. As a logged in user, I can't write to the backend to save this setting?
-  if (val) {
+async function finalizeSetup() {
+  if (analyticsAgree.value) {
     mixpanel.opt_in_tracking();
   } else {
     mixpanel.opt_out_tracking();
   }
+
+  await api.finalizeSetup(analyticsAgree.value, licenseContents);
+  await router.push("/main/dashboard");
 }
 
 </script>
