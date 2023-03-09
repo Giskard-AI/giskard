@@ -5,10 +5,11 @@
         width="650"
     >
       <template v-slot:activator="{ on, attrs }">
-        <v-btn small tile class='mx-1' @click='openPopup'
+        <v-btn tile class='mx-1' @click='openPopup'
                :loading='running'
                :disabled='running'
                v-bind="attrs"
+               color="primary"
                v-on="on">
           <v-icon>arrow_right</v-icon>
           Run test suite
