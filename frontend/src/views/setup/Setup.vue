@@ -52,7 +52,7 @@
           </v-stepper-content>
 
           <v-stepper-step step="2" :complete="step > 2">
-            Upload license file
+            Select license file
           </v-stepper-step>
           <v-stepper-content step="2">
             <p>You can upload your license file by pressing the button below.</p>
@@ -72,7 +72,8 @@
               <template v-slot:label>
                 <div>
                   <div>I agree to send anonymous usage reports</div>
-                  <div class="caption">This information helps us improve the product and fix bugs 🐞 sooner.</div>
+                  <div class="caption">This information helps us improve the product and fix bugs 🐞 sooner.
+                     This parameter can be later changed in the settings</div>
                 </div>
               </template>
             </v-checkbox>
