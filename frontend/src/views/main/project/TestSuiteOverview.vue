@@ -32,7 +32,7 @@
                     label="Search" type="text" dense></v-text-field>
     </div>
     <v-list-item-group>
-      <template v-for="({result, test}) in filteredTest">
+      <template v-for="({result, test, suiteTest}) in filteredTest">
         <v-divider/>
         <v-list-item :value="result">
           <v-list-item-icon>
@@ -49,7 +49,6 @@
                   <v-tooltip v-if="result !== undefined && !result.passed">
                     <template v-slot:activator="{ on, attrs }">
                       <v-btn
-                          class="ma-2"
                           text
                           icon
                           color="green"
@@ -61,7 +60,14 @@
                     </template>
                     <span>Debugger tools are not yet available</span>
                   </v-tooltip>
-
+                  <v-btn
+                      text
+                      icon
+                      color="error"
+                      @click.stop="removeTest(suiteTest)"
+                  >
+                    <v-icon>delete</v-icon>
+                  </v-btn>
                 </div>
               </div>
             </v-list-item-title>
@@ -79,11 +85,15 @@
 import {useTestSuiteStore} from '@/stores/test-suite';
 import {storeToRefs} from 'pinia';
 import {computed, ref} from 'vue';
-import {SuiteTestExecutionDTO, TestFunctionDTO, TestResult} from '@/generated-sources';
+import {SuiteTestDTO, SuiteTestExecutionDTO, TestFunctionDTO, TestResult} from '@/generated-sources';
 import {Colors} from '@/utils/colors';
 import {chain} from 'lodash';
+import {$vfm} from 'vue-final-modal';
+import ConfirmModal from '@/views/main/project/modals/ConfirmModal.vue';
+import {api} from '@/api';
 
 const {executions, registry, models, datasets, suite} = storeToRefs(useTestSuiteStore());
+const testSuiteStore = useTestSuiteStore();
 
 const statusFilterOptions = [{
   label: 'All',
@@ -154,6 +164,24 @@ function getIcon(result?: SuiteTestExecutionDTO): string {
   } else {
     return 'close';
   }
+}
+
+async function removeTest(suiteTest: SuiteTestDTO) {
+  await $vfm.show({
+    component: ConfirmModal,
+    bind: {
+      title: 'Remove test',
+      text: `Are you sure that you want to remove this test from the test suite?`,
+      isWarning: true
+    },
+    on: {
+      async confirm(close) {
+        await api.removeTest(suite.value!.projectKey!, suite.value!.id!, suiteTest.id!);
+        await testSuiteStore.reload();
+        close();
+      }
+    }
+  });
 }
 </script>
 
