@@ -10,7 +10,8 @@
         <v-stepper v-model="step" vertical>
           <v-stepper-step step="1" :complete="step > 1">
             Request a license
-            <small v-if="licenseRequestSubmitted" style="color: green;">Your license request was submitted, please check your email.</small>
+            <small v-if="licenseRequestSubmitted" style="color: green;">Your license request was submitted, please check
+              your email.</small>
           </v-stepper-step>
           <v-stepper-content step="1">
             <p>
@@ -35,9 +36,10 @@
                                     :rules="{ required: { allowFalse: false } }"
                                     v-slot="{errors}">
 
-                  <v-checkbox v-model="termsOfServiceAgree" dense :error-messages="errors" >
+                  <v-checkbox v-model="termsOfServiceAgree" dense :error-messages="errors">
                     <template v-slot:label>
-                      I agree to the the &nbsp<a @click.stop href="https://giskard-ai.github.io/giskard-privacy/policy.html">privacy
+                      I agree to the the &nbsp<a @click.stop
+                                                 href="https://giskard-ai.github.io/giskard-privacy/policy.html">privacy
                       policy</a>
                     </template>
                   </v-checkbox>
@@ -66,8 +68,14 @@
             <p>Your Giskard setup is now complete. You can now refresh this page or click the button below to open
               Giskard.</p>
 
-            <v-checkbox dense label="Send anonymous usage reports. This information helps us improve the product and fix
-                  bugs sooner. 🐞" @change="onTrackingChange"></v-checkbox>
+            <v-checkbox dense @change="onTrackingChange" class="pl-2">
+              <template v-slot:label>
+                <div>
+                  <div>I agree to send anonymous usage reports</div>
+                  <div class="caption">This information helps us improve the product and fix bugs 🐞 sooner.</div>
+                </div>
+              </template>
+            </v-checkbox>
             <v-btn color="primary" large @click="redirectToMain()">Launch Giskard</v-btn>
           </v-stepper-content>
         </v-stepper>
