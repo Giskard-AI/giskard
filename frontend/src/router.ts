@@ -148,7 +148,7 @@ export default new Router({
                                             }
                                         },
                                         {
-                                            path: 'execution/compare',
+                                            path: 'compare-execution',
                                             name: 'test-suite-compare-executions',
                                             component: () => import('./views/main/project/TestSuiteCompareExecutions.vue'),
                                             props: (route) => {
