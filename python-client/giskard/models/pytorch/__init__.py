@@ -94,69 +94,39 @@ class PyTorchModel(MLFlowBasedModel):
                                   path=local_path,
                                   mlflow_model=mlflow_meta)
 
-    def get_torch_prediction(self, data):
+    def _get_predictions(self, data):
         with torch.no_grad():
-            return self.clf(data).detach().squeeze(0).numpy()
-
-    def get_torch_prediction_unpack_input(self, data):
-        with torch.no_grad():
-            return self.clf(*data).detach().squeeze(0).numpy()
-
-    def check_if_one_entry_prediction_is_valid(self, data, to_unpack):
-        for entry in data:
-            try:
-                if to_unpack:
-                    self.get_torch_prediction_unpack_input(entry)
-                else:
-                    self.get_torch_prediction(entry)
-            except ValueError as ve:
-                raise ValueError(
-                    "Calling clf on one element of your dataset or your data_preprocessing_function output fails.") from ve
-            break
-
-    def get_torch_predictions_from_iterable(self, data):
-        to_unpack = models_utils.is_data_unpackable(data)
-        self.check_if_one_entry_prediction_is_valid(data, to_unpack)
-        predictions = []
-        if to_unpack:
-            for entry in data:
-                predictions.append(self.get_torch_prediction_unpack_input(entry))
-        else:
-            for entry in data:
-                predictions.append(self.get_torch_prediction(entry))
-        return predictions
+            return [self.clf(*entry).detach().squeeze(0).numpy() for entry in _map_to_tuple(data)]
 
     def clf_predict(self, data):
         self.clf.to(self.device)
         self.clf.eval()
 
-        # Use isinstance to check if o is an instance of X or any subclass of X
-        # Use is to check if the type of o is exactly X, excluding subclasses of X
+        # Fault tolerance: try to convert to the right format in special cases
         if isinstance(data, pd.DataFrame):
             data = TorchMinimalDataset(data, str_to_torch_dtype[self.torch_dtype])
         elif isinstance(data, DataLoader):
-            if not isinstance(data.dataset, collections.defaultdict):
-                data = data.dataset
-            else:
-                raise ValueError(f"We tried to infer the torch.utils.data.Dataset from your DataLoader. \n \
-                                   The type we found was {data.dataset} which we don't support. Please provide us \n \
-                                   with a different iterable as output of your data_preprocessing_function.")
+            data = _get_dataset_from_dataloader(data)
 
-        elif not models_utils.check_if_data_is_iterable(data):
-            try:
-                return self.get_torch_prediction(data)
-            except ValueError as ve:
-                raise ValueError(f"The data exposed to your clf is of type={type(data)}.\n \
-                                We attempted to evaluate your clf with this data but it failed. \
-                                Make sure that your data or your data_preprocessing_function outputs one of the following: \n \
-                                - pandas.DataFrame \n \
-                                - torch.utils.data.Dataset \n \
-                                - torch.utils.data.DataLoader \n \
-                                - iterable with elements that are compatible with your clf") from ve
+        # Create the data iterator
+        try:
+            data_iter = iter(data)
+        except TypeError as err:
+            raise ValueError(
+                f"The data exposed to your clf must be iterable (instead, we got type={type(data)})."
+                "Make sure that your data or your `data_preprocessing_function` outputs one of the following:\n"
+                "- pandas.DataFrame\n- torch.utils.data.Dataset\n- iterable with elements that are compatible with your clf"
+            ) from err
 
-        predictions = self.get_torch_predictions_from_iterable(data)
+        # Get a list of model predictions
+        try:
+            predictions = self._get_predictions(data)
+        except ValueError as err:
+            raise ValueError(
+                "Calling clf on one element of your dataset or your `data_preprocessing_function` output fails."
+            ) from err
 
-        return np.array(predictions)
+        return np.asarray(predictions)
 
     def save_pytorch_meta(self, local_path):
         with open(Path(local_path) / "giskard-model-pytorch-meta.yaml", "w") as f:
@@ -183,3 +153,18 @@ class PyTorchModel(MLFlowBasedModel):
             raise ValueError(
                 f"Cannot load model ({cls.__module__}.{cls.__name__}), "
                 f"{pytorch_meta_file} file not found")
+
+
+def _get_dataset_from_dataloader(dl: DataLoader):
+    if not isinstance(dl.dataset, collections.defaultdict):
+        return dl.dataset
+
+    raise ValueError(
+        f"We tried to infer the torch.utils.data.Dataset from your DataLoader. \n \
+                    The type we found was {dl.dataset} which we don't support. Please provide us \n \
+                    with a different iterable as output of your data_preprocessing_function."
+    )
+
+
+def _map_to_tuple(data):
+    return map(lambda x: x if isinstance(x, tuple) else (x,), data)
