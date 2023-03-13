@@ -63,16 +63,17 @@
                     </tbody>
                   </template>
                 </v-simple-table>
-                <div class="d-flex flex-row-reverse pt-4">
+                <div class="d-flex flex-column align-end pt-4">
                   <v-btn
                       @click="() => suiteInputs.push({name: '', type: availableTypes[0], suiteInputType: 'suite'})">
                     <v-icon>add</v-icon>
                     Add input
                   </v-btn>
-                  <v-btn v-if="!showAdvancedSettings" class="mr-4"
+                  <v-btn v-if="!showAdvancedSettings" class="mt-4"
+                         text
                          @click="() => showAdvancedSettings = true">
-                    <v-icon>settings</v-icon>
-                    Advanced settings
+                    <v-icon>add_link</v-icon>
+                    Create shared inputs
                   </v-btn>
                 </div>
                 <h2 v-if="showAdvancedSettings">Shared inputs</h2>
