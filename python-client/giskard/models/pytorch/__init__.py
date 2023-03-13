@@ -13,7 +13,6 @@ from torch.utils.data import Dataset as torch_dataset
 from giskard.core.core import SupportedModelTypes
 from giskard.core.model import MLFlowBasedModel
 
-import giskard.models.utils as models_utils
 from ..utils import map_to_tuples
 
 # There's no casting currently from str to torch.dtype
