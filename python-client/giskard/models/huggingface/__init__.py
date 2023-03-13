@@ -101,7 +101,4 @@ class HuggingFaceModel(WrapperModel):
             _predictions = [{p["label"]: p["score"] for p in pl} for pl in self.clf(list(data), top_k=None)]
             return [[p[l] for l in self.meta.classification_labels] for p in _predictions]
 
-        if isinstance(data, dict):
-            return self.clf(**data)
-
-        return self.clf(data)
+        return self.clf(**data)
