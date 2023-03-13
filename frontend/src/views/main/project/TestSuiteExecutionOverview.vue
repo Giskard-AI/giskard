@@ -1,18 +1,29 @@
 <template>
   <v-container>
-    <h2>
-      <v-icon :color="props.execution.result === TestResult.PASSED ? Colors.PASS : Colors.FAIL" size="40">{{
+    <div class="d-flex">
+      <v-icon :color="props.execution.result === TestResult.PASSED ? Colors.PASS : Colors.FAIL" size="64">{{
           testResultIcon
         }}
       </v-icon>
-      Test Suite -
-      <span
-          v-if="props.execution.result === TestResult.ERROR">An error arose during the execution</span>
-      <span v-else-if="filteredTest.length === 0">No test match the current filter</span>
-      <span v-else>success ratio {{ filteredTest.filter(({result}) => result !== undefined && result.passed).length }} / {{
-          filteredTest.filter(({result}) => result !== undefined).length
-        }}</span>
-    </h2>
+      <div>
+        <h2>
+
+          Test Suite
+        </h2>
+        <h4
+            v-if="props.execution.result === TestResult.ERROR">An error arose during the execution</h4>
+        <h4 v-else-if="filteredTest.length === 0">No test match the current filter</h4>
+        <h4 v-else>Success ratio {{ filteredTest.filter(({result}) => result !== undefined && result.passed).length }} /
+          {{
+            filteredTest.filter(({result}) => result !== undefined).length
+          }}</h4>
+      </div>
+      <div class="flex-grow-1"/>
+      <v-btn icon @click="openSettings" color="secondary">
+        <v-icon left>settings</v-icon>
+      </v-btn>
+    </div>
+
     <div class="d-flex mt-4 mb-4">
       <v-select
           v-model="statusFilter"
@@ -104,11 +115,12 @@ import {$vfm} from 'vue-final-modal';
 import SuiteTestInfoModal from '@/views/main/project/modals/SuiteTestInfoModal.vue';
 import ConfirmModal from '@/views/main/project/modals/ConfirmModal.vue';
 import {api} from '@/api';
+import CreateTestSuiteModal from '@/views/main/project/modals/CreateTestSuiteModal.vue';
 
 const props = defineProps<{ execution: TestSuiteExecutionDTO }>();
 
 const testSuiteStore = useTestSuiteStore();
-const {registry, models, datasets, inputs, suite} = storeToRefs(testSuiteStore);
+const {registry, models, datasets, inputs, suite, projectId} = storeToRefs(testSuiteStore);
 
 const statusFilterOptions = [{
   label: 'All',
@@ -216,6 +228,18 @@ async function removeTest(suiteTest: SuiteTestDTO) {
         await testSuiteStore.reload();
         close();
       }
+    }
+  });
+}
+
+async function openSettings() {
+  const project = await api.getProject(projectId.value!)
+  $vfm.show({
+    component: CreateTestSuiteModal,
+    bind: {
+      projectKey: project.key,
+      projectId: project.id,
+      suite: suite.value
     }
   });
 }

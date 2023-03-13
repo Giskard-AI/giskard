@@ -10,7 +10,7 @@
       <ValidationObserver ref="observer" v-slot="{ invalid }">
         <v-card>
           <v-card-title>
-            Create a new test suite
+            {{ suite ? `Edit ${suite?.name}` : "Create a new test suite" }}
           </v-card-title>
 
           <v-card-text>
@@ -81,7 +81,7 @@
                 :disabled="invalid"
                 :loading="isLoading"
             >
-              Create
+              {{ suite ? 'Update' : 'Create' }}
             </v-btn>
           </v-card-actions>
         </v-card>
@@ -95,46 +95,57 @@
 import {onMounted, ref} from 'vue';
 import mixpanel from 'mixpanel-browser';
 import {api} from '@/api';
-import {GenerateTestSuiteDTO, GenerateTestSuiteInputDTO, TestCatalogDTO} from '@/generated-sources';
+import {GenerateTestSuiteDTO, GenerateTestSuiteInputDTO, TestSuiteDTO} from '@/generated-sources';
 import {useRouter} from 'vue-router/composables';
 import {$vfm} from 'vue-final-modal';
 import InputSettingsModal from '@/views/main/project/modals/ModelInputSettingsModal.vue';
+import {useTestSuiteStore} from '@/stores/test-suite';
 
-const {projectKey, projectId} = defineProps<{
+const {projectKey, projectId, suite} = defineProps<{
   projectKey: string,
   projectId: number
+  suite?: TestSuiteDTO
 }>();
 
-let registry = ref<TestCatalogDTO | null>(null);
 const dialog = ref<boolean>(false);
 const name = ref<string>('');
 const suiteInputs = ref<GenerateTestSuiteInputDTO[]>([]);
 const isLoading = ref<boolean>(false);
 
 const router = useRouter();
+const {updateTestSuite} = useTestSuiteStore();
+
+onMounted(() => {
+  if (suite) {
+    name.value = suite.name;
+  }
+})
 
 const availableTypes = ['Model', 'Dataset', 'str', 'bool', 'int', 'float']
-
-onMounted(async () => {
-  registry.value = await api.getTestsCatalog(projectId);
-});
 
 async function submit(close) {
   isLoading.value = true;
 
-  mixpanel.track('Create test suite v2', {
-    projectKey
-  });
+  if (suite) {
+    await updateTestSuite(projectKey, {
+      ...suite,
+      name: name.value
+    }).finally(() => isLoading.value = false);
+  } else {
+    mixpanel.track('Create test suite v2', {
+      projectKey
+    });
 
+    const createdTestSuiteId = await api.generateTestSuite(projectKey, {
+      name: name.value,
+      inputs: suiteInputs.value.map(val => ({...val}))
+    } as GenerateTestSuiteDTO)
+        .finally(() => isLoading.value = false);
 
-  const createdTestSuiteId = await api.generateTestSuite(projectKey, {
-    name: name.value,
-    inputs: suiteInputs.value.map(val => ({...val}))
-  } as GenerateTestSuiteDTO)
-      .finally(() => isLoading.value = false);
+    await router.push({name: 'test-suite-overview', params: {suiteId: createdTestSuiteId.toString()}});
+  }
 
   dialog.value = false;
-  await router.push({name: 'test-suite-overview', params: {suiteId: createdTestSuiteId.toString()}});
 
   close();
 }
@@ -148,7 +159,6 @@ function handleInputSettingsClick(input: GenerateTestSuiteInputDTO) {
     on: {
       async save(meta) {
         Object.assign(input, meta);
-
       }
     }
   });

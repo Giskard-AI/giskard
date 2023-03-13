@@ -1,16 +1,10 @@
-import {
-    DatasetDTO,
-    JobDTO,
-    ModelDTO,
-    TestFunctionDTO,
-    TestSuiteExecutionDTO,
-    TestSuiteDTO
-} from '@/generated-sources';
+import {DatasetDTO, JobDTO, ModelDTO, TestFunctionDTO, TestSuiteDTO, TestSuiteExecutionDTO} from '@/generated-sources';
 import {defineStore} from 'pinia';
 import {api} from '@/api';
 import {chain} from 'lodash';
 import {trackJob} from '@/utils/job-utils';
 import {useMainStore} from '@/stores/main';
+import mixpanel from 'mixpanel-browser';
 
 interface State {
     projectId: number | null,
@@ -71,6 +65,13 @@ export const useTestSuiteStore = defineStore('testSuite', {
             this.datasets = Object.fromEntries(completeSuite.datasets.map(x => [x.id, x]));
             this.models = Object.fromEntries(completeSuite.models.map(x => [x.id, x]));
             this.executions = completeSuite.executions;
+        },
+        async updateTestSuite(projectKey: string, testSuite: TestSuiteDTO) {
+            mixpanel.track('Update test suite v2', {
+                projectKey
+            });
+
+            this.suite = await api.updateTestSuite(projectKey, testSuite);
         },
         async trackJob(uuid: string) {
             console.log(uuid);
