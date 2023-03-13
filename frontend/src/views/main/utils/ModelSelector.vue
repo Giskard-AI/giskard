@@ -12,6 +12,7 @@
       @input="onInput"
       dense
       hide-details
+      :error-messages="errorMessages"
   ></v-select>
 </template>
 
@@ -27,6 +28,7 @@ import {ModelDTO} from '@/generated-sources';
 export default class ModelSelector extends Vue {
   @Prop({required: true}) projectId!: number;
   @Prop({default: true}) returnObject!: boolean;
+  @Prop({default: []}) errorMessages?: string | string[];
   projectModels: Array<ModelDTO> = [];
   @Prop() value?: ModelDTO | number;
 
