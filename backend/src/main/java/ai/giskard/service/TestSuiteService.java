@@ -167,6 +167,10 @@ public class TestSuiteService {
             TestSuite suite = new TestSuite();
             suite.setProject(project);
             suite.setName(dto.getName());
+            suite.setTestInputs(dto.getSharedInputs().stream()
+                .map(giskardMapper::fromDTO)
+                .toList());
+            suite.getTestInputs().forEach(input -> input.setSuite(suite));
             suite.getTests().addAll(response.getTestsList().stream()
                 .map(test -> new SuiteTest(suite, test, testFunctionRepository.getById(UUID.fromString(test.getTestUuid()))))
                 .toList());
@@ -206,6 +210,11 @@ public class TestSuiteService {
         TestSuite testSuite = testSuiteRepository.getById(suiteId);
 
         testSuite.setName(testSuiteDTO.getName());
+        testSuite.getTestInputs().clear();
+        testSuite.getTestInputs().addAll(testSuiteDTO.getTestInputs().stream()
+            .map(giskardMapper::fromDTO)
+            .toList());
+        testSuite.getTestInputs().forEach(input -> input.setSuite(testSuite));
 
         return giskardMapper.toDTO(testSuiteRepository.save(testSuite));
     }

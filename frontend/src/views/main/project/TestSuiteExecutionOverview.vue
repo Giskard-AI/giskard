@@ -1,7 +1,9 @@
 <template>
   <v-container>
     <div class="d-flex">
-      <v-icon :color="props.execution.result === TestResult.PASSED ? Colors.PASS : Colors.FAIL" size="64">{{
+      <v-icon
+          :color="!props.execution ? 'grey' : props.execution.result === TestResult.PASSED ? Colors.PASS : Colors.FAIL"
+          size="64">{{
           testResultIcon
         }}
       </v-icon>
@@ -11,7 +13,9 @@
           Test Suite
         </h2>
         <h4
-            v-if="props.execution.result === TestResult.ERROR">An error arose during the execution</h4>
+            v-if="!props.execution">No execution has been performed yet!</h4>
+        <h4
+            v-else-if="props.execution.result === TestResult.ERROR">An error arose during the execution</h4>
         <h4 v-else-if="filteredTest.length === 0">No test match the current filter</h4>
         <h4 v-else-if="executedTests.length > 0" :style="{
           color: successColor
@@ -117,7 +121,7 @@ import ConfirmModal from '@/views/main/project/modals/ConfirmModal.vue';
 import {api} from '@/api';
 import CreateTestSuiteModal from '@/views/main/project/modals/CreateTestSuiteModal.vue';
 
-const props = defineProps<{ execution: TestSuiteExecutionDTO }>();
+const props = defineProps<{ execution?: TestSuiteExecutionDTO }>();
 
 const testSuiteStore = useTestSuiteStore();
 const {registry, models, datasets, inputs, suite, projectId} = storeToRefs(testSuiteStore);
@@ -140,6 +144,9 @@ const statusFilter = ref<string>(statusFilterOptions[0].label);
 const searchFilter = ref<string>("");
 
 const testResultIcon = computed(() => {
+  if (!props.execution) {
+    return 'block'
+  }
   switch (props.execution.result) {
     case TestResult.PASSED:
       return 'done';
@@ -157,7 +164,7 @@ const filteredTest = computed(() => suite.value === null ? [] : chain(suite.valu
     .map(suiteTest => ({
       suiteTest,
       test: registryByUuid.value[suiteTest.testUuid],
-      result: props.execution.results?.find(result => result.test.id === suiteTest.id)
+      result: props.execution?.results?.find(result => result.test.id === suiteTest.id)
     }))
     .filter(({result}) => statusFilterOptions.find(opt => statusFilter.value === opt.label)!.filter(result))
     .filter(({test}) => {
@@ -244,7 +251,7 @@ async function openSettings() {
   });
 }
 
-const executedTests = computed(() => props.execution.result === TestResult.ERROR ? []
+const executedTests = computed(() => !props.execution || props.execution.result === TestResult.ERROR ? []
     : filteredTest.value.filter(({result}) => result !== undefined));
 
 const successRatio = computed(() => ({

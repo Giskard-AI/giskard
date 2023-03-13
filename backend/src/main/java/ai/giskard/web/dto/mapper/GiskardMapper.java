@@ -183,6 +183,7 @@ public interface GiskardMapper {
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "test", ignore = true)
+    @Mapping(target = "suite", ignore = true)
     @Mapping(target = "alias", source = "alias")
     TestInput fromDTO(TestInputDTO dto);
     TestInputDTO toDTO(TestInput obj);
