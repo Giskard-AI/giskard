@@ -22,24 +22,39 @@ def _make_model_mock(labels=["First", "Second", "Third"]):
 def test_postprocess():
     model = _make_model_mock(["one", "two"])
 
-    data_prepocessing_function_output = np.array(0.6)
-    result = WrapperModel._postprocess(model, data_prepocessing_function_output)
+    clf_predict_output = np.array(0.6)
+    result = WrapperModel._postprocess(model, clf_predict_output)
 
     assert result.ndim == 2
+    assert result.shape[0] == 1
+    assert result.shape[1] == 2
     if WrapperModel.is_binary_classification:
         assert result.shape[1] == 2
 
-    data_prepocessing_function_output = np.array([0.6])
-    result = WrapperModel._postprocess(model, data_prepocessing_function_output)
+    clf_predict_output = np.array([0.6])
+    result = WrapperModel._postprocess(model, clf_predict_output)
 
     assert result.ndim == 2
+    assert result.shape[0] == 1
+    assert result.shape[1] == 2
     if WrapperModel.is_binary_classification:
         assert result.shape[1] == 2
 
-    data_prepocessing_function_output = np.array([[0.6], [0.4]])
-    result = WrapperModel._postprocess(model, data_prepocessing_function_output)
+    clf_predict_output = np.array([[0.6, 0.4]])
+    result = WrapperModel._postprocess(model, clf_predict_output)
 
     assert result.ndim == 2
+    assert result.shape[0] == 1
+    assert result.shape[1] == 2
+    if WrapperModel.is_binary_classification:
+        assert result.shape[1] == 2
+
+    clf_predict_output = np.array([[0.6], [0.4]])
+    result = WrapperModel._postprocess(model, clf_predict_output)
+
+    assert result.ndim == 2
+    assert result.shape[0] == 2
+    assert result.shape[1] == 2
     if WrapperModel.is_binary_classification:
         assert result.shape[1] == 2
 
