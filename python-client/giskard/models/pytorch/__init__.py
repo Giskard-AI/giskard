@@ -1,4 +1,3 @@
-import itertools
 from typing import Union
 from pathlib import Path
 import mlflow
@@ -15,6 +14,7 @@ from giskard.core.core import SupportedModelTypes
 from giskard.core.model import MLFlowBasedModel
 
 import giskard.models.utils as models_utils
+from ..utils import map_to_tuples
 
 # There's no casting currently from str to torch.dtype
 str_to_torch_dtype = {
@@ -98,7 +98,7 @@ class PyTorchModel(MLFlowBasedModel):
 
     def _get_predictions(self, data: Iterator):
         with torch.no_grad():
-            return [self.clf(*entry).detach().squeeze(0).numpy() for entry in _map_to_tuples(data)]
+            return [self.clf(*entry).detach().squeeze(0).numpy() for entry in map_to_tuples(data)]
 
     def clf_predict(self, data):
         self.clf.to(self.device)
@@ -122,7 +122,7 @@ class PyTorchModel(MLFlowBasedModel):
 
         # Get a list of model predictions
         try:
-            predictions = self._get_predictions(data)
+            predictions = self._get_predictions(data_iter)
         except ValueError as err:
             raise ValueError(
                 "Calling clf on one element of your dataset or your `data_preprocessing_function` output fails."
@@ -166,13 +166,3 @@ def _get_dataset_from_dataloader(dl: DataLoader):
                     The type we found was {dl.dataset} which we don't support. Please provide us \n \
                     with a different iterable as output of your data_preprocessing_function."
     )
-
-
-def _map_to_tuples(data: Iterator):
-    item = next(data)
-    data = itertools.chain([item], data)
-
-    if isinstance(item, tuple):  # nothing to do
-        return data
-
-    return map(lambda x: (x,), data)

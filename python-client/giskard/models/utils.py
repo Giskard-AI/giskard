@@ -1,3 +1,7 @@
+import itertools
+from collections.abc import Iterator
+
+
 def check_if_data_is_iterable(data, break_it=False):
     try:
         for entry in data: # noqa
@@ -19,3 +23,13 @@ def is_data_unpackable(data):
     check_if_data_is_iterable(data, break_it=True)
     for entry in data:
         return is_tuple(entry)
+
+
+def map_to_tuples(data: Iterator):
+    item = next(data)
+    data = itertools.chain([item], data)
+
+    if isinstance(item, tuple):  # nothing to do
+        return data
+
+    return map(lambda x: (x,), data)
