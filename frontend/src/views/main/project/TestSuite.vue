@@ -4,11 +4,12 @@
       <v-container class="main-container vc">
         <v-row>
           <v-col :align="'right'">
-            <div class="d-flex flex-row-reverse">
-              <RunTestSuiteModal :inputs="inputs" :suite-id="suiteId" :project-id="projectId"/>
-              <v-btn text @click="loadData()" color="secondary">Reload
+            <div class="d-flex">
+              <v-btn text @click="loadData()" color="secondary">Refresh
                 <v-icon right>refresh</v-icon>
               </v-btn>
+              <div class="flex-grow-1"/>
+              <RunTestSuiteModal :inputs="inputs" :suite-id="suiteId" :project-id="projectId"/>
             </div>
           </v-col>
         </v-row>
