@@ -296,10 +296,6 @@ class WrapperModel(Model, ABC):
     def _postprocess(self, raw_predictions):
         raw_predictions = np.asarray(raw_predictions)
 
-        # Ensure this is 2-dimensional
-        if raw_predictions.ndim <= 1:
-            raw_predictions = raw_predictions.reshape(-1, 1)
-
         # We try to automatically fix issues in the output shape
         raw_predictions = self._possibly_fix_predictions_shape(raw_predictions)
         
@@ -321,6 +317,10 @@ class WrapperModel(Model, ABC):
     def _possibly_fix_predictions_shape(self, raw_predictions):
         if not self.is_classification:
             return raw_predictions
+
+        # Ensure this is 2-dimensional
+        if raw_predictions.ndim <= 1:
+            raw_predictions = raw_predictions.reshape(-1, 1)
 
         # Fix possible extra dimensions (e.g. batch dimension which was not squeezed)
         if raw_predictions.ndim > 2:
