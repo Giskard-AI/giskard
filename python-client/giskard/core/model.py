@@ -105,7 +105,7 @@ class Model(ABC):
                     "classification_labels": self.meta.classification_labels,
                     "loader_module": self.meta.loader_module,
                     "loader_class": self.meta.loader_class,
-                    "id": self.id,
+                    "id": str(self.id),
                     "name": self.meta.name,
                     "size": get_size(local_path),
                 },
