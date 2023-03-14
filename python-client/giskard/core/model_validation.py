@@ -1,9 +1,12 @@
+import tempfile
 from typing import List, Iterable
 
+import yaml
 import numpy as np
 import pandas as pd
 from pandas.core.dtypes.common import is_string_dtype
 
+from giskard.core.core import ModelMeta
 from giskard.client.python_utils import warning
 from giskard.core.core import SupportedModelTypes
 from giskard.core.model import Model, WrapperModel
@@ -14,8 +17,13 @@ from giskard.ml_worker.core.dataset import Dataset
 def validate_model(model: Model, validate_ds: Dataset):
     model_type = model.meta.model_type
 
+    model = validate_model_loading_and_saving(model)
+
     if isinstance(model, WrapperModel) and model.data_preprocessing_function is not None:
         validate_data_preprocessing_function(model.data_preprocessing_function)
+
+    if model.model_postprocessing_function is not None:
+        validate_model_postprocessing_function(model.model_postprocessing_function)
 
     validate_classification_labels(model.meta.classification_labels, model_type)
 
@@ -48,7 +56,7 @@ def validate_model_execution(model: Model, dataset: Dataset) -> None:
         prediction = model.predict(validation_ds)
     except Exception as e:
         raise ValueError(
-            "Invalid prediction_function input.\n"
+            "Invalid model.predict() input.\n"
             "Please make sure that model.predict(dataset) does not return an error "
             "message before uploading in Giskard"
         ) from e
@@ -72,10 +80,52 @@ def validate_deterministic_model(model: Model, validate_ds: Dataset, prev_predic
         )
 
 
-def validate_data_preprocessing_function(prediction_function):
-    if not callable(prediction_function):
+def validate_model_loading_and_saving(model: Model):
+    """
+    Validates if the model can be serialised and deserialised
+    """
+    try:
+        with tempfile.TemporaryDirectory(prefix="giskard-model-") as f:
+            model.save(f)
+
+            with open(f + "/giskard-model-meta.yaml") as yaml_f:
+                saved_meta = yaml.load(yaml_f, Loader=yaml.Loader)
+
+            meta = ModelMeta(
+                name=saved_meta['name'],
+                model_type=SupportedModelTypes[saved_meta['model_type']],
+                feature_names=saved_meta['feature_names'],
+                classification_labels=saved_meta['classification_labels'],
+                classification_threshold=saved_meta['threshold'],
+                loader_module=saved_meta['loader_module'],
+                loader_class=saved_meta['loader_class'],
+            )
+
+            clazz = Model.determine_model_class(meta, f)
+
+            constructor_params = meta.__dict__
+            del constructor_params['loader_module']
+            del constructor_params['loader_class']
+
+            loaded_model = clazz.load(f, **constructor_params)
+
+            return loaded_model
+
+    except Exception as e:
+        raise ValueError("Failed to validate model saving and loading from local disk") from e
+
+
+def validate_data_preprocessing_function(f):
+    if not callable(f):
         raise ValueError(
-            f"Invalid prediction_function parameter: {prediction_function}. Please specify Python function."
+            f"Invalid data_preprocessing_function parameter: {f}. Please specify Python function."
+        )
+
+
+def validate_model_postprocessing_function(f):
+    if not callable(f):
+        raise ValueError(
+            f"Invalid model_postprocessing_function parameter: {f}. Please specify Python function."
         )
 
 
@@ -153,7 +203,7 @@ def validate_label_with_target(classification_labels, target_values=None, target
 def validate_prediction_output(df: pd.DataFrame, model_type, prediction):
     assert len(df) == len(prediction), (
         f"Number of rows ({len(df)}) of dataset provided does not match with the "
-        f"number of rows ({len(prediction)}) of prediction_function output"
+        f"number of rows ({len(prediction)}) of model.predict output"
     )
     if isinstance(prediction, np.ndarray) or isinstance(prediction, list):
         if model_type == SupportedModelTypes.CLASSIFICATION:
@@ -168,14 +218,14 @@ def validate_prediction_output(df: pd.DataFrame, model_type, prediction):
 
 def validate_classification_prediction(classification_labels, prediction):
     if not np.all(np.logical_and(prediction >= 0, prediction <= 1)):
-        warning(
-            "Output of the prediction_function returns values out of range [0,1]. "
-            "The output of Multiclass and Binary classifications should be within the range [0,1]"
-        )
+        warning("Output of model.predict returns values out of range [0,1]. "
+                "The output of Multiclass and Binary classifications should be within the range [0,1]")
     if not np.all(np.isclose(np.sum(prediction, axis=1), 1, atol=0.0000001)):
-        warning(
-            "Sum of output values of prediction_function is not equal to 1."
-            " For Multiclass and Binary classifications, the sum of probabilities should be 1"
+        warning("Sum of output values of model.predict is not equal to 1."
+                " For Multiclass and Binary classifications, the sum of probabilities should be 1")
+    if prediction.shape[1] != len(classification_labels):
+        raise ValueError(
+            "Prediction output label shape and classification_labels shape do not match"
         )
     if prediction.shape[1] != len(classification_labels):
         raise ValueError("Prediction output label shape and classification_labels shape do not match")

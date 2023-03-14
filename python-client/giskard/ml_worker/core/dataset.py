@@ -6,15 +6,24 @@ from pathlib import Path
 from typing import Callable, Dict, Optional, List
 
 import pandas as pd
+from pandas.api.types import is_numeric_dtype
+from enum import Enum
 import yaml
 from zstandard import ZstdDecompressor
 
 from giskard.client.giskard_client import GiskardClient
+from giskard.client.python_utils import warning
 from giskard.client.io_utils import save_df, compress
 from giskard.core.core import DatasetMeta, SupportedFeatureTypes
 from giskard.settings import settings
 
 logger = logging.getLogger(__name__)
+
+
+class Nuniques(Enum):
+    CATEGORY = 2
+    NUMERIC = 100
+    TEXT = 1000
 
 
 class Dataset:
@@ -29,29 +38,61 @@ class Dataset:
         name: Optional[str] = None,
         target: Optional[str] = None,
         cat_columns: Optional[List[str]] = None,
+        infer_cat_columns: Optional[bool] = False,
         feature_types: Optional[Dict[str, str]] = None,
     ) -> None:
         self.name = name
         self.df = pd.DataFrame(df)
         self.target = target
         self.column_types = self.extract_column_types(self.df)
-        if cat_columns:
-            self.feature_types = {f: SupportedFeatureTypes.CATEGORY for f in cat_columns}
-        else:
+        if feature_types:
             self.feature_types = feature_types
+        elif cat_columns:
+            self.feature_types = self.extract_feature_types(self.column_types, cat_columns)
+        elif infer_cat_columns:
+            self.feature_types = self.infer_feature_types(self.df, self.column_types)
+        else:
+            self.feature_types = self.infer_feature_types(self.df, self.column_types, no_cat=True)
+            warning("You did not provide any of [feature_types, cat_columns, infer_cat_columns = True] for your Dataset."
+                    "In this case, we assume that there's no categorical columns in your Dataset.")
+
+    @staticmethod
+    def infer_feature_types(df, column_types, no_cat=False):
+        # TODO: improve this method
+        nuniques = df.nunique()
+        feature_types = {}
+        for col, col_type in column_types.items():
+            if nuniques[col] <= Nuniques.CATEGORY.value and not no_cat:
+                feature_types[col] = SupportedFeatureTypes.CATEGORY.value
+            elif is_numeric_dtype(df[col]):
+                feature_types[col] = SupportedFeatureTypes.NUMERIC.value
+            else:
+                feature_types[col] = SupportedFeatureTypes.TEXT.value
+        return feature_types
+
+    @staticmethod
+    def extract_feature_types(column_types, cat_columns):
+        feature_types = {}
+        for cat_col in cat_columns:
+            feature_types[cat_col] = SupportedFeatureTypes.CATEGORY.value
+        for col, col_type in column_types.items():
+            if col not in cat_columns:
+                feature_types[col] = SupportedFeatureTypes.NUMERIC.value if is_numeric_dtype(col_type) else SupportedFeatureTypes.TEXT.value
+
+        return feature_types
 
     @staticmethod
     def extract_column_types(df):
         return df.dtypes.apply(lambda x: x.name).to_dict()
 
-    def save(self, client: GiskardClient, project_key: str):
+    def upload(self, client: GiskardClient, project_key: str):
         from giskard.core.dataset_validation import validate_dataset
 
         validate_dataset(self)
 
         dataset_id = str(uuid.uuid4())
         with tempfile.TemporaryDirectory(prefix="giskard-dataset-") as local_path:
-            original_size_bytes, compressed_size_bytes = self._save_to_local_dir(Path(local_path), dataset_id)
+            original_size_bytes, compressed_size_bytes = self.save(Path(local_path), dataset_id)
             client.log_artifacts(local_path, posixpath.join(project_key, "datasets", dataset_id))
             client.save_dataset_meta(
                 project_key,
@@ -80,7 +121,7 @@ class Dataset:
         return df
 
     @classmethod
-    def _read_dataset_from_local_dir(cls, local_path: str):
+    def load(cls, local_path: str):
         with open(local_path, "rb") as ds_stream:
             return pd.read_csv(
                 ZstdDecompressor().stream_reader(ds_stream),
@@ -89,7 +130,7 @@ class Dataset:
             )
 
     @classmethod
-    def load(cls, client: GiskardClient, project_key, dataset_id):
+    def download(cls, client: GiskardClient, project_key, dataset_id):
         local_dir = settings.home_dir / settings.cache_dir / project_key / "datasets" / dataset_id
 
         if client is None:
@@ -107,19 +148,20 @@ class Dataset:
             client.load_artifact(local_dir, posixpath.join(project_key, "datasets", dataset_id))
             meta: DatasetMeta = client.load_dataset_meta(project_key, dataset_id)
 
-        df = cls._read_dataset_from_local_dir(local_dir / "data.csv.zst")
+        df = cls.load(local_dir / "data.csv.zst")
         df = cls.cast_column_to_types(df, meta.column_types)
         return cls(df=df, name=meta.name, target=meta.target, feature_types=meta.feature_types)
 
     @staticmethod
     def _cat_columns(meta):
-        return [fname for (fname, ftype) in meta.feature_types.items() if ftype == SupportedFeatureTypes.CATEGORY]
+        return [fname for (fname, ftype) in meta.feature_types.items() if
+                ftype == SupportedFeatureTypes.CATEGORY] if meta.feature_types else None
 
     @property
     def cat_columns(self):
         return self._cat_columns(self.meta)
 
-    def _save_to_local_dir(self, local_path: Path, dataset_id):
+    def save(self, local_path: Path, dataset_id):
         with open(local_path / "data.csv.zst", "wb") as f:
             uncompressed_bytes = save_df(self.df)
             compressed_bytes = compress(uncompressed_bytes)

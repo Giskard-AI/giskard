@@ -20,7 +20,6 @@ from giskard.client.dtos import TestSuiteNewDTO
 from giskard.client.project import Project
 from giskard.client.python_utils import warning
 from giskard.core.core import ModelMeta, DatasetMeta
-from giskard.core.core import SupportedModelTypes
 
 logger = logging.getLogger(__name__)
 
@@ -83,7 +82,7 @@ class GiskardClient:
             server_settings = self._session.get("settings/ml-worker-connect").json()
             self.analytics.init(server_settings)
         except Exception:  # noqa
-            logger.warning("Failed to fetch server settings", exc_info=True)
+            logger.warning("Failed to fetch server settings: ", exc_info=True)
         self.analytics.track("Init GiskardClient", {"client version": giskard.__version__})
 
     @property
@@ -114,7 +113,7 @@ class GiskardClient:
         Function to create a project in Giskard
         Args:
             project_key:
-                The unique value of the project which will be used to identify  and fetch teh project in future
+                The unique value of the project which will be used to identify  and fetch the project in future
             name:
                 The name of the project
             description:
@@ -148,15 +147,9 @@ class GiskardClient:
             print(f"Project created with a key : {actual_project_key}")
         return Project(self._session, actual_project_key, actual_project_id, analytics=self.analytics)
 
-    def load_model_meta(self, project_key: str, uuid: str) -> ModelMeta:
+    def load_model_meta(self, project_key: str, uuid: str):
         res = self._session.get(f"project/{project_key}/models/{uuid}").json()
-        return ModelMeta(
-            name=res["name"],
-            feature_names=res["featureNames"],
-            model_type=SupportedModelTypes[res["modelType"]],
-            classification_labels=res["classificationLabels"],
-            classification_threshold=res["threshold"],
-        )
+        return res
 
     def load_dataset_meta(self, project_key: str, uuid: str) -> DatasetMeta:
         res = self._session.get(f"project/{project_key}/datasets/{uuid}").json()
@@ -194,6 +187,8 @@ class GiskardClient:
                 "featureNames": anonymize(meta.feature_names),
                 "language": "PYTHON",
                 "classificationLabels": anonymize(meta.classification_labels),
+                "loader_module": meta.loader_module,
+                "loader_class": meta.loader_class,
                 "size": size,
             },
         )

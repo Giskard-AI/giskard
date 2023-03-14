@@ -39,7 +39,7 @@ def explain(model: Model, dataset: Dataset, input_data: Dict):
 
     example = background_example(df, dataset.feature_types)
     kernel = shap.KernelExplainer(predict_array, example)
-    shap_values = kernel.shap_values(input_df)
+    shap_values = kernel.shap_values(input_df, silent=True)
 
     if model.is_regression:
         explanation_chart_data = summary_shap_regression(shap_values=shap_values, feature_names=feature_names)
@@ -70,13 +70,13 @@ def explain_text(model: Model, input_df: pd.DataFrame, text_column: str, text_do
         text_explainer.show_prediction(target_names=model.meta.classification_labels)
         exp = text_explainer.explain_prediction(target_names=model.meta.classification_labels)
         exp = eli5.formatters.html.prepare_weighted_spans(exp.targets)
-        return get_list_words_weigths(exp)
+        return get_list_words_weights(exp)
     except Exception as e:
         logger.exception(f"Failed to explain text: {text_document}", e)
         raise Exception("Failed to create text explanation") from e
 
 
-def get_list_words_weigths(exp):
+def get_list_words_weights(exp):
     list_words = []
     document = exp[0][0].doc_weighted_spans.document
     for k, g in groupby(document, str.isalnum):

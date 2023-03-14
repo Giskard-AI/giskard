@@ -56,7 +56,7 @@ class StatisticalTests(AbstractTestCollection):
             SingleTestResult(
                 actual_slices_size=[len(actual_slice)],
                 metric=passed_ratio,
-                passed=passed_ratio > threshold,
+                passed=bool(passed_ratio > threshold),
             )
         )
 
@@ -134,7 +134,7 @@ class StatisticalTests(AbstractTestCollection):
             SingleTestResult(
                 actual_slices_size=[len(actual_slice)],
                 metric=passed_ratio,
-                passed=passed_ratio >= threshold,
+                passed=bool(passed_ratio >= threshold),
             )
         )
 
@@ -225,7 +225,7 @@ class StatisticalTests(AbstractTestCollection):
         return self.save_results(
             SingleTestResult(
                 metric=disparate_impact_score,
-                passed=(disparate_impact_score > min_threshold) * (disparate_impact_score < max_threshold),
+                passed=bool((disparate_impact_score > min_threshold) * (disparate_impact_score < max_threshold)),
                 messages=messages,
             )
         )

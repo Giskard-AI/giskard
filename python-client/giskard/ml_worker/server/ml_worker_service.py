@@ -1,3 +1,4 @@
+import asyncio
 import logging
 import os
 import platform
@@ -30,6 +31,7 @@ from giskard.ml_worker.exceptions.IllegalArgumentError import IllegalArgumentErr
 from giskard.ml_worker.exceptions.giskard_exception import GiskardException
 from giskard.ml_worker.generated import ml_worker_pb2
 from giskard.ml_worker.generated.ml_worker_pb2_grpc import MLWorkerServicer
+from giskard.ml_worker.ml_worker import MLWorker
 from giskard.ml_worker.testing.registry.registry import tests_registry
 from giskard.ml_worker.utils.logging import Timer
 from giskard.path_utils import model_path, dataset_path
@@ -48,11 +50,14 @@ def file_already_exists(meta: ml_worker_pb2.FileUploadMetadata):
 
 
 class MLWorkerServiceImpl(MLWorkerServicer):
-    def __init__(self, client: GiskardClient, address=None, remote=None) -> None:
+    def __init__(self, ml_worker: MLWorker, client: GiskardClient, address=None, remote=None,
+                 loop=asyncio.get_event_loop()) -> None:
         super().__init__()
+        self.ml_worker = ml_worker
         self.address = address
         self.remote = remote
         self.client = client
+        self.loop = loop
 
     def echo_orig(self, request, context):
         logger.debug(f"echo: {request.msg}")
@@ -172,7 +177,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
         arguments = {}
         for arg in request_arguments:
             if arg.HasField("dataset"):
-                value = Dataset.load(self.client, arg.dataset.project_key, arg.dataset.id)
+                value = Dataset.download(self.client, arg.dataset.project_key, arg.dataset.id)
             elif arg.HasField("model"):
                 value = Model.download(self.client, arg.model.project_key, arg.model.id)
             elif arg.HasField("float"):
@@ -198,11 +203,11 @@ class MLWorkerServiceImpl(MLWorkerServicer):
         tests = GiskardTestFunctions()
         _globals = {"model": model, "tests": tests}
         if request.reference_ds.id:
-            _globals["reference_ds"] = Dataset.load(
+            _globals["reference_ds"] = Dataset.download(
                 self.client, request.reference_ds.project_key, request.reference_ds.id
             )
         if request.actual_ds.id:
-            _globals["actual_ds"] = Dataset.load(self.client, request.actual_ds.project_key, request.actual_ds.id)
+            _globals["actual_ds"] = Dataset.download(self.client, request.actual_ds.project_key, request.actual_ds.id)
         try:
             timer = Timer()
             exec(request.code, _globals)
@@ -219,7 +224,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
 
     def explain(self, request: ml_worker_pb2.ExplainRequest, context) -> ml_worker_pb2.ExplainResponse:
         model = Model.download(self.client, request.model.project_key, request.model.id)
-        dataset = Dataset.load(self.client, request.dataset.project_key, request.dataset.id)
+        dataset = Dataset.download(self.client, request.dataset.project_key, request.dataset.id)
         explanations = explain(model, dataset, request.columns)
 
         return ml_worker_pb2.ExplainResponse(
@@ -238,8 +243,8 @@ class MLWorkerServiceImpl(MLWorkerServicer):
             raise ValueError(f"Column {text_column} is not of type text")
         text_document = request.columns[text_column]
         input_df = pd.DataFrame({k: [v] for k, v in request.columns.items()})
-        if model.feature_names:
-            input_df = input_df[model.feature_names]
+        if model.meta.feature_names:
+            input_df = input_df[model.meta.feature_names]
         (list_words, list_weights) = explain_text(model, input_df, text_column, text_document, n_samples)
         map_features_weight = dict(zip(model.meta.classification_labels, list_weights))
         return ml_worker_pb2.ExplainTextResponse(
@@ -273,7 +278,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
     def runModel(self, request: ml_worker_pb2.RunModelRequest, context) -> ml_worker_pb2.RunModelResponse:
         try:
             model = Model.download(self.client, request.model.project_key, request.model.id)
-            dataset = Dataset.load(self.client, request.dataset.project_key, request.dataset.id)
+            dataset = Dataset.download(self.client, request.dataset.project_key, request.dataset.id)
         except ValueError as e:
             if "unsupported pickle protocol" in str(e):
                 raise ValueError(
@@ -287,7 +292,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
             raise GiskardException(
                 f"Failed to import '{e.name}'. "
                 f"Make sure it's installed in the ML Worker environment."
-                "To install it, refer to https://docs.giskard.ai/start/guides/configuration"
+                "To have more information on ML Worker, please see: https://docs.giskard.ai/start/guides/installation/ml-worker"
             ) from e
         prediction_results = model.predict(dataset)
 
@@ -339,6 +344,13 @@ class MLWorkerServiceImpl(MLWorkerServicer):
                     )
                 column_types = meta.column_types
                 logger.info(f"Filtering dataset with {meta}")
+
+                def filter_wrapper(row):
+                    try:
+                        return bool(filterfunc["filter_row"](row))
+                    except Exception as e:  # noqa # NOSONAR
+                        raise ValueError("Failed to execute user defined filtering function") from e
+
                 yield ml_worker_pb2.FilterDatasetResponse(code=ml_worker_pb2.StatusCode.Ready)
             elif filter_msg.HasField("data"):
                 logger.info("Got chunk " + str(filter_msg.idx))
@@ -351,7 +363,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
                 df = df.astype(column_types)
                 # Iterate over rows, applying filter_row func
                 try:
-                    rows_to_keep = df.apply(filterfunc["filter_row"], axis=1)[lambda x: x is True].index.array
+                    rows_to_keep = df[df.apply(filter_wrapper, axis=1)].index.array
                 except Exception as e:
                     yield ml_worker_pb2.FilterDatasetResponse(
                         code=ml_worker_pb2.StatusCode.Failed, error_message=str(e)
@@ -389,6 +401,12 @@ class MLWorkerServiceImpl(MLWorkerServicer):
                 for test in tests_registry.get_all().values()
             }
         )
+
+    def stopWorker(self, request: google.protobuf.empty_pb2.Empty,
+                   context: grpc.ServicerContext) -> google.protobuf.empty_pb2.Empty:
+        logger.info('Received request to stop the worker')
+        self.loop.create_task(self.ml_worker.stop())
+        return google.protobuf.empty_pb2.Empty()
 
     @staticmethod
     def pandas_df_to_proto_df(df):

@@ -1,15 +1,18 @@
 <template>
-  <v-container fluid id="container-project-tab" class="vertical-container">
+  <div class="vc">
     <v-tabs v-if="tabs.length > 1">
       <v-tab v-for="tab in tabs" :to="tab.to">
         <v-icon left>{{ tab.icon }}</v-icon>
         {{ tab.text }}
       </v-tab>
     </v-tabs>
-    <keep-alive>
-      <router-view></router-view>
-    </keep-alive>
-  </v-container>
+    <div class="vc fill-height">
+      <keep-alive>
+        <router-view></router-view>
+      </keep-alive>
+    </div>
+  </div>
+
 </template>
 
 <script setup lang="ts">

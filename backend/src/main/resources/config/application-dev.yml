@@ -19,6 +19,8 @@ logging:
     tech.jhipster: INFO
     org.hibernate.SQL: INFO
     ai.giskard: DEBUG
+    com.zaxxer.hikari.HikariConfig: DEBUG
+    com.zaxxer.hikari: TRACE
 
 spring:
   devtools:
@@ -39,6 +41,10 @@ spring:
     hikari:
       poolName: Hikari
       auto-commit: false
+      maximum-pool-size: 8
+      minimum-idle: 10
+      connection-timeout: 20000
+      leak-detection-threshold: 10000
   jpa:
     database-platform: tech.jhipster.domain.util.FixedH2Dialect
     show-sql: true
@@ -110,4 +116,4 @@ jhipster:
 # ===================================================================
 
 giskard:
-  home: ${HOME}/giskard-home
+  home: ${user.home}/giskard-home

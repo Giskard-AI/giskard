@@ -51,9 +51,7 @@ def test_auc(data, model, threshold, expected_metric, actual_slices_size, reques
     "data,model,threshold,expected_metric,actual_slices_size",
     [("enron_data", "enron_model", 0.5, 1, 7)],
 )
-def test_auc_with_unique_target_no_exception(
-    data, model, threshold, expected_metric, actual_slices_size, request
-):
+def test_auc_with_unique_target_no_exception(data, model, threshold, expected_metric, actual_slices_size, request):
     tests = GiskardTestFunctions()
     data = request.getfixturevalue(data)
     results = tests.performance.test_auc(
@@ -71,9 +69,7 @@ def test_auc_with_unique_target_no_exception(
     "data,model,threshold,expected_metric,actual_slices_size",
     [("enron_data", "enron_model", 0.5, 1, 7)],
 )
-def test_auc_with_unique_target_raise_exception(
-    data, model, threshold, expected_metric, actual_slices_size, request
-):
+def test_auc_with_unique_target_raise_exception(data, model, threshold, expected_metric, actual_slices_size, request):
     with pytest.raises(AssertionError) as e:
         tests = GiskardTestFunctions()
         data = request.getfixturevalue(data)
@@ -240,11 +236,13 @@ def test_diff_accuracy(data, model, threshold, expected_metric, request):
 
 @pytest.mark.parametrize(
     "test_fn_name,data,model,threshold,expected_metric",
-    [("test_diff_accuracy", "german_credit_data", "german_credit_always_default_model", 0, 0),
-     ("test_diff_f1", "german_credit_data", "german_credit_always_default_model", 0, 0),
-     ("test_diff_precision", "german_credit_data", "german_credit_always_default_model", 0, 0),
-     ("test_diff_recall", "german_credit_data", "german_credit_always_default_model", 0, 0),
-     ("test_diff_reference_actual_f1", "german_credit_data", "german_credit_always_default_model", 0, 0)],
+    [
+        ("test_diff_accuracy", "german_credit_data", "german_credit_always_default_model", 0, 0),
+        ("test_diff_f1", "german_credit_data", "german_credit_always_default_model", 0, 0),
+        ("test_diff_precision", "german_credit_data", "german_credit_always_default_model", 0, 0),
+        ("test_diff_recall", "german_credit_data", "german_credit_always_default_model", 0, 0),
+        ("test_diff_reference_actual_f1", "german_credit_data", "german_credit_always_default_model", 0, 0),
+    ],
 )
 def test_diff_always_default(test_fn_name, data, model, threshold, expected_metric, request):
     tests = GiskardTestFunctions()
@@ -263,8 +261,10 @@ def test_diff_always_default(test_fn_name, data, model, threshold, expected_metr
     assert type(result.output_df) is bytes
     assert not result.passed
     assert len(result.messages) == 1
-    assert re.match("^Unable to calculate performance difference: the."
-                    "*inside the reference_slice is equal to zero$", result.messages[0].text)
+    assert re.match(
+        "^Unable to calculate performance difference: the." "*inside the reference_slice is equal to zero$",
+        result.messages[0].text,
+    )
 
 
 @pytest.mark.parametrize(

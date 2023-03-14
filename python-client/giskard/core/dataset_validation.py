@@ -3,7 +3,7 @@ from pandas.core.dtypes.common import is_string_dtype, is_numeric_dtype
 from giskard.client.python_utils import warning
 from giskard.core.core import SupportedFeatureTypes
 from giskard.core.validation import validate_is_pandasdataframe, validate_target
-from giskard.ml_worker.core.dataset import Dataset
+from giskard.ml_worker.core.dataset import Dataset, Nuniques
 
 
 def validate_dataset(dataset: Dataset):
@@ -55,24 +55,21 @@ def validate_feature_types(ds: Dataset):
 
 def validate_column_categorization(ds: Dataset):
     nuniques = ds.df.nunique()
-    nuniques_category = 2
-    nuniques_numeric = 100
-    nuniques_text = 1000
 
     for column in ds.df.columns:
         if column == ds.target:
             continue
-        if nuniques[column] <= nuniques_category and (
+        if nuniques[column] <= Nuniques.CATEGORY.value and (
             ds.feature_types[column] == SupportedFeatureTypes.NUMERIC.value
             or ds.feature_types[column] == SupportedFeatureTypes.TEXT.value
         ):
             warning(
                 f"Feature '{column}' is declared as '{ds.feature_types[column]}' but has {nuniques[column]} "
-                f"(<= nuniques_category={nuniques_category}) distinct values. Are "
+                f"(<= Nuniques.CATEGORY.value={Nuniques.CATEGORY.value}) distinct values. Are "
                 f"you sure it is not a 'category' feature?"
             )
         elif (
-            nuniques[column] > nuniques_text
+            nuniques[column] > Nuniques.TEXT.value
             and is_string_dtype(ds.df[column])
             and (
                 ds.feature_types[column] == SupportedFeatureTypes.CATEGORY.value
@@ -81,11 +78,11 @@ def validate_column_categorization(ds: Dataset):
         ):
             warning(
                 f"Feature '{column}' is declared as '{ds.feature_types[column]}' but has {nuniques[column]} "
-                f"(> nuniques_text={nuniques_text}) distinct values. Are "
+                f"(> Nuniques.TEXT.value={Nuniques.TEXT.value}) distinct values. Are "
                 f"you sure it is not a 'text' feature?"
             )
         elif (
-            nuniques[column] > nuniques_numeric
+            nuniques[column] > Nuniques.NUMERIC.value
             and is_numeric_dtype(ds.df[column])
             and (
                 ds.feature_types[column] == SupportedFeatureTypes.CATEGORY.value
@@ -94,6 +91,6 @@ def validate_column_categorization(ds: Dataset):
         ):
             warning(
                 f"Feature '{column}' is declared as '{ds.feature_types[column]}' but has {nuniques[column]} "
-                f"(> nuniques_numeric={nuniques_numeric}) distinct values. Are "
+                f"(> Nuniques.NUMERIC.value={Nuniques.NUMERIC.value}) distinct values. Are "
                 f"you sure it is not a 'numeric' feature?"
             )
