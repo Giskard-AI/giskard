@@ -4,7 +4,6 @@ column_types:
   credit_amount: int64
   credit_history: object
   credits_this_bank: int64
-  default: object
   duration_in_month: int64
   foreign_worker: object
   housing: object
@@ -21,14 +20,13 @@ column_types:
   savings: object
   sex: object
   telephone: object
-compressed_size_bytes: 5818
+compressed_size_bytes: 5524
 feature_types:
   account_check_status: category
   age: numeric
   credit_amount: numeric
   credit_history: category
   credits_this_bank: numeric
-  default: category
   duration_in_month: numeric
   foreign_worker: category
   housing: category
@@ -45,7 +43,7 @@ feature_types:
   savings: category
   sex: category
   telephone: category
-id: 684204db-d670-4e8a-8501-65354dcc4e2f
-name: test dataset
-original_size_bytes: 53607
-target: default
+id: b3ff3df6-a7c8-4acb-bf0b-81a6e13b30d0
+name: production dataset
+original_size_bytes: 51524
+target: null

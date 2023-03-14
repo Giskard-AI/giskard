@@ -24,12 +24,12 @@ feature_names:
 - telephone
 - foreign_worker
 id: !!python/object:uuid.UUID
-  int: 311588609835207460765253771001073096304
+  int: 107395499658482812184553357000074685086
 language: PYTHON
 language_version: 3.7.16
 loader_class: SKLearnModel
 loader_module: giskard.models.sklearn
 model_type: CLASSIFICATION
-name: Random Forest Classifier
-size: 1776043
+name: Logistic Regression (sklearn)
+size: 8176
 threshold: 0.5

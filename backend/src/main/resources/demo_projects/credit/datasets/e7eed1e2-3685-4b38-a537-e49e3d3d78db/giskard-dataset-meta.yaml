@@ -21,14 +21,13 @@ column_types:
   savings: object
   sex: object
   telephone: object
-compressed_size_bytes: 5818
+compressed_size_bytes: 5807
 feature_types:
   account_check_status: category
   age: numeric
   credit_amount: numeric
   credit_history: category
   credits_this_bank: numeric
-  default: category
   duration_in_month: numeric
   foreign_worker: category
   housing: category
@@ -45,7 +44,7 @@ feature_types:
   savings: category
   sex: category
   telephone: category
-id: ebf74d33-21b8-4af1-b765-46b83c523f67
-name: train dataset
+id: e7eed1e2-3685-4b38-a537-e49e3d3d78db
+name: testing dataset
 original_size_bytes: 53607
 target: default
