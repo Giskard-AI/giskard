@@ -1,0 +1,34 @@
+classification_labels: []
+feature_names:
+- TypeOfDewelling
+- BldgType
+- AbvGroundLivingArea
+- Neighborhood
+- KitchenQuality
+- NumGarageCars
+- YearBuilt
+- RemodelYear
+- ExternalQuality
+- LotArea
+- LotShape
+- Fireplaces
+- NumBathroom
+- Basement1Type
+- Basement1SurfaceArea
+- Basement2Type
+- Basement2SurfaceArea
+- TotalBasementArea
+- GarageArea
+- 1stFlrArea
+- 2ndFlrArea
+- Utilities
+- OverallQuality
+id: 287878e3-a14e-4f07-8b4e-68274904b726
+language: PYTHON
+language_version: 3.7.16
+loader_class: CatboostModel
+loader_module: giskard.models.catboost
+model_type: REGRESSION
+name: CatBoost Regressor (catboost)
+size: 8811
+threshold: 0.5
