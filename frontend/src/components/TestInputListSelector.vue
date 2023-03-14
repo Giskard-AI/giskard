@@ -31,14 +31,6 @@
               }}</span>
           </template>
           <div v-else-if="props.modelValue" class="d-flex">
-            <template v-if="sharedInputs && sharedInputs.filter(i => i.type === input.type).length > 0">
-              <v-btn icon v-if="!props.modelValue[input.name].isAlias" @click="() => linkInput(input.name, true)">
-                <v-icon>link</v-icon>
-              </v-btn>
-              <v-btn icon v-else @click="() => linkInput(input.name, false)">
-                <v-icon>link_off</v-icon>
-              </v-btn>
-            </template>
             <template v-if="!props.modelValue[input.name].isAlias">
               <DatasetSelector :project-id="projectId" :label="input.name" :return-object="false"
                                v-if="input.type === 'Dataset'" :value.sync="props.modelValue[input.name].value"/>
@@ -66,6 +58,13 @@
                 dense
                 hide-details
             ></v-select>
+
+            <div class="shared-switch" v-if="sharedInputs">
+              <v-switch v-if="sharedInputs.filter(i => i.type === input.type).length > 0"
+                        v-model="props.modelValue[input.name].isAlias"
+                        @change="() => props.modelValue[input.name].value = null"
+                        label="Shared input"></v-switch>
+            </div>
           </div>
 
         </v-col>
@@ -106,3 +105,11 @@ function linkInput(name: string, link: boolean) {
 }
 
 </script>
+
+<style scoped lang="scss">
+
+
+.shared-switch {
+  width: 150px;
+}
+</style>
