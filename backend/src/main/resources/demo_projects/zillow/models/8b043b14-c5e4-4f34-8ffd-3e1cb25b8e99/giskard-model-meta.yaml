@@ -1,0 +1,34 @@
+classification_labels: null
+feature_names:
+- TypeOfDewelling
+- BldgType
+- AbvGroundLivingArea
+- Neighborhood
+- KitchenQuality
+- NumGarageCars
+- YearBuilt
+- RemodelYear
+- ExternalQuality
+- LotArea
+- LotShape
+- Fireplaces
+- NumBathroom
+- Basement1Type
+- Basement1SurfaceArea
+- Basement2Type
+- Basement2SurfaceArea
+- TotalBasementArea
+- GarageArea
+- 1stFlrArea
+- 2ndFlrArea
+- Utilities
+- OverallQuality
+id: 8b043b14-c5e4-4f34-8ffd-3e1cb25b8e99
+language: PYTHON
+language_version: 3.7.16
+loader_class: SKLearnModel
+loader_module: giskard.models.sklearn
+model_type: REGRESSION
+name: Random Forest Regressor (sklearn)
+size: 9177881
+threshold: 0.5
