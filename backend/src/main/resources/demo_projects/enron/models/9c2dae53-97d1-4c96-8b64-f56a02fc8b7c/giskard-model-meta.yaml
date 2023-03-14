@@ -1,0 +1,22 @@
+classification_labels:
+- CALIFORNIA CRISIS
+- INFLUENCE
+- INTERNAL
+- REGULATION
+feature_names:
+- Subject
+- Content
+- Week_day
+- Year
+- Month
+- Hour
+- Nb_of_forwarded_msg
+id: 9c2dae53-97d1-4c96-8b64-f56a02fc8b7c
+language: PYTHON
+language_version: 3.7.16
+loader_class: SKLearnModel
+loader_module: giskard.models.sklearn
+model_type: CLASSIFICATION
+name: Logistic Regression (sklearn)
+size: 1802158
+threshold: 0.5

@@ -1,0 +1,2 @@
+huggingface_module: !!python/name:transformers.models.bert.modeling_bert.BertForSequenceClassification ''
+pipeline_task: null
