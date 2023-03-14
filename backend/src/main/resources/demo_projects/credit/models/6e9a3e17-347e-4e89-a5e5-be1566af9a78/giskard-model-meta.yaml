@@ -23,8 +23,7 @@ feature_names:
 - people_under_maintenance
 - telephone
 - foreign_worker
-id: !!python/object:uuid.UUID
-  int: 279190629381971183924816567716342137120
+id: 6e9a3e17-347e-4e89-a5e5-be1566af9a78
 language: PYTHON
 language_version: 3.7.16
 loader_class: SKLearnModel
