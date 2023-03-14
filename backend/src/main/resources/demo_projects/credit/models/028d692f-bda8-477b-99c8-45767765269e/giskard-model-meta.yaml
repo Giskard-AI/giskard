@@ -23,10 +23,13 @@ feature_names:
 - people_under_maintenance
 - telephone
 - foreign_worker
-id: 93112387-7bce-4b71-826e-933cfb235a65
+id: !!python/object:uuid.UUID
+  int: 3392703284051367999229259220607379102
 language: PYTHON
+language_version: 3.7.16
+loader_class: SKLearnModel
+loader_module: giskard.models.sklearn
 model_type: CLASSIFICATION
-name: Credit Scoring Model logistic_regression
-language_version: 3.7.14
-size: 8043
+name: Logistic Regression
+size: 8176
 threshold: 0.5

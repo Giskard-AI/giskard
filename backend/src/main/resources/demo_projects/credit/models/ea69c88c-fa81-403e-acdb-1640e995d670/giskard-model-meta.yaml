@@ -1,0 +1,35 @@
+classification_labels:
+- Default
+- Not default
+feature_names:
+- account_check_status
+- duration_in_month
+- credit_history
+- purpose
+- credit_amount
+- savings
+- present_employment_since
+- installment_as_income_perc
+- sex
+- personal_status
+- other_debtors
+- present_residence_since
+- property
+- age
+- other_installment_plans
+- housing
+- credits_this_bank
+- job
+- people_under_maintenance
+- telephone
+- foreign_worker
+id: !!python/object:uuid.UUID
+  int: 311588609835207460765253771001073096304
+language: PYTHON
+language_version: 3.7.16
+loader_class: SKLearnModel
+loader_module: giskard.models.sklearn
+model_type: CLASSIFICATION
+name: Random Forest Classifier
+size: 1776043
+threshold: 0.5

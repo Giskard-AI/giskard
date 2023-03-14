@@ -1,5 +1,27 @@
-column_types: null
-compressed_size_bytes: 5812
+column_types:
+  account_check_status: object
+  age: int64
+  credit_amount: int64
+  credit_history: object
+  credits_this_bank: int64
+  default: object
+  duration_in_month: int64
+  foreign_worker: object
+  housing: object
+  installment_as_income_perc: int64
+  job: object
+  other_debtors: object
+  other_installment_plans: object
+  people_under_maintenance: int64
+  personal_status: object
+  present_employment_since: object
+  present_residence_since: int64
+  property: object
+  purpose: object
+  savings: object
+  sex: object
+  telephone: object
+compressed_size_bytes: 5818
 feature_types:
   account_check_status: category
   age: numeric
@@ -23,7 +45,7 @@ feature_types:
   savings: category
   sex: category
   telephone: category
-id: 02e1926a-8b14-403a-9127-d129e3e8bcdf
-name: Credit Scoring data test
+id: 684204db-d670-4e8a-8501-65354dcc4e2f
+name: test dataset
 original_size_bytes: 53607
 target: default
