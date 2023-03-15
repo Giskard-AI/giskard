@@ -43,6 +43,7 @@
     "ai.giskard.web.dto.PrepareDeleteDTO$LightTestSuite": "PrepareDeleteDTO.LightTestSuite",
     "ai.giskard.web.dto.ml.NamedSingleTestResultDTO": "NamedSingleTestResultDTO",
     "ai.giskard.web.dto.user.RoleDTO": "RoleDTO",
+    "ai.giskard.web.dto.config.LicenseDTO": "LicenseDTO",
     "ai.giskard.web.dto.FeedbackMinimalDTO": "FeedbackMinimalDTO",
     "ai.giskard.web.dto.ml.DatasetDTO": "DatasetDTO",
     "ai.giskard.web.dto.PrepareDeleteDTO$LightFeedback": "PrepareDeleteDTO.LightFeedback",
@@ -60,6 +61,7 @@
     "ai.giskard.web.dto.ml.ProjectPostDTO": "ProjectPostDTO",
     "ai.giskard.web.dto.config.MLWorkerInfoDTO$PlatformInfoDTO": "MLWorkerInfoDTO.PlatformInfoDTO",
     "ai.giskard.web.dto.SliceValidateDTO": "SliceValidateDTO",
+    "ai.giskard.web.dto.SetupDTO": "SetupDTO",
     "ai.giskard.domain.ml.CodeLanguage": "CodeLanguage",
     "ai.giskard.web.dto.ExplainResponseDTO": "ExplainResponseDTO",
     "ai.giskard.web.dto.ModelMetadataDTO": "ModelMetadataDTO",
@@ -75,6 +77,7 @@
     "ai.giskard.domain.ml.table.RegressionUnit": "RegressionUnit",
     "ai.giskard.web.dto.ml.SliceDTO": "SliceDTO",
     "ai.giskard.web.dto.ml.TestEditorConfigDTO": "TestEditorConfigDTO",
+    "ai.giskard.service.ee.FeatureFlag": "FeatureFlag",
     "ai.giskard.domain.ml.TestResult": "TestResult",
     "ai.giskard.web.dto.user.UserDTO": "UserDTO",
     "ai.giskard.web.dto.SliceCreateDTO": "SliceCreateDTO"

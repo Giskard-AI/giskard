@@ -19,6 +19,7 @@ import {
     InspectionCreateDTO,
     InspectionDTO,
     JWTToken,
+    LicenseDTO,
     ManagedUserVM,
     MessageDTO,
     MLWorkerInfoDTO,
@@ -42,13 +43,14 @@ import {
     UpdateTestSuiteDTO,
     UserDTO
 } from './generated-sources';
-import { PostImportProjectDTO } from './generated-sources/ai/giskard/web/dto/post-import-project-dto';
+import {PostImportProjectDTO} from './generated-sources/ai/giskard/web/dto/post-import-project-dto';
 import {TYPE} from "vue-toastification";
 import ErrorToast from "@/views/main/utils/ErrorToast.vue";
 import router from "@/router";
 import mixpanel from "mixpanel-browser";
 import {useUserStore} from "@/stores/user";
 import AdminUserDTOWithPassword = AdminUserDTO.AdminUserDTOWithPassword;
+import {SetupDTO} from "@/generated-sources/ai/giskard/web/dto/setup-dto";
 
 function jwtRequestInterceptor(config) {
     // Do something before request is sent
@@ -188,8 +190,8 @@ export const api = {
     async logInGetToken(username: string, password: string) {
         return apiV2.post<unknown, JWTToken>(`/authenticate`, {username, password});
     },
-    async getFeatureFlags() {
-        return apiV2.get<unknown, unknown>(`/settings/featureFlags`);
+    async getLicense() {
+        return apiV2.get<unknown, LicenseDTO>(`/settings/license`);
     },
     async getUserAndAppSettings() {
         return apiV2.get<unknown, AppConfigDTO>(`/settings`);
@@ -274,13 +276,13 @@ export const api = {
     async getProjectModels(id: number) {
         return axiosProject.get<unknown, ModelDTO[]>(`/${id}/models`);
     },
-    async prepareImport(formData: FormData){
-        const headers = { 'Content-Type': 'multipart/form-data' };
+    async prepareImport(formData: FormData) {
+        const headers = {'Content-Type': 'multipart/form-data'};
         return axiosProject.post<unknown, PrepareImportProjectDTO>(`/import/prepare`, formData, {
             headers: headers
         });
     },
-    async importProject(postImportProject: PostImportProjectDTO){
+    async importProject(postImportProject: PostImportProjectDTO) {
         return axiosProject.post<unknown, ProjectDTO>(`/import`, postImportProject);
     },
     async deleteDatasetFile(datasetId: number) {
@@ -299,12 +301,12 @@ export const api = {
         downloadURL(`${API_V2_ROOT}/download/model/${id}`);
     },
     async editModelName(modelId: number, name: string) {
-      return apiV2.patch<unknown, ModelDTO>(`/models/${modelId}/name/${encodeURIComponent(name)}`, null)
+        return apiV2.patch<unknown, ModelDTO>(`/models/${modelId}/name/${encodeURIComponent(name)}`, null)
     },
     downloadDataFile(id: number) {
         downloadURL(`${API_V2_ROOT}/download/dataset/${id}`);
     },
-    downloadExportedProject(id: number){
+    downloadExportedProject(id: number) {
         downloadURL(`${API_V2_ROOT}/download/project/${id}/export`);
     },
     async peekDataFile(datasetId: number) { //TODO
@@ -455,6 +457,19 @@ export const api = {
         return apiV2.post("/slices/validate", {
             datasetId: datasetId,
             code: code
+        });
+    },
+    async uploadLicense(form: FormData) {
+        return apiV2.post<unknown, unknown>(`/ee/license`, form, {
+            headers: {
+                'Content-Type': 'multipart/form-data'
+            }
+        })
+    },
+    async finalizeSetup(allowAnalytics: boolean, license: string) {
+        return apiV2.post<SetupDTO, unknown>(`/setup`, {
+            allowAnalytics: allowAnalytics,
+            license: license
         });
     }
 };

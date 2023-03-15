@@ -1,4 +1,4 @@
-package ai.giskard.security.jwt;
+package ai.giskard.security.ee.jwt;
 
 public enum JWTTokenType {
     UI, API, INVITATION
