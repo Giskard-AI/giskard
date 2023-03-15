@@ -1,8 +1,8 @@
 import pandas as pd
 import torch
+import torch.nn as nn
 import torchtext.functional as F
 import torchtext.transforms as T
-from scipy import special
 from torch.hub import load_state_dict_from_url
 from torchdata.datapipes.iter import IterableWrapper
 from torchtext.datasets import SST2
@@ -11,11 +11,7 @@ from torchtext.models import RobertaClassificationHead, XLMR_BASE_ENCODER
 import tests.utils
 from giskard import PyTorchModel, Dataset
 
-
-def my_softmax(x):
-    return special.softmax(x, axis=1)
-
-
+torch_softmax = nn.Softmax(dim=1)
 device = "cuda" if torch.cuda.is_available() else "cpu"
 
 padding_idx = 1
@@ -59,6 +55,10 @@ def test_sst2_pytorch_list():
         return data_list
 
     classification_labels = ["0", "1"]
+
+    def my_softmax(x):
+        return torch_softmax(x)
+
     my_model = PyTorchModel(
         name="SST2-XLMR_BASE_ENCODER",
         clf=model,
