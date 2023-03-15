@@ -53,7 +53,7 @@ public class TestSuiteExecutionService {
 
             for (SuiteTest suiteTest : execution.getSuite().getTests()) {
                 builder.addTests(testArgumentService
-                    .buildFixedTestArgument(suiteTest, execution.getSuite().getProject().getKey()));
+                    .buildFixedTestArgument(execution.getInputs(), suiteTest, execution.getSuite().getProject().getKey()));
             }
 
             TestSuiteResultMessage testSuiteResultMessage = client.getBlockingStub().runTestSuite(builder.build());

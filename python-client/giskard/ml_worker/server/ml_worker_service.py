@@ -458,7 +458,7 @@ def map_result_to_single_test_result(result) -> ml_worker_pb2.SingleTestResult:
                     text=message.text,
                 )
                 for message in result.messages
-            ],
+            ] if result.messages is not None else [],
             props=result.props,
             metric=result.metric,
             missing_count=result.missing_count,
