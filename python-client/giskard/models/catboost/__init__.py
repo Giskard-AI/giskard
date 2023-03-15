@@ -43,4 +43,10 @@ class CatboostModel(MLFlowBasedModel):
         return mlflow.catboost.load_model(local_dir)
 
     def clf_predict(self, df):
-        return self.clf.predict(df)
+        if self.is_classification:
+            return self.clf.predict_proba(df)
+        elif self.is_regression:
+            return self.clf.predict(df)
+        else:
+            raise ValueError("Unsupported model type")
+
