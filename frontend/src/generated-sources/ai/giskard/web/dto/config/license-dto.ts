@@ -5,7 +5,9 @@ import type {FeatureFlag} from './../../../service/ee/feature-flag';
  */
 export interface LicenseDTO {
     active: boolean;
+    expiresOn: any /* TODO: Missing translation of java.time.Instant */;
     features: {[key in FeatureFlag]: boolean};
+    licenseProblem: string;
     planCode: string;
     planName: string;
     projectLimit: number;

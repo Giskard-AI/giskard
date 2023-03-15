@@ -7,6 +7,7 @@
     </v-card-text>
     <v-card-actions>
       <v-spacer/>
+      <v-btn small color="primary" :to="{name: 'setup'}">Request new license</v-btn>
       <v-btn small color="primary" @click="openFileInput">Upload license file</v-btn>
       <input type="file" ref="fileInput" style="display: none;" @change="onFileUpdate"/>
     </v-card-actions>

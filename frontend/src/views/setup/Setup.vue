@@ -5,6 +5,34 @@
         <img src="@/assets/logo_v2_full.png" alt="logo" width="480">
       </v-col>
     </v-row>
+    <v-row v-if="mainStore.license && !mainStore.license.active && mainStore.license.licenseProblem">
+      <v-col>
+        <v-alert type="warning" outlined prominent dense>
+          <v-card flat>
+            <v-card-title>The current license is invalid</v-card-title>
+            <v-card-text>{{ mainStore.license.licenseProblem }}</v-card-text>
+          </v-card>
+        </v-alert>
+      </v-col>
+    </v-row>
+    <template v-if="mainStore.license && mainStore.license.active && !mainStore.license.licenseProblem">
+      <v-row>
+        <v-col>
+          <v-alert type="success" outlined prominent color="primary" dense>
+            <v-card flat>
+              <v-card-title>The current license is valid <span v-if="mainStore.license.expiresOn">&nbsp;until {{mainStore.license.expiresOn | date}}</span></v-card-title>
+              <v-card-text>
+                <v-btn tile color="primary" :to="{name: 'main-dashboard'}">Open Giskard</v-btn>
+              </v-card-text>
+            </v-card>
+          </v-alert>
+        </v-col>
+      </v-row>
+      <v-row>
+        <v-col class="text-center">If you want to update your license follow the steps below</v-col>
+      </v-row>
+    </template>
+
     <v-row>
       <v-col>
         <v-stepper v-model="step" vertical>
@@ -39,7 +67,7 @@
                   <v-checkbox v-model="termsOfServiceAgree" dense :error-messages="errors">
                     <template v-slot:label>
                       I agree to the &nbsp<a @click.stop
-                                                 href="https://giskard-ai.github.io/giskard-privacy/policy.html">privacy
+                                             href="https://giskard-ai.github.io/giskard-privacy/policy.html">privacy
                       policy</a>
                     </template>
                   </v-checkbox>
@@ -73,7 +101,8 @@
                 <div>
                   <div>I agree to send anonymous usage reports</div>
                   <div class="caption">This information helps us improve the product and fix bugs 🐞 sooner.
-                     This parameter can be later changed in the settings</div>
+                    This parameter can be later changed in the settings
+                  </div>
                 </div>
               </template>
             </v-checkbox>
@@ -162,7 +191,6 @@ async function onFileUpdate(event) {
     if (licenseContents.startsWith("-----BEGIN LICENSE FILE-----")) {
       step.value = 3;
     } else {
-      debugger;
       mainStore.addNotification({
         color: 'error',
         content: 'License file format is not valid.'

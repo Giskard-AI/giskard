@@ -7,6 +7,7 @@ import ai.giskard.repository.UserRepository;
 import ai.giskard.security.AuthoritiesConstants;
 import ai.giskard.service.GeneralSettingsService;
 import ai.giskard.service.ee.License;
+import ai.giskard.service.ee.LicenseException;
 import ai.giskard.service.ee.LicenseService;
 import ai.giskard.service.ml.MLWorkerService;
 import ai.giskard.web.dto.config.AppConfigDTO;
@@ -34,6 +35,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
@@ -113,16 +115,26 @@ public class SettingsController {
     }
 
     @GetMapping("/license")
-    public LicenseDTO getLicense() {
+    public LicenseDTO getLicense() throws IOException {
+        LicenseDTO.LicenseDTOBuilder dtoBuilder = LicenseDTO.builder();
         License currentLicense = licenseService.getCurrentLicense();
 
-        return LicenseDTO.builder()
+        if (!currentLicense.isActive()) {
+            try {
+                licenseService.readLicenseFromFile();
+            } catch (LicenseException e) {
+                dtoBuilder.licenseProblem(e.getMessage());
+            }
+        }
+
+        return dtoBuilder
             .planName(currentLicense.getPlanName())
             .planCode(currentLicense.getPlanCode())
             .userLimit(currentLicense.getUserLimit())
             .projectLimit(currentLicense.getProjectLimit())
             .active(currentLicense.isActive())
             .features(currentLicense.getFeatures())
+            .expiresOn(currentLicense.getExpiresOn())
             .build();
     }
 

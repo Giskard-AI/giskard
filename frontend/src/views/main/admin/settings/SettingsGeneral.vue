@@ -27,6 +27,10 @@
                     </td>
                   </tr>
                   <tr>
+                    <td>License expiration date</td>
+                    <td v-if="mainStore.license && mainStore.license.expiresOn">{{ mainStore.license.expiresOn | date }}</td>
+                  </tr>
+                  <tr>
                     <td colspan="2">
                       <v-divider class="divider"/>
                     </td>
