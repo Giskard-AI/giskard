@@ -297,14 +297,15 @@ class WrapperModel(Model, ABC):
         self.model_postprocessing_function = model_postprocessing_function
 
     def _postprocess(self, raw_predictions):
-        raw_predictions = np.asarray(raw_predictions)
-
-        # We try to automatically fix issues in the output shape
-        raw_predictions = self._possibly_fix_predictions_shape(raw_predictions)
-
         # User specified a custom postprocessing function
         if self.model_postprocessing_function:
             raw_predictions = self.model_postprocessing_function(raw_predictions)
+
+        # Convert predictions to numpy array
+        raw_predictions = self._convert_to_numpy(raw_predictions)
+
+        # We try to automatically fix issues in the output shape
+        raw_predictions = self._possibly_fix_predictions_shape(raw_predictions)
 
         return raw_predictions
 
@@ -316,6 +317,9 @@ class WrapperModel(Model, ABC):
         raw_prediction = self._postprocess(raw_prediction)
 
         return raw_prediction
+
+    def _convert_to_numpy(self, raw_predictions):
+        return np.asarray(raw_predictions)
 
     def _possibly_fix_predictions_shape(self, raw_predictions):
         if not self.is_classification:
