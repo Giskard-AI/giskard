@@ -28,6 +28,16 @@
         </v-list>
         <v-spacer></v-spacer>
         <v-list>
+          <v-list-item>
+            <v-list-item-content v-if="warningMessage">
+              <v-tooltip right>
+                <template v-slot:activator="{ on, attrs }">
+                  <v-icon color="orange" v-bind="attrs" v-on="on">mdi-alert</v-icon>
+                </template>
+                <span>{{ warningMessage }}</span>
+              </v-tooltip>
+            </v-list-item-content>
+          </v-list-item>
           <v-divider/>
           <v-list-item v-show="hasAdminAccess" to="/main/admin/">
             <v-list-item-content>
@@ -58,56 +68,48 @@
   </v-main>
 </template>
 
-<script lang="ts">
-import {Component, Vue} from "vue-property-decorator";
-
-import {appName} from "@/env";
+<script lang="ts" setup>
 import {useUserStore} from "@/stores/user";
 import {useMainStore} from "@/stores/main";
+import {computed, ref} from "vue";
+import moment from "moment/moment";
 
-const routeGuardMain = async (to, _from, next) => {
-  if (to.path === "/main") {
-    next("/main/dashboard");
+const mainStore = useMainStore();
+const userStore = useUserStore();
+
+
+let warningMessage = ref<string>()
+
+if (mainStore.license) {
+  let m = moment(String(mainStore.license.expiresOn));
+  let dif = m.diff(moment(), 'days')
+  if (dif <= 7) {
+    warningMessage.value = `Your license expires in ${dif} days`
+  }
+}
+
+
+const hasAdminAccess = computed(() => {
+
+  return userStore.hasAdminAccess;
+});
+
+
+const authAvailable = computed(() => {
+  return mainStore.authAvailable;
+});
+
+const userId = computed(() => {
+  const userProfile = userStore.userProfile;
+  if (userProfile) {
+    return userProfile.user_id;
   } else {
-    next();
+    return "Guest";
   }
-};
+});
 
-@Component
-export default class Main extends Vue {
-  public appName = appName;
-  private miniDrawer = false;
-
-  public beforeRouteEnter(to, from, next) {
-    routeGuardMain(to, from, next);
-  }
-
-  public beforeRouteUpdate(to, from, next) {
-    routeGuardMain(to, from, next);
-  }
-
-  public get hasAdminAccess() {
-    const userStore = useUserStore();
-    return userStore.hasAdminAccess;
-  }
-
-  public get authAvailable() {
-    const mainStore = useMainStore();
-    return mainStore.authAvailable;
-  }
-
-  get userId() {
-    const userProfile = useUserStore().userProfile;
-    if (userProfile) {
-      return userProfile.user_id;
-    } else {
-      return "Guest";
-    }
-  }
-
-  public async logout() {
-    await useUserStore().userLogout();
-  }
+async function logout() {
+  await userStore.userLogout();
 }
 </script>
 
