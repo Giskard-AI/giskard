@@ -29,7 +29,7 @@ jobs:
         shell: bash
         run:
           BRANCH=${GITHUB_REF#refs/heads/}
-          echo SANITIZED_BRANCH=${BRANCH//"/"/-}
+          SANITIZED_BRANCH=${BRANCH//"/"/-}
           
           echo "branch=$BRANCH" >> $GITHUB_OUTPUT
           echo "tag=$SANITIZED_BRANCH" >> $GITHUB_OUTPUT
