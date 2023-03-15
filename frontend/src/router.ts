@@ -14,6 +14,7 @@ export default new Router({
             component: () => import(/* webpackChunkName: "start" */ './views/main/Start.vue'),
             children: [
                 {
+                    name: "setup",
                     path: 'setup',
                     component: () => import(/* webpackChunkName: "setup" */ './views/setup/Setup.vue')
                 },
@@ -46,6 +47,7 @@ export default new Router({
                     redirect: '/main/dashboard',
                     children: [
                         {
+                            name: 'main-dashboard',
                             path: 'dashboard',
                             component: () => import(/* webpackChunkName: "main-dashboard" */ './views/main/Dashboard.vue'),
                         },

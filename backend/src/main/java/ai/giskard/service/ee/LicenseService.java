@@ -29,7 +29,7 @@ public class LicenseService {
 
     private final ApplicationProperties properties;
 
-    private License currentLicense;
+    private License currentLicense = new License();
 
     /**
      * On service init, load the stored license if it exists
@@ -37,15 +37,19 @@ public class LicenseService {
      */
     @PostConstruct
     public void init() throws IOException {
-        if (currentLicense == null) {
-            if (Files.exists(fileLocationService.licensePath())) {
-                String licenseFile = Files.readString(fileLocationService.licensePath());
-                initializeLicense(licenseFile);
-            } else {
-                // The default license has "active" set to false -> it will go back to the setup page
-                currentLicense = new License();
-            }
+        try {
+            this.currentLicense = readLicenseFromFile();
+        } catch (LicenseException e) {
+            log.warn("Invalid license file", e);
         }
+    }
+
+    public synchronized License readLicenseFromFile() throws IOException {
+        if (Files.exists(fileLocationService.licensePath())) {
+            String licenseFile = Files.readString(fileLocationService.licensePath());
+            return readLicense(licenseFile);
+        }
+        return new License();
     }
 
     /**
@@ -66,14 +70,14 @@ public class LicenseService {
      * Takes a license file content, parses it, validates that it is a proper license.
      * If it's a real license, saves it in giskard home and updates available feature flags
      *
-     * @param licenseFile
+     * @param licenseContent
      */
-    public synchronized void uploadLicense(String licenseFile) throws IOException {
-        initializeLicense(licenseFile);
-        Files.write(fileLocationService.licensePath(), licenseFile.getBytes());
+    public synchronized void uploadLicense(String licenseContent) throws IOException {
+        currentLicense = readLicense(licenseContent);
+        Files.write(fileLocationService.licensePath(), licenseContent.getBytes());
     }
 
-    private void initializeLicense(String lic) throws IOException {
+    private License readLicense(String lic) throws IOException {
         // 1. Remove start/end decorators
         String encodedPayload = lic.replaceAll(
             "(?:^-----BEGIN LICENSE FILE-----\\n)|" +
@@ -93,31 +97,25 @@ public class LicenseService {
         String algorithm = payloadJson.get("alg").asText();
 
         if (!"base64+ed25519".equals(algorithm)) {
-            throw new LicenseValidationException();
+            throw new LicenseException("Incorrect algorithm, base64+ed25519 is expected");
         }
 
         // 4. Decode signing bytes and use signature to validate
         if (!verifySignature(encodedData, encodedSig)) {
-            throw new LicenseValidationException();
+            throw new LicenseException("Invalid signature");
         }
 
         // 5. Decode license and parse it into a License object
         String decodedLicense = new String(Base64.getDecoder().decode(encodedData));
         JsonNode licenseJson = mapper.readTree(decodedLicense);
 
-        JsonNode meta = licenseJson.get("meta");
-        if (!verifyExpired(meta)) {
-            throw new LicenseExpiredException();
-        }
+        verifyExpired(licenseJson);
 
-        License newLicense = License.fromJson(licenseJson);
+        License newLicense = KeygenLicenseReader.read(licenseJson);
         if (!newLicense.isActive()) {
-            throw new LicenseValidationException();
+            throw new LicenseException("License is inactive");
         }
-
-        log.info("License file loaded. Plan: {}", newLicense.getPlanName());
-
-        this.currentLicense = newLicense;
+        return newLicense;
     }
 
 
@@ -135,11 +133,16 @@ public class LicenseService {
         return verifier.verifySignature(signatureBytes);
     }
 
-    private boolean verifyExpired(JsonNode licenseMetadata) {
+    private void verifyExpired(JsonNode json) {
+        JsonNode attributes = json.get("data").get("attributes");
         Instant now = Instant.now();
-        Instant issued = ZonedDateTime.parse(licenseMetadata.get("issued").asText()).toInstant();
-        Instant expiry = ZonedDateTime.parse(licenseMetadata.get("expiry").asText()).toInstant();
-
-        return issued.isBefore(now) && expiry.isAfter(now);
+        Instant created = ZonedDateTime.parse(attributes.get("created").asText()).toInstant();
+        Instant expiry = ZonedDateTime.parse(attributes.get("expiry").asText()).toInstant();
+        if (now.isBefore(created)) {
+            throw new LicenseException("License created date: %s is before current date, check server date".formatted(created));
+        }
+        if (now.isAfter(expiry)) {
+            throw new LicenseException("License has expired on %s".formatted(expiry));
+        }
     }
 }
