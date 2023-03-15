@@ -27,13 +27,13 @@ jobs:
 
       - name: Extract branch name
         shell: bash
-        run: echo "branch=${GITHUB_REF#refs/heads/}" >> $GITHUB_OUTPUT
+        run:
+          BRANCH=${GITHUB_REF#refs/heads/}
+          echo SANITIZED_BRANCH=${BRANCH//"/"/-}
+          
+          echo "branch=$BRANCH" >> $GITHUB_OUTPUT
+          echo "tag=$SANITIZED_BRANCH" >> $GITHUB_OUTPUT
         id: extract_branch
-
-      - name: Define tag
-        shell: bash
-        run: echo "tag=${${{ steps.extract_branch.outputs.branch }}//"/"/-}" >> $GITHUB_OUTPUT
-        id: define_tag
 
       - name: Login to Docker registry
         uses: docker/login-action@v2
@@ -44,7 +44,7 @@ jobs:
       - name: Build and push
         uses: docker/bake-action@master
         env:
-          TAG: ${{ (steps.define_tag.outputs.tag == 'main' && 'dev') || steps.define_tag.outputs.tag }}
+          TAG: ${{ (steps.extract_branch.outputs.tag == 'main' && 'dev') || steps.extract_branch.outputs.tag }}
         with:
           push: true
           set: |
