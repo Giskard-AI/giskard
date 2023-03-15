@@ -13,8 +13,9 @@ from giskard.ml_worker.generated.ml_worker_pb2 import SingleTestResult
 from giskard.ml_worker.testing.abstract_test_collection import AbstractTestCollection
 from giskard.ml_worker.testing.registry.decorators import test
 from giskard.ml_worker.utils.logging import configure_logging
-from giskard.models.pytorch import PyTorchModel
 from giskard.models.sklearn import SKLearnModel
+from giskard.models.catboost import CatboostModel
+from giskard.models.pytorch import PyTorchModel
 from giskard.models.tensorflow import TensorFlowModel
 from giskard.models.huggingface import HuggingFaceModel
 
@@ -37,14 +38,15 @@ __version__: str = get_version()
 __all__ = [
     'SingleTestResult',
     'Project',
-    'Model',
-    'WrapperModel',
-    'MLFlowBasedModel',
-    'SKLearnModel',
     'Dataset',
     'GiskardClient',
     'AbstractTestCollection',
     'test',
+    'Model',
+    'WrapperModel',
+    'MLFlowBasedModel',
+    'SKLearnModel',
+    'CatboostModel',
     'PyTorchModel',
     'TensorFlowModel',
     'HuggingFaceModel'
