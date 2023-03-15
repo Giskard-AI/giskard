@@ -77,6 +77,10 @@ public class FileLocationService {
         return giskardHome().resolve("tmp");
     }
 
+    public Path licensePath() {
+        return giskardHome().resolve("license.lic");
+    }
+
     private Path giskardHome() {
         return applicationProperties.getHome();
     }
