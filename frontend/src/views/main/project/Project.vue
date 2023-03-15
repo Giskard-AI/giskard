@@ -10,11 +10,18 @@
         </span>
       </v-toolbar-title>
       <v-spacer></v-spacer>
-      <v-btn small tile color="primary" v-if="isProjectOwnerOrAdmin"
-             @click="openShareDialog = true">
-        <v-icon dense left>people</v-icon>
-        Invite
-      </v-btn>
+      <v-tooltip :disabled="mainStore.authAvailable" bottom>
+        <template v-slot:activator="{ on, attrs}">
+          <div v-on="on">
+            <v-btn small tile color="primary" v-if="isProjectOwnerOrAdmin"
+                   @click="openShareDialog = true" :disabled="!mainStore.authAvailable">
+              <v-icon dense left>people</v-icon>
+              Invite
+            </v-btn>
+          </div>
+        </template>
+        <span>Inviting users is only available in Giskard Starter or above.</span>
+      </v-tooltip>
       <v-menu left bottom offset-y rounded=0 v-if="isProjectOwnerOrAdmin">
         <template v-slot:activator="{ on, attrs }">
           <v-btn text small v-bind="attrs" v-on="on">
