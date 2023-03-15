@@ -86,14 +86,7 @@ class PyTorchModel(MLFlowBasedModel):
     def save_with_mlflow(self, local_path, mlflow_meta: mlflow.models.Model):
         mlflow.pytorch.save_model(self.clf, path=local_path, mlflow_model=mlflow_meta)
 
-    def _get_predictions(self, data: Iterator):
-        with torch.no_grad():
-            return [self.clf(*entry) for entry in map_to_tuples(data)]
-
-    def clf_predict(self, data):
-        self.clf.to(self.device)
-        self.clf.eval()
-
+    def _get_predictions_from_iterable(self, data):
         # Fault tolerance: try to convert to the right format in special cases
         if isinstance(data, pd.DataFrame):
             data = TorchMinimalDataset(data, str_to_torch_dtype[self.torch_dtype])
@@ -105,23 +98,47 @@ class PyTorchModel(MLFlowBasedModel):
             data_iter = iter(data)
         except TypeError as err:
             raise ValueError(
-                f"The data exposed to your clf must be iterable (instead, we got type={type(data)})."
+                f"The data exposed to your clf must be iterable (instead, we got type={type(data)}). "
                 "Make sure that your data or your `data_preprocessing_function` outputs one of the following:\n"
                 "- pandas.DataFrame\n- torch.utils.data.Dataset\n- iterable with elements that are compatible with your clf"
             ) from err
 
-        # Get a list of model predictions
         try:
-            if self.iterate_dataset:
-                predictions = self._get_predictions(data_iter)
-            else:
-                predictions = self.clf(data)
+            with torch.no_grad():
+                return torch.cat([self.clf(*entry) for entry in map_to_tuples(data_iter)])
         except ValueError as err:
             raise ValueError(
-                "Calling clf on your dataset after applying your `data_preprocessing_function` output fails."
+                "Running your model prediction on one element of your dataset returned an error.\n"
+                "Please check that your `data_preprocessing_function` returns an iterable of objects "
+                "that are valid inputs for your model."
             ) from err
 
-        return torch.cat(predictions)
+    def _get_predictions_from_object(self, data):
+        try:
+            return self.clf(data)
+        except ValueError as err:
+            raise ValueError(
+                "Running your model prediction returned an error.\n"
+                "Since you specified `iter_dataset=False`, please check that your `data_preprocessing_function` "
+                "returns an object that can be passed as input for your model. "
+            )
+
+    def clf_predict(self, data):
+        self.clf.to(self.device)
+        self.clf.eval()
+
+        if self.iterate_dataset:
+            predictions = self._get_predictions_from_iterable(data)
+        else:
+            predictions = self._get_predictions_from_object(data)
+
+        return predictions
+
+    def _convert_to_numpy(self, raw_predictions):
+        if isinstance(raw_predictions, torch.Tensor):
+            return raw_predictions.detach().numpy()
+
+        return np.asarray(raw_predictions)
 
     def save_pytorch_meta(self, local_path):
         with open(Path(local_path) / "giskard-model-pytorch-meta.yaml", "w") as f:
