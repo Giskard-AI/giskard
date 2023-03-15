@@ -40,7 +40,3 @@ async function onFileUpdate(event) {
 }
 
 </script>
-
-<style scoped>
-
-</style>

@@ -33,8 +33,6 @@ import IEditorOptions = editor.IEditorOptions;
 const userStore = useUserStore();
 const mainStore = useMainStore();
 
-mainStore.fetchLicense();
-
 const loggedIn = computed(() => {
   return userStore.isLoggedIn;
 })
