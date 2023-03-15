@@ -73,18 +73,10 @@ import {useUserStore} from "@/stores/user";
 import {useMainStore} from "@/stores/main";
 import {computed, ref} from "vue";
 import moment from "moment/moment";
-import {useRouter} from "vue-router/composables";
 
 const mainStore = useMainStore();
 const userStore = useUserStore();
 
-const routeGuardMain = async (to, _from, next) => {
-  if (to.path === "/main") {
-    next("/main/dashboard");
-  } else {
-    next();
-  }
-};
 
 let warningMessage = ref<string>()
 
@@ -96,10 +88,6 @@ if (mainStore.license) {
   }
 }
 
-const router = useRouter();
-router.beforeEach((to, from, next) => {
-  routeGuardMain(to, from, next);
-});
 
 const hasAdminAccess = computed(() => {
 
@@ -107,9 +95,9 @@ const hasAdminAccess = computed(() => {
 });
 
 
-function authAvailable() {
+const authAvailable = computed(() => {
   return mainStore.authAvailable;
-}
+});
 
 const userId = computed(() => {
   const userProfile = userStore.userProfile;

@@ -80,9 +80,9 @@ public class LicenseService {
     private License readLicense(String lic) throws IOException {
         // 1. Remove start/end decorators
         String encodedPayload = lic.replaceAll(
-            "(?:^-----BEGIN LICENSE FILE-----\\n)|" +
+            "(?:^-----BEGIN LICENSE FILE-----\\n)|" + // NOSONAR
                 "\\n|" +
-                "(?:-----END LICENSE FILE-----\\n$)",
+                "(?:-----END LICENSE FILE-----\\n$)", // NOSONAR
             "");
 
         // 2. Decode base64 => json

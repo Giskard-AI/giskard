@@ -7,6 +7,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class KeygenLicenseReader {
+    private KeygenLicenseReader() {
+    }
 
     public static License read(JsonNode json) {
         List<String> feats = new ArrayList<>();
@@ -15,11 +17,11 @@ public class KeygenLicenseReader {
         if (json.has("included")) {
             for (JsonNode included : json.get("included")) {
                 if ("policies".equals(included.get("type").asText())) {
-                    policyAttrs = included.get("attributes");
+                    policyAttrs = included.get("attributes"); // NOSONAR
 
                 }
                 if ("entitlements".equals(included.get("type").asText())) {
-                    feats.add(included.get("attributes").get("code").asText());
+                    feats.add(included.get("attributes").get("code").asText()); // NOSONAR
                 }
             }
         }
@@ -44,7 +46,7 @@ public class KeygenLicenseReader {
 
 
         license.setFeatures(feats);
-        JsonNode licenseAttributes = json.get("data").get("attributes");
+        JsonNode licenseAttributes = json.get("data").get("attributes"); // NOSONAR
         license.setActive("ACTIVE".equals(licenseAttributes.get("status").asText()));
         license.setExpiresOn(ZonedDateTime.parse(licenseAttributes.get("expiry").asText()).toInstant());
 
