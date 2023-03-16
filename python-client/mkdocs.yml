@@ -1,0 +1,9 @@
+site_name: Giskard documentation
+
+theme:
+  name: "material"
+
+plugins:
+  - search
+  - mkdocstrings
+  - autorefs

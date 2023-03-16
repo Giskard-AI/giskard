@@ -3,4 +3,14 @@
 ```python
 how is it going?
 ```
-- {ref}`subpage`.
+
+| Method      | Description                          |
+| ----------- | ------------------------------------ |
+| `GET`       | :material-check:     Fetch resource  |
+| `PUT`       | :material-check-all: Update resource |
+| `DELETE`    | :material-close:     Delete resource |
+
+
+```{autoclass} classname
+:members:
+```
