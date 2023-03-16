@@ -12,9 +12,9 @@ build:
 
     post_create_environment:
       - pip install poetry
-      - poetry config virtualenvs.create false
+      - poetry -C python-client config virtualenvs.create false
     post_install:
-      - poetry install -C python-client --only main
+      - poetry -C python-client install --only main
 
 
 sphinx:
