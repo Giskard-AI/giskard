@@ -6,6 +6,8 @@ build:
     python: "3.10"
   jobs:
     pre_build:
-      - pip install myst-parser
+      - pip install myst-parser poetry
+      - poetry install -C python-client --only main
 #      - sphinx-apidoc -o python-client/docs python-client/giskard
-
+sphinx:
+  configuration: python-client/docs/conf.py
