@@ -5,7 +5,7 @@ build:
   tools:
     python: "3.10"
   jobs:
-    pre_build:
+    pre_create_environment:
       - pip install myst-parser poetry
       - poetry -C python-client export --output python-client/requirements.txt --only main
 #      - sphinx-apidoc -o python-client/docs python-client/giskard
@@ -13,6 +13,4 @@ sphinx:
   configuration: python-client/docs/conf.py
 
 python:
-  install:
-    - requirements: python-client/requirements.txt
   system_packages: true
