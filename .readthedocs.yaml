@@ -5,15 +5,17 @@ build:
   tools:
     python: "3.10"
   jobs:
-#    pre_build:
-#      - pip install myst-parser poetry
-#      - poetry install -C python-client --only main
-##      - sphinx-apidoc -o python-client/docs python-client/giskard
+    #    pre_build:
+    #      - pip install myst-parser poetry
+    #      - poetry install -C python-client --only main
+    ##      - sphinx-apidoc -o python-client/docs python-client/giskard
     post_create_environment:
       - pip install poetry
-      - poetry -C python-client export --output python-client/requirements.txt --only main,doc
+      #      - poetry -C python-client export --output python-client/requirements.txt --only main,doc
+      - poetry -C python-client config virtualenvs.create false
     post_install:
-      - pip install -r python-client/requirements.txt
+      - poetry -C python-client install --only main,doc
+#      - pip install -r python-client/requirements.txt
 
 
 sphinx:
