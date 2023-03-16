@@ -6,5 +6,5 @@ build:
     python: "3.10"
   jobs:
     pre_build:
-     - sphinx-apidoc -o ./source ../giskard
+     - sphinx-apidoc -o python-client/docs python-client/giskard
 
