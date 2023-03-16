@@ -11,3 +11,6 @@ build:
 #      - sphinx-apidoc -o python-client/docs python-client/giskard
 sphinx:
   configuration: python-client/docs/conf.py
+
+python:
+  system_packages: true
