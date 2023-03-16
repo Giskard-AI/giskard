@@ -10,7 +10,3 @@ how is it going?
 | `PUT`       | :material-check-all: Update resource |
 | `DELETE`    | :material-close:     Delete resource |
 
-
-```{autoclass} classname
-:members:
-```

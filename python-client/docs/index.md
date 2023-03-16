@@ -27,15 +27,23 @@ For full documentation visit [mkdocs.org](https://www.mkdocs.org).
 
 {py:obj}`giskard.ml_worker.core.dataset.Dataset`
 
+
 ::::{tab-set}
 
+
 :::{tab-item} Label1
+
 Content 1
+
 :::
 
+
 :::{tab-item} Label2
+
 Content 2
+
 :::
+
 
 ::::
 
@@ -43,12 +51,16 @@ Content 2
 
 
 
-HOHOHO
+# HOHOHO
+
 
 
 ```{eval-rst}
-.. autoclass:: giskard.ml_worker.core.dataset.Dataset
+.. autoclass:: giskard.Dataset
     :show-inheritance:
     :members:
     :undoc-members:
 ```
+
+
+`custom example`
