@@ -61,7 +61,7 @@ const props = defineProps<{
 }>();
 
 const mainStore = useMainStore();
-const {inputs} = storeToRefs(useTestSuiteStore())
+const {inputs, executions} = storeToRefs(useTestSuiteStore())
 
 onMounted(() => loadData());
 watch(() => props.suiteId, () => loadData());
@@ -81,7 +81,8 @@ async function openRunTestSuite(compareMode: boolean) {
       projectId: props.projectId,
       suiteId: props.suiteId,
       inputs: inputs.value,
-      compareMode
+      compareMode,
+      previousParams: executions.value.length === 0 ? {} : executions.value[0].inputs
     }
   });
 }
