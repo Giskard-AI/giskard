@@ -11,10 +11,10 @@ build:
 ##      - sphinx-apidoc -o python-client/docs python-client/giskard
 
     post_create_environment:
-      - pip install poetry myst-parser
-      - poetry -C python-client config virtualenvs.create false
+      - pip install poetry
+      - cd python-client && poetry config virtualenvs.create false
     post_install:
-      - poetry -C python-client install --only main
+      - cd python-client && poetry install --only main,doc
 
 
 sphinx:
