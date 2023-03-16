@@ -201,7 +201,8 @@ export default new Router({
                                                 return {
                                                     suiteId: Number(route.params.suiteId),
                                                     projectId: Number(route.params.id),
-                                                    latestCount: Number(route.query.latestCount)
+                                                    latestCount: route.query.latestCount ? Number(route.query.latestCount) : undefined,
+                                                    selectedIds: route.query.selectedIds ? JSON.parse(route.query.selectedIds as string) : undefined
                                                 }
                                             }
                                         },

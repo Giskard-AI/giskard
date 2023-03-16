@@ -40,9 +40,22 @@ type ExecutionComparison = {
 
 const route = useRoute();
 
+const selectedIds = computed(() => {
+  if (route.query.latestCount) {
+    return executions.value ?
+        [...executions.value].splice(0, Number(route.query.latestCount))
+            .map(execution => execution.id)
+        : [];
+  } else if (route.query.selectedIds) {
+    return JSON.parse(route.query.selectedIds as string) as number[]
+  } else {
+    return [];
+  }
+})
+
 const executionComparisons: ComputedRef<ExecutionComparison[]> = computed(() => {
   const results: ExecutionComparison[] = executions.value ?
-      [...executions.value].splice(0, Number(route.query.latestCount))
+      executions.value.filter(e => selectedIds.value.includes(e.id))
           .map(execution => ({execution} as ExecutionComparison))
       : [];
 

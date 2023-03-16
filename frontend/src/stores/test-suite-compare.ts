@@ -19,5 +19,8 @@ export const useTestSuiteCompareStore = defineStore('testSuiteCompare', {
             this.currentExecution = null;
             this.compareSelectedItems = null;
         },
+        startComparing() {
+            this.compareSelectedItems = [this.currentExecution!];
+        },
     }
 });
