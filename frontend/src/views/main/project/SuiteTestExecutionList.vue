@@ -88,8 +88,14 @@ const {suite} = storeToRefs(testSuiteStore);
 
 
 function getTestName(test: TestFunctionDTO) {
-  const tags = test.tags.filter(tag => tag !== 'giskard' && tag !== 'pickle');
   const name = test.displayName ?? test.name;
+
+  if (props.compact) {
+    return name;
+  }
+
+  const tags = test.tags.filter(tag => tag !== 'giskard' && tag !== 'pickle');
+
 
   if (tags.length === 0) {
     return name;
