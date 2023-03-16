@@ -7,5 +7,5 @@ build:
   jobs:
     pre_build:
       - pip install myst-parser
-      - sphinx-apidoc -o python-client/docs python-client/giskard
+#      - sphinx-apidoc -o python-client/docs python-client/giskard
 
