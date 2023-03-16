@@ -28,4 +28,4 @@ html_static_path = ['_static']
 import os
 import sys
 
-sys.path.insert(0, os.path.abspath('../giskard/'))
+sys.path.insert(0, os.path.abspath('../'))
