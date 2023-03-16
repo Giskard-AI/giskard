@@ -24,6 +24,8 @@ Indices and tables
 Reference documentation
 =======================
 
+Hello world
+
 .. autoclass:: giskard.ml_worker.core.dataset.Dataset
     :members:
     :undoc-members:
