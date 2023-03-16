@@ -11,9 +11,9 @@ build:
 ##      - sphinx-apidoc -o python-client/docs python-client/giskard
     post_create_environment:
       - pip install poetry
-      - poetry config virtualenvs.create false
+      - poetry -C python-client export --output python-client/requirements.txt --only main,doc
     post_install:
-      - poetry install --only main,doc
+      - pip install -r python-client/requirements.txt
 
 
 sphinx:
