@@ -3,3 +3,4 @@
 ```python
 how is it going?
 ```
+- {ref}`subpage`.
