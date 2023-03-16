@@ -17,3 +17,6 @@ build:
 
 sphinx:
   configuration: python-client/docs/conf.py
+
+python:
+  system_packages: true
