@@ -19,3 +19,11 @@ Indices and tables
 * :ref:`modindex`
 * :ref:`search`
 * :ref:`test`
+
+
+Reference documentation
+=======================
+
+.. autoclass:: giskard.ml_worker.core.dataset.Dataset
+    :members:
+    :undoc-members:
