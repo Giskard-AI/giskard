@@ -61,9 +61,9 @@
 
 import {computed, onMounted, ref} from 'vue';
 import {api} from '@/api';
-import {SuiteTestDTO, TestFunctionDTO, TestSuiteDTO} from '@/generated-sources';
+import {SuiteTestDTO, TestFunctionDTO, TestInputDTO, TestSuiteDTO} from '@/generated-sources';
 import TestInputListSelector from '@/components/TestInputListSelector.vue';
-import {chain, isNull} from 'lodash';
+import {chain} from 'lodash';
 
 const {projectId, test, suiteId} = defineProps<{
   projectId: number,
@@ -74,13 +74,22 @@ const {projectId, test, suiteId} = defineProps<{
 const dialog = ref<boolean>(false);
 const testSuites = ref<TestSuiteDTO[]>([]);
 const selectedSuite = ref<TestSuiteDTO | null>(null);
-const testInputs = ref<{ [name: string]: any }>({});
+const testInputs = ref<{ [name: string]: TestInputDTO }>({});
 
 onMounted(() => loadData());
 
 async function loadData() {
   testSuites.value = await api.getTestSuites(projectId);
   selectedSuite.value = testSuites.value.find(({id}) => id === suiteId) ?? null
+  testInputs.value = test.args.reduce((result, arg) => {
+    result[arg.name] = {
+      name: arg.name,
+      type: arg.type,
+      isAlias: false,
+      value: ''
+    }
+    return result
+  }, {} as { [name: string]: TestInputDTO })
 }
 
 
@@ -95,16 +104,11 @@ async function submit(close) {
   const suiteTest: SuiteTestDTO = {
     testUuid: test.uuid,
     testInputs: chain(testInputs.value)
-        .omitBy(isNull)
-        .mapValues((value, name) => ({
-          name,
-          value,
-          isAlias: false
-        }))
-        .value()
+        .omitBy(({value}) => value === null || value.trim() === '')
+        .value() as { [name: string]: TestInputDTO }
   }
 
-  await api.addTestToSuite(projectId, selectedSuite.value, suiteTest);
+  await api.addTestToSuite(projectId, selectedSuite.value!.id!, suiteTest);
   close();
 }
 
