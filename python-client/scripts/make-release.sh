@@ -21,7 +21,7 @@ if [ -n "$1" ]; then
   git commit -m "Version $1"
   git tag -a "python-client-v$1" -m "v$1"
   git push
-  git push origin "v$1"
+  git push origin "python-client-$1"
 else
   echo "New version is not specified"
 fi
