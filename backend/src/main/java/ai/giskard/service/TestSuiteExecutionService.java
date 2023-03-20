@@ -1,11 +1,9 @@
 package ai.giskard.service;
 
-import ai.giskard.domain.ml.SuiteTest;
-import ai.giskard.domain.ml.SuiteTestExecution;
-import ai.giskard.domain.ml.TestResult;
-import ai.giskard.domain.ml.TestSuiteExecution;
+import ai.giskard.domain.ml.*;
 import ai.giskard.ml.MLWorkerClient;
 import ai.giskard.repository.TestSuiteExecutionRepository;
+import ai.giskard.repository.ml.TestSuiteRepository;
 import ai.giskard.service.ml.MLWorkerService;
 import ai.giskard.web.dto.mapper.GiskardMapper;
 import ai.giskard.web.dto.ml.TestSuiteExecutionDTO;
@@ -35,6 +33,7 @@ public class TestSuiteExecutionService {
     private final MLWorkerService mlWorkerService;
     private final TestArgumentService testArgumentService;
     private final TestSuiteExecutionRepository testSuiteExecutionRepository;
+    private final TestSuiteRepository testSuiteRepository;
     private final GiskardMapper giskardMapper;
 
     @Transactional(readOnly = true)
@@ -44,8 +43,8 @@ public class TestSuiteExecutionService {
 
     @Transactional(noRollbackFor = Exception.class)
     public void executeScheduledTestSuite(TestSuiteExecution execution, Map<String, String> suiteInputs) {
-
         try (MLWorkerClient client = mlWorkerService.createClient(execution.getSuite().getProject().isUsingInternalWorker())) {
+            TestSuite testSuite = testSuiteRepository.getById(execution.getSuite().getId());
             RunTestSuiteRequest.Builder builder = RunTestSuiteRequest.newBuilder();
 
             for (Map.Entry<String, String> entry : execution.getInputs().entrySet()) {
@@ -54,7 +53,7 @@ public class TestSuiteExecutionService {
             }
 
             Map<String, String> suiteInputsAndShared = new HashMap<>(execution.getInputs());
-            execution.getSuite().getTestInputs().stream()
+            testSuite.getTestInputs().stream()
                 .filter(i -> Strings.isNotBlank(i.getValue()))
                 .forEach(i -> suiteInputsAndShared.put(i.getName(), i.getValue()));
 
