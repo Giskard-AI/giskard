@@ -82,6 +82,7 @@ const filteredTest = computed(() => suite.value === null ? [] : chain(suite.valu
           test.name.toLowerCase().includes(keyword)
           || test.doc?.toLowerCase()?.includes(keyword)
           || test.displayName?.toLowerCase()?.includes(keyword)
+          || test.tags?.filter(tag => tag.includes(keyword))?.length > 0
       ).length === keywords.length;
     })
     .value()

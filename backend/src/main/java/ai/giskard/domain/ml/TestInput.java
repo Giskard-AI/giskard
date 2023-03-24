@@ -25,6 +25,7 @@ public class TestInput {
 
     private String type;
 
+    @Column(columnDefinition = "CLOB")
     private String value;
 
     private boolean isAlias = false;
