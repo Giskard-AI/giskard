@@ -3,6 +3,7 @@ from giskard.models.pytorch import PyTorchModel
 from giskard.models.tensorflow import TensorFlowModel
 from giskard.models.huggingface import HuggingFaceModel
 
+
 class AutoModel:
     def __new__(cls, *args, **kw):
         is_huggingface = "transformers" in kw['clf'].__module__
