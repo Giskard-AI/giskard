@@ -546,7 +546,7 @@ devel = ["colorama", "json-spec", "jsonschema", "pylint", "pytest", "pytest-benc
 name = "filelock"
 version = "3.10.0"
 description = "A platform independent file lock."
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=3.7"
 
@@ -822,7 +822,7 @@ python-versions = ">=3"
 name = "huggingface-hub"
 version = "0.13.2"
 description = "Client library to download and publish models, datasets and other repos on the huggingface.co hub"
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=3.7.0"
 
@@ -2463,7 +2463,7 @@ six = "*"
 name = "regex"
 version = "2022.10.31"
 description = "Alternative regular expression module, to replace re."
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=3.6"
 
@@ -3030,7 +3030,7 @@ python-versions = ">=3.6.1"
 name = "tokenizers"
 version = "0.13.2"
 description = "Fast and Customizable Tokenizers"
-category = "dev"
+category = "main"
 optional = false
 python-versions = "*"
 
@@ -3148,9 +3148,9 @@ test = ["argcomplete (>=2.0)", "pre-commit", "pytest", "pytest-mock"]
 
 [[package]]
 name = "transformers"
-version = "4.27.1"
+version = "4.27.3"
 description = "State-of-the-art Machine Learning for JAX, PyTorch and TensorFlow"
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=3.7.0"
 
@@ -3420,7 +3420,7 @@ cffi = ["cffi (>=1.11)"]
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.7.5,<3.11"
-content-hash = "9e08ee9f73e6a05af466f09c68044736c916ebe08ff17f2e5ecd551e210100cb"
+content-hash = "c679fc3e9ce1ec22c2f74d7b604b8c991fd53b4ba340d0e5bcb4bc8c6b515f32"
 
 [metadata.files]
 absl-py = [
@@ -5764,8 +5764,8 @@ traitlets = [
     {file = "traitlets-5.9.0.tar.gz", hash = "sha256:f6cde21a9c68cf756af02035f72d5a723bf607e862e7be33ece505abf4a3bad9"},
 ]
 transformers = [
-    {file = "transformers-4.27.1-py3-none-any.whl", hash = "sha256:b8cf844cbeaefd24b07f7ab1550af11b5d9cf0a7d09e5f4fedede9b15a3da2c0"},
-    {file = "transformers-4.27.1.tar.gz", hash = "sha256:05120d91e407c0d3db364f5d0710cdacccd15f67114b075f161a71535c133695"},
+    {file = "transformers-4.27.3-py3-none-any.whl", hash = "sha256:d764c351b6d590952ac6104573721abe323b3eabd55e53bae0215c14750d5f13"},
+    {file = "transformers-4.27.3.tar.gz", hash = "sha256:26bff783ad6ed463fe3f0954406e7c30a8313758b6488677827886e48e6bd5a9"},
 ]
 typed-ast = [
     {file = "typed_ast-1.5.4-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:669dd0c4167f6f2cd9f57041e03c3c2ebf9063d0757dc89f79ba1daa2bfca9d4"},
