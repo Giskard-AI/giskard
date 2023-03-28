@@ -16,6 +16,6 @@ public class DataUploadParamsDTO {
     private String name;
     private String projectKey;
     private Map<String, ColumnType> columnTypes;
-    private Map<String, String> columnDTypes;
+    private Map<String, String> columnDtypes;
     private String target;
 }

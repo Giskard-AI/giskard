@@ -31,7 +31,7 @@ public class DatasetDTO {
     private UUID id;
     private String name;
     @JsonAlias("column_dtypes")
-    private Map<String, String> columnDTypes;
+    private Map<String, String> columnDtypes;
     @JsonAlias("original_size_bytes")
     private int originalSizeBytes;
     @JsonAlias("compressed_size_bytes")
