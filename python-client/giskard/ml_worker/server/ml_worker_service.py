@@ -239,7 +239,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
         model = Model.download(self.client, request.model.project_key, request.model.id)
         text_column = request.feature_name
 
-        if request.feature_types[text_column] != "text":
+        if request.column_types[text_column] != "text":
             raise ValueError(f"Column {text_column} is not of type text")
         text_document = request.columns[text_column]
         input_df = pd.DataFrame({k: [v] for k, v in request.columns.items()})
@@ -262,7 +262,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
         ds = Dataset(
             pd.DataFrame([r.columns for r in request.dataframe.rows]),
             target=request.target,
-            feature_types=request.feature_types,
+            column_types=request.column_types,
         )
         predictions = model.predict(ds)
         if model.is_classification:
@@ -331,7 +331,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
         meta = None
 
         times = []  # This is an array of chunk execution times for performance stats
-        column_types = []
+        column_dtypes = []
 
         for filter_msg in request_iterator:
             if filter_msg.HasField("meta"):
@@ -342,7 +342,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
                     yield ml_worker_pb2.FilterDatasetResponse(
                         code=ml_worker_pb2.StatusCode.Failed, error_message=str(e)
                     )
-                column_types = meta.column_types
+                column_dtypes = meta.column_dtypes
                 logger.info(f"Filtering dataset with {meta}")
 
                 def filter_wrapper(row):
@@ -360,7 +360,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
                 # CSV => Dataframe
                 data = StringIO(data_as_string)  # Wrap using StringIO to avoid creating file
                 df = pd.read_csv(data, keep_default_na=False, na_values=["_GSK_NA_"])
-                df = df.astype(column_types)
+                df = df.astype(column_dtypes)
                 # Iterate over rows, applying filter_row func
                 try:
                     rows_to_keep = df[df.apply(filter_wrapper, axis=1)].index.array
