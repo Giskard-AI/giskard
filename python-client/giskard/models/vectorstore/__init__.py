@@ -4,37 +4,27 @@ from pathlib import Path
 from typing import Union
 
 import cloudpickle
-from langchain.indexes.vectorstore import VectorStoreIndexWrapper, VectorstoreIndexCreator
+from langchain import OpenAI
+from langchain.chains import RetrievalQA
+
+from giskard.core.model import CustomModel
 from langchain.vectorstores import Chroma
+import pandas as pd
 
-from giskard import WrapperModel
 
+class RetrievalQAModel(CustomModel):
+    model: RetrievalQA
 
-class VectorStoreModel(WrapperModel, ABC):
     def __init__(self,
-                 clf,
-                 model_type: Union[SupportedModelTypes, str],
-                 name: str = None,
-                 data_preprocessing_function=None,
-                 model_postprocessing_function=None,
-                 feature_names=None,
-                 classification_threshold=0.5,
-                 classification_labels=None) -> None:
-
-        if classification_labels is None and hasattr(clf, "classes_"):
-            classification_labels = list(getattr(clf, "classes_"))
-        if feature_names is None and hasattr(clf, "feature_names_"):
-            feature_names = list(getattr(clf, "feature_names_"))
-
+                 model: RetrievalQA,
+                 name: str = None) -> None:
+        self.model = model
         super().__init__(
-            clf=clf,
-            model_type=model_type,
-            data_preprocessing_function=data_preprocessing_function,
-            model_postprocessing_function=model_postprocessing_function,
+            model_type='LLM',
             name=name,
-            feature_names=feature_names,
-            classification_threshold=classification_threshold,
-            classification_labels=classification_labels,
+            feature_names=None,
+            classification_threshold=None,
+            classification_labels=None
         )
 
     def save(self, local_path: Union[str, Path]) -> None:
@@ -45,20 +35,52 @@ class VectorStoreModel(WrapperModel, ABC):
         if not self.id:
             self.id = uuid.uuid4()
 
-        with open(Path(local_path) / "vectorstore.pkl", "wb") as f:
-            cloudpickle.dump(self.clf.vectorstore, f)
+        vectorstore: Chroma = self.model.retriever.vectorstore
+
+        # Save previous state to not alter user settings
+        tmp_persist_directory = vectorstore._persist_directory
+        tmp_client_settings = vectorstore._client_settings
+        tmp_client = vectorstore._client
+
+        try:
+            import chromadb
+            import chromadb.config
+        except ImportError:
+            raise ValueError(
+                "Could not import chromadb python package. "
+                "Please install it with `pip install chromadb`."
+            )
+
+        vectorstore._persist_directory = (Path(local_path) / str(self.id) / "db").absolute().as_posix()
+        vectorstore._client_settings = chromadb.config.Settings(
+            chroma_db_impl="duckdb+parquet", persist_directory=vectorstore._persist_directory
+        )
+        vectorstore._client = chromadb.Client(vectorstore._client_settings)
+        vectorstore.persist()
+
+        with open(Path(local_path) / str(self.id) / "embedding_function.pkl", "wb") as f:
+            cloudpickle.dump(vectorstore._embedding_function, f)
+
+        # Reset data
+        vectorstore._persist_directory = tmp_persist_directory
+        vectorstore._client_settings = tmp_client_settings
+        vectorstore._client = tmp_client
 
         super().save(local_path)
 
-    @classmethod
-    def load(cls, local_dir, **kwargs):
-        vectorstore = cls.load_clf(local_dir)
-        VectorStores
-        clf = VectorstoreIndexCreator.from_loaders()
-        return cls(clf=vectorstore, **kwargs)
+    def predict_df(self, df: pd.DataFrame):
+        return self.model.apply(list(df))
 
     @classmethod
-    @abstractmethod
-    def load_clf(cls, local_dir):
-        with open(Path(local_dir) / "vectorstore.pkl", "rb") as f:
-            cloudpickle.load(f)
+    def load(cls, local_dir, **constructor_params):
+        with open(Path(local_dir) / "embedding_function.pkl", "rb") as f:
+            embedding_function = cloudpickle.load(f)
+
+            persist_directory = (Path(local_dir) / "db").absolute().as_posix()
+            chroma = Chroma(persist_directory=persist_directory, embedding_function=embedding_function)
+
+            cls(RetrievalQA.from_chain_type(llm=OpenAI(), chain_type="stuff", retriever=chroma.as_retriever()))
+
+# For inspect= clf predict
+# Should save class to true
+# Example in the unit tests
