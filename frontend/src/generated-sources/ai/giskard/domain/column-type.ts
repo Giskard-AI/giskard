@@ -1,7 +1,7 @@
 /**
- * Generated from ai.giskard.domain.FeatureType
+ * Generated from ai.giskard.domain.ColumnType
  */
-export enum FeatureType {
+export enum ColumnType {
     NUMERIC = 'numeric',
     CATEGORY = 'category',
     TEXT = 'text'

@@ -53,12 +53,12 @@ import static java.util.Arrays.stream;
 @RequiredArgsConstructor
 public class InitService {
 
-    private static final Map<String, FeatureType> germanCreditFeatureTypes = new HashMap<>();
-    private static final Map<String, String> germanCreditColumnTypes = new HashMap<>();
-    private static final Map<String, FeatureType> enronFeatureTypes = new HashMap<>();
-    private static final Map<String, String> enronColumnTypes = new HashMap<>();
-    private static final Map<String, FeatureType> zillowFeatureTypes = new HashMap<>();
-    private static final Map<String, String> zillowColumnTypes = new HashMap<>();
+    private static final Map<String, ColumnType> germanCreditColumnTypes = new HashMap<>();
+    private static final Map<String, String> germanCreditColumnDtypes = new HashMap<>();
+    private static final Map<String, ColumnType> enronColumnTypes = new HashMap<>();
+    private static final Map<String, String> enronColumnDtypes = new HashMap<>();
+    private static final Map<String, ColumnType> zillowColumnTypes = new HashMap<>();
+    private static final Map<String, String> zillowColumnDtypes = new HashMap<>();
     public static final String ZILLOW_PROJECT_KEY = "zillow";
     public static final String ENRON_PROJECT_KEY = "enron";
     public static final String GERMAN_CREDIT_PROJECT_KEY = "credit";
@@ -87,13 +87,13 @@ public class InitService {
                     .name("House Pricing Model")
                     .language(ModelLanguage.PYTHON)
                     .languageVersion("3.7")
-                    .featureNames(zillowFeatureTypes.keySet().stream().toList())
+                    .featureNames(zillowColumnTypes.keySet().stream().toList())
                     .build(),
                 DataUploadParamsDTO.builder()
                     .projectKey(ZILLOW_PROJECT_KEY)
                     .name("House Pricing Data")
-                    .featureTypes(zillowFeatureTypes)
                     .columnTypes(zillowColumnTypes)
+                    .columnDtypes(zillowColumnDtypes)
                     .target("SalePrice")
                     .build(),
                 new InspectionSettings()
@@ -105,12 +105,12 @@ public class InitService {
                     .name("Email Classification Model")
                     .language(ModelLanguage.PYTHON)
                     .languageVersion("3.7")
-                    .featureNames(enronFeatureTypes.keySet().stream().toList())
+                    .featureNames(enronColumnTypes.keySet().stream().toList())
                     .build(),
                 DataUploadParamsDTO.builder()
                     .name("Email data")
-                    .featureTypes(enronFeatureTypes)
                     .columnTypes(enronColumnTypes)
+                    .columnDtypes(enronColumnDtypes)
                     .projectKey(ENRON_PROJECT_KEY)
                     .target("Target")
                     .build(),
@@ -123,14 +123,14 @@ public class InitService {
                     .name("Credit Scoring Model")
                     .language(ModelLanguage.PYTHON)
                     .languageVersion("3.7")
-                    .featureNames(germanCreditFeatureTypes.keySet().stream().toList())
+                    .featureNames(germanCreditColumnTypes.keySet().stream().toList())
                     .build(),
                 DataUploadParamsDTO.builder()
                     .name("Credit Scoring data")
                     .projectKey(GERMAN_CREDIT_PROJECT_KEY)
                     .target("default")
-                    .featureTypes(germanCreditFeatureTypes)
                     .columnTypes(germanCreditColumnTypes)
+                    .columnDtypes(germanCreditColumnDtypes)
                     .build(),
                 new InspectionSettings()
             )
