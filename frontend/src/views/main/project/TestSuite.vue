@@ -23,8 +23,8 @@
                 Add test
               </v-btn>
               <v-btn tile class='mx-1'
-                     v-if="currentExecution !== null && hasTest"
-                     @click='compare'
+                     v-if="hasTest"
+                     @click='openRunTestSuite(true)'
                      color="secondary">
                 <v-icon>compare</v-icon>
                 Compare
@@ -94,22 +94,8 @@ async function openRunTestSuite(compareMode: boolean) {
 }
 
 let testSuiteCompareStore = useTestSuiteCompareStore();
-const {currentExecution, compareSelectedItems} = storeToRefs(testSuiteCompareStore);
+const {currentExecution} = storeToRefs(testSuiteCompareStore);
 const {hasTest} = storeToRefs(useTestSuiteStore());
-
-async function compare() {
-  if (route.name === 'test-suite-overview') {
-    await openRunTestSuite(true);
-  } else if (compareSelectedItems.value === null) {
-    testSuiteCompareStore.startComparing();
-  } else {
-    await router.push({
-      name: 'test-suite-compare-executions',
-      query: {selectedIds: JSON.stringify(compareSelectedItems.value)}
-    })
-    testSuiteCompareStore.reset();
-  }
-}
 
 </script>
 
