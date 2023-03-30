@@ -19,7 +19,7 @@ def test_catboost():
     from giskard.models.catboost import CatboostModel
 
     model = CatBoostClassifier()
-    kwargs = {"clf": model, "model_type": "classification", "classification_labels": [""]}
+    kwargs = {"clf": model, "model_type": "classification", "classification_labels": [""], "feature_names": [""]}
     my_automodel1 = make_model(**kwargs)
     assert isinstance(my_automodel1, CatboostModel)
     my_automodel2 = Model.auto_make(**kwargs)
