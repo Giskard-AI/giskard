@@ -29,7 +29,7 @@
       <option name="useCurrentConnection" value="false" />
     </EXTENSION>
     <option name="SCRIPT_NAME" value="$PROJECT_DIR$/python-client/giskard/cli.py" />
-    <option name="PARAMETERS" value="worker start -u http://localhost:19000/" />
+    <option name="PARAMETERS" value="worker start -u http://localhost:9000/" />
     <option name="SHOW_COMMAND_LINE" value="false" />
     <option name="EMULATE_TERMINAL" value="false" />
     <option name="MODULE_MODE" value="false" />
