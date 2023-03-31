@@ -39,7 +39,7 @@
                 </v-col>
                 <v-col cols="6">
                     <template v-if="!editing">
-                        <span v-if="!props.testInputs.hasOwnProperty(input.name)" class="italic">
+                        <span v-if="!props.testInputs.hasOwnProperty(input.name)" class="font-italic">
                           Suite input
                         </span>
                         <span v-if="props.testInputs[input.name]?.isAlias">
@@ -60,7 +60,7 @@
                             }}</span>
                     </template>
                     <div v-else-if="props.modelValue" class="d-flex">
-                      <span v-if="!props.modelValue.hasOwnProperty(input.name)">
+                      <span v-if="!props.modelValue.hasOwnProperty(input.name)" class="font-italic">
                         Suite input
                       </span>
                         <template v-else-if="!props.modelValue[input.name].isAlias">
