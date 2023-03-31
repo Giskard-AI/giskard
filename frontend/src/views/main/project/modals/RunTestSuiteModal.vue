@@ -27,20 +27,20 @@
                         </div>
                         <div v-if="Object.entries(input.globalInput).length > 0">
                             <h4>Global inputs</h4>
-                            <TestInputListSelector
-                                    editing
-                                    :model-value="input.globalInput"
-                                    :inputs="globalTypes"
-                                    :project-id="props.projectId"
+                            <SuiteInputListSelector
+                                editing
+                                :model-value="input.globalInput"
+                                :inputs="globalTypes"
+                                :project-id="props.projectId"
                             />
                         </div>
                         <div v-if="Object.entries(input.sharedInputs).length > 0">
                             <h4>Shared inputs</h4>
-                            <TestInputListSelector
-                                    editing
-                                    :model-value="input.sharedInputs"
-                                    :inputs="sharedTypes"
-                                    :project-id="props.projectId"
+                            <SuiteInputListSelector
+                                editing
+                                :model-value="input.sharedInputs"
+                                :inputs="sharedTypes"
+                                :project-id="props.projectId"
                             />
                         </div>
                     </div>
@@ -80,7 +80,7 @@
 import {computed, onMounted, ref} from 'vue';
 import {api} from '@/api';
 import mixpanel from 'mixpanel-browser';
-import TestInputListSelector from '@/components/TestInputListSelector.vue';
+import SuiteInputListSelector from '@/components/SuiteInputListSelector.vue';
 import {useMainStore} from "@/stores/main";
 import {useTestSuiteStore} from '@/stores/test-suite';
 import {RequiredInputDTO, TestInputDTO} from '@/generated-sources';
