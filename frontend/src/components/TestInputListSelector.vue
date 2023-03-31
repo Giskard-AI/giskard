@@ -13,7 +13,7 @@
                         </v-list-item-action-text>
                     </v-list-item-content>
                 </v-col>
-                <v-col cols="3">
+                <v-col cols="3" v-if="editing">
                     <v-btn-toggle
                             v-model="buttonToggleValues[input.name]"
                             @change="item => handleTypeSelected(input.name, item)">
@@ -37,7 +37,7 @@
                         </v-tooltip>
                     </v-btn-toggle>
                 </v-col>
-                <v-col cols="6">
+                <v-col :cols="editing ? 6 : 9">
                     <template v-if="!editing">
                         <span v-if="!props.testInputs.hasOwnProperty(input.name)" class="font-italic">
                           Suite input
