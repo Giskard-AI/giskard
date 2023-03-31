@@ -2,17 +2,17 @@
   <v-list-item-group>
     <template v-for="({result, test, suiteTest}) in props.tests">
       <v-divider/>
-      <v-list-item :value="result">
-        <v-list-item-icon>
-          <v-icon :color="getColor(result)" size="40">{{
-              getIcon(result)
-            }}
-          </v-icon>
-        </v-list-item-icon>
-        <v-list-item-content>
-          <v-list-item-title>
-            <div class="d-flex justify-space-between">
-              <span>{{ getTestName(test) }}</span>
+      <v-list-item :value="result" @click="testInfo(suiteTest, test)">
+          <v-list-item-icon>
+              <v-icon :color="getColor(result)" size="40">{{
+                  getIcon(result)
+                  }}
+              </v-icon>
+          </v-list-item-icon>
+          <v-list-item-content>
+              <v-list-item-title>
+                  <div class="d-flex justify-space-between">
+                      <span>{{ getTestName(test) }}</span>
               <div>
                 <v-tooltip v-if="result !== undefined && !result.passed">
                   <template v-slot:activator="{ on, attrs }">
@@ -28,14 +28,6 @@
                   </template>
                   <span>Debugger tools are not yet available</span>
                 </v-tooltip>
-                <v-btn
-                    text
-                    icon
-                    color="primary"
-                    @click.stop="testInfo(suiteTest, test)"
-                >
-                  <v-icon>info</v-icon>
-                </v-btn>
                 <v-btn
                     v-if="!compact"
                     text
