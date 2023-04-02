@@ -87,7 +87,7 @@ grpcio-tools = "^1.46.3"
 mypy-protobuf = "^3.2.0"
 mypy-extensions = "^0.4.3"
 mypy = "^0.982"
-deptry = "^0.5.13"
+deptry = ">=0.5.13,<0.9.0"
 httpretty = "^1.1.4"
 
 [tool.poetry.group.test.dependencies]
