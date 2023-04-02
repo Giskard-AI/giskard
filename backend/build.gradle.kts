@@ -199,7 +199,7 @@ dependencies {
     implementation("io.jsonwebtoken:jjwt-api")
     implementation(group = "tech.tablesaw", name = "tablesaw-core", version = "0.43.1")
     implementation(group = "tech.tablesaw", name = "tablesaw-json", version = "0.34.2")
-    implementation(group = "org.apache.commons", name = "commons-compress", version = "1.21")
+    implementation(group = "org.apache.commons", name = "commons-compress", version = "1.23.0")
     runtimeOnly("io.jsonwebtoken:jjwt-impl")
     runtimeOnly("io.jsonwebtoken:jjwt-jackson")
 
@@ -229,7 +229,7 @@ dependencies {
     implementation(files("$projectDir/src/main/resources/third-party/j2ts-api.jar"))
     implementation(group = "com.fasterxml.jackson.dataformat", name = "jackson-dataformat-yaml", version = "2.14.2")
     implementation(group = "com.github.luben", name = "zstd-jni", version = "1.5.2-3")
-    implementation("org.apache.commons:commons-compress:1.21")
+    implementation("org.apache.commons:commons-compress:1.23.0")
     implementation("org.apache.commons:commons-csv:1.10.0")
     implementation("commons-codec:commons-codec:1.15")
     implementation("com.google.protobuf:protobuf-java-util:3.21.9")
