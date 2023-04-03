@@ -55,7 +55,7 @@ const existingAliases = computed(() =>
             .filter(input => input.isAlias)
             .value()
     ])
-        .map('name')
+        .map('value')
         .uniq()
         .value()
 )

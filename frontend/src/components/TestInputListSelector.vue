@@ -75,8 +75,6 @@
                             outlined
                             v-model="props.modelValue[input.name].value"
                             :items="aliases[input.type] ?? []"
-                            item-text="name"
-                            item-value="name"
                             dense
                             hide-details
                         >
@@ -136,8 +134,8 @@ const inputs = computed(() => Object.keys(props.inputs).map((name) => ({
 
 const buttonToggleValues = ref<{ [name: string]: number | null }>({});
 
-const aliases = computed(() =>
-    chain([
+const aliases = computed(() => {
+    return chain([
         ...suite.value!.testInputs,
         ...chain(suite.value!.tests)
             .flatMap(test => Object.values(test.testInputs))
@@ -153,7 +151,7 @@ const aliases = computed(() =>
             .uniq()
             .value())
         .value()
-)
+})
 
 watch(() => [props.modelValue, props.inputs], () => {
     if (props.modelValue) {
@@ -206,7 +204,8 @@ async function createAlias(name: string, type: string) {
         },
         on: {
             async save(input: TestInputDTO) {
-                props.modelValue![name] = input
+                props.modelValue![name] = input;
+                props.modelValue = {...props.modelValue};
             }
         }
     });
