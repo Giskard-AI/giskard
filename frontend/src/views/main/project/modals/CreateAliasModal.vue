@@ -7,28 +7,79 @@
         v-on="$listeners"
     >
         <div class="text-center">
-            <v-card>
-                <v-card-title>
-                    Create an alias for {{ props.name }}
-                </v-card-title>
-                <v-card-text class="card-content">
-
-                </v-card-text>
-                <v-card-actions>
-                    <v-btn @click="close" color="error">Cancel</v-btn>
-                    <v-btn color="primary">Create</v-btn>
-                </v-card-actions>
-            </v-card>
+            <ValidationObserver ref="observer" v-slot="{ invalid, pristine }">
+                <v-card>
+                    <v-card-title>
+                        Create an alias for {{ props.name }}
+                    </v-card-title>
+                    <v-card-text class="card-content">
+                        <ValidationProvider name="Alias" rules="required|aliasDoesNotExists" v-slot="{errors}">
+                            <v-text-field label="Alias" autofocus v-model="aliasName" :error-messages="errors"
+                                          outlined/>
+                        </ValidationProvider>
+                    </v-card-text>
+                    <v-card-actions>
+                        <v-btn @click="close" color="error">Cancel</v-btn>
+                        <v-btn @click="() => saveAlias(close)" color="primary" :disabled="invalid">Create</v-btn>
+                    </v-card-actions>
+                </v-card>
+            </ValidationObserver>
         </div>
     </vue-final-modal>
 </template>
 
 <script setup lang="ts">
 
+import {useTestSuiteStore} from "@/stores/test-suite";
+import {computed, ref} from "vue";
+import {chain} from "lodash";
+import {extend} from "vee-validate";
+import {TestInputDTO} from "@/generated-sources";
+
 const props = defineProps<{
     name: string,
-    type: string
+    type: string,
 }>();
+
+const aliasName = ref<string>('')
+
+const {suite} = useTestSuiteStore();
+
+const emit = defineEmits(['save']);
+
+const existingAliases = computed(() =>
+    chain([
+        ...suite!.testInputs,
+        ...chain(suite!.tests)
+            .flatMap(test => Object.values(test.testInputs))
+            .filter(input => input.isAlias)
+            .value()
+    ])
+        .map('name')
+        .uniq()
+        .value()
+)
+
+const aliasDoesNotExists = {
+    message() {
+        return 'Alias is already existing'
+    },
+    validate(value) {
+        return !existingAliases.value.includes(value);
+    }
+}
+
+extend('aliasDoesNotExists', aliasDoesNotExists);
+
+function saveAlias(close) {
+    emit('save', {
+        isAlias: true,
+        name: props.name,
+        type: props.type,
+        value: aliasName.value
+    } as TestInputDTO)
+    close()
+}
 
 </script>
 

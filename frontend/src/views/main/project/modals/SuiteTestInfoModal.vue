@@ -21,8 +21,7 @@
                                  :test="registryByUuid[suiteTest.testUuid]"
                                  :model-value="editedInputs"
                                  :project-id="projectId"
-                                 :inputs="inputType"
-                                 :shared-inputs="suite.testInputs"/>
+                                 :inputs="inputType"/>
           <v-row>
             <v-col>
               <v-expansion-panels flat @change="resizeEditor">
