@@ -14,29 +14,24 @@
                   <div class="d-flex justify-space-between">
                       <span>{{ getTestName(test) }}</span>
               <div>
-                <v-tooltip v-if="result !== undefined && !result.passed">
-                  <template v-slot:activator="{ on, attrs }">
-                    <v-btn
-                        text
-                        icon
-                        color="green"
-                        disabled
-                        v-bind="attrs" v-on="on"
-                    >
+                  <v-btn
+                          v-if="result !== undefined && !result.passed"
+                          text
+                          icon
+                          color="green"
+                          :to="{name: 'llm-inspector'}"
+                  >
                       <v-icon>mdi-bug</v-icon>
-                    </v-btn>
-                  </template>
-                  <span>Debugger tools are not yet available</span>
-                </v-tooltip>
-                <v-btn
-                    v-if="!compact"
-                    text
-                    icon
-                    color="error"
-                    @click.stop="removeTest(suiteTest)"
-                >
-                  <v-icon>delete</v-icon>
-                </v-btn>
+                  </v-btn>
+                  <v-btn
+                          v-if="!compact"
+                          text
+                          icon
+                          color="error"
+                          @click.stop="removeTest(suiteTest)"
+                  >
+                      <v-icon>delete</v-icon>
+                  </v-btn>
               </div>
             </div>
           </v-list-item-title>
