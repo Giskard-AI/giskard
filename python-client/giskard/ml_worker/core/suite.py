@@ -5,8 +5,8 @@ from typing import List, Any, Union, Dict, Mapping, Callable
 
 from giskard.client.dtos import TestSuiteNewDTO, SuiteTestDTO, TestInputDTO
 from giskard.client.giskard_client import GiskardClient
-from giskard.core.model import Model
-from giskard.ml_worker.core.dataset import Dataset
+from giskard.models.base import Model
+from giskard.datasets.base import Dataset
 from giskard.ml_worker.core.test_result import TestResult
 from giskard.ml_worker.core.test_runner import run_test
 from giskard.ml_worker.testing.registry.giskard_test import GiskardTest
