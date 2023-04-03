@@ -13,7 +13,7 @@ from giskard.ml_worker.testing.registry.decorators import test
 from giskard.ml_worker.utils.logging import configure_logging
 from giskard.models import model, model_from_catboost, model_from_sklearn, \
     model_from_pytorch, model_from_tensorflow, model_from_huggingface
-from giskard.models.base import Model
+from giskard.models.base import BaseModel
 from giskard.models.base import WrapperModel
 from giskard.models.base import MLFlowBasedModel
 from giskard.models.base import CustomModel
@@ -53,7 +53,7 @@ __all__ = [
     'model_from_pytorch',
     'model_from_tensorflow',
     'model_from_huggingface',
-    'Model',
+    'BaseModel',
     'WrapperModel',
     'MLFlowBasedModel',
     'CustomModel',

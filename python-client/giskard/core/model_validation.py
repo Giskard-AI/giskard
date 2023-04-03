@@ -9,12 +9,12 @@ from pandas.core.dtypes.common import is_string_dtype
 from giskard.core.core import ModelMeta
 from giskard.client.python_utils import warning
 from giskard.core.core import SupportedModelTypes
-from giskard.models.base import Model, WrapperModel
+from giskard.models.base import BaseModel, WrapperModel
 from giskard.core.validation import validate_is_pandasdataframe, validate_target
 from giskard.datasets.base import Dataset
 
 
-def validate_model(model: Model, validate_ds: Dataset):
+def validate_model(model: BaseModel, validate_ds: Dataset):
     model_type = model.meta.model_type
 
     model = validate_model_loading_and_saving(model)
@@ -49,7 +49,7 @@ def validate_model(model: Model, validate_ds: Dataset):
             validate_model_execution(model, validate_ds)
 
 
-def validate_model_execution(model: Model, dataset: Dataset) -> None:
+def validate_model_execution(model: BaseModel, dataset: Dataset) -> None:
     validation_size = min(len(dataset), 10)
     validation_ds = dataset.slice(lambda x: x.head(validation_size))
     try:
@@ -67,7 +67,7 @@ def validate_model_execution(model: Model, dataset: Dataset) -> None:
         validate_classification_prediction(model.meta.classification_labels, prediction.raw)
 
 
-def validate_deterministic_model(model: Model, validate_ds: Dataset, prev_prediction):
+def validate_deterministic_model(model: BaseModel, validate_ds: Dataset, prev_prediction):
     """
     Asserts if the model is deterministic by asserting previous and current prediction on same data
     """
@@ -75,12 +75,12 @@ def validate_deterministic_model(model: Model, validate_ds: Dataset, prev_predic
 
     if not np.allclose(prev_prediction.raw, new_prediction.raw):
         warning(
-            "Model is stochastic and not deterministic. Prediction function returns different results"
+            "BaseModel is stochastic and not deterministic. Prediction function returns different results"
             "after being invoked for the same data multiple times."
         )
 
 
-def validate_model_loading_and_saving(model: Model):
+def validate_model_loading_and_saving(model: BaseModel):
     """
     Validates if the model can be serialised and deserialised
     """
@@ -101,7 +101,7 @@ def validate_model_loading_and_saving(model: Model):
                 loader_class=saved_meta['loader_class'],
             )
 
-            clazz = Model.determine_model_class(meta, f)
+            clazz = BaseModel.determine_model_class(meta, f)
 
             constructor_params = meta.__dict__
             del constructor_params['loader_module']
@@ -208,12 +208,12 @@ def validate_prediction_output(df: pd.DataFrame, model_type, prediction):
     if isinstance(prediction, np.ndarray) or isinstance(prediction, list):
         if model_type == SupportedModelTypes.CLASSIFICATION:
             if not any(isinstance(y, (np.floating, float)) for x in prediction for y in x):
-                raise ValueError("Model prediction should return float values ")
+                raise ValueError("BaseModel prediction should return float values ")
         if model_type == SupportedModelTypes.REGRESSION:
             if not any(isinstance(x, (np.floating, float)) for x in prediction):
-                raise ValueError("Model prediction should return float values ")
+                raise ValueError("BaseModel prediction should return float values ")
     else:
-        raise ValueError("Model should return numpy array or a list")
+        raise ValueError("BaseModel should return numpy array or a list")
 
 
 def validate_classification_prediction(classification_labels, prediction):

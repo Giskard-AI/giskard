@@ -13,7 +13,7 @@ from giskard.settings import expand_env_var, settings
 
 
 @dataclass
-class Model:
+class BaseModel:
     name: str
 
 
