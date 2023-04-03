@@ -47,7 +47,7 @@
                   <v-icon>mdi-bug</v-icon>
                   Debug
               </v-btn>
-              <v-btn color="primary" @click="saveEditedInputs()">
+              <v-btn color="primary" @click="() => saveEditedInputs(close)">
                   <v-icon>save</v-icon>
                   Save
               </v-btn>
@@ -113,15 +113,16 @@ onMounted(() => {
         }, {});
 });
 
-async function saveEditedInputs() {
-  if (editedInputs.value === null) {
-    return;
-  }
+async function saveEditedInputs(close) {
+    if (editedInputs.value === null) {
+        return;
+    }
 
-  await api.updateTestInputs(projectId.value!, suite.value!.id!, test.uuid, Object.values(editedInputs.value))
-  editedInputs.value = null;
+    await api.updateTestInputs(projectId.value!, suite.value!.id!, test.uuid, Object.values(editedInputs.value))
+    editedInputs.value = null;
 
-  await reload();
+    await reload();
+    close();
 }
 
 const inputType = computed(() => chain(sortedArguments.value)
