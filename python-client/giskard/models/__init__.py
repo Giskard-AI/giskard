@@ -15,10 +15,7 @@ except ImportError:
 # format: dict[GiskardModel: list(tuple(module, base_class))]
 _libraries = {HuggingFaceModel: [("transformers", "PreTrainedModel")],
               SKLearnModel: [("sklearn.base", "BaseEstimator")],
-              CatboostModel: [("catboost", "CatBoost"),
-                              ("catboost", "CatBoostClassifier"),
-                              ("catboost", "CatBoostRanker"),
-                              ("catboost", "CatBoostRegressor")],
+              CatboostModel: [("catboost", "CatBoost")],
               PyTorchModel: [("torch.nn", "Module")],
               TensorFlowModel: [("tensorflow", "Module")]}
 

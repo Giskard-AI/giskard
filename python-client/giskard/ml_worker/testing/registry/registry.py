@@ -12,16 +12,6 @@ from typing import Optional, List, Dict
 from giskard.settings import expand_env_var, settings
 
 
-@dataclass
-class BaseModel:
-    name: str
-
-
-@dataclass
-class Dataset:
-    name: str
-
-
 logger = logging.getLogger(__name__)
 plugins_root = Path(expand_env_var(settings.home)) / "plugins"
 

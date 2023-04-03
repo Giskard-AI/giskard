@@ -75,7 +75,7 @@ def validate_deterministic_model(model: BaseModel, validate_ds: Dataset, prev_pr
 
     if not np.allclose(prev_prediction.raw, new_prediction.raw):
         warning(
-            "BaseModel is stochastic and not deterministic. Prediction function returns different results"
+            "Model is stochastic and not deterministic. Prediction function returns different results"
             "after being invoked for the same data multiple times."
         )
 
@@ -208,12 +208,12 @@ def validate_prediction_output(df: pd.DataFrame, model_type, prediction):
     if isinstance(prediction, np.ndarray) or isinstance(prediction, list):
         if model_type == SupportedModelTypes.CLASSIFICATION:
             if not any(isinstance(y, (np.floating, float)) for x in prediction for y in x):
-                raise ValueError("BaseModel prediction should return float values ")
+                raise ValueError("Model prediction should return float values ")
         if model_type == SupportedModelTypes.REGRESSION:
             if not any(isinstance(x, (np.floating, float)) for x in prediction):
-                raise ValueError("BaseModel prediction should return float values ")
+                raise ValueError("Model prediction should return float values ")
     else:
-        raise ValueError("BaseModel should return numpy array or a list")
+        raise ValueError("Model should return numpy array or a list")
 
 
 def validate_classification_prediction(classification_labels, prediction):
