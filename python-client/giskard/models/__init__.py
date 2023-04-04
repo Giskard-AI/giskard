@@ -1,19 +1,7 @@
 from importlib import import_module
-import torch  # TODO: to be omitted in another PR
 from typing import Union
-from giskard.core.core import SupportedModelTypes
-from giskard.models.sklearn import SKLearnModel
-from giskard.models.catboost import CatboostModel
-from giskard.models.pytorch import PyTorchModel
-from giskard.models.tensorflow import TensorFlowModel
-from giskard.models.huggingface import HuggingFaceModel
 
-# format: dict[GiskardModel: list(tuple(module, base_class))]
-_libraries = {HuggingFaceModel: [("transformers", "PreTrainedModel")],
-              SKLearnModel: [("sklearn.base", "BaseEstimator")],
-              CatboostModel: [("catboost", "CatBoost")],
-              PyTorchModel: [("torch.nn", "Module")],
-              TensorFlowModel: [("tensorflow", "Module")]}
+from giskard.core.core import SupportedModelTypes
 
 
 def get_class(_lib, _class):
@@ -29,9 +17,18 @@ def model(clf,
           classification_threshold=0.5,
           classification_labels=None,
           **kwargs):
-    for giskard_class, _base_libs in _libraries.items():
-        base_libs = [get_class(*_base_lib) for _base_lib in _base_libs]
+    _libraries = {
+        ("giskard.models.huggingface", "HuggingFaceModel"): [("transformers", "PreTrainedModel")],
+        ("giskard.models.sklearn", "SKLearnModel"): [("sklearn.base", "BaseEstimator")],
+        ("giskard.models.catboost", "CatboostModel"): [("catboost", "CatBoost")],
+        ("giskard.models.pytorch", "PyTorchModel"): [("torch.nn", "Module")],
+        ("giskard.models.tensorflow", "TensorFlowModel"): [("tensorflow", "Module")]
+    }
+
+    for _giskard_class, _base_libs in _libraries.items():
         try:
+            giskard_class = get_class(*_giskard_class)
+            base_libs = [get_class(*_base_lib) for _base_lib in _base_libs]
             if isinstance(clf, tuple(base_libs)):
                 return giskard_class(clf,
                                      model_type,
@@ -62,6 +59,7 @@ def model_from_sklearn(clf,
                        feature_names=None,
                        classification_threshold=0.5,
                        classification_labels=None):
+    from giskard import SKLearnModel
     return SKLearnModel(clf,
                         model_type,
                         name,
@@ -80,6 +78,7 @@ def model_from_catboost(clf,
                         feature_names=None,
                         classification_threshold=0.5,
                         classification_labels=None):
+    from giskard import CatboostModel
     return CatboostModel(clf,
                          model_type,
                          name,
@@ -92,7 +91,7 @@ def model_from_catboost(clf,
 
 def model_from_pytorch(clf,
                        model_type: Union[SupportedModelTypes, str],
-                       torch_dtype=torch.float32,
+                       torch_dtype=None,
                        device="cpu",
                        name: str = None,
                        data_preprocessing_function=None,
@@ -101,6 +100,9 @@ def model_from_pytorch(clf,
                        classification_threshold=0.5,
                        classification_labels=None,
                        iterate_dataset=True):
+    from giskard import PyTorchModel
+    import torch
+    torch_dtype = torch.float32 if not torch_dtype else torch_dtype
     return PyTorchModel(clf,
                         model_type,
                         torch_dtype,
@@ -122,6 +124,7 @@ def model_from_tensorflow(clf,
                           feature_names=None,
                           classification_threshold=0.5,
                           classification_labels=None):
+    from giskard import TensorFlowModel
     return TensorFlowModel(clf,
                            model_type,
                            name,
@@ -140,6 +143,7 @@ def model_from_huggingface(clf,
                            feature_names=None,
                            classification_threshold=0.5,
                            classification_labels=None):
+    from giskard import HuggingFaceModel
     return HuggingFaceModel(clf,
                             model_type,
                             name,
