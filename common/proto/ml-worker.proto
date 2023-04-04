@@ -15,7 +15,7 @@ service MLWorker {
   rpc runTest (RunTestRequest) returns (TestResultMessage) {}
   rpc runAdHocTest (RunAdHocTestRequest) returns (TestResultMessage) {}
   rpc runTestSuite (RunTestSuiteRequest) returns (TestSuiteResultMessage) {}
-  rpc runModel(RunModelRequest) returns (RunModelResponse) {}
+  rpc runModel(RunModelRequest) returns (google.protobuf.Empty) {}
   rpc runModelForDataFrame(RunModelForDataFrameRequest) returns (RunModelForDataFrameResponse) {}
   rpc explain(ExplainRequest) returns (ExplainResponse) {}
   rpc explainText(ExplainTextRequest) returns (ExplainTextResponse) {}
@@ -84,7 +84,7 @@ message ExplainTextRequest{
   ArtifactRef model = 1;
   string feature_name = 2;
   map<string, string> columns = 3;
-  map<string, string> feature_types = 4;
+  map<string, string> column_types = 4;
   uint32 n_samples = 5;
 }
 
@@ -123,13 +123,15 @@ message RunModelForDataFrameRequest{
   ArtifactRef model = 1;
   DataFrame dataframe = 2;
   string target = 3;
-  map<string, string> feature_types = 4;
-  map<string, string> column_types = 5;
+  map<string, string> column_types = 4;
+  map<string, string> column_dtypes = 5;
 }
 
 message RunModelRequest{
   ArtifactRef model = 1;
   ArtifactRef dataset = 2;
+  uint64 inspectionId = 3;
+  string project_key = 4;
 }
 
 message RunModelResponse{
@@ -305,7 +307,7 @@ message FilterDatasetRequest {
 message FilterDatasetMetadata {
   string function = 1;
   string headers = 2; // Since we are going to stream the CSV rows, we store the headers first
-  map<string, string> column_types = 3;
+  map<string, string> column_dtypes = 3;
 }
 
 message FilterDatasetResponse {

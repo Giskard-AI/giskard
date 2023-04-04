@@ -51,8 +51,8 @@ import ErrorToast from "@/views/main/utils/ErrorToast.vue";
 import router from "@/router";
 import mixpanel from "mixpanel-browser";
 import {useUserStore} from "@/stores/user";
-import AdminUserDTOWithPassword = AdminUserDTO.AdminUserDTOWithPassword;
 import {SetupDTO} from "@/generated-sources/ai/giskard/web/dto/setup-dto";
+import AdminUserDTOWithPassword = AdminUserDTO.AdminUserDTOWithPassword;
 
 function jwtRequestInterceptor(config) {
     // Do something before request is sent
@@ -351,8 +351,11 @@ export const api = {
     async getTestSuites(projectId: number) {
         return apiV2.get<unknown, TestSuiteDTO[]>(`testing/project/${projectId}/suites`);
     },
-    async generateTestSuite(projectId: string, generateTestSuite: GenerateTestSuiteDTO) {
-        return apiV2.post<unknown, number>(`testing/project/${projectId}/suites/generate`, generateTestSuite);
+    async createTestSuite(projectKey: string, testSuite: TestSuiteDTO) {
+        return apiV2.post<unknown, number>(`testing/project/${projectKey}/suites`, testSuite);
+    },
+    async generateTestSuite(projectKey: string, generateTestSuite: GenerateTestSuiteDTO) {
+        return apiV2.post<unknown, number>(`testing/project/${projectKey}/suites/generate`, generateTestSuite);
     },
     async updateTestSuite(projectKey: string, suite: TestSuiteDTO) {
         return apiV2.put<unknown, TestSuiteDTO>(`testing/project/${projectKey}/suite/${suite.id}`, suite);
@@ -373,7 +376,7 @@ export const api = {
     async executeTestSuite(projectId: number, suiteId: number, inputs: { [key: string]: string }) {
         return apiV2.post<unknown, any>(`testing/project/${projectId}/suite/${suiteId}/schedule-execution`, inputs);
     },
-    async updateTestInputs(projectId: number, suiteId: number, testId: string, inputs: TestInputDTO[]) {
+    async updateTestInputs(projectId: number, suiteId: number, testId: number, inputs: TestInputDTO[]) {
         return apiV2.put<unknown, TestSuiteExecutionDTO[]>(`testing/project/${encodeURIComponent(projectId)}/suite/${suiteId}/test/${testId}/inputs`, inputs);
     },
     async removeTest(projectId: string, suiteId: number, suiteTestId: number) {
@@ -458,7 +461,6 @@ export const api = {
     async getTestFunctions() {
         return apiV2.get<unknown, TestFunctionDTO[]>(`/tests`);
     },
-
     async uploadLicense(form: FormData) {
         return apiV2.post<unknown, unknown>(`/ee/license`, form, {
             headers: {

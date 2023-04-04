@@ -10,62 +10,65 @@
       <div class="text-center">
 
         <v-card>
-          <v-card-title>
-            Configure run parameters
-          </v-card-title>
+            <v-card-title>
+                Configure run parameters
+            </v-card-title>
 
-          <v-card-text>
-            <div v-for="(input, idx) of testSuiteInputs">
-              <h2 v-if="testSuiteInputs.length > 1">Execution {{ idx + 1 }}
-                <v-btn icon v-if="idx > 1"
-                       @click="() => {testSuiteInputs.splice(idx, 1)}"
-                       color="error">
-                  <v-icon>delete</v-icon>
-                </v-btn>
-              </h2>
-              <div v-if="Object.entries(input.globalInput).length > 0">
-                <h4>Global inputs</h4>
-                <TestInputListSelector
-                    editing
-                    :model-value="input.globalInput"
-                    :inputs="globalTypes"
-                    :project-id="props.projectId"
-                />
-              </div>
-              <div v-if="Object.entries(input.sharedInputs).length > 0">
-                <h4>Shared inputs</h4>
-                <TestInputListSelector
-                    editing
-                    :model-value="input.sharedInputs"
-                    :inputs="sharedTypes"
-                    :project-id="props.projectId"
-                />
-              </div>
-            </div>
-            <v-btn v-if="testSuiteInputs.length > 1"
-                   @click="() => testSuiteInputs = [...testSuiteInputs, {
+            <v-card-text clas>
+                <div class="d-flex flex-wrap">
+                    <div v-for="(input, idx) of testSuiteInputs"
+                         :class="{'border-execution': testSuiteInputs.length > 1}">
+                        <div class="d-flex justify-end">
+                            <v-btn icon v-if="idx > 1"
+                                   @click="() => {testSuiteInputs.splice(idx, 1)}"
+                                   color="error">
+                                <v-icon>delete</v-icon>
+                            </v-btn>
+                        </div>
+                        <div v-if="Object.entries(input.globalInput).length > 0">
+                            <h4>Global inputs</h4>
+                            <SuiteInputListSelector
+                                editing
+                                :model-value="input.globalInput"
+                                :inputs="globalTypes"
+                                :project-id="props.projectId"
+                            />
+                        </div>
+                        <div v-if="Object.entries(input.sharedInputs).length > 0">
+                            <h4>Shared inputs</h4>
+                            <SuiteInputListSelector
+                                editing
+                                :model-value="input.sharedInputs"
+                                :inputs="sharedTypes"
+                                :project-id="props.projectId"
+                            />
+                        </div>
+                    </div>
+                </div>
+                <v-btn v-if="testSuiteInputs.length > 1"
+                       @click="() => testSuiteInputs = [...testSuiteInputs, {
                      globalInput: createInputs(globalInputs),
                      sharedInputs: createInputs(sharedInputs),
                    }]">
-              <v-icon>add</v-icon>
-              Add an execution
-            </v-btn>
-          </v-card-text>
+                    <v-icon>add</v-icon>
+                    Add another comparison
+                </v-btn>
+            </v-card-text>
 
-          <v-divider></v-divider>
+            <v-divider></v-divider>
 
-          <v-card-actions>
-            <v-spacer></v-spacer>
-            <v-btn
-                color="primary"
-                text
-                @click="executeTestSuite(close)"
-                :disabled="!isAllParamsSet() || running"
-            >
-              <v-icon>arrow_right</v-icon>
-              Run test suite
-            </v-btn>
-          </v-card-actions>
+            <v-card-actions>
+                <v-spacer></v-spacer>
+                <v-btn
+                        color="primary"
+                        text
+                        @click="executeTestSuite(close)"
+                        :disabled="!isAllParamsSet() || running"
+                >
+                    <v-icon>arrow_right</v-icon>
+                    Run test suite
+                </v-btn>
+            </v-card-actions>
         </v-card>
       </div>
     </vue-final-modal>
@@ -77,7 +80,7 @@
 import {computed, onMounted, ref} from 'vue';
 import {api} from '@/api';
 import mixpanel from 'mixpanel-browser';
-import TestInputListSelector from '@/components/TestInputListSelector.vue';
+import SuiteInputListSelector from '@/components/SuiteInputListSelector.vue';
 import {useMainStore} from "@/stores/main";
 import {useTestSuiteStore} from '@/stores/test-suite';
 import {RequiredInputDTO, TestInputDTO} from '@/generated-sources';
@@ -88,7 +91,8 @@ const props = defineProps<{
   projectId: number,
   suiteId: number,
   inputs: { [name: string]: RequiredInputDTO },
-  compareMode: boolean
+  compareMode: boolean,
+  previousParams: { [name: string]: string }
 }>();
 
 const mainStore = useMainStore();
@@ -131,7 +135,7 @@ function createInputs(inputs: (RequiredInputDTO & { name: string })[]) {
           isAlias: false,
           name,
           type,
-          value: ''
+          value: testSuiteStore.suite!.testInputs.find(t => t.name === name)?.value ?? props.previousParams[name] ?? ''
         }
         return result;
       }, {});
@@ -205,12 +209,21 @@ async function executeTestSuite(close) {
 }
 
 ::v-deep(.modal-content) {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  margin: 0 1rem;
-  padding: 1rem;
-  min-width: 50vw;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    margin: 0 1rem;
+    padding: 1rem;
+    min-width: 50vw;
+}
+
+.border-execution {
+    border-radius: 10px;
+    -webkit-border-radius: 10px;
+    -moz-border-radius: 10px;
+    border: 1px solid #000000;
+    margin: 8px;
+    padding: 4px;
 }
 
 </style>

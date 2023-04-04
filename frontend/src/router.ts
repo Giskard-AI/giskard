@@ -9,7 +9,6 @@ import {useMainStore} from "@/stores/main";
 async function routeGuard(to, from, next) {
     const userStore = useUserStore();
     const mainStore = useMainStore();
-
     if (!mainStore.license) {
         await mainStore.fetchLicense();
     }
@@ -137,6 +136,14 @@ export default new Router({
                                     })
                                 },
                                 {
+                                    path: 'llm-inspection',
+                                    name: 'llm-inspector',
+                                    component: () => import('./views/main/project/LlmInspectorWrapper.vue'),
+                                    props: route => ({
+                                        projectId: Number(route.params.id)
+                                    })
+                                },
+                                {
                                     path: 'feedbacks',
                                     name: 'project-feedbacks',
                                     component: () => import('./views/main/project/FeedbackList.vue'),
@@ -160,7 +167,10 @@ export default new Router({
                                     name: 'project-tests-catalog',
                                     component: () => import('./views/main/project/TestsCatalog.vue'),
                                     props: (route) => {
-                                        return {projectId: Number(route.params.id)}
+                                        return {
+                                            projectId: Number(route.params.id),
+                                            suiteId: route.query.suiteId ? Number(route.query.suiteId) : undefined,
+                                        }
                                     },
                                 },
                                 {
@@ -201,7 +211,8 @@ export default new Router({
                                                 return {
                                                     suiteId: Number(route.params.suiteId),
                                                     projectId: Number(route.params.id),
-                                                    latestCount: Number(route.query.latestCount)
+                                                    latestCount: route.query.latestCount ? Number(route.query.latestCount) : undefined,
+                                                    selectedIds: route.query.selectedIds ? JSON.parse(route.query.selectedIds as string) : undefined
                                                 }
                                             }
                                         },

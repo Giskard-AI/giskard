@@ -1,33 +1,6 @@
 <template>
-  <v-container>
-    <div class="d-flex">
-      <v-icon
-          :color="!props.execution ? 'grey' : props.execution.result === TestResult.PASSED ? Colors.PASS : Colors.FAIL"
-          size="64">{{
-          testResultIcon
-        }}
-      </v-icon>
-      <div>
-        <h2>
-
-          Test Suite
-        </h2>
-        <h4
-            v-if="!props.execution">No execution has been performed yet!</h4>
-        <h4
-            v-else-if="props.execution.result === TestResult.ERROR">An error arose during the execution</h4>
-        <h4 v-else-if="filteredTest.length === 0">No test match the current filter</h4>
-        <h4 v-else-if="executedTests.length > 0" :style="{
-          color: successColor
-        } ">Success ratio: {{ successRatio.passed }} /
-          {{ successRatio.executed }}</h4>
-      </div>
-      <div class="flex-grow-1"/>
-      <v-btn icon @click="openSettings" color="secondary">
-        <v-icon left>settings</v-icon>
-      </v-btn>
-    </div>
-
+  <v-container v-if="hasTest">
+    <TestSuiteExecutionHeader :execution="execution" :tests="filteredTest" :compact="false"/>
     <div class="d-flex mt-4 mb-4">
       <v-select
           v-model="statusFilter"
@@ -43,61 +16,16 @@
       <v-text-field v-model="searchFilter" append-icon="search"
                     label="Search" type="text" dense></v-text-field>
     </div>
-    <v-list-item-group>
-      <template v-for="({result, test, suiteTest}) in filteredTest">
-        <v-divider/>
-        <v-list-item :value="result">
-          <v-list-item-icon>
-            <v-icon :color="getColor(result)" size="40">{{
-                getIcon(result)
-              }}
-            </v-icon>
-          </v-list-item-icon>
-          <v-list-item-content>
-            <v-list-item-title>
-              <div class="d-flex justify-space-between">
-                <span>{{ getTestName(test) }}</span>
-                <div>
-                  <v-tooltip v-if="result !== undefined && !result.passed">
-                    <template v-slot:activator="{ on, attrs }">
-                      <v-btn
-                          text
-                          icon
-                          color="green"
-                          disabled
-                          v-bind="attrs" v-on="on"
-                      >
-                        <v-icon>mdi-bug</v-icon>
-                      </v-btn>
-                    </template>
-                    <span>Debugger tools are not yet available</span>
-                  </v-tooltip>
-                  <v-btn
-                      text
-                      icon
-                      color="primary"
-                      @click.stop="testInfo(suiteTest, test)"
-                  >
-                    <v-icon>info</v-icon>
-                  </v-btn>
-                  <v-btn
-                      text
-                      icon
-                      color="error"
-                      @click.stop="removeTest(suiteTest)"
-                  >
-                    <v-icon>delete</v-icon>
-                  </v-btn>
-                </div>
-              </div>
-            </v-list-item-title>
-            <v-list-item-subtitle>
-              UUID: {{ test.uuid }}
-            </v-list-item-subtitle>
-          </v-list-item-content>
-        </v-list-item>
-      </template>
-    </v-list-item-group>
+    <SuiteTestExecutionList :tests="filteredTest" :compact="false"/>
+  </v-container>
+  <v-container v-else class="d-flex flex-column vc fill-height">
+    <h1 class="pt-16">No tests has been added to the suite</h1>
+    <v-btn tile class='mx-1'
+           :to="{name: 'project-tests-catalog', query: {suiteId: suite.id}}"
+           color="primary">
+      <v-icon>add</v-icon>
+      Add test
+    </v-btn>
   </v-container>
 </template>
 
@@ -105,26 +33,26 @@
 
 import {storeToRefs} from 'pinia';
 import {useTestSuiteStore} from '@/stores/test-suite';
-import {
-  SuiteTestDTO,
-  SuiteTestExecutionDTO,
-  TestFunctionDTO,
-  TestResult,
-  TestSuiteExecutionDTO
-} from '@/generated-sources';
-import {Colors, pickHexLinear, rgbToHex, SUCCESS_GRADIENT} from '@/utils/colors';
-import {computed, ref} from 'vue';
+import {TestSuiteExecutionDTO} from '@/generated-sources';
+import {computed, onMounted, ref, watch} from 'vue';
 import {chain} from 'lodash';
-import {$vfm} from 'vue-final-modal';
-import SuiteTestInfoModal from '@/views/main/project/modals/SuiteTestInfoModal.vue';
-import ConfirmModal from '@/views/main/project/modals/ConfirmModal.vue';
-import {api} from '@/api';
-import CreateTestSuiteModal from '@/views/main/project/modals/CreateTestSuiteModal.vue';
+import {useTestSuiteCompareStore} from '@/stores/test-suite-compare';
+import SuiteTestExecutionList from '@/views/main/project/SuiteTestExecutionList.vue';
+import TestSuiteExecutionHeader from '@/views/main/project/TestSuiteExecutionHeader.vue';
 
 const props = defineProps<{ execution?: TestSuiteExecutionDTO }>();
 
 const testSuiteStore = useTestSuiteStore();
-const {registry, models, datasets, inputs, suite, projectId} = storeToRefs(testSuiteStore);
+const {registry, models, datasets, inputs, suite, projectId, hasTest} = storeToRefs(testSuiteStore);
+const testSuiteCompareStore = useTestSuiteCompareStore();
+
+onMounted(() => {
+  testSuiteCompareStore.setCurrentExecution(props.execution ? props.execution.id : null);
+})
+
+watch(() => props.execution,
+    () => testSuiteCompareStore.setCurrentExecution(props.execution ? props.execution.id : null),
+    {deep: true});
 
 const statusFilterOptions = [{
   label: 'All',
@@ -142,20 +70,6 @@ const statusFilterOptions = [{
 
 const statusFilter = ref<string>(statusFilterOptions[0].label);
 const searchFilter = ref<string>("");
-
-const testResultIcon = computed(() => {
-  if (!props.execution) {
-    return 'block'
-  }
-  switch (props.execution.result) {
-    case TestResult.PASSED:
-      return 'done';
-    case TestResult.FAILED:
-      return 'close';
-    default:
-      return 'error';
-  }
-})
 
 
 const registryByUuid = computed(() => chain(registry.value).keyBy('uuid').value());
@@ -175,92 +89,11 @@ const filteredTest = computed(() => suite.value === null ? [] : chain(suite.valu
           test.name.toLowerCase().includes(keyword)
           || test.doc?.toLowerCase()?.includes(keyword)
           || test.displayName?.toLowerCase()?.includes(keyword)
+          || test.tags?.filter(tag => tag.includes(keyword))?.length > 0
       ).length === keywords.length;
     })
     .value()
 );
-
-function getTestName(test: TestFunctionDTO) {
-  const tags = test.tags.filter(tag => tag !== 'giskard' && tag !== 'pickle');
-  const name = test.displayName ?? test.name;
-
-  if (tags.length === 0) {
-    return name;
-  } else {
-    return tags.reduce((list, tag) => `${list} #${tag}`, '') + ` (${name})`;
-  }
-}
-
-function getColor(result?: SuiteTestExecutionDTO): string {
-  if (result === undefined) {
-    return 'grey';
-  } else if (result.passed) {
-    return Colors.PASS;
-  } else {
-    return Colors.FAIL;
-  }
-}
-
-function getIcon(result?: SuiteTestExecutionDTO): string {
-  if (result === undefined) {
-    return 'block';
-  } else if (result.passed) {
-    return 'done';
-  } else {
-    return 'close';
-  }
-}
-
-async function testInfo(suiteTest: SuiteTestDTO, test: TestFunctionDTO) {
-  await $vfm.show({
-    component: SuiteTestInfoModal,
-    bind: {
-      suiteTest,
-      test
-    }
-  });
-}
-
-async function removeTest(suiteTest: SuiteTestDTO) {
-  await $vfm.show({
-    component: ConfirmModal,
-    bind: {
-      title: 'Remove test',
-      text: `Are you sure that you want to remove this test from the test suite?`,
-      isWarning: true
-    },
-    on: {
-      async confirm(close) {
-        await api.removeTest(suite.value!.projectKey!, suite.value!.id!, suiteTest.id!);
-        await testSuiteStore.reload();
-        close();
-      }
-    }
-  });
-}
-
-async function openSettings() {
-  const project = await api.getProject(projectId.value!)
-  $vfm.show({
-    component: CreateTestSuiteModal,
-    bind: {
-      projectKey: project.key,
-      projectId: project.id,
-      suite: suite.value
-    }
-  });
-}
-
-const executedTests = computed(() => !props.execution || props.execution.result === TestResult.ERROR ? []
-    : filteredTest.value.filter(({result}) => result !== undefined));
-
-const successRatio = computed(() => ({
-  passed: executedTests.value.filter(({result}) => result!.passed).length,
-  executed: executedTests.value.length
-}))
-
-const successColor = computed(() => successRatio.value.executed === 0 ? Colors.PASS :
-    rgbToHex(pickHexLinear(SUCCESS_GRADIENT, successRatio.value.passed / successRatio.value.executed)));
 </script>
 
 <style scoped lang="scss">

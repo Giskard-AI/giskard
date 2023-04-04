@@ -1,10 +1,10 @@
 import inspect
 import pickle
 import sys
+from abc import abstractmethod, ABC
 from pathlib import Path
 from typing import Union, Callable, Any, Optional
 
-from giskard import test
 from giskard.core.core import TestFunctionMeta, SMT
 from giskard.ml_worker.core.savable import Savable
 from giskard.ml_worker.core.test_result import TestResult
@@ -13,7 +13,7 @@ from giskard.ml_worker.testing.registry.registry import tests_registry, get_test
 Result = Union[TestResult, bool]
 
 
-class GiskardTest(Savable[Any, TestFunctionMeta]):
+class GiskardTest(Savable[Any, TestFunctionMeta], ABC):
     """
     The base class of all Giskard's tests
 
@@ -27,16 +27,18 @@ class GiskardTest(Savable[Any, TestFunctionMeta]):
         meta = tests_registry.get_test(test_uuid)
         if meta is None:
             # equivalent to adding @test decorator
+            from giskard import test
             test(type(self))
             meta = tests_registry.get_test(test_uuid)
         super(GiskardTest, self).__init__(type(self), meta)
 
+    @abstractmethod
     def execute(self) -> Result:
         """
         Execute the test
         :return: A SingleTestResult containing detailed information of the test execution results
         """
-        pass
+        ...
 
     @classmethod
     def _get_name(cls) -> str:
@@ -94,18 +96,35 @@ Test = Union[GiskardTest, Function]
 class GiskardTestMethod(GiskardTest):
     params: ...
 
-    def __init__(self, test_function: Function, **kwargs):
-        self.params = kwargs
-        test_uuid = get_test_uuid(test_function)
+    def __init__(self, test_fn: Function) -> None:
+        self.test_fn = test_fn
+        test_uuid = get_test_uuid(test_fn)
         meta = tests_registry.get_test(test_uuid)
         if meta is None:
             # equivalent to adding @test decorator
-            test(test_function)
+            from giskard import test
+            test()(test_fn)
             meta = tests_registry.get_test(test_uuid)
-        super(GiskardTest, self).__init__(test_function, meta)
+        super(GiskardTest, self).__init__(test_fn, meta)
+
+    def __call__(self, **kwargs):
+        self.is_initialized = True
+        self.params = kwargs
+        return self
 
     def execute(self) -> Result:
-        return self.data(**self.params)
+        return self.test_fn(**self.params)
+
+    def __repr__(self) -> str:
+        if not self.is_initialized:
+            hint = "Test object hasn't been initialized, call it by providing the inputs"
+        else:
+            hint = 'To execute the test call "execute()" method'
+        output = [hint]
+        if self.params and len(self.params):
+            output.append(f"Named inputs: {self.params}")
+
+        return "\n".join(output)
 
     def get_builder(self):
-        return lambda **kwargs: GiskardTestMethod(self.data, **kwargs)
+        return GiskardTestMethod(self.data)

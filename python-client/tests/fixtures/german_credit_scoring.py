@@ -11,7 +11,7 @@ from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
 
 from giskard.core.core import SupportedModelTypes
-from giskard.ml_worker.core.dataset import Dataset
+from giskard.datasets.base import Dataset
 from giskard.ml_worker.utils.logging import Timer
 from giskard.models.catboost import CatboostModel
 from giskard.models.sklearn import SKLearnModel
@@ -54,7 +54,7 @@ def german_credit_data() -> Dataset:
     return Dataset(
         df=df,
         target="default",
-        feature_types=input_types,
+        column_types=input_types,
     )
 
 
@@ -64,9 +64,9 @@ def german_credit_catboost(german_credit_data) -> SKLearnModel:
     from sklearn import model_selection
 
     timer = Timer()
-    feature_types = {i: input_types[i] for i in input_types if i != "default"}
+    column_types = {i: input_types[i] for i in input_types if i != "default"}
 
-    columns_to_encode = [key for key in feature_types.keys() if feature_types[key] == "category"]
+    columns_to_encode = [key for key in column_types.keys() if column_types[key] == "category"]
 
     credit = german_credit_data.df
 
@@ -94,7 +94,7 @@ def german_credit_test_data(german_credit_data):
     df = pd.DataFrame(german_credit_data.df).drop(columns=["default"])
     return Dataset(
         df=df,
-        feature_types=input_types,
+        column_types=input_types,
         target=None,
     )
 

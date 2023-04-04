@@ -4,8 +4,10 @@ import os
 import platform
 import re
 import sys
+import tempfile
 import time
 from io import StringIO
+from pathlib import Path
 
 import google
 import grpc
@@ -17,8 +19,8 @@ import tqdm
 
 import giskard
 from giskard.client.giskard_client import GiskardClient
-from giskard.core.model import Model
-from giskard.ml_worker.core.dataset import Dataset
+from giskard.models.base import BaseModel
+from giskard.datasets.base import Dataset
 from giskard.ml_worker.core.log_listener import LogListener
 from giskard.ml_worker.core.model_explanation import (
     explain,
@@ -137,7 +139,8 @@ class MLWorkerServiceImpl(MLWorkerServicer):
         test_result = test.get_builder()(**arguments).execute()
 
         return ml_worker_pb2.TestResultMessage(results=[
-            ml_worker_pb2.NamedSingleTestResult(testUuid=test.meta.uuid, result=map_result_to_single_test_result(test_result))
+            ml_worker_pb2.NamedSingleTestResult(testUuid=test.meta.uuid,
+                                                result=map_result_to_single_test_result(test_result))
         ])
 
     def runTestSuite(self, request: ml_worker_pb2.RunTestSuiteRequest,
@@ -153,7 +156,8 @@ class MLWorkerServiceImpl(MLWorkerServicer):
             global_arguments = self.parse_test_arguments(request.globalArguments)
 
             test_names = list(
-                map(lambda t: t['test'].meta.display_name or f"{t['test'].meta.module + '.' + t['test'].meta.name}", tests)
+                map(lambda t: t['test'].meta.display_name or f"{t['test'].meta.module + '.' + t['test'].meta.name}",
+                    tests)
             )
             logger.info(f"Executing test suite: {test_names}")
 
@@ -193,7 +197,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
             if arg.HasField("dataset"):
                 value = Dataset.download(self.client, arg.dataset.project_key, arg.dataset.id)
             elif arg.HasField("model"):
-                value = Model.download(self.client, arg.model.project_key, arg.model.id)
+                value = BaseModel.download(self.client, arg.model.project_key, arg.model.id)
             elif arg.HasField("float"):
                 value = float(arg.float)
             elif arg.HasField("int"):
@@ -212,7 +216,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
     ) -> ml_worker_pb2.TestResultMessage:
         from giskard.ml_worker.testing.functions import GiskardTestFunctions
 
-        model = Model.download(self.client, request.model.project_key, request.model.id)
+        model = BaseModel.download(self.client, request.model.project_key, request.model.id)
 
         tests = GiskardTestFunctions()
         _globals = {"model": model, "tests": tests}
@@ -237,7 +241,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
         return ml_worker_pb2.TestResultMessage(results=tests.tests_results)
 
     def explain(self, request: ml_worker_pb2.ExplainRequest, context) -> ml_worker_pb2.ExplainResponse:
-        model = Model.download(self.client, request.model.project_key, request.model.id)
+        model = BaseModel.download(self.client, request.model.project_key, request.model.id)
         dataset = Dataset.download(self.client, request.dataset.project_key, request.dataset.id)
         explanations = explain(model, dataset, request.columns)
 
@@ -250,10 +254,10 @@ class MLWorkerServiceImpl(MLWorkerServicer):
 
     def explainText(self, request: ml_worker_pb2.ExplainTextRequest, context) -> ml_worker_pb2.ExplainTextResponse:
         n_samples = 500 if request.n_samples <= 0 else request.n_samples
-        model = Model.download(self.client, request.model.project_key, request.model.id)
+        model = BaseModel.download(self.client, request.model.project_key, request.model.id)
         text_column = request.feature_name
 
-        if request.feature_types[text_column] != "text":
+        if request.column_types[text_column] != "text":
             raise ValueError(f"Column {text_column} is not of type text")
         text_document = request.columns[text_column]
         input_df = pd.DataFrame({k: [v] for k, v in request.columns.items()})
@@ -272,11 +276,11 @@ class MLWorkerServiceImpl(MLWorkerServicer):
         )
 
     def runModelForDataFrame(self, request: ml_worker_pb2.RunModelForDataFrameRequest, context):
-        model = Model.download(self.client, request.model.project_key, request.model.id)
+        model = BaseModel.download(self.client, request.model.project_key, request.model.id)
         ds = Dataset(
             pd.DataFrame([r.columns for r in request.dataframe.rows]),
             target=request.target,
-            feature_types=request.feature_types,
+            column_types=request.column_types,
         )
         predictions = model.predict(ds)
         if model.is_classification:
@@ -291,7 +295,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
 
     def runModel(self, request: ml_worker_pb2.RunModelRequest, context) -> ml_worker_pb2.RunModelResponse:
         try:
-            model = Model.download(self.client, request.model.project_key, request.model.id)
+            model = BaseModel.download(self.client, request.model.project_key, request.model.id)
             dataset = Dataset.download(self.client, request.dataset.project_key, request.dataset.id)
         except ValueError as e:
             if "unsupported pickle protocol" in str(e):
@@ -336,16 +340,21 @@ class MLWorkerServiceImpl(MLWorkerServicer):
             else:
                 calculated = pd.concat([preds_serie], axis=1)
 
-        return ml_worker_pb2.RunModelResponse(
-            results_csv=results.to_csv(index=False), calculated_csv=calculated.to_csv(index=False)
-        )
+        with tempfile.TemporaryDirectory(prefix="giskard-") as f:
+            dir = Path(f)
+            results.to_csv(index=False, path_or_buf=dir / "predictions.csv")
+            self.ml_worker.tunnel.client.log_artifact(dir / "predictions.csv", f"{request.project_key}/models/inspections/{request.inspectionId}")
+
+            calculated.to_csv(index=False, path_or_buf=dir / "calculated.csv")
+            self.ml_worker.tunnel.client.log_artifact(dir / "calculated.csv", f"{request.project_key}/models/inspections/{request.inspectionId}")
+        return google.protobuf.empty_pb2.Empty()
 
     def filterDataset(self, request_iterator, context: grpc.ServicerContext):
         filterfunc = {}
         meta = None
 
         times = []  # This is an array of chunk execution times for performance stats
-        column_types = []
+        column_dtypes = []
 
         for filter_msg in request_iterator:
             if filter_msg.HasField("meta"):
@@ -356,7 +365,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
                     yield ml_worker_pb2.FilterDatasetResponse(
                         code=ml_worker_pb2.StatusCode.Failed, error_message=str(e)
                     )
-                column_types = meta.column_types
+                column_dtypes = meta.column_dtypes
                 logger.info(f"Filtering dataset with {meta}")
 
                 def filter_wrapper(row):
@@ -374,7 +383,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
                 # CSV => Dataframe
                 data = StringIO(data_as_string)  # Wrap using StringIO to avoid creating file
                 df = pd.read_csv(data, keep_default_na=False, na_values=["_GSK_NA_"])
-                df = df.astype(column_types)
+                df = df.astype(column_dtypes)
                 # Iterate over rows, applying filter_row func
                 try:
                     rows_to_keep = df[df.apply(filter_wrapper, axis=1)].index.array

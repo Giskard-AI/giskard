@@ -10,7 +10,7 @@ from torch.utils.data import DataLoader
 from torch.utils.data import Dataset as torch_dataset
 
 from giskard.core.core import SupportedModelTypes
-from giskard.core.model import MLFlowBasedModel
+from giskard.models.base import MLFlowBasedModel
 
 from ..utils import map_to_tuples
 
@@ -121,7 +121,7 @@ class PyTorchModel(MLFlowBasedModel):
                 "Running your model prediction returned an error.\n"
                 "Since you specified `iter_dataset=False`, please check that your `data_preprocessing_function` "
                 "returns an object that can be passed as input for your model. "
-            )
+            ) from err
 
     def clf_predict(self, data):
         self.clf.to(self.device)
@@ -164,7 +164,7 @@ class PyTorchModel(MLFlowBasedModel):
                 pytorch_meta = yaml.load(f, Loader=yaml.Loader)
                 kwargs["device"] = pytorch_meta["device"]
                 kwargs["torch_dtype"] = pytorch_meta["torch_dtype"]
-                kwargs["iterate_dataset"] = pytorch_meta["iterate_dataset"]
+                kwargs["iterate_dataset"] = pytorch_meta.get("iterate_dataset")
                 return super().load(local_dir, **kwargs)
         else:
             raise ValueError(

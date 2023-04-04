@@ -1,5 +1,5 @@
 # `python-base` sets up all our shared environment variables
-FROM python:3.7.13-buster as python-base
+FROM python:3.9.16-buster as python-base
 
     # python
 ENV PYTHONUNBUFFERED=1 \

@@ -19,7 +19,6 @@ import ai.giskard.worker.*;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import lombok.RequiredArgsConstructor;
-import org.apache.logging.log4j.util.Strings;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -47,7 +46,6 @@ public class TestSuiteService {
 
         Map<String, RequiredInputDTO> res = new HashMap<>();
 
-
         suite.getTests().forEach(test -> {
             ImmutableMap<String, TestInput> providedInputs = Maps.uniqueIndex(test.getTestInputs(), TestInput::getName);
 
@@ -59,15 +57,8 @@ public class TestSuiteService {
                     if (!providedInputs.containsKey(a.getName())) {
                         name = a.getName();
                     } else if (providedInputs.get(a.getName()).isAlias()) {
-                        String sharedInputName = providedInputs.get(a.getName()).getValue();
-
-                        if (suite.getTestInputs().stream()
-                            .noneMatch(shared -> shared.getName().equals(sharedInputName)
-                                && Strings.isNotBlank(shared.getValue()))) {
-                            // Shared input value is not set globally
-                            name = sharedInputName;
-                            isShared = true;
-                        }
+                        name = providedInputs.get(a.getName()).getValue();
+                        isShared = true;
                     }
                     if (name != null) {
                         if (res.containsKey(name) && !a.getType().equals(res.get(name).getType())) {
@@ -115,12 +106,12 @@ public class TestSuiteService {
         }
     }
 
-    public TestSuiteDTO updateTestInputs(long suiteId, String testUuid, List<TestInputDTO> inputs) {
+    public TestSuiteDTO updateTestInputs(long suiteId, long testId, List<TestInputDTO> inputs) {
         TestSuite testSuite = testSuiteRepository.getById(suiteId);
 
         SuiteTest test = testSuite.getTests().stream()
-            .filter(t -> testUuid.equals(t.getTestFunction().getUuid().toString()))
-            .findFirst().orElseThrow(() -> new EntityNotFoundException(TEST_SUITE, testUuid));
+                .filter(t -> testId == t.getId())
+                .findFirst().orElseThrow(() -> new EntityNotFoundException(TEST_SUITE, testId));
 
         verifyAllInputExists(inputs, test);
 

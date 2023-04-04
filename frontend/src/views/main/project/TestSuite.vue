@@ -5,9 +5,6 @@
         <v-row>
           <v-col :align="'right'">
             <div class="d-flex">
-              <v-btn text @click="loadData()" color="secondary">Refresh
-                <v-icon right>refresh</v-icon>
-              </v-btn>
               <v-btn v-if="route.name === 'test-suite-overview'"
                      text :to="{name:'test-suite-executions'}" color="secondary">
                 <v-icon>history</v-icon>
@@ -20,13 +17,20 @@
               </v-btn>
               <div class="flex-grow-1"/>
               <v-btn tile class='mx-1'
-                     v-if="Object.entries(inputs).length > 0"
-                     @click='() => openRunTestSuite(true)'
+                     :to="{name: 'project-tests-catalog', query: {suiteId: suiteId}}"
+                     color="secondary">
+                <v-icon>add</v-icon>
+                Add test
+              </v-btn>
+              <v-btn tile class='mx-1'
+                     v-if="hasTest"
+                     @click='openRunTestSuite(true)'
                      color="secondary">
                 <v-icon>compare</v-icon>
                 Compare
               </v-btn>
               <v-btn tile class='mx-1'
+                     v-if="hasTest"
                      @click='() => openRunTestSuite(false)'
                      color="primary">
                 <v-icon>arrow_right</v-icon>
@@ -51,7 +55,7 @@ import {onMounted, watch} from "vue";
 import {useMainStore} from "@/stores/main";
 import {useTestSuiteStore} from '@/stores/test-suite';
 import {storeToRefs} from 'pinia';
-import {useRoute} from 'vue-router/composables';
+import {useRoute, useRouter} from 'vue-router/composables';
 import {$vfm} from 'vue-final-modal';
 import RunTestSuiteModal from '@/views/main/project/modals/RunTestSuiteModal.vue';
 
@@ -61,13 +65,14 @@ const props = defineProps<{
 }>();
 
 const mainStore = useMainStore();
-const {inputs} = storeToRefs(useTestSuiteStore())
+const {inputs, executions} = storeToRefs(useTestSuiteStore())
 
 onMounted(() => loadData());
 watch(() => props.suiteId, () => loadData());
 
 const {loadTestSuite} = useTestSuiteStore();
 
+const router = useRouter();
 const route = useRoute();
 
 async function loadData() {
@@ -81,10 +86,14 @@ async function openRunTestSuite(compareMode: boolean) {
       projectId: props.projectId,
       suiteId: props.suiteId,
       inputs: inputs.value,
-      compareMode
+      compareMode,
+      previousParams: executions.value.length === 0 ? {} : executions.value[0].inputs
     }
   });
 }
+
+const {hasTest} = storeToRefs(useTestSuiteStore());
+
 </script>
 
 

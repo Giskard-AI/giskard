@@ -1,5 +1,5 @@
 <template>
-  <v-container fluid class="vc">
+  <v-container fluid class="vc" v-if="suites.length > 0">
     <div class="d-flex flex-row-reverse pb-4">
       <v-btn
           color="primary"
@@ -20,15 +20,23 @@
       </v-card>
     </v-row>
   </v-container>
+  <v-container v-else class="d-flex flex-column vc fill-height">
+    <h1 class="pt-16">You haven't created any test suite for this project!</h1>
+    <v-btn tile class='mx-1'
+           @click="createTestSuite"
+           color="primary">
+      <v-icon>add</v-icon>
+      Create a new test suite
+    </v-btn>
+  </v-container>
 </template>
 
 <script lang="ts" setup>
 
 import {api} from "@/api";
 import {onMounted, ref} from "vue";
-import CreateTestSuiteModal from '@/views/main/project/modals/CreateTestSuiteModal.vue';
-import {$vfm} from 'vue-final-modal';
 import {TestSuiteDTO} from '@/generated-sources';
+import router from '@/router';
 
 const props = defineProps<{
   projectId: number
@@ -40,13 +48,16 @@ onMounted(async () => suites.value = await api.getTestSuites(props.projectId))
 
 async function createTestSuite() {
   const project = await api.getProject(props.projectId)
-  $vfm.show({
-    component: CreateTestSuiteModal,
-    bind: {
-      projectKey: project.key,
-      projectId: project.id
-    }
+  const suite = await api.createTestSuite(project.key, {
+    id: null,
+    name: '',
+    projectKey: project.key,
+    testInputs: [],
+    tests: []
   });
+
+  await router.push({name: 'test-suite-overview', params: {suiteId: suite.toString()}});
+  suites.value = await api.getTestSuites(props.projectId);
 }
 
 </script>

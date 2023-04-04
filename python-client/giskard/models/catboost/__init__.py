@@ -3,7 +3,7 @@ from typing import Union
 import mlflow
 
 from giskard.core.core import SupportedModelTypes
-from giskard.core.model import MLFlowBasedModel
+from giskard.models.base import MLFlowBasedModel
 
 
 class CatboostModel(MLFlowBasedModel):
@@ -20,7 +20,10 @@ class CatboostModel(MLFlowBasedModel):
         if classification_labels is None and hasattr(clf, "classes_"):
             classification_labels = list(getattr(clf, "classes_"))
         if feature_names is None and hasattr(clf, "feature_names_"):
-            feature_names = list(getattr(clf, "feature_names_"))
+            if data_preprocessing_function is None:
+                feature_names = list(getattr(clf, "feature_names_"))
+            else:
+                raise ValueError("feature_names must be provided if data_preprocessing_function is not None.")
 
         super().__init__(
             clf=clf,

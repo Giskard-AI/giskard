@@ -3,7 +3,7 @@ from sklearn import datasets, linear_model
 from sklearn.metrics import mean_squared_error
 
 from giskard.core.core import SupportedModelTypes
-from giskard.ml_worker.core.dataset import Dataset
+from giskard.datasets.base import Dataset
 from giskard.ml_worker.utils.logging import Timer
 from giskard.models.sklearn import SKLearnModel
 
@@ -53,7 +53,7 @@ def diabetes_dataset():
     diabetes = datasets.load_diabetes()
     return Dataset(
         df=datasets.load_diabetes(as_frame=True)["data"],
-        feature_types={feature: "numeric" for feature in diabetes["feature_names"]},
+        column_types={feature: "numeric" for feature in diabetes["feature_names"]},
         target="target",
     )
 
@@ -65,6 +65,6 @@ def diabetes_dataset_with_target():
     data["target"] = loaded["target"]
     return Dataset(
         df=data,
-        feature_types={feature: "numeric" for feature in list(data.columns)},
+        column_types={feature: "numeric" for feature in list(data.columns)},
         target="target",
     )

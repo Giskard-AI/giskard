@@ -11,7 +11,7 @@ from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
 
 from giskard.core.core import SupportedModelTypes
-from giskard.ml_worker.core.dataset import Dataset
+from giskard.datasets.base import Dataset
 from giskard.ml_worker.utils.logging import Timer
 from giskard.models.sklearn import SKLearnModel
 from tests import path
@@ -34,7 +34,7 @@ def enron_data() -> Dataset:
     return Dataset(
         df=pd.read_csv(path("test_data/enron_data.csv"), keep_default_na=False, na_values=["_GSK_NA_"]),
         target="Target",
-        feature_types=input_types,
+        column_types=input_types,
     )
 
 
@@ -42,7 +42,7 @@ def enron_data() -> Dataset:
 def enron_test_data(enron_data):
     return Dataset(
         df=pd.DataFrame(enron_data.df).drop(columns=["Target"]),
-        feature_types=input_types,
+        column_types=input_types,
         target=None,
     )
 

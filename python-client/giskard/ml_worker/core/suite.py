@@ -7,15 +7,15 @@ from typing import List, Any, Union, Dict, Mapping, Optional
 from giskard.client.dtos import TestSuiteDTO, TestInputDTO, SuiteTestDTO
 from giskard.client.giskard_client import GiskardClient
 from giskard.core.core import TestFunctionMeta
-from giskard.core.model import Model
-from giskard.ml_worker.core.dataset import Dataset
+from giskard.datasets.base import Dataset
 from giskard.ml_worker.core.test_result import TestResult
 from giskard.ml_worker.testing.registry.giskard_test import GiskardTest, Test, GiskardTestMethod
 from giskard.ml_worker.testing.registry.registry import tests_registry
+from giskard.models.base import BaseModel
 
 logger = logging.getLogger(__name__)
 
-suite_input_types: List[type] = [Dataset, Model, str, bool, int, float]
+suite_input_types: List[type] = [Dataset, BaseModel, str, bool, int, float]
 
 
 class SuiteInput:
@@ -41,7 +41,7 @@ class ModelInput(SuiteInput):
     model_type: Optional[str] = None
 
     def __init__(self, name: str, model_type: Optional[str] = None) -> None:
-        super().__init__(name, Model)
+        super().__init__(name, BaseModel)
         self.model_type = model_type
 
 
@@ -115,6 +115,8 @@ class Suite:
 
     def save(self, client: GiskardClient, project_key: str):
         self.id = client.save_test_suite(self.to_dto(client, project_key))
+        project_id = client.get_project(project_key).project_id
+        print(f"Test suite has been saved: {client.host_url}/main/projects/{project_id}/test-suite/{self.id}/overview")
         return self
 
     def to_dto(self, client: GiskardClient, project_key: str):
@@ -126,7 +128,7 @@ class Suite:
         for t in self.tests:
             inputs = {}
             for pname, p in t.provided_inputs.items():
-                if issubclass(type(p), Dataset) or issubclass(type(p), Model):
+                if issubclass(type(p), Dataset) or issubclass(type(p), BaseModel):
                     if str(p.id) not in uploaded_uuids:
                         p.upload(client, project_key)
                     inputs[pname] = TestInputDTO(name=pname, value=str(p.id))

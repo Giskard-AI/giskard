@@ -63,7 +63,7 @@
                           <DatasetSelector :project-id="projectId" :label="a.name" :return-object="false"
                                            v-if="a.type === 'Dataset'" :value.sync="testArguments[a.name]"/>
                           <ModelSelector :project-id="projectId" :label="a.name" :return-object="false"
-                                         v-if="a.type === 'Model'" :value.sync="testArguments[a.name]"/>
+                                         v-if="a.type === 'BaseModel'" :value.sync="testArguments[a.name]"/>
                           <v-text-field
                               :step='a.type === "float" ? 0.1 : 1'
                               v-model="testArguments[a.name]"
@@ -136,7 +136,8 @@ import IEditorOptions = editor.IEditorOptions;
 
 const l = MonacoEditor;
 let props = defineProps<{
-  projectId: number
+  projectId: number,
+  suiteId?: number
 }>();
 
 const editor = ref(null)
@@ -148,7 +149,6 @@ let tryMode = ref(true)
 let testArguments = ref({})
 let testResult = ref<TestTemplateExecutionResultDTO | null>(null);
 
-let openFeedbackDetail = false
 
 const monacoOptions: IEditorOptions = inject('monacoOptions');
 monacoOptions.readOnly = true;
@@ -234,7 +234,9 @@ function addToTestSuite() {
     component: AddTestToSuite,
     bind: {
       projectId: props.projectId,
-      test: selected.value
+      test: selected.value,
+      suiteId: props.suiteId,
+      testArguments: testArguments.value
     }
   });
 }

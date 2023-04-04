@@ -5,5 +5,5 @@ export interface TestInputDTO {
     isAlias: boolean;
     name: string;
     type: string;
-    value: string;
+    value?: string | null;
 }
