@@ -7,8 +7,8 @@ from typing import List, Any, Union, Dict, Mapping, Optional
 from giskard.client.dtos import TestSuiteDTO, TestInputDTO, SuiteTestDTO
 from giskard.client.giskard_client import GiskardClient
 from giskard.core.core import TestFunctionMeta
-from giskard.core.model import Model
-from giskard.ml_worker.core.dataset import Dataset
+from giskard.models.base import BaseModel
+from giskard.datasets.base import Dataset
 from giskard.ml_worker.core.test_result import TestResult
 from giskard.ml_worker.testing.registry.giskard_test import GiskardTest, Test, GiskardTestMethod
 from giskard.ml_worker.testing.registry.registry import tests_registry
@@ -128,7 +128,7 @@ class Suite:
         for t in self.tests:
             inputs = {}
             for pname, p in t.provided_inputs.items():
-                if issubclass(type(p), Dataset) or issubclass(type(p), Model):
+                if issubclass(type(p), Dataset) or issubclass(type(p), BaseModel):
                     if str(p.id) not in uploaded_uuids:
                         p.upload(client, project_key)
                     inputs[pname] = TestInputDTO(name=pname, value=str(p.id))
