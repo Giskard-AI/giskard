@@ -13,6 +13,7 @@ import numpy as np
 import pandas as pd
 import yaml
 from pydantic import BaseModel
+from inspect import signature
 from giskard.client.giskard_client import GiskardClient
 from giskard.core.core import ModelMeta
 from giskard.core.core import SupportedModelTypes
@@ -303,6 +304,18 @@ class WrapperModel(BaseModel, ABC):
         self.clf = clf
         self.data_preprocessing_function = data_preprocessing_function
         self.model_postprocessing_function = model_postprocessing_function
+
+        if self.data_preprocessing_function:
+            sign_len = len(signature(self.data_preprocessing_function).parameters)
+            print(sign_len)
+            if sign_len != 1:
+                raise ValueError(
+                    f"data_preprocessing_function only takes 1 argument (a pandas.DataFrame) but {sign_len} were provided.")
+        if self.model_postprocessing_function:
+            sign_len = len(signature(self.model_postprocessing_function).parameters)
+            if sign_len != 1:
+                raise ValueError(
+                    f"model_postprocessing_function only takes 1 argument but {sign_len} were provided.")
 
     def _postprocess(self, raw_predictions):
         # User specified a custom postprocessing function
