@@ -19,7 +19,6 @@ extensions = ["myst_parser",
               'sphinx.ext.viewcode',
               'sphinx.ext.autodoc',
               'sphinx.ext.autosummary',
-              'sphinx_rtd_theme',
               'sphinx_design'
               ]
 myst_enable_extensions = ["colon_fence"]

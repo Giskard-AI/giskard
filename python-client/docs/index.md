@@ -8,7 +8,7 @@
 ```
 
 
-{py:obj}`giskard.ml_worker.core.dataset.Dataset`
+{py:obj}`giskard.Dataset`
 
 
 ::::{tab-set}
