@@ -1,6 +1,6 @@
 import inspect
 import sys
-from typing import Callable, Optional, List, Union, Type
+from typing import Callable, Optional, List, Union, Type, TypeVar
 
 from giskard.ml_worker.testing.registry.giskard_test import GiskardTestMethod, GiskardTest
 
@@ -11,7 +11,7 @@ def test(_fn=None, name=None, tags: Optional[List[str]] = None):
     else:
         import typing_extensions as t
     P = t.ParamSpec("P")
-    R = t.TypeVar("R")
+    R = TypeVar("R")
 
     def inner(func: Union[Callable[P, R], Type[GiskardTest]]) -> Union[Callable[P, GiskardTest], GiskardTest, GiskardTestMethod]:
         """
