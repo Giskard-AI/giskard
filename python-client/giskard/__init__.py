@@ -27,7 +27,6 @@ from giskard.models.catboost import CatboostModel
 from giskard.models.huggingface import HuggingFaceModel
 from giskard.models.pytorch import PyTorchModel
 from giskard.models.sklearn import SKLearnModel
-from giskard.models.sklearn import SKLearnModel
 from giskard.models.tensorflow import TensorFlowModel
 
 configure_logging()
