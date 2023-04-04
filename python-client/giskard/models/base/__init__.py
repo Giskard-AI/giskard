@@ -61,6 +61,12 @@ class BaseModel(ABC):
                     f'Invalid model type value "{model_type}". Available values are: {available_values}'
                 ) from e
 
+        if classification_labels:
+            if len(classification_labels) != len(set(classification_labels)):
+                raise ValueError(
+                    "Duplicates are found in 'classification_labels', please only provide unique values."
+                )
+
         self.meta = ModelMeta(
             name=name if name is not None else self.__class__.__name__,
             model_type=model_type,
