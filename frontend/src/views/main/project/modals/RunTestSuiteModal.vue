@@ -135,7 +135,7 @@ function createInputs(inputs: (RequiredInputDTO & { name: string })[]) {
           isAlias: false,
           name,
           type,
-          value: props.previousParams[name] ?? ''
+          value: testSuiteStore.suite!.testInputs.find(t => t.name === name)?.value ?? props.previousParams[name] ?? ''
         }
         return result;
       }, {});
