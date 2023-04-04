@@ -7,15 +7,15 @@ from typing import List, Any, Union, Dict, Mapping, Optional
 from giskard.client.dtos import TestSuiteDTO, TestInputDTO, SuiteTestDTO
 from giskard.client.giskard_client import GiskardClient
 from giskard.core.core import TestFunctionMeta
-from giskard.models.base import BaseModel
 from giskard.datasets.base import Dataset
 from giskard.ml_worker.core.test_result import TestResult
 from giskard.ml_worker.testing.registry.giskard_test import GiskardTest, Test, GiskardTestMethod
 from giskard.ml_worker.testing.registry.registry import tests_registry
+from giskard.models.base import BaseModel
 
 logger = logging.getLogger(__name__)
 
-suite_input_types: List[type] = [Dataset, Model, str, bool, int, float]
+suite_input_types: List[type] = [Dataset, BaseModel, str, bool, int, float]
 
 
 class SuiteInput:
@@ -41,7 +41,7 @@ class ModelInput(SuiteInput):
     model_type: Optional[str] = None
 
     def __init__(self, name: str, model_type: Optional[str] = None) -> None:
-        super().__init__(name, Model)
+        super().__init__(name, BaseModel)
         self.model_type = model_type
 
 
