@@ -38,42 +38,46 @@
                     </v-btn-toggle>
                 </v-col>
                 <v-col :cols="6">
-                    <div v-if="props.modelValue" class="d-flex">
-                      <span v-if="!props.modelValue.hasOwnProperty(input.name)" class="font-italic">
+                    <div v-if="editedInputs" class="d-flex">
+                      <span v-if="!editedInputs.hasOwnProperty(input.name)" class="font-italic">
                         Suite input
                       </span>
-                        <template v-else-if="!props.modelValue[input.name].isAlias">
+                        <template v-else-if="!editedInputs[input.name].isAlias">
                             <DatasetSelector :project-id="projectId" :label="input.name" :return-object="false"
                                              v-if="input.type === 'Dataset'"
-                                             :value.sync="props.modelValue[input.name].value"/>
+                                             :value.sync="editedInputs[input.name].value"/>
                             <ModelSelector :project-id="projectId" :label="input.name" :return-object="false"
                                            v-else-if="input.type === 'BaseModel'"
-                                           :value.sync="props.modelValue[input.name].value"/>
-                            <v-text-field
+                                           :value.sync="editedInputs[input.name].value"/>
+                            <ValidationProvider
+                                name="value"
+                                v-else-if="['float', 'int'].includes(input.type)"
+                                mode="eager" rules="required" v-slot="{errors}">
+                                <v-text-field
                                     :step='input.type === "float" ? 0.1 : 1'
-                                    v-model="props.modelValue[input.name].value"
-                                    v-else-if="['float', 'int'].includes(input.type)"
-                                    hide-details
+                                    v-model="editedInputs[input.name].value"
+                                    :error-messages="errors"
                                     single-line
                                     type="number"
                                     outlined
                                     dense
-                            />
+                                />
+                            </ValidationProvider>
                             <v-text-field
-                                    v-model="props.modelValue[input.name].value"
-                                    v-else-if="input.type === 'str'"
-                                    hide-details
-                                    single-line
-                                    type="text"
-                                    outlined
-                                    dense
+                                v-model="editedInputs[input.name].value"
+                                v-else-if="input.type === 'str'"
+                                hide-details
+                                single-line
+                                type="text"
+                                outlined
+                                dense
                             />
                         </template>
                         <v-select
                             v-else
                             clearable
                             outlined
-                            v-model="props.modelValue[input.name].value"
+                            v-model="editedInputs[input.name].value"
                             :items="aliases[input.type] ?? []"
                             dense
                             hide-details
@@ -109,7 +113,7 @@
 <script setup lang="ts">
 import DatasetSelector from '@/views/main/utils/DatasetSelector.vue';
 import ModelSelector from '@/views/main/utils/ModelSelector.vue';
-import {computed, ref, watch} from 'vue';
+import {computed, onMounted, ref, watch} from 'vue';
 import {TestFunctionDTO, TestInputDTO} from '@/generated-sources';
 import {storeToRefs} from 'pinia';
 import {useTestSuiteStore} from '@/stores/test-suite';
@@ -125,7 +129,24 @@ const props = defineProps<{
     modelValue?: { [name: string]: TestInputDTO }
 }>();
 
+const emit = defineEmits(['invalid', 'result']);
+
 const {models, datasets, suite} = storeToRefs(useTestSuiteStore());
+
+const editedInputs = ref<{ [input: string]: TestInputDTO }>({});
+
+function updateEditedValue() {
+    editedInputs.value = {
+        ...props.modelValue
+    }
+}
+
+onMounted(() => {
+    updateEditedValue();
+});
+
+
+watch(() => props.modelValue, () => updateEditedValue(), {deep: true})
 
 const inputs = computed(() => Object.keys(props.inputs).map((name) => ({
     name,
@@ -141,7 +162,7 @@ const aliases = computed(() => {
             .flatMap(test => Object.values(test.testInputs))
             .filter(input => input.isAlias)
             .value(),
-        ...chain(Object.values(props.modelValue!))
+        ...chain(Object.values(editedInputs.value))
             .filter(input => input.isAlias)
             .value()
     ])
@@ -153,13 +174,13 @@ const aliases = computed(() => {
         .value()
 })
 
-watch(() => [props.modelValue, props.inputs], () => {
-    if (props.modelValue) {
+watch(() => [editedInputs.value, props.inputs], () => {
+    if (editedInputs.value) {
         buttonToggleValues.value = chain(props.inputs)
             .mapValues((_, name) => {
-                if (!props.modelValue!.hasOwnProperty(name)) {
+                if (!editedInputs.value.hasOwnProperty(name)) {
                     return 0;
-                } else if (props.modelValue![name].isAlias) {
+                } else if (editedInputs.value[name].isAlias) {
                     return 1;
                 } else {
                     return null;
@@ -174,23 +195,33 @@ watch(() => [props.modelValue, props.inputs], () => {
 function handleTypeSelected(input: string, item: number) {
     switch (item) {
         case 0:
-            delete props.modelValue![input];
+            delete editedInputs.value[input];
+            editedInputs.value = {
+                ...editedInputs.value
+            };
+
             break;
         case 1:
-            props.modelValue![input] = {
-                isAlias: true,
-                name: input,
-                type: props.inputs[input],
-                value: null
-            };
+            editedInputs.value = {
+                ...editedInputs.value,
+                [input]: {
+                    isAlias: true,
+                    name: input,
+                    type: props.inputs[input],
+                    value: null
+                }
+            }
             break;
         default:
-            props.modelValue![input] = {
-                isAlias: false,
-                name: input,
-                type: props.inputs[input],
-                value: null
-            };
+            editedInputs.value = {
+                ...editedInputs.value,
+                [input]: {
+                    isAlias: false,
+                    name: input,
+                    type: props.inputs[input],
+                    value: null
+                }
+            }
             break;
     }
 }
@@ -204,12 +235,20 @@ async function createAlias(name: string, type: string) {
         },
         on: {
             async save(input: TestInputDTO) {
-                props.modelValue![name] = input;
-                props.modelValue = {...props.modelValue};
+                editedInputs.value[name] = input;
+                editedInputs.value = {...editedInputs.value};
             }
         }
     });
 }
+
+
+watch(() => [editedInputs.value, buttonToggleValues], () => {
+    emit('result', editedInputs.value);
+    emit('invalid', Object.values(editedInputs.value)
+        .findIndex(param => param && (param.value === null || param.value.trim() === '')) !== -1);
+}, {deep: true})
+
 
 </script>
 
