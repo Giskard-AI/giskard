@@ -25,6 +25,7 @@ Heuristic tests
 .. autofunction:: giskard.test_right_label
 .. autofunction:: giskard.test_output_in_range
 
+
 Performance tests
 ^^^^^^^^^^^^^^^^^^^^^^^
 .. autofunction:: giskard.test_mae
