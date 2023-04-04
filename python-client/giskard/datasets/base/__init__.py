@@ -33,17 +33,18 @@ class Dataset:
     df: pd.DataFrame
 
     def __init__(
-        self,
-        df: pd.DataFrame,
-        name: Optional[str] = None,
-        target: Optional[str] = None,
-        cat_columns: Optional[List[str]] = None,
-        infer_column_types: Optional[bool] = False,
-        column_types: Optional[Dict[str, str]] = None,
+            self,
+            df: pd.DataFrame,
+            name: Optional[str] = None,
+            target: Optional[str] = None,
+            cat_columns: Optional[List[str]] = None,
+            infer_column_types: Optional[bool] = False,
+            column_types: Optional[Dict[str, str]] = None,
     ) -> None:
         self.name = name
         self.df = pd.DataFrame(df)
         self.target = target
+        self.check_object_dtype_castability(self.df)
         self.column_dtypes = self.extract_column_dtypes(self.df)
         if column_types:
             self.column_types = column_types
@@ -53,8 +54,24 @@ class Dataset:
             self.column_types = self.infer_column_types(self.df, self.column_dtypes)
         else:
             self.column_types = self.infer_column_types(self.df, self.column_dtypes, no_cat=True)
-            warning("You did not provide any of [column_types, cat_columns, infer_column_types = True] for your Dataset."
-                    "In this case, we assume that there's no categorical columns in your Dataset.")
+            warning(
+                "You did not provide any of [column_types, cat_columns, infer_column_types = True] for your Dataset."
+                "In this case, we assume that there's no categorical columns in your Dataset.")
+
+    @staticmethod
+    def check_object_dtype_castability(df):
+        df_objects = df.select_dtypes(include='object')
+        non_supported_cols = []
+        for col in df_objects.columns:
+            if not isinstance(df[col].iat[0], str):
+                try:
+                    float(df[col].iat[0])
+                except TypeError:
+                    non_supported_cols.append(col)
+
+        if non_supported_cols:
+            raise TypeError(
+                f"The following columns in your df: {non_supported_cols} don't contain strings or numbers (our only supported data types).")
 
     @staticmethod
     def infer_column_types(df, column_dtypes, no_cat=False):
@@ -77,7 +94,8 @@ class Dataset:
             column_types[cat_col] = SupportedColumnTypes.CATEGORY.value
         for col, col_type in column_dtypes.items():
             if col not in cat_columns:
-                column_types[col] = SupportedColumnTypes.NUMERIC.value if is_numeric_dtype(col_type) else SupportedColumnTypes.TEXT.value
+                column_types[col] = SupportedColumnTypes.NUMERIC.value if is_numeric_dtype(
+                    col_type) else SupportedColumnTypes.TEXT.value
 
         return column_types
 
