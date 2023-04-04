@@ -11,8 +11,8 @@ from scipy.stats import chi2, ks_2samp
 from scipy.stats.stats import Ks_2sampResult, wasserstein_distance
 
 from giskard.core.core import SupportedModelTypes
-from giskard.ml_worker.core.dataset import Dataset
-from giskard.core.model import Model
+from giskard.datasets.base import Dataset
+from giskard.models.base import BaseModel
 from giskard.ml_worker.generated.ml_worker_pb2 import SingleTestResult, TestMessage, TestMessageType
 from giskard.ml_worker.testing.abstract_test_collection import AbstractTestCollection
 
@@ -413,7 +413,7 @@ class DriftTests(AbstractTestCollection):
         self,
         reference_slice: Dataset,
         actual_slice: Dataset,
-        model: Model,
+        model: BaseModel,
         max_categories: int = 10,
         threshold: float = 0.2,
         psi_contribution_percent: float = 0.2,
@@ -430,7 +430,7 @@ class DriftTests(AbstractTestCollection):
                 Slice of the actual dataset
             reference_slice(Dataset):
                 Slice of the reference dataset
-            model(Model):
+            model(BaseModel):
                 Model used to compute the test
             threshold(float):
                 Threshold value for PSI
@@ -509,7 +509,7 @@ class DriftTests(AbstractTestCollection):
         self,
         reference_slice: Dataset,
         actual_slice: Dataset,
-        model: Model,
+        model: BaseModel,
         max_categories: int = 10,
         threshold: float = 0.05,
         chi_square_contribution_percent: float = 0.2,
@@ -526,7 +526,7 @@ class DriftTests(AbstractTestCollection):
                 Slice of the actual dataset
             reference_slice(Dataset):
                 Slice of the reference dataset
-            model(Model):
+            model(BaseModel):
                 Model used to compute the test
             threshold(float):
                 Threshold value of p-value of Chi-Square
@@ -592,7 +592,7 @@ class DriftTests(AbstractTestCollection):
         self,
         reference_slice: Dataset,
         actual_slice: Dataset,
-        model: Model,
+        model: BaseModel,
         classification_label=None,
         threshold=None,
     ) -> SingleTestResult:
@@ -609,7 +609,7 @@ class DriftTests(AbstractTestCollection):
                 Slice of the actual dataset
             reference_slice(Dataset):
                 Slice of the reference dataset
-            model(Model):
+            model(BaseModel):
                 Model used to compute the test
             threshold(float):
                 Threshold for p-value of Kolmogorov-Smirnov test
@@ -680,7 +680,7 @@ class DriftTests(AbstractTestCollection):
         self,
         reference_slice: Dataset,
         actual_slice: Dataset,
-        model: Model,
+        model: BaseModel,
         classification_label=None,
         threshold=0.2,
     ) -> SingleTestResult:
@@ -701,7 +701,7 @@ class DriftTests(AbstractTestCollection):
                 slice of the reference dataset
             actual_slice(Dataset):
                 slice of the actual dataset
-            model(Model):
+            model(BaseModel):
                 uploaded model
             classification_label:
                 one specific label value from the target column for classification model

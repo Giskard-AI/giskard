@@ -1,8 +1,8 @@
 import pandas as pd
 
 from giskard.core.core import SupportedModelTypes
-from giskard.core.model import Model
-from giskard.ml_worker.core.dataset import Dataset
+from giskard.models.base import BaseModel
+from giskard.datasets.base import Dataset
 from giskard.ml_worker.generated.ml_worker_pb2 import SingleTestResult, TestMessage, TestMessageType
 from giskard.ml_worker.testing.abstract_test_collection import AbstractTestCollection
 from giskard.ml_worker.testing.stat_utils import equivalence_t_test, paired_t_test
@@ -14,7 +14,7 @@ from giskard.ml_worker.utils.logging import timer
 
 class MetamorphicTests(AbstractTestCollection):
     @staticmethod
-    def _predict_numeric_result(ds: Dataset, model: Model, output_proba=True, classification_label=None):
+    def _predict_numeric_result(ds: Dataset, model: BaseModel, output_proba=True, classification_label=None):
         if model.is_regression or not output_proba:
             return model.predict(ds).raw_prediction
         elif model.is_classification and classification_label is not None:
@@ -29,7 +29,7 @@ class MetamorphicTests(AbstractTestCollection):
     @staticmethod
     def _perturb_and_predict(
         ds: Dataset,
-        model: Model,
+        model: BaseModel,
         perturbation_dict,
         output_proba=True,
         classification_label=None,
@@ -184,7 +184,7 @@ class MetamorphicTests(AbstractTestCollection):
         Args:
             df(Dataset):
               Dataset used to compute the test
-            model(Model):
+            model(BaseModel):
               Model used to compute the test
             perturbation_dict(dict):
               Dictionary of the perturbations. It provides the perturbed features as key
@@ -237,7 +237,7 @@ class MetamorphicTests(AbstractTestCollection):
         Args:
             df(Dataset):
               Dataset used to compute the test
-            model(Model):
+            model(BaseModel):
               Model used to compute the test
             perturbation_dict(dict):
               Dictionary of the perturbations. It provides the perturbed features as key
@@ -290,7 +290,7 @@ class MetamorphicTests(AbstractTestCollection):
         Args:
             df(Dataset):
               Dataset used to compute the test
-            model(Model):
+            model(BaseModel):
               Model used to compute the test
             perturbation_dict(dict):
               Dictionary of the perturbations. It provides the perturbed features as key
@@ -372,7 +372,7 @@ class MetamorphicTests(AbstractTestCollection):
         Args:
             df(Dataset):
                 Dataset used to compute the test
-            model(Model):
+            model(BaseModel):
                 Model used to compute the test
             perturbation_dict(dict):
                 Dictionary of the perturbations. It provides the perturbed features as key
@@ -422,7 +422,7 @@ class MetamorphicTests(AbstractTestCollection):
         Args:
             df(Dataset):
                 Dataset used to compute the test
-            model(Model):
+            model(BaseModel):
                 Model used to compute the test
             perturbation_dict(dict):
                 Dictionary of the perturbations. It provides the perturbed features as key
@@ -480,7 +480,7 @@ class MetamorphicTests(AbstractTestCollection):
         Args:
               df(Dataset):
                   Dataset used to compute the test
-              model(Model):
+              model(BaseModel):
                   Model used to compute the test
               perturbation_dict(dict):
                   Dictionary of the perturbations. It provides the perturbed features as key
@@ -558,7 +558,7 @@ class MetamorphicTests(AbstractTestCollection):
         Args:
             df(Dataset):
                 Dataset used to compute the test
-            model(Model):
+            model(BaseModel):
                 Model used to compute the test
             perturbation_dict(dict):
                 Dictionary of the perturbations. It provides the perturbed features as key
@@ -608,7 +608,7 @@ class MetamorphicTests(AbstractTestCollection):
         Args:
             df(Dataset):
                 Dataset used to compute the test
-            model(Model):
+            model(BaseModel):
                 Model used to compute the test
             perturbation_dict(dict):
                 Dictionary of the perturbations. It provides the perturbed features as key
@@ -661,7 +661,7 @@ class MetamorphicTests(AbstractTestCollection):
         Args:
             df(Dataset):
                 Dataset used to compute the test
-            model(Model):
+            model(BaseModel):
                 Model used to compute the test
             perturbation_dict(dict):
                 Dictionary of the perturbations. It provides the perturbed features as key

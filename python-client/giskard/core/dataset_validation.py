@@ -3,7 +3,7 @@ from pandas.core.dtypes.common import is_string_dtype, is_numeric_dtype
 from giskard.client.python_utils import warning
 from giskard.core.core import SupportedColumnTypes
 from giskard.core.validation import validate_is_pandasdataframe, validate_target
-from giskard.ml_worker.core.dataset import Dataset, Nuniques
+from giskard.datasets.base import Dataset, Nuniques
 
 
 def validate_dataset(dataset: Dataset):
