@@ -17,6 +17,7 @@ release = '1.8.0'
 extensions = ["myst_parser", 'sphinx.ext.todo', 'sphinx.ext.viewcode', 'sphinx_rtd_theme',
               'sphinx.ext.napoleon', 'sphinx.ext.autodoc']
 
+autodoc_mock_imports = ["giskard.ml_worker.generated"]
 templates_path = ['_templates']
 exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 
