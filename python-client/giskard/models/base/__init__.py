@@ -8,15 +8,12 @@ import uuid
 from abc import abstractmethod, ABC
 from pathlib import Path
 from typing import Optional, Any, Union
-
 import cloudpickle
-import mlflow
 import numpy as np
 import pandas as pd
 import yaml
-from mlflow.pyfunc import PyFuncModel
 from pydantic import BaseModel
-
+from inspect import signature
 from giskard.client.giskard_client import GiskardClient
 from giskard.core.core import ModelMeta
 from giskard.core.core import SupportedModelTypes
@@ -24,6 +21,12 @@ from giskard.datasets.base import Dataset
 from giskard.ml_worker.utils.logging import Timer
 from giskard.path_utils import get_size
 from giskard.settings import settings
+
+try:
+    import mlflow
+    from mlflow.pyfunc import PyFuncModel
+except ImportError:
+    pass
 
 MODEL_CLASS_PKL = "ModelClass.pkl"
 
@@ -43,12 +46,12 @@ class BaseModel(ABC):
     id: uuid.UUID = None
 
     def __init__(
-        self,
-        model_type: Union[SupportedModelTypes, str],
-        name: str = None,
-        feature_names=None,
-        classification_threshold=0.5,
-        classification_labels=None,
+            self,
+            model_type: Union[SupportedModelTypes, str],
+            name: str = None,
+            feature_names=None,
+            classification_threshold=0.5,
+            classification_labels=None,
     ) -> None:
         if type(model_type) == str:
             try:
@@ -58,6 +61,12 @@ class BaseModel(ABC):
                 raise ValueError(
                     f'Invalid model type value "{model_type}". Available values are: {available_values}'
                 ) from e
+
+        if classification_labels is not None:
+            if len(classification_labels) != len(set(classification_labels)):
+                raise ValueError(
+                    "Duplicates are found in 'classification_labels', please only provide unique values."
+                )
 
         self.meta = ModelMeta(
             name=name if name is not None else self.__class__.__name__,
@@ -281,20 +290,32 @@ class WrapperModel(BaseModel, ABC):
     model_postprocessing_function: any
 
     def __init__(
-        self,
-        clf,
-        model_type: Union[SupportedModelTypes, str],
-        data_preprocessing_function=None,
-        model_postprocessing_function=None,
-        name: str = None,
-        feature_names=None,
-        classification_threshold=0.5,
-        classification_labels=None,
+            self,
+            clf,
+            model_type: Union[SupportedModelTypes, str],
+            data_preprocessing_function=None,
+            model_postprocessing_function=None,
+            name: str = None,
+            feature_names=None,
+            classification_threshold=0.5,
+            classification_labels=None,
     ) -> None:
         super().__init__(model_type, name, feature_names, classification_threshold, classification_labels)
         self.clf = clf
         self.data_preprocessing_function = data_preprocessing_function
         self.model_postprocessing_function = model_postprocessing_function
+
+        if self.data_preprocessing_function:
+            sign_len = len(signature(self.data_preprocessing_function).parameters)
+            print(sign_len)
+            if sign_len != 1:
+                raise ValueError(
+                    f"data_preprocessing_function only takes 1 argument (a pandas.DataFrame) but {sign_len} were provided.")
+        if self.model_postprocessing_function:
+            sign_len = len(signature(self.model_postprocessing_function).parameters)
+            if sign_len != 1:
+                raise ValueError(
+                    f"model_postprocessing_function only takes 1 argument but {sign_len} were provided.")
 
     def _postprocess(self, raw_predictions):
         # User specified a custom postprocessing function
