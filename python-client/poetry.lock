@@ -40,7 +40,7 @@ files = [
 name = "alabaster"
 version = "0.7.13"
 description = "A configurable sidebar-enabled Sphinx theme"
-category = "main"
+category = "dev"
 optional = false
 python-versions = ">=3.6"
 files = [
@@ -228,7 +228,7 @@ tests-no-zope = ["cloudpickle", "cloudpickle", "hypothesis", "hypothesis", "mypy
 name = "babel"
 version = "2.12.1"
 description = "Internationalization utilities"
-category = "main"
+category = "dev"
 optional = false
 python-versions = ">=3.7"
 files = [
@@ -1558,7 +1558,7 @@ files = [
 name = "imagesize"
 version = "1.4.1"
 description = "Getting image size from png/jpeg/jpeg2000/gif file"
-category = "main"
+category = "dev"
 optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
 files = [
@@ -3977,7 +3977,7 @@ files = [
 name = "pygments"
 version = "2.14.0"
 description = "Pygments is a syntax highlighting package written in Python."
-category = "main"
+category = "dev"
 optional = false
 python-versions = ">=3.6"
 files = [
@@ -4891,7 +4891,7 @@ files = [
 name = "snowballstemmer"
 version = "2.2.0"
 description = "This package provides 29 stemmers for 28 languages generated from Snowball algorithms."
-category = "main"
+category = "dev"
 optional = false
 python-versions = "*"
 files = [
@@ -4915,7 +4915,7 @@ files = [
 name = "sphinx"
 version = "6.1.3"
 description = "Python documentation generator"
-category = "main"
+category = "dev"
 optional = false
 python-versions = ">=3.8"
 files = [
@@ -5009,7 +5009,7 @@ dev = ["bump2version", "sphinxcontrib-httpdomain", "transifex-client", "wheel"]
 name = "sphinxcontrib-applehelp"
 version = "1.0.4"
 description = "sphinxcontrib-applehelp is a Sphinx extension which outputs Apple help books"
-category = "main"
+category = "dev"
 optional = false
 python-versions = ">=3.8"
 files = [
@@ -5025,7 +5025,7 @@ test = ["pytest"]
 name = "sphinxcontrib-devhelp"
 version = "1.0.2"
 description = "sphinxcontrib-devhelp is a sphinx extension which outputs Devhelp document."
-category = "main"
+category = "dev"
 optional = false
 python-versions = ">=3.5"
 files = [
@@ -5041,7 +5041,7 @@ test = ["pytest"]
 name = "sphinxcontrib-htmlhelp"
 version = "2.0.1"
 description = "sphinxcontrib-htmlhelp is a sphinx extension which renders HTML help files"
-category = "main"
+category = "dev"
 optional = false
 python-versions = ">=3.8"
 files = [
@@ -5072,7 +5072,7 @@ Sphinx = ">=1.8"
 name = "sphinxcontrib-jsmath"
 version = "1.0.1"
 description = "A sphinx extension which renders display math in HTML via JavaScript"
-category = "main"
+category = "dev"
 optional = false
 python-versions = ">=3.5"
 files = [
@@ -5087,7 +5087,7 @@ test = ["flake8", "mypy", "pytest"]
 name = "sphinxcontrib-qthelp"
 version = "1.0.3"
 description = "sphinxcontrib-qthelp is a sphinx extension which outputs QtHelp document."
-category = "main"
+category = "dev"
 optional = false
 python-versions = ">=3.5"
 files = [
@@ -5103,7 +5103,7 @@ test = ["pytest"]
 name = "sphinxcontrib-serializinghtml"
 version = "1.1.5"
 description = "sphinxcontrib-serializinghtml is a sphinx extension which outputs \"serialized\" HTML files (json and pickle)."
-category = "main"
+category = "dev"
 optional = false
 python-versions = ">=3.5"
 files = [
@@ -6342,4 +6342,4 @@ cffi = ["cffi (>=1.11)"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.8,<3.11"
-content-hash = "9d79a0a1a0ad2082ba0085d4bd181b28ca66176df8eafa972139dc72847ab1ec"
+content-hash = "03a7ec83fe209c83e99f7d63c344bf417b3a78e7d8eef1f5ecf239dfe57b3e17"
