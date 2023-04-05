@@ -1,17 +1,15 @@
 from typing import Union
 import logging
+
 from scipy import special
+import torch
 from pathlib import Path
 import yaml
+
 from giskard.core.core import SupportedModelTypes
 from giskard.models.base import WrapperModel
 
-try:
-    import torch
-    from transformers import pipeline, pipelines
-except ImportError:
-    pass
-
+from transformers import pipeline, pipelines
 
 logger = logging.getLogger(__name__)
 
@@ -28,7 +26,6 @@ class HuggingFaceModel(WrapperModel):
         classification_threshold=0.5,
         classification_labels=None,
     ) -> None:
-
         super().__init__(
             clf=clf,
             model_type=model_type,

@@ -8,12 +8,16 @@ import uuid
 from abc import abstractmethod, ABC
 from pathlib import Path
 from typing import Optional, Any, Union
+
 import cloudpickle
+import mlflow
 import numpy as np
 import pandas as pd
 import yaml
+from mlflow.pyfunc import PyFuncModel
 from pydantic import BaseModel
 from inspect import signature
+
 from giskard.client.giskard_client import GiskardClient
 from giskard.core.core import ModelMeta
 from giskard.core.core import SupportedModelTypes
@@ -21,12 +25,6 @@ from giskard.datasets.base import Dataset
 from giskard.ml_worker.utils.logging import Timer
 from giskard.path_utils import get_size
 from giskard.settings import settings
-
-try:
-    import mlflow
-    from mlflow.pyfunc import PyFuncModel
-except ImportError:
-    pass
 
 MODEL_CLASS_PKL = "ModelClass.pkl"
 
@@ -46,12 +44,12 @@ class BaseModel(ABC):
     id: uuid.UUID = None
 
     def __init__(
-            self,
-            model_type: Union[SupportedModelTypes, str],
-            name: str = None,
-            feature_names=None,
-            classification_threshold=0.5,
-            classification_labels=None,
+        self,
+        model_type: Union[SupportedModelTypes, str],
+        name: str = None,
+        feature_names=None,
+        classification_threshold=0.5,
+        classification_labels=None,
     ) -> None:
         if type(model_type) == str:
             try:
@@ -290,15 +288,15 @@ class WrapperModel(BaseModel, ABC):
     model_postprocessing_function: any
 
     def __init__(
-            self,
-            clf,
-            model_type: Union[SupportedModelTypes, str],
-            data_preprocessing_function=None,
-            model_postprocessing_function=None,
-            name: str = None,
-            feature_names=None,
-            classification_threshold=0.5,
-            classification_labels=None,
+        self,
+        clf,
+        model_type: Union[SupportedModelTypes, str],
+        data_preprocessing_function=None,
+        model_postprocessing_function=None,
+        name: str = None,
+        feature_names=None,
+        classification_threshold=0.5,
+        classification_labels=None,
     ) -> None:
         super().__init__(model_type, name, feature_names, classification_threshold, classification_labels)
         self.clf = clf

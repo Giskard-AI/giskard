@@ -1,11 +1,8 @@
+import mlflow
 from typing import Union
+
 from giskard.core.core import SupportedModelTypes
 from giskard.models.base import MLFlowBasedModel
-
-try:
-    import mlflow
-except ImportError:
-    pass
 
 
 class SKLearnModel(MLFlowBasedModel):
