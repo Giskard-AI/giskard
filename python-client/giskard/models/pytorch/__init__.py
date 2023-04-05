@@ -1,20 +1,18 @@
 from typing import Union
 from pathlib import Path
+import mlflow
 import yaml
 import pandas as pd
 import numpy as np
+import torch
 import collections
+from torch.utils.data import DataLoader
+from torch.utils.data import Dataset as torch_dataset
+
 from giskard.core.core import SupportedModelTypes
 from giskard.models.base import MLFlowBasedModel
-from ..utils import map_to_tuples
 
-try:
-    import mlflow
-    import torch
-    from torch.utils.data import DataLoader
-    from torch.utils.data import Dataset as torch_dataset
-except ImportError:
-    pass
+from ..utils import map_to_tuples
 
 # There's no casting currently from str to torch.dtype
 str_to_torch_dtype = {
@@ -53,18 +51,18 @@ class TorchMinimalDataset(torch_dataset):
 
 class PyTorchModel(MLFlowBasedModel):
     def __init__(
-            self,
-            clf,
-            model_type: Union[SupportedModelTypes, str],
-            torch_dtype=torch.float32,
-            device="cpu",
-            name: str = None,
-            data_preprocessing_function=None,
-            model_postprocessing_function=None,
-            feature_names=None,
-            classification_threshold=0.5,
-            classification_labels=None,
-            iterate_dataset=True,
+        self,
+        clf,
+        model_type: Union[SupportedModelTypes, str],
+        torch_dtype=torch.float32,
+        device="cpu",
+        name: str = None,
+        data_preprocessing_function=None,
+        model_postprocessing_function=None,
+        feature_names=None,
+        classification_threshold=0.5,
+        classification_labels=None,
+        iterate_dataset=True,
     ) -> None:
         super().__init__(
             clf=clf,

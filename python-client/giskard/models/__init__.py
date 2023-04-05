@@ -1,4 +1,5 @@
 from importlib import import_module
+import torch  # TODO: to be omitted in another PR
 from typing import Union
 
 from giskard.core.core import SupportedModelTypes
