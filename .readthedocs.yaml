@@ -13,7 +13,7 @@ build:
       - pip install poetry
       #      - poetry -C python-client export --output python-client/requirements.txt --only main,doc
       - poetry -C python-client config virtualenvs.create false --local
-      - ../gradlew :python-client:generateProto
+      - ./gradlew :python-client:generateProto
     post_install:
       - poetry -C python-client install --only main,doc
 #      - pip install -r python-client/requirements.txt
