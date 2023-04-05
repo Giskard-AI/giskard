@@ -1,20 +1,20 @@
 import tempfile
-from typing import List, Iterable
-
+from typing import List, Iterable, Union
 import yaml
 import numpy as np
 import pandas as pd
 from pandas.core.dtypes.common import is_string_dtype
-
 from giskard.core.core import ModelMeta
 from giskard.client.python_utils import warning
 from giskard.core.core import SupportedModelTypes
 from giskard.models.base import BaseModel, WrapperModel
 from giskard.core.validation import validate_is_pandasdataframe, validate_target
 from giskard.datasets.base import Dataset
+from pydantic import validate_arguments
 
 
-def validate_model(model: BaseModel, validate_ds: Dataset):
+@validate_arguments(config=type('', (object,), {'arbitrary_types_allowed': True}))
+def validate_model(model: BaseModel, validate_ds: Union[Dataset, None]):
     model_type = model.meta.model_type
 
     model = validate_model_loading_and_saving(model)
@@ -43,7 +43,7 @@ def validate_model(model: BaseModel, validate_ds: Dataset):
         elif model.is_classification and validate_ds.target is not None:
             validate_target(validate_ds.target, validate_ds.df.keys())
             target_values = validate_ds.df[validate_ds.target].unique()
-            validate_label_with_target(model.meta.classification_labels, target_values, validate_ds.target)
+            validate_label_with_target(model.meta.name, model.meta.classification_labels, target_values, validate_ds.target)
             validate_model_execution(model, validate_ds)
         else:  # Classification with target = None
             validate_model_execution(model, validate_ds)
@@ -156,9 +156,9 @@ def validate_classification_labels(classification_labels: List[str], model_type:
 
 def validate_features(feature_names=None, validate_df=None):
     if (
-        feature_names is not None
-        and validate_df is not None
-        and not set(feature_names).issubset(set(validate_df.columns))
+            feature_names is not None
+            and validate_df is not None
+            and not set(feature_names).issubset(set(validate_df.columns))
     ):
         missing_feature_names = set(feature_names) - set(validate_df.columns)
         raise ValueError(
@@ -182,7 +182,7 @@ def validate_classification_threshold_label(classification_labels, classificatio
             )
 
 
-def validate_label_with_target(classification_labels, target_values=None, target_name=None):
+def validate_label_with_target(model_name, classification_labels, target_values=None, target_name=None):
     if target_values is not None:
         if not is_string_dtype(target_values):
             print(
@@ -191,12 +191,16 @@ def validate_label_with_target(classification_labels, target_values=None, target
                 'to make results more understandable in Giskard."'
             )
 
+        _to_append = ""
+        if model_name:
+            _to_append = " of the model: "+model_name
+
         target_values = target_values if is_string_dtype(target_values) else [str(label) for label in target_values]
         if not set(target_values).issubset(set(classification_labels)):
             invalid_target_values = set(target_values) - set(classification_labels)
             raise ValueError(
-                f"Values in {target_name} column are not declared in "
-                f"classification_labels parameter: {invalid_target_values}"
+                f"Values {invalid_target_values} in {target_name} column are not declared in "
+                f"classification_labels parameter {classification_labels}"+_to_append
             )
 
 

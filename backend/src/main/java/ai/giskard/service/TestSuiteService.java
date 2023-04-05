@@ -193,14 +193,14 @@ public class TestSuiteService {
             .setName(input.getName())
             .setType(input.getType());
 
-        if (input instanceof GenerateTestModelInputDTO) {
+        if (input instanceof GenerateTestModelInputDTO generateTestModelInputDTO) {
             builder.setModelMeta(ModelMeta.newBuilder()
-                .setModelType(((GenerateTestModelInputDTO) input).getModelType())
-                .build());
-        } else if (input instanceof GenerateTestDatasetInputDTO) {
+                    .setModelType(generateTestModelInputDTO.getModelType())
+                    .build());
+        } else if (input instanceof GenerateTestDatasetInputDTO generateTestDatasetInputDTO) {
             builder.setDatasetMeta(DatasetMeta.newBuilder()
-                .setTarget(((GenerateTestDatasetInputDTO) input).getTarget())
-                .build());
+                    .setTarget(generateTestDatasetInputDTO.getTarget())
+                    .build());
         }
 
         return builder.build();

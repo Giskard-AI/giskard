@@ -9,6 +9,7 @@ import lombok.Setter;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
+import java.io.Serializable;
 import java.util.List;
 
 @Entity
@@ -16,7 +17,7 @@ import java.util.List;
 @Getter
 @Setter
 @NoArgsConstructor
-public class SuiteTest {
+public class SuiteTest implements Serializable {
     @Id
     @GeneratedValue
     @Column(name = "id", nullable = false)
