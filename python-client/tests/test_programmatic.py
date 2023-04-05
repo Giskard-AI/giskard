@@ -1,9 +1,9 @@
 import pytest
 
-from giskard.models.base import BaseModel
 from giskard.datasets.base import Dataset
 from giskard.ml_worker.core.suite import Suite, SuiteInput
 from giskard.ml_worker.testing.tests.performance import test_auc, test_f1, test_diff_f1, AucTest
+from giskard.models.base import BaseModel
 from tests.utils import MockedClient
 
 
@@ -49,8 +49,8 @@ def test_all_global():
 def test_multiple(german_credit_data: Dataset, german_credit_model: BaseModel):
     assert (
         Suite()
-        .add_test(test_auc, threshold=0.2)
-        .add_test(test_f1, threshold=0.2)
+        .add_test(test_auc(threshold=0.2))
+        .add_test(test_f1(threshold=0.2))
         .run(actual_slice=german_credit_data, model=german_credit_model)[0]
     )
 
@@ -66,19 +66,19 @@ def test_all_inputs_exposed_and_shared(german_credit_data, german_credit_model):
 
 
 def test_shared_input(german_credit_data: Dataset, german_credit_model: BaseModel):
-    first_half = german_credit_data.slice(lambda df: df.head(len(df) // 2))
     last_half = german_credit_data.slice(lambda df: df.tail(len(df) // 2))
 
     shared_input = SuiteInput("dataset", Dataset)
 
     assert (
         Suite()
-        .add_test(test_auc, actual_slice=shared_input, threshold=0.2)
-        .add_test(test_f1, actual_slice=shared_input, threshold=0.2)
-        .add_test(test_diff_f1, threshold=0.2)
-        .run(model=german_credit_model, dataset=german_credit_data, actual_slice=first_half, reference_slice=last_half)[
-            0
-        ]
+        .add_test(test_auc(actual_slice=shared_input, threshold=0.2))
+        .add_test(test_f1(actual_slice=shared_input, threshold=0.2))
+        .add_test(test_diff_f1(threshold=0.2, actual_slice=shared_input))
+        .run(
+            model=german_credit_model,
+            dataset=german_credit_data,
+            reference_slice=last_half)[0]
     )
 
 
