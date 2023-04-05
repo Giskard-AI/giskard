@@ -169,7 +169,7 @@ def _extract_series(actual_ds, reference_ds, column_name, feature_type):
     return actual_series, reference_series
 
 
-#@test(name='Categorical drift (PSI)')
+@test(name='Categorical drift (PSI)')
 def test_drift_psi(
         reference_ds: Dataset,
         actual_ds: Dataset,
@@ -230,7 +230,7 @@ def test_drift_psi(
     )
 
 
-#@test(name='Categorical drift (Chi-squared)')
+@test(name='Categorical drift (Chi-squared)')
 def test_drift_chi_square(
         reference_ds: Dataset,
         actual_ds: Dataset,
@@ -293,7 +293,7 @@ def test_drift_chi_square(
     )
 
 
-#@test(name='Numerical drift (Kolmogorov-Smirnov)')
+@test(name='Numerical drift (Kolmogorov-Smirnov)')
 def test_drift_ks(
         reference_ds: Dataset,
         actual_ds: Dataset,
@@ -345,7 +345,7 @@ def test_drift_ks(
     )
 
 
-#@test(name='Numerical drift (Earth mover\'s distance)')
+@test(name='Numerical drift (Earth mover\'s distance)')
 def test_drift_earth_movers_distance(
         reference_ds: Dataset,
         actual_ds: Dataset,
@@ -404,7 +404,7 @@ def test_drift_earth_movers_distance(
     )
 
 
-#@test(name='Label drift (PSI)')
+@test(name='Label drift (PSI)')
 def test_drift_prediction_psi(
         reference_slice: Dataset,
         actual_slice: Dataset,
@@ -499,7 +499,7 @@ def _generate_message_modalities(main_drifting_modalities_bool, output_data, tes
     return messages
 
 
-#@test(name='Label drift (Chi-squared)')
+@test(name='Label drift (Chi-squared)')
 def test_drift_prediction_chi_square(
         reference_slice: Dataset,
         actual_slice: Dataset,
@@ -581,7 +581,7 @@ def _test_series_drift_chi(
     return messages, p_value, passed
 
 
-#@test(name='Classification Probability drift (Kolmogorov-Smirnov)', tags=['classification'])
+@test(name='Classification Probability drift (Kolmogorov-Smirnov)', tags=['classification'])
 def test_drift_prediction_ks(
         reference_slice: Dataset,
         actual_slice: Dataset,
@@ -668,7 +668,7 @@ def _generate_message_ks(passed, result, threshold, data_type):
     return messages
 
 
-#@test(name='Classification Probability drift (Earth mover\'s distance)', tags=['classification'])
+@test(name='Classification Probability drift (Earth mover\'s distance)', tags=['classification'])
 def test_drift_prediction_earth_movers_distance(
         reference_slice: Dataset,
         actual_slice: Dataset,

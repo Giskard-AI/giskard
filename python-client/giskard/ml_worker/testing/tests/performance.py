@@ -98,7 +98,7 @@ def _test_diff_prediction(
     )
 
 
-#@test(name="AUC test class", tags=['performance', 'classification', 'ground_truth'])
+@test(name="AUC test class", tags=['performance', 'classification', 'ground_truth'])
 class AucTest(GiskardTest):
     """
     Test if the model AUC performance is higher than a threshold for a given slice
@@ -134,7 +134,7 @@ class AucTest(GiskardTest):
         return test_auc.test_fn(actual_slice=self.actual_slice, model=self.model, threshold=self.threshold)
 
 
-#@test(name='AUC', tags=['performance', 'classification', 'ground_truth'])
+@test(name='AUC', tags=['performance', 'classification', 'ground_truth'])
 def test_auc(actual_slice: Dataset, model: BaseModel, threshold: float = 1.0):
     """
     Test if the model AUC performance is higher than a threshold for a given slice
@@ -181,7 +181,7 @@ def test_auc(actual_slice: Dataset, model: BaseModel, threshold: float = 1.0):
     )
 
 
-#@test(name='F1', tags=['performance', 'classification', 'ground_truth'])
+@test(name='F1', tags=['performance', 'classification', 'ground_truth'])
 def test_f1(actual_slice: Dataset, model: BaseModel, threshold: float = 1.0):
     """
     Test if the model F1 score is higher than a defined threshold for a given slice
@@ -208,7 +208,7 @@ def test_f1(actual_slice: Dataset, model: BaseModel, threshold: float = 1.0):
     return _test_classification_score(f1_score, actual_slice, model, threshold)
 
 
-#@test(name='Accuracy', tags=['performance', 'classification', 'ground_truth'])
+@test(name='Accuracy', tags=['performance', 'classification', 'ground_truth'])
 def test_accuracy(actual_slice: Dataset, model: BaseModel, threshold: float = 1.0):
     """
     Test if the model Accuracy is higher than a threshold for a given slice
@@ -235,7 +235,7 @@ def test_accuracy(actual_slice: Dataset, model: BaseModel, threshold: float = 1.
     return _test_accuracy_score(actual_slice, model, threshold)
 
 
-#@test(name='Precision', tags=['performance', 'classification', 'ground_truth'])
+@test(name='Precision', tags=['performance', 'classification', 'ground_truth'])
 def test_precision(actual_slice: Dataset, model: BaseModel, threshold: float = 1.0):
     """
     Test if the model Precision is higher than a threshold for a given slice
@@ -261,7 +261,7 @@ def test_precision(actual_slice: Dataset, model: BaseModel, threshold: float = 1
     return _test_classification_score(precision_score, actual_slice, model, threshold)
 
 
-#@test(name='Recall', tags=['performance', 'classification', 'ground_truth'])
+@test(name='Recall', tags=['performance', 'classification', 'ground_truth'])
 def test_recall(actual_slice: Dataset, model: BaseModel, threshold: float = 1.0):
     """
     Test if the model Recall is higher than a threshold for a given slice
@@ -287,7 +287,7 @@ def test_recall(actual_slice: Dataset, model: BaseModel, threshold: float = 1.0)
     return _test_classification_score(recall_score, actual_slice, model, threshold)
 
 
-#@test(name='RMSE', tags=['performance', 'regression', 'ground_truth'])
+@test(name='RMSE', tags=['performance', 'regression', 'ground_truth'])
 def test_rmse(actual_slice: Dataset, model: BaseModel, threshold: float = 1.0):
     """
     Test if the model RMSE is lower than a threshold
@@ -313,7 +313,7 @@ def test_rmse(actual_slice: Dataset, model: BaseModel, threshold: float = 1.0):
     return _test_regression_score(_get_rmse, actual_slice, model, threshold)
 
 
-#@test(name='MAE', tags=['performance', 'regression', 'ground_truth'])
+@test(name='MAE', tags=['performance', 'regression', 'ground_truth'])
 def test_mae(actual_slice: Dataset, model: BaseModel, threshold: float = 1.0):
     """
     Test if the model Mean Absolute Error is lower than a threshold
@@ -342,7 +342,7 @@ def test_mae(actual_slice: Dataset, model: BaseModel, threshold: float = 1.0):
     return _test_regression_score(mean_absolute_error, actual_slice, model, threshold)
 
 
-#@test(name='R2', tags=['performance', 'regression', 'ground_truth'])
+@test(name='R2', tags=['performance', 'regression', 'ground_truth'])
 def test_r2(actual_slice: Dataset, model: BaseModel, threshold: float = 1.0):
     """
     Test if the model R-Squared is higher than a threshold
@@ -369,7 +369,7 @@ def test_r2(actual_slice: Dataset, model: BaseModel, threshold: float = 1.0):
     return _test_regression_score(r2_score, actual_slice, model, threshold, r2=True)
 
 
-#@test(name='Accuracy difference', tags=['performance', 'classification', 'ground_truth'])
+@test(name='Accuracy difference', tags=['performance', 'classification', 'ground_truth'])
 def test_diff_accuracy(actual_slice: Dataset, reference_slice: Dataset, model: BaseModel,
                        threshold: float = 0.1):
     """
@@ -411,7 +411,7 @@ def test_diff_accuracy(actual_slice: Dataset, reference_slice: Dataset, model: B
     )
 
 
-#@test(name='F1 difference', tags=['performance', 'classification', 'ground_truth'])
+@test(name='F1 difference', tags=['performance', 'classification', 'ground_truth'])
 def test_diff_f1(actual_slice: Dataset,
                  reference_slice: Dataset,
                  model: BaseModel,
@@ -450,7 +450,7 @@ def test_diff_f1(actual_slice: Dataset,
     )
 
 
-#@test(name='Precision difference', tags=['performance', 'classification', 'ground_truth'])
+@test(name='Precision difference', tags=['performance', 'classification', 'ground_truth'])
 def test_diff_precision(actual_slice: Dataset, reference_slice: Dataset, model: BaseModel,
                         threshold: float = 0.1):
     """
@@ -491,7 +491,7 @@ def test_diff_precision(actual_slice: Dataset, reference_slice: Dataset, model: 
     )
 
 
-#@test(name='Recall difference', tags=['performance', 'classification', 'ground_truth'])
+@test(name='Recall difference', tags=['performance', 'classification', 'ground_truth'])
 def test_diff_recall(actual_slice: Dataset, reference_slice: Dataset, model: BaseModel,
                      threshold: float = 0.1):
     """
@@ -527,7 +527,7 @@ def test_diff_recall(actual_slice: Dataset, reference_slice: Dataset, model: Bas
     )
 
 
-#@test(name='F1 Reference Actual difference', tags=['performance', 'classification', 'ground_truth'])
+@test(name='F1 Reference Actual difference', tags=['performance', 'classification', 'ground_truth'])
 def test_diff_reference_actual_f1(reference_slice: Dataset, actual_slice: Dataset, model: BaseModel,
                                   threshold: float = 0.1):
     """
@@ -564,7 +564,7 @@ def test_diff_reference_actual_f1(reference_slice: Dataset, actual_slice: Datase
     )
 
 
-#@test(name='Accuracy Reference Actual difference', tags=['performance', 'classification', 'ground_truth'])
+@test(name='Accuracy Reference Actual difference', tags=['performance', 'classification', 'ground_truth'])
 def test_diff_reference_actual_accuracy(
         reference_slice: Dataset, actual_slice: Dataset, model: BaseModel, threshold: float = 0.1
 ):
@@ -607,7 +607,7 @@ def test_diff_reference_actual_accuracy(
     )
 
 
-#@test(name='RMSE difference', tags=['performance', 'regression', 'ground_truth'])
+@test(name='RMSE difference', tags=['performance', 'regression', 'ground_truth'])
 def test_diff_rmse(actual_slice: Dataset, reference_slice: Dataset, model: BaseModel,
                    threshold: float = 0.1):
     """
@@ -644,7 +644,7 @@ def test_diff_rmse(actual_slice: Dataset, reference_slice: Dataset, model: BaseM
     )
 
 
-#@test(name='RMSE Reference Actual difference', tags=['performance', 'regression', 'ground_truth'])
+@test(name='RMSE Reference Actual difference', tags=['performance', 'regression', 'ground_truth'])
 def test_diff_reference_actual_rmse(reference_slice: Dataset, actual_slice: Dataset, model: BaseModel,
                                     threshold: float = 0.1):
     """
