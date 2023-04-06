@@ -9,7 +9,7 @@ from setuptools.command.build_py import build_py
 
 class GrpcTool(Command):
     user_options = []
-    out_path = 'giskard/generated'
+    out_path = 'giskard/asd'
 
     def initialize_options(self):
         pass
@@ -49,7 +49,7 @@ class GrpcTool(Command):
             f'ml-worker.proto'
         ])
 
-        self.fix_paths()
+        # self.fix_paths()
 
 
 class BuildPyCommand(build_py):
