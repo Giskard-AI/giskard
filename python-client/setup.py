@@ -3,8 +3,7 @@ import re
 
 import pkg_resources
 from setuptools import setup, Command
-from setuptools.command.build_py import build_py
-from setuptools.command.install_lib import install_lib
+from wheel.bdist_wheel import bdist_wheel
 
 
 class GrpcTool(Command):
@@ -51,23 +50,23 @@ class GrpcTool(Command):
         self.fix_paths()
 
 
-class BuildPyCommand(build_py):
+class BuildPyCommand(bdist_wheel):
     def run(self):
         self.run_command('grpc')
         super(BuildPyCommand, self).run()
 
 
-class InstallLibCommand(install_lib):
-
-    def run(self) -> None:
-        print(f"ABA: {self.get_exclusions()}" )
-        super().run()
+# class InstallLibCommand(install_lib):
+#
+#     def run(self) -> None:
+#         print(f"ABA: {self.get_exclusions()}" )
+#         super().run()
 
 
 setup(
     cmdclass={
-        "build_py": BuildPyCommand,
-        "install_lib": InstallLibCommand,
+        "bdist_wheel": BuildPyCommand,
+        # "install_lib": InstallLibCommand,
         "grpc": GrpcTool
     },
 
