@@ -2,7 +2,7 @@
 #package-dir = "giskard"
 
 [build-system]
-requires = ["setuptools>=61", "wheel", "grpcio-tools", "protobuf<3.20"]
+requires = ["setuptools>=61", "wheel", "grpcio-tools==1.46.3", "protobuf<3.20"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]

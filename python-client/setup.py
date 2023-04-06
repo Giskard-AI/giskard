@@ -33,6 +33,7 @@ class GrpcTool(Command):
                     print(f'Fixed {fname}')
 
     def run(self):
+        print("Running grpc_tools.protoc")
         import grpc_tools.protoc
 
         os.makedirs(self.out_path, exist_ok=True)
