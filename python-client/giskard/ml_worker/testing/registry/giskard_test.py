@@ -80,8 +80,7 @@ class GiskardTest(Savable[Any, TestFunctionMeta], ABC):
     @classmethod
     def _read_meta_from_loca_dir(cls, uuid: str, project_key: Optional[str]) -> TestFunctionMeta:
         meta = tests_registry.get_test(uuid)
-        if meta is None:
-            assert f"Cannot find test function {uuid}"
+        assert meta is not None, f"Cannot find test function {uuid}"
         return meta
 
     def get_builder(self):

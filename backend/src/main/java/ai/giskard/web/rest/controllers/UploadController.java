@@ -4,8 +4,6 @@ import ai.giskard.domain.ArtifactType;
 import ai.giskard.service.FileUploadService;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.io.IOUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -23,14 +21,15 @@ import java.util.Set;
 @RequiredArgsConstructor
 @RequestMapping("/api/v2/")
 public class UploadController {
+    private static final String GLOBAL_KEY = "global";
+
     private final FileUploadService uploadService;
-    private final Logger log = LoggerFactory.getLogger(UploadController.class);
 
     @GetMapping("artifact-info/global/{artifactType}/{artifactId}")
     public Set<String> getGlobalArtifactInfo(@PathVariable String artifactType,
-                                       @PathVariable String artifactId) {
+                                             @PathVariable String artifactId) {
 
-        return uploadService.listArtifacts("global", ArtifactType.fromDirectoryName(artifactType), artifactId);
+        return uploadService.listArtifacts(GLOBAL_KEY, ArtifactType.fromDirectoryName(artifactType), artifactId);
     }
 
     @GetMapping("artifact-info/{projectKey}/{artifactType}/{artifactId}")
@@ -51,7 +50,7 @@ public class UploadController {
         String matchPattern = (String) request.getAttribute(HandlerMapping.BEST_MATCHING_PATTERN_ATTRIBUTE);
         String resoursePath = new AntPathMatcher().extractPathWithinPattern(matchPattern, path);
 
-        try (InputStream artifactStream = uploadService.getArtifactStream("global", ArtifactType.fromDirectoryName(artifactType), artifactId, resoursePath)) {
+        try (InputStream artifactStream = uploadService.getArtifactStream(GLOBAL_KEY, ArtifactType.fromDirectoryName(artifactType), artifactId, resoursePath)) {
             IOUtils.copy(artifactStream, response.getOutputStream());
             response.flushBuffer();
         }
@@ -84,7 +83,7 @@ public class UploadController {
 
 
         try (InputStream uploadedStream = request.getInputStream()) {
-            uploadService.saveArtifact(uploadedStream, "global", ArtifactType.fromDirectoryName(artifactType), artifactId, resoursePath);
+            uploadService.saveArtifact(uploadedStream, GLOBAL_KEY, ArtifactType.fromDirectoryName(artifactType), artifactId, resoursePath);
         }
 
         return new ResponseEntity<>(HttpStatus.OK);

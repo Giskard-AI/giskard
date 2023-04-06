@@ -14,7 +14,6 @@
     "ai.giskard.web.dto.ml.ExecuteTestSuiteRequest": "ExecuteTestSuiteRequest",
     "ai.giskard.web.dto.ml.SuiteTestExecutionDTO": "SuiteTestExecutionDTO",
     "ai.giskard.web.rest.vm.TokenAndPasswordVM": "TokenAndPasswordVM",
-    "ai.giskard.web.dto.TestSuiteCreateDTO": "TestSuiteCreateDTO",
     "ai.giskard.web.dto.PrepareDeleteDTO": "PrepareDeleteDTO",
     "ai.giskard.web.dto.ml.ProjectDTO": "ProjectDTO",
     "ai.giskard.web.dto.CreateFeedbackReplyDTO": "CreateFeedbackReplyDTO",
