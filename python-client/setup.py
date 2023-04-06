@@ -8,7 +8,7 @@ from setuptools.command.build_py import build_py
 
 class GrpcTool(Command):
     user_options = []
-    out_path = 'giskard/ml_worker/generated'
+    out_path = 'giskard/core'
 
     def initialize_options(self):
         pass
