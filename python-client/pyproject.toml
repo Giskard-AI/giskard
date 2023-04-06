@@ -8,8 +8,6 @@ build-backend = "setuptools.build_meta"
 [tool.setuptools.packages.find]
 include = ["giskard*"]
 exclude = ["docs*", "tests*"]
-[tool.setuptools]
-include-package-data = false
 [project.scripts]
 giskard = "giskard.cli:cli"
 
