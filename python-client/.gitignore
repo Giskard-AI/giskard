@@ -163,3 +163,4 @@ catboost_info
 generated
 .scannerwork
 *.iml.pdm-python
+*pb2*.py
