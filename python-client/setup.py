@@ -4,6 +4,7 @@ import re
 import pkg_resources
 from setuptools import setup, Command
 from setuptools.command.build_py import build_py
+from setuptools.command.install_lib import install_lib
 
 
 class GrpcTool(Command):
@@ -56,9 +57,17 @@ class BuildPyCommand(build_py):
         super(BuildPyCommand, self).run()
 
 
+class InstallLibCommand(install_lib):
+
+    def run(self) -> None:
+        print(f"ABA: {self.get_exclusions()}" )
+        super().run()
+
+
 setup(
     cmdclass={
         "build_py": BuildPyCommand,
+        "install_lib": InstallLibCommand,
         "grpc": GrpcTool
     },
 
