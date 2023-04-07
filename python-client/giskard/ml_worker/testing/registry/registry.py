@@ -1,19 +1,15 @@
-import hashlib
 import importlib.util
 import inspect
 import logging
 import os
-import random
 import re
 import sys
-import uuid
 from pathlib import Path
 from typing import Optional, Dict, Any
 
-import cloudpickle
-
 from giskard.core.core import TestFunctionMeta, TestFunctionArgument
 from giskard.ml_worker.testing.registry.udf_repository import udf_repo_available, udf_root
+from giskard.ml_worker.utils.pickling import get_func_uuid
 from giskard.settings import expand_env_var, settings
 
 
@@ -35,23 +31,6 @@ def _get_plugin_method_full_name(func):
         path_parts.remove("__init__")
     path_parts.append(func.__name__)
     return ".".join(path_parts)
-
-
-def generate_func_id(name) -> str:
-    rd = random.Random()
-    rd.seed(hashlib.sha512(name.encode('utf-8')).hexdigest())
-    func_id = str(uuid.UUID(int=rd.getrandbits(128), version=4))
-    return str(func_id)
-
-
-def get_test_uuid(func) -> str:
-    func_name = f"{func.__module__}.{func.__name__}"
-
-    if func_name.startswith('__main__'):
-        reference = cloudpickle.dumps(func)
-        func_name += hashlib.sha512(reference).hexdigest()
-
-    return generate_func_id(func_name)
 
 
 def load_plugins():
@@ -111,12 +90,12 @@ def create_test_function_id(func):
     return full_name
 
 
-class GiskardTestRegistry:
+class GiskardRegistry:
     _tests: Dict[str, TestFunctionMeta] = {}
 
     def register(self, func: Any, name=None, tags=None):
         full_name = create_test_function_id(func)
-        func_uuid = get_test_uuid(func)
+        func_uuid = get_func_uuid(func)
 
         if func_uuid not in self._tests:
             if inspect.isclass(func):
@@ -216,4 +195,4 @@ def new_getfile(object, _old_getfile=inspect.getfile):
 # Override getfile to have it working over Jupyter Notebook files
 inspect.getfile = new_getfile
 
-tests_registry = GiskardTestRegistry()
+giskard_registry = GiskardRegistry()

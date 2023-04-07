@@ -6,14 +6,15 @@ from pathlib import Path
 from typing import Union, Callable, Any, Optional
 
 from giskard.core.core import TestFunctionMeta, SMT
-from giskard.ml_worker.core.savable import Savable
+from giskard.ml_worker.core.savable_old import SavableOld
 from giskard.ml_worker.core.test_result import TestResult
-from giskard.ml_worker.testing.registry.registry import tests_registry, get_test_uuid
+from giskard.ml_worker.testing.registry.registry import giskard_registry
+from giskard.ml_worker.utils.pickling import get_func_uuid
 
 Result = Union[TestResult, bool]
 
 
-class GiskardTest(Savable[Any, TestFunctionMeta], ABC):
+class GiskardTest(SavableOld[Any, TestFunctionMeta], ABC):
     """
     The base class of all Giskard's tests.
 
@@ -22,13 +23,13 @@ class GiskardTest(Savable[Any, TestFunctionMeta], ABC):
     """
 
     def __init__(self):
-        test_uuid = get_test_uuid(type(self))
-        meta = tests_registry.get_test(test_uuid)
+        test_uuid = get_func_uuid(type(self))
+        meta = giskard_registry.get_test(test_uuid)
         if meta is None:
             # equivalent to adding @test decorator
             from giskard import test
             test(type(self))
-            meta = tests_registry.get_test(test_uuid)
+            meta = giskard_registry.get_test(test_uuid)
         super(GiskardTest, self).__init__(type(self), meta)
 
     @abstractmethod
@@ -49,7 +50,7 @@ class GiskardTest(Savable[Any, TestFunctionMeta], ABC):
         return TestFunctionMeta
 
     def _get_uuid(self) -> str:
-        return get_test_uuid(type(self))
+        return get_func_uuid(type(self))
 
     def _should_save_locally(self) -> bool:
         return self.data.__module__.startswith('__main__')
@@ -72,14 +73,14 @@ class GiskardTest(Savable[Any, TestFunctionMeta], ABC):
         else:
             giskard_test = GiskardTestMethod(func)
 
-        tests_registry.add_func(meta)
+        giskard_registry.add_func(meta)
         giskard_test.meta = meta
 
         return giskard_test
 
     @classmethod
     def _read_meta_from_loca_dir(cls, uuid: str, project_key: Optional[str]) -> TestFunctionMeta:
-        meta = tests_registry.get_test(uuid)
+        meta = giskard_registry.get_test(uuid)
         assert meta is not None, f"Cannot find test function {uuid}"
         return meta
 
@@ -97,13 +98,13 @@ class GiskardTestMethod(GiskardTest):
 
     def __init__(self, test_fn: Function) -> None:
         self.test_fn = test_fn
-        test_uuid = get_test_uuid(test_fn)
-        meta = tests_registry.get_test(test_uuid)
+        test_uuid = get_func_uuid(test_fn)
+        meta = giskard_registry.get_test(test_uuid)
         if meta is None:
             # equivalent to adding @test decorator
             from giskard import test
             test()(test_fn)
-            meta = tests_registry.get_test(test_uuid)
+            meta = giskard_registry.get_test(test_uuid)
         super(GiskardTest, self).__init__(test_fn, meta)
 
     def __call__(self, **kwargs):

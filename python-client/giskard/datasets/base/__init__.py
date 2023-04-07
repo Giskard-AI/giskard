@@ -2,18 +2,19 @@ import logging
 import posixpath
 import tempfile
 import uuid
+from abc import ABC
+from enum import Enum
 from pathlib import Path
 from typing import Callable, Dict, Optional, List
 
 import pandas as pd
-from pandas.api.types import is_numeric_dtype
-from enum import Enum
 import yaml
+from pandas.api.types import is_numeric_dtype
 from zstandard import ZstdDecompressor
 
 from giskard.client.giskard_client import GiskardClient
-from giskard.client.python_utils import warning
 from giskard.client.io_utils import save_df, compress
+from giskard.client.python_utils import warning
 from giskard.core.core import DatasetMeta, SupportedColumnTypes
 from giskard.settings import settings
 
@@ -24,6 +25,10 @@ class Nuniques(Enum):
     CATEGORY = 2
     NUMERIC = 100
     TEXT = 1000
+
+
+class BaseDataset(ABC):
+    df: pd.DataFrame
 
 
 class Dataset:

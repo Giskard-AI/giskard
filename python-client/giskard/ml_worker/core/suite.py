@@ -10,7 +10,7 @@ from giskard.core.core import TestFunctionMeta
 from giskard.datasets.base import Dataset
 from giskard.ml_worker.core.test_result import TestResult
 from giskard.ml_worker.testing.registry.giskard_test import GiskardTest, Test, GiskardTestMethod
-from giskard.ml_worker.testing.registry.registry import tests_registry
+from giskard.ml_worker.testing.registry.registry import giskard_registry
 from giskard.models.base import BaseModel
 
 logger = logging.getLogger(__name__)
@@ -149,7 +149,7 @@ class Suite:
                 test_params[pname] = kwargs[pname]
         return test_params
 
-    def save(self, client: GiskardClient, project_key: str):
+    def upload(self, client: GiskardClient, project_key: str):
         """
         Saves the test suite to the Giskard backend and sets its ID.
 
@@ -249,7 +249,7 @@ class Suite:
         return res
 
     def generate_tests(self, inputs: List[SuiteInput]):
-        giskard_tests = [test for test in tests_registry.get_all().values()
+        giskard_tests = [test for test in giskard_registry.get_all().values()
                          if contains_tag(test, 'giskard') and not self._contains_test(test)]
 
         for test in giskard_tests:

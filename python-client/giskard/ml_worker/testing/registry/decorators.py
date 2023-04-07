@@ -2,6 +2,9 @@ import inspect
 import sys
 from typing import Callable, Optional, List, Union, Type, TypeVar
 
+import pandas
+
+from giskard.ml_worker.testing.registry.giskard_filter import Filter
 from giskard.ml_worker.testing.registry.giskard_test import GiskardTestMethod, GiskardTest
 
 
@@ -18,10 +21,18 @@ def test(_fn=None, name=None, tags: Optional[List[str]] = None):
         Declare output as both Callable and GiskardTest so that there's autocompletion
         for GiskardTest's methods as well as the original wrapped function arguments (for __call__)
         """
-        from giskard.ml_worker.testing.registry.registry import tests_registry
-        tests_registry.register(func, name=name, tags=tags)
+        from giskard.ml_worker.testing.registry.registry import giskard_registry
+        giskard_registry.register(func, name=name, tags=tags)
         if inspect.isclass(func) and issubclass(func, GiskardTest):
             return func
         return GiskardTestMethod(func)
+
+    return inner
+
+
+def filter_func(_fn=None):
+    def inner(func: Callable[[pandas.Series], pandas.Series]) -> Callable[[], Filter]:
+        # TODO: Add registry
+        return Filter(func)
 
     return inner

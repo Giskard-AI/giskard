@@ -1,10 +1,11 @@
+from pathlib import Path
+from typing import Union
+
 import cloudpickle
 from giskard.core.model import Model
 from langchain import OpenAI
 from langchain.chains import RetrievalQA
 from langchain.vectorstores import Chroma
-from pathlib import Path
-from typing import Union
 
 
 class RetrievalQAModel(Model):
@@ -25,7 +26,7 @@ class RetrievalQAModel(Model):
         )
 
     def save(self, local_path: Union[str, Path]) -> None:
-        super().save(local_path)
+        super().upload(local_path)
 
         vectorstore: Chroma = self.model.retriever.vectorstore
 
