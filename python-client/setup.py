@@ -171,6 +171,8 @@ class BuildPyCommand(build_py):
 
     def finalize_options(self) -> None:
         super().finalize_options()
+        self.packages.append('giskard.ml_worker.generated')
+        self.packages = list(set(self.packages))
         print(f"ABA finalize_options: self.packages={self.packages}")
 
     def build_packages(self) -> None:
