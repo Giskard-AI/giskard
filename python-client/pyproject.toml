@@ -6,7 +6,7 @@ requires = ["setuptools>=61", "wheel", "grpcio-tools"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]
-include = ["giskard*"]
+include = ["giskard*","giskard.ml_worker.generated"]
 exclude = ["docs*", "tests*"]
 
 [project.scripts]
