@@ -1,9 +1,13 @@
+import distutils.command.install_lib as orig
 import os
 import re
+import shutil
 
 import pkg_resources
 from setuptools import setup, Command
+from setuptools.archive_util import UnrecognizedFormat
 from setuptools.command.build_py import build_py
+from setuptools.command.install_lib import install_lib
 
 
 class GrpcTool(Command):
@@ -54,6 +58,70 @@ class GrpcTool(Command):
         # self.fix_paths()
 
 
+class InstallLibCommand(install_lib):
+    @staticmethod
+    def ensure_directory(path):
+        """Ensure that the parent directory of `path` exists"""
+        dirname = os.path.dirname(path)
+        os.makedirs(dirname, exist_ok=True)
+
+    @staticmethod
+    def unpack_directory(filename, extract_dir, progress_filter):
+        """"Unpack" a directory, using the same interface as for archives
+
+        Raises ``UnrecognizedFormat`` if `filename` is not a directory
+        """
+        if not os.path.isdir(filename):
+            raise UnrecognizedFormat("%s is not a directory" % filename)
+
+        paths = {
+            filename: ('', extract_dir),
+        }
+        for base, dirs, files in os.walk(filename):
+            src, dst = paths[base]
+            for d in dirs:
+                paths[os.path.join(base, d)] = src + d + '/', os.path.join(dst, d)
+            for f in files:
+                target = os.path.join(dst, f)
+                target = progress_filter(src + f, target)
+                if not target:
+                    # skip non-files
+                    continue
+                InstallLibCommand.ensure_directory(target)
+                f = os.path.join(base, f)
+                shutil.copyfile(f, target)
+                shutil.copystat(f, target)
+
+    def copy_tree(
+            self, infile, outfile,
+            preserve_mode=1, preserve_times=1, preserve_symlinks=0, level=1
+    ):
+        assert preserve_mode and preserve_times and not preserve_symlinks
+        exclude = self.get_exclusions()
+
+        if not exclude:
+            return orig.install_lib.copy_tree(self, infile, outfile)
+
+        # Exclude namespace package __init__.py* files from the output
+
+        from distutils import log
+
+        outfiles = []
+
+        def pf(src, dst):
+            if dst in exclude:
+                log.warn("Skipping installation of %s (namespace package)",
+                         dst)
+                return False
+
+            log.info("copying %s -> %s", src, os.path.dirname(dst))
+            outfiles.append(dst)
+            return dst
+
+        InstallLibCommand.unpack_directory(infile, outfile, pf)
+        return outfiles
+
+
 class BuildPyCommand(build_py):
     def run(self):
         self.run_command('grpc')
@@ -63,6 +131,7 @@ class BuildPyCommand(build_py):
 setup(
     cmdclass={
         "build_py": BuildPyCommand,
+        "install_lib": InstallLibCommand,
         "grpc": GrpcTool
     },
 
