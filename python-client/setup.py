@@ -1,6 +1,5 @@
 import os
 import re
-from pathlib import Path
 
 import pkg_resources
 from setuptools import setup, Command
@@ -48,8 +47,12 @@ class GrpcTool(Command):
             f'--grpc_python_out={self.out_path}',
             f'ml-worker.proto'
         ])
+        for r, d, f in os.walk('giskard'):
+            for file in f:
+                print(f'ABA: {r}/{file}')
 
-        # self.fix_paths()
+
+    # self.fix_paths()
 
 
 class BuildPyCommand(build_py):
