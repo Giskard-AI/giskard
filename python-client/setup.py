@@ -169,6 +169,10 @@ class InstallLibCommand(install_lib):
 
 class BuildPyCommand(build_py):
 
+    def finalize_options(self) -> None:
+        super().finalize_options()
+        print(f"ABA finalize_options: self.packages={self.packages}")
+
     def build_packages(self) -> None:
         print(f"ABA build_packages before: self.packages={self.packages}")
         for package in self.packages:
