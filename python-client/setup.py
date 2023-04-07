@@ -51,8 +51,7 @@ class GrpcTool(Command):
             for file in f:
                 print(f'ABA: {r}/{file}')
 
-
-    # self.fix_paths()
+        # self.fix_paths()
 
 
 class BuildPyCommand(build_py):
