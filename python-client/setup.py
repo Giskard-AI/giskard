@@ -108,6 +108,7 @@ class InstallLibCommand(install_lib):
         outputs = []
 
         for n in names:
+            print(f"HOHO copy_tree_dist: name={name}")
             src_name = os.path.join(src, n)
             dst_name = os.path.join(dst, n)
 
