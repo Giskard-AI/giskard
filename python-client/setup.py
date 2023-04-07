@@ -171,6 +171,8 @@ class BuildPyCommand(build_py):
 
     def finalize_options(self) -> None:
         super().finalize_options()
+        self.run_command('grpc')
+
         self.packages.append('giskard.ml_worker.generated')
         self.packages = list(set(self.packages))
         print(f"ABA finalize_options: self.packages={self.packages}")
@@ -195,7 +197,6 @@ class BuildPyCommand(build_py):
         print("ABA build_packages after")
 
     def run(self):
-        self.run_command('grpc')
         super(BuildPyCommand, self).run()
 
 
