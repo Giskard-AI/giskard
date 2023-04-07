@@ -168,6 +168,26 @@ class InstallLibCommand(install_lib):
 
 
 class BuildPyCommand(build_py):
+
+    def build_packages(self) -> None:
+        print(f"ABA build_packages before: self.packages={self.packages}")
+        for package in self.packages:
+            # Get list of (package, module, module_file) tuples based on
+            # scanning the package directory.  'package' is only included
+            # in the tuple so that 'find_modules()' and
+            # 'find_package_tuples()' have a consistent interface; it's
+            # ignored here (apart from a sanity check).  Also, 'module' is
+            # the *unqualified* module name (ie. no dots, no package -- we
+            # already know its package!), and 'module_file' is the path to
+            # the .py file, relative to the current directory
+            # (ie. including 'package_dir').
+            package_dir = self.get_package_dir(package)
+            modules = self.find_package_modules(package, package_dir)
+            print(f"ABA build_packages FOR: {package_dir} - {modules}")
+
+        super().build_packages()
+        print("ABA build_packages after")
+
     def run(self):
         self.run_command('grpc')
         super(BuildPyCommand, self).run()
