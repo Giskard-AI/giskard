@@ -36,7 +36,7 @@ class GrpcTool(Command):
         import grpc_tools.protoc
 
         os.makedirs(self.out_path, exist_ok=True)
-        proto_path = 'proto'
+        proto_path = '../common/proto'
         proto_include = pkg_resources.resource_filename('grpc_tools', '_proto')
 
         grpc_tools.protoc.main([
@@ -47,6 +47,7 @@ class GrpcTool(Command):
             f'--grpc_python_out={self.out_path}',
             f'ml-worker.proto'
         ])
+
         self.fix_paths()
 
 
