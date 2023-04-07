@@ -159,7 +159,13 @@ class MLWorkerBridge:
             remote_writer.write(self.encryptor.encrypt(message, additional_data=self.key_id.encode()))
             await remote_writer.drain()
 
-            grpc_reader, grpc_writer = await asyncio.open_unix_connection(urlparse(self.local_address).path)
+            # On Windows, we go over TCP because UDS are not supported yet.
+            # Check on gRPC every once in a while for eventual support.
+            if sys.platform == "win32":
+                grpc_reader, grpc_writer = await asyncio.open_connection("localhost", 40052)
+            # On Linux, we can use Unix Domain Sockets.
+            else:
+                grpc_reader, grpc_writer = await asyncio.open_unix_connection(urlparse(self.local_address).path)
 
             readers.add(grpc_reader)
             writers.add(grpc_writer)
