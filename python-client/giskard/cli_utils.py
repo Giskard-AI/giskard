@@ -16,7 +16,8 @@ logger = logging.getLogger(__name__)
 
 
 def remove_stale_pid_file(pid_file):
-    if check_pid(pid_file.read_pid()):
+    pid = pid_file.read_pid()
+    if pid is not None and check_pid(pid):
         logger.debug("Stale PID file found, removing it")
         pid_file.break_lock()
 
