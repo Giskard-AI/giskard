@@ -1,12 +1,9 @@
 import os
 import re
-from distutils.dir_util import mkpath
-from distutils.errors import DistutilsFileError
 
 import pkg_resources
 from setuptools import setup, Command
 from setuptools.command.build_py import build_py
-from setuptools.command.install_lib import install_lib
 
 
 class GrpcTool(Command):
@@ -57,153 +54,16 @@ class GrpcTool(Command):
         # self.fix_paths()
 
 
-class InstallLibCommand(install_lib):
-
-    @staticmethod
-    def copy_tree_dist(  # noqa: C901
-            src,
-            dst,
-            preserve_mode=1,
-            preserve_times=1,
-            preserve_symlinks=0,
-            update=0,
-            verbose=1,
-            dry_run=0,
-    ):
-        """Copy an entire directory tree 'src' to a new location 'dst'.
-
-        Both 'src' and 'dst' must be directory names.  If 'src' is not a
-        directory, raise DistutilsFileError.  If 'dst' does not exist, it is
-        created with 'mkpath()'.  The end result of the copy is that every
-        file in 'src' is copied to 'dst', and directories under 'src' are
-        recursively copied to 'dst'.  Return the list of files that were
-        copied or might have been copied, using their output name.  The
-        return value is unaffected by 'update' or 'dry_run': it is simply
-        the list of all files under 'src', with the names changed to be
-        under 'dst'.
-
-        'preserve_mode' and 'preserve_times' are the same as for
-        'copy_file'; note that they only apply to regular files, not to
-        directories.  If 'preserve_symlinks' is true, symlinks will be
-        copied as symlinks (on platforms that support them!); otherwise
-        (the default), the destination of the symlink will be copied.
-        'update' and 'verbose' are the same as for 'copy_file'.
-        """
-
-        if not dry_run and not os.path.isdir(src):
-            raise DistutilsFileError("cannot copy tree '%s': not a directory" % src)
-        try:
-            names = os.listdir(src)
-        except OSError as e:
-            if dry_run:
-                names = []
-            else:
-                raise DistutilsFileError(
-                    "error listing files in '{}': {}".format(src, e.strerror)
-                )
-
-        if not dry_run:
-            mkpath(dst, verbose=verbose)
-
-        outputs = []
-
-        for n in names:
-            print(f"HOHO copy_tree_dist: name={n}")
-            src_name = os.path.join(src, n)
-            dst_name = os.path.join(dst, n)
-
-            if n.startswith('.nfs'):
-                # skip NFS rename files
-                continue
-
-            if preserve_symlinks and os.path.islink(src_name):
-                link_dest = os.readlink(src_name)
-                if verbose >= 1:
-                    print("linking %s -> %s", dst_name, link_dest)
-                if not dry_run:
-                    os.symlink(link_dest, dst_name)
-                outputs.append(dst_name)
-
-            elif os.path.isdir(src_name):
-                outputs.extend(
-                    InstallLibCommand.copy_tree_dist(
-                        src_name,
-                        dst_name,
-                        preserve_mode,
-                        preserve_times,
-                        preserve_symlinks,
-                        update,
-                        verbose=verbose,
-                        dry_run=dry_run,
-                    )
-                )
-            else:
-                print(f"HOHO {src_name} -->> {dst_name}")
-                from distutils.file_util import copy_file
-                copy_file(
-                    src_name,
-                    dst_name,
-                    preserve_mode,
-                    preserve_times,
-                    update,
-                    verbose=verbose,
-                    dry_run=dry_run,
-                )
-                outputs.append(dst_name)
-
-        return outputs
-
-    #
-    #
-    def copy_tree(
-            self, infile, outfile,
-            preserve_mode=1, preserve_times=1, preserve_symlinks=0, level=1
-    ):
-        assert preserve_mode and preserve_times and not preserve_symlinks
-        exclude = self.get_exclusions()
-
-        print(f"ABA copy_tree infile={infile}, outfile={outfile}")
-        if not exclude:
-            return InstallLibCommand.copy_tree_dist(infile, outfile)
-
-
 class BuildPyCommand(build_py):
 
     def finalize_options(self) -> None:
         super().finalize_options()
         self.run_command('grpc')
 
-        self.packages.append('giskard.ml_worker.generated')
-        self.packages = list(set(self.packages))
-        print(f"ABA finalize_options: self.packages={self.packages}")
-
-    def build_packages(self) -> None:
-        print(f"ABA build_packages before: self.packages={self.packages}")
-        for package in self.packages:
-            # Get list of (package, module, module_file) tuples based on
-            # scanning the package directory.  'package' is only included
-            # in the tuple so that 'find_modules()' and
-            # 'find_package_tuples()' have a consistent interface; it's
-            # ignored here (apart from a sanity check).  Also, 'module' is
-            # the *unqualified* module name (ie. no dots, no package -- we
-            # already know its package!), and 'module_file' is the path to
-            # the .py file, relative to the current directory
-            # (ie. including 'package_dir').
-            package_dir = self.get_package_dir(package)
-            modules = self.find_package_modules(package, package_dir)
-            print(f"ABA build_packages FOR: {package_dir} - {modules}")
-
-        super().build_packages()
-        print("ABA build_packages after")
-
-    def run(self):
-        super(BuildPyCommand, self).run()
-
 
 setup(
     cmdclass={
         "build_py": BuildPyCommand,
-        "install_lib": InstallLibCommand,
         "grpc": GrpcTool
     },
 
