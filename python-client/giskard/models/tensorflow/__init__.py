@@ -1,6 +1,8 @@
-from typing import Union
+from typing import Union, Optional, Iterable, Any, Callable
+import pandas as pd
 import logging
 from giskard.core.core import SupportedModelTypes
+from giskard.core.validation import validate_args
 from giskard.models.base import MLFlowBasedModel
 
 logger = logging.getLogger(__name__)
@@ -12,15 +14,16 @@ except ImportError:
 
 
 class TensorFlowModel(MLFlowBasedModel):
+    @validate_args
     def __init__(self,
                  clf,
                  model_type: Union[SupportedModelTypes, str],
-                 name: str = None,
-                 data_preprocessing_function=None,
-                 model_postprocessing_function=None,
-                 feature_names=None,
-                 classification_threshold=0.5,
-                 classification_labels=None) -> None:
+                 name: Optional[str] = None,
+                 data_preprocessing_function: Callable[[pd.DataFrame], Any] = None,
+                 model_postprocessing_function: Callable[[Any], Any] = None,
+                 feature_names: Optional[Iterable] = None,
+                 classification_threshold: float = 0.5,
+                 classification_labels: Optional[Iterable] = None):
         super().__init__(clf=clf,
                          model_type=model_type,
                          name=name,
