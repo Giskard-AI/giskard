@@ -36,7 +36,7 @@ class GrpcTool(Command):
         import grpc_tools.protoc
 
         os.makedirs(self.out_path, exist_ok=True)
-        proto_path = '../common/proto'
+        proto_path = 'proto'
         proto_include = pkg_resources.resource_filename('grpc_tools', '_proto')
 
         grpc_tools.protoc.main([
@@ -47,11 +47,7 @@ class GrpcTool(Command):
             f'--grpc_python_out={self.out_path}',
             f'ml-worker.proto'
         ])
-        for r, d, f in os.walk('giskard'):
-            for file in f:
-                print(f'ABA: {r}/{file}')
-
-        # self.fix_paths()
+        self.fix_paths()
 
 
 class BuildPyCommand(build_py):
