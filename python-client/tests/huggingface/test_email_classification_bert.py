@@ -44,7 +44,6 @@ def get_labels(filename):
 
 
 def test_email_classification_bert_custom_model():
-
     email_files = email_classification_utils.get_email_files()
 
     columns_name = ['Target', 'Subject', 'Content', 'Week_day', 'Year', 'Month', 'Hour', 'Nb_of_forwarded_msg']
@@ -61,7 +60,7 @@ def test_email_classification_bert_custom_model():
             values_to_add['Target'] = str(idx_to_cat[target_int])
 
         # Features are metadata from the email object
-        filename = email_file+'.txt'
+        filename = email_file + '.txt'
         with open(filename) as f:
 
             message = email.message_from_string(f.read())
@@ -83,7 +82,7 @@ def test_email_classification_bert_custom_model():
             values_to_add['Nb_of_forwarded_msg'] = number_of_messages
 
         row_to_add = pd.Series(values_to_add)
-        data = data.append(row_to_add, ignore_index=True)
+        data = pd.concat([data, row_to_add], ignore_index=True)
 
     # We filter 879 rows (if Primary topics exists (i.e. if coarse genre 1.1 is selected) )
     data_filtered = data[data["Target"].notnull()]
@@ -116,8 +115,9 @@ def test_email_classification_bert_custom_model():
         model_type="classification",
         classification_labels=list(classification_labels_mapping.keys()),
         data_preprocessing_function=preprocessing_func,
-        )
+    )
 
-    my_test_dataset = Dataset(data_filtered.head(5), name="test dataset", target="Target", cat_columns=['Week_day', 'Month'])
+    my_test_dataset = Dataset(data_filtered.head(5), name="test dataset", target="Target",
+                              cat_columns=['Week_day', 'Month'])
 
     tests.utils.verify_model_upload(my_model, my_test_dataset)

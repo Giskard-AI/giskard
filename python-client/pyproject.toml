@@ -12,6 +12,9 @@ exclude = ["docs*", "tests*"]
 [project.scripts]
 giskard = "giskard.cli:cli"
 
+[tool.pdm.scripts]
+proto = "setup.py grpc"
+test = "pytest -c pyproject.toml --cov=giskard tests --cov-report=xml"
 
 [project.urls]
 repository = "https://github.com/Giskard-AI/giskard"
@@ -26,7 +29,6 @@ description = "Inspect your AI models visually, find bugs, give feedback 🕵️
 authors = [
     { name = "Giskard AI", email = "hello@giskard.ai" },
 ]
-# Keywords description https://python-poetry.org/docs/pyproject/#keywords
 keywords = [
     "Artificial Intelligence",
     "Machine Learning",
@@ -52,7 +54,7 @@ dependencies = [
     "cloudpickle>=2.0.0",
     "zstandard>=0.18.0",
     "mlflow-skinny>=2",
-    "numpy>=1.21.6,<1.22.0",
+    "numpy",
     "scikit-learn>=1.0",
     "scipy>=1.7.2,<1.8",
     "shap>=0.41.0",
@@ -72,6 +74,7 @@ dependencies = [
     "tqdm>=4.65.0",
     "setuptools>=65.4.1,<68.0.0",
     "pycryptodome>=3.17",
+    "pandas<2",
 ]
 [project.optional-dependencies]
 dev = [
@@ -107,9 +110,9 @@ test = [
     "torchtext>=0.15.1",
     "portalocker>=2.0.0",
     "scikit-learn==1.0.2",
-    "tensorflow-macos==2.8.0; sys_platform == 'darwin' and platform_machine == 'arm64'",
-    "tensorflow==2.8.0; sys_platform != 'darwin' or platform_machine != 'arm64'",
-    "tensorflow-text==2.8.2; sys_platform != 'darwin' or platform_machine != 'arm64'",
+    "tensorflow-macos>=2.8.0, <2.10; sys_platform == 'darwin' and platform_machine == 'arm64'",
+    "tensorflow>=2.8.0, <2.10; sys_platform != 'darwin' or platform_machine != 'arm64'",
+    "tensorflow-text>=2.8.0, <2.10; sys_platform != 'darwin' or platform_machine != 'arm64'",
 ]
 
 [tool.black]
