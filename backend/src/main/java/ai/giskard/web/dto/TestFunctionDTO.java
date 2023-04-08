@@ -1,13 +1,9 @@
 package ai.giskard.web.dto;
 
-import ai.giskard.utils.SimpleJSONStringAttributeConverter;
 import com.dataiku.j2ts.annotations.UIModel;
 import com.fasterxml.jackson.annotation.JsonAlias;
 import lombok.Data;
 
-import javax.persistence.Column;
-import javax.persistence.Convert;
-import javax.persistence.Id;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.util.List;

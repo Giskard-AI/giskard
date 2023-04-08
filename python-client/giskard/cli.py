@@ -144,6 +144,11 @@ def _start_command(is_server, url: AnyHttpUrl, api_key, is_daemon):
         if is_daemon:
             # Releasing the lock because it will be re-acquired by a daemon process
             pid_file.release()
+            # If on windows, throw error and exit
+            if sys.platform == "win32":
+                logger.error("Daemon mode is not supported on Windows.")
+                return
+
             run_daemon(is_server, url, api_key)
         else:
             ml_worker = MLWorker(is_server, url, api_key)

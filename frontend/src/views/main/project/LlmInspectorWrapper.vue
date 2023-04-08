@@ -137,7 +137,3 @@ const query = ref<string>('How many countries start with the letter "V"?')
 const answer = ref<string>('There are no countries that start with the letter "V".')
 const expected_answer = ref<string>('There are five countries that start with the letter "V".')
 </script>
-
-<style scoped>
-
-</style>
