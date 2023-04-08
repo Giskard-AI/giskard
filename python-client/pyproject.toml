@@ -1,9 +1,49 @@
-[tool.pdm]
-#package-dir = "giskard"
-
 [build-system]
-requires = ["setuptools>=61", "wheel", "grpcio-tools"]
+requires = ["setuptools>=61", "wheel", "grpcio-tools", "protobuf<3.20"]
 build-backend = "setuptools.build_meta"
+
+[tool.pdm.scripts]
+proto = "setup.py grpc"
+test = "pytest -c pyproject.toml --cov=giskard tests --cov-report=xml"
+
+[tool.pdm.dev-dependencies]
+dev = [
+    "typing-extensions>=4.5.0",
+    "black>=23.3.0",
+    "bandit>=1.7.4",
+    "darglint>=1.8.1",
+    "flake8>=3.9.2",
+    "jupyter>=1.0.0",
+    "jupyterlab>=3.4.2",
+    "pre-commit>=2.19.0",
+    "pydocstyle>=6.1.1",
+    "pylint>=2.13.9",
+    "pyupgrade>=2.32.1",
+    "safety>=1.10.3",
+    "grpcio-tools>=1.46.3",
+    "mypy-protobuf>=3.2.0",
+    "mypy-extensions>=0.4.3",
+    "mypy>=0.982",
+    "deptry>=0.5.13",
+    "httpretty>=1.1.4",
+    "isort[colors]>=5.12.0",
+]
+test = [
+    "pytest-cov>=4.0.0",
+    "pytest>=7.1.2",
+    "catboost>=1.1.1",
+    "requests-mock>=1.10.0",
+    "tensorflow-hub>=0.12.0",
+    "transformers>=4.27.4",
+    "torch>=2.0.0",
+    "torchdata>=0.6.0",
+    "torchtext>=0.15.1",
+    "portalocker>=2.0.0",
+    "scikit-learn==1.0.2",
+    "tensorflow-macos>=2.8.0, <2.10; sys_platform == 'darwin' and platform_machine == 'arm64'",
+    "tensorflow>=2.8.0, <2.10; sys_platform != 'darwin' or platform_machine != 'arm64'",
+    "tensorflow-text>=2.8.0, <2.10; sys_platform != 'darwin' or platform_machine != 'arm64'",
+]
 
 [tool.setuptools.packages.find]
 include = ["giskard*"]
@@ -11,10 +51,6 @@ exclude = ["docs*", "tests*"]
 
 [project.scripts]
 giskard = "giskard.cli:cli"
-
-[tool.pdm.scripts]
-proto = "setup.py grpc"
-test = "pytest -c pyproject.toml --cov=giskard tests --cov-report=xml"
 
 [project.urls]
 repository = "https://github.com/Giskard-AI/giskard"
@@ -75,44 +111,6 @@ dependencies = [
     "setuptools>=65.4.1,<68.0.0",
     "pycryptodome>=3.17",
     "pandas<2",
-]
-[project.optional-dependencies]
-dev = [
-    "typing-extensions>=4.5.0",
-    "black>=23.3.0",
-    "bandit>=1.7.4",
-    "darglint>=1.8.1",
-    "flake8>=3.9.2",
-    "jupyter>=1.0.0",
-    "jupyterlab>=3.4.2",
-    "pre-commit>=2.19.0",
-    "pydocstyle>=6.1.1",
-    "pylint>=2.13.9",
-    "pyupgrade>=2.32.1",
-    "safety>=1.10.3",
-    "grpcio-tools>=1.46.3",
-    "mypy-protobuf>=3.2.0",
-    "mypy-extensions>=0.4.3",
-    "mypy>=0.982",
-    "deptry>=0.5.13",
-    "httpretty>=1.1.4",
-    "isort[colors]>=5.12.0",
-]
-test = [
-    "pytest-cov>=4.0.0",
-    "pytest>=7.1.2",
-    "catboost>=1.1.1",
-    "requests-mock>=1.10.0",
-    "tensorflow-hub>=0.12.0",
-    "transformers>=4.27.4",
-    "torch>=2.0.0",
-    "torchdata>=0.6.0",
-    "torchtext>=0.15.1",
-    "portalocker>=2.0.0",
-    "scikit-learn==1.0.2",
-    "tensorflow-macos>=2.8.0, <2.10; sys_platform == 'darwin' and platform_machine == 'arm64'",
-    "tensorflow>=2.8.0, <2.10; sys_platform != 'darwin' or platform_machine != 'arm64'",
-    "tensorflow-text>=2.8.0, <2.10; sys_platform != 'darwin' or platform_machine != 'arm64'",
 ]
 
 [tool.black]

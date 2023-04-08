@@ -1493,11 +1493,10 @@ summary = "Persistent/Functional/Immutable data structures"
 
 [[package]]
 name = "pytest"
-version = "7.2.2"
+version = "7.3.0"
 requires_python = ">=3.7"
 summary = "pytest: simple powerful testing with Python"
 dependencies = [
-    "attrs>=19.2.0",
     "colorama; sys_platform == \"win32\"",
     "exceptiongroup>=1.0.0rc8; python_version < \"3.11\"",
     "iniconfig",
@@ -2219,9 +2218,8 @@ dependencies = [
 ]
 
 [metadata]
-lock_version = "4.2"
-groups = ["default", "dev", "test"]
-content_hash = "sha256:d816049b3fb96ad2393194c53b415f2f027b37fe0fadf7e65fcd6597fad57d93"
+lock_version = "4.1"
+content_hash = "sha256:54631c27bc668a3debae82bc9b3313fdedf1cd59e668717babb6889684c789ab"
 
 [metadata.files]
 "absl-py 1.4.0" = [
@@ -3803,9 +3801,9 @@ content_hash = "sha256:d816049b3fb96ad2393194c53b415f2f027b37fe0fadf7e65fcd6597f
     {url = "https://files.pythonhosted.org/packages/ed/7b/7d032130a6838b179b46dff1ee88909c11d518a10ec9bc70c4b72c7c2f80/pyrsistent-0.19.3-cp310-cp310-macosx_10_9_universal2.whl", hash = "sha256:20460ac0ea439a3e79caa1dbd560344b64ed75e85d8703943e0b66c2a6150e4a"},
     {url = "https://files.pythonhosted.org/packages/f4/43/183384edb4d2788374aa7663b82ace4afe4a0c1fbfee064875eb40ada95b/pyrsistent-0.19.3-cp39-cp39-manylinux_2_5_i686.manylinux1_i686.manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:3a8cb235fa6d3fd7aae6a4f1429bbb1fec1577d978098da1252f0489937786f3"},
 ]
-"pytest 7.2.2" = [
-    {url = "https://files.pythonhosted.org/packages/b2/68/5321b5793bd506961bd40bdbdd0674e7de4fb873ee7cab33dd27283ad513/pytest-7.2.2-py3-none-any.whl", hash = "sha256:130328f552dcfac0b1cec75c12e3f005619dc5f874f0a06e8ff7263f0ee6225e"},
-    {url = "https://files.pythonhosted.org/packages/b9/29/311895d9cd3f003dd58e8fdea36dd895ba2da5c0c90601836f7de79f76fe/pytest-7.2.2.tar.gz", hash = "sha256:c99ab0c73aceb050f68929bc93af19ab6db0558791c6a0715723abe9d0ade9d4"},
+"pytest 7.3.0" = [
+    {url = "https://files.pythonhosted.org/packages/2b/a6/22c1138c2a7b60c9eb9ddeac017d82a58dfd9661651c721e7466af648764/pytest-7.3.0.tar.gz", hash = "sha256:58ecc27ebf0ea643ebfdf7fb1249335da761a00c9f955bcd922349bcb68ee57d"},
+    {url = "https://files.pythonhosted.org/packages/83/b8/345f25e35406da60b5cb0cb9de9f92a96f44eae618dc2cc4a00a2bf416f9/pytest-7.3.0-py3-none-any.whl", hash = "sha256:933051fa1bfbd38a21e73c3960cebdad4cf59483ddba7696c48509727e17f201"},
 ]
 "pytest-cov 4.0.0" = [
     {url = "https://files.pythonhosted.org/packages/ea/70/da97fd5f6270c7d2ce07559a19e5bf36a76f0af21500256f005a69d9beba/pytest-cov-4.0.0.tar.gz", hash = "sha256:996b79efde6433cdbd0088872dbc5fb3ed7fe1578b68cdbba634f14bb8dd0470"},

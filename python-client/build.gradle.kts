@@ -13,10 +13,10 @@ tasks {
     val virtualEnvDirectory = ".venv"
     python {
         envPath = virtualEnvDirectory
-        minPythonVersion = "3.7.13"
+        minPythonVersion = "3.8"
         scope = VIRTUALENV
         installVirtualenv = true
-        pip(listOf("pdm:2.4.9", "importlib-metadata:4.13.0"))
+        pip(listOf("pdm:2.4.9"))
         environment = mapOf("PYTHONPATH" to file(protoGeneratedPath).absolutePath)
     }
 
