@@ -1,13 +1,15 @@
 import email
 from collections import defaultdict
+
 import pandas as pd
-from dateutil import parser
 import torch
-from transformers import BertTokenizer, BertForSequenceClassification
-from giskard import HuggingFaceModel, Dataset
-import tests.utils
+from dateutil import parser
 from scipy import special
+from transformers import BertTokenizer, BertForSequenceClassification
+
 import email_classification_utils
+import tests.utils
+from giskard import HuggingFaceModel, Dataset
 
 idx_to_cat = {
     1: 'REGULATION',
@@ -49,8 +51,7 @@ def test_email_classification_bert_custom_model():
 
     columns_name = ['Target', 'Subject', 'Content', 'Week_day', 'Year', 'Month', 'Hour', 'Nb_of_forwarded_msg']
 
-    data = pd.DataFrame(columns=columns_name)
-
+    data_list = []
     for email_file in email_files:
         values_to_add = {}
 
@@ -82,8 +83,9 @@ def test_email_classification_bert_custom_model():
                     number_of_messages += 1
             values_to_add['Nb_of_forwarded_msg'] = number_of_messages
 
-        row_to_add = pd.Series(values_to_add)
-        data = pd.concat([data, row_to_add], ignore_index=True)
+        data_list.append(values_to_add)
+
+    data = pd.DataFrame(data_list, columns=columns_name)
 
     # We filter 879 rows (if Primary topics exists (i.e. if coarse genre 1.1 is selected) )
     data_filtered = data[data["Target"].notnull()]
