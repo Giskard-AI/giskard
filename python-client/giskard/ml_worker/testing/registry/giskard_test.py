@@ -15,11 +15,10 @@ Result = Union[TestResult, bool]
 
 class GiskardTest(Savable[Any, TestFunctionMeta], ABC):
     """
-    The base class of all Giskard's tests
+    The base class of all Giskard's tests.
 
-    The test are then executed inside the execute method
-    All arguments shall be passed in the __init__ method
-    It is advised to set default value for all arguments (None or actual value) in order to allow autocomplete
+    The tests are executed inside the `execute` method. All arguments should be passed in the `__init__` method. It is
+    required to set default values for all arguments (either `None` or a default values).
     """
 
     def __init__(self):
@@ -36,7 +35,8 @@ class GiskardTest(Savable[Any, TestFunctionMeta], ABC):
     def execute(self) -> Result:
         """
         Execute the test
-        :return: A SingleTestResult containing detailed information of the test execution results
+        :return: A TestResult or a bool containing detailed information of the test execution results
+        :rtype: Union[TestResult, bool]
         """
         ...
 
@@ -80,8 +80,7 @@ class GiskardTest(Savable[Any, TestFunctionMeta], ABC):
     @classmethod
     def _read_meta_from_loca_dir(cls, uuid: str, project_key: Optional[str]) -> TestFunctionMeta:
         meta = tests_registry.get_test(uuid)
-        if meta is None:
-            assert f"Cannot find test function {uuid}"
+        assert meta is not None, f"Cannot find test function {uuid}"
         return meta
 
     def get_builder(self):

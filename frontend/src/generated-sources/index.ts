@@ -75,7 +75,6 @@ export const GENERATED_MAPPING = {
     'ai.giskard.web.dto.TestFunctionDTO' : 'TestFunctionDTO',
     'ai.giskard.web.dto.TestInputDTO' : 'TestInputDTO',
     'ai.giskard.web.dto.TestSuiteCompleteDTO' : 'TestSuiteCompleteDTO',
-    'ai.giskard.web.dto.TestSuiteCreateDTO' : 'TestSuiteCreateDTO',
     'ai.giskard.web.dto.TestSuiteDTO' : 'TestSuiteDTO',
     'ai.giskard.web.dto.user.AdminUserDTO$AdminUserDTOWithPassword' : 'AdminUserDTO.AdminUserDTOWithPassword',
     'ai.giskard.web.dto.user.AdminUserDTO' : 'AdminUserDTO',
@@ -160,7 +159,6 @@ export * from './ai/giskard/web/dto/test-function-argument-dto';
 export * from './ai/giskard/web/dto/test-function-dto';
 export * from './ai/giskard/web/dto/test-input-dto';
 export * from './ai/giskard/web/dto/test-suite-complete-dto';
-export * from './ai/giskard/web/dto/test-suite-create-dto';
 export * from './ai/giskard/web/dto/test-suite-dto';
 export * from './ai/giskard/web/dto/user/admin-user-dto';
 export * from './ai/giskard/web/dto/user/password-change-dto';

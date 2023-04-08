@@ -18,13 +18,25 @@ logger = logging.getLogger(__name__)
 suite_input_types: List[type] = [Dataset, BaseModel, str, bool, int, float]
 
 
+class TestSuiteResult(tuple):
+    def _repr_html_(self):
+        passed = self[0]
+        tests_results = ''.join([f"<h3>Test: {key}</h3>{value._repr_html_()}" for key, value in self[1].items()])
+        return """
+               <h2><span style="color:{0};">{1}</span> Test suite {2}</h2>
+               {3}
+               """.format('green' if passed else 'red',
+                          '✓' if passed else '𐄂',
+                          'succeed' if passed else 'failed',
+                          tests_results)
+
+
 class SuiteInput:
     type: Any
     name: str
 
     def __init__(self, name: str, ptype: Any) -> None:
-        if type not in suite_input_types:
-            assert f'Type should be one of those: {suite_input_types}'
+        assert ptype in suite_input_types, f'Type should be one of those: {suite_input_types}'
         self.name = name
         self.type = ptype
 
@@ -66,17 +78,38 @@ def single_binary_result(test_results: List):
 
 
 class Suite:
+    """
+    The Test Suite class is used to group and execute a collection of test cases. It provides methods to add new tests,
+    execute all tests, and save the suite to a Giskard instance.
+    """
+
     id: int
     tests: List[TestPartial]
     suite_params: Mapping[str, SuiteInput]
     name: str
 
     def __init__(self, name=None) -> None:
+        """
+        Create a new Test Suite instance with a given name.
+
+        :param name: The name of the test suite.
+        """
         self.suite_params = {}
         self.tests = []
         self.name = name
 
-    def run(self, **suite_run_args):
+    def run(self, verbose: bool = True, **suite_run_args):
+        """
+        Execute all the tests that have been added to the test suite through the `add_test` method.
+
+        :param verbose: If set to True, the execution information for each test will be displayed. Defaults to False.
+        :param suite_run_args: Any arguments passed here will be applied to all the tests in the suite whenever they match with the
+            arguments defined for each test. If a test contains an argument that has already been defined, it will not get
+            overridden. If any inputs on the test suite are missing, an error will be raised.
+        :return:  A tuple with the following values:
+            - (bool) A boolean value representing whether all the tests in the suite passed or not.
+            - (dict) A dictionary with the results of each test run. The keys are the test names, and the result of the test execution
+        """
         res: Dict[str, Union[bool, TestResult]] = dict()
         required_params = self.find_required_params()
         undefined_params = {k: v for k, v in required_params.items() if k not in suite_run_args}
@@ -86,6 +119,9 @@ class Suite:
         for test_partial in self.tests:
             test_params = self.create_test_params(test_partial, suite_run_args)
             res[test_partial.test_identifier] = test_partial.giskard_test.get_builder()(**test_params).execute()
+            if verbose:
+                print(
+                    f"Executed {test_partial.test_identifier} with arguments {test_params}: {res[test_partial.test_identifier]}")
 
         result = single_binary_result(list(res.values()))
 
@@ -93,7 +129,7 @@ class Suite:
         logger.info(f"result: {'success' if result else 'failed'}")
         for (test_name, r) in res.items():
             logger.info(f"{test_name}: {format_test_result(r)}")
-        return result, res
+        return TestSuiteResult((result, res))
 
     @staticmethod
     def create_test_params(test_partial, kwargs):
@@ -114,6 +150,13 @@ class Suite:
         return test_params
 
     def save(self, client: GiskardClient, project_key: str):
+        """
+        Saves the test suite to the Giskard backend and sets its ID.
+
+        :param client: A GiskardClient instance to connect to the backend.
+        :param project_key: The key of the project that the test suite belongs to.
+        :return: The current instance of the test Suite to allow chained call.
+        """
         self.id = client.save_test_suite(self.to_dto(client, project_key))
         project_id = client.get_project(project_key).project_id
         print(f"Test suite has been saved: {client.host_url}/main/projects/{project_id}/test-suite/{self.id}/overview")
@@ -144,15 +187,21 @@ class Suite:
 
         return TestSuiteDTO(name=self.name, project_key=project_key, tests=suite_tests)
 
-    def add_test(self, test_fn: Test,
-                 test_identifier: Optional[Union[int, str]] = None, **params):
+    def add_test(self, test_fn: Test, test_name: Optional[Union[int, str]] = None, **params):
         """
-        Add a test to the Suite
+         Add a test to the suite.
+
         :param test_fn: A test method that will be executed or an instance of a GiskardTest class
-        :param test_identifier: A unique test identifier used to track the test result
-        :param params: default params to be passed to the test method,
-          will be ignored if test_fn is an instance of GiskardTest
-        :return: The current instance of the test Suite to allow chained call
+        :type test_fn: Test
+        :param test_name: A unique identifier used to track the test result. If None, the identifier will be generated
+        based on the module and name of the test method. If the identifier already exists in the suite, a new unique
+        identifier will be generated.
+        :type test_name: Optional[Union[int, str]]
+        :param params: Default parameters to be passed to the test method. This parameter will be ignored if `test_fn`
+        is an instance of GiskardTest.
+        :type params: Dict[str, Any]
+        :return: The current instance of the test suite to allow chained calls.
+        :rtype: TestSuite
         """
         if isinstance(test_fn, GiskardTestMethod):
             params = {k: v for k, v in test_fn.params.items() if v is not None}
@@ -165,14 +214,15 @@ class Suite:
         else:
             test_fn = GiskardTestMethod(test_fn)
 
-        if test_identifier is None:
-            test_identifier = f"{test_fn.meta.module}.{test_fn.meta.name}"
-            if any([test for test in self.tests if test.test_identifier == test_identifier]):
-                test_identifier = f"{test_identifier}-{str(uuid.uuid4())}"
-        elif any([test for test in self.tests if test.test_identifier == test_identifier]):
-            assert f"The test identifier {test_identifier} as already been assigned to a test"
+        if test_name is None:
+            test_name = f"{test_fn.meta.module}.{test_fn.meta.name}"
+            if any([test for test in self.tests if test.test_identifier == test_name]):
+                test_name = f"{test_name}-{str(uuid.uuid4())}"
+        else:
+            assert not any([test for test in self.tests if
+                            test.test_identifier == test_name]), f"The test identifier {test_name} as already been assigned to a test"
 
-        self.tests.append(TestPartial(test_fn, params, test_identifier))
+        self.tests.append(TestPartial(test_fn, params, test_name))
 
         return self
 
@@ -215,7 +265,7 @@ class Suite:
         }
 
         if any([arg for arg in required_args if
-                arg.name not in input_dict or not arg.type == input_dict[arg.name].type.__name__]):
+                arg.name not in input_dict or arg.type != input_dict[arg.name].type.__name__]):
             # Test is not added if an input  without default value is not specified
             # or if an input does not match the required type
             return

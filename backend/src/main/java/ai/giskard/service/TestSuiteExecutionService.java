@@ -67,8 +67,7 @@ public class TestSuiteExecutionService {
             Map<Long, SuiteTest> tests = execution.getSuite().getTests().stream()
                 .collect(Collectors.toMap(SuiteTest::getId, Function.identity()));
 
-            execution.setResult(testSuiteResultMessage.getIsError() ? TestResult.ERROR :
-                testSuiteResultMessage.getIsPass() ? TestResult.PASSED : TestResult.FAILED);
+            execution.setResult(getResult(testSuiteResultMessage));
             execution.setResults(testSuiteResultMessage.getResultsList().stream()
                 .map(identifierSingleTestResult ->
                     new SuiteTestExecution(tests.get(identifierSingleTestResult.getId()), execution, identifierSingleTestResult.getResult()))
@@ -82,6 +81,16 @@ public class TestSuiteExecutionService {
         } finally {
             execution.setCompletionDate(new Date());
             testSuiteExecutionRepository.save(execution);
+        }
+    }
+
+    private static TestResult getResult(TestSuiteResultMessage testSuiteResultMessage) {
+        if (testSuiteResultMessage.getIsError()) {
+            return TestResult.ERROR;
+        } else if (testSuiteResultMessage.getIsPass()) {
+            return TestResult.PASSED;
+        } else {
+            return TestResult.FAILED;
         }
     }
 
