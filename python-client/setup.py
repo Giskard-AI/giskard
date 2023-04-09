@@ -38,16 +38,16 @@ class GrpcTool(Command):
         proto_path = '../common/proto'
         proto_include = pkg_resources.resource_filename('grpc_tools', '_proto')
 
-        grpc_tools.protoc.main([
+        cmd = [
             'grpc_tools.protoc',
             f'-I{proto_include}',
             f'-I{proto_path}',
             f'--python_out={self.out_path}',
             f'--grpc_python_out={self.out_path}',
-            f'--mypy_out={self.out_path}',
-            f'--mypy_grpc_out={self.out_path}',
             f'ml-worker.proto'
-        ])
+        ]
+        print(f"Running: {' '.join(cmd)}")
+        grpc_tools.protoc.main(cmd)
 
         self.fix_paths()
 
