@@ -16,7 +16,7 @@ tasks {
         minPythonVersion = "3.8"
         scope = VIRTUALENV
         installVirtualenv = true
-        pip(listOf("pdm:2.4.9"))
+        pip(listOf("pdm:2.5.0"))
         environment = mapOf("PYTHONPATH" to file(protoGeneratedPath).absolutePath)
     }
 

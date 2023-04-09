@@ -82,12 +82,12 @@ jobs:
           key: ${{ runner.os }}-frontend-${{ hashFiles('frontend/package-lock.json')}}
           restore-keys: ${{ runner.os }}-frontend
 
-#      - name: Cache Python dependencies
-#        uses: actions/cache@v3
-#        with:
-#          path: python-client/.venv
-#          key: ${{ runner.os }}-client-${{ hashFiles('python-client/pdm.lock')}}
-#          restore-keys: ${{ runner.os }}-client
+      - name: Cache Python dependencies
+        uses: actions/cache@v3
+        with:
+          path: python-client/.venv
+          key: ${{ runner.os }}-client-${{ hashFiles('python-client/pdm.lock')}}
+          restore-keys: ${{ runner.os }}-client
 
       - name: "Python client: extract current package version"
         if: ${{ steps.extract_branch.outputs.branch == 'main' }}
