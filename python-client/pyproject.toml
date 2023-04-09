@@ -107,6 +107,13 @@ torchtext = "^0.15.1"
 portalocker = ">=2.0.0"
 scikit-learn = "1.0.2" # because our tests require this version
 
+
+[tool.poetry.group.docs.dependencies]
+mkdocs = "^1.4.2"
+mkdocs-material = "^9.1.6"
+mkdocstrings = {extras = ["crystal", "python"], version = "^0.21.2"}
+pytkdocs = {extras = ["numpy-style"], version = "^0.16.1"}
+
 [tool.black]
 # https://github.com/psf/black
 target-version = ['py38', 'py39', 'py310']

@@ -185,13 +185,13 @@ def test_drift_psi(
     Example : The test is passed when the  PSI score of gender between reference and actual sets is below 0.2
 
     Args:
-        actual_ds(Dataset):
+        actual_ds:
             Actual dataset to compute the test
-        reference_ds(Dataset):
+        reference_ds:
             Reference dataset to compute the test
-        column_name(str):
+        column_name:
             Name of column with categorical feature
-        threshold(float:
+        threshold:
             Threshold value for PSI
         max_categories:
             the maximum categories to compute the PSI score
