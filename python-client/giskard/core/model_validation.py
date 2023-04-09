@@ -209,7 +209,7 @@ def validate_label_with_target(model_name: str, classification_labels: Union[np.
         if not set(target_values).issubset(set(classification_labels)):
             invalid_target_values = set(target_values) - set(classification_labels)
             raise ValueError(
-                f"Values {invalid_target_values} in {target_name} column are not declared in "
+                f"Values {invalid_target_values} in \"{target_name}\" column are not declared in "
                 f"classification_labels parameter {classification_labels}" + to_append
             )
 
