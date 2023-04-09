@@ -1,6 +1,7 @@
 import os
-import pkg_resources
 import re
+
+import pkg_resources
 from setuptools import setup, Command
 from setuptools.command.build_py import build_py
 
@@ -45,11 +46,18 @@ class GrpcTool(Command):
             f'-I{proto_include}',
             f'-I{proto_path}',
             f'--python_out={self.out_path}',
-            f'--grpc_python_out={self.out_path}',
-            f'--mypy_out={self.out_path}',
-            f'--mypy_grpc_out={self.out_path}',
-            f'ml-worker.proto'
+            f'--grpc_python_out={self.out_path}'
         ]
+        try:
+            import importlib
+            importlib.import_module('mypy_protobuf')
+            cmd += [
+                f'--mypy_out={self.out_path}',
+                f'--mypy_grpc_out={self.out_path}'
+            ]
+        except Exception:
+            print("mypy-protobuf isn't installed or 'import mypy_protobuf' didn't work")
+        cmd.append(f'ml-worker.proto')
         print(f"Running: {' '.join(cmd)}")
         grpc_tools.protoc.main(cmd)
 
