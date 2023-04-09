@@ -6,6 +6,11 @@ build-backend = "setuptools.build_meta"
 proto = "setup.py grpc"
 test = "pytest -c pyproject.toml --cov=giskard tests --cov-report=xml"
 
+[[tool.pdm.source]]
+# In order to run the tests CPU version of torch is enough
+url = "https://download.pytorch.org/whl/cpu"
+name = "torch-cpu"
+
 [tool.pdm.dev-dependencies]
 dev = [
     "typing-extensions>=4.5.0",
