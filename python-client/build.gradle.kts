@@ -13,6 +13,7 @@ tasks {
     val virtualEnvDirectory = ".venv"
     python {
         envPath = virtualEnvDirectory
+        pythonBinary = "python3.9"
         minPythonVersion = "3.8"
         scope = VIRTUALENV
         installVirtualenv = true
