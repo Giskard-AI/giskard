@@ -1,9 +1,5 @@
 from giskard.models.sklearn import SKLearnModel
-
-try:
-    import mlflow
-except ImportError as e:
-    raise ImportError("Please install it via 'pip install mlflow-skinny'") from e
+import mlflow
 
 
 class CatboostModel(SKLearnModel):
