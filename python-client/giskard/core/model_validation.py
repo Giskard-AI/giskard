@@ -1,15 +1,17 @@
 import tempfile
 from typing import List, Iterable, Union, Callable, Any
-import yaml
+
 import numpy as np
 import pandas as pd
+import yaml
 from pandas.core.dtypes.common import is_string_dtype
-from giskard.core.core import ModelMeta
+
 from giskard.client.python_utils import warning
+from giskard.core.core import ModelMeta, ModelType
 from giskard.core.core import SupportedModelTypes
-from giskard.models.base import BaseModel, WrapperModel
 from giskard.core.validation import validate_is_pandasdataframe, validate_target, validate_args
 from giskard.datasets.base import Dataset
+from giskard.models.base import BaseModel, WrapperModel
 
 
 @validate_args
@@ -135,7 +137,7 @@ def validate_model_postprocessing_function(f: Callable[[Any], Any]):
 
 
 @validate_args
-def validate_model_type(model_type: Union[SupportedModelTypes, str]):
+def validate_model_type(model_type: ModelType):
     if model_type not in {task.value for task in SupportedModelTypes}:
         raise ValueError(
             f"Invalid model_type parameter: {model_type}. "
@@ -145,7 +147,7 @@ def validate_model_type(model_type: Union[SupportedModelTypes, str]):
 
 @validate_args
 def validate_classification_labels(classification_labels: Union[np.ndarray, List, None],
-                                   model_type: Union[SupportedModelTypes, str]):
+                                   model_type: ModelType):
     if model_type == SupportedModelTypes.CLASSIFICATION:
         if classification_labels is not None and isinstance(classification_labels, Iterable):
             if len(classification_labels) <= 1:
@@ -215,7 +217,7 @@ def validate_label_with_target(model_name: str, classification_labels: Union[np.
 
 
 @validate_args
-def validate_prediction_output(ds: Dataset, model_type: Union[SupportedModelTypes, str], prediction):
+def validate_prediction_output(ds: Dataset, model_type: ModelType, prediction):
     assert len(ds.df) == len(prediction), (
         f"Number of rows ({len(ds.df)}) of dataset provided does not match with the "
         f"number of rows ({len(prediction)}) of model.predict output"
