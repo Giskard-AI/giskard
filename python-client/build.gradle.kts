@@ -37,14 +37,14 @@ tasks {
     }
 
     create<PythonTask>("lint") {
-        module = "flake8"
-        command = "giskard tests"
+        module = "pdm"
+        command = "lint"
     }
 
     create<PythonTask>("test") {
-        module = "pytest"
+        module = "pdm"
         // add "-n auto" to the pytest command to parallelize the execution
-        command = "-c ${file("pyproject.toml")} --cov=giskard tests --cov-report=xml"
+        command = "test"
     }
 
     idea {

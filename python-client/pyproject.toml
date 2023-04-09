@@ -5,6 +5,7 @@ build-backend = "setuptools.build_meta"
 [tool.pdm.scripts]
 proto = "setup.py grpc"
 test = "pytest -c pyproject.toml --cov=giskard tests --cov-report=xml"
+lint = "flake8 giskard tests"
 
 [[tool.pdm.source]]
 # In order to run the tests CPU version of torch is enough

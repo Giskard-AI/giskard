@@ -273,7 +273,7 @@ def test_metamorphic_increasing(
     )
 
 
-#TODO: once perturbation are implemented:@test(name="Decreasing (proportion)")
+# TODO: once perturbation are implemented:@test(name="Decreasing (proportion)")
 def test_metamorphic_decreasing(
         df: Dataset, model: BaseModel, perturbation_dict, threshold=0.5, classification_label=None
 ):
@@ -358,7 +358,7 @@ def _test_metamorphic_t_test(
     )
 
 
-#TODO: once perturbation are implemented: @test(name="Decreasing (t-test)")
+# TODO: once perturbation are implemented: @test(name="Decreasing (t-test)")
 def test_metamorphic_decreasing_t_test(
         df: Dataset, model: BaseModel, perturbation_dict, critical_quantile=0.05, classification_label=None
 ):
@@ -410,7 +410,7 @@ def test_metamorphic_decreasing_t_test(
     )
 
 
-#TODO: once perturbation are implemented:@test(name="Increasing (t-test)")
+# TODO: once perturbation are implemented:@test(name="Increasing (t-test)")
 def test_metamorphic_increasing_t_test(
         df: Dataset, model: BaseModel, perturbation_dict, critical_quantile=0.05, classification_label=None
 ):
@@ -462,7 +462,7 @@ def test_metamorphic_increasing_t_test(
     )
 
 
-#TODO: once perturbation are implemented: @test(name="Invariance (t-test)")
+# TODO: once perturbation are implemented: @test(name="Invariance (t-test)")
 def test_metamorphic_invariance_t_test(
         df: Dataset,
         model: BaseModel,
@@ -546,7 +546,7 @@ def _test_metamorphic_wilcoxon(
     )
 
 
-#TODO: once perturbation are implemented: @test(name="Decreasing (Wilcoxon)")
+# TODO: once perturbation are implemented: @test(name="Decreasing (Wilcoxon)")
 def test_metamorphic_decreasing_wilcoxon(
         df: Dataset, model: BaseModel, perturbation_dict, critical_quantile=0.05, classification_label=None
 ):
@@ -649,7 +649,7 @@ def test_metamorphic_increasing_wilcoxon(
     )
 
 
-#TODO: once perturbation are implemented: @test(name="Invariance (Wilcoxon)")
+# TODO: once perturbation are implemented: @test(name="Invariance (Wilcoxon)")
 def test_metamorphic_invariance_wilcoxon(
         df: Dataset, model: BaseModel, perturbation_dict, window_size=0.2, critical_quantile=0.05
 ) -> TestResult:
