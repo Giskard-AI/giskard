@@ -1,7 +1,6 @@
 import os
-import re
-
 import pkg_resources
+import re
 from setuptools import setup, Command
 from setuptools.command.build_py import build_py
 
@@ -45,6 +44,8 @@ class GrpcTool(Command):
             f'-I{proto_path}',
             f'--python_out={self.out_path}',
             f'--grpc_python_out={self.out_path}',
+            f'--mypy_out={self.out_path}',
+            f'--mypy_grpc_out={self.out_path}',
             f'ml-worker.proto'
         ])
 
