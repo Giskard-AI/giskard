@@ -15,9 +15,11 @@ class GrpcTool(Command):
     def finalize_options(self):
         pass
 
-    def fix_paths(self):
-        for dirpath, dirs, files in os.walk(self.out_path):
+    @staticmethod
+    def fix_paths(path):
+        for dirpath, dirs, files in os.walk(path):
             for filename in files:
+                print(f"Generated file: {dirpath}/{filename}")
                 if not filename.endswith('.py'):
                     continue
                 fname = os.path.join(dirpath, filename)
@@ -44,12 +46,14 @@ class GrpcTool(Command):
             f'-I{proto_path}',
             f'--python_out={self.out_path}',
             f'--grpc_python_out={self.out_path}',
+            f'--mypy_out={self.out_path}',
+            f'--mypy_grpc_out={self.out_path}',
             f'ml-worker.proto'
         ]
         print(f"Running: {' '.join(cmd)}")
         grpc_tools.protoc.main(cmd)
 
-        self.fix_paths()
+        self.fix_paths(self.out_path)
 
 
 class BuildPyCommand(build_py):
