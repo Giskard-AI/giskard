@@ -273,6 +273,7 @@
                 <constraints nullable="false"/>
             </column>
             <column name="test_function_uuid" type="UUID"/>
+            <column name="arg_order" type="INT" />
         </createTable>
     </changeSet>
     <changeSet author="kevinmessiaen (generated)" id="1677712287947-16">
