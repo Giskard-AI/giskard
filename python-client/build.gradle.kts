@@ -13,16 +13,16 @@ tasks {
     val virtualEnvDirectory = ".venv"
     python {
         envPath = virtualEnvDirectory
-        minPythonVersion = "3.7.13"
+        minPythonVersion = "3.8"
         scope = VIRTUALENV
         installVirtualenv = true
-        pip(listOf("poetry:1.4.0", "importlib-metadata:4.13.0"))
+        pip(listOf("pdm:2.5.0"))
         environment = mapOf("PYTHONPATH" to file(protoGeneratedPath).absolutePath)
     }
 
     create<PythonTask>("install") {
         dependsOn("pipInstall")
-        module = "poetry"
+        module = "pdm"
         command = "install"
     }
 
@@ -36,35 +36,15 @@ tasks {
         command = "$script_path $fout giskard.ml_worker.generated"
     }
 
-    create<PythonTask>("generateProto") {
-        dependsOn("install")
-        environment("PATH", file(virtualEnvDirectory).resolve("bin"))
-
-        val fout = file(protoGeneratedPath)
-        val pdir = file("../common/proto")
-
-        doFirst {
-            mkdir(fout)
-        }
-
-        finalizedBy("fixGeneratedFiles")
-
-        module = "grpc_tools.protoc"
-
-        command =
-            "-I$pdir --python_out=$fout --grpc_python_out=$fout --mypy_out=$fout --mypy_grpc_out=$fout $pdir/ml-worker.proto"
-
-    }
-
     create<PythonTask>("lint") {
-        module = "flake8"
-        command = "giskard tests"
+        module = "pdm"
+        command = "lint"
     }
 
     create<PythonTask>("test") {
-        module = "pytest"
+        module = "pdm"
         // add "-n auto" to the pytest command to parallelize the execution
-        command = "-c ${file("pyproject.toml")} --cov=giskard tests --cov-report=xml"
+        command = "test"
     }
 
     idea {
@@ -79,7 +59,7 @@ tasks {
         }
     }
     build {
-        dependsOn("install", "generateProto", "test")
+        dependsOn("install", "test")
     }
 
     create<PythonTask>("start") {
@@ -88,7 +68,7 @@ tasks {
     }
 
     create<PythonTask>("package") {
-        module = "poetry"
+        module = "pdm"
         command = "build"
     }
 }
