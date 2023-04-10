@@ -217,4 +217,3 @@ def new_getfile(object, _old_getfile=inspect.getfile):
 inspect.getfile = new_getfile
 
 tests_registry = GiskardTestRegistry()
-
