@@ -5,7 +5,7 @@ from typing import Callable, Optional, List, Union, Type, TypeVar
 from giskard.ml_worker.testing.registry.giskard_test import GiskardTestMethod, GiskardTest
 
 
-def test(_fn=None, name=None, tags: Optional[List[str]] = None):
+def test(fn=None, name=None, tags: Optional[List[str]] = None):
     if sys.version_info >= (3, 10):
         import typing as t
     else:
@@ -25,7 +25,7 @@ def test(_fn=None, name=None, tags: Optional[List[str]] = None):
             return func
         return GiskardTestMethod(func)
 
-    if callable(_fn):
-        return inner(_fn)
+    if callable(fn):
+        return inner(fn)
     else:
         return inner
