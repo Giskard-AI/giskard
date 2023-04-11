@@ -55,6 +55,7 @@ class TestFunctionArgument:
     type: str
     default: any
     optional: bool
+    argOrder: int
 
 
 class TestFunctionMeta(SavableMeta):
@@ -106,7 +107,8 @@ class TestFunctionMeta(SavableMeta):
                         "name": arg.name,
                         "type": arg.type,
                         "default": arg.default,
-                        "optional": arg.optional
+                        "optional": arg.optional,
+                        "argOrder": arg.argOrder,
                     } for arg in self.args.values()
                 ]
         }
@@ -128,7 +130,8 @@ class TestFunctionMeta(SavableMeta):
                     name=arg["name"],
                     type=arg["type"],
                     default=arg["defaultValue"],
-                    optional=arg["optional"]
+                    optional=arg["optional"],
+                    argOrder=arg["argOrder"]
                 ) for arg in json["args"]
             }
 

@@ -107,9 +107,17 @@ class GiskardTestMethod(GiskardTest):
             meta = giskard_registry.get_test(test_uuid)
         super(GiskardTest, self).__init__(test_fn, meta)
 
-    def __call__(self, **kwargs):
+    def __call__(self, *args, **kwargs):
         self.is_initialized = True
         self.params = kwargs
+
+        for idx, arg in enumerate(args):
+            self.params[next(iter([arg.name for arg in self.meta.args.values() if arg.argOrder == idx]))] = arg
+
+        unknown_params = [param for param in self.params if param not in self.meta.args]
+        assert len(unknown_params) == 0, \
+            f"The test '{self.meta.name}' doesn't contain any of those parameters: {''.join(unknown_params)}"
+
         return self
 
     def execute(self) -> Result:

@@ -2,8 +2,7 @@ import pandas as pd
 
 from giskard.core.core import SupportedModelTypes
 from giskard.datasets.base import Dataset
-from giskard.ml_worker.core.test_result import TestResult
-from giskard.ml_worker.generated.ml_worker_pb2 import TestMessage, TestMessageType
+from giskard.ml_worker.core.test_result import TestResult, TestMessage, TestMessageLevel
 from giskard.ml_worker.testing.stat_utils import equivalence_t_test, paired_t_test
 from giskard.ml_worker.testing.stat_utils import equivalence_wilcoxon, paired_wilcoxon
 from giskard.ml_worker.testing.utils import Direction
@@ -153,7 +152,7 @@ def _test_metamorphic(
     )
     passed_ratio = len(passed_idx) / modified_rows_count if modified_rows_count != 0 else 1
 
-    messages = [TestMessage(type=TestMessageType.INFO, text=f"{modified_rows_count} rows were perturbed")]
+    messages = [TestMessage(type=TestMessageLevel.INFO, text=f"{modified_rows_count} rows were perturbed")]
 
     return TestResult(
         actual_slices_size=[len(actual_slice)],
@@ -273,7 +272,7 @@ def test_metamorphic_increasing(
     )
 
 
-#TODO: once perturbation are implemented:@test(name="Decreasing (proportion)")
+# TODO: once perturbation are implemented:@test(name="Decreasing (proportion)")
 def test_metamorphic_decreasing(
         df: Dataset, model: BaseModel, perturbation_dict, threshold=0.5, classification_label=None
 ):
@@ -348,7 +347,7 @@ def _test_metamorphic_t_test(
 
     p_value = _compare_probabilities_t_test(result_df, direction, window_size, critical_quantile)
 
-    messages = [TestMessage(type=TestMessageType.INFO, text=f"{modified_rows_count} rows were perturbed")]
+    messages = [TestMessage(type=TestMessageLevel.INFO, text=f"{modified_rows_count} rows were perturbed")]
 
     return TestResult(
         actual_slices_size=[len(actual_slice)],
@@ -358,7 +357,7 @@ def _test_metamorphic_t_test(
     )
 
 
-#TODO: once perturbation are implemented: @test(name="Decreasing (t-test)")
+# TODO: once perturbation are implemented: @test(name="Decreasing (t-test)")
 def test_metamorphic_decreasing_t_test(
         df: Dataset, model: BaseModel, perturbation_dict, critical_quantile=0.05, classification_label=None
 ):
@@ -410,7 +409,7 @@ def test_metamorphic_decreasing_t_test(
     )
 
 
-#TODO: once perturbation are implemented:@test(name="Increasing (t-test)")
+# TODO: once perturbation are implemented:@test(name="Increasing (t-test)")
 def test_metamorphic_increasing_t_test(
         df: Dataset, model: BaseModel, perturbation_dict, critical_quantile=0.05, classification_label=None
 ):
@@ -462,7 +461,7 @@ def test_metamorphic_increasing_t_test(
     )
 
 
-#TODO: once perturbation are implemented: @test(name="Invariance (t-test)")
+# TODO: once perturbation are implemented: @test(name="Invariance (t-test)")
 def test_metamorphic_invariance_t_test(
         df: Dataset,
         model: BaseModel,
@@ -536,7 +535,7 @@ def _test_metamorphic_wilcoxon(
 
     p_value = _compare_probabilities_wilcoxon(result_df, direction, window_size, critical_quantile)
 
-    messages = [TestMessage(type=TestMessageType.INFO, text=f"{modified_rows_count} rows were perturbed")]
+    messages = [TestMessage(type=TestMessageLevel.INFO, text=f"{modified_rows_count} rows were perturbed")]
 
     return TestResult(
         actual_slices_size=[len(actual_slice)],
@@ -546,7 +545,7 @@ def _test_metamorphic_wilcoxon(
     )
 
 
-#TODO: once perturbation are implemented: @test(name="Decreasing (Wilcoxon)")
+# TODO: once perturbation are implemented: @test(name="Decreasing (Wilcoxon)")
 def test_metamorphic_decreasing_wilcoxon(
         df: Dataset, model: BaseModel, perturbation_dict, critical_quantile=0.05, classification_label=None
 ):
@@ -649,7 +648,7 @@ def test_metamorphic_increasing_wilcoxon(
     )
 
 
-#TODO: once perturbation are implemented: @test(name="Invariance (Wilcoxon)")
+# TODO: once perturbation are implemented: @test(name="Invariance (Wilcoxon)")
 def test_metamorphic_invariance_wilcoxon(
         df: Dataset, model: BaseModel, perturbation_dict, window_size=0.2, critical_quantile=0.05
 ) -> TestResult:

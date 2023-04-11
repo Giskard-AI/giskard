@@ -16,7 +16,8 @@ def test(_fn=None, name=None, tags: Optional[List[str]] = None):
     P = t.ParamSpec("P")
     R = TypeVar("R")
 
-    def inner(func: Union[Callable[P, R], Type[GiskardTest]]) -> Union[Callable[P, GiskardTest], GiskardTest, GiskardTestMethod]:
+    def inner(func: Union[Callable[P, R], Type[GiskardTest]]) \
+            -> Union[Callable[P, GiskardTest], GiskardTest, GiskardTestMethod]:
         """
         Declare output as both Callable and GiskardTest so that there's autocompletion
         for GiskardTest's methods as well as the original wrapped function arguments (for __call__)
@@ -27,7 +28,10 @@ def test(_fn=None, name=None, tags: Optional[List[str]] = None):
             return func
         return GiskardTestMethod(func)
 
-    return inner
+    if callable(_fn):
+        return inner(_fn)
+    else:
+        return inner
 
 
 def filter_func(_fn=None):
