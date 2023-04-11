@@ -9,6 +9,8 @@ from setuptools.command.build_py import build_py
 
 
 class GrpcTool(Command):
+    user_options = []
+
     def initialize_options(self):
         self.build_lib = None
         self.out_path = None
