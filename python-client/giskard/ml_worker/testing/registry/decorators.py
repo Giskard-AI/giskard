@@ -28,6 +28,7 @@ def test(_fn=None, name=None, tags: Optional[List[str]] = None):
         return functools.wraps(original)(GiskardTestMethod(original))
 
     if callable(_fn):
-        return inner(_fn)
+        # in case @test decorator was used without parenthesis
+        return functools.wraps(_fn)(inner(_fn))
     else:
         return inner
