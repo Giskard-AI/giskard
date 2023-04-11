@@ -30,12 +30,6 @@ tasks {
         delete(protoGeneratedPath, virtualEnvDirectory, "coverage.xml", ".coverage")
     }
 
-    create<PythonTask>("fixGeneratedFiles") {
-        val script_path = file("scripts/fix_grpc_generated_imports.py")
-        val fout = file(protoGeneratedPath)
-        command = "$script_path $fout giskard.ml_worker.generated"
-    }
-
     create<PythonTask>("lint") {
         module = "pdm"
         command = "lint"
