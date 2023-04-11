@@ -5,7 +5,6 @@
     <option name="PARENT_ENVS" value="true" />
     <envs>
       <env name="PYTHONUNBUFFERED" value="1" />
-      <env name="GIT_REPOSITORY" value="https://github.com/kevinmessiaen/udf.git" />
     </envs>
     <option name="SDK_HOME" value="$PROJECT_DIR$/python-client/.venv/bin/python3.9" />
     <option name="SDK_NAME" value="Python 3.9 (giskard)" />
