@@ -19,7 +19,7 @@ from pydantic import BaseModel
 
 from giskard.client.giskard_client import GiskardClient
 from giskard.core.core import ModelMeta, SupportedModelTypes, ModelType
-from giskard.core.validation import validate_args
+from giskard.core.validation import configured_validate_arguments
 from giskard.datasets.base import Dataset
 from giskard.ml_worker.utils.logging import Timer
 from giskard.path_utils import get_size
@@ -42,7 +42,7 @@ class BaseModel(ABC):
     should_save_model_class = False
     id: uuid.UUID = None
 
-    @validate_args
+    @configured_validate_arguments
     def __init__(
             self,
             model_type: ModelType,
@@ -288,7 +288,7 @@ class WrapperModel(BaseModel, ABC):
     data_preprocessing_function: Callable[[pd.DataFrame], Any]
     model_postprocessing_function: Callable[[Any], Any]
 
-    @validate_args
+    @configured_validate_arguments
     def __init__(
             self,
             clf: Any,
@@ -330,7 +330,7 @@ class WrapperModel(BaseModel, ABC):
 
         return raw_predictions
 
-    @validate_args
+    @configured_validate_arguments
     def predict_df(self, df: pd.DataFrame):
         if self.data_preprocessing_function:
             df = self.data_preprocessing_function(df)

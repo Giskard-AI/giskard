@@ -1,12 +1,15 @@
 from typing import Callable, Iterable, Any, Optional
+
 import pandas as pd
+
+import mlflow
 from giskard.core.core import ModelType
-from giskard.core.validation import validate_args
+from giskard.core.validation import configured_validate_arguments
 from giskard.models.base import MLFlowBasedModel
 
 
 class SKLearnModel(MLFlowBasedModel):
-    @validate_args
+    @configured_validate_arguments
     def __init__(self,
                  clf,
                  model_type: ModelType,
@@ -37,7 +40,6 @@ class SKLearnModel(MLFlowBasedModel):
         )
 
     def save_with_mlflow(self, local_path, mlflow_meta):
-        import mlflow
         if self.is_classification:
             pyfunc_predict_fn = "predict_proba"
         elif self.is_regression:
@@ -51,7 +53,6 @@ class SKLearnModel(MLFlowBasedModel):
 
     @classmethod
     def load_clf(cls, local_dir):
-        import mlflow
         return mlflow.sklearn.load_model(local_dir)
 
     def clf_predict(self, df):
