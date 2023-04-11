@@ -1,6 +1,8 @@
 from dataclasses import dataclass, field
 from enum import Enum
 
+from giskard import Dataset
+
 from typing import List, Dict
 
 
@@ -54,6 +56,7 @@ class TestResult:
     number_of_perturbed_rows: int = 0
     actual_slices_size: List[int] = field(default_factory=list, repr=False)
     reference_slices_size: List[int] = field(default_factory=list, repr=False)
+    dataset_to_debug: Dataset = None
 
     def _repr_html_(self):
         return """

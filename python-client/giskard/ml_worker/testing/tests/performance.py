@@ -1,6 +1,7 @@
 """Performance tests"""
 import numpy as np
 import pandas as pd
+import inspect
 from sklearn.metrics import (
     accuracy_score,
     f1_score,
@@ -17,6 +18,7 @@ from giskard.datasets.base import Dataset
 from giskard.ml_worker.core.test_result import TestResult
 from giskard.ml_worker.testing.registry.giskard_test import GiskardTest
 from giskard.models.base import BaseModel
+from .debug_utils import slices_to_debug
 
 
 def _verify_target_availability(dataset):
@@ -32,17 +34,18 @@ def _test_classification_score(
         score_fn, gsk_dataset: Dataset, model: BaseModel, threshold: float = 1.0
 ):
     _verify_target_availability(gsk_dataset)
-    is_binary_classification = len(model.meta.classification_labels) == 2
     gsk_dataset.df.reset_index(drop=True, inplace=True)
     actual_target = gsk_dataset.df[gsk_dataset.target].astype(str)
     prediction = model.predict(gsk_dataset).prediction
-    if is_binary_classification:
+    if model.is_binary_classification:
         metric = score_fn(actual_target, prediction, pos_label=model.meta.classification_labels[1])
     else:
         metric = score_fn(actual_target, prediction, average="macro")
 
+    test_name = inspect.stack()[0][3]
     return TestResult(
-        actual_slices_size=[len(gsk_dataset)], metric=metric, passed=bool(metric >= threshold)
+        actual_slices_size=[len(gsk_dataset)], metric=metric, passed=bool(metric >= threshold),
+        dataset_to_debug=slices_to_debug.get(test_name)(gsk_dataset, prediction)
     )
 
 
