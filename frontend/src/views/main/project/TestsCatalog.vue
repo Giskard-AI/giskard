@@ -15,7 +15,7 @@
                                 <div class="d-flex align-center">
                                     {{ test.name }}
                                     <v-spacer class="flex-grow-1"/>
-                                    <v-tooltip bottom>
+                                    <v-tooltip bottom v-if="test.potentiallyUnavailable">
                                         <template v-slot:activator="{ on, attrs }">
                                             <div v-bind="attrs" v-on="on">
                                                 <v-icon color="orange">warning</v-icon>
