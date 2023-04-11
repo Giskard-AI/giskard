@@ -53,8 +53,10 @@ include = ["giskard*"]
 giskard = "giskard.cli:cli"
 
 [project.urls]
-repository = "https://github.com/Giskard-AI/giskard"
-homepage = "https://giskard-ai"
+"Homepage" = "https://giskard-ai"
+"Documentation" = "https://docs.giskard.ai"
+"Bug Tracker" = "https://github.com/giskard-AI/giskard/issues"
+"Source Code" = "https://github.com/Giskard-AI/giskard"
 
 [project]
 name = "giskard"
