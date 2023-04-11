@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from enum import Enum
-from typing import Optional, Dict, List, TypeVar
+from typing import Optional, Dict, List, Union, Literal, TypeVar
 
 
 class SupportedModelTypes(Enum):
@@ -8,10 +8,16 @@ class SupportedModelTypes(Enum):
     REGRESSION = "regression"
 
 
+ModelType = Union[SupportedModelTypes, Literal["classification", "regression"]]
+
+
 class SupportedColumnTypes(Enum):
     NUMERIC = "numeric"
     CATEGORY = "category"
     TEXT = "text"
+
+
+ColumnType = Union[SupportedColumnTypes, Literal["numeric", "category", "text"]]
 
 
 class SavableMeta:
