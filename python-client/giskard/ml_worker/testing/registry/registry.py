@@ -208,8 +208,8 @@ def new_getfile(object, _old_getfile=inspect.getfile):
     for name, member in inspect.getmembers(object):
         if inspect.isfunction(member) and object.__qualname__ + '.' + member.__name__ == member.__qualname__:
             return inspect.getfile(member)
-        else:
-            raise TypeError('Source for {!r} not found'.format(object))
+
+    raise TypeError('Source for {!r} not found'.format(object))
 
 
 # Override getfile to have it working over Jupyter Notebook files
