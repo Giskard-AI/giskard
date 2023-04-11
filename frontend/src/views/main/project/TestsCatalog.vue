@@ -21,7 +21,7 @@
                                                 <v-icon color="orange">warning</v-icon>
                                             </div>
                                         </template>
-                                        <span>Potentially unavailable. Start your external ML worker to display available tests.</span>
+                                        <span>This test is potentially unavailable. Start your external ML worker to display available tests.</span>
                                     </v-tooltip>
                                 </div>
                             </v-list-item-title>
@@ -46,68 +46,82 @@
               </v-btn>
             </div>
             <!--            <AddTestToTestSuiteModal style="border: 1px solid lightgrey"></AddTestToTestSuiteModal>-->
-            <div class="vc overflow-x-hidden pr-5">
-
-              <pre class="test-doc caption pt-5">{{ selected.doc }}</pre>
-              <div class="pt-5">
-                <div class="d-flex justify-space-between">
-                  <span class="text-h6">Inputs</span>
-                  <v-btn width="100" small tile outlined @click="tryMode = !tryMode">{{
-                      tryMode ? 'Cancel' : 'Try it'
-                    }}
-                  </v-btn>
-                </div>
-                <v-list>
-                  <v-list-item v-for="a in selected.args" class="pl-0 pr-0">
-                    <v-row>
-                      <v-col>
-                        <v-list-item-content>
-                          <v-list-item-title>{{ a.name }}</v-list-item-title>
-                          <v-list-item-subtitle class="text-caption">{{ a.type }}</v-list-item-subtitle>
-                          <v-list-item-action-text v-show="!!a.optional">Optional. Default: <code>{{
-                              a.defaultValue
-                            }}</code>
-                          </v-list-item-action-text>
-                        </v-list-item-content>
-                      </v-col>
-                      <v-col>
-                        <template v-if="tryMode">
-                          <DatasetSelector :project-id="projectId" :label="a.name" :return-object="false"
-                                           v-if="a.type === 'Dataset'" :value.sync="testArguments[a.name]"/>
-                          <ModelSelector :project-id="projectId" :label="a.name" :return-object="false"
-                                         v-if="a.type === 'BaseModel'" :value.sync="testArguments[a.name]"/>
-                          <v-text-field
-                              :step='a.type === "float" ? 0.1 : 1'
-                              v-model="testArguments[a.name]"
-                              v-if="['float', 'int'].includes(a.type)"
-                              hide-details
-                              single-line
-                              type="number"
-                              outlined
-                              dense
-                          />
-                        </template>
-                      </v-col>
-                    </v-row>
-                  </v-list-item>
-                </v-list>
-                <v-row v-show="tryMode">
-                  <v-col :align="'right'">
-                    <v-btn width="100" small tile outlined class="primary" color="white" @click="runTest">Run
-                    </v-btn>
-                  </v-col>
-                </v-row>
-                <v-row style="height: 150px" v-if="testResult">
-                  <v-col>
-                    <TestExecutionResultBadge :result="testResult"/>
-                  </v-col>
-                </v-row>
-                <v-row>
-                  <v-col>
-                    <v-expansion-panels flat @change="resizeEditor">
-                      <v-expansion-panel>
-                        <v-expansion-panel-header class="pa-0">Code</v-expansion-panel-header>
-                        <v-expansion-panel-content class="pa-0">
+              <div class="vc overflow-x-hidden pr-5">
+                  <v-alert
+                          v-if="selected.potentiallyUnavailable"
+                          color="warning"
+                          border="left"
+                          outlined
+                          colored-border
+                          icon="info"
+                  >
+                      <span>This test is potentially unavailable. Start your external ML worker to display available tests.</span>
+                      <pre></pre>
+                      <StartWorkerInstructions/>
+                  </v-alert>
+                  <pre class="test-doc caption pt-5">{{ selected.doc }}</pre>
+                  <div class="pt-5">
+                      <div class="d-flex justify-space-between">
+                          <span class="text-h6">Inputs</span>
+                          <v-btn width="100" small tile outlined @click="tryMode = !tryMode">{{
+                              tryMode ? 'Cancel' : 'Try it'
+                              }}
+                          </v-btn>
+                      </div>
+                      <v-list>
+                          <v-list-item v-for="a in selected.args" class="pl-0 pr-0">
+                              <v-row>
+                                  <v-col>
+                                      <v-list-item-content>
+                                          <v-list-item-title>{{ a.name }}</v-list-item-title>
+                                          <v-list-item-subtitle class="text-caption">{{ a.type }}</v-list-item-subtitle>
+                                          <v-list-item-action-text v-show="!!a.optional">Optional. Default: <code>{{
+                                              a.defaultValue
+                                              }}</code>
+                                          </v-list-item-action-text>
+                                      </v-list-item-content>
+                                  </v-col>
+                                  <v-col>
+                                      <template v-if="tryMode">
+                                          <DatasetSelector :project-id="projectId" :label="a.name"
+                                                           :return-object="false"
+                                                           v-if="a.type === 'Dataset'"
+                                                           :value.sync="testArguments[a.name]"/>
+                                          <ModelSelector :project-id="projectId" :label="a.name" :return-object="false"
+                                                         v-if="a.type === 'BaseModel'"
+                                                         :value.sync="testArguments[a.name]"/>
+                                          <v-text-field
+                                                  :step='a.type === "float" ? 0.1 : 1'
+                                                  v-model="testArguments[a.name]"
+                                                  v-if="['float', 'int'].includes(a.type)"
+                                                  hide-details
+                                                  single-line
+                                                  type="number"
+                                                  outlined
+                                                  dense
+                                          />
+                                      </template>
+                                  </v-col>
+                              </v-row>
+                          </v-list-item>
+                      </v-list>
+                      <v-row v-show="tryMode">
+                          <v-col :align="'right'">
+                              <v-btn width="100" small tile outlined class="primary" color="white" @click="runTest">Run
+                              </v-btn>
+                          </v-col>
+                      </v-row>
+                      <v-row style="height: 150px" v-if="testResult">
+                          <v-col>
+                              <TestExecutionResultBadge :result="testResult"/>
+                          </v-col>
+                      </v-row>
+                      <v-row>
+                          <v-col>
+                              <v-expansion-panels flat @change="resizeEditor">
+                                  <v-expansion-panel>
+                                      <v-expansion-panel-header class="pa-0">Code</v-expansion-panel-header>
+                                      <v-expansion-panel-content class="pa-0">
                           <MonacoEditor
                               ref="editor"
                               v-model='selected.code'
@@ -144,6 +158,7 @@ import {editor} from "monaco-editor";
 import {TestFunctionArgumentDTO, TestFunctionDTO, TestTemplateExecutionResultDTO} from "@/generated-sources";
 import AddTestToSuite from '@/views/main/project/modals/AddTestToSuite.vue';
 import {$vfm} from 'vue-final-modal';
+import StartWorkerInstructions from "@/components/StartWorkerInstructions.vue";
 import IEditorOptions = editor.IEditorOptions;
 
 const l = MonacoEditor;
