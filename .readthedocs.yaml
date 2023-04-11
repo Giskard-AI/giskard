@@ -12,7 +12,7 @@ build:
       - which python
 #      - pdm config python.use_venv false
     post_install:
-      - sh -c "pdm config python.use_venv false && cd python-client && pdm info && pdm install -G doc && pdm config && pip list"
+      - sh -c "which python && pdm config python.use_venv false && cd python-client && pdm info && pdm install -G doc && pdm config && pip list"
 #      - pip install -r python-client/requirements.txt
 
 
