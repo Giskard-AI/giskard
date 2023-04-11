@@ -3,7 +3,7 @@ import pickle
 import sys
 from abc import abstractmethod, ABC
 from pathlib import Path
-from typing import Union, Callable, Any, Optional
+from typing import Union, Callable, Any, Optional, TypeVar
 
 from giskard.core.core import TestFunctionMeta, SMT
 from giskard.ml_worker.core.savable import Savable
@@ -91,11 +91,13 @@ Function = Callable[..., Result]
 
 Test = Union[GiskardTest, Function]
 
+T = TypeVar('T')
 
-class GiskardTestMethod(GiskardTest):
-    params: ...
 
-    def __init__(self, test_fn: Function) -> None:
+class GiskardTestMethod(T, GiskardTest):
+    params: T
+
+    def __init__(self, test_fn: Callable[[T], Result]) -> None:
         self.test_fn = test_fn
         test_uuid = get_test_uuid(test_fn)
         meta = tests_registry.get_test(test_uuid)
@@ -106,7 +108,7 @@ class GiskardTestMethod(GiskardTest):
             meta = tests_registry.get_test(test_uuid)
         super(GiskardTest, self).__init__(test_fn, meta)
 
-    def __call__(self, *args, **kwargs):
+    def __call__(self, *args: T, **kwargs: T):
         self.is_initialized = True
         self.params = kwargs
 
