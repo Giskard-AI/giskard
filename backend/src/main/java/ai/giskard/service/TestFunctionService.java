@@ -2,29 +2,21 @@ package ai.giskard.service;
 
 import ai.giskard.domain.TestFunction;
 import ai.giskard.domain.TestFunctionArgument;
-import ai.giskard.ml.MLWorkerClient;
 import ai.giskard.repository.ProjectRepository;
 import ai.giskard.repository.ml.TestFunctionRepository;
-import ai.giskard.service.ml.MLWorkerService;
+import ai.giskard.service.ml.MLWorkerCacheService;
 import ai.giskard.web.dto.TestFunctionArgumentDTO;
 import ai.giskard.web.dto.TestFunctionDTO;
 import ai.giskard.web.dto.mapper.GiskardMapper;
-import ai.giskard.worker.MLWorkerGrpc;
-import ai.giskard.worker.TestRegistryResponse;
-import com.google.protobuf.Empty;
-import io.grpc.StatusRuntimeException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import static ai.giskard.utils.GRPCUtils.convertGRPCObject;
 
 @Service
 @RequiredArgsConstructor
@@ -33,7 +25,7 @@ public class TestFunctionService {
     private final GiskardMapper giskardMapper;
     private final TestFunctionRepository testFunctionRepository;
     private final ProjectRepository projectRepository;
-    private final MLWorkerService mlWorkerService;
+    private final MLWorkerCacheService mlWorkerCacheService;
 
     @Transactional
     public TestFunctionDTO save(TestFunctionDTO testFunction) {
@@ -83,29 +75,8 @@ public class TestFunctionService {
     @Transactional
     public List<TestFunctionDTO> findAll(long projectId) {
         return Stream.concat(testFunctionRepository.findAll().stream().map(giskardMapper::toDTO),
-                findGiskardTest(projectRepository.getById(projectId).isUsingInternalWorker()).stream())
+                mlWorkerCacheService.findGiskardTest(projectRepository.getById(projectId).isUsingInternalWorker()).stream())
             .toList();
-    }
-
-    private List<TestFunctionDTO> findGiskardTest(boolean isInternal) {
-        try (MLWorkerClient client = mlWorkerService.createClientNoError(isInternal)) {
-            if (!isInternal && client == null) {
-                // Fallback to internal ML worker to not display empty catalog
-                return findGiskardTest(true).stream()
-                    .map(dto -> dto.toBuilder().potentiallyUnavailable(true).build())
-                    .toList();
-            } else if (client == null) {
-                return Collections.emptyList();
-            }
-
-            MLWorkerGrpc.MLWorkerBlockingStub blockingStub = client.getBlockingStub();
-            TestRegistryResponse response = blockingStub.getTestRegistry(Empty.newBuilder().build());
-            return response.getTestsMap().values().stream()
-                .map(test -> convertGRPCObject(test, TestFunctionDTO.class))
-                .toList();
-        } catch (StatusRuntimeException e) {
-            return Collections.emptyList();
-        }
     }
 
 }
