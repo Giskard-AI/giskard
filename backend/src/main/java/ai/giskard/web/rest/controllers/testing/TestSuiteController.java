@@ -82,7 +82,7 @@ public class TestSuiteController {
                                               @PathVariable("suiteId") @NotNull Long suiteId) {
         return new TestSuiteCompleteDTO(
             giskardMapper.toDTO(testSuiteRepository.findOneByProjectIdAndId(projectId, suiteId)),
-            testFunctionService.findAll(),
+            testFunctionService.findAll(projectId),
             giskardMapper.datasetsToDatasetDTOs(datasetRepository.findAllByProjectId(projectId)),
             giskardMapper.modelsToModelDTOs(modelRepository.findAllByProjectId(projectId)),
             testSuiteExecutionService.listAllExecution(suiteId),
