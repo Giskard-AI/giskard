@@ -30,12 +30,18 @@ tasks {
         delete(protoGeneratedPath, virtualEnvDirectory, "coverage.xml", ".coverage")
     }
 
+    create<PythonTask>("proto") {
+        module = "pdm"
+        command = "proto"
+    }
+
     create<PythonTask>("lint") {
         module = "pdm"
         command = "lint"
     }
 
     create<PythonTask>("test") {
+        dependsOn("proto")
         module = "pdm"
         // add "-n auto" to the pytest command to parallelize the execution
         command = "test"
@@ -52,6 +58,7 @@ tasks {
             testSources.from(file("tests"))
         }
     }
+
     build {
         dependsOn("install", "test")
     }
