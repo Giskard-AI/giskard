@@ -1,47 +1,68 @@
 <template>
-  <v-select
-      clearable
-      outlined
-      class="dataset-selector"
-      :label="label"
-      :value="value"
-      :items="projectDatasets"
-      :item-text="extractDatasetName"
-      item-value="id"
-      :return-object="returnObject"
-      @input="onInput"
-      dense
-      hide-details
-  ></v-select>
+    <div class="d-flex">
+        <v-select
+            clearable
+            outlined
+            class="dataset-selector"
+            :label="label"
+            :value="value"
+            :items="projectDatasets"
+            :item-text="extractDatasetName"
+            item-value="id"
+            :return-object="returnObject"
+            @input="onInput"
+            dense
+            hide-details
+        ></v-select>
+        <v-btn icon @click="openAdvancedModal">
+            <v-icon>settings</v-icon>
+        </v-btn>
+    </div>
 </template>
 
-<script lang="ts">
-import Component from "vue-class-component";
-import Vue from "vue";
+<script setup lang="ts">
+
+
+import {onMounted, ref} from "vue";
 import axios from "axios";
 import {apiURL} from "@/env";
-import {Prop} from "vue-property-decorator";
-import {DatasetDTO} from '@/generated-sources';
+import {DatasetDTO, TestInputDTO} from '@/generated-sources';
+import {$vfm} from "vue-final-modal";
+import AdvancedDatasetInputModal from "@/views/main/project/modals/AdvancedDatasetInputModal.vue";
 
-@Component
-export default class DatasetSelector extends Vue {
-  @Prop({required: true}) projectId!: number;
-  @Prop({default: 'Dataset', required: true}) label!: string;
-  @Prop({default: true}) returnObject!: boolean;
-  @Prop() value?: DatasetDTO | number;
-  projectDatasets: Array<DatasetDTO> = [];
+const props = defineProps<{
+    projectId: number,
+    label: string,
+    returnObject: boolean,
+    value?: string
+}>()
 
-  extractDatasetName(dataset: DatasetDTO) {
+const emit = defineEmits(['update:value']);
+
+const projectDatasets = ref<Array<DatasetDTO>>([])
+
+onMounted(async () => projectDatasets.value = (await axios.get<Array<DatasetDTO>>(`${apiURL}/api/v2/project/${props.projectId}/datasets`)).data)
+
+function extractDatasetName(dataset: DatasetDTO) {
     return dataset.name || dataset.id;
-  }
+}
 
-  onInput(value) {
-    this.$emit('update:value', value);
-  }
+function onInput(value) {
+    emit('update:value', value);
+}
 
-  async mounted() {
-    this.projectDatasets = (await axios.get<Array<DatasetDTO>>(`${apiURL}/api/v2/project/${this.projectId}/datasets`)).data;
-  }
+async function openAdvancedModal() {
+    await $vfm.show({
+        component: AdvancedDatasetInputModal,
+        bind: {
+            input: props.label
+        },
+        on: {
+            async save(input: TestInputDTO) {
+
+            }
+        }
+    });
 }
 </script>
 

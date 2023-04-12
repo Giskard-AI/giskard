@@ -106,7 +106,7 @@ class GiskardTestMethod(GiskardTest):
             meta = tests_registry.get_test(test_uuid)
         super(GiskardTest, self).__init__(test_fn, meta)
 
-    def __call__(self, *args, **kwargs) -> 'GiskardTestMethod':
+    def __call__(self, *args, **kwargs) -> GiskardTest:
         self.is_initialized = True
         self.params = kwargs
 
