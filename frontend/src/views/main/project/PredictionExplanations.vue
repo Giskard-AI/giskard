@@ -64,6 +64,8 @@ export default class PredictionExplanations extends Vue {
   @Prop() classificationLabels!: string[];
   @Prop({default: {}}) inputData!: object;
   @Prop() modelFeatures!: string[];
+  @Prop({default: 250}) debouncingTimeout!: number;
+
 
   loading: boolean = false;
   errorMsg: string = "";
@@ -82,7 +84,7 @@ export default class PredictionExplanations extends Vue {
 
   private debouncedGetExplanation = _.debounce(async () => {
     await this.getExplanation();
-  }, 250);
+  }, this.debouncingTimeout);
 
   private async getExplanation() {
     if (this.controller) {

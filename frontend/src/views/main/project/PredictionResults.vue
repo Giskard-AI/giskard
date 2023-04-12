@@ -121,6 +121,8 @@ export default class PredictionResults extends Vue {
   @Prop() classificationLabels!: string[];
   @Prop() inputData!: { [key: string]: string };
   @Prop({default: false}) modified!: boolean;
+  @Prop({default: 250}) debouncingTimeout!: number;
+
 
   prediction: string | number | undefined = "";
   resultProbabilities: object = {};
@@ -149,7 +151,7 @@ export default class PredictionResults extends Vue {
 
   private debouncedSubmitPrediction = _.debounce(async () => {
     await this.submitPrediction();
-  }, 250);
+  }, this.debouncingTimeout);
 
   private async submitPrediction() {
     if (this.controller) {
