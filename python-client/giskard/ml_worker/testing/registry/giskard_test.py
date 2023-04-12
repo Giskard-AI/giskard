@@ -116,7 +116,7 @@ class GiskardTestMethod(GiskardTest):
 
         unknown_params = [param for param in self.params if param not in self.meta.args]
         assert len(unknown_params) == 0, \
-            f"The test '{self.meta.name}' doesn't contain any of those parameters: {''.join(unknown_params)}"
+            f"The test '{self.meta.name}' doesn't contain any of those parameters: {', '.join(unknown_params)}"
 
         return self
 
