@@ -1,9 +1,9 @@
 from giskard.ml_worker.testing.tests import drift
-from giskard.ml_worker.testing.tests import heuristic
 from giskard.ml_worker.testing.tests import performance
+from giskard.ml_worker.testing.tests import statistical
 
 __all__ = [
-    'heuristic',
+    'statistical.py',
     'performance',
     'drift',
 ]
