@@ -8,8 +8,10 @@ from setuptools.command.build import SubCommand
 from setuptools.command.build_py import build_py
 
 
-class GrpcTool(Command):
-    user_options = []
+class GrpcTool(Command, SubCommand):
+    user_options = [
+        ("build-lib=", "d", 'directory to "build" (copy) to'),
+    ]
 
     def initialize_options(self):
         self.build_lib = None
@@ -19,7 +21,10 @@ class GrpcTool(Command):
 
     def finalize_options(self):
         self.set_undefined_options("build_py", ("build_lib", "build_lib"))
-        self.out_path = Path(self.build_lib, "giskard", "ml_worker", "generated")
+        if self.editable_mode:
+            self.out_path = Path("giskard", "ml_worker", "generated")
+        else:
+            self.out_path = Path(self.build_lib, "giskard", "ml_worker", "generated")
 
     def fix_paths(self, path):
         for dirpath, dirs, files in os.walk(path):

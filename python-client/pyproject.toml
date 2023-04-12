@@ -3,7 +3,7 @@ requires = ["setuptools>=61", "wheel", "grpcio-tools", "protobuf<3.20"]
 build-backend = "setuptools.build_meta"
 
 [tool.pdm.scripts]
-proto = "setup.py build_grpc"
+proto = "setup.py build_grpc --build-lib ."
 test = "pytest -c pyproject.toml --cov=giskard tests --cov-report=xml"
 lint = "flake8 giskard tests"
 
