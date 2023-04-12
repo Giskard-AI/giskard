@@ -1,3 +1,4 @@
+import functools
 import inspect
 import sys
 from typing import Callable, Optional, List, Union, Type, TypeVar
@@ -13,19 +14,25 @@ def test(_fn=None, name=None, tags: Optional[List[str]] = None):
     P = t.ParamSpec("P")
     R = TypeVar("R")
 
-    def inner(func: Union[Callable[P, R], Type[GiskardTest]]) \
-            -> Union[Callable[P, GiskardTest], GiskardTest, GiskardTestMethod]:
+    def inner(original: Union[Callable[P, R], Type[GiskardTest]]) -> Union[
+              Callable[P, GiskardTest], GiskardTest, GiskardTestMethod]:
         """
         Declare output as both Callable and GiskardTest so that there's autocompletion
         for GiskardTest's methods as well as the original wrapped function arguments (for __call__)
         """
         from giskard.ml_worker.testing.registry.registry import tests_registry
-        tests_registry.register(func, name=name, tags=tags)
-        if inspect.isclass(func) and issubclass(func, GiskardTest):
-            return func
-        return GiskardTestMethod(func)
+        tests_registry.register(original, name=name, tags=tags)
+
+        if inspect.isclass(original) and issubclass(original, GiskardTest):
+            return original
+
+        original.__annotations__['return'] = GiskardTestMethod
+
+        return functools.wraps(original)(GiskardTestMethod(original))
 
     if callable(_fn):
-        return inner(_fn)
+        # in case @test decorator was used without parenthesis
+        _fn.__annotations__['return'] = GiskardTestMethod
+        return functools.wraps(_fn)(inner(_fn))
     else:
         return inner
