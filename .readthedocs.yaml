@@ -7,7 +7,6 @@ build:
   jobs:
     post_create_environment:
       - pip install pdm
-    post_install:
       - pdm config -p python-client python.use_venv false -l
       - pdm install -p python-client -G doc
 
