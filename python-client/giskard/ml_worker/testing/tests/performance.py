@@ -18,7 +18,7 @@ from giskard.datasets.base import Dataset
 from giskard.ml_worker.core.test_result import TestResult
 from giskard.ml_worker.testing.registry.giskard_test import GiskardTest
 from giskard.models.base import BaseModel
-from .debug_utils import slices_to_debug
+from .debug_utils import debug_filters
 
 
 def _verify_target_availability(dataset):
@@ -45,7 +45,7 @@ def _test_classification_score(
     test_name = inspect.stack()[0][3]
     return TestResult(
         actual_slices_size=[len(gsk_dataset)], metric=metric, passed=bool(metric >= threshold),
-        dataset_to_debug=slices_to_debug.get(test_name)(gsk_dataset, prediction)
+        slices_to_debug=debug_filters.get(test_name)(gsk_dataset, prediction)
     )
 
 

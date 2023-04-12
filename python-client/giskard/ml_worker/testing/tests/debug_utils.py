@@ -7,7 +7,7 @@ try:
 except ImportError as e:
     raise ImportError("Please install it via 'pip install catalogue'") from e
 
-slices_to_debug = catalogue.create("giskard", "slices_to_debug")
+debug_filters = catalogue.create("giskard", "debug_filters")
 
 
 def fresh_copy(gsk_dataset: Dataset, suffix="_copy"):
@@ -17,10 +17,10 @@ def fresh_copy(gsk_dataset: Dataset, suffix="_copy"):
     return copied_dataset
 
 
-@slices_to_debug.register("_test_classification_score")
+@debug_filters.register("_test_classification_score")
 def _test_classification_score(gsk_dataset: Dataset, predictions):
     sliced_dataset = fresh_copy(gsk_dataset)
     if hasattr(gsk_dataset, "df"):  # tabular and NLP cases
         targets = gsk_dataset.df[gsk_dataset.target].astype(str)
         sliced_dataset.df = sliced_dataset.df.loc[targets != predictions]
-        return sliced_dataset
+        return [sliced_dataset]
