@@ -384,10 +384,12 @@ class MLWorkerServiceImpl(MLWorkerServicer):
         with tempfile.TemporaryDirectory(prefix="giskard-") as f:
             dir = Path(f)
             results.to_csv(index=False, path_or_buf=dir / "predictions.csv")
-            self.ml_worker.tunnel.client.log_artifact(dir / "predictions.csv", f"{request.project_key}/models/inspections/{request.inspectionId}")
+            self.ml_worker.tunnel.client.log_artifact(dir / "predictions.csv",
+                                                      f"{request.project_key}/models/inspections/{request.inspectionId}")
 
             calculated.to_csv(index=False, path_or_buf=dir / "calculated.csv")
-            self.ml_worker.tunnel.client.log_artifact(dir / "calculated.csv", f"{request.project_key}/models/inspections/{request.inspectionId}")
+            self.ml_worker.tunnel.client.log_artifact(dir / "calculated.csv",
+                                                      f"{request.project_key}/models/inspections/{request.inspectionId}")
         return google.protobuf.empty_pb2.Empty()
 
     def filterDataset(self, request_iterator, context: grpc.ServicerContext):
@@ -441,6 +443,12 @@ class MLWorkerServiceImpl(MLWorkerServicer):
 
         logger.info(f"Filter dataset finished. Avg chunk time: {sum(times) / len(times)}")
         yield ml_worker_pb2.FilterDatasetResponse(code=ml_worker_pb2.StatusCode.Ok)
+
+    def suggestFilter(self, request: ml_worker_pb2.SuggestFilterRequest, context):
+        # Here we would take everything that the Request gives us and try to return a list of suggestions
+        # suggestions = suggest_filter(request.dataset)
+        # return ml_worker_pb2.SuggestFilterResponse(suggestions=suggestions)
+        return
 
     @staticmethod
     def map_suite_input(i: ml_worker_pb2.SuiteInput):

@@ -23,6 +23,7 @@ service MLWorker {
   rpc generateTestSuite(GenerateTestSuiteRequest) returns (GenerateTestSuiteResponse) {}
   rpc stopWorker(google.protobuf.Empty) returns (google.protobuf.Empty) {}
   rpc getCatalog(google.protobuf.Empty) returns (CatalogResponse) {}
+  rpc suggestFilter(SuggestFilterRequest) returns (SuggestFilterResponse) {}
 }
 
 message MLWorkerInfoRequest{
@@ -346,4 +347,14 @@ message TestFunctionArgument{
   bool optional = 3;
   string default = 4;
   uint32 argOrder = 5;
+}
+
+message SuggestFilterRequest {
+  ArtifactRef model = 1;
+  ArtifactRef dataset = 2;
+  uint64 rowidx = 3;
+}
+
+message SuggestFilterResponse {
+  repeated string filters = 1;
 }
