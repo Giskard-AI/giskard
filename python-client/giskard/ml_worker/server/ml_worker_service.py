@@ -485,6 +485,12 @@ class MLWorkerServiceImpl(MLWorkerServicer):
         logger.info(f"Filter dataset finished. Avg chunk time: {sum(times) / len(times)}")
         yield ml_worker_pb2.FilterDatasetResponse(code=ml_worker_pb2.StatusCode.Ok)
 
+    def suggestFilter(self, request: ml_worker_pb2.SuggestFilterRequest, context):
+        # Here we would take everything that the Request gives us and try to return a list of suggestions
+        # suggestions = suggest_filter(request.dataset)
+        # return ml_worker_pb2.SuggestFilterResponse(suggestions=suggestions)
+        return
+
     @staticmethod
     def map_suite_input(i: ml_worker_pb2.SuiteInput):
         if i.type == 'Model' and i.model_meta is not None:

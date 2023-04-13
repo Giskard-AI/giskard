@@ -24,6 +24,7 @@ service MLWorker {
   rpc stopWorker(google.protobuf.Empty) returns (google.protobuf.Empty) {}
   rpc getCatalog(google.protobuf.Empty) returns (CatalogResponse) {}
   rpc generateQueryBasedSlicingFunction(GenerateQueryBasedSliceRequest) returns (GenerateQueryBasedSliceResponse) {}
+  rpc suggestFilter(SuggestFilterRequest) returns (SuggestFilterResponse) {}
 }
 
 message MLWorkerInfoRequest{
@@ -392,4 +393,14 @@ message GenerateQueryBasedSliceRequest{
 
 message GenerateQueryBasedSliceResponse{
   string id = 1;
+}
+
+message SuggestFilterRequest {
+  ArtifactRef model = 1;
+  ArtifactRef dataset = 2;
+  uint64 rowidx = 3;
+}
+
+message SuggestFilterResponse {
+  repeated string filters = 1;
 }
