@@ -17,6 +17,7 @@
               </v-btn>
               <div class="flex-grow-1"/>
               <v-btn tile class='mx-1'
+                     v-if="hasTest"
                      :to="{name: 'project-tests-catalog', query: {suiteId: suiteId}}"
                      color="secondary">
                 <v-icon>add</v-icon>
@@ -70,13 +71,13 @@ const {inputs, executions} = storeToRefs(useTestSuiteStore())
 onMounted(() => loadData());
 watch(() => props.suiteId, () => loadData());
 
-const {loadTestSuite} = useTestSuiteStore();
+const {loadTestSuites} = useTestSuiteStore();
 
 const router = useRouter();
 const route = useRoute();
 
 async function loadData() {
-  await loadTestSuite(props.projectId, props.suiteId);
+    await loadTestSuites(props.projectId, props.suiteId);
 }
 
 async function openRunTestSuite(compareMode: boolean) {
