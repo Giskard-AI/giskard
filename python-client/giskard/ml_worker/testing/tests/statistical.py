@@ -7,6 +7,7 @@ import pandas as pd
 from giskard import test
 from giskard.datasets.base import Dataset
 from giskard.ml_worker.core.test_result import TestResult, TestMessage, TestMessageLevel
+from giskard.ml_worker.testing.registry.slice_function import SliceFunction
 from giskard.models.base import BaseModel
 
 
@@ -143,8 +144,8 @@ def test_output_in_range(
 # TODO: support type in the future
 def test_disparate_impact(
         gsk_dataset: Dataset,
-        protected_slice: Callable[[pd.DataFrame], pd.DataFrame],
-        unprotected_slice: Callable[[pd.DataFrame], pd.DataFrame],
+        protected_slice: SliceFunction,
+        unprotected_slice: SliceFunction,
         model: BaseModel,
         positive_outcome,
         min_threshold=0.8,
@@ -174,9 +175,9 @@ def test_disparate_impact(
     Args:
           gsk_dataset(Dataset):
               Dataset used to compute the test
-          protected_slice(Callable):
+          protected_slice:
               Slice that defines the protected group from the full dataset given
-          unprotected_slice(Callable):
+          unprotected_slice:
               Slice that defines the unprotected group from the full dataset given
           model(BaseModel):
               Model used to compute the test
