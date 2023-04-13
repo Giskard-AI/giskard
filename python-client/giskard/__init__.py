@@ -22,7 +22,7 @@ from giskard.ml_worker.testing.tests.performance import AucTest, test_mae, test_
     test_diff_reference_actual_f1
 from giskard.ml_worker.testing.tests.statistical import test_right_label, test_output_in_range
 from giskard.ml_worker.utils.logging import configure_logging
-from giskard.models import model, model_from_catboost, model_from_huggingface, model_from_tensorflow, \
+from giskard.models import wrap_model, model_from_catboost, model_from_huggingface, model_from_tensorflow, \
     model_from_pytorch, model_from_sklearn
 from giskard.models.base import WrapperModel, CustomModel, MLFlowBasedModel, BaseModel
 
@@ -49,7 +49,7 @@ __all__ = [
     'Dataset',
     'GiskardClient',
     'test',
-    'model',
+    'wrap_model',
     'model_from_catboost',
     'model_from_sklearn',
     'model_from_pytorch',

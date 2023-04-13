@@ -82,7 +82,7 @@ def german_credit_catboost(german_credit_data) -> SKLearnModel:
     timer.stop(f"Trained model with score: {model_score}")
 
     return CatboostModel(
-        clf=cb,
+        model=cb,
         model_type=SupportedModelTypes.CLASSIFICATION,
         feature_names=list(input_types),
         classification_labels=cb.classes_,
@@ -140,7 +140,7 @@ def german_credit_raw_model(german_credit_data):
 @pytest.fixture()
 def german_credit_model(german_credit_raw_model) -> SKLearnModel:
     return SKLearnModel(
-        clf=german_credit_raw_model,
+        model=german_credit_raw_model,
         model_type=SupportedModelTypes.CLASSIFICATION,
         feature_names=list(input_types),
         classification_threshold=0.5,
@@ -157,7 +157,7 @@ def german_credit_always_default_model(german_credit_data) -> SKLearnModel:
     dummy.fit(X, y)
 
     return SKLearnModel(
-        clf=dummy,
+        model=dummy,
         model_type=SupportedModelTypes.CLASSIFICATION,
         feature_names=list(input_types),
         classification_threshold=0.5,
