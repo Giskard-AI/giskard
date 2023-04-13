@@ -67,9 +67,5 @@ public class TestController {
             }
             return res;
         }
-
-        //TestRegistryResponse response = mlWorkerService.createClient().getBlockingStub().getTestRegistry(Empty.newBuilder().build());
-
-        //return JsonFormat.printer().print(response);
     }
 }

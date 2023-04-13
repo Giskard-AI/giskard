@@ -26,7 +26,7 @@ class SliceFunction(Savable[SliceFunctionType, CallableMeta]):
         test_uuid = get_object_uuid(func)
         meta = tests_registry.get_test(test_uuid)
         if meta is None:
-            meta = tests_registry.register(CallableMeta(func, tags=default_tags))
+            meta = tests_registry.register(CallableMeta(func, tags=default_tags, type='SLICE'))
         super().__init__(func, meta)
 
     def __call__(self, row_or_df: Union[pd.Series, pd.DataFrame]):
