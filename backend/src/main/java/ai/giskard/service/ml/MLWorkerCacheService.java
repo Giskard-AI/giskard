@@ -2,7 +2,9 @@ package ai.giskard.service.ml;
 
 import ai.giskard.ml.MLWorkerClient;
 import ai.giskard.ml.tunnel.MLWorkerTunnelService;
+import ai.giskard.repository.ml.TestFunctionRepository;
 import ai.giskard.web.dto.TestFunctionDTO;
+import ai.giskard.web.dto.mapper.GiskardMapper;
 import ai.giskard.worker.MLWorkerGrpc;
 import ai.giskard.worker.TestRegistryResponse;
 import com.google.protobuf.Empty;
@@ -10,6 +12,7 @@ import io.grpc.StatusRuntimeException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
 import java.util.Collections;
 import java.util.List;
 
@@ -21,11 +24,15 @@ public class MLWorkerCacheService {
 
     private final MLWorkerService mlWorkerService;
     private final MLWorkerTunnelService mlWorkerTunnelService;
+    private final TestFunctionRepository testFunctionRepository;
+    private final GiskardMapper giskardMapper;
     private List<TestFunctionDTO> testFunctions = Collections.emptyList();
 
+    @Transactional
     public List<TestFunctionDTO> findGiskardTest(boolean isInternal) {
         if (mlWorkerTunnelService.isClearCacheRequested()) {
             testFunctions = getTestFunctions(isInternal);
+            testFunctionRepository.saveAll(testFunctions.stream().map(giskardMapper::fromDTO).toList());
             mlWorkerTunnelService.setClearCacheRequested(false);
         }
 

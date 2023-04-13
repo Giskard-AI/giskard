@@ -18,6 +18,7 @@ import tqdm
 
 import giskard
 from giskard.client.giskard_client import GiskardClient
+from giskard.core.core import TestFunctionMeta
 from giskard.datasets.base import Dataset
 from giskard.ml_worker.core.log_listener import LogListener
 from giskard.ml_worker.core.model_explanation import (
@@ -414,6 +415,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
 
     def getTestRegistry(self, request: google.protobuf.empty_pb2.Empty,
                         context: grpc.ServicerContext) -> ml_worker_pb2.TestRegistryResponse:
+        # TODO: rename TestRegistryResponse to RegistryResponse, same for function, function argument, ...
         return ml_worker_pb2.TestRegistryResponse(tests={
             test.uuid: ml_worker_pb2.TestFunction(
                 uuid=test.uuid,
@@ -432,7 +434,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
                         argOrder=a.argOrder
                     ) for a
                     in test.args.values()
-                ]
+                ] if isinstance(test, TestFunctionMeta) else None
             )
             for test in tests_registry.get_all().values()
         })
