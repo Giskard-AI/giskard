@@ -16,8 +16,13 @@ from ..slicing.tree_slicer import DecisionTreeSlicer
 from ..slicing.category_slicer import CategorySlicer
 from ..slicing.multiscale_slicer import MultiscaleSlicer
 
-from giskard.ml_worker.testing.tests.performance import test_diff_f1, test_diff_rmse, test_diff_accuracy, \
-    test_diff_recall, test_diff_precision
+from ..ml_worker.testing.tests.performance import (
+    test_diff_f1,
+    test_diff_rmse,
+    test_diff_accuracy,
+    test_diff_recall,
+    test_diff_precision,
+)
 
 
 class PerformanceScan:
@@ -29,9 +34,14 @@ class PerformanceScan:
         self.dataset = dataset
         self.test_names = test_names
 
-    def run(self, model: Optional[BaseModel] = None, dataset: Optional[Dataset] = None, slicer="opt",
-            test_names: list = None,
-            threshold=0.1):
+    def run(
+        self,
+        model: Optional[BaseModel] = None,
+        dataset: Optional[Dataset] = None,
+        slicer="opt",
+        test_names: list = None,
+        threshold=0.1,
+    ):
         model = model or self.model
         dataset = dataset or self.dataset
         test_names = test_names or self.test_names
@@ -62,7 +72,7 @@ class PerformanceScan:
 
         # Calculate loss
         meta = self._calculate_meta(model, dataset)
-        slices = self.find_slices(dataset.select_columns(model.meta.feature_names), meta, slicer)
+        slices = self._find_slices(dataset.select_columns(model.meta.feature_names), model, meta, slicer)
         issues = self._find_issues(slices, model, dataset, tests, threshold)
 
         return PerformanceScanResult(issues)
@@ -77,21 +87,18 @@ class PerformanceScan:
 
         return issues
 
-    def _diff_test(self, slice_fn, model, dataset, test, threshold):
-        # Convert slice to Giskard Dataframe
-        sliced_dataset = dataset.slice(slice_fn)
-        # target_col=self.dataset.target,
-        # column_types=self.dataset.column_types
-
+    def _diff_test(self, slice_fn, model, dataset, test_fn, threshold):
         # Apply the test
-        test_res = test(
-            actual_slice=sliced_dataset,
+        test = test_fn(
+            actual_slice=dataset.slice(slice_fn),
             reference_slice=dataset,  # Could exclude slice_dataset for independence
             model=model,
             threshold=threshold,
         )
 
-        return test_res
+        res = test.execute()
+
+        return res
 
     def _calculate_meta(self, model, dataset):
         true_target = dataset.df.loc[:, dataset.target].values
@@ -104,7 +111,7 @@ class PerformanceScan:
 
         return pd.DataFrame({"__gsk__loss": loss_values}, index=dataset.df.index)
 
-    def find_slices(self, dataset, model, meta: pd.DataFrame, slicer_name):
+    def _find_slices(self, dataset, model, meta: pd.DataFrame, slicer_name):
         df_with_meta = dataset.df.join(meta)
         target_col = "__gsk__loss"
 
