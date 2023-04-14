@@ -18,7 +18,6 @@ import tqdm
 
 import giskard
 from giskard.client.giskard_client import GiskardClient
-from giskard.core.core import TestFunctionMeta
 from giskard.datasets.base import Dataset
 from giskard.ml_worker.core.log_listener import LogListener
 from giskard.ml_worker.core.model_explanation import (
@@ -433,7 +432,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
                         argOrder=a.argOrder
                     ) for a
                     in test.args.values()
-                ] if isinstance(test, TestFunctionMeta) else None,
+                ],
                 type=test.type
             )
             for test in tests_registry.get_all().values()
