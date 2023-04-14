@@ -5,16 +5,14 @@ from scipy import stats
 from typing import Optional, Sequence
 from sklearn.tree import DecisionTreeRegressor
 from sklearn.tree._tree import Tree as SklearnTree
-from sklearn.model_selection import GridSearchCV, train_test_split
+from sklearn.model_selection import GridSearchCV
 
 from .base import BaseSlicer
-from .slice import DataSlice, Query, LowerThan, GreaterThan
+from .slice import Query, LowerThan, GreaterThan, QueryBasedSliceFunction
 from .filters import SignificanceFilter
 
 
-def make_slices_from_tree(
-    data: pd.DataFrame, tree: SklearnTree, feature_names: Optional[Sequence] = None
-):
+def make_slices_from_tree(data: pd.DataFrame, tree: SklearnTree, feature_names: Optional[Sequence] = None):
     """Builds data slices from a decision tree."""
     node_clauses = np.empty(tree.node_count, dtype=list)
     node_clauses[0] = []
@@ -31,11 +29,7 @@ def make_slices_from_tree(
 
         current_clauses = node_clauses[cnode]
         th = tree.threshold[cnode]
-        feat = (
-            tree.feature[cnode]
-            if feature_names is None
-            else feature_names[tree.feature[cnode]]
-        )
+        feat = tree.feature[cnode] if feature_names is None else feature_names[tree.feature[cnode]]
         node_clauses[left_child] = current_clauses + [LowerThan(feat, th)]
         node_clauses[right_child] = current_clauses + [GreaterThan(feat, th, True)]
 
@@ -44,28 +38,20 @@ def make_slices_from_tree(
     # Now aggregate the filters for the leaves
     leaves_clauses = node_clauses[tree.children_left == -1]
 
-    return [
-        DataSlice(Query(clauses, optimize=True), data) for clauses in leaves_clauses
-    ]
+    return [QueryBasedSliceFunction(Query(clauses, optimize=True), data) for clauses in leaves_clauses]
 
 
 class DecisionTreeSlicer(BaseSlicer):
-    def __init__(self, data=None, features=None, target=None):
-        self.data = data
-        self.features = features
-        self.target = target
-
     def find_slices(self, features, target=None):
         target = target or self.target
+        data = self.dataset.df
 
         if len(features) > 1:
-            raise NotImplementedError(
-                "Only single-feature slicing is implemented for now."
-            )
+            raise NotImplementedError("Only single-feature slicing is implemented for now.")
 
-        data = self.data.loc[:, features + [target]].dropna()
+        data = data.loc[:, features + [target]].dropna()
 
-        criterion = self._choose_tree_criterion(self.data.loc[:, target].values)
+        criterion = self._choose_tree_criterion(data.loc[:, target].values)
         logging.debug(f"Using `{criterion}` criterion")
 
         min_samples = max(int(0.01 * len(data)), 30)  # min 1% of the data or 30 samples
@@ -99,14 +85,7 @@ class DecisionTreeSlicer(BaseSlicer):
         # Make test slices
         slice_candidates = make_slices_from_tree(data, dt.tree_, features)
 
-        # Filter by relevance
-        filt = SignificanceFilter(target)
-        slices = filt.filter(slice_candidates)
-
-        for s in slices:
-            s.bind(self.data)
-
-        return slices
+        return slice_candidates
 
     def _choose_tree_criterion(self, target_samples: np.ndarray):
         norm_ks_stat = stats.kstest(target_samples, "norm").statistic
