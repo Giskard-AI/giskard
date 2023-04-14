@@ -11,6 +11,7 @@ export interface TestFunctionDTO {
     module: string;
     moduleDoc: string;
     name: string;
+    potentiallyUnavailable: boolean;
     tags: string[];
     uuid: string;
     version: number;
