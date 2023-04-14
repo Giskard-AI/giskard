@@ -5,8 +5,8 @@
         class="slice-function-selector"
         :label="label"
         :value="value"
-        :items="projectDatasets"
-        :item-text="extractDatasetName"
+        :items="sliceFunctions"
+        :item-text="extractName"
         item-value="id"
         :return-object="returnObject"
         @input="onInput"
@@ -18,10 +18,9 @@
 <script setup lang="ts">
 
 
-import {onMounted, ref} from "vue";
-import axios from "axios";
-import {apiURL} from "@/env";
-import {DatasetDTO} from '@/generated-sources';
+import {SliceFunctionDTO} from '@/generated-sources';
+import {storeToRefs} from "pinia";
+import {useCatalogStore} from "@/stores/catalog";
 
 const props = defineProps<{
     projectId: number,
@@ -32,12 +31,10 @@ const props = defineProps<{
 
 const emit = defineEmits(['update:value']);
 
-const projectDatasets = ref<Array<DatasetDTO>>([])
+const {sliceFunctions} = storeToRefs(useCatalogStore())
 
-onMounted(async () => projectDatasets.value = (await axios.get<Array<DatasetDTO>>(`${apiURL}/api/v2/project/${props.projectId}/datasets`)).data)
-
-function extractDatasetName(dataset: DatasetDTO) {
-    return dataset.name || dataset.id;
+function extractName(sliceFunctionDTO: SliceFunctionDTO) {
+    return sliceFunctionDTO.displayName ?? sliceFunctionDTO.name
 }
 
 function onInput(value) {
