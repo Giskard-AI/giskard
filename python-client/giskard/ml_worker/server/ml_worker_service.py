@@ -18,6 +18,7 @@ import tqdm
 
 import giskard
 from giskard.client.giskard_client import GiskardClient
+from giskard.core.core import TestFunctionMeta
 from giskard.datasets.base import Dataset
 from giskard.ml_worker.core.log_listener import LogListener
 from giskard.ml_worker.core.model_explanation import (
@@ -32,6 +33,7 @@ from giskard.ml_worker.generated import ml_worker_pb2
 from giskard.ml_worker.generated.ml_worker_pb2_grpc import MLWorkerServicer
 from giskard.ml_worker.ml_worker import MLWorker
 from giskard.ml_worker.testing.registry.giskard_test import GiskardTest
+from giskard.ml_worker.testing.registry.registry import tests_registry
 from giskard.models.base import BaseModel
 from giskard.path_utils import model_path, dataset_path
 
@@ -410,6 +412,32 @@ class MLWorkerServiceImpl(MLWorkerServicer):
         logger.info('Received request to stop the worker')
         self.loop.create_task(self.ml_worker.stop())
         return google.protobuf.empty_pb2.Empty()
+
+    def getTestRegistry(self, request: google.protobuf.empty_pb2.Empty,
+                        context: grpc.ServicerContext) -> ml_worker_pb2.TestRegistryResponse:
+        # TODO: rename TestRegistryResponse to RegistryResponse, same for function, function argument, ...
+        return ml_worker_pb2.TestRegistryResponse(tests={
+            test.uuid: ml_worker_pb2.TestFunction(
+                uuid=test.uuid,
+                name=test.name,
+                module=test.module,
+                doc=test.doc,
+                code=test.code,
+                moduleDoc=test.module_doc,
+                tags=test.tags,
+                args=[
+                    ml_worker_pb2.TestFunctionArgument(
+                        name=a.name,
+                        type=a.type,
+                        optional=a.optional,
+                        default=str(a.default),
+                        argOrder=a.argOrder
+                    ) for a
+                    in test.args.values()
+                ] if isinstance(test, TestFunctionMeta) else None
+            )
+            for test in tests_registry.get_all().values()
+        })
 
     @staticmethod
     def pandas_df_to_proto_df(df):
