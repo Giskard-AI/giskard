@@ -22,6 +22,7 @@ service MLWorker {
   rpc filterDataset(stream FilterDatasetRequest) returns (stream FilterDatasetResponse) {}
   rpc generateTestSuite(GenerateTestSuiteRequest) returns (GenerateTestSuiteResponse) {}
   rpc stopWorker(google.protobuf.Empty) returns (google.protobuf.Empty) {}
+  rpc getTestRegistry(google.protobuf.Empty) returns (TestRegistryResponse) {}
 }
 
 message MLWorkerInfoRequest{
@@ -307,4 +308,29 @@ message FilterDatasetResponse {
   uint32 idx = 2;
   repeated uint32 rows = 3; // Will we ever have >4 billion rows in a chunk?
   string error_message = 4;
+}
+
+message TestRegistryResponse{
+  map<string, TestFunction> tests = 1;
+}
+
+message TestFunction{
+  string uuid = 1;
+  string name = 2;
+  string displayName = 3;
+  uint32 version = 4;
+  string module = 5;
+  string doc = 6;
+  string moduleDoc = 7;
+  repeated TestFunctionArgument args = 8;
+  repeated string tags = 9;
+  string code = 10;
+}
+
+message TestFunctionArgument{
+  string name = 1;
+  string type = 2;
+  bool optional = 3;
+  string default = 4;
+  uint32 argOrder = 5;
 }
