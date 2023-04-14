@@ -54,7 +54,7 @@ def validate_model(model: BaseModel, validate_ds: Union[Dataset, None]):
 @configured_validate_arguments
 def validate_model_execution(model: BaseModel, dataset: Dataset) -> None:
     validation_size = min(len(dataset), 10)
-    validation_ds = dataset.slice(lambda x: x.head(validation_size))
+    validation_ds = dataset.slice(lambda x: x.head(validation_size), row_level=False)
     try:
         prediction = model.predict(validation_ds)
     except Exception as e:

@@ -284,9 +284,7 @@
             <column name="code" type="VARCHAR">
                 <constraints nullable="false"/>
             </column>
-            <column name="display_name" type="VARCHAR(255)">
-                <constraints nullable="false"/>
-            </column>
+            <column name="display_name" type="VARCHAR(255)"/>
             <column name="doc" type="VARCHAR"/>
             <column name="module" type="VARCHAR(255)"/>
             <column name="module_doc" type="VARCHAR"/>
