@@ -15,7 +15,7 @@ from ..slicing.text_slicer import TextSlicer
 from ..slicing.tree_slicer import DecisionTreeSlicer
 from ..slicing.category_slicer import CategorySlicer
 from ..slicing.multiscale_slicer import MultiscaleSlicer
-
+from ..slicing.bruteforce_slicer import BruteForceSlicer
 from ..ml_worker.testing.tests.performance import (
     test_diff_f1,
     test_diff_rmse,
@@ -176,6 +176,9 @@ class PerformanceScan:
             return DecisionTreeSlicer(dataset, target=target)
         if slicer_name == "ms":
             return MultiscaleSlicer(dataset, target=target)
+        if slicer_name == "bf":
+            return BruteForceSlicer(dataset,target=target)
+
         raise ValueError(f"Invalid slicer `{slicer_name}`.")
 
 
