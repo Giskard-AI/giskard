@@ -16,6 +16,7 @@ import io.netty.handler.logging.ByteBufFormat;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
 import lombok.Getter;
+import lombok.Setter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -34,7 +35,9 @@ public class MLWorkerTunnelService {
 
     @Getter
     private Optional<InnerServerStartResponse> innerServerDetails = Optional.empty();
-
+    @Getter
+    @Setter
+    private boolean clearCacheRequested = true;
 
     public MLWorkerTunnelService(
         ApplicationProperties applicationProperties,
@@ -77,6 +80,7 @@ public class MLWorkerTunnelService {
             @Subscribe
             public void onInnerServerStarted(Optional<InnerServerStartResponse> event) {
                 innerServerDetails = event;
+                clearCacheRequested = true;
             }
         });
         ChannelFuture f = b.bind().addListener(future -> {

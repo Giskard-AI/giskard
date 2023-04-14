@@ -1,34 +1,39 @@
 <template>
-  <div class="d-flex w100">
-    <v-icon
-        :color="!props.execution ? 'grey' : props.execution.result === TestResult.PASSED ? Colors.PASS : Colors.FAIL"
-        size="64">{{
-        testResultIcon
-      }}
-    </v-icon>
-    <div>
-      <h2>
-
-        Test Suite
-      </h2>
-      <h4
-          v-if="!props.execution">No execution has been performed yet!</h4>
-      <h4
-          v-else-if="props.execution.result === TestResult.ERROR">An error arose during the execution</h4>
-      <h4 v-else-if="tests.length === 0">No test match the current filter</h4>
-      <h4 v-else-if="executedTests.length > 0" :style="{
+    <div class="d-flex w100 align-start">
+        <v-icon
+            :color="!props.execution ? 'grey' : props.execution.result === TestResult.PASSED ? Colors.PASS : Colors.FAIL"
+            size="64">{{
+                testResultIcon
+            }}
+        </v-icon>
+        <div>
+            <h2>
+                {{ suite.name }}
+            </h2>
+            <h4 v-if="!props.execution">
+                No execution has been performed yet!
+            </h4>
+            <h4 v-else-if="props.execution.result === TestResult.ERROR">
+                An error arose during the execution
+            </h4>
+            <h4 v-else-if="tests.length === 0">No test match the current filter</h4>
+            <h4 v-else-if="executedTests.length > 0" :style="{
           color: successColor
         } ">Success ratio: {{ successRatio.passed }} /
-        {{ successRatio.executed }}</h4>
+                {{ successRatio.executed }}
+            </h4>
+            <p v-if="props.execution">
+                Executed: {{ props.execution.executionDate | date }}
+            </p>
+        </div>
+        <div class="flex-grow-1"/>
+        <v-btn icon @click="openLogs" color="secondary">
+            <v-icon>text_snippet</v-icon>
+        </v-btn>
+        <v-btn icon @click="openSettings" color="secondary" v-if="!compact">
+            <v-icon>settings</v-icon>
+        </v-btn>
     </div>
-    <div class="flex-grow-1"/>
-    <v-btn icon @click="openLogs" color="secondary">
-      <v-icon>text_snippet</v-icon>
-    </v-btn>
-    <v-btn icon @click="openSettings" color="secondary" v-if="!compact">
-      <v-icon>settings</v-icon>
-    </v-btn>
-  </div>
 </template>
 
 <script setup lang="ts">
