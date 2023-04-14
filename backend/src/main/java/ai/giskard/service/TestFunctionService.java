@@ -65,7 +65,9 @@ public class TestFunctionService extends CallableService<TestFunction, TestFunct
                 existingArg.setOptional(currentArg.isOptional());
                 existingArg.setDefaultValue(currentArg.getDefaultValue());
             } else {
-                existing.getArgs().add(giskardMapper.fromDTO(currentArg));
+                TestFunctionArgument createdArg = giskardMapper.fromDTO(currentArg);
+                createdArg.setTestFunction(existing);
+                existing.getArgs().add(createdArg);
             }
         });
 
