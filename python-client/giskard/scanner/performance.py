@@ -75,6 +75,10 @@ class PerformanceScan:
         # Calculate loss
         meta = self._calculate_meta(model, dataset)
         slices = self._find_slices(dataset.select_columns(model.meta.feature_names), model, meta, slicer)
+
+        # Keep only slices of size at least 5% of the dataset
+        slices = [s for s in slices if len(dataset.slice(s)) / len(dataset) >= 0.05]
+
         issues = self._find_issues(slices, model, dataset, tests, threshold)
 
         return PerformanceScanResult(issues)
@@ -85,23 +89,22 @@ class PerformanceScan:
             for test in tests:
                 test_result = self._diff_test(s, model, dataset, test, threshold)
                 if not test_result.passed:
-                    issues.append(Issue(s, model, dataset, test_result,self._get_test_name(test)))
+                    issues.append(Issue(s, model, dataset, test_result, self._get_test_name(test)))
 
         return issues
 
-    def _get_test_name(self,test):
+    def _get_test_name(self, test):
+        # @TODO: throw this away when we can
         if test.meta.name.endswith("f1"):
-            return("f1")
+            return "F1 score"
         if test.meta.name.endswith("accuracy"):
-            return("accuracy")
+            return "Accuracy"
         if test.meta.name.endswith("recall"):
-            return("recall")
+            return "Recall"
         if test.meta.name.endswith("rmse"):
-            return("rmse")
+            return "RMSE"
         if test.meta.name.endswith("precision"):
-            return("precision")
-
-
+            return "Precision"
 
     def _diff_test(self, slice_fn, model, dataset, test_fn, threshold):
         # Apply the test
@@ -217,13 +220,11 @@ class PerformanceScanResult(ScanResult):
 
         main_content = f"""
 <div class="dark:text-white dark:bg-zinc-800 p-4 mt-8 mb-4">
-    <h2 class="uppercase">9 performance issues detected</h2>
+    <h2 class="uppercase">{len(self.issues)} performance issues detected</h2>
     <p class="my-1">We detected {len(self.issues)} data slices where the model exhibits low performance.</p>
 
     <div class="flex items-center space-x-1">
         <h2 class="uppercase my-4 mr-2 font-medium">Issues</h2>
-        <span class="text-xs border rounded px-1 uppercase text-red-400 border-red-400">3 major</span>
-        <span class="text-xs border rounded px-1 uppercase text-amber-200 border-amber-200">3 medium</span>
     </div>
 
     {issues_table}    
@@ -262,14 +263,14 @@ class PerformanceScanResult(ScanResult):
         </code>
     </td>
     <td class="p-3">
-        [METRIC]
+        {issue.test_name}
     </td>
     <td class="p-3">
         <span class="{'text-red-400' if issue.is_major else 'text-amber-200'}">−{tr.metric*100:.2f}% than global</span>
     </td>
     <td class="p-3">
         <span class="text-gray-400">
-            {tr.actual_slices_size} samples ({100 * (tr.actual_slices_size[0] / tr.reference_slices_size[0]):.2f}%)
+            {tr.actual_slices_size[0]} samples ({100 * (tr.actual_slices_size[0] / tr.reference_slices_size[0]):.2f}%)
         </span>
     </td>
 </tr>
