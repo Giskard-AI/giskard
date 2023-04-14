@@ -56,6 +56,9 @@ class MultiscaleSlicer(BaseSlicer):
                     )
                     break
 
+        if len(selection_nodes) == 0:
+            return []
+
         # Keep slices that are consistent across 5 levels
         dx_sel = pd.DataFrame(selection_nodes).query("depth >= 5")
 
