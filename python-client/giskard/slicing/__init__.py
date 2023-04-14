@@ -1,1 +1,1 @@
-from slice import QueryBasedSliceFunction
+from .slice import QueryBasedSliceFunction

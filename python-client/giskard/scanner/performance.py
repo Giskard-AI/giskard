@@ -80,13 +80,13 @@ class PerformanceScan:
             slices.extend(slicer.find_slices([col]))
 
         # Categorical features
-        slicer = CategorySlicer(df_with_meta, target=target_col)
+        slicer = CategorySlicer(dataset_with_meta, target=target_col)
         for col in cols_by_type["category"]:
             slices.extend(slicer.find_slices([col]))
 
         # @TODO: FIX THIS
         # Text features
-        slicer = TextSlicer(df_with_meta, target=target_col)
+        slicer = TextSlicer(dataset_with_meta, target=target_col)
         for col in cols_by_type["text"]:
             slices.extend(slicer.find_slices([col]))
 
