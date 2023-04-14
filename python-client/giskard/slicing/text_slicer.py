@@ -1,9 +1,16 @@
+"""
+@TODO: This is a hackish implementation of the text slices.
+"""
 import numpy as np
 import pandas as pd
 
+from giskard.datasets.base import Dataset
+from giskard.ml_worker.testing.registry.slice_function import SliceFunction
+from giskard.slicing.category_slicer import CategorySlicer
+
 from .base import BaseSlicer
 from .opt_slicer import OptSlicer
-from .slice import DataSlice, Query, StringContains
+from .slice import DataSlice, Query, QueryBasedSliceFunction, StringContains
 
 
 class TextSlicer(BaseSlicer):
@@ -11,9 +18,7 @@ class TextSlicer(BaseSlicer):
         target = target or self.target
 
         if len(features) > 1:
-            raise NotImplementedError(
-                "Only single-feature slicing is implemented for now."
-            )
+            raise NotImplementedError("Only single-feature slicing is implemented for now.")
         (feature,) = features
 
         # Make metadata slices
@@ -27,48 +32,49 @@ class TextSlicer(BaseSlicer):
         # @TODO: filter slices
         slices = slice_candidates
 
-        for s in slices:
-            s.bind(self.data)
-
         return slices
 
     def find_metadata_slices(self, feature, target):
         slices = []
+        data = self.dataset.df
 
-        meta = self._calculate_text_metadata(self.data[feature], prefix=f"{feature}__")
-        self.data = self.data.join(meta)
+        # @TODO: this is bad, wait for support of metadata in Datasets
+        meta = _calculate_text_metadata(data[feature]).add_prefix("__gsk__meta__")
+        data = data.join(meta)
 
-        slicer = OptSlicer(self.data, target=target)
-        for col in meta.columns:
+        # @TODO: hard coded for now, waiting for more organic Database API with meta support
+        column_types = self.dataset.column_types.copy()
+        column_types["__gsk__meta__charset"] = "category"
+        column_types["__gsk__meta__avg_word_length"] = "numeric"
+        column_types["__gsk__meta__text_length"] = "numeric"
+        dataset_with_meta = Dataset(data, target=self.dataset.target, column_types=column_types)
+
+        # Run a slicer for numeric
+        slicer = OptSlicer(dataset_with_meta, target=target)
+        for col in filter(lambda x: column_types[x] == "numeric", meta.columns):
             slices.extend(slicer.find_slices([col]))
+
+        # Run a slicer for categorical
+        slicer = CategorySlicer(dataset_with_meta, target=target)
+        for col in filter(lambda x: column_types[x] == "category", meta.columns):
+            slices.extend(slicer.find_slices([col]))
+
+        # @TODO: previous code will create non-working slices, since those are query-based but
+        # the queries will act on a different dataset, so we need to encapsulate this into a
+        # special slice function that will recalculate everytime the text properties.
+        slices = [TextMetadataSliceFunction(s.query, feature) for s in slices]
 
         return slices
 
     def find_top_tokens_slices(self, feature, target):
         slices = []
 
-        tokens = self._get_top_tokens(self.data[feature])
+        tokens = self._get_top_tokens(self.dataset.df[feature])
 
         for token in tokens:
-            slices.append(DataSlice(Query([StringContains(feature, token)]), self.data))
+            slices.append(QueryBasedSliceFunction(Query([StringContains(feature, token)])))
 
         return slices
-
-    def _calculate_text_metadata(self, feature_data, prefix=""):
-        import chardet
-
-        return pd.DataFrame(
-            {
-                f"{prefix}text_length": feature_data.map(len),
-                f"{prefix}avg_word_length": feature_data.map(
-                    lambda x: np.mean([len(w) for w in x.split()])
-                ),
-                f"{prefix}charset": pd.Categorical(
-                    feature_data.map(lambda x: chardet.detect(x.encode())["encoding"])
-                ),
-            },
-            index=feature_data.index,
-        )
 
     def _get_top_tokens(self, feature_data, n=30):
         from sklearn.feature_extraction.text import TfidfVectorizer
@@ -88,3 +94,34 @@ class TextSlicer(BaseSlicer):
         top_words = [inv_vocab[sorted_global_tfidf_indices[i]] for i in range(n)]
 
         return top_words
+
+
+def _calculate_text_metadata(feature_data: pd.Series):
+    import chardet
+
+    return pd.DataFrame(
+        {
+            "text_length": feature_data.map(len),
+            "avg_word_length": feature_data.map(lambda x: np.mean([len(w) for w in x.split()])),
+            "charset": pd.Categorical(feature_data.map(lambda x: chardet.detect(x.encode())["encoding"])),
+        },
+        index=feature_data.index,
+    )
+
+
+# @TODO: this is a temporary hack, will be removed once we have a proper way to handle metadata
+class TextMetadataSliceFunction(SliceFunction):
+    row_level = False
+
+    def __init__(self, query: Query, feature: str):
+        self.query = query
+        self.feature = feature
+
+    def __call__(self, data: pd.DataFrame):
+        # @TODO: this is the slowest part, should disappear once we support metadata
+        meta = _calculate_text_metadata(data[self.feature]).add_prefix("__gsk__meta__")
+
+        data_with_meta = data.join(meta)
+        data_filtered = self.query.run(data_with_meta)
+
+        return data_filtered.loc[:, data.columns]
