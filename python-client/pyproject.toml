@@ -2,6 +2,13 @@
 requires = ["setuptools>=61", "wheel", "grpcio-tools", "protobuf<3.20"]
 build-backend = "setuptools.build_meta"
 
+[[tool.pdm.source]]
+type = "find_links"
+url = "https://download.pytorch.org/whl/cpu/torch_stable.html"
+name = "torch"
+
+
+
 [tool.pdm.scripts]
 proto = "setup.py build_grpc --build-lib ."
 test = "pytest -c pyproject.toml --cov=giskard tests --cov-report=xml"
