@@ -52,7 +52,7 @@ def _make_all_optional_or_suite_input(fn):
     sig = signature(fn)
     sig = sig.replace(
         parameters=[Parameter(name=par.name, kind=par.kind,
-                              default=None if par.kind == inspect.Signature.empty else par.default,
+                              default=None if par.default == inspect.Signature.empty else par.default,
                               annotation=Optional[Union[SuiteInput, par.annotation]])
                     for par in sig.parameters.values()])
     fn.__signature__ = sig
