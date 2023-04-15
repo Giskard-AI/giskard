@@ -1,6 +1,7 @@
 import pytest
 
-from giskard.ml_worker.testing.functions import GiskardTestFunctions
+import giskard.ml_worker.testing.tests.statistical as statistical
+from giskard.ml_worker.testing.registry.slice_function import SliceFunction
 
 
 @pytest.mark.parametrize(
@@ -12,16 +13,15 @@ from giskard.ml_worker.testing.functions import GiskardTestFunctions
     ],
 )
 def test_statistical(data, model, threshold, label, expected_metric, actual_slices_size, request):
-    tests = GiskardTestFunctions()
     data = request.getfixturevalue(data)
     model = request.getfixturevalue(model)
 
-    results = tests.statistical.test_right_label(
-        actual_slice=data.slice(lambda df: df.head(len(df) // 2)),
+    results = statistical.test_right_label(
+        actual_slice=data.slice(lambda df: df.head(len(df) // 2), row_level=False),
         model=model,
         classification_label=model.meta.classification_labels[label],
         threshold=threshold,
-    )
+    ).execute()
 
     assert results.actual_slices_size[0] == actual_slices_size
     assert round(results.metric, 2) == expected_metric
@@ -37,16 +37,15 @@ def test_statistical(data, model, threshold, label, expected_metric, actual_slic
     ],
 )
 def test_statistical_filtered(data, model, threshold, label, expected_metric, actual_slices_size, request):
-    tests = GiskardTestFunctions()
     data = request.getfixturevalue(data)
     model = request.getfixturevalue(model)
 
-    results = tests.statistical.test_right_label(
-        actual_slice=data.slice(lambda df: df.head(10)),
+    results = statistical.test_right_label(
+        actual_slice=data.slice(lambda df: df.head(10), row_level=False),
         model=model,
         classification_label=model.meta.classification_labels[label],
         threshold=threshold,
-    )
+    ).execute()
 
     assert results.actual_slices_size[0] == actual_slices_size
     assert round(results.metric, 2) == expected_metric
@@ -62,17 +61,16 @@ def test_statistical_filtered(data, model, threshold, label, expected_metric, ac
     ],
 )
 def test_output_in_range_clf(data, model, threshold, label, expected_metric, actual_slices_size, request):
-    tests = GiskardTestFunctions()
     data = request.getfixturevalue(data)
     model = request.getfixturevalue(model)
-    results = tests.statistical.test_output_in_range(
-        actual_slice=data.slice(lambda df: df.head(len(df) // 2)),
+    results = statistical.test_output_in_range(
+        actual_slice=data.slice(lambda df: df.head(len(df) // 2), row_level=False),
         model=model,
         classification_label=model.meta.classification_labels[label],
         min_range=0.3,
         max_range=0.7,
         threshold=threshold,
-    )
+    ).execute()
 
     assert results.actual_slices_size[0] == actual_slices_size
     assert round(results.metric, 2) == expected_metric
@@ -84,15 +82,14 @@ def test_output_in_range_clf(data, model, threshold, label, expected_metric, act
     [("diabetes_dataset_with_target", "linear_regression_diabetes", 0.1, 0.28, 221)],
 )
 def test_output_in_range_reg(data, model, threshold, expected_metric, actual_slices_size, request):
-    tests = GiskardTestFunctions()
     data = request.getfixturevalue(data)
-    results = tests.statistical.test_output_in_range(
-        actual_slice=data.slice(lambda df: df.head(len(df) // 2)),
+    results = statistical.test_output_in_range(
+        actual_slice=data.slice(lambda df: df.head(len(df) // 2), row_level=False),
         model=request.getfixturevalue(model),
         min_range=100,
         max_range=150,
         threshold=threshold,
-    )
+    ).execute()
 
     assert results.actual_slices_size[0] == actual_slices_size
     assert round(results.metric, 2) == expected_metric
@@ -104,13 +101,12 @@ def test_output_in_range_reg(data, model, threshold, expected_metric, actual_sli
     [("german_credit_data", "german_credit_model")],
 )
 def test_disparate_impact(data, model, request):
-    tests = GiskardTestFunctions()
     data = request.getfixturevalue(data)
     model = request.getfixturevalue(model)
-    results = tests.statistical.test_disparate_impact(
+    results = statistical.test_disparate_impact(
         gsk_dataset=data,
-        protected_slice=lambda df: df[df.sex == "female"],
-        unprotected_slice=lambda df: df[df.sex == "male"],
+        protected_slice=SliceFunction(lambda df: df[df.sex == "female"], row_level=False),
+        unprotected_slice=SliceFunction(lambda df: df[df.sex == "male"], row_level=False),
         model=model,
         positive_outcome="Not default",
     )
