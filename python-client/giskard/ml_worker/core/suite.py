@@ -190,7 +190,7 @@ class Suite:
 
         return TestSuiteDTO(name=self.name, project_key=project_key, tests=suite_tests)
 
-    def add_test(self, test_fn: Test, test_name: Optional[Union[int, str]] = None, **params):
+    def add_test(self, test_fn: Test, test_name: Optional[Union[int, str]] = None, **params) -> 'Suite':
         """
          Add a test to the suite.
 
