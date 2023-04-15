@@ -57,9 +57,15 @@ def _make_all_optional_or_suite_input(fn):
                     for par in sig.parameters.values()])
     fn.__signature__ = sig
 
+    fn.__annotations__ = {k: Optional[Union[SuiteInput, v]] for k, v in fn.__annotations__.items()}
+
 
 def _set_return_type(fn, return_type):
     from inspect import signature
     sig = signature(fn)
     sig = sig.replace(return_annotation=return_type)
     fn.__signature__ = sig
+
+    annotations = fn.__annotations__.copy()
+    annotations['return'] = GiskardTestMethod
+    fn.__annotations__ = annotations
