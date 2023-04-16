@@ -49,7 +49,7 @@ def test_right_label(
     actual_slice.df.reset_index(drop=True, inplace=True)
     prediction_results = model.predict(actual_slice).prediction
 
-    passed_idx = actual_slice.df.loc[prediction_results == str(classification_label)].index.values
+    passed_idx = actual_slice.df.loc[prediction_results == classification_label].index.values
 
     passed_ratio = len(passed_idx) / len(actual_slice)
     return TestResult(
@@ -118,7 +118,7 @@ def test_output_in_range(
         results_df["output"] = prediction_results.raw_prediction
 
     elif model.is_classification:
-        results_df["output"] = prediction_results.all_predictions[str(classification_label)]
+        results_df["output"] = prediction_results.all_predictions[classification_label]
 
     else:
         raise ValueError(f"Prediction task is not supported: {model.meta.model_type}")

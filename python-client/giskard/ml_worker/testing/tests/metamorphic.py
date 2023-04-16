@@ -263,7 +263,7 @@ def test_metamorphic_increasing(
         actual_slice=df,
         model=model,
         perturbation_dict=perturbation_dict,
-        classification_label=str(classification_label),
+        classification_label=classification_label,
         threshold=threshold,
     )
 
@@ -316,7 +316,7 @@ def test_metamorphic_decreasing(
         actual_slice=df,
         model=model,
         perturbation_dict=perturbation_dict,
-        classification_label=str(classification_label),
+        classification_label=classification_label,
         threshold=threshold,
     )
 
@@ -393,7 +393,7 @@ def test_metamorphic_decreasing_t_test(
         actual_slice=df,
         model=model,
         perturbation_dict=perturbation_dict,
-        classification_label=str(classification_label),
+        classification_label=classification_label,
         window_size=float("nan"),
         critical_quantile=critical_quantile,
     )
@@ -442,7 +442,7 @@ def test_metamorphic_increasing_t_test(
         actual_slice=df,
         model=model,
         perturbation_dict=perturbation_dict,
-        classification_label=str(classification_label),
+        classification_label=classification_label,
         window_size=float("nan"),
         critical_quantile=critical_quantile,
     )
@@ -575,7 +575,7 @@ def test_metamorphic_decreasing_wilcoxon(
         actual_slice=df,
         model=model,
         perturbation_dict=perturbation_dict,
-        classification_label=str(classification_label),
+        classification_label=classification_label,
         window_size=float("nan"),
         critical_quantile=critical_quantile,
     )
@@ -623,7 +623,7 @@ def test_metamorphic_increasing_wilcoxon(
         actual_slice=df,
         model=model,
         perturbation_dict=perturbation_dict,
-        classification_label=str(classification_label),
+        classification_label=classification_label,
         window_size=float("nan"),
         critical_quantile=critical_quantile,
     )
