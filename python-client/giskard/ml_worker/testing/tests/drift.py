@@ -190,7 +190,7 @@ def test_drift_psi(
             Reference dataset to compute the test
         column_name(str):
             Name of column with categorical feature
-        threshold(float:
+        threshold(float):
             Threshold value for PSI
         max_categories:
             the maximum categories to compute the PSI score
