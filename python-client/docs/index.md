@@ -13,10 +13,7 @@ reference/index
 Follow our handy guides to get started on the basics as quickly as possible:
 
 - **<project:/guides/installation/index.md>**
-- **<project:/guides/upload-your-model/index.md>**
-- **<project:/guides/review-your-model/index.md>**
 - **<project:/guides/test-catalog/index.rst>**
-- **<project:/guides/create-tests-from-your-review/index.md>**
 
 ## <project:/reference/index.rst>
 
@@ -26,3 +23,4 @@ The reference describes ho the methods work and which parameters can be used.
 - **<project:/reference/models/index.rst>**
 - **<project:/reference/datasets/index.rst>**
 - **<project:/reference/tests/index.rst>**
+- **<project:/reference/suite/index.rst>**
