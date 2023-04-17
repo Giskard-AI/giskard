@@ -12,15 +12,15 @@ def get_class(_lib, _class):
 
 
 @configured_validate_arguments
-def model(clf,
-          model_type: ModelType,
-          data_preprocessing_function: Callable[[pd.DataFrame], Any] = None,
-          model_postprocessing_function: Callable[[Any], Any] = None,
-          name: Optional[str] = None,
-          feature_names: Optional[Iterable] = None,
-          classification_threshold: float = 0.5,
-          classification_labels: Optional[Iterable] = None,
-          **kwargs):
+def wrap_model(model,
+               model_type: ModelType,
+               data_preprocessing_function: Callable[[pd.DataFrame], Any] = None,
+               model_postprocessing_function: Callable[[Any], Any] = None,
+               name: Optional[str] = None,
+               feature_names: Optional[Iterable] = None,
+               classification_threshold: float = 0.5,
+               classification_labels: Optional[Iterable] = None,
+               **kwargs):
     _libraries = {
         ("giskard.models.huggingface", "HuggingFaceModel"): [("transformers", "PreTrainedModel")],
         ("giskard.models.sklearn", "SKLearnModel"): [("sklearn.base", "BaseEstimator")],
@@ -28,13 +28,16 @@ def model(clf,
         ("giskard.models.pytorch", "PyTorchModel"): [("torch.nn", "Module")],
         ("giskard.models.tensorflow", "TensorFlowModel"): [("tensorflow", "Module")]
     }
-
     for _giskard_class, _base_libs in _libraries.items():
         try:
             giskard_class = get_class(*_giskard_class)
             base_libs = [get_class(*_base_lib) for _base_lib in _base_libs]
-            if isinstance(clf, tuple(base_libs)):
-                return giskard_class(clf=clf,
+            if isinstance(model, tuple(base_libs)):
+                origin_library = _base_libs[0][0].split(".")[0]
+                giskard_wrapper = _giskard_class[1]
+                print("Your '" + origin_library + "' model is successfully wrapped by Giskard's '"
+                      + giskard_wrapper + "' wrapper class.")
+                return giskard_class(model=model,
                                      model_type=model_type,
                                      data_preprocessing_function=data_preprocessing_function,
                                      model_postprocessing_function=model_postprocessing_function,
