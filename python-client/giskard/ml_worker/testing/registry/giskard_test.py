@@ -67,7 +67,7 @@ class GiskardTest(Savable[Type, TestFunctionMeta], ABC):
             with open(Path(local_dir) / 'data.pkl', 'rb') as f:
                 func = pickle.load(f)
 
-        if inspect.isclass(func):
+        if inspect.isclass(func) or hasattr(func, 'meta'):
             giskard_test = func()
         elif isinstance(func, GiskardTest):
             giskard_test = func
