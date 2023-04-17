@@ -12,6 +12,7 @@ from giskard.core.core import SupportedModelTypes
 from giskard.core.validation import validate_is_pandasdataframe, validate_target, configured_validate_arguments
 from giskard.datasets.base import Dataset
 from giskard.models.base import BaseModel, WrapperModel
+from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction
 
 
 @configured_validate_arguments
@@ -54,7 +55,7 @@ def validate_model(model: BaseModel, validate_ds: Union[Dataset, None]):
 @configured_validate_arguments
 def validate_model_execution(model: BaseModel, dataset: Dataset) -> None:
     validation_size = min(len(dataset), 10)
-    validation_ds = dataset.slice(lambda x: x.head(validation_size), row_level=False)
+    validation_ds = dataset.slice(SlicingFunction(lambda x: x.head(validation_size), row_level=False))
     try:
         prediction = model.predict(validation_ds)
     except Exception as e:
