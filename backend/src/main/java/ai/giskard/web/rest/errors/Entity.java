@@ -8,6 +8,7 @@ public enum Entity {
     PROJECT_MODEL("Model"),
     TEST_SUITE("Test suite"),
     TEST_FUNCTION("Test function"),
+    SLICING_FUNCTION("Slicing function"),
     TEST("Test"),
     USER("User"),
     ROLE("Role"),
