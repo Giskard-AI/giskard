@@ -5,8 +5,7 @@ from giskard.datasets.base import Dataset
 from giskard.ml_worker.core.test_result import TestResult, TestMessage, TestMessageLevel
 from giskard.ml_worker.testing.stat_utils import equivalence_t_test, paired_t_test
 from giskard.ml_worker.testing.stat_utils import equivalence_wilcoxon, paired_wilcoxon
-from giskard.ml_worker.testing.utils import Direction
-from giskard.ml_worker.testing.utils import apply_perturbation_inplace
+from giskard.ml_worker.testing.utils import Direction, apply_perturbation_inplace, validate_classification_label
 from giskard.ml_worker.utils.logging import timer
 from giskard.models.base import BaseModel
 
@@ -127,7 +126,6 @@ def _compare_probabilities_wilcoxon(result_df, direction, window_size=0.2, criti
 
 
 def _test_metamorphic(
-
         direction: Direction,
         actual_slice: Dataset,
         model,
@@ -218,6 +216,7 @@ def test_metamorphic_invariance(
 
 
 # TODO: once perturbation are implemented:@test(name="Increasing (proportion)")
+@validate_classification_label
 def test_metamorphic_increasing(
         df: Dataset, model: BaseModel, perturbation_dict, threshold=0.5, classification_label=None
 ):
@@ -258,9 +257,6 @@ def test_metamorphic_increasing(
         passed:
           TRUE if metric > threshold
     """
-    assert (
-            not model.is_classification or str(classification_label) in model.meta.classification_labels
-    ), f'"{classification_label}" is not part of model labels: {",".join(model.meta.classification_labels)}'
 
     return _test_metamorphic(
         direction=Direction.Increasing,
@@ -273,6 +269,7 @@ def test_metamorphic_increasing(
 
 
 # TODO: once perturbation are implemented:@test(name="Decreasing (proportion)")
+@validate_classification_label
 def test_metamorphic_decreasing(
         df: Dataset, model: BaseModel, perturbation_dict, threshold=0.5, classification_label=None
 ):
@@ -314,10 +311,6 @@ def test_metamorphic_decreasing(
           TRUE if metric > threshold
     """
 
-    assert (
-            not model.is_classification or classification_label in model.meta.classification_labels
-    ), f'"{classification_label}" is not part of model labels: {",".join(model.meta.classification_labels)}'
-
     return _test_metamorphic(
         direction=Direction.Decreasing,
         actual_slice=df,
@@ -358,6 +351,7 @@ def _test_metamorphic_t_test(
 
 
 # TODO: once perturbation are implemented: @test(name="Decreasing (t-test)")
+@validate_classification_label
 def test_metamorphic_decreasing_t_test(
         df: Dataset, model: BaseModel, perturbation_dict, critical_quantile=0.05, classification_label=None
 ):
@@ -394,10 +388,6 @@ def test_metamorphic_decreasing_t_test(
             TRUE if the p-value of the t-test between (A) and (B) is below the critical value
     """
 
-    assert (
-            not model.is_classification or str(classification_label) in model.meta.classification_labels
-    ), f'"{classification_label}" is not part of model labels: {",".join(model.meta.classification_labels)}'
-
     return _test_metamorphic_t_test(
         direction=Direction.Decreasing,
         actual_slice=df,
@@ -410,6 +400,7 @@ def test_metamorphic_decreasing_t_test(
 
 
 # TODO: once perturbation are implemented:@test(name="Increasing (t-test)")
+@validate_classification_label
 def test_metamorphic_increasing_t_test(
         df: Dataset, model: BaseModel, perturbation_dict, critical_quantile=0.05, classification_label=None
 ):
@@ -445,10 +436,6 @@ def test_metamorphic_increasing_t_test(
         passed:
             TRUE if the p-value of the t-test between (A) and (B) is below the critical value
     """
-
-    assert (
-            not model.is_classification or str(classification_label) in model.meta.classification_labels
-    ), f'"{classification_label}" is not part of model labels: {",".join(model.meta.classification_labels)}'
 
     return _test_metamorphic_t_test(
         direction=Direction.Increasing,
@@ -546,6 +533,7 @@ def _test_metamorphic_wilcoxon(
 
 
 # TODO: once perturbation are implemented: @test(name="Decreasing (Wilcoxon)")
+@validate_classification_label
 def test_metamorphic_decreasing_wilcoxon(
         df: Dataset, model: BaseModel, perturbation_dict, critical_quantile=0.05, classification_label=None
 ):
@@ -582,10 +570,6 @@ def test_metamorphic_decreasing_wilcoxon(
             TRUE if the p-value of the Wilcoxon signed-rank test between (A) and (B) is below the critical value
     """
 
-    assert (
-            not model.is_classification or str(classification_label) in model.meta.classification_labels
-    ), f'"{classification_label}" is not part of model labels: {",".join(model.meta.classification_labels)}'
-
     return _test_metamorphic_wilcoxon(
         direction=Direction.Decreasing,
         actual_slice=df,
@@ -597,6 +581,7 @@ def test_metamorphic_decreasing_wilcoxon(
     )
 
 
+@validate_classification_label
 def test_metamorphic_increasing_wilcoxon(
         df: Dataset, model, perturbation_dict, critical_quantile=0.05, classification_label=None
 ):
@@ -632,10 +617,6 @@ def test_metamorphic_increasing_wilcoxon(
         passed:
             TRUE if the p-value of the Wilcoxon signed-rank test between (A) and (B) is below the critical value
     """
-
-    assert (
-            not model.is_classification or str(classification_label) in model.meta.classification_labels
-    ), f'"{classification_label}" is not part of model labels: {",".join(model.meta.classification_labels)}'
 
     return _test_metamorphic_wilcoxon(
         direction=Direction.Increasing,

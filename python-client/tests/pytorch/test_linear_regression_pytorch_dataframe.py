@@ -116,7 +116,7 @@ def test_linear_regression_pytorch_dataframe():
     df = pd.DataFrame({"x": np.squeeze(x), "y": np.squeeze(y)})
     feature_names = ["x"]
 
-    my_model = PyTorchModel(name="my_linear_model", clf=model, feature_names=feature_names, model_type="regression")
+    my_model = PyTorchModel(name="my_linear_model", model=model, feature_names=feature_names, model_type="regression")
 
     my_test_dataset = Dataset(df.head(), name="test dataset", target="label")
 
