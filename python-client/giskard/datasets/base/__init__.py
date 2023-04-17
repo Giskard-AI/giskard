@@ -55,14 +55,11 @@ class DataProcessor:
             if apply_only_last:
                 break
 
-        ret = Dataset(
-            df=df,
-            name=dataset.name,
-            target=dataset.target,
-            cat_columns=dataset.cat_columns,
-            column_types=dataset.column_types,
-            id=dataset.id,
-        )
+        ret = Dataset(df=df,
+                      name=dataset.name,
+                      target=dataset.target,
+                      cat_columns=dataset.cat_columns,
+                      column_types=dataset.column_types)
 
         if len(self.pipeline):
             ret.data_processor = self
