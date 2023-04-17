@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref } from "vue";
+import InspectionDialog from "@/components/InspectionDialog.vue";
 
 const inspections = ref([
   {
@@ -44,13 +45,24 @@ const inspections = ref([
 ]);
 
 const searchInspection = ref("");
+const showInspectionDialog = ref(false);
 
-function createInspection() {
-  console.log("Create inspection");
+function openInspectionDialog() {
+  closeInspectionDialog();
+  showInspectionDialog.value = true;
+
+}
+
+function closeInspectionDialog() {
+  showInspectionDialog.value = false;
 }
 
 function openInspection(id: number) {
   console.log("Open inspection " + id);
+}
+
+function logInspection(inspection: any) {
+  console.log(inspection);
 }
 
 function deleteInspection(id: number) {
@@ -67,6 +79,9 @@ function formatDate(date: Date) : string {
 </script>
 
 <template>
+  <div>
+  <InspectionDialog :is-visible="showInspectionDialog" @closeDialog="closeInspectionDialog"
+  @createInspection="(newInspection) => {logInspection(newInspection)}"></InspectionDialog>
   <v-container fluid class="vc" v-if="inspections.length > 0">
     <v-row>
       <v-col cols="4">
@@ -74,7 +89,7 @@ function formatDate(date: Date) : string {
       </v-col>
       <v-col cols="8">
         <div class="d-flex flex-row-reverse pb-4">
-          <v-btn color="primary" @click="createInspection"><v-icon>add</v-icon> New Inspection</v-btn>
+          <v-btn color="primary" @click="openInspectionDialog"><v-icon>add</v-icon> New Inspection</v-btn>
         </div>
       </v-col>
     </v-row>
@@ -83,10 +98,10 @@ function formatDate(date: Date) : string {
       <v-row class="px-2 py-1 caption secondary--text text--lighten-3">
         <v-col cols="2">Name</v-col>
         <v-col cols="1">Id</v-col>
-        <v-col cols="2">Created on</v-col>
-        <v-col cols="1">Dataset Name</v-col>
+        <v-col cols="2">Created at</v-col>
+        <v-col cols="1">Dataset name</v-col>
         <v-col cols="1">Dataset ID</v-col>
-        <v-col cols="1">Model Name</v-col>
+        <v-col cols="1">Model name</v-col>
         <v-col cols="1">Model ID</v-col>
         <v-col cols="2">Actions</v-col>
       </v-row>
@@ -121,18 +136,23 @@ function formatDate(date: Date) : string {
   </v-container>
 
   <v-container v-else class="d-flex flex-column vc fill-height">
-    <h1 class="pt-16">You haven't created any inspection for this project!</h1>
+    <h1 class="pt-16 create-inspection-message">You haven't created any inspection session for this project!</h1>
     <v-btn tile class='mx-1'
-           @click="createInspection"
+           @click="openInspectionDialog"
            color="primary">
       <v-icon>add</v-icon>
       Create a new inspection
     </v-btn>
-  </v-container>
+  </v-container>  
+</div>
 </template>
 
 <style scoped>
 .delete-button {
   margin-left: 0.5rem;
+}
+
+.create-inspection-message {
+  margin-bottom: 0.5rem;
 }
 </style>
