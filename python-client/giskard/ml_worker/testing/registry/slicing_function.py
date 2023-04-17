@@ -10,20 +10,20 @@ from giskard.core.core import CallableMeta
 from giskard.ml_worker.core.savable import Savable
 from giskard.ml_worker.testing.registry.registry import get_object_uuid, tests_registry
 
-SliceFunctionType = Callable[[pd.Series], bool]
+SlicingFunctionType = Callable[[pd.Series], bool]
 
 default_tags = ['filter']
 
 
-class SliceFunction(Savable[SliceFunctionType, CallableMeta]):
-    func: SliceFunctionType = None
+class SlicingFunction(Savable[SlicingFunctionType, CallableMeta]):
+    func: SlicingFunctionType = None
     row_level: bool = True
 
     @classmethod
     def _get_name(cls) -> str:
         return 'slices'
 
-    def __init__(self, func: SliceFunctionType, row_level=True):
+    def __init__(self, func: SlicingFunctionType, row_level=True):
         self.func = func
         self.row_level = row_level
         test_uuid = get_object_uuid(func)
@@ -51,12 +51,12 @@ class SliceFunction(Savable[SliceFunctionType, CallableMeta]):
             with open(Path(local_dir) / 'data.pkl', 'rb') as f:
                 func = pickle.load(f)
 
-        slice_function = cls(func)
+        _slicing_function = cls(func)
 
         tests_registry.add_func(meta)
-        slice_function.meta = meta
+        _slicing_function.meta = meta
 
-        return slice_function
+        return _slicing_function
 
     @classmethod
     def _read_meta_from_loca_dir(cls, uuid: str, project_key: Optional[str]) -> CallableMeta:
@@ -70,15 +70,15 @@ class SliceFunction(Savable[SliceFunctionType, CallableMeta]):
 
 
 def slicing_function(_fn=None, row_level=True, name=None, tags: Optional[List[str]] = None):
-    def inner(func: Union[SliceFunctionType, Type[SliceFunction]]) -> SliceFunction:
+    def inner(func: Union[SlicingFunctionType, Type[SlicingFunction]]) -> SlicingFunction:
 
         from giskard.ml_worker.testing.registry.registry import tests_registry
 
         tests_registry.register(
             CallableMeta(func, name=name, tags=default_tags if not tags else (default_tags + tags), type='SLICE'))
-        if inspect.isclass(func) and issubclass(func, SliceFunction):
+        if inspect.isclass(func) and issubclass(func, SlicingFunction):
             return func
-        return SliceFunction(func, row_level)
+        return SlicingFunction(func, row_level)
 
     if callable(_fn):
         return inner(_fn)
