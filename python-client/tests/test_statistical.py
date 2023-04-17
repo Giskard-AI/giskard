@@ -60,7 +60,7 @@ def test_statistical_filtered(data, model, threshold, label, expected_metric, ac
         ("enron_data", "enron_model", 0, 0.1, 0.32, 25),
     ],
 )
-def test_output_in_range_clf(data, model, threshold, label, expected_metric, actual_slices_size, request):
+def test_output_in_range_model(data, model, threshold, label, expected_metric, actual_slices_size, request):
     data = request.getfixturevalue(data)
     model = request.getfixturevalue(model)
     results = statistical.test_output_in_range(
