@@ -28,11 +28,11 @@
                             datasets[props.testInputs[input.name].value].name ?? datasets[props.testInputs[input.name].value].id
                             }}
                           </span>
-                        <span v-else-if="input.name in props.testInputs && input.type === 'SliceFunction'">
+                        <span v-else-if="input.name in props.testInputs && input.type === 'SlicingFunction'">
                       {{
-                            sliceFunctionsByUuid[props.testInputs[input.name].value].displayName
-                            ?? sliceFunctionsByUuid[props.testInputs[input.name].value].name
-                            }}
+                            slicingFunctionsByUuid[props.testInputs[input.name].value].displayName
+                            ?? slicingFunctionsByUuid[props.testInputs[input.name].value].name
+                          }}
                     </span>
                         <span v-else-if="input && input.name in props.testInputs">{{
                             props.testInputs[input.name].value
@@ -46,8 +46,8 @@
                         <ModelSelector :project-id="projectId" :label="input.name" :return-object="false"
                                        v-else-if="input.type === 'BaseModel'"
                                        :value.sync="props.modelValue[input.name].value"/>
-                        <SliceFunctionSelector :project-id="projectId" :label="input.name" :return-object="false"
-                                               v-else-if="input.type === 'SliceFunction'"
+                        <SlicingFunctionSelector :project-id="projectId" :label="input.name" :return-object="false"
+                                               v-else-if="input.type === 'SlicingFunction'"
                                                :value.sync="props.modelValue[input.name].value"/>
                         <v-text-field
                                 :step='input.type === "float" ? 0.1 : 1'
@@ -82,7 +82,7 @@ import {computed} from 'vue';
 import {TestFunctionDTO, TestInputDTO} from '@/generated-sources';
 import {storeToRefs} from 'pinia';
 import {useTestSuiteStore} from '@/stores/test-suite';
-import SliceFunctionSelector from "@/views/main/utils/SliceFunctionSelector.vue";
+import SlicingFunctionSelector from "@/views/main/utils/SlicingFunctionSelector.vue";
 import {useCatalogStore} from "@/stores/catalog";
 
 const props = defineProps<{
@@ -95,7 +95,7 @@ const props = defineProps<{
 }>();
 
 const {models, datasets} = storeToRefs(useTestSuiteStore());
-const {sliceFunctionsByUuid} = storeToRefs(useCatalogStore());
+const {slicingFunctionsByUuid} = storeToRefs(useCatalogStore());
 
 const inputs = computed(() => Object.keys(props.inputs).map((name) => ({
     name,
