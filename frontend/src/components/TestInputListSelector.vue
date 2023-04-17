@@ -172,7 +172,6 @@ const buttonToggleValues = ref<{ [name: string]: number | null }>({});
 
 const aliases = computed(() => {
     return chain([
-        ...suite.value!.testInputs,
         ...chain(suite.value!.tests)
             .flatMap(test => Object.values(test.testInputs))
             .filter(input => input.isAlias)
