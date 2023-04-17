@@ -1,12 +1,11 @@
+# @TODO: simplify this module, don’t need this complexity.
 import itertools
 import numpy as np
 import pandas as pd
 from collections import defaultdict
 from typing import Sequence
 
-from ..ml_worker.testing.registry.slice_function import SliceFunction
-
-# @TODO: simplify this module, don’t need this complexity.
+from ..ml_worker.testing.registry.slicing_function import SlicingFunction
 
 
 class Clause:
@@ -179,7 +178,7 @@ class DataSlice:
         return len(self.data)
 
 
-class QueryBasedSliceFunction(SliceFunction):
+class QueryBasedSliceFunction(SlicingFunction):
     row_level = False
 
     def __init__(self, query: Query):
