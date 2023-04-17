@@ -10,31 +10,31 @@ from giskard.core.core import CallableMeta
 from giskard.ml_worker.core.savable import Savable
 from giskard.ml_worker.testing.registry.registry import get_object_uuid, tests_registry
 
-SlicingFunctionType = Union[Callable[[pd.Series], bool], Callable[[pd.DataFrame], bool]]
+TransformationFunctionType = Union[Callable[[pd.Series], pd.Series], Callable[[pd.DataFrame], pd.DataFrame]]
 
-default_tags = ['filter']
+default_tags = ['transformation']
 
 
-class SlicingFunction(Savable[SlicingFunctionType, CallableMeta]):
-    func: SlicingFunctionType = None
+class TransformationFunction(Savable[TransformationFunctionType, CallableMeta]):
+    func: TransformationFunctionType = None
     row_level: bool = True
 
     @classmethod
     def _get_name(cls) -> str:
-        return 'slices'
+        return 'transformations'
 
-    def __init__(self, func: SlicingFunctionType, row_level=True):
+    def __init__(self, func: TransformationFunctionType, row_level=True):
         self.func = func
         self.row_level = row_level
         test_uuid = get_object_uuid(func)
         meta = tests_registry.get_test(test_uuid)
         if meta is None:
-            meta = tests_registry.register(CallableMeta(func, tags=default_tags, type='SLICE'))
+            meta = tests_registry.register(CallableMeta(func, tags=default_tags, type='TRANSFORMATION'))
         super().__init__(func, meta)
 
     def __call__(self, data: Union[pd.Series, pd.DataFrame]):
         if self.row_level:
-            return data.loc[data.apply(self.func, axis=1)]
+            return data.apply(self.func, axis=1)
         else:
             return self.func(data)
 
@@ -54,17 +54,17 @@ class SlicingFunction(Savable[SlicingFunctionType, CallableMeta]):
             with open(Path(local_dir) / 'data.pkl', 'rb') as f:
                 func = pickle.load(f)
 
-        _slicing_function = cls(func)
+        func_obj = cls(func)
 
         tests_registry.add_func(meta)
-        _slicing_function.meta = meta
+        func_obj.meta = meta
 
-        return _slicing_function
+        return func_obj
 
     @classmethod
     def _read_meta_from_loca_dir(cls, uuid: str, project_key: Optional[str]) -> CallableMeta:
         meta = tests_registry.get_test(uuid)
-        assert meta is not None, f"Cannot find slicing function {uuid}"
+        assert meta is not None, f"Cannot find transformation function {uuid}"
         return meta
 
     @classmethod
@@ -72,16 +72,19 @@ class SlicingFunction(Savable[SlicingFunctionType, CallableMeta]):
         return CallableMeta
 
 
-def slicing_function(_fn=None, row_level=True, name=None, tags: Optional[List[str]] = None):
-    def inner(func: Union[SlicingFunctionType, Type[SlicingFunction]]) -> SlicingFunction:
+def transformation_function(_fn: Union[TransformationFunctionType, Type[TransformationFunction]] = None,
+                            row_level=True, name=None,
+                            tags: Optional[List[str]] = None):
+    def inner(func: Union[TransformationFunctionType, Type[TransformationFunction]]) -> TransformationFunction:
 
         from giskard.ml_worker.testing.registry.registry import tests_registry
 
         tests_registry.register(
-            CallableMeta(func, name=name, tags=default_tags if not tags else (default_tags + tags), type='SLICE'))
-        if inspect.isclass(func) and issubclass(func, SlicingFunction):
+            CallableMeta(func, name=name, tags=default_tags if not tags else (default_tags + tags),
+                         type='TRANSFORMATION'))
+        if inspect.isclass(func) and issubclass(func, TransformationFunction):
             return func
-        return SlicingFunction(func, row_level)
+        return TransformationFunction(func, row_level)
 
     if callable(_fn):
         return inner(_fn)
