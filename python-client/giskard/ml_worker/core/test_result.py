@@ -73,4 +73,4 @@ class TestResult:
                {2}
                """.format('succeed' if self.passed else 'failed',
                           self.metric,
-                          ''.join([m.__repr__() for m in self.messages]))
+                          '\n'.join([] if self.messages is None else [m.__repr__() for m in self.messages]))
