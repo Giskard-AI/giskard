@@ -2,7 +2,6 @@ from importlib import import_module
 from typing import Callable, Optional, Iterable, Any
 
 import pandas as pd
-from rich.console import Console
 
 from giskard.core.core import ModelType
 from giskard.core.validation import configured_validate_arguments
@@ -29,7 +28,6 @@ def wrap_model(model,
         ("giskard.models.pytorch", "PyTorchModel"): [("torch.nn", "Module")],
         ("giskard.models.tensorflow", "TensorFlowModel"): [("tensorflow", "Module")]
     }
-    console = Console()
     for _giskard_class, _base_libs in _libraries.items():
         try:
             giskard_class = get_class(*_giskard_class)
@@ -37,11 +35,8 @@ def wrap_model(model,
             if isinstance(model, tuple(base_libs)):
                 origin_library = _base_libs[0][0].split(".")[0]
                 giskard_wrapper = _giskard_class[1]
-                console.print("Your '" + origin_library + "' model is successfully wrapped by Giskard's '"
-                              + giskard_wrapper + "' wrapper class.", style="bold green")
-                console.print("Check Giskard's [link=https://giskard.readthedocs.io/en/latest/reference/models/index.html]Models[/link]"
-                              " in the API reference documentation for more details.",
-                              style="bold blue")
+                print("Your '" + origin_library + "' model is successfully wrapped by Giskard's '"
+                      + giskard_wrapper + "' wrapper class.")
                 return giskard_class(model=model,
                                      model_type=model_type,
                                      data_preprocessing_function=data_preprocessing_function,
