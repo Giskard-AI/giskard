@@ -212,7 +212,7 @@ def test_drift_reg_output_ks(data, model, threshold, expected_metric, request):
         ("enron_data", "enron_model", 0.05, 0.29, "CALIFORNIA CRISIS"),
     ],
 )
-def test_drift_clf_prob_ks(data, model, threshold, expected_metric, classification_label, request):
+def test_drift_model_prob_ks(data, model, threshold, expected_metric, classification_label, request):
     data = request.getfixturevalue(data)
     results = drift.test_drift_prediction_ks(
         reference_slice=data.slice(lambda df: df.head(len(df) // 2), row_level=False),
@@ -236,7 +236,7 @@ def test_drift_clf_prob_ks(data, model, threshold, expected_metric, classificati
         ("german_credit_data", "german_credit_model", 0.05, 0.83, "Default", 11),
     ],
 )
-def test_drift_clf_prob_ks_small_dataset(
+def test_drift_model_prob_ks_small_dataset(
     data, model, threshold, expected_metric, classification_label, num_rows, request
 ):
     data = request.getfixturevalue(data)
@@ -257,7 +257,7 @@ def test_drift_clf_prob_ks_small_dataset(
     [("german_credit_data", "german_credit_model", 0.05, 0.29, "Default")],
 )
 @pytest.mark.skip(reason="#585")
-def test_drift_clf_prob_ks_small_unique_dataset(data, model, threshold, expected_metric, classification_label, request):
+def test_drift_model_prob_ks_small_unique_dataset(data, model, threshold, expected_metric, classification_label, request):
     data = request.getfixturevalue(data)
     results = drift.test_drift_prediction_ks(
         reference_slice=data.slice(lambda df: df[df["housing"] == "own"], row_level=False),
@@ -295,7 +295,7 @@ def test_drift_reg_output_earth_movers_distance(data, model, threshold, expected
         ("enron_data", "enron_model", 0.2, 0.12, "CALIFORNIA CRISIS"),
     ],
 )
-def test_drift_clf_prob_earth_movers_distance(data, model, threshold, expected_metric, classification_label, request):
+def test_drift_model_prob_earth_movers_distance(data, model, threshold, expected_metric, classification_label, request):
     data = request.getfixturevalue(data)
     results = drift.test_drift_prediction_earth_movers_distance(
         reference_slice=data.slice(lambda df: df.head(len(df) // 2), row_level=False),
@@ -309,7 +309,7 @@ def test_drift_clf_prob_earth_movers_distance(data, model, threshold, expected_m
     assert results.passed
 
 
-def test_drift_clf_prob_ks_exception(german_credit_data, german_credit_model, threshold=0.02):
+def test_drift_model_prob_ks_exception(german_credit_data, german_credit_model, threshold=0.02):
     with pytest.raises(Exception):
         ds = german_credit_data
         drift.test_drift_prediction_ks(
