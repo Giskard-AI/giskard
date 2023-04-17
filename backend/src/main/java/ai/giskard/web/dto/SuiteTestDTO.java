@@ -14,11 +14,9 @@ import java.util.UUID;
 public class SuiteTestDTO {
     @UINullable
     private long id;
-
-    private TestFunctionDTO testFunction;
-
     @JsonAlias("test_uuid")
     @NotNull
     private UUID testUuid;
+    private TestFunctionDTO test;
     private Map<@NotBlank String, @Valid TestInputDTO> testInputs;
 }
