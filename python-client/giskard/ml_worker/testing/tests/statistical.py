@@ -6,7 +6,7 @@ from giskard import test
 from giskard.datasets.base import Dataset
 from giskard.ml_worker.core.test_result import TestResult, TestMessage, TestMessageLevel
 from giskard.ml_worker.testing.utils import validate_classification_label
-from giskard.ml_worker.testing.registry.slice_function import SliceFunction
+from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction
 from giskard.models.base import BaseModel
 
 
@@ -139,8 +139,8 @@ def test_output_in_range(
 # TODO: support type in the future
 def test_disparate_impact(
         gsk_dataset: Dataset,
-        protected_slice: SliceFunction,
-        unprotected_slice: SliceFunction,
+        protected_slice: SlicingFunction,
+        unprotected_slice: SlicingFunction,
         model: BaseModel,
         positive_outcome,
         min_threshold=0.8,
