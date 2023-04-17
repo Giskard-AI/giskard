@@ -196,15 +196,15 @@ class PerformanceScanResult(ScanResult):
         return f"<PerformanceScanResult ({len(self.issues)} issue{'s' if len(self.issues) > 1 else ''})>"
 
     def _ipython_display_(self):
-        from IPython.core.display import HTML, display
+        from IPython.core.display import display_html
 
         html = self._repr_html_()
-        display(HTML(html, metadata=dict(isolated=True)))
+        display_html(html, raw=True)
 
     def _repr_html_(self):
         tab_header = f"""
 <!-- TAB HEADER -->
-<div class="flex items-center items-stretch">
+<div class="flex items-center items-stretch h-10">
     <div class="flex items-center px-4 dark:fill-white border-b border-gray-500">
         <svg xmlns="http://www.w3.org/2000/svg" xml:space="preserve" viewBox="0 0 410 213" height="15">
             <path
@@ -260,6 +260,19 @@ tailwind.config = {{
     darkMode: 'class'
 }}
 </script>
+<style>
+table.dataframe {{
+    width: 100%;
+    max-width: 100%;
+    overflow: auto;
+}}
+.dataframe tr {{
+    border-bottom: 1px solid #555;
+}}
+.dataframe td, .dataframe th {{
+    padding: 0.5rem;
+}}
+</style>
 </head>
 <body>
 <div class="dark">
@@ -284,10 +297,23 @@ tailwind.config = {{
 </body>
 </html>
 """
-        return html
-        # escaped = html.replace('"', "&quot;")
+        escaped = html.replace('"', "&quot;")
 
-        # return f'<iframe srcdoc="{escaped}" style="width: 100%; height: 100vh; border: none;"></iframe>'
+        return f'''<iframe srcdoc="{escaped}" style="width: 100%; border: none;" class="gsk-scan"></iframe>
+<script>
+(function() {{
+    // @TODO: fix this
+    let elements = document.querySelectorAll(".gsk-scan");
+    elements.forEach(el => {{
+        el.style.height = el.contentWindow.document.body.scrollHeight + "px";
+        setTimeout(() => {{
+            el.style.height = el.contentWindow.document.body.scrollHeight + "px";
+        }}, 1000)
+
+    }})
+}})()
+</script>
+'''
 
     def _make_issues_table_html(self):
         rows = ""
@@ -323,7 +349,9 @@ tailwind.config = {{
     <tr class="gsk-issue-detail text-left collapse peer-[.open]:visible border-b border-zinc-400 bg-zinc-700">
         <td colspan="5" class="p-3">
             <h4 class="uppercase w-100">Examples</h4>
+            <div class="text-white text-sm">
             {issue.examples(3).to_html()}
+            </div>
         </td>
     </tr>
 </tbody>
