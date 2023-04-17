@@ -143,6 +143,29 @@ class MLWorkerServiceImpl(MLWorkerServicer):
                                                 result=map_result_to_single_test_result(test_result))
         ])
 
+    def runAdHocSlicing(
+            self, request: ml_worker_pb2.RunAdHocTestRequest, context: grpc.ServicerContext
+    ) -> ml_worker_pb2.SlicingResultMessage:
+        sliceFunction = SliceFunction.load(request.slicingFunctionUuid, self.client, None)
+        dataset = Dataset.download(self.client, request.dataset.project_key, request.dataset.id)
+
+        result = dataset.slice(sliceFunction)
+        desc = result.df.describe()
+
+        return ml_worker_pb2.SlicingResultMessage(
+            totalRow=len(dataset.df.index),
+            filteredRow=len(result.df.index),
+            describeColumns=[
+                ml_worker_pb2.DatasetDescribeColumn(
+                    columnName=col,
+                    count=desc[col]['count'],
+                    unique=desc[col]['unique'],
+                    top=str(desc[col]['top']),
+                    freq=desc[col]['freq'],
+                ) for col in desc.columns
+            ]
+        )
+
     def runTestSuite(self, request: ml_worker_pb2.RunTestSuiteRequest,
                      context: grpc.ServicerContext) -> ml_worker_pb2.TestSuiteResultMessage:
         log_listener = LogListener()

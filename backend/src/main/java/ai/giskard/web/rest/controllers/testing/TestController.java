@@ -39,7 +39,7 @@ public class TestController {
     private final TestFunctionRepository testFunctionRepository;
 
     @PostMapping("/run-test")
-    @Transactional
+    @Transactional(readOnly = true)
     public TestTemplateExecutionResultDTO runAdHocTest(@RequestBody RunAdhocTestRequest request) {
         TestFunction testFunction = testFunctionRepository.findById(UUID.fromString(request.getTestUuid()))
             .orElseThrow(() -> new EntityNotFoundException(TEST_FUNCTION, request.getTestUuid()));
