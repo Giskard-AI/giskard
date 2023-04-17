@@ -153,7 +153,6 @@ public class TestSuiteService {
 
         SuiteTest suiteTest = giskardMapper.fromDTO(suiteTestDTO);
         suiteTest.setSuite(suite);
-        suiteTest.setTestFunction(testFunctionRepository.getById(suiteTestDTO.getTestUuid()));
         suite.getTests().add(suiteTest);
 
         return testSuiteRepository.save(suite);
