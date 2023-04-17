@@ -1,3 +1,4 @@
+import type {TestFunctionDTO} from './test-function-dto';
 import type {TestInputDTO} from './test-input-dto';
 
 /**
@@ -5,6 +6,7 @@ import type {TestInputDTO} from './test-input-dto';
  */
 export interface SuiteTestDTO {
     id?: number | null;
+    testFunction: TestFunctionDTO;
     testInputs: {[key: string]: TestInputDTO};
     testUuid: string;
 }

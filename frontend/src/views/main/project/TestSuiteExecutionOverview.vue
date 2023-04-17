@@ -22,7 +22,7 @@
     <v-container v-else class="d-flex flex-column vc fill-height">
         <h1 class="pt-16">No tests has been added to the suite</h1>
         <v-btn tile class='mx-1'
-               :to="{name: 'project-catalog-tests', query: {suiteId: suite.id}}"
+               :to="{name: 'project-catalog-tests', query: {suiteId: suite?.id}}"
                color="primary">
             <v-icon>add</v-icon>
             Add test
@@ -40,7 +40,6 @@ import {chain} from 'lodash';
 import {useTestSuiteCompareStore} from '@/stores/test-suite-compare';
 import SuiteTestExecutionList from '@/views/main/project/SuiteTestExecutionList.vue';
 import TestSuiteExecutionHeader from '@/views/main/project/TestSuiteExecutionHeader.vue';
-import {useCatalogStore} from "@/stores/catalog";
 import LoadingFullscreen from "@/components/LoadingFullscreen.vue";
 
 const props = defineProps<{ execution?: TestSuiteExecutionDTO }>();
@@ -74,25 +73,25 @@ const statusFilterOptions = [{
 const statusFilter = ref<string>(statusFilterOptions[0].label);
 const searchFilter = ref<string>("");
 
-const {testFunctionsByUuid} = storeToRefs(useCatalogStore());
 
 const filteredTest = computed(() => suite.value === null ? [] : chain(suite.value!.tests)
     .map(suiteTest => ({
         suiteTest,
-        test: testFunctionsByUuid.value[suiteTest.testUuid],
         result: props.execution?.results?.find(result => result.test.id === suiteTest.id)
     }))
     .filter(({result}) => statusFilterOptions.find(opt => statusFilter.value === opt.label)!.filter(result))
-    .filter(({test}) => {
-      const keywords = searchFilter.value.split(' ')
-          .map(keyword => keyword.trim().toLowerCase())
-          .filter(keyword => keyword !== '');
-      return keywords.filter(keyword =>
-          test.name.toLowerCase().includes(keyword)
-          || test.doc?.toLowerCase()?.includes(keyword)
-          || test.displayName?.toLowerCase()?.includes(keyword)
-          || test.tags?.filter(tag => tag.includes(keyword))?.length > 0
-      ).length === keywords.length;
+    .filter(({suiteTest}) => {
+        const test = suiteTest.testFunction;
+
+        const keywords = searchFilter.value.split(' ')
+            .map(keyword => keyword.trim().toLowerCase())
+            .filter(keyword => keyword !== '');
+        return keywords.filter(keyword =>
+            test.name.toLowerCase().includes(keyword)
+            || test.doc?.toLowerCase()?.includes(keyword)
+            || test.displayName?.toLowerCase()?.includes(keyword)
+            || test.tags?.filter(tag => tag.includes(keyword))?.length > 0
+        ).length === keywords.length;
     })
     .value()
 );
