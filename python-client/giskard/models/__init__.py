@@ -22,17 +22,38 @@ def wrap_model(model,
                classification_labels: Optional[Iterable] = None,
                **kwargs):
     """
-    Wraps a trained model of type `model_type` into a Giskard model.
+    Wraps a trained model from :code:`sklearn`, :code:`catboost`, :code:`pytorch`, :code:`tensorflow` or
+    :code:`huggingface` into a Giskard model.
 
     Args:
-        model (Union[BaseEstimator, PreTrainedModel, CatBoost, Module]): The trained model to be wrapped.
-        model_type (ModelType): The type of the model, either regression or classification.
-        data_preprocessing_function (Optional[Callable[[pd.DataFrame], Any]]): A function that processes the input data before feeding it to the model.
-        model_postprocessing_function (Optional[Callable[[Any], Any]]): A function that processes the output of the model.
-        name (Optional[str]): The name of the model.
-        feature_names (Optional[Iterable[str]]): The feature names.
-        classification_threshold (float): The threshold used for classification models.
-        classification_labels (Optional[Iterable[str]]): The labels used for classification models.
+        model (Union[BaseEstimator, PreTrainedModel, CatBoost, Module]):
+            Could be any model from :code:`sklearn`, :code:`catboost`, :code:`pytorch`, :code:`tensorflow` or :code:`huggingface`.
+            The standard model output required for Giskard is:
+
+            * if classification: an array of probabilities corresponding to d   ata entries (rows of pandas.DataFrame)
+                and classification_labels. In the case of binary classification, an array of probabilities is also accepted.
+                Make sure that the probability provided is for the first label provided in classification_labels.
+            * if regression: an array of predictions corresponding to data entries (rows of pandas.DataFrame) and outputs.
+        name (Optional[str]):
+             the name of the model.
+        model_type (ModelType):
+            The type of the model, either regression or classification.
+        data_preprocessing_function (Optional[Callable[[pd.DataFrame], Any]]):
+            A function that takes a pandas.DataFrame as raw input, applies preprocessing and returns any object
+            that could be directly fed to clf. You can also choose to include your preprocessing inside clf,
+            in which case no need to provide this argument.
+        model_postprocessing_function (Optional[Callable[[Any], Any]]):
+            A function that takes a clf output as input,
+            applies postprocessing and returns an object of the same type and shape as the clf output.
+        feature_names (Optional[Iterable[str]]):
+            list of feature names matching the column names in the data that correspond to the features which the model
+            trained on. By default, feature_names are all the Dataset columns except from target.
+        classification_threshold (float):
+            represents the classification model threshold, for binary
+            classification models.
+        classification_labels (Optional[Iterable[str]]):
+            that represents the classification labels, if model_type is
+            classification. Make sure the labels have the same order as the column output of clf.
         **kwargs: Additional keyword arguments.
 
     Returns:
