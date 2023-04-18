@@ -12,7 +12,6 @@ interface Props {
 const props = defineProps<Props>();
 
 const inspections = ref<InspectionDTO[]>([]);
-
 const activeInspection = ref<number | null>(null);
 const searchInspection = ref("");
 
@@ -31,13 +30,15 @@ function toggleActiveInspection(id: number) {
   }
 }
 
-function logInspection(inspection: any) {
-  console.log(inspection);
+function createNewInspection(newInspection: InspectionDTO) {
+  inspections.value.push(newInspection);
+  // toggleActiveInspection(newInspection.id); // TODO: this is not working properly
 }
 
 async function deleteInspection(id: number) {
   await api.deleteInspection(id);
   await loadInspections();
+
 }
 
 // function formatDate(date: Date): string {
@@ -60,7 +61,7 @@ onActivated(() => loadInspections());
         </v-col>
         <v-col cols="8">
           <div class="d-flex flex-row-reverse pb-4">
-            <InspectionDialog v-bind:project-id="projectId" v-on:createInspection="logInspection"></InspectionDialog>
+            <InspectionDialog v-bind:project-id="projectId" v-on:createInspection="createNewInspection"></InspectionDialog>
           </div>
         </v-col>
       </v-row>
@@ -109,7 +110,7 @@ onActivated(() => loadInspections());
         <h1 class="headline bold">No debugging sessions found</h1>
         <p class="create-inspection-message">You haven't created any debugging session for this project. Please, create a new one in order to use this functionality.</p>
       </v-alert>
-      <InspectionDialog v-bind:project-id="projectId" v-on:createInspection="logInspection"></InspectionDialog>
+      <InspectionDialog v-bind:project-id="projectId" v-on:createInspection="createNewInspection"></InspectionDialog>
       <div class="d-flex justify-center mb-6">
         <img src="@/assets/logo_debugger.png" class="debugger-logo" title="Debugger tab logo" alt="A turtle using a magnifying glass">
       </div>
