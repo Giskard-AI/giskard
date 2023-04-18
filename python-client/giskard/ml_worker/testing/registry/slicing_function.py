@@ -2,7 +2,7 @@ import inspect
 import pickle
 import sys
 from pathlib import Path
-from typing import Callable, Optional, List, Union, Type
+from typing import Optional, List, Union, Type, Callable
 
 import pandas as pd
 
@@ -10,7 +10,7 @@ from giskard.core.core import CallableMeta
 from giskard.ml_worker.core.savable import Savable
 from giskard.ml_worker.testing.registry.registry import get_object_uuid, tests_registry
 
-SlicingFunctionType = Callable[[pd.Series], bool]
+SlicingFunctionType = Union[Callable[[pd.Series], bool], Callable[[pd.DataFrame], bool]]
 
 default_tags = ['filter']
 
@@ -32,8 +32,11 @@ class SlicingFunction(Savable[SlicingFunctionType, CallableMeta]):
             meta = tests_registry.register(CallableMeta(func, tags=default_tags, type='SLICE'))
         super().__init__(func, meta)
 
-    def __call__(self, row_or_df: Union[pd.Series, pd.DataFrame]):
-        return self.func(row_or_df)
+    def __call__(self, data: Union[pd.Series, pd.DataFrame]):
+        if self.row_level:
+            return data.loc[data.apply(self.func, axis=1)]
+        else:
+            return self.func(data)
 
     def _should_save_locally(self) -> bool:
         return self.data.__module__.startswith('__main__')
@@ -61,7 +64,7 @@ class SlicingFunction(Savable[SlicingFunctionType, CallableMeta]):
     @classmethod
     def _read_meta_from_loca_dir(cls, uuid: str, project_key: Optional[str]) -> CallableMeta:
         meta = tests_registry.get_test(uuid)
-        assert meta is not None, f"Cannot find test function {uuid}"
+        assert meta is not None, f"Cannot find slicing function {uuid}"
         return meta
 
     @classmethod

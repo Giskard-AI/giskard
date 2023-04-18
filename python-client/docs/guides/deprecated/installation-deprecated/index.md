@@ -1,4 +1,4 @@
-# Installation & upgrade
+# Installation & upgrade (⚠️ Deprecated)
 How to install Giskard on your machine, set up your Python backend and upgrade Giskard
 
 :::{tip}
@@ -41,7 +41,7 @@ Since the backend container may take some minutes to load, please wait a bit and
 
 To log in, the default credentials are **Login: admin / Password: admin**
 
-You're all set to try Giskard in action. Upload your first model by following the [upload-your-model](../upload-your-model/ "mention") tutorial.
+You're all set to try Giskard in action. Upload your first model by following the [upload-your-model](../upload-your-model-deprecated/ "mention") tutorial.
 
 ## Upgrade Giskard to the latest version
 
@@ -55,7 +55,7 @@ docker compose down && docker compose pull && docker compose up -d --force-recre
 :::{danger}
 * The browser may keep using an old version of Giskard UI due to caching. If there are issues after running an upgrade try to **hard refresh** Giskard page by pressing\
   `Ctrl + Shift + R` or  `Command + Shift + R`&#x20;
-* If you installed in Giskard additional **Python libraries** or a **new Python version**, you will need to reinstall them. Please refer to [configuration](../configuration.md).
+* If you installed in Giskard additional **Python libraries** or a **new Python version**, you will need to reinstall them. Please refer to [configuration](../../configuration.md).
 :::
 
 ## Troubleshooting

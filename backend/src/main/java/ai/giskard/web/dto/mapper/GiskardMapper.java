@@ -227,4 +227,9 @@ public interface GiskardMapper {
     @Mapping(target = "potentiallyUnavailable", ignore = true)
     SlicingFunctionDTO toDTO(SlicingFunction testFunction);
 
+    @Mapping(target = "potentiallyUnavailable", ignore = true)
+    TransformationFunctionDTO toDTO(TransformationFunction testFunction);
+
+    TransformationFunction fromDTO(TransformationFunctionDTO testFunction);
+
 }
