@@ -109,10 +109,11 @@ class PerformanceScan:
     def _diff_test(self, slice_fn, model, dataset, test_fn, threshold):
         # Apply the test
         test = test_fn(
-            actual_slice=dataset.slice(slice_fn),
-            reference_slice=dataset,  # Could exclude slice_dataset for independence
+            actual_dataset=dataset.slice(slice_fn),
+            reference_dataset=dataset,  # Could exclude slice_dataset for independence
             model=model,
             threshold=threshold,
+            absolute=False
         )
 
         res = test.execute()
@@ -338,7 +339,7 @@ table.dataframe {{
             {issue.test_name}
         </td>
         <td class="p-3">
-            <span class="{'text-red-400' if issue.is_major else 'text-amber-200'}">−{tr.metric*100:.2f}% than global</span>
+            <span class="{'text-red-400' if issue.is_major else 'text-amber-200'}">{tr.metric*100:.2f}% than global</span>
         </td>
         <td class="p-3">
             <span class="text-gray-400">
@@ -373,7 +374,7 @@ table.dataframe {{
                 {
                     "slice": str(issue.slice_fn),
                     "metric": issue.test_name,
-                    "metric_value": f"−{issue.test_results.metric*100:.2f}% than global",
+                    "metric_value": f"{issue.test_results.metric*100:.2f}% than global",
                     "size": f"{issue.test_results.actual_slices_size[0]} samples ({100 * (issue.test_results.actual_slices_size[0] / issue.test_results.reference_slices_size[0]):.2f}%)",
                 }
                 for issue in self.issues
