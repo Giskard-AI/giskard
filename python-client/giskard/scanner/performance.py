@@ -204,10 +204,11 @@ class PerformanceScanResult(ScanResult):
         display_html(html, raw=True)
 
     def _repr_html_(self):
-        from jinja2 import Environment, PackageLoader, select_autoescape
-
+        from pathlib import Path
+        from jinja2 import Environment, FileSystemLoader, select_autoescape
+        
         env = Environment(
-            loader=PackageLoader("giskard.scanner", "templates"),
+            loader=FileSystemLoader(Path(__file__).parent.joinpath("templates")),
             autoescape=select_autoescape(),
         )
         tpl = env.get_template("scan_results.html")
