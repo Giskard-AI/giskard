@@ -2,7 +2,7 @@
 import { computed, ref } from "vue";
 
 interface Props {
-  isVisible: boolean
+  projectId: number;
 }
 
 const props = defineProps<Props>();
@@ -37,12 +37,13 @@ const models = ref([
   }
 ]);
 
-const datasetsFormatted = computed(() => datasets.value.map(({name, id}) => appendIdToName(name, id)));
-const modelsFormatted = computed(() => models.value.map(({name, id}) => appendIdToName(name, id)));
-
+const dialog = ref(false);
 const inspectionName = ref("");
 const datasetSelected = ref({});
 const modelSelected = ref({});
+
+const datasetsFormatted = computed(() => datasets.value.map(({ name, id }) => appendIdToName(name, id)));
+const modelsFormatted = computed(() => models.value.map(({ name, id }) => appendIdToName(name, id)));
 
 const missingValues = computed(() => {
   return Object.keys(datasetSelected.value).length === 0 || Object.keys(modelSelected.value).length === 0;
@@ -57,14 +58,7 @@ const newInspection = computed(() => {
   }
 });
 
-const emit = defineEmits(['closeDialog', 'createInspection'])
-
-function closeDialog() {
-  inspectionName.value = "";
-  datasetSelected.value = {};
-  modelSelected.value = {};
-  emit('closeDialog');
-}
+const emit = defineEmits(['createInspection'])
 
 function createInspection() {
   emit('createInspection', newInspection.value);
@@ -79,23 +73,29 @@ function appendIdToName(name: string, id: number): string {
 </script>
 
 <template>
- <v-dialog v-model="isVisible" width="600">
-    <v-card>
-      <v-card-title class="headline">Create Inspection</v-card-title>
-      <v-card-text>
-        <v-text-field label="Inspection name (optional)" v-model="inspectionName"></v-text-field>
-        <v-select label="Dataset" :items="datasetsFormatted" v-model="datasetSelected" required></v-select>
-        <v-select label="Model" :items="modelsFormatted" v-model="modelSelected" required></v-select>
-      </v-card-text>
-
-      <v-card-actions>
-        <v-btn text @click="closeDialog">Cancel</v-btn>
-        <v-spacer></v-spacer>
-        <v-btn color="primary" @click="createInspection" :disabled="missingValues">Create</v-btn>
-      </v-card-actions>
-    </v-card>
-  </v-dialog>
+  <div class="text-center">
+    <v-dialog v-model="dialog" width="80vw">
+      <template v-slot:activator="{ on, attrs }">
+        <v-btn color="primary" v-bind="attrs" v-on="on">
+          <v-icon>add</v-icon>
+          New Debugging Session
+        </v-btn>
+      </template>
+      <v-card>
+        <v-card-title class="headline">Create Inspection</v-card-title>
+        <v-card-text>
+          <v-text-field label="Inspection name (optional)" v-model="inspectionName"></v-text-field>
+          <v-select label="Dataset" :items="datasetsFormatted" v-model="datasetSelected" required></v-select>
+          <v-select label="Model" :items="modelsFormatted" v-model="modelSelected" required></v-select>
+        </v-card-text>
+        <v-card-actions>
+          <v-btn text @click="dialog = false">Cancel</v-btn>
+          <v-spacer></v-spacer>
+          <v-btn color="primary" @click="createInspection" :disabled="missingValues">Create</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+  </div>
 </template>
 
-<style scoped>
-</style>
+<style scoped></style>
