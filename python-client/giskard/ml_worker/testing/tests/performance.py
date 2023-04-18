@@ -23,9 +23,11 @@ from giskard.models.base import BaseModel
 
 def _verify_target_availability(dataset):
     if not dataset.target:
-        raise ValueError("This test requires 'target' in Dataset not to be None. 'target' is the column name in df "
-                         "corresponding to the actual target variable (ground truth). "
-                         "You can set it when creating your giskard dataset.")
+        raise ValueError(
+            "This test requires 'target' in Dataset not to be None. 'target' is the column name in df "
+            "corresponding to the actual target variable (ground truth). "
+            "You can set it when creating your giskard dataset."
+        )
 
 
 def _get_rmse(y_actual, y_predicted):
@@ -130,14 +132,14 @@ class AucTest(GiskardTest):
     def execute(self) -> TestResult:
         """
 
-            :return:
-              actual_slices_size:
-                Length of dataset tested
-              metric:
-                The AUC performance metric
-              passed:
-                TRUE if AUC metrics >= threshold
-            """
+        :return:
+          actual_slices_size:
+            Length of dataset tested
+          metric:
+            The AUC performance metric
+          passed:
+            TRUE if AUC metrics >= threshold
+        """
         return test_auc.test_fn(dataset=self.dataset, model=self.model, threshold=self.threshold)
 
 
