@@ -2,47 +2,49 @@
 import { computed, ref } from "vue";
 import InspectionDialog from "@/components/InspectionDialog.vue";
 
-const inspections = ref([
-  {
-    "id": 1,
-    "name": "Inspection 1",
-    "createdDate": new Date("2023-04-17T12:00:00.000Z"),
-    "dataset": {
-      "id": 1,
-      "name": "Dataset 1"
-    },
-    "model": {
-      "id": 1,
-      "name": "Model 1"
-    }
-  },
-  {
-    "id": 2,
-    "name": "Inspection 2",
-    "createdDate": new Date("2023-04-17T12:00:00.000Z"),
-    "dataset": {
-      "id": 2,
-      "name": "Dataset 2"
-    },
-    "model": {
-      "id": 2,
-      "name": "Model 2"
-    }
-  },
-  {
-    "id": 3,
-    "name": "Inspection 3",
-    "createdDate": new Date("2023-04-17T12:00:00.000Z"),
-    "dataset": {
-      "id": 3,
-      "name": "Dataset 3"
-    },
-    "model": {
-      "id": 3,
-      "name": "Model 3"
-    }
-  }
-]);
+// const inspections = ref([
+//   {
+//     "id": 1,
+//     "name": "Inspection 1",
+//     "createdDate": new Date("2023-04-17T12:00:00.000Z"),
+//     "dataset": {
+//       "id": 1,
+//       "name": "Dataset 1"
+//     },
+//     "model": {
+//       "id": 1,
+//       "name": "Model 1"
+//     }
+//   },
+//   {
+//     "id": 2,
+//     "name": "Inspection 2",
+//     "createdDate": new Date("2023-04-17T12:00:00.000Z"),
+//     "dataset": {
+//       "id": 2,
+//       "name": "Dataset 2"
+//     },
+//     "model": {
+//       "id": 2,
+//       "name": "Model 2"
+//     }
+//   },
+//   {
+//     "id": 3,
+//     "name": "Inspection 3",
+//     "createdDate": new Date("2023-04-17T12:00:00.000Z"),
+//     "dataset": {
+//       "id": 3,
+//       "name": "Dataset 3"
+//     },
+//     "model": {
+//       "id": 3,
+//       "name": "Model 3"
+//     }
+//   }
+// ]);
+
+const inspections = ref([]);
 
 const activeInspection = ref(null);
 const searchInspection = ref("");
@@ -144,19 +146,25 @@ function formatDate(date: Date): string {
       </v-expansion-panels>
     </v-container>
 
-
-    <v-container v-else class="d-flex flex-column vc fill-height">
-      <h1 class="pt-16 create-inspection-message">You haven't created any inspection session for this project!</h1>
-      <v-btn tile class='mx-1' @click="openInspectionDialog" color="primary">
-        <v-icon>add</v-icon>
-        Create a new inspection
-      </v-btn>
+    <v-container v-else class="vc mt-12">
+      <v-alert class="text-center">
+        <h1 class="headline bold">No debugging sessions found</h1>
+        <p class="create-inspection-message">You haven't created any debugging session for this project. Please, create a new one in order to use this functionality.</p>
+        <v-btn tile class='mx-1' @click="openInspectionDialog" color="primary">
+          <v-icon>add</v-icon>
+          Create a new debugging session
+        </v-btn>
+      </v-alert>
+      <div class="d-flex justify-center mb-6">
+        <img src="@/assets/logo_debugger.png" title="Debugger tab logo" alt="A turtle using a magnifying glass" width="30%">
+      </div>
     </v-container>
   </div>
 </template>
 
 <style scoped>
 .create-inspection-message {
-  margin-bottom: 0.5rem;
+  margin-bottom: 1.5rem;
+  font-size: 1.125rem;
 }
 </style>
