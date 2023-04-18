@@ -48,7 +48,7 @@ myst_enable_extensions = [
 # HTML output
 # -----------------------------------------------------------------------------
 
-html_title = "Giskard Docs"
+html_title = "Giskard v2.0 Documentation"
 
 html_theme = 'furo'
 # html_static_path = ['_static']
