@@ -394,6 +394,9 @@ export const api = {
     async getInspection(inspectionId: number) {
         return apiV2.get<unknown, InspectionDTO>(`/inspection/${inspectionId}`);
     },
+    async deleteInspection(inspectionId: number) {
+        return apiV2.delete<unknown, void>(`/inspections/${inspectionId}`);
+    },
     async predict(modelId: string, datasetId: string, inputData: { [key: string]: string }, controller: AbortController) {
         const data: PredictionInputDTO = {
             datasetId: datasetId,
