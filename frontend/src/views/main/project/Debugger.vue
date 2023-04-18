@@ -1,57 +1,28 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { api } from '@/api';
+import { InspectionDTO } from "@/generated-sources";
 import InspectionDialog from "@/components/InspectionDialog.vue";
+import { computed, ref, onActivated } from "vue";
 
-// const inspections = ref([
-//   {
-//     "id": 1,
-//     "name": "Inspection 1",
-//     "createdDate": new Date("2023-04-17T12:00:00.000Z"),
-//     "dataset": {
-//       "id": 1,
-//       "name": "Dataset 1"
-//     },
-//     "model": {
-//       "id": 1,
-//       "name": "Model 1"
-//     }
-//   },
-//   {
-//     "id": 2,
-//     "name": "Inspection 2",
-//     "createdDate": new Date("2023-04-17T12:00:00.000Z"),
-//     "dataset": {
-//       "id": 2,
-//       "name": "Dataset 2"
-//     },
-//     "model": {
-//       "id": 2,
-//       "name": "Model 2"
-//     }
-//   },
-//   {
-//     "id": 3,
-//     "name": "Inspection 3",
-//     "createdDate": new Date("2023-04-17T12:00:00.000Z"),
-//     "dataset": {
-//       "id": 3,
-//       "name": "Dataset 3"
-//     },
-//     "model": {
-//       "id": 3,
-//       "name": "Model 3"
-//     }
-//   }
-// ]);
 
-const inspections = ref([]);
 
-const activeInspection = ref(null);
+interface Props {
+  projectId: number;
+}
+
+const props = defineProps<Props>();
+
+const inspections = ref<InspectionDTO[]>([]);
+
+const activeInspection = ref<number | null>(null);
 const searchInspection = ref("");
 const showInspectionDialog = ref(false);
 
 const displayComponents = computed(() => activeInspection.value == null);
 
+async function loadInspections() {
+  inspections.value = await api.getProjectInspections(props.projectId)
+}
 
 function toggleActiveInspection(id: number) {
   if (activeInspection.value === id) {
@@ -90,6 +61,8 @@ function formatDate(date: Date): string {
     " " + date.getHours().toString().padStart(2, "0") +
     ":" + date.getMinutes().toString().padStart(2, "0");
 }
+
+onActivated(() => loadInspections());
 </script>
 
 <template>
@@ -122,9 +95,9 @@ function formatDate(date: Date): string {
         <v-expansion-panel v-for="inspection in inspections" :key="inspection.id" v-show="displayComponents || activeInspection == inspection.id" @click="toggleActiveInspection(inspection.id)">
           <v-expansion-panel-header>
             <v-row dense no-gutters class="align-center">
-              <v-col cols="3">{{ inspection.name }}</v-col>
+              <v-col cols="3">Generic name</v-col>
               <v-col cols="2">{{ inspection.id }}</v-col>
-              <v-col cols="2">{{ formatDate(inspection.createdDate) }}</v-col>
+              <v-col cols="2">Generic date</v-col>
               <v-col cols="1">{{ inspection.dataset.name }}</v-col>
               <v-col cols="1">{{ inspection.dataset.id }}</v-col>
               <v-col cols="1">{{ inspection.model.name }}</v-col>
