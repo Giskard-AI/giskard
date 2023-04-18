@@ -52,6 +52,8 @@ public class TestArgumentService {
             case "Dataset" -> argumentBuilder.setDataset(buildArtifactRef(projectKey, inputValue));
             case "BaseModel" -> argumentBuilder.setModel(buildArtifactRef(projectKey, inputValue));
             case "SlicingFunction" -> argumentBuilder.setSlicingFunction(buildArtifactRef(projectKey, inputValue));
+            case "TransformationFunction" ->
+                argumentBuilder.setTransformationFunction(buildArtifactRef(projectKey, inputValue));
             case "float" -> argumentBuilder.setFloat(Float.parseFloat(inputValue));
             case "int" -> argumentBuilder.setInt(Integer.parseInt(inputValue));
             case "str" -> argumentBuilder.setStr(inputValue);

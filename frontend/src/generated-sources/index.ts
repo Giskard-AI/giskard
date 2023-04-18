@@ -81,6 +81,8 @@ export const GENERATED_MAPPING = {
     'ai.giskard.web.dto.TestInputDTO' : 'TestInputDTO',
     'ai.giskard.web.dto.TestSuiteCompleteDTO' : 'TestSuiteCompleteDTO',
     'ai.giskard.web.dto.TestSuiteDTO' : 'TestSuiteDTO',
+    'ai.giskard.web.dto.TransformationFunctionDTO' : 'TransformationFunctionDTO',
+    'ai.giskard.web.dto.TransformationResultDTO' : 'TransformationResultDTO',
     'ai.giskard.web.dto.user.AdminUserDTO$AdminUserDTOWithPassword' : 'AdminUserDTO.AdminUserDTOWithPassword',
     'ai.giskard.web.dto.user.AdminUserDTO' : 'AdminUserDTO',
     'ai.giskard.web.dto.user.PasswordChangeDTO' : 'PasswordChangeDTO',
@@ -170,6 +172,8 @@ export * from './ai/giskard/web/dto/test-function-dto';
 export * from './ai/giskard/web/dto/test-input-dto';
 export * from './ai/giskard/web/dto/test-suite-complete-dto';
 export * from './ai/giskard/web/dto/test-suite-dto';
+export * from './ai/giskard/web/dto/transformation-function-dto';
+export * from './ai/giskard/web/dto/transformation-result-dto';
 export * from './ai/giskard/web/dto/user/admin-user-dto';
 export * from './ai/giskard/web/dto/user/password-change-dto';
 export * from './ai/giskard/web/dto/user/role-dto';

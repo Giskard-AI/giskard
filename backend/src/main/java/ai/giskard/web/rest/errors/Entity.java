@@ -9,6 +9,7 @@ public enum Entity {
     TEST_SUITE("Test suite"),
     TEST_FUNCTION("Test function"),
     SLICING_FUNCTION("Slicing function"),
+    TRANSFORMATION_FUNCTION("Transformation function"),
     TEST("Test"),
     USER("User"),
     ROLE("Role"),
