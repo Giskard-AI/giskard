@@ -91,49 +91,23 @@ class DataProcessor:
 
 class Dataset:
     """
-    A class that represents a dataset object.
+    A class for constructing and processing datasets.
 
-    Members:
-        name (str):
-            The name of the dataset.
-        target (str):
-            The name of the target column in the dataset.
-        column_types (Dict[str, str]):
-            A dictionary mapping column names to their corresponding column types.
-        df (pd.DataFrame):
-            The pandas DataFrame containing the data.
-        id (uuid.UUID):
-            The unique identifier of the dataset.
+    Attributes:
+        dataset (pandas.DataFrame):
+            The dataframe representing the dataset.
+        name (Optional[str]):
+            The name of the dataset. Default is None.
+        target (Optional[str]):
+            The column name in df corresponding to the actual target variable (ground truth). Default is None.
+        cat_columns (Optional[List[str]]):
+            A list of column names to be treated as categorical variables. Default is None.
+        infer_column_types (Optional[bool]):
+            If True, column data types will be inferred from the dataset. Default is False.
+        column_types (Optional[Dict[str, str]]):
+            A dictionary that maps column names to their data types. Default is None.
         data_processor (DataProcessor):
-            A `DataProcessor` object that can be used to transform the dataset.
-
-    Methods:
-        __init__(self, df: pd.DataFrame, name: Optional[str] = None, target: Optional[str] = None,
-        cat_columns: Optional[List[str]] = None, infer_column_types: Optional[bool] = False,
-        column_types: Optional[Dict[str, str]] = None, id: Optional[uuid.UUID] = None) -> None:
-            Constructs a new `Dataset` object.
-        add_slicing_function(self, slicing_function: SlicingFunction):
-            Adds a slicing function to the dataset's `DataProcessor`.
-        add_transformation_function(self, slicing_function: SlicingFunction):
-            Adds a transformation function to the dataset's `DataProcessor`.
-        slice(self, slicing_function: Optional[SlicingFunction] = None):
-            Applies the slicing function to the dataset's `DataProcessor`.
-        transform(self, transformation_function: TransformationFunction):
-            Applies the transformation function to the dataset's `DataProcessor`.
-        process(self):
-            Applies all the functions in the dataset's `DataProcessor`.
-        check_hashability(df):
-            Checks if the DataFrame is hashable.
-        infer_column_types(df, column_dtypes, no_cat=False):
-            Infers the column types of a DataFrame.
-        extract_column_types(column_dtypes, cat_columns):
-            Extracts the column types from a DataFrame.
-        extract_column_dtypes(df):
-            Extracts the column data types from a DataFrame.
-        upload(self, client: GiskardClient, project_key: str):
-            Uploads the dataset to the Giskard server.
-        meta(self):
-            Returns a `DatasetMeta` object containing metadata about the dataset.
+            An instance of the `DataProcessor` class used for data processing.
     """
     name: str
     target: str
@@ -153,6 +127,28 @@ class Dataset:
         column_types: Optional[Dict[str, str]] = None,
         id: Optional[uuid.UUID] = None,
     ) -> None:
+        """
+        Initializes a Dataset object.
+
+        Args:
+            df (pd.DataFrame): The input dataset as a pandas DataFrame.
+            name (Optional[str]): The name of the dataset.
+            target (Optional[str]): The column name in df corresponding to the actual target variable (ground truth).
+            cat_columns (Optional[List[str]]): A list of column names that are categorical.
+            infer_column_types (Optional[bool]): If True, attempts to infer column types automatically.
+            column_types (Optional[Dict[str, str]]): A dictionary mapping column names to their types.
+            id (Optional[uuid.UUID]): A UUID that uniquely identifies this dataset.
+
+        Raises:
+            ValueError: If the input DataFrame is empty.
+            ValueError: If cat_columns contains a column that does not exist in the input DataFrame.
+
+        Notes:
+            - If infer_column_types is True and cat_columns is not specified, the algorithm assumes there are no categorical
+              columns in the dataset.
+            - If column_types is specified, it overrides the types inferred from cat_columns or infer_column_types.
+            - Validates numeric columns of the Dataset object using `validate_numeric_columns` function.
+        """
         if df.empty:
             raise ValueError("Please provide a non-empty df to construct the Dataset object.")
         if id is None:
@@ -189,14 +185,37 @@ class Dataset:
         validate_numeric_columns(self)
 
     def add_slicing_function(self, slicing_function: SlicingFunction):
+        """
+        Adds a slicing function to the data processor.
+
+        Args:
+            slicing_function (SlicingFunction): A slicing function to add to the data processor.
+        """
         self.data_processor.add_step(slicing_function)
         return self
 
-    def add_transformation_function(self, slicing_function: SlicingFunction):
-        self.data_processor.add_step(slicing_function)
+    def add_transformation_function(self, transformation_function: TransformationFunction):
+        """
+        Add a transformation function to the data processor's list of steps.
+
+        Args:
+            transformation_function (TransformationFunction): A transformation function to add to the data processor.
+        """
+        self.data_processor.add_step(transformation_function)
         return self
 
     def slice(self, slicing_function: Optional[SlicingFunction] = None):
+        """
+        Slice the dataset using the specified `SlicingFunction`.
+
+        Args:
+            slicing_function (SlicingFunction, optional):
+                The slicing function to use. It should take a pandas DataFrame and return a DataFrame with the same columns.
+
+        Returns:
+            Dataset:
+                The sliced dataset as a `Dataset` object.
+        """
         if slicing_function:
             return self.data_processor.add_step(slicing_function).apply(self, apply_only_last=True)
         else:
@@ -204,14 +223,40 @@ class Dataset:
 
     @configured_validate_arguments
     def transform(self, transformation_function: TransformationFunction):
+        """
+        Transform the data in the current Dataset by applying a transformation function.
+
+        Args:
+            transformation_function (TransformationFunction): A function that takes a pandas DataFrame as input and returns a modified DataFrame.
+
+        Returns:
+            Dataset: A new Dataset object containing the transformed data.
+        """
         return self.data_processor.add_step(transformation_function).apply(self, apply_only_last=True)
 
     def process(self):
+        """
+        Process the dataset by applying all the transformation and slicing functions in the defined order.
+
+        Returns:
+            The processed dataset after applying all the transformation and slicing functions.
+        """
         return self.data_processor.apply(self)
 
     @staticmethod
     def check_hashability(df):
-        df_objects = df.select_dtypes(include="object")
+        """
+        This is a static method that checks if a given pandas DataFrame is hashable or not.
+        It checks if all the columns containing object types in the input DataFrame are hashable or not.
+        If any column is not hashable, it raises a TypeError indicating which columns are not hashable.
+
+        Args:
+        df (pandas.DataFrame): The DataFrame to be checked for hashability.
+
+        Raises:
+        TypeError: If any column containing object types in the input DataFrame is not hashable.
+        """
+        df_objects = df.select_dtypes(include='object')
         non_hashable_cols = []
         for col in df_objects.columns:
             if not isinstance(df[col].iat[0], Hashable):
@@ -225,6 +270,17 @@ class Dataset:
 
     @staticmethod
     def infer_column_types(df, column_dtypes, no_cat=False):
+        """
+        Infer column types of a given DataFrame based on the number of unique values and column data types.
+
+        Args:
+            df (pandas.DataFrame): The DataFrame to infer column types for.
+            column_dtypes (dict): A dictionary that maps column names to their expected data types.
+            no_cat (bool, optional): If True, do not infer categories and treat them as text instead.
+
+        Returns:
+            dict: A dictionary that maps column names to their inferred types, one of 'text', 'numeric', or 'category'.
+        """
         # TODO: improve this method
         nuniques = df.nunique()
         column_types = {}
@@ -239,6 +295,17 @@ class Dataset:
 
     @staticmethod
     def extract_column_types(column_dtypes, cat_columns):
+        """
+        Infer the types of the columns based on their dtype and category columns.
+
+        Args:
+            column_dtypes (Dict[str, Type]): A dictionary that maps column names to their respective data types.
+            cat_columns (List[str]): A list of column names that are considered categorical.
+
+        Returns:
+            Dict[str, Type]: A dictionary that maps column names to their respective inferred types (numeric, text or category).
+                The inferred data types can be one of the SupportedColumnTypes defined in the SupportedColumnTypes Enum.
+        """
         column_types = {}
         for cat_col in cat_columns:
             column_types[cat_col] = SupportedColumnTypes.CATEGORY.value
@@ -254,9 +321,31 @@ class Dataset:
 
     @staticmethod
     def extract_column_dtypes(df):
+        """
+        Extracts the column data types from a pandas DataFrame.
+
+        Args:
+            df (pandas.DataFrame): The input DataFrame.
+
+        Returns:
+            dict: A dictionary where the keys are the column names and the values are the corresponding data types as strings.
+        """
         return df.dtypes.apply(lambda x: x.name).to_dict()
 
     def upload(self, client: GiskardClient, project_key: str):
+        """
+        Uploads the dataset to the specified Giskard project.
+
+        Args:
+            client: A GiskardClient instance for connecting to the Giskard API.
+            project_key (str): The key of the project to upload the dataset to.
+
+        Returns:
+            str: The ID of the uploaded dataset.
+
+        Raises:
+            DatasetValidationError: If the dataset is not valid.
+        """
         from giskard.core.dataset_validation import validate_dataset
 
         validate_dataset(self)
@@ -303,6 +392,19 @@ class Dataset:
 
     @classmethod
     def download(cls, client: GiskardClient, project_key, dataset_id):
+        """
+        Downloads a dataset from a Giskard project and returns a Dataset object.
+        If the client is None, then the function assumes that it is running in an internal worker and looks for the dataset locally.
+
+        Args:
+            client (GiskardClient or None): The GiskardClient instance to use for downloading the dataset.
+                If None, the function looks for the dataset locally.
+            project_key (str): The key of the Giskard project that the dataset belongs to.
+            dataset_id (str): The ID of the dataset to download.
+
+        Returns:
+            Dataset: A Dataset object that represents the downloaded dataset.
+        """
         local_dir = settings.home_dir / settings.cache_dir / project_key / "datasets" / dataset_id
 
         if client is None:
