@@ -46,7 +46,7 @@ sudo docker compose up -d --force-recreate --no-build
 * Go to **`http://<your IP address>:19000`** in your web browser
 * The user id is `admin` and the password is `admin`
 
-That's it, you are now ready to use Giskard in AWS! Now you can start [uploading a model](../upload-your-model/)!
+That's it, you are now ready to use Giskard in AWS! Now you can start [uploading a model](../upload-your-model-deprecated/)!
 
 :::{info}
 You can stop the instance and restart it when you need to save your AWS compute costs. However, note that the **IP address will not necessarily be the same**. So make sure you copy it again when it's launched
