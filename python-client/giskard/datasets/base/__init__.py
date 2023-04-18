@@ -31,6 +31,28 @@ class Nuniques(Enum):
 
 
 class DataProcessor:
+    """
+    A class for processing tabular data using a pipeline of functions.
+
+    The pipeline consists of slicing functions that extract subsets of the data and transformation functions that modify it.
+    Slicing functions should take a pandas DataFrame as input and return a DataFrame, while transformation functions
+    should take a DataFrame and return a modified version of it.
+
+    Attributes:
+        pipeline (List[Union[SlicingFunction, TransformationFunction]]): a list of functions to be applied to the data,
+            in the order in which they were added.
+
+    Methods:
+        add_step(processor: Union[SlicingFunction, TransformationFunction]) -> DataProcessor:
+            Add a function to the processing pipeline, if it is not already the last step in the pipeline. Return self.
+
+        apply(dataset: Dataset, apply_only_last=False) -> Dataset:
+            Apply the processing pipeline to the given dataset. If apply_only_last is True, apply only the last function
+            in the pipeline. Return a new Dataset object containing the processed data.
+
+        __repr__() -> str:
+            Return a string representation of the DataProcessor object, showing the number of steps in its pipeline.
+    """
     pipeline: List[Union[SlicingFunction, TransformationFunction]] = []
 
     @configured_validate_arguments
@@ -68,6 +90,51 @@ class DataProcessor:
 
 
 class Dataset:
+    """
+    A class that represents a dataset object.
+
+    Members:
+        name (str):
+            The name of the dataset.
+        target (str):
+            The name of the target column in the dataset.
+        column_types (Dict[str, str]):
+            A dictionary mapping column names to their corresponding column types.
+        df (pd.DataFrame):
+            The pandas DataFrame containing the data.
+        id (uuid.UUID):
+            The unique identifier of the dataset.
+        data_processor (DataProcessor):
+            A `DataProcessor` object that can be used to transform the dataset.
+
+    Methods:
+        __init__(self, df: pd.DataFrame, name: Optional[str] = None, target: Optional[str] = None,
+        cat_columns: Optional[List[str]] = None, infer_column_types: Optional[bool] = False,
+        column_types: Optional[Dict[str, str]] = None, id: Optional[uuid.UUID] = None) -> None:
+            Constructs a new `Dataset` object.
+        add_slicing_function(self, slicing_function: SlicingFunction):
+            Adds a slicing function to the dataset's `DataProcessor`.
+        add_transformation_function(self, slicing_function: SlicingFunction):
+            Adds a transformation function to the dataset's `DataProcessor`.
+        slice(self, slicing_function: Optional[SlicingFunction] = None):
+            Applies the slicing function to the dataset's `DataProcessor`.
+        transform(self, transformation_function: TransformationFunction):
+            Applies the transformation function to the dataset's `DataProcessor`.
+        process(self):
+            Applies all the functions in the dataset's `DataProcessor`.
+        check_hashability(df):
+            Checks if the DataFrame is hashable.
+        infer_column_types(df, column_dtypes, no_cat=False):
+            Infers the column types of a DataFrame.
+        extract_column_types(column_dtypes, cat_columns):
+            Extracts the column types from a DataFrame.
+        extract_column_dtypes(df):
+            Extracts the column data types from a DataFrame.
+        upload(self, client: GiskardClient, project_key: str):
+            Uploads the dataset to the Giskard server.
+        meta(self):
+            Returns a `DatasetMeta` object containing metadata about the dataset.
+    """
     name: str
     target: str
     column_types: Dict[str, str]
@@ -118,8 +185,8 @@ class Dataset:
                 "In this case, we assume that there's no categorical columns in your Dataset."
             )
 
-        from giskard.core.dataset_validation import validate_column_types_vs_dtypes
-        validate_column_types_vs_dtypes(self)
+        from giskard.core.dataset_validation import validate_numeric_columns
+        validate_numeric_columns(self)
 
     def add_slicing_function(self, slicing_function: SlicingFunction):
         self.data_processor.add_step(slicing_function)
