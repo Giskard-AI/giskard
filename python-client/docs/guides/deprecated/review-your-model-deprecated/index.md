@@ -4,7 +4,7 @@ description: How to evaluate and get collaborative feedback on your Machine Lear
 
 # Collect feedback of your ML model
 
-:::{info}
+:::{hint}
 To review your model, you can either
 
 * Inspect it by yourself
@@ -107,7 +107,7 @@ To better target some feedback, you can filter them depending on:
 
 You can also aggregate the feedback using the "Group by feature" checkbox.&#x20;
 
-:::{info}
+:::{hint}
 Grouping feedback by feature enables you to check which feature collected the most feedback. Analyzing your feedback allows you to schedule your feature engineering tasks for your next model version.
 :::
 
@@ -117,7 +117,7 @@ You can click on particular feedback to re-inspect the example and discuss it wi
 
 ![](<../../assets/Screenshot_2022-03-08_at_10.00.08_(1).png>)
 
-:::{info}
+:::{hint}
 Discussion can be important to clarify the feedback context and find the best action to correct the model.
 :::
 

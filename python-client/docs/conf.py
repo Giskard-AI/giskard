@@ -15,6 +15,7 @@ release = '2.0.0'
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
 extensions = ["myst_parser",
+              'sphinx_design',
               'sphinx.ext.todo',
               'sphinx.ext.napoleon',
               'sphinx.ext.autodoc',
