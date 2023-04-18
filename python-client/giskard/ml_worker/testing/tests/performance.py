@@ -32,9 +32,7 @@ def _get_rmse(y_actual, y_predicted):
     return np.sqrt(mean_squared_error(y_actual, y_predicted))
 
 
-def _test_classification_score(
-        score_fn, gsk_dataset: Dataset, model: BaseModel, threshold: float = 1.0
-):
+def _test_classification_score(score_fn, gsk_dataset: Dataset, model: BaseModel, threshold: float = 1.0):
     _verify_target_availability(gsk_dataset)
     is_binary_classification = len(model.meta.classification_labels) == 2
     gsk_dataset.df.reset_index(drop=True, inplace=True)
@@ -45,9 +43,7 @@ def _test_classification_score(
     else:
         metric = score_fn(actual_target, prediction, average="macro")
 
-    return TestResult(
-        actual_slices_size=[len(gsk_dataset)], metric=metric, passed=bool(metric >= threshold)
-    )
+    return TestResult(actual_slices_size=[len(gsk_dataset)], metric=metric, passed=bool(metric >= threshold))
 
 
 def _test_accuracy_score(gsk_dataset: Dataset, model: BaseModel, threshold: float = 1.0):
@@ -58,14 +54,10 @@ def _test_accuracy_score(gsk_dataset: Dataset, model: BaseModel, threshold: floa
 
     metric = accuracy_score(actual_target, prediction)
 
-    return TestResult(
-        actual_slices_size=[len(gsk_dataset)], metric=metric, passed=bool(metric >= threshold)
-    )
+    return TestResult(actual_slices_size=[len(gsk_dataset)], metric=metric, passed=bool(metric >= threshold))
 
 
-def _test_regression_score(
-        score_fn, giskard_ds, model: BaseModel, threshold: float = 1.0, r2=False
-):
+def _test_regression_score(score_fn, giskard_ds, model: BaseModel, threshold: float = 1.0, r2=False):
     results_df = pd.DataFrame()
     giskard_ds.df.reset_index(drop=True, inplace=True)
     _verify_target_availability(giskard_ds)
@@ -83,23 +75,32 @@ def _test_regression_score(
 
 
 def _test_diff_prediction(
-        test_fn, model, actual_slice, reference_slice, threshold: float = 0.5, test_name=None
+    test_fn,
+    model,
+    actual_slice,
+    reference_slice,
+    threshold: float = 0.5,
+    absolute: bool = True,
+    test_name=None,
 ):
-    metric_1 = test_fn(reference_slice, model).metric
-    metric_2 = test_fn(actual_slice, model).metric
+    metric_reference = test_fn(reference_slice, model).metric
+    metric_actual = test_fn(actual_slice, model).metric
+
     try:
-        change_pct = abs(metric_1 - metric_2) / metric_1
+        rel_change = (metric_actual - metric_reference) / metric_reference
     except ZeroDivisionError:
         raise ZeroDivisionError(
             f"Unable to calculate performance difference: the {test_name} inside the"
-            f" reference_dataset is equal to zero"
+            " reference_dataset is equal to zero"
         )
+
+    passed = abs(rel_change) < threshold if absolute else rel_change > threshold
 
     return TestResult(
         actual_slices_size=[len(actual_slice)],
         reference_slices_size=[len(reference_slice)],
-        metric=change_pct,
-        passed=bool(change_pct < threshold),
+        metric=rel_change,
+        passed=passed,
     )
 
 
@@ -110,6 +111,7 @@ class AucTest(GiskardTest):
 
     Example : The test is passed when the AUC for females is higher than 0.7
     """
+
     dataset: Dataset
     model: BaseModel
     threshold: float
@@ -168,25 +170,17 @@ def test_auc(dataset: Dataset, model: BaseModel, slicing_function: SlicingFuncti
     dataset = dataset.slice(slicing_function)
     _verify_target_availability(dataset)
     if len(model.meta.classification_labels) == 2:
-        metric = roc_auc_score(
-            dataset.df[dataset.target], model.predict(dataset).raw_prediction
-        )
+        metric = roc_auc_score(dataset.df[dataset.target], model.predict(dataset).raw_prediction)
     else:
         predictions = model.predict(dataset).all_predictions
-        non_declared_categories = set(predictions.columns) - set(
-            dataset.df[dataset.target].unique()
-        )
+        non_declared_categories = set(predictions.columns) - set(dataset.df[dataset.target].unique())
         assert not len(
             non_declared_categories
         ), f'Predicted classes don\'t exist in the dataset "{dataset.target}" column: {non_declared_categories}'
 
-        metric = roc_auc_score(
-            dataset.df[dataset.target], predictions, multi_class="ovo"
-        )
+        metric = roc_auc_score(dataset.df[dataset.target], predictions, multi_class="ovo")
 
-    return TestResult(
-        actual_slices_size=[len(dataset)], metric=metric, passed=bool(metric >= threshold)
-    )
+    return TestResult(actual_slices_size=[len(dataset)], metric=metric, passed=bool(metric >= threshold))
 
 
 @test(name='F1', tags=['performance', 'classification', 'ground_truth'])
@@ -249,8 +243,9 @@ def test_accuracy(dataset: Dataset, model: BaseModel, slicing_function: SlicingF
 
 
 @test(name='Precision', tags=['performance', 'classification', 'ground_truth'])
-def test_precision(dataset: Dataset, model: BaseModel, slicing_function: SlicingFunction = None,
-                   threshold: float = 1.0):
+def test_precision(
+    dataset: Dataset, model: BaseModel, slicing_function: SlicingFunction = None, threshold: float = 1.0
+):
     """
     Test if the model Precision is higher than a threshold for a given slice
 
@@ -394,8 +389,14 @@ def test_r2(dataset: Dataset, model: BaseModel, slicing_function: SlicingFunctio
 
 
 @test(name='Accuracy difference', tags=['performance', 'classification', 'ground_truth'])
-def test_diff_accuracy(actual_dataset: Dataset, reference_dataset: Dataset, model: BaseModel,
-                       slicing_function: SlicingFunction = None, threshold: float = 0.1):
+def test_diff_accuracy(
+    actual_dataset: Dataset,
+    reference_dataset: Dataset,
+    model: BaseModel,
+    slicing_function: SlicingFunction = None,
+    threshold: float = 0.1,
+    absolute: bool = True,
+):
     """
 
     Test if the absolute percentage change of model Accuracy between two samples is lower than a threshold
@@ -432,17 +433,21 @@ def test_diff_accuracy(actual_dataset: Dataset, reference_dataset: Dataset, mode
         model,
         actual_dataset.slice(slicing_function),
         reference_dataset.slice(slicing_function),
-        threshold,
+        threshold=threshold,
+        absolute=absolute,
         test_name="Accuracy",
     )
 
 
 @test(name='F1 difference', tags=['performance', 'classification', 'ground_truth'])
-def test_diff_f1(actual_dataset: Dataset,
-                 reference_dataset: Dataset,
-                 model: BaseModel,
-                 slicing_function: SlicingFunction = None,
-                 threshold: float = 0.1):
+def test_diff_f1(
+    actual_dataset: Dataset,
+    reference_dataset: Dataset,
+    model: BaseModel,
+    slicing_function: SlicingFunction = None,
+    threshold: float = 0.1,
+    absolute: bool = True,
+):
     """
     Test if the absolute percentage change in model F1 Score between two samples is lower than a threshold
 
@@ -475,14 +480,25 @@ def test_diff_f1(actual_dataset: Dataset,
           TRUE if F1 Score difference < threshold
     """
     return _test_diff_prediction(
-        test_f1.test_fn, model, actual_dataset.slice(slicing_function),
-        reference_dataset.slice(slicing_function), threshold, test_name="F1 Score"
+        test_f1.test_fn,
+        model,
+        actual_dataset.slice(slicing_function),
+        reference_dataset.slice(slicing_function),
+        threshold=threshold,
+        absolute=absolute,
+        test_name="F1 Score",
     )
 
 
 @test(name='Precision difference', tags=['performance', 'classification', 'ground_truth'])
-def test_diff_precision(actual_dataset: Dataset, reference_dataset: Dataset, model: BaseModel,
-                        slicing_function: SlicingFunction = None, threshold: float = 0.1):
+def test_diff_precision(
+    actual_dataset: Dataset,
+    reference_dataset: Dataset,
+    model: BaseModel,
+    slicing_function: SlicingFunction = None,
+    threshold: float = 0.1,
+    absolute: bool = True,
+):
     """
     Test if the absolute percentage change of model Precision between two samples is lower than a threshold
 
@@ -518,14 +534,21 @@ def test_diff_precision(actual_dataset: Dataset, reference_dataset: Dataset, mod
         model,
         actual_dataset.slice(slicing_function),
         reference_dataset.slice(slicing_function),
-        threshold,
+        threshold=threshold,
+        absolute=absolute,
         test_name="Precision",
     )
 
 
 @test(name='Recall difference', tags=['performance', 'classification', 'ground_truth'])
-def test_diff_recall(actual_dataset: Dataset, reference_dataset: Dataset, model: BaseModel,
-                     slicing_function: SlicingFunction = None, threshold: float = 0.1):
+def test_diff_recall(
+    actual_dataset: Dataset,
+    reference_dataset: Dataset,
+    model: BaseModel,
+    slicing_function: SlicingFunction = None,
+    threshold: float = 0.1,
+    absolute: bool = True,
+):
     """
     Test if the absolute percentage change of model Recall between two samples is lower than a threshold
 
@@ -557,14 +580,25 @@ def test_diff_recall(actual_dataset: Dataset, reference_dataset: Dataset, model:
           TRUE if Recall difference < threshold
     """
     return _test_diff_prediction(
-        test_recall.test_fn, model, actual_dataset.slice(slicing_function),
-        reference_dataset.slice(slicing_function), threshold, test_name="Recall"
+        test_recall.test_fn,
+        model,
+        actual_dataset.slice(slicing_function),
+        reference_dataset.slice(slicing_function),
+        threshold=threshold,
+        absolute=absolute,
+        test_name="Recall",
     )
 
 
 @test(name='F1 Reference Actual difference', tags=['performance', 'classification', 'ground_truth'])
-def test_diff_reference_actual_f1(actual_dataset: Dataset, reference_dataset: Dataset, model: BaseModel,
-                                  slicing_function: SlicingFunction = None, threshold: float = 0.1):
+def test_diff_reference_actual_f1(
+    actual_dataset: Dataset,
+    reference_dataset: Dataset,
+    model: BaseModel,
+    slicing_function: SlicingFunction = None,
+    threshold: float = 0.1,
+    absolute: bool = True,
+):
     """
     Test if the absolute percentage change in model F1 Score between reference and actual data
     is lower than a threshold
@@ -597,14 +631,25 @@ def test_diff_reference_actual_f1(actual_dataset: Dataset, reference_dataset: Da
           TRUE if F1 Score difference < threshold
     """
     return _test_diff_prediction(
-        test_f1.test_fn, model, actual_dataset.slice(slicing_function),
-        reference_dataset.slice(slicing_function), threshold, test_name="F1 Score"
+        test_f1.test_fn,
+        model,
+        actual_dataset.slice(slicing_function),
+        reference_dataset.slice(slicing_function),
+        threshold=threshold,
+        absolute=absolute,
+        test_name="F1 Score",
     )
 
 
 @test(name='Accuracy Reference Actual difference', tags=['performance', 'classification', 'ground_truth'])
-def test_diff_reference_actual_accuracy(actual_dataset: Dataset, reference_dataset: Dataset, model: BaseModel,
-                                        slicing_function: SlicingFunction = None, threshold: float = 0.1):
+def test_diff_reference_actual_accuracy(
+    actual_dataset: Dataset,
+    reference_dataset: Dataset,
+    model: BaseModel,
+    slicing_function: SlicingFunction = None,
+    threshold: float = 0.1,
+    absolute: bool = True,
+):
     """
     Test if the absolute percentage change in model Accuracy between reference and actual data
     is lower than a threshold
@@ -641,14 +686,21 @@ def test_diff_reference_actual_accuracy(actual_dataset: Dataset, reference_datas
         model,
         actual_dataset.slice(slicing_function),
         reference_dataset.slice(slicing_function),
-        threshold,
+        threshold=threshold,
+        absolute=absolute,
         test_name="Accuracy",
     )
 
 
 @test(name='RMSE difference', tags=['performance', 'regression', 'ground_truth'])
-def test_diff_rmse(actual_dataset: Dataset, reference_dataset: Dataset, model: BaseModel,
-                   slicing_function: SlicingFunction = None, threshold: float = 0.1):
+def test_diff_rmse(
+    actual_dataset: Dataset,
+    reference_dataset: Dataset,
+    model: BaseModel,
+    slicing_function: SlicingFunction = None,
+    threshold: float = 0.1,
+    absolute: bool = True,
+):
     """
     Test if the absolute percentage change of model RMSE between two samples is lower than a threshold
 
@@ -681,14 +733,25 @@ def test_diff_rmse(actual_dataset: Dataset, reference_dataset: Dataset, model: B
           TRUE if RMSE difference < threshold
     """
     return _test_diff_prediction(
-        test_rmse.test_fn, model, actual_dataset.slice(slicing_function),
-        reference_dataset.slice(slicing_function), threshold, test_name="RMSE"
+        test_rmse.test_fn,
+        model,
+        actual_dataset.slice(slicing_function),
+        reference_dataset.slice(slicing_function),
+        threshold=threshold,
+        absolute=absolute,
+        test_name="RMSE",
     )
 
 
 @test(name='RMSE Reference Actual difference', tags=['performance', 'regression', 'ground_truth'])
-def test_diff_reference_actual_rmse(actual_dataset: Dataset, reference_dataset: Dataset, model: BaseModel,
-                                    slicing_function: SlicingFunction = None, threshold: float = 0.1):
+def test_diff_reference_actual_rmse(
+    actual_dataset: Dataset,
+    reference_dataset: Dataset,
+    model: BaseModel,
+    slicing_function: SlicingFunction = None,
+    threshold: float = 0.1,
+    absolute: bool = True,
+):
     """
     Test if the absolute percentage change in model RMSE between reference and actual data
     is lower than a threshold
@@ -721,6 +784,11 @@ def test_diff_reference_actual_rmse(actual_dataset: Dataset, reference_dataset: 
           TRUE if RMSE difference < threshold
     """
     return _test_diff_prediction(
-        test_rmse.test_fn, model, actual_dataset.slice(slicing_function),
-        reference_dataset.slice(slicing_function), threshold, test_name="RMSE"
+        test_rmse.test_fn,
+        model,
+        actual_dataset.slice(slicing_function),
+        reference_dataset.slice(slicing_function),
+        threshold=threshold,
+        absolute=absolute,
+        test_name="RMSE",
     )
