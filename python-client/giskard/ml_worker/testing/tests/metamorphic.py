@@ -59,12 +59,16 @@ def _compare_prediction(results_df, prediction_task, direction, output_sensitivi
                 axis=1,
             )
             passed_idx = results_df.loc[results_df["predict_difference_ratio"] < output_sensitivity].index.values
+        else:
+            raise ValueError(f"Invalid prediction task: {prediction_task}")
 
     elif direction == Direction.Increasing:
         passed_idx = results_df.loc[results_df["prediction"] < results_df["perturbed_prediction"]].index.values
 
     elif direction == Direction.Decreasing:
         passed_idx = results_df.loc[results_df["prediction"] > results_df["perturbed_prediction"]].index.values
+    else:
+        raise ValueError(f"Invalid direction: {direction}")
 
     failed_idx = results_df.loc[~results_df.index.isin(passed_idx)].index.values
     return passed_idx, failed_idx
