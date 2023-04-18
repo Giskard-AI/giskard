@@ -95,26 +95,3 @@ def validate_column_categorization(ds: Dataset):
                 f"(> Nuniques.NUMERIC.value={Nuniques.NUMERIC.value}) distinct values. Are "
                 f"you sure it is not a 'numeric' feature?"
             )
-
-
-def validate_column_types_vs_dtypes(ds: Dataset):
-    """
-    Verifies that declared column_types are consistent with the extracted column_dtypes
-    :param ds: Dataset to be validated
-    """
-    for col, col_type in ds.column_types.items():
-        if col == ds.target:
-            break
-        if ds.column_dtypes[col] == SupportedColumnTypes.NUMERIC:
-            try:
-                ds[col] = ds[col].astype(float)
-            except TypeError as e:
-                raise TypeError(
-                    f"You declared your column '{col}' as 'numeric' but we were unable to cast it into 'float'. "
-                    f"Please check that you declared the type of '{col}' correctly in 'column_types'.") from e
-        elif ds.column_dtypes[col] == SupportedColumnTypes.TEXT:
-            try:
-                ds[col] = ds[col].astype(str)
-            except TypeError as e:
-                raise TypeError(f"You declared your column '{col}' as 'text' but we were unable to cast it into 'str'. "
-                                f"Please check that you declared the type of '{col}' correctly in 'column_types'.") from e
