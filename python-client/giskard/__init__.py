@@ -29,6 +29,7 @@ from giskard.ml_worker.utils.logging import configure_logging
 from giskard.models import wrap_model, model_from_catboost, model_from_huggingface, model_from_tensorflow, \
     model_from_pytorch, model_from_sklearn
 from giskard.models.base import WrapperModel, CustomModel, MLFlowBasedModel, BaseModel
+from .scanner import scan
 
 configure_logging()
 if sys.version_info >= (3, 8):
@@ -104,7 +105,8 @@ __all__ = [
     'slicing_function',
     'transformation_function',
     'SuiteInput',
-    'SlicingFunction'
+    'SlicingFunction',
+    'scan'
 ]
 try:
     from giskard.models.catboost import CatboostModel
