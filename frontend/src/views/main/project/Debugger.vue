@@ -31,17 +31,13 @@ function toggleActiveInspection(id: number) {
   }
 }
 
-
-function checkActiveInspection(inspectionId: number): boolean {
-  return activeInspection.value === inspectionId;
-}
-
 function logInspection(inspection: any) {
   console.log(inspection);
 }
 
-function deleteInspection(id: number) {
-  console.log("Delete inspection " + id);
+async function deleteInspection(id: number) {
+  await api.deleteInspection(id);
+  await loadInspections();
 }
 
 // function formatDate(date: Date): string {
@@ -93,7 +89,7 @@ onActivated(() => loadInspections());
               <v-col cols="1">{{ inspection.model.id }}</v-col>
               <v-col cols="1">
                 <v-card-actions>
-                  <v-btn icon color="accent" class="delete-button" @click="deleteInspection(inspection.id)">
+                  <v-btn icon color="accent" class="delete-button" @click.stop="deleteInspection(inspection.id)">
                     <v-icon>mdi-delete</v-icon>
                   </v-btn>
                 </v-card-actions>
