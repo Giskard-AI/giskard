@@ -21,8 +21,8 @@ reference/index
 
 ## <project:/reference/index.rst>
 
-The reference guide contains a detailed description of the functions, modules, and objects included in Giskard.
-The reference describes ho the methods work and which parameters can be used.
+**The reference guide contains a detailed description of the functions, modules, and objects included in Giskard.
+The reference describes ho the methods work and which parameters can be used.**
 
 - **<project:/reference/models/index.rst>**
 - **<project:/reference/datasets/index.rst>**
