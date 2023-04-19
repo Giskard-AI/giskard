@@ -34,7 +34,10 @@ function toggleActiveInspection(newActiveInspectionId: Props["activeInspectionId
 
 function createNewInspection(newInspection: InspectionDTO) {
   inspections.value.push(newInspection);
-  toggleActiveInspection(newInspection.id);
+  toggleActiveInspection(null);
+  setTimeout(() => {
+    toggleActiveInspection(newInspection.id);
+  });
 }
 
 async function deleteInspection(id: number) {
