@@ -58,7 +58,8 @@ You can see all our tests in the [📖 Test Catalog](../test-catalog/index.rst)
 :::{tab-item} Drift tests
 
 ```python
-from giskard import wrap_model, wrap_dataset, test_drift_prediction_ks
+from giskard import wrap_model, wrap_dataset
+from giskard.ml_worker.testing.tests.drift import test_drift_prediction_ks
 
 my_model = wrap_model(...)
 train_df = wrap_dataset(...)
@@ -85,7 +86,8 @@ one. Then you need to initialize the test and execute it, it will return a **Tes
 :::{tab-item} Performance tests
 
 ```python
-from giskard import wrap_model, wrap_dataset, test_f1
+from giskard import wrap_model, wrap_dataset
+from giskard.ml_worker.testing.tests.performance import test_f1
 
 my_model = wrap_model(...)
 dataset = wrap_dataset(...)
@@ -99,7 +101,8 @@ print(f"result: {result.passed} with metric {result.metric}")
 :::{tab-item} Metamorphic tets
 
 ```python
-from giskard import wrap_model, wrap_dataset, test_metamorphic_invariance, transformation_function
+from giskard import wrap_model, wrap_dataset, transformation_function
+from giskard.ml_worker.testing.tests.metamorphic import test_metamorphic_invariance
 
 my_model = wrap_model(...)
 dataset = wrap_dataset(...)
@@ -123,7 +126,8 @@ to see how to create custom transformations
 :::{tab-item} Statistic tests
 
 ```python
-from giskard import wrap_model, wrap_dataset, test_right_label
+from giskard import wrap_model, wrap_dataset
+from giskard.ml_worker.testing.tests.statistic import test_right_label
 
 my_model = wrap_model(...)
 dataset = wrap_dataset(...)
@@ -240,7 +244,8 @@ In order to define a custom test class, you need to extends `GiskardTest` and im
 Example using a performance test and the DataQuality test created previously
 
 ```python
-from giskard import wrap_model, wrap_dataset, test_f1, Suite
+from giskard import wrap_model, wrap_dataset, Suite
+from giskard.ml_worker.testing.tests.performance import test_f1
 
 # Define our Giskard Model
 my_dataset = wrap_dataset(...)
@@ -248,9 +253,10 @@ my_dataset = wrap_dataset(...)
 # Create a suite and add a F1 test and a DataQuality test
 # Note that all the parameters are specified excect dataset
 # Which means that we will need to specify dataset everytime we run the suite
-suite = Suite()
-.add_test(test_f1(actual_slice=my_dataset))
-.add_test(DataQuality(dataset=my_dataset, column_name='Month', category='August'), "quality"))
+
+suite = Suite() \
+    .add_test(test_f1(actual_slice=my_dataset)) \
+    .add_test(DataQuality(dataset=my_dataset, column_name='Month', category='August'), "quality")
 
 # Create our first model
 my_first_model = wrap_model(...)
@@ -263,6 +269,8 @@ my_improved_model = wrap_model(...)
 
 # Run the suite with our new version and check if the results improved
 suite.run(model=my_improved_model)
+
+
 ```
 
 #### Description
@@ -288,7 +296,8 @@ a test class or a test function.
 :::{tab-item} Test suite saving
 
 ```python
-from giskard import test_f1, Suite, GiskardClient
+from giskard import Suite, GiskardClient
+from giskard.ml_worker.testing.tests.performance import test_f1
 
 url = "http://localhost:19000"  # If Giskard is installed locally (for installation, see: https://docs.giskard.ai/start/guides/installation)
 # url = "http://app.giskard.ai" # If you want to upload on giskard URL
@@ -301,10 +310,12 @@ client = GiskardClient(url, token)
 # Create a project
 client.create_project(project_name, "Email Classification", "Email Classification")
 
-suite = Suite()
-.add_test(test_f1(actual_slice=my_dataset))
-.add_test(DataQuality(dataset=my_dataset, column_name='Month', category='August'))
-.save(client, project_name)
+suite = Suite() \
+    .add_test(test_f1(actual_slice=my_dataset)) \
+    .add_test(DataQuality(dataset=my_dataset, column_name='Month', category='August')) \
+    .save(client, project_name)
+
+
 ```
 
 #### Description

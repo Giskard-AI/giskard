@@ -8,8 +8,8 @@ from torchtext.datasets import AG_NEWS
 from torchtext.vocab import build_vocab_from_iterator
 
 import tests.utils
-from giskard import PyTorchModel, Dataset
-
+from giskard import Dataset
+from giskard.models.pytorch import PyTorchModel
 
 train_iter = AG_NEWS(split="train")
 test_iter = AG_NEWS(split="test")

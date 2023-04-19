@@ -1,4 +1,5 @@
 import asyncio
+import datetime
 import logging
 import os
 import platform
@@ -254,4 +255,5 @@ def read_logs(lines, is_follow):
 
 
 if __name__ == "__main__":
+    print('cli', datetime.datetime.now() - giskard.start)
     cli(auto_envvar_prefix="GSK")

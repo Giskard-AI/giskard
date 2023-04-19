@@ -130,7 +130,7 @@ def model_from_sklearn(model, model_type: ModelType, name: Optional[str] = None,
         SKLearnModel
             An instance of the `SKLearnModel` class.
     """
-    from giskard import SKLearnModel
+    from giskard.models.sklearn import SKLearnModel
     return SKLearnModel(model,
                         model_type,
                         name,
@@ -168,7 +168,7 @@ def model_from_catboost(model, model_type: ModelType, name: Optional[str] = None
     Returns:
         CatboostModel: An instance of the `CatboostModel` class.
     """
-    from giskard import CatboostModel
+    from giskard.models.catboost import CatboostModel
     return CatboostModel(model,
                          model_type,
                          name,
@@ -211,13 +211,13 @@ def model_from_pytorch(model, model_type: ModelType, torch_dtype=None, device: O
     Returns:
         PyTorchModel: An instance of the `PyTorchModel` class.
     """
-    from giskard import PyTorchModel
     try:
         import torch
     except ImportError as e:
         raise ImportError("Please install it via 'pip install torch'") from e
 
     torch_dtype = torch.float32 if not torch_dtype else torch_dtype
+    from giskard.models.pytorch import PyTorchModel
     return PyTorchModel(model,
                         model_type,
                         torch_dtype,
@@ -258,7 +258,7 @@ def model_from_tensorflow(model, model_type: ModelType, name: Optional[str] = No
     Returns:
         TensorFlowModel: An instance of the `TensorFlowModel` class.
     """
-    from giskard import TensorFlowModel
+    from giskard.models.tensorflow import TensorFlowModel
     return TensorFlowModel(model,
                            model_type,
                            name,
@@ -296,7 +296,7 @@ def model_from_huggingface(model, model_type: ModelType, name: Optional[str] = N
     Returns:
         HuggingFaceModel: An instance of the `HuggingFaceModel` class.
     """
-    from giskard import HuggingFaceModel
+    from giskard.models.huggingface import HuggingFaceModel
     return HuggingFaceModel(model,
                             model_type,
                             name,

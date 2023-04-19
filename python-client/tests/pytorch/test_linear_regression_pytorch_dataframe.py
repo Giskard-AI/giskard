@@ -7,7 +7,8 @@ from torch.utils.data import TensorDataset, DataLoader
 from torch.utils.data.dataset import random_split
 
 import tests.utils
-from giskard import PyTorchModel, Dataset
+from giskard import Dataset
+from giskard.models.pytorch import PyTorchModel
 
 
 class ManualLinearRegression(nn.Module):

@@ -3,7 +3,7 @@ import re
 import pytest
 
 from giskard import Dataset
-from giskard import SKLearnModel
+from giskard.models.sklearn import SKLearnModel
 from tests.utils import MockedClient, match_model_id, match_url_patterns
 
 model_name = "uploaded model"
@@ -72,7 +72,8 @@ def _test_upload_model_exceptions(model: SKLearnModel, ds: Dataset):
                     name=model_name,
                     classification_labels=[0, 1],
                 ).upload(client, "test-project", ds)
-            assert e.match("Values .* in .* column are not declared in classification_labels parameter .* of the model: uploaded model") # noqa
+            assert e.match(
+                "Values .* in .* column are not declared in classification_labels parameter .* of the model: uploaded model")  # noqa
 
 
 @pytest.mark.parametrize(
