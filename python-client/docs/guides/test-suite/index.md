@@ -60,13 +60,13 @@ You can see all our tests in the [📖 Test Catalog](../test-catalog/index.rst)
 ```python
 from giskard import wrap_model, wrap_dataset, test_drift_prediction_ks
 
-my_model = wrap_model(...)
+wrapped_model = wrap_model(...)
 train_df = wrap_dataset(...)
 test_df = wrap_dataset(...)
 
 result = test_drift_prediction_ks(reference_dataset=train_df,
                                   actual_dataset=test_df,
-                                  model=my_model,
+                                  model=wrapped_model,
                                   classification_label='CALIFORNIA CRISIS',
                                   threshold=0.5).execute()
 
@@ -87,10 +87,10 @@ one. Then you need to initialize the test and execute it, it will return a **Tes
 ```python
 from giskard import wrap_model, wrap_dataset, test_f1
 
-my_model = wrap_model(...)
+wrapped_model = wrap_model(...)
 dataset = wrap_dataset(...)
 
-result = test_f1(dataset=dataset, model=my_model).execute()
+result = test_f1(dataset=dataset, model=wrapped_model).execute()
 print(f"result: {result.passed} with metric {result.metric}")
 ```
 
@@ -101,7 +101,7 @@ print(f"result: {result.passed} with metric {result.metric}")
 ```python
 from giskard import wrap_model, wrap_dataset, test_metamorphic_invariance, transformation_function
 
-my_model = wrap_model(...)
+wrapped_model = wrap_model(...)
 dataset = wrap_dataset(...)
 
 
@@ -111,7 +111,7 @@ def add_three_years(row):
     return row
 
 
-result = test_metamorphic_invariance(dataset, my_model, add_three_years).execute()
+result = test_metamorphic_invariance(dataset, wrapped_model, add_three_years).execute()
 print(f"result: {result.passed} with metric {result.metric}")
 ```
 
@@ -125,10 +125,10 @@ to see how to create custom transformations
 ```python
 from giskard import wrap_model, wrap_dataset, test_right_label
 
-my_model = wrap_model(...)
+wrapped_model = wrap_model(...)
 dataset = wrap_dataset(...)
 
-result = test_right_label(dataset, my_model, 'SUCCESS').execute()
+result = test_right_label(dataset, wrapped_model, 'SUCCESS').execute()
 print(f"result: {result.passed} with metric {result.metric}")
 ```
 
@@ -243,14 +243,14 @@ Example using a performance test and the DataQuality test created previously
 from giskard import wrap_model, wrap_dataset, test_f1, Suite
 
 # Define our Giskard Model
-my_dataset = wrap_dataset(...)
+wrapped_dataset = wrap_dataset(...)
 
 # Create a suite and add a F1 test and a DataQuality test
 # Note that all the parameters are specified excect dataset
 # Which means that we will need to specify dataset everytime we run the suite
 suite = Suite()
-.add_test(test_f1(actual_slice=my_dataset))
-.add_test(DataQuality(dataset=my_dataset, column_name='Month', category='August'), "quality"))
+    .add_test(test_f1, "f1", dataset=wrapped_dataset)
+    .add_test(DataQuality(dataset=wrapped_dataset, column_name='Month', category='August'), "quality")
 
 # Create our first model
 my_first_model = wrap_model(...)
@@ -302,8 +302,8 @@ client = GiskardClient(url, token)
 client.create_project(project_name, "Email Classification", "Email Classification")
 
 suite = Suite()
-.add_test(test_f1(actual_slice=my_dataset))
-.add_test(DataQuality(dataset=my_dataset, column_name='Month', category='August'))
+.add_test(test_f1, dataset=wrapped_dataset)
+.add_test(DataQuality(dataset=wrapped_dataset, column_name='Month', category='August'))
 .save(client, project_name)
 ```
 
