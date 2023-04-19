@@ -335,9 +335,6 @@ class Dataset:
 
         Returns:
             str: The ID of the uploaded dataset.
-
-        Raises:
-            DatasetValidationError: If the dataset is not valid.
         """
         from giskard.core.dataset_validation import validate_dataset
 
@@ -390,7 +387,8 @@ class Dataset:
         If the client is None, then the function assumes that it is running in an internal worker and looks for the dataset locally.
 
         Args:
-            client (GiskardClient or None): The GiskardClient instance to use for downloading the dataset.
+            client (GiskardClient):
+                The GiskardClient instance to use for downloading the dataset.
                 If None, the function looks for the dataset locally.
             project_key (str): The key of the Giskard project that the dataset belongs to.
             dataset_id (str): The ID of the dataset to download.
