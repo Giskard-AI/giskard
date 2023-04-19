@@ -41,6 +41,15 @@ class TorchMinimalDataset(torch_dataset):
 
 
 class PyTorchModel(MLFlowBasedModel):
+    """
+    A wrapper class for PyTorch models that extends the functionality of the
+    MLFlowBasedModel class.
+
+    Attributes:
+        iterate_dataset (bool, optional): Whether to iterate over the dataset for prediction. Defaults to True.
+        device (str): The device to run the model on.
+        torch_dtype (TorchDType): The data type to be used for input tensors.
+    """
     def __init__(
             self,
             model,
