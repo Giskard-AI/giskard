@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import math
 import os
 import platform
 import sys
@@ -168,27 +169,11 @@ class MLWorkerServiceImpl(MLWorkerServicer):
         dataset = Dataset.download(self.client, request.dataset.project_key, request.dataset.id)
 
         result = dataset.slice(slicing_function)
-        desc = result.df.describe()
 
         return ml_worker_pb2.SlicingResultMessage(
-            totalRow=len(dataset.df.index),
-            filteredRow=len(result.df.index),
-            describeColumns=[
-                ml_worker_pb2.DatasetDescribeColumn(
-                    columnName=col,
-                    count=int(desc[col]['count']),
-                    unique=desc[col]['unique'] if 'unique' in desc[col] else None,
-                    top=desc[col]['top'] if 'top' in desc[col] else None,
-                    freq=desc[col]['freq'] if 'freq' in desc[col] else None,
-                    mean=desc[col]['mean'] if 'mean' in desc[col] else None,
-                    std=desc[col]['std'] if 'std' in desc[col] else None,
-                    min=desc[col]['min'] if 'min' in desc[col] else None,
-                    twentyFive=desc[col]['25%'] if '25%' in desc[col] else None,
-                    fifty=desc[col]['50%'] if '50%' in desc[col] else None,
-                    seventyFive=desc[col]['75%'] if '75%' in desc[col] else None,
-                    max=desc[col]['max'] if 'max' in desc[col] else None,
-                ) for col in desc.columns
-            ]
+            datasetId=request.dataset.id,
+            totalRows=len(dataset.df.index),
+            filteredRows=dataset.df.index.difference(result.df.index)
         )
 
     def runAdHocTransformation(
@@ -198,31 +183,19 @@ class MLWorkerServiceImpl(MLWorkerServicer):
         dataset = Dataset.download(self.client, request.dataset.project_key, request.dataset.id)
 
         result = dataset.transform(transformation_function)
-        desc = result.df.describe()
 
-        modified_rows = 0
-        for idx, r in dataset.df.iterrows():
-            if not r.equals(result.df.loc[idx]):
-                modified_rows += 1
+        modified_rows = result.df[dataset.df.ne(result.df)].dropna(how='all')
 
         return ml_worker_pb2.TransformationResultMessage(
-            totalRow=len(dataset.df.index),
-            modifiedRow=modified_rows,
-            describeColumns=[
-                ml_worker_pb2.DatasetDescribeColumn(
-                    columnName=col,
-                    count=int(desc[col]['count']),
-                    unique=desc[col]['unique'] if 'unique' in desc[col] else None,
-                    top=desc[col]['top'] if 'top' in desc[col] else None,
-                    freq=desc[col]['freq'] if 'freq' in desc[col] else None,
-                    mean=desc[col]['mean'] if 'mean' in desc[col] else None,
-                    std=desc[col]['std'] if 'std' in desc[col] else None,
-                    min=desc[col]['min'] if 'min' in desc[col] else None,
-                    twentyFive=desc[col]['25%'] if '25%' in desc[col] else None,
-                    fifty=desc[col]['50%'] if '50%' in desc[col] else None,
-                    seventyFive=desc[col]['75%'] if '75%' in desc[col] else None,
-                    max=desc[col]['max'] if 'max' in desc[col] else None,
-                ) for col in desc.columns
+            datasetId=request.dataset.id,
+            totalRows=len(dataset.df.index),
+            modifications=[
+                ml_worker_pb2.DatasetRowModificationResult(
+                    rowId=row[0],
+                    modifications={key: str(value) for key, value in row[1].items() if not math.isnan(value)}
+                )
+                for row
+                in modified_rows.iterrows()
             ]
         )
 
