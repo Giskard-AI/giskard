@@ -140,7 +140,15 @@ results = giskard.scan(wrapped_model, wrapped_dataset, tests=["f1", "accuracy"])
 
 display(results) # in your notebook
 ```
-  
+In the notebook, this will produce a widget that allows you to explore the detected issues:
+![](<../../assets/scan_results.png>)
+
+
+You can also get a table of the scan results as a `pandas.DataFrame`. This is useful if you want to save the results of the scan to a CSV or HTML file.
+```python
+results_df = results.to_dataframe()
+results_df.to_csv("scan_results_my_model.csv")
+```  
 
 ## 6. Upload your model and dataset to giskard UI
 
