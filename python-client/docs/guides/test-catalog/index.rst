@@ -1,4 +1,4 @@
-Test Catalog
+📖 Test Catalog
 ============
 
 .. toctree::
