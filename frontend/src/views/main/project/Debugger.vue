@@ -7,26 +7,28 @@ import { computed, ref, onActivated } from "vue";
 
 interface Props {
   projectId: number;
+  activeInspectionId: number | null;
 }
 
-const props = defineProps<Props>();
+const props = withDefaults(defineProps<Props>(), {
+  activeInspectionId: null
+});
 
 const inspections = ref<InspectionDTO[]>([]);
-const activeInspection = ref<number | null>(null);
 const searchInspection = ref("");
 
-const displayComponents = computed(() => activeInspection.value == null);
+const displayComponents = computed(() => props.activeInspectionId === null);
 
 async function loadInspections() {
   inspections.value = await api.getProjectInspections(props.projectId)
-  // inspections.value = [];
 }
 
-function toggleActiveInspection(id: number) {
-  if (activeInspection.value === id) {
-    activeInspection.value = null;
+
+function toggleActiveInspection(newActiveInspectionId: Props["activeInspectionId"]) {
+  if (props.activeInspectionId === newActiveInspectionId) {
+    props.activeInspectionId = null;
   } else {
-    activeInspection.value = id;
+    props.activeInspectionId = newActiveInspectionId;
   }
 }
 
@@ -61,7 +63,7 @@ onActivated(() => loadInspections());
         </v-col>
         <v-col cols="8">
           <div class="d-flex justify-end">
-            <v-btn v-if="activeInspection !== null" @click="activeInspection = null" class="mr-4 pa-2">
+            <v-btn v-if="!displayComponents" @click="toggleActiveInspection(null)" class="mr-4 pa-2">
               <v-icon>mdi-arrow-u-left-top</v-icon> Show past inspections
             </v-btn>
             <InspectionDialog v-bind:project-id="projectId" v-on:createInspection="createNewInspection"></InspectionDialog>
@@ -102,7 +104,7 @@ onActivated(() => loadInspections());
           </v-expansion-panel-header>
         </v-expansion-panel>
       </v-expansion-panels>
-      <InspectorWrapper v-if="activeInspection !== null" :projectId="projectId" :inspectionId="activeInspection"></InspectorWrapper>
+      <InspectorWrapper v-if="!displayComponents" :projectId="projectId" :inspectionId="activeInspectionId"></InspectorWrapper>
     </v-container>
 
     <v-container v-else class="vc mt-12">
