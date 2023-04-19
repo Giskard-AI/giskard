@@ -68,27 +68,27 @@ onActivated(() => {
   <div class="text-center">
     <v-dialog v-model="dialog" width="60vw">
       <template v-slot:activator="{ on, attrs }">
-        <v-btn color="primary" v-bind="attrs" v-on="on">
+        <v-btn color="primary" v-bind="attrs" v-on="on" @click="resetInputs">
           <v-icon>add</v-icon>
           New Inspection Session
         </v-btn>
       </template>
       <v-stepper non-linear v-model="currentStep">
         <v-stepper-header>
-          <v-stepper-step step="1" :complete="currentStep > 1" editable>
+          <v-stepper-step step="1" :complete="currentStep > 1">
             Select a model
           </v-stepper-step>
           <v-divider></v-divider>
-          <v-stepper-step step="2" :complete="currentStep > 2" editable>
+          <v-stepper-step step="2" :complete="currentStep > 2">
             Select a dataset
           </v-stepper-step>
           <v-divider></v-divider>
-          <v-stepper-step step="3" :complete="currentStep > 3" editable>
+          <v-stepper-step step="3" :complete="currentStep > 3">
             Define a inspection name
             <small>Optional</small>
           </v-stepper-step>
           <v-divider></v-divider>
-          <v-stepper-step step="4" :complete="currentStep > 4" editable>
+          <v-stepper-step step="4" :complete="currentStep > 4">
             Review
           </v-stepper-step>
         </v-stepper-header>
