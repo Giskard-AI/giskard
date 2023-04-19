@@ -41,7 +41,8 @@ class TorchMinimalDataset(torch_dataset):
 
 
 class PyTorchModel(MLFlowBasedModel):
-    """A wrapper class for PyTorch models that extends the functionality of the
+    """
+    A wrapper class for PyTorch models that extends the functionality of the
     MLFlowBasedModel class.
 
     Attributes:
@@ -49,7 +50,6 @@ class PyTorchModel(MLFlowBasedModel):
         device (str): The device to run the model on.
         torch_dtype (TorchDType): The data type to be used for input tensors.
     """
-
     def __init__(
             self,
             model,
@@ -171,15 +171,17 @@ class PyTorchModel(MLFlowBasedModel):
                 f"Cannot load model ({cls.__module__}.{cls.__name__}), " f"{pytorch_meta_file} file not found"
             )
 
-    def _get_dataset_from_dataloader(dl: DataLoader):
-        if not isinstance(dl.dataset, collections.defaultdict):
-            return dl.dataset
 
-        raise ValueError(
-            f"We tried to infer the torch.utils.data.Dataset from your DataLoader. \n \
-                        The type we found was {dl.dataset} which we don't support. Please provide us \n \
-                        with a different iterable as output of your data_preprocessing_function."
-        )
+def _get_dataset_from_dataloader(dl: DataLoader):
+    if not isinstance(dl.dataset, collections.defaultdict):
+        return dl.dataset
 
-    def _convert_to_numpy(self, predictions):
-        return torch.cat(predictions).detach().squeeze(0).numpy()
+    raise ValueError(
+        f"We tried to infer the torch.utils.data.Dataset from your DataLoader. \n \
+                    The type we found was {dl.dataset} which we don't support. Please provide us \n \
+                    with a different iterable as output of your data_preprocessing_function."
+    )
+
+
+def _convert_to_numpy(self, predictions):
+    return torch.cat(predictions).detach().squeeze(0).numpy()
