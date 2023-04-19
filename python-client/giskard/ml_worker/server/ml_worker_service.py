@@ -487,6 +487,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
 
     def suggestFilter(self, request: ml_worker_pb2.SuggestFilterRequest, context):
         # Here we would take everything that the Request gives us and try to return a list of suggestions
+        # Would need shap_values,
         # suggestions = suggest_filter(request.dataset)
         # return ml_worker_pb2.SuggestFilterResponse(suggestions=suggestions)
         return
