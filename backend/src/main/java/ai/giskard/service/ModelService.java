@@ -21,6 +21,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
+import java.time.Instant;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
@@ -98,15 +99,26 @@ public class ModelService {
         return response;
     }
 
-    public Inspection createInspection(UUID modelId, UUID datasetId) throws IOException {
+    public Inspection createInspection(String name, UUID modelId, UUID datasetId) throws IOException {
         log.info("Creating inspection for model {} and dataset {}", modelId, datasetId);
         ProjectModel model = modelRepository.getById(modelId);
         Dataset dataset = datasetRepository.getById(datasetId);
         permissionEvaluator.validateCanReadProject(model.getProject().getId());
 
         Inspection inspection = new Inspection();
+
+        if (name == null || name.isEmpty())
+            inspection.setName("Unnamed inspection");
+        else
+            inspection.setName(name);
+
         inspection.setDataset(dataset);
         inspection.setModel(model);
+
+        Instant instant = Instant.now();
+        inspection.setCreatedDate(instant);
+        inspection.setLastModifiedDate(instant);
+
         inspection = inspectionRepository.save(inspection);
 
         predictSerializedDataset(model, dataset, inspection.getId());
