@@ -7,21 +7,6 @@ from giskard.commands.cli_server import server
 from giskard.commands.cli_worker import worker
 from giskard.path_utils import run_dir
 
-# import sys
-# from typing import Optional
-#
-# import click
-# import lockfile
-# import psutil
-# from click import INT, STRING
-# from lockfile.pidlockfile import PIDLockFile, read_pid_from_pidfile, remove_existing_pidfile
-# from pydantic import AnyHttpUrl
-#
-# import giskard
-# from giskard.cli_utils import create_pid_file_path, remove_stale_pid_file, run_daemon, get_log_path, tail, follow_file
-# from giskard.cli_utils import validate_url
-# from giskard.client.analytics_collector import GiskardAnalyticsCollector, anonymize
-
 run_dir.mkdir(parents=True, exist_ok=True)
 
 
