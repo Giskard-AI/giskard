@@ -26,12 +26,14 @@ const filteredInspections = computed(() => {
     const dataset = inspection.dataset;
     const model = inspection.model;
 
+    const search = searchInspection.value.toLowerCase();
     return (
-      inspection.id.toString().includes(searchInspection.value) ||
-      dataset.name.toLowerCase().includes(searchInspection.value.toLowerCase()) ||
-      dataset.id.toString().includes(searchInspection.value) ||
-      model.name.toLowerCase().includes(searchInspection.value.toLowerCase()) ||
-      model.id.toString().includes(searchInspection.value)
+      inspection.id.toString().includes(search) ||
+      inspection.name.toLowerCase().includes(search) ||
+      dataset.name.toLowerCase().includes(search) ||
+      dataset.id.toString().includes(search) ||
+      model.name.toLowerCase().includes(search) ||
+      model.id.toString().includes(search)
     );
   });
 
@@ -64,13 +66,15 @@ async function deleteInspection(id: number) {
 
 }
 
-// function formatDate(date: Date): string {
-//   return date.getFullYear() +
-//     "-" + (date.getMonth() + 1).toString().padStart(2, "0") +
-//     "-" + date.getDate().toString().padStart(2, "0") +
-//     " " + date.getHours().toString().padStart(2, "0") +
-//     ":" + date.getMinutes().toString().padStart(2, "0");
-// }
+function formatDate(dateStr: string): string {
+  const date = new Date(dateStr);
+
+  return date.getFullYear() +
+    "-" + (date.getMonth() + 1).toString().padStart(2, "0") +
+    "-" + date.getDate().toString().padStart(2, "0") +
+    " " + date.getHours().toString().padStart(2, "0") +
+    ":" + date.getMinutes().toString().padStart(2, "0");
+}
 
 onActivated(() => loadInspections());
 </script>
@@ -107,9 +111,9 @@ onActivated(() => loadInspections());
         <v-expansion-panel v-for="inspection in filteredInspections" :key="inspection.id" v-show="displayComponents" @click="toggleActiveInspection(inspection.id)">
           <v-expansion-panel-header :disableIconRotate="true">
             <v-row dense no-gutters class="align-center">
-              <v-col cols="3">Generic name</v-col>
+              <v-col cols="3">{{ inspection.name }}</v-col>
               <v-col cols="1">{{ inspection.id }}</v-col>
-              <v-col cols="2">Generic date</v-col>
+              <v-col cols="2">{{ formatDate(inspection.createdDate) }}</v-col>
               <v-col cols="1">{{ inspection.dataset.name }}</v-col>
               <v-col cols="1" class="id-container" :title="inspection.dataset.id">{{ inspection.dataset.id }}</v-col>
               <v-col cols="2">{{ inspection.model.name }}</v-col>
