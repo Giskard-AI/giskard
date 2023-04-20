@@ -17,7 +17,7 @@ const models = ref<ModelDTO[]>([]);
 const currentStep = ref(1);
 
 const dialog = ref(false);
-const inspectionName = ref("");
+const sessionName = ref("");
 const selectedDataset = ref<DatasetDTO | null>(null);
 const selectedModel = ref<ModelDTO | null>(null);
 
@@ -28,18 +28,18 @@ const missingValues = computed(() => {
   return false;
 });
 
-const emit = defineEmits(['createInspection'])
+const emit = defineEmits(['createDebuggingSession'])
 
-async function createNewInspection() {
-  const inspection = await api.prepareInspection({
+async function createNewDebugginSession() {
+  const debuggingSession = await api.prepareInspection({
     datasetId: selectedDataset.value!.id,
     modelId: selectedModel.value!.id,
-    name: inspectionName.value
+    name: sessionName.value
   });
 
   closeDialog();
 
-  emit('createInspection', inspection);
+  emit('createDebuggingSession', debuggingSession);
 }
 
 function closeDialog() {
@@ -50,7 +50,7 @@ function closeDialog() {
 function resetInputs() {
   selectedDataset.value = null;
   selectedModel.value = null;
-  inspectionName.value = "";
+  sessionName.value = "";
   currentStep.value = 1;
 }
 
@@ -74,7 +74,7 @@ onActivated(() => {
       <template v-slot:activator="{ on, attrs }">
         <v-btn color="primary" v-bind="attrs" v-on="on" @click="resetInputs">
           <v-icon>add</v-icon>
-          New Inspection Session
+          New debugging session
         </v-btn>
       </template>
       <v-stepper non-linear v-model="currentStep">
@@ -88,7 +88,7 @@ onActivated(() => {
           </v-stepper-step>
           <v-divider></v-divider>
           <v-stepper-step step="3" :complete="currentStep > 3">
-            Define a inspection name
+            Define a session name
             <small>Optional</small>
           </v-stepper-step>
           <v-divider></v-divider>
@@ -129,7 +129,7 @@ onActivated(() => {
           <v-stepper-content step="3">
             <v-card>
               <v-card-text>
-                <v-text-field label="Inspection name (optional)" class="selector" v-model="inspectionName" outlined dense hide-details></v-text-field>
+                <v-text-field label="Debugging session name (optional)" class="selector" v-model="sessionName" outlined dense hide-details></v-text-field>
               </v-card-text>
               <v-card-actions class="d-flex justify-space-between">
                 <v-btn text @click="closeDialog">Cancel</v-btn>
@@ -159,8 +159,8 @@ onActivated(() => {
                   </v-list-item>
                   <v-list-item>
                     <v-list-item-content>
-                      <v-list-item-title>Inspection name</v-list-item-title>
-                      <v-list-item-subtitle>{{ inspectionName || '-' }}</v-list-item-subtitle>
+                      <v-list-item-title>Debugging session</v-list-item-title>
+                      <v-list-item-subtitle>{{ sessionName || 'Unnamed session' }}</v-list-item-subtitle>
                     </v-list-item-content>
                   </v-list-item>
                 </v-list>
@@ -169,7 +169,7 @@ onActivated(() => {
                 <v-btn text @click="closeDialog">Cancel</v-btn>
                 <div class="d-flex justify-end">
                   <v-btn text @click="currentStep = 3" class="mr-2">Back</v-btn>
-                  <v-btn color="primary" @click="createNewInspection" :disabled="missingValues">Create</v-btn>
+                  <v-btn color="primary" @click="createNewDebugginSession" :disabled="missingValues">Create</v-btn>
                 </div>
               </v-card-actions>
             </v-card>

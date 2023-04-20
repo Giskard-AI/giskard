@@ -1,35 +1,35 @@
 <script setup lang="ts">
 import { api } from '@/api';
 import { InspectionDTO } from "@/generated-sources";
-import InspectionDialog from "@/components/InspectionDialog.vue";
+import AddDebugginSession from '@/components/AddDebugginSession.vue';
 import InspectorWrapper from './InspectorWrapper.vue';
 import { computed, ref, onActivated } from "vue";
 
 interface Props {
   projectId: number;
-  activeInspectionId: number | null;
+  activeSessionId: number | null;
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  activeInspectionId: null
+  activeSessionId: null
 });
 
-const inspections = ref<InspectionDTO[]>([]);
-const searchInspection = ref("");
+const debuggingSessions = ref<InspectionDTO[]>([]);
+const searchSession = ref("");
 
-const displayComponents = computed(() => props.activeInspectionId === null);
+const displayComponents = computed(() => props.activeSessionId === null);
 
-const filteredInspections = computed(() => {
-  if (searchInspection.value.length == 0) return orderByDate(inspections.value);
+const filteredSessions = computed(() => {
+  if (searchSession.value.length == 0) return orderByDate(debuggingSessions.value);
 
-  return orderByDate(inspections.value.filter((inspection) => {
-    const dataset = inspection.dataset;
-    const model = inspection.model;
+  return orderByDate(debuggingSessions.value.filter((session) => {
+    const dataset = session.dataset;
+    const model = session.model;
 
-    const search = searchInspection.value.toLowerCase();
+    const search = searchSession.value.toLowerCase();
     return (
-      inspection.id.toString().includes(search) ||
-      inspection.name.toLowerCase().includes(search) ||
+      session.id.toString().includes(search) ||
+      session.name.toLowerCase().includes(search) ||
       dataset.name.toLowerCase().includes(search) ||
       dataset.id.toString().includes(search) ||
       model.name.toLowerCase().includes(search) ||
@@ -39,30 +39,30 @@ const filteredInspections = computed(() => {
 
 })
 
-async function loadInspections() {
-  inspections.value = await api.getProjectInspections(props.projectId)
+async function loadDebuggingSessions() {
+  debuggingSessions.value = await api.getProjectInspections(props.projectId)
 }
 
 
-function toggleActiveInspection(newActiveInspectionId: Props["activeInspectionId"]) {
-  if (props.activeInspectionId === newActiveInspectionId) {
-    props.activeInspectionId = null;
+function toggleActiveSession(newActiveSessionId: Props["activeSessionId"]) {
+  if (props.activeSessionId === newActiveSessionId) {
+    props.activeSessionId = null;
   } else {
-    props.activeInspectionId = newActiveInspectionId;
+    props.activeSessionId = newActiveSessionId;
   }
 }
 
-function createNewInspection(newInspection: InspectionDTO) {
-  inspections.value.push(newInspection);
-  toggleActiveInspection(null);
+function createDebuggingSession(debuggingSession: InspectionDTO) {
+  debuggingSessions.value.push(debuggingSession);
+  toggleActiveSession(null);
   setTimeout(() => {
-    toggleActiveInspection(newInspection.id);
+    toggleActiveSession(debuggingSession.id);
   });
 }
 
-async function deleteInspection(id: number) {
+async function deleteDebuggingSession(id: number) {
   await api.deleteInspection(id);
-  await loadInspections();
+  await loadDebuggingSessions();
 
 }
 
@@ -76,8 +76,8 @@ function formatDate(dateStr: string): string {
     ":" + date.getMinutes().toString().padStart(2, "0");
 }
 
-function orderByDate(inspections: InspectionDTO[]): InspectionDTO[] {
-  return inspections.sort((a, b) => {
+function orderByDate(debuggingSessions: InspectionDTO[]): InspectionDTO[] {
+  return debuggingSessions.sort((a, b) => {
     const aDate = new Date(a.createdDate);
     const bDate = new Date(b.createdDate);
 
@@ -85,30 +85,30 @@ function orderByDate(inspections: InspectionDTO[]): InspectionDTO[] {
   });
 }
 
-onActivated(() => loadInspections());
+onActivated(() => loadDebuggingSessions());
 </script>
 
 <template>
   <div class="vertical-container">
-    <v-container fluid class="vc" v-if="inspections.length > 0">
+    <v-container fluid class="vc" v-if="debuggingSessions.length > 0">
       <v-row>
         <v-col cols="4">
-          <v-text-field v-show="displayComponents" label="Search for an inspection session" append-icon="search" outlined v-model="searchInspection"></v-text-field>
+          <v-text-field v-show="displayComponents" label="Search for a debugging session" append-icon="search" outlined v-model="searchSession"></v-text-field>
         </v-col>
         <v-col cols="8">
           <div class="d-flex justify-end">
-            <v-btn v-if="!displayComponents" @click="toggleActiveInspection(null)" class="mr-4 pa-2 text--secondary">
+            <v-btn v-if="!displayComponents" @click="toggleActiveSession(null)" class="mr-4 pa-2 text--secondary">
               <v-icon>history</v-icon> Past sessions
             </v-btn>
-            <InspectionDialog v-bind:project-id="projectId" v-on:createInspection="createNewInspection"></InspectionDialog>
+            <AddDebugginSession v-bind:project-id="projectId" v-on:createDebuggingSession="createDebuggingSession"></AddDebugginSession>
           </div>
         </v-col>
       </v-row>
 
       <v-expansion-panels>
         <v-row dense no-gutters class="mr-12 ml-6 caption secondary--text text--lighten-3 pb-2" v-if="displayComponents">
-          <v-col cols="3">Name</v-col>
-          <v-col cols="1">ID</v-col>
+          <v-col cols="3">Session name</v-col>
+          <v-col cols="1">Session ID</v-col>
           <v-col cols="2">Created at</v-col>
           <v-col cols="1">Dataset name</v-col>
           <v-col cols="1">Dataset ID</v-col>
@@ -117,19 +117,19 @@ onActivated(() => loadInspections());
           <v-col cols="1">Actions</v-col>
         </v-row>
 
-        <v-expansion-panel v-for="inspection in filteredInspections" :key="inspection.id" v-show="displayComponents" @click="toggleActiveInspection(inspection.id)">
+        <v-expansion-panel v-for="session in filteredSessions" :key="session.id" v-show="displayComponents" @click="toggleActiveSession(session.id)">
           <v-expansion-panel-header :disableIconRotate="true">
             <v-row dense no-gutters class="align-center">
-              <v-col cols="3">{{ inspection.name }}</v-col>
-              <v-col cols="1">{{ inspection.id }}</v-col>
-              <v-col cols="2">{{ formatDate(inspection.createdDate) }}</v-col>
-              <v-col cols="1">{{ inspection.dataset.name }}</v-col>
-              <v-col cols="1" class="id-container" :title="inspection.dataset.id">{{ inspection.dataset.id }}</v-col>
-              <v-col cols="2">{{ inspection.model.name }}</v-col>
-              <v-col cols="1" class="id-container" :title="inspection.dataset.id">{{ inspection.model.id }}</v-col>
+              <v-col cols="3">{{ session.name }}</v-col>
+              <v-col cols="1">{{ session.id }}</v-col>
+              <v-col cols="2">{{ formatDate(session.createdDate) }}</v-col>
+              <v-col cols="1">{{ session.dataset.name }}</v-col>
+              <v-col cols="1" class="id-container" :title="session.dataset.id">{{ session.dataset.id }}</v-col>
+              <v-col cols="2">{{ session.model.name }}</v-col>
+              <v-col cols="1" class="id-container" :title="session.dataset.id">{{ session.model.id }}</v-col>
               <v-col cols="1">
                 <v-card-actions>
-                  <v-btn icon color="accent" class="delete-button" @click.stop="deleteInspection(inspection.id)">
+                  <v-btn icon color="accent" class="delete-button" @click.stop="deleteDebuggingSession(session.id)">
                     <v-icon>mdi-delete</v-icon>
                   </v-btn>
                 </v-card-actions>
@@ -138,14 +138,14 @@ onActivated(() => loadInspections());
           </v-expansion-panel-header>
         </v-expansion-panel>
       </v-expansion-panels>
-      <InspectorWrapper v-if="!displayComponents" :projectId="projectId" :inspectionId="activeInspectionId"></InspectorWrapper>
+      <InspectorWrapper v-if="!displayComponents" :projectId="projectId" :inspectionId="activeSessionId"></InspectorWrapper>
     </v-container>
 
     <v-container v-else class="vc mt-12">
       <v-alert class="text-center">
-        <p class="create-inspection-message headline blue-grey--text">You haven't created any inspection session for this project. <br>Please create your first inspection session to start debugging your model.</p>
+        <p class="create-session-message headline blue-grey--text">You haven't created any debugging session for this project. <br>Please create your first session to start debugging your model.</p>
       </v-alert>
-      <InspectionDialog v-bind:project-id="projectId" v-on:createInspection="createNewInspection"></InspectionDialog>
+      <AddDebugginSession v-bind:project-id="projectId" v-on:createDebuggingSession="createDebuggingSession"></AddDebugginSession>
       <div class="d-flex justify-center mb-6">
         <img src="@/assets/logo_debugger.png" class="debugger-logo" title="Debugger tab logo" alt="A turtle using a magnifying glass">
       </div>
@@ -154,7 +154,7 @@ onActivated(() => loadInspections());
 </template>
 
 <style scoped>
-.create-inspection-message {
+.create-session-message {
   font-size: 1.125rem;
 }
 
