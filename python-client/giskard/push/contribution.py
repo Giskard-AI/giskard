@@ -7,19 +7,20 @@ def contribution(model, ds, idrow):  # data_aug_dict
     shap_res = _contribution_push(model, ds, idrow)
     values = ds.df.iloc[idrow]
     training_label = values[ds.target]
-    prediction = model.model.predict(ds.df.iloc[[idrow]])
+    prediction = model.clf.predict(ds.df.iloc[[idrow]])
 
-    if len(shap_res) != 0:
+    if shap_res is not None:
         for el in shap_res:
+            # skip for now the following case
             # if ds.column_types[el] == "category" and training_label != prediction and data_aug_dict(el, values):
             #    print(f"Data augmentation recommended for the slice.............{el}",
             #          el, values[el])
             if training_label != prediction:  # use scan feature ?
-                print(f"Performance test recommanded for the slice.............{el}",
-                      el, values[el])
+                return [f"Performance test recommanded for the slice.............{el}",
+                        el, values[el]]
             else:
-                print(f"Target highly correlated with the slice.............{el}",
-                      el, values[el])
+                return [f"Target highly correlated with the slice.............{el}",
+                        el, values[el]]
 
 
 def _contribution_push(model, ds, idrow):  # done at each step
@@ -30,16 +31,16 @@ def _contribution_push(model, ds, idrow):  # done at each step
     k1, k2 = keys[-1], keys[-2]
     if zscore_array[-1] >= 2:
         # print(keys[-1],"is an important feature")
-        return k1
+        return [k1]
     elif zscore_array[-1] >= 1.5 and zscore_array[-2] >= 1:
         # print(keys[-1] ,"and", keys[-2] ,"are important features")
         return [k1, k2]
     else:
-        return False
+        return None
 
 
 def _get_shap_values(model, ds, idrow):  # from gRPC
-    return explain(model, ds, ds.df.iloc[[idrow]])["explanations"][model.meta.classification_labels[0]]
+    return explain(model, ds, ds.df.iloc[idrow])["explanations"][model.meta.classification_labels[0]]
 
 
 def bins_count(model, dataframe):  # done at the beggining
