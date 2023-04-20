@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import math
 import os
 import platform
 import sys
@@ -51,9 +52,9 @@ def file_already_exists(meta: ml_worker_pb2.FileUploadMetadata):
     return path.exists(), path
 
 
-def map_callable_function(callable_type):
+def map_function_meta(callable_type):
     return {
-        test.uuid: ml_worker_pb2.CallableFunction(
+        test.uuid: ml_worker_pb2.FunctionMeta(
             uuid=test.uuid,
             name=test.name,
             module=test.module,
@@ -61,7 +62,17 @@ def map_callable_function(callable_type):
             code=test.code,
             moduleDoc=test.module_doc,
             tags=test.tags,
-            type=test.type
+            type=test.type,
+            args=[
+                ml_worker_pb2.TestFunctionArgument(
+                    name=a.name,
+                    type=a.type,
+                    optional=a.optional,
+                    default=str(a.default),
+                    argOrder=a.argOrder
+                ) for a
+                in test.args.values()
+            ],
         )
         for test in tests_registry.get_all().values()
         if test.type == callable_type
@@ -167,28 +178,14 @@ class MLWorkerServiceImpl(MLWorkerServicer):
         slicing_function = SlicingFunction.load(request.slicingFunctionUuid, self.client, None)
         dataset = Dataset.download(self.client, request.dataset.project_key, request.dataset.id)
 
-        result = dataset.slice(slicing_function)
-        desc = result.df.describe()
+        arguments = self.parse_test_arguments(request.arguments)
+
+        result = dataset.slice(slicing_function(**arguments))
 
         return ml_worker_pb2.SlicingResultMessage(
-            totalRow=len(dataset.df.index),
-            filteredRow=len(result.df.index),
-            describeColumns=[
-                ml_worker_pb2.DatasetDescribeColumn(
-                    columnName=col,
-                    count=int(desc[col]['count']),
-                    unique=desc[col]['unique'] if 'unique' in desc[col] else None,
-                    top=desc[col]['top'] if 'top' in desc[col] else None,
-                    freq=desc[col]['freq'] if 'freq' in desc[col] else None,
-                    mean=desc[col]['mean'] if 'mean' in desc[col] else None,
-                    std=desc[col]['std'] if 'std' in desc[col] else None,
-                    min=desc[col]['min'] if 'min' in desc[col] else None,
-                    twentyFive=desc[col]['25%'] if '25%' in desc[col] else None,
-                    fifty=desc[col]['50%'] if '50%' in desc[col] else None,
-                    seventyFive=desc[col]['75%'] if '75%' in desc[col] else None,
-                    max=desc[col]['max'] if 'max' in desc[col] else None,
-                ) for col in desc.columns
-            ]
+            datasetId=request.dataset.id,
+            totalRows=len(dataset.df.index),
+            filteredRows=dataset.df.index.difference(result.df.index)
         )
 
     def runAdHocTransformation(
@@ -197,32 +194,23 @@ class MLWorkerServiceImpl(MLWorkerServicer):
         transformation_function = TransformationFunction.load(request.transformationFunctionUuid, self.client, None)
         dataset = Dataset.download(self.client, request.dataset.project_key, request.dataset.id)
 
-        result = dataset.transform(transformation_function)
-        desc = result.df.describe()
+        arguments = self.parse_test_arguments(request.arguments)
 
-        modified_rows = 0
-        for idx, r in dataset.df.iterrows():
-            if not r.equals(result.df.loc[idx]):
-                modified_rows += 1
+        result = dataset.transform(transformation_function(**arguments))
+
+        modified_rows = result.df[dataset.df.ne(result.df)].dropna(how='all')
 
         return ml_worker_pb2.TransformationResultMessage(
-            totalRow=len(dataset.df.index),
-            modifiedRow=modified_rows,
-            describeColumns=[
-                ml_worker_pb2.DatasetDescribeColumn(
-                    columnName=col,
-                    count=int(desc[col]['count']),
-                    unique=desc[col]['unique'] if 'unique' in desc[col] else None,
-                    top=desc[col]['top'] if 'top' in desc[col] else None,
-                    freq=desc[col]['freq'] if 'freq' in desc[col] else None,
-                    mean=desc[col]['mean'] if 'mean' in desc[col] else None,
-                    std=desc[col]['std'] if 'std' in desc[col] else None,
-                    min=desc[col]['min'] if 'min' in desc[col] else None,
-                    twentyFive=desc[col]['25%'] if '25%' in desc[col] else None,
-                    fifty=desc[col]['50%'] if '50%' in desc[col] else None,
-                    seventyFive=desc[col]['75%'] if '75%' in desc[col] else None,
-                    max=desc[col]['max'] if 'max' in desc[col] else None,
-                ) for col in desc.columns
+            datasetId=request.dataset.id,
+            totalRows=len(dataset.df.index),
+            modifications=[
+                ml_worker_pb2.DatasetRowModificationResult(
+                    rowId=row[0],
+                    modifications={key: str(value) for key, value in row[1].items() if
+                                   not type(value) == float or not math.isnan(value)}
+                )
+                for row
+                in modified_rows.iterrows()
             ]
         )
 
@@ -502,32 +490,10 @@ class MLWorkerServiceImpl(MLWorkerServicer):
 
     def getCatalog(self, request: google.protobuf.empty_pb2.Empty,
                    context: grpc.ServicerContext) -> ml_worker_pb2.CatalogResponse:
-        return ml_worker_pb2.CatalogResponse(tests={
-            test.uuid: ml_worker_pb2.TestFunction(
-                uuid=test.uuid,
-                name=test.name,
-                module=test.module,
-                doc=test.doc,
-                code=test.code,
-                moduleDoc=test.module_doc,
-                tags=test.tags,
-                args=[
-                    ml_worker_pb2.TestFunctionArgument(
-                        name=a.name,
-                        type=a.type,
-                        optional=a.optional,
-                        default=str(a.default),
-                        argOrder=a.argOrder
-                    ) for a
-                    in test.args.values()
-                ],
-                type=test.type
-            )
-            for test in tests_registry.get_all().values()
-            if test.type == 'TEST'
-        },
-            slices=map_callable_function('SLICE'),
-            transformations=map_callable_function('TRANSFORMATION')
+        return ml_worker_pb2.CatalogResponse(
+            tests=map_function_meta('TEST'),
+            slices=map_function_meta('SLICE'),
+            transformations=map_function_meta('TRANSFORMATION')
         )
 
     @staticmethod

@@ -1,7 +1,9 @@
 from typing import Dict, Optional, List
+
 import pandas as pd
-from giskard.datasets.base import Dataset
+
 from giskard.core.validation import configured_validate_arguments
+from giskard.datasets.base import Dataset
 
 
 @configured_validate_arguments
@@ -35,10 +37,6 @@ def wrap_dataset(dataset: pd.DataFrame,
     Returns:
         Dataset:
             A Giskard Dataset object that wraps the input Pandas DataFrame.
-
-    Raises:
-        TypeError:
-            If the input dataset is not a Pandas DataFrame or if cat_columns is not a list of strings.
 
     Notes:
 
