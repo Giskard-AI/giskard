@@ -1,5 +1,7 @@
 import numpy as np
 from scipy.stats import zscore
+from giskard.ml_worker.core.model_explanation import explain
+
 
 from giskard.core.core import SupportedModelTypes
 from giskard.ml_worker.core.model_explanation import explain
