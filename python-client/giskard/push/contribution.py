@@ -1,54 +1,45 @@
 import numpy as np
 from scipy.stats import zscore
+from giskard.ml_worker.core.model_explanation import explain
 
 
-def contribution_push(feature_shap):  # done at each step
-    keys = list(feature_shap.keys())
-    zscore_array = np.round(zscore(list(feature_shap.values())) * 2) / 2
-    # print(zscore_array)
-    k1, k2 = keys[-1], keys[-2]
-    if zscore_array[-1] >= 2:
+def contribution(model, ds, idrow):  # data_aug_dict
+    shap_res = _contribution_push(model, ds, idrow)
+    values = ds.df.iloc[idrow]
+    training_label = values[ds.target]
+    prediction = model.model.predict(ds.df.iloc[[idrow]])
 
-        # print(keys[-1],"is an important feature")
-        return ([keys[-1]])
-    elif zscore_array[-1] >= 1.5 and zscore_array[-2] >= 1:
-        # print(keys[-1] ,"and", keys[-2] ,"are important features")
-        return ([keys[-1], keys[-2]])
-    else:
-        return (False)
-
-
-def perturb_and_predict(row, feature, model):  # done at each step
-    ref_row = row
-    row_perturbed = ref_row.copy()
-    row_perturbed[feature] *= 1.2  # self.df[feature].std()
-    # print(row_perturbed[feature])
-    # Predict probabilities for the perturbed input row using the given model
-    ref_prob = model.predict(ref_row)
-    probabilities = model.predict(row_perturbed)  # .reshape(1, -1)
-    return ref_prob[0] != probabilities[0]
-
-
-def perturbation(row, column_types):
-    for feat, type in column_types.items():
-        if type == "numeric" and perturb_and_predict(row, feat):
-            print(f"Metamorphic test recommanded for the slice.............{feat}=",
-                  feat, row[feat])
-
-
-def contribution(shap_features, training_label, prediction, column_types, data_aug_dict, values):
-    shap_res = contribution_push(shap_features)
-    if not shap_res.isnull():
+    if len(shap_res) != 0:
         for el in shap_res:
-            if column_types[el] == "category" and training_label != prediction and data_aug_dict(el, values):
-                print(f"Data augmentation recommanded for the slice.............{el}",
-                      el, values[el])
-            elif training_label != prediction:  # use scan feature ?
+            # if ds.column_types[el] == "category" and training_label != prediction and data_aug_dict(el, values):
+            #    print(f"Data augmentation recommended for the slice.............{el}",
+            #          el, values[el])
+            if training_label != prediction:  # use scan feature ?
                 print(f"Performance test recommanded for the slice.............{el}",
                       el, values[el])
             else:
                 print(f"Target highly correlated with the slice.............{el}",
                       el, values[el])
+
+
+def _contribution_push(model, ds, idrow):  # done at each step
+    feature_shap = _get_shap_values(model, ds, idrow)
+    keys = list(feature_shap.keys())
+    zscore_array = np.round(zscore(list(feature_shap.values())) * 2) / 2
+    # print(zscore_array)
+    k1, k2 = keys[-1], keys[-2]
+    if zscore_array[-1] >= 2:
+        # print(keys[-1],"is an important feature")
+        return k1
+    elif zscore_array[-1] >= 1.5 and zscore_array[-2] >= 1:
+        # print(keys[-1] ,"and", keys[-2] ,"are important features")
+        return [k1, k2]
+    else:
+        return False
+
+
+def _get_shap_values(model, ds, idrow):  # from gRPC
+    return explain(model, ds, ds.df.iloc[[idrow]])["explanations"][model.meta.classification_labels[0]]
 
 
 def bins_count(model, dataframe):  # done at the beggining
@@ -66,4 +57,4 @@ def bins_count(model, dataframe):  # done at the beggining
                                 'nunique': nunique,
                                 'ratio': ratio,
                                 'flag': flag}
-    return (value_counts)
+    return value_counts
