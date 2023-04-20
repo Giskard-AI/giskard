@@ -14,7 +14,7 @@ from giskard.ml_worker.testing.registry.decorators_utils import validate_arg_typ
     make_all_optional_or_suite_input, set_return_type
 from giskard.ml_worker.testing.registry.registry import get_object_uuid, tests_registry
 
-SlicingFunctionType = Union[Callable[[pd.Series, ...], bool], Callable[[pd.DataFrame, ...], bool]]
+SlicingFunctionType = Callable[..., bool]
 
 default_tags = ['filter']
 
