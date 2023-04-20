@@ -206,7 +206,8 @@ class MLWorkerServiceImpl(MLWorkerServicer):
             modifications=[
                 ml_worker_pb2.DatasetRowModificationResult(
                     rowId=row[0],
-                    modifications={key: str(value) for key, value in row[1].items() if not math.isnan(value)}
+                    modifications={key: str(value) for key, value in row[1].items() if
+                                   not type(value) == float or not math.isnan(value)}
                 )
                 for row
                 in modified_rows.iterrows()
