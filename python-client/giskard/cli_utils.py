@@ -17,18 +17,18 @@ logger = logging.getLogger(__name__)
 
 def remove_stale_pid_file(pid_file):
     pid = pid_file.read_pid()
-    if pid is not None and check_pid(pid):
+    if pid is not None and is_pid_stale(pid):
         logger.debug("Stale PID file found, removing it")
         pid_file.break_lock()
 
 
-def check_pid(pid):
+def is_pid_stale(pid):
     try:
-        os.kill(pid, 0)
+        os.kill(pid, 0)  # NOSONAR
     except OSError:
-        return False
-    else:
         return True
+    else:
+        return False
 
 
 def create_pid_file_path(is_server, url):
