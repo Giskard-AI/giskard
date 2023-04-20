@@ -1,9 +1,14 @@
 def perturbation(model, ds, idrow):
     for feat, coltype in ds.column_types.items():
         if coltype == "numeric" and _perturb_and_predict(model, ds, idrow, feat):
-            return [f"Metamorphic test recommanded for the slice.............{feat}=",
-                    feat,
-                    ds.df.iloc[[idrow]][feat]]
+            res = [{
+                "sentence": "A small variation (+20%) of this feature makes the prediction change, do you want to "
+                            "check if this unrobust behavior generalizes to the whole dataset ?",
+                "action": "Test",
+                "value": str(ds.df.iloc[idrow][feat]),
+                "key": str(feat),
+            }]
+            return res
 
 
 def _perturb_and_predict(model, ds, idrow, feature):  # done at each step
