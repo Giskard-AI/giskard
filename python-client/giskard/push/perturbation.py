@@ -56,8 +56,8 @@ def _text_perturb(val):
     # Augment the text
     aug_text = aug.augment(data=val)
     return aug_text
-def perturbation(model, ds, idrow, column_types):
-    for feat, coltype in column_types.items():
+def perturbation(model, ds, idrow):
+    for feat, coltype in ds.column_types.items():
         if coltype == "numeric" and _perturb_and_predict(model, ds, idrow, feat):
             print(f"Metamorphic test recommanded for the slice.............{feat}=",
                   feat, ds.df.iloc[[idrow]][feat])
