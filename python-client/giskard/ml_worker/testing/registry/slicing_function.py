@@ -1,3 +1,4 @@
+import functools
 import inspect
 import pickle
 import sys
@@ -6,16 +7,19 @@ from typing import Optional, List, Union, Type, Callable
 
 import pandas as pd
 
-from giskard.core.core import CallableMeta
+from giskard.core.core import DatasetProcessFunctionMeta
+from giskard.core.validation import configured_validate_arguments
 from giskard.ml_worker.core.savable import Savable
+from giskard.ml_worker.testing.registry.decorators_utils import validate_arg_type, drop_arg, \
+    make_all_optional_or_suite_input, set_return_type
 from giskard.ml_worker.testing.registry.registry import get_object_uuid, tests_registry
 
-SlicingFunctionType = Union[Callable[[pd.Series], bool], Callable[[pd.DataFrame], bool]]
+SlicingFunctionType = Union[Callable[[pd.Series, ...], bool], Callable[[pd.DataFrame, ...], bool]]
 
 default_tags = ['filter']
 
 
-class SlicingFunction(Savable[SlicingFunctionType, CallableMeta]):
+class SlicingFunction(Savable[SlicingFunctionType, DatasetProcessFunctionMeta]):
     """
     A slicing function used to subset data.
 
@@ -26,6 +30,8 @@ class SlicingFunction(Savable[SlicingFunctionType, CallableMeta]):
     """
     func: SlicingFunctionType = None
     row_level: bool = True
+    params = {}
+    is_initialized = False
 
     @classmethod
     def _get_name(cls) -> str:
@@ -51,10 +57,21 @@ class SlicingFunction(Savable[SlicingFunctionType, CallableMeta]):
         test_uuid = get_object_uuid(func)
         meta = tests_registry.get_test(test_uuid)
         if meta is None:
-            meta = tests_registry.register(CallableMeta(func, tags=default_tags, type='SLICE'))
+            meta = tests_registry.register(DatasetProcessFunctionMeta(func, tags=default_tags, type='SLICE'))
         super().__init__(func, meta)
 
-    def __call__(self, data: Union[pd.Series, pd.DataFrame]):
+    def __call__(self, *args, **kwargs) -> 'SlicingFunction':
+        self.is_initialized = True
+        self.params = kwargs
+
+        from inspect import signature
+        sig = list(signature(self.func).parameters.values())
+        for idx, arg in enumerate(args):
+            self.params[sig[idx].name] = arg
+
+        return self
+
+    def execute(self, data: Union[pd.Series, pd.DataFrame]):
         """
         Slices the data using the slicing function.
 
@@ -64,9 +81,9 @@ class SlicingFunction(Savable[SlicingFunctionType, CallableMeta]):
         :rtype: Union[pd.Series, pd.DataFrame]
         """
         if self.row_level:
-            return data.loc[data.apply(self.func, axis=1)]
+            return data.loc[data.apply(lambda row: self.func(row, **self.params), axis=1)]
         else:
-            return self.func(data)
+            return self.func(data, **self.params)
 
     def _should_save_locally(self) -> bool:
         return self.data.__module__.startswith('__main__')
@@ -75,7 +92,7 @@ class SlicingFunction(Savable[SlicingFunctionType, CallableMeta]):
         return self.meta.version is None
 
     @classmethod
-    def _read_from_local_dir(cls, local_dir: Path, meta: CallableMeta):
+    def _read_from_local_dir(cls, local_dir: Path, meta: DatasetProcessFunctionMeta):
         if not meta.module.startswith('__main__'):
             func = getattr(sys.modules[meta.module], meta.name)
         else:
@@ -84,22 +101,24 @@ class SlicingFunction(Savable[SlicingFunctionType, CallableMeta]):
             with open(Path(local_dir) / 'data.pkl', 'rb') as f:
                 func = pickle.load(f)
 
-        _slicing_function = cls(func)
-
-        tests_registry.add_func(meta)
-        _slicing_function.meta = meta
+        if inspect.isclass(func) or hasattr(func, 'meta'):
+            _slicing_function = func()
+        else:
+            _slicing_function = cls(func)
+            tests_registry.add_func(meta)
+            _slicing_function.meta = meta
 
         return _slicing_function
 
     @classmethod
-    def _read_meta_from_loca_dir(cls, uuid: str, project_key: Optional[str]) -> CallableMeta:
+    def _read_meta_from_loca_dir(cls, uuid: str, project_key: Optional[str]) -> DatasetProcessFunctionMeta:
         meta = tests_registry.get_test(uuid)
         assert meta is not None, f"Cannot find slicing function {uuid}"
         return meta
 
     @classmethod
     def _get_meta_class(cls):
-        return CallableMeta
+        return DatasetProcessFunctionMeta
 
 
 def slicing_function(_fn=None, row_level=True, name=None, tags: Optional[List[str]] = None):
@@ -117,12 +136,26 @@ def slicing_function(_fn=None, row_level=True, name=None, tags: Optional[List[st
         from giskard.ml_worker.testing.registry.registry import tests_registry
 
         tests_registry.register(
-            CallableMeta(func, name=name, tags=default_tags if not tags else (default_tags + tags), type='SLICE'))
+            DatasetProcessFunctionMeta(func, name=name, tags=default_tags if not tags else (default_tags + tags),
+                                       type='SLICE'))
         if inspect.isclass(func) and issubclass(func, SlicingFunction):
             return func
-        return SlicingFunction(func, row_level)
+
+        return _wrap_slicing_function(func, row_level)
 
     if callable(_fn):
-        return inner(_fn)
+        return functools.wraps(_fn)(inner(_fn))
     else:
         return inner
+
+
+def _wrap_slicing_function(original: Callable, row_level: bool):
+    slicing_fn = functools.wraps(original)(SlicingFunction(original, row_level))
+
+    validate_arg_type(slicing_fn, 0, pd.Series if row_level else pd.DataFrame)
+    drop_arg(slicing_fn, 0)
+
+    make_all_optional_or_suite_input(slicing_fn)
+    set_return_type(slicing_fn, SlicingFunction)
+
+    return configured_validate_arguments(slicing_fn)
