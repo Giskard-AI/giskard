@@ -16,11 +16,39 @@ def contribution(model, ds, idrow):  # data_aug_dict
             #    print(f"Data augmentation recommended for the slice.............{el}",
             #          el, values[el])
             if training_label != prediction:  # use scan feature ?
-                return [f"Performance test recommanded for the slice.............{el}",
-                        el, values[el]]
+
+                res = [{
+                    "sentence": "This value is responsible for the incorrect prediction",
+                    "action": "Slice",
+                    "value": str(values[el]),
+                    "key": str(el),
+                },
+                    {
+                    "sentence": "This correlation may apply to the whole dataset",
+                    "action": "Test",
+                    "value": str(values[el]),
+                    "key": str(el),
+                    }
+                ]
+
+                return res
+
             else:
-                return [f"Target highly correlated with the slice.............{el}",
-                        el, values[el]]
+                res = [{
+                    "sentence": "This feature contributes a lot to the prediction",
+                    "action": "Slice",
+                    "value": str(values[el]),
+                    "key": str(el),
+                },
+                    {
+                    "sentence": "This correlation may apply to the whole dataset",
+                    "action": "Test",
+                    "value": str(values[el]),
+                    "key": str(el),
+                    }
+                ]
+
+                return res
 
 
 def _contribution_push(model, ds, idrow):  # done at each step
