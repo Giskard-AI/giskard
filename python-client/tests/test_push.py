@@ -50,3 +50,13 @@ def test_perturbation_reg(linear_regression_diabetes, diabetes_dataset_with_targ
         if res is not None:
             testl.append(res)
     assert len(testl)>0
+
+
+# def test_perturbation_text(enron_model, enron_data):
+#     testl = []
+#     for i in range(40):
+#         res = perturbation(enron_model, enron_data, i)
+#         if res is not None:
+#             testl.append(res)
+#     assert testl != []
+
