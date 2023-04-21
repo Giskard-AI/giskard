@@ -1,7 +1,9 @@
 package ai.giskard.web.rest.controllers;
 
+import ai.giskard.domain.ml.Dataset;
 import ai.giskard.domain.ml.Inspection;
 import ai.giskard.domain.ml.table.Filter;
+import ai.giskard.domain.ml.ProjectModel;
 import ai.giskard.repository.InspectionRepository;
 import ai.giskard.repository.ml.DatasetRepository;
 import ai.giskard.repository.ml.ModelRepository;
@@ -17,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.constraints.NotNull;
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequiredArgsConstructor
@@ -34,6 +37,7 @@ public class InspectionController {
 
     /**
      * get all inspections
+     *
      * @return list of inspections
      */
     @GetMapping("/inspections")
@@ -43,6 +47,7 @@ public class InspectionController {
 
     /**
      * get all inspections for a project
+     *
      * @param projectId id of the project
      * @return list of inspections
      */
@@ -76,6 +81,7 @@ public class InspectionController {
 
     /**
      * delete an inspection
+     *
      * @param id id of the inspection
      */
     @DeleteMapping("/inspections/{id}")
@@ -92,5 +98,17 @@ public class InspectionController {
     @PutMapping("/inspections/{id}")
     public InspectionDTO updateInspection(@PathVariable @NotNull Long id, @RequestBody @NotNull InspectionCreateDTO createDTO) throws EntityNotFoundException {
         return giskardMapper.toDTO(inspectionService.updateInspection(id, createDTO));
+    }
+
+    @GetMapping("/suggest/{modelId}/{datasetId}/{idx}")
+    public void getSuggestions(@PathVariable @NotNull UUID modelId, @PathVariable @NotNull UUID datasetId, @PathVariable @NotNull int idx) {
+        ProjectModel model = modelRepository.getById(modelId);
+        permissionEvaluator.validateCanReadProject(model.getProject().getId());
+        Dataset dataset = datasetRepository.getById(datasetId);
+        inspectionService.getSuggestions(
+            model,
+            dataset,
+            idx
+        );
     }
 }
