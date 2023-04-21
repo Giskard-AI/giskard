@@ -1,10 +1,16 @@
 package ai.giskard.service;
 
 import ai.giskard.config.ApplicationProperties;
+import ai.giskard.domain.ml.Dataset;
 import ai.giskard.domain.ml.Inspection;
 import ai.giskard.domain.ml.ModelType;
+import ai.giskard.domain.ml.ProjectModel;
 import ai.giskard.domain.ml.table.Filter;
+import ai.giskard.ml.MLWorkerClient;
 import ai.giskard.repository.InspectionRepository;
+import ai.giskard.service.ml.MLWorkerService;
+import ai.giskard.worker.SuggestFilterRequest;
+import ai.giskard.worker.SuggestFilterResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.util.FileSystemUtils;
@@ -32,6 +38,9 @@ public class InspectionService {
     private final InspectionRepository inspectionRepository;
     private final ApplicationProperties applicationProperties;
     private final FileLocationService fileLocationService;
+    private final SliceService sliceService;
+    private final MLWorkerService mlWorkerService;
+    private final GRPCMapper grpcMapper;
 
     public Table getTableFromBucketFile(String location) throws FileNotFoundException {
         InputStreamReader reader = new InputStreamReader(new FileInputStream(location));
@@ -234,5 +243,26 @@ public class InspectionService {
         Inspection inspection = inspectionRepository.getMandatoryById(inspectionId);
         inspection.setName(name);
         return inspectionRepository.save(inspection);
+    }
+//    public ExplainResponse explain(ProjectModel model, Dataset dataset, Map<String, String> features) {
+//        try (MLWorkerClient client = mlWorkerService.createClient(model.getProject().isUsingInternalWorker())) {
+//            ExplainRequest request = ExplainRequest.newBuilder()
+//                .setModel(grpcMapper.createRef(model))
+//                .setDataset(grpcMapper.createRef(dataset))
+//                .putAllColumns(Maps.filterValues(features, Objects::nonNull))
+//                .build();
+//
+//            return client.getBlockingStub().explain(request);
+//        }
+//    }
+
+    public void getSuggestions(ProjectModel model, Dataset dataset, int idx) {
+        try (MLWorkerClient client = mlWorkerService.createClient(true)) {
+            SuggestFilterResponse resp = client.getBlockingStub().suggestFilter(SuggestFilterRequest.newBuilder()
+                .setDataset(grpcMapper.createRef(dataset))
+                .setModel(grpcMapper.createRef(model))
+                .setRowidx(idx)
+                .build());
+        }
     }
 }

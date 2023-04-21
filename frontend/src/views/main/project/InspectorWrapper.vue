@@ -75,7 +75,8 @@
                  :originalData='originalData'
                  :transformationModifications="{}"
                  class='px-0' @reset='resetInput' @submitValueFeedback='submitValueFeedback'
-                 @submitValueVariationFeedback='submitValueVariationFeedback' v-if="totalRows > 0"/>
+                 @submitValueVariationFeedback='submitValueVariationFeedback' v-if="totalRows > 0"
+                 :row-nb="rowNb"/>
       <v-alert v-else border="bottom" colored-border type="warning" class="mt-8" elevation="2">
           No data matches the selected filter.<br/>
           In order to show data, please refine the filter's criteria.

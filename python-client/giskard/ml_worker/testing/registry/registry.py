@@ -104,6 +104,7 @@ class GiskardTestRegistry:
         if meta.uuid not in self._tests:
             self.add_func(meta)
             logger.info(f"Registered test function: {meta.uuid}")
+        return meta
 
     def add_func(self, meta: SavableMeta):
         self._tests[meta.uuid] = meta
