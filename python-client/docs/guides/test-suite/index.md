@@ -109,7 +109,7 @@ def add_three_years(row):
     return row
 
 
-result = test_metamorphic_invariance(wrapped_dataset, wrapped_model, add_three_years).execute()
+result = test_metamorphic_invariance(wrapped_model, wrapped_dataset, add_three_years).execute()
 print(f"result: {result.passed} with metric {result.metric}")
 ```
 
