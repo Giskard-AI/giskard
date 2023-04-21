@@ -50,7 +50,6 @@ def test_right_label(
           TRUE if passed_ratio > threshold
     """
     dataset = dataset.slice(slicing_function)
-    dataset.df.reset_index(drop=True, inplace=True)
     prediction_results = model.predict(dataset).prediction
 
     passed_idx = dataset.df.loc[prediction_results == classification_label].index.values
@@ -118,7 +117,6 @@ def test_output_in_range(
     """
     dataset = dataset.slice(slicing_function)
     results_df = pd.DataFrame()
-    dataset.df.reset_index(drop=True, inplace=True)
 
     prediction_results = model.predict(dataset)
 
@@ -206,7 +204,6 @@ def test_disparate_impact(
             f"The positive outcome chosen {positive_outcome} is not part of the dataset target values {list(model.meta.classification_labels)}."
         )
 
-    dataset.df.reset_index(drop=True, inplace=True)
     protected_ds = dataset.slice(protected_slicing_function)
     unprotected_ds = dataset.slice(unprotected_slicing_function)
 
