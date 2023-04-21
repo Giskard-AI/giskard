@@ -2,6 +2,7 @@ import logging
 import posixpath
 import tempfile
 import uuid
+import inspect
 from enum import Enum
 from pathlib import Path
 from typing import Dict, Optional, List, Hashable, Union
@@ -70,9 +71,6 @@ class DataProcessor:
 
             if apply_only_last:
                 break
-
-        if df.empty:
-            raise ValueError("Processing pipeline produced an empty dataset")
 
         ret = Dataset(df=df,
                       name=dataset.name,
@@ -148,8 +146,6 @@ class Dataset:
             - If column_types is specified, it overrides the types inferred from cat_columns or infer_column_types.
             - Validates numeric columns of the Dataset object using `validate_numeric_columns` function.
         """
-        if df.empty:
-            raise ValueError("Please provide a non-empty df to construct the Dataset object.")
         if id is None:
             self.id = uuid.uuid4()
         else:
@@ -161,7 +157,8 @@ class Dataset:
             warning(
                 "You did not provide the optional argument 'target'. "
                 "'target' is the column name in df corresponding to the actual target variable (ground truth).")
-        self.check_hashability(self.df)
+        if not self.df.empty:
+            self.check_hashability(self.df)
         self.column_dtypes = self.extract_column_dtypes(self.df)
         if column_types:
             self.column_types = column_types
@@ -202,22 +199,28 @@ class Dataset:
         return self
 
     @configured_validate_arguments
-    def slice(self, slicing_function: Optional[SlicingFunction] = None):
+    def slice(self, slicing_function: SlicingFunction, row_level: bool = True):
         """
         Slice the dataset using the specified `SlicingFunction`.
 
         Args:
             slicing_function (SlicingFunction, optional):
                 The slicing function to use. It should take a pandas DataFrame and return a DataFrame with the same columns.
+            row_level (bool):
+                Choose whether to apply the slicing function on a row-level of the pandas DataFrame or not
 
         Returns:
             Dataset:
                 The sliced dataset as a `Dataset` object.
+
+        Notes:
+            if slicing_function provided as SlicingFunction, row_level is read from the slicing_function itself not the
+            row_level argument in Dataset.slice()
         """
-        if slicing_function:
-            return self.data_processor.add_step(slicing_function).apply(self, apply_only_last=True)
-        else:
-            return self
+        if inspect.isfunction(slicing_function):
+            slicing_function = SlicingFunction(slicing_function, row_level=row_level)
+        return self.data_processor.add_step(slicing_function).apply(self, apply_only_last=True)
+
 
     @configured_validate_arguments
     def transform(self, transformation_function: Optional[TransformationFunction] = None):
