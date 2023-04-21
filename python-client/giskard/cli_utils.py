@@ -25,10 +25,7 @@ def remove_stale_pid_file(pid_file):
 def check_pid(pid):
     try:
         os.kill(pid, 0)
-    except OSError:
-        return False
-    # TypeError can occur if not pid file was found
-    except TypeError:
+    except (OSError, TypeError):
         return False
     else:
         return True
