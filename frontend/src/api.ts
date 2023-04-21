@@ -477,4 +477,7 @@ export const api = {
             license: license
         });
     },
+    async getSuggestions(modelId: string, datasetId: string, idx: number) {
+        return apiV2.get<unknown, unknown>(`/suggest/${modelId}/${datasetId}/${idx}`);
+    }
 };

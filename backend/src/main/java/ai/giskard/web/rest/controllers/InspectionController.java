@@ -1,8 +1,12 @@
 package ai.giskard.web.rest.controllers;
 
+import ai.giskard.domain.ml.Dataset;
 import ai.giskard.domain.ml.Inspection;
+import ai.giskard.domain.ml.ProjectModel;
 import ai.giskard.domain.ml.table.Filter;
 import ai.giskard.repository.InspectionRepository;
+import ai.giskard.repository.ml.DatasetRepository;
+import ai.giskard.repository.ml.ModelRepository;
 import ai.giskard.security.PermissionEvaluator;
 import ai.giskard.service.InspectionService;
 import ai.giskard.service.ModelService;
@@ -23,6 +27,7 @@ import tech.tablesaw.api.Table;
 import javax.validation.constraints.NotNull;
 import java.io.IOException;
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequiredArgsConstructor
@@ -34,6 +39,8 @@ public class InspectionController {
     private final InspectionRepository inspectionRepository;
     private final GiskardMapper giskardMapper;
     private final PermissionEvaluator permissionEvaluator;
+    private final ModelRepository modelRepository;
+    private final DatasetRepository datasetRepository;
 
 
     /**
@@ -97,5 +104,15 @@ public class InspectionController {
         return giskardMapper.toDTO(modelService.createInspection(createDTO.getModelId(), createDTO.getDatasetId()));
     }
 
-
+    @GetMapping("/suggest/{modelId}/{datasetId}/{idx}")
+    public void getSuggestions(@PathVariable @NotNull UUID modelId, @PathVariable @NotNull UUID datasetId, @PathVariable @NotNull int idx) {
+        ProjectModel model = modelRepository.getById(modelId);
+        permissionEvaluator.validateCanReadProject(model.getProject().getId());
+        Dataset dataset = datasetRepository.getById(datasetId);
+        inspectionService.getSuggestions(
+            model,
+            dataset,
+            idx
+        );
+    }
 }

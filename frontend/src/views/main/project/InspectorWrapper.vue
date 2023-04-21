@@ -69,6 +69,7 @@
                :inputData.sync='inputData'
                :model='inspection.model'
                :originalData='originalData'
+               :row-nb="rowNb"
                class='px-0'
                @reset='resetInput'
                @submitValueFeedback='submitValueFeedback'

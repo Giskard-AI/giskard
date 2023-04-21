@@ -81,6 +81,12 @@
                           :inputType="c.type"
                           @submit="$emit(dirty ? 'submitValueVariationFeedback' : 'submitValueFeedback', arguments[0])"
                       />
+
+                      <SuggestionPopover
+                          :disabled="c.name !== 'account_check_status'"
+                          :modelId="model.id"
+                          :datasetId="dataset.id"
+                      />
                     </div>
                     <div class="py-1 d-flex" v-else>
                       <label class="info--text">{{ c.name }}</label>
@@ -133,8 +139,8 @@
                   </template>
                   <span>Text explanation is not available because your model does not contain any text features</span>
                 </v-tooltip>
-                
-                  
+
+
                 <v-tab-item v-if='modelFeatures.length>1'>
 
                   <PredictionExplanations :modelId="model.id"
@@ -178,9 +184,13 @@ import {isClassification} from "@/ml-utils";
 import mixpanel from "mixpanel-browser";
 import {anonymize} from "@/utils";
 import _ from 'lodash';
+import SuggestionPopover from "@/components/SuggestionPopover.vue";
 
 @Component({
-  components: {OverlayLoader, PredictionResults, FeedbackPopover, PredictionExplanations, TextExplanation}
+  components: {
+    SuggestionPopover,
+    OverlayLoader, PredictionResults, FeedbackPopover, PredictionExplanations, TextExplanation
+  }
 })
 export default class Inspector extends Vue {
   @Prop({required: true}) model!: ModelDTO
@@ -188,6 +198,8 @@ export default class Inspector extends Vue {
   @Prop({required: true}) originalData!: object // used for the variation feedback
   @Prop({required: true}) inputData!: { [key: string]: string }
   @Prop({default: false}) isMiniMode!: boolean;
+  @Prop({default: 0}) rowNb!: number;
+
   loadingData = false;
   inputMetaData: FeatureMetadataDTO[] = [];
   featuresToView: string[] = []

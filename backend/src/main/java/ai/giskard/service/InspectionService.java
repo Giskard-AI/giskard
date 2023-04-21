@@ -1,11 +1,17 @@
 package ai.giskard.service;
 
 import ai.giskard.config.ApplicationProperties;
+import ai.giskard.domain.ml.Dataset;
 import ai.giskard.domain.ml.Inspection;
 import ai.giskard.domain.ml.ModelType;
+import ai.giskard.domain.ml.ProjectModel;
 import ai.giskard.domain.ml.table.Filter;
+import ai.giskard.ml.MLWorkerClient;
 import ai.giskard.repository.InspectionRepository;
+import ai.giskard.service.ml.MLWorkerService;
 import ai.giskard.web.rest.errors.EntityNotFoundException;
+import ai.giskard.worker.SuggestFilterRequest;
+import ai.giskard.worker.SuggestFilterResponse;
 import com.google.common.primitives.Ints;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -13,7 +19,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.FileSystemUtils;
-import tech.tablesaw.api.*;
+import tech.tablesaw.api.DoubleColumn;
+import tech.tablesaw.api.IntColumn;
+import tech.tablesaw.api.StringColumn;
+import tech.tablesaw.api.Table;
 import tech.tablesaw.io.csv.CsvReadOptions;
 import tech.tablesaw.selection.Selection;
 
@@ -41,6 +50,8 @@ public class InspectionService {
     private final ApplicationProperties applicationProperties;
     private final FileLocationService fileLocationService;
     private final SliceService sliceService;
+    private final MLWorkerService mlWorkerService;
+    private final GRPCMapper grpcMapper;
 
     public Table getTableFromBucketFile(String location) throws FileNotFoundException {
         InputStreamReader reader = new InputStreamReader(new FileInputStream(location));
@@ -233,6 +244,28 @@ public class InspectionService {
             }
         } catch (Exception e) {
             throw new GiskardRuntimeException("Failed to delete inspections", e);
+        }
+    }
+
+//    public ExplainResponse explain(ProjectModel model, Dataset dataset, Map<String, String> features) {
+//        try (MLWorkerClient client = mlWorkerService.createClient(model.getProject().isUsingInternalWorker())) {
+//            ExplainRequest request = ExplainRequest.newBuilder()
+//                .setModel(grpcMapper.createRef(model))
+//                .setDataset(grpcMapper.createRef(dataset))
+//                .putAllColumns(Maps.filterValues(features, Objects::nonNull))
+//                .build();
+//
+//            return client.getBlockingStub().explain(request);
+//        }
+//    }
+
+    public void getSuggestions(ProjectModel model, Dataset dataset, int idx) {
+        try (MLWorkerClient client = mlWorkerService.createClient(true)) {
+            SuggestFilterResponse resp = client.getBlockingStub().suggestFilter(SuggestFilterRequest.newBuilder()
+                .setDataset(grpcMapper.createRef(dataset))
+                .setModel(grpcMapper.createRef(model))
+                .setRowidx(idx)
+                .build());
         }
     }
 }
