@@ -93,6 +93,12 @@
                                         </v-row>
                                     </v-list-item>
                                 </v-list>
+                                <SuiteInputListSelector
+                                    :editing="tryMode"
+                                    :model-value="slicingArguments"
+                                    :inputs="inputType"
+                                    :project-id="props.projectId"
+                                />
                                 <v-row v-show="tryMode">
                                     <v-col :align="'right'">
                                         <v-btn width="100" small tile outlined class="primary" color="white"
@@ -147,17 +153,18 @@
 
 <script setup lang="ts">
 import _, {chain} from "lodash";
-import {computed, inject, onActivated, ref} from "vue";
+import {computed, inject, onActivated, ref, watch} from "vue";
 import {pasterColor} from "@/utils";
 import MonacoEditor from 'vue-monaco';
 import {editor} from "monaco-editor";
-import {SlicingFunctionDTO, SlicingResultDTO} from "@/generated-sources";
+import {SlicingFunctionDTO, SlicingResultDTO, TestInputDTO} from "@/generated-sources";
 import StartWorkerInstructions from "@/components/StartWorkerInstructions.vue";
 import {storeToRefs} from "pinia";
 import {useCatalogStore} from "@/stores/catalog";
 import DatasetSelector from "@/views/main/utils/DatasetSelector.vue";
 import {api} from "@/api";
 import DatasetTable from "@/components/DatasetTable.vue";
+import SuiteInputListSelector from "@/components/SuiteInputListSelector.vue";
 import IEditorOptions = editor.IEditorOptions;
 
 const l = MonacoEditor;
@@ -174,6 +181,7 @@ const selected = ref<SlicingFunctionDTO | null>(null);
 const sliceResult = ref<SlicingResultDTO | null>(null);
 const tryMode = ref<boolean>(false);
 const selectedDataset = ref<string | null>(null);
+let slicingArguments = ref<{ [name: string]: TestInputDTO }>({})
 
 const monacoOptions: IEditorOptions = inject('monacoOptions');
 monacoOptions.readOnly = true;
@@ -217,36 +225,33 @@ onActivated(async () => {
 });
 
 async function runSlicingFunction() {
-    sliceResult.value = await api.runAdHocSlicingFunction(selected.value.uuid, selectedDataset.value);
+    sliceResult.value = await api.runAdHocSlicingFunction(selected.value.uuid, selectedDataset.value, chain(slicingArguments.value)
+        .mapValues('value')
+        .value());
 }
 
-const infoHeader = {
-    text: '',
-    value: 'info'
-}
-const infoColumns = ['count', 'unique', 'top', 'freq']
+watch(() => selected.value, () => {
+    sliceResult.value = null;
+    tryMode.value = false;
 
-const headers = computed(() =>
-    [
-        infoHeader,
-        ...chain(sliceResult.value?.describeColumns ?? [])
-            .map(column => ({
-                text: column.columnName,
-                value: column.columnName,
-                cellClass: 'overflow-ellipsis'
-            }))
-            .value()
-    ]
-);
+    if (!selected.value) {
+        return;
+    }
 
-const resultData = computed(() => chain(infoColumns)
-    .map(info => ({
-        info,
-        ...chain(sliceResult.value?.describeColumns ?? [])
-            .keyBy('columnName')
-            .mapValues(info)
-            .value()
-    }))
+    slicingArguments.value = chain(selected.value.args)
+        .keyBy('name')
+        .mapValues(arg => ({
+            name: arg.name,
+            isAlias: false,
+            type: arg.type,
+            value: null
+        }))
+        .value()
+})
+
+const inputType = computed(() => chain(selected.value?.args ?? [])
+    .keyBy('name')
+    .mapValues('type')
     .value()
 );
 

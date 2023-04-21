@@ -149,11 +149,13 @@ message RunAdHocTestRequest {
 message RunAdHocSlicingRequest {
   string slicingFunctionUuid = 1;
   ArtifactRef dataset = 2;
+  repeated TestArgument arguments = 3;
 }
 
 message RunAdHocTransformationRequest {
   string transformationFunctionUuid = 1;
   ArtifactRef dataset = 2;
+  repeated TestArgument arguments = 3;
 }
 
 message SuiteTestArgument {
@@ -342,12 +344,12 @@ message FilterDatasetResponse {
 }
 
 message CatalogResponse{
-  map<string, TestFunction> tests = 1;
-  map<string, CallableFunction> slices = 2;
-  map<string, CallableFunction> transformations = 3;
+  map<string, FunctionMeta> tests = 1;
+  map<string, FunctionMeta> slices = 2;
+  map<string, FunctionMeta> transformations = 3;
 }
 
-message TestFunction {
+message FunctionMeta {
   string uuid = 1;
   string name = 2;
   string displayName = 3;
@@ -361,18 +363,6 @@ message TestFunction {
   string type = 11;
 }
 
-message CallableFunction {
-  string uuid = 1;
-  string name = 2;
-  string displayName = 3;
-  uint32 version = 4;
-  string module = 5;
-  string doc = 6;
-  string moduleDoc = 7;
-  repeated string tags = 8;
-  string code = 9;
-  string type = 10;
-}
 
 message TestFunctionArgument{
   string name = 1;
