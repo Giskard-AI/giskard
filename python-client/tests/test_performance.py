@@ -358,7 +358,6 @@ def test_diff_reference_actual_rmse(data, model, threshold, expected_metric, req
     ],
 )
 def test_f1_empty_slice(data, model, threshold, expected_metric, actual_slices_size, request):
-
     @slicing_function
     def my_slicing_function(row: pd.core.series.Series):
         return row['age'] > 100
@@ -367,9 +366,8 @@ def test_f1_empty_slice(data, model, threshold, expected_metric, actual_slices_s
             ValueError,
             match="The sliced dataset in test_f1 is empty."):
         performance.test_f1(
-        dataset=request.getfixturevalue(data),
-        model=request.getfixturevalue(model),
-        slicing_function=my_slicing_function,
-        threshold=threshold,
-    ).execute()
-
+            dataset=request.getfixturevalue(data),
+            model=request.getfixturevalue(model),
+            slicing_function=my_slicing_function,
+            threshold=threshold,
+        ).execute()

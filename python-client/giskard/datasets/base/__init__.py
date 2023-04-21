@@ -204,7 +204,7 @@ class Dataset:
         Slice the dataset using the specified `SlicingFunction`.
 
         Args:
-            slicing_function (SlicingFunction, optional):
+            slicing_function (SlicingFunction):
                 The slicing function to use. It should take a pandas DataFrame and return a DataFrame with the same columns.
             row_level (bool):
                 Choose whether to apply the slicing function on a row-level of the pandas DataFrame or not
@@ -220,7 +220,6 @@ class Dataset:
         if inspect.isfunction(slicing_function):
             slicing_function = SlicingFunction(slicing_function, row_level=row_level)
         return self.data_processor.add_step(slicing_function).apply(self, apply_only_last=True)
-
 
     @configured_validate_arguments
     def transform(self, transformation_function: Optional[TransformationFunction] = None):
