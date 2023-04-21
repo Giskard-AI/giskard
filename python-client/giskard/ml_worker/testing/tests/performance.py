@@ -38,7 +38,6 @@ def _get_rmse(y_actual, y_predicted):
 def _test_classification_score(score_fn, gsk_dataset: Dataset, model: BaseModel, threshold: float = 1.0):
     _verify_target_availability(gsk_dataset)
     is_binary_classification = len(model.meta.classification_labels) == 2
-    gsk_dataset.df.reset_index(drop=True, inplace=True)
     actual_target = gsk_dataset.df[gsk_dataset.target]
     prediction = model.predict(gsk_dataset).prediction
     if is_binary_classification:
@@ -51,7 +50,6 @@ def _test_classification_score(score_fn, gsk_dataset: Dataset, model: BaseModel,
 
 def _test_accuracy_score(gsk_dataset: Dataset, model: BaseModel, threshold: float = 1.0):
     _verify_target_availability(gsk_dataset)
-    gsk_dataset.df.reset_index(drop=True, inplace=True)
     prediction = model.predict(gsk_dataset).prediction
     actual_target = gsk_dataset.df[gsk_dataset.target]
 
@@ -62,7 +60,6 @@ def _test_accuracy_score(gsk_dataset: Dataset, model: BaseModel, threshold: floa
 
 def _test_regression_score(score_fn, giskard_ds, model: BaseModel, threshold: float = 1.0, r2=False):
     results_df = pd.DataFrame()
-    giskard_ds.df.reset_index(drop=True, inplace=True)
     _verify_target_availability(giskard_ds)
 
     results_df["actual_target"] = giskard_ds.df[giskard_ds.target]
