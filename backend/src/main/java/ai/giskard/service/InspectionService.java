@@ -1,18 +1,22 @@
 package ai.giskard.service;
 
 import ai.giskard.config.ApplicationProperties;
+import ai.giskard.domain.ml.Dataset;
 import ai.giskard.domain.ml.Inspection;
 import ai.giskard.domain.ml.ModelType;
+import ai.giskard.domain.ml.ProjectModel;
 import ai.giskard.domain.ml.table.Filter;
+import ai.giskard.ml.MLWorkerClient;
 import ai.giskard.repository.InspectionRepository;
+import ai.giskard.service.ml.MLWorkerService;
 import ai.giskard.utils.FileUtils;
+import ai.giskard.worker.SuggestFilterRequest;
+import ai.giskard.worker.SuggestFilterResponse;
 import ai.giskard.web.dto.InspectionCreateDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.util.FileSystemUtils;
-import tech.tablesaw.api.DoubleColumn;
-import tech.tablesaw.api.StringColumn;
-import tech.tablesaw.api.Table;
+import tech.tablesaw.api.*;
 import tech.tablesaw.io.csv.CsvReadOptions;
 import tech.tablesaw.selection.Selection;
 
@@ -36,6 +40,8 @@ public class InspectionService {
     private final ApplicationProperties applicationProperties;
     private final FileLocationService fileLocationService;
     private final ModelService modelService;
+    private final MLWorkerService mlWorkerService;
+    private final GRPCMapper grpcMapper;
 
     public Table getTableFromBucketFile(String location) throws FileNotFoundException {
         InputStreamReader reader = new InputStreamReader(new FileInputStream(location));
@@ -246,5 +252,15 @@ public class InspectionService {
         }
 
         return inspectionRepository.save(inspection);
+    }
+
+    public void getSuggestions(ProjectModel model, Dataset dataset, int idx) {
+        try (MLWorkerClient client = mlWorkerService.createClient(true)) {
+            SuggestFilterResponse resp = client.getBlockingStub().suggestFilter(SuggestFilterRequest.newBuilder()
+                .setDataset(grpcMapper.createRef(dataset))
+                .setModel(grpcMapper.createRef(model))
+                .setRowidx(idx)
+                .build());
+        }
     }
 }

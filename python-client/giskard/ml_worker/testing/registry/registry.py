@@ -90,6 +90,7 @@ class GiskardTestRegistry:
             self.add_func(meta)
             full_name = f"{meta.full_name} ({meta.uuid})" if hasattr(meta, "full_name") else f"{meta.uuid}"
             logger.info(f"Registered test function: {full_name}")
+        return meta
 
     def add_func(self, meta: SavableMeta):
         self._tests[meta.uuid] = meta

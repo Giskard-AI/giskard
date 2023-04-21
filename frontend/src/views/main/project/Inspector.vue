@@ -96,12 +96,18 @@
                                         v-if="catalogStore.transformationFunctionsByColumnType.hasOwnProperty(c.type)"
                                         :column="c.name" :column-type="c.type"/>
                             </div>
-                        </div>
-                        <div class="py-1 d-flex" v-else>
-                            <label class="info--text">{{ c.name }}</label>
-                            <span>{{ inputData[c.name] }}</span>
-                        </div>
-                    </ValidationProvider>
+
+                      <SuggestionPopover
+                          :disabled="c.name !== 'account_check_status'"
+                          :modelId="model.id"
+                          :datasetId="dataset.id"
+                      />
+                    </div>
+                    <div class="py-1 d-flex" v-else>
+                      <label class="info--text">{{ c.name }}</label>
+                      <span>{{ inputData[c.name] }}</span>
+                    </div>
+                  </ValidationProvider>
                 </div>
               </v-form>
             </v-card-text>
@@ -149,8 +155,8 @@
                   </template>
                   <span>Text explanation is not available because your model does not contain any text features</span>
                 </v-tooltip>
-                
-                  
+
+
                 <v-tab-item v-if='modelFeatures.length>1'>
 
                   <PredictionExplanations :modelId="model.id"
@@ -196,10 +202,11 @@ import {anonymize} from "@/utils";
 import _ from 'lodash';
 import TransformationPopover from "@/components/TransformationPopover.vue";
 import {useCatalogStore} from "@/stores/catalog";
+import SuggestionPopover from "@/components/SuggestionPopover.vue";
 
 @Component({
     components: {
-        TransformationPopover,
+        TransformationPopover, SuggestionPopover,
         OverlayLoader, PredictionResults, FeedbackPopover, PredictionExplanations, TextExplanation
     }
 })
@@ -210,7 +217,10 @@ export default class Inspector extends Vue {
     @Prop({required: true}) transformationModifications!: object // used for the variation feedback
     @Prop({required: true}) inputData!: { [key: string]: string }
     @Prop({default: false}) isMiniMode!: boolean;
-    loadingData = false;
+    @Prop({default: 0}) rowNb!: number;
+
+  loadingData = false;
+
     featuresToView: string[] = []
     errorLoadingMetadata = ""
     dataErrorMsg = ""

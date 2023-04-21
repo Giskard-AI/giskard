@@ -486,10 +486,31 @@ class MLWorkerServiceImpl(MLWorkerServicer):
         yield ml_worker_pb2.FilterDatasetResponse(code=ml_worker_pb2.StatusCode.Ok)
 
     def suggestFilter(self, request: ml_worker_pb2.SuggestFilterRequest, context):
-        # Here we would take everything that the Request gives us and try to return a list of suggestions
-        # Would need shap_values,
-        # suggestions = suggest_filter(request.dataset)
-        # return ml_worker_pb2.SuggestFilterResponse(suggestions=suggestions)
+        try:
+            model = BaseModel.download(self.client, request.model.project_key, request.model.id)
+            dataset = Dataset.download(self.client, request.dataset.project_key, request.dataset.id)
+        except ValueError as e:
+            if "unsupported pickle protocol" in str(e):
+                raise ValueError(
+                    "Unable to unpickle object, "
+                    "Make sure that Python version of client code is the same as the Python version in ML Worker."
+                    "To change Python version, please refer to https://docs.giskard.ai/start/guides/configuration"
+                    f"\nOriginal Error: {e}"
+                ) from e
+            raise e
+        except ModuleNotFoundError as e:
+            raise GiskardException(
+                f"Failed to import '{e.name}'. "
+                f"Make sure it's installed in the ML Worker environment."
+                "To have more information on ML Worker, please see: https://docs.giskard.ai/start/guides/installation/ml-worker"
+            ) from e
+
+        from giskard.push.contribution import contribution
+        from giskard.push.perturbation import perturbation
+
+        contribs = contribution(model, dataset, request.rowidx)
+        perturbs = perturbation(model, dataset, request.rowidx)
+
         return
 
     @staticmethod

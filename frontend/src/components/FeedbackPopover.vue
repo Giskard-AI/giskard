@@ -1,26 +1,31 @@
 <template>
   <v-menu offset-x :close-on-content-click="false" v-model="opened">
-    
+
     <template v-slot:activator="{ on: onMenu }">
-      
       <v-tooltip right>
         <template v-slot:activator="{ on: onTooltip }">
           <v-btn small icon
-            :color="submittedOnce? 'grey' : 'primary'"
-            v-on="{ ...onMenu, ...onTooltip }">
+                 :color="submittedOnce? 'grey' : 'primary'"
+                 v-on="{ ...onMenu, ...onTooltip }">
             <v-icon size=18>mdi-message-plus</v-icon>
           </v-btn>
         </template>
-      <span>Feedback</span>
+        <span>Feedback</span>
       </v-tooltip>
     </template>
 
     <v-card dark color="primary">
       <v-card-title>
-        <div v-if="originalValue == inputValue">Does the impact of <v-chip>{{inputLabel}}</v-chip> on the prediction make sense?</div>
-        <div v-else>Does the impact of changing <v-chip>{{inputLabel}}</v-chip> 
-          <span v-show="inputType != 'text'"> from <v-chip color="blue darken-2">{{originalValue}}</v-chip> to <v-chip color="accent">{{inputValue}}</v-chip></span>
-          on the prediction make sense?</div>
+        <div v-if="originalValue == inputValue">Does the impact of
+          <v-chip>{{ inputLabel }}</v-chip>
+          on the prediction make sense?
+        </div>
+        <div v-else>Does the impact of changing
+          <v-chip>{{ inputLabel }}</v-chip>
+          <span v-show="inputType != 'text'"> from <v-chip color="blue darken-2">{{ originalValue }}</v-chip> to <v-chip
+              color="accent">{{ inputValue }}</v-chip></span>
+          on the prediction make sense?
+        </div>
       </v-card-title>
       <v-card-text>
         <v-radio-group v-model="selected" dark row hide-details>
@@ -29,9 +34,9 @@
           <v-radio label="Other" value="other"></v-radio>
         </v-radio-group>
         <v-text-field dense dark outlined single-line hide-details
-          v-model="message"
-          placeholder="Why?"
-          class="message"
+                      v-model="message"
+                      placeholder="Why?"
+                      class="message"
         ></v-text-field>
       </v-card-text>
       <v-card-actions>
@@ -44,7 +49,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue, Prop, Watch } from 'vue-property-decorator';
+import {Component, Prop, Vue, Watch} from 'vue-property-decorator';
 
 @Component
 export default class FeedbackPopover extends Vue {
@@ -101,7 +106,7 @@ div.v-card {
   & > *:nth-child(-n + 2) { // for the first two children: the title and the content
     padding-bottom: 0px;
   }
-  
+
   .v-card__title {
     font-size: 1rem;
     padding-top: 8px;
@@ -120,6 +125,7 @@ div.v-card {
     align-items: center;
     font-size: 13px;
     color: white;
+
     * {
       margin: 0 3px
     }
