@@ -58,10 +58,10 @@ def _text_perturb(val):
     return aug_text
 def perturbation(model, ds, idrow):
     for feat, coltype in ds.column_types.items():
-        if coltype == "numeric" and _perturb_and_predict(model, ds, idrow, feat,coltype):
+        if coltype == "numeric" and _perturb_and_predict(model, ds, idrow, feat, coltype):
             res = [
                 {
-                    "sentence": "A small variation (+20%) of this feature makes the prediction change, do you want to "
+                    "sentence": "A small variation (+10%) of this feature makes the prediction change, do you want to "
                                 "check if this unrobust behavior generalizes to the whole dataset ?",
                     "action": "Test",
                     "value": str(ds.df.iloc[idrow][feat]),
@@ -92,13 +92,18 @@ def _perturb_and_predict(model, ds, idrow, feature, coltype):  # done at each st
         row_perturbed[feature] = _text_perturb(str(row_perturbed[feature]))
     # print(row_perturbed[feature])
     # Predict probabilities for the perturbed input row using the given model
-    ref_prob = model.clf.predict(ref_row)
-    probabilities = model.clf.predict(row_perturbed)  # .reshape(1, -1)
-    return ref_prob[0] != probabilities[0]
+    if model.meta.model_type == SupportedModelTypes.CLASSIFICATION:
+        ref_prob = model.clf.predict(ref_row)
+        probabilities = model.clf.predict(row_perturbed)  # .reshape(1, -1)
+        return ref_prob[0] != probabilities[0]
+    if model.meta.model_type == SupportedModelTypes.REGRESSION:
+        ref_val = model.clf.predict(ref_row.drop(columns=[ds.target]))
+        new_val = model.clf.predict(row_perturbed.drop(columns=[ds.target]))  # .reshape(1, -1)
+        return abs(new_val - ref_val) / ref_val >= 0.2
 
 
 def _num_perturb(val):
-    return val * 1.2  # 20% perturbation
+    return val * 1.1  # 20% perturbation
 
 
 def _text_perturb(val):
