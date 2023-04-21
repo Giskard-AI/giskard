@@ -23,6 +23,8 @@ COPY frontend frontend
 COPY backend backend
 COPY common common
 COPY gradle gradle
+# Copying .git to make gradle-git-properties gradle plugin work
+COPY .git .git
 
 COPY build.gradle.kts gradle.properties gradlew settings.gradle.kts ./
 
@@ -47,13 +49,15 @@ RUN apt-get update && \
 ENV SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/postgres \
     SPRING_LIQUIBASE_URL=jdbc:postgresql://localhost:5432/postgres \
     GSK_HOST=0.0.0.0 \
-    GSK_HOME=/home/giskard-home \
+    GSK_USER_HOME=/home/giskard \
+    GSK_HOME=/home/giskard/datadir \
     GSK_DIST_PATH=/opt/giskard
 
 ENV VENV_PATH=$GSK_DIST_PATH/internal-mlworker-venv
 
 ENV PATH="$VENV_PATH/bin:/usr/lib/postgresql/13/bin:$PATH" \
-    PGDATA=$GSK_HOME/database
+    PGDATA=$GSK_HOME/database \
+    GISKARD_HOME=$GSK_HOME
 
 WORKDIR $GSK_DIST_PATH
 
@@ -64,19 +68,15 @@ COPY --from=build /app/frontend/dist $GSK_DIST_PATH/frontend/dist
 COPY supervisord.conf ./
 COPY packaging/nginx.conf.template $GSK_DIST_PATH/frontend/
 
-RUN rm /etc/nginx/sites-enabled/default
-
 ARG GISKARD_UID=50000
 
 RUN adduser --gecos "First Last,RoomNumber,WorkPhone,HomePhone" --disabled-password \
-       --quiet "giskard" --uid "${GISKARD_UID}" --gid "0" --home "${GSK_HOME}" && \
-    mkdir -p ${GSK_DIST_PATH} ${GSK_HOME}/run && chown -R "giskard:0" "${GSK_HOME}" ${GSK_DIST_PATH}
+       --quiet "giskard" --uid "${GISKARD_UID}" --gid "0" --home "${GSK_USER_HOME}" && \
+    mkdir -p "${GSK_HOME}/run" && chown -R "giskard:0" "${GSK_USER_HOME}" "${GSK_DIST_PATH}"
 
 RUN chown -R giskard:0 /var/run/postgresql /var/lib/nginx
 
-
 USER giskard
-
-RUN initdb -D $PGDATA
+WORKDIR $GSK_HOME
 
 ENTRYPOINT ["supervisord", "-c", "/opt/giskard/supervisord.conf"]

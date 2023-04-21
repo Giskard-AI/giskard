@@ -1,11 +1,13 @@
 import asyncio
 import collections
+import functools
 import hashlib
 import logging
 import os
 import sys
 from time import sleep
 
+import click
 from lockfile.pidlockfile import PIDLockFile
 from pydantic import AnyHttpUrl, parse_obj_as
 
@@ -19,9 +21,27 @@ logging.getLogger("giskard").setLevel(logging.INFO)
 analytics = GiskardAnalyticsCollector()
 
 
+def common_options(func):
+    @click.option(
+        "--verbose",
+        "-v",
+        is_flag=True,
+        callback=set_verbose,
+        default=False,
+        expose_value=False,
+        is_eager=True,
+        help="Enable verbose logging",
+    )
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        return func(*args, **kwargs)
+
+    return wrapper
+
+
 def set_verbose(_ctx, _param, value):
     if value:
-        logging.getLogger().setLevel(logging.DEBUG)
+        logging.getLogger("giskard").setLevel(logging.DEBUG)
 
 
 def remove_stale_pid_file(pid_file):
