@@ -13,6 +13,7 @@ logger = logging.getLogger(__name__)
 
 giskard_home_path = settings.home_dir
 giskard_settings_path = giskard_home_path / "giskard-settings.yml"
+IMAGE_NAME = "docker.io/giskardai/giskard"
 
 try:
     import docker
@@ -72,12 +73,13 @@ def start(attached):
     try:
         container = docker_client.containers.get(f"giskard-server.{version.replace('v', '')}")
     except:
-        container = docker_client.containers.create(f"giskardai/giskard:{version.replace('v', '')}",
+        container = docker_client.containers.create(f"{IMAGE_NAME}:{version.replace('v', '')}",
                                                     detach=not attached,
                                                     name=f"giskard-server.{version.replace('v', '')}",
                                                     ports={7860: 19000},
                                                     volumes={
-                                                        home_volume.name: {'bind': '/home/giskard/datadir', 'mode': 'rw'}
+                                                        home_volume.name: {'bind': '/home/giskard/datadir',
+                                                                           'mode': 'rw'}
                                                     })
     container.start()
     logger.info(f"Giskard Server {version} started. You can access it at http://localhost:19000")
@@ -172,7 +174,7 @@ def info():
 
 
 def _check_downloaded(ver: str):
-    tag = f"giskardai/giskard:{ver}"
+    tag = f"{IMAGE_NAME}:{ver}"
     try:
         docker_client.images.get(tag)
         logger.debug(f"Docker image exists: {tag}")
@@ -186,7 +188,7 @@ def _check_downloaded(ver: str):
 def _pull_image(version):
     if not _check_downloaded(version):
         logger.info(f"Downloading image for version {version}")
-        docker_client.images.pull("giskardai/giskard", tag=version.replace('v', ''))
+        docker_client.images.pull(IMAGE_NAME, tag=version.replace('v', ''))
 
 
 # Returns the latest tag from the GitHub API
