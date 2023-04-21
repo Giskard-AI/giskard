@@ -4,7 +4,7 @@ from typing import Optional
 
 from giskard.scanner.issue import Issue
 from ..models.base import BaseModel
-from ..models.precooked import PrecookedModel
+from ..models._precooked import PrecookedModel
 from ..datasets.base import Dataset
 
 from .result import ScanResult
