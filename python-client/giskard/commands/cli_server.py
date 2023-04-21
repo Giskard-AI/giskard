@@ -1,26 +1,28 @@
 import logging
 import os
+from typing import Optional
 
 import click
 import requests
 import yaml
-from docker.errors import NotFound
+from docker import DockerClient
+from docker.errors import NotFound, DockerException
 
 from giskard.cli_utils import common_options
 from giskard.settings import settings
 
 logger = logging.getLogger(__name__)
 
-giskard_home_path = settings.home_dir
-giskard_settings_path = giskard_home_path / "giskard-settings.yml"
+giskard_settings_path = settings.home_dir / "server-settings.yml"
 IMAGE_NAME = "docker.io/giskardai/giskard"
 
+docker_client: Optional[DockerClient] = None
 try:
     import docker
 
     docker_client = docker.from_env()
-except Exception as e:
-    logger.error("Failed to create Docker client", e)
+except DockerException as e:
+    logger.error("Failed to connect to Docker: ", e)
 
 
 @click.group("server", help="Giskard UI management", context_settings={"show_default": True})
@@ -33,7 +35,6 @@ def server() -> None:
 def update_options(fn):
     fn = click.option(
         "--version",
-        "-v",
         "version",
         is_flag=False,
         default="",
@@ -122,7 +123,8 @@ def restart():
 
 @server.command("logs")
 @common_options
-@click.argument("service", default="backend", type=click.Choice(["backend", "frontend", "worker"]), required=True)
+@click.argument("service", default="backend", type=click.Choice(["backend", "frontend", "mlworker", "db"]),
+                required=True)
 def logs(service):
     """\b
     Prints logs for selected service.
@@ -134,7 +136,6 @@ def logs(service):
 @common_options
 @click.option(
     "--version",
-    "-v",
     "version",
     is_flag=False,
     default="",
@@ -218,7 +219,7 @@ def _get_home_volume():
     try:
         logger.debug("Found existing 'giskard-home' volume, reusing it")
         home_volume = docker_client.volumes.get("giskard-home")
-    except docker.errors.NotFound:
+    except NotFound:
         logger.info("Creating a new volume: 'giskard-home'")
         home_volume = docker_client.volumes.create("giskard-home")
 
