@@ -66,7 +66,7 @@ class DataProcessor:
         while len(self.pipeline):
             step = self.pipeline.pop(-1 if apply_only_last else 0)
 
-            df = step(df)
+            df = step.execute(df)
 
             if apply_only_last:
                 break
@@ -201,6 +201,7 @@ class Dataset:
         self.data_processor.add_step(transformation_function)
         return self
 
+    @configured_validate_arguments
     def slice(self, slicing_function: Optional[SlicingFunction] = None):
         """
         Slice the dataset using the specified `SlicingFunction`.
@@ -219,17 +220,20 @@ class Dataset:
             return self
 
     @configured_validate_arguments
-    def transform(self, transformation_function: TransformationFunction):
+    def transform(self, transformation_function: Optional[TransformationFunction] = None):
         """
         Transform the data in the current Dataset by applying a transformation function.
 
         Args:
-            transformation_function (TransformationFunction): A function that takes a pandas DataFrame as input and returns a modified DataFrame.
+            transformation_function (TransformationFunction, optional): A function that takes a pandas DataFrame as input and returns a modified DataFrame.
 
         Returns:
             Dataset: A new Dataset object containing the transformed data.
         """
-        return self.data_processor.add_step(transformation_function).apply(self, apply_only_last=True)
+        if transformation_function:
+            return self.data_processor.add_step(transformation_function).apply(self, apply_only_last=True)
+        else:
+            return self
 
     def process(self):
         """
