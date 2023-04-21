@@ -126,7 +126,7 @@ from giskard import wrap_model, wrap_dataset, test_right_label
 wrapped_model = wrap_model(...)
 wrapped_dataset = wrap_dataset(...)
 
-result = test_right_label(wrapped_dataset, wrapped_model, 'SUCCESS').execute()
+result = test_right_label(wrapped_model, wrapped_dataset, 'SUCCESS').execute()
 print(f"result: {result.passed} with metric {result.metric}")
 ```
 
