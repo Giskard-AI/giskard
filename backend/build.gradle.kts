@@ -98,7 +98,7 @@ liquibase {
     activities.register("main") {
         this.arguments = mapOf(
             "driver" to "org.postgresql.Driver",
-            "url" to System.getenv().getOrDefault("SPRING_LIQUIBASE_URL", "jdbc:postgresql://localhost:5432/app"),
+            "url" to System.getenv().getOrDefault("SPRING_LIQUIBASE_URL", "jdbc:postgresql://localhost:5432/postgres"),
             "username" to System.getenv().getOrDefault("POSTGRES_USER", "postgres"),
             "password" to System.getenv().getOrDefault("POSTGRES_PASSWORD", "y1QYbF2BtFUC"),
             "changeLogFile" to "src/main/resources/config/liquibase/master.xml",
