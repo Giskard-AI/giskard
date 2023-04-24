@@ -348,7 +348,6 @@ def test_rmse(model: BaseModel, dataset: Dataset, slicing_function: SlicingFunct
     return _test_regression_score(_get_rmse, model, dataset, threshold)
 
 
-
 @test(name='MAE', tags=['performance', 'regression', 'ground_truth'])
 def test_mae(model: BaseModel, dataset: Dataset, slicing_function: SlicingFunction = None, threshold: float = 1.0):
     """
