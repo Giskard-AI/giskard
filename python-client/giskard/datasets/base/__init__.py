@@ -300,6 +300,7 @@ class Dataset:
             if not cat_columns:
                 if nuniques[col] <= self.category_threshold:
                     column_types[col] = SupportedColumnTypes.CATEGORY.value
+                    continue
             # inference of text and numeric columns
             if is_numeric_dtype(self.df[col]):
                 column_types[col] = SupportedColumnTypes.NUMERIC.value
