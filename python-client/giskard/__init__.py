@@ -109,8 +109,6 @@ __all__ = [
     'SlicingFunction',
     'TestResult',
     'GiskardTest',
-    'short_comment_slicing_fn',
-    'keyword_lookup_slicing_fn'
 ]
 try:
     from giskard.models.catboost import CatboostModel
