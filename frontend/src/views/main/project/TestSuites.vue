@@ -1,7 +1,7 @@
 <template>
     <v-container fluid class="vc" v-if="testSuites.length > 0">
         <div class="d-flex flex-row-reverse pb-4">
-            <v-btn color="primary" @click="createTestSuite" class="grey--text text--darken-4">
+            <v-btn color="primaryLight" class="primaryLightBtn" @click="createTestSuite">
                 <v-icon left>add</v-icon>
                 New test suite
             </v-btn>
@@ -18,7 +18,7 @@
         <v-alert class="text-center">
             <p class="headline font-weight-medium grey--text text--darken-2">You haven't created any test suite for this project. <br>Please create a new one.</p>
         </v-alert>
-        <v-btn tile @click="createTestSuite" color="primary" class="grey--text text--darken-4">
+        <v-btn tile @click="createTestSuite" color="primaryLight" class="primaryLightBtn">
             <v-icon>add</v-icon>
             Create a new test suite
         </v-btn>
