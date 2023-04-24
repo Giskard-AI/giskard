@@ -188,17 +188,15 @@ def stop():
 
     Stops any running Giskard server. Does nothing if Giskard server is not running.
     """
-    version = get_version()
-
     try:
-        container = get_container(version)
+        container = get_container()
         if container.status != 'exited':
             logger.info("Stopping Giskard Server")
             container.stop()
         else:
-            logger.info(f"Giskard {version} is not running")
+            logger.info(f"Giskard container {container.name} is not running")
     except NotFound:
-        logger.info(f"Giskard {version} is not found")
+        logger.info(f"Giskard container {get_container_name()} is not found")
 
 
 @server.command("restart")
