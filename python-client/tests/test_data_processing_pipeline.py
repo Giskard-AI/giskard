@@ -43,6 +43,14 @@ def test_slicing(german_credit_data: Dataset):
     assert len(ds.df) == 568
 
 
+def test_slicing_using_lambda(german_credit_data: Dataset):
+    assert len(german_credit_data.df) == 1000
+    ds = german_credit_data.slice(lambda x: x.credit_amount > 1000)
+    assert len(ds.df) == 884
+    ds = ds.slice(lambda x: x.credit_amount > 2000)
+    assert len(ds.df) == 568
+
+
 def test_chain(german_credit_data: Dataset):
     assert len(german_credit_data.df) == 1000
     german_credit_data.add_slicing_function(filter_without_parenthesis)

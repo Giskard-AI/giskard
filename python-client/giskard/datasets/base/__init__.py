@@ -1,8 +1,8 @@
+import inspect
 import logging
 import posixpath
 import tempfile
 import uuid
-import inspect
 from enum import Enum
 from pathlib import Path
 from typing import Dict, Optional, List, Hashable, Union
@@ -17,7 +17,7 @@ from giskard.client.io_utils import save_df, compress
 from giskard.client.python_utils import warning
 from giskard.core.core import DatasetMeta, SupportedColumnTypes
 from giskard.core.validation import configured_validate_arguments
-from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction
+from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction, SlicingFunctionType
 from giskard.ml_worker.testing.registry.transformation_function import TransformationFunction
 from giskard.settings import settings
 
@@ -199,7 +199,7 @@ class Dataset:
         return self
 
     @configured_validate_arguments
-    def slice(self, slicing_function: SlicingFunction, row_level: bool = True):
+    def slice(self, slicing_function: Union[SlicingFunction, SlicingFunctionType], row_level: bool = True):
         """
         Slice the dataset using the specified `SlicingFunction`.
 
