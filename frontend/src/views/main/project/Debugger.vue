@@ -79,16 +79,6 @@ async function renameSession(id: number, name: string) {
   }
 }
 
-function formatDate(dateStr: string): string {
-  const date = new Date(dateStr);
-
-  return date.getFullYear() +
-    "-" + (date.getMonth() + 1).toString().padStart(2, "0") +
-    "-" + date.getDate().toString().padStart(2, "0") +
-    " " + date.getHours().toString().padStart(2, "0") +
-    ":" + date.getMinutes().toString().padStart(2, "0");
-}
-
 function orderByDate(debuggingSessions: InspectionDTO[]): InspectionDTO[] {
   return debuggingSessions.sort((a, b) => {
     const aDate = new Date(a.createdDate);
@@ -142,7 +132,7 @@ onActivated(() => loadDebuggingSessions());
                 </InlineEditText>
               </v-col>
               <v-col cols="1">{{ session.id }}</v-col>
-              <v-col cols="2">{{ formatDate(session.createdDate) }}</v-col>
+              <v-col cols="2">{{ session.createdDate | date }}</v-col>
               <v-col cols="1">{{ session.dataset.name }}</v-col>
               <v-col cols="1" class="id-container" :title="session.dataset.id">{{ session.dataset.id }}</v-col>
               <v-col cols="2">{{ session.model.name }}</v-col>
