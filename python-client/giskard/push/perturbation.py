@@ -1,19 +1,13 @@
 import nlpaug.augmenter.word as naw
 from giskard.core.core import SupportedModelTypes
+from ..push import Push
 
 
 def perturbation(model, ds, idrow):
+    push=Push()
     for feat, coltype in ds.column_types.items():
         if coltype == "numeric" and _perturb_and_predict(model, ds, idrow, feat, coltype):
-            res = [
-                {
-                    "sentence": "A small variation (+10%) of this feature makes the prediction change, do you want to "
-                                "check if this unrobust behavior generalizes to the whole dataset ?",
-                    "action": "Test",
-                    "value": str(ds.df.iloc[idrow][feat]),
-                    "key": str(feat),
-                }
-            ]
+            res = push.perturbation(feature=feat,value=ds.df.iloc[idrow][feat])
             return res
 
         # if coltype == "text" and _perturb_and_predict(model, ds, idrow, feat, coltype):
@@ -49,7 +43,7 @@ def _perturb_and_predict(model, ds, idrow, feature, coltype):  # done at each st
 
 
 def _num_perturb(val):
-    return val * 1.1  # 20% perturbation
+    return val * 1.2  # 20% perturbation
 
 
 def _text_perturb(val):
