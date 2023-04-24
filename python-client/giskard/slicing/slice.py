@@ -184,7 +184,7 @@ class QueryBasedSliceFunction(SlicingFunction):
     def __init__(self, query: Query):
         self.query = query
 
-    def __call__(self, data: pd.DataFrame):
+    def execute(self, data: pd.DataFrame):
         return self.query.run(data)
 
     def __str__(self):
