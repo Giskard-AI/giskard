@@ -176,17 +176,11 @@ public interface GiskardMapper {
         suite.getTests().forEach(e -> e.setSuite(suite));
     }
 
-    @AfterMapping
-    default void afterMapping(@MappingTarget SuiteTest test) {
-        test.getTestInputs().forEach(e -> e.setTest(test));
-    }
-
     @Mapping(target = "id", ignore = true)
-    @Mapping(target = "test", ignore = true)
-    @Mapping(target = "suite", ignore = true)
     @Mapping(target = "alias", source = "alias")
-    TestInput fromDTO(TestInputDTO dto);
-    TestInputDTO toDTO(TestInput obj);
+    FunctionInput fromDTO(FunctionInputDTO dto);
+
+    FunctionInputDTO toDTO(FunctionInput obj);
 
 
     List<TestSuiteDTO> toDTO(List<TestSuite> suites);
@@ -198,11 +192,11 @@ public interface GiskardMapper {
     @Mapping(target = "test", source = "testFunction")
     SuiteTestDTO toDTO(SuiteTest dto);
 
-    default Map<String, TestInputDTO> map(List<TestInput> value) {
-        return value.stream().collect(Collectors.toMap(TestInput::getName, this::toDTO));
+    default Map<String, FunctionInputDTO> map(List<FunctionInput> value) {
+        return value.stream().collect(Collectors.toMap(FunctionInput::getName, this::toDTO));
     }
 
-    default List<TestInput> map(Map<String, TestInputDTO> value) {
+    default List<FunctionInput> map(Map<String, FunctionInputDTO> value) {
         return value.values().stream().map(this::fromDTO).toList();
     }
 
