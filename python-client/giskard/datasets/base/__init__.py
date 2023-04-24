@@ -148,6 +148,7 @@ class Dataset:
         # used in the inference of category columns
         self.category_threshold = round(np.log10(len(self.df))) if len(self.df) >= 100 else 2
         if column_types:
+            column_types.pop(self.target, None)  # no need for target type
             self.column_types = column_types
             validate_column_types(self)
         else:
@@ -282,10 +283,13 @@ class Dataset:
                                  "Please make sure that `cat_columns` refers to existing columns in your dataset.")
 
             for cat_col in cat_columns:
-                column_types[cat_col] = SupportedColumnTypes.CATEGORY.value
+                if cat_col != self.target:
+                    column_types[cat_col] = SupportedColumnTypes.CATEGORY.value
             df_columns = set(df_columns) - set(cat_columns)
 
         for col in df_columns:
+            if col == self.target:
+                continue
             # inference of categorical columns
             # in case cat_columns were provided by the user, we don't try to infer the categorical for the rest
             # we raise a warning instead in validate_column_categorization
