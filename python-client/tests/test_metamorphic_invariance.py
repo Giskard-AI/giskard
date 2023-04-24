@@ -14,7 +14,7 @@ def test_metamorphic_invariance_no_change(german_credit_test_data, german_credit
     def perturbation(x: pd.Series) -> pd.Series:
         return x
 
-    results = metamorphic.test_metamorphic_invariance(dataset=german_credit_test_data, model=german_credit_model,
+    results = metamorphic.test_metamorphic_invariance(model=german_credit_model, dataset=german_credit_test_data,
                                                       transformation_function=perturbation, threshold=0.1).execute()
 
     assert results.actual_slices_size[0] == 1000
@@ -27,7 +27,7 @@ def _test_metamorphic_invariance_male_female(german_credit_test_data, german_cre
         x.sex = "female" if x.sex == "male" else "male"
         return x
 
-    results = metamorphic.test_metamorphic_invariance(dataset=german_credit_test_data, model=german_credit_model,
+    results = metamorphic.test_metamorphic_invariance(model=german_credit_model, dataset=german_credit_test_data,
                                                       transformation_function=perturbation,
                                                       threshold=threshold).execute()
 
@@ -48,7 +48,7 @@ def test_metamorphic_invariance_2_perturbations(german_credit_test_data, german_
         x.sex = "female" if x.sex == "male" else "male"
         return x
 
-    results = metamorphic.test_metamorphic_invariance(dataset=german_credit_test_data, model=german_credit_model,
+    results = metamorphic.test_metamorphic_invariance(model=german_credit_model, dataset=german_credit_test_data,
                                                       transformation_function=perturbation, threshold=0.1).execute()
 
     assert results.actual_slices_size[0] == len(german_credit_test_data)
@@ -61,7 +61,7 @@ def test_metamorphic_invariance_some_rows(german_credit_test_data, german_credit
         x.sex = "female" if x.sex == "male" else "male"
         return x
 
-    results = metamorphic.test_metamorphic_invariance(dataset=german_credit_test_data, model=german_credit_model,
+    results = metamorphic.test_metamorphic_invariance(model=german_credit_model, dataset=german_credit_test_data,
                                                       transformation_function=perturbation, threshold=0.1).execute()
 
     assert round(results.metric, 2) == 0.97
@@ -76,10 +76,10 @@ def test_metamorphic_invariance_regression(diabetes_dataset_with_target, linear_
         x.sex = sex_values[1] if x.sex == sex_values[0] else x.sex
         return x
 
-    results = metamorphic.test_metamorphic_invariance(dataset=diabetes_dataset_with_target,
-                                                      model=linear_regression_diabetes,
-                                                      transformation_function=perturbation,
-                                                      threshold=0.1, output_sensitivity=0.1).execute()
+    results = metamorphic.test_metamorphic_invariance(model=linear_regression_diabetes,
+                                                      dataset=diabetes_dataset_with_target,
+                                                      transformation_function=perturbation, threshold=0.1,
+                                                      output_sensitivity=0.1).execute()
 
     assert results.actual_slices_size[0] == len(diabetes_dataset_with_target)
     assert round(results.metric, 2) == 0.11
@@ -160,7 +160,7 @@ def test_metamorphic_invariance_t_test(german_credit_test_data, german_credit_mo
         x.sex = "female" if x.sex == "male" else "male"
         return x
 
-    results = metamorphic.test_metamorphic_invariance_t_test(dataset=german_credit_test_data, model=german_credit_model,
+    results = metamorphic.test_metamorphic_invariance_t_test(model=german_credit_model, dataset=german_credit_test_data,
                                                              transformation_function=perturbation, window_size=0.2,
                                                              critical_quantile=0.05).execute()
 
@@ -173,7 +173,7 @@ def test_metamorphic_invariance_t_test_nopert(german_credit_test_data, german_cr
     def perturbation(x: pd.Series) -> pd.Series:
         return x
 
-    results = metamorphic.test_metamorphic_invariance_t_test(dataset=german_credit_test_data, model=german_credit_model,
+    results = metamorphic.test_metamorphic_invariance_t_test(model=german_credit_model, dataset=german_credit_test_data,
                                                              transformation_function=perturbation, window_size=0.2,
                                                              critical_quantile=0.05).execute()
 
@@ -187,8 +187,8 @@ def test_metamorphic_invariance_wilcoxon(german_credit_test_data, german_credit_
         x.sex = "female" if x.sex == "male" else "male"
         return x
 
-    results = metamorphic.test_metamorphic_invariance_wilcoxon(dataset=german_credit_test_data,
-                                                               model=german_credit_model,
+    results = metamorphic.test_metamorphic_invariance_wilcoxon(model=german_credit_model,
+                                                               dataset=german_credit_test_data,
                                                                transformation_function=perturbation, window_size=0.2,
                                                                critical_quantile=0.05).execute()
 
@@ -201,8 +201,8 @@ def test_metamorphic_invariance_wilcoxon_nopert(german_credit_test_data, german_
     def perturbation(x: pd.Series) -> pd.Series:
         return x
 
-    results = metamorphic.test_metamorphic_invariance_wilcoxon(dataset=german_credit_test_data,
-                                                               model=german_credit_model,
+    results = metamorphic.test_metamorphic_invariance_wilcoxon(model=german_credit_model,
+                                                               dataset=german_credit_test_data,
                                                                transformation_function=perturbation, window_size=0.2,
                                                                critical_quantile=0.05).execute()
 
