@@ -82,14 +82,15 @@ def validate_column_categorization(ds: Dataset):
                 f"(<= category_threshold={ds.category_threshold}) distinct values. Are "
                 f"you sure it is not a 'category' feature?"
             )
+        # TODO: A bit noisy with a conservative category_threshold, decide on whether to include it or not.
         # if a user provided possibly wrong information in column_types or cat_columns about cat columns
-        elif nuniques[column] > ds.category_threshold and \
-                ds.column_types[column] == SupportedColumnTypes.CATEGORY.value:
-            warning(
-                f"Feature '{column}' is declared as '{ds.column_types[column]}' but has {nuniques[column]} "
-                f"(> category_threshold={ds.category_threshold}) distinct values. Are "
-                f"you sure it is a 'category' feature?"
-            )
+        # elif nuniques[column] > ds.category_threshold and \
+        #         ds.column_types[column] == SupportedColumnTypes.CATEGORY.value:
+        #     warning(
+        #         f"Feature '{column}' is declared as '{ds.column_types[column]}' but has {nuniques[column]} "
+        #         f"(> category_threshold={ds.category_threshold}) distinct values. Are "
+        #         f"you sure it is a 'category' feature?"
+        #     )
         # if a user provided possibly wrong information in column_types about text columns
         elif (
                 is_string_dtype(ds.df[column])
