@@ -11,6 +11,7 @@ from giskard.ml_worker.testing.stat_utils import equivalence_wilcoxon, paired_wi
 from giskard.ml_worker.testing.utils import Direction, validate_classification_label
 from giskard.ml_worker.utils.logging import timer
 from giskard.models.base import BaseModel
+from ..utils import check_slice_not_empty
 
 
 def _predict_numeric_result(ds: Dataset, model: BaseModel, output_proba=True, classification_label=None):
@@ -212,10 +213,13 @@ def test_metamorphic_invariance(dataset: Dataset, model: BaseModel,
         passed:
           TRUE if metric > threshold
     """
+    if slicing_function:
+        dataset = dataset.slice(slicing_function)
+        check_slice_not_empty(sliced_dataset=dataset, dataset_name="dataset", test_name="test_metamorphic_invariance")
 
     return _test_metamorphic(
         direction=Direction.Invariant,
-        dataset=dataset.slice(slicing_function),
+        dataset=dataset,
         model=model,
         transformation_function=transformation_function,
         threshold=threshold,
@@ -268,10 +272,13 @@ def test_metamorphic_increasing(dataset: Dataset, model: BaseModel,
         passed:
           TRUE if metric > threshold
     """
+    if slicing_function:
+        dataset = dataset.slice(slicing_function)
+        check_slice_not_empty(sliced_dataset=dataset, dataset_name="dataset", test_name="test_metamorphic_increasing")
 
     return _test_metamorphic(
         direction=Direction.Increasing,
-        dataset=dataset.slice(slicing_function),
+        dataset=dataset,
         model=model,
         transformation_function=transformation_function,
         classification_label=classification_label,
@@ -324,10 +331,13 @@ def test_metamorphic_decreasing(dataset: Dataset, model: BaseModel,
         passed:
           TRUE if metric > threshold
     """
+    if slicing_function:
+        dataset = dataset.slice(slicing_function)
+        check_slice_not_empty(sliced_dataset=dataset, dataset_name="dataset", test_name="test_metamorphic_decreasing")
 
     return _test_metamorphic(
         direction=Direction.Decreasing,
-        dataset=dataset.slice(slicing_function),
+        dataset=dataset,
         model=model,
         transformation_function=transformation_function,
         classification_label=classification_label,
@@ -396,8 +406,11 @@ def test_metamorphic_decreasing_t_test(dataset: Dataset, model: BaseModel,
         passed:
             TRUE if the p-value of the t-test between (A) and (B) is below the critical value
     """
+    if slicing_function:
+        dataset = dataset.slice(slicing_function)
+        check_slice_not_empty(sliced_dataset=dataset, dataset_name="dataset", test_name="test_metamorphic_decreasing_t_test")
 
-    return _test_metamorphic_t_test(direction=Direction.Decreasing, dataset=dataset.slice(slicing_function),
+    return _test_metamorphic_t_test(direction=Direction.Decreasing, dataset=dataset,
                                     model=model,
                                     transformation_function=transformation_function, window_size=float("nan"),
                                     critical_quantile=critical_quantile, classification_label=classification_label)
@@ -442,8 +455,11 @@ def test_metamorphic_increasing_t_test(dataset: Dataset, model: BaseModel,
         passed:
             TRUE if the p-value of the t-test between (A) and (B) is below the critical value
     """
+    if slicing_function:
+        dataset = dataset.slice(slicing_function)
+        check_slice_not_empty(sliced_dataset=dataset, dataset_name="dataset", test_name="test_metamorphic_increasing_t_test")
 
-    return _test_metamorphic_t_test(direction=Direction.Increasing, dataset=dataset.slice(slicing_function),
+    return _test_metamorphic_t_test(direction=Direction.Increasing, dataset=dataset,
                                     model=model,
                                     transformation_function=transformation_function, window_size=float("nan"),
                                     critical_quantile=critical_quantile, classification_label=classification_label)
@@ -492,8 +508,11 @@ def test_metamorphic_invariance_t_test(dataset: Dataset, model: BaseModel,
           passed:
               TRUE if the p-value of the t-test between (A) and (B)+window_size/2 < critical_quantile && the p-value of the t-test between (B)-window_size/2 and (A) < critical_quantile
     """
+    if slicing_function:
+        dataset = dataset.slice(slicing_function)
+        check_slice_not_empty(sliced_dataset=dataset, dataset_name="dataset", test_name="test_metamorphic_invariance_t_test")
 
-    return _test_metamorphic_t_test(direction=Direction.Invariant, dataset=dataset.slice(slicing_function), model=model,
+    return _test_metamorphic_t_test(direction=Direction.Invariant, dataset=dataset, model=model,
                                     transformation_function=transformation_function, window_size=window_size,
                                     critical_quantile=critical_quantile)
 
@@ -565,10 +584,13 @@ def test_metamorphic_decreasing_wilcoxon(dataset: Dataset, model: BaseModel,
         passed:
             TRUE if the p-value of the Wilcoxon signed-rank test between (A) and (B) is below the critical value
     """
+    if slicing_function:
+        dataset = dataset.slice(slicing_function)
+        check_slice_not_empty(sliced_dataset=dataset, dataset_name="dataset", test_name="test_metamorphic_decreasing_wilcoxon")
 
     return _test_metamorphic_wilcoxon(
         direction=Direction.Decreasing,
-        dataset=dataset.slice(slicing_function),
+        dataset=dataset,
         model=model,
         transformation_function=transformation_function,
         classification_label=classification_label,
@@ -616,10 +638,13 @@ def test_metamorphic_increasing_wilcoxon(dataset: Dataset, model: BaseModel,
         passed:
             TRUE if the p-value of the Wilcoxon signed-rank test between (A) and (B) is below the critical value
     """
+    if slicing_function:
+        dataset = dataset.slice(slicing_function)
+        check_slice_not_empty(sliced_dataset=dataset, dataset_name="dataset", test_name="test_metamorphic_increasing_wilcoxon")
 
     return _test_metamorphic_wilcoxon(
         direction=Direction.Increasing,
-        dataset=dataset.slice(slicing_function),
+        dataset=dataset,
         model=model,
         transformation_function=transformation_function,
         classification_label=classification_label,
@@ -671,10 +696,13 @@ def test_metamorphic_invariance_wilcoxon(dataset: Dataset, model: BaseModel,
         passed:
             TRUE if the p-value of the Wilcoxon signed-rank test between (A) and (B)+window_size/2 < critical_quantile && the p-value of the t-test between (B)-window_size/2 and (A) < critical_quantile
     """
+    if slicing_function:
+        dataset = dataset.slice(slicing_function)
+        check_slice_not_empty(sliced_dataset=dataset, dataset_name="dataset", test_name="test_metamorphic_invariance_wilcoxon")
 
     return _test_metamorphic_wilcoxon(
         direction=Direction.Invariant,
-        dataset=dataset.slice(slicing_function),
+        dataset=dataset,
         model=model,
         transformation_function=transformation_function,
         window_size=window_size,
