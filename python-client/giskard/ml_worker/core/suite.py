@@ -224,6 +224,12 @@ class Suite:
         :return: The current instance of the test suite to allow chained calls.
         :rtype: TestSuite
         """
+        if isinstance(test_fn, bool) or isinstance(test_fn, TestResult):
+            raise TypeError("""
+            It seems that you executed your test inside of the 'add_test' method.
+            
+            In order to add a test to a 'Suite', please use the 'set_params' method.
+            """)
         if isinstance(test_fn, GiskardTestMethod):
             params = {k: v for k, v in test_fn.params.items() if v is not None}
         elif isinstance(test_fn, GiskardTest):

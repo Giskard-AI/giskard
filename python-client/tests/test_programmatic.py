@@ -95,10 +95,21 @@ def test_multiple_execution_of_same_test(german_credit_data: Dataset, german_cre
         .add_test(test_auc.set_params(dataset=shared_input, threshold=0.2)) \
         .add_test(test_auc.set_params(dataset=shared_input, threshold=0.25)) \
         .add_test(test_auc.set_params(dataset=shared_input, threshold=0.3)) \
-        .run(model=german_credit_model, dataset=german_credit_data, actual_dataset=first_half, reference_dataset=last_half)
+        .run(model=german_credit_model, dataset=german_credit_data, actual_dataset=first_half,
+             reference_dataset=last_half)
 
     assert result[0]
     assert len(result[1]) == 3
+
+
+def test_trying_to_call_test_inside_add_test(german_credit_data: Dataset, german_credit_model: BaseModel):
+    with pytest.raises(TypeError,
+                       match="""
+            It seems that you executed your test inside of the 'add_test' method.
+            
+            In order to add a test to a 'Suite', please use the 'set_params' method.
+            """):
+        Suite().add_test(test_f1(german_credit_model, german_credit_data))
 
 
 def test_giskard_test_class(german_credit_data: Dataset, german_credit_model: BaseModel):
