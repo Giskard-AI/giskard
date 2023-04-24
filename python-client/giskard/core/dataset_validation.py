@@ -52,6 +52,7 @@ def validate_column_types(ds: Dataset):
             "Please make sure that the column names in `column_types` covers all the existing "
             "columns in your dataset.")
 
+
 def validate_numeric_columns(ds: Dataset):
     for col, col_type in ds.column_types.items():
         if col == ds.target:

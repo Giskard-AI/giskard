@@ -26,15 +26,15 @@ def test_upload_df(diabetes_dataset: Dataset, diabetes_dataset_with_target: Data
                     column_types=diabetes_dataset.column_types, target=diabetes_dataset_with_target.target)
         assert e.match(
             "Invalid target parameter: 'target' column is not present in the dataset "
-            "with columns: \['age', 'sex', 'bmi', 'bp', 's1', 's2', 's3', 's4', 's5', 's6'\]") # noqa
+            "with columns: \['age', 'sex', 'bmi', 'bp', 's1', 's2', 's3', 's4', 's5', 's6'\]")  # noqa
 
         with pytest.raises(Exception) as e:
             diabetes_dataset.column_types = {"test": "test"}
             Dataset(df=diabetes_dataset.df,
                     column_types=diabetes_dataset.column_types, target=diabetes_dataset_with_target.target)
         assert e.match(
-            "Invalid target parameter: 'target' column is not present in the dataset " 
-            "with columns: \['age', 'sex', 'bmi', 'bp', 's1', 's2', 's3', 's4', 's5', 's6'\]") # noqa
+            "Invalid target parameter: 'target' column is not present in the dataset "
+            "with columns: \['age', 'sex', 'bmi', 'bp', 's1', 's2', 's3', 's4', 's5', 's6'\]")  # noqa
 
 
 def _test_upload_model(model: SKLearnModel, ds: Dataset):
