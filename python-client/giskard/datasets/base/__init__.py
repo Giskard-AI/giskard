@@ -3,7 +3,6 @@ import logging
 import posixpath
 import tempfile
 import uuid
-from enum import Enum
 from pathlib import Path
 from typing import Dict, Optional, List, Hashable, Union
 
@@ -15,7 +14,6 @@ from zstandard import ZstdDecompressor
 
 from giskard.client.giskard_client import GiskardClient
 from giskard.client.io_utils import save_df, compress
-from giskard.client.python_utils import warning
 from giskard.core.core import DatasetMeta, SupportedColumnTypes
 from giskard.core.validation import configured_validate_arguments
 from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction, SlicingFunctionType
@@ -120,11 +118,6 @@ class Dataset:
             cat_columns (Optional[List[str]]): A list of column names that are categorical.
             column_types (Optional[Dict[str, str]]): A dictionary mapping column names to their types.
             id (Optional[uuid.UUID]): A UUID that uniquely identifies this dataset.
-
-        Raises:
-            ValueError: If the input DataFrame is empty.
-            ValueError: If cat_columns contains a column that does not exist in the input DataFrame.
-            ValueError: If column_types contains a column that does not exist in the input DataFrame.
 
         Notes:
             if neither of cat_columns or column_types are provided. We infer heuristically the types of the columns.

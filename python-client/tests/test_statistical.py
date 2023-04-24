@@ -19,7 +19,7 @@ def test_statistical(data, model, threshold, label, expected_metric, actual_slic
     results = statistical.test_right_label(model=model, dataset=data.slice(
         SlicingFunction(lambda df: df.head(len(df) // 2), row_level=False)),
                                            classification_label=model.meta.classification_labels[label],
-                                           threshold=threshold)
+                                           threshold=threshold).execute()
 
     assert results.actual_slices_size[0] == actual_slices_size
     assert round(results.metric, 2) == expected_metric
@@ -41,7 +41,7 @@ def test_statistical_filtered(data, model, threshold, label, expected_metric, ac
     results = statistical.test_right_label(model=model,
                                            dataset=data.slice(SlicingFunction(lambda df: df.head(10), row_level=False)),
                                            classification_label=model.meta.classification_labels[label],
-                                           threshold=threshold)
+                                           threshold=threshold).execute()
 
     assert results.actual_slices_size[0] == actual_slices_size
     assert round(results.metric, 2) == expected_metric
@@ -61,8 +61,8 @@ def test_output_in_range_model(data, model, threshold, label, expected_metric, a
     model = request.getfixturevalue(model)
     results = statistical.test_output_in_range(model=model, dataset=data.slice(
         SlicingFunction(lambda df: df.head(len(df) // 2), row_level=False)),
-                                               classification_label=model.meta.classification_labels[label],
-                                               min_range=0.3, max_range=0.7, threshold=threshold)
+        classification_label=model.meta.classification_labels[label],
+        min_range=0.3, max_range=0.7, threshold=threshold).execute()
 
     assert results.actual_slices_size[0] == actual_slices_size
     assert round(results.metric, 2) == expected_metric
@@ -77,7 +77,7 @@ def test_output_in_range_reg(data, model, threshold, expected_metric, actual_sli
     data = request.getfixturevalue(data)
     results = statistical.test_output_in_range(model=request.getfixturevalue(model), dataset=data.slice(
         SlicingFunction(lambda df: df.head(len(df) // 2), row_level=False)), min_range=100, max_range=150,
-                                               threshold=threshold)
+                                               threshold=threshold).execute()
 
     assert results.actual_slices_size[0] == actual_slices_size
     assert round(results.metric, 2) == expected_metric
