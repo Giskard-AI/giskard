@@ -3,6 +3,7 @@ from scipy.stats import zscore
 from giskard.ml_worker.core.model_explanation import explain
 from giskard.ml_worker.testing.tests.performance import test_rmse
 from giskard.core.core import SupportedModelTypes
+from ..push import Push
 
 
 from giskard.core.core import SupportedModelTypes
@@ -12,12 +13,12 @@ from ..push import Push
 
 
 def contribution(model, ds, idrow):  # data_aug_dict
+    push = Push()
     if model.meta.model_type == SupportedModelTypes.CLASSIFICATION:
         shap_res = _contribution_push(model, ds, idrow)
         values = ds.df.iloc[idrow]
         training_label = values[ds.target]
         prediction = model.clf.predict(ds.df.iloc[[idrow]])
-
         if shap_res is not None:
             for el in shap_res:
                 # skip for now the following case
@@ -61,47 +62,21 @@ def contribution(model, ds, idrow):  # data_aug_dict
     if model.meta.model_type == SupportedModelTypes.REGRESSION:
         shap_res = _contribution_push(model, ds, idrow)
         values = ds.df.iloc[idrow]
-        re = ds.__dict__
+        # re = ds.__dict__
         y = values[ds.target]
         y_hat = model.clf.predict(ds.df.drop(columns=[ds.target]).iloc[[idrow]])
         error = abs(y_hat - y)
         rmse_res = test_rmse(ds, model).execute()
-        print(shap_res)
+        # print(shap_res)
         if shap_res is not None:
             for el in shap_res:
-                print(error, rmse_res)
+                # print(error, rmse_res)
                 if abs(error - rmse_res.metric) / rmse_res.metric >= 0.2:  # use scan feature ?
-                    res = [{
-                        "sentence": "This value is responsible for the incorrect prediction",
-                        "action": "Slice",
-                        "value": str(values[el]),
-                        "key": str(el),
-                    },
-                        {
-                            "sentence": "This correlation may apply to the whole dataset",
-                            "action": "Test",
-                            "value": str(values[el]),
-                            "key": str(el),
-                        }
-                    ]
-
+                    res = push.incorrect(feature=el, value=values[el])
                     return res
 
                 else:
-                    res = [{
-                        "sentence": "This feature contributes a lot to the prediction",
-                        "action": "Slice",
-                        "value": str(values[el]),
-                        "key": str(el),
-                    },
-                        {
-                            "sentence": "This correlation may apply to the whole dataset",
-                            "action": "Test",
-                            "value": str(values[el]),
-                            "key": str(el),
-                        }
-                    ]
-
+                    res = push.high_correlation(feature=el, value=values[el])
                     return res
 
 
