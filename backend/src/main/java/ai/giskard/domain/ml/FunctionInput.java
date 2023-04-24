@@ -32,7 +32,7 @@ public class FunctionInput implements Serializable {
 
     private boolean isAlias = false;
 
-    @OneToMany
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "function_input_id")
     private List<FunctionInput> params = new ArrayList<>();
 
