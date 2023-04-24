@@ -135,6 +135,7 @@ public class SettingsController {
             .active(currentLicense.isActive())
             .features(currentLicense.getFeatures())
             .expiresOn(currentLicense.getExpiresOn())
+            .licenseId(currentLicense.getId())
             .build();
     }
 
