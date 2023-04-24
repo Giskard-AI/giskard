@@ -1,9 +1,8 @@
 import re
-
 import pytest
-
+import pandas as pd
 import giskard.ml_worker.testing.tests.performance as performance
-from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction
+from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction, slicing_function
 
 
 @pytest.mark.parametrize(
@@ -308,3 +307,25 @@ def test_diff_reference_actual_rmse(model, data, threshold, expected_metric, req
                                                          threshold=threshold).execute()
     assert round(result.metric, 2) == expected_metric
     assert result.passed
+
+
+@pytest.mark.parametrize(
+    "data,model,threshold,expected_metric,actual_slices_size",
+    [
+        ("german_credit_data", "german_credit_model", 0.5, 0.85, 1000)
+    ],
+)
+def test_f1_empty_slice(data, model, threshold, expected_metric, actual_slices_size, request):
+    @slicing_function
+    def my_slicing_function(row: pd.core.series.Series):
+        return row['age'] > 100
+
+    with pytest.raises(
+            ValueError,
+            match="The sliced dataset in test_f1 is empty."):
+        performance.test_f1(
+            dataset=request.getfixturevalue(data),
+            model=request.getfixturevalue(model),
+            slicing_function=my_slicing_function,
+            threshold=threshold,
+        ).execute()

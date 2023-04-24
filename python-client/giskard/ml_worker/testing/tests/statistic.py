@@ -8,6 +8,7 @@ from giskard.ml_worker.core.test_result import TestResult, TestMessage, TestMess
 from giskard.ml_worker.testing.utils import validate_classification_label
 from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction
 from giskard.models.base import BaseModel
+from ..utils import check_slice_not_empty
 
 
 @test(name="Right Label", tags=["heuristic", "classification"])
@@ -44,7 +45,10 @@ def test_right_label(model: BaseModel, dataset: Dataset, classification_label: s
       passed:
           TRUE if passed_ratio > threshold
     """
-    dataset = dataset.slice(slicing_function)
+    if slicing_function:
+        dataset = dataset.slice(slicing_function)
+        check_slice_not_empty(sliced_dataset=dataset, dataset_name="dataset", test_name="test_right_label")
+
     dataset.df.reset_index(drop=True, inplace=True)
     prediction_results = model.predict(dataset).prediction
 
@@ -105,7 +109,10 @@ def test_output_in_range(model: BaseModel, dataset: Dataset, slicing_function: S
         passed:
             TRUE if metric > threshold
     """
-    dataset = dataset.slice(slicing_function)
+    if slicing_function:
+        dataset = dataset.slice(slicing_function)
+        check_slice_not_empty(sliced_dataset=dataset, dataset_name="dataset", test_name="test_output_in_range")
+
     results_df = pd.DataFrame()
     dataset.df.reset_index(drop=True, inplace=True)
 
@@ -182,7 +189,10 @@ def test_disparate_impact(model: BaseModel, dataset: Dataset, protected_slicing_
           passed:
               TRUE if the disparate impact ratio > min_threshold && disparate impact ratio < max_threshold
     """
-    dataset = dataset.slice(slicing_function)
+    if slicing_function:
+        dataset = dataset.slice(slicing_function)
+        check_slice_not_empty(sliced_dataset=dataset, dataset_name="dataset", test_name="test_disparate_impact")
+
     if positive_outcome not in list(model.meta.classification_labels):
         raise ValueError(
             f"The positive outcome chosen {positive_outcome} is not part of the dataset target values {list(model.meta.classification_labels)}."
