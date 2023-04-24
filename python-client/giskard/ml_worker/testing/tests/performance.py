@@ -20,6 +20,7 @@ from giskard.ml_worker.core.test_result import TestResult
 from giskard.ml_worker.testing.registry.giskard_test import GiskardTest
 from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction
 from giskard.models.base import BaseModel
+from giskard.ml_worker.testing.utils import check_slice_not_empty
 
 
 def _verify_target_availability(dataset):
@@ -35,10 +36,9 @@ def _get_rmse(y_actual, y_predicted):
     return np.sqrt(mean_squared_error(y_actual, y_predicted))
 
 
-def _test_classification_score(score_fn, gsk_dataset: Dataset, model: BaseModel, threshold: float = 1.0):
+def _test_classification_score(score_fn, model: BaseModel, gsk_dataset: Dataset, threshold: float = 1.0):
     _verify_target_availability(gsk_dataset)
     is_binary_classification = len(model.meta.classification_labels) == 2
-    gsk_dataset.df.reset_index(drop=True, inplace=True)
     actual_target = gsk_dataset.df[gsk_dataset.target]
     prediction = model.predict(gsk_dataset).prediction
     if is_binary_classification:
@@ -51,7 +51,6 @@ def _test_classification_score(score_fn, gsk_dataset: Dataset, model: BaseModel,
 
 def _test_accuracy_score(gsk_dataset: Dataset, model: BaseModel, threshold: float = 1.0):
     _verify_target_availability(gsk_dataset)
-    gsk_dataset.df.reset_index(drop=True, inplace=True)
     prediction = model.predict(gsk_dataset).prediction
     actual_target = gsk_dataset.df[gsk_dataset.target]
 
@@ -60,9 +59,8 @@ def _test_accuracy_score(gsk_dataset: Dataset, model: BaseModel, threshold: floa
     return TestResult(actual_slices_size=[len(gsk_dataset)], metric=metric, passed=bool(metric >= threshold))
 
 
-def _test_regression_score(score_fn, giskard_ds, model: BaseModel, threshold: float = 1.0, r2=False):
+def _test_regression_score(score_fn, model: BaseModel, giskard_ds, threshold: float = 1.0, r2=False):
     results_df = pd.DataFrame()
-    giskard_ds.df.reset_index(drop=True, inplace=True)
     _verify_target_availability(giskard_ds)
 
     results_df["actual_target"] = giskard_ds.df[giskard_ds.target]
@@ -86,9 +84,8 @@ def _test_diff_prediction(
     direction: Direction = Direction.Invariant,
     test_name=None,
 ):
-    metric_reference = test_fn(reference_dataset, model).metric
-    metric_actual = test_fn(actual_dataset, model).metric
-
+    metric_reference = test_fn(dataset=reference_dataset, model=model).metric
+    metric_actual = test_fn(dataset=actual_dataset, model=model).metric
     try:
         rel_change = (metric_actual - metric_reference) / metric_reference
     except ZeroDivisionError:
@@ -126,10 +123,10 @@ class AucTest(GiskardTest):
     model: BaseModel
     threshold: float
 
-    def __init__(self, dataset: Dataset = None, model: BaseModel = None, threshold: float = None):
+    def __init__(self, model: BaseModel = None, dataset: Dataset = None, threshold: float = None):
         """
-        :param dataset: dataset used to compute the test
         :param model: Model used to compute the test
+        :param dataset: dataset used to compute the test
         :param threshold: Threshold value of AUC metrics
         """
         self.dataset = dataset
@@ -152,7 +149,7 @@ class AucTest(GiskardTest):
 
 
 @test(name='AUC', tags=['performance', 'classification', 'ground_truth'])
-def test_auc(dataset: Dataset, model: BaseModel, slicing_function: SlicingFunction = None, threshold: float = 1.0):
+def test_auc(model: BaseModel, dataset: Dataset, slicing_function: SlicingFunction = None, threshold: float = 1.0):
     """
     Test if the model AUC performance is higher than a threshold for a given slice
 
@@ -160,10 +157,10 @@ def test_auc(dataset: Dataset, model: BaseModel, slicing_function: SlicingFuncti
 
 
     Args:
-        dataset(Dataset):
-          Actual dataset used to compute the test
         model(BaseModel):
           Model used to compute the test
+        dataset(Dataset):
+          Actual dataset used to compute the test
         slicing_function(SlicingFunction):
           Slicing function to be applied on dataset
         threshold(float):
@@ -177,7 +174,10 @@ def test_auc(dataset: Dataset, model: BaseModel, slicing_function: SlicingFuncti
       passed:
           TRUE if AUC metrics >= threshold
     """
-    dataset = dataset.slice(slicing_function)
+    if slicing_function:
+        dataset = dataset.slice(slicing_function)
+        check_slice_not_empty(sliced_dataset=dataset, dataset_name="dataset", test_name="test_auc")
+
     _verify_target_availability(dataset)
     if len(model.meta.classification_labels) == 2:
         metric = roc_auc_score(dataset.df[dataset.target], model.predict(dataset).raw_prediction)
@@ -194,7 +194,7 @@ def test_auc(dataset: Dataset, model: BaseModel, slicing_function: SlicingFuncti
 
 
 @test(name='F1', tags=['performance', 'classification', 'ground_truth'])
-def test_f1(dataset: Dataset, model: BaseModel, slicing_function: SlicingFunction = None, threshold: float = 1.0):
+def test_f1(model: BaseModel, dataset: Dataset, slicing_function: SlicingFunction = None, threshold: float = 1.0):
     """
     Test if the model F1 score is higher than a defined threshold for a given slice
 
@@ -202,10 +202,10 @@ def test_f1(dataset: Dataset, model: BaseModel, slicing_function: SlicingFunctio
 
 
     Args:
-        dataset(Dataset):
-          Actual dataset used to compute the test
         model(BaseModel):
           Model used to compute the test
+        dataset(Dataset):
+          Actual dataset used to compute the test
         slicing_function(SlicingFunction):
           Slicing function to be applied on dataset
         threshold(float):
@@ -220,11 +220,14 @@ def test_f1(dataset: Dataset, model: BaseModel, slicing_function: SlicingFunctio
         passed:
           TRUE if F1 Score metrics >= threshold
     """
-    return _test_classification_score(f1_score, dataset.slice(slicing_function), model, threshold)
+    if slicing_function:
+        dataset = dataset.slice(slicing_function)
+        check_slice_not_empty(sliced_dataset=dataset, dataset_name="dataset", test_name="test_f1")
+    return _test_classification_score(f1_score, model, dataset, threshold)
 
 
 @test(name='Accuracy', tags=['performance', 'classification', 'ground_truth'])
-def test_accuracy(dataset: Dataset, model: BaseModel, slicing_function: SlicingFunction = None, threshold: float = 1.0):
+def test_accuracy(model: BaseModel, dataset: Dataset, slicing_function: SlicingFunction = None, threshold: float = 1.0):
     """
     Test if the model Accuracy is higher than a threshold for a given slice
 
@@ -232,10 +235,10 @@ def test_accuracy(dataset: Dataset, model: BaseModel, slicing_function: SlicingF
 
 
     Args:
-        dataset(Dataset):
-          Actual dataset used to compute the test
         model(BaseModel):
           Model used to compute the test
+        dataset(Dataset):
+          Actual dataset used to compute the test
         slicing_function(SlicingFunction):
           Slicing function to be applied on dataset
         threshold(float):
@@ -249,12 +252,15 @@ def test_accuracy(dataset: Dataset, model: BaseModel, slicing_function: SlicingF
       passed:
           TRUE if Accuracy metrics >= threshold
     """
-    return _test_accuracy_score(dataset.slice(slicing_function), model, threshold)
+    if slicing_function:
+        dataset = dataset.slice(slicing_function)
+        check_slice_not_empty(sliced_dataset=dataset, dataset_name="dataset", test_name="test_accuracy")
+    return _test_accuracy_score(dataset, model, threshold)
 
 
 @test(name='Precision', tags=['performance', 'classification', 'ground_truth'])
 def test_precision(
-    dataset: Dataset, model: BaseModel, slicing_function: SlicingFunction = None, threshold: float = 1.0
+    model: BaseModel, dataset: Dataset, slicing_function: SlicingFunction = None, threshold: float = 1.0
 ):
     """
     Test if the model Precision is higher than a threshold for a given slice
@@ -263,10 +269,10 @@ def test_precision(
 
 
     Args:
-        dataset(Dataset):
-          Actual dataset used to compute the test
         model(BaseModel):
           Model used to compute the test
+        dataset(Dataset):
+          Actual dataset used to compute the test
         slicing_function(SlicingFunction):
           Slicing function to be applied on dataset
         threshold(float):
@@ -279,11 +285,14 @@ def test_precision(
         passed:
           TRUE if Precision metrics >= threshold
     """
-    return _test_classification_score(precision_score, dataset.slice(slicing_function), model, threshold)
+    if slicing_function:
+        dataset = dataset.slice(slicing_function)
+        check_slice_not_empty(sliced_dataset=dataset, dataset_name="dataset", test_name="test_precision")
+    return _test_classification_score(precision_score, model, dataset, threshold)
 
 
 @test(name='Recall', tags=['performance', 'classification', 'ground_truth'])
-def test_recall(dataset: Dataset, model: BaseModel, slicing_function: SlicingFunction = None, threshold: float = 1.0):
+def test_recall(model: BaseModel, dataset: Dataset, slicing_function: SlicingFunction = None, threshold: float = 1.0):
     """
     Test if the model Recall is higher than a threshold for a given slice
 
@@ -291,10 +300,10 @@ def test_recall(dataset: Dataset, model: BaseModel, slicing_function: SlicingFun
 
 
     Args:
-        dataset(Dataset):
-          Actual dataset used to compute the test
         model(BaseModel):
           Model used to compute the test
+        dataset(Dataset):
+          Actual dataset used to compute the test
         slicing_function(SlicingFunction):
           Slicing function to be applied on dataset
         threshold(float):
@@ -307,11 +316,14 @@ def test_recall(dataset: Dataset, model: BaseModel, slicing_function: SlicingFun
         passed:
           TRUE if Recall metric >= threshold
     """
-    return _test_classification_score(recall_score, dataset.slice(slicing_function), model, threshold)
+    if slicing_function:
+        dataset = dataset.slice(slicing_function)
+        check_slice_not_empty(sliced_dataset=dataset, dataset_name="dataset", test_name="test_recall")
+    return _test_classification_score(recall_score, model, dataset, threshold)
 
 
 @test(name='RMSE', tags=['performance', 'regression', 'ground_truth'])
-def test_rmse(dataset: Dataset, model: BaseModel, slicing_function: SlicingFunction = None, threshold: float = 1.0):
+def test_rmse(model: BaseModel, dataset: Dataset, slicing_function: SlicingFunction = None, threshold: float = 1.0):
     """
     Test if the model RMSE is lower than a threshold
 
@@ -319,10 +331,10 @@ def test_rmse(dataset: Dataset, model: BaseModel, slicing_function: SlicingFunct
 
 
     Args:
-        dataset(Dataset):
-          Dataset used to compute the test
         model(BaseModel):
           Model used to compute the test
+        dataset(Dataset):
+          Dataset used to compute the test
         slicing_function(SlicingFunction):
           Slicing function to be applied on dataset
         threshold(float):
@@ -335,11 +347,14 @@ def test_rmse(dataset: Dataset, model: BaseModel, slicing_function: SlicingFunct
         passed:
           TRUE if RMSE metric <= threshold
     """
-    return _test_regression_score(_get_rmse, dataset.slice(slicing_function), model, threshold)
+    if slicing_function:
+        dataset = dataset.slice(slicing_function)
+        check_slice_not_empty(sliced_dataset=dataset, dataset_name="dataset", test_name="test_rmse")
+    return _test_regression_score(_get_rmse, model, dataset, threshold)
 
 
 @test(name='MAE', tags=['performance', 'regression', 'ground_truth'])
-def test_mae(dataset: Dataset, model: BaseModel, slicing_function: SlicingFunction = None, threshold: float = 1.0):
+def test_mae(model: BaseModel, dataset: Dataset, slicing_function: SlicingFunction = None, threshold: float = 1.0):
     """
     Test if the model Mean Absolute Error is lower than a threshold
 
@@ -347,10 +362,10 @@ def test_mae(dataset: Dataset, model: BaseModel, slicing_function: SlicingFuncti
 
 
     Args:
-        dataset(Dataset):
-          Dataset used to compute the test
         model(BaseModel):
           Model used to compute the test
+        dataset(Dataset):
+          Dataset used to compute the test
         slicing_function(SlicingFunction):
           Slicing function to be applied on dataset
         threshold(float):
@@ -366,11 +381,14 @@ def test_mae(dataset: Dataset, model: BaseModel, slicing_function: SlicingFuncti
         passed:
           TRUE if MAE metric <= threshold
     """
-    return _test_regression_score(mean_absolute_error, dataset.slice(slicing_function), model, threshold)
+    if slicing_function:
+        dataset = dataset.slice(slicing_function)
+        check_slice_not_empty(sliced_dataset=dataset, dataset_name="dataset", test_name="test_mae")
+    return _test_regression_score(mean_absolute_error, model, dataset, threshold)
 
 
 @test(name='R2', tags=['performance', 'regression', 'ground_truth'])
-def test_r2(dataset: Dataset, model: BaseModel, slicing_function: SlicingFunction = None, threshold: float = 1.0):
+def test_r2(model: BaseModel, dataset: Dataset, slicing_function: SlicingFunction = None, threshold: float = 1.0):
     """
     Test if the model R-Squared is higher than a threshold
 
@@ -378,10 +396,10 @@ def test_r2(dataset: Dataset, model: BaseModel, slicing_function: SlicingFunctio
 
 
     Args:
-        dataset(Dataset):
-          Dataset used to compute the test
         model(BaseModel):
           Model used to compute the test
+        dataset(Dataset):
+          Dataset used to compute the test
         slicing_function(SlicingFunction):
           Slicing function to be applied on dataset
         threshold(float):
@@ -395,14 +413,17 @@ def test_r2(dataset: Dataset, model: BaseModel, slicing_function: SlicingFunctio
         passed:
           TRUE if R-Squared metric >= threshold
     """
-    return _test_regression_score(r2_score, dataset.slice(slicing_function), model, threshold, r2=True)
+    if slicing_function:
+        dataset = dataset.slice(slicing_function)
+        check_slice_not_empty(sliced_dataset=dataset, dataset_name="dataset", test_name="test_r2")
+    return _test_regression_score(r2_score, model, dataset, threshold, r2=True)
 
 
 @test(name='Accuracy difference', tags=['performance', 'classification', 'ground_truth'])
 def test_diff_accuracy(
+    model: BaseModel,
     actual_dataset: Dataset,
     reference_dataset: Dataset,
-    model: BaseModel,
     slicing_function: SlicingFunction = None,
     threshold: float = 0.1,
     direction: Direction = Direction.Invariant,
@@ -418,12 +439,12 @@ def test_diff_accuracy(
 
 
     Args:
+        model(BaseModel):
+          Model used to compute the test
         actual_dataset(Dataset):
           Actual dataset used to compute the test
         reference_dataset(Dataset):
           Reference dataset used to compute the test
-        model(BaseModel):
-          Model used to compute the test
         slicing_function(SlicingFunction):
           Slicing function to be applied on both actual and reference datasets
         threshold(float):
@@ -438,11 +459,18 @@ def test_diff_accuracy(
         passed:
           TRUE if Accuracy difference < threshold
     """
+    if slicing_function:
+        test_name = "test_diff_accuracy"
+        actual_dataset = actual_dataset.slice(slicing_function)
+        check_slice_not_empty(sliced_dataset=actual_dataset, dataset_name="actual_dataset", test_name=test_name)
+        reference_dataset = reference_dataset.slice(slicing_function)
+        check_slice_not_empty(sliced_dataset=reference_dataset, dataset_name="reference_dataset", test_name=test_name)
+
     return _test_diff_prediction(
         test_accuracy.test_fn,
         model,
-        actual_dataset.slice(slicing_function),
-        reference_dataset.slice(slicing_function),
+        actual_dataset,
+        reference_dataset,
         threshold=threshold,
         direction=direction,
         test_name="Accuracy",
@@ -451,9 +479,9 @@ def test_diff_accuracy(
 
 @test(name='F1 difference', tags=['performance', 'classification', 'ground_truth'])
 def test_diff_f1(
+    model: BaseModel,
     actual_dataset: Dataset,
     reference_dataset: Dataset,
-    model: BaseModel,
     slicing_function: SlicingFunction = None,
     threshold: float = 0.1,
     direction: Direction = Direction.Invariant,
@@ -468,12 +496,12 @@ def test_diff_f1(
 
 
     Args:
+        model(BaseModel):
+          Model used to compute the test
         actual_dataset(Dataset):
           Actual dataset used to compute the test
         reference_dataset(Dataset):
           Reference dataset used to compute the test
-        model(BaseModel):
-          Model used to compute the test
         slicing_function(SlicingFunction):
           Slicing function to be applied on both actual and reference datasets
         threshold(float):
@@ -489,11 +517,18 @@ def test_diff_f1(
         passed:
           TRUE if F1 Score difference < threshold
     """
+    if slicing_function:
+        test_name = "test_diff_f1"
+        actual_dataset = actual_dataset.slice(slicing_function)
+        check_slice_not_empty(sliced_dataset=actual_dataset, dataset_name="actual_dataset", test_name=test_name)
+        reference_dataset = reference_dataset.slice(slicing_function)
+        check_slice_not_empty(sliced_dataset=reference_dataset, dataset_name="reference_dataset", test_name=test_name)
+
     return _test_diff_prediction(
         test_f1.test_fn,
         model,
-        actual_dataset.slice(slicing_function),
-        reference_dataset.slice(slicing_function),
+        actual_dataset,
+        reference_dataset,
         threshold=threshold,
         direction=direction,
         test_name="F1 Score",
@@ -502,9 +537,9 @@ def test_diff_f1(
 
 @test(name='Precision difference', tags=['performance', 'classification', 'ground_truth'])
 def test_diff_precision(
+    model: BaseModel,
     actual_dataset: Dataset,
     reference_dataset: Dataset,
-    model: BaseModel,
     slicing_function: SlicingFunction = None,
     threshold: float = 0.1,
     direction: Direction = Direction.Invariant,
@@ -519,12 +554,12 @@ def test_diff_precision(
 
 
     Args:
+        model(BaseModel):
+          Model used to compute the test
         actual_dataset(Dataset):
           Actual dataset used to compute the test
         reference_dataset(Dataset):
           Reference dataset used to compute the test
-        model(BaseModel):
-          Model used to compute the test
         slicing_function(SlicingFunction):
           Slicing function to be applied on both actual and reference datasets
         threshold(float):
@@ -539,11 +574,18 @@ def test_diff_precision(
         passed:
           TRUE if Precision difference < threshold
     """
+    if slicing_function:
+        test_name = "test_diff_precision"
+        actual_dataset = actual_dataset.slice(slicing_function)
+        check_slice_not_empty(sliced_dataset=actual_dataset, dataset_name="actual_dataset", test_name=test_name)
+        reference_dataset = reference_dataset.slice(slicing_function)
+        check_slice_not_empty(sliced_dataset=reference_dataset, dataset_name="reference_dataset", test_name=test_name)
+
     return _test_diff_prediction(
         test_precision.test_fn,
         model,
-        actual_dataset.slice(slicing_function),
-        reference_dataset.slice(slicing_function),
+        actual_dataset,
+        reference_dataset,
         threshold=threshold,
         direction=direction,
         test_name="Precision",
@@ -552,9 +594,9 @@ def test_diff_precision(
 
 @test(name='Recall difference', tags=['performance', 'classification', 'ground_truth'])
 def test_diff_recall(
+    model: BaseModel,
     actual_dataset: Dataset,
     reference_dataset: Dataset,
-    model: BaseModel,
     slicing_function: SlicingFunction = None,
     threshold: float = 0.1,
     direction: Direction = Direction.Invariant,
@@ -569,12 +611,12 @@ def test_diff_recall(
 
 
     Args:
+        model(BaseModel):
+          Model used to compute the test
         actual_dataset(Dataset):
           Actual dataset used to compute the test
         reference_dataset(Dataset):
           Actual dataset used to compute the test
-        model(BaseModel):
-          Model used to compute the test
         slicing_function(SlicingFunction):
           Slicing function to be applied on both actual and reference datasets
         threshold(float):
@@ -589,11 +631,18 @@ def test_diff_recall(
         passed:
           TRUE if Recall difference < threshold
     """
+    if slicing_function:
+        test_name = "test_diff_recall"
+        actual_dataset = actual_dataset.slice(slicing_function)
+        check_slice_not_empty(sliced_dataset=actual_dataset, dataset_name="actual_dataset", test_name=test_name)
+        reference_dataset = reference_dataset.slice(slicing_function)
+        check_slice_not_empty(sliced_dataset=reference_dataset, dataset_name="reference_dataset", test_name=test_name)
+
     return _test_diff_prediction(
         test_recall.test_fn,
         model,
-        actual_dataset.slice(slicing_function),
-        reference_dataset.slice(slicing_function),
+        actual_dataset,
+        reference_dataset,
         threshold=threshold,
         direction=direction,
         test_name="Recall",
@@ -602,9 +651,9 @@ def test_diff_recall(
 
 @test(name='F1 Reference Actual difference', tags=['performance', 'classification', 'ground_truth'])
 def test_diff_reference_actual_f1(
+    model: BaseModel,
     actual_dataset: Dataset,
     reference_dataset: Dataset,
-    model: BaseModel,
     slicing_function: SlicingFunction = None,
     threshold: float = 0.1,
     direction: Direction = Direction.Invariant,
@@ -620,12 +669,12 @@ def test_diff_reference_actual_f1(
 
 
     Args:
+        model(BaseModel):
+          Model used to compute the test
         actual_dataset(Dataset):
           Actual ataset used to compute the test
         reference_dataset(Dataset):
           Reference ataset used to compute the test
-        model(BaseModel):
-          Model used to compute the test
         slicing_function(SlicingFunction):
           Slicing function to be applied on both actual and reference datasets
         threshold(float):
@@ -640,11 +689,18 @@ def test_diff_reference_actual_f1(
       passed:
           TRUE if F1 Score difference < threshold
     """
+    if slicing_function:
+        test_name = "test_diff_reference_actual_f1"
+        actual_dataset = actual_dataset.slice(slicing_function)
+        check_slice_not_empty(sliced_dataset=actual_dataset, dataset_name="actual_dataset", test_name=test_name)
+        reference_dataset = reference_dataset.slice(slicing_function)
+        check_slice_not_empty(sliced_dataset=reference_dataset, dataset_name="reference_dataset", test_name=test_name)
+
     return _test_diff_prediction(
         test_f1.test_fn,
         model,
-        actual_dataset.slice(slicing_function),
-        reference_dataset.slice(slicing_function),
+        actual_dataset,
+        reference_dataset,
         threshold=threshold,
         direction=direction,
         test_name="F1 Score",
@@ -653,9 +709,9 @@ def test_diff_reference_actual_f1(
 
 @test(name='Accuracy Reference Actual difference', tags=['performance', 'classification', 'ground_truth'])
 def test_diff_reference_actual_accuracy(
+    model: BaseModel,
     actual_dataset: Dataset,
     reference_dataset: Dataset,
-    model: BaseModel,
     slicing_function: SlicingFunction = None,
     threshold: float = 0.1,
     direction: Direction = Direction.Invariant,
@@ -671,12 +727,12 @@ def test_diff_reference_actual_accuracy(
 
 
     Args:
+        model(BaseModel):
+          Model used to compute the test
         actual_dataset(Dataset):
           Actual ataset used to compute the test
         reference_dataset(Dataset):
           Reference ataset used to compute the test
-        model(BaseModel):
-          Model used to compute the test
         slicing_function(SlicingFunction):
           Slicing function to be applied on both actual and reference datasets
         threshold(float):
@@ -691,11 +747,18 @@ def test_diff_reference_actual_accuracy(
         passed:
           TRUE if Accuracy difference < threshold
     """
+    if slicing_function:
+        test_name = "test_diff_reference_actual_accuracy"
+        actual_dataset = actual_dataset.slice(slicing_function)
+        check_slice_not_empty(sliced_dataset=actual_dataset, dataset_name="actual_dataset", test_name=test_name)
+        reference_dataset = reference_dataset.slice(slicing_function)
+        check_slice_not_empty(sliced_dataset=reference_dataset, dataset_name="reference_dataset", test_name=test_name)
+
     return _test_diff_prediction(
         test_accuracy.test_fn,
         model,
-        actual_dataset.slice(slicing_function),
-        reference_dataset.slice(slicing_function),
+        actual_dataset,
+        reference_dataset,
         threshold=threshold,
         direction=direction,
         test_name="Accuracy",
@@ -704,9 +767,9 @@ def test_diff_reference_actual_accuracy(
 
 @test(name='RMSE difference', tags=['performance', 'regression', 'ground_truth'])
 def test_diff_rmse(
+    model: BaseModel,
     actual_dataset: Dataset,
     reference_dataset: Dataset,
-    model: BaseModel,
     slicing_function: SlicingFunction = None,
     threshold: float = 0.1,
     direction: Direction = Direction.Invariant,
@@ -721,12 +784,12 @@ def test_diff_rmse(
 
 
     Args:
+        model(BaseModel):
+          Model used to compute the test
         actual_dataset(Dataset):
           Actual dataset used to compute the test
         reference_dataset(Dataset):
           Reference dataset used to compute the test
-        model(BaseModel):
-          Model used to compute the test
         slicing_function(SlicingFunction):
           Slicing function to be applied on both actual and reference datasets
         threshold(float):
@@ -742,11 +805,18 @@ def test_diff_rmse(
         passed:
           TRUE if RMSE difference < threshold
     """
+    if slicing_function:
+        test_name = "test_diff_rmse"
+        actual_dataset = actual_dataset.slice(slicing_function)
+        check_slice_not_empty(sliced_dataset=actual_dataset, dataset_name="actual_dataset", test_name=test_name)
+        reference_dataset = reference_dataset.slice(slicing_function)
+        check_slice_not_empty(sliced_dataset=reference_dataset, dataset_name="reference_dataset", test_name=test_name)
+
     return _test_diff_prediction(
         test_rmse.test_fn,
         model,
-        actual_dataset.slice(slicing_function),
-        reference_dataset.slice(slicing_function),
+        actual_dataset,
+        reference_dataset,
         threshold=threshold,
         direction=direction,
         test_name="RMSE",
@@ -755,9 +825,9 @@ def test_diff_rmse(
 
 @test(name='RMSE Reference Actual difference', tags=['performance', 'regression', 'ground_truth'])
 def test_diff_reference_actual_rmse(
+    model: BaseModel,
     actual_dataset: Dataset,
     reference_dataset: Dataset,
-    model: BaseModel,
     slicing_function: SlicingFunction = None,
     threshold: float = 0.1,
     direction: Direction = Direction.Invariant,
@@ -773,12 +843,12 @@ def test_diff_reference_actual_rmse(
 
 
     Args:
+        model(BaseModel):
+          Model used to compute the test
         actual_dataset(Dataset):
           Actual dataset used to compute the test
         reference_dataset(Dataset):
           Reference dataset used to compute the test
-        model(BaseModel):
-          Model used to compute the test
         slicing_function(SlicingFunction):
           Slicing function to be applied on both actual and reference datasets
         threshold(float):
@@ -793,11 +863,18 @@ def test_diff_reference_actual_rmse(
       passed:
           TRUE if RMSE difference < threshold
     """
+    if slicing_function:
+        test_name = "test_diff_reference_actual_rmse"
+        actual_dataset = actual_dataset.slice(slicing_function)
+        check_slice_not_empty(sliced_dataset=actual_dataset, dataset_name="actual_dataset", test_name=test_name)
+        reference_dataset = reference_dataset.slice(slicing_function)
+        check_slice_not_empty(sliced_dataset=reference_dataset, dataset_name="reference_dataset", test_name=test_name)
+
     return _test_diff_prediction(
         test_rmse.test_fn,
         model,
-        actual_dataset.slice(slicing_function),
-        reference_dataset.slice(slicing_function),
+        actual_dataset,
+        reference_dataset,
         threshold=threshold,
         direction=direction,
         test_name="RMSE",

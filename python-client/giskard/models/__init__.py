@@ -18,7 +18,7 @@ def wrap_model(model,
                model_postprocessing_function: Callable[[Any], Any] = None,
                name: Optional[str] = None,
                feature_names: Optional[Iterable] = None,
-               classification_threshold: float = 0.5,
+               classification_threshold: Optional[float] = 0.5,
                classification_labels: Optional[Iterable] = None,
                **kwargs):
     """
@@ -103,7 +103,7 @@ def wrap_model(model,
 def model_from_sklearn(model, model_type: ModelType, name: Optional[str] = None,
                        data_preprocessing_function: Callable[[pd.DataFrame], Any] = None,
                        model_postprocessing_function: Callable[[Any], Any] = None,
-                       feature_names: Optional[Iterable] = None, classification_threshold: float = 0.5,
+                       feature_names: Optional[Iterable] = None, classification_threshold: Optional[float] = 0.5,
                        classification_labels: Optional[Iterable] = None):
     """
     Factory method that creates an instance of the `SKLearnModel` class.
@@ -145,7 +145,7 @@ def model_from_sklearn(model, model_type: ModelType, name: Optional[str] = None,
 def model_from_catboost(model, model_type: ModelType, name: Optional[str] = None,
                         data_preprocessing_function: Callable[[pd.DataFrame], Any] = None,
                         model_postprocessing_function: Callable[[Any], Any] = None,
-                        feature_names: Optional[Iterable] = None, classification_threshold: float = 0.5,
+                        feature_names: Optional[Iterable] = None, classification_threshold: Optional[float] = 0.5,
                         classification_labels: Optional[Iterable] = None):
     """
     Factory method that creates an instance of the `CatboostModel` class.
@@ -184,7 +184,7 @@ def model_from_pytorch(model, model_type: ModelType, torch_dtype=None, device: O
                        name: Optional[str] = None,
                        data_preprocessing_function: Callable[[pd.DataFrame], Any] = None,
                        model_postprocessing_function: Callable[[Any], Any] = None,
-                       feature_names: Optional[Iterable] = None, classification_threshold: float = 0.5,
+                       feature_names: Optional[Iterable] = None, classification_threshold: Optional[float] = 0.5,
                        classification_labels: Optional[Iterable] = None, iterate_dataset=True):
     """
     Factory method that creates an instance of the `PyTorchModel` class.
@@ -235,7 +235,7 @@ def model_from_pytorch(model, model_type: ModelType, torch_dtype=None, device: O
 def model_from_tensorflow(model, model_type: ModelType, name: Optional[str] = None,
                           data_preprocessing_function: Callable[[pd.DataFrame], Any] = None,
                           model_postprocessing_function: Callable[[Any], Any] = None,
-                          feature_names: Optional[Iterable] = None, classification_threshold: float = 0.5,
+                          feature_names: Optional[Iterable] = None, classification_threshold: Optional[float] = 0.5,
                           classification_labels: Optional[Iterable] = None):
     """
     Factory method that creates an instance of the `TensorFlowModel` class.
@@ -273,7 +273,7 @@ def model_from_tensorflow(model, model_type: ModelType, name: Optional[str] = No
 def model_from_huggingface(model, model_type: ModelType, name: Optional[str] = None,
                            data_preprocessing_function: Callable[[pd.DataFrame], Any] = None,
                            model_postprocessing_function: Callable[[Any], Any] = None,
-                           feature_names: Optional[Iterable] = None, classification_threshold: float = 0.5,
+                           feature_names: Optional[Iterable] = None, classification_threshold: Optional[float] = 0.5,
                            classification_labels: Optional[Iterable] = None):
     """
     Factory method that creates an instance of the `HuggingFaceModel` class.

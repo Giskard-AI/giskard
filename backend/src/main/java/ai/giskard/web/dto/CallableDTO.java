@@ -43,4 +43,5 @@ public class CallableDTO {
     private String code;
     private List<@NotBlank String> tags;
     private boolean potentiallyUnavailable;
+    private List<TestFunctionArgumentDTO> args;
 }

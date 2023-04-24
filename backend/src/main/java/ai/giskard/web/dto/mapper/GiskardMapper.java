@@ -211,10 +211,10 @@ public interface GiskardMapper {
 
     List<TestSuiteExecutionDTO> testSuiteExecutionToDTOs(List<TestSuiteExecution> save);
 
-    TestFunctionArgumentDTO toDTO(TestFunctionArgument testFunctionArgument);
+    TestFunctionArgumentDTO toDTO(FunctionArgument functionArgument);
 
-    @Mapping(target = "testFunction", ignore = true)
-    TestFunctionArgument fromDTO(TestFunctionArgumentDTO testFunctionArgument);
+    @Mapping(target = "function", ignore = true)
+    FunctionArgument fromDTO(TestFunctionArgumentDTO testFunctionArgument);
 
     @Mapping(target = "potentiallyUnavailable", ignore = true)
     TestFunctionDTO toDTO(TestFunction testFunction);

@@ -1,3 +1,4 @@
+import inspect
 import logging
 import posixpath
 import tempfile
@@ -17,8 +18,11 @@ from giskard.client.io_utils import save_df, compress
 from giskard.client.python_utils import warning
 from giskard.core.core import DatasetMeta, SupportedColumnTypes, ColumnType
 from giskard.core.validation import configured_validate_arguments
-from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction
-from giskard.ml_worker.testing.registry.transformation_function import TransformationFunction
+from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction, SlicingFunctionType
+from giskard.ml_worker.testing.registry.transformation_function import (
+    TransformationFunction,
+    TransformationFunctionType,
+)
 from giskard.settings import settings
 
 logger = logging.getLogger(__name__)
@@ -53,6 +57,7 @@ class DataProcessor:
         __repr__() -> str:
             Return a string representation of the DataProcessor object, showing the number of steps in its pipeline.
     """
+
     pipeline: List[Union[SlicingFunction, TransformationFunction]] = []
 
     @configured_validate_arguments
@@ -67,19 +72,18 @@ class DataProcessor:
         while len(self.pipeline):
             step = self.pipeline.pop(-1 if apply_only_last else 0)
 
-            df = step(df)
+            df = step.execute(df)
 
             if apply_only_last:
                 break
 
-        if df.empty:
-            raise ValueError("Processing pipeline produced an empty dataset")
-
-        ret = Dataset(df=df,
-                      name=dataset.name,
-                      target=dataset.target,
-                      cat_columns=dataset.cat_columns,
-                      column_types=dataset.column_types)
+        ret = Dataset(
+            df=df,
+            name=dataset.name,
+            target=dataset.target,
+            cat_columns=dataset.cat_columns,
+            column_types=dataset.column_types,
+        )
 
         if len(self.pipeline):
             ret.data_processor = self
@@ -109,6 +113,7 @@ class Dataset:
         data_processor (DataProcessor):
             An instance of the `DataProcessor` class used for data processing.
     """
+
     name: str
     target: str
     column_types: Dict[str, str]
@@ -149,8 +154,6 @@ class Dataset:
             - If column_types is specified, it overrides the types inferred from cat_columns or infer_column_types.
             - Validates numeric columns of the Dataset object using `validate_numeric_columns` function.
         """
-        if df.empty:
-            raise ValueError("Please provide a non-empty df to construct the Dataset object.")
         if id is None:
             self.id = uuid.uuid4()
         else:
@@ -163,14 +166,17 @@ class Dataset:
                 "You did not provide the optional argument 'target'. "
                 "'target' is the column name in df corresponding to the actual target variable (ground truth)."
             )
-        self.check_hashability(self.df)
+        if not self.df.empty:
+            self.check_hashability(self.df)
         self.column_dtypes = self.extract_column_dtypes(self.df)
         if column_types:
             self.column_types = column_types
         elif cat_columns:
             if not set(cat_columns).issubset(list(df.columns)):
-                raise ValueError("The provided 'cat_columns' are not all part of your dataset 'columns'. "
-                                 "Please make sure that `cat_columns` refers to existing columns in your dataset.")
+                raise ValueError(
+                    "The provided 'cat_columns' are not all part of your dataset 'columns'. "
+                    "Please make sure that `cat_columns` refers to existing columns in your dataset."
+                )
             self.column_types = self.extract_column_types(self.column_dtypes, cat_columns)
         elif infer_column_types:
             self.column_types = self.infer_column_types(self.df, self.column_dtypes)
@@ -182,6 +188,7 @@ class Dataset:
             )
 
         from giskard.core.dataset_validation import validate_numeric_columns
+
         validate_numeric_columns(self)
 
     def add_slicing_function(self, slicing_function: SlicingFunction):
@@ -204,34 +211,55 @@ class Dataset:
         self.data_processor.add_step(transformation_function)
         return self
 
-    def slice(self, slicing_function: Optional[SlicingFunction] = None):
+    @configured_validate_arguments
+    def slice(self, slicing_function: Union[SlicingFunction, SlicingFunctionType], row_level: bool = True):
         """
-        Slice the dataset using the specified `SlicingFunction`.
+        Slice the dataset using the specified `slicing_function`.
 
         Args:
-            slicing_function (SlicingFunction, optional):
-                The slicing function to use. It should take a pandas DataFrame and return a DataFrame with the same columns.
+            slicing_function (Union[SlicingFunction, SlicingFunctionType]): A slicing function to apply.
+                If `slicing_function` is a callable, it will be wrapped in a `SlicingFunction` object
+                with `row_level` as its `row_level` argument. The `SlicingFunction` object will be
+                used to slice the DataFrame. If `slicing_function` is a `SlicingFunction` object, it
+                will be used directly to slice the DataFrame.
+            row_level (bool): Whether the `slicing_function` should be applied to the rows (True) or
+                the whole dataframe (False). Defaults to True.
 
         Returns:
             Dataset:
                 The sliced dataset as a `Dataset` object.
+
+        Notes:
+            Raises TypeError: If `slicing_function` is not a callable or a `SlicingFunction` object.
         """
-        if slicing_function:
-            return self.data_processor.add_step(slicing_function).apply(self, apply_only_last=True)
-        else:
-            return self
+        if inspect.isfunction(slicing_function):
+            slicing_function = SlicingFunction(slicing_function, row_level=row_level)
+        return self.data_processor.add_step(slicing_function).apply(self, apply_only_last=True)
 
     @configured_validate_arguments
-    def transform(self, transformation_function: TransformationFunction):
+    def transform(
+        self, transformation_function: Union[TransformationFunction, TransformationFunctionType], row_level: bool = True
+    ):
         """
         Transform the data in the current Dataset by applying a transformation function.
 
         Args:
-            transformation_function (TransformationFunction): A function that takes a pandas DataFrame as input and returns a modified DataFrame.
+            transformation_function (Union[TransformationFunction, TransformationFunctionType]):
+                A transformation function to apply. If `transformation_function` is a callable, it will
+                be wrapped in a `TransformationFunction` object with `row_level` as its `row_level`
+                argument. If `transformation_function` is a `TransformationFunction` object, it will be used
+                directly to transform the DataFrame.
+            row_level (bool): Whether the `transformation_function` should be applied to the rows (True) or
+                the whole dataframe (False). Defaults to True.
 
         Returns:
             Dataset: A new Dataset object containing the transformed data.
+
+        Notes:
+            Raises TypeError: If `transformation_function` is not a callable or a `TransformationFunction` object.
         """
+        if inspect.isfunction(transformation_function):
+            transformation_function = TransformationFunction(transformation_function, row_level=row_level)
         return self.data_processor.add_step(transformation_function).apply(self, apply_only_last=True)
 
     def process(self):
@@ -342,9 +370,6 @@ class Dataset:
 
         Returns:
             str: The ID of the uploaded dataset.
-
-        Raises:
-            DatasetValidationError: If the dataset is not valid.
         """
         from giskard.core.dataset_validation import validate_dataset
 
@@ -397,7 +422,8 @@ class Dataset:
         If the client is None, then the function assumes that it is running in an internal worker and looks for the dataset locally.
 
         Args:
-            client (GiskardClient or None): The GiskardClient instance to use for downloading the dataset.
+            client (GiskardClient):
+                The GiskardClient instance to use for downloading the dataset.
                 If None, the function looks for the dataset locally.
             project_key (str): The key of the Giskard project that the dataset belongs to.
             dataset_id (str): The ID of the dataset to download.
