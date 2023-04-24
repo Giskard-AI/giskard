@@ -35,28 +35,41 @@ pip install "giskard[scan] @ git+https://github.com/Giskard-AI/giskard.git@featu
 
 ## 2. Wrap your model
 
-We currently support all **tabular** and **NLP** models from `sklearn`, `catboost`, `pytorch`, `tensorflow` and `huggingface`.
+We currently support all **tabular** and **NLP** models from `sklearn`, `catboost`, `pytorch`, `tensorflow`
+and `huggingface`.
 
-To create your Giskard model, you can simply wrap your model with [wrap_model](../../reference/models/index.rst#giskard.wrap_model) as shown in the following example:
+To use your model with Giskard, you can simply wrap your model
+with [wrap_model](../../reference/models/index.rst#giskard.wrap_model). The objective of this wrapper is to encapsulate 
+the entire prediction process, starting from the **raw** `pandas.DataFrame` and leading up to the final predictions. 
+
+Here's an example:
 
 :::::{tab-set}
 ::::{tab-item} Classification
 :::{important}
 Click on [wrap_model](../../reference/models/index.rst#giskard.wrap_model) to see the full documentation.
 :::
-:::{warning}
-If your ML model contains preprocessing functions (categorical encoding, scaling, etc.), it should be either inside your
-`model` or inside the `data_preprocessing_function` of the Giskard model you create.
-:::
 #### Example
+
 ```python
 from giskard import wrap_model
 
-wrapped_model = wrap_model(some_classifier,
+# Example of data_preprocessing_function for a pytorch model
+# ----------------------------------------------------------
+# def my_preprocessing_function(df: pd.DataFrame):
+#     return torch.from_numpy(some_scaler.transform(df.to_numpy()))
+
+wrapped_model = wrap_model(model=some_classifier,
+                           data_preprocessing_function = None,
                            model_type="classification",
                            feature_names=['sepal length', 'sepal width', 'petal length'],
                            classification_labels=['Setosa', 'Versicolor', 'Virginica'])
 ```
+:::{warning}
+If your ML model contains preprocessing functions (categorical encoding, scaling, etc.), it should be either inside your
+`model` or inside the `data_preprocessing_function` of the Giskard model you create.
+:::
+
 :::{hint}
 Most classes in sklearn and catboost
 have [classes_](https://scikit-learn.org/stable/modules/generated/sklearn.feature_selection.RFE.html#sklearn.feature_selection.RFE.classes_)
@@ -74,59 +87,52 @@ respectively.
 :::{important}
 Click on [wrap_model](../../reference/models/index.rst#giskard.wrap_model) to see the full documentation.
 :::
-:::{warning}
-If your ML model contains preprocessing functions (categorical encoding, scaling, etc.), it should be either inside your
-`model` or inside the `data_preprocessing_function` of the Giskard model you create.
-:::
+
 #### Example
 ```python
 from giskard import wrap_model
 
-wrapped_model = wrap_model(some_regressor,
+wrapped_model = wrap_model(model=some_regressor,
                            model_type="regression",
                            feature_names=['x', 'y', 'z'])
+# outputs: Your '<library>' model is successfully wrapped by Giskard's '<wrapper name>' wrapper class.
 ```
+:::{warning}
+If your ML model contains preprocessing functions (categorical encoding, scaling, etc.), it should be either inside your
+`model` or inside the `data_preprocessing_function` of the Giskard model you create.
+:::
+
 ::::
 :::::
-
 
 ## 3. Wrap your dataset
 
 The Giskard dataset is a wrapper of `pandas.DataFrame`. It contains additional properties like the name of the target
-column (ground truth variable), the categorical columns, etc. This object gets passed to the Giskard model (see Create
-Giskard model) for evaluation.
+column (ground truth variable), etc. This object gets passed to the Giskard wrapper (
+See [Wrap your model](#wrap-your-model)) for evaluation.
 
-:::{warning}
-The `pandas.DataFrame` you provide should contain the raw data before prepocessing (categorical encoding, scaling,
-etc.).
+:::{important}
+Click on [wrap_dataset](../../reference/datasets/index.rst#giskard.wrap_dataset) to see the full documentation.
 :::
 
 #### Example
-
 ```python
 import pandas as pd
 
-# option 1 (preferable)
-my_column_types = {"categorical_column": "category",
-                   "text_column": "text",
-                   "numeric_column": "numeric"}
-
-# option 2 (preferable)                
-# my_cat_columns = ["categorical_column"]
-
-# option 3 (not very accurate)
-# INFER_CAT_COLUMNS = True
+iris_df = pd.DataFrame({"sepal length": [5.1],
+                        "sepal width": [3.5],
+                        "iris_type": ["Setosa"]})
 
 from giskard import wrap_dataset
 
-wrapped_dataset = wrap_dataset(some_df, target="numeric_column", column_types=my_column_types)
+wrapped_dataset = wrap_dataset(iris_df, target="iris_type")
+# outputs: Your 'pandas.DataFrame' dataset is successfully wrapped by Giskard's 'Dataset' wrapper class.
 ```
-
-```{eval-rst}
-.. autofunction:: giskard.wrap_dataset 
-```
-
-
+:::{warning}
+The `pandas.DataFrame` you provide should contain the raw data before prepocessing (categorical encoding, scaling,
+etc.). The preprocessing steps should be wrapped in a function that gets assigned to `data_preprocessing_function` of
+the [wrap_model](../../reference/models/index.rst#giskard.wrap_model) method.
+:::
 ## 4. Validate your model
 
 To make sure your model is working in Giskard, you can simply execute the following line:
@@ -135,23 +141,27 @@ To make sure your model is working in Giskard, you can simply execute the follow
 from giskard.core.model_validation import validate_model
 
 validate_model(wrapped_model, wrapped_dataset)
+# outputs: Your model is successfully validated.
 ```
 
 ## 5. Scan your model for vulnerabilities
 
 Finally 🎉, you can scan your model for vulnerabilities using:
+
 ```python
 import giskard
 
 results = giskard.scan(wrapped_model, wrapped_dataset, tests=["f1", "accuracy"])
 
-display(results) # in your notebook
+display(results)  # in your notebook
 ```
+
 In the notebook, this will produce a widget that allows you to explore the detected issues:
 ![](<../../assets/scan_results.png>)
 
+You can also get a table of the scan results as a `pandas.DataFrame`. This is useful if you want to save the results of
+the scan to a CSV or HTML file.
 
-You can also get a table of the scan results as a `pandas.DataFrame`. This is useful if you want to save the results of the scan to a CSV or HTML file.
 ```python
 results_df = results.to_dataframe()
 results_df.to_csv("scan_results_my_model.csv")
