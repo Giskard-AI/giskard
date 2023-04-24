@@ -194,7 +194,7 @@ def stop():
     """\b
     Stop Giskard Server.
 
-    Stops any running Giskard server. Does nothing if Giskard server is not running.
+    Stops a running Giskard server. Does nothing if Giskard server is not running.
     """
     try:
         container = get_container()
@@ -281,12 +281,12 @@ def logs(service, nb_lines, follow):
 
 
 @server.command("diagnose")
-@click.option("--output",
+@click.option("--out_path",
               "-o",
               "local_dir",
               default=os.getcwd(),
               type=click.Path(),
-              help="Save logs to a local archive")
+              help="Destination directory to save diagnose archive to")
 @common_options
 def diagnose(local_dir):
     """\b
@@ -313,7 +313,7 @@ def diagnose(local_dir):
     default=None)
 def update(version):
     """\b
-    Update Giskard Server
+    Update Giskard Server. Uses the latest available version if not specified.
     """
     latest_version = _fetch_latest_tag()
     if not version:
@@ -334,7 +334,7 @@ def update(version):
 @common_options
 def status():
     """\b
-    Get the Giskard Server status.
+    Check if server container is running and status of each internal service
     """
     app_settings = _get_settings()
     if not app_settings:
