@@ -10,7 +10,7 @@ def validate_target(ds: Dataset):
         if ds.target not in ds.df.keys():
             raise ValueError(
                 f"Invalid target parameter:"
-                f" {ds.target} column is not present in the dataset with columns: {ds.df.keys()}"
+                f" '{ds.target}' column is not present in the dataset with columns: {list(ds.df.keys())}"
             )
 
 
