@@ -202,21 +202,23 @@ class Dataset:
     @configured_validate_arguments
     def slice(self, slicing_function: Union[SlicingFunction, SlicingFunctionType], row_level: bool = True):
         """
-        Slice the dataset using the specified `SlicingFunction`.
+        Slice the dataset using the specified `slicing_function`.
 
         Args:
-            slicing_function (SlicingFunction):
-                The slicing function to use. It should take a pandas DataFrame and return a DataFrame with the same columns.
-            row_level (bool):
-                Choose whether to apply the slicing function on a row-level of the pandas DataFrame or not
+            slicing_function (Union[SlicingFunction, SlicingFunctionType]): A slicing function to apply.
+                If `slicing_function` is a callable, it will be wrapped in a `SlicingFunction` object
+                with `row_level` as its `row_level` argument. The `SlicingFunction` object will be
+                used to slice the DataFrame. If `slicing_function` is a `SlicingFunction` object, it
+                will be used directly to slice the DataFrame.
+            row_level (bool): Whether the `slicing_function` should be applied to the rows (True) or
+                the whole dataframe (False). Defaults to True.
 
         Returns:
             Dataset:
                 The sliced dataset as a `Dataset` object.
 
         Notes:
-            if slicing_function provided as SlicingFunction, row_level is read from the slicing_function itself not the
-            row_level argument in Dataset.slice()
+            Raises TypeError: If `slicing_function` is not a callable or a `SlicingFunction` object.
         """
         if inspect.isfunction(slicing_function):
             slicing_function = SlicingFunction(slicing_function, row_level=row_level)
@@ -229,10 +231,19 @@ class Dataset:
         Transform the data in the current Dataset by applying a transformation function.
 
         Args:
-            transformation_function (TransformationFunction, optional): A function that takes a pandas DataFrame as input and returns a modified DataFrame.
+            transformation_function (Union[TransformationFunction, TransformationFunctionType]):
+                A transformation function to apply. If `transformation_function` is a callable, it will
+                be wrapped in a `TransformationFunction` object with `row_level` as its `row_level`
+                argument. If `transformation_function` is a `TransformationFunction` object, it will be used
+                directly to transform the DataFrame.
+            row_level (bool): Whether the `transformation_function` should be applied to the rows (True) or
+                the whole dataframe (False). Defaults to True.
 
         Returns:
             Dataset: A new Dataset object containing the transformed data.
+
+        Notes:
+            Raises TypeError: If `transformation_function` is not a callable or a `TransformationFunction` object.
         """
         if inspect.isfunction(transformation_function):
             transformation_function = TransformationFunction(transformation_function, row_level=row_level)
