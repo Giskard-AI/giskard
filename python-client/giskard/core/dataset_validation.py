@@ -6,7 +6,11 @@ from giskard.datasets.base import Dataset
 
 
 def validate_target(ds: Dataset):
-    if ds.target is not None:
+    if not ds.target:
+        warning(
+            "You did not provide the optional argument 'target'. "
+            "'target' is the column name in df corresponding to the actual target variable (ground truth).")
+    else:
         if ds.target not in ds.df.keys():
             raise ValueError(
                 f"Invalid target parameter:"

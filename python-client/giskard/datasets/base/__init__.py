@@ -139,10 +139,7 @@ class Dataset:
         self.target = target
         from giskard.core.dataset_validation import validate_target
         validate_target(self)
-        if not self.target:
-            warning(
-                "You did not provide the optional argument 'target'. "
-                "'target' is the column name in df corresponding to the actual target variable (ground truth).")
+
         if not self.df.empty:
             self.check_hashability(self.df)
         self.column_dtypes = self.extract_column_dtypes(self.df)
