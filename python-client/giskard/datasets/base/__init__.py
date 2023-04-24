@@ -18,7 +18,8 @@ from giskard.client.python_utils import warning
 from giskard.core.core import DatasetMeta, SupportedColumnTypes
 from giskard.core.validation import configured_validate_arguments
 from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction, SlicingFunctionType
-from giskard.ml_worker.testing.registry.transformation_function import TransformationFunction
+from giskard.ml_worker.testing.registry.transformation_function import TransformationFunction, \
+    TransformationFunctionType
 from giskard.settings import settings
 
 logger = logging.getLogger(__name__)
@@ -222,7 +223,8 @@ class Dataset:
         return self.data_processor.add_step(slicing_function).apply(self, apply_only_last=True)
 
     @configured_validate_arguments
-    def transform(self, transformation_function: Optional[TransformationFunction] = None):
+    def transform(self, transformation_function: Union[TransformationFunction, TransformationFunctionType],
+                  row_level: bool = True):
         """
         Transform the data in the current Dataset by applying a transformation function.
 
@@ -232,10 +234,9 @@ class Dataset:
         Returns:
             Dataset: A new Dataset object containing the transformed data.
         """
-        if transformation_function:
-            return self.data_processor.add_step(transformation_function).apply(self, apply_only_last=True)
-        else:
-            return self
+        if inspect.isfunction(transformation_function):
+            transformation_function = TransformationFunction(transformation_function, row_level=row_level)
+        return self.data_processor.add_step(transformation_function).apply(self, apply_only_last=True)
 
     def process(self):
         """
