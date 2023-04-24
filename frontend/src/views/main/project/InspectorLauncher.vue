@@ -77,7 +77,6 @@ async function launchInspector() {
   try {
     creatingInspection.value = true;
     const inspection = await api.prepareInspection({ datasetId: datasetSelected.value!.id, modelId: props.model.id, name: "" });
-    // await router.push({name: 'project-inspector', params: {inspectionId: inspection.id.toString()}});
     await router.push({
       name: 'project-debugger',
       params: {
