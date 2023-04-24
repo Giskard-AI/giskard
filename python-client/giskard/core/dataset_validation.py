@@ -91,10 +91,7 @@ def validate_column_categorization(ds: Dataset):
         # if a user provided possibly wrong information in column_types about text columns
         elif (
                 is_string_dtype(ds.df[column])
-                and (
-                        ds.column_types[column] == SupportedColumnTypes.CATEGORY.value
-                        or ds.column_types[column] == SupportedColumnTypes.NUMERIC.value
-                )
+                and ds.column_types[column] == SupportedColumnTypes.NUMERIC.value
         ):
             warning(
                 f"Feature '{column}' is declared as '{ds.column_types[column]}'. Are "
@@ -103,10 +100,7 @@ def validate_column_categorization(ds: Dataset):
         # if a user provided possibly wrong information in column_types about numeric columns
         elif (
                 is_numeric_dtype(ds.df[column])
-                and (
-                        ds.column_types[column] == SupportedColumnTypes.CATEGORY.value
-                        or ds.column_types[column] == SupportedColumnTypes.TEXT.value
-                )
+                and ds.column_types[column] == SupportedColumnTypes.TEXT.value
         ):
             warning(
                 f"Feature '{column}' is declared as '{ds.column_types[column]}'. Are "
