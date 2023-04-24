@@ -3,7 +3,7 @@
     <v-card-title class="font-weight-light secondary--text">API Access Token</v-card-title>
     <v-card-text>
       <div class="mb-2">
-        <v-btn small tile color="primary" class="grey--text text--darken-4" @click="generateToken">Generate</v-btn>
+        <v-btn small tile color="primaryLight" class="primaryLightBtn" @click="generateToken">Generate</v-btn>
         <v-btn v-if="apiAccessToken && apiAccessToken.id_token" small tile color="secondary" class="ml-2" @click="copyToken">
           Copy
           <v-icon right dark>mdi-content-copy</v-icon>
