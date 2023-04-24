@@ -90,13 +90,9 @@ def build_test_input_dto(client, p, pname, ptype, project_key, uploaded_uuids):
         if str(p.meta.uuid) not in uploaded_uuids:
             p.upload(client)
         uploaded_uuids.append(str(p.meta.uuid))
-
-        from inspect import signature
-        sig = signature(p)
-
         return TestInputDTO(name=pname, value=str(p.meta.uuid), type=ptype,
                             params=[
-                                build_test_input_dto(client, p, pname, sig.parameters[pname].annotation, project_key,
+                                build_test_input_dto(client, p, pname, p.meta.args[pname].type, project_key,
                                                      uploaded_uuids) for pname, p in
                                 p.params.items()])
     elif isinstance(p, SuiteInput):
@@ -209,16 +205,13 @@ class Suite:
         uploaded_uuids: List[str] = []
 
         for t in self.tests:
-            from inspect import signature
-            sig = signature(t.giskard_test)
+
 
             suite_tests.append(SuiteTestDTO(
                 testUuid=t.giskard_test.upload(client),
                 functionInputs={
-                    pname: build_test_input_dto(client, p, pname, sig.parameters[pname].annotation, project_key,
-                                                uploaded_uuids) for pname, p
-                    in
-                    t.provided_inputs.items()}
+                    pname: build_test_input_dto(client, p, pname, t.giskard_test.meta.args[pname].type, project_key,
+                                                uploaded_uuids) for pname, p in t.provided_inputs.items()}
             ))
 
         return TestSuiteDTO(name=self.name, project_key=project_key, tests=suite_tests)
