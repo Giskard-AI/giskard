@@ -11,10 +11,10 @@ def validate_target(ds: Dataset):
             "You did not provide the optional argument 'target'. "
             "'target' is the column name in df corresponding to the actual target variable (ground truth).")
     else:
-        if ds.target not in ds.df.keys():
+        if ds.target not in list(ds.df.columns):
             raise ValueError(
                 f"Invalid target parameter:"
-                f" '{ds.target}' column is not present in the dataset with columns: {list(ds.df.keys())}"
+                f" '{ds.target}' column is not present in the dataset with columns: {list(ds.df.columns)}"
             )
 
 
@@ -34,26 +34,21 @@ def validate_column_types(ds: Dataset):
     else:
         raise ValueError(f"Invalid column_types parameter: {ds.column_types}. Please specify non-empty dictionary.")
 
-    columns_with_types = set(ds.column_types.keys())
+    df_columns_set = set(ds.df.columns) - set([ds.target])
+    column_types_set = set(ds.column_types.keys()) - set([ds.target])
 
-    df = ds.df
-
-    if ds.target in ds.df.columns:
-        df = ds.df.drop(ds.target, axis=1)
-
-    df_columns = set(df.columns)
-    columns_with_types.discard(ds.target)
-
-    if not columns_with_types.issubset(df_columns):
-        missing_columns = columns_with_types - df_columns
-        raise ValueError(f"Missing columns in dataframe according to column_types: {missing_columns}")
-    elif not df_columns.issubset(columns_with_types):
-        missing_columns = df_columns - columns_with_types
-        if missing_columns:
-            raise ValueError(
-                f"Invalid column_types parameter: Please declare the type for " f"{missing_columns} columns"
-            )
-
+    if column_types_set > df_columns_set:
+        unknown_columns = column_types_set - df_columns_set
+        raise ValueError(
+            f"The provided {list(unknown_columns)} in 'column_types' are not all part of your dataset "
+            "'columns'. Please make sure that the column names in `column_types` refers to existing "
+            "columns in your dataset.")
+    elif column_types_set < df_columns_set:
+        missing_columns = df_columns_set - column_types_set
+        raise ValueError(
+            f"The following {list(missing_columns)} are missing from 'column_types'. "
+            "Please make sure that the column names in `column_types` covers all the existing "
+            "columns in your dataset.")
 
 def validate_numeric_columns(ds: Dataset):
     for col, col_type in ds.column_types.items():

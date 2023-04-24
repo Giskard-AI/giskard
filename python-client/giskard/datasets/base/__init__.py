@@ -148,11 +148,6 @@ class Dataset:
         # used in the inference of category columns
         self.category_threshold = round(np.log10(len(self.df))) if len(self.df) >= 100 else 2
         if column_types:
-            if not set(column_types.keys()).issubset(list(df.columns)):
-                raise ValueError(
-                    "The provided column names in 'column_types' are not all part of your dataset 'columns'. "
-                    "Please make sure that the column names in `column_types` refers to existing columns in "
-                    "your dataset.")
             self.column_types = column_types
             validate_column_types(self)
         else:
