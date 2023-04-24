@@ -387,4 +387,4 @@ def clean(delete_data):
     if delete_data and click.confirm("Are you sure you want to delete user data (giskard-home volume)? "
                                      "This will permanently erase all of the Giskard activity results"):
         client.volumes.get('giskard-home').remove()
-        logger.info(f"User data has been deleted in 'giskard-home' volume")
+        logger.info("User data has been deleted in 'giskard-home' volume")
