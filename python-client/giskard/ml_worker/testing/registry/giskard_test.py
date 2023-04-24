@@ -95,7 +95,7 @@ Test = Union[GiskardTest, Function]
 
 
 class GiskardTestMethod(GiskardTest):
-    params = None
+    params = {}
     is_initialized = False
 
     def __init__(self, test_fn: Function) -> None:
@@ -109,14 +109,18 @@ class GiskardTestMethod(GiskardTest):
             meta = tests_registry.get_test(test_uuid)
         super(GiskardTest, self).__init__(test_fn, meta)
 
-    def __call__(self, *args, **kwargs) -> 'GiskardTestMethod':
-        self.is_initialized = True
-        self.params = kwargs
+    def __call__(self, *args, **kwargs) -> Result:
+        return self.test_fn(*args, **kwargs)
+
+    def set_params(self, *args, **kwargs) -> 'GiskardTestMethod':
+        new_instance = GiskardTestMethod(self.data)
+        new_instance.is_initialized = True
+        new_instance.params = kwargs
 
         for idx, arg in enumerate(args):
-            self.params[next(iter([arg.name for arg in self.meta.args.values() if arg.argOrder == idx]))] = arg
+            new_instance.params[next(iter([arg.name for arg in self.meta.args.values() if arg.argOrder == idx]))] = arg
 
-        return self
+        return new_instance
 
     def execute(self) -> Result:
         return self.test_fn(**self.params)
@@ -133,4 +137,4 @@ class GiskardTestMethod(GiskardTest):
         return "\n".join(output)
 
     def get_builder(self):
-        return GiskardTestMethod(self.data)
+        return self.set_params

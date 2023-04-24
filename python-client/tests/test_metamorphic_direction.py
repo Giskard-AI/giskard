@@ -13,7 +13,7 @@ def _test_metamorphic_increasing_regression(ds: Dataset, model, threshold):
         return x
 
     results = metamorphic.test_metamorphic_increasing(model=model, dataset=ds, transformation_function=perturbation,
-                                                      threshold=threshold).execute()
+                                                      threshold=threshold)
 
     assert results.actual_slices_size[0] == 442
     assert round(results.metric, 2) == 0.44
@@ -27,7 +27,7 @@ def _test_metamorphic_decreasing_regression(ds: Dataset, model, threshold):
         return x
 
     results = metamorphic.test_metamorphic_decreasing(model=model, dataset=ds, transformation_function=perturbation,
-                                                      threshold=threshold).execute()
+                                                      threshold=threshold)
     assert results.actual_slices_size[0] == 442
     assert round(results.metric, 2) == 0.54
     return results.passed
@@ -42,7 +42,7 @@ def _test_metamorphic_increasing_classification(df, model, threshold):
     results = metamorphic.test_metamorphic_increasing(model=model, dataset=df, transformation_function=perturbation,
                                                       threshold=threshold,
                                                       classification_label=model.meta.classification_labels[
-                                                          0]).execute()
+                                                          0])
 
     assert results.actual_slices_size[0] == 1000
     assert results.metric == 1
@@ -58,7 +58,7 @@ def _test_metamorphic_decreasing_classification(df, model, threshold):
     results = metamorphic.test_metamorphic_decreasing(model=model, dataset=df, transformation_function=perturbation,
                                                       threshold=threshold,
                                                       classification_label=model.meta.classification_labels[
-                                                          0]).execute()
+                                                          0])
 
     assert results.actual_slices_size[0] == 1000
     assert results.metric == 1
@@ -92,7 +92,7 @@ def test_metamorphic_decreasing_exception(german_credit_test_data, german_credit
 
         metamorphic.test_metamorphic_decreasing(model=german_credit_model, dataset=german_credit_test_data,
                                                 transformation_function=perturbation, threshold=0.5,
-                                                classification_label="random_value").execute()
+                                                classification_label="random_value")
 
 
 def test_metamorphic_increasing_exception(german_credit_test_data, german_credit_model):
@@ -104,7 +104,7 @@ def test_metamorphic_increasing_exception(german_credit_test_data, german_credit
 
         metamorphic.test_metamorphic_increasing(model=german_credit_model, dataset=german_credit_test_data,
                                                 transformation_function=perturbation, threshold=0.5,
-                                                classification_label="random_value").execute()
+                                                classification_label="random_value")
 
 
 def test_metamorphic_increasing_t_test(german_credit_test_data, german_credit_model):
@@ -116,7 +116,7 @@ def test_metamorphic_increasing_t_test(german_credit_test_data, german_credit_mo
     results = metamorphic.test_metamorphic_increasing_t_test(model=german_credit_model, dataset=german_credit_test_data,
                                                              transformation_function=perturbation,
                                                              critical_quantile=0.05,
-                                                             classification_label="Default").execute()
+                                                             classification_label="Default")
 
     assert results.actual_slices_size[0] == len(german_credit_test_data)
     assert not results.passed, f"metric = {results.metric}"
@@ -131,7 +131,7 @@ def test_metamorphic_decreasing_t_test(german_credit_test_data, german_credit_mo
     results = metamorphic.test_metamorphic_decreasing_t_test(model=german_credit_model, dataset=german_credit_test_data,
                                                              transformation_function=perturbation,
                                                              critical_quantile=0.05,
-                                                             classification_label="Default").execute()
+                                                             classification_label="Default")
 
     assert results.actual_slices_size[0] == len(german_credit_test_data)
     assert results.passed, f"metric = {results.metric}"
@@ -147,7 +147,7 @@ def test_metamorphic_increasing_wilcoxon(german_credit_test_data, german_credit_
                                                                dataset=german_credit_test_data,
                                                                transformation_function=perturbation,
                                                                critical_quantile=0.05,
-                                                               classification_label="Default").execute()
+                                                               classification_label="Default")
 
     assert results.actual_slices_size[0] == len(german_credit_test_data)
     assert not results.passed, f"metric = {results.metric}"
@@ -163,7 +163,7 @@ def test_metamorphic_decreasing_wilcoxon(german_credit_test_data, german_credit_
                                                                dataset=german_credit_test_data,
                                                                transformation_function=perturbation,
                                                                critical_quantile=0.05,
-                                                               classification_label="Default").execute()
+                                                               classification_label="Default")
 
     assert results.actual_slices_size[0] == len(german_credit_test_data)
     assert results.passed, f"metric = {results.metric}"
@@ -177,7 +177,7 @@ def test_metamorphic_increasing_t_test_nopert(german_credit_test_data, german_cr
     results = metamorphic.test_metamorphic_increasing_t_test(model=german_credit_model, dataset=german_credit_test_data,
                                                              transformation_function=perturbation,
                                                              critical_quantile=0.05,
-                                                             classification_label="Default").execute()
+                                                             classification_label="Default")
 
     assert results.actual_slices_size[0] == len(german_credit_test_data)
     assert not results.passed, f"metric = {results.metric}"
@@ -191,7 +191,7 @@ def test_metamorphic_decreasing_t_test_nopert(german_credit_test_data, german_cr
     results = metamorphic.test_metamorphic_decreasing_t_test(model=german_credit_model, dataset=german_credit_test_data,
                                                              transformation_function=perturbation,
                                                              critical_quantile=0.05,
-                                                             classification_label="Default").execute()
+                                                             classification_label="Default")
 
     assert results.actual_slices_size[0] == len(german_credit_test_data)
     assert not results.passed, f"metric = {results.metric}"
@@ -206,7 +206,7 @@ def test_metamorphic_increasing_wilcoxon_nopert(german_credit_test_data, german_
                                                                dataset=german_credit_test_data,
                                                                transformation_function=perturbation,
                                                                critical_quantile=0.05,
-                                                               classification_label="Default").execute()
+                                                               classification_label="Default")
 
     assert results.actual_slices_size[0] == len(german_credit_test_data)
     assert not results.passed, f"metric = {results.metric}"
@@ -221,7 +221,7 @@ def test_metamorphic_decreasing_wilcoxon_nopert(german_credit_test_data, german_
                                                                dataset=german_credit_test_data,
                                                                transformation_function=perturbation,
                                                                critical_quantile=0.05,
-                                                               classification_label="Default").execute()
+                                                               classification_label="Default")
 
     assert results.actual_slices_size[0] == len(german_credit_test_data)
     assert not results.passed, f"metric = {results.metric}"

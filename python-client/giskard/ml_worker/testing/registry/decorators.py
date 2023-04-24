@@ -29,15 +29,16 @@ def test(_fn=None, name=None, tags: Optional[List[str]] = None):
         if inspect.isclass(original) and issubclass(original, GiskardTest):
             return original
 
-        return _wrap_test_method(original)
+        return GiskardTestMethod(original)
 
     if callable(_fn):
         # in case @test decorator was used without parenthesis
-        return functools.wraps(_fn)(inner(_fn))
+        return inner(_fn)
     else:
         return inner
 
 
+# TODO: migrate to set_params
 def _wrap_test_method(original):
     giskard_test_method = functools.wraps(original)(GiskardTestMethod(original))
     make_all_optional_or_suite_input(giskard_test_method)
