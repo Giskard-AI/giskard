@@ -62,5 +62,5 @@ __all__ = [
     'SuiteInput',
     'SlicingFunction',
     'TestResult',
-    'GiskardTest'
+    'GiskardTest',
 ]

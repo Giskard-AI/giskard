@@ -119,6 +119,6 @@ def test_linear_regression_pytorch_dataframe():
 
     my_model = PyTorchModel(name="my_linear_model", model=model, feature_names=feature_names, model_type="regression")
 
-    my_test_dataset = Dataset(df.head(), name="test dataset", target="label")
+    my_test_dataset = Dataset(df.head(), name="test dataset", target="y")
 
     tests.utils.verify_model_upload(my_model, my_test_dataset)

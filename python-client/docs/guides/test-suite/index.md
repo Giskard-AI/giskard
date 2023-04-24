@@ -61,15 +61,12 @@ You can see all our tests in the [📖 Test Catalog](../test-catalog/index.rst)
 from giskard import wrap_model, wrap_dataset
 from giskard.ml_worker.testing.tests.drift import test_drift_prediction_ks
 
-my_model = wrap_model(...)
+wrapped_model = wrap_model(...)
 train_df = wrap_dataset(...)
 test_df = wrap_dataset(...)
 
-result = test_drift_prediction_ks(reference_dataset=train_df,
-                                  actual_dataset=test_df,
-                                  model=my_model,
-                                  classification_label='CALIFORNIA CRISIS',
-                                  threshold=0.5).execute()
+result = test_drift_prediction_ks(model=wrapped_model, actual_dataset=test_df, reference_dataset=train_df,
+                                  classification_label='CALIFORNIA CRISIS', threshold=0.5).execute()
 
 print("Result for 'Classification Probability drift (Kolmogorov-Smirnov):")
 print(f"Passed: {result.passed}")
@@ -89,10 +86,11 @@ one. Then you need to initialize the test and execute it, it will return a **Tes
 from giskard import wrap_model, wrap_dataset
 from giskard.ml_worker.testing.tests.performance import test_f1
 
-my_model = wrap_model(...)
-dataset = wrap_dataset(...)
+wrapped_model = wrap_model(...)
+wrapped_dataset = wrap_dataset(...)
 
-result = test_f1(dataset=dataset, model=my_model).execute()
+result = test_f1(dataset=wrapped_dataset, model=wrapped_model).execute()
+
 print(f"result: {result.passed} with metric {result.metric}")
 ```
 
@@ -104,8 +102,8 @@ print(f"result: {result.passed} with metric {result.metric}")
 from giskard import wrap_model, wrap_dataset, transformation_function
 from giskard.ml_worker.testing.tests.metamorphic import test_metamorphic_invariance
 
-my_model = wrap_model(...)
-dataset = wrap_dataset(...)
+wrapped_model = wrap_model(...)
+wrapped_dataset = wrap_dataset(...)
 
 
 @transformation_function
@@ -114,7 +112,7 @@ def add_three_years(row):
     return row
 
 
-result = test_metamorphic_invariance(dataset, my_model, add_three_years).execute()
+result = test_metamorphic_invariance(wrapped_model, wrapped_dataset, add_three_years).execute()
 print(f"result: {result.passed} with metric {result.metric}")
 ```
 
@@ -129,10 +127,10 @@ to see how to create custom transformations
 from giskard import wrap_model, wrap_dataset
 from giskard.ml_worker.testing.tests.statistic import test_right_label
 
-my_model = wrap_model(...)
-dataset = wrap_dataset(...)
+wrapped_model = wrap_model(...)
+wrapped_dataset = wrap_dataset(...)
 
-result = test_right_label(dataset, my_model, 'SUCCESS').execute()
+result = test_right_label(wrapped_model, wrapped_dataset, 'SUCCESS').execute()
 print(f"result: {result.passed} with metric {result.metric}")
 ```
 
@@ -248,15 +246,14 @@ from giskard import wrap_model, wrap_dataset, Suite
 from giskard.ml_worker.testing.tests.performance import test_f1
 
 # Define our Giskard Model
-my_dataset = wrap_dataset(...)
+wrapped_dataset = wrap_dataset(...)
 
 # Create a suite and add a F1 test and a DataQuality test
 # Note that all the parameters are specified excect dataset
 # Which means that we will need to specify dataset everytime we run the suite
-
-suite = Suite() \
-    .add_test(test_f1(actual_slice=my_dataset)) \
-    .add_test(DataQuality(dataset=my_dataset, column_name='Month', category='August'), "quality")
+suite = Suite()
+    .add_test(test_f1, "f1", dataset=wrapped_dataset)
+    .add_test(DataQuality(dataset=wrapped_dataset, column_name='Month', category='August'), "quality")
 
 # Create our first model
 my_first_model = wrap_model(...)
@@ -310,9 +307,9 @@ client = GiskardClient(url, token)
 # Create a project
 client.create_project(project_name, "Email Classification", "Email Classification")
 
-suite = Suite() \
-    .add_test(test_f1(actual_slice=my_dataset)) \
-    .add_test(DataQuality(dataset=my_dataset, column_name='Month', category='August')) \
+suite = Suite()
+.add_test(test_f1, dataset=wrapped_dataset)
+.add_test(DataQuality(dataset=wrapped_dataset, column_name='Month', category='August'))
     .save(client, project_name)
 
 

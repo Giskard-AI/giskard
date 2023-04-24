@@ -35,34 +35,28 @@ pip install "git+https://github.com/Giskard-AI/giskard.git@feature/ai-test-v2-me
 
 ## 2. Wrap your model
 
-We currently support all **tabular** and **NLP** models from the following:
+We currently support all **tabular** and **NLP** models from `sklearn`, `catboost`, `pytorch`, `tensorflow` and `huggingface`.
 
-#### Supported libraries
+To create your Giskard model, you can simply wrap your model with [wrap_model](../../reference/models/index.rst#giskard.wrap_model) as shown in the following example:
 
-- sklearn
-- catboost
-- pytorch
-- tensorflow
-- huggingface
-
-To create your Giskard model, you can simply wrap your model with `giskard.wrap_model` as shown in {class}`~.giskard.wrap_model`.
-
+:::::{tab-set}
+::::{tab-item} Classification
+:::{important}
+Click on [wrap_model](../../reference/models/index.rst#giskard.wrap_model) to see the full documentation.
+:::
 :::{warning}
 If your ML model contains preprocessing functions (categorical encoding, scaling, etc.), it should be either inside your
 `model` or inside the `data_preprocessing_function` of the Giskard model you create.
 :::
-
 #### Example
-
 ```python
 from giskard import wrap_model
 
-my_model = wrap_model(some_classifier,
-                      model_type="classification", # or "regression"
-                      feature_names=["column1", "column2", ...],
-                      classification_labels=["label1", "label2", ...]) # not needed in case of "regression"
+wrapped_model = wrap_model(some_classifier,
+                           model_type="classification",
+                           feature_names=['sepal length', 'sepal width', 'petal length'],
+                           classification_labels=['Setosa', 'Versicolor', 'Virginica'])
 ```
-
 :::{hint}
 Most classes in sklearn and catboost
 have [classes_](https://scikit-learn.org/stable/modules/generated/sklearn.feature_selection.RFE.html#sklearn.feature_selection.RFE.classes_)
@@ -74,9 +68,27 @@ and [feature_names_in_](https://scikit-learn.org/stable/modules/generated/sklear
 respectively.
 :::
 
-```{eval-rst}
-.. autofunction:: giskard.wrap_model 
+::::
+
+::::{tab-item} Regression
+:::{important}
+Click on [wrap_model](../../reference/models/index.rst#giskard.wrap_model) to see the full documentation.
+:::
+:::{warning}
+If your ML model contains preprocessing functions (categorical encoding, scaling, etc.), it should be either inside your
+`model` or inside the `data_preprocessing_function` of the Giskard model you create.
+:::
+#### Example
+```python
+from giskard import wrap_model
+
+wrapped_model = wrap_model(some_regressor,
+                           model_type="regression",
+                           feature_names=['x', 'y', 'z'])
 ```
+::::
+:::::
+
 
 ## 3. Wrap your dataset
 
@@ -94,25 +106,20 @@ etc.).
 ```python
 import pandas as pd
 
-# option 1
+# option 1 (preferable)
 my_column_types = {"categorical_column": "category",
                    "text_column": "text",
                    "numeric_column": "numeric"}
 
-# option 2                 
-my_cat_columns = ["categorical_column"]
+# option 2 (preferable)                
+# my_cat_columns = ["categorical_column"]
 
-# option 3
-INFER_CAT_COLUMNS = True
+# option 3 (not very accurate)
+# INFER_CAT_COLUMNS = True
 
 from giskard import wrap_dataset
 
-my_dataset = wrap_dataset(some_df,
-                          target="numeric_column",
-                          column_types=my_column_types,            # option 1
-                          # cat_columns=my_cat_columns,            # option 2
-                          # infer_column_types = INFER_CAT_COLUMNS # option 3
-                          )
+wrapped_dataset = wrap_dataset(some_df, target="numeric_column", column_types=my_column_types)
 ```
 
 ```{eval-rst}
@@ -127,7 +134,7 @@ To make sure your model is working in Giskard, you can simply execute the follow
 ```python
 from giskard.core.model_validation import validate_model
 
-validate_model(my_model, my_dataset)
+validate_model(wrapped_model, wrapped_dataset)
 ```
 
 ## 5. Scan your model for vulnerabilities
@@ -136,11 +143,19 @@ Finally 🎉, you can scan your model for vulnerabilities using:
 ```python
 import giskard
 
-results = giskard.scan(my_model, my_dataset, tests=["f1", "accuracy"])
+results = giskard.scan(wrapped_model, wrapped_dataset, tests=["f1", "accuracy"])
 
 display(results) # in your notebook
 ```
-  
+In the notebook, this will produce a widget that allows you to explore the detected issues:
+![](<../../assets/scan_results.png>)
+
+
+You can also get a table of the scan results as a `pandas.DataFrame`. This is useful if you want to save the results of the scan to a CSV or HTML file.
+```python
+results_df = results.to_dataframe()
+results_df.to_csv("scan_results_my_model.csv")
+```  
 
 ## 6. Upload your model and dataset to giskard UI
 
@@ -157,8 +172,8 @@ client = GiskardClient(url, token)
 your_project = client.create_project("project_key", "PROJECT_NAME", "DESCRIPTION")
 
 # Upload your model and dataset
-model_id = my_model.upload(client, "project_key")
-dataset_id = my_test_dataset.upload(client, "project_key")
+model_id = wrapped_model.upload(client, "project_key")
+dataset_id = wrapped_dataset.upload(client, "project_key")
 ```
 
 ## Troubleshooting
