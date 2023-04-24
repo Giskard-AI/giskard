@@ -17,7 +17,7 @@ def test_dataset_index_is_preserved(german_credit_data, german_credit_model):
         dataset=dataset,
         model=model,
         threshold=0.8
-    )
+    ).execute()
 
     assert (dataset.df.index == original_idx).all()
 
@@ -29,6 +29,6 @@ def test_dataset_index_is_preserved(german_credit_data, german_credit_model):
         dataset=dataset,
         model=model,
         threshold=0.8
-    )
+    ).execute()
 
     assert (dataset.df.index == original_idx).all()
