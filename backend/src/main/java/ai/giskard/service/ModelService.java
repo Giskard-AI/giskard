@@ -21,7 +21,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
-import java.time.Instant;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
@@ -114,10 +113,6 @@ public class ModelService {
 
         inspection.setDataset(dataset);
         inspection.setModel(model);
-
-        Instant instant = Instant.now();
-        inspection.setCreatedDate(instant);
-        inspection.setLastModifiedDate(instant);
 
         inspection = inspectionRepository.save(inspection);
 
