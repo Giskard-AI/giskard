@@ -125,9 +125,8 @@ def _compare_probabilities_wilcoxon(result_df, direction, window_size=0.2, criti
 
 
 def _test_metamorphic(model, direction: Direction, dataset: Dataset, transformation_function: TransformationFunction,
-                      threshold: float, classification_label=None, output_sensitivity=None, output_proba=True) -> TestResult:
-    dataset.df.reset_index(drop=True, inplace=True)
-
+                      threshold: float, classification_label=None, output_sensitivity=None,
+                      output_proba=True) -> TestResult:
     results_df, modified_rows_count = _perturb_and_predict(model, dataset, transformation_function,
                                                            output_proba=output_proba,
                                                            classification_label=classification_label)
@@ -323,8 +322,6 @@ def test_metamorphic_decreasing(model: BaseModel, dataset: Dataset, transformati
 def _test_metamorphic_t_test(direction: Direction, model, dataset: Dataset,
                              transformation_function: TransformationFunction, window_size: float,
                              critical_quantile: float, classification_label=None, output_proba=True) -> TestResult:
-    dataset.df.reset_index(drop=True, inplace=True)
-
     result_df, modified_rows_count = _perturb_and_predict(model, dataset, transformation_function,
                                                           output_proba=output_proba,
                                                           classification_label=classification_label)
@@ -382,7 +379,8 @@ def test_metamorphic_decreasing_t_test(model: BaseModel, dataset: Dataset,
     """
     if slicing_function:
         dataset = dataset.slice(slicing_function)
-        check_slice_not_empty(sliced_dataset=dataset, dataset_name="dataset", test_name="test_metamorphic_decreasing_t_test")
+        check_slice_not_empty(sliced_dataset=dataset, dataset_name="dataset",
+                              test_name="test_metamorphic_decreasing_t_test")
 
     return _test_metamorphic_t_test(direction=Direction.Decreasing, dataset=dataset,
                                     model=model,
@@ -431,7 +429,8 @@ def test_metamorphic_increasing_t_test(model: BaseModel, dataset: Dataset,
     """
     if slicing_function:
         dataset = dataset.slice(slicing_function)
-        check_slice_not_empty(sliced_dataset=dataset, dataset_name="dataset", test_name="test_metamorphic_increasing_t_test")
+        check_slice_not_empty(sliced_dataset=dataset, dataset_name="dataset",
+                              test_name="test_metamorphic_increasing_t_test")
 
     return _test_metamorphic_t_test(direction=Direction.Increasing, dataset=dataset,
                                     model=model,
@@ -484,7 +483,8 @@ def test_metamorphic_invariance_t_test(model: BaseModel, dataset: Dataset,
     """
     if slicing_function:
         dataset = dataset.slice(slicing_function)
-        check_slice_not_empty(sliced_dataset=dataset, dataset_name="dataset", test_name="test_metamorphic_invariance_t_test")
+        check_slice_not_empty(sliced_dataset=dataset, dataset_name="dataset",
+                              test_name="test_metamorphic_invariance_t_test")
 
     return _test_metamorphic_t_test(direction=Direction.Invariant, dataset=dataset, model=model,
                                     transformation_function=transformation_function, window_size=window_size,
@@ -494,8 +494,6 @@ def test_metamorphic_invariance_t_test(model: BaseModel, dataset: Dataset,
 def _test_metamorphic_wilcoxon(direction: Direction, model, dataset: Dataset,
                                transformation_function: TransformationFunction, window_size: float,
                                critical_quantile: float, classification_label=None, output_proba=True) -> TestResult:
-    dataset.df.reset_index(drop=True, inplace=True)
-
     result_df, modified_rows_count = _perturb_and_predict(model, dataset, transformation_function,
                                                           output_proba=output_proba,
                                                           classification_label=classification_label)
@@ -553,7 +551,8 @@ def test_metamorphic_decreasing_wilcoxon(model: BaseModel, dataset: Dataset,
     """
     if slicing_function:
         dataset = dataset.slice(slicing_function)
-        check_slice_not_empty(sliced_dataset=dataset, dataset_name="dataset", test_name="test_metamorphic_decreasing_wilcoxon")
+        check_slice_not_empty(sliced_dataset=dataset, dataset_name="dataset",
+                              test_name="test_metamorphic_decreasing_wilcoxon")
 
     return _test_metamorphic_wilcoxon(
         direction=Direction.Decreasing,
@@ -607,7 +606,8 @@ def test_metamorphic_increasing_wilcoxon(model: BaseModel, dataset: Dataset,
     """
     if slicing_function:
         dataset = dataset.slice(slicing_function)
-        check_slice_not_empty(sliced_dataset=dataset, dataset_name="dataset", test_name="test_metamorphic_increasing_wilcoxon")
+        check_slice_not_empty(sliced_dataset=dataset, dataset_name="dataset",
+                              test_name="test_metamorphic_increasing_wilcoxon")
 
     return _test_metamorphic_wilcoxon(
         direction=Direction.Increasing,
@@ -665,7 +665,8 @@ def test_metamorphic_invariance_wilcoxon(model: BaseModel, dataset: Dataset,
     """
     if slicing_function:
         dataset = dataset.slice(slicing_function)
-        check_slice_not_empty(sliced_dataset=dataset, dataset_name="dataset", test_name="test_metamorphic_invariance_wilcoxon")
+        check_slice_not_empty(sliced_dataset=dataset, dataset_name="dataset",
+                              test_name="test_metamorphic_invariance_wilcoxon")
 
     return _test_metamorphic_wilcoxon(
         direction=Direction.Invariant,

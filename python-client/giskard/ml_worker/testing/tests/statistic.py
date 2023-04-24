@@ -49,7 +49,6 @@ def test_right_label(model: BaseModel, dataset: Dataset, classification_label: s
         dataset = dataset.slice(slicing_function)
         check_slice_not_empty(sliced_dataset=dataset, dataset_name="dataset", test_name="test_right_label")
 
-    dataset.df.reset_index(drop=True, inplace=True)
     prediction_results = model.predict(dataset).prediction
 
     passed_idx = dataset.df.loc[prediction_results == classification_label].index.values
@@ -114,7 +113,6 @@ def test_output_in_range(model: BaseModel, dataset: Dataset, slicing_function: S
         check_slice_not_empty(sliced_dataset=dataset, dataset_name="dataset", test_name="test_output_in_range")
 
     results_df = pd.DataFrame()
-    dataset.df.reset_index(drop=True, inplace=True)
 
     prediction_results = model.predict(dataset)
 
@@ -198,7 +196,6 @@ def test_disparate_impact(model: BaseModel, dataset: Dataset, protected_slicing_
             f"The positive outcome chosen {positive_outcome} is not part of the dataset target values {list(model.meta.classification_labels)}."
         )
 
-    dataset.df.reset_index(drop=True, inplace=True)
     protected_ds = dataset.slice(protected_slicing_function)
     unprotected_ds = dataset.slice(unprotected_slicing_function)
 
