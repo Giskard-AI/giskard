@@ -79,7 +79,7 @@ def test_transformation_without_annotation(german_credit_data: Dataset):
     assert np.all(ds.df.credit_amount == -2)
     assert len(german_credit_data.df) == 1000
     assert len(german_credit_data.df.credit_amount.unique()) > 1
-    
+
 
 def test_missing_arg_slicing_function():
     with pytest.raises(TypeError,
