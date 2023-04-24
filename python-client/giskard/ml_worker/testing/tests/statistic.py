@@ -8,17 +8,13 @@ from giskard.ml_worker.core.test_result import TestResult, TestMessage, TestMess
 from giskard.ml_worker.testing.utils import validate_classification_label
 from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction
 from giskard.models.base import BaseModel
+from ..utils import check_slice_not_empty
 
 
 @test(name="Right Label", tags=["heuristic", "classification"])
 @validate_classification_label
-def test_right_label(
-        dataset: Dataset,
-        model: BaseModel,
-        classification_label: str,
-        slicing_function: SlicingFunction = None,
-        threshold: float = 0.5,
-) -> TestResult:
+def test_right_label(model: BaseModel, dataset: Dataset, classification_label: str,
+                     slicing_function: SlicingFunction = None, threshold: float = 0.5) -> TestResult:
     """
     Summary: Test if the model returns the right classification label for a slice
 
@@ -30,10 +26,10 @@ def test_right_label(
 
 
     Args:
-       dataset(Dataset):
-          Dataset used to compute the test
       model(BaseModel):
           Model used to compute the test
+      dataset(Dataset):
+          Dataset used to compute the test
       classification_label(str):
           Classification label you want to test
       slicing_function(SlicingFunction):
@@ -49,7 +45,10 @@ def test_right_label(
       passed:
           TRUE if passed_ratio > threshold
     """
-    dataset = dataset.slice(slicing_function)
+    if slicing_function:
+        dataset = dataset.slice(slicing_function)
+        check_slice_not_empty(sliced_dataset=dataset, dataset_name="dataset", test_name="test_right_label")
+
     prediction_results = model.predict(dataset).prediction
 
     passed_idx = dataset.df.loc[prediction_results == classification_label].index.values
@@ -64,15 +63,9 @@ def test_right_label(
 
 @test(name="Output in range", tags=["heuristic", "classification", "regression"])
 @validate_classification_label
-def test_output_in_range(
-    dataset: Dataset,
-    model: BaseModel,
-    slicing_function: SlicingFunction = None,
-    classification_label: str = None,
-    min_range: float = 0.3,
-    max_range: float = 0.7,
-    threshold: float = 0.5,
-) -> TestResult:
+def test_output_in_range(model: BaseModel, dataset: Dataset, slicing_function: SlicingFunction = None,
+                         classification_label: str = None, min_range: float = 0.3, max_range: float = 0.7,
+                         threshold: float = 0.5) -> TestResult:
     """
     Summary: Test if the model output belongs to the right range for a slice
 
@@ -92,12 +85,12 @@ def test_output_in_range(
 
 
     Args:
-       dataset(Dataset):
-          Dataset used to compute the test
         model(BaseModel):
             Model used to compute the test
-      slicing_function(SlicingFunction):
-          Slicing function to be applied on the dataset
+        dataset(Dataset):
+            Dataset used to compute the test
+        slicing_function(SlicingFunction):
+            Slicing function to be applied on the dataset
         classification_label(str):
             Optional. Classification label you want to test
         min_range(float):
@@ -115,7 +108,10 @@ def test_output_in_range(
         passed:
             TRUE if metric > threshold
     """
-    dataset = dataset.slice(slicing_function)
+    if slicing_function:
+        dataset = dataset.slice(slicing_function)
+        check_slice_not_empty(sliced_dataset=dataset, dataset_name="dataset", test_name="test_output_in_range")
+
     results_df = pd.DataFrame()
 
     prediction_results = model.predict(dataset)
@@ -143,16 +139,9 @@ def test_output_in_range(
 
 
 # TODO: support type in the future
-def test_disparate_impact(
-        dataset: Dataset,
-        protected_slicing_function: SlicingFunction,
-        unprotected_slicing_function: SlicingFunction,
-        model: BaseModel,
-        positive_outcome,
-        slicing_function: SlicingFunction = None,
-        min_threshold=0.8,
-        max_threshold=1.25,
-) -> TestResult:
+def test_disparate_impact(model: BaseModel, dataset: Dataset, protected_slicing_function: SlicingFunction,
+                          unprotected_slicing_function: SlicingFunction, positive_outcome,
+                          slicing_function: SlicingFunction = None, min_threshold=0.8, max_threshold=1.25) -> TestResult:
     """
     Summary: Tests if the model is biased more towards an unprotected slice of the dataset over a protected slice.
     Note that this test reflects only a possible bias in the model while being agnostic to any bias in the dataset
@@ -175,14 +164,14 @@ def test_disparate_impact(
     women.
 
     Args:
+          model(BaseModel):
+              Model used to compute the test
           dataset(Dataset):
               Dataset used to compute the test
           protected_slicing_function:
               Slicing function that defines the protected group from the full dataset given
           unprotected_slicing_function:
               Slicing function that defines the unprotected group from the full dataset given
-          model(BaseModel):
-              Model used to compute the test
           positive_outcome(str or float):
               The target value that is considered a positive outcome in the dataset
           slicing_function(SlicingFunction):
@@ -198,7 +187,10 @@ def test_disparate_impact(
           passed:
               TRUE if the disparate impact ratio > min_threshold && disparate impact ratio < max_threshold
     """
-    dataset = dataset.slice(slicing_function)
+    if slicing_function:
+        dataset = dataset.slice(slicing_function)
+        check_slice_not_empty(sliced_dataset=dataset, dataset_name="dataset", test_name="test_disparate_impact")
+
     if positive_outcome not in list(model.meta.classification_labels):
         raise ValueError(
             f"The positive outcome chosen {positive_outcome} is not part of the dataset target values {list(model.meta.classification_labels)}."
