@@ -51,7 +51,7 @@ def linear_regression_diabetes(linear_regression_diabetes_raw) -> SKLearnModel:
 @pytest.fixture()
 def diabetes_dataset():
     diabetes = datasets.load_diabetes()
-    return Dataset(df=datasets.load_diabetes(as_frame=True)["data"], target="target",
+    return Dataset(df=datasets.load_diabetes(as_frame=True)["data"],
                    column_types={feature: "numeric" for feature in diabetes["feature_names"]})
 
 
