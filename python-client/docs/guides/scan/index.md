@@ -100,19 +100,14 @@ my_column_types = {"categorical_column": "category",
                    "numeric_column": "numeric"}
 
 # option 2 (preferable)                
-#my_cat_columns = ["categorical_column"]
+# my_cat_columns = ["categorical_column"]
 
 # option 3 (not very accurate)
-#INFER_CAT_COLUMNS = True
+# INFER_CAT_COLUMNS = True
 
 from giskard import wrap_dataset
 
-wrapped_dataset = wrap_dataset(some_df,
-                               target="numeric_column",
-                               column_types=my_column_types,            # option 1
-                               # cat_columns=my_cat_columns,            # option 2
-                               # infer_column_types = INFER_CAT_COLUMNS # option 3
-                               )
+wrapped_dataset = wrap_dataset(some_df, target="numeric_column", column_types=my_column_types)
 ```
 
 ```{eval-rst}
