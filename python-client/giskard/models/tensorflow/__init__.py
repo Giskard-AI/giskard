@@ -14,15 +14,15 @@ logger = logging.getLogger(__name__)
 class TensorFlowModel(MLFlowBasedModel):
     @configured_validate_arguments
     def __init__(self,
-                 clf,
+                 model,
                  model_type: ModelType,
                  name: Optional[str] = None,
                  data_preprocessing_function: Callable[[pd.DataFrame], Any] = None,
                  model_postprocessing_function: Callable[[Any], Any] = None,
                  feature_names: Optional[Iterable] = None,
-                 classification_threshold: float = 0.5,
+                 classification_threshold: Optional[float] = 0.5,
                  classification_labels: Optional[Iterable] = None):
-        super().__init__(clf=clf,
+        super().__init__(model=model,
                          model_type=model_type,
                          name=name,
                          data_preprocessing_function=data_preprocessing_function,
@@ -32,13 +32,13 @@ class TensorFlowModel(MLFlowBasedModel):
                          classification_labels=classification_labels)
 
     @classmethod
-    def load_clf(cls, local_path):
+    def load_model(cls, local_path):
         return mlflow.tensorflow.load_model(local_path)
 
     def save_with_mlflow(self, local_path, mlflow_meta: mlflow.models.Model):
-        mlflow.tensorflow.save_model(self.clf,
+        mlflow.tensorflow.save_model(self.model,
                                      path=local_path,
                                      mlflow_model=mlflow_meta)
 
-    def clf_predict(self, data):
-        return self.clf.predict(data)
+    def model_predict(self, data):
+        return self.model.predict(data)
