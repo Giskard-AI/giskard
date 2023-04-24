@@ -9,7 +9,7 @@ from pandas.core.dtypes.common import is_string_dtype
 from giskard.client.python_utils import warning
 from giskard.core.core import ModelMeta, ModelType
 from giskard.core.core import SupportedModelTypes
-from giskard.core.validation import validate_is_pandasdataframe, validate_target, configured_validate_arguments
+from giskard.core.validation import validate_is_pandasdataframe, configured_validate_arguments
 from giskard.datasets.base import Dataset
 from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction
 from giskard.models.base import BaseModel, WrapperModel
@@ -43,7 +43,6 @@ def validate_model(model: BaseModel, validate_ds: Optional[Dataset] = None):
         if model.is_regression:
             validate_model_execution(model, validate_ds)
         elif model.is_classification and validate_ds.target is not None:
-            validate_target(validate_ds.target, validate_ds.df.keys())
             target_values = validate_ds.df[validate_ds.target].unique()
             validate_label_with_target(model.meta.name, model.meta.classification_labels, target_values,
                                        validate_ds.target)
