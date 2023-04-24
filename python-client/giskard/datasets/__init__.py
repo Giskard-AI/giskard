@@ -53,9 +53,4 @@ def wrap_dataset(dataset: pd.DataFrame,
     """
 
     print("Your 'pandas.DataFrame' dataset is successfully wrapped by Giskard's 'Dataset' wrapper class.")
-    return Dataset(dataset,
-                   name,
-                   target,
-                   cat_columns,
-                   infer_column_types,
-                   column_types)
+    return Dataset(dataset, name, target, cat_columns, column_types)

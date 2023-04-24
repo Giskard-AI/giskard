@@ -2,19 +2,16 @@ from pandas.core.dtypes.common import is_string_dtype, is_numeric_dtype
 import pandas as pd
 from giskard.client.python_utils import warning
 from giskard.core.core import SupportedColumnTypes
-from giskard.core.validation import validate_is_pandasdataframe, validate_target
-from giskard.datasets.base import Dataset, Nuniques
+from giskard.datasets.base import Dataset
 
 
-def validate_dataset(dataset: Dataset):
-    df = dataset.df
-    validate_is_pandasdataframe(df)
-    if dataset.target is not None:
-        validate_target(dataset.target, df.keys())
-
-    validate_column_types(dataset)
-    validate_column_categorization(dataset)
-    validate_numeric_columns(dataset)
+def validate_target(ds: Dataset):
+    if ds.target is not None:
+        if ds.target not in ds.df.keys():
+            raise ValueError(
+                f"Invalid target parameter:"
+                f" {ds.target} column is not present in the dataset with columns: {ds.df.keys()}"
+            )
 
 
 def validate_column_types(ds: Dataset):
@@ -73,38 +70,45 @@ def validate_column_categorization(ds: Dataset):
     for column in ds.df.columns:
         if column == ds.target:
             continue
-        if nuniques[column] <= Nuniques.CATEGORY.value and (
+        # if a user provided possibly wrong information in column_types or cat_columns about cat columns
+        if nuniques[column] <= ds.category_threshold and (
                 ds.column_types[column] == SupportedColumnTypes.NUMERIC.value
                 or ds.column_types[column] == SupportedColumnTypes.TEXT.value
         ):
             warning(
                 f"Feature '{column}' is declared as '{ds.column_types[column]}' but has {nuniques[column]} "
-                f"(<= Nuniques.CATEGORY.value={Nuniques.CATEGORY.value}) distinct values. Are "
+                f"(<= category_threshold={ds.category_threshold}) distinct values. Are "
                 f"you sure it is not a 'category' feature?"
             )
+        # if a user provided possibly wrong information in column_types or cat_columns about cat columns
+        elif nuniques[column] > ds.category_threshold and \
+                ds.column_types[column] == SupportedColumnTypes.CATEGORY.value:
+            warning(
+                f"Feature '{column}' is declared as '{ds.column_types[column]}' but has {nuniques[column]} "
+                f"(> category_threshold={ds.category_threshold}) distinct values. Are "
+                f"you sure it is a 'category' feature?"
+            )
+        # if a user provided possibly wrong information in column_types about text columns
         elif (
-                nuniques[column] > Nuniques.TEXT.value
-                and is_string_dtype(ds.df[column])
+                is_string_dtype(ds.df[column])
                 and (
                         ds.column_types[column] == SupportedColumnTypes.CATEGORY.value
                         or ds.column_types[column] == SupportedColumnTypes.NUMERIC.value
                 )
         ):
             warning(
-                f"Feature '{column}' is declared as '{ds.column_types[column]}' but has {nuniques[column]} "
-                f"(> Nuniques.TEXT.value={Nuniques.TEXT.value}) distinct values. Are "
+                f"Feature '{column}' is declared as '{ds.column_types[column]}'. Are "
                 f"you sure it is not a 'text' feature?"
             )
+        # if a user provided possibly wrong information in column_types about numeric columns
         elif (
-                nuniques[column] > Nuniques.NUMERIC.value
-                and is_numeric_dtype(ds.df[column])
+                is_numeric_dtype(ds.df[column])
                 and (
                         ds.column_types[column] == SupportedColumnTypes.CATEGORY.value
                         or ds.column_types[column] == SupportedColumnTypes.TEXT.value
                 )
         ):
             warning(
-                f"Feature '{column}' is declared as '{ds.column_types[column]}' but has {nuniques[column]} "
-                f"(> Nuniques.NUMERIC.value={Nuniques.NUMERIC.value}) distinct values. Are "
+                f"Feature '{column}' is declared as '{ds.column_types[column]}'. Are "
                 f"you sure it is not a 'numeric' feature?"
             )
