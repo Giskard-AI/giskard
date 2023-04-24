@@ -1,11 +1,12 @@
 <script setup lang="ts">
+import { computed, ref, onActivated } from "vue";
+import { $vfm } from 'vue-final-modal';
 import { api } from '@/api';
 import { InspectionDTO } from "@/generated-sources";
 import AddDebuggingSessionModal from '@/components/AddDebuggingSessionModal.vue';
 import InspectorWrapper from './InspectorWrapper.vue';
 import InlineEditText from '@/components/InlineEditText.vue';
-import DeleteDebuggingSession from '@/components/DeleteDebuggingSession.vue';
-import { computed, ref, onActivated } from "vue";
+import ConfirmModal from './modals/ConfirmModal.vue';
 
 interface Props {
   projectId: number;
@@ -88,6 +89,24 @@ function orderByDate(debuggingSessions: InspectionDTO[]): InspectionDTO[] {
   });
 }
 
+function deleteDebuggingSession(debuggingSession: InspectionDTO) {
+  $vfm.show({
+    component: ConfirmModal,
+    bind: {
+      title: 'Delete debugging session',
+      text: `Are you sure that you want to delete the debugging session '${debuggingSession.name}'?`,
+      isWarning: true
+    },
+    on: {
+      async confirm(close) {
+        await api.deleteInspection(debuggingSession.id);
+        await loadDebuggingSessions();
+        close();
+      }
+    }
+  });
+}
+
 function resetSearchInput() {
   searchSession.value = "";
 }
@@ -139,7 +158,9 @@ onActivated(() => loadDebuggingSessions());
               <v-col cols="1" class="id-container" :title="session.dataset.id">{{ session.model.id }}</v-col>
               <v-col cols="1">
                 <v-card-actions>
-                  <DeleteDebuggingSession :sessionName="session.name" :sessionId="session.id" @deleteDebuggingSession="loadDebuggingSessions"></DeleteDebuggingSession>
+                  <v-btn icon @click.stop="deleteDebuggingSession(session)" @click.stop.prevent>
+                    <v-icon color="accent">delete</v-icon>
+                  </v-btn>
                 </v-card-actions>
               </v-col>
             </v-row>
