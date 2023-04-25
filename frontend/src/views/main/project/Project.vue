@@ -122,15 +122,19 @@
         </v-tab>
         <v-tab :to="{ name: 'project-models' }">
           <v-icon left>settings_suggest</v-icon>
-          Models
+            Models
         </v-tab>
-        <v-tab :to="{ name: 'project-inspector', params: tempInspectorParams }" v-if="showInspector">
-          <v-icon left>model_training</v-icon>
-            Inspector
-        </v-tab>
+          <v-tab :to="{ name: 'project-inspector', params: tempInspectorParams }" v-if="showInspector">
+              <v-icon left>model_training</v-icon>
+              Inspector
+          </v-tab>
           <v-tab :to="{name: 'project-feedbacks'}">
               <v-icon left small>mdi-comment-multiple-outline</v-icon>
               Feedback
+          </v-tab>
+          <v-tab :to="{name: 'project-debugger'}">
+              <v-icon left small>mdi-debug-step-over</v-icon>
+              Debugger
           </v-tab>
           <v-tab :to="{name: 'project-test-suites'}">
               <v-icon left small>mdi-list-status</v-icon>
@@ -150,17 +154,17 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from "vue";
-import { IUserProfileMinimal } from "@/interfaces";
-import { Role } from "@/enums";
+import {computed, onMounted, ref, watch} from "vue";
+import {IUserProfileMinimal} from "@/interfaces";
+import {Role} from "@/enums";
 import mixpanel from "mixpanel-browser";
-import { InspectionSettings, ProjectPostDTO } from "@/generated-sources";
-import { useRoute, useRouter } from "vue-router/composables";
-import { useMainStore } from "@/stores/main";
-import { useUserStore } from "@/stores/user";
-import { useProjectStore } from "@/stores/project";
-import { Route } from "vue-router";
-import { getUserFullDisplayName } from "@/utils";
+import {InspectionSettings, ProjectPostDTO} from "@/generated-sources";
+import {useRoute, useRouter} from "vue-router/composables";
+import {useMainStore} from "@/stores/main";
+import {useUserStore} from "@/stores/user";
+import {useProjectStore} from "@/stores/project";
+import {Route} from "vue-router";
+import {getUserFullDisplayName} from "@/utils";
 
 const route = useRoute();
 const router = useRouter();
