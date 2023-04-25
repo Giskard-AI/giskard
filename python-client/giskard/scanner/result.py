@@ -22,6 +22,7 @@ class ScanResult:
 
     def _repr_html_(self):
         from jinja2 import Environment, PackageLoader, select_autoescape
+        from html import escape
 
         env = Environment(
             loader=PackageLoader("giskard.scanner", "templates"),
@@ -34,7 +35,7 @@ class ScanResult:
             num_medium_issues=len([i for i in self.issues if not i.is_major]),
         )
 
-        escaped = html.replace('"', "&quot;")
+        escaped = escape(html)
 
         return f'''<iframe srcdoc="{escaped}" style="width: 100%; border: none;" class="gsk-scan"></iframe>
 <script>
