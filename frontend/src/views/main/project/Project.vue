@@ -8,7 +8,7 @@
         <span class="text-subtitle-1">
           <span class="mr-1">/</span>{{ project.name }}
         </span>
-        <v-btn icon id="no-background-hover" :to="{ name: 'project-overview' }">
+        <v-btn icon id="no-background-hover" :to="{ name: 'project-overview' }" @click="tab = null">
           <span class="group pa-2">
             <v-icon medium>info</v-icon>
           </span>
@@ -116,32 +116,32 @@
     </v-dialog>
 
     <v-container fluid id="container-project-tab" class="vertical-container overflow-hidden pb-0">
-      <v-tabs>
-        <v-tab :to=" { name: 'project-datasets' } ">
+      <v-tabs v-model=" tab " optional>
+        <v-tab :to=" { name: 'project-datasets' } " value="datasets">
           <v-icon left>stacked_bar_chart</v-icon>
           Datasets
         </v-tab>
-        <v-tab :to=" { name: 'project-models' } ">
+        <v-tab :to=" { name: 'project-models' } " value="models">
           <v-icon left>settings_suggest</v-icon>
           Models
         </v-tab>
-        <v-tab :to=" { name: 'project-inspector', params: tempInspectorParams } " v-if=" showInspector ">
+        <v-tab :to=" { name: 'project-inspector', params: tempInspectorParams } " v-if=" showInspector " value="inspector">
           <v-icon left>model_training</v-icon>
           Inspector
         </v-tab>
-        <v-tab :to=" { name: 'project-feedbacks' } ">
+        <v-tab :to=" { name: 'project-feedbacks' } " value="feedbacks">
           <v-icon left small>mdi-comment-multiple-outline</v-icon>
           Feedback
         </v-tab>
-        <v-tab :to=" { name: 'project-debugger' } ">
+        <v-tab :to=" { name: 'project-debugger' } " value="debugger">
           <v-icon left small>mdi-debug-step-over</v-icon>
           Debugger
         </v-tab>
-        <v-tab :to=" { name: 'project-test-suites' } ">
+        <v-tab :to=" { name: 'project-test-suites' } " value="test-suites">
           <v-icon left small>mdi-list-status</v-icon>
           Test suites️
         </v-tab>
-        <v-tab :to=" { name: 'project-catalog-tests' } ">
+        <v-tab :to=" { name: 'project-catalog-tests' } " value="catalog-tests">
           <v-icon left small>mdi-list-status</v-icon>
           Catalog
         </v-tab>
@@ -189,6 +189,8 @@ const newName = ref<string>("");
 const newDescription = ref<string>("");
 const showInspector = ref<boolean>(false);
 const tempInspectorParams = ref<any>({}); // Type this later?
+
+const tab = ref<string>(null);
 
 onMounted(async () => {
   // make sure project is loaded first
