@@ -1,115 +1,70 @@
 <template>
-  <div class="vertical-container">
-    <v-container fluid>
-      <v-row>
-        <v-col :align="'right'">
-          <v-btn small tile color="primary" class="mx-1" @click="createTestSuite()">
-            <v-icon left>add</v-icon>
-            create test suite
-          </v-btn>
-        </v-col>
-      </v-row>
-      <v-data-table
-          class="row-pointer"
-          :items="testSuites"
-          :headers="tableHeaders"
-          @click:row="openTestSuite"
-      >
-      </v-data-table>
+    <v-container fluid class="vc" v-if="testSuites.length > 0">
+        <div class="d-flex flex-row-reverse pb-4">
+            <v-btn color="primaryLight" class="primaryLightBtn" @click="createTestSuite">
+                <v-icon left>add</v-icon>
+                New test suite
+            </v-btn>
+        </div>
+        <v-row>
+            <v-card elevation="2" :to="{ name: 'test-suite-overview', params: { suiteId: suite.id } }" class="ma-2" style="width: 300px" v-for="suite in testSuites" :key="suite.id">
+                <v-card-title>{{ suite.name }}</v-card-title>
+                <v-card-subtitle>Tests: {{ suite.tests.length }}</v-card-subtitle>
+                <v-card-text>{{ suite.projectKey }}</v-card-text>
+            </v-card>
+        </v-row>
     </v-container>
-  </div>
+    <v-container v-else class="vc mt-6 fill-height">
+        <v-alert class="text-center">
+            <p class="headline font-weight-medium grey--text text--darken-2">You haven't created any test suite for this project. <br>Please create a new one.</p>
+        </v-alert>
+        <v-btn tile @click="createTestSuite" color="primaryLight" class="primaryLightBtn">
+            <v-icon>add</v-icon>
+            Create a new test suite
+        </v-btn>
+        <div class="d-flex justify-center mb-6">
+            <img src="@/assets/logo_test_suite.png" class="test-suite-logo" title="Test suite tab logo" alt="A turtle checking a to-do list">
+        </div>
+    </v-container>
 </template>
 
-<script lang="ts">
+<script lang="ts" setup>
 
-import {Prop, Vue} from "vue-property-decorator";
-import Component from "vue-class-component";
-import TestSuiteCreateModal from "@/views/main/project/modals/TestSuiteCreateModal.vue";
-import {api} from "@/api";
-import {DatasetDTO, ModelDTO, TestSuiteDTO} from '@/generated-sources';
+import { api } from "@/api";
+import { onMounted } from "vue";
+import router from '@/router';
+import { useTestSuitesStore } from "@/stores/test-suites";
+import { storeToRefs } from "pinia";
 
-@Component({
-  components: {TestSuiteCreateModal}
-})
-export default class TestSuites extends Vue {
-  @Prop({required: true}) projectId!: number;
+const props = defineProps<{
+    projectId: number
+}>();
 
-  testSuites: Array<TestSuiteDTO> = []
 
-  private static getProjectFileName(obj: ModelDTO | DatasetDTO): string {
-    return obj ? (obj.name || obj.id.toString()) : "";
-  }
+const testSuitesStore = useTestSuitesStore();
+const { testSuites } = storeToRefs(testSuitesStore);
 
-  get tableHeaders() {
-    return [
-      {
-        text: "Name",
-        sortable: true,
-        value: "name",
-        align: "left"
-      },
-      {
-        text: "Model",
-        sortable: true,
-        value: "model.name",
-        align: "left"
-      },
-      {
-        text: "Reference dataset",
-        sortable: true,
-        value: "referenceDataset.name",
-        align: "left"
-      },
-      {
-        text: "Actual dataset",
-        sortable: true,
-        value: "actualDataset.name",
-        align: "left"
-      },
-      {
-        text: "id",
-        sortable: false,
-        value: "id",
-        align: "left"
-      }
-    ];
-  }
+onMounted(async () => await testSuitesStore.loadTestSuites(props.projectId))
 
-  public openTestSuite(suite) {
-    this.$router.push({name: 'suite-details', params: {suiteId: suite.id}})
-  }
-
-  public async createTestSuite() {
-    const newTestSuite = await this.$dialog.showAndWait(TestSuiteCreateModal, {
-      width: 800, projectId: this.projectId, scrollable: true
+async function createTestSuite() {
+    const project = await api.getProject(props.projectId)
+    const suite = await api.createTestSuite(project.key, {
+        id: null,
+        name: 'Unnamed test suite',
+        projectKey: project.key,
+        testInputs: [],
+        tests: []
     });
-    await this.$router.push({
-      name: 'suite-details', params: {
-        projectId: this.projectId.toString(),
-        suiteId: newTestSuite.id
-      }
-    });
-  }
 
-  public async activated() {
-    await this.init();
-  }
-
-  public async mounted() {
-    await this.init();
-  }
-
-  private async init() {
-    this.testSuites = (await api.getTestSuites(this.projectId)).map((ts: TestSuiteDTO) => {
-      ts.model.name = TestSuites.getProjectFileName(ts.model);
-      if (ts.referenceDataset) {
-        ts.referenceDataset.name = TestSuites.getProjectFileName(ts.referenceDataset);
-      }
-      if (ts.actualDataset) {
-        ts.actualDataset.name = TestSuites.getProjectFileName(ts.actualDataset);
-      }
-      return ts;
-    });
-  }
+    await testSuitesStore.reload()
+    await router.push({ name: 'test-suite-overview', params: { suiteId: suite.toString() } });
 }
+
 </script>
+
+<style scoped>
+.test-suite-logo {
+    max-width: 30%;
+    margin-top: 2rem;
+}
+</style>

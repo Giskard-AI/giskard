@@ -1,9 +1,12 @@
-import type {TestInputDTO} from './test-input-dto';
+import type {FunctionInputDTO} from './function-input-dto';
+import type {TestFunctionDTO} from './test-function-dto';
 
 /**
  * Generated from ai.giskard.web.dto.SuiteTestDTO
  */
 export interface SuiteTestDTO {
-    testId: string;
-    testInputs: {[key: string]: TestInputDTO};
+    functionInputs: {[key: string]: FunctionInputDTO};
+    id?: number | null;
+    test: TestFunctionDTO;
+    testUuid: string;
 }

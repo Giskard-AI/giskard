@@ -1,101 +1,98 @@
 <template>
-  <v-container fluid v-if="testSuite" class="vertical-container">
-    <v-row>
-      <v-col>
-        <span>Test suite: </span>
-        <router-link class="text-h6 text-decoration-none" :to="{name: 'suite-details', params: {
-          suiteId: this.suiteId
-         } }">
-          {{ testSuite.name }}
-        </router-link>
-      </v-col>
-      <v-col :align="'right'" v-show="$router.currentRoute.name === 'suite-test-list'">
-        <v-btn
-            class="mx-2 mr-0"
-            dark
-            small
-            outlined
-            color="primary"
-            @click="openSettings()"
-        >
-          <v-icon>settings</v-icon>
-        </v-btn>
-        <v-btn
-            class="mx-2 mr-0"
-            dark
-            small
-            outlined
-            color="primary"
-            @click="remove()"
-        >
-          <v-icon>delete</v-icon>
-        </v-btn>
-      </v-col>
-    </v-row>
-    <router-view class="vertical-container"></router-view>
-  </v-container>
+  <div class="vc mt-2 pb-0">
+    <div class="vc">
+      <v-container class="main-container vc">
+        <v-row>
+          <v-col :align="'right'">
+            <div class="d-flex">
+              <v-btn v-if="route.name === 'test-suite-overview'" text :to="{ name: 'test-suite-executions' }" color="secondary">
+                <v-icon left>history</v-icon>
+                Past executions
+              </v-btn>
+              <v-btn v-else text :to="{ name: 'test-suite-overview' }" color="secondary">
+                <v-icon>arrow_left</v-icon>
+                Overview
+              </v-btn>
+              <div class="flex-grow-1" />
+              <v-btn tile class='mx-1' v-if="hasTest" :to="{ name: 'project-catalog-tests', query: { suiteId: suiteId } }" color="secondary">
+                <v-icon>add</v-icon>
+                Add test
+              </v-btn>
+              <v-btn tile class='mx-1' v-if="hasTest" @click='openRunTestSuite(true)' color="secondary">
+                <v-icon>compare</v-icon>
+                Compare
+              </v-btn>
+              <v-btn tile class='mx-1' v-if="hasTest" @click='() => openRunTestSuite(false)' color="primary">
+                <v-icon>arrow_right</v-icon>
+                Run test suite
+              </v-btn>
+            </div>
+          </v-col>
+        </v-row>
+        <v-row class="vc">
+          <v-col class="vc" cols="12">
+            <router-view />
+          </v-col>
+        </v-row>
+      </v-container>
+    </div>
+  </div>
 </template>
 
-<script lang="ts">
-import Vue from "vue";
-import Component from "vue-class-component";
-import {Prop} from "vue-property-decorator";
-import {api} from "@/api";
-import ModelSelector from "@/views/main/utils/ModelSelector.vue";
-import DatasetSelector from "@/views/main/utils/DatasetSelector.vue";
-import * as _ from "lodash";
-import Tests from "@/views/main/project/Tests.vue";
-import TestSuiteSettings from "@/views/main/project/modals/TestSuiteSettings.vue";
-import {TestSuiteDTO} from '@/generated-sources';
+<script lang="ts" setup>
 
+import { onActivated, watch } from "vue";
+import { useMainStore } from "@/stores/main";
+import { useTestSuiteStore } from '@/stores/test-suite';
+import { storeToRefs } from 'pinia';
+import { useRoute, useRouter } from 'vue-router/composables';
+import { $vfm } from 'vue-final-modal';
+import RunTestSuiteModal from '@/views/main/project/modals/RunTestSuiteModal.vue';
+import { useCatalogStore } from "@/stores/catalog";
 
-@Component({
-  components:
-      {
-        DatasetSelector, ModelSelector,
-        Tests, TestSuiteSettings
-      }
-})
-export default class TestSuite extends Vue {
-  @Prop({required: true}) projectId?: number;
-  @Prop({required: true}) suiteId!: number;
-  testSuite: TestSuiteDTO | null = null;
-  savedTestSuite: TestSuiteDTO | null = null;
+const props = defineProps<{
+  projectId: number,
+  suiteId: number
+}>();
 
-  async activated() {
-    await this.init();
-  }
+const mainStore = useMainStore();
+const { inputs, executions } = storeToRefs(useTestSuiteStore())
 
-  async mounted() {
-    await this.init();
-  }
+onActivated(() => loadData());
+watch(() => props.suiteId, () => loadData());
 
+const { loadTestSuites } = useTestSuiteStore();
+const { loadCatalog } = useCatalogStore();
 
-  private async init() {
-    this.savedTestSuite = await api.getTestSuite(this.suiteId);
-    this.testSuite = _.cloneDeep(this.savedTestSuite);
-  }
+const router = useRouter();
+const route = useRoute();
 
-  async remove() {
-    if (await this.$dialog.confirm({
-      text: `Would you like to delete test suite "${this.testSuite?.name}"?`,
-      title: 'Delete test suite',
-      showClose: false,
-      actions: {
-        false: 'Cancel',
-        true: 'Delete'
-      }
-    })) {
-      await api.deleteTestSuite(this.testSuite!.id);
-      await this.$router.push({name: 'project-test-suites', params: {projectId: this.projectId!.toString()}})
-    }
-  }
-
-  async openSettings() {
-    let modifiedSuite = await this.$dialog.showAndWait(TestSuiteSettings, {scrollable: true, width: 800, testSuite: this.testSuite});
-    if (modifiedSuite) {
-      this.testSuite = modifiedSuite;
-    }
-  }
+async function loadData() {
+  await loadTestSuites(props.projectId, props.suiteId);
+  await loadCatalog(props.projectId);
 }
+
+async function openRunTestSuite(compareMode: boolean) {
+  await $vfm.show({
+    component: RunTestSuiteModal,
+    bind: {
+      projectId: props.projectId,
+      suiteId: props.suiteId,
+      inputs: inputs.value,
+      compareMode,
+      previousParams: executions.value.length === 0 ? {} : executions.value[0].inputs
+    }
+  });
+}
+
+const { hasTest } = storeToRefs(useTestSuiteStore());
+
 </script>
+
+
+<style scoped lang="scss">
+.main-container {
+  width: 100%;
+  max-width: 100%;
+}
+</style>

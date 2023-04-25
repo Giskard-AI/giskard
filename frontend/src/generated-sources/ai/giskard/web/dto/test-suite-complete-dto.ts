@@ -1,8 +1,8 @@
 import type {DatasetDTO} from './ml/dataset-dto';
 import type {ModelDTO} from './ml/model-dto';
-import type {TestCatalogDTO} from './test-catalog-dto';
+import type {RequiredInputDTO} from './required-input-dto';
+import type {TestSuiteDTO} from './test-suite-dto';
 import type {TestSuiteExecutionDTO} from './ml/test-suite-execution-dto';
-import type {TestSuiteNewDTO} from './test-suite-new-dto';
 
 /**
  * Generated from ai.giskard.web.dto.TestSuiteCompleteDTO
@@ -10,8 +10,7 @@ import type {TestSuiteNewDTO} from './test-suite-new-dto';
 export interface TestSuiteCompleteDTO {
     datasets: DatasetDTO[];
     executions: TestSuiteExecutionDTO[];
-    inputs: {[key: string]: string};
+    inputs: {[key: string]: RequiredInputDTO};
     models: ModelDTO[];
-    registry: TestCatalogDTO;
-    suite: TestSuiteNewDTO;
+    suite: TestSuiteDTO;
 }

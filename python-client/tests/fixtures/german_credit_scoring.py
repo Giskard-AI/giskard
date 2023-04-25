@@ -11,7 +11,7 @@ from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
 
 from giskard.core.core import SupportedModelTypes
-from giskard.ml_worker.core.dataset import Dataset
+from giskard.datasets.base import Dataset
 from giskard.ml_worker.utils.logging import Timer
 from giskard.models.catboost import CatboostModel
 from giskard.models.sklearn import SKLearnModel
@@ -51,11 +51,7 @@ def german_credit_data() -> Dataset:
         keep_default_na=False,
         na_values=["_GSK_NA_"],
     )
-    return Dataset(
-        df=df,
-        target="default",
-        feature_types=input_types,
-    )
+    return Dataset(df=df, name='Test german credit scoring dataset', target="default", column_types=input_types)
 
 
 @pytest.fixture()
@@ -64,9 +60,9 @@ def german_credit_catboost(german_credit_data) -> SKLearnModel:
     from sklearn import model_selection
 
     timer = Timer()
-    feature_types = {i: input_types[i] for i in input_types if i != "default"}
+    column_types = {i: input_types[i] for i in input_types if i != "default"}
 
-    columns_to_encode = [key for key in feature_types.keys() if feature_types[key] == "category"]
+    columns_to_encode = [key for key in column_types.keys() if column_types[key] == "category"]
 
     credit = german_credit_data.df
 
@@ -82,7 +78,7 @@ def german_credit_catboost(german_credit_data) -> SKLearnModel:
     timer.stop(f"Trained model with score: {model_score}")
 
     return CatboostModel(
-        clf=cb,
+        model=cb,
         model_type=SupportedModelTypes.CLASSIFICATION,
         feature_names=list(input_types),
         classification_labels=cb.classes_,
@@ -92,11 +88,7 @@ def german_credit_catboost(german_credit_data) -> SKLearnModel:
 @pytest.fixture()
 def german_credit_test_data(german_credit_data):
     df = pd.DataFrame(german_credit_data.df).drop(columns=["default"])
-    return Dataset(
-        df=df,
-        feature_types=input_types,
-        target=None,
-    )
+    return Dataset(df=df, target=None, column_types=input_types)
 
 
 @pytest.fixture()
@@ -140,7 +132,7 @@ def german_credit_raw_model(german_credit_data):
 @pytest.fixture()
 def german_credit_model(german_credit_raw_model) -> SKLearnModel:
     return SKLearnModel(
-        clf=german_credit_raw_model,
+        model=german_credit_raw_model,
         model_type=SupportedModelTypes.CLASSIFICATION,
         feature_names=list(input_types),
         classification_threshold=0.5,
@@ -157,7 +149,7 @@ def german_credit_always_default_model(german_credit_data) -> SKLearnModel:
     dummy.fit(X, y)
 
     return SKLearnModel(
-        clf=dummy,
+        model=dummy,
         model_type=SupportedModelTypes.CLASSIFICATION,
         feature_names=list(input_types),
         classification_threshold=0.5,

@@ -6,15 +6,17 @@ from pydantic import BaseModel
 class TestInputDTO(BaseModel):
     name: str
     value: str
+    type: str
+    params: List['TestInputDTO'] = list()
     is_alias: bool = False
 
 
 class SuiteTestDTO(BaseModel):
-    testId: str
-    testInputs: Dict[str, TestInputDTO]
+    testUuid: str
+    functionInputs: Dict[str, TestInputDTO]
 
 
-class TestSuiteNewDTO(BaseModel):
+class TestSuiteDTO(BaseModel):
     name: Optional[str]
     project_key: str
     tests: List[SuiteTestDTO]

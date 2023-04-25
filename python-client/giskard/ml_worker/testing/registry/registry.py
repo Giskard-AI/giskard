@@ -1,38 +1,50 @@
+import hashlib
 import importlib.util
 import inspect
 import logging
 import os
-import re
+import random
 import sys
-import types
-from dataclasses import dataclass
+import uuid
 from pathlib import Path
-from typing import Optional, List, Dict
+from typing import Optional, Dict
 
+import cloudpickle
+
+from giskard.core.core import SavableMeta
+from giskard.ml_worker.testing.registry.udf_repository import udf_repo_available, udf_root
 from giskard.settings import expand_env_var, settings
 
 
-@dataclass
-class Model:
-    name: str
-
-
-@dataclass
-class Dataset:
-    name: str
+def find_plugin_location():
+    if udf_repo_available:
+        return udf_root
+    else:
+        return Path(expand_env_var(settings.home)) / "plugins"
 
 
 logger = logging.getLogger(__name__)
-plugins_root = Path(expand_env_var(settings.home)) / "plugins"
+plugins_root = find_plugin_location()
 
 
-def _get_plugin_method_full_name(func):
-    path_parts = list(Path(inspect.getfile(func)).relative_to(plugins_root).with_suffix("").parts)
-    path_parts.insert(0, "giskard_plugins")
-    if "__init__" in path_parts:
-        path_parts.remove("__init__")
-    path_parts.append(func.__name__)
-    return ".".join(path_parts)
+def generate_func_id(name) -> str:
+    rd = random.Random()
+    rd.seed(hashlib.sha512(name.encode('utf-8')).hexdigest())
+    func_id = str(uuid.UUID(int=rd.getrandbits(128), version=4))
+    return str(func_id)
+
+
+def get_object_uuid(func) -> str:
+    if hasattr(func, 'meta'):
+        return func.meta.uuid
+
+    func_name = f"{func.__module__}.{func.__name__}"
+
+    if func_name.startswith('__main__'):
+        reference = cloudpickle.dumps(func)
+        func_name += hashlib.sha512(reference).hexdigest()
+
+    return generate_func_id(func_name)
 
 
 def load_plugins():
@@ -41,6 +53,12 @@ def load_plugins():
         importlib.import_module(giskard_tests_module)
     else:
         importlib.reload(sys.modules[giskard_tests_module])
+
+    giskard_functions_module = "giskard.ml_worker.testing.functions"
+    if giskard_functions_module not in sys.modules:
+        importlib.import_module(giskard_functions_module)
+    else:
+        importlib.reload(sys.modules[giskard_functions_module])
 
     if not os.path.exists(plugins_root):
         logger.info(f"Plugins directory doesn't exist: {plugins_root}")
@@ -79,102 +97,16 @@ def import_plugin(import_path, root=None):
         print(e)
 
 
-@dataclass
-class TestFunctionArgument:
-    name: str
-    type: str
-    default: any
-    optional: bool
-
-
-@dataclass
-class TestFunction:
-    code: str
-    id: str
-    name: str
-    module: str
-    doc: str
-    module_doc: str
-    fn: types.FunctionType
-    args: Dict[str, TestFunctionArgument]
-    tags: List[str]
-
-
-def create_test_function_id(func):
-    try:
-        # is_relative_to is only available from python 3.9
-        is_relative = Path(inspect.getfile(func)).relative_to(plugins_root)
-    except ValueError:
-        is_relative = False
-    if is_relative:
-        full_name = _get_plugin_method_full_name(func)
-    else:
-        full_name = f"{func.__module__}.{func.__name__}"
-    return full_name
-
-
 class GiskardTestRegistry:
-    _tests: Dict[str, TestFunction] = {}
+    _tests: Dict[str, SavableMeta] = {}
 
-    def register(self, func: types.FunctionType, name=None, tags=None):
-        full_name = create_test_function_id(func)
+    def register(self, meta: SavableMeta):
+        if meta.uuid not in self._tests:
+            self.add_func(meta)
+            logger.info(f"Registered test function: {meta.uuid}")
 
-        if full_name not in self._tests:
-            parameters = inspect.signature(func).parameters
-            args_without_type = [p for p in parameters if parameters[p].annotation == inspect.Parameter.empty]
-
-            if len(args_without_type):
-                logger.warning(
-                    f'Test function definition "{func.__module__}.{func.__name__}" is missing argument type: {", ".join(args_without_type)}'
-                )
-                return
-            func.__module__.rpartition(".")
-            func_doc = self._extract_doc(func)
-
-            tags = [] if not tags else tags
-            if full_name.partition(".")[0] == "giskard":
-                tags.append("giskard")
-            else:
-                tags.append("custom")
-
-            code = None
-            try:
-                code = inspect.getsource(func)
-            except Exception as e:
-                logger.info(f"Failed to extract test function code {full_name}", e)
-
-            self._tests[full_name] = TestFunction(
-                id=full_name,
-                code=code,
-                name=name or func.__name__,
-                tags=tags,
-                module=func.__module__,
-                doc=func_doc,
-                module_doc=inspect.getmodule(func).__doc__.strip() if inspect.getmodule(func).__doc__ else None,
-                fn=func,
-                args={
-                    name: TestFunctionArgument(
-                        name=name,
-                        type=parameters[name].annotation.__qualname__,
-                        optional=parameters[name].default != inspect.Parameter.empty
-                        and parameters[name].default is not None,
-                        default=None
-                        if parameters[name].default == inspect.Parameter.empty
-                        else parameters[name].default,
-                    )
-                    for name in parameters
-                },
-            )
-            logger.info(f"Registered test function: {full_name}")
-
-    @staticmethod
-    def _extract_doc(func):
-        if func.__doc__:
-            func_doc, _, args_doc = func.__doc__.partition("\n\n\n")
-            func_doc = re.sub(r"\n[ \t\n]+", r"\n", func_doc.strip())
-        else:
-            func_doc = None
-        return func_doc
+    def add_func(self, meta: SavableMeta):
+        self._tests[meta.uuid] = meta
 
     def get_all(self):
         return self._tests
@@ -182,5 +114,26 @@ class GiskardTestRegistry:
     def get_test(self, test_id):
         return self._tests.get(test_id)
 
+
+def new_getfile(object, _old_getfile=inspect.getfile):
+    if not inspect.isclass(object):
+        return _old_getfile(object)
+
+    # Lookup by parent module (as in current inspect)
+    if hasattr(object, '__module__'):
+        object_ = sys.modules.get(object.__module__)
+        if hasattr(object_, '__file__'):
+            return object_.__file__
+
+    # If parent module is __main__, lookup by methods (NEW)
+    for name, member in inspect.getmembers(object):
+        if inspect.isfunction(member) and object.__qualname__ + '.' + member.__name__ == member.__qualname__:
+            return inspect.getfile(member)
+
+    raise TypeError('Source for {!r} not found'.format(object))
+
+
+# Override getfile to have it working over Jupyter Notebook files
+inspect.getfile = new_getfile
 
 tests_registry = GiskardTestRegistry()

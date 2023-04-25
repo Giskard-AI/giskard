@@ -1,22 +1,16 @@
-import {
-    DatasetDTO,
-    JobDTO,
-    ModelDTO,
-    TestCatalogDTO,
-    TestSuiteExecutionDTO,
-    TestSuiteNewDTO
-} from '@/generated-sources';
+import {DatasetDTO, JobDTO, ModelDTO, RequiredInputDTO, TestSuiteDTO, TestSuiteExecutionDTO} from '@/generated-sources';
 import {defineStore} from 'pinia';
 import {api} from '@/api';
 import {chain} from 'lodash';
 import {trackJob} from '@/utils/job-utils';
 import {useMainStore} from '@/stores/main';
+import mixpanel from 'mixpanel-browser';
+import {useTestSuiteCompareStore} from '@/stores/test-suite-compare';
 
 interface State {
     projectId: number | null,
-    inputs: { [name: string]: string },
-    suite: TestSuiteNewDTO | null,
-    registry: TestCatalogDTO | null,
+    inputs: { [name: string]: RequiredInputDTO },
+    suite: TestSuiteDTO | null,
     datasets: { [key: string]: DatasetDTO },
     models: { [key: string]: ModelDTO },
     executions: TestSuiteExecutionDTO[],
@@ -24,13 +18,13 @@ interface State {
 }
 
 const mainStore = useMainStore();
+const testSuiteCompareStore = useTestSuiteCompareStore();
 
 export const useTestSuiteStore = defineStore('testSuite', {
     state: (): State => ({
         projectId: null,
         inputs: {},
         suite: null,
-        registry: null,
         datasets: {},
         models: {},
         executions: [],
@@ -51,26 +45,35 @@ export const useTestSuiteStore = defineStore('testSuite', {
                     })
                 ))
                 .flatten()
-                .groupBy(result => result.testResult.test.testId)
+                .groupBy(result => result.testResult.test.testUuid)
                 .value();
-        }
+        },
+        hasTest: ({suite}) => suite && Object.keys(suite.tests).length > 0
     },
     actions: {
         async reload() {
             if (this.suiteId !== null && this.projectId !== null) {
-                await this.loadTestSuite(this.projectId, this.suiteId!)
+                await this.loadTestSuites(this.projectId, this.suiteId!);
+                testSuiteCompareStore.reset()
             }
         },
-        async loadTestSuite(projectId: number, suiteId: number) {
+        async loadTestSuites(projectId: number, suiteId: number) {
             const completeSuite = await api.getTestSuiteComplete(projectId, suiteId);
 
             this.projectId = projectId;
             this.inputs = completeSuite.inputs;
             this.suite = completeSuite.suite;
-            this.registry = completeSuite.registry;
             this.datasets = Object.fromEntries(completeSuite.datasets.map(x => [x.id, x]));
             this.models = Object.fromEntries(completeSuite.models.map(x => [x.id, x]));
             this.executions = completeSuite.executions;
+            testSuiteCompareStore.reset()
+        },
+        async updateTestSuite(projectKey: string, testSuite: TestSuiteDTO) {
+            mixpanel.track('Update test suite v2', {
+                projectKey
+            });
+
+            this.suite = await api.updateTestSuite(projectKey, testSuite);
         },
         async trackJob(uuid: string) {
             console.log(uuid);

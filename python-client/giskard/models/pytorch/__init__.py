@@ -1,44 +1,35 @@
-from typing import Union
-from pathlib import Path
-import mlflow
-import yaml
-import pandas as pd
-import numpy as np
-import torch
 import collections
+import importlib
+from pathlib import Path
+from typing import Union, Literal, get_args, Optional
+
+import mlflow
+import numpy as np
+import pandas as pd
+import torch
+import yaml
 from torch.utils.data import DataLoader
 from torch.utils.data import Dataset as torch_dataset
 
-from giskard.core.core import SupportedModelTypes
-from giskard.core.model import MLFlowBasedModel
-
+from giskard.core.core import ModelType
+from giskard.models.base import MLFlowBasedModel
 from ..utils import map_to_tuples
 
-# There's no casting currently from str to torch.dtype
-str_to_torch_dtype = {
-    "torch.float32": torch.float32,
-    "torch.float": torch.float,
-    "torch.float64": torch.float64,
-    "torch.double": torch.double,
-    "torch.complex64": torch.complex64,
-    "torch.cfloat": torch.cfloat,
-    "torch.float16": torch.float16,
-    "torch.half": torch.half,
-    "torch.bfloat16": torch.bfloat16,
-    "torch.uint8": torch.uint8,
-    "torch.int8": torch.int8,
-    "torch.int16": torch.int16,
-    "torch.short": torch.short,
-    "torch.int32": torch.int32,
-    "torch.int": torch.int,
-    "torch.int64": torch.int64,
-    "torch.long": torch.long,
-    "torch.bool": torch.bool,
-}
+TorchDType = Literal[
+    "float32", "float", "float64", "double", "complex64", "cfloat", "float16",
+    "half", "bfloat16", "uint8", "int8", "int16", "short", "int32", "int", "int64", "long", "bool"]
+
+
+def string_to_torch_dtype(torch_dtype_string: TorchDType):
+    try:
+        return getattr(importlib.import_module("torch"), torch_dtype_string)
+    except AttributeError:
+        raise ValueError(f"Incorrect torch dtype specified: {torch_dtype_string}, "
+                         f"available values are: {get_args(TorchDType)}")
 
 
 class TorchMinimalDataset(torch_dataset):
-    def __init__(self, df: pd.DataFrame, torch_dtype=torch.float32):
+    def __init__(self, df: pd.DataFrame, torch_dtype: TorchDType = "float32"):
         self.entries = df
         self.torch_dtype = torch_dtype
 
@@ -46,26 +37,36 @@ class TorchMinimalDataset(torch_dataset):
         return len(self.entries)
 
     def __getitem__(self, idx):
-        return torch.tensor(self.entries.iloc[idx].to_numpy(), dtype=self.torch_dtype)
+        return torch.tensor(self.entries.iloc[idx].to_numpy(), dtype=string_to_torch_dtype(self.torch_dtype))
 
 
 class PyTorchModel(MLFlowBasedModel):
+    """
+    A wrapper class for PyTorch models that extends the functionality of the
+    MLFlowBasedModel class.
+
+    Attributes:
+        iterate_dataset (bool, optional): Whether to iterate over the dataset for prediction. Defaults to True.
+        device (str): The device to run the model on.
+        torch_dtype (TorchDType): The data type to be used for input tensors.
+    """
+
     def __init__(
-        self,
-        clf,
-        model_type: Union[SupportedModelTypes, str],
-        torch_dtype=torch.float32,
-        device="cpu",
-        name: str = None,
-        data_preprocessing_function=None,
-        model_postprocessing_function=None,
-        feature_names=None,
-        classification_threshold=0.5,
-        classification_labels=None,
-        iterate_dataset=True,
+            self,
+            model,
+            model_type: ModelType,
+            torch_dtype: TorchDType = "float32",
+            device="cpu",
+            name: Optional[str] = None,
+            data_preprocessing_function=None,
+            model_postprocessing_function=None,
+            feature_names=None,
+            classification_threshold=0.5,
+            classification_labels=None,
+            iterate_dataset=True,
     ) -> None:
         super().__init__(
-            clf=clf,
+            model=model,
             model_type=model_type,
             name=name,
             data_preprocessing_function=data_preprocessing_function,
@@ -76,20 +77,20 @@ class PyTorchModel(MLFlowBasedModel):
         )
 
         self.device = device
-        self.torch_dtype = str(torch_dtype)
+        self.torch_dtype = torch_dtype
         self.iterate_dataset = iterate_dataset
 
     @classmethod
-    def load_clf(cls, local_dir):
+    def load_model(cls, local_dir):
         return mlflow.pytorch.load_model(local_dir)
 
     def save_with_mlflow(self, local_path, mlflow_meta: mlflow.models.Model):
-        mlflow.pytorch.save_model(self.clf, path=local_path, mlflow_model=mlflow_meta)
+        mlflow.pytorch.save_model(self.model, path=local_path, mlflow_model=mlflow_meta)
 
     def _get_predictions_from_iterable(self, data):
         # Fault tolerance: try to convert to the right format in special cases
         if isinstance(data, pd.DataFrame):
-            data = TorchMinimalDataset(data, str_to_torch_dtype[self.torch_dtype])
+            data = TorchMinimalDataset(data, self.torch_dtype)
         elif isinstance(data, DataLoader):
             data = _get_dataset_from_dataloader(data)
 
@@ -98,14 +99,14 @@ class PyTorchModel(MLFlowBasedModel):
             data_iter = iter(data)
         except TypeError as err:
             raise ValueError(
-                f"The data exposed to your clf must be iterable (instead, we got type={type(data)}). "
+                f"The data exposed to your model must be iterable (instead, we got type={type(data)}). "
                 "Make sure that your data or your `data_preprocessing_function` outputs one of the following:\n"
-                "- pandas.DataFrame\n- torch.utils.data.Dataset\n- iterable with elements that are compatible with your clf"
+                "- pandas.DataFrame\n- torch.utils.data.Dataset\n- iterable with elements that are compatible with your model"
             ) from err
 
         try:
             with torch.no_grad():
-                return torch.cat([self.clf(*entry) for entry in map_to_tuples(data_iter)])
+                return torch.cat([self.model(*entry) for entry in map_to_tuples(data_iter)])
         except ValueError as err:
             raise ValueError(
                 "Running your model prediction on one element of your dataset returned an error.\n"
@@ -115,7 +116,7 @@ class PyTorchModel(MLFlowBasedModel):
 
     def _get_predictions_from_object(self, data):
         try:
-            return self.clf(data)
+            return self.model(data)
         except ValueError as err:
             raise ValueError(
                 "Running your model prediction returned an error.\n"
@@ -123,9 +124,9 @@ class PyTorchModel(MLFlowBasedModel):
                 "returns an object that can be passed as input for your model. "
             ) from err
 
-    def clf_predict(self, data):
-        self.clf.to(self.device)
-        self.clf.eval()
+    def model_predict(self, data):
+        self.model.to(self.device)
+        self.model.eval()
 
         if self.iterate_dataset:
             predictions = self._get_predictions_from_iterable(data)
@@ -164,7 +165,7 @@ class PyTorchModel(MLFlowBasedModel):
                 pytorch_meta = yaml.load(f, Loader=yaml.Loader)
                 kwargs["device"] = pytorch_meta["device"]
                 kwargs["torch_dtype"] = pytorch_meta["torch_dtype"]
-                kwargs["iterate_dataset"] = pytorch_meta["iterate_dataset"]
+                kwargs["iterate_dataset"] = pytorch_meta.get("iterate_dataset")
                 return super().load(local_dir, **kwargs)
         else:
             raise ValueError(

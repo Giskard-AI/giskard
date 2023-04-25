@@ -1,11 +1,13 @@
 import asyncio
 import logging
+import math
 import os
 import platform
-import re
 import sys
+import tempfile
 import time
 from io import StringIO
+from pathlib import Path
 
 import google
 import grpc
@@ -14,26 +16,27 @@ import pandas as pd
 import pkg_resources
 import psutil
 import tqdm
-from google.protobuf.wrappers_pb2 import Int32Value, DoubleValue
 
 import giskard
 from giskard.client.giskard_client import GiskardClient
-from giskard.core.model import Model
-from giskard.ml_worker.core.dataset import Dataset
+from giskard.datasets.base import Dataset
+from giskard.ml_worker.core.log_listener import LogListener
 from giskard.ml_worker.core.model_explanation import (
     explain,
     explain_text,
 )
-from giskard.ml_worker.core.suite import Suite
+from giskard.ml_worker.core.suite import Suite, ModelInput, DatasetInput, SuiteInput
 from giskard.ml_worker.core.test_result import TestResult, TestMessageLevel
-from giskard.ml_worker.core.test_runner import run_test
 from giskard.ml_worker.exceptions.IllegalArgumentError import IllegalArgumentError
 from giskard.ml_worker.exceptions.giskard_exception import GiskardException
 from giskard.ml_worker.generated import ml_worker_pb2
 from giskard.ml_worker.generated.ml_worker_pb2_grpc import MLWorkerServicer
 from giskard.ml_worker.ml_worker import MLWorker
+from giskard.ml_worker.testing.registry.giskard_test import GiskardTest
 from giskard.ml_worker.testing.registry.registry import tests_registry
-from giskard.ml_worker.utils.logging import Timer
+from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction
+from giskard.ml_worker.testing.registry.transformation_function import TransformationFunction
+from giskard.models.base import BaseModel
 from giskard.path_utils import model_path, dataset_path
 
 logger = logging.getLogger(__name__)
@@ -47,6 +50,33 @@ def file_already_exists(meta: ml_worker_pb2.FileUploadMetadata):
     else:
         raise ValueError(f"Illegal file type: {meta.file_type}")
     return path.exists(), path
+
+
+def map_function_meta(callable_type):
+    return {
+        test.uuid: ml_worker_pb2.FunctionMeta(
+            uuid=test.uuid,
+            name=test.name,
+            module=test.module,
+            doc=test.doc,
+            code=test.code,
+            moduleDoc=test.module_doc,
+            tags=test.tags,
+            type=test.type,
+            args=[
+                ml_worker_pb2.TestFunctionArgument(
+                    name=a.name,
+                    type=a.type,
+                    optional=a.optional,
+                    default=str(a.default),
+                    argOrder=a.argOrder
+                ) for a
+                in test.args.values()
+            ],
+        )
+        for test in tests_registry.get_all().values()
+        if test.type == callable_type
+    }
 
 
 class MLWorkerServiceImpl(MLWorkerServicer):
@@ -130,56 +160,121 @@ class MLWorkerServiceImpl(MLWorkerServicer):
             self, request: ml_worker_pb2.RunAdHocTestRequest, context: grpc.ServicerContext
     ) -> ml_worker_pb2.TestResultMessage:
 
-        test = tests_registry.get_test(request.testId)
+        test: GiskardTest = GiskardTest.load(request.testUuid, self.client, None)
 
-        arguments = self.parse_test_arguments(request.arguments)
+        arguments = self.parse_function_arguments(request.arguments)
 
-        logger.info(f"Executing {test.name}")
-        test_result = run_test(test.fn, arguments)
+        logger.info(f"Executing {test.meta.display_name or f'{test.meta.module}.{test.meta.name}'}")
+        test_result = test.get_builder()(**arguments).execute()
 
-        return ml_worker_pb2.TestResultMessage(
-            results=[
-                ml_worker_pb2.NamedSingleTestResult(name=test.id, result=map_result_to_single_test_result(test_result))
+        return ml_worker_pb2.TestResultMessage(results=[
+            ml_worker_pb2.NamedSingleTestResult(testUuid=test.meta.uuid,
+                                                result=map_result_to_single_test_result(test_result))
+        ])
+
+    def runAdHocSlicing(
+            self, request: ml_worker_pb2.RunAdHocTestRequest, context: grpc.ServicerContext
+    ) -> ml_worker_pb2.SlicingResultMessage:
+        slicing_function = SlicingFunction.load(request.slicingFunctionUuid, self.client, None)
+        dataset = Dataset.download(self.client, request.dataset.project_key, request.dataset.id)
+
+        arguments = self.parse_function_arguments(request.arguments)
+
+        result = dataset.slice(slicing_function(**arguments))
+
+        return ml_worker_pb2.SlicingResultMessage(
+            datasetId=request.dataset.id,
+            totalRows=len(dataset.df.index),
+            filteredRows=dataset.df.index.difference(result.df.index)
+        )
+
+    def runAdHocTransformation(
+            self, request: ml_worker_pb2.RunAdHocTestRequest, context: grpc.ServicerContext
+    ) -> ml_worker_pb2.TransformationResultMessage:
+        transformation_function = TransformationFunction.load(request.transformationFunctionUuid, self.client, None)
+        dataset = Dataset.download(self.client, request.dataset.project_key, request.dataset.id)
+
+        arguments = self.parse_function_arguments(request.arguments)
+
+        result = dataset.transform(transformation_function(**arguments))
+
+        modified_rows = result.df[dataset.df.ne(result.df)].dropna(how='all')
+
+        return ml_worker_pb2.TransformationResultMessage(
+            datasetId=request.dataset.id,
+            totalRows=len(dataset.df.index),
+            modifications=[
+                ml_worker_pb2.DatasetRowModificationResult(
+                    rowId=row[0],
+                    modifications={key: str(value) for key, value in row[1].items() if
+                                   not type(value) == float or not math.isnan(value)}
+                )
+                for row
+                in modified_rows.iterrows()
             ]
         )
 
-    def runTestSuite(
-            self, request: ml_worker_pb2.RunTestSuiteRequest, context: grpc.ServicerContext
-    ) -> ml_worker_pb2.TestSuiteResultMessage:
-        tests = list(map(tests_registry.get_test, request.testId))
+    def runTestSuite(self, request: ml_worker_pb2.RunTestSuiteRequest,
+                     context: grpc.ServicerContext) -> ml_worker_pb2.TestSuiteResultMessage:
+        log_listener = LogListener()
+        try:
+            tests = [{
+                'test': GiskardTest.load(t.testUuid, self.client, None),
+                'arguments': self.parse_function_arguments(t.arguments),
+                'id': t.id
+            } for t in request.tests]
 
-        global_arguments = self.parse_test_arguments(request.globalArguments)
+            global_arguments = self.parse_function_arguments(request.globalArguments)
 
-        logger.info(f"Executing test suite: {list(map(lambda t: t.name, tests))}")
-
-        suite = Suite()
-        for test in tests:
-            fixed_arguments = self.parse_test_arguments(
-                next(x for x in request.fixedArguments if x.testId == test.id).arguments
+            test_names = list(
+                map(lambda t: t['test'].meta.display_name or f"{t['test'].meta.module + '.' + t['test'].meta.name}",
+                    tests)
             )
-            suite.add_test(test.fn, **fixed_arguments)
+            logger.info(f"Executing test suite: {test_names}")
 
-        is_pass, results = suite.run(**global_arguments)
+            suite = Suite()
+            for t in tests:
+                suite.add_test(t['test'].get_builder()(**t['arguments']), t['id'])
 
-        result_list = list(results.values())
+            is_pass, results = suite.run(**global_arguments)
 
-        named_single_test_result = []
-        for i in range(len(tests)):
-            named_single_test_result.append(
-                ml_worker_pb2.NamedSingleTestResult(
-                    name=tests[i].id, result=map_result_to_single_test_result(result_list[i])
+            identifier_single_test_results = []
+            for identifier, result in results:
+                identifier_single_test_results.append(
+                    ml_worker_pb2.IdentifierSingleTestResult(
+                        id=identifier, result=map_result_to_single_test_result(result)
+                    )
                 )
+
+            return ml_worker_pb2.TestSuiteResultMessage(
+                is_error=False,
+                is_pass=is_pass,
+                results=identifier_single_test_results,
+                logs=log_listener.close()
             )
 
-        return ml_worker_pb2.TestSuiteResultMessage(is_pass=is_pass, results=named_single_test_result)
+        except Exception as exc:
+            logger.error("An unexpected error arose during the test suite execution: %s", exc)
+            return ml_worker_pb2.TestSuiteResultMessage(
+                is_error=True,
+                is_pass=False,
+                results=[],
+                logs=log_listener.close()
+            )
 
-    def parse_test_arguments(self, request_arguments):
+    def parse_function_arguments(self, request_arguments):
         arguments = {}
         for arg in request_arguments:
             if arg.HasField("dataset"):
                 value = Dataset.download(self.client, arg.dataset.project_key, arg.dataset.id)
             elif arg.HasField("model"):
-                value = Model.download(self.client, arg.model.project_key, arg.model.id)
+                value = BaseModel.download(self.client, arg.model.project_key, arg.model.id)
+            elif arg.HasField("slicingFunction"):
+                value = SlicingFunction.load(arg.slicingFunction.id, self.client, None)(
+                    **self.parse_function_arguments(arg.args))
+            elif arg.HasField("transformationFunction"):
+                value = TransformationFunction.load(arg.transformationFunction.id, self.client, None)(
+                    **self.parse_function_arguments(arg.args))
             elif arg.HasField("float"):
                 value = float(arg.float)
             elif arg.HasField("int"):
@@ -193,37 +288,8 @@ class MLWorkerServiceImpl(MLWorkerServicer):
             arguments[arg.name] = value
         return arguments
 
-    def runTest(
-            self, request: ml_worker_pb2.RunTestRequest, context: grpc.ServicerContext
-    ) -> ml_worker_pb2.TestResultMessage:
-        from giskard.ml_worker.testing.functions import GiskardTestFunctions
-
-        model = Model.download(self.client, request.model.project_key, request.model.id)
-
-        tests = GiskardTestFunctions()
-        _globals = {"model": model, "tests": tests}
-        if request.reference_ds.id:
-            _globals["reference_ds"] = Dataset.download(
-                self.client, request.reference_ds.project_key, request.reference_ds.id
-            )
-        if request.actual_ds.id:
-            _globals["actual_ds"] = Dataset.download(self.client, request.actual_ds.project_key, request.actual_ds.id)
-        try:
-            timer = Timer()
-            exec(request.code, _globals)
-            timer.stop(f"Test {tests.tests_results[0].name}")
-        except NameError as e:
-            missing_name = re.findall(r"name '(\w+)' is not defined", str(e))[0]
-            if missing_name == "reference_ds":
-                raise IllegalArgumentError("Reference Dataset is not specified")
-            if missing_name == "actual_ds":
-                raise IllegalArgumentError("Actual Dataset is not specified")
-            raise e
-
-        return ml_worker_pb2.TestResultMessage(results=tests.tests_results)
-
     def explain(self, request: ml_worker_pb2.ExplainRequest, context) -> ml_worker_pb2.ExplainResponse:
-        model = Model.download(self.client, request.model.project_key, request.model.id)
+        model = BaseModel.download(self.client, request.model.project_key, request.model.id)
         dataset = Dataset.download(self.client, request.dataset.project_key, request.dataset.id)
         explanations = explain(model, dataset, request.columns)
 
@@ -236,10 +302,10 @@ class MLWorkerServiceImpl(MLWorkerServicer):
 
     def explainText(self, request: ml_worker_pb2.ExplainTextRequest, context) -> ml_worker_pb2.ExplainTextResponse:
         n_samples = 500 if request.n_samples <= 0 else request.n_samples
-        model = Model.download(self.client, request.model.project_key, request.model.id)
+        model = BaseModel.download(self.client, request.model.project_key, request.model.id)
         text_column = request.feature_name
 
-        if request.feature_types[text_column] != "text":
+        if request.column_types[text_column] != "text":
             raise ValueError(f"Column {text_column} is not of type text")
         text_document = request.columns[text_column]
         input_df = pd.DataFrame({k: [v] for k, v in request.columns.items()})
@@ -258,12 +324,9 @@ class MLWorkerServiceImpl(MLWorkerServicer):
         )
 
     def runModelForDataFrame(self, request: ml_worker_pb2.RunModelForDataFrameRequest, context):
-        model = Model.download(self.client, request.model.project_key, request.model.id)
-        ds = Dataset(
-            pd.DataFrame([r.columns for r in request.dataframe.rows]),
-            target=request.target,
-            feature_types=request.feature_types,
-        )
+        model = BaseModel.download(self.client, request.model.project_key, request.model.id)
+        ds = Dataset(pd.DataFrame([r.columns for r in request.dataframe.rows]), target=None,
+                     column_types=request.column_types)
         predictions = model.predict(ds)
         if model.is_classification:
             return ml_worker_pb2.RunModelForDataFrameResponse(
@@ -277,7 +340,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
 
     def runModel(self, request: ml_worker_pb2.RunModelRequest, context) -> ml_worker_pb2.RunModelResponse:
         try:
-            model = Model.download(self.client, request.model.project_key, request.model.id)
+            model = BaseModel.download(self.client, request.model.project_key, request.model.id)
             dataset = Dataset.download(self.client, request.dataset.project_key, request.dataset.id)
         except ValueError as e:
             if "unsupported pickle protocol" in str(e):
@@ -322,16 +385,21 @@ class MLWorkerServiceImpl(MLWorkerServicer):
             else:
                 calculated = pd.concat([preds_serie], axis=1)
 
-        return ml_worker_pb2.RunModelResponse(
-            results_csv=results.to_csv(index=False), calculated_csv=calculated.to_csv(index=False)
-        )
+        with tempfile.TemporaryDirectory(prefix="giskard-") as f:
+            dir = Path(f)
+            results.to_csv(index=False, path_or_buf=dir / "predictions.csv")
+            self.ml_worker.tunnel.client.log_artifact(dir / "predictions.csv", f"{request.project_key}/models/inspections/{request.inspectionId}")
+
+            calculated.to_csv(index=False, path_or_buf=dir / "calculated.csv")
+            self.ml_worker.tunnel.client.log_artifact(dir / "calculated.csv", f"{request.project_key}/models/inspections/{request.inspectionId}")
+        return google.protobuf.empty_pb2.Empty()
 
     def filterDataset(self, request_iterator, context: grpc.ServicerContext):
         filterfunc = {}
         meta = None
 
         times = []  # This is an array of chunk execution times for performance stats
-        column_types = []
+        column_dtypes = []
 
         for filter_msg in request_iterator:
             if filter_msg.HasField("meta"):
@@ -342,7 +410,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
                     yield ml_worker_pb2.FilterDatasetResponse(
                         code=ml_worker_pb2.StatusCode.Failed, error_message=str(e)
                     )
-                column_types = meta.column_types
+                column_dtypes = meta.column_dtypes
                 logger.info(f"Filtering dataset with {meta}")
 
                 def filter_wrapper(row):
@@ -360,7 +428,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
                 # CSV => Dataframe
                 data = StringIO(data_as_string)  # Wrap using StringIO to avoid creating file
                 df = pd.read_csv(data, keep_default_na=False, na_values=["_GSK_NA_"])
-                df = df.astype(column_types)
+                df = df.astype(column_dtypes)
                 # Iterate over rows, applying filter_row func
                 try:
                     rows_to_keep = df[df.apply(filter_wrapper, axis=1)].index.array
@@ -378,28 +446,39 @@ class MLWorkerServiceImpl(MLWorkerServicer):
         logger.info(f"Filter dataset finished. Avg chunk time: {sum(times) / len(times)}")
         yield ml_worker_pb2.FilterDatasetResponse(code=ml_worker_pb2.StatusCode.Ok)
 
-    def getTestRegistry(
-            self, request: google.protobuf.empty_pb2.Empty, context: grpc.ServicerContext
-    ) -> ml_worker_pb2.TestRegistryResponse:
-        return ml_worker_pb2.TestRegistryResponse(
-            tests={
-                test.id: ml_worker_pb2.TestFunction(
-                    id=test.id,
-                    name=test.name,
-                    module=test.module,
-                    doc=test.doc,
-                    code=test.code,
-                    module_doc=test.module_doc,
-                    tags=test.tags,
-                    arguments={
-                        a.name: ml_worker_pb2.TestFunctionArgument(
-                            name=a.name, type=a.type, optional=a.optional, default=str(a.default)
+    @staticmethod
+    def map_suite_input(i: ml_worker_pb2.SuiteInput):
+        if i.type == 'Model' and i.model_meta is not None:
+            return ModelInput(i.name, i.model_meta.model_type)
+        elif i.type == 'Dataset' and i.dataset_meta is not None:
+            return DatasetInput(i.name, i.dataset_meta.target)
+        else:
+            return SuiteInput(i.name, i.type)
+
+    def generateTestSuite(
+            self,
+            request: ml_worker_pb2.GenerateTestSuiteRequest,
+            context: grpc.ServicerContext,
+    ) -> ml_worker_pb2.GenerateTestSuiteResponse:
+        inputs = [self.map_suite_input(i) for i in request.inputs]
+
+        suite = Suite().generate_tests(inputs).to_dto(self.client, request.project_key)
+
+        return ml_worker_pb2.GenerateTestSuiteResponse(
+            tests=[
+                ml_worker_pb2.GeneratedTest(
+                    test_uuid=test.testUuid,
+                    inputs=[
+                        ml_worker_pb2.GeneratedTestInput(
+                            name=i.name,
+                            value=i.value,
+                            is_alias=i.is_alias
                         )
-                        for a in test.args.values()
-                    },
+                        for i in test.functionInputs.values()
+                    ]
                 )
-                for test in tests_registry.get_all().values()
-            }
+                for test in suite.tests
+            ]
         )
 
     def stopWorker(self, request: google.protobuf.empty_pb2.Empty,
@@ -407,6 +486,14 @@ class MLWorkerServiceImpl(MLWorkerServicer):
         logger.info('Received request to stop the worker')
         self.loop.create_task(self.ml_worker.stop())
         return google.protobuf.empty_pb2.Empty()
+
+    def getCatalog(self, request: google.protobuf.empty_pb2.Empty,
+                   context: grpc.ServicerContext) -> ml_worker_pb2.CatalogResponse:
+        return ml_worker_pb2.CatalogResponse(
+            tests=map_function_meta('TEST'),
+            slices=map_function_meta('SLICE'),
+            transformations=map_function_meta('TRANSFORMATION')
+        )
 
     @staticmethod
     def pandas_df_to_proto_df(df):
@@ -433,15 +520,15 @@ def map_result_to_single_test_result(result) -> ml_worker_pb2.SingleTestResult:
                     text=message.text,
                 )
                 for message in result.messages
-            ],
+            ] if result.messages is not None else [],
             props=result.props,
             metric=result.metric,
-            missing_count=Int32Value(value=result.missing_count),
-            missing_percent=DoubleValue(value=result.missing_percent),
-            unexpected_count=Int32Value(value=result.unexpected_count),
-            unexpected_percent=DoubleValue(value=result.unexpected_percent),
-            unexpected_percent_total=DoubleValue(value=result.unexpected_percent_total),
-            unexpected_percent_nonmissing=DoubleValue(value=result.unexpected_percent_nonmissing),
+            missing_count=result.missing_count,
+            missing_percent=result.missing_percent,
+            unexpected_count=result.unexpected_count,
+            unexpected_percent=result.unexpected_percent,
+            unexpected_percent_total=result.unexpected_percent_total,
+            unexpected_percent_nonmissing=result.unexpected_percent_nonmissing,
             partial_unexpected_index_list=[
                 ml_worker_pb2.Partial_unexpected_counts(value=puc.value, count=puc.count)
                 for puc in result.partial_unexpected_index_list
@@ -455,4 +542,4 @@ def map_result_to_single_test_result(result) -> ml_worker_pb2.SingleTestResult:
     elif isinstance(result, bool):
         return ml_worker_pb2.SingleTestResult(passed=result)
     else:
-        raise ValueError("Result of test can only be 'GiskardTestResult' or 'bool'")
+        raise ValueError("Result of test can only be 'TestResult' or 'bool'")

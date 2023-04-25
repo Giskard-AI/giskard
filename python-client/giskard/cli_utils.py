@@ -1,27 +1,63 @@
 import asyncio
 import collections
+import functools
 import hashlib
 import logging
 import os
 import sys
 from time import sleep
 
-from daemon import DaemonContext
-from daemon.daemon import change_working_directory
-from daemon.runner import is_pidfile_stale
+import click
 from lockfile.pidlockfile import PIDLockFile
 from pydantic import AnyHttpUrl, parse_obj_as
 
+from giskard.client.analytics_collector import GiskardAnalyticsCollector
 from giskard.path_utils import run_dir
 from giskard.settings import settings
 
 logger = logging.getLogger(__name__)
+logging.getLogger().setLevel(logging.INFO)
+logging.getLogger("giskard").setLevel(logging.INFO)
+analytics = GiskardAnalyticsCollector()
+
+
+def common_options(func):
+    @click.option(
+        "--verbose",
+        "-v",
+        is_flag=True,
+        callback=set_verbose,
+        default=False,
+        expose_value=False,
+        is_eager=True,
+        help="Enable verbose logging",
+    )
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        return func(*args, **kwargs)
+
+    return wrapper
+
+
+def set_verbose(_ctx, _param, value):
+    if value:
+        logging.getLogger("giskard").setLevel(logging.DEBUG)
 
 
 def remove_stale_pid_file(pid_file):
-    if is_pidfile_stale(pid_file):
+    pid = pid_file.read_pid()
+    if pid is not None and is_pid_stale(pid):
         logger.debug("Stale PID file found, removing it")
         pid_file.break_lock()
+
+
+def is_pid_stale(pid):
+    try:
+        os.kill(pid, 0)  # NOSONAR
+    except (OSError, TypeError):
+        return True
+    else:
+        return False
 
 
 def create_pid_file_path(is_server, url):
@@ -43,6 +79,8 @@ def validate_url(_ctx, _param, value) -> AnyHttpUrl:
 
 def run_daemon(is_server, url, api_key):
     from giskard.ml_worker.ml_worker import MLWorker
+    from daemon import DaemonContext
+    from daemon.daemon import change_working_directory
 
     log_path = get_log_path()
     logger.info(f"Writing logs to {log_path}")

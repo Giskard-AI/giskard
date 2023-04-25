@@ -1,10 +1,11 @@
 package ai.giskard.service;
 
-import ai.giskard.domain.FeatureType;
+import ai.giskard.domain.ColumnType;
 import ai.giskard.domain.ml.Dataset;
 import ai.giskard.repository.ml.DatasetRepository;
 import ai.giskard.security.PermissionEvaluator;
 import ai.giskard.web.dto.DatasetMetadataDTO;
+import ai.giskard.web.dto.DatasetPageDTO;
 import ai.giskard.web.dto.FeatureMetadataDTO;
 import ai.giskard.web.dto.ml.DatasetDetailsDTO;
 import ai.giskard.web.rest.errors.Entity;
@@ -13,7 +14,6 @@ import com.univocity.parsers.common.TextParsingException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import tech.tablesaw.api.ColumnType;
 import tech.tablesaw.api.IntColumn;
 import tech.tablesaw.api.Table;
 import tech.tablesaw.io.csv.CsvReadOptions;
@@ -23,6 +23,7 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
@@ -44,8 +45,8 @@ public class DatasetService {
      */
     public Table readTableByDatasetId(@NotNull UUID datasetId) {
         Dataset dataset = datasetRepository.findById(datasetId).orElseThrow(() -> new EntityNotFoundException(Entity.DATASET, datasetId.toString()));
-        Map<String, ColumnType> columnTypes = dataset.getFeatureTypes().entrySet().stream()
-            .collect(Collectors.toMap(Map.Entry::getKey, e -> FeatureType.featureToColumn.get(e.getValue())));
+        Map<String, tech.tablesaw.api.ColumnType> columnDtypes = dataset.getColumnTypes().entrySet().stream()
+            .collect(Collectors.toMap(Map.Entry::getKey, e -> ColumnType.featureToColumn.get(e.getValue())));
         Path filePath = locationService.datasetsDirectory(dataset.getProject().getKey())
             .resolve(dataset.getId().toString()).resolve("data.csv.zst");
         String filePathName = filePath.toAbsolutePath().toString().replace(".zst", "");
@@ -53,7 +54,7 @@ public class DatasetService {
         try {
             CsvReadOptions csvReadOptions = CsvReadOptions
                 .builder(fileUploadService.decompressFileToStream(filePath))
-                .columnTypesPartial(columnTypes)
+                .columnTypesPartial(columnDtypes)
                 .missingValueIndicator("_GSK_NA_")
                 .maxCharsPerColumn(-1)
                 .build();
@@ -83,9 +84,9 @@ public class DatasetService {
         Dataset dataset = this.datasetRepository.getById(id);
         DatasetMetadataDTO metadata = new DatasetMetadataDTO();
         metadata.setId(id);
-        metadata.setColumnTypes(dataset.getColumnTypes());
+        metadata.setColumnDtypes(dataset.getColumnDtypes());
         metadata.setTarget(dataset.getTarget());
-        metadata.setFeatureTypes(dataset.getFeatureTypes());
+        metadata.setColumnTypes(dataset.getColumnTypes());
         return metadata;
     }
 
@@ -97,10 +98,13 @@ public class DatasetService {
      * @param rangeMax max range of the dataset
      * @return filtered table
      */
-    public Table getRows(@NotNull UUID id, @NotNull int rangeMin, @NotNull int rangeMax) {
+    public DatasetPageDTO getRows(@NotNull UUID id, @NotNull int rangeMin, @NotNull int rangeMax) {
         Table table = readTableByDatasetId(id);
         table.addColumns(IntColumn.indexColumn(GISKARD_DATASET_INDEX_COLUMN_NAME, table.rowCount(), 0));
-        return table.inRange(rangeMin, Math.min(table.rowCount(), rangeMax));
+        return new DatasetPageDTO(table.rowCount(), table.inRange(rangeMin, Math.min(table.rowCount(), rangeMax)).stream()
+            .map(row -> row.columnNames().stream()
+                .collect(Collectors.toMap(Function.identity(), row::getObject)))
+            .toList());
     }
 
     @Transactional
@@ -110,13 +114,13 @@ public class DatasetService {
 
         Table data = readTableByDatasetId(datasetId);
 
-        return dataset.getFeatureTypes().entrySet().stream().map(featureAndType -> {
+        return dataset.getColumnTypes().entrySet().stream().map(featureAndType -> {
             String featureName = featureAndType.getKey();
-            FeatureType type = featureAndType.getValue();
+            ColumnType type = featureAndType.getValue();
             FeatureMetadataDTO meta = new FeatureMetadataDTO();
             meta.setType(type);
             meta.setName(featureName);
-            if (type == FeatureType.CATEGORY) {
+            if (type == ColumnType.CATEGORY) {
                 meta.setValues(data.column(featureName).unique().asStringColumn().asSet());
             }
             return meta;

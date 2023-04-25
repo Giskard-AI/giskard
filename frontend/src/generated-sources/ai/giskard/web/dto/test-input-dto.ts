@@ -4,5 +4,7 @@
 export interface TestInputDTO {
     isAlias: boolean;
     name: string;
-    value: string;
+    params?: {[key: string]: string} | null;
+    type: string;
+    value?: string | null;
 }

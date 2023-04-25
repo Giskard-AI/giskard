@@ -1,7 +1,6 @@
 package ai.giskard.domain.ml;
 
 import ai.giskard.domain.BaseEntity;
-import ai.giskard.utils.GRPCUtils;
 import ai.giskard.utils.SimpleJSONStringAttributeConverter;
 import ai.giskard.web.dto.ml.TestResultMessageDTO;
 import ai.giskard.worker.SingleTestResult;
@@ -24,7 +23,10 @@ import java.util.stream.Collectors;
 @Setter
 public class SuiteTestExecution extends BaseEntity {
 
+    private Long id;
+
     @ManyToOne(optional = false)
+    @JsonIgnore
     private SuiteTest test;
 
     @ManyToOne
@@ -77,12 +79,12 @@ public class SuiteTestExecution extends BaseEntity {
                               SingleTestResult message) {
         this.test = test;
         this.execution = execution;
-        this.missingCount = GRPCUtils.convertType(message.getMissingCount());
-        this.missingPercent = GRPCUtils.convertType(message.getMissingPercent());
-        this.unexpectedCount = GRPCUtils.convertType(message.getUnexpectedCount());
-        this.unexpectedPercent = GRPCUtils.convertType(message.getUnexpectedPercent());
-        this.unexpectedPercentTotal = GRPCUtils.convertType(message.getUnexpectedPercentTotal());
-        this.unexpectedPercentNonmissing = GRPCUtils.convertType(message.getUnexpectedPercentNonmissing());
+        this.missingCount = message.getMissingCount();
+        this.missingPercent = message.getMissingPercent();
+        this.unexpectedCount = message.getUnexpectedCount();
+        this.unexpectedPercent = message.getUnexpectedPercent();
+        this.unexpectedPercentTotal = message.getUnexpectedPercentTotal();
+        this.unexpectedPercentNonmissing = message.getUnexpectedPercentNonmissing();
         this.partialUnexpectedIndexList = message.getPartialUnexpectedIndexListList();
         this.unexpectedIndexList = message.getUnexpectedIndexListList();
         this.passed = message.getPassed();
@@ -91,8 +93,8 @@ public class SuiteTestExecution extends BaseEntity {
         this.referenceSlicesSize = message.getReferenceSlicesSizeList();
         this.messages = message.getMessagesList().stream().map(
             msg -> new TestResultMessageDTO(msg.getType(), msg.getText())).toList();
-        this.inputs = test.getTestInputs().stream()
-            .collect(Collectors.toMap(TestInput::getName, TestInput::getValue));
+        this.inputs = test.getFunctionInputs().stream()
+            .collect(Collectors.toMap(FunctionInput::getName, FunctionInput::getValue));
     }
 
 }

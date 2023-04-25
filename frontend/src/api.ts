@@ -1,20 +1,24 @@
-import axios, {AxiosError} from 'axios';
-import {apiURL} from '@/env';
-import {getLocalToken, removeLocalToken} from '@/utils';
+import axios, { AxiosError } from 'axios';
+import { apiURL } from '@/env';
+import { getLocalToken, removeLocalToken } from '@/utils';
 import Vue from "vue";
 
 import {
     AdminUserDTO,
     AppConfigDTO,
+    CatalogDTO,
     CreateFeedbackDTO,
     CreateFeedbackReplyDTO,
     DatasetDTO,
+    DatasetPageDTO,
     ExplainResponseDTO,
     ExplainTextResponseDTO,
     FeatureMetadataDTO,
     FeedbackDTO,
     FeedbackMinimalDTO,
+    FunctionInputDTO,
     GeneralSettings,
+    GenerateTestSuiteDTO,
     InspectionCreateDTO,
     InspectionDTO,
     JobDTO,
@@ -33,27 +37,24 @@ import {
     ProjectPostDTO,
     RoleDTO,
     SliceDTO,
-    TestCatalogDTO,
-    TestDTO,
-    TestExecutionResultDTO,
+    SlicingResultDTO,
+    SuiteTestDTO,
     TestSuiteCompleteDTO,
-    TestSuiteCreateDTO,
     TestSuiteDTO,
     TestSuiteExecutionDTO,
-    TestSuiteNewDTO,
-    TestTemplatesResponse,
+    TestTemplateExecutionResultDTO,
     TokenAndPasswordVM,
+    TransformationResultDTO,
     UpdateMeDTO,
-    UpdateTestSuiteDTO,
     UserDTO
 } from './generated-sources';
-import {PostImportProjectDTO} from './generated-sources/ai/giskard/web/dto/post-import-project-dto';
-import {TYPE} from "vue-toastification";
+import { PostImportProjectDTO } from './generated-sources/ai/giskard/web/dto/post-import-project-dto';
+import { TYPE } from "vue-toastification";
 import ErrorToast from "@/views/main/utils/ErrorToast.vue";
 import router from "@/router";
 import mixpanel from "mixpanel-browser";
-import {useUserStore} from "@/stores/user";
-import {SetupDTO} from "@/generated-sources/ai/giskard/web/dto/setup-dto";
+import { useUserStore } from "@/stores/user";
+import { SetupDTO } from "@/generated-sources/ai/giskard/web/dto/setup-dto";
 import AdminUserDTOWithPassword = AdminUserDTO.AdminUserDTOWithPassword;
 
 function jwtRequestInterceptor(config) {
@@ -192,7 +193,7 @@ function downloadURL(urlString) {
 
 export const api = {
     async logInGetToken(username: string, password: string) {
-        return apiV2.post<unknown, JWTToken>(`/authenticate`, {username, password});
+        return apiV2.post<unknown, JWTToken>(`/authenticate`, { username, password });
     },
     async getLicense() {
         return apiV2.get<unknown, LicenseDTO>(`/settings/license`);
@@ -244,7 +245,7 @@ export const api = {
         return apiV2.patch<unknown, void>(`/admin/users/${login}/enable`);
     },
     async passwordRecovery(email: string) {
-        return apiV2.post<unknown, void>(`/account/password-recovery`, <PasswordResetRequest>{email});
+        return apiV2.post<unknown, void>(`/account/password-recovery`, <PasswordResetRequest>{ email });
     },
     async resetPassword(password: string) {
         return apiV2.post<unknown, void>(`/account/reset-password`, <TokenAndPasswordVM>{
@@ -272,7 +273,7 @@ export const api = {
         return apiV2.get<unknown, ProjectDTO[]>(`projects`);
     },
     async getProject(id: number) {
-        return axiosProject.get<unknown, ProjectDTO>(`/`, {params: {id}});
+        return axiosProject.get<unknown, ProjectDTO>(`/`, { params: { id } });
     },
     async createProject(data: ProjectPostDTO) {
         return axiosProject.post<unknown, ProjectDTO>(`/`, data);
@@ -294,7 +295,7 @@ export const api = {
         return axiosProject.get<unknown, ModelDTO[]>(`/${id}/models`);
     },
     async prepareImport(formData: FormData) {
-        const headers = {'Content-Type': 'multipart/form-data'};
+        const headers = { 'Content-Type': 'multipart/form-data' };
         return axiosProject.post<unknown, PrepareImportProjectDTO>(`/import/prepare`, formData, {
             headers: headers
         });
@@ -326,17 +327,20 @@ export const api = {
     downloadExportedProject(id: number) {
         downloadURL(`${API_V2_ROOT}/download/project/${id}/export`);
     },
-    async peekDataFile(datasetId: string) { //TODO
-        return apiV2.get<unknown, any>(`/dataset/${datasetId}/rows`, {params: {offset: 0, size: 10}});
+    async peekDataFile(datasetId: string) {
+        return this.getDatasetRows(datasetId, 0, 10);
+    },
+    async getDatasetRows(datasetId: string, offset: number, size: number) {
+        return apiV2.get<unknown, DatasetPageDTO>(`/dataset/${datasetId}/rows`, {params: {offset, size}});
     },
     async getFeaturesMetadata(datasetId: string) {
         return apiV2.get<unknown, FeatureMetadataDTO[]>(`/dataset/${datasetId}/features`);
     },
     async filterDataset(datasetId: number, sliceName: string, code: string) {
-        return apiV2.post<unknown, unknown>(`/dataset/${datasetId}/filter`, {sliceName: sliceName, code: code});
+        return apiV2.post<unknown, unknown>(`/dataset/${datasetId}/filter`, { sliceName: sliceName, code: code });
     },
     async getDataFilteredByRange(inspectionId, props, filter) {
-        return apiV2.post<unknown, any>(`/inspection/${inspectionId}/rowsFiltered`, filter, {params: props});
+        return apiV2.post<unknown, any>(`/inspection/${inspectionId}/rowsFiltered`, filter, { params: props });
     },
     async editDatasetName(datasetId: string, name: string) {
         return apiV2.patch<unknown, DatasetDTO>(`/dataset/${datasetId}/name/${encodeURIComponent(name)}`, null)
@@ -350,33 +354,64 @@ export const api = {
     async getProjectDatasets(projectId: number) {
         return axiosProject.get<unknown, DatasetDTO[]>(`/${projectId}/datasets`);
     },
-    async getTestSuitesNew(projectId: number) {
-        return apiV2.get<unknown, TestSuiteNewDTO[]>(`testing/project/${projectId}/suites-new`);
+    async getTestSuites(projectId: number) {
+        return apiV2.get<unknown, TestSuiteDTO[]>(`testing/project/${projectId}/suites`);
     },
-    async getTestSuiteNew(projectId: number, suiteId: number) {
-        return apiV2.get<unknown, TestSuiteNewDTO>(`testing/project/${projectId}/suite-new/${suiteId}`);
+    async createTestSuite(projectKey: string, testSuite: TestSuiteDTO) {
+        return apiV2.post<unknown, number>(`testing/project/${projectKey}/suites`, testSuite);
+    },
+    async deleteSuite(projectKey: string, testSuiteId: number) {
+        return apiV2.delete<unknown, void>(`testing/project/${projectKey}/suite/${testSuiteId}`);
+    },
+    async generateTestSuite(projectKey: string, generateTestSuite: GenerateTestSuiteDTO) {
+        return apiV2.post<unknown, number>(`testing/project/${projectKey}/suites/generate`, generateTestSuite);
+    },
+    async updateTestSuite(projectKey: string, suite: TestSuiteDTO) {
+        return apiV2.put<unknown, TestSuiteDTO>(`testing/project/${projectKey}/suite/${suite.id}`, suite);
+    },
+    async getTestSuite(projectId: number, suiteId: number) {
+        return apiV2.get<unknown, TestSuiteDTO>(`testing/project/${projectId}/suite/${suiteId}`);
     },
     async getTestSuiteComplete(projectId: number, suiteId: number) {
-        return apiV2.get<unknown, TestSuiteCompleteDTO>(`testing/project/${projectId}/suite-new/${suiteId}/complete`);
+        return apiV2.get<unknown, TestSuiteCompleteDTO>(`testing/project/${projectId}/suite/${suiteId}/complete`);
+    },
+    async addTestToSuite(projectId: number, suiteId: number, suiteTest: SuiteTestDTO) {
+        return apiV2.post<unknown, TestSuiteDTO>(`testing/project/${projectId}/suite/${suiteId}/test`,
+            suiteTest);
     },
     async getProjectSlices(id: number) {
         return axiosProject.get<unknown, SliceDTO[]>(`/${id}/slices`);
     },
-    async executeTestSuiteNew(projectId: number, suiteId: number, inputs: { [key: string]: string }) {
-        return apiV2.post<unknown, any>(`testing/project/${projectId}/suite-new/${suiteId}/schedule-execution`, inputs);
+    async executeTestSuite(projectId: number, suiteId: number, inputs: { [key: string]: string }) {
+        return apiV2.post<unknown, any>(`testing/project/${projectId}/suite/${suiteId}/schedule-execution`, inputs);
     },
-    async updateTestInputs(projectId: number, suiteId: number, testId: string, inputs: { [key: string]: string }) {
-        return apiV2.put<unknown, TestSuiteExecutionDTO[]>(`testing/project/${projectId}/suite-new/${encodeURIComponent(suiteId)}/test/${testId}/inputs`, inputs);
+    async updateTestInputs(projectId: number, suiteId: number, testId: number, inputs: FunctionInputDTO[]) {
+        return apiV2.put<unknown, TestSuiteExecutionDTO[]>(`testing/project/${encodeURIComponent(projectId)}/suite/${suiteId}/test/${testId}/inputs`, inputs);
+    },
+    async removeTest(projectId: string, suiteId: number, suiteTestId: number) {
+        return apiV2.delete<unknown, void>(`testing/project/${encodeURIComponent(projectId)}/suite/${suiteId}/suite-test/${suiteTestId}`);
+    },
+    async getInspections() {
+        return apiV2.get<unknown, InspectionDTO[]>(`/inspections`);
+    },
+    async getProjectInspections(projectId: number) {
+        return axiosProject.get<unknown, InspectionDTO[]>(`/${projectId}/inspections`);
     },
     async getInspection(inspectionId: number) {
         return apiV2.get<unknown, InspectionDTO>(`/inspection/${inspectionId}`);
+    },
+    async deleteInspection(inspectionId: number) {
+        return apiV2.delete<unknown, void>(`/inspections/${inspectionId}`);
+    },
+    async updateInspectionName(inspectionId: number, inspection: InspectionCreateDTO) {
+        return apiV2.put<unknown, InspectionDTO>(`/inspections/${inspectionId}`, inspection);
     },
     async predict(modelId: string, datasetId: string, inputData: { [key: string]: string }, controller: AbortController) {
         const data: PredictionInputDTO = {
             datasetId: datasetId,
             features: inputData
         }
-        return apiV2.post<unknown, PredictionDTO>(`/models/${modelId}/predict`, data, {signal: controller.signal});
+        return apiV2.post<unknown, PredictionDTO>(`/models/${modelId}/predict`, data, { signal: controller.signal });
     },
 
     async prepareInspection(payload: InspectionCreateDTO) {
@@ -384,14 +419,14 @@ export const api = {
     },
     async explain(modelId: string, datasetId: string, inputData: object, controller: AbortController) {
         return apiV2.post<unknown, ExplainResponseDTO>(`/models/${modelId}/explain/${datasetId}`,
-            {features: inputData},
-            {signal: controller.signal});
+            { features: inputData },
+            { signal: controller.signal });
     },
     async explainText(modelId: string, datasetId: string, inputData: object, featureName: string) {
         return apiV2.post<unknown, ExplainTextResponseDTO>(`/models/explain-text/${featureName}`,
             {
                 features: inputData
-            }, {params: {modelId, datasetId}});
+            }, { params: { modelId, datasetId } });
     },
     // feedbacks
     async submitFeedback(payload: CreateFeedbackDTO, projectId: number) {
@@ -412,49 +447,6 @@ export const api = {
     },
     async deleteFeedback(id: number) {
         return apiV2.delete<unknown, void>(`/feedbacks/${id}`);
-    },
-    async getTestSuites(projectId: number) {
-        return apiV2.get<unknown, Array<TestSuiteDTO>>(`/testing/suites/${projectId}`);
-    },
-    async getTests(suiteId: number) {
-        return apiV2.get<unknown, Array<TestDTO>>(`/testing/tests`, {params: {suiteId}});
-    },
-    async getTestSuite(suiteId: number) {
-        return apiV2.get<unknown, TestSuiteDTO>(`/testing/suite/${suiteId}`);
-    },
-    async deleteTestSuite(suiteId: number) {
-        return apiV2.delete<unknown, TestSuiteDTO>(`/testing/suite/${suiteId}`);
-    },
-    async createTestSuite(data: TestSuiteCreateDTO) {
-        return apiV2.post<unknown, TestSuiteDTO>(`/testing/suites`, data);
-    },
-    async saveTestSuite(testSuite: UpdateTestSuiteDTO) {
-        return apiV2.put<unknown, TestSuiteDTO>(`/testing/suites`, testSuite);
-    },
-    async getTestDetails(testId: number) {
-        return apiV2.get<unknown, TestDTO>(`/testing/tests/${testId}`);
-    },
-    async getCodeTestTemplates(suiteId: number) {
-        return apiV2.get<unknown, TestTemplatesResponse>(`/testing/tests/code-test-templates`, {params: {suiteId}});
-    },
-
-    async deleteTest(testId: number) {
-        return apiV2.delete<unknown, TestSuiteDTO>(`/testing/tests/${testId}`);
-    },
-    async saveTest(testDetails: TestDTO) {
-        return apiV2.put<unknown, TestDTO>(`/testing/tests`, testDetails);
-    },
-    async runTest(testId: number) {
-        return apiV2.post<unknown, TestExecutionResultDTO>(`/testing/tests/${testId}/run`);
-    },
-    async createTest(suiteId: number, name: string) {
-        return apiV2.post<unknown, TestDTO>(`/testing/tests`, {
-            name: name,
-            suiteId: suiteId
-        });
-    },
-    async executeTestSuite(suiteId: number) {
-        return apiV2.post<unknown, Array<TestExecutionResultDTO>>(`/testing/suites/execute`, {suiteId});
     },
     async createSlice(projectId: number, name: string, code: string) {
         return apiV2.post<unknown, SliceDTO>(`/slices`, {
@@ -480,13 +472,20 @@ export const api = {
             code: code
         });
     },
-    async getTestsCatalog(projectId: number) {
-        return apiV2.get<unknown, TestCatalogDTO>(`/testing/tests/test-catalog`, {params: {projectId}});
+    async runAdHocTest(projectId: number, testUuid: string, inputs: { [key: string]: string }) {
+        return apiV2.post<unknown, TestTemplateExecutionResultDTO>(`/testing/tests/run-test`, {
+            projectId,
+            testUuid,
+            inputs
+        });
     },
-    async runAdHocTest(projectId: number, testId: string, inputs: { [key: string]: string }) {
-        return apiV2.post<unknown, TestExecutionResultDTO>(`/testing/tests/run-test`, {projectId, testId, inputs});
+    async getCatalog(projectId: number) {
+        return apiV2.get<unknown, CatalogDTO>(`/catalog`, {
+            params: {
+                projectId
+            }
+        });
     },
-
     async uploadLicense(form: FormData) {
         return apiV2.post<unknown, unknown>(`/ee/license`, form, {
             headers: {
@@ -499,5 +498,15 @@ export const api = {
             allowAnalytics: allowAnalytics,
             license: license
         });
-    }
-}
+    },
+    async runAdHocSlicingFunction(slicingFnUuid: string, datasetUuid: string, inputs: { [key: string]: string }) {
+        return apiV2.post<unknown, SlicingResultDTO>(
+            `/slices/${encodeURIComponent(slicingFnUuid)}/dataset/${encodeURIComponent(datasetUuid)}`, inputs);
+    },
+    async runAdHocTransformationFunction(transformationFnUuid: string, datasetUuid: string, inputs: {
+        [key: string]: string
+    }) {
+        return apiV2.post<unknown, TransformationResultDTO>(
+            `/transformations/${encodeURIComponent(transformationFnUuid)}/dataset/${encodeURIComponent(datasetUuid)}`, inputs);
+    },
+};

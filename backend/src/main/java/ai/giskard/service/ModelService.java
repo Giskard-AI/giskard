@@ -1,6 +1,6 @@
 package ai.giskard.service;
 
-import ai.giskard.domain.FeatureType;
+import ai.giskard.domain.ColumnType;
 import ai.giskard.domain.InspectionSettings;
 import ai.giskard.domain.ml.Dataset;
 import ai.giskard.domain.ml.Inspection;
@@ -21,8 +21,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
@@ -62,11 +60,11 @@ public class ModelService {
         if (dataset.getTarget() != null) {
             requestBuilder.setTarget(dataset.getTarget());
         }
-        if (dataset.getFeatureTypes() != null) {
-            requestBuilder.putAllFeatureTypes(Maps.transformValues(dataset.getFeatureTypes(), FeatureType::getName));
-        }
         if (dataset.getColumnTypes() != null) {
-            requestBuilder.putAllColumnTypes(dataset.getColumnTypes());
+            requestBuilder.putAllColumnTypes(Maps.transformValues(dataset.getColumnTypes(), ColumnType::getName));
+        }
+        if (dataset.getColumnDtypes() != null) {
+            requestBuilder.putAllColumnDtypes(dataset.getColumnDtypes());
         }
         response = client.getBlockingStub().runModelForDataFrame(requestBuilder.build());
         return response;
@@ -92,7 +90,7 @@ public class ModelService {
                     .setModel(grpcMapper.createRef(model))
                     .setFeatureName(featureName)
                     .putAllColumns(features)
-                    .putAllFeatureTypes(Maps.transformValues(dataset.getFeatureTypes(), FeatureType::getName))
+                    .putAllColumnTypes(Maps.transformValues(dataset.getColumnTypes(), ColumnType::getName))
                     .setNSamples(inspectionSettings.getLimeNumberSamples())
                     .build()
             );
@@ -100,39 +98,37 @@ public class ModelService {
         return response;
     }
 
-    public Inspection createInspection(UUID modelId, UUID datasetId) throws IOException {
+    public Inspection createInspection(String name, UUID modelId, UUID datasetId) {
         log.info("Creating inspection for model {} and dataset {}", modelId, datasetId);
         ProjectModel model = modelRepository.getById(modelId);
         Dataset dataset = datasetRepository.getById(datasetId);
         permissionEvaluator.validateCanReadProject(model.getProject().getId());
 
         Inspection inspection = new Inspection();
+
+        if (name == null || name.isEmpty())
+            inspection.setName("Unnamed session");
+        else
+            inspection.setName(name);
+
         inspection.setDataset(dataset);
         inspection.setModel(model);
+
         inspection = inspectionRepository.save(inspection);
 
-        RunModelResponse predictions = predictSerializedDataset(model, dataset);
-        if (predictions == null) {
-            return inspection;
-        }
-        Path inspectionPath = fileLocationService.resolvedInspectionPath(model.getProject().getKey(), inspection.getId());
-        Files.createDirectories(inspectionPath);
-        Files.write(inspectionPath.resolve("predictions.csv"), predictions.getResultsCsvBytes().toByteArray());
-        Files.write(inspectionPath.resolve("calculated.csv"), predictions.getCalculatedCsvBytes().toByteArray());
+        predictSerializedDataset(model, dataset, inspection.getId());
         return inspection;
     }
 
-    private RunModelResponse predictSerializedDataset(ProjectModel model, Dataset dataset) {
-        RunModelResponse response;
+    private void predictSerializedDataset(ProjectModel model, Dataset dataset, Long inspectionId) {
         try (MLWorkerClient client = mlWorkerService.createClient(model.getProject().isUsingInternalWorker())) {
             RunModelRequest request = RunModelRequest.newBuilder()
                 .setModel(grpcMapper.createRef(model))
                 .setDataset(grpcMapper.createRef(dataset))
+                .setInspectionId(inspectionId)
+                .setProjectKey(model.getProject().getKey())
                 .build();
-
-            response = client.getBlockingStub().runModel(request);
+            client.getBlockingStub().runModel(request);
         }
-
-        return response;
     }
 }

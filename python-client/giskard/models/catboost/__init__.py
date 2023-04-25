@@ -1,51 +1,22 @@
-from typing import Union
-
+from giskard.models.sklearn import SKLearnModel
 import mlflow
 
-from giskard.core.core import SupportedModelTypes
-from giskard.core.model import MLFlowBasedModel
 
+class CatboostModel(SKLearnModel):
+    """
+    A subclass of the SKLearnModel class for using the Catboost model.
 
-class CatboostModel(MLFlowBasedModel):
-    def __init__(self,
-                 clf,
-                 model_type: Union[SupportedModelTypes, str],
-                 name: str = None,
-                 data_preprocessing_function=None,
-                 model_postprocessing_function=None,
-                 feature_names=None,
-                 classification_threshold=0.5,
-                 classification_labels=None) -> None:
+    The CatboostModel class is a wrapper around the Catboost machine learning library.
 
-        if classification_labels is None and hasattr(clf, "classes_"):
-            classification_labels = list(getattr(clf, "classes_"))
-        if feature_names is None and hasattr(clf, "feature_names_"):
-            feature_names = list(getattr(clf, "feature_names_"))
+    Inherits all attributes and methods from the SKLearnModel class.
 
-        super().__init__(
-            clf=clf,
-            model_type=model_type,
-            data_preprocessing_function=data_preprocessing_function,
-            model_postprocessing_function=model_postprocessing_function,
-            name=name,
-            feature_names=feature_names,
-            classification_threshold=classification_threshold,
-            classification_labels=classification_labels,
-        )
+    Attributes:
+        _feature_names_attr (str): A string attribute indicating the name of the feature names attribute for the Catboost model.
+
+    """
+    _feature_names_attr = "feature_names_"
 
     def save_with_mlflow(self, local_path, mlflow_meta: mlflow.models.Model):
         mlflow.catboost.save_model(
-            self.clf, path=local_path, mlflow_model=mlflow_meta
+            self.model, path=local_path, mlflow_model=mlflow_meta
         )
-
-    @classmethod
-    def load_clf(cls, local_dir):
-        return mlflow.catboost.load_model(local_dir)
-
-    def clf_predict(self, df):
-        if self.is_classification:
-            return self.clf.predict_proba(df)
-        elif self.is_regression:
-            return self.clf.predict(df)
-        else:
-            raise ValueError("Unsupported model type")

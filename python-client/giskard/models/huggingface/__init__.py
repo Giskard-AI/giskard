@@ -1,47 +1,86 @@
-from typing import Union
 import logging
-
-from scipy import special
-import torch
 from pathlib import Path
+from typing import Union, Optional, Iterable, Any, Callable
+
+import pandas as pd
 import yaml
+from scipy import special
 
-from giskard.core.core import SupportedModelTypes
-from giskard.core.model import WrapperModel
+from giskard.core.core import ModelType
+from giskard.core.validation import configured_validate_arguments
+from giskard.models.base import WrapperModel
 
-from transformers import pipeline, pipelines
+try:
+    import torch
+except ImportError as e:
+    raise ImportError("Please install it via 'pip install torch'") from e
+
+try:
+    from transformers import pipeline, pipelines
+except ImportError as e:
+    raise ImportError("Please install it via 'pip install transformers'") from e
 
 logger = logging.getLogger(__name__)
 
 
 class HuggingFaceModel(WrapperModel):
+    """
+    A subclass of the WrapperModel class for using HuggingFace transformers.
+
+    The HuggingFaceModel class is a wrapper around the HuggingFace transformers library.
+
+    Inherits all attributes and methods from the WrapperModel class.
+
+    Attributes:
+        huggingface_module (Type): The type of the HuggingFace module used by the model.
+        pipeline_task (str, optional): The task performed by the HuggingFace pipeline, if applicable.
+    """
+    @configured_validate_arguments
     def __init__(
         self,
-        clf,
-        model_type: Union[SupportedModelTypes, str],
-        name: str = None,
-        data_preprocessing_function=None,
-        model_postprocessing_function=None,
-        feature_names=None,
-        classification_threshold=0.5,
-        classification_labels=None,
+        model,
+        model_type: ModelType,
+        name: Optional[str] = None,
+        data_preprocessing_function: Callable[[pd.DataFrame], Any] = None,
+        model_postprocessing_function: Callable[[Any], Any] = None,
+        feature_names: Optional[Iterable] = None,
+        classification_threshold: Optional[float] = 0.5,
+        classification_labels: Optional[Iterable] = None
     ) -> None:
-        super().__init__(
-            clf=clf,
-            model_type=model_type,
-            name=name,
-            data_preprocessing_function=data_preprocessing_function,
-            model_postprocessing_function=model_postprocessing_function,
-            feature_names=feature_names,
-            classification_threshold=classification_threshold,
-            classification_labels=classification_labels,
-        )
+        """
+        Initializes an instance of a HuggingFaceModel with the provided arguments and sets necessary attributes.
 
-        self.huggingface_module = clf.__class__
-        self.pipeline_task = clf.task if isinstance(clf, pipelines.Pipeline) else None
+        Arguments:
+            model: The model to be wrapped.
+            model_type (ModelType): The type of the model, either regression or classification.
+            name (str, optional): The name of the model.
+            data_preprocessing_function (Callable[[pd.DataFrame], Any], optional): A function to preprocess the input data.
+            model_postprocessing_function (Callable[[Any], Any], optional): A function to postprocess the model output.
+            feature_names (Iterable, optional): The names of the model features.
+            classification_threshold (float, optional): The classification probability threshold for binary classification models.
+            classification_labels (Iterable, optional): The labels for classification models.
+
+        Notes:
+            huggingface_module (Type): The type of the HuggingFace module used by the model.
+            pipeline_task (str, optional): The task performed by the HuggingFace pipeline, if applicable.
+        """
+
+        super().__init__(
+                    model=model,
+                    model_type=model_type,
+                    name=name,
+                    data_preprocessing_function=data_preprocessing_function,
+                    model_postprocessing_function=model_postprocessing_function,
+                    feature_names=feature_names,
+                    classification_threshold=classification_threshold,
+                    classification_labels=classification_labels,
+                )
+
+        self.huggingface_module = model.__class__
+        self.pipeline_task = model.task if isinstance(model, pipelines.Pipeline) else None
 
     @classmethod
-    def load_clf(cls, local_path):
+    def load_model(cls, local_path):
         huggingface_meta_file = Path(local_path) / "giskard-model-huggingface-meta.yaml"
         if huggingface_meta_file.exists():
             with open(huggingface_meta_file) as f:
@@ -69,13 +108,13 @@ class HuggingFaceModel(WrapperModel):
         self.save_huggingface_meta(local_path)
 
     def save_with_huggingface(self, local_path):
-        self.clf.save_pretrained(local_path)
+        self.model.save_pretrained(local_path)
 
-    def clf_predict(self, data):
+    def model_predict(self, data):
         predictions = self._get_predictions(data)
 
         if self.is_classification and hasattr(predictions, "logits"):
-            if isinstance(self.clf, torch.nn.Module):
+            if isinstance(self.model, torch.nn.Module):
                 with torch.no_grad():
                     logits = predictions.logits.detach().numpy()
             else:
@@ -93,12 +132,12 @@ class HuggingFaceModel(WrapperModel):
         return predictions
 
     def _get_predictions(self, data):
-        if isinstance(self.clf, torch.nn.Module):
+        if isinstance(self.model, torch.nn.Module):
             with torch.no_grad():
-                return self.clf(**data)
+                return self.model(**data)
 
-        if isinstance(self.clf, pipelines.Pipeline):
-            _predictions = [{p["label"]: p["score"] for p in pl} for pl in self.clf(list(data), top_k=None)]
+        if isinstance(self.model, pipelines.Pipeline):
+            _predictions = [{p["label"]: p["score"] for p in pl} for pl in self.model(list(data), top_k=None)]
             return [[p[label] for label in self.meta.classification_labels] for p in _predictions]
 
-        return self.clf(**data)
+        return self.model(**data)

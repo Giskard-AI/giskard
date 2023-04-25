@@ -11,6 +11,7 @@ import java.util.Map;
 @Getter
 @Setter
 public class License {
+    private String id;
     private boolean active;
     private String planName;
     private String planCode;

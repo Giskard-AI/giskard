@@ -108,6 +108,7 @@
               :predictionTask="model.modelType"
               :inputData="inputData"
               :modified="dirty || isInputNotOriginal"
+              :debouncingTimeout="debouncingTimeout"
               @result="setResult"
           />
           <v-card class="mb-4">
@@ -144,6 +145,7 @@
                                           :predictionTask="model.modelType"
                                           :inputData="inputData"
                                           :modelFeatures="modelFeatures"
+                                          :debouncingTimeout="debouncingTimeout"
                   />
                 </v-tab-item>
                 <v-tab-item v-if='textFeatureNames.length'>
@@ -195,6 +197,7 @@ export default class Inspector extends Vue {
   dataErrorMsg = ""
   classificationResult = null
   isClassification = isClassification
+  debouncingTimeout: number = 500;
 
   async mounted() {
     await this.loadMetaData();
@@ -238,7 +241,7 @@ export default class Inspector extends Vue {
 
   async onValuePerturbation(featureMeta: FeatureMetadataDTO) {
     mixpanel.track("Feature perturbation", {
-      featureType: featureMeta.type,
+      columnType: featureMeta.type,
       featureName: anonymize(featureMeta.name),
       modelId: this.model.id,
       datasetId: this.dataset.id

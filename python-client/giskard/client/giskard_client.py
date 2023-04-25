@@ -16,10 +16,10 @@ from requests_toolbelt import sessions
 
 import giskard
 from giskard.client.analytics_collector import GiskardAnalyticsCollector, anonymize
-from giskard.client.dtos import TestSuiteNewDTO
+from giskard.client.dtos import TestSuiteDTO
 from giskard.client.project import Project
 from giskard.client.python_utils import warning
-from giskard.core.core import ModelMeta, DatasetMeta
+from giskard.core.core import ModelMeta, DatasetMeta, TestFunctionMeta, SMT
 
 logger = logging.getLogger(__name__)
 
@@ -78,11 +78,10 @@ class GiskardClient:
         self._session.mount(base_url, ErrorHandlingAdapter())
         self._session.auth = BearerAuth(token)
         self.analytics = GiskardAnalyticsCollector()
-        try:
-            server_settings = self._session.get("settings/ml-worker-connect").json()
-            self.analytics.init(server_settings)
-        except Exception:  # noqa
-            logger.warning("Failed to fetch server settings: ", exc_info=True)
+
+        server_settings = self._session.get("settings/ml-worker-connect").json()
+        self.analytics.init(server_settings)
+
         self.analytics.track("Init GiskardClient", {"client version": giskard.__version__})
 
     @property
@@ -156,8 +155,8 @@ class GiskardClient:
         return DatasetMeta(
             name=res["name"],
             target=res["target"],
-            feature_types=res["featureTypes"],
             column_types=res["columnTypes"],
+            column_dtypes=res["columnDtypes"],
         )
 
     def save_model_meta(self, project_key: str, model_id: UUID, meta: ModelMeta, python_version: str, size: int):
@@ -248,8 +247,8 @@ class GiskardClient:
                 "id": dataset_id,
                 "name": meta.name,
                 "target": meta.target,
-                "featureTypes": meta.feature_types,
                 "columnTypes": meta.column_types,
+                "columnDtypes": meta.column_dtypes,
                 "originalSizeBytes": original_size_bytes,
                 "compressedSizeBytes": compressed_size_bytes,
             },
@@ -261,8 +260,8 @@ class GiskardClient:
                 "id": anonymize(dataset_id),
                 "name": anonymize(meta.name),
                 "target": anonymize(meta.target),
-                "featureTypes": anonymize(meta.feature_types),
                 "columnTypes": anonymize(meta.column_types),
+                "columnDtypes": anonymize(meta.column_dtypes),
                 "original_size_bytes": original_size_bytes,
                 "compressed_size_bytes": compressed_size_bytes,
             },
@@ -270,8 +269,15 @@ class GiskardClient:
 
         print(f"Dataset successfully uploaded to project key '{project_key}' with ID = {dataset_id}")
 
+    def save_meta(self, endpoint: str, meta: SMT) -> SMT:
+        json = self._session.put(endpoint, json=meta.to_json()).json()
+        return meta if json is None or 'uuid' not in json else meta.from_json(json)
+
+    def load_meta(self, endpoint: str, meta_class: SMT) -> TestFunctionMeta:
+        return meta_class.from_json(self._session.get(endpoint).json())
+
     def get_server_info(self):
         return self._session.get("settings/ml-worker-connect").json()
 
-    def save_test_suite(self, dto: TestSuiteNewDTO):
-        return self._session.post(f"testing/project/{dto.project_key}/suites-new", json=dto.dict()).json()
+    def save_test_suite(self, dto: TestSuiteDTO):
+        return self._session.post(f"testing/project/{dto.project_key}/suites", json=dto.dict()).json()

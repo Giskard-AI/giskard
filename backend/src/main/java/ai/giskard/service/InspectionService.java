@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Optional;
 
 import static ai.giskard.domain.ml.table.RowFilterType.CUSTOM;
 import static ai.giskard.service.DatasetService.GISKARD_DATASET_INDEX_COLUMN_NAME;
@@ -47,12 +48,12 @@ public class InspectionService {
         return Table.read().csv(reader);
     }
 
-    public Table getTableFromBucketFile(String location, ColumnType[] columnTypes) throws FileNotFoundException {
+    public Table getTableFromBucketFile(String location, tech.tablesaw.api.ColumnType[] columnDtypes) throws FileNotFoundException {
         InputStreamReader reader = new InputStreamReader(
             new FileInputStream(location));
         CsvReadOptions csvReadOptions = CsvReadOptions
             .builder(reader)
-            .columnTypes(columnTypes)
+            .columnTypes(columnDtypes)
             .build();
         return Table.read().csv(csvReadOptions);
     }
@@ -144,8 +145,8 @@ public class InspectionService {
 
     private Selection getSelection(Inspection inspection, Filter filter) throws FileNotFoundException {
         Table predsTable = getTableFromBucketFile(getPredictionsPath(inspection).toString());
-        ColumnType[] columnTypes = {ColumnType.STRING, ColumnType.STRING, ColumnType.DOUBLE};
-        Table calculatedTable = getTableFromBucketFile(getCalculatedPath(inspection).toString(), columnTypes);
+        tech.tablesaw.api.ColumnType[] columnDtypes = {tech.tablesaw.api.ColumnType.STRING, tech.tablesaw.api.ColumnType.STRING, tech.tablesaw.api.ColumnType.DOUBLE};
+        Table calculatedTable = getTableFromBucketFile(getCalculatedPath(inspection).toString(), columnDtypes);
         StringColumn predictedClass = calculatedTable.stringColumn(0);
         Selection selection = predictedClass.isNotMissing();
         if (inspection.getDataset().getTarget() != null) {
@@ -234,5 +235,23 @@ public class InspectionService {
         } catch (Exception e) {
             throw new GiskardRuntimeException("Failed to delete inspections", e);
         }
+    }
+
+    public List<Inspection> getInspections() {
+        return inspectionRepository.findAll();
+    }
+
+    public List<Inspection> getInspectionsByProjectId(long projectId) {
+        return inspectionRepository.findAllByModelProjectId(projectId);
+    }
+
+    public void deleteInspection(Long inspectionId) {
+        inspectionRepository.deleteById(inspectionId);
+    }
+
+    public Inspection updateInspectionName(long inspectionId, String name) {
+        Inspection inspection = inspectionRepository.getById(inspectionId);
+        inspection.setName(name);
+        return inspectionRepository.save(inspection);
     }
 }

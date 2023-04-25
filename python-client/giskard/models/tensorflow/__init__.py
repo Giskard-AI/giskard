@@ -1,25 +1,28 @@
-import mlflow
-from typing import Union
 import logging
+from typing import Optional, Iterable, Any, Callable
 
-from giskard.core.core import SupportedModelTypes
-from giskard.core.model import MLFlowBasedModel
+import mlflow
+import pandas as pd
+
+from giskard.core.core import ModelType
+from giskard.core.validation import configured_validate_arguments
+from giskard.models.base import MLFlowBasedModel
 
 logger = logging.getLogger(__name__)
 
 
 class TensorFlowModel(MLFlowBasedModel):
+    @configured_validate_arguments
     def __init__(self,
-                 clf,
-                 model_type: Union[SupportedModelTypes, str],
-                 name: str = None,
-                 data_preprocessing_function=None,
-                 model_postprocessing_function=None,
-                 feature_names=None,
-                 classification_threshold=0.5,
-                 classification_labels=None) -> None:
-
-        super().__init__(clf=clf,
+                 model,
+                 model_type: ModelType,
+                 name: Optional[str] = None,
+                 data_preprocessing_function: Callable[[pd.DataFrame], Any] = None,
+                 model_postprocessing_function: Callable[[Any], Any] = None,
+                 feature_names: Optional[Iterable] = None,
+                 classification_threshold: Optional[float] = 0.5,
+                 classification_labels: Optional[Iterable] = None):
+        super().__init__(model=model,
                          model_type=model_type,
                          name=name,
                          data_preprocessing_function=data_preprocessing_function,
@@ -29,13 +32,13 @@ class TensorFlowModel(MLFlowBasedModel):
                          classification_labels=classification_labels)
 
     @classmethod
-    def load_clf(cls, local_path):
+    def load_model(cls, local_path):
         return mlflow.tensorflow.load_model(local_path)
 
     def save_with_mlflow(self, local_path, mlflow_meta: mlflow.models.Model):
-        mlflow.tensorflow.save_model(self.clf,
+        mlflow.tensorflow.save_model(self.model,
                                      path=local_path,
                                      mlflow_model=mlflow_meta)
 
-    def clf_predict(self, data):
-        return self.clf.predict(data)
+    def model_predict(self, data):
+        return self.model.predict(data)

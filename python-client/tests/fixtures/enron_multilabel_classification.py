@@ -11,7 +11,7 @@ from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
 
 from giskard.core.core import SupportedModelTypes
-from giskard.ml_worker.core.dataset import Dataset
+from giskard.datasets.base import Dataset
 from giskard.ml_worker.utils.logging import Timer
 from giskard.models.sklearn import SKLearnModel
 from tests import path
@@ -31,20 +31,16 @@ input_types = {
 @pytest.fixture()
 def enron_data() -> Dataset:
     logger.info("Fetching Enron Data")
+    df = pd.read_csv(path("test_data/enron_data.csv"), keep_default_na=False, na_values=["_GSK_NA_"])
+    df.drop(columns="Unnamed: 0", inplace=True)
     return Dataset(
-        df=pd.read_csv(path("test_data/enron_data.csv"), keep_default_na=False, na_values=["_GSK_NA_"]),
-        target="Target",
-        feature_types=input_types,
-    )
+        df=df,
+        target="Target", column_types=input_types)
 
 
 @pytest.fixture()
 def enron_test_data(enron_data):
-    return Dataset(
-        df=pd.DataFrame(enron_data.df).drop(columns=["Target"]),
-        feature_types=input_types,
-        target=None,
-    )
+    return Dataset(df=pd.DataFrame(enron_data.df).drop(columns=["Target"]), target=None, column_types=input_types)
 
 
 @pytest.fixture()
@@ -86,7 +82,7 @@ def enron_model(enron_data) -> SKLearnModel:
     timer.stop(f"Trained model with score: {model_score}")
 
     return SKLearnModel(
-        clf=clf,
+        model=clf,
         model_type=SupportedModelTypes.CLASSIFICATION,
         feature_names=list(input_types),
         classification_threshold=0.5,

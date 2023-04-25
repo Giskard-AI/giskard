@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import sys
 
 import grpc
 from grpc.aio._server import Server
@@ -9,7 +10,7 @@ from giskard import cli_utils
 from giskard.client.giskard_client import GiskardClient
 from giskard.ml_worker.bridge.ml_worker_bridge import MLWorkerBridge
 from giskard.ml_worker.testing.registry.registry import load_plugins
-from giskard.ml_worker.utils.error_interceptor import ErrorInterceptor
+from giskard.ml_worker.utils.request_interceptor import MLWorkerRequestInterceptor
 from giskard.settings import settings
 
 logger = logging.getLogger(__name__)
@@ -36,7 +37,7 @@ class MLWorker:
         from giskard.ml_worker.utils.network import find_free_port
 
         server = grpc.aio.server(
-            interceptors=[ErrorInterceptor()],
+            interceptors=[MLWorkerRequestInterceptor()],
             options=[
                 ("grpc.max_send_message_length", settings.max_send_message_length_mb * 1024 ** 2),
                 ("grpc.max_receive_message_length", settings.max_receive_message_length_mb * 1024 ** 2),
@@ -48,8 +49,15 @@ class MLWorker:
             address = f"{settings.host}:{port}"
         else:
             worker_id = cli_utils.ml_worker_id(is_server, client.host_url)
-            self.socket_file_location = f"{settings.home_dir / 'run' / f'ml-worker-{worker_id}.sock'}"
-            address = f"unix://{self.socket_file_location}"
+            # On Windows, we cannot use Unix sockets, so we use TCP.
+            # Port 40052 is only used internally between the worker and the bridge.
+            if sys.platform == "win32":
+                # Find random open port
+                port = find_free_port()
+                address = f"localhost:{port}"
+            else:
+                self.socket_file_location = f"{settings.home_dir / 'run' / f'ml-worker-{worker_id}.sock'}"
+                address = f"unix://{self.socket_file_location}"
 
         add_MLWorkerServicer_to_server(MLWorkerServiceImpl(self, client, address, not is_server), server)
         server.add_insecure_port(address)
@@ -59,6 +67,7 @@ class MLWorker:
 
     async def start(self):
         load_plugins()
+
         await self.grpc_server.start()
         if self.tunnel:
             await self.tunnel.start()
