@@ -17,22 +17,23 @@
 
 import {SuiteTestDTO, SuiteTestExecutionDTO, TestFunctionDTO, TestSuiteExecutionDTO} from '@/generated-sources';
 import {computed, ComputedRef} from 'vue';
-import {chain} from 'lodash';
 import {storeToRefs} from 'pinia';
 import {useTestSuiteStore} from '@/stores/test-suite';
 import {useRoute} from 'vue-router/composables';
 import SuiteTestExecutionList from '@/views/main/project/SuiteTestExecutionList.vue';
 import TestSuiteExecutionHeader from '@/views/main/project/TestSuiteExecutionHeader.vue';
+import {useCatalogStore} from "@/stores/catalog";
 
-const {executions, models, datasets, inputs, registry, suite} = storeToRefs(useTestSuiteStore());
+const {executions, models, datasets, inputs, suite} = storeToRefs(useTestSuiteStore());
+const {testFunctionsByUuid} = storeToRefs(useCatalogStore());
 
 type ExecutionComparison = {
-  execution: TestSuiteExecutionDTO,
-  tests: {
-    suiteTest: SuiteTestDTO,
-    test: TestFunctionDTO,
-    result?: SuiteTestExecutionDTO
-  }[]
+    execution: TestSuiteExecutionDTO,
+    tests: {
+        suiteTest: SuiteTestDTO,
+        test: TestFunctionDTO,
+        result?: SuiteTestExecutionDTO
+    }[]
 }
 
 const route = useRoute();
@@ -59,16 +60,14 @@ const executionComparisons: ComputedRef<ExecutionComparison[]> = computed(() => 
   results.forEach(result => {
     result.tests = suite.value === null ? [] : suite.value!.tests
         .map(suiteTest => ({
-          suiteTest,
-          test: registryByUuid.value[suiteTest.testUuid],
-          result: result.execution?.results?.find(result => result.test.id === suiteTest.id)
+            suiteTest,
+            test: testFunctionsByUuid.value[suiteTest.testUuid],
+            result: result.execution?.results?.find(result => result.test.id === suiteTest.id)
         }));
   })
 
   return results;
 });
-
-const registryByUuid = computed(() => chain(registry.value).keyBy('uuid').value());
 
 
 </script>

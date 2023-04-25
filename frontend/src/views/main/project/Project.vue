@@ -11,10 +11,9 @@
       </v-toolbar-title>
       <v-spacer></v-spacer>
       <v-tooltip :disabled="mainStore.authAvailable" bottom>
-        <template v-slot:activator="{ on, attrs}">
+        <template v-slot:activator="{ on, attrs }">
           <div v-on="on">
-            <v-btn small tile color="primary" v-if="isProjectOwnerOrAdmin"
-                   @click="openShareDialog = true" :disabled="!mainStore.authAvailable">
+            <v-btn small tile color="primary" v-if="isProjectOwnerOrAdmin" @click="openShareDialog = true" :disabled="!mainStore.authAvailable">
               <v-icon dense left>people</v-icon>
               Invite
             </v-btn>
@@ -59,19 +58,7 @@
         </v-card-title>
         <v-card-text>
           <v-container fluid>
-            <v-autocomplete
-                label="Enter name or ID..."
-                v-model="userToInvite"
-                :items="coworkerNamesAvailable"
-                :item-text="getUserFullDisplayName"
-                item-value="id"
-                return-object
-                class="mx-2"
-                outlined dense single-line hide-details
-                clearable
-                prepend-inner-icon="person"
-                no-data-text="No user found"
-            ></v-autocomplete>
+            <v-autocomplete label="Enter name or ID..." v-model="userToInvite" :items="coworkerNamesAvailable" :item-text="getUserFullDisplayName" item-value="id" return-object class="mx-2" outlined dense single-line hide-details clearable prepend-inner-icon="person" no-data-text="No user found"></v-autocomplete>
           </v-container>
         </v-card-text>
         <v-card-actions>
@@ -87,16 +74,15 @@
         <v-form @submit.prevent="submitEditProject()">
           <v-card-title>Edit project details</v-card-title>
           <v-card-text>
-            <ValidationProvider name="Name" mode="eager" rules="required" v-slot="{errors}">
+            <ValidationProvider name="Name" mode="eager" rules="required" v-slot="{ errors }">
               <v-text-field label="Project Name*" type="text" v-model="newName" :error-messages="errors"></v-text-field>
             </ValidationProvider>
             <v-text-field label="Project Description" type="text" v-model="newDescription"></v-text-field>
           </v-card-text>
           <v-card-title>Modify project settings</v-card-title>
           <v-card-text>
-            <ValidationProvider name="Lime Number Samples" rules="required" v-slot="{errors}">
-              <v-text-field label="Lime Number Samples*" type="number" :error-messages="errors"
-                            v-model="newLimeSamples"></v-text-field>
+            <ValidationProvider name="Lime Number Samples" rules="required" v-slot="{ errors }">
+              <v-text-field label="Lime Number Samples*" type="number" :error-messages="errors" v-model="newLimeSamples"></v-text-field>
             </ValidationProvider>
           </v-card-text>
           <v-card-actions>
@@ -124,33 +110,40 @@
       </v-card>
     </v-dialog>
 
-		<v-container fluid id="container-project-tab" class="vertical-container overflow-hidden pb-0">
+    <v-container fluid id="container-project-tab" class="vertical-container overflow-hidden pb-0">
       <v-tabs>
-        <v-tab :to="{name: 'project-overview'}">
+        <v-tab :to="{ name: 'project-overview' }">
           <v-icon left>notes</v-icon>
           Overview
         </v-tab>
-        <v-tab :to="{name: 'project-datasets'}">
+        <v-tab :to="{ name: 'project-datasets' }">
           <v-icon left>stacked_bar_chart</v-icon>
           Datasets
         </v-tab>
-        <v-tab :to="{name: 'project-models'}">
+        <v-tab :to="{ name: 'project-models' }">
           <v-icon left>settings_suggest</v-icon>
-          Models
+            Models
         </v-tab>
-        <v-tab :to="{name: 'project-inspector', params: tempInspectorParams}" v-if="showInspector">
-          <v-icon left>model_training</v-icon>
-          Inspector
-        </v-tab>
-        <v-tab :to="{name: 'project-feedbacks'}">
-          <v-icon left small>mdi-comment-multiple-outline</v-icon>
-          Feedback
-        </v-tab>
-				<v-tab :to="{name: 'project-test-suites'}">
-          <v-icon left small>mdi-list-status</v-icon>
-          Test suites️
-        </v-tab>
-				<v-tab :to="{name: 'project-tests-catalog'}"><v-icon left small>mdi-list-status</v-icon>Test catalog</v-tab>
+          <v-tab :to="{ name: 'project-inspector', params: tempInspectorParams }" v-if="showInspector">
+              <v-icon left>model_training</v-icon>
+              Inspector
+          </v-tab>
+          <v-tab :to="{name: 'project-feedbacks'}">
+              <v-icon left small>mdi-comment-multiple-outline</v-icon>
+              Feedback
+          </v-tab>
+          <v-tab :to="{name: 'project-debugger'}">
+              <v-icon left small>mdi-debug-step-over</v-icon>
+              Debugger
+          </v-tab>
+          <v-tab :to="{name: 'project-test-suites'}">
+              <v-icon left small>mdi-list-status</v-icon>
+              Test suites️
+          </v-tab>
+          <v-tab :to="{name: 'project-catalog-tests'}">
+              <v-icon left small>mdi-list-status</v-icon>
+              Catalog
+          </v-tab>
       </v-tabs>
       <keep-alive>
         <router-view :isProjectOwnerOrAdmin="isProjectOwnerOrAdmin"></router-view>
@@ -198,13 +191,13 @@ const tempInspectorParams = ref<any>({}); // Type this later?
 
 onMounted(async () => {
   // make sure project is loaded first
-  await projectStore.getProject({id: props.id});
+  await projectStore.getProject({ id: props.id });
   await mainStore.getCoworkers();
 
   setInspector(router.currentRoute);
 })
 
-watch(() => (route), setInspector, {deep: true});
+watch(() => (route), setInspector, { deep: true });
 
 const userProfile = computed(() => {
   return userStore.userProfile;
@@ -239,8 +232,8 @@ function setInspector(to: Route) {
 async function inviteUser() {
   if (project.value && userToInvite.value) {
     try {
-      mixpanel.track('Invite user to project', {projectId: project.value?.id, userId: userToInvite.value?.id!});
-      await projectStore.inviteUserToProject({projectId: project.value!.id, userId: userToInvite.value!.id!})
+      mixpanel.track('Invite user to project', { projectId: project.value?.id, userId: userToInvite.value?.id! });
+      await projectStore.inviteUserToProject({ projectId: project.value!.id, userId: userToInvite.value!.id! })
       openShareDialog.value = false
     } catch (e) {
       console.error(e)
@@ -249,7 +242,7 @@ async function inviteUser() {
 }
 
 function exportProject(id: number) {
-  mixpanel.track('Export project', {id});
+  mixpanel.track('Export project', { id });
   projectStore.exportProject(id);
 }
 
@@ -274,7 +267,7 @@ async function submitEditProject() {
       description: newDescription.value,
     }
     try {
-      await projectStore.editProject({id: project.value!.id, data: proj})
+      await projectStore.editProject({ id: project.value!.id, data: proj })
       openEditDialog.value = false;
     } catch (e) {
       console.error(e.message);
@@ -285,8 +278,8 @@ async function submitEditProject() {
 async function deleteProject() {
   if (project.value) {
     try {
-      mixpanel.track('Delete project', {id: project.value!.id});
-      await projectStore.deleteProject({id: project.value!.id})
+      mixpanel.track('Delete project', { id: project.value!.id });
+      await projectStore.deleteProject({ id: project.value!.id })
       await router.push('/main/dashboard');
     } catch (e) {
       console.error(e.message);
