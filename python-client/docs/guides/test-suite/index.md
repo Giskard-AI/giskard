@@ -13,7 +13,7 @@ In order to test your model, you'll need to install the `giskard` library with `
 :::{tab-item} Windows
 
 ```sh
-pip install "git+https://github.com/Giskard-AI/giskard.git@feature/ai-test-v2-merged#subdirectory=python-client" --user
+pip install "giskard[scan] @ git+https://github.com/Giskard-AI/giskard.git@feature/scan#subdirectory=python-client" --user
 ```
 
 :::
@@ -21,7 +21,7 @@ pip install "git+https://github.com/Giskard-AI/giskard.git@feature/ai-test-v2-me
 :::{tab-item} Mac and Linux
 
 ```sh
-pip install "git+https://github.com/Giskard-AI/giskard.git@feature/ai-test-v2-merged#subdirectory=python-client"
+pip install "giskard[scan] @ git+https://github.com/Giskard-AI/giskard.git@feature/scan#subdirectory=python-client"
 ```
 
 :::
@@ -64,11 +64,8 @@ wrapped_model = wrap_model(...)
 train_df = wrap_dataset(...)
 test_df = wrap_dataset(...)
 
-result = test_drift_prediction_ks(reference_dataset=train_df,
-                                  actual_dataset=test_df,
-                                  model=wrapped_model,
-                                  classification_label='CALIFORNIA CRISIS',
-                                  threshold=0.5).execute()
+result = test_drift_prediction_ks(model=wrapped_model, actual_dataset=test_df, reference_dataset=train_df,
+                                  classification_label='CALIFORNIA CRISIS', threshold=0.5).execute()
 
 print("Result for 'Classification Probability drift (Kolmogorov-Smirnov):")
 print(f"Passed: {result.passed}")
@@ -112,7 +109,7 @@ def add_three_years(row):
     return row
 
 
-result = test_metamorphic_invariance(wrapped_dataset, wrapped_model, add_three_years).execute()
+result = test_metamorphic_invariance(wrapped_model, wrapped_dataset, add_three_years).execute()
 print(f"result: {result.passed} with metric {result.metric}")
 ```
 
@@ -129,7 +126,7 @@ from giskard import wrap_model, wrap_dataset, test_right_label
 wrapped_model = wrap_model(...)
 wrapped_dataset = wrap_dataset(...)
 
-result = test_right_label(wrapped_dataset, wrapped_model, 'SUCCESS').execute()
+result = test_right_label(wrapped_model, wrapped_dataset, 'SUCCESS').execute()
 print(f"result: {result.passed} with metric {result.metric}")
 ```
 
@@ -166,8 +163,8 @@ class-based method.
 
 * <mark style="color:red;">**`parameters`**</mark> : **Your parameters need to have a type defined.** Here is the type
   allowed as your test parameters:
-    * `Dataset` A giskard dataset, [wrap your dataset](../scan/index.md#3-wrap-your-dataset)
-    * `BaseModel` A giskard model, [wrap your model](../scan/index.md#2-wrap-your-model)
+    * `Dataset` A giskard dataset, [wrap your dataset](../scan/index.md#wrap-your-dataset)
+    * `BaseModel` A giskard model, [wrap your model](../scan/index.md#wrap-your-model)
     * `int/float/bool/str`  Any primitive type can be used
 * <mark style="color:red;">**`return`**</mark> The result of your test must be either a bool or a TestResult:
     * `bool` Either `True` if the test passed or `False` if it failed
@@ -250,8 +247,8 @@ wrapped_dataset = wrap_dataset(...)
 # Note that all the parameters are specified excect dataset
 # Which means that we will need to specify dataset everytime we run the suite
 suite = Suite()
-    .add_test(test_f1, "f1", dataset=wrapped_dataset)
-    .add_test(DataQuality(dataset=wrapped_dataset, column_name='Month', category='August'), "quality")
+.add_test(test_f1(dataset=wrapped_dataset))
+.add_test(DataQuality(dataset=wrapped_dataset, column_name='Month', category='August'))
 
 # Create our first model
 my_first_model = wrap_model(...)
@@ -300,10 +297,10 @@ project_name = "enron"
 client = GiskardClient(url, token)
 
 # Create a project
-client.create_project(project_name, "Email Classification", "Email Classification")
+client.create_project(project_name, "Project name", "Small description of the project")
 
 suite = Suite()
-.add_test(test_f1, dataset=wrapped_dataset)
+.add_test(test_f1(dataset=wrapped_dataset))
 .add_test(DataQuality(dataset=wrapped_dataset, column_name='Month', category='August'))
 .save(client, project_name)
 ```

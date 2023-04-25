@@ -1,32 +1,30 @@
+import inspect
 import logging
 import posixpath
 import tempfile
 import uuid
-from enum import Enum
 from pathlib import Path
 from typing import Dict, Optional, List, Hashable, Union
+from pandas.api.types import is_list_like
 
 import pandas as pd
+import numpy as np
 import yaml
 from pandas.api.types import is_numeric_dtype
 from zstandard import ZstdDecompressor
 
 from giskard.client.giskard_client import GiskardClient
 from giskard.client.io_utils import save_df, compress
-from giskard.client.python_utils import warning
 from giskard.core.core import DatasetMeta, SupportedColumnTypes
 from giskard.core.validation import configured_validate_arguments
-from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction
-from giskard.ml_worker.testing.registry.transformation_function import TransformationFunction
+from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction, SlicingFunctionType
+from giskard.ml_worker.testing.registry.transformation_function import (
+    TransformationFunction,
+    TransformationFunctionType,
+)
 from giskard.settings import settings
 
 logger = logging.getLogger(__name__)
-
-
-class Nuniques(Enum):
-    CATEGORY = 2
-    NUMERIC = 100
-    TEXT = 1000
 
 
 class DataProcessor:
@@ -52,6 +50,7 @@ class DataProcessor:
         __repr__() -> str:
             Return a string representation of the DataProcessor object, showing the number of steps in its pipeline.
     """
+
     pipeline: List[Union[SlicingFunction, TransformationFunction]] = []
 
     @configured_validate_arguments
@@ -60,7 +59,7 @@ class DataProcessor:
             self.pipeline.append(processor)
         return self
 
-    def apply(self, dataset: 'Dataset', apply_only_last=False):
+    def apply(self, dataset: "Dataset", apply_only_last=False):
         df = dataset.df.copy()
 
         while len(self.pipeline):
@@ -71,14 +70,13 @@ class DataProcessor:
             if apply_only_last:
                 break
 
-        if df.empty:
-            raise ValueError("Processing pipeline produced an empty dataset")
-
-        ret = Dataset(df=df,
-                      name=dataset.name,
-                      target=dataset.target,
-                      cat_columns=dataset.cat_columns,
-                      column_types=dataset.column_types)
+        ret = Dataset(
+            df=df,
+            name=dataset.name,
+            target=dataset.target,
+            cat_columns=dataset.cat_columns,
+            column_types=dataset.column_types,
+        )
 
         if len(self.pipeline):
             ret.data_processor = self
@@ -94,20 +92,26 @@ class Dataset:
 
     Attributes:
         dataset (pandas.DataFrame):
-            The dataframe representing the dataset.
+            A Pandas dataframe that contains some data examples that might interest you to inspect (test set, train set,
+            production data). Some important remarks:
+
+            - df should be the raw data that comes before all the preprocessing steps
+            - df can contain more columns than the features of the model such as the actual ground truth variable,
+            sample_id, metadata, etc.
         name (Optional[str]):
-            The name of the dataset. Default is None.
+            A string representing the name of the dataset (default None).
         target (Optional[str]):
-            The column name in df corresponding to the actual target variable (ground truth). Default is None.
+            The column name in df corresponding to the actual target variable (ground truth).
         cat_columns (Optional[List[str]]):
-            A list of column names to be treated as categorical variables. Default is None.
-        infer_column_types (Optional[bool]):
-            If True, column data types will be inferred from the dataset. Default is False.
+            A list of strings representing the names of categorical columns (default None). If not provided,
+            the categorical columns will be automatically inferred.
         column_types (Optional[Dict[str, str]]):
-            A dictionary that maps column names to their data types. Default is None.
+            A dictionary of column names and their types (numeric, category or text) for all columns of df. If not provided,
+            the categorical columns will be automatically inferred.
         data_processor (DataProcessor):
             An instance of the `DataProcessor` class used for data processing.
     """
+
     name: str
     target: str
     column_types: Dict[str, str]
@@ -117,14 +121,13 @@ class Dataset:
 
     @configured_validate_arguments
     def __init__(
-            self,
-            df: pd.DataFrame,
-            name: Optional[str] = None,
-            target: Optional[str] = None,
-            cat_columns: Optional[List[str]] = None,
-            infer_column_types: Optional[bool] = False,
-            column_types: Optional[Dict[str, str]] = None,
-            id: Optional[uuid.UUID] = None
+        self,
+        df: pd.DataFrame,
+        name: Optional[str] = None,
+        target: Optional[str] = None,
+        cat_columns: Optional[List[str]] = [],
+        column_types: Optional[Dict[str, str]] = None,
+        id: Optional[uuid.UUID] = None,
     ) -> None:
         """
         Initializes a Dataset object.
@@ -134,22 +137,13 @@ class Dataset:
             name (Optional[str]): The name of the dataset.
             target (Optional[str]): The column name in df corresponding to the actual target variable (ground truth).
             cat_columns (Optional[List[str]]): A list of column names that are categorical.
-            infer_column_types (Optional[bool]): If True, attempts to infer column types automatically.
             column_types (Optional[Dict[str, str]]): A dictionary mapping column names to their types.
             id (Optional[uuid.UUID]): A UUID that uniquely identifies this dataset.
 
-        Raises:
-            ValueError: If the input DataFrame is empty.
-            ValueError: If cat_columns contains a column that does not exist in the input DataFrame.
-
         Notes:
-            - If infer_column_types is True and cat_columns is not specified, the algorithm assumes there are no categorical
-              columns in the dataset.
-            - If column_types is specified, it overrides the types inferred from cat_columns or infer_column_types.
-            - Validates numeric columns of the Dataset object using `validate_numeric_columns` function.
+            if neither of cat_columns or column_types are provided. We infer heuristically the types of the columns.
+            See the _infer_column_types method.
         """
-        if df.empty:
-            raise ValueError("Please provide a non-empty df to construct the Dataset object.")
         if id is None:
             self.id = uuid.uuid4()
         else:
@@ -157,28 +151,28 @@ class Dataset:
         self.name = name
         self.df = pd.DataFrame(df)
         self.target = target
-        if not self.target:
-            warning(
-                "You did not provide the optional argument 'target'. "
-                "'target' is the column name in df corresponding to the actual target variable (ground truth).")
-        self.check_hashability(self.df)
+        from giskard.core.dataset_validation import validate_target
+
+        validate_target(self)
+
+        if not self.df.empty:
+            self.check_hashability(self.df)
         self.column_dtypes = self.extract_column_dtypes(self.df)
+
+        from giskard.core.dataset_validation import validate_column_categorization, validate_column_types
+
+        # used in the inference of category columns
+        self.category_threshold = round(np.log10(len(self.df))) if len(self.df) >= 100 else 2
         if column_types:
+            column_types.pop(self.target, None)  # no need for target type
             self.column_types = column_types
-        elif cat_columns:
-            if not set(cat_columns).issubset(list(df.columns)):
-                raise ValueError("The provided 'cat_columns' are not all part of your dataset 'columns'. "
-                                 "Please make sure that `cat_columns` refers to existing columns in your dataset.")
-            self.column_types = self.extract_column_types(self.column_dtypes, cat_columns)
-        elif infer_column_types:
-            self.column_types = self.infer_column_types(self.df, self.column_dtypes)
+            validate_column_types(self)
         else:
-            self.column_types = self.infer_column_types(self.df, self.column_dtypes, no_cat=True)
-            warning(
-                "You did not provide any of [column_types, cat_columns, infer_column_types = True] for your Dataset. "
-                "In this case, we assume that there's no categorical columns in your Dataset.")
+            self.column_types = self._infer_column_types(cat_columns)
+        validate_column_categorization(self)
 
         from giskard.core.dataset_validation import validate_numeric_columns
+
         validate_numeric_columns(self)
 
     def add_slicing_function(self, slicing_function: SlicingFunction):
@@ -202,38 +196,55 @@ class Dataset:
         return self
 
     @configured_validate_arguments
-    def slice(self, slicing_function: Optional[SlicingFunction] = None):
+    def slice(self, slicing_function: Union[SlicingFunction, SlicingFunctionType], row_level: bool = True):
         """
-        Slice the dataset using the specified `SlicingFunction`.
+        Slice the dataset using the specified `slicing_function`.
 
         Args:
-            slicing_function (SlicingFunction, optional):
-                The slicing function to use. It should take a pandas DataFrame and return a DataFrame with the same columns.
+            slicing_function (Union[SlicingFunction, SlicingFunctionType]): A slicing function to apply.
+                If `slicing_function` is a callable, it will be wrapped in a `SlicingFunction` object
+                with `row_level` as its `row_level` argument. The `SlicingFunction` object will be
+                used to slice the DataFrame. If `slicing_function` is a `SlicingFunction` object, it
+                will be used directly to slice the DataFrame.
+            row_level (bool): Whether the `slicing_function` should be applied to the rows (True) or
+                the whole dataframe (False). Defaults to True.
 
         Returns:
             Dataset:
                 The sliced dataset as a `Dataset` object.
+
+        Notes:
+            Raises TypeError: If `slicing_function` is not a callable or a `SlicingFunction` object.
         """
-        if slicing_function:
-            return self.data_processor.add_step(slicing_function).apply(self, apply_only_last=True)
-        else:
-            return self
+        if inspect.isfunction(slicing_function):
+            slicing_function = SlicingFunction(slicing_function, row_level=row_level)
+        return self.data_processor.add_step(slicing_function).apply(self, apply_only_last=True)
 
     @configured_validate_arguments
-    def transform(self, transformation_function: Optional[TransformationFunction] = None):
+    def transform(
+        self, transformation_function: Union[TransformationFunction, TransformationFunctionType], row_level: bool = True
+    ):
         """
         Transform the data in the current Dataset by applying a transformation function.
 
         Args:
-            transformation_function (TransformationFunction, optional): A function that takes a pandas DataFrame as input and returns a modified DataFrame.
+            transformation_function (Union[TransformationFunction, TransformationFunctionType]):
+                A transformation function to apply. If `transformation_function` is a callable, it will
+                be wrapped in a `TransformationFunction` object with `row_level` as its `row_level`
+                argument. If `transformation_function` is a `TransformationFunction` object, it will be used
+                directly to transform the DataFrame.
+            row_level (bool): Whether the `transformation_function` should be applied to the rows (True) or
+                the whole dataframe (False). Defaults to True.
 
         Returns:
             Dataset: A new Dataset object containing the transformed data.
+
+        Notes:
+            Raises TypeError: If `transformation_function` is not a callable or a `TransformationFunction` object.
         """
-        if transformation_function:
-            return self.data_processor.add_step(transformation_function).apply(self, apply_only_last=True)
-        else:
-            return self
+        if inspect.isfunction(transformation_function):
+            transformation_function = TransformationFunction(transformation_function, row_level=row_level)
+        return self.data_processor.add_step(transformation_function).apply(self, apply_only_last=True)
 
     def process(self):
         """
@@ -266,10 +277,10 @@ class Dataset:
         if non_hashable_cols:
             raise TypeError(
                 f"The following columns in your df: {non_hashable_cols} are not hashable. "
-                f"We currently support only hashable column types such as int, bool, str, tuple and not list or dict.")
+                f"We currently support only hashable column types such as int, bool, str, tuple and not list or dict."
+            )
 
-    @staticmethod
-    def infer_column_types(df, column_dtypes, no_cat=False):
+    def _infer_column_types(self, cat_columns: List[str]):
         """
         Infer column types of a given DataFrame based on the number of unique values and column data types.
 
@@ -281,39 +292,37 @@ class Dataset:
         Returns:
             dict: A dictionary that maps column names to their inferred types, one of 'text', 'numeric', or 'category'.
         """
-        # TODO: improve this method
-        nuniques = df.nunique()
         column_types = {}
-        for col, col_type in column_dtypes.items():
-            if nuniques[col] <= Nuniques.CATEGORY.value and not no_cat:
-                column_types[col] = SupportedColumnTypes.CATEGORY.value
-            elif is_numeric_dtype(df[col]):
+        nuniques = self.df.nunique()
+        df_columns = list(self.df.columns)
+
+        if cat_columns:
+            if not set(cat_columns).issubset(df_columns):
+                raise ValueError(
+                    "The provided 'cat_columns' are not all part of your dataset 'columns'. "
+                    "Please make sure that `cat_columns` refers to existing columns in your dataset."
+                )
+
+            for cat_col in cat_columns:
+                if cat_col != self.target:
+                    column_types[cat_col] = SupportedColumnTypes.CATEGORY.value
+            df_columns = set(df_columns) - set(cat_columns)
+
+        for col in df_columns:
+            if col == self.target:
+                continue
+            # inference of categorical columns
+            # in case cat_columns were provided by the user, we don't try to infer the categorical for the rest
+            # we raise a warning instead in validate_column_categorization
+            if not cat_columns:
+                if nuniques[col] <= self.category_threshold:
+                    column_types[col] = SupportedColumnTypes.CATEGORY.value
+                    continue
+            # inference of text and numeric columns
+            if is_numeric_dtype(self.df[col]):
                 column_types[col] = SupportedColumnTypes.NUMERIC.value
             else:
                 column_types[col] = SupportedColumnTypes.TEXT.value
-        return column_types
-
-    @staticmethod
-    def extract_column_types(column_dtypes, cat_columns):
-        """
-        Infer the types of the columns based on their dtype and category columns.
-
-        Args:
-            column_dtypes (Dict[str, Type]): A dictionary that maps column names to their respective data types.
-            cat_columns (List[str]): A list of column names that are considered categorical.
-
-        Returns:
-            Dict[str, Type]: A dictionary that maps column names to their respective inferred types (numeric, text or category).
-                The inferred data types can be one of the SupportedColumnTypes defined in the SupportedColumnTypes Enum.
-        """
-        column_types = {}
-        for cat_col in cat_columns:
-            column_types[cat_col] = SupportedColumnTypes.CATEGORY.value
-        for col, col_type in column_dtypes.items():
-            if col not in cat_columns:
-                column_types[col] = SupportedColumnTypes.NUMERIC.value if is_numeric_dtype(
-                    col_type) else SupportedColumnTypes.TEXT.value
-
         return column_types
 
     @staticmethod
@@ -340,10 +349,6 @@ class Dataset:
         Returns:
             str: The ID of the uploaded dataset.
         """
-        from giskard.core.dataset_validation import validate_dataset
-
-        validate_dataset(self)
-
         dataset_id = str(self.id)
 
         with tempfile.TemporaryDirectory(prefix="giskard-dataset-") as local_path:
@@ -423,8 +428,11 @@ class Dataset:
 
     @staticmethod
     def _cat_columns(meta):
-        return [fname for (fname, ftype) in meta.column_types.items() if
-                ftype == SupportedColumnTypes.CATEGORY] if meta.column_types else None
+        return (
+            [fname for (fname, ftype) in meta.column_types.items() if ftype == SupportedColumnTypes.CATEGORY]
+            if meta.column_types
+            else None
+        )
 
     @property
     def cat_columns(self):
@@ -459,3 +467,35 @@ class Dataset:
 
     def __len__(self):
         return len(self.df)
+
+    def select_columns(self, columns=None, col_type=None):
+        columns = _cast_to_list_like(columns) if columns is not None else None
+        col_type = _cast_to_list_like(col_type) if col_type is not None else None
+
+        df = self.df.copy()
+
+        if columns is None and col_type is None:
+            # TODO: should probably copy
+            return self
+
+        # Filter by columns
+        if columns is not None:
+            df = df.loc[:, columns]
+
+        # Filter by type
+        if col_type is not None:
+            if not is_list_like(col_type):
+                col_type = [col_type]
+
+            columns = [col for col in df.columns if self.column_types[col] in col_type]
+            df = df.loc[:, columns]
+
+        return Dataset(
+            df=df,
+            target=self.target if self.target in df.columns else None,
+            column_types={key: val for key, val in self.column_types.items() if key in df.columns},
+        )
+
+
+def _cast_to_list_like(object):
+    return object if is_list_like(object) else (object,)
