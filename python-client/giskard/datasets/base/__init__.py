@@ -5,6 +5,7 @@ import tempfile
 import uuid
 from pathlib import Path
 from typing import Dict, Optional, List, Hashable, Union
+from pandas.api.types import is_list_like
 
 import pandas as pd
 import numpy as np
@@ -17,8 +18,10 @@ from giskard.client.io_utils import save_df, compress
 from giskard.core.core import DatasetMeta, SupportedColumnTypes
 from giskard.core.validation import configured_validate_arguments
 from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction, SlicingFunctionType
-from giskard.ml_worker.testing.registry.transformation_function import TransformationFunction, \
-    TransformationFunctionType
+from giskard.ml_worker.testing.registry.transformation_function import (
+    TransformationFunction,
+    TransformationFunctionType,
+)
 from giskard.settings import settings
 
 logger = logging.getLogger(__name__)
@@ -47,6 +50,7 @@ class DataProcessor:
         __repr__() -> str:
             Return a string representation of the DataProcessor object, showing the number of steps in its pipeline.
     """
+
     pipeline: List[Union[SlicingFunction, TransformationFunction]] = []
 
     @configured_validate_arguments
@@ -55,7 +59,7 @@ class DataProcessor:
             self.pipeline.append(processor)
         return self
 
-    def apply(self, dataset: 'Dataset', apply_only_last=False):
+    def apply(self, dataset: "Dataset", apply_only_last=False):
         df = dataset.df.copy()
 
         while len(self.pipeline):
@@ -66,8 +70,13 @@ class DataProcessor:
             if apply_only_last:
                 break
 
-        ret = Dataset(df=df, name=dataset.name, target=dataset.target, cat_columns=dataset.cat_columns,
-                      column_types=dataset.column_types)
+        ret = Dataset(
+            df=df,
+            name=dataset.name,
+            target=dataset.target,
+            cat_columns=dataset.cat_columns,
+            column_types=dataset.column_types,
+        )
 
         if len(self.pipeline):
             ret.data_processor = self
@@ -102,6 +111,7 @@ class Dataset:
         data_processor (DataProcessor):
             An instance of the `DataProcessor` class used for data processing.
     """
+
     name: str
     target: str
     column_types: Dict[str, str]
@@ -110,9 +120,15 @@ class Dataset:
     data_processor: DataProcessor = DataProcessor()
 
     @configured_validate_arguments
-    def __init__(self, df: pd.DataFrame, name: Optional[str] = None, target: Optional[str] = None,
-                 cat_columns: Optional[List[str]] = [], column_types: Optional[Dict[str, str]] = None,
-                 id: Optional[uuid.UUID] = None) -> None:
+    def __init__(
+        self,
+        df: pd.DataFrame,
+        name: Optional[str] = None,
+        target: Optional[str] = None,
+        cat_columns: Optional[List[str]] = [],
+        column_types: Optional[Dict[str, str]] = None,
+        id: Optional[uuid.UUID] = None,
+    ) -> None:
         """
         Initializes a Dataset object.
 
@@ -136,6 +152,7 @@ class Dataset:
         self.df = pd.DataFrame(df)
         self.target = target
         from giskard.core.dataset_validation import validate_target
+
         validate_target(self)
 
         if not self.df.empty:
@@ -143,6 +160,7 @@ class Dataset:
         self.column_dtypes = self.extract_column_dtypes(self.df)
 
         from giskard.core.dataset_validation import validate_column_categorization, validate_column_types
+
         # used in the inference of category columns
         self.category_threshold = round(np.log10(len(self.df))) if len(self.df) >= 100 else 2
         if column_types:
@@ -154,6 +172,7 @@ class Dataset:
         validate_column_categorization(self)
 
         from giskard.core.dataset_validation import validate_numeric_columns
+
         validate_numeric_columns(self)
 
     def add_slicing_function(self, slicing_function: SlicingFunction):
@@ -202,8 +221,9 @@ class Dataset:
         return self.data_processor.add_step(slicing_function).apply(self, apply_only_last=True)
 
     @configured_validate_arguments
-    def transform(self, transformation_function: Union[TransformationFunction, TransformationFunctionType],
-                  row_level: bool = True):
+    def transform(
+        self, transformation_function: Union[TransformationFunction, TransformationFunctionType], row_level: bool = True
+    ):
         """
         Transform the data in the current Dataset by applying a transformation function.
 
@@ -257,7 +277,8 @@ class Dataset:
         if non_hashable_cols:
             raise TypeError(
                 f"The following columns in your df: {non_hashable_cols} are not hashable. "
-                f"We currently support only hashable column types such as int, bool, str, tuple and not list or dict.")
+                f"We currently support only hashable column types such as int, bool, str, tuple and not list or dict."
+            )
 
     def _infer_column_types(self, cat_columns: List[str]):
         """
@@ -277,8 +298,10 @@ class Dataset:
 
         if cat_columns:
             if not set(cat_columns).issubset(df_columns):
-                raise ValueError("The provided 'cat_columns' are not all part of your dataset 'columns'. "
-                                 "Please make sure that `cat_columns` refers to existing columns in your dataset.")
+                raise ValueError(
+                    "The provided 'cat_columns' are not all part of your dataset 'columns'. "
+                    "Please make sure that `cat_columns` refers to existing columns in your dataset."
+                )
 
             for cat_col in cat_columns:
                 if cat_col != self.target:
@@ -405,8 +428,11 @@ class Dataset:
 
     @staticmethod
     def _cat_columns(meta):
-        return [fname for (fname, ftype) in meta.column_types.items() if
-                ftype == SupportedColumnTypes.CATEGORY] if meta.column_types else None
+        return (
+            [fname for (fname, ftype) in meta.column_types.items() if ftype == SupportedColumnTypes.CATEGORY]
+            if meta.column_types
+            else None
+        )
 
     @property
     def cat_columns(self):
@@ -441,3 +467,35 @@ class Dataset:
 
     def __len__(self):
         return len(self.df)
+
+    def select_columns(self, columns=None, col_type=None):
+        columns = _cast_to_list_like(columns) if columns is not None else None
+        col_type = _cast_to_list_like(col_type) if col_type is not None else None
+
+        df = self.df.copy()
+
+        if columns is None and col_type is None:
+            # TODO: should probably copy
+            return self
+
+        # Filter by columns
+        if columns is not None:
+            df = df.loc[:, columns]
+
+        # Filter by type
+        if col_type is not None:
+            if not is_list_like(col_type):
+                col_type = [col_type]
+
+            columns = [col for col in df.columns if self.column_types[col] in col_type]
+            df = df.loc[:, columns]
+
+        return Dataset(
+            df=df,
+            target=self.target if self.target in df.columns else None,
+            column_types={key: val for key, val in self.column_types.items() if key in df.columns},
+        )
+
+
+def _cast_to_list_like(object):
+    return object if is_list_like(object) else (object,)
