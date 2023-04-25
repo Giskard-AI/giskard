@@ -21,7 +21,6 @@ from giskard.ml_worker.core.test_result import TestResult
 from giskard.ml_worker.testing.registry.giskard_test import GiskardTest
 from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction
 from giskard.models.base import BaseModel
-from .debug_utils import debug_filters
 from giskard.ml_worker.testing.utils import check_slice_not_empty
 
 
@@ -51,8 +50,7 @@ def _test_classification_score(score_fn, model: BaseModel, gsk_dataset: Dataset,
 
     test_name = inspect.stack()[0][3]
     return TestResult(
-        actual_slices_size=[len(gsk_dataset)], metric=metric, passed=bool(metric >= threshold),
-        slices_to_debug=debug_filters.get(test_name)(gsk_dataset, prediction)
+        actual_slices_size=[len(gsk_dataset)], metric=metric, passed=bool(metric >= threshold)
     )
 
 

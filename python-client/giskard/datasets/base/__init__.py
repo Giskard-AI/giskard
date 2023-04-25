@@ -218,7 +218,7 @@ class Dataset:
         """
         if inspect.isfunction(slicing_function):
             slicing_function = SlicingFunction(slicing_function, row_level=row_level)
-        return self.data_processor.add_step(slicing_function).apply(self, apply_only_last=True)
+        return self.data_processor.add_step(slicing_function).app   ly(self, apply_only_last=True)
 
     @configured_validate_arguments
     def transform(
