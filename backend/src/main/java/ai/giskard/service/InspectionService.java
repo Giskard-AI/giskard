@@ -9,6 +9,7 @@ import ai.giskard.domain.ml.table.Filter;
 import ai.giskard.ml.MLWorkerClient;
 import ai.giskard.repository.InspectionRepository;
 import ai.giskard.service.ml.MLWorkerService;
+import ai.giskard.web.dto.PushDTO;
 import ai.giskard.worker.SuggestFilterRequest;
 import ai.giskard.worker.SuggestFilterResponse;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +28,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static ai.giskard.domain.ml.table.RowFilterType.CUSTOM;
 
@@ -38,7 +40,6 @@ public class InspectionService {
     private final InspectionRepository inspectionRepository;
     private final ApplicationProperties applicationProperties;
     private final FileLocationService fileLocationService;
-    private final SliceService sliceService;
     private final MLWorkerService mlWorkerService;
     private final GRPCMapper grpcMapper;
 
@@ -256,13 +257,17 @@ public class InspectionService {
 //        }
 //    }
 
-    public void getSuggestions(ProjectModel model, Dataset dataset, int idx) {
+    public List<PushDTO> getSuggestions(ProjectModel model, Dataset dataset, int idx) {
         try (MLWorkerClient client = mlWorkerService.createClient(true)) {
             SuggestFilterResponse resp = client.getBlockingStub().suggestFilter(SuggestFilterRequest.newBuilder()
                 .setDataset(grpcMapper.createRef(dataset))
                 .setModel(grpcMapper.createRef(model))
                 .setRowidx(idx)
                 .build());
+
+            return resp.getPushesList().stream()
+                .map(PushDTO::fromGrpc)
+                .collect(Collectors.toList());
         }
     }
 }

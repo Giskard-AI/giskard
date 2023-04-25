@@ -37,6 +37,7 @@ import {
     PrepareImportProjectDTO,
     ProjectDTO,
     ProjectPostDTO,
+    PushDTO,
     RoleDTO,
     RowFilterDTO,
     SuiteTestDTO,
@@ -469,6 +470,6 @@ export const api = {
             `/project/${projectId}/datasets/${encodeURIComponent(datasetUuid)}/process`, functions);
     },
     async getSuggestions(modelId: string, datasetId: string, idx: number) {
-        return apiV2.get<unknown, unknown>(`/suggest/${modelId}/${datasetId}/${idx}`);
+        return apiV2.get<unknown, PushDTO[]>(`/suggest/${modelId}/${datasetId}/${idx}`);
     }
 };
