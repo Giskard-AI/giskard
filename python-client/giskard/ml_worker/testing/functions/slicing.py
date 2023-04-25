@@ -1,6 +1,8 @@
 from typing import List
 
 import pandas as pd
+import numpy as np
+from typing import Any, List
 
 from giskard.ml_worker.testing.registry.slicing_function import slicing_function
 
@@ -69,6 +71,12 @@ def _sentiment_analysis(x, column_name, threshold, model, emotion):
     sentences = list(map(lambda txt: txt[:512], list(x[column_name])))
     return x.iloc[list(
         map(lambda s: s['label'] == emotion and s['score'] >= threshold, sentiment_pipeline(sentences)))]
+
+
+# ====== debug feature slicing_functions ======
+@slicing_function(name="Incorrect Rows", row_level=False, tags=["performance", "hidden"])
+def incorrect_rows(x: pd.DataFrame, target: str, predictions: np.ndarray) -> pd.DataFrame:
+    return x[x[target] != predictions]
 
 
 @slicing_function(name='Outlier Filter', tags=['number'], cell_level=True)

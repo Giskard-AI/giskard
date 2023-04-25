@@ -119,7 +119,8 @@ def _test_diff_prediction(
 @test(name='AUC', tags=['performance', 'classification', 'ground_truth'])
 def test_auc(
     model: BaseModel, dataset: Dataset, slicing_function: Optional[SlicingFunction] = None, threshold: float = 1.0
-):
+,
+             debug: bool = True):
     """
     Test if the model AUC performance is higher than a threshold for a given slice
 
@@ -148,20 +149,28 @@ def test_auc(
         dataset = dataset.slice(slicing_function)
         check_slice_not_empty(sliced_dataset=dataset, dataset_name="dataset", test_name="test_auc")
 
+    _predictions = model.predict(dataset)
+
     _verify_target_availability(dataset)
     if len(model.meta.classification_labels) == 2:
         metric = roc_auc_score(dataset.df[dataset.target], model.predict(dataset).raw[:, 1])
     else:
-        predictions = model.predict(dataset).all_predictions
+        predictions = _predictions.all_predictions
         non_declared_categories = set(predictions.columns) - set(dataset.df[dataset.target].unique())
         assert not len(
             non_declared_categories
         ), f'Predicted classes don\'t exist in the dataset "{dataset.target}" column: {non_declared_categories}. ' \
            'ROC AUC score is not defined in that case.'
 
-        metric = roc_auc_score(dataset.df[dataset.target], predictions, multi_class="ovo")
+        targets = dataset.df[dataset.target]
+        metric = roc_auc_score(targets, predictions, multi_class="ovo")
 
-    return TestResult(actual_slices_size=[len(dataset)], metric=metric, passed=bool(metric >= threshold))
+    if debug:
+        from giskard.ml_worker.testing.functions.slicing import incorrect_rows
+        debugging_mask = dataset.slice(incorrect_rows(dataset.target, _predictions.prediction), get_mask=True)
+
+    return TestResult(actual_slices_size=[len(dataset)], metric=metric, passed=bool(metric >= threshold),
+                      debugging_mask=debugging_mask)
 
 
 @test(name='F1', tags=['performance', 'classification', 'ground_truth'])

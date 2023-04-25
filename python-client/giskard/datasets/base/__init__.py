@@ -70,7 +70,7 @@ class DataProcessor:
             self.pipeline.append(processor)
         return self
 
-    def apply(self, dataset: "Dataset", apply_only_last=False):
+    def apply(self, dataset: "Dataset", apply_only_last=False, get_mask: bool = False):
         ds = dataset.copy()
         is_slicing_only = True
 
@@ -90,14 +90,17 @@ class DataProcessor:
             if apply_only_last:
                 break
 
-        if len(self.pipeline):
-            ds.data_processor = self
+        if get_mask:
+            return dataset.df.index.isin(df.index)  # returns a boolean numpy.ndarray of shape len(dataset.df)
+        else:
+            if len(self.pipeline):
+                ds.data_processor = self
 
-        # If dataset had metadata, copy it to the new dataset
-        if is_slicing_only and hasattr(dataset, "column_meta"):
-            ds.load_metadata_from_instance(dataset.column_meta)
+            # If dataset had metadata, copy it to the new dataset
+            if is_slicing_only and hasattr(dataset, "column_meta"):
+                ds.load_metadata_from_instance(dataset.column_meta)
 
-        return ds
+            return ds
 
     def __repr__(self) -> str:
         return f"<DataProcessor ({len(self.pipeline)} steps)>"
@@ -232,11 +235,12 @@ class Dataset(ColumnMetadataMixin):
 
     @configured_validate_arguments
     def slice(
-        self,
-        slicing_function: Union[SlicingFunction, SlicingFunctionType],
-        row_level: bool = True,
-        cell_level=False,
-        column_name: Optional[str] = None,
+            self,
+            slicing_function: Union[SlicingFunction, SlicingFunctionType],
+            row_level: bool = True,
+            get_mask: bool = False,
+            cell_level=False,
+            column_name: Optional[str] = None,
     ):
         """
         Slice the dataset using the specified `slicing_function`.
@@ -249,12 +253,15 @@ class Dataset(ColumnMetadataMixin):
                 will be used directly to slice the DataFrame.
             row_level (bool): Whether the `slicing_function` should be applied to the rows (True) or
                 the whole dataframe (False). Defaults to True.
+            get_mask (bool): Whether the `slicing_function` returns a dataset (False) or a mask, i.e.
+                a list of indices (True).
             cell_level (bool): Whether the `slicing_function` should be applied to the cells (True) or
                 the whole dataframe (False). Defaults to False.
 
         Returns:
-            Dataset:
-                The sliced dataset as a `Dataset` object.
+            Union[Dataset, List]:
+                The sliced dataset as a `Dataset` object if get_mask = False (default) Or a mask if
+                get_mask = True.
 
         Notes:
             Raises TypeError: If `slicing_function` is not a callable or a `SlicingFunction` object.
@@ -267,7 +274,7 @@ class Dataset(ColumnMetadataMixin):
                                                 **{key: value for key, value in slicing_function.params.items() if
                                                    key != 'column_name'})
 
-        return self.data_processor.add_step(slicing_function).apply(self, apply_only_last=True)
+        return self.data_processor.add_step(slicing_function).apply(self, apply_only_last=True, get_mask=get_mask)
 
     @configured_validate_arguments
     def transform(
