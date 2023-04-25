@@ -1,30 +1,20 @@
 <template>
-    <LoadingFullscreen v-if="suite === null" name="suite"/>
+    <LoadingFullscreen v-if="suite === null" name="suite" />
     <v-container v-else-if="hasTest">
-        <TestSuiteExecutionHeader :execution="execution" :tests="filteredTest" :compact="false"/>
+        <TestSuiteExecutionHeader :execution="execution" :tests="filteredTest" :compact="false" />
         <div class="d-flex mt-4 mb-4">
-            <v-select
-                v-model="statusFilter"
-                label="Status"
-                :items="statusFilterOptions"
-                item-text="label"
-                variant="underlined"
-                hide-details="auto"
-                dense
-                class="mr-4"
-            >
+            <v-select v-model="statusFilter" label="Status" :items="statusFilterOptions" item-text="label" variant="underlined" hide-details="auto" dense class="mr-4">
             </v-select>
-            <v-text-field v-model="searchFilter" append-icon="search"
-                          label="Search" type="text" dense></v-text-field>
+            <v-text-field v-model="searchFilter" append-icon="search" label="Search" type="text" dense></v-text-field>
         </div>
-        <SuiteTestExecutionList :tests="filteredTest" :compact="false"/>
+        <SuiteTestExecutionList :tests="filteredTest" :compact="false" />
     </v-container>
     <v-container v-else class="d-flex flex-column vc fill-height">
-        <h1 class="pt-16">No tests has been added to the suite</h1>
-        <v-btn tile class='mx-1'
-               :to="{name: 'project-catalog-tests', query: {suiteId: suite?.id}}"
-               color="primary">
-            <v-icon>add</v-icon>
+        <v-alert class="text-center">
+            <p class="headline font-weight-medium grey--text text--darken-2">No tests have been added to the suite.</p>
+        </v-alert>
+        <v-btn tile color="primaryLight" class="primaryLightBtn" :to="{ name: 'project-catalog-tests', query: { suiteId: suite?.id } }">
+            <v-icon left>add</v-icon>
             Add test
         </v-btn>
     </v-container>
@@ -32,12 +22,12 @@
 
 <script setup lang="ts">
 
-import {storeToRefs} from 'pinia';
-import {useTestSuiteStore} from '@/stores/test-suite';
-import {TestSuiteExecutionDTO} from '@/generated-sources';
-import {computed, onMounted, ref, watch} from 'vue';
-import {chain} from 'lodash';
-import {useTestSuiteCompareStore} from '@/stores/test-suite-compare';
+import { storeToRefs } from 'pinia';
+import { useTestSuiteStore } from '@/stores/test-suite';
+import { TestSuiteExecutionDTO } from '@/generated-sources';
+import { computed, onMounted, ref, watch } from 'vue';
+import { chain } from 'lodash';
+import { useTestSuiteCompareStore } from '@/stores/test-suite-compare';
 import SuiteTestExecutionList from '@/views/main/project/SuiteTestExecutionList.vue';
 import TestSuiteExecutionHeader from '@/views/main/project/TestSuiteExecutionHeader.vue';
 import LoadingFullscreen from "@/components/LoadingFullscreen.vue";
@@ -45,7 +35,7 @@ import LoadingFullscreen from "@/components/LoadingFullscreen.vue";
 const props = defineProps<{ execution?: TestSuiteExecutionDTO }>();
 
 const testSuiteStore = useTestSuiteStore();
-const {models, datasets, inputs, suite, projectId, hasTest} = storeToRefs(testSuiteStore);
+const { models, datasets, inputs, suite, projectId, hasTest } = storeToRefs(testSuiteStore);
 const testSuiteCompareStore = useTestSuiteCompareStore();
 
 onMounted(() => {
@@ -54,20 +44,20 @@ onMounted(() => {
 
 watch(() => props.execution,
     () => testSuiteCompareStore.setCurrentExecution(props.execution ? props.execution.id : null),
-    {deep: true});
+    { deep: true });
 
 const statusFilterOptions = [{
-  label: 'All',
-  filter: (_) => true
+    label: 'All',
+    filter: (_) => true
 }, {
-  label: 'Passed',
-  filter: (result) => result !== undefined && result.passed
+    label: 'Passed',
+    filter: (result) => result !== undefined && result.passed
 }, {
-  label: 'Failed',
-  filter: (result) => result !== undefined && !result.passed
+    label: 'Failed',
+    filter: (result) => result !== undefined && !result.passed
 }, {
-  label: 'Not executed',
-  filter: (result) => result === undefined
+    label: 'Not executed',
+    filter: (result) => result === undefined
 }];
 
 const statusFilter = ref<string>(statusFilterOptions[0].label);
@@ -79,8 +69,8 @@ const filteredTest = computed(() => suite.value === null ? [] : chain(suite.valu
         suiteTest,
         result: props.execution?.results?.find(result => result.test.id === suiteTest.id)
     }))
-    .filter(({result}) => statusFilterOptions.find(opt => statusFilter.value === opt.label)!.filter(result))
-    .filter(({suiteTest}) => {
+    .filter(({ result }) => statusFilterOptions.find(opt => statusFilter.value === opt.label)!.filter(result))
+    .filter(({ suiteTest }) => {
         const test = suiteTest.test;
 
         const keywords = searchFilter.value.split(' ')
@@ -99,8 +89,8 @@ const filteredTest = computed(() => suite.value === null ? [] : chain(suite.valu
 
 <style scoped lang="scss">
 .log-viewer {
-  overflow: auto;
-  max-height: 400px;
+    overflow: auto;
+    max-height: 400px;
 }
 </style>
 
