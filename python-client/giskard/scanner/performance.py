@@ -2,7 +2,7 @@ import pandas as pd
 from sklearn import metrics
 from typing import Optional
 
-from giskard.scanner.issue import Issue
+from .issue import Issue
 from ..models.base import BaseModel
 from ..models._precooked import PrecookedModel
 from ..datasets.base import Dataset
@@ -18,8 +18,7 @@ from ..ml_worker.testing.tests.performance import (
     test_diff_recall,
     test_diff_precision,
 )
-
-GSK_LOSS_COLUMN = "__gsk_loss"
+from .common import GSK_LOSS_COLUMN
 
 
 class PerformanceScan:
