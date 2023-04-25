@@ -2,6 +2,7 @@
 """Inspect your AI models visually, find bugs, give feedback 🕵️‍♀️ 💬"""
 
 import datetime
+
 start = datetime.datetime.now()
 
 import sys
@@ -25,13 +26,13 @@ from giskard.models.base import WrapperModel, CustomModel, MLFlowBasedModel, Bas
 from .scanner import scan
 
 configure_logging()
-if sys.version_info >= (3, 8):
-    from importlib import metadata as importlib_metadata
-else:
-    import importlib_metadata
 
 
 def get_version() -> str:
+    if sys.version_info >= (3, 8):
+        from importlib import metadata as importlib_metadata
+    else:
+        import importlib_metadata
     try:
         return importlib_metadata.version(__name__)
     except importlib_metadata.PackageNotFoundError:  # pragma: no cover
