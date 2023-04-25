@@ -69,7 +69,7 @@ def test_contribution_reg(linear_regression_diabetes, diabetes_dataset_with_targ
         res = contribution(linear_regression_diabetes, diabetes_dataset_with_target, i)
         if res is not None:
             testl.append(res)
-    assert testl != []
+    assert len(testl)>0
 
 def test_perturbation_reg(linear_regression_diabetes, diabetes_dataset_with_target):
     testl = []
@@ -77,4 +77,4 @@ def test_perturbation_reg(linear_regression_diabetes, diabetes_dataset_with_targ
         res = perturbation(linear_regression_diabetes, diabetes_dataset_with_target, i)
         if res is not None:
             testl.append(res)
-    assert testl != []
+    assert len(testl)>0
