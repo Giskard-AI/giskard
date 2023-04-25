@@ -35,7 +35,6 @@ public class InspectionController {
     private final GiskardMapper giskardMapper;
     private final PermissionEvaluator permissionEvaluator;
 
-
     /**
      * Retrieve the row specified by the given range on the dataset
      * TODO Replace with spring pagination
@@ -74,6 +73,26 @@ public class InspectionController {
         return result;
     }
 
+
+    /**
+     * get all inspections
+     * @return list of inspections
+     */
+    @GetMapping("/inspections")
+    public List<InspectionDTO> getInspections() {
+        return giskardMapper.inspectionsToInspectionDTOs(inspectionService.getInspections());
+    }
+
+    /**
+     * get all inspections for a project
+     * @param projectId id of the project
+     * @return list of inspections
+     */
+    @GetMapping("project/{projectId}/inspections")
+    public List<InspectionDTO> listProjectInspections(@PathVariable @NotNull long projectId) {
+        return giskardMapper.inspectionsToInspectionDTOs(inspectionService.getInspectionsByProjectId(projectId));
+    }
+
     @GetMapping("/inspection/{id}")
     public InspectionDTO getInspection(@PathVariable @NotNull Long id) {
         Inspection inspection = inspectionRepository.findById(id).orElseThrow(() -> new EntityNotFoundException(Entity.INSPECTION, id));
@@ -94,8 +113,27 @@ public class InspectionController {
 
     @PostMapping("/inspection")
     public InspectionDTO createInspection(@RequestBody @NotNull InspectionCreateDTO createDTO) throws IOException {
-        return giskardMapper.toDTO(modelService.createInspection(createDTO.getModelId(), createDTO.getDatasetId()));
+        return giskardMapper.toDTO(modelService.createInspection(createDTO.getName(), createDTO.getModelId(), createDTO.getDatasetId()));
     }
 
+    /**
+     * delete an inspection
+     * @param id id of the inspection
+     */
+    @DeleteMapping("/inspections/{id}")
+    public void deleteInspection(@PathVariable @NotNull Long id) {
+        inspectionService.deleteInspection(id);
+    }
 
+    /**
+     *
+     * @param id
+     * @param createDTO
+     * @return updated inspection
+     * @throws EntityNotFoundException
+     */
+    @PutMapping("/inspections/{id}")
+    public InspectionDTO updateInspectionName(@PathVariable @NotNull Long id, @RequestBody @NotNull InspectionCreateDTO createDTO) throws EntityNotFoundException {
+        return giskardMapper.toDTO(inspectionService.updateInspectionName(id, createDTO.getName()));
+    }
 }
