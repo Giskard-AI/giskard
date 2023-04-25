@@ -13,7 +13,6 @@ from ..push import Push
 
 
 def contribution(model, ds, idrow):  # data_aug_dict
-    push = Push()
     if model.meta.model_type == SupportedModelTypes.CLASSIFICATION:
         shap_res = _contribution_push(model, ds, idrow)
         values = ds.df.iloc[idrow]
@@ -72,11 +71,14 @@ def contribution(model, ds, idrow):  # data_aug_dict
             for el in shap_res:
                 # print(error, rmse_res)
                 if abs(error - rmse_res.metric) / rmse_res.metric >= 0.2:  # use scan feature ?
-                    res = push.incorrect(feature=el, value=values[el])
+                    res = Push(push_type="contribution_wrong",
+                               feature=el,
+                               value=values[el]
+                               )
                     return res
 
                 else:
-                    res = push.high_correlation(feature=el, value=values[el])
+                    res = Push(push_type="contribution_only", feature=el, value=values[el])
                     return res
 
 

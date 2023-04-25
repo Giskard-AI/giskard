@@ -7,6 +7,12 @@ class Perturbation:
         self.perturbation_value = perturbation_value
 
 
+class Perturbation:
+    def __init__(self, passed, perturbation_value):
+        self.passed = passed
+        self.perturbation_value = perturbation_value
+
+
 class Push:
     key = None
     value = None
