@@ -14,6 +14,7 @@ import java.util.Map;
 @Builder
 @UIModel
 public class LicenseDTO {
+    private String licenseId;
     private String planCode;
     private String planName;
     private Integer projectLimit;
