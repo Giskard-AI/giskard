@@ -13,7 +13,7 @@ In order to test your model, you'll need to install the `giskard` library with `
 :::{tab-item} Windows
 
 ```sh
-pip install "git+https://github.com/Giskard-AI/giskard.git@feature/ai-test-v2-merged#subdirectory=python-client" --user
+pip install "giskard[scan] @ git+https://github.com/Giskard-AI/giskard.git@feature/scan#subdirectory=python-client" --user
 ```
 
 :::
@@ -21,7 +21,7 @@ pip install "git+https://github.com/Giskard-AI/giskard.git@feature/ai-test-v2-me
 :::{tab-item} Mac and Linux
 
 ```sh
-pip install "git+https://github.com/Giskard-AI/giskard.git@feature/ai-test-v2-merged#subdirectory=python-client"
+pip install "giskard[scan] @ git+https://github.com/Giskard-AI/giskard.git@feature/scan#subdirectory=python-client"
 ```
 
 :::
@@ -252,8 +252,8 @@ wrapped_dataset = wrap_dataset(...)
 # Note that all the parameters are specified excect dataset
 # Which means that we will need to specify dataset everytime we run the suite
 suite = Suite()
-    .add_test(test_f1, "f1", dataset=wrapped_dataset)
-    .add_test(DataQuality(dataset=wrapped_dataset, column_name='Month', category='August'), "quality")
+.add_test(test_f1(dataset=wrapped_dataset))
+.add_test(DataQuality(dataset=wrapped_dataset, column_name='Month', category='August'))
 
 # Create our first model
 my_first_model = wrap_model(...)
@@ -305,10 +305,10 @@ project_name = "enron"
 client = GiskardClient(url, token)
 
 # Create a project
-client.create_project(project_name, "Email Classification", "Email Classification")
+client.create_project(project_name, "Project name", "Small description of the project")
 
 suite = Suite()
-.add_test(test_f1, dataset=wrapped_dataset)
+.add_test(test_f1(dataset=wrapped_dataset))
 .add_test(DataQuality(dataset=wrapped_dataset, column_name='Month', category='August'))
     .save(client, project_name)
 
