@@ -29,6 +29,7 @@ import {useCatalogStore} from "@/stores/catalog";
 import {computed} from "vue";
 import {$vfm} from "vue-final-modal";
 import FunctionInputsModal from "@/views/main/project/modals/FunctionInputsModal.vue";
+import {chain} from "lodash";
 
 const props = defineProps<{
     projectId: number,
@@ -61,7 +62,7 @@ async function onInput(value) {
             projectId: props.projectId,
             title: `Set up parameters for '${func.displayName ?? func.name}'`,
             function: func,
-            defaultValue: [],
+            defaultValue: {},
         },
         on: {
             async save(args: Array<FunctionInputDTO>) {
@@ -84,7 +85,7 @@ async function updateArgs() {
             projectId: props.projectId,
             title: `Update parameters for '${func.displayName ?? func.name}'`,
             function: func,
-            defaultValue: [],
+            defaultValue: chain(props.args).keyBy('name').value(),
         },
         on: {
             async save(args: Array<FunctionInputDTO>) {
