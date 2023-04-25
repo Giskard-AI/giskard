@@ -70,7 +70,7 @@ def get_container_name(version=None):
     return f"giskard-server.{version}"
 
 
-def image_name(version=None):
+def get_image_name(version=None):
     if not version:
         version = get_version()
     return f"{IMAGE_NAME}:{version}"
@@ -83,6 +83,10 @@ def get_container(version=None) -> Container:
 def _start(attached=False, version=None):
     logger.info("Starting Giskard Server")
 
+    settings = _get_settings() or {}
+    port = settings.get('port', 19000)
+    ml_worker_port = settings.get('ml_worker_port', 40051)
+
     version = get_version(version)
 
     _pull_image(version)
@@ -92,20 +96,21 @@ def _start(attached=False, version=None):
     try:
         container = get_container(version)
     except NotFound:
-        container = create_docker_client().containers.create(image_name(version),
+        container = create_docker_client().containers.create(get_image_name(version),
                                                              detach=not attached,
                                                              name=get_container_name(version),
-                                                             ports={7860: 19000},
+                                                             ports={7860: port,
+                                                                    40051: ml_worker_port},
                                                              volumes={
                                                                  home_volume.name: {'bind': '/home/giskard/datadir',
                                                                                     'mode': 'rw'}
                                                              })
     container.start()
-    logger.info(f"Giskard Server {version} started. You can access it at http://localhost:19000")
+    logger.info(f"Giskard Server {version} started. You can access it at http://localhost:{port}")
 
 
 def _check_downloaded(version: str):
-    image = image_name(version)
+    image = get_image_name(version)
     try:
         create_docker_client().images.get(image)
         logger.debug(f"Docker image exists: {image}")
@@ -122,7 +127,7 @@ def _pull_image(version):
         try:
             create_docker_client().images.pull(IMAGE_NAME, tag=version)
         except NotFound:
-            logger.error(f"Image {image_name(version)} not found")
+            logger.error(f"Image {get_image_name(version)} not found")
             exit(1)
 
 
@@ -189,7 +194,7 @@ def stop():
     """\b
     Stop Giskard Server.
 
-    Stops any running Giskard server. Does nothing if Giskard server is not running.
+    Stops a running Giskard server. Does nothing if Giskard server is not running.
     """
     try:
         container = get_container()
@@ -276,12 +281,12 @@ def logs(service, nb_lines, follow):
 
 
 @server.command("diagnose")
-@click.option("--output",
+@click.option("--out_path",
               "-o",
               "local_dir",
               default=os.getcwd(),
               type=click.Path(),
-              help="Save logs to a local archive")
+              help="Destination directory to save diagnose archive to")
 @common_options
 def diagnose(local_dir):
     """\b
@@ -308,7 +313,7 @@ def diagnose(local_dir):
     default=None)
 def update(version):
     """\b
-    Update Giskard Server
+    Update Giskard Server. Uses the latest available version if not specified.
     """
     latest_version = _fetch_latest_tag()
     if not version:
@@ -329,14 +334,14 @@ def update(version):
 @common_options
 def status():
     """\b
-    Get the Giskard Server status.
+    Check if server container is running and status of each internal service
     """
-    settings = _get_settings()
-    if not settings:
+    app_settings = _get_settings()
+    if not app_settings:
         logger.info("Giskard Server is not installed. Install using `giskard server start`")
         return
     else:
-        version = settings["version"]
+        version = app_settings["version"]
 
     logger.info(f"Giskard Server {version} is installed.")
 
@@ -352,3 +357,39 @@ def status():
             print(get_container().exec_run("supervisorctl -c /opt/giskard/supervisord.conf").output.decode())
         else:
             logger.info(f"Container {container.name} isn't running ({container.status})")
+
+
+@server.command("clean")
+@click.option("--data", "delete_data",
+              is_flag=True,
+              help="Delete user data (giskard-home volume)")
+@common_options
+def clean(delete_data):
+    """\b
+    Delete Docker container, container (and possibly a volume) associated with the current version of Giskard Server
+    """
+    logger.info("Removing Giskard Server")
+    client = create_docker_client()
+    container_name = get_container_name()
+    image_name = get_image_name()
+    try:
+        container = client.containers.get(container_name)
+        container.stop()
+        container.remove()
+        logger.info(f"Container {container_name} has been deleted")
+    except NotFound:
+        logger.info(f"Container {container_name} does not exist")
+    try:
+        client.images.get(image_name).remove()
+        logger.info(f"Image {image_name} has been deleted")
+    except NotFound:
+        logger.info(f"Image {image_name} does not exist")
+
+    try:
+        volume = client.volumes.get('giskard-home')
+        if delete_data and click.confirm("Are you sure you want to delete user data (giskard-home volume)? "
+                                         "This will permanently erase all of the Giskard activity results"):
+            volume.remove()
+            logger.info("User data has been deleted in 'giskard-home' volume")
+    except NotFound:
+        logger.info("Volume 'giskard-home' does not exist")
