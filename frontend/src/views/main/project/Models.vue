@@ -43,7 +43,7 @@
             <div>
               <v-btn small tile color="primaryLight" class="primaryLightBtn" @click="showInspectDialog = true; modelToInspect = m">
                 <v-icon dense left>policy</v-icon>
-                Inspect
+                Debug
               </v-btn>
               <v-tooltip bottom>
                 <template v-slot:activator=" { on, attrs } ">
@@ -53,7 +53,7 @@
                 </template>
                 <span>Download</span>
               </v-tooltip>
-              <DeleteModal v-if=" isProjectOwnerOrAdmin " :id=" m.id " :file-name=" m.fileName " type="model" @submit=" deleteModelPickle(m.id) " />
+              <DeleteModal v-if="isProjectOwnerOrAdmin" :id="m.id" :file-name="m.fileName" type="model" @submit="deleteModelPickle(m.id)" />
             </div>
           </v-col>
         </v-row>
@@ -61,8 +61,8 @@
       </v-card>
 
       <!-- Dialog for launching model inspection -->
-      <v-dialog persistent max-width="600" v-model=" showInspectDialog " class="inspector-launcher-container">
-        <InspectorLauncher :projectId=" projectId " :model=" modelToInspect " @cancel=" cancelLaunchInspector() " />
+      <v-dialog persistent max-width="600" v-model="showInspectDialog" class="inspector-launcher-container">
+        <InspectorLauncher :projectId="projectId" :model="modelToInspect" @cancel="cancelLaunchInspector()" />
       </v-dialog>
 
     </v-container>
