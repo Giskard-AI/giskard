@@ -47,7 +47,13 @@
 </template>
 
 <script setup lang="ts">
-import {ref, watch} from 'vue';
+import {computed, ref, watch} from 'vue';
+import {usePushStore} from "@/stores/suggestions";
+import {PushDTO} from "@/generated-sources";
+
+const pushStore = usePushStore();
+
+const value = ref<PushDTO | undefined>(undefined);
 import {usePushStore} from "@/stores/suggestions";
 import {PushDTO} from "@/generated-sources";
 
@@ -73,6 +79,11 @@ watch(() => props.rowNb, () => {
 async function dbg_GetSuggestion() {
 
 }
+
+const val = computed(() => {
+  const list = pushStore.getPushSuggestions(props.modelId ?? "", props.datasetId ?? "", props.rowNb ?? 0);
+  return list ? list.filter((s) => s.key == props.column)[0] : undefined;
+});
 </script>
 
 <style scoped>

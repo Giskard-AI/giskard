@@ -22,19 +22,19 @@
                   </v-btn>
                 </template>
                 <v-list dense tile>
-                    <v-list-item>
-                        <v-btn tile small text color="primary"
-                               @click="featuresToView = inputMetaData.map(e => e.name)">All
-                        </v-btn>
-                        <v-btn tile small text color="secondary" @click="featuresToView = []">None</v-btn>
-                    </v-list-item>
-                    <v-list-item v-for="f in inputMetaData" :key="f.name">
-                        <v-checkbox
-                                :label="f.name" :value="f.name"
-                                v-model="featuresToView"
-                                hide-details class="mt-1"
-                        ></v-checkbox>
-                    </v-list-item>
+                  <v-list-item>
+                    <v-btn tile small text color="primary"
+                           @click="featuresToView = inputMetaData.map(e => e.name)">All
+                    </v-btn>
+                    <v-btn tile small text color="secondary" @click="featuresToView = []">None</v-btn>
+                  </v-list-item>
+                  <v-list-item v-for="f in inputMetaData" :key="f.name">
+                    <v-checkbox
+                        :label="f.name" :value="f.name"
+                        v-model="featuresToView"
+                        hide-details class="mt-1"
+                    ></v-checkbox>
+                  </v-list-item>
                 </v-list>
               </v-menu>
 
@@ -44,59 +44,59 @@
               <v-form lazy-validation>
                 <div v-for="c in datasetNonTargetColumns" :key="c.name"
                      v-show="featuresToView.includes(c.name)">
-<<<<<<< refs/remotes/origin/feature/transformation-in-ai-debug
-                    <ValidationProvider
-                            :name="c.name"
-                            v-slot="{ dirty }"
-                    >
-                        <div class="py-1 d-flex" v-if="isFeatureEditable(c.name)">
-                            <label class="info--text">{{ c.name }}</label>
-                            <input type="number" v-if="c.type === 'numeric'"
-                                   v-model="inputData[c.name]"
-                                   class="common-style-input"
-                                   :class="{
+                  <<<<<<< refs/remotes/origin/feature/transformation-in-ai-debug
+                  <ValidationProvider
+                      :name="c.name"
+                      v-slot="{ dirty }"
+                  >
+                    <div class="py-1 d-flex" v-if="isFeatureEditable(c.name)">
+                      <label class="info--text">{{ c.name }}</label>
+                      <input type="number" v-if="c.type === 'numeric'"
+                             v-model="inputData[c.name]"
+                             class="common-style-input"
+                             :class="{
                                  'is-transformed': !dirty && transformationModifications.hasOwnProperty(c.name) && inputData[c.name] === transformationModifications[c.name],
                                  'is-dirty': dirty || inputData[c.name] !== originalData[c.name]
                              }"
-                                   @change="onValuePerturbation(c)"
-                                   required
-                            />
-                            <textarea v-if="c.type === 'text'"
-                                      v-model="inputData[c.name]"
-                                      :rows="!inputData[c.name] ? 1 : Math.min(15, parseInt(inputData[c.name].length / 40) + 1)"
-                                      class="common-style-input"
-                                      :class="{
+                             @change="onValuePerturbation(c)"
+                             required
+                      />
+                      <textarea v-if="c.type === 'text'"
+                                v-model="inputData[c.name]"
+                                :rows="!inputData[c.name] ? 1 : Math.min(15, parseInt(inputData[c.name].length / 40) + 1)"
+                                class="common-style-input"
+                                :class="{
                                  'is-transformed': !dirty && transformationModifications.hasOwnProperty(c.name) && inputData[c.name] === transformationModifications[c.name],
                                  'is-dirty': dirty || inputData[c.name] !== originalData[c.name]
                              }"
-                                      @change="onValuePerturbation(c)"
-                                      required
-                            ></textarea>
-                            <select v-if="c.type === 'category'"
-                                    v-model="inputData[c.name]"
-                                    class="common-style-input"
-                                    :class="{
+                                @change="onValuePerturbation(c)"
+                                required
+                      ></textarea>
+                      <select v-if="c.type === 'category'"
+                              v-model="inputData[c.name]"
+                              class="common-style-input"
+                              :class="{
                                  'is-transformed': !dirty && transformationModifications.hasOwnProperty(c.name) && inputData[c.name] === transformationModifications[c.name],
                                  'is-dirty': dirty || inputData[c.name] !== originalData[c.name]
                              }"
-                                    @change="onValuePerturbation(c)"
-                                    required
-                            >
-                                <option v-for="k in c.values" :key="k" :value="k">{{ k }}</option>
-                            </select>
-                            <div class="d-flex flex-column">
-                                <FeedbackPopover
-                                        v-if="!isMiniMode"
-                                        :inputLabel="c.name"
-                                        :inputValue="inputData[c.name]"
-                                        :originalValue="originalData[c.name]"
-                                        :inputType="c.type"
-                                        @submit="$emit(dirty ? 'submitValueVariationFeedback' : 'submitValueFeedback', arguments[0])"
-                                />
-                                <TransformationPopover
+                              @change="onValuePerturbation(c)"
+                              required
+                      >
+                        <option v-for="k in c.values" :key="k" :value="k">{{ k }}</option>
+                      </select>
+                      <div class="d-flex flex-column">
+                        <FeedbackPopover
+                            v-if="!isMiniMode"
+                            :inputLabel="c.name"
+                            :inputValue="inputData[c.name]"
+                            :originalValue="originalData[c.name]"
+                            :inputType="c.type"
+                            @submit="$emit(dirty ? 'submitValueVariationFeedback' : 'submitValueFeedback', arguments[0])"
+                        />
+                        <TransformationPopover
                                         v-if="catalogStore.transformationFunctionsByColumnType.hasOwnProperty(c.type)"
                                         :column="c.name" :column-type="c.type"/>
-                            </div>
+                      </div>
 
                       <SuggestionPopover
                           :modelId="model.id"
@@ -110,7 +110,7 @@
                       <span>{{ inputData[c.name] }}</span>
                     </div>
                   </ValidationProvider>
-=======
+                  =======
                   <ValidationProvider
                       :name="c.name"
                       v-slot="{ dirty }"
@@ -151,9 +151,10 @@
                       />
 
                       <SuggestionPopover
-                          :disabled="c.name !== 'account_check_status'"
                           :modelId="model.id"
                           :datasetId="dataset.id"
+                          :row-nb="rowNb"
+                          :column="c.name"
                       />
                     </div>
                     <div class="py-1 d-flex" v-else>
@@ -161,7 +162,7 @@
                       <span>{{ inputData[c.name] }}</span>
                     </div>
                   </ValidationProvider>
->>>>>>> Start of front and backend
+                  >>>>>>> Start of front and backend
                 </div>
               </v-form>
             </v-card-text>
@@ -258,51 +259,50 @@ import TransformationPopover from "@/components/TransformationPopover.vue";
 import {useCatalogStore} from "@/stores/catalog";
 import SuggestionPopover from "@/components/SuggestionPopover.vue";
 import {usePushStore} from "@/stores/suggestions";
-import SuggestionPopover from "@/components/SuggestionPopover.vue";
+import {usePushStore} from "@/stores/suggestions";
 
 @Component({
-    components: {
-        TransformationPopover, SuggestionPopover,
-        OverlayLoader, PredictionResults, FeedbackPopover, PredictionExplanations, TextExplanation
-    }
+  components: {
+    TransformationPopover, SuggestionPopover,
+    OverlayLoader, PredictionResults, FeedbackPopover, PredictionExplanations, TextExplanation
+  }
 })
 export default class Inspector extends Vue {
-    @Prop({required: true}) model!: ModelDTO
-    @Prop({required: true}) dataset!: DatasetDTO
-    @Prop({required: true}) originalData!: object // used for the variation feedback
-    @Prop({required: true}) transformationModifications!: object // used for the variation feedback
-    @Prop({required: true}) inputData!: { [key: string]: string }
-    @Prop({default: false}) isMiniMode!: boolean;
-    @Prop({default: 0}) rowNb!: number;
-    loadingData = false;
+  @Prop({required: true}) model!: ModelDTO
+  @Prop({required: true}) dataset!: DatasetDTO
+  @Prop({required: true}) originalData!: object // used for the variation feedback
+  @Prop({required: true}) transformationModifications!: object // used for the variation feedback
+  @Prop({required: true}) inputData!: { [key: string]: string }
+  @Prop({default: false}) isMiniMode!: boolean;
+  @Prop({default: 0}) rowNb!: number;
+  loadingData = false;
 
-    featuresToView: string[] = []
-    errorLoadingMetadata = ""
-    dataErrorMsg = ""
-    classificationResult = null
-    isClassification = isClassification
-    debouncingTimeout: number = 500;
+  featuresToView: string[] = []
+  errorLoadingMetadata = ""
+  dataErrorMsg = ""
+  classificationResult = null
+  isClassification = isClassification
+  debouncingTimeout: number = 500;
 
     catalogStore = useCatalogStore()
 
-    async mounted() {
-        await this.loadMetaData();
-    }
+  async mounted() {
+    await this.loadMetaData();
+  }
 
-    @Watch('originalData')
-    public resetInput() {
-        this.$emit('reset');
-        (this.$refs.dataFormObserver as HTMLFormElement).reset();
-    }
+  @Watch('originalData')
+  public resetInput() {
+    this.$emit('reset');
+    (this.$refs.dataFormObserver as HTMLFormElement).reset();
+  }
 
-    get inputMetaData() {
+  get inputMetaData() {
         if (!this.model) {
-            return [];
-        }
-
-        return Object.entries(this.dataset.columnTypes)
-            .map(([name, type]) => ({
-                name,
+  return [];
+  }
+    return Object.entries(this.dataset.columnTypes)
+    .map(([name, type]) => ( {
+      name,
                 type,
                 values: this.dataset.categoryFeatures[name]
             }))
@@ -310,10 +310,21 @@ export default class Inspector extends Vue {
 
     @Watch('inputMetaData')
     async loadMetaData() {
-        this.featuresToView = this.inputMetaData.map(e => e.name)
-    }
+      this.featuresToView = this.inputMetaData.map(e => e.name)}
 
-    @Watch('rowNb')
+      @Watch('rowNb')
+    async onRowNbChange(newValue, oldValue) {
+      if (newValue != oldValue) {
+    const pushStore = usePushStore();
+      await pushStore.fetchPushSuggestions(this.model.id, this.dataset.id, newValue ?? 0);
+    }
+  }
+
+  get isInputNotOriginal() { // used in case of opening a feedback where original data and input data passed are different
+    return JSON.stringify(this.inputData) !== JSON.stringify({...this.originalData, ...this.transformationModifications})
+  }
+
+  @Watch('rowNb')
   async onRowNbChange(newValue, oldValue) {
     if (newValue != oldValue) {
       const pushStore = usePushStore();
@@ -321,39 +332,35 @@ export default class Inspector extends Vue {
     }
   }
 
-  get isInputNotOriginal() { // used in case of opening a feedback where original data and input data passed are different
-    return JSON.stringify(this.inputData) !== JSON.stringify({...this.originalData, ...this.transformationModifications})
-    }
+  get textFeatureNames() {
+    return this.inputMetaData.filter(e => e.type == 'text').map(e => e.name)
+  }
 
-    get textFeatureNames() {
-        return this.inputMetaData.filter(e => e.type == 'text').map(e => e.name)
+  public setResult(r) {
+    if (isClassification(this.model.modelType)) {
+      this.classificationResult = r
     }
+  }
 
-    public setResult(r) {
-        if (isClassification(this.model.modelType)) {
-            this.classificationResult = r
-        }
+  async onValuePerturbation(featureMeta) {
+    mixpanel.track("Feature perturbation", {
+      columnType: featureMeta.type,
+      featureName: anonymize(featureMeta.name),
+      modelId: this.model.id,
+      datasetId: this.dataset.id
+    })
+    this.$emit('update:inputData', this.inputData)
+  }
+
+  isFeatureEditable(featureName: string) {
+    if (!this.model.featureNames || this.model.featureNames.length == 0) {
+      // if user doesn't specify feature names consider all columns as feature names
+      return true;
     }
+    return this.model.featureNames.includes(featureName)
+  }
 
-    async onValuePerturbation(featureMeta) {
-        mixpanel.track("Feature perturbation", {
-            columnType: featureMeta.type,
-            featureName: anonymize(featureMeta.name),
-            modelId: this.model.id,
-            datasetId: this.dataset.id
-        })
-        this.$emit('update:inputData', this.inputData)
-    }
-
-    isFeatureEditable(featureName: string) {
-        if (!this.model.featureNames || this.model.featureNames.length == 0) {
-            // if user doesn't specify feature names consider all columns as feature names
-            return true;
-        }
-        return this.model.featureNames.includes(featureName)
-    }
-
-    get modelFeatures() {
+  get modelFeatures() {
     return this.inputMetaData
         .filter(x => (x.name !== this.dataset.target) && (!this.model.featureNames || this.model.featureNames.includes(x.name)))
         .map(x => x.name);

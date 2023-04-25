@@ -11,6 +11,7 @@ import ai.giskard.security.PermissionEvaluator;
 import ai.giskard.service.InspectionService;
 import ai.giskard.service.ModelService;
 import ai.giskard.web.dto.InspectionCreateDTO;
+import ai.giskard.web.dto.PushDTO;
 import ai.giskard.web.dto.mapper.GiskardMapper;
 import ai.giskard.web.dto.ml.InspectionDTO;
 import ai.giskard.web.rest.errors.EntityNotFoundException;
@@ -101,11 +102,11 @@ public class InspectionController {
     }
 
     @GetMapping("/suggest/{modelId}/{datasetId}/{idx}")
-    public void getSuggestions(@PathVariable @NotNull UUID modelId, @PathVariable @NotNull UUID datasetId, @PathVariable @NotNull int idx) {
+    public List<PushDTO> getSuggestions(@PathVariable @NotNull UUID modelId, @PathVariable @NotNull UUID datasetId, @PathVariable @NotNull int idx) {
         ProjectModel model = modelRepository.getById(modelId);
         permissionEvaluator.validateCanReadProject(model.getProject().getId());
         Dataset dataset = datasetRepository.getById(datasetId);
-        inspectionService.getSuggestions(
+        return inspectionService.getSuggestions(
             model,
             dataset,
             idx

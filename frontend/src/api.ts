@@ -32,13 +32,13 @@ import {
   ParameterizedCallableDTO,
   PasswordResetRequest,
   PostImportProjectDTO,
-  PredictionDTO,
-  PredictionInputDTO,
-  PrepareDeleteDTO,
-  PrepareImportProjectDTO,
-  ProjectDTO,
-  ProjectPostDTO,
-  PushDTO,
+    PredictionDTO,
+    PredictionInputDTO,
+    PrepareDeleteDTO,
+    PrepareImportProjectDTO,
+    ProjectDTO,
+    ProjectPostDTO,
+    PushDTO,
     RoleDTO,
     RowFilterDTO,
   SetupDTO,
@@ -495,6 +495,6 @@ export const api = {
     );
   },
   async getSuggestions(modelId: string, datasetId: string, idx: number) {
-    return apiV2.get<unknown, unknown>(`/suggest/${modelId}/${datasetId}/${idx}`);
+    return apiV2.get<unknown, PushDTO[]>(`/suggest/${modelId}/${datasetId}/${idx}`);
   }
 };
