@@ -59,8 +59,8 @@ def test_statistical_filtered(data, model, threshold, label, expected_metric, ac
 def test_output_in_range_model(data, model, threshold, label, expected_metric, actual_slices_size, request):
     data = request.getfixturevalue(data)
     model = request.getfixturevalue(model)
-    results = statistical.test_output_in_range(model=model, dataset=data.slice(
-        SlicingFunction(lambda df: df.head(len(df) // 2), row_level=False)),
+    results = statistical.test_output_in_range(model=model,
+                                               dataset=data.slice(lambda df: df.head(len(df) // 2), row_level=False),
                                                classification_label=model.meta.classification_labels[label],
                                                min_range=0.3, max_range=0.7, threshold=threshold)
 
