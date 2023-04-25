@@ -98,9 +98,10 @@
                             </div>
 
                       <SuggestionPopover
-                          :disabled="c.name !== 'account_check_status'"
                           :modelId="model.id"
                           :datasetId="dataset.id"
+                          :row-nb="rowNb"
+                          :column="c.name"
                       />
                     </div>
                     <div class="py-1 d-flex" v-else>
@@ -203,6 +204,7 @@ import _ from 'lodash';
 import TransformationPopover from "@/components/TransformationPopover.vue";
 import {useCatalogStore} from "@/stores/catalog";
 import SuggestionPopover from "@/components/SuggestionPopover.vue";
+import {usePushStore} from "@/stores/suggestions";
 
 @Component({
     components: {
@@ -258,8 +260,16 @@ export default class Inspector extends Vue {
         this.featuresToView = this.inputMetaData.map(e => e.name)
     }
 
-    get isInputNotOriginal() { // used in case of opening a feedback where original data and input data passed are different
-        return JSON.stringify(this.inputData) !== JSON.stringify({...this.originalData, ...this.transformationModifications})
+    @Watch('rowNb')
+  async onRowNbChange(newValue, oldValue) {
+    if (newValue != oldValue) {
+      const pushStore = usePushStore();
+      await pushStore.fetchPushSuggestions(this.model.id, this.dataset.id, newValue ?? 0);
+    }
+  }
+
+  get isInputNotOriginal() { // used in case of opening a feedback where original data and input data passed are different
+    return JSON.stringify(this.inputData) !== JSON.stringify({...this.originalData, ...this.transformationModifications})
     }
 
     get textFeatureNames() {

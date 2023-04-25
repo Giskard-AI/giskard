@@ -38,8 +38,9 @@ import {
   PrepareImportProjectDTO,
   ProjectDTO,
   ProjectPostDTO,
-  RoleDTO,
-  RowFilterDTO,
+  PushDTO,
+    RoleDTO,
+    RowFilterDTO,
   SetupDTO,
   SlicingFunctionDTO,
   SuiteTestDTO,
@@ -494,6 +495,6 @@ export const api = {
     );
   },
   async getSuggestions(modelId: string, datasetId: string, idx: number) {
-    return apiV2.get<unknown, unknown>(`/suggest/${modelId}/${datasetId}/${idx}`);
+    return apiV2.get<unknown, PushDTO[]>(`/suggest/${modelId}/${datasetId}/${idx}`);
   }
 };

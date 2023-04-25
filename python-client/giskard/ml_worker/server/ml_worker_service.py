@@ -504,14 +504,18 @@ class MLWorkerServiceImpl(MLWorkerServicer):
                 f"Make sure it's installed in the ML Worker environment."
                 "To have more information on ML Worker, please see: https://docs.giskard.ai/start/guides/installation/ml-worker"
             ) from e
-
         from giskard.push.contribution import contribution
         from giskard.push.perturbation import perturbation
 
         contribs = contribution(model, dataset, request.rowidx)
         perturbs = perturbation(model, dataset, request.rowidx)
 
-        return
+        logger.info(f"Contributions: {contribs}")
+        logger.info(f"Perturbations: {perturbs}")
+        # TODO: Handle None
+        return ml_worker_pb2.SuggestFilterResponse(
+            pushes=[contribs.to_grpc()]
+        )
 
     @staticmethod
     def map_suite_input(i: ml_worker_pb2.SuiteInput):

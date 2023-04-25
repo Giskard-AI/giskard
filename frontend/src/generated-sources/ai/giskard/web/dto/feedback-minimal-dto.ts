@@ -3,7 +3,7 @@
  */
 export interface FeedbackMinimalDTO {
     createdOn: any /* TODO: Missing translation of java.time.Instant */;
-    datasetId: string;
+    datasetId: any /* TODO: Missing translation of java.util.UUID */;
     datasetName: string;
     featureName: string;
     featureValue: string;
@@ -11,7 +11,7 @@ export interface FeedbackMinimalDTO {
     feedbackMessage: string;
     feedbackType: string;
     id: number;
-    modelId: string;
+    modelId: any /* TODO: Missing translation of java.util.UUID */;
     modelName: string;
     userLogin: string;
 }

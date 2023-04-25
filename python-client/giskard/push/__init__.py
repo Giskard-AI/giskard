@@ -1,4 +1,4 @@
-from giskard.core.core import SupportedModelTypes
+import ml_worker_pb2
 
 
 class Perturbation:
@@ -95,3 +95,12 @@ class Push:
         self.push_title = res["push_title"]
         self.push_details = res["push_details"]
         return res
+
+    def to_grpc(self):
+        return ml_worker_pb2.Push(
+            key=self.key,
+            value=self.value,
+            push_title=self.push_title,
+            push_details=self.push_details,
+            perturbation_value=self.perturbation_value
+        )
