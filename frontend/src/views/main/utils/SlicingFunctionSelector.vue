@@ -89,10 +89,6 @@ async function updateArgs() {
         on: {
             async save(args: Array<FunctionInputDTO>) {
                 emit('update:args', args);
-            },
-            async cancel() {
-                // Rollback changes
-                emit('update:args', props.args);
             }
         },
         cancel: {}
