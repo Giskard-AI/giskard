@@ -59,7 +59,7 @@ class DataProcessor:
             self.pipeline.append(processor)
         return self
 
-    def apply(self, dataset: "Dataset", apply_only_last=False):
+    def apply(self, dataset: "Dataset", apply_only_last=False, get_mask: bool = False):
         df = dataset.df.copy()
 
         while len(self.pipeline):
@@ -70,17 +70,19 @@ class DataProcessor:
             if apply_only_last:
                 break
 
-        ret = Dataset(
-            df=df,
-            name=dataset.name,
-            target=dataset.target,
-            cat_columns=dataset.cat_columns,
-            column_types=dataset.column_types,
-        )
-
-        if len(self.pipeline):
-            ret.data_processor = self
-        return ret
+        if get_mask:
+            return dataset.df.index.isin(df.index)  # returns a boolean numpy.ndarray of shape len(dataset.df)
+        else:
+            ret = Dataset(
+                df=df,
+                name=dataset.name,
+                target=dataset.target,
+                cat_columns=dataset.cat_columns,
+                column_types=dataset.column_types,
+            )
+            if len(self.pipeline):
+                ret.data_processor = self
+            return ret
 
     def __repr__(self) -> str:
         return f"DataProcessor: {len(self.pipeline)} steps"
@@ -196,7 +198,8 @@ class Dataset:
         return self
 
     @configured_validate_arguments
-    def slice(self, slicing_function: Union[SlicingFunction, SlicingFunctionType], row_level: bool = True):
+    def slice(self, slicing_function: Union[SlicingFunction, SlicingFunctionType],
+              row_level: bool = True, get_mask: bool = False):
         """
         Slice the dataset using the specified `slicing_function`.
 
@@ -208,17 +211,20 @@ class Dataset:
                 will be used directly to slice the DataFrame.
             row_level (bool): Whether the `slicing_function` should be applied to the rows (True) or
                 the whole dataframe (False). Defaults to True.
+            get_mask (bool): Whether the `slicing_function` returns a dataset (False) or a mask, i.e.
+                a list of indices (True).
 
         Returns:
-            Dataset:
-                The sliced dataset as a `Dataset` object.
+            Union[Dataset, List]:
+                The sliced dataset as a `Dataset` object if get_mask = False (default) Or a mask if
+                get_mask = True.
 
         Notes:
             Raises TypeError: If `slicing_function` is not a callable or a `SlicingFunction` object.
         """
         if inspect.isfunction(slicing_function):
             slicing_function = SlicingFunction(slicing_function, row_level=row_level)
-        return self.data_processor.add_step(slicing_function).apply(self, apply_only_last=True)
+        return self.data_processor.add_step(slicing_function).apply(self, apply_only_last=True, get_mask=get_mask)
 
     @configured_validate_arguments
     def transform(
