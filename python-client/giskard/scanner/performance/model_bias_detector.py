@@ -1,4 +1,3 @@
-import logging
 import pandas as pd
 from sklearn import metrics
 from typing import Optional, Sequence
@@ -13,6 +12,7 @@ from ...ml_worker.testing.registry.slicing_function import SlicingFunction
 from .issues import PerformanceIssue, PerformanceIssueInfo
 from .metrics import PerformanceMetric, get_metric
 from ..decorators import detector
+from ...client.python_utils import warning
 
 
 @detector(name="model_bias", tags=["model_bias", "classification", "regression"])
@@ -25,7 +25,7 @@ class ModelBiasDetector:
     def run(self, model: BaseModel, dataset: Dataset):
         # Check if we have enough data to run the scan
         if len(dataset) < 100:
-            logging.warning("Skipping model bias scan: the dataset is too small.")
+            warning("Skipping model bias scan: the dataset is too small.")
             return []
 
         # Calculate loss
