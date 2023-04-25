@@ -167,8 +167,8 @@ class-based method.
 
 * <mark style="color:red;">**`parameters`**</mark> : **Your parameters need to have a type defined.** Here is the type
   allowed as your test parameters:
-    * `Dataset` A giskard dataset, [wrap your dataset](../scan/index.md#3-wrap-your-dataset)
-    * `BaseModel` A giskard model, [wrap your model](../scan/index.md#2-wrap-your-model)
+    * `Dataset` A giskard dataset, [wrap your dataset](../scan/index.md#wrap-your-dataset)
+    * `BaseModel` A giskard model, [wrap your model](../scan/index.md#wrap-your-model)
     * `int/float/bool/str`  Any primitive type can be used
 * <mark style="color:red;">**`return`**</mark> The result of your test must be either a bool or a TestResult:
     * `bool` Either `True` if the test passed or `False` if it failed

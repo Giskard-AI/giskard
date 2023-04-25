@@ -337,6 +337,19 @@ version = "0.3.6"
 summary = "Distribution utilities"
 
 [[package]]
+name = "docker"
+version = "6.0.1"
+requires_python = ">=3.7"
+summary = "A Python library for the Docker Engine API."
+dependencies = [
+    "packaging>=14.0",
+    "pywin32>=304; sys_platform == \"win32\"",
+    "requests>=2.26.0",
+    "urllib3>=1.26.0",
+    "websocket-client>=0.32.0",
+]
+
+[[package]]
 name = "docutils"
 version = "0.18.1"
 requires_python = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
@@ -1922,6 +1935,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "sphinx-click"
+version = "4.4.0"
+requires_python = ">=3.7"
+summary = "Sphinx extension that automatically documents click applications"
+dependencies = [
+    "click>=7.0",
+    "docutils",
+    "sphinx>=2.0",
+]
+
+[[package]]
 name = "sphinx-copybutton"
 version = "0.5.2"
 requires_python = ">=3.7"
@@ -2442,7 +2466,7 @@ dependencies = [
 [metadata]
 lock_version = "4.2"
 groups = ["default", "dev", "doc", "proto", "test"]
-content_hash = "sha256:6586e5fb98d4e382378609f7e4ca6af0e761e6857fc72c54d56b05ba0b966e73"
+content_hash = "sha256:de307a0e062a7e88b58ef9fb28589e48a1d52dfd13f3c57f00f9cf0a70afdb9a"
 
 [metadata.files]
 "absl-py 1.4.0" = [
@@ -2918,6 +2942,10 @@ content_hash = "sha256:6586e5fb98d4e382378609f7e4ca6af0e761e6857fc72c54d56b05ba0
 "distlib 0.3.6" = [
     {url = "https://files.pythonhosted.org/packages/58/07/815476ae605bcc5f95c87a62b95e74a1bce0878bc7a3119bc2bf4178f175/distlib-0.3.6.tar.gz", hash = "sha256:14bad2d9b04d3a36127ac97f30b12a19268f211063d8f8ee4f47108896e11b46"},
     {url = "https://files.pythonhosted.org/packages/76/cb/6bbd2b10170ed991cf64e8c8b85e01f2fb38f95d1bc77617569e0b0b26ac/distlib-0.3.6-py2.py3-none-any.whl", hash = "sha256:f35c4b692542ca110de7ef0bea44d73981caeb34ca0b9b6b2e6d7790dda8f80e"},
+]
+"docker 6.0.1" = [
+    {url = "https://files.pythonhosted.org/packages/79/26/6609b51ecb418e12d1534d00b888ce7e108f38b47dc6cd589598d5c6aaa2/docker-6.0.1.tar.gz", hash = "sha256:896c4282e5c7af5c45e8b683b0b0c33932974fe6e50fc6906a0a83616ab3da97"},
+    {url = "https://files.pythonhosted.org/packages/d5/b3/a5e41798a6d4b92880998e0d9e6980e57c5d039f7f7144f87627a6b19084/docker-6.0.1-py3-none-any.whl", hash = "sha256:dbcb3bd2fa80dca0788ed908218bf43972772009b881ed1e20dfc29a65e49782"},
 ]
 "docutils 0.18.1" = [
     {url = "https://files.pythonhosted.org/packages/57/b1/b880503681ea1b64df05106fc7e3c4e3801736cf63deffc6fa7fc5404cf5/docutils-0.18.1.tar.gz", hash = "sha256:679987caf361a7539d76e584cbeddc311e3aee937877c87346f31debc63e9d06"},
@@ -4533,6 +4561,10 @@ content_hash = "sha256:6586e5fb98d4e382378609f7e4ca6af0e761e6857fc72c54d56b05ba0
 "sphinx-basic-ng 1.0.0b1" = [
     {url = "https://files.pythonhosted.org/packages/76/aa/eb38c4ad0a46e9fe45604bde48fee569c1954929edb7c3f1d8a3a86fca71/sphinx_basic_ng-1.0.0b1-py3-none-any.whl", hash = "sha256:ade597a3029c7865b24ad0eda88318766bcc2f9f4cef60df7e28126fde94db2a"},
     {url = "https://files.pythonhosted.org/packages/80/77/df8674b4c0eb26d5a3817858ec83f103389c7c1ce31f7d31b13394a6ff0e/sphinx_basic_ng-1.0.0b1.tar.gz", hash = "sha256:89374bd3ccd9452a301786781e28c8718e99960f2d4f411845ea75fc7bb5a9b0"},
+]
+"sphinx-click 4.4.0" = [
+    {url = "https://files.pythonhosted.org/packages/48/bf/8e5c3e7865d909a64ed2bd89dcc835f3c542fec857c8bdf38ee8b682af14/sphinx-click-4.4.0.tar.gz", hash = "sha256:cc67692bd28f482c7f01531c61b64e9d2f069bfcf3d24cbbb51d4a84a749fa48"},
+    {url = "https://files.pythonhosted.org/packages/ce/cd/00689d6d6e20159509499c79b76c143a2ac5fdcd5c44089119e47e3d674d/sphinx_click-4.4.0-py3-none-any.whl", hash = "sha256:2821c10a68fc9ee6ce7c92fad26540d8d8c8f45e6d7258f0e4fb7529ae8fab49"},
 ]
 "sphinx-copybutton 0.5.2" = [
     {url = "https://files.pythonhosted.org/packages/9e/48/1ea60e74949eecb12cdd6ac43987f9fd331156388dcc2319b45e2ebb81bf/sphinx_copybutton-0.5.2-py3-none-any.whl", hash = "sha256:fb543fd386d917746c9a2c50360c7905b605726b9355cd26e9974857afeae06e"},
