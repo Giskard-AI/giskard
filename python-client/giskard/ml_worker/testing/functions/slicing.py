@@ -47,9 +47,3 @@ def _sentiment_analysis(x, column_name, threshold, model, emotion):
     sentences = list(map(lambda txt: txt[:512], list(x[column_name])))
     return x.iloc[list(
         map(lambda s: s['label'] == emotion and s['score'] >= threshold, sentiment_pipeline(sentences)))]
-
-
-# ====== debug feature slicing_functions ======
-@slicing_function(name="Incorrect Rows", row_level=False, tags=["performance", "hidden"])
-def incorrect_rows(x: pd.DataFrame, target: str, predictions: np.ndarray) -> pd.DataFrame:
-    return x[x[target] != predictions]
