@@ -8,13 +8,11 @@
         <span class="text-subtitle-1">
           <span class="mr-1">/</span>{{ project.name }}
         </span>
-        <v-btn icon id="no-background-hover" :to="{ name: 'project-overview' }" @click="tab = null">
-          <span class="group pa-2">
-            <v-icon medium>info</v-icon>
-          </span>
-        </v-btn>
       </v-toolbar-title>
       <v-spacer></v-spacer>
+      <v-btn small tile color="primaryLight" class="primaryLightBtn mr-2" :to="{ name: 'project-overview' }" @click="tab = null">
+        Project settings
+      </v-btn>
       <v-tooltip :disabled="mainStore.authAvailable" bottom>
         <template v-slot:activator="{ on, attrs }">
           <div v-on="on">
@@ -26,10 +24,6 @@
         </template>
         <span>Inviting users is only available in Giskard Starter or above.</span>
       </v-tooltip>
-      <v-btn small tile color="primaryLight" class="primaryLightBtn ml-2" :to="{ name: 'project-overview' }" @click="tab = null">
-        <v-icon dense left>info</v-icon>
-        Info
-      </v-btn>
       <v-menu left bottom offset-y rounded=0 v-if="isProjectOwnerOrAdmin">
         <template v-slot:activator="{ on, attrs }">
           <v-btn text small v-bind="attrs" v-on="on">
