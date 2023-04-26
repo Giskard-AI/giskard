@@ -20,6 +20,7 @@ from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction
 from giskard.ml_worker.testing.test_result import TestResult
 from giskard.ml_worker.testing.utils import Direction
 from giskard.ml_worker.testing.utils import check_slice_not_empty
+from debug_masks import incorrect_rows_mask, top_nper_abs_err_rows_mask
 from giskard.models.base import BaseModel
 from giskard.models.utils import np_type_to_native
 
@@ -41,42 +42,53 @@ def _get_rmse(y_actual, y_predicted):
     return np.sqrt(mean_squared_error(y_actual, y_predicted))
 
 
-def _test_classification_score(score_fn, model: BaseModel, gsk_dataset: Dataset, threshold: float = 1.0):
-    _verify_target_availability(gsk_dataset)
+def _test_classification_score(score_fn, model: BaseModel, dataset: Dataset, threshold: float = 1.0,
+                               debug: bool = True):
+    _verify_target_availability(dataset)
     is_binary_classification = len(model.meta.classification_labels) == 2
-    actual_target = gsk_dataset.df[gsk_dataset.target]
-    prediction = model.predict(gsk_dataset).prediction
+    targets = dataset.df[dataset.target]
+    prediction = model.predict(dataset).prediction
     if is_binary_classification:
-        metric = score_fn(actual_target, prediction, pos_label=model.meta.classification_labels[1])
+        metric = score_fn(targets, prediction, pos_label=model.meta.classification_labels[1])
     else:
-        metric = score_fn(actual_target, prediction, average="micro")
+        metric = score_fn(targets, prediction, average="micro")
 
-    return TestResult(actual_slices_size=[len(gsk_dataset)], metric=metric, passed=bool(metric >= threshold))
+    debugging_mask = incorrect_rows_mask(dataset.df, targets, prediction) if debug else None
 
-
-def _test_accuracy_score(gsk_dataset: Dataset, model: BaseModel, threshold: float = 1.0):
-    _verify_target_availability(gsk_dataset)
-    prediction = model.predict(gsk_dataset).prediction
-    actual_target = gsk_dataset.df[gsk_dataset.target]
-
-    metric = accuracy_score(actual_target, prediction)
-
-    return TestResult(actual_slices_size=[len(gsk_dataset)], metric=metric, passed=bool(metric >= threshold))
+    return TestResult(actual_slices_size=[len(dataset)], metric=metric, passed=bool(metric >= threshold),
+                      debugging_mask=debugging_mask)
 
 
-def _test_regression_score(score_fn, model: BaseModel, giskard_ds, threshold: float = 1.0, r2=False):
-    results_df = pd.DataFrame()
-    _verify_target_availability(giskard_ds)
+def _test_accuracy_score(dataset: Dataset, model: BaseModel, threshold: float = 1.0, debug: bool = True):
+    _verify_target_availability(dataset)
+    prediction = model.predict(dataset).prediction
+    targets = dataset.df[dataset.target]
 
-    results_df["actual_target"] = giskard_ds.df[giskard_ds.target]
-    results_df["prediction"] = model.predict(giskard_ds).raw_prediction
+    metric = accuracy_score(targets, prediction)
 
-    metric = score_fn(results_df["actual_target"], results_df["prediction"])
+    debugging_mask = incorrect_rows_mask(dataset.df, targets, prediction) if debug else None
+
+    return TestResult(actual_slices_size=[len(dataset)], metric=metric, passed=bool(metric >= threshold),
+                      debugging_mask=debugging_mask)
+
+
+def _test_regression_score(score_fn, model: BaseModel, dataset: Dataset, threshold: float = 1.0, r2=False,
+                           debug_percent_rows: float = 0.3, debug: bool = True):
+    _verify_target_availability(dataset)
+
+    targets = dataset.df[dataset.target]
+    raw_prediction = model.predict(dataset).raw_prediction
+
+    metric = score_fn(targets, raw_prediction)
+
+    debugging_mask = top_nper_abs_err_rows_mask(dataset.df, targets, raw_prediction,
+                                                debug_percent_rows) if debug else None
 
     return TestResult(
-        actual_slices_size=[len(giskard_ds)],
+        actual_slices_size=[len(dataset)],
         metric=metric,
         passed=bool(metric >= threshold if r2 else metric <= threshold),
+        debugging_mask=debugging_mask
     )
 
 
@@ -165,7 +177,7 @@ def test_auc(
 
         metric = roc_auc_score(targets, predictions, multi_class="ovo")
 
-    debugging_mask = dataset.df.index[targets != _predictions.prediction].tolist() if debug else None
+    debugging_mask = incorrect_rows_mask(dataset.df, targets, _predictions.prediction) if debug else None
 
     return TestResult(actual_slices_size=[len(dataset)], metric=metric, passed=bool(metric >= threshold),
                       debugging_mask=debugging_mask)
