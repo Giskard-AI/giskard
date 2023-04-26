@@ -59,7 +59,7 @@ class DataProcessor:
             self.pipeline.append(processor)
         return self
 
-    def apply(self, dataset: "Dataset", apply_only_last=False, get_mask: bool = False):
+    def apply(self, dataset: "Dataset", apply_only_last=False):
         df = dataset.df.copy()
 
         while len(self.pipeline):
@@ -70,19 +70,17 @@ class DataProcessor:
             if apply_only_last:
                 break
 
-        if get_mask:
-            return dataset.df.index.isin(df.index)  # returns a boolean numpy.ndarray of shape len(dataset.df)
-        else:
-            ret = Dataset(
-                df=df,
-                name=dataset.name,
-                target=dataset.target,
-                cat_columns=dataset.cat_columns,
-                column_types=dataset.column_types,
-            )
-            if len(self.pipeline):
-                ret.data_processor = self
-            return ret
+        ret = Dataset(
+            df=df,
+            name=dataset.name,
+            target=dataset.target,
+            cat_columns=dataset.cat_columns,
+            column_types=dataset.column_types,
+        )
+
+        if len(self.pipeline):
+            ret.data_processor = self
+        return ret
 
     def __repr__(self) -> str:
         return f"DataProcessor: {len(self.pipeline)} steps"
@@ -123,13 +121,13 @@ class Dataset:
 
     @configured_validate_arguments
     def __init__(
-        self,
-        df: pd.DataFrame,
-        name: Optional[str] = None,
-        target: Optional[str] = None,
-        cat_columns: Optional[List[str]] = [],
-        column_types: Optional[Dict[str, str]] = None,
-        id: Optional[uuid.UUID] = None,
+            self,
+            df: pd.DataFrame,
+            name: Optional[str] = None,
+            target: Optional[str] = None,
+            cat_columns: Optional[List[str]] = [],
+            column_types: Optional[Dict[str, str]] = None,
+            id: Optional[uuid.UUID] = None,
     ) -> None:
         """
         Initializes a Dataset object.
@@ -198,8 +196,7 @@ class Dataset:
         return self
 
     @configured_validate_arguments
-    def slice(self, slicing_function: Union[SlicingFunction, SlicingFunctionType],
-              row_level: bool = True, get_mask: bool = False):
+    def slice(self, slicing_function: Union[SlicingFunction, SlicingFunctionType], row_level: bool = True):
         """
         Slice the dataset using the specified `slicing_function`.
 
@@ -211,24 +208,22 @@ class Dataset:
                 will be used directly to slice the DataFrame.
             row_level (bool): Whether the `slicing_function` should be applied to the rows (True) or
                 the whole dataframe (False). Defaults to True.
-            get_mask (bool): Whether the `slicing_function` returns a dataset (False) or a mask, i.e.
-                a list of indices (True).
 
         Returns:
-            Union[Dataset, List]:
-                The sliced dataset as a `Dataset` object if get_mask = False (default) Or a mask if
-                get_mask = True.
+            Dataset:
+                The sliced dataset as a `Dataset` object.
 
         Notes:
             Raises TypeError: If `slicing_function` is not a callable or a `SlicingFunction` object.
         """
         if inspect.isfunction(slicing_function):
             slicing_function = SlicingFunction(slicing_function, row_level=row_level)
-        return self.data_processor.add_step(slicing_function).apply(self, apply_only_last=True, get_mask=get_mask)
+        return self.data_processor.add_step(slicing_function).apply(self, apply_only_last=True)
 
     @configured_validate_arguments
     def transform(
-        self, transformation_function: Union[TransformationFunction, TransformationFunctionType], row_level: bool = True
+            self, transformation_function: Union[TransformationFunction, TransformationFunctionType],
+            row_level: bool = True
     ):
         """
         Transform the data in the current Dataset by applying a transformation function.
