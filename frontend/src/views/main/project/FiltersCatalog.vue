@@ -19,15 +19,15 @@
                                       v-model="searchFilter"></v-text-field>
                         <v-list three-line>
                             <v-list-item-group v-model="selected" color="primary" mandatory>
-                                <template v-for="filter in filteredTestFunctions">
+                                <template v-for="slicingFunction in filteredTestFunctions">
                                     <v-divider/>
-                                    <v-list-item :value="filter">
+                                    <v-list-item :value="slicingFunction">
                                         <v-list-item-content>
                                             <v-list-item-title class="test-title">
                                                 <div class="d-flex align-center">
-                                                    {{ filter.name }}
+                                                    {{ slicingFunction.displayName ?? slicingFunction.name }}
                                                     <v-spacer class="flex-grow-1"/>
-                                                    <v-tooltip bottom v-if="filter.potentiallyUnavailable">
+                                                    <v-tooltip bottom v-if="slicingFunction.potentiallyUnavailable">
                                                         <template v-slot:activator="{ on, attrs }">
                                                             <div v-bind="attrs" v-on="on">
                                                                 <v-icon color="orange">warning</v-icon>
@@ -37,8 +37,8 @@
                                                     </v-tooltip>
                                                 </div>
                                             </v-list-item-title>
-                                            <v-list-item-subtitle v-if="filter.tags">
-                                                <v-chip class="mr-2" v-for="tag in sorted(filter.tags)" x-small
+                                            <v-list-item-subtitle v-if="slicingFunction.tags">
+                                                <v-chip class="mr-2" v-for="tag in sorted(slicingFunction.tags)" x-small
                                                         :color="pasterColor(tag)">
                                                     {{ tag }}
                                                 </v-chip>
@@ -215,6 +215,7 @@ const filteredTestFunctions = computed(() => {
                 || func.displayName?.toLowerCase()?.includes(keyword)
             ).length === keywords.length;
         })
+        .sortBy(t => t.displayName ?? t.name)
         .value();
 })
 

@@ -57,6 +57,7 @@ def map_function_meta(callable_type):
         test.uuid: ml_worker_pb2.FunctionMeta(
             uuid=test.uuid,
             name=test.name,
+            displayName=test.display_name,
             module=test.module,
             doc=test.doc,
             code=test.code,
