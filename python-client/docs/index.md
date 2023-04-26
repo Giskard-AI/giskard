@@ -21,6 +21,7 @@ reference/index
 - **<project:/guides/test-catalog/index.rst>**
 - **<project:/guides/slicing-function-catalog/index.rst>**
 - **<project:/guides/transformation-function-catalog/index.rst>**
+- **<project:/guides/tutorials/index.md>**
 
 ## <project:/reference/index.rst>
 
