@@ -16,10 +16,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -49,15 +46,15 @@ public class TestSuiteExecutionService {
 
             for (Map.Entry<String, String> entry : execution.getInputs().entrySet()) {
                 builder.addGlobalArguments(testArgumentService.buildTestArgument(suiteInputs, entry.getKey(),
-                    entry.getValue(), execution.getSuite().getProject().getKey()));
+                    entry.getValue(), execution.getSuite().getProject().getKey(), Collections.emptyList()));
             }
 
             Map<String, String> suiteInputsAndShared = new HashMap<>(execution.getInputs());
-            testSuite.getTestInputs().stream()
+            testSuite.getFunctionInputs().stream()
                 .filter(i -> Strings.isNotBlank(i.getValue()))
                 .forEach(i -> suiteInputsAndShared.put(i.getName(), i.getValue()));
 
-            for (SuiteTest suiteTest : execution.getSuite().getTests()) {
+            for (SuiteTest suiteTest : testSuite.getTests()) {
                 builder.addTests(testArgumentService
                     .buildFixedTestArgument(suiteInputsAndShared, suiteTest, execution.getSuite().getProject().getKey()));
             }
