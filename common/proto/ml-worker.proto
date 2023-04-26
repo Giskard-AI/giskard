@@ -180,8 +180,9 @@ message FuncArgument{
     bool bool = 7;
     ArtifactRef slicingFunction = 8;
     ArtifactRef transformationFunction = 9;
+    string kwargs = 10;
   }
-  repeated FuncArgument args = 10;
+  repeated FuncArgument args = 11;
 }
 
 message RunTestResponse {
