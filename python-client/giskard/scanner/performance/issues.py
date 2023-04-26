@@ -65,3 +65,10 @@ class PerformanceIssue(Issue):
         predictions = self.model.predict(ex_dataset).prediction
         examples["predicted_label"] = predictions
         return examples
+
+    @property
+    def importance(self):
+        if self.info.metric.greater_is_better:
+            return -self.info.metric_rel_delta
+
+        return self.info.metric_rel_delta
