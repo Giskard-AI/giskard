@@ -1,43 +1,51 @@
 <template>
   <v-container fluid class="font-weight-light mt-3">
     <v-row>
-      <v-col cols="6">
+      <v-col cols="9">
         <v-card height="100%">
           <v-card-title class="font-weight-light secondary--text">
             Properties
           </v-card-title>
-          <v-card-text>
-            <v-simple-table class="info-table">
-              <tr>
-                <td>Project Description</td>
-                <td>{{ project.description }}</td>
-              </tr>
-              <tr>
-                <td>Project Unique Key</td>
-                <td>{{ project.key }}</td>
-              </tr>
-              <tr>
-                <td>Project ID</td>
-                <td>{{ project.id }}</td>
-              </tr>
-              <tr>
-                <td>Created by</td>
-                <td>{{ getUserFullDisplayName(project.owner) }}</td>
-              </tr>
-              <tr>
-                <td>Created at</td>
-                <td>{{ project.createdDate | date }}</td>
-              </tr>
-              <tr>
-                <td>ML Worker</td>
-                <td>{{ project.mlWorkerType.toLowerCase() }}</td>
-              </tr>
-            </v-simple-table>
+          <v-card-text class="container">
+            <v-row>
+              <v-col cols="6">
+                <v-simple-table class="properties-table-c1">
+                  <tr>
+                    <td>Project Description:</td>
+                    <td>{{ project.description }}</td>
+                  </tr>
+                  <tr>
+                    <td>Project Unique Key:</td>
+                    <td>{{ project.key }}</td>
+                  </tr>
+                  <tr>
+                    <td>Project ID:</td>
+                    <td>{{ project.id }}</td>
+                  </tr>
+                </v-simple-table>
+              </v-col>
+              <v-col cols="6">
+                <v-simple-table class="properties-table-c2">
+                  <tr>
+                    <td>Created by:</td>
+                    <td>{{ getUserFullDisplayName(project.owner) }}</td>
+                  </tr>
+                  <tr>
+                    <td>Created at:</td>
+                    <td>{{ project.createdDate | date }}</td>
+                  </tr>
+                  <tr>
+                    <td>ML Worker:</td>
+                    <td>{{ project.mlWorkerType.toLowerCase() }}</td>
+                  </tr>
+                </v-simple-table>
+              </v-col>
+            </v-row>
           </v-card-text>
         </v-card>
       </v-col>
 
-      <v-col cols="6">
+      <v-col cols="3">
         <v-card height="100%">
           <v-card-title class="font-weight-light secondary--text">
             Guest Users
@@ -62,6 +70,30 @@
     </v-row>
 
     <v-divider class="my-4"></v-divider>
+
+    <v-row>
+      <v-col cols="6">
+        <v-card>
+          <v-card-title>
+            Datasets
+          </v-card-title>
+          <v-card-text>
+            Lorem ipsum dolor sit amet consectetur, adipisicing elit. Alias libero iure, modi eveniet perspiciatis rem tempora corrupti ex voluptatibus veritatis corporis delectus ducimus laboriosam assumenda quo odio necessitatibus labore! Nam vel dolorum omnis, inventore aliquid, dolore consequuntur sunt cum, quaerat est repellendus velit?
+          </v-card-text>
+        </v-card>
+      </v-col>
+
+      <v-col cols="6">
+        <v-card>
+          <v-card-title>
+            Models
+          </v-card-title>
+          <v-card-text>
+            Lorem ipsum dolor sit amet consectetur, adipisicing elit. Alias libero iure, modi eveniet perspiciatis rem tempora corrupti ex voluptatibus veritatis corporis delectus ducimus laboriosam assumenda quo odio necessitatibus labore! Nam vel dolorum omnis, inventore aliquid, dolore consequuntur sunt cum, quaerat est repellendus velit?
+          </v-card-text>
+        </v-card>
+      </v-col>
+    </v-row>
   </v-container>
 </template>
 
@@ -109,10 +141,22 @@ export default class ProjectSettings extends Vue {
 </script>
 
 <style scoped lang="scss">
-.info-table {
+.properties-table-c1 {
   tr {
     td:first-child {
       width: 150px;
+    }
+
+    td:nth-child(2) {
+      font-weight: bold;
+    }
+  }
+}
+
+.properties-table-c2 {
+  tr {
+    td:first-child {
+      width: 100px;
     }
 
     td:nth-child(2) {
