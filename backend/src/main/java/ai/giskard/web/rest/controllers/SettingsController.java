@@ -16,6 +16,7 @@ import ai.giskard.web.dto.config.LicenseDTO;
 import ai.giskard.web.dto.config.MLWorkerConnectionInfoDTO;
 import ai.giskard.web.dto.user.AdminUserDTO;
 import ai.giskard.web.dto.user.RoleDTO;
+import ai.giskard.web.rest.errors.ExpiredTokenException;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -69,7 +70,9 @@ public class SettingsController {
     @GetMapping("")
     @Transactional
     public AppConfigDTO getApplicationSettings(@AuthenticationPrincipal final UserDetails user) {
-        log.debug("REST request to get all public User names");
+        if (user == null) {
+            throw new ExpiredTokenException();
+        }
         AdminUserDTO userDTO = userRepository
             .findOneWithRolesByLogin(user.getUsername())
             .map(AdminUserDTO::new)
@@ -138,6 +141,7 @@ public class SettingsController {
             .active(currentLicense.isActive())
             .features(currentLicense.getFeatures())
             .expiresOn(currentLicense.getExpiresOn())
+            .licenseId(currentLicense.getId())
             .build();
     }
 

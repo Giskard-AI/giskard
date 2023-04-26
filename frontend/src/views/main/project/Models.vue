@@ -21,13 +21,10 @@
           <v-col cols="3">Actions</v-col>
         </v-row>
       </v-card>
-      <v-card outlined tile class="grey lighten-5" v-for="m in models" :key="m.id">
+      <v-card outlined tile class="grey lighten-5" v-for="m in           models          " :key="m.id">
         <v-row class="px-2 py-1 align-center">
           <v-col cols="4">
-            <InlineEditText
-                :text="m.name"
-                :can-edit="isProjectOwnerOrAdmin"
-                @save="(name) => renameModel(m.id, name)">
+            <InlineEditText :text="m.name" :can-edit="isProjectOwnerOrAdmin" @save="(name) => renameModel(m.id, name)">
             </InlineEditText>
           </v-col>
           <v-col cols="1">
@@ -44,26 +41,19 @@
           </v-col>
           <v-col cols="3">
             <div>
-              <v-btn small tile color="primary"
-                     @click="showInspectDialog = true; modelToInspect = m">
+              <v-btn small tile color="primaryLight" class="primaryLightBtn" @click="showInspectDialog = true; modelToInspect = m">
                 <v-icon dense left>policy</v-icon>
-                Inspect
+                Debug
               </v-btn>
               <v-tooltip bottom>
-                <template v-slot:activator="{ on, attrs }">
-                  <v-btn icon color="info" @click="downloadModelPickle(m.id)" v-bind="attrs" v-on="on">
+                <template v-slot:activator=" { on, attrs } ">
+                  <v-btn icon color="info" @click=" downloadModelPickle(m.id) " v-bind=" attrs " v-on=" on ">
                     <v-icon>download</v-icon>
                   </v-btn>
                 </template>
                 <span>Download</span>
               </v-tooltip>
-              <DeleteModal
-                  v-if="isProjectOwnerOrAdmin"
-                  :id="m.id"
-                  :file-name="m.fileName"
-                  type="model"
-                  @submit="deleteModelPickle(m.id)"
-              />
+              <DeleteModal v-if="isProjectOwnerOrAdmin" :id="m.id" :file-name="m.fileName" type="model" @submit="deleteModelPickle(m.id)" />
             </div>
           </v-col>
         </v-row>
@@ -72,8 +62,7 @@
 
       <!-- Dialog for launching model inspection -->
       <v-dialog persistent max-width="600" v-model="showInspectDialog" class="inspector-launcher-container">
-        <InspectorLauncher :projectId="projectId" :model="modelToInspect"
-                           @cancel="cancelLaunchInspector()"/>
+        <InspectorLauncher :projectId="projectId" :model="modelToInspect" @cancel="cancelLaunchInspector()" />
       </v-dialog>
 
     </v-container>
@@ -84,14 +73,14 @@
 </template>
 
 <script setup lang="ts">
-import {api} from '@/api';
+import { api } from '@/api';
 import InspectorLauncher from './InspectorLauncher.vue';
-import {ModelDTO} from '@/generated-sources';
+import { ModelDTO } from '@/generated-sources';
 import mixpanel from "mixpanel-browser";
-import {onActivated, ref} from 'vue';
+import { onActivated, ref } from 'vue';
 import DeleteModal from '@/views/main/project/modals/DeleteModal.vue';
 import InlineEditText from '@/components/InlineEditText.vue';
-import {useMainStore} from "@/stores/main";
+import { useMainStore } from "@/stores/main";
 
 const props = withDefaults(defineProps<{
   projectId: number,
@@ -112,15 +101,15 @@ async function loadModelPickles() {
 }
 
 async function deleteModelPickle(id: string) {
-  mixpanel.track('Delete model', {id});
+  mixpanel.track('Delete model', { id });
 
   let messageDTO = await api.deleteModelFiles(id);
-  useMainStore().addNotification({content: messageDTO.message});
+  useMainStore().addNotification({ content: messageDTO.message });
   await loadModelPickles();
 }
 
 function downloadModelPickle(id: number) {
-  mixpanel.track('Download model', {id});
+  mixpanel.track('Download model', { id });
   api.downloadModelFile(id)
 }
 
@@ -129,7 +118,7 @@ function cancelLaunchInspector() {
 }
 
 async function renameModel(id: string, name: string) {
-  mixpanel.track('Update model name', {id});
+  mixpanel.track('Update model name', { id });
   const savedDataset = await api.editModelName(id, name);
   const idx = models.value.findIndex(f => f.id === id);
   models.value[idx] = savedDataset;
