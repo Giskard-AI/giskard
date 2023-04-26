@@ -17,7 +17,6 @@ class MetadataIndexer:
 
     """
 
-    _dataset: "Dataset"
     _metadata: dict
     _registry = MetadataProviderRegistry
 
