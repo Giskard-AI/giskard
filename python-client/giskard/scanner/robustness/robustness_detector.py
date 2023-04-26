@@ -42,7 +42,7 @@ class RobustnessDetector:
                 continue
 
             test_result = robustness_test.execute()
-            print(feature, test_result.metric, test_result.passed)
+
             if not test_result.passed:
                 issue_info = RobustnessIssueInfo(
                     feature=feature,
