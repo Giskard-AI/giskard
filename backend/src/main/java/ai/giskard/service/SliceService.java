@@ -11,7 +11,6 @@ import ai.giskard.web.dto.ml.SliceDTO;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -22,7 +21,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Service
-@Transactional
 @RequiredArgsConstructor
 public class SliceService {
     private final GiskardMapper giskardMapper;
@@ -38,13 +36,13 @@ public class SliceService {
 
     public Slice updateSlice(SlicePutDTO sliceDTO) {
         validateSliceName(sliceDTO.getName());
-        Slice slice = sliceRepository.getById(sliceDTO.getId());
+        Slice slice = sliceRepository.getMandatoryById(sliceDTO.getId());
         giskardMapper.updateSliceFromDto(sliceDTO, slice);
         return sliceRepository.save(slice);
     }
 
     public List<Integer> getSlicedRowsForDataset(Long sliceId, Dataset dataset) throws IOException {
-        Slice slice = sliceRepository.getById(sliceId);
+        Slice slice = sliceRepository.getMandatoryById(sliceId);
         String hash = DigestUtils.md5Hex(slice.getCode()); // NOSONAR: no security risk here
         Path cachedSliceFile = fileLocationService.resolvedSlicePath(slice.getProject().getKey(), dataset.getId(), hash);
         List<Integer> result;

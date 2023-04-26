@@ -17,7 +17,6 @@ import ai.giskard.worker.ArtifactRef;
 import ai.giskard.worker.RunAdHocSlicingRequest;
 import ai.giskard.worker.SlicingResultMessage;
 import lombok.RequiredArgsConstructor;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -42,18 +41,16 @@ public class SlicingFunctionController {
     private final TestArgumentService testArgumentService;
 
     @GetMapping("/slices/{uuid}")
-    @Transactional(readOnly = true)
     public SlicingFunctionDTO getSlicingFunction(@PathVariable("uuid") @NotNull UUID uuid) {
-        return giskardMapper.toDTO(slicingFunctionRepository.getById(uuid));
+        return giskardMapper.toDTO(slicingFunctionRepository.getMandatoryById(uuid));
     }
 
     @PostMapping("/slices/{sliceFnUuid}/dataset/{datasetUuid}")
-    @Transactional(readOnly = true)
     public SlicingResultDTO runAdHocFunction(@PathVariable("sliceFnUuid") @NotNull UUID sliceFnUuid,
                                              @PathVariable("datasetUuid") @NotNull UUID datasetUuid,
                                              @RequestBody Map<String, String> inputs) {
-        SlicingFunction slicingFunction = slicingFunctionRepository.getById(sliceFnUuid);
-        Dataset dataset = datasetRepository.getById(datasetUuid);
+        SlicingFunction slicingFunction = slicingFunctionRepository.getMandatoryById(sliceFnUuid);
+        Dataset dataset = datasetRepository.getMandatoryById(datasetUuid);
         Project project = dataset.getProject();
 
         try (MLWorkerClient client = mlWorkerService.createClient(project.isUsingInternalWorker())) {
@@ -79,7 +76,6 @@ public class SlicingFunctionController {
     }
 
     @PutMapping("/slices/{uuid}")
-    @Transactional
     public SlicingFunctionDTO updateSlicingFunction(@PathVariable("uuid") @NotNull UUID uuid,
                                                     @Valid @RequestBody SlicingFunctionDTO slicingFunction) {
         return slicingFunctionService.save(slicingFunction);

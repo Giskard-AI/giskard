@@ -5,9 +5,10 @@
     <option name="PARENT_ENVS" value="true" />
     <envs>
       <env name="PYTHONUNBUFFERED" value="1" />
+      <env name="GSK_API_KEY" value="eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiIsInRva2VuX3R5cGUiOiJBUEkiLCJhdXRoIjoiUk9MRV9BRE1JTiIsImV4cCI6MTY5MDI0MjA3MX0.j5geA0XjbYYEl_VxPRhBat2vNtAjIQv59sPCe1YGsM8" />
     </envs>
-    <option name="SDK_HOME" value="/usr/bin/python3" />
-    <option name="SDK_NAME" value="Python 3.8" />
+    <option name="SDK_HOME" value="$PROJECT_DIR$/python-client/.venv/bin/python" />
+    <option name="SDK_NAME" value="Gikard main" />
     <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/python-client/giskard" />
     <option name="IS_MODULE_SDK" value="true" />
     <option name="ADD_CONTENT_ROOTS" value="true" />
@@ -29,7 +30,7 @@
       <option name="useCurrentConnection" value="false" />
     </EXTENSION>
     <option name="SCRIPT_NAME" value="$PROJECT_DIR$/python-client/giskard/cli.py" />
-    <option name="PARAMETERS" value="worker start -u http://localhost:9000/" />
+    <option name="PARAMETERS" value="worker start -u http://localhost:9000/ -v" />
     <option name="SHOW_COMMAND_LINE" value="false" />
     <option name="EMULATE_TERMINAL" value="false" />
     <option name="MODULE_MODE" value="false" />

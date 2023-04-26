@@ -25,7 +25,6 @@ import org.springframework.context.annotation.PropertySource;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
@@ -62,13 +61,11 @@ public class SettingsController {
 
     @PostMapping("")
     @PreAuthorize("hasAuthority(\"" + ADMIN + "\")")
-    @Transactional
     public GeneralSettings saveGeneralSettings(@RequestBody GeneralSettings settings) {
         return settingsService.save(settings);
     }
 
     @GetMapping("")
-    @Transactional
     public AppConfigDTO getApplicationSettings(@AuthenticationPrincipal final UserDetails user) {
         if (user == null) {
             throw new ExpiredTokenException();
