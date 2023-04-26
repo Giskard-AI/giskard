@@ -43,114 +43,80 @@ class TextTransformer:
         self.text = text
 
     def execute_protocol(self):
-        self.replace()  # replace proper noun, gender,ethnicity,location by a mask
-        # self.char_perturbation()  # 10% of the words for each sentence
-        # self.word_perturbation()  # 10% of the words for each sentence
-        self.title_case()
-        self.upper_case()
-        self.lower_case()
-        # @TODO: Change the functions so it doesn't take to much time to run
+        self._replace_by_mask()  # replace proper noun, gender,ethnicity,location by a mask
         return self.text
-
-    def replace(self):
-        self.text = self._replace_by_mask(["GPE", "NORP", "PRP", "PROPN"])
-
-    def _replace_by_mask(self, tag_list):
-        doc = self.nlp(self.text)
+    def tokenize(self):
+        return self.nlp(self.text)
+    def _replace_by_mask(self):
+        doc = self.tokenize()
         new_text = []
         for token in doc:
-            if token.ent_type_ == "GPE" and "GPE" in tag_list:
+            if token.ent_type_ == "GPE":
                 new_text.append("[LOCATION]")
-            elif token.ent_type_ == "NORP" and "NORP" in tag_list:
+            elif token.ent_type_ == "NORP":
                 new_text.append("[ETHNICITY]")
-            elif (token.tag_ == "PRP" or token.tag_ == "PRP$") and "PRP" in tag_list:  # PRP$
+            elif token.tag_ == "PRP" or token.tag_ == "PRP$":  # PRP$
                 new_text.append("[GENDER]")
-            elif token.tag_ == "PROPN" and "PROPN" in tag_list:
+            elif token.tag_ == "PROPN":
                 new_text.append("[PROPER NOUN]")
             else:
-                new_text.append(str(token.text))
+                # Tranformation suite
+                text_transformed = str(token.text)
+                text_transformed = self.add_typos(text_transformed)
+                text_transformed = self.char_perturbation(text_transformed)
+                text_transformed = self.title_case(text_transformed)
+                text_transformed = self.word_perturbation(text_transformed)
+                new_text.append(text_transformed)
         return " ".join(new_text)
 
-    def char_perturbation(self):
-        """
-        Perform a character-level perturbation attack on the input text by adding or deleting random characters, and
-        perform a typo attack on the input text.
-        """
-        # Split the text into tokens
-        tokens = self.text.split()
+    def char_perturbation(self, text):
+        # Get the token's text and apply a perturbation with probability 0.1
+        if random.random() < 0.1:
+            # Choose a perturbation type randomly
+            perturbation_type = random.choice(['insert', 'delete', 'replace'])
+            # Apply the perturbation
+            if perturbation_type == 'insert':
+                idx = random.randint(0, len(text))
+                new_char = chr(random.randint(33, 126))
+                text = text[:idx] + new_char + text[idx:]
+                return text
+            elif perturbation_type == 'delete':
+                idx = random.randint(0, len(text) - 1)
+                text = text[:idx] + text[idx + 1:]
+                return text
+            elif perturbation_type == 'replace':
+                idx = random.randint(0, len(text) - 1)
+                new_char = chr(random.randint(33, 126))
+                text = text[:idx] + new_char + text[idx + 1:]
+                return text
+        return text
 
-        # Loop over the tokens in the document
-        for i in range(len(tokens)):
-            # Get the token's text and apply a perturbation with probability 0.1
-            if random.random() < 0.1:
-                # Choose a perturbation type randomly
-                perturbation_type = random.choice(['insert', 'delete', 'replace'])
+    def word_perturbation(self, text):
+        if random.random() < 0.05:  # 5% of the words
+            # Choose a text augmentation operation randomly
+            op = random.choice(['delete', 'replace'])  # ['delete', 'add', 'swap'], 'swap'
 
-                # Apply the perturbation
-                if perturbation_type == 'insert':
-                    idx = random.randint(0, len(tokens[i]))
-                    new_char = chr(random.randint(33, 126))
-                    tokens[i] = tokens[i][:idx] + new_char + tokens[i][idx:]
-                elif perturbation_type == 'delete':
-                    idx = random.randint(0, len(tokens[i]) - 1)
-                    tokens[i] = tokens[i][:idx] + tokens[i][idx + 1:]
-                elif perturbation_type == 'replace':
-                    idx = random.randint(0, len(tokens[i]) - 1)
-                    new_char = chr(random.randint(33, 126))
-                    tokens[i] = tokens[i][:idx] + new_char + tokens[i][idx + 1:]
+            # Delete the word
+            if op == 'delete':
+                if len(text) > 1:
+                    return ""
 
-        # Return the modified text as a string
-        self.text = ' '.join(tokens)
+            # Replace the word by another random word
+            elif op == 'replace':
+                # Choose a random word from the vocabulary
+                new_word = str(random.choice(list(self.nlp.vocab.strings)))
+                return new_word
 
-    def word_perturbation(self):
-        """
-        Perform random text augmentation by deleting a word, adding a random word, or swapping two words in the input text.
-        """
-        # Tokenize the input text into words
-        words = self.text.split()
+    def upper_case(self, text):
+        return text.upper()
 
-        for i in range(len(words)):
-            if random.random() < 0.1:
-                # Choose a text augmentation operation randomly
-                op = random.choice(['delete', 'add', 'swap'])  # ['delete', 'add', 'swap']
+    def lower_case(self, text):
+        return text.lower()
 
-                # Delete a random word from the text
-                if op == 'delete':
-                    if len(words) > 1:
-                        # Choose a random word in the document (excluding the first word)
-                        word_idx = random.randint(1, len(words) - 1)
-                        # Delete the selected word
-                        words.pop(word_idx)
+    def title_case(self, text):
+        return text.title()
 
-                # Add a random word to the text
-                elif op == 'add':
-                    # Choose a random word from the vocabulary
-                    new_word = str(random.choice(list(self.nlp.vocab.strings)))
-                    word_idx = random.randint(0, len(words))
-                    words.insert(word_idx, new_word)
-
-                # Swap two random words in the text
-                elif op == 'swap':
-                    if len(words) > 1:
-                        # Choose two random words in the document (excluding the first word)
-                        word_idx_1 = random.randint(1, len(words) - 1)
-                        word_idx_2 = random.randint(1, len(words) - 1)
-                        # Swap the selected words
-                        words[word_idx_1], words[word_idx_2] = words[word_idx_2], words[word_idx_1]
-
-        # Return the modified text as a string
-        self.text = ' '.join(words)
-
-    def upper_case(self):
-        self.text = self.text.upper()
-
-    def lower_case(self):
-        self.text = self.text.lower()
-
-    def title_case(self):
-        self.text = self.text.title()
-
-    def add_typos(self):
+    def add_typos(self, text):
         # Define a dictionary of common typos
         typos = {
             'a': ['s', 'z', 'q', 'w', 'x'],
@@ -180,37 +146,13 @@ class TextTransformer:
             'y': ['t', 'g', 'h', 'u'],
             'z': ['a', 's', 'x']
         }
+        if random.random() < 0.2:  # 10% chance of introducing a typo
+            if len(text) > 1:
+                j = random.randint(0, len(text) - 1)
+                c = text[j]
+                if c in typos:
+                    replacement = random.choice(typos[c])
+                    text_modified = text[:j] + replacement + text[j + 1:]
+                    return text_modified
 
-        # Split the text into words
-        words = self.text.split(" ")
-
-        # Introduce typos into some of the words
-        for i in range(len(words)):
-            if random.random() < 1:  # 10% chance of introducing a typo
-                word = words[i]
-                if len(word) > 1:
-                    j = random.randint(0, len(word) - 1)
-                    c = word[j]
-                    if c in typos:
-                        replacement = random.choice(typos[c])
-                        words[i] = word[:j] + replacement + word[j + 1:]
-
-        # Join the words back into a string
-        text = ' '.join(words)
-
-        self.text = text
-
-# text = "She her the brown fox jumps over the lazy dog in Sydney, was christian"
-# text_perturbation_generator = TextTransformer()
-# print(text_perturbation_generator.replace_gender(text))
-# print(text_perturbation_generator.replace_loc(text))
-# print(text_perturbation_generator.replace_ethnicity(text))
-# print(text_perturbation_generator.lower_case(text))
-# print(text_perturbation_generator.upper_case(text))
-# print(text_perturbation_generator.title_case(text))
-# print(text_perturbation_generator.word_perturbation(text))
-# print(text_perturbation_generator.char_perturbation(text))
-# print( [method for method in dir(text_perturbation_generator)
-#                                 if callable(getattr(text_perturbation_generator, method))
-#                                 and not method.startswith("__")
-#         and not method.startswith("_")])
+        return text
