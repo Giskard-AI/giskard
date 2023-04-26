@@ -6,5 +6,5 @@ import type {TestInputDTO} from './test-input-dto';
 export interface SuiteTestDTO {
     id?: number | null;
     testInputs: {[key: string]: TestInputDTO};
-    testUuid: string;
+    testUuid: any /* TODO: Missing translation of java.util.UUID */;
 }

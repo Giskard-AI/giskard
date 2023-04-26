@@ -12,6 +12,6 @@ export interface TestFunctionDTO {
     moduleDoc: string;
     name: string;
     tags: string[];
-    uuid: string;
+    uuid: any /* TODO: Missing translation of java.util.UUID */;
     version: number;
 }

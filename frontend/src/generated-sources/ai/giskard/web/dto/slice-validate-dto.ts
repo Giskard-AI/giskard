@@ -3,5 +3,5 @@
  */
 export interface SliceValidateDTO {
     code: string;
-    datasetId: string;
+    datasetId: any /* TODO: Missing translation of java.util.UUID */;
 }

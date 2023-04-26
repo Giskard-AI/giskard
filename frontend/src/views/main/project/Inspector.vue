@@ -83,9 +83,10 @@
                       />
 
                       <SuggestionPopover
-                          :disabled="c.name !== 'account_check_status'"
                           :modelId="model.id"
                           :datasetId="dataset.id"
+                          :row-nb="rowNb"
+                          :column="c.name"
                       />
                     </div>
                     <div class="py-1 d-flex" v-else>
@@ -185,6 +186,7 @@ import mixpanel from "mixpanel-browser";
 import {anonymize} from "@/utils";
 import _ from 'lodash';
 import SuggestionPopover from "@/components/SuggestionPopover.vue";
+import {usePushStore} from "@/stores/suggestions";
 
 @Component({
   components: {
@@ -231,6 +233,14 @@ export default class Inspector extends Vue {
       this.errorLoadingMetadata = e.response.data.detail
     } finally {
       this.loadingData = false;
+    }
+  }
+
+  @Watch('rowNb')
+  async onRowNbChange(newValue, oldValue) {
+    if (newValue != oldValue) {
+      const pushStore = usePushStore();
+      await pushStore.fetchPushSuggestions(this.model.id, this.dataset.id, newValue ?? 0);
     }
   }
 

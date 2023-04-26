@@ -2,6 +2,6 @@
  * Generated from ai.giskard.web.dto.InspectionCreateDTO
  */
 export interface InspectionCreateDTO {
-    datasetId: string;
-    modelId: string;
+    datasetId: any /* TODO: Missing translation of java.util.UUID */;
+    modelId: any /* TODO: Missing translation of java.util.UUID */;
 }
