@@ -223,6 +223,27 @@ class Dataset(ColumnMetadataMixin):
         self.data_processor.add_step(transformation_function)
         return self
 
+
+    @configured_validate_arguments
+    def filter(self, mask: List[int], axis: int = 0):
+        """
+        Filter the dataset using the specified `mask`.
+
+        Args:
+            mask (List[int]): A mask of int values to apply.
+            axis (int): The axis on which the `mask` should be applied. axis = 0 by default.
+
+        Returns:
+            Dataset:
+                The filtered dataset as a `Dataset` object.
+
+        """
+        return Dataset(df=self.df.filter(mask, axis=axis),
+                       name=self.name,
+                       target=self.target,
+                       cat_columns=self.cat_columns,
+                       column_types=self.column_types)
+
     @cached_property
     def row_hashes(self):
         return pandas.Series(
