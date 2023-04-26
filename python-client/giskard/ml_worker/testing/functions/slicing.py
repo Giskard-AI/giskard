@@ -67,3 +67,11 @@ def _sentiment_analysis(x, column_name, threshold, model, emotion):
     sentences = list(map(lambda txt: txt[:512], list(x[column_name])))
     return x.iloc[list(
         map(lambda s: s['label'] == emotion and s['score'] >= threshold, sentiment_pipeline(sentences)))]
+
+
+@slicing_function(name='Outlier Filter')
+def outlier_filter(x: pd.Series, column_name: str, lower_bound: float, upper_bound: float) -> bool:
+    """
+    Filter rows where the specified column values fall outside the specified range.
+    """
+    return x[column_name] < lower_bound or x[column_name] > upper_bound
