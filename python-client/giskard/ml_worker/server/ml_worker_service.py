@@ -162,7 +162,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
 
         test: GiskardTest = GiskardTest.load(request.testUuid, self.client, None)
 
-        arguments = self.parse_test_arguments(request.arguments)
+        arguments = self.parse_function_arguments(request.arguments)
 
         logger.info(f"Executing {test.meta.display_name or f'{test.meta.module}.{test.meta.name}'}")
         test_result = test.get_builder()(**arguments).execute()
@@ -178,7 +178,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
         slicing_function = SlicingFunction.load(request.slicingFunctionUuid, self.client, None)
         dataset = Dataset.download(self.client, request.dataset.project_key, request.dataset.id)
 
-        arguments = self.parse_test_arguments(request.arguments)
+        arguments = self.parse_function_arguments(request.arguments)
 
         result = dataset.slice(slicing_function(**arguments))
 
@@ -194,7 +194,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
         transformation_function = TransformationFunction.load(request.transformationFunctionUuid, self.client, None)
         dataset = Dataset.download(self.client, request.dataset.project_key, request.dataset.id)
 
-        arguments = self.parse_test_arguments(request.arguments)
+        arguments = self.parse_function_arguments(request.arguments)
 
         result = dataset.transform(transformation_function(**arguments))
 
@@ -220,11 +220,11 @@ class MLWorkerServiceImpl(MLWorkerServicer):
         try:
             tests = [{
                 'test': GiskardTest.load(t.testUuid, self.client, None),
-                'arguments': self.parse_test_arguments(t.arguments),
+                'arguments': self.parse_function_arguments(t.arguments),
                 'id': t.id
             } for t in request.tests]
 
-            global_arguments = self.parse_test_arguments(request.globalArguments)
+            global_arguments = self.parse_function_arguments(request.globalArguments)
 
             test_names = list(
                 map(lambda t: t['test'].meta.display_name or f"{t['test'].meta.module + '.' + t['test'].meta.name}",
@@ -262,28 +262,33 @@ class MLWorkerServiceImpl(MLWorkerServicer):
                 logs=log_listener.close()
             )
 
-    def parse_test_arguments(self, request_arguments):
-        arguments = {}
+    def parse_function_arguments(self, request_arguments):
+        arguments = dict()
         for arg in request_arguments:
             if arg.HasField("dataset"):
-                value = Dataset.download(self.client, arg.dataset.project_key, arg.dataset.id)
+                arguments[arg.name] = Dataset.download(self.client, arg.dataset.project_key, arg.dataset.id)
             elif arg.HasField("model"):
-                value = BaseModel.download(self.client, arg.model.project_key, arg.model.id)
+                arguments[arg.name] = BaseModel.download(self.client, arg.model.project_key, arg.model.id)
             elif arg.HasField("slicingFunction"):
-                value = SlicingFunction.load(arg.slicingFunction.id, self.client, None)
+                arguments[arg.name] = SlicingFunction.load(arg.slicingFunction.id, self.client, None)(
+                    **self.parse_function_arguments(arg.args))
             elif arg.HasField("transformationFunction"):
-                value = TransformationFunction.load(arg.transformationFunction.id, self.client, None)
+                arguments[arg.name] = TransformationFunction.load(arg.transformationFunction.id, self.client, None)(
+                    **self.parse_function_arguments(arg.args))
             elif arg.HasField("float"):
-                value = float(arg.float)
+                arguments[arg.name] = float(arg.float)
             elif arg.HasField("int"):
-                value = int(arg.int)
+                arguments[arg.name] = int(arg.int)
             elif arg.HasField("str"):
-                value = str(arg.str)
+                arguments[arg.name] = str(arg.str)
             elif arg.HasField("bool"):
-                value = bool(arg.bool)
+                arguments[arg.name] = bool(arg.bool)
+            elif arg.HasField("kwargs"):
+                kwargs = dict()
+                exec(arg.kwargs, {'kwargs': kwargs})
+                arguments.update(kwargs)
             else:
                 raise IllegalArgumentError("Unknown argument type")
-            arguments[arg.name] = value
         return arguments
 
     def explain(self, request: ml_worker_pb2.ExplainRequest, context) -> ml_worker_pb2.ExplainResponse:
@@ -472,7 +477,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
                             value=i.value,
                             is_alias=i.is_alias
                         )
-                        for i in test.testInputs.values()
+                        for i in test.functionInputs.values()
                     ]
                 )
                 for test in suite.tests
