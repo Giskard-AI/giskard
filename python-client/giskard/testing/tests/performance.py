@@ -20,7 +20,7 @@ from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction
 from giskard.ml_worker.testing.test_result import TestResult
 from giskard.ml_worker.testing.utils import Direction
 from giskard.ml_worker.testing.utils import check_slice_not_empty
-from .debug_masks import incorrect_rows_mask, top_nper_abs_err_rows_mask
+from .debug_masks import incorrect_rows_mask, top_nper_abs_err_rows_mask, nlargest_abs_err_rows_mask
 from giskard.models.base import BaseModel
 from giskard.models.utils import np_type_to_native
 
@@ -81,7 +81,7 @@ def _test_regression_score(score_fn, model: BaseModel, dataset: Dataset, thresho
 
     metric = score_fn(targets, raw_prediction)
 
-    debugging_mask = top_nper_abs_err_rows_mask(dataset.df, targets, raw_prediction,
+    debugging_mask = nlargest_abs_err_rows_mask(dataset.df, targets, raw_prediction,
                                                 debug_percent_rows) if debug else None
 
     return TestResult(
