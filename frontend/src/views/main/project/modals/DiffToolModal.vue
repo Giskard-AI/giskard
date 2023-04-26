@@ -11,17 +11,22 @@
                 Differences
             </v-card-title>
             <v-card-text class="card-content">
-                <v-row v-if="diffs">
+                <v-row>
                     <v-col cols=6>
-                        <span v-for="diff in diffs" v-if="!diff.added"
-                              :class="{'removed': diff.removed}">{{ diff.value }}</span>
+                        <p>
+                            <span v-for="(diff, i) in removed" :key="i" :class="{removed: diff.removed}">
+                                {{ diff.value }}
+                            </span>
+                        </p>
                     </v-col>
                     <v-col cols=6>
-                        <span v-for="diff in diffs" v-if="!diff.removed"
-                              :class="{'added': diff.added}">{{ diff.value }}</span>
+                        <p>
+                            <span v-for="(diff, i) in added" :key="i" :class="{added: diff.added}">
+                                {{ diff.value }}
+                            </span>
+                        </p>
                     </v-col>
                 </v-row>
-                <v-progress-circular indeterminate v-else/>
             </v-card-text>
 
             <v-divider></v-divider>
@@ -43,6 +48,7 @@
 <script setup lang="ts">
 
 import {onMounted, ref} from "vue";
+import {chain} from "lodash";
 
 const Diff = require('diff');
 
@@ -51,11 +57,19 @@ const props = defineProps<{
     newValue: string
 }>()
 
-const diffs = ref(null)
+
+const added = ref<Array<any>>([])
+const removed = ref<Array<any>>([])
 
 onMounted(() => {
-    new Promise((resolve) => resolve(Diff.diffChars(props.oldValue, props.newValue)))
-        .then((value) => diffs.value = value)
+    const diffs = Diff.diffChars(props.oldValue, props.newValue, {})
+
+    removed.value = chain(diffs)
+        .filter(diff => !diff.added)
+        .value();
+    added.value = chain(diffs)
+        .filter(diff => !diff.removed)
+        .value();
 })
 
 </script>
