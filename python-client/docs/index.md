@@ -18,6 +18,7 @@ reference/index
 **Additional useful information can also be found here:**
 - **<project:/guides/installation/index.md>**
 - **<project:/guides/test-catalog/index.rst>**
+- **<project:/guides/tutorials/index.md>**
 
 ## <project:/reference/index.rst>
 
