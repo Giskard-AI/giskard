@@ -115,18 +115,6 @@
 
     <v-container fluid id="container-project-tab" class="vertical-container overflow-hidden pb-0">
       <v-tabs v-model=" tab " optional>
-        <v-tab :to=" { name: 'project-datasets' } " value="datasets">
-          <v-icon left>stacked_bar_chart</v-icon>
-          Datasets
-        </v-tab>
-        <v-tab :to=" { name: 'project-models' } " value="models">
-          <v-icon left>settings_suggest</v-icon>
-          Models
-        </v-tab>
-        <v-tab :to=" { name: 'project-inspector', params: tempInspectorParams } " v-if=" showInspector " value="inspector">
-          <v-icon left>model_training</v-icon>
-          Inspector
-        </v-tab>
         <v-tab :to=" { name: 'project-feedbacks' } " value="feedbacks">
           <v-icon left small>mdi-comment-multiple-outline</v-icon>
           Feedback
@@ -185,8 +173,6 @@ const openDeleteDialog = ref<boolean>(false);
 const newLimeSamples = ref<number>(0);
 const newName = ref<string>("");
 const newDescription = ref<string>("");
-const showInspector = ref<boolean>(false);
-const tempInspectorParams = ref<any>({}); // Type this later?
 
 const tab = ref<string>(null);
 
@@ -194,11 +180,7 @@ onMounted(async () => {
   // make sure project is loaded first
   await projectStore.getProject({ id: props.id });
   await mainStore.getCoworkers();
-
-  setInspector(router.currentRoute);
 })
-
-watch(() => (route), setInspector, { deep: true });
 
 const userProfile = computed(() => {
   return userStore.userProfile;
@@ -223,12 +205,6 @@ const isUserProjectOwner = computed(() => {
   return project.value && userProfile.value ? project.value?.owner.id == userProfile.value?.id : false;
 });
 
-function setInspector(to: Route) {
-  if (to.name === 'project-inspector') {
-    showInspector.value = true;
-    tempInspectorParams.value = to.params;
-  }
-}
 
 async function inviteUser() {
   if (project.value && userToInvite.value) {
