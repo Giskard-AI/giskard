@@ -53,24 +53,25 @@ iris_df = pd.DataFrame({"sepal length": [5.1],
 
 from giskard import wrap_dataset
 
-wrapped_dataset = wrap_dataset(dataset=iris_df, 
-                               target="iris_type", # Optional but a MUST if available
-                               # name="my_iris_dataset", # Optional
-                               # cat_columns=None # Optional: if not provided, it is inferred automatically
-                               # column_types=None # # Optional: if not provided, it is inferred automatically
-                               )
+wrapped_dataset = wrap_dataset(
+  dataset=iris_df, 
+  target="iris_type", # Optional but a MUST if available
+  # name="my_iris_dataset", # Optional
+  # cat_columns=None # Optional: if not provided, it is inferred automatically
+  # column_types=None # # Optional: if not provided, it is inferred automatically
+  )
 ```
-* <mark style="color:red;">**`Mandatory parameters`**</mark>:
-  * `dataset` A `pandas.DataFrame` that contains the raw data (before all the preprocessing steps) and the actual 
+* <mark style="color:red;">**`Mandatory parameters`**</mark>
+  * `dataset`: A `pandas.DataFrame` that contains the raw data (before all the preprocessing steps) and the actual 
      ground truth variable (target).
 
-* <mark style="color:red;">**`Optional parameters`**</mark>:
-  * `target` The column name in `dataset` corresponding to the actual target variable (ground truth).
-  * `name` Name of the wrapped dataset.
+* <mark style="color:red;">**`Optional parameters`**</mark>
+  * `target`: The column name in `dataset` corresponding to the actual target variable (ground truth).
+  * `name`: Name of the wrapped dataset.
   * One of:
-    * `cat_columns` A list of strings representing the names of categorical columns. 
+    * `cat_columns`: A list of strings representing the names of categorical columns. 
        If not provided, the columns types will be automatically inferred.
-    * `column_types` A dictionary of column names and their types (numeric, category or text) for all columns of `dataset`. 
+    * `column_types`: A dictionary of column names and their types (numeric, category or text) for all columns of `dataset`. 
        If not provided, the categorical columns will be automatically inferred.
 
 ## 3. Wrap your model
@@ -91,57 +92,60 @@ If your ML model contains preprocessing functions (categorical encoding, scaling
 ```python
 from giskard import wrap_model
 
-wrapped_model = wrap_model(model=some_classifier,
-                           model_type="classification",
-                           classification_labels=['Setosa', 'Versicolor', 'Virginica'],
-                           # name="my_iris_classification_model", # Optional
-                           # feature_names=['sepal length', 'sepal width'], # Default: all columns of your dataset
-                           # classification_threshold=0.5, # Default: 0.5
-                           # data_preprocessing_function=None, # Optional
-                           # model_postprocessing_function=None, # Optional
-                           # **kwargs # Additional model-specific arguments
-                           )
+wrapped_model = wrap_model(
+  model=some_classifier,
+  model_type="classification",
+  classification_labels=['Setosa', 'Versicolor', 'Virginica'],
+  # name="my_iris_classification_model", # Optional
+  # feature_names=['sepal length', 'sepal width'], # Default: all columns of your dataset
+  # classification_threshold=0.5, # Default: 0.5
+  # data_preprocessing_function=None, # Optional
+  # model_postprocessing_function=None, # Optional
+  # **kwargs # Additional model-specific arguments
+  )
 ```
-* <mark style="color:red;">**`Mandatory parameters`**</mark>: 
-  * `model` Could be any model from `sklearn`, `catboost`, `pytorch`, `tensorflow` or `huggingface`.
-  * `model_type` The type of the model, either `regression` or `classification`.
-  * `classification_labels` The list of unique categories contained in your dataset target variable.
+* <mark style="color:red;">**`Mandatory parameters`**</mark>
+  * `model`: Could be any model from `sklearn`, `catboost`, `pytorch`, `tensorflow` or `huggingface`.
+  * `model_type`: The type of the model, either `regression` or `classification`.
+  * `classification_labels`: The list of unique categories contained in your dataset target variable.
 
-* <mark style="color:red;">**`Optional parameters`**</mark>:
-  * `name` Name of the wrapped model.
-  * `feature_names` An optional list of the feature names. By default, `feature_names` are all the columns in your dataset.
-  * `classification_threshold` Model threshold for binary classification problems.
-  * `data_preprocessing_function` A function that takes a `pandas.DataFrame` as raw input, applies preprocessing and 
+* <mark style="color:red;">**`Optional parameters`**</mark>
+  * `name`: Name of the wrapped model.
+  * `feature_names`: An optional list of the feature names. By default, `feature_names` are all the columns in your dataset.
+  * `classification_threshold`: Model threshold for binary classification problems.
+  * `data_preprocessing_function`: A function that takes a `pandas.DataFrame` as raw input, applies preprocessing and 
      returns any object that could be directly fed to `model`.
-  * `model_postprocessing_function` A function that takes a `model` output as input, applies postprocessing and returns 
+  * `model_postprocessing_function`: A function that takes a `model` output as input, applies postprocessing and returns 
      an object of the same type and shape as the `model` output.
-  * `**kwargs` Additional model-specific arguments (See [Models](../../reference/models/index.rst)
+  * `**kwargs`: Additional model-specific arguments (See [Models](../../reference/models/index.rst)).
 
   ::::::
 ::::::{tab-item} Regression
 ```python
 from giskard import wrap_model
 
-wrapped_model = wrap_model(model=some_regressor,
-                           model_type="regression",
-                           # name="my_regression_model", # Optional
-                           # feature_names=['x', 'y'], # Default: all columns of your dataset
-                           # data_preprocessing_function=None, # Optional
-                           # model_postprocessing_function=None, # Optional
-                           # **kwargs # Additional model-specific arguments
+wrapped_model = wrap_model(
+  model=some_regressor,
+  model_type="regression",
+  # name="my_regression_model", # Optional
+  # feature_names=['x', 'y'], # Default: all columns of your dataset
+  # data_preprocessing_function=None, # Optional
+  # model_postprocessing_function=None, # Optional
+  # **kwargs # Additional model-specific arguments
+  )
 ```
-* <mark style="color:red;">**`Mandatory parameters`**</mark>:
-  * `model` Could be any model from `sklearn`, `catboost`, `pytorch`, `tensorflow` or `huggingface`.
-  * `model_type` The type of the model, either `regression` or `classification`.
+* <mark style="color:red;">**`Mandatory parameters`**</mark>
+  * `model`: Could be any model from `sklearn`, `catboost`, `pytorch`, `tensorflow` or `huggingface`.
+  * `model_type`: The type of the model, either `regression` or `classification`.
 
-* <mark style="color:red;">**`Optional parameters`**</mark>:
-  * `name` Name of the wrapped model.
-  * `feature_names` An optional list of the feature names. By default, `feature_names` are all the columns in your dataset.
-  * `data_preprocessing_function` A function that takes a `pandas.DataFrame` as raw input, applies preprocessing and
+* <mark style="color:red;">**`Optional parameters`**</mark>
+  * `name`: Name of the wrapped model.
+  * `feature_names`: An optional list of the feature names. By default, `feature_names` are all the columns in your dataset.
+  * `data_preprocessing_function`: A function that takes a `pandas.DataFrame` as raw input, applies preprocessing and
     returns any object that could be directly fed to `model`.
-  * `model_postprocessing_function` A function that takes a `model` output as input, applies postprocessing and returns
+  * `model_postprocessing_function`: A function that takes a `model` output as input, applies postprocessing and returns
     an object of the same type and shape as the `model` output.
-  * `**kwargs` Additional model-specific arguments (See [Models](../../reference/models/index.rst)).
+  * `**kwargs`: Additional model-specific arguments (See [Models](../../reference/models/index.rst)).
 
 ::::::
 :::::::
