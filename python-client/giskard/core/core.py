@@ -1,13 +1,17 @@
 import inspect
 import logging
 import re
-from abc import ABC, abstractmethod
+from abc import ABC
 from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
 from typing import Optional, Dict, List, Union, Literal, TypeVar, Callable, Type, Any
 
 logger = logging.getLogger(__name__)
+
+
+class Kwargs:
+    pass
 
 
 def _get_plugin_method_full_name(func):
@@ -155,16 +159,20 @@ class CallableMeta(SavableMeta, ABC):
                 if name != 'self'
             }
 
-    @abstractmethod
     def extract_parameters(self, callable_obj):
-        pass
+        if inspect.isclass(callable_obj):
+            parameters = list(inspect.signature(callable_obj.__init__).parameters.values())[1:]
+        else:
+            parameters = list(inspect.signature(callable_obj).parameters.values())
+
+        return parameters
 
     @staticmethod
     def extract_module_doc(func_doc):
         return inspect.getmodule(func_doc).__doc__.strip() if inspect.getmodule(func_doc).__doc__ else None
 
     def populate_tags(self, tags=None):
-        tags = [] if not tags else tags
+        tags = [] if not tags else tags.copy()
         if self.full_name.partition(".")[0] == "giskard":
             tags.append("giskard")
         elif self.full_name.startswith('__main__'):
@@ -240,32 +248,37 @@ def __repr__(self) -> str:
 
 class TestFunctionMeta(CallableMeta):
     def extract_parameters(self, callable_obj):
-        if inspect.isclass(callable_obj):
-            parameters = list(inspect.signature(callable_obj.__init__).parameters.values())[1:]
-        else:
-            parameters = list(inspect.signature(callable_obj).parameters.values())
+        parameters = unknown_annotations_to_kwargs(CallableMeta.extract_parameters(self, callable_obj))
 
-        args_without_type = [p.name for p in parameters if p.annotation == inspect.Parameter.empty]
-        if len(args_without_type):
-            msg = f'Test function definition "{callable_obj.__module__}.{callable_obj.__name__}" ' \
-                  f'is missing argument type: {", ".join(args_without_type)}'
-            logger.warning(msg)
-            raise ValueError(msg)
         return {p.name: p for p in parameters}
 
 
 class DatasetProcessFunctionMeta(CallableMeta):
     def extract_parameters(self, callable_obj):
-        parameters = list(inspect.signature(callable_obj).parameters.values())[1:]
+        parameters = unknown_annotations_to_kwargs(CallableMeta.extract_parameters(self, callable_obj)[1:])
 
-        args_without_type = [p.name for p in parameters if p.annotation == inspect.Parameter.empty]
-        if len(args_without_type):
-            msg = f'Test function definition "{callable_obj.__module__}.{callable_obj.__name__}" ' \
-                  f'is missing argument type: {", ".join(args_without_type)}'
-            logger.warning(msg)
-            raise ValueError(msg)
         return {p.name: p for p in parameters}
 
 
 DT = TypeVar('DT')
 SMT = TypeVar('SMT', bound=SavableMeta)
+
+
+def unknown_annotations_to_kwargs(parameters: List[inspect.Parameter]) -> List[inspect.Parameter]:
+    from giskard.models.base import BaseModel
+    from giskard.datasets.base import Dataset
+    from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction
+    from giskard.ml_worker.testing.registry.transformation_function import TransformationFunction
+
+    allowed_types = [str, bool, int, float, BaseModel, Dataset, SlicingFunction, TransformationFunction]
+
+    has_kwargs = any([param for param in parameters if
+                      not any([param.annotation == allowed_type for allowed_type in allowed_types])])
+
+    parameters = [param for param in parameters if
+                  any([param.annotation == allowed_type for allowed_type in allowed_types])]
+
+    if has_kwargs:
+        parameters.append(inspect.Parameter(name='kwargs', kind=4, annotation=Kwargs))
+
+    return parameters

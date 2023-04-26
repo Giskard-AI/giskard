@@ -93,8 +93,8 @@ public class SuiteTestExecution extends BaseEntity {
         this.referenceSlicesSize = message.getReferenceSlicesSizeList();
         this.messages = message.getMessagesList().stream().map(
             msg -> new TestResultMessageDTO(msg.getType(), msg.getText())).toList();
-        this.inputs = test.getTestInputs().stream()
-            .collect(Collectors.toMap(TestInput::getName, TestInput::getValue));
+        this.inputs = test.getFunctionInputs().stream()
+            .collect(Collectors.toMap(FunctionInput::getName, FunctionInput::getValue));
     }
 
 }
