@@ -1,13 +1,14 @@
 <template>
-    <LoadingFullscreen v-if="suite === null" name="suite" />
-    <v-container v-else-if="hasTest">
-        <TestSuiteExecutionHeader :execution="execution" :tests="filteredTest" :compact="false" />
+    <LoadingFullscreen v-if="suite === null" name="suite"/>
+    <v-container class="main-container vc" v-else-if="hasTest">
+        <TestSuiteExecutionHeader :execution="execution" :tests="filteredTest" :compact="false"/>
         <div class="d-flex mt-4 mb-4">
-            <v-select v-model="statusFilter" label="Status" :items="statusFilterOptions" item-text="label" variant="underlined" hide-details="auto" dense class="mr-4">
+            <v-select v-model="statusFilter" label="Status" :items="statusFilterOptions" item-text="label"
+                      variant="underlined" hide-details="auto" dense class="mr-4">
             </v-select>
             <v-text-field v-model="searchFilter" append-icon="search" label="Search" type="text" dense></v-text-field>
         </div>
-        <SuiteTestExecutionList :tests="filteredTest" :compact="false" />
+        <SuiteTestExecutionList :tests="filteredTest" :compact="false"/>
     </v-container>
     <v-container v-else class="d-flex flex-column vc fill-height">
         <v-alert class="text-center">
@@ -22,12 +23,12 @@
 
 <script setup lang="ts">
 
-import { storeToRefs } from 'pinia';
-import { useTestSuiteStore } from '@/stores/test-suite';
-import { TestSuiteExecutionDTO } from '@/generated-sources';
-import { computed, onMounted, ref, watch } from 'vue';
-import { chain } from 'lodash';
-import { useTestSuiteCompareStore } from '@/stores/test-suite-compare';
+import {storeToRefs} from 'pinia';
+import {useTestSuiteStore} from '@/stores/test-suite';
+import {TestSuiteExecutionDTO} from '@/generated-sources';
+import {computed, onMounted, ref, watch} from 'vue';
+import {chain} from 'lodash';
+import {useTestSuiteCompareStore} from '@/stores/test-suite-compare';
 import SuiteTestExecutionList from '@/views/main/project/SuiteTestExecutionList.vue';
 import TestSuiteExecutionHeader from '@/views/main/project/TestSuiteExecutionHeader.vue';
 import LoadingFullscreen from "@/components/LoadingFullscreen.vue";
@@ -35,7 +36,7 @@ import LoadingFullscreen from "@/components/LoadingFullscreen.vue";
 const props = defineProps<{ execution?: TestSuiteExecutionDTO }>();
 
 const testSuiteStore = useTestSuiteStore();
-const { models, datasets, inputs, suite, projectId, hasTest } = storeToRefs(testSuiteStore);
+const {models, datasets, inputs, suite, projectId, hasTest} = storeToRefs(testSuiteStore);
 const testSuiteCompareStore = useTestSuiteCompareStore();
 
 onMounted(() => {
