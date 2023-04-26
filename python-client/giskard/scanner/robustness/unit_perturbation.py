@@ -1,7 +1,6 @@
 import pandas as pd
 from giskard.ml_worker.testing.registry.transformation_function import transformation_function
 import random
-import spacy
 
 
 class TransformationGenerator:
@@ -36,6 +35,8 @@ class TransformationGenerator:
 
 class TextTransformer:
     def __init__(self):
+        import spacy
+
         self.nlp = spacy.load("en_core_web_sm")
         self.text = None
 
@@ -45,8 +46,10 @@ class TextTransformer:
     def execute_protocol(self):
         self._replace_by_mask()  # replace proper noun, gender,ethnicity,location by a mask
         return self.text
+
     def tokenize(self):
         return self.nlp(self.text)
+
     def _replace_by_mask(self):
         doc = self.tokenize()
         new_text = []
@@ -82,12 +85,12 @@ class TextTransformer:
                 return text
             elif perturbation_type == 'delete':
                 idx = random.randint(0, len(text) - 1)
-                text = text[:idx] + text[idx + 1:]
+                text = text[:idx] + text[idx + 1 :]
                 return text
             elif perturbation_type == 'replace':
                 idx = random.randint(0, len(text) - 1)
                 new_char = chr(random.randint(33, 126))
-                text = text[:idx] + new_char + text[idx + 1:]
+                text = text[:idx] + new_char + text[idx + 1 :]
                 return text
         return text
 
@@ -144,7 +147,7 @@ class TextTransformer:
             'w': ['q', 'a', 's', 'e'],
             'x': ['z', 's', 'd', 'c'],
             'y': ['t', 'g', 'h', 'u'],
-            'z': ['a', 's', 'x']
+            'z': ['a', 's', 'x'],
         }
         if random.random() < 0.2:  # 10% chance of introducing a typo
             if len(text) > 1:
@@ -152,7 +155,7 @@ class TextTransformer:
                 c = text[j]
                 if c in typos:
                     replacement = random.choice(typos[c])
-                    text_modified = text[:j] + replacement + text[j + 1:]
+                    text_modified = text[:j] + replacement + text[j + 1 :]
                     return text_modified
 
         return text
