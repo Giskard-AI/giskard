@@ -46,24 +46,24 @@
 </template>
 
 <script lang="ts">
-import {Component, Prop, Vue} from 'vue-property-decorator';
-import {getUserFullDisplayName} from '@/utils';
+import { Component, Prop, Vue } from 'vue-property-decorator';
+import { getUserFullDisplayName } from '@/utils';
 import Models from '@/views/main/project/Models.vue';
 import Datasets from '@/views/main/project/Datasets.vue';
 import FeedbackList from '@/views/main/project/FeedbackList.vue';
-import {IUserProfileMinimal} from '@/interfaces';
+import { IUserProfileMinimal } from '@/interfaces';
 import mixpanel from "mixpanel-browser";
-import {useProjectStore} from "@/stores/project";
+import { useProjectStore } from "@/stores/project";
 
 @Component({
   components: {
     Models, Datasets, FeedbackList
   }
 })
-export default class ProjectOverview extends Vue {
+export default class ProjectSettings extends Vue {
 
-  @Prop({required: true}) projectId!: number;
-  @Prop({type: Boolean, required: true, default: false}) isProjectOwnerOrAdmin!: boolean;
+  @Prop({ required: true }) projectId!: number;
+  @Prop({ type: Boolean, required: true, default: false }) isProjectOwnerOrAdmin!: boolean;
 
   get project() {
     return useProjectStore().project(this.projectId);
@@ -78,8 +78,8 @@ export default class ProjectOverview extends Vue {
     });
     if (this.project && confirm) {
       try {
-        mixpanel.track('Cancel user invitation to project', {projectId: this.project.id, userId: user.id});
-        await useProjectStore().uninviteUserFromProject({projectId: this.project.id, userId: user.id})
+        mixpanel.track('Cancel user invitation to project', { projectId: this.project.id, userId: user.id });
+        await useProjectStore().uninviteUserFromProject({ projectId: this.project.id, userId: user.id })
       } catch (e) {
         console.error(e)
       }
