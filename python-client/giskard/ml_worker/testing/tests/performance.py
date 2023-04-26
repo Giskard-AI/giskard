@@ -76,13 +76,13 @@ def _test_regression_score(score_fn, model: BaseModel, giskard_ds, threshold: fl
 
 
 def _test_diff_prediction(
-    test_fn,
-    model,
-    actual_dataset,
-    reference_dataset,
-    threshold: float = 0.5,
-    direction: Direction = Direction.Invariant,
-    test_name=None,
+        test_fn,
+        model,
+        actual_dataset,
+        reference_dataset,
+        threshold: float = 0.5,
+        direction: Direction = Direction.Invariant,
+        test_name=None,
 ):
     metric_reference = test_fn(dataset=reference_dataset, model=model).metric
     metric_actual = test_fn(dataset=actual_dataset, model=model).metric
@@ -180,24 +180,22 @@ def test_auc(model: BaseModel, dataset: Dataset, slicing_function: SlicingFuncti
         check_slice_not_empty(sliced_dataset=dataset, dataset_name="dataset", test_name="test_auc")
 
     _predictions = model.predict(dataset)
+    targets = dataset.df[dataset.target]
 
     _verify_target_availability(dataset)
     if len(model.meta.classification_labels) == 2:
         predictions = _predictions.raw_prediction
-        metric = roc_auc_score(dataset.df[dataset.target], predictions)
+        metric = roc_auc_score(targets, predictions)
     else:
         predictions = _predictions.all_predictions
-        non_declared_categories = set(predictions.columns) - set(dataset.df[dataset.target].unique())
+        non_declared_categories = set(predictions.columns) - set(targets.unique())
         assert not len(
             non_declared_categories
         ), f'Predicted classes don\'t exist in the dataset "{dataset.target}" column: {non_declared_categories}'
 
-        targets = dataset.df[dataset.target]
         metric = roc_auc_score(targets, predictions, multi_class="ovo")
 
-    if debug:
-        from giskard.ml_worker.testing.functions.slicing import incorrect_rows
-        debugging_mask = dataset.slice(incorrect_rows(dataset.target, _predictions.prediction), get_mask=True)
+    debugging_mask = dataset.df.index[targets != _predictions.prediction].tolist() if debug else None
 
     return TestResult(actual_slices_size=[len(dataset)], metric=metric, passed=bool(metric >= threshold),
                       debugging_mask=debugging_mask)
@@ -270,7 +268,7 @@ def test_accuracy(model: BaseModel, dataset: Dataset, slicing_function: SlicingF
 
 @test(name='Precision', tags=['performance', 'classification', 'ground_truth'])
 def test_precision(
-    model: BaseModel, dataset: Dataset, slicing_function: SlicingFunction = None, threshold: float = 1.0
+        model: BaseModel, dataset: Dataset, slicing_function: SlicingFunction = None, threshold: float = 1.0
 ):
     """
     Test if the model Precision is higher than a threshold for a given slice
@@ -431,12 +429,12 @@ def test_r2(model: BaseModel, dataset: Dataset, slicing_function: SlicingFunctio
 
 @test(name='Accuracy difference', tags=['performance', 'classification', 'ground_truth'])
 def test_diff_accuracy(
-    model: BaseModel,
-    actual_dataset: Dataset,
-    reference_dataset: Dataset,
-    slicing_function: SlicingFunction = None,
-    threshold: float = 0.1,
-    direction: Direction = Direction.Invariant,
+        model: BaseModel,
+        actual_dataset: Dataset,
+        reference_dataset: Dataset,
+        slicing_function: SlicingFunction = None,
+        threshold: float = 0.1,
+        direction: Direction = Direction.Invariant,
 ):
     """
 
@@ -489,12 +487,12 @@ def test_diff_accuracy(
 
 @test(name='F1 difference', tags=['performance', 'classification', 'ground_truth'])
 def test_diff_f1(
-    model: BaseModel,
-    actual_dataset: Dataset,
-    reference_dataset: Dataset,
-    slicing_function: SlicingFunction = None,
-    threshold: float = 0.1,
-    direction: Direction = Direction.Invariant,
+        model: BaseModel,
+        actual_dataset: Dataset,
+        reference_dataset: Dataset,
+        slicing_function: SlicingFunction = None,
+        threshold: float = 0.1,
+        direction: Direction = Direction.Invariant,
 ):
     """
     Test if the absolute percentage change in model F1 Score between two samples is lower than a threshold
@@ -547,12 +545,12 @@ def test_diff_f1(
 
 @test(name='Precision difference', tags=['performance', 'classification', 'ground_truth'])
 def test_diff_precision(
-    model: BaseModel,
-    actual_dataset: Dataset,
-    reference_dataset: Dataset,
-    slicing_function: SlicingFunction = None,
-    threshold: float = 0.1,
-    direction: Direction = Direction.Invariant,
+        model: BaseModel,
+        actual_dataset: Dataset,
+        reference_dataset: Dataset,
+        slicing_function: SlicingFunction = None,
+        threshold: float = 0.1,
+        direction: Direction = Direction.Invariant,
 ):
     """
     Test if the absolute percentage change of model Precision between two samples is lower than a threshold
@@ -604,12 +602,12 @@ def test_diff_precision(
 
 @test(name='Recall difference', tags=['performance', 'classification', 'ground_truth'])
 def test_diff_recall(
-    model: BaseModel,
-    actual_dataset: Dataset,
-    reference_dataset: Dataset,
-    slicing_function: SlicingFunction = None,
-    threshold: float = 0.1,
-    direction: Direction = Direction.Invariant,
+        model: BaseModel,
+        actual_dataset: Dataset,
+        reference_dataset: Dataset,
+        slicing_function: SlicingFunction = None,
+        threshold: float = 0.1,
+        direction: Direction = Direction.Invariant,
 ):
     """
     Test if the absolute percentage change of model Recall between two samples is lower than a threshold
@@ -661,12 +659,12 @@ def test_diff_recall(
 
 @test(name='F1 Reference Actual difference', tags=['performance', 'classification', 'ground_truth'])
 def test_diff_reference_actual_f1(
-    model: BaseModel,
-    actual_dataset: Dataset,
-    reference_dataset: Dataset,
-    slicing_function: SlicingFunction = None,
-    threshold: float = 0.1,
-    direction: Direction = Direction.Invariant,
+        model: BaseModel,
+        actual_dataset: Dataset,
+        reference_dataset: Dataset,
+        slicing_function: SlicingFunction = None,
+        threshold: float = 0.1,
+        direction: Direction = Direction.Invariant,
 ):
     """
     Test if the absolute percentage change in model F1 Score between reference and actual data
@@ -719,12 +717,12 @@ def test_diff_reference_actual_f1(
 
 @test(name='Accuracy Reference Actual difference', tags=['performance', 'classification', 'ground_truth'])
 def test_diff_reference_actual_accuracy(
-    model: BaseModel,
-    actual_dataset: Dataset,
-    reference_dataset: Dataset,
-    slicing_function: SlicingFunction = None,
-    threshold: float = 0.1,
-    direction: Direction = Direction.Invariant,
+        model: BaseModel,
+        actual_dataset: Dataset,
+        reference_dataset: Dataset,
+        slicing_function: SlicingFunction = None,
+        threshold: float = 0.1,
+        direction: Direction = Direction.Invariant,
 ):
     """
     Test if the absolute percentage change in model Accuracy between reference and actual data
@@ -777,12 +775,12 @@ def test_diff_reference_actual_accuracy(
 
 @test(name='RMSE difference', tags=['performance', 'regression', 'ground_truth'])
 def test_diff_rmse(
-    model: BaseModel,
-    actual_dataset: Dataset,
-    reference_dataset: Dataset,
-    slicing_function: SlicingFunction = None,
-    threshold: float = 0.1,
-    direction: Direction = Direction.Invariant,
+        model: BaseModel,
+        actual_dataset: Dataset,
+        reference_dataset: Dataset,
+        slicing_function: SlicingFunction = None,
+        threshold: float = 0.1,
+        direction: Direction = Direction.Invariant,
 ):
     """
     Test if the absolute percentage change of model RMSE between two samples is lower than a threshold
@@ -835,12 +833,12 @@ def test_diff_rmse(
 
 @test(name='RMSE Reference Actual difference', tags=['performance', 'regression', 'ground_truth'])
 def test_diff_reference_actual_rmse(
-    model: BaseModel,
-    actual_dataset: Dataset,
-    reference_dataset: Dataset,
-    slicing_function: SlicingFunction = None,
-    threshold: float = 0.1,
-    direction: Direction = Direction.Invariant,
+        model: BaseModel,
+        actual_dataset: Dataset,
+        reference_dataset: Dataset,
+        slicing_function: SlicingFunction = None,
+        threshold: float = 0.1,
+        direction: Direction = Direction.Invariant,
 ):
     """
     Test if the absolute percentage change in model RMSE between reference and actual data
