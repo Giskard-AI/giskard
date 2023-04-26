@@ -37,7 +37,16 @@ class TextTransformer:
     def __init__(self):
         import spacy
 
-        self.nlp = spacy.load("en_core_web_sm")
+        language_file = "en_core_web_sm"
+
+        try:
+            self.nlp = spacy.load(language_file)
+        except OSError:
+            from spacy.cli import download
+
+            download(language_file)
+            self.nlp = spacy.load(language_file)
+
         self.text = None
 
     def load(self, text):
