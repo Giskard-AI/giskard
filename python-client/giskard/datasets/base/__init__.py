@@ -70,7 +70,7 @@ class DataProcessor:
             self.pipeline.append(processor)
         return self
 
-    def apply(self, dataset: "Dataset", apply_only_last=False, get_mask: bool = False):
+    def apply(self, dataset: "Dataset", apply_only_last=False):
         ds = dataset.copy()
         is_slicing_only = True
 
@@ -138,13 +138,13 @@ class Dataset(ColumnMetadataMixin):
 
     @configured_validate_arguments
     def __init__(
-        self,
-        df: pd.DataFrame,
-        name: Optional[str] = None,
-        target: Optional[str] = None,
-        cat_columns: Optional[List[str]] = None,
-        column_types: Optional[Dict[str, str]] = None,
-        id: Optional[uuid.UUID] = None,
+            self,
+            df: pd.DataFrame,
+            name: Optional[str] = None,
+            target: Optional[str] = None,
+            cat_columns: Optional[List[str]] = None,
+            column_types: Optional[Dict[str, str]] = None,
+            id: Optional[uuid.UUID] = None,
         validation=True,
     ) -> None:
         """
@@ -240,7 +240,7 @@ class Dataset(ColumnMetadataMixin):
             row_level: bool = True,
             get_mask: bool = False,
             cell_level=False,
-            column_name: Optional[str] = None,
+            column_name: Optional[str] = None
     ):
         """
         Slice the dataset using the specified `slicing_function`.
@@ -259,9 +259,8 @@ class Dataset(ColumnMetadataMixin):
                 the whole dataframe (False). Defaults to False.
 
         Returns:
-            Union[Dataset, List]:
-                The sliced dataset as a `Dataset` object if get_mask = False (default) Or a mask if
-                get_mask = True.
+            Dataset:
+                The sliced dataset as a `Dataset` object.
 
         Notes:
             Raises TypeError: If `slicing_function` is not a callable or a `SlicingFunction` object.
@@ -274,13 +273,12 @@ class Dataset(ColumnMetadataMixin):
                                                 **{key: value for key, value in slicing_function.params.items() if
                                                    key != 'column_name'})
 
-        return self.data_processor.add_step(slicing_function).apply(self, apply_only_last=True, get_mask=get_mask)
+        return self.data_processor.add_step(slicing_function).apply(self, apply_only_last=True)
 
     @configured_validate_arguments
     def transform(
-        self,
-        transformation_function: Union[TransformationFunction, TransformationFunctionType],
-        row_level: bool = True,
+            self, transformation_function: Union[TransformationFunction, TransformationFunctionType],
+            row_level: bool = True,
         cell_level=False,
         column_name: Optional[str] = None,
     ):
