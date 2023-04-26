@@ -1,47 +1,67 @@
 <template>
-  <v-container fluid class="font-weight-light">
-    <p class="caption">
-      <v-simple-table class="info-table">
-        <tr>
-          <td>Project Unique Key</td>
-          <td>{{ project.key }}</td>
-        </tr>
-        <tr>
-          <td>Project Id</td>
-          <td>{{ project.id }}</td>
-        </tr>
-        <tr>
-          <td>Created by</td>
-          <td>{{ getUserFullDisplayName(project.owner) }}</td>
-        </tr>
-        <tr>
-          <td>On</td>
-          <td>{{ project.createdDate | date }}</td>
-        </tr>
-        <tr>
-          <td>ML Worker</td>
-          <td>{{ project.mlWorkerType.toLowerCase() }}</td>
-        </tr>
-      </v-simple-table>
-    </p>
-    <p v-show="project.description">{{ project.description }}</p>
+  <v-container fluid class="font-weight-light mt-3">
+    <v-row>
+      <v-col cols="6">
+        <v-card height="100%">
+          <v-card-title class="font-weight-light secondary--text">
+            Properties
+          </v-card-title>
+          <v-card-text>
+            <v-simple-table class="info-table">
+              <tr>
+                <td>Project Description</td>
+                <td>{{ project.description }}</td>
+              </tr>
+              <tr>
+                <td>Project Unique Key</td>
+                <td>{{ project.key }}</td>
+              </tr>
+              <tr>
+                <td>Project ID</td>
+                <td>{{ project.id }}</td>
+              </tr>
+              <tr>
+                <td>Created by</td>
+                <td>{{ getUserFullDisplayName(project.owner) }}</td>
+              </tr>
+              <tr>
+                <td>Created at</td>
+                <td>{{ project.createdDate | date }}</td>
+              </tr>
+              <tr>
+                <td>ML Worker</td>
+                <td>{{ project.mlWorkerType.toLowerCase() }}</td>
+              </tr>
+            </v-simple-table>
+          </v-card-text>
+        </v-card>
+      </v-col>
+
+      <v-col cols="6">
+        <v-card height="100%">
+          <v-card-title class="font-weight-light secondary--text">
+            Guest Users
+          </v-card-title>
+          <v-card-text>
+            <div class="px-2">
+              <table v-if="project.guests.length">
+                <tr v-for="p in project.guests" :key="p.user_id">
+                  <td class="caption pr-4">{{ getUserFullDisplayName(p) }}</td>
+                  <td v-if="isProjectOwnerOrAdmin">
+                    <v-btn icon small color="accent" @click="cancelUserInvitation(p)">
+                      <v-icon small>person_remove</v-icon>
+                    </v-btn>
+                  </td>
+                </tr>
+              </table>
+              <p v-else class="caption">None</p>
+            </div>
+          </v-card-text>
+        </v-card>
+      </v-col>
+    </v-row>
+
     <v-divider class="my-4"></v-divider>
-    <div class="subtitle-1">
-      Guest Users
-    </div>
-    <div class="px-2">
-      <table v-if="project.guests.length">
-        <tr v-for="p in project.guests" :key="p.user_id">
-          <td class="caption pr-4">{{ getUserFullDisplayName(p) }}</td>
-          <td v-if="isProjectOwnerOrAdmin">
-            <v-btn icon small color="accent" @click="cancelUserInvitation(p)">
-              <v-icon small>person_remove</v-icon>
-            </v-btn>
-          </td>
-        </tr>
-      </table>
-      <p v-else class="caption">None</p>
-    </div>
   </v-container>
 </template>
 
