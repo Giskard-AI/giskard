@@ -62,6 +62,7 @@ public class TestArgumentService {
             case "int" -> argumentBuilder.setInt(Integer.parseInt(inputValue));
             case "str" -> argumentBuilder.setStr(inputValue);
             case "bool" -> argumentBuilder.setBool(Boolean.parseBoolean(inputValue));
+            case "Kwargs" -> argumentBuilder.setKwargs(inputValue);
             default ->
                 throw new IllegalArgumentException(String.format("Unknown test execution input type %s", inputType));
         }
