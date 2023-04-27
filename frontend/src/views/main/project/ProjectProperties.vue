@@ -3,10 +3,10 @@
     <v-row>
       <v-col cols="9">
         <v-card height="100%" outlined>
-          <v-card-title class="font-weight-light secondary--text py-1">
+          <v-card-title class="font-weight-light secondary--text py-1 mt-2">
             Project Settings
           </v-card-title>
-          <v-card-text class="container">
+          <v-card-text class="container pb-0">
             <v-row>
               <v-col cols="6">
                 <v-simple-table class="properties-table project-properties-table-1" dense>
@@ -93,38 +93,41 @@
       </v-col>
     </v-row>
 
-    <div class="py-8 d-flex">
+    <div class="pt-8 pb-4 d-flex">
       <div class="d-flex justify-end align-center flex-grow-1">
-        <v-btn tile small color="primary" class="mx-2" href="https://docs.giskard.ai/start/guides/upload-your-model" target="_blank">
+        <v-btn color="primary" class="mx-2" href="https://docs.giskard.ai/start/guides/upload-your-model" target="_blank">
           Upload with API
         </v-btn>
-        <v-btn tile small text @click="reloadDataObjects()" color="secondary">Reload
+        <v-btn text @click="reloadDataObjects()" color="secondary">Reload
           <v-icon right>refresh</v-icon>
         </v-btn>
       </div>
     </div>
 
     <v-row class="mb-8">
-      <v-col cols="6" class="py-0 my-0">
-        <v-card height="100%" flat class="py-0 my-0">
-          <v-card-title class="font-weight-light secondary--text py-0 my-0">
-            <v-icon left class="pb-1">stacked_bar_chart</v-icon>
-            Datasets
+      <v-col cols="12">
+        <v-card height="100%" outlined>
+          <v-card-title class="justify-space-between">
+            <h3 class="flex-1 font-weight-light secondary--text">Giskard Objects</h3>
+            <v-btn-toggle v-model="toggleObject" borderless mandatory color="primary">
+              <v-btn value="datasets" class="pa-5">
+                <span>Datasets</span>
+                <v-icon end class="pb-1 pl-1" :color="toggleObject === 'datasets' ? 'primary' : ''">
+                  stacked_bar_chart
+                </v-icon>
+              </v-btn>
+              <v-btn value="models" class="pa-5">
+                <span>Models</span>
+                <v-icon end class="pb-1 pl-1" :color="toggleObject === 'models' ? 'primary' : ''">
+                  settings_suggest
+                </v-icon>
+              </v-btn>
+            </v-btn-toggle>
+            <div class="flex-1"></div>
           </v-card-title>
           <v-card-text>
-            <Datasets ref="datasetsComponentRef" :projectId="projectId" :isProjectOwnerOrAdmin="isProjectOwnerOrAdmin"></Datasets>
-          </v-card-text>
-        </v-card>
-      </v-col>
-      <v-divider vertical></v-divider>
-      <v-col cols="6" class="py-0 my-0">
-        <v-card height="100%" flat class="py-0 my-0">
-          <v-card-title class="font-weight-light secondary--text py-0 my-0">
-            <v-icon left class="pb-1">settings_suggest</v-icon>
-            Models
-          </v-card-title>
-          <v-card-text>
-            <Models ref="modelsComponentRef" :projectId="projectId" :isProjectOwnerOrAdmin="isProjectOwnerOrAdmin"></Models>
+            <Datasets v-show="toggleObject === 'datasets'" ref="datasetsComponentRef" :projectId="projectId" :isProjectOwnerOrAdmin="isProjectOwnerOrAdmin"></Datasets>
+            <Models v-show="toggleObject === 'models'" ref="modelsComponentRef" :projectId="projectId" :isProjectOwnerOrAdmin="isProjectOwnerOrAdmin"></Models>
           </v-card-text>
         </v-card>
       </v-col>
@@ -180,6 +183,7 @@ const projectStore = useProjectStore();
 const openDeleteDialog = ref(false);
 const datasetsComponentRef = ref<any>(null);
 const modelsComponentRef = ref<any>(null);
+const toggleObject = ref<string>("datasets");
 
 const project = computed(() => useProjectStore().project(props.projectId))
 
@@ -299,5 +303,9 @@ async function deleteProject() {
       width: 100px;
     }
   }
+}
+
+.flex-1 {
+  flex: 1;
 }
 </style>

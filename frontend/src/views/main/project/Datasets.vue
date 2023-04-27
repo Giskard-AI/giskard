@@ -1,6 +1,6 @@
 <template>
   <div class="vertical-container">
-    <v-container v-if="files.length > 0">
+    <v-container v-if="files.length > 0" fluid class="vc">
       <v-expansion-panels flat>
         <v-row dense no-gutters class="mr-6 ml-3 caption secondary--text text--lighten-3 pb-2">
           <v-col cols="4">Name</v-col>
