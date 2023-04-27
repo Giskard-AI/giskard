@@ -17,6 +17,7 @@ import ai.giskard.worker.ArtifactRef;
 import ai.giskard.worker.RunAdHocSlicingRequest;
 import ai.giskard.worker.SlicingResultMessage;
 import lombok.RequiredArgsConstructor;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -41,6 +42,7 @@ public class SlicingFunctionController {
     private final TestArgumentService testArgumentService;
 
     @GetMapping("/slices/{uuid}")
+    @Transactional(readOnly = true)
     public SlicingFunctionDTO getSlicingFunction(@PathVariable("uuid") @NotNull UUID uuid) {
         return giskardMapper.toDTO(slicingFunctionRepository.getMandatoryById(uuid));
     }
