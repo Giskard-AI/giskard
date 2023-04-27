@@ -82,7 +82,10 @@
             <v-simple-table class="properties-table">
               <tr>
                 <td>Lime Number Samples:</td>
-                <td>500 [EDIT BTN]</td>
+                <td>
+                  <InlineEditText :text="project.inspectionSettings.limeNumberSamples.toString()" editText="Change" @save="renameLimeNumberSamples" :canEdit="false">
+                  </InlineEditText>
+                </td>
               </tr>
             </v-simple-table>
           </v-card-text>
@@ -142,7 +145,7 @@ import { computed, ref } from 'vue';
 import { $vfm } from 'vue-final-modal';
 import ConfirmModal from '@/views/main/project/modals/ConfirmModal.vue';
 import InlineEditText from '@/components/InlineEditText.vue';
-import { InspectionSettings, ProjectPostDTO } from '@/generated-sources';
+import { ProjectPostDTO } from '@/generated-sources';
 
 
 interface Props {
@@ -207,6 +210,21 @@ async function renameProjectDescription(newDescription: string) {
     name: project.value!.name,
     description: newDescription,
     inspectionSettings: project.value!.inspectionSettings
+  }
+
+  await editProject(proj);
+}
+
+async function renameLimeNumberSamples(newLimeSamples: string) {
+  const newLimeSamplesParsed = parseInt(newLimeSamples);
+  if (isNaN(newLimeSamplesParsed)) return;
+
+  const proj: ProjectPostDTO = {
+    name: project.value!.name,
+    description: project.value!.description,
+    inspectionSettings: {
+      limeNumberSamples: newLimeSamplesParsed
+    }
   }
 
   await editProject(proj);
