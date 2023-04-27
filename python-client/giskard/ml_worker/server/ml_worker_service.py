@@ -195,11 +195,14 @@ class MLWorkerServiceImpl(MLWorkerServicer):
         transformation_function = TransformationFunction.load(request.transformationFunctionUuid, self.client, None)
         dataset = Dataset.download(self.client, request.dataset.project_key, request.dataset.id)
 
+        selected_rows = dataset.slice(lambda df: df.iloc[request.rows], row_level=False) if len(
+            request.rows) > 0 else dataset
+
         arguments = self.parse_function_arguments(request.arguments)
 
         result = dataset.transform(transformation_function(**arguments))
 
-        modified_rows = result.df[dataset.df.ne(result.df)].dropna(how='all')
+        modified_rows = result.df[selected_rows.df.ne(result.df)].dropna(how='all')
 
         return ml_worker_pb2.TransformationResultMessage(
             datasetId=request.dataset.id,

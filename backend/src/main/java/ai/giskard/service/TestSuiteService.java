@@ -14,6 +14,7 @@ import ai.giskard.repository.TestSuiteExecutionRepository;
 import ai.giskard.repository.ml.TestFunctionRepository;
 import ai.giskard.repository.ml.TestSuiteRepository;
 import ai.giskard.service.ml.MLWorkerService;
+import ai.giskard.utils.TransactionUtils;
 import ai.giskard.web.dto.*;
 import ai.giskard.web.dto.mapper.GiskardMapper;
 import ai.giskard.web.rest.errors.EntityNotFoundException;
@@ -21,7 +22,6 @@ import ai.giskard.worker.*;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import lombok.RequiredArgsConstructor;
-import org.hibernate.Hibernate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -81,7 +81,7 @@ public class TestSuiteService {
     @Transactional
     public UUID scheduleTestSuiteExecution(Long projectId, Long suiteId, Map<String, String> inputs) {
         TestSuite testSuite = testSuiteRepository.getMandatoryById(suiteId);
-        initializeTestSuite(testSuite);
+        TransactionUtils.initializeTestSuite(testSuite);
 
         TestSuiteExecution execution = new TestSuiteExecution(testSuite);
         execution.setInputs(inputs.entrySet().stream()
@@ -97,21 +97,6 @@ public class TestSuiteService {
             testSuiteExecutionService.executeScheduledTestSuite(execution, suiteInputs);
             testSuiteExecutionRepository.save(execution);
         }, projectId, JobType.TEST_SUITE_EXECUTION, mlWorkerType);
-    }
-
-    private static void initializeTestSuite(TestSuite testSuite) {
-        Hibernate.initialize(testSuite.getFunctionInputs());
-        Hibernate.initialize(testSuite.getTests());
-        testSuite.getTests().forEach(TestSuiteService::initializeSuiteTest);
-    }
-
-    private static void initializeSuiteTest(SuiteTest suiteTest) {
-        suiteTest.getFunctionInputs().forEach(TestSuiteService::initializeFunctionInput);
-    }
-
-    private static void initializeFunctionInput(FunctionInput functionInput) {
-        Hibernate.initialize(functionInput.getParams());
-        functionInput.getParams().forEach(TestSuiteService::initializeFunctionInput);
     }
 
     private static void verifyAllInputProvided(Map<String, String> providedInputs,
