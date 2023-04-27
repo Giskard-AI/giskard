@@ -5,15 +5,16 @@ import ai.giskard.domain.ml.Inspection;
 import ai.giskard.domain.ml.ModelType;
 import ai.giskard.domain.ml.table.Filter;
 import ai.giskard.repository.InspectionRepository;
-import ai.giskard.web.rest.errors.EntityNotFoundException;
 import com.google.common.primitives.Ints;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.FileSystemUtils;
-import tech.tablesaw.api.*;
+import tech.tablesaw.api.DoubleColumn;
+import tech.tablesaw.api.IntColumn;
+import tech.tablesaw.api.StringColumn;
+import tech.tablesaw.api.Table;
 import tech.tablesaw.io.csv.CsvReadOptions;
 import tech.tablesaw.selection.Selection;
 
@@ -24,14 +25,11 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.file.Path;
 import java.util.List;
-import java.util.Optional;
 
 import static ai.giskard.domain.ml.table.RowFilterType.CUSTOM;
 import static ai.giskard.service.DatasetService.GISKARD_DATASET_INDEX_COLUMN_NAME;
-import static ai.giskard.web.rest.errors.Entity.INSPECTION;
 
 @Service
-@Transactional
 @RequiredArgsConstructor
 public class InspectionService {
     private final Logger log = LoggerFactory.getLogger(InspectionService.class);
@@ -193,9 +191,8 @@ public class InspectionService {
      *
      * @return filtered table
      */
-    @Transactional
     public Table getRowsFiltered(@NotNull Long inspectionId, @NotNull Filter filter) throws IOException {
-        Inspection inspection = inspectionRepository.findById(inspectionId).orElseThrow(() -> new EntityNotFoundException(INSPECTION, inspectionId));
+        Inspection inspection = inspectionRepository.getMandatoryById(inspectionId);
         Table table = datasetService.readTableByDatasetId(inspection.getDataset().getId());
         table.addColumns(IntColumn.indexColumn(GISKARD_DATASET_INDEX_COLUMN_NAME, table.rowCount(), 0));
         Selection selection = (inspection.getModel().getModelType() == ModelType.CLASSIFICATION) ? getSelection(inspection, filter) : getSelectionRegression(inspection, filter);
@@ -213,9 +210,8 @@ public class InspectionService {
      *
      * @return filtered table
      */
-    @Transactional
     public List<String> getLabels(@NotNull Long inspectionId) {
-        Inspection inspection = inspectionRepository.getById(inspectionId);
+        Inspection inspection = inspectionRepository.getMandatoryById(inspectionId);
         return inspection.getModel().getClassificationLabels();
     }
 
@@ -250,7 +246,7 @@ public class InspectionService {
     }
 
     public Inspection updateInspectionName(long inspectionId, String name) {
-        Inspection inspection = inspectionRepository.getById(inspectionId);
+        Inspection inspection = inspectionRepository.getMandatoryById(inspectionId);
         inspection.setName(name);
         return inspectionRepository.save(inspection);
     }
