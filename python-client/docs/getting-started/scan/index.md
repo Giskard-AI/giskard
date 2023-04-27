@@ -79,9 +79,6 @@ wrapped_dataset = wrap_dataset(
 
 ## 3. Wrap your model
 
-We currently support **tabular** and **NLP** models from `sklearn`, `catboost`, `pytorch`, `tensorflow`
-and `huggingface`.
-
 To use your model with Giskard, you can simply wrap your model
 with [wrap_model](../../reference/models/index.rst#giskard.wrap_model). The objective of this wrapper is to encapsulate 
 the entire prediction process, starting from the **raw** `pandas.DataFrame` and leading up to the final predictions. 
@@ -89,14 +86,21 @@ the entire prediction process, starting from the **raw** `pandas.DataFrame` and 
 If your ML model contains preprocessing functions (categorical encoding, scaling, etc.), it should be either inside your
 `model` or inside the `data_preprocessing_function` of the Giskard model you create.
 
+:::{important}
+- For model-specific usages, try our [tutorials](../guides/tutorials/index.md).
+- For wrapping any python function in Giskard, try this [guide](../guides/custom-wrapper/index.md).
+:::
+
 ### Usage of [wrap_model](../../reference/models/index.rst#giskard.wrap_model)
 :::::::{tab-set}
 ::::::{tab-item} Classification
 ```python
 from giskard import wrap_model
 
+clf = LogisticRegression()
+
 wrapped_model = wrap_model(
-  model=some_classifier,
+  model=clf,
   model_type="classification",
   classification_labels=['Setosa', 'Versicolor', 'Virginica'],
   # name="my_iris_classification_model", # Optional
@@ -108,7 +112,10 @@ wrapped_model = wrap_model(
   )
 ```
 * <mark style="color:red;">**`Mandatory parameters`**</mark>
-  * `model`: Could be any model from `sklearn`, `catboost`, `pytorch`, `tensorflow` or `huggingface`.
+  * `model`: Could be any model from `sklearn`, `catboost`, `pytorch`, `tensorflow` or `huggingface` (check 
+    the [tutorials](../guides/tutorials/index.md)). If none of these
+    libraries apply to you, or if you ML model is a custom python function: check our "Wrap any python function with Giskard" 
+    [guide](../guides/custom-wrapper/index.md).
   * `model_type`: The type of the model, either `regression` or `classification`.
   * `classification_labels`: The list of unique categories contained in your dataset target variable.
 
@@ -122,13 +129,15 @@ wrapped_model = wrap_model(
      an object of the same type and shape as the `model` output.
   * `**kwargs`: Additional model-specific arguments (See [Models](../../reference/models/index.rst)).
 
-  ::::::
+::::::
 ::::::{tab-item} Regression
 ```python
 from giskard import wrap_model
 
+reg = LinearRegression()
+
 wrapped_model = wrap_model(
-  model=some_regressor,
+  model=reg,
   model_type="regression",
   # name="my_regression_model", # Optional
   # feature_names=['x', 'y'], # Default: all columns of your dataset
@@ -155,6 +164,14 @@ wrapped_model = wrap_model(
 
 ### Model-specific [tutorials](../guides/tutorials/index.md)
 :::::{tab-set}
+::::{tab-item} Any function
+:::{important} 
+Check first our "Wrap any python function with Giskard" [guide](../guides/custom-wrapper/index.md).
+:::
+- **<project:../../guides/tutorials/pytorch/custom_model.md>**
+- **<project:../../guides/tutorials/huggingface/BertForSequenceClassification_custom.md>**
+::::
+
 ::::{tab-item} sklearn
 
 :::{hint}
@@ -205,11 +222,6 @@ respectively.
 - **<project:../../guides/tutorials/huggingface/pytorch.md>**
 - **<project:../../guides/tutorials/huggingface/pytorch_pipeline.md>**
 - **<project:../../guides/tutorials/huggingface/tensorflow.md>**
-::::
-
-::::{tab-item} custom wrapper
-- **<project:../../guides/tutorials/pytorch/custom_model.md>**
-- **<project:../../guides/tutorials/huggingface/BertForSequenceClassification_custom.md>**
 ::::
 :::::
 

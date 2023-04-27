@@ -140,9 +140,7 @@ const monacoOptions: IEditorOptions = inject('monacoOptions');
 monacoOptions.readOnly = true;
 
 async function runTest() {
-    testResult.value = await api.runAdHocTest(props.projectId, selected.value!.uuid, chain(testArguments.value)
-        .mapValues('value')
-        .value());
+    testResult.value = await api.runAdHocTest(props.projectId, selected.value!.uuid, Object.values(testArguments.value));
 }
 
 
