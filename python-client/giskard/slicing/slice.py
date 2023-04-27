@@ -132,52 +132,6 @@ def _optimize_column_clauses(clauses: Sequence[Clause]):
     return list(itertools.chain(*conds.values()))
 
 
-class DataSlice:
-    def __init__(self, query: Query, raw_data=None):
-        self.query = query
-        data = raw_data if raw_data is not None else pd.DataFrame(columns=query.columns())
-        self.bind(data)
-
-    def bind(self, data: pd.DataFrame):
-        self._data = data
-        self.mask = self.query.mask(self._data)
-
-    @property
-    def data(self):
-        return self._data[self.mask]
-
-    @property
-    def data_complement(self):
-        return self._data[~self.mask]
-
-    @property
-    def data_unsliced(self):
-        return self._data
-
-    def columns(self):
-        return self.query.columns()
-
-    def get_column_interval(self, column):
-        assert column in self.columns(), f"Column `{column}` is not present in the slice."
-
-        clauses = self.query.clauses[column]
-
-        try:
-            low = max(c.value for c in clauses if isinstance(c, GreaterThan))
-        except (StopIteration, ValueError):
-            low = None
-
-        try:
-            high = min(c.value for c in clauses if isinstance(c, LowerThan))
-        except (StopIteration, ValueError):
-            high = None
-
-        return low, high
-
-    def __len__(self):
-        return len(self.data)
-
-
 class QueryBasedSliceFunction(SlicingFunction):
     row_level = False
 

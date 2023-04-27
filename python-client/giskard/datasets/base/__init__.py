@@ -23,6 +23,7 @@ from giskard.ml_worker.testing.registry.transformation_function import (
     TransformationFunctionType,
 )
 from giskard.settings import settings
+from ..metadata.indexing import ColumnMetadataMixin
 
 logger = logging.getLogger(__name__)
 
@@ -86,7 +87,7 @@ class DataProcessor:
         return f"DataProcessor: {len(self.pipeline)} steps"
 
 
-class Dataset:
+class Dataset(ColumnMetadataMixin):
     """
     A class for constructing and processing datasets.
 
