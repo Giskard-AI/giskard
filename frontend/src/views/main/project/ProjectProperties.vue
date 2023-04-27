@@ -95,11 +95,13 @@
 
     <div class="pt-8 pb-4 d-flex">
       <div class="d-flex justify-end align-center flex-grow-1">
+        <v-btn @click="reloadDataObjects()" class="pa-2 text--secondary">
+          Reload
+          <v-icon right>refresh</v-icon>
+        </v-btn>
         <v-btn color="primary" class="mx-2" href="https://docs.giskard.ai/start/guides/upload-your-model" target="_blank">
           Upload with API
-        </v-btn>
-        <v-btn text @click="reloadDataObjects()" color="secondary">Reload
-          <v-icon right>refresh</v-icon>
+          <v-icon right>mdi-application-braces-outline</v-icon>
         </v-btn>
       </div>
     </div>
@@ -110,13 +112,13 @@
           <v-card-title class="justify-space-between">
             <h3 class="flex-1 font-weight-light secondary--text">Giskard Objects</h3>
             <v-btn-toggle v-model="toggleObject" borderless mandatory color="primary">
-              <v-btn value="datasets" class="pa-5">
+              <v-btn value="datasets" class="py-5 px-4">
                 <span>Datasets</span>
                 <v-icon end class="pb-1 pl-1" :color="toggleObject === 'datasets' ? 'primary' : ''">
                   stacked_bar_chart
                 </v-icon>
               </v-btn>
-              <v-btn value="models" class="pa-5">
+              <v-btn value="models" class="py-5 px-4">
                 <span>Models</span>
                 <v-icon end class="pb-1 pl-1" :color="toggleObject === 'models' ? 'primary' : ''">
                   settings_suggest
