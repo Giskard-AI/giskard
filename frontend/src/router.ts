@@ -103,9 +103,9 @@ export default new Router({
                             },
                             children: [
                                 {
-                                    path: 'overview',
-                                    name: 'project-settings',
-                                    component: () => import('./views/main/project/ProjectSettings.vue'),
+                                    path: 'properties',
+                                    name: 'project-properties',
+                                    component: () => import('./views/main/project/ProjectProperties.vue'),
                                     props: (route) => {
                                         return { projectId: Number(route.params.id) }
                                     }

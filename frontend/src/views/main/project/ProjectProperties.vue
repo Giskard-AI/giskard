@@ -4,7 +4,7 @@
       <v-col cols="9">
         <v-card height="100%">
           <v-card-title class="font-weight-light secondary--text">
-            Project Properties
+            Project Settings
           </v-card-title>
           <v-card-text class="container">
             <v-row>
