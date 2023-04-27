@@ -188,7 +188,7 @@ async function cancelUserInvitation(user: IUserProfileMinimal) {
   });
 }
 
-async function renameProjectName(newName) {
+async function renameProjectName(newName: string) {
   if (!newName) return;
 
   const proj: ProjectPostDTO = {
@@ -200,7 +200,7 @@ async function renameProjectName(newName) {
   await editProject(proj);
 }
 
-async function renameProjectDescription(newDescription) {
+async function renameProjectDescription(newDescription: string) {
   if (!newDescription) return;
 
   const proj: ProjectPostDTO = {
