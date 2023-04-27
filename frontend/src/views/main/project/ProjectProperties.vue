@@ -96,9 +96,9 @@
           <v-card-text>
             <v-simple-table class="properties-table">
               <tr>
-                <td>Lime Number Samples:</td>
+                <td>LIME Number Samples:</td>
                 <td>
-                  <InlineEditText :text="project.inspectionSettings.limeNumberSamples.toString()" editText="Change" @save="renameLimeNumberSamples" :canEdit="false">
+                  <InlineEditText :text="project.inspectionSettings.limeNumberSamples.toString()" editText="Change" @save="renameLimeNumberSamples" :canEdit="true">
                   </InlineEditText>
                 </td>
               </tr>
