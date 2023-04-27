@@ -14,7 +14,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import javax.transaction.Transactional;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import java.io.IOException;
@@ -35,7 +34,6 @@ public class SliceController {
     }
 
     @PostMapping("slices")
-    @Transactional
     @PreAuthorize("@permissionEvaluator.canWriteProject(#dto.projectId)")
     public SliceDTO createSlice(@Valid @RequestBody SliceCreateDTO dto) {
         Slice slice = giskardMapper.fromDTO(dto);
@@ -43,7 +41,6 @@ public class SliceController {
     }
 
     @PutMapping("slices")
-    @Transactional
     @PreAuthorize("@permissionEvaluator.canWriteProject(#dto.projectId)")
     public SliceDTO updateSlice(@Valid @RequestBody SlicePutDTO dto) {
         return giskardMapper.sliceToSliceDTO(sliceService.updateSlice(dto));
@@ -51,16 +48,14 @@ public class SliceController {
 
 
     @DeleteMapping("project/{projectId}/slices/{sliceId}")
-    @Transactional
     @PreAuthorize("@permissionEvaluator.canWriteProject(#projectId)")
     public void deleteSlice(@PathVariable @NotNull Long projectId, @PathVariable @NotNull Long sliceId) {
         sliceRepository.deleteById(sliceId);
     }
 
     @PostMapping("slices/validate")
-    @Transactional
     public boolean validateCode(@Valid @RequestBody SliceValidateDTO dto) throws IOException {
-        Dataset dataset = datasetRepository.getById(dto.getDatasetId());
+        Dataset dataset = datasetRepository.getMandatoryById(dto.getDatasetId());
         return sliceService.validateCodeOverDataset(dto.getCode(), dataset);
     }
 

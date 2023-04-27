@@ -35,7 +35,6 @@ import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
 import javax.validation.constraints.NotNull;
@@ -149,7 +148,6 @@ public class InitService {
      * Initializing first authorities, mock users, and mock projects
      */
     @EventListener(ApplicationReadyEvent.class)
-    @Transactional
     public void init() {
         projects = createProjectConfigMap();
         generalSettingsService.saveIfNotExists(new GeneralSettings());

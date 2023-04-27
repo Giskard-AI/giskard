@@ -30,7 +30,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.FileSystemUtils;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -48,7 +47,6 @@ import java.util.TreeSet;
 import java.util.regex.Pattern;
 
 @Service
-@Transactional
 @RequiredArgsConstructor
 public class ProjectService {
     private final LicenseService licenseService;
@@ -74,7 +72,7 @@ public class ProjectService {
      * @return project updated
      */
     public Project update(@NotNull Long id, ProjectPostDTO projectDTO) {
-        Project project = projectRepository.getById(id);
+        Project project = projectRepository.getMandatoryById(id);
         giskardMapper.updateProjectFromDto(projectDTO, project);
         return projectRepository.save(project);
     }
@@ -124,7 +122,7 @@ public class ProjectService {
      * @param id id of the project to delete
      */
     public void delete(Long id) {
-        Project project = projectRepository.getById(id);
+        Project project = projectRepository.getMandatoryById(id);
         try {
             projectRepository.deleteById(id);
             projectRepository.flush();
@@ -137,7 +135,7 @@ public class ProjectService {
     public byte[] export(Long id) throws IOException {
         Path projectZipPath = null;
         Path temporaryExportDir = null;
-        Project project = this.projectRepository.findById(id).orElseThrow(() -> new EntityNotFoundException(Entity.PROJECT, id));
+        Project project = projectRepository.getMandatoryById(id);
         // Create a tmp folder
 
         // Get the project from repository
@@ -180,6 +178,7 @@ public class ProjectService {
         Path datasetsMetadataPath = locationService.resolvedMetadataPath(temporaryExportDirectory, Dataset.class.getSimpleName());
         Path feedBacksMetadataPath = locationService.resolvedMetadataPath(temporaryExportDirectory, Feedback.class.getSimpleName());
         Path testSuiteMetadataPath = testSuiteService.resolvedMetadataPath(temporaryExportDirectory, TestSuite.class.getSimpleName());
+
         YAMLConverter.exportEntityToYAML(project, projectMetadataPath);
         YAMLConverter.exportEntitiesToYAML(project.getModels(), modelsMetadatPath);
         YAMLConverter.exportEntitiesToYAML(project.getDatasets(), datasetsMetadataPath);
@@ -268,7 +267,7 @@ public class ProjectService {
      * @return update project
      */
     public Project uninvite(Long id, Long userId) {
-        User user = userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException(Entity.USER, userId));
+        User user = userRepository.getMandatoryById(userId);
         Project project = projectRepository.findOneWithGuestsById(id).orElseThrow(() -> new EntityNotFoundException(Entity.PROJECT, id));
         project.removeGuest(user);
         projectRepository.save(project);
@@ -283,7 +282,7 @@ public class ProjectService {
      * @return updated project
      */
     public Project invite(Long id, Long userId) {
-        User user = userRepository.getById(userId);
+        User user = userRepository.getMandatoryById(userId);
         Project project = projectRepository.findOneWithGuestsById(id).orElseThrow(() -> new EntityNotFoundException(Entity.PROJECT, id));
         project.addGuest(user);
         projectRepository.save(project);

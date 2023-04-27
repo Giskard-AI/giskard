@@ -24,7 +24,7 @@ public class TestFunctionController {
     @GetMapping("/tests/{testUuid}")
     @Transactional(readOnly = true)
     public TestFunctionDTO getTestFunction(@PathVariable("testUuid") @NotNull UUID testUuid) {
-        return giskardMapper.toDTO(testFunctionRepository.getById(testUuid));
+        return giskardMapper.toDTO(testFunctionRepository.getMandatoryById(testUuid));
     }
 
     @PutMapping("/tests/{testUuid}")
