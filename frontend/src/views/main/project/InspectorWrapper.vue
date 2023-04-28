@@ -67,9 +67,11 @@
                                         @onChanged="applyTransformation"
                                         :value.sync="selectedTransformationFunction.uuid"
                                         :args.sync="selectedTransformationFunction.params"/>
-        <SliceDropdown :project-id="projectId" :is-project-owner-or-admin="isProjectOwnerOrAdmin" @onSelect="applySlice"
-                       @onClear="clearSlice" :loading="loadingSlice" :default-dataset-id="inspection.dataset.id"
-                       class="mr-3 fill-height"/>
+        <SlicingFunctionSelector label="Slice to apply" :project-id="projectId"
+                                 :full-width="false" :icon="true" class="mr-3"
+                                 @onChanged="applySlice"
+                                 :value.sync="selectedSlicingFunction.uuid"
+                                 :args.sync="selectedSlicingFunction.params"/>
 
         <InspectionFilter :is-target-available="isDefined(inspection.dataset.target)" :labels="labels"
                           :model-type="inspection.model.modelType" @input="f => filter = f"/>
@@ -140,8 +142,7 @@ import {
     FunctionInputDTO,
     InspectionDTO,
     ModelType,
-    RowFilterType,
-    SliceDTO
+    RowFilterType
 } from '@/generated-sources';
 import mixpanel from "mixpanel-browser";
 import _ from "lodash";
@@ -149,6 +150,7 @@ import InspectionFilter from './InspectionFilter.vue';
 import SliceDropdown from "@/components/slice/SliceDropdown.vue";
 import TransformationFunctionSelector from "@/views/main/utils/TransformationFunctionSelector.vue";
 import {useCatalogStore} from "@/stores/catalog";
+import SlicingFunctionSelector from "@/views/main/utils/SlicingFunctionSelector.vue";
 
 type CreatedFeedbackCommonDTO = {
     targetFeature?: string | null;
@@ -160,6 +162,7 @@ type CreatedFeedbackCommonDTO = {
 };
 @Component({
   components: {
+      SlicingFunctionSelector,
       TransformationFunctionSelector,
       SliceDropdown,
       OverlayLoader,
@@ -204,6 +207,13 @@ export default class InspectorWrapper extends Vue {
     percentRegressionUnit = true;
     RowFilterType = RowFilterType;
     selectedTransformationFunction: {
+        uuid?: string;
+        params: Array<FunctionInputDTO>
+    } = {
+        uuid: undefined,
+        params: []
+    }
+    selectedSlicingFunction: {
         uuid?: string;
         params: Array<FunctionInputDTO>
     } = {
@@ -345,11 +355,12 @@ export default class InspectorWrapper extends Vue {
         await this.fetchRows(this.rowNb, forceFetch);
 
         if (this.selectedTransformationFunction.uuid) {
-            const result = await api.runAdHocTransformationFunction(this.selectedTransformationFunction.uuid, this.inspection!.dataset.id,
-                {
-                    functionInputs: this.selectedTransformationFunction.params,
-                    rows: [this.rowNb]
-                });
+            const result = await api.datasetProcessing(this.projectId, this.inspection!.dataset.id,
+                [{
+                    uuid: this.selectedTransformationFunction.uuid,
+                    params: this.selectedTransformationFunction.params,
+                    type: 'TRANSFORMATION'
+                }]);
             this.transformationModifications = result.modifications.find(m => m.rowId === this.rowNb)?.modifications ?? {}
         } else {
             this.transformationModifications = {};
@@ -417,12 +428,11 @@ export default class InspectorWrapper extends Vue {
       await api.submitFeedback(payload, payload.projectId);
   }
 
-    private async applySlice(slice: SliceDTO) {
+    private async applySlice() {
         this.loadingSlice = true;
-        this.filter.sliceId = slice.id;
         await this.updateRow(true);
         this.loadingSlice = false;
-        mixpanel.track('Apply slice', {sliceId: this.filter.sliceId});
+        mixpanel.track('Apply slicing function', {sliceId: this.selectedSlicingFunction.uuid});
     }
 
     private async applyTransformation() {

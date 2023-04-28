@@ -101,10 +101,6 @@ async function updateArgs() {
             async save(args: Array<FunctionInputDTO>) {
                 emit('update:args', args);
                 emit('onChanged');
-            },
-            async cancel() {
-                // Rollback changes
-                emit('update:args', props.args);
             }
         },
         cancel: {}
@@ -112,6 +108,7 @@ async function updateArgs() {
 }
 
 const hasArguments = computed(() => props.value && transformationFunctionsByUuid.value[props.value].args.length > 0)
+
 </script>
 
 <style scoped>

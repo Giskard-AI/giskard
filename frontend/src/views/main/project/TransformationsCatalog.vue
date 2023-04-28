@@ -233,9 +233,11 @@ onActivated(async () => {
 });
 
 async function runSlicingFunction() {
-    transformationResult.value = await api.runAdHocTransformationFunction(selected.value!.uuid, selectedDataset.value!, {
-        functionInputs: Object.values(transformationArguments.value)
-    });
+    transformationResult.value = await api.datasetProcessing(props.projectId, selectedDataset.value!, [{
+        uuid: selected.value!.uuid,
+        params: Object.values(transformationArguments.value),
+        type: 'TRANSFORMATION'
+    }]);
 }
 
 watch(() => selected.value, () => {

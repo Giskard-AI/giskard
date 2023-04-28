@@ -226,9 +226,12 @@ onActivated(async () => {
 });
 
 async function runSlicingFunction() {
-    sliceResult.value = await api.runAdHocSlicingFunction(selected.value.uuid, selectedDataset.value, chain(slicingArguments.value)
-        .mapValues('value')
-        .value());
+    sliceResult.value = await api.datasetProcessing(props.projectId, selectedDataset.value!, [{
+        uuid: selected.value!.uuid,
+        params: Object.values(slicingArguments.value),
+        type: 'SLICING'
+    }]);
+
 }
 
 watch(() => selected.value, () => {
