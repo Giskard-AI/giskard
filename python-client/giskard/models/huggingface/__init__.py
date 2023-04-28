@@ -116,7 +116,7 @@ class HuggingFaceModel(WrapperModel):
         if self.is_classification and hasattr(predictions, "logits"):
             if isinstance(self.model, torch.nn.Module):
                 with torch.no_grad():
-                    logits = predictions.logits.detach().numpy()
+                        logits = predictions.logits.detach().numpy()
             else:
                 logits = predictions.logits
 

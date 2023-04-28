@@ -39,6 +39,7 @@ def infer_ml_library(model):
         '\nWe recommend that you create your own wrapper using our documentation page: https://giskard.readthedocs.io/en/latest/guides/custom-wrapper'
     )
 
+
 @configured_validate_arguments
 def wrap_model(model,
                model_type: ModelType,
@@ -87,8 +88,6 @@ def wrap_model(model,
     Returns:
         Union[SKLearnModel, HuggingFaceModel, CatboostModel, PyTorchModel, TensorFlowModel]: The wrapped Giskard model.
 
-    Raises:
-        ValueError: If the model library cannot be inferred.
     """
     giskard_class = infer_ml_library(model)
     print("Your model is successfully wrapped by Giskard's '"
@@ -102,7 +101,6 @@ def wrap_model(model,
                          classification_threshold=classification_threshold,
                          classification_labels=classification_labels,
                          **kwargs)
-
 
 
 @configured_validate_arguments

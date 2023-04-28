@@ -174,7 +174,6 @@ class AutoSerializableModel(BaseModel, ABC):
                 f"{model_path} file not found and 'load_model' method isn't overriden"
             )
 
-
     @classmethod
     def load_data_preprocessing_function(cls, local_path: Union[str, Path]):
         local_path = Path(local_path)
