@@ -13,7 +13,7 @@ class MLFlowBasedModel(WrapperModel, ABC):
     An abstract base class for models that are serializable by the MLFlow library.
 
     This class provides functionality for saving the model with MLFlow in addition to saving other metadata with the
-    `save` method. Subclasses should implement the `save_with_mlflow` method to provide their own MLFlow-specific model
+    `save` method. Subclasses should implement the `save_model` method to provide their own MLFlow-specific model
     saving functionality.
     """
 
@@ -24,9 +24,9 @@ class MLFlowBasedModel(WrapperModel, ABC):
         """
         if not self.id:
             self.id = uuid.uuid4()
-        self.save_with_mlflow(local_path, mlflow.models.Model(model_uuid=str(self.id)))
+        self.save_model(local_path, mlflow.models.Model(model_uuid=str(self.id)))
         super().save(local_path)
 
     @abstractmethod
-    def save_with_mlflow(self, local_path, mlflow_meta: mlflow.models.Model):
+    def save_model(self, local_path, mlflow_meta: mlflow.models.Model):
         ...

@@ -33,6 +33,7 @@ from giskard.models import wrap_model, model_from_catboost, model_from_huggingfa
 from .models.base.wrapper import WrapperModel
 from .models.base.mlflowbased import MLFlowBasedModel
 from .models.base import BaseModel, CustomModel
+from .models.base.autoserializable import AutoSerializableModel
 from .scanner import scan
 
 configure_logging()
@@ -55,6 +56,8 @@ __all__ = [
     'SingleTestResult',
     'Project',
     'wrap_dataset',
+    'CustomModel',
+    'AutoSerializableModel',
     'Dataset',
     'GiskardClient',
     'test',
