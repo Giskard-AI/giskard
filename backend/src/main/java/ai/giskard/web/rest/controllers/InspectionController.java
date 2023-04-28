@@ -1,8 +1,6 @@
 package ai.giskard.web.rest.controllers;
 
-import ai.giskard.domain.ml.Dataset;
 import ai.giskard.domain.ml.Inspection;
-import ai.giskard.domain.ml.ProjectModel;
 import ai.giskard.repository.InspectionRepository;
 import ai.giskard.repository.ml.DatasetRepository;
 import ai.giskard.repository.ml.ModelRepository;
@@ -10,7 +8,6 @@ import ai.giskard.security.PermissionEvaluator;
 import ai.giskard.service.InspectionService;
 import ai.giskard.service.ModelService;
 import ai.giskard.web.dto.InspectionCreateDTO;
-import ai.giskard.web.dto.PushDTO;
 import ai.giskard.web.dto.mapper.GiskardMapper;
 import ai.giskard.web.dto.ml.InspectionDTO;
 import ai.giskard.web.rest.errors.EntityNotFoundException;
@@ -20,7 +17,6 @@ import org.springframework.web.bind.annotation.*;
 import javax.validation.constraints.NotNull;
 import java.io.IOException;
 import java.util.List;
-import java.util.UUID;
 
 @RestController
 @RequiredArgsConstructor
@@ -98,17 +94,5 @@ public class InspectionController {
     @PutMapping("/inspections/{id}")
     public InspectionDTO updateInspectionName(@PathVariable @NotNull Long id, @RequestBody @NotNull InspectionCreateDTO createDTO) throws EntityNotFoundException {
         return giskardMapper.toDTO(inspectionService.updateInspectionName(id, createDTO.getName()));
-    }
-
-    @GetMapping("/suggest/{modelId}/{datasetId}/{idx}")
-    public List<PushDTO> getSuggestions(@PathVariable @NotNull UUID modelId, @PathVariable @NotNull UUID datasetId, @PathVariable @NotNull int idx) {
-        ProjectModel model = modelRepository.getById(modelId);
-        permissionEvaluator.validateCanReadProject(model.getProject().getId());
-        Dataset dataset = datasetRepository.getById(datasetId);
-        return inspectionService.getSuggestions(
-            model,
-            dataset,
-            idx
-        );
     }
 }

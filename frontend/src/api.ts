@@ -469,7 +469,7 @@ export const api = {
         return apiV2.post<unknown, DatasetProcessingResultDTO>(
             `/project/${projectId}/datasets/${encodeURIComponent(datasetUuid)}/process`, functions);
     },
-    async getSuggestions(modelId: string, datasetId: string, idx: number) {
-        return apiV2.get<unknown, PushDTO[]>(`/suggest/${modelId}/${datasetId}/${idx}`);
+    async getPushes(modelId: string, datasetId: string, idx: number) {
+        return apiV2.get<unknown, PushDTO[]>(`/pushes/${modelId}/${datasetId}/${idx}`);
     }
 };
