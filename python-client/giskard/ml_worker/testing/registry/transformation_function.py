@@ -10,8 +10,12 @@ import pandas as pd
 from giskard.core.core import DatasetProcessFunctionMeta
 from giskard.core.validation import configured_validate_arguments
 from giskard.ml_worker.core.savable import Savable
-from giskard.ml_worker.testing.registry.decorators_utils import validate_arg_type, drop_arg, \
-    make_all_optional_or_suite_input, set_return_type
+from giskard.ml_worker.testing.registry.decorators_utils import (
+    validate_arg_type,
+    drop_arg,
+    make_all_optional_or_suite_input,
+    set_return_type,
+)
 from giskard.ml_worker.testing.registry.registry import get_object_uuid, tests_registry
 
 TransformationFunctionType = Callable[..., pd.Series]
@@ -89,16 +93,20 @@ class TransformationFunction(Savable[TransformationFunctionType, DatasetProcessF
         return DatasetProcessFunctionMeta
 
 
-def transformation_function(_fn: Union[TransformationFunctionType, Type[TransformationFunction]] = None,
-                            row_level=True, name=None,
-                            tags: Optional[List[str]] = None):
+def transformation_function(
+    _fn: Union[TransformationFunctionType, Type[TransformationFunction]] = None,
+    row_level=True,
+    name=None,
+    tags: Optional[List[str]] = None,
+):
     def inner(func: Union[TransformationFunctionType, Type[TransformationFunction]]) -> TransformationFunction:
-
         from giskard.ml_worker.testing.registry.registry import tests_registry
 
         tests_registry.register(
-            DatasetProcessFunctionMeta(func, name=name, tags=default_tags if not tags else (default_tags + tags),
-                                       type='TRANSFORMATION'))
+            DatasetProcessFunctionMeta(
+                func, name=name, tags=default_tags if not tags else (default_tags + tags), type='TRANSFORMATION'
+            )
+        )
         if inspect.isclass(func) and issubclass(func, TransformationFunction):
             return func
         return _wrap_transformation_function(func, row_level)()
