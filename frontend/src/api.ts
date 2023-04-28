@@ -478,7 +478,7 @@ export const api = {
             license: license
         });
     },
-    async getSuggestions(modelId: string, datasetId: string, idx: number) {
-        return apiV2.get<unknown, PushDTO[]>(`/suggest/${modelId}/${datasetId}/${idx}`);
+    async getPushes(modelId: string, datasetId: string, idx: number) {
+        return apiV2.get<unknown, PushDTO[]>(`/pushes/${modelId}/${datasetId}/${idx}`);
     }
 };
