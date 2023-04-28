@@ -10,7 +10,6 @@ from pandas.api.types import is_list_like
 import pandas as pd
 import numpy as np
 import yaml
-from pandas.api.types import is_numeric_dtype
 from zstandard import ZstdDecompressor
 
 from giskard.client.giskard_client import GiskardClient
@@ -122,13 +121,13 @@ class Dataset(ColumnMetadataMixin):
 
     @configured_validate_arguments
     def __init__(
-        self,
-        df: pd.DataFrame,
-        name: Optional[str] = None,
-        target: Optional[str] = None,
-        cat_columns: Optional[List[str]] = [],
-        column_types: Optional[Dict[str, str]] = None,
-        id: Optional[uuid.UUID] = None,
+            self,
+            df: pd.DataFrame,
+            name: Optional[str] = None,
+            target: Optional[str] = None,
+            cat_columns: Optional[List[str]] = [],
+            column_types: Optional[Dict[str, str]] = None,
+            id: Optional[uuid.UUID] = None,
     ) -> None:
         """
         Initializes a Dataset object.
@@ -223,7 +222,8 @@ class Dataset(ColumnMetadataMixin):
 
     @configured_validate_arguments
     def transform(
-        self, transformation_function: Union[TransformationFunction, TransformationFunctionType], row_level: bool = True
+            self, transformation_function: Union[TransformationFunction, TransformationFunctionType],
+            row_level: bool = True
     ):
         """
         Transform the data in the current Dataset by applying a transformation function.
