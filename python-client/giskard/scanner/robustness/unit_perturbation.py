@@ -1,32 +1,31 @@
-import pandas as pd
-from giskard.ml_worker.testing.registry.transformation_function import transformation_function
-import random
-from transformers import AutoTokenizer, AutoModelForTokenClassification
-from transformers import pipeline
-from giskard.scanner.robustness.entity_swap import masculine_to_feminine, feminine_to_masculine, minority_groups, \
-    religion_dict, typos
-from giskard.ml_worker.testing.registry.transformation_function import TransformationFunction
 import string
+import random
+import pandas as pd
 
-@transformation_function(row_level=False)
-def text_uppercase(x: pd.DataFrame, column: str) -> pd.Series:  # Or Series in input ?
-    y = x.copy()
-    y[column] = y[column].str.upper()
-    return y
-
-
-@transformation_function(row_level=False)
-def text_lowercase(x: pd.DataFrame, column: str) -> pd.Series:
-    y = x.copy()
-    y[column] = y[column].str.lower()
-    return y
+from ...scanner.robustness.entity_swap import typos
+from ...ml_worker.testing.registry.transformation_function import TransformationFunction
+from ...ml_worker.testing.registry.transformation_function import transformation_function
 
 
 @transformation_function(row_level=False)
-def text_titlecase(x: pd.DataFrame, column: str) -> pd.Series:
-    y = x.copy()
-    y[column] = y[column].str.title()
-    return y
+def text_uppercase(df: pd.DataFrame, column: str) -> pd.DataFrame:
+    df = df.copy()
+    df[column] = df[column].str.upper()
+    return df
+
+
+@transformation_function(row_level=False)
+def text_lowercase(df: pd.DataFrame, column: str) -> pd.DataFrame:
+    df = df.copy()
+    df[column] = df[column].str.lower()
+    return df
+
+
+@transformation_function(row_level=False)
+def text_titlecase(df: pd.DataFrame, column: str) -> pd.DataFrame:
+    df = df.copy()
+    df[column] = df[column].str.title()
+    return df
 
 
 class TextTransformation(TransformationFunction):
@@ -62,19 +61,21 @@ class TextTypoTransformation(TextTransformation):
                 return word
             elif perturbation_type == 'delete':
                 idx = random.randint(0, len(word) - 1)
-                word = word[:idx] + word[idx + 1:]
+                word = word[:idx] + word[idx + 1 :]
                 return word
             elif perturbation_type == 'replace':
                 j = random.randint(0, len(word) - 1)
                 c = word[j]
                 if c in typos:
                     replacement = random.choice(typos[c])
-                    text_modified = word[:j] + replacement + word[j + 1:]
+                    text_modified = word[:j] + replacement + word[j + 1 :]
                     return text_modified
         return word
 
+
 class TextPunctuationRemovalTransformation(TextTransformation):
     name = "Punctuation Removal"
+
     def perturbation(self, x):
         split_text = x.split(" ")
         new_text = []
@@ -82,65 +83,5 @@ class TextPunctuationRemovalTransformation(TextTransformation):
             new_text.append(self._remove_punc(token))
         return " ".join(new_text)
 
-    def _remove_punc(self,text):
+    def _remove_punc(self, text):
         return text.translate(str.maketrans('', '', string.punctuation))
-
-
-class TransformationGenerator:
-    def __init__(self, model, dataset):
-        self.model = model
-        self.dataset = dataset
-        self.column_types = dataset.column_types
-        self.text_perturbation_generator = TextTransformer()
-
-    def generate_std_transformation(self, feature):
-        mad = self.dataset.df[feature].mad()
-
-        @transformation_function()
-        def func(x: pd.Series) -> pd.Series:
-            if self.column_types[feature] == "numeric":
-                x[feature] += 3 * mad
-                return x
-            return x
-
-        return func
-
-    def text_transformation(self, feature):
-        @transformation_function()
-        def func(x: pd.Series) -> pd.Series:
-            if self.column_types[feature] == 'text':
-                self.text_perturbation_generator.load(x[feature])
-                x[feature] = self.text_perturbation_generator.execute_protocol()
-                return x
-
-        return func
-
-#
-#
-# # def tokenize(self):
-# #     return self.nlp(self.text)
-# def _switch_gender(token):
-#     if token in masculine_to_feminine.keys():
-#         switch_to = masculine_to_feminine[token]
-#         return switch_to
-#     elif token in feminine_to_masculine.keys():
-#         switch_to = feminine_to_masculine[token]
-#         return switch_to
-#     else:
-#         return token
-#
-# def _switch_minority(token):
-#     if token in minority_groups:
-#         switch_to = random.choice(minority_groups.remove(token))
-#         return switch_to
-#     else:
-#         return token
-#
-# def _switch_religion(token):
-#     token_low = token.lower()
-#     for word_list in religion_dict.values():
-#         if token_low in word_list:
-#             word_list.remove(token_low)
-#             switch_to_random_word = random.choice(word_list)
-#             return switch_to_random_word
-#     return token
