@@ -9,9 +9,8 @@ from ...datasets.base import Dataset
 @dataclass
 class RobustnessIssueInfo(IssueInfo):
     feature: str
-    metric: str
-    variation_ratio: float
-    messages: str
+    perturbation_name: str
+    fail_ratio: float
 
 
 class RobustnessIssue(Issue):
@@ -31,19 +30,19 @@ class RobustnessIssue(Issue):
 
     @property
     def metric(self) -> str:
-        return self.info.metric
+        return self.info.perturbation_name
 
     @property
     def deviation(self) -> str:
-        return f"{self.info.variation_ratio * 100:.2f}% of samples are sensible"
+        return f"{self.info.fail_ratio * 100:.2f}% of samples are sensible"
 
     @property
     def description(self) -> str:
-        return ", ".join(self.info.messages)
+        return ""
 
     def examples(self, n=3) -> pd.DataFrame:
         return pd.DataFrame()
 
     @property
     def importance(self) -> float:
-        return self.info.variation_ratio
+        return self.info.fail_ratio
