@@ -30,7 +30,9 @@ from giskard.ml_worker.testing.tests.statistic import test_right_label, test_out
 from giskard.ml_worker.utils.logging import configure_logging
 from giskard.models import wrap_model, model_from_catboost, model_from_huggingface, model_from_tensorflow, \
     model_from_pytorch, model_from_sklearn
-from giskard.models.base import WrapperModel, CustomModel, MLFlowBasedModel, BaseModel
+from .models.base.wrapper import WrapperModel
+from .models.base.mlflowbased import MLFlowBasedModel
+from .models.base import BaseModel, CustomModel
 from .scanner import scan
 
 configure_logging()
@@ -62,10 +64,6 @@ __all__ = [
     'model_from_pytorch',
     'model_from_tensorflow',
     'model_from_huggingface',
-    'BaseModel',
-    'WrapperModel',
-    'MLFlowBasedModel',
-    'CustomModel',
     'Suite',
     'test_drift_psi',
     'test_drift_chi_square',

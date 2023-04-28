@@ -5,7 +5,7 @@ import pandas as pd
 import mlflow
 from giskard.core.core import ModelType, SupportedModelTypes
 from giskard.core.validation import configured_validate_arguments
-from giskard.models.base import MLFlowBasedModel
+from giskard import MLFlowBasedModel
 
 
 class SKLearnModel(MLFlowBasedModel):

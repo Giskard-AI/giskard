@@ -8,7 +8,7 @@ from scipy import special
 
 from giskard.core.core import ModelType
 from giskard.core.validation import configured_validate_arguments
-from giskard.models.base import WrapperModel
+from giskard import WrapperModel
 
 try:
     import torch

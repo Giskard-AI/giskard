@@ -6,7 +6,7 @@ import pandas as pd
 
 from giskard.core.core import ModelType
 from giskard.core.validation import configured_validate_arguments
-from giskard.models.base import MLFlowBasedModel
+from giskard import MLFlowBasedModel
 
 logger = logging.getLogger(__name__)
 

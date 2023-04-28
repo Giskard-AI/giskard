@@ -12,7 +12,7 @@ from torch.utils.data import DataLoader
 from torch.utils.data import Dataset as torch_dataset
 
 from giskard.core.core import ModelType
-from giskard.models.base import MLFlowBasedModel
+from ... import MLFlowBasedModel
 from ..utils import map_to_tuples
 
 TorchDType = Literal[
