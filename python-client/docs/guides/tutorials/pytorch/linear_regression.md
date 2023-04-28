@@ -117,5 +117,8 @@ for epoch in range(n_epochs):
 feature_names = ["x"]
 ```
 ```python
-wrapped_model = wrap_model(name="my_linear_model", model=model, feature_names=feature_names, model_type="regression")
+wrapped_model = wrap_model(name="my_linear_model", 
+                           model=model, 
+                           feature_names=feature_names, 
+                           model_type="regression")
 ```
