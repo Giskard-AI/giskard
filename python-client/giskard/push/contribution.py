@@ -1,8 +1,9 @@
 import numpy as np
 from scipy.stats import zscore
+
+from giskard.core.core import SupportedModelTypes
 from giskard.ml_worker.core.model_explanation import explain
 from giskard.ml_worker.testing.tests.performance import test_rmse
-from giskard.core.core import SupportedModelTypes
 from ..push import Push
 
 
@@ -75,11 +76,11 @@ def contribution(model, ds, idrow):  # data_aug_dict
                                feature=el,
                                value=values[el]
                                )
-                    return res
+                    yield res
 
                 else:
                     res = Push(push_type="contribution_only", feature=el, value=values[el])
-                    return res
+                    yield res
 
 
 def _contribution_push(model, ds, idrow):  # done at each step

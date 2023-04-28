@@ -80,10 +80,7 @@ async function dbg_GetSuggestion() {
 
 }
 
-const val = computed(() => {
-  const list = pushStore.getPushSuggestions(props.modelId ?? "", props.datasetId ?? "", props.rowNb ?? 0);
-  return list ? list.filter((s) => s.key == props.column)[0] : undefined;
-});
+}
 </script>
 
 <style scoped>
