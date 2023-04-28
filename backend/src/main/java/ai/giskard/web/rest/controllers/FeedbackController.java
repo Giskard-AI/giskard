@@ -48,7 +48,7 @@ public class FeedbackController {
         if (SecurityUtils.isCurrentUserAdmin()) {
             feedbacks = feedbackRepository.findAllByProjectId(projectId);
         } else {
-            Project project = projectRepository.getById(projectId);
+            Project project = projectRepository.getMandatoryById(projectId);
             Long currentUserId = userRepository.getOneByLogin(user.getUsername()).getId();
             if (project.getOwner().getId().equals(currentUserId)) {
                 feedbacks = feedbackRepository.findAllByProjectId(projectId);
@@ -75,10 +75,9 @@ public class FeedbackController {
         }
     }
 
-    @Transactional
     @PostMapping("/{projectId}")
     public ResponseEntity<Void> addFeedback(@PathVariable("projectId") Long projectId, @RequestBody CreateFeedbackDTO dto) {
-        Project project = projectRepository.getById(projectId);
+        Project project = projectRepository.getMandatoryById(projectId);
         String currUserLogin = SecurityUtils.getCurrentAuthenticatedUserLogin();
         if (!SecurityUtils.isCurrentUserAdmin() &&
             !project.getOwner().getLogin().equals(currUserLogin) &&
@@ -96,7 +95,6 @@ public class FeedbackController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    @Transactional
     @PostMapping("/{feedbackId}/reply")
     public ResponseEntity<Void> addFeedbackReply(@PathVariable("feedbackId") Long feedbackId, @RequestBody CreateFeedbackReplyDTO dto) {
         String userLogin = SecurityUtils.getCurrentAuthenticatedUserLogin();
@@ -121,7 +119,7 @@ public class FeedbackController {
             mailService.sendFeedbackEmail(feedback.getUser(), currentUser, feedback, project, reply.getContent(), COMMENT);
         }
         if (reply.getReplyToReply() != null) {
-            FeedbackReply originalReply = feedbackReplyRepository.getById(reply.getReplyToReply());
+            FeedbackReply originalReply = feedbackReplyRepository.getMandatoryById(reply.getReplyToReply());
             if (!currentUser.getId().equals(originalReply.getUser().getId())) {
                 mailService.sendFeedbackEmail(originalReply.getUser(), currentUser, feedback, project, reply.getContent(), REPLY);
             }
@@ -129,7 +127,6 @@ public class FeedbackController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    @Transactional
     @DeleteMapping("/{feedbackId}")
     public ResponseEntity<Void> deleteFeedback(@PathVariable("feedbackId") long feedbackId) {
         Feedback feedback = feedbackRepository.findOneById(feedbackId);

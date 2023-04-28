@@ -1,4 +1,12 @@
-import {DatasetDTO, JobDTO, ModelDTO, RequiredInputDTO, TestSuiteDTO, TestSuiteExecutionDTO} from '@/generated-sources';
+import {
+    DatasetDTO,
+    JobDTO,
+    JobState,
+    ModelDTO,
+    RequiredInputDTO,
+    TestSuiteDTO,
+    TestSuiteExecutionDTO
+} from '@/generated-sources';
 import {defineStore} from 'pinia';
 import {api} from '@/api';
 import {chain} from 'lodash';
@@ -19,6 +27,7 @@ interface State {
 
 const mainStore = useMainStore();
 const testSuiteCompareStore = useTestSuiteCompareStore();
+
 
 export const useTestSuiteStore = defineStore('testSuite', {
     state: (): State => ({
@@ -48,7 +57,8 @@ export const useTestSuiteStore = defineStore('testSuite', {
                 .groupBy(result => result.testResult.test.testUuid)
                 .value();
         },
-        hasTest: ({suite}) => suite && Object.keys(suite.tests).length > 0
+        hasTest: ({suite}) => suite && Object.keys(suite.tests).length > 0,
+        hasInput: ({inputs}) => Object.keys(inputs).length > 0
     },
     actions: {
         async reload() {
@@ -75,8 +85,10 @@ export const useTestSuiteStore = defineStore('testSuite', {
 
             this.suite = await api.updateTestSuite(projectKey, testSuite);
         },
+        async runTestSuite(input: { [name: string]: string }) {
+            return this.trackJob(await api.executeTestSuite(this.projectId!, this.suiteId!, input))
+        },
         async trackJob(uuid: string) {
-            console.log(uuid);
             const result = await trackJob(uuid, (res) => this.trackedJobs = {
                 ...this.trackedJobs,
                 [uuid]: res
@@ -86,7 +98,7 @@ export const useTestSuiteStore = defineStore('testSuite', {
             delete res[uuid]
             this.trackedJobs = res;
 
-            if (result) {
+            if (result && result.state !== JobState.ERROR) {
                 mainStore.addNotification({
                     content: 'Test suite execution has been executed successfully',
                     color: 'success'

@@ -116,7 +116,7 @@ public class OuterChannelHandler extends ChannelInboundHandlerAdapter {
                 assert payload != null;
                 String innerChannelId = payload.toString(StandardCharsets.UTF_8);
                 channelRegistry.linkOuterAndInnerChannels(outerChannel, innerChannelId, mlWorkerSecurityService.findKey(keyId));
-                log.info("Linked outer channel {} with inner channel {}", outerChannel.id(), innerChannelId);
+                log.debug("Linked outer channel {} with inner channel {}", outerChannel.id(), innerChannelId);
             }
             default -> throw new IllegalArgumentException("Unknown command");
         }
