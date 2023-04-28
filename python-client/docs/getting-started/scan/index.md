@@ -87,8 +87,8 @@ If your ML model contains preprocessing functions (categorical encoding, scaling
 `model` or inside the `data_preprocessing_function` of the Giskard model you create.
 
 :::{important}
-- For model-specific usages, try our [tutorials](../guides/tutorials/index.md).
-- For wrapping any python function in Giskard, try this [guide](../guides/custom-wrapper/index.md).
+- For model-specific usages, try our [tutorials](../../guides/tutorials/index.md).
+- For wrapping any python function in Giskard, try this [guide](../../guides/custom-wrapper/index.md).
 :::
 
 ### Usage of [wrap_model](../../reference/models/index.rst#giskard.wrap_model)
@@ -113,9 +113,9 @@ wrapped_model = wrap_model(
 ```
 * <mark style="color:red;">**`Mandatory parameters`**</mark>
   * `model`: Could be any model from `sklearn`, `catboost`, `pytorch`, `tensorflow` or `huggingface` (check 
-    the [tutorials](../guides/tutorials/index.md)). If none of these
+    the [tutorials](../../guides/tutorials/index.md)). If none of these
     libraries apply to you, or if you ML model is a custom python function: check our "Wrap any python function with Giskard" 
-    [guide](../guides/custom-wrapper/index.md).
+    [guide](../../guides/custom-wrapper/index.md).
   * `model_type`: The type of the model, either `regression` or `classification`.
   * `classification_labels`: The list of unique categories contained in your dataset target variable.
 
@@ -162,11 +162,11 @@ wrapped_model = wrap_model(
 ::::::
 :::::::
 
-### Model-specific [tutorials](../guides/tutorials/index.md)
+### Model-specific [tutorials](../../guides/tutorials/index.md)
 :::::{tab-set}
 ::::{tab-item} Any function
 :::{important} 
-Check first our "Wrap any python function with Giskard" [guide](../guides/custom-wrapper/index.md).
+Check first our "Wrap any python function with Giskard" [guide](../../guides/custom-wrapper/index.md).
 :::
 - **<project:../../guides/tutorials/pytorch/custom_model.md>**
 - **<project:../../guides/tutorials/huggingface/BertForSequenceClassification_custom.md>**
