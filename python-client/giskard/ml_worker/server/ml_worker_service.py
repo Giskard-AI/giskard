@@ -510,11 +510,17 @@ class MLWorkerServiceImpl(MLWorkerServicer):
         contribs = contribution(model, dataset, request.rowidx)
         perturbs = perturbation(model, dataset, request.rowidx)
 
-        logger.info(f"Contributions: {contribs}")
-        logger.info(f"Perturbations: {perturbs}")
-        # TODO: Handle None
+        pushes = []
+
+        for c in contribs:
+            if c is not None:
+                pushes.append(c.to_grpc())
+        for p in perturbs:
+            if p is not None:
+                pushes.append(p.to_grpc())
+
         return ml_worker_pb2.SuggestFilterResponse(
-            pushes=[contribs.to_grpc()]
+            pushes=pushes
         )
 
     @staticmethod

@@ -1,10 +1,10 @@
 <template>
-  <v-menu offset-x :close-on-content-click="false" v-model="opened" v-if="val">
+  <v-menu offset-x :close-on-content-click="false" v-model="opened" v-if="value">
     <template v-slot:activator="{ on: onMenu }">
       <v-tooltip right>
         <template v-slot:activator='{ on: onTooltip }'>
           <v-btn small icon v-on="{ ...onMenu, ...onTooltip }" :disabled="props.disabled">
-            <v-badge color="error" content="3" overlap>
+            <v-badge color="error" :content="value.details.length" overlap>
               <v-icon size="18">mdi-auto-fix</v-icon>
             </v-badge>
           </v-btn>
@@ -16,7 +16,6 @@
 
     <v-card dark color="primary">
       <v-card-title>
-        <!--        Potential improvements for-->
         {{ value.pushTitle }}
       </v-card-title>
       <v-card-text>
@@ -25,22 +24,16 @@
             <v-list-item>
               <v-list-item-content>
                 <v-list-item-title>
-                  <!--                This value is responsible for the prediction being wrong.-->
                   {{ detail.action }}
                 </v-list-item-title>
                 <v-list-item-subtitle>
-                  <!--                Open the inspector with similar examples ?-->
                   {{ detail.explanation }}
                 </v-list-item-subtitle>
               </v-list-item-content>
               <v-list-item-action>
                 <v-btn small text color="primary" @click.stop="dbg_GetSuggestion">
-                  <!--                <v-icon>mdi-check</v-icon>-->
                   {{ detail.button }}
                 </v-btn>
-                <!--              <v-btn small icon color="error">-->
-                <!--                <v-icon>mdi-close</v-icon>-->
-                <!--              </v-btn>-->
               </v-list-item-action>
             </v-list-item>
             <v-divider/>
@@ -54,8 +47,7 @@
 </template>
 
 <script setup lang="ts">
-import {computed, ref, watch} from 'vue';
-import {api} from "@/api";
+import {ref, watch} from 'vue';
 import {usePushStore} from "@/stores/suggestions";
 import {PushDTO} from "@/generated-sources";
 
@@ -79,13 +71,8 @@ watch(() => props.rowNb, () => {
 });
 
 async function dbg_GetSuggestion() {
-  await api.getSuggestions(props.modelId ?? "", props.datasetId ?? "", props.rowNb ?? 0);
-}
 
-const val = computed(() => {
-  const list = pushStore.getPushSuggestions(props.modelId ?? "", props.datasetId ?? "", props.rowNb ?? 0);
-  return list ? list.filter((s) => s.key == props.column)[0] : undefined;
-});
+}
 </script>
 
 <style scoped>
