@@ -78,9 +78,10 @@ public class DatasetsController {
      * @return List of datasets
      */
 
-    @GetMapping("/dataset/{datasetId}/rows")
-    public DatasetPageDTO getRows(@PathVariable @NotNull UUID datasetId, @NotNull int offset, @NotNull int size) {
-        return datasetService.getRows(datasetId, offset, offset + size);
+    @PostMapping("/dataset/{datasetId}/rows")
+    public DatasetPageDTO getRows(@PathVariable @NotNull UUID datasetId, @NotNull int offset, @NotNull int size,
+                                  @RequestBody RowFilterDTO rowFilter) throws IOException {
+        return datasetService.getRows(datasetId, offset, offset + size, rowFilter);
     }
 
     /**

@@ -20,7 +20,6 @@ service MLWorker {
   rpc explain(ExplainRequest) returns (ExplainResponse) {}
   rpc explainText(ExplainTextRequest) returns (ExplainTextResponse) {}
   rpc echo(EchoMsg) returns (EchoMsg){}
-  rpc filterDataset(stream FilterDatasetRequest) returns (stream FilterDatasetResponse) {}
   rpc generateTestSuite(GenerateTestSuiteRequest) returns (GenerateTestSuiteResponse) {}
   rpc stopWorker(google.protobuf.Empty) returns (google.protobuf.Empty) {}
   rpc getCatalog(google.protobuf.Empty) returns (CatalogResponse) {}
@@ -318,25 +317,6 @@ message GeneratedTestInput{
   string name = 1;
   string value = 2;
   bool is_alias = 3;
-}
-
-message FilterDatasetRequest {
-  FilterDatasetMetadata meta = 1;
-  Chunk data = 2;
-  uint32 idx = 3;
-}
-
-message FilterDatasetMetadata {
-  string function = 1;
-  string headers = 2; // Since we are going to stream the CSV rows, we store the headers first
-  map<string, string> column_dtypes = 3;
-}
-
-message FilterDatasetResponse {
-  StatusCode code = 1;
-  uint32 idx = 2;
-  repeated uint32 rows = 3; // Will we ever have >4 billion rows in a chunk?
-  string error_message = 4;
 }
 
 message CatalogResponse{

@@ -57,19 +57,19 @@
           <span class='caption grey--text' v-if="totalRows > 0">
           Entry #{{ totalRows === 0 ? 0 : rowNb + 1 }} / {{ totalRows }}
         </span>
-          <span v-show="originalData && isDefined(originalData.Index)" class='caption grey--text'
-                style='margin-left: 15px'>Row Index {{ originalData.Index + 1 }}</span>
+          <span v-show="originalData && isDefined(originalData['Index'])" class='caption grey--text'
+                style='margin-left: 15px'>Row Index {{ originalData['Index'] + 1 }}</span>
       </v-toolbar>
         <v-spacer/>
 
-        <TransformationFunctionSelector label="Transformation to apply" :project-id="projectId"
+        <!--<TransformationFunctionSelector label="Transformation to apply" :project-id="projectId"
                                         :full-width="false" :icon="true" class="mr-3"
                                         @onChanged="applyTransformation"
                                         :value.sync="selectedTransformationFunction.uuid"
-                                        :args.sync="selectedTransformationFunction.params"/>
+                                        :args.sync="selectedTransformationFunction.params"/>-->
         <SlicingFunctionSelector label="Slice to apply" :project-id="projectId"
                                  :full-width="false" :icon="true" class="mr-3"
-                                 @onChanged="applySlice"
+                                 @onChanged="processDataset"
                                  :value.sync="selectedSlicingFunction.uuid"
                                  :args.sync="selectedSlicingFunction.params"/>
 
@@ -78,7 +78,7 @@
     </v-row>
       <Inspector :dataset='inspection.dataset' :inputData.sync='inputData' :model='inspection.model'
                  :originalData='originalData'
-                 :transformationModifications="transformationModifications"
+                 :transformationModifications="{}"
                  class='px-0' @reset='resetInput' @submitValueFeedback='submitValueFeedback'
                  @submitValueVariationFeedback='submitValueVariationFeedback' v-if="totalRows > 0"/>
       <v-alert v-else border="bottom" colored-border type="warning" class="mt-8" elevation="2">
@@ -138,16 +138,16 @@ import Inspector from './Inspector.vue';
 import Mousetrap from 'mousetrap';
 import {
     CreateFeedbackDTO,
+    DatasetProcessingResultDTO,
     Filter,
-    FunctionInputDTO,
     InspectionDTO,
     ModelType,
+    ParameterizedCallableDTO,
     RowFilterType
 } from '@/generated-sources';
 import mixpanel from "mixpanel-browser";
 import _ from "lodash";
 import InspectionFilter from './InspectionFilter.vue';
-import SliceDropdown from "@/components/slice/SliceDropdown.vue";
 import TransformationFunctionSelector from "@/views/main/utils/TransformationFunctionSelector.vue";
 import {useCatalogStore} from "@/stores/catalog";
 import SlicingFunctionSelector from "@/views/main/utils/SlicingFunctionSelector.vue";
@@ -164,7 +164,6 @@ type CreatedFeedbackCommonDTO = {
   components: {
       SlicingFunctionSelector,
       TransformationFunctionSelector,
-      SliceDropdown,
       OverlayLoader,
       Inspector,
       PredictionResults,
@@ -182,7 +181,7 @@ export default class InspectorWrapper extends Vue {
     inspection: InspectionDTO | null = null;
     mouseTrap = new Mousetrap();
     loadingData = false;
-    loadingSlice = false; // specific boolean for slice loading because it can take a while...
+    loadingProcessedDataset = false; // specific boolean for dataset processing pipeline loading because it can take a while...
     inputData = {};
     originalData = {};
     rowNb: number = 0;
@@ -195,7 +194,10 @@ export default class InspectorWrapper extends Vue {
     feedbackError: string = '';
     feedbackSubmitted: boolean = false;
     labels: string[] = [];
-    filter: Filter = {type: RowFilterType.ALL};
+    filter: Filter = {
+        inspectionId: this.inspectionId,
+        type: RowFilterType.ALL
+    };
 
     totalRows = 0;
     mt = ModelType;
@@ -206,21 +208,14 @@ export default class InspectorWrapper extends Vue {
     regressionThreshold: number = 0.1;
     percentRegressionUnit = true;
     RowFilterType = RowFilterType;
-    selectedTransformationFunction: {
-        uuid?: string;
-        params: Array<FunctionInputDTO>
-    } = {
+
+    selectedSlicingFunction: Partial<ParameterizedCallableDTO> = {
         uuid: undefined,
-        params: []
+        params: [],
+        type: 'SLICING'
     }
-    selectedSlicingFunction: {
-        uuid?: string;
-        params: Array<FunctionInputDTO>
-    } = {
-        uuid: undefined,
-        params: []
-    }
-    transformationModifications: { [key: string]: string } = {};
+
+    dataProcessingResult: DatasetProcessingResultDTO | null = null;
 
     get commonFeedbackData(): CreatedFeedbackCommonDTO {
         return {
@@ -344,6 +339,7 @@ export default class InspectorWrapper extends Vue {
     @Watch('filter', {deep: true, immediate: false})
     @Watch('shuffleMode')
     @Watch('percentRegressionUnit')
+    @Watch('dataProcessingResult')
     async applyFilter(nv, ov) {
         if (JSON.stringify(nv) === JSON.stringify(ov)) {
             return;
@@ -353,18 +349,6 @@ export default class InspectorWrapper extends Vue {
 
     async updateRow(forceFetch) {
         await this.fetchRows(this.rowNb, forceFetch);
-
-        if (this.selectedTransformationFunction.uuid) {
-            const result = await api.datasetProcessing(this.projectId, this.inspection!.dataset.id,
-                [{
-                    uuid: this.selectedTransformationFunction.uuid,
-                    params: this.selectedTransformationFunction.params,
-                    type: 'TRANSFORMATION'
-                }]);
-            this.transformationModifications = result.modifications.find(m => m.rowId === this.rowNb)?.modifications ?? {}
-        } else {
-            this.transformationModifications = {};
-        }
 
         this.assignCurrentRow(forceFetch)
     }
@@ -377,26 +361,19 @@ export default class InspectorWrapper extends Vue {
     public async fetchRows(rowIdxInResults: number, forceFetch: boolean) {
         const remainder = rowIdxInResults % this.itemsPerPage;
         const newPage = Math.floor(rowIdxInResults / this.itemsPerPage);
-        if ((rowIdxInResults > 0 && remainder === 0) || forceFetch) {
-            await this.fetchRowsByRange(newPage * this.itemsPerPage, (newPage + 1) * this.itemsPerPage);
-        }
-    }
 
-    /**
-     * Requesting the filtered rows in a given range
-     * @param minRange
-     * @param maxRange
-     */
-    public async fetchRowsByRange(minRange: number, maxRange: number) {
-        const props = {
-            'modelId': this.inspection?.model.id,
-            'minRange': minRange,
-            'maxRange': maxRange,
-            'isRandom': this.shuffleMode
-        };
-        const response = await api.getDataFilteredByRange(this.inspection?.id, props, this.filter);
-        this.rows = response.data;
-        this.numberOfRows = response.rowNb;
+        if ((rowIdxInResults > 0 && remainder === 0) || forceFetch) {
+            const result = await api.getDatasetRows(this.inspection!.dataset.id,
+                newPage * this.itemsPerPage, this.itemsPerPage, {
+                    filter: {
+                        ...this.filter,
+                        inspectionId: this.inspectionId
+                    },
+                    removeRows: this.dataProcessingResult?.filteredRows
+                })
+            this.rows = result.content;
+            this.numberOfRows = result.totalItems;
+        }
     }
 
     private assignCurrentRow(forceFetch: boolean) {
@@ -414,7 +391,10 @@ export default class InspectorWrapper extends Vue {
     }
 
   private resetInput() {
-      this.inputData = {...this.originalData, ...this.transformationModifications};
+      this.inputData = {
+          ...this.originalData,
+          ...this.dataProcessingResult?.modifications?.find(m => m.rowId === this.originalData['Index'])?.modifications ?? {}
+      };
   }
 
   private async doSubmitFeedback(payload: CreateFeedbackDTO) {
@@ -428,25 +408,13 @@ export default class InspectorWrapper extends Vue {
       await api.submitFeedback(payload, payload.projectId);
   }
 
-    private async applySlice() {
-        this.loadingSlice = true;
-        await this.updateRow(true);
-        this.loadingSlice = false;
-        mixpanel.track('Apply slicing function', {sliceId: this.selectedSlicingFunction.uuid});
-    }
+    private async processDataset() {
+        const pipeline = [this.selectedSlicingFunction]
+            .filter(callable => !!callable.uuid) as Array<ParameterizedCallableDTO>;
 
-    private async applyTransformation() {
-        this.loadingSlice = true;
-        await this.updateRow(false);
-        this.loadingSlice = false;
-        mixpanel.track('Apply transformation', {sliceId: this.selectedTransformationFunction.uuid});
-    }
-
-    private async clearSlice() {
-        this.loadingSlice = true;
-        this.filter.sliceId = 0;
-        await this.updateRow(true);
-        this.loadingSlice = false;
+        this.loadingProcessedDataset = true;
+        this.dataProcessingResult = await api.datasetProcessing(this.projectId, this.inspection!.dataset.id, pipeline)
+        this.loadingProcessedDataset = false;
     }
 
 }
