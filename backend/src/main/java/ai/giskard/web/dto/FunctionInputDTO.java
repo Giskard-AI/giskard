@@ -6,9 +6,10 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
 import javax.validation.constraints.NotBlank;
+import java.util.List;
 
 @Data
-public class TestInputDTO {
+public class FunctionInputDTO {
 
     @NotBlank
     private String name;
@@ -18,4 +19,5 @@ public class TestInputDTO {
     @JsonAlias("is_alias")
     @JsonProperty("isAlias")
     private boolean isAlias;
+    private List<FunctionInputDTO> params;
 }

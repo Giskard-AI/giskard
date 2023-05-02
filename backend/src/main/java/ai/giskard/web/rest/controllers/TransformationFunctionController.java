@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
+import java.util.Collections;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -43,16 +44,15 @@ public class TransformationFunctionController {
     @GetMapping("/transformations/{uuid}")
     @Transactional(readOnly = true)
     public TransformationFunctionDTO getTransformationFunction(@PathVariable("uuid") @NotNull UUID uuid) {
-        return giskardMapper.toDTO(transformationFunctionRepository.getById(uuid));
+        return giskardMapper.toDTO(transformationFunctionRepository.getMandatoryById(uuid));
     }
 
     @PostMapping("/transformations/{transformationFnUuid}/dataset/{datasetUuid}")
-    @Transactional(readOnly = true)
     public TransformationResultDTO runAdHocTransformation(@PathVariable("transformationFnUuid") @NotNull UUID sliceFnUuid,
                                                           @PathVariable("datasetUuid") @NotNull UUID datasetUuid,
                                                           @RequestBody Map<String, String> inputs) {
-        TransformationFunction transformationFunction = transformationFunctionRepository.getById(sliceFnUuid);
-        Dataset dataset = datasetRepository.getById(datasetUuid);
+        TransformationFunction transformationFunction = transformationFunctionService.getInitialized(sliceFnUuid);
+        Dataset dataset = datasetRepository.getMandatoryById(datasetUuid);
         Project project = dataset.getProject();
 
         try (MLWorkerClient client = mlWorkerService.createClient(project.isUsingInternalWorker())) {
@@ -67,8 +67,10 @@ public class TransformationFunctionController {
                     .build());
 
             for (Map.Entry<String, String> entry : inputs.entrySet()) {
-                builder.addArguments(testArgumentService.buildTestArgument(argumentTypes, entry.getKey(), entry.getValue(), project.getKey()));
+                builder.addArguments(testArgumentService
+                    .buildTestArgument(argumentTypes, entry.getKey(), entry.getValue(), project.getKey(), Collections.emptyList()));
             }
+
 
             TransformationResultMessage transformationResultMessage = client.getBlockingStub().runAdHocTransformation(builder.build());
 
@@ -77,7 +79,6 @@ public class TransformationFunctionController {
     }
 
     @PutMapping("/transformations/{uuid}")
-    @Transactional
     public TransformationFunctionDTO updateTransformationFunction(@PathVariable("uuid") @NotNull UUID uuid,
                                                                   @Valid @RequestBody TransformationFunctionDTO transformationFunction) {
         return transformationFunctionService.save(transformationFunction);

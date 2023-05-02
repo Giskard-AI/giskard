@@ -1,13 +1,12 @@
-Getting started
+User Guide
 ===============
 
 .. toctree::
    :maxdepth: 2
 
-   installation/index
-   scan/index
-   test-suite/index
-   create-slices-and-transformation-functions/index
-
-   installation/index
    test-catalog/index
+   slicing-function-catalog/index
+   transformation-function-catalog/index
+   custom-wrapper/index
+   installation/index
+   tutorials/index
