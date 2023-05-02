@@ -61,13 +61,12 @@ def keyboard_typo_transformation(x: pd.Series, column_name: str, rate: float = 0
     return x
 
 
-@transformation_function(name="To uppercase", tags=['text'])
-def uppercase_transformation(x: pd.Series, column_name: str) -> pd.Series:
+@transformation_function(name="To uppercase", tags=['text'], cell_level=True)
+def uppercase_transformation(text: str) -> str:
     """
-    Transform the text of the column 'column_name' to uppercase
+    Transform the text to uppercase
     """
-    x[column_name] = x[column_name].upper()
-    return x
+    return text.upper()
 
 
 @transformation_function(name="To lowercase", tags=['text'])
