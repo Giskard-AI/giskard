@@ -24,7 +24,7 @@ function formatInputValue(input: string, value: string): string {
   switch (inputTypes[input]) {
     case 'Dataset':
         return datasets[value].name ?? 'Unnamed dataset';
-      case 'BaseModel':
+      case '_BaseModel':
           return models[value].name;
       default:
           return value;

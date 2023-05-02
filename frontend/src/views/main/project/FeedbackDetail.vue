@@ -15,7 +15,7 @@
                       <div class="subtitle-2">{{ data.user.displayName || data.user.user_id }}</div>
                       <div class="caption font-weight-light">Sent On</div>
                       <div class="subtitle-2">{{ data.createdOn | date }}</div>
-                      <div class="caption font-weight-light">Model</div>
+                      <div class="caption font-weight-light">_Model</div>
                       <div class="subtitle-2">{{ data.model.fileName }}</div>
                       <div class="caption font-weight-light">Dataset File</div>
                       <div class="subtitle-2">{{ data.dataset.fileName }}</div>

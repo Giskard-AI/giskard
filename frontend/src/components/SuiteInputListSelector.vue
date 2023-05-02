@@ -19,7 +19,7 @@
                         <span v-else-if="props.functionInputs[input.name]?.isAlias">
                         {{ props.functionInputs[input.name].value }}
                       </span>
-                        <span v-else-if="input.name in props.functionInputs && input.type === 'BaseModel'">
+                        <span v-else-if="input.name in props.functionInputs && input.type === '_BaseModel'">
                       {{
                             models[props.functionInputs[input.name].value].name ?? models[props.functionInputs[input.name].value].id
                             }}
@@ -45,7 +45,7 @@
                                          v-if="input.type === 'Dataset'"
                                          :value.sync="props.modelValue[input.name].value"/>
                         <ModelSelector :project-id="projectId" :label="input.name" :return-object="false"
-                                       v-else-if="input.type === 'BaseModel'"
+                                       v-else-if="input.type === '_BaseModel'"
                                        :value.sync="props.modelValue[input.name].value"/>
                         <SlicingFunctionSelector :project-id="projectId" :label="input.name"
                                                  v-else-if="input.type === 'SlicingFunction'"

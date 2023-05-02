@@ -38,7 +38,7 @@
                                              v-if="input.type === 'Dataset'"
                                              :value.sync="editedInputs[input.name].value"/>
                             <ModelSelector :project-id="projectId" :label="input.name" :return-object="false"
-                                           v-else-if="input.type === 'BaseModel'"
+                                           v-else-if="input.type === '_BaseModel'"
                                            :value.sync="editedInputs[input.name].value"/>
                             <SlicingFunctionSelector :project-id="projectId" :label="input.name"
                                                      v-else-if="input.type === 'SlicingFunction'"

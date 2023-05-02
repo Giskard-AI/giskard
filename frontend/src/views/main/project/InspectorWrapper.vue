@@ -19,7 +19,7 @@
             <div class="pl-5"> {{ inspection.name || "-" }}</div>
           </div>
           <br />
-          <h3> Model </h3>
+          <h3> _Model </h3>
           <div class="d-flex">
             <div> Id</div>
             <v-spacer />

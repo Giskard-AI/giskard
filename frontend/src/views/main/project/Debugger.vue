@@ -162,8 +162,8 @@ onActivated(async () => {
           <v-col cols="2">Created at</v-col>
           <v-col cols="1">Dataset name</v-col>
           <v-col cols="1">Dataset ID</v-col>
-          <v-col cols="2">Model name</v-col>
-          <v-col cols="1">Model ID</v-col>
+          <v-col cols="2">_Model name</v-col>
+          <v-col cols="1">_Model ID</v-col>
           <v-col cols="1"></v-col>
         </v-row>
 

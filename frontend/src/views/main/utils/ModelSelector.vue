@@ -3,7 +3,7 @@
       clearable
       outlined
       class="model-selector"
-      label="Model"
+      label="_Model"
       :value="value"
       :items="projectModels"
       :item-text="extractModelName"

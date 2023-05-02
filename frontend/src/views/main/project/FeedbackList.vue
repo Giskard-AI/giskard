@@ -9,7 +9,7 @@
           class="mx-2 flex-1"
           :items="existingModels"
           v-model="modelFilter"
-          placeholder="Model"
+          placeholder="_Model"
       ></v-select>
       <v-select
           dense
@@ -144,7 +144,7 @@ function handleFeedbackDetailDialogClosed(isOpen) {
 
 const tableHeaders = computed(() => [
   {
-    text: "Model",
+    text: "_Model",
     sortable: true,
     value: "modelName",
     align: "left",
