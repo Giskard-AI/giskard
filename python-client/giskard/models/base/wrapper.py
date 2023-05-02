@@ -88,7 +88,8 @@ class WrapperModel(BaseModel, ABC):
         if self.data_preprocessing_function:
             df = self.data_preprocessing_function(df)
 
-        raw_prediction = super().predict_df(df)
+        raw_prediction = self.predict_proba(df)
+        raw_prediction = self._postprocess(raw_prediction)
 
         return raw_prediction
 
