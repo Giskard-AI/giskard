@@ -2,7 +2,6 @@ package ai.giskard.service;
 
 import ai.giskard.config.ApplicationProperties;
 import ai.giskard.domain.ml.Inspection;
-import ai.giskard.domain.ml.ModelType;
 import ai.giskard.domain.ml.table.Filter;
 import ai.giskard.repository.InspectionRepository;
 import com.google.common.primitives.Ints;
@@ -195,13 +194,19 @@ public class InspectionService {
         Inspection inspection = inspectionRepository.getMandatoryById(inspectionId);
         Table table = datasetService.readTableByDatasetId(inspection.getDataset().getId());
         table.addColumns(IntColumn.indexColumn(GISKARD_DATASET_INDEX_COLUMN_NAME, table.rowCount(), 0));
-        Selection selection = (inspection.getModel().getModelType() == ModelType.CLASSIFICATION) ? getSelection(inspection, filter) : getSelectionRegression(inspection, filter);
+
+        Selection selection = switch (inspection.getModel().getModelType()) {
+            case CLASSIFICATION -> getSelection(inspection, filter);
+            case REGRESSION -> getSelectionRegression(inspection, filter);
+            default -> null;
+        };
 
         if (filter.getSliceId() != null && filter.getSliceId() > 0) {
             List<Integer> filteredRowIds = sliceService.getSlicedRowsForDataset(filter.getSliceId(), inspection.getDataset());
             Selection withFilteredRowIds = Selection.with(Ints.toArray(filteredRowIds));
             selection = selection != null ? selection.and(Selection.with(Ints.toArray(filteredRowIds))) : withFilteredRowIds;
         }
+
         return selection == null ? table : table.where(selection);
     }
 

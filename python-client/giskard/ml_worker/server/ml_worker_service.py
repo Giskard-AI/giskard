@@ -379,7 +379,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
                 preds_serie = (diff >= 0).astype(int).map(labels).rename("predictions")
                 abs_diff = pd.Series(diff.abs(), name="absDiff")
             calculated = pd.concat([preds_serie, label_serie, abs_diff], axis=1)
-        else:
+        elif model.is_classification:
             results = pd.Series(prediction_results.prediction)
             preds_serie = results
             if dataset.target and dataset.target in dataset.df.columns:
@@ -391,6 +391,10 @@ class MLWorkerServiceImpl(MLWorkerServicer):
                 calculated = pd.concat([preds_serie, target_serie, abs_diff, abs_diff_percent, diff_percent], axis=1)
             else:
                 calculated = pd.concat([preds_serie], axis=1)
+        else:
+            results = pd.Series(prediction_results.prediction)
+            preds_serie = results
+            calculated = pd.concat([preds_serie], axis=1)
 
         with tempfile.TemporaryDirectory(prefix="giskard-") as f:
             dir = Path(f)

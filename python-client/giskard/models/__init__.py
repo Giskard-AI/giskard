@@ -57,7 +57,7 @@ def wrap_model(model,
         **kwargs: Additional keyword arguments.
 
     Returns:
-        Union[SKLearnModel, HuggingFaceModel, CatboostModel, PyTorchModel, TensorFlowModel]: The wrapped Giskard model.
+        Union[SKLearnModel, HuggingFaceModel, CatboostModel, PyTorchModel, TensorFlowModel, LangchainModel]: The wrapped Giskard model.
 
     Raises:
         ValueError: If the model library cannot be inferred.
@@ -67,7 +67,8 @@ def wrap_model(model,
         ("giskard.models.sklearn", "SKLearnModel"): [("sklearn.base", "BaseEstimator")],
         ("giskard.models.catboost", "CatboostModel"): [("catboost", "CatBoost")],
         ("giskard.models.pytorch", "PyTorchModel"): [("torch.nn", "Module")],
-        ("giskard.models.tensorflow", "TensorFlowModel"): [("tensorflow", "Module")]
+        ("giskard.models.tensorflow", "TensorFlowModel"): [("tensorflow", "Module")],
+        ("giskard.models.langchain", "LangchainModel"): [("langchain", "RetrievalQA")]
     }
     for _giskard_class, _base_libs in _libraries.items():
         try:
@@ -96,6 +97,7 @@ def wrap_model(model,
         '\n- pytorch'
         '\n- tensorflow'
         '\n- huggingface'
+        '\n- langchain'
     )
 
 

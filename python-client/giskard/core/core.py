@@ -42,9 +42,10 @@ def create_test_function_id(func):
 class SupportedModelTypes(Enum):
     CLASSIFICATION = "classification"
     REGRESSION = "regression"
+    LLM = "llm"
 
 
-ModelType = Union[SupportedModelTypes, Literal["classification", "regression"]]
+ModelType = Union[SupportedModelTypes, Literal["classification", "regression", "llm"]]
 
 
 class SupportedColumnTypes(Enum):
