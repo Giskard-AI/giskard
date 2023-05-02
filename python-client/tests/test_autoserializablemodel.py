@@ -2,7 +2,6 @@ import pandas as pd
 import tests.utils
 
 from giskard import AutoSerializableModel
-from fixtures.german_credit_scoring import german_credit_raw_model, german_credit_data
 
 
 def test_autoserializablemodel(german_credit_raw_model, german_credit_data):

@@ -1,13 +1,13 @@
-from abc import ABC, abstractmethod
+from abc import ABC
 from pathlib import Path
 from typing import Any, Optional, Iterable, Union
+import importlib
 
 import cloudpickle
 import pickle
-import numpy as np
-import pandas as pd
 import mlflow
 import yaml
+import pandas as pd
 
 from giskard.core.core import ModelType, SupportedModelTypes, ModelMeta
 from giskard.core.validation import configured_validate_arguments
@@ -48,16 +48,16 @@ class AutoSerializableModel(BaseModel, ABC):
         """
         super().__init__(model_type, name, feature_names, classification_threshold, classification_labels)
         self.model = model
-
-    def save(self, local_path: Union[str, Path]) -> None:
         giskard_class = infer_ml_library(self.model)
         self.meta.loader_class = giskard_class.__name__
         self.meta.loader_module = giskard_class.__module__
+
+    def save(self, local_path: Union[str, Path]) -> None:
         super().save(local_path)
         self.save_model(local_path)
 
     def save_model(self, local_path: Union[str, Path]) -> None:
-        giskard_class = infer_ml_library(self.model)
+        giskard_class = getattr(importlib.import_module(self.meta.loader_module), self.meta.loader_class)
         if str(giskard_class) in ["SKLearnModel", "CatBoostModel", "PyTorchModel", "TensorFlowModel"]:
             giskard_class.save_model(local_path, mlflow.models.Model(model_uuid=str(self.id)))
         elif str(giskard_class) == "HuggingFaceModel":
@@ -102,3 +102,7 @@ class AutoSerializableModel(BaseModel, ABC):
                 f"Cannot load model with cloudpickle, "
                 f"{model_path} file not found and 'load_model' method isn't overriden"
             )
+
+    def predict_proba(self, df: pd.DataFrame):
+        giskard_class = getattr(importlib.import_module(self.meta.loader_module), self.meta.loader_class)
+        return giskard_class.predict_proba(df)
