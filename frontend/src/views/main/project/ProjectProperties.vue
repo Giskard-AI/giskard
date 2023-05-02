@@ -160,6 +160,7 @@ import Datasets from '@/views/main/project/Datasets.vue';
 import { IUserProfileMinimal } from '@/interfaces';
 import mixpanel from "mixpanel-browser";
 import { useProjectStore } from "@/stores/project";
+import { useMainStore } from "@/stores/main";
 import { computed, ref } from 'vue';
 import { $vfm } from 'vue-final-modal';
 import ConfirmModal from '@/views/main/project/modals/ConfirmModal.vue';
@@ -181,6 +182,7 @@ const props = withDefaults(defineProps<Props>(), {
 const router = useRouter();
 
 const projectStore = useProjectStore();
+const mainStore = useMainStore();
 
 const openDeleteDialog = ref(false);
 const datasetsComponentRef = ref<any>(null);
@@ -257,22 +259,14 @@ async function renameLimeNumberSamples(newLimeSamples: string) {
 }
 
 async function editProject(data: ProjectPostDTO) {
-  try {
-    await projectStore.editProject({ id: project.value!.id, data })
-  } catch (e) {
-    console.error(e.message);
-  }
+  await projectStore.editProject({ id: project.value!.id, data })
 }
 
 async function deleteProject() {
   if (project.value) {
-    try {
-      mixpanel.track('Delete project', { id: project.value!.id });
-      await projectStore.deleteProject({ id: project.value!.id })
-      await router.push('/main/dashboard');
-    } catch (e) {
-      console.error(e.message);
-    }
+    mixpanel.track('Delete project', { id: project.value!.id });
+    await projectStore.deleteProject({ id: project.value!.id })
+    await router.push('/main/dashboard');
   }
 }
 </script>
