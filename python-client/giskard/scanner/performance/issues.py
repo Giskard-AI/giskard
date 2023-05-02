@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 from ..issues import Issue, IssueInfo
-from ...models.base import BaseModel
+from ...models.base import _BaseModel
 from ... import Dataset
 from .metrics import PerformanceMetric
 from ...ml_worker.testing.registry.slicing_function import SlicingFunction
@@ -27,12 +27,12 @@ class PerformanceIssueInfo(IssueInfo):
 class PerformanceIssue(Issue):
     """Performance Issue"""
 
-    group = "Model bias"
+    group = "_Model bias"
     info: PerformanceIssueInfo
 
     def __init__(
         self,
-        model: BaseModel,
+        model: _BaseModel,
         dataset: Dataset,
         level: str,
         info: PerformanceIssueInfo,

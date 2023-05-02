@@ -37,9 +37,9 @@ class ModelPredictionResults(pydantic.BaseModel):
     all_predictions: Optional[Any]
 
 
-class BaseModel(ABC):
+class _BaseModel(ABC):
     """
-    The BaseModel class is an abstract base class that defines the common interface for all the models used in this project.
+    The _BaseModel class is an abstract base class that defines the common interface for all the models used in this project.
 
     Attributes:
         model_type: ModelType
@@ -72,7 +72,7 @@ class BaseModel(ABC):
             classification_labels: Optional[Iterable] = None,
     ) -> None:
         """
-        Initialize a new instance of the BaseModel class.
+        Initialize a new instance of the _BaseModel class.
 
         Parameters:
             model_type (ModelType): Type of the model, either ModelType.REGRESSION or ModelType.CLASSIFICATION.
@@ -134,8 +134,8 @@ class BaseModel(ABC):
         if class_file.exists():
             with open(class_file, "rb") as f:
                 clazz = cloudpickle.load(f)
-                if not issubclass(clazz, BaseModel):
-                    raise ValueError(f"Unknown model class: {clazz}. Models should inherit from 'BaseModel' class")
+                if not issubclass(clazz, _BaseModel):
+                    raise ValueError(f"Unknown model class: {clazz}. Models should inherit from '_BaseModel' class")
                 return clazz
         else:
             return getattr(importlib.import_module(meta.loader_module), meta.loader_class)

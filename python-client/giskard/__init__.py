@@ -27,10 +27,9 @@ from giskard.ml_worker.testing.tests.performance import AucTest, test_mae, test_
     test_diff_reference_actual_f1
 from giskard.ml_worker.testing.tests.statistic import test_right_label, test_output_in_range, test_disparate_impact
 from giskard.ml_worker.utils.logging import configure_logging
-from giskard.models import Model
+from giskard.models import BaseModel, Model
 from .models.base.wrapper import WrapperModel
 from .models.base.mlflowbased import MLFlowBasedModel
-from .models.base import BaseModel
 from .scanner import scan
 
 configure_logging()
@@ -54,8 +53,9 @@ __all__ = [
     'Project',
     'GiskardClient',
     'test',
-    'Model',
     'Dataset',
+    'BaseModel',
+    'Model',
     'Suite',
     'test_drift_psi',
     'test_drift_chi_square',

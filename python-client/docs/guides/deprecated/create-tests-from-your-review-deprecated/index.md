@@ -24,7 +24,7 @@ To create tests, you need first to create a test suite, here are the 3 steps:
 2\. Choose the inputs parameters of your test suite:
 
 * **Test suite name**: A test suite name
-* **Model**: The model that the test suite will test
+* **_Model**: The model that the test suite will test
 * **Actual dataset**: A test dataset used to execute the tests inside the test suite. It could be any datasets that you've uploaded with [#3.-upload-a-model-and-a-dataset](../upload-your-model-deprecated/#3.-upload-a-model-and-a-dataset "mention")
 * **Reference dataset (optional)**: An optional reference dataset used for the drift testing to assess the changes with the Actual dataset. It could be any datasets that you've uploaded with [#3.-upload-a-model-and-a-dataset](../upload-your-model-deprecated/#3.-upload-a-model-and-a-dataset "mention")\
 

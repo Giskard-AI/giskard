@@ -74,12 +74,12 @@ giskard.ml_worker.core.dataset
 import Dataset
 
 ort
-Model
+_Model
 
 
 # 2. Create your custom test function
-# The parametters of the test function can be a Model, a Dataset or a primitive type
-def custom_test(model: Model, dataset: Dataset, threshold: float = 0.5) -> TestResult:
+# The parametters of the test function can be a _Model, a Dataset or a primitive type
+def custom_test(model: _Model, dataset: Dataset, threshold: float = 0.5) -> TestResult:
     metric = comput_metric(model, dataset)
     return TestResult(passed=metric >= threshold, metric=metric)
 
@@ -87,14 +87,14 @@ def custom_test(model: Model, dataset: Dataset, threshold: float = 0.5) -> TestR
 # 2. Create your custom test 
 class CustomTest(GiskardTest):
     actual_dataset: Dataset
-    model: Model
+    model: _Model
     threshold: float
 
     # The parametters of the test class must be set inside the __init__ method
-    # They can be a Model, a Dataset or a primitive type
+    # They can be a _Model, a Dataset or a primitive type
     # If their is no default value, you should set None as default
     # This is for autocomplete purpose
-    def __init__(self, actual_dataset: Dataset = None, model: Model = None, threshold: float = 0.5):
+    def __init__(self, actual_dataset: Dataset = None, model: _Model = None, threshold: float = 0.5):
         self.actual_dataset = actual_dataset
         self.model = model
         self.threshold = threshold
@@ -109,7 +109,7 @@ class CustomTest(GiskardTest):
 
 #### 4. Execute your test
 
-You can try and execute your test manually, to do so you will need to wrap your Model and Dataset into Giskard one:
+You can try and execute your test manually, to do so you will need to wrap your _Model and Dataset into Giskard one:
 
 ```
 # Wrap your clf with SKLearnModel from Giskard

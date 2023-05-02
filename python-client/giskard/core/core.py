@@ -265,12 +265,12 @@ SMT = TypeVar('SMT', bound=SavableMeta)
 
 
 def unknown_annotations_to_kwargs(parameters: List[inspect.Parameter]) -> List[inspect.Parameter]:
-    from giskard.models.base import BaseModel
+    from giskard.models.base import _BaseModel
     from giskard import Dataset
     from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction
     from giskard.ml_worker.testing.registry.transformation_function import TransformationFunction
 
-    allowed_types = [str, bool, int, float, BaseModel, Dataset, SlicingFunction, TransformationFunction]
+    allowed_types = [str, bool, int, float, _BaseModel, Dataset, SlicingFunction, TransformationFunction]
 
     has_kwargs = any([param for param in parameters if
                       not any([param.annotation == allowed_type for allowed_type in allowed_types])])

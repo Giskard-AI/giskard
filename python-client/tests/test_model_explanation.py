@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from giskard.models.base import BaseModel
+from giskard.models.base import _BaseModel
 from giskard import Dataset
 from giskard.ml_worker.core.model_explanation import explain, explain_text
 
@@ -22,7 +22,7 @@ from giskard.ml_worker.core.model_explanation import explain, explain_text
 )
 def test_explain(ds_name: str, model_name: str, include_feature_names: bool, request):
     ds: Dataset = request.getfixturevalue(ds_name)
-    model: BaseModel = request.getfixturevalue(model_name)
+    model: _BaseModel = request.getfixturevalue(model_name)
 
     # Try without feature names, it should also work
     if not include_feature_names:

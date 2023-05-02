@@ -4,7 +4,7 @@ from giskard import test, Dataset
 from giskard.ml_worker.core.suite import Suite, SuiteInput
 from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction
 from giskard.ml_worker.testing.tests.performance import test_auc, test_f1, test_diff_f1, AucTest
-from giskard.models.base import BaseModel
+from giskard.models.base import _BaseModel
 from tests.utils import MockedClient
 
 
@@ -48,7 +48,7 @@ def test_all_global():
     assert passed
 
 
-def test_multiple(german_credit_data: Dataset, german_credit_model: BaseModel):
+def test_multiple(german_credit_data: Dataset, german_credit_model: _BaseModel):
     assert (
         Suite()
         .add_test(test_auc(threshold=0.2))
@@ -67,7 +67,7 @@ def test_all_inputs_exposed_and_shared(german_credit_data, german_credit_model):
     )
 
 
-def test_shared_input(german_credit_model: BaseModel, german_credit_data: Dataset):
+def test_shared_input(german_credit_model: _BaseModel, german_credit_data: Dataset):
     last_half = german_credit_data.slice(SlicingFunction(lambda df: df.tail(len(df) // 2), row_level=False))
 
     shared_input = SuiteInput("dataset", Dataset)
@@ -84,7 +84,7 @@ def test_shared_input(german_credit_model: BaseModel, german_credit_data: Datase
     )
 
 
-def test_multiple_execution_of_same_test(german_credit_data: Dataset, german_credit_model: BaseModel):
+def test_multiple_execution_of_same_test(german_credit_data: Dataset, german_credit_model: _BaseModel):
     first_half = german_credit_data.slice(SlicingFunction(lambda df: df.head(len(df) // 2), row_level=False))
     last_half = german_credit_data.slice(SlicingFunction(lambda df: df.tail(len(df) // 2), row_level=False))
 
@@ -100,7 +100,7 @@ def test_multiple_execution_of_same_test(german_credit_data: Dataset, german_cre
     assert len(result[1]) == 3
 
 
-def test_giskard_test_class(german_credit_data: Dataset, german_credit_model: BaseModel):
+def test_giskard_test_class(german_credit_data: Dataset, german_credit_model: _BaseModel):
     shared_input = SuiteInput("dataset", Dataset)
 
     assert (
@@ -110,13 +110,13 @@ def test_giskard_test_class(german_credit_data: Dataset, german_credit_model: Ba
     )
 
 
-def test_save_suite(german_credit_data: Dataset, german_credit_model: BaseModel):
+def test_save_suite(german_credit_data: Dataset, german_credit_model: _BaseModel):
     with MockedClient() as (client, mr):
         Suite().add_test(test_auc(threshold=0.2, dataset=german_credit_data)).add_test(
             test_f1(threshold=0.2, dataset=german_credit_data)
         ).upload(client, "test_project_key")
 
-# def test_save_suite_real(german_credit_data: Dataset, german_credit_model: BaseModel):
+# def test_save_suite_real(german_credit_data: Dataset, german_credit_model: _BaseModel):
 #    client = GiskardClient("http://localhost:9000", "")
 #
 #    Suite(name="Test Suite 1") \

@@ -1,4 +1,4 @@
-from ..models.base import BaseModel
+from ..models.base import _BaseModel
 from .. import Dataset
 from .scanner import Scanner
 
@@ -18,12 +18,12 @@ def _register_default_detectors():
 _register_default_detectors()
 
 
-def scan(model: BaseModel, dataset: Dataset, params=None, only=None):
+def scan(model: _BaseModel, dataset: Dataset, params=None, only=None):
     """
     Scan a model with a dataset.
 
     Args:
-        model (BaseModel):
+        model (_BaseModel):
             A Giskard model object.
         dataset (Dataset):
             A Giskard dataset object.

@@ -29,7 +29,10 @@ wrapped_dataset = Dataset(test_df.head(),
                                target="Target")
 ```
 ## Wrap model
+
 ```python
+import giskard.models.base.model
+
 hub = pytest.importorskip("tensorflow_hub")
 pytest.importorskip("tensorflow_text")
 
@@ -40,6 +43,7 @@ tfhub_handle_encoder = hub.KerasLayer(
     "https://tfhub.dev/tensorflow/small_bert/bert_en_uncased_L-2_H-128_A-2/2",
     trainable=True)
 
+
 def build_classifier_model():
     text_input = tf.keras.layers.Input(shape=(), dtype=tf.string, name='text')
     preprocessing_layer = hub.KerasLayer(tfhub_handle_preprocess, name='preprocessing')
@@ -49,7 +53,8 @@ def build_classifier_model():
     net = outputs['pooled_output']
     net = tf.keras.layers.Dropout(0.1)(net)
     net = tf.keras.layers.Dense(4, activation='softmax', name='classifier')(net)
-    return tf.keras.Model(inputs=text_input, outputs=net)
+    return giskard.models.base.model._Model(inputs=text_input, outputs=net)
+
 
 model = build_classifier_model()
 ```

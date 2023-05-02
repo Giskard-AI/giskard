@@ -51,7 +51,7 @@ These are our predefined model wrappers:
 
 These classes are based on the following base classes:
 
-.. autoclass:: giskard.BaseModel
+.. autoclass:: giskard._BaseModel
    .. automethod:: prepare_dataframe
    .. automethod:: _predict_df
    .. automethod:: predict

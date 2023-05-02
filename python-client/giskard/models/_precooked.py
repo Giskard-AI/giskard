@@ -2,11 +2,11 @@ import numpy as np
 import pandas as pd
 from typing import Optional, Iterable
 
-from .base import BaseModel, ModelType, ModelPredictionResults
+from .base import _BaseModel, ModelType, ModelPredictionResults
 from .. import Dataset
 
 
-class PrecookedModel(BaseModel):
+class PrecookedModel(_BaseModel):
     """A dummy model for internal usage."""
 
     def __init__(
@@ -24,7 +24,7 @@ class PrecookedModel(BaseModel):
         )
 
     @classmethod
-    def from_model(cls, model: BaseModel, dataset: Dataset):
+    def from_model(cls, model: _BaseModel, dataset: Dataset):
         """Creates a PrecookedModel from an existing model and dataset."""
         predictions = model.predict(dataset)
 

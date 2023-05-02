@@ -1,7 +1,7 @@
 import sklearn.metrics
 from abc import ABC, ABCMeta, abstractmethod
 
-from ...models.base import BaseModel
+from ...models.base import _BaseModel
 from ... import Dataset
 
 
@@ -10,12 +10,12 @@ class PerformanceMetric(ABC):
     greater_is_better = True
 
     @abstractmethod
-    def __call__(self, model: BaseModel, dataset: Dataset) -> float:
+    def __call__(self, model: _BaseModel, dataset: Dataset) -> float:
         ...
 
 
 class ClassificationPerformanceMetric(PerformanceMetric, metaclass=ABCMeta):
-    def __call__(self, model: BaseModel, dataset: Dataset) -> float:
+    def __call__(self, model: _BaseModel, dataset: Dataset) -> float:
         if not model.is_classification:
             raise ValueError(f"Metric '{self.name}' is only defined for classification models.")
 
@@ -25,7 +25,7 @@ class ClassificationPerformanceMetric(PerformanceMetric, metaclass=ABCMeta):
         return self._calculate_metric(y_true, y_pred, model)
 
     @abstractmethod
-    def _calculate_metric(self, y_true, y_pred, model: BaseModel) -> float:
+    def _calculate_metric(self, y_true, y_pred, model: _BaseModel) -> float:
         ...
 
 
@@ -33,14 +33,14 @@ class Accuracy(ClassificationPerformanceMetric):
     name = "Accuracy"
     greater_is_better = True
 
-    def _calculate_metric(self, y_true, y_pred, model: BaseModel):
+    def _calculate_metric(self, y_true, y_pred, model: _BaseModel):
         return sklearn.metrics.accuracy_score(y_true, y_pred)
 
 
 class SklearnClassificationScoreMixin:
     _sklearn_metric: str
 
-    def _calculate_metric(self, y_true, y_pred, model: BaseModel):
+    def _calculate_metric(self, y_true, y_pred, model: _BaseModel):
         metric_fn = getattr(sklearn.metrics, self._sklearn_metric)
         if model.is_binary_classification:
             return metric_fn(
@@ -79,7 +79,7 @@ class AUC(SklearnClassificationScoreMixin, ClassificationPerformanceMetric):
 
 
 class RegressionPerformanceMetric(PerformanceMetric):
-    def __call__(self, model: BaseModel, dataset: Dataset) -> float:
+    def __call__(self, model: _BaseModel, dataset: Dataset) -> float:
         if not model.is_regression:
             raise ValueError(f"Metric '{self.name}' is only defined for regression models.")
 
@@ -89,14 +89,14 @@ class RegressionPerformanceMetric(PerformanceMetric):
         return self._calculate_metric(y_true, y_pred, model)
 
     @abstractmethod
-    def _calculate_metric(self, y_true, y_pred, model: BaseModel) -> float:
+    def _calculate_metric(self, y_true, y_pred, model: _BaseModel) -> float:
         ...
 
 
 class SklearnRegressionScoreMixin:
     _sklearn_metric: str
 
-    def _calculate_metric(self, y_true, y_pred, model: BaseModel):
+    def _calculate_metric(self, y_true, y_pred, model: _BaseModel):
         metric_fn = getattr(sklearn.metrics, self._sklearn_metric)
         return metric_fn(y_true, y_pred)
 

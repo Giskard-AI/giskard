@@ -9,15 +9,15 @@ import pandas as pd
 
 from giskard.core.core import ModelType
 from giskard.core.validation import configured_validate_arguments
-from giskard.models.base import BaseModel
+from giskard.models.base import _BaseModel
 import logging
 
 logger = logging.getLogger(__name__)
 
 
-class WrapperModel(BaseModel, ABC):
+class WrapperModel(_BaseModel, ABC):
     """
-    A subclass of a BaseModel that wraps an existing model object (model) and uses it to make inference
+    A subclass of a _BaseModel that wraps an existing model object (model) and uses it to make inference
     This class introduces a `data_preprocessing_function` which can be used
     to preprocess incoming data before it's passed to the underlying model
     """

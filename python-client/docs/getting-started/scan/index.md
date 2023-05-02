@@ -123,7 +123,7 @@ wrapped_model = wrap_model(
 * <mark style="color:red;">**`Optional parameters`**</mark>
   * `name`: Name of the wrapped model.
   * `feature_names`: An optional list of the feature names. By default, `feature_names` are all the columns in your dataset.
-  * `classification_threshold`: Model threshold for binary classification problems.
+  * `classification_threshold`: _Model threshold for binary classification problems.
   * `data_preprocessing_function`: A function that takes a `pandas.DataFrame` as raw input, applies preprocessing and 
      returns any object that could be directly fed to `model`.
   * `model_postprocessing_function`: A function that takes a `model` output as input, applies postprocessing and returns 
@@ -163,7 +163,7 @@ wrapped_model = wrap_model(
 ::::::
 :::::::
 
-### Model-specific [tutorials](../../guides/tutorials/index.md)
+### _Model-specific [tutorials](../../guides/tutorials/index.md)
 :::::{tab-set}
 ::::{tab-item} Any function
 :::{important} 

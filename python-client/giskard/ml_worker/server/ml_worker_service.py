@@ -36,7 +36,7 @@ from giskard.ml_worker.testing.registry.giskard_test import GiskardTest
 from giskard.ml_worker.testing.registry.registry import tests_registry
 from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction
 from giskard.ml_worker.testing.registry.transformation_function import TransformationFunction
-from giskard.models.base import BaseModel
+from giskard.models.base import _BaseModel
 from giskard.path_utils import model_path, dataset_path
 
 logger = logging.getLogger(__name__)
@@ -272,7 +272,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
             if arg.HasField("dataset"):
                 arguments[arg.name] = Dataset.download(self.client, arg.dataset.project_key, arg.dataset.id)
             elif arg.HasField("model"):
-                arguments[arg.name] = BaseModel.download(self.client, arg.model.project_key, arg.model.id)
+                arguments[arg.name] = _BaseModel.download(self.client, arg.model.project_key, arg.model.id)
             elif arg.HasField("slicingFunction"):
                 arguments[arg.name] = SlicingFunction.load(arg.slicingFunction.id, self.client, None)(
                     **self.parse_function_arguments(arg.args))
@@ -296,7 +296,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
         return arguments
 
     def explain(self, request: ml_worker_pb2.ExplainRequest, context) -> ml_worker_pb2.ExplainResponse:
-        model = BaseModel.download(self.client, request.model.project_key, request.model.id)
+        model = _BaseModel.download(self.client, request.model.project_key, request.model.id)
         dataset = Dataset.download(self.client, request.dataset.project_key, request.dataset.id)
         explanations = explain(model, dataset, request.columns)
 
@@ -309,7 +309,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
 
     def explainText(self, request: ml_worker_pb2.ExplainTextRequest, context) -> ml_worker_pb2.ExplainTextResponse:
         n_samples = 500 if request.n_samples <= 0 else request.n_samples
-        model = BaseModel.download(self.client, request.model.project_key, request.model.id)
+        model = _BaseModel.download(self.client, request.model.project_key, request.model.id)
         text_column = request.feature_name
 
         if request.column_types[text_column] != "text":
@@ -331,7 +331,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
         )
 
     def runModelForDataFrame(self, request: ml_worker_pb2.RunModelForDataFrameRequest, context):
-        model = BaseModel.download(self.client, request.model.project_key, request.model.id)
+        model = _BaseModel.download(self.client, request.model.project_key, request.model.id)
         ds = Dataset(pd.DataFrame([r.columns for r in request.dataframe.rows]), target=None,
                      column_types=request.column_types)
         predictions = model.predict(ds)
@@ -347,7 +347,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
 
     def runModel(self, request: ml_worker_pb2.RunModelRequest, context) -> ml_worker_pb2.RunModelResponse:
         try:
-            model = BaseModel.download(self.client, request.model.project_key, request.model.id)
+            model = _BaseModel.download(self.client, request.model.project_key, request.model.id)
             dataset = Dataset.download(self.client, request.dataset.project_key, request.dataset.id)
         except ValueError as e:
             if "unsupported pickle protocol" in str(e):
@@ -455,7 +455,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
 
     @staticmethod
     def map_suite_input(i: ml_worker_pb2.SuiteInput):
-        if i.type == 'Model' and i.model_meta is not None:
+        if i.type == '_Model' and i.model_meta is not None:
             return ModelInput(i.name, i.model_meta.model_type)
         elif i.type == 'Dataset' and i.dataset_meta is not None:
             return DatasetInput(i.name, i.dataset_meta.target)

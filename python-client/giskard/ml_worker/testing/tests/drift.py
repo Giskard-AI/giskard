@@ -14,7 +14,7 @@ from giskard.ml_worker.core.test_result import TestResult, TestMessage, TestMess
 from giskard.ml_worker.testing.registry.decorators import test
 from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction
 from giskard.ml_worker.testing.utils import validate_classification_label
-from giskard.models.base import BaseModel
+from giskard.models.base import _BaseModel
 from ..utils import check_slice_not_empty
 
 other_modalities_pattern = "^other_modalities_[a-z0-9]{32}$"
@@ -432,7 +432,7 @@ def test_drift_earth_movers_distance(actual_dataset: Dataset, reference_dataset:
 
 
 @test(name='Label drift (PSI)')
-def test_drift_prediction_psi(model: BaseModel, actual_dataset: Dataset, reference_dataset: Dataset,
+def test_drift_prediction_psi(model: _BaseModel, actual_dataset: Dataset, reference_dataset: Dataset,
                               slicing_function: SlicingFunction = None, max_categories: int = 10,
                               threshold: float = 0.2, psi_contribution_percent: float = 0.2):
     """
@@ -443,8 +443,8 @@ def test_drift_prediction_psi(model: BaseModel, actual_dataset: Dataset, referen
     for females between reference and actual sets is below 0.2
 
     Args:
-        model(BaseModel):
-            Model used to compute the test
+        model(_BaseModel):
+            _Model used to compute the test
         actual_dataset(Dataset):
             Actual dataset used to compute the test
         reference_dataset(Dataset):
@@ -529,7 +529,7 @@ def _generate_message_modalities(main_drifting_modalities_bool, output_data, tes
 
 
 @test(name='Label drift (Chi-squared)')
-def test_drift_prediction_chi_square(model: BaseModel, actual_dataset: Dataset, reference_dataset: Dataset,
+def test_drift_prediction_chi_square(model: _BaseModel, actual_dataset: Dataset, reference_dataset: Dataset,
                                      slicing_function: SlicingFunction = None, max_categories: int = 10,
                                      threshold: float = 0.05, chi_square_contribution_percent: float = 0.2):
     """
@@ -540,8 +540,8 @@ def test_drift_prediction_chi_square(model: BaseModel, actual_dataset: Dataset, 
     for females between reference and actual sets is below 0.05
 
     Args:
-        model(BaseModel):
-            Model used to compute the test
+        model(_BaseModel):
+            _Model used to compute the test
         actual_dataset(Dataset):
             Actual dataset used to compute the test
         reference_dataset(Dataset):
@@ -614,7 +614,7 @@ def _test_series_drift_chi(
 
 @test(name='Classification Probability drift (Kolmogorov-Smirnov)', tags=['classification'])
 @validate_classification_label
-def test_drift_prediction_ks(model: BaseModel, actual_dataset: Dataset, reference_dataset: Dataset,
+def test_drift_prediction_ks(model: _BaseModel, actual_dataset: Dataset, reference_dataset: Dataset,
                              slicing_function: SlicingFunction = None, classification_label: str = None,
                              threshold: float = None) -> TestResult:
     """
@@ -626,8 +626,8 @@ def test_drift_prediction_ks(model: BaseModel, actual_dataset: Dataset, referenc
      rejected at 5% level and that we cannot assume drift for this variable.
 
     Args:
-        model(BaseModel):
-            Model used to compute the test
+        model(_BaseModel):
+            _Model used to compute the test
         actual_dataset(Dataset):
             Actual dataset used to compute the test
         reference_dataset(Dataset):
@@ -699,7 +699,7 @@ def _generate_message_ks(passed, result, threshold, data_type):
 
 @test(name='Classification Probability drift (Earth mover\'s distance)', tags=['classification'])
 @validate_classification_label
-def test_drift_prediction_earth_movers_distance(model: BaseModel, actual_dataset: Dataset, reference_dataset: Dataset,
+def test_drift_prediction_earth_movers_distance(model: _BaseModel, actual_dataset: Dataset, reference_dataset: Dataset,
                                                 slicing_function: SlicingFunction = None,
                                                 classification_label: str = None, threshold: float = 0.2) -> TestResult:
     """
@@ -715,7 +715,7 @@ def test_drift_prediction_earth_movers_distance(model: BaseModel, actual_dataset
     for females between reference and actual sets is below 0.2
 
     Args:
-        model(BaseModel):
+        model(_BaseModel):
             uploaded model
         actual_dataset(Dataset):
             Actual dataset used to compute the test

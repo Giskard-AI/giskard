@@ -8,7 +8,7 @@ import pandas as pd
 import shap
 from eli5.lime import TextExplainer
 
-from giskard.models.base import BaseModel
+from giskard.models.base import _BaseModel
 from giskard import Dataset
 from giskard.ml_worker.utils.logging import timer
 
@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 
 @timer()
-def explain(model: BaseModel, dataset: Dataset, input_data: Dict):
+def explain(model: _BaseModel, dataset: Dataset, input_data: Dict):
     def prepare_df(df):
         if dataset.target in df.columns:
             prepared_ds = Dataset(df=df, target=dataset.target, column_types=dataset.column_types)
@@ -57,7 +57,7 @@ def explain(model: BaseModel, dataset: Dataset, input_data: Dict):
 
 
 @timer()
-def explain_text(model: BaseModel, input_df: pd.DataFrame, text_column: str, text_document: str, n_samples: int):
+def explain_text(model: _BaseModel, input_df: pd.DataFrame, text_column: str, text_document: str, n_samples: int):
     text_explainer = TextExplainer(random_state=42, n_samples=n_samples)
     prediction_function = text_explanation_prediction_wrapper(model._predict_df, input_df, text_column)
     text_explain_attempts = 10

@@ -6,13 +6,13 @@ from giskard import test, Dataset
 from giskard.ml_worker.core.test_result import TestResult, TestMessage, TestMessageLevel
 from giskard.ml_worker.testing.utils import validate_classification_label
 from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction
-from giskard.models.base import BaseModel
+from giskard.models.base import _BaseModel
 from ..utils import check_slice_not_empty
 
 
 @test(name="Right Label", tags=["heuristic", "classification"])
 @validate_classification_label
-def test_right_label(model: BaseModel, dataset: Dataset, classification_label: str,
+def test_right_label(model: _BaseModel, dataset: Dataset, classification_label: str,
                      slicing_function: SlicingFunction = None, threshold: float = 0.5) -> TestResult:
     """
     Summary: Test if the model returns the right classification label for a slice
@@ -25,8 +25,8 @@ def test_right_label(model: BaseModel, dataset: Dataset, classification_label: s
 
 
     Args:
-      model(BaseModel):
-          Model used to compute the test
+      model(_BaseModel):
+          _Model used to compute the test
       dataset(Dataset):
           Dataset used to compute the test
       classification_label(str):
@@ -62,7 +62,7 @@ def test_right_label(model: BaseModel, dataset: Dataset, classification_label: s
 
 @test(name="Output in range", tags=["heuristic", "classification", "regression"])
 @validate_classification_label
-def test_output_in_range(model: BaseModel, dataset: Dataset, slicing_function: SlicingFunction = None,
+def test_output_in_range(model: _BaseModel, dataset: Dataset, slicing_function: SlicingFunction = None,
                          classification_label: str = None, min_range: float = 0.3, max_range: float = 0.7,
                          threshold: float = 0.5) -> TestResult:
     """
@@ -84,8 +84,8 @@ def test_output_in_range(model: BaseModel, dataset: Dataset, slicing_function: S
 
 
     Args:
-        model(BaseModel):
-            Model used to compute the test
+        model(_BaseModel):
+            _Model used to compute the test
         dataset(Dataset):
             Dataset used to compute the test
         slicing_function(SlicingFunction):
@@ -138,7 +138,7 @@ def test_output_in_range(model: BaseModel, dataset: Dataset, slicing_function: S
 
 
 # TODO: support type in the future
-def test_disparate_impact(model: BaseModel, dataset: Dataset, protected_slicing_function: SlicingFunction,
+def test_disparate_impact(model: _BaseModel, dataset: Dataset, protected_slicing_function: SlicingFunction,
                           unprotected_slicing_function: SlicingFunction, positive_outcome,
                           slicing_function: SlicingFunction = None, min_threshold=0.8, max_threshold=1.25) -> TestResult:
     """
@@ -163,8 +163,8 @@ def test_disparate_impact(model: BaseModel, dataset: Dataset, protected_slicing_
     women.
 
     Args:
-          model(BaseModel):
-              Model used to compute the test
+          model(_BaseModel):
+              _Model used to compute the test
           dataset(Dataset):
               Dataset used to compute the test
           protected_slicing_function:

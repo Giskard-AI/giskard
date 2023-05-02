@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from abc import ABC, abstractmethod
 
 from .. import Dataset
-from ..models.base import BaseModel
+from ..models.base import _BaseModel
 
 
 @dataclass
@@ -17,7 +17,7 @@ class Issue:
 
     def __init__(
         self,
-        model: BaseModel,
+        model: _BaseModel,
         dataset: Dataset,
         level: str,
         info: Optional[IssueInfo] = None,

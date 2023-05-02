@@ -101,7 +101,7 @@ To analyze feedback, select the Feedback tab. It lists all the feedback that wer
 
 To better target some feedback, you can filter them depending on:
 
-* Model version
+* _Model version
 * Dataset
 * Type of feedback: value perturbation, by feature or general
 

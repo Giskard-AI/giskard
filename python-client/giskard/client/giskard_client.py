@@ -176,7 +176,7 @@ class GiskardClient:
             },
         )
         self.analytics.track(
-            "Upload Model",
+            "Upload _Model",
             {
                 "name": anonymize(meta.name),
                 "projectKey": anonymize(project_key),
@@ -192,7 +192,7 @@ class GiskardClient:
             },
         )
 
-        print(f"Model successfully uploaded to project key '{project_key}' with ID = {model_id}")
+        print(f"_Model successfully uploaded to project key '{project_key}' with ID = {model_id}")
 
     def log_artifacts(self, local_dir, artifact_path=None):
         local_dir = os.path.abspath(local_dir)

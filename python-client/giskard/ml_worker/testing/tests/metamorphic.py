@@ -9,11 +9,11 @@ from giskard.ml_worker.testing.stat_utils import equivalence_t_test, paired_t_te
 from giskard.ml_worker.testing.stat_utils import equivalence_wilcoxon, paired_wilcoxon
 from giskard.ml_worker.testing.utils import Direction, validate_classification_label
 from giskard.ml_worker.utils.logging import timer
-from giskard.models.base import BaseModel
+from giskard.models.base import _BaseModel
 from ..utils import check_slice_not_empty
 
 
-def _predict_numeric_result(model: BaseModel, ds: Dataset, output_proba=True, classification_label=None):
+def _predict_numeric_result(model: _BaseModel, ds: Dataset, output_proba=True, classification_label=None):
     if model.is_regression or not output_proba:
         return model.predict(ds).raw_prediction
     elif model.is_classification and classification_label is not None:
@@ -27,7 +27,7 @@ def _prediction_ratio(prediction, perturbed_prediction):
 
 
 @timer("Perturb and predict data")
-def _perturb_and_predict(model: BaseModel, ds: Dataset, transformation_function: TransformationFunction,
+def _perturb_and_predict(model: _BaseModel, ds: Dataset, transformation_function: TransformationFunction,
                          output_proba=True, classification_label=None):
     results_df = pd.DataFrame()
     results_df["prediction"] = _predict_numeric_result(model, ds, output_proba, classification_label)
@@ -150,7 +150,7 @@ def _test_metamorphic(model, direction: Direction, dataset: Dataset, transformat
 
 
 @test(name="Invariance (proportion)")
-def test_metamorphic_invariance(model: BaseModel, dataset: Dataset, transformation_function: TransformationFunction,
+def test_metamorphic_invariance(model: _BaseModel, dataset: Dataset, transformation_function: TransformationFunction,
                                 slicing_function: SlicingFunction = None, threshold: float = 0.5,
                                 output_sensitivity: float = None) -> TestResult:
     """
@@ -168,8 +168,8 @@ def test_metamorphic_invariance(model: BaseModel, dataset: Dataset, transformati
     more than 50%(threshold 0.5) of males have unchanged outputs
 
     Args:
-        model(BaseModel):
-          Model used to compute the test
+        model(_BaseModel):
+          _Model used to compute the test
         dataset(Dataset):
           Dataset used to compute the test
         transformation_function(TransformationFunction):
@@ -210,7 +210,7 @@ def test_metamorphic_invariance(model: BaseModel, dataset: Dataset, transformati
 
 @test(name="Increasing (proportion)")
 @validate_classification_label
-def test_metamorphic_increasing(model: BaseModel, dataset: Dataset, transformation_function: TransformationFunction,
+def test_metamorphic_increasing(model: _BaseModel, dataset: Dataset, transformation_function: TransformationFunction,
                                 slicing_function: SlicingFunction = None, threshold: float = 0.5,
                                 classification_label: str = None):
     """
@@ -228,8 +228,8 @@ def test_metamorphic_increasing(model: BaseModel, dataset: Dataset, transformati
      default probability is increasing for more than 50% of people in the dataset
 
     Args:
-        model(BaseModel):
-          Model used to compute the test
+        model(_BaseModel):
+          _Model used to compute the test
         dataset(Dataset):
           Dataset used to compute the test
         transformation_function(TransformationFunction):
@@ -267,7 +267,7 @@ def test_metamorphic_increasing(model: BaseModel, dataset: Dataset, transformati
 
 @test(name="Decreasing (proportion)")
 @validate_classification_label
-def test_metamorphic_decreasing(model: BaseModel, dataset: Dataset, transformation_function: TransformationFunction,
+def test_metamorphic_decreasing(model: _BaseModel, dataset: Dataset, transformation_function: TransformationFunction,
                                 slicing_function: SlicingFunction = None, threshold: float = 0.5,
                                 classification_label: str = None):
     """
@@ -285,8 +285,8 @@ def test_metamorphic_decreasing(model: BaseModel, dataset: Dataset, transformati
      default probability is decreasing for more than 50% of people in the dataset
 
     Args:
-        model(BaseModel):
-          Model used to compute the test
+        model(_BaseModel):
+          _Model used to compute the test
         dataset(Dataset):
           Dataset used to compute the test
         transformation_function(TransformationFunction):
@@ -343,7 +343,7 @@ def _test_metamorphic_t_test(direction: Direction, model, dataset: Dataset,
 
 @test(name="Decreasing (t-test)")
 @validate_classification_label
-def test_metamorphic_decreasing_t_test(model: BaseModel, dataset: Dataset,
+def test_metamorphic_decreasing_t_test(model: _BaseModel, dataset: Dataset,
                                        transformation_function: TransformationFunction,
                                        slicing_function: SlicingFunction = None, critical_quantile: float = 0.05,
                                        classification_label: str = None):
@@ -359,8 +359,8 @@ def test_metamorphic_decreasing_t_test(model: BaseModel, dataset: Dataset,
              causes a statistically significant probability decrease.
 
     Args:
-        model(BaseModel):
-            Model used to compute the test
+        model(_BaseModel):
+            _Model used to compute the test
         dataset(Dataset):
             Dataset used to compute the test
         transformation_function(TransformationFunction):
@@ -393,7 +393,7 @@ def test_metamorphic_decreasing_t_test(model: BaseModel, dataset: Dataset,
 
 @test(name="Increasing (t-test)")
 @validate_classification_label
-def test_metamorphic_increasing_t_test(model: BaseModel, dataset: Dataset,
+def test_metamorphic_increasing_t_test(model: _BaseModel, dataset: Dataset,
                                        transformation_function: TransformationFunction,
                                        slicing_function: SlicingFunction = None, critical_quantile: float = 0.05,
                                        classification_label: str = None):
@@ -409,8 +409,8 @@ def test_metamorphic_increasing_t_test(model: BaseModel, dataset: Dataset,
              causes a statistically significant probability increase.
 
     Args:
-        model(BaseModel):
-            Model used to compute the test
+        model(_BaseModel):
+            _Model used to compute the test
         dataset(Dataset):
             Dataset used to compute the test
         transformation_function(TransformationFunction):
@@ -442,7 +442,7 @@ def test_metamorphic_increasing_t_test(model: BaseModel, dataset: Dataset,
 
 
 @test(name="Invariance (t-test)")
-def test_metamorphic_invariance_t_test(model: BaseModel, dataset: Dataset,
+def test_metamorphic_invariance_t_test(model: _BaseModel, dataset: Dataset,
                                        transformation_function: TransformationFunction,
                                        slicing_function: SlicingFunction = None, window_size: float = 0.2,
                                        critical_quantile: float = 0.05) -> TestResult:
@@ -461,8 +461,8 @@ def test_metamorphic_invariance_t_test(model: BaseModel, dataset: Dataset,
     perturbed sample is statistically within a window determined by the user.
 
     Args:
-          model(BaseModel):
-              Model used to compute the test
+          model(_BaseModel):
+              _Model used to compute the test
           dataset(Dataset):
               Dataset used to compute the test
           transformation_function(TransformationFunction):
@@ -515,7 +515,7 @@ def _test_metamorphic_wilcoxon(direction: Direction, model, dataset: Dataset,
 
 @test(name="Decreasing (Wilcoxon)")
 @validate_classification_label
-def test_metamorphic_decreasing_wilcoxon(model: BaseModel, dataset: Dataset,
+def test_metamorphic_decreasing_wilcoxon(model: _BaseModel, dataset: Dataset,
                                          transformation_function: TransformationFunction,
                                          slicing_function: SlicingFunction = None, critical_quantile: float = 0.05,
                                          classification_label: str = None):
@@ -531,8 +531,8 @@ def test_metamorphic_decreasing_wilcoxon(model: BaseModel, dataset: Dataset,
              causes a statistically significant probability decrease.
 
     Args:
-        model(BaseModel):
-            Model used to compute the test
+        model(_BaseModel):
+            _Model used to compute the test
         dataset(Dataset):
             Dataset used to compute the test
         transformation_function(TransformationFunction):
@@ -570,7 +570,7 @@ def test_metamorphic_decreasing_wilcoxon(model: BaseModel, dataset: Dataset,
 
 @test()
 @validate_classification_label
-def test_metamorphic_increasing_wilcoxon(model: BaseModel, dataset: Dataset,
+def test_metamorphic_increasing_wilcoxon(model: _BaseModel, dataset: Dataset,
                                          transformation_function: TransformationFunction,
                                          slicing_function: SlicingFunction = None, critical_quantile: float = 0.05,
                                          classification_label: str = None):
@@ -586,8 +586,8 @@ def test_metamorphic_increasing_wilcoxon(model: BaseModel, dataset: Dataset,
              causes a statistically significant probability increase.
 
     Args:
-        model(BaseModel):
-            Model used to compute the test
+        model(_BaseModel):
+            _Model used to compute the test
         dataset(Dataset):
             Dataset used to compute the test
         transformation_function(TransformationFunction):
@@ -624,7 +624,7 @@ def test_metamorphic_increasing_wilcoxon(model: BaseModel, dataset: Dataset,
 
 
 @test(name="Invariance (Wilcoxon)")
-def test_metamorphic_invariance_wilcoxon(model: BaseModel, dataset: Dataset,
+def test_metamorphic_invariance_wilcoxon(model: _BaseModel, dataset: Dataset,
                                          transformation_function: TransformationFunction,
                                          slicing_function: SlicingFunction = None, window_size: float = 0.2,
                                          critical_quantile: float = 0.05) -> TestResult:
@@ -643,8 +643,8 @@ def test_metamorphic_invariance_wilcoxon(model: BaseModel, dataset: Dataset,
     perturbed sample is statistically within a window determined by the user.
 
     Args:
-        model(BaseModel):
-            Model used to compute the test
+        model(_BaseModel):
+            _Model used to compute the test
         dataset(Dataset):
             Dataset used to compute the test
         transformation_function(TransformationFunction):

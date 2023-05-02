@@ -1,7 +1,7 @@
 # 🧪 Create a test suite
 
 :::{warning}
-First you'll need to create a Model and a dataset (And scan your model),
+First you'll need to create a _Model and a dataset (And scan your model),
 see [🔬 Scan your ML model](../scan/index.md)
 :::
 
@@ -117,13 +117,13 @@ print(f"result: {result.passed} with metric {result.metric}")
 
 ::::{tab-set}
 
-:::{tab-item} Model as input
+:::{tab-item} _Model as input
 Example using a two performance tests
 
 ```python
 from giskard import wrap_model, Dataset, test_f1, test_accuracy, Suite
 
-# Define our Giskard Model
+# Define our Giskard _Model
 wrapped_dataset = Dataset(...)
 
 # Create a suite and add a F1 test and an accuracy test
@@ -232,7 +232,7 @@ class-based method.
 * <mark style="color:red;">**`parameters`**</mark> : **Your parameters need to have a type defined.** Here is the type
   allowed as your test parameters:
     * `Dataset` A giskard dataset, [wrap your dataset](../scan/index.md#wrap-your-dataset)
-    * `BaseModel` A giskard model, [wrap your model](../scan/index.md#wrap-your-model)
+    * `_BaseModel` A giskard model, [wrap your model](../scan/index.md#wrap-your-model)
     * `int/float/bool/str`  Any primitive type can be used
 * <mark style="color:red;">**`return`**</mark> The result of your test must be either a bool or a TestResult:
     * `bool` Either `True` if the test passed or `False` if it failed
@@ -286,7 +286,7 @@ In order to define a custom test class, you need to extends `GiskardTest` and im
   calling `super().__init__()`. **Your parameters need to have a type and default value specified.** You can should use
   **None** as a default value if you require a parameter to be specified. Here is the type allowed in the init method:
     * `Dataset` A giskard dataset, [wrap your dataset](../scan/index.md#3-wrap-your-dataset)
-    * `BaseModel` A giskard model, [wrap your model](../scan/index.md#2-wrap-your-model)
+    * `_BaseModel` A giskard model, [wrap your model](../scan/index.md#2-wrap-your-model)
     * `int/float/bool/str`  Any primitive type can be used
 * <mark style="color:red;">**`execute`**</mark> The execute method will be called to perform the test, you will be able
   to access all the parameters set by the initialization method. Your method can return two type of results:

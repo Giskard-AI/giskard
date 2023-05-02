@@ -1,7 +1,7 @@
 import warnings
 from typing import Optional, Sequence
 
-from ..models.base import BaseModel
+from ..models.base import _BaseModel
 from .. import Dataset
 from ..core.model_validation import validate_model
 from .registry import DetectorRegistry
@@ -19,7 +19,7 @@ class Scanner:
         self.params = params or dict()
         self.only = only
 
-    def analyze(self, model: BaseModel, dataset: Dataset) -> ScanResult:
+    def analyze(self, model: _BaseModel, dataset: Dataset) -> ScanResult:
         """Runs the analysis of a model and dataset, detecting issues."""
         validate_model(model=model, validate_ds=dataset)
 

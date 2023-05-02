@@ -5,11 +5,11 @@ from typing import Union
 from giskard import SKLearnModel
 from giskard.models.base.wrapper import WrapperModel
 from giskard.core.core import SupportedModelTypes
-from giskard.models.base import MODEL_CLASS_PKL, BaseModel
+from giskard.models.base import MODEL_CLASS_PKL, _BaseModel
 from tests.utils import MockedClient
 
 
-def test_custom_model(linear_regression_diabetes: BaseModel):
+def test_custom_model(linear_regression_diabetes: _BaseModel):
     with MockedClient() as (client, mr):
         class MyModel(WrapperModel):
             @classmethod

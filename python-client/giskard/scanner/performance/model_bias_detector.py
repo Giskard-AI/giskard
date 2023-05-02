@@ -3,7 +3,7 @@ import pandas as pd
 from sklearn import metrics
 from typing import Optional, Sequence
 
-from ...models.base import BaseModel
+from ...models.base import _BaseModel
 from ...models._precooked import PrecookedModel
 from ... import Dataset
 from ...slicing.utils import get_slicer
@@ -23,7 +23,7 @@ class ModelBiasDetector:
         self.threshold = threshold
         self.method = method
 
-    def run(self, model: BaseModel, dataset: Dataset):
+    def run(self, model: _BaseModel, dataset: Dataset):
         # Check if we have enough data to run the scan
         if len(dataset) < 100:
             warning("Skipping model bias scan: the dataset is too small.")
@@ -97,7 +97,7 @@ class ModelBiasDetector:
     def _find_issues(
         self,
         slices: Sequence[SlicingFunction],
-        model: BaseModel,
+        model: _BaseModel,
         dataset: Dataset,
     ) -> Sequence[PerformanceIssue]:
         # Use a precooked model to speed up the tests
@@ -113,7 +113,7 @@ class IssueFinder:
         self.metrics = metrics
         self.threshold = threshold
 
-    def detect(self, model: BaseModel, dataset: Dataset, slices: Sequence[SlicingFunction]):
+    def detect(self, model: _BaseModel, dataset: Dataset, slices: Sequence[SlicingFunction]):
         # Prepare metrics
         metrics = self._get_default_metrics(model) if self.metrics is None else self.metrics
         metrics = [get_metric(m) for m in metrics]
@@ -132,14 +132,14 @@ class IssueFinder:
             [max(group, key=lambda i: i.importance) for group in issues_by_slice.values()], key=lambda i: i.importance
         )
 
-    def _get_default_metrics(self, model: BaseModel):
+    def _get_default_metrics(self, model: _BaseModel):
         if model.is_classification:
             return ["accuracy", "f1", "precision", "recall"]
 
         return ["mse"]
 
     def _detect_for_metric(
-        self, model: BaseModel, dataset: Dataset, slices: Sequence[SlicingFunction], metric: PerformanceMetric
+        self, model: _BaseModel, dataset: Dataset, slices: Sequence[SlicingFunction], metric: PerformanceMetric
     ):
         # Calculate the metric on the reference dataset
         ref_metric_val = metric(model, dataset)
