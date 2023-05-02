@@ -84,11 +84,11 @@ class WrapperModel(BaseModel, ABC):
         return raw_predictions
 
     @configured_validate_arguments
-    def predict_df(self, df: pd.DataFrame):
+    def _predict_df(self, df: pd.DataFrame):
         if self.data_preprocessing_function:
             df = self.data_preprocessing_function(df)
 
-        raw_prediction = self.predict_proba(df)
+        raw_prediction = self.model_predict(df)
         raw_prediction = self._postprocess(raw_prediction)
 
         return raw_prediction

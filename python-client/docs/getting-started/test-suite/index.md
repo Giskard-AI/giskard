@@ -38,11 +38,11 @@ You can see all our tests in the [📖 Test Catalog](../../guides/test-catalog/i
 :::{tab-item} Drift tests
 
 ```python
-from giskard import wrap_model, wrap_dataset, test_drift_prediction_ks
+from giskard import wrap_model, Dataset, test_drift_prediction_ks
 
 wrapped_model = wrap_model(...)
-train_df = wrap_dataset(...)
-test_df = wrap_dataset(...)
+train_df = Dataset(...)
+test_df = Dataset(...)
 
 result = test_drift_prediction_ks(model=wrapped_model, actual_dataset=test_df, reference_dataset=train_df,
                                   classification_label='CALIFORNIA CRISIS', threshold=0.5).execute()
@@ -62,10 +62,10 @@ one. Then you need to initialize the test and execute it, it will return a **Tes
 :::{tab-item} Performance tests
 
 ```python
-from giskard import wrap_model, wrap_dataset, test_f1
+from giskard import wrap_model, Dataset, test_f1
 
 wrapped_model = wrap_model(...)
-wrapped_dataset = wrap_dataset(...)
+wrapped_dataset = Dataset(...)
 
 result = test_f1(dataset=wrapped_dataset, model=wrapped_model).execute()
 
@@ -77,10 +77,10 @@ print(f"result: {result.passed} with metric {result.metric}")
 :::{tab-item} Metamorphic tets
 
 ```python
-from giskard import wrap_model, wrap_dataset, test_metamorphic_invariance, transformation_function
+from giskard import wrap_model, Dataset, test_metamorphic_invariance, transformation_function
 
 wrapped_model = wrap_model(...)
-wrapped_dataset = wrap_dataset(...)
+wrapped_dataset = Dataset(...)
 
 
 @transformation_function
@@ -101,10 +101,10 @@ to see how to create custom transformations
 :::{tab-item} Statistic tests
 
 ```python
-from giskard import wrap_model, wrap_dataset, test_right_label
+from giskard import wrap_model, Dataset, test_right_label
 
 wrapped_model = wrap_model(...)
-wrapped_dataset = wrap_dataset(...)
+wrapped_dataset = Dataset(...)
 
 result = test_right_label(wrapped_model, wrapped_dataset, 'SUCCESS').execute()
 print(f"result: {result.passed} with metric {result.metric}")
@@ -121,10 +121,10 @@ print(f"result: {result.passed} with metric {result.metric}")
 Example using a two performance tests
 
 ```python
-from giskard import wrap_model, wrap_dataset, test_f1, test_accuracy, Suite
+from giskard import wrap_model, Dataset, test_f1, test_accuracy, Suite
 
 # Define our Giskard Model
-wrapped_dataset = wrap_dataset(...)
+wrapped_dataset = Dataset(...)
 
 # Create a suite and add a F1 test and an accuracy test
 # Note that all the parameters are specified excect dataset

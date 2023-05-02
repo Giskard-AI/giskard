@@ -10,10 +10,9 @@ from giskard.client.python_utils import warning
 from giskard.core.core import ModelMeta, ModelType
 from giskard.core.core import SupportedModelTypes
 from giskard.core.validation import validate_is_pandasdataframe, configured_validate_arguments
-from giskard.datasets.base import Dataset
 from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction
 from giskard.models.base import BaseModel
-from giskard import WrapperModel
+from giskard import WrapperModel, Dataset
 
 
 @configured_validate_arguments

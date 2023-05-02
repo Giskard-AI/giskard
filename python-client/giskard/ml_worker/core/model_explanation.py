@@ -9,7 +9,7 @@ import shap
 from eli5.lime import TextExplainer
 
 from giskard.models.base import BaseModel
-from giskard.datasets.base import Dataset
+from giskard import Dataset
 from giskard.ml_worker.utils.logging import timer
 
 logger = logging.getLogger(__name__)
@@ -37,7 +37,7 @@ def explain(model: BaseModel, dataset: Dataset, input_data: Dict):
     input_df = prepare_df(pd.DataFrame([input_data]))
 
     def predict_array(array):
-        return model.predict_df(prepare_df(pd.DataFrame(array, columns=list(df.columns))))
+        return model._predict_df(prepare_df(pd.DataFrame(array, columns=list(df.columns))))
 
     example = background_example(df, dataset.column_types)
     kernel = shap.KernelExplainer(predict_array, example)
@@ -59,7 +59,7 @@ def explain(model: BaseModel, dataset: Dataset, input_data: Dict):
 @timer()
 def explain_text(model: BaseModel, input_df: pd.DataFrame, text_column: str, text_document: str, n_samples: int):
     text_explainer = TextExplainer(random_state=42, n_samples=n_samples)
-    prediction_function = text_explanation_prediction_wrapper(model.predict_df, input_df, text_column)
+    prediction_function = text_explanation_prediction_wrapper(model._predict_df, input_df, text_column)
     text_explain_attempts = 10
     try:
         for i in range(text_explain_attempts):

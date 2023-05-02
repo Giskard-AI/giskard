@@ -1,9 +1,9 @@
 Datasets
 ============
 Currently we only support **tabular** or **NLP** data types. Your data must be based on a :code:`pandas.DataFrame` and wrapped
-with our own :class:`~.giskard.Dataset` class. The wrapping is done via the :func:`~.giskard.wrap_dataset` factory method.
+with our own :class:`~.giskard.Dataset` class. The wrapping is done via the :func:`~.giskard.Dataset` factory method.
 
-.. autofunction:: giskard.wrap_dataset
+.. autofunction:: giskard.Dataset
 
 .. autoclass:: giskard.Dataset
 

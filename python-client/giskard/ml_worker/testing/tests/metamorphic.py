@@ -1,8 +1,7 @@
 import pandas as pd
 
-from giskard import test
+from giskard import test, Dataset
 from giskard.core.core import SupportedModelTypes
-from giskard.datasets.base import Dataset
 from giskard.ml_worker.core.test_result import TestResult, TestMessage, TestMessageLevel
 from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction
 from giskard.ml_worker.testing.registry.transformation_function import TransformationFunction

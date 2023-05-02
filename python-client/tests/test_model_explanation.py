@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 
 from giskard.models.base import BaseModel
-from giskard.datasets.base import Dataset
+from giskard import Dataset
 from giskard.ml_worker.core.model_explanation import explain, explain_text
 
 

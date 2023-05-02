@@ -3,7 +3,7 @@ import pandas as pd
 from typing import Optional, Iterable
 
 from .base import BaseModel, ModelType, ModelPredictionResults
-from ..datasets.base import Dataset
+from .. import Dataset
 
 
 class PrecookedModel(BaseModel):
@@ -62,8 +62,8 @@ class PrecookedModel(BaseModel):
             all_predictions=all_predictions,
         )
 
-    def predict_proba(self, df: pd.DataFrame):
+    def model_predict(self, df: pd.DataFrame):
         raise NotImplementedError()
 
-    def predict_df(self, df: pd.DataFrame):
+    def _predict_df(self, df: pd.DataFrame):
         raise NotImplementedError()

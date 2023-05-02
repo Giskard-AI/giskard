@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from typing import Sequence, List, Optional
 
 from .slice import QueryBasedSliceFunction
-from ..datasets.base import Dataset
+from .. import Dataset
 
 
 class BaseSlicer(ABC):

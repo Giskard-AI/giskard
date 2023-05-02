@@ -1,6 +1,6 @@
 import pandas as pd
 from unittest import mock
-from giskard.datasets import wrap_dataset
+from giskard import Dataset
 from giskard.datasets.metadata import MetadataProviderRegistry, MetadataProvider
 from giskard.datasets.metadata.text_metadata_provider import TextMetadataProvider
 
@@ -24,7 +24,7 @@ def test_dataset_metadata_indexer():
     MetadataProviderRegistry.register(provider)
 
     df = pd.DataFrame({"col1": ["hello", "world"], "col2": ["CAT1", "CAT2"], "col3": [1, 2]})
-    dataset = wrap_dataset(df, column_types={"col1": "text", "col2": "category", "col3": "numeric"})
+    dataset = Dataset(df, column_types={"col1": "text", "col2": "category", "col3": "numeric"})
 
     metadata = dataset.column_meta["col1", "test_meta"]
     assert provider.generate_metadata.is_called_once()

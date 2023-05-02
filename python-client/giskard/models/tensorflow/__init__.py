@@ -40,5 +40,5 @@ class TensorFlowModel(MLFlowBasedModel):
                                      path=local_path,
                                      mlflow_model=mlflow_meta)
 
-    def predict_proba(self, data):
+    def model_predict(self, data):
         return self.model.predict(data)

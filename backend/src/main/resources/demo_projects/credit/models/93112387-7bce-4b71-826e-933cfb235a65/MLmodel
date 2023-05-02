@@ -3,7 +3,7 @@ flavors:
     env: conda.yaml
     loader_module: mlflow.sklearn
     model_path: model.pkl
-    predict_fn: predict_proba
+    predict_fn: model_predict
     python_version: 3.7.14
   sklearn:
     code: null

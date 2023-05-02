@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 from ..issues import Issue, IssueInfo
 from ...models.base import BaseModel
-from ...datasets.base import Dataset
+from ... import Dataset
 from .metrics import PerformanceMetric
 from ...ml_worker.testing.registry.slicing_function import SlicingFunction
 

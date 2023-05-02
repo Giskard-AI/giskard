@@ -2,7 +2,7 @@ import warnings
 from typing import Optional, Sequence
 
 from ..models.base import BaseModel
-from ..datasets.base import Dataset
+from .. import Dataset
 from ..core.model_validation import validate_model
 from .registry import DetectorRegistry
 from .result import ScanResult

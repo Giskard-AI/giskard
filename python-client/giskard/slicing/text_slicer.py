@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 from typing import Optional, Sequence
 
-from giskard.datasets.base import Dataset
+from .. import Dataset
 from giskard.slicing.category_slicer import CategorySlicer
 from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction
 

@@ -1,5 +1,5 @@
 from ..models.base import BaseModel
-from ..datasets.base import Dataset
+from .. import Dataset
 from .scanner import Scanner
 
 

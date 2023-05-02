@@ -3,7 +3,7 @@ from sklearn import datasets, linear_model
 from sklearn.metrics import mean_squared_error
 
 from giskard.core.core import SupportedModelTypes
-from giskard.datasets.base import Dataset
+from giskard import Dataset
 from giskard.ml_worker.utils.logging import Timer
 from giskard.models.sklearn import SKLearnModel
 

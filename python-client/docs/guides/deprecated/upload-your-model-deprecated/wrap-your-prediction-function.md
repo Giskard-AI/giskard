@@ -26,26 +26,26 @@ Here is an [example](https://colab.research.google.com/drive/1K6L9IOryfphNzK4hPi
 
 ```python
 def wrapped_prediction_function(X):
-  #Create a new numerical variable that computes the Sepal area
-  X["sepal area"] = X["sepal length (cm)"] * X["sepal width (cm)"]
-  
-  #Turn sepal width (cm) into a categorical variable
-  bins = [-np.inf, 2.5, 3.5, np.inf]
-  labels = ["small","medium","big"]
-  X["cat_sepal_width"] = pd.cut(X["sepal width (cm)"], bins=bins, labels=labels)
+    # Create a new numerical variable that computes the Sepal area
+    X["sepal area"] = X["sepal length (cm)"] * X["sepal width (cm)"]
 
-  #Scale all the numerical variables
-  num_cols = ["sepal area", "petal length (cm)", "petal width (cm)"]
-  X[num_cols] = std_slc.transform(X[num_cols])
+    # Turn sepal width (cm) into a categorical variable
+    bins = [-np.inf, 2.5, 3.5, np.inf]
+    labels = ["small", "medium", "big"]
+    X["cat_sepal_width"] = pd.cut(X["sepal width (cm)"], bins=bins, labels=labels)
 
-  #Use OneHotEncoder with cat_sepal_width
-  arr =  one_hot_encoder.transform(X[['cat_sepal_width']]).toarray()
-  X = X.join(pd.DataFrame(arr))
+    # Scale all the numerical variables
+    num_cols = ["sepal area", "petal length (cm)", "petal width (cm)"]
+    X[num_cols] = std_slc.transform(X[num_cols])
 
-  #Remove Sepal length, sepal width and cat_sepal_width
-  X = X.drop(columns= ["sepal width (cm)", "sepal length (cm)", "cat_sepal_width"])
+    # Use OneHotEncoder with cat_sepal_width
+    arr = one_hot_encoder.transform(X[['cat_sepal_width']]).toarray()
+    X = X.join(pd.DataFrame(arr))
 
-  return knn.predict_proba(X)
+    # Remove Sepal length, sepal width and cat_sepal_width
+    X = X.drop(columns=["sepal width (cm)", "sepal length (cm)", "cat_sepal_width"])
+
+    return knn.model_predict(X)
 ```
 
 Then you can easily upload your `wrapped_prediction_function` using the following code
@@ -108,12 +108,12 @@ Then to upload to Giskard, you just need to call the `predict_proba` method of t
 
 ```python
 enron.upload_model_and_df(
-    prediction_function=clf.predict_proba, 
+    prediction_function=clf.model_predict,
     model_type='classification',
-    df=test_data, #the dataset you want to use to inspect your model
-    column_types=column_types, #all the column types of df
-    target='Target', #the column name in df corresponding to the actual target variable (ground truth).
-    feature_names=list(feature_types.keys()),#list of the feature names of prediction_function
+    df=test_data,  #the dataset you want to use to inspect your model
+    column_types=column_types,  #all the column types of df
+    target='Target',  #the column name in df corresponding to the actual target variable (ground truth).
+    feature_names=list(feature_types.keys()),  #list of the feature names of prediction_function
     classification_labels=clf.classes_
 )
 ```

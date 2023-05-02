@@ -101,34 +101,39 @@ Make sure that `prediction_function`(`df`\[feature\_names]) gets executed **with
 ## Examples
 
 ```python
-!pip install giskard
-!giskard worker start
+!pip
+install
+giskard
+!giskard
+worker
+start
 
 from giskard import GiskardClient
 
 client = GiskardClient(url, token)
 
-#If you're creating your project for the first time
-credit_scoring = client.create_project("credit_scoring", "Credit scoring project", "Predict the default probabilities of a credit demand")
+# If you're creating your project for the first time
+credit_scoring = client.create_project("credit_scoring", "Credit scoring project",
+                                       "Predict the default probabilities of a credit demand")
 
-#If your project is already created use 
-#project = client.get_project("credit_scoring")
+# If your project is already created use 
+# project = client.get_project("credit_scoring")
 
 credit_scoring.upload_model_and_df(
-    prediction_function=clf.predict_proba,
+    prediction_function=clf.model_predict,
     model_type='classification',
     df=test_data,
     column_types={
-        'credit_id':'category',
-        'credit_amount':'numeric',
-        'credit_category':'category',
-        'credit_application':'text',
+        'credit_id': 'category',
+        'credit_amount': 'numeric',
+        'credit_category': 'category',
+        'credit_application': 'text',
         'Is_default': 'category'
-        },
-    target = 'Is_default',
-    feature_names=['credit_amount','credit_category','credit_application'],
-    classification_labels=['Not default','Default']
-    )
+    },
+    target='Is_default',
+    feature_names=['credit_amount', 'credit_category', 'credit_application'],
+    classification_labels=['Not default', 'Default']
+)
 ```
 
 :::{hint}

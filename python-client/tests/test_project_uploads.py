@@ -10,7 +10,7 @@ from giskard.core.dataset_validation import validate_column_categorization, vali
 from giskard.models.base import ModelPredictionResults
 from giskard.core.model_validation import validate_classification_prediction, validate_deterministic_model
 from giskard.core.validation import validate_is_pandasdataframe
-from giskard.datasets.base import Dataset
+from giskard import Dataset
 from giskard.models.sklearn import SKLearnModel
 
 data = np.array(["g", "e", "e", "k", "s"])

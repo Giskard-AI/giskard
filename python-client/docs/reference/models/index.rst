@@ -53,7 +53,7 @@ These classes are based on the following base classes:
 
 .. autoclass:: giskard.BaseModel
    .. automethod:: prepare_dataframe
-   .. automethod:: predict_df
+   .. automethod:: _predict_df
    .. automethod:: predict
    .. automethod:: predict
    .. automethod:: download

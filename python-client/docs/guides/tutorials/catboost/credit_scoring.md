@@ -1,11 +1,12 @@
 # Credit scoring (catboost model)
 
 ## Libraries import
+
 ```python
 import pandas as pd
 from catboost import CatBoostClassifier
 from sklearn import model_selection
-from giskard import wrap_model, wrap_dataset
+from giskard import wrap_model, Dataset
 ```
 
 ## Wrapping dataset
@@ -42,7 +43,7 @@ df = pd.read_csv(
 )
 ```
 ```python
-wrapped_dataset = wrap_dataset(df, 
+wrapped_dataset = Dataset(df, 
                                name='Test german credit scoring dataset', 
                                target="default", 
                                column_types=column_types)

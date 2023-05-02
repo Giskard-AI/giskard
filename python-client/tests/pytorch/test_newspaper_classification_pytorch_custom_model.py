@@ -74,7 +74,7 @@ def test_newspaper_classification_pytorch_custom_model():
     class my_PyTorchModel(PyTorchModel):
         should_save_model_class = True
 
-        def predict_proba(self, df):
+        def model_predict(self, df):
             def predict_proba(text):
                 with torch.no_grad():
                     text = torch.tensor(text_pipeline(text))

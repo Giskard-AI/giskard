@@ -1,13 +1,13 @@
 import pandas as pd
 import tests.utils
 
-from giskard import AutoSerializableModel
+from giskard import Model
 
 
 def test_autoserializablemodel(german_credit_raw_model, german_credit_data):
-    class my_custom_model(AutoSerializableModel):
+    class my_custom_model(Model):
 
-        def predict_proba(self, some_df: pd.DataFrame):
+        def model_predict(self, some_df: pd.DataFrame):
             return self.model.predict_proba(some_df)
 
     my_model = my_custom_model(

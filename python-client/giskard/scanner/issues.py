@@ -3,7 +3,7 @@ from typing import Optional
 from dataclasses import dataclass
 from abc import ABC, abstractmethod
 
-from ..datasets import Dataset
+from .. import Dataset
 from ..models.base import BaseModel
 
 

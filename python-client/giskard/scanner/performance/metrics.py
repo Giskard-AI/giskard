@@ -2,7 +2,7 @@ import sklearn.metrics
 from abc import ABC, ABCMeta, abstractmethod
 
 from ...models.base import BaseModel
-from ...datasets.base import Dataset
+from ... import Dataset
 
 
 class PerformanceMetric(ABC):

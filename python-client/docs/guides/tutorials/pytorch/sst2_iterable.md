@@ -1,6 +1,7 @@
 # `SST2-XLMR_BASE_ENCODER`
 
 ## Libraries import
+
 ```python
 import pandas as pd
 import torch
@@ -11,7 +12,7 @@ from torch.hub import load_state_dict_from_url
 from torchdata.datapipes.iter import IterableWrapper
 from torchtext.datasets import SST2
 from torchtext.models import RobertaClassificationHead, XLMR_BASE_ENCODER
-from giskard import wrap_model, wrap_dataset
+from giskard import wrap_model, Dataset
 ```
 
 ## Wrap dataset
@@ -20,7 +21,7 @@ dev_datapipe = SST2(split="dev")
 dev_dataframe = pd.DataFrame(dev_datapipe, columns=["text", "label"])
 ```
 ```python
-wrapped_dataset = wrap_dataset(dev_dataframe.head(), 
+wrapped_dataset = Dataset(dev_dataframe.head(), 
                                name="test dataset", 
                                target="label")
 ```

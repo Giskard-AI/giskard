@@ -10,7 +10,7 @@ that relies on `cloudpickle` for serialisation as follows:
 from giskard import CustomModel
 class my_custom_model(CustomModel):
 
-    def predict_df(self, some_df: pd.DataFrame):
+    def _predict_df(self, some_df: pd.DataFrame):
         """
         Your code to extract predictions from some_df goes here
         """
@@ -32,7 +32,7 @@ from giskard import CustomModel
 import requests
 class my_url_based_model(CustomModel):
 
-    def predict_df(input_data: pd.DataFrame):
+    def _predict_df(input_data: pd.DataFrame):
         # Set up the API endpoint URL and parameters
         api_endpoint = "https://api.example.com/predict"
         api_params = {

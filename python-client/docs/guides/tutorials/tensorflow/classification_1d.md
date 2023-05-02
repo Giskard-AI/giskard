@@ -1,13 +1,14 @@
 # Sentiment analysis model
 
 ## Libraries import
+
 ```python
 from pathlib import Path
 import pandas as pd
 import tensorflow as tf
 from tensorflow.keras import layers
 import tests.utils
-from giskard import wrap_model, wrap_dataset
+from giskard import wrap_model, Dataset
 ```
 
 ## Wrap dataset
@@ -28,7 +29,7 @@ for text_batch, label_batch in raw_test_ds.take(782):
     test_df = pd.DataFrame.from_dict(test_dataset)
 ```
 ```python
-wrapped_dataset = wrap_dataset(test_df.head(), 
+wrapped_dataset = Dataset(test_df.head(), 
                                name="test dataset", 
                                target="Label")
 ```

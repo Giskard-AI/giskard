@@ -5,7 +5,7 @@ from typing import Optional, Sequence
 
 from ...models.base import BaseModel
 from ...models._precooked import PrecookedModel
-from ...datasets.base import Dataset
+from ... import Dataset
 from ...slicing.utils import get_slicer
 from ...slicing.text_slicer import TextSlicer
 from ...slicing.category_slicer import CategorySlicer

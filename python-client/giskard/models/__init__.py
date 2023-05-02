@@ -1,9 +1,18 @@
+import importlib
+import pickle
+from abc import ABC
 from importlib import import_module
-from typing import Callable, Optional, Iterable, Any
+from pathlib import Path
+from typing import Optional, Iterable, Any, Union
+
+import cloudpickle
+import mlflow
 
 import pandas as pd
+import yaml
 
-from giskard.core.core import ModelType
+from giskard.models.base import BaseModel
+from giskard.core.core import ModelType, ModelMeta, SupportedModelTypes
 from giskard.core.validation import configured_validate_arguments
 
 
@@ -40,272 +49,91 @@ def infer_ml_library(model):
     )
 
 
-@configured_validate_arguments
-def wrap_model(model,
-               model_type: ModelType,
-               data_preprocessing_function: Callable[[pd.DataFrame], Any] = None,
-               model_postprocessing_function: Callable[[Any], Any] = None,
-               name: Optional[str] = None,
-               feature_names: Optional[Iterable] = None,
-               classification_threshold: Optional[float] = 0.5,
-               classification_labels: Optional[Iterable] = None,
-               **kwargs):
+class Model(BaseModel, ABC):
     """
-    Wraps a trained model from :code:`sklearn`, :code:`catboost`, :code:`pytorch`, :code:`tensorflow` or
-    :code:`huggingface` into a Giskard model.
-
-    Args:
-        model (Union[BaseEstimator, PreTrainedModel, CatBoost, Module]):
-            Could be any model from :code:`sklearn`, :code:`catboost`, :code:`pytorch`, :code:`tensorflow` or :code:`huggingface`.
-            The standard model output required for Giskard is:
-
-            * if classification: an array of probabilities corresponding to d   ata entries (rows of pandas.DataFrame)
-                and classification_labels. In the case of binary classification, an array of probabilities is also accepted.
-                Make sure that the probability provided is for the first label provided in classification_labels.
-            * if regression: an array of predictions corresponding to data entries (rows of pandas.DataFrame) and outputs.
-        name (Optional[str]):
-             the name of the model.
-        model_type (ModelType):
-            The type of the model, either regression or classification.
-        data_preprocessing_function (Optional[Callable[[pd.DataFrame], Any]]):
-            A function that takes a pandas.DataFrame as raw input, applies preprocessing and returns any object
-            that could be directly fed to clf. You can also choose to include your preprocessing inside clf,
-            in which case no need to provide this argument.
-        model_postprocessing_function (Optional[Callable[[Any], Any]]):
-            A function that takes a clf output as input,
-            applies postprocessing and returns an object of the same type and shape as the clf output.
-        feature_names (Optional[Iterable[str]]):
-            list of feature names matching the column names in the data that correspond to the features which the model
-            trained on. By default, feature_names are all the Dataset columns except from target.
-        classification_threshold (float):
-            represents the classification model threshold, for binary
-            classification models.
-        classification_labels (Optional[Iterable[str]]):
-            that represents the classification labels, if model_type is
-            classification. Make sure the labels have the same order as the column output of clf.
-        **kwargs: Additional keyword arguments.
-
-    Returns:
-        Union[SKLearnModel, HuggingFaceModel, CatboostModel, PyTorchModel, TensorFlowModel]: The wrapped Giskard model.
-
+    A subclass of a BaseModel that wraps an existing model object (model) and uses it to make inference
     """
-    giskard_class = infer_ml_library(model)
-    print("Your model is successfully wrapped by Giskard's '"
-          + giskard_class.__name__ + "' wrapper class.")
-    return giskard_class(model=model,
-                         model_type=model_type,
-                         data_preprocessing_function=data_preprocessing_function,
-                         model_postprocessing_function=model_postprocessing_function,
-                         name=name,
-                         feature_names=feature_names,
-                         classification_threshold=classification_threshold,
-                         classification_labels=classification_labels,
-                         **kwargs)
+    should_save_model_class = True
+    model: Any
 
+    @configured_validate_arguments
+    def __init__(
+            self,
+            model: Any,
+            model_type: ModelType,
+            name: Optional[str] = None,
+            feature_names: Optional[Iterable] = None,
+            classification_threshold: Optional[float] = 0.5,
+            classification_labels: Optional[Iterable] = None,
+    ) -> None:
+        """
+        Initialize a new instance of the WrapperModel class.
 
-@configured_validate_arguments
-def model_from_sklearn(model, model_type: ModelType, name: Optional[str] = None,
-                       data_preprocessing_function: Callable[[pd.DataFrame], Any] = None,
-                       model_postprocessing_function: Callable[[Any], Any] = None,
-                       feature_names: Optional[Iterable] = None, classification_threshold: Optional[float] = 0.5,
-                       classification_labels: Optional[Iterable] = None):
-    """
-    Factory method that creates an instance of the `SKLearnModel` class.
+        Args:
+            model (Any): The model that will be wrapped.
+            model_type (ModelType): The type of the model. Must be a value from the `ModelType` enumeration.
+            name (str, optional): A name for the wrapper. Defaults to None.
+            feature_names (Optional[Iterable], optional): A list of feature names. Defaults to None.
+            classification_threshold (float, optional): The probability threshold for classification. Defaults to 0.5.
+            classification_labels (Optional[Iterable], optional): A list of classification labels. Defaults to None.
+        """
+        super().__init__(model_type, name, feature_names, classification_threshold, classification_labels)
+        self.model = model
+        giskard_class = infer_ml_library(self.model)
+        self.meta.loader_class = giskard_class.__name__
+        self.meta.loader_module = giskard_class.__module__
 
-    Parameters:
-        model: Any
-            The trained scikit-learn model object to wrap.
-        model_type: ModelType
-            The type of the model, either `ModelType.CLASSIFICATION` or `ModelType.REGRESSION`.
-        name: Optional[str], default=None
-            The name of the model.
-        data_preprocessing_function: Optional[Callable[[pd.DataFrame], Any]], default=None
-            A function that preprocesses the input data before it is fed to the model.
-        model_postprocessing_function: Optional[Callable[[Any], Any]], default=None
-            A function that post-processes the model's output.
-        feature_names: Optional[Iterable], default=None
-            A list of feature names.
-        classification_threshold: float, default=0.5
-            The threshold value used for classification models.
-        classification_labels: Optional[Iterable], default=None
-            A list of classification labels.
+    def save(self, local_path: Union[str, Path]) -> None:
+        super().save(local_path)
+        self.save_model(local_path)
 
-    Returns:
-        SKLearnModel
-            An instance of the `SKLearnModel` class.
-    """
-    from giskard import SKLearnModel
-    return SKLearnModel(model,
-                        model_type,
-                        name,
-                        data_preprocessing_function,
-                        model_postprocessing_function,
-                        feature_names,
-                        classification_threshold,
-                        classification_labels)
+    def save_model(self, local_path: Union[str, Path]) -> None:
+        giskard_class = getattr(importlib.import_module(self.meta.loader_module), self.meta.loader_class)
+        if str(giskard_class) in ["SKLearnModel", "CatBoostModel", "PyTorchModel", "TensorFlowModel"]:
+            giskard_class.save_model(local_path, mlflow.models.Model(model_uuid=str(self.id)))
+        elif str(giskard_class) == "HuggingFaceModel":
+            giskard_class.save_model(local_path)
+        else:
+            try:
+                model_file = Path(local_path) / "model.pkl"
+                with open(model_file, "wb") as f:
+                    cloudpickle.dump(self.model, f, protocol=pickle.DEFAULT_PROTOCOL)
+            except ValueError:
+                raise ValueError(
+                    "We couldn't find a suitable method to serialise your model. Please provide us with your own "
+                    "serialisation method by overriding the save_model() and load_model() methods.")
 
+    @classmethod
+    def load(cls, local_dir, **kwargs):
+        model_file = Path(local_dir)
+        assert model_file.exists(), f"Cannot find model {local_dir}."
+        with open(model_file / "giskard-model-meta.yaml") as f:
+            file_meta = yaml.load(f, Loader=yaml.Loader)
+            meta = ModelMeta(
+                name=file_meta["name"],
+                model_type=SupportedModelTypes[file_meta["model_type"]],
+                feature_names=file_meta["feature_names"],
+                classification_labels=file_meta["classification_labels"],
+                classification_threshold=file_meta["threshold"],
+                loader_module=file_meta["loader_module"],
+                loader_class=file_meta["loader_class"],
+            )
+        clazz = cls.determine_model_class(meta, local_dir)
+        return cls(model=clazz.load_model(model_file / "model.pkl"), **kwargs)
 
-@configured_validate_arguments
-def model_from_catboost(model, model_type: ModelType, name: Optional[str] = None,
-                        data_preprocessing_function: Callable[[pd.DataFrame], Any] = None,
-                        model_postprocessing_function: Callable[[Any], Any] = None,
-                        feature_names: Optional[Iterable] = None, classification_threshold: Optional[float] = 0.5,
-                        classification_labels: Optional[Iterable] = None):
-    """
-    Factory method that creates an instance of the `CatboostModel` class.
+    @classmethod
+    def load_model(cls, local_dir):
+        model_path = Path(local_dir)
+        if model_path.exists():
+            with open(model_path, "rb") as f:
+                model = cloudpickle.load(f)
+                return model
+        else:
+            raise ValueError(
+                f"Cannot load model with cloudpickle, "
+                f"{model_path} file not found and 'load_model' method isn't overriden"
+            )
 
-    Args:
-        model (Any): The trained Catboost model object to wrap.
-        model_type (ModelType): The type of the model, either `ModelType.CLASSIFICATION` or `ModelType.REGRESSION`.
-        name (Optional[str], optional): The name of the model. Defaults to None.
-        data_preprocessing_function (Optional[Callable[[pd.DataFrame], Any]], optional):
-            A function that preprocesses the input data before it is fed to the model. Defaults to None.
-        model_postprocessing_function (Optional[Callable[[Any], Any]], optional):
-            A function that post-processes the model's output. Defaults to None.
-        feature_names (Optional[Iterable], optional):
-            A list of feature names. Defaults to None.
-        classification_threshold (float, optional):
-            The threshold value used for classification models. Defaults to 0.5.
-        classification_labels (Optional[Iterable], optional):
-            A list of classification labels. Defaults to None.
-
-    Returns:
-        CatboostModel: An instance of the `CatboostModel` class.
-    """
-    from giskard import CatboostModel
-    return CatboostModel(model,
-                         model_type,
-                         name,
-                         data_preprocessing_function,
-                         model_postprocessing_function,
-                         feature_names,
-                         classification_threshold,
-                         classification_labels)
-
-
-@configured_validate_arguments
-def model_from_pytorch(model, model_type: ModelType, torch_dtype=None, device: Optional[str] = "cpu",
-                       name: Optional[str] = None,
-                       data_preprocessing_function: Callable[[pd.DataFrame], Any] = None,
-                       model_postprocessing_function: Callable[[Any], Any] = None,
-                       feature_names: Optional[Iterable] = None, classification_threshold: Optional[float] = 0.5,
-                       classification_labels: Optional[Iterable] = None, iterate_dataset=True):
-    """
-    Factory method that creates an instance of the `PyTorchModel` class.
-
-    Args:
-        model (Any): The trained PyTorch model object to wrap.
-        model_type (ModelType): The type of the model, either `ModelType.CLASSIFICATION` or `ModelType.REGRESSION`.
-        torch_dtype (Optional[torch.dtype], optional): The data type of the input tensors. Defaults to torch.float32.
-        device (Optional[str], optional): The device to run the model on, either "cpu" or "cuda". Defaults to "cpu".
-        name (Optional[str], optional): The name of the model. Defaults to None.
-        data_preprocessing_function (Optional[Callable[[pd.DataFrame], Any]], optional):
-            A function that preprocesses the input data before it is fed to the model. Defaults to None.
-        model_postprocessing_function (Optional[Callable[[Any], Any]], optional):
-            A function that post-processes the model's output. Defaults to None.
-        feature_names (Optional[Iterable], optional):
-            A list of feature names. Defaults to None.
-        classification_threshold (float, optional):
-            The threshold value used for classification models. Defaults to 0.5.
-        classification_labels (Optional[Iterable], optional):
-            A list of classification labels. Defaults to None.
-        iterate_dataset (bool, optional): Whether to iterate over the dataset or feed it to the model at once.
-            Defaults to True.
-
-    Returns:
-        PyTorchModel: An instance of the `PyTorchModel` class.
-    """
-    from giskard import PyTorchModel
-    try:
-        import torch
-    except ImportError as e:
-        raise ImportError("Please install it via 'pip install torch'") from e
-
-    torch_dtype = torch.float32 if not torch_dtype else torch_dtype
-    return PyTorchModel(model,
-                        model_type,
-                        torch_dtype,
-                        device,
-                        name,
-                        data_preprocessing_function,
-                        model_postprocessing_function,
-                        feature_names,
-                        classification_threshold,
-                        classification_labels,
-                        iterate_dataset)
-
-
-@configured_validate_arguments
-def model_from_tensorflow(model, model_type: ModelType, name: Optional[str] = None,
-                          data_preprocessing_function: Callable[[pd.DataFrame], Any] = None,
-                          model_postprocessing_function: Callable[[Any], Any] = None,
-                          feature_names: Optional[Iterable] = None, classification_threshold: Optional[float] = 0.5,
-                          classification_labels: Optional[Iterable] = None):
-    """
-    Factory method that creates an instance of the `TensorFlowModel` class.
-
-    Args:
-        model (Any): The trained TensorFlow model object to wrap.
-        model_type (ModelType): The type of the model, either `ModelType.CLASSIFICATION` or `ModelType.REGRESSION`.
-        name (Optional[str], optional): The name of the model. Defaults to None.
-        data_preprocessing_function (Optional[Callable[[pd.DataFrame], Any]], optional):
-            A function that preprocesses the input data before it is fed to the model. Defaults to None.
-        model_postprocessing_function (Optional[Callable[[Any], Any]], optional):
-            A function that post-processes the model's output. Defaults to None.
-        feature_names (Optional[Iterable], optional):
-            A list of feature names. Defaults to None.
-        classification_threshold (float, optional):
-            The threshold value used for classification models. Defaults to 0.5.
-        classification_labels (Optional[Iterable], optional):
-            A list of classification labels. Defaults to None.
-
-    Returns:
-        TensorFlowModel: An instance of the `TensorFlowModel` class.
-    """
-    from giskard import TensorFlowModel
-    return TensorFlowModel(model,
-                           model_type,
-                           name,
-                           data_preprocessing_function,
-                           model_postprocessing_function,
-                           feature_names,
-                           classification_threshold,
-                           classification_labels)
-
-
-@configured_validate_arguments
-def model_from_huggingface(model, model_type: ModelType, name: Optional[str] = None,
-                           data_preprocessing_function: Callable[[pd.DataFrame], Any] = None,
-                           model_postprocessing_function: Callable[[Any], Any] = None,
-                           feature_names: Optional[Iterable] = None, classification_threshold: Optional[float] = 0.5,
-                           classification_labels: Optional[Iterable] = None):
-    """
-    Factory method that creates an instance of the `HuggingFaceModel` class.
-
-    Args:
-        model (Any): The trained Hugging Face model object to wrap.
-        model_type (ModelType): The type of the model, either `ModelType.CLASSIFICATION` or `ModelType.REGRESSION`.
-        name (Optional[str], optional): The name of the model. Defaults to None.
-        data_preprocessing_function (Optional[Callable[[pd.DataFrame], Any]], optional):
-            A function that preprocesses the input data before it is fed to the model. Defaults to None.
-        model_postprocessing_function (Optional[Callable[[Any], Any]], optional):
-            A function that post-processes the model's output. Defaults to None.
-        feature_names (Optional[Iterable], optional):
-            A list of feature names. Defaults to None.
-        classification_threshold (float, optional):
-            The threshold value used for classification models. Defaults to 0.5.
-        classification_labels (Optional[Iterable], optional):
-            A list of classification labels. Defaults to None.
-
-    Returns:
-        HuggingFaceModel: An instance of the `HuggingFaceModel` class.
-    """
-    from giskard import HuggingFaceModel
-    return HuggingFaceModel(model,
-                            model_type,
-                            name,
-                            data_preprocessing_function,
-                            model_postprocessing_function,
-                            feature_names,
-                            classification_threshold,
-                            classification_labels)
+    def model_predict(self, df: pd.DataFrame):
+        giskard_class = getattr(importlib.import_module(self.meta.loader_module), self.meta.loader_class)
+        return giskard_class.model_predict(df)

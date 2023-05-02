@@ -266,7 +266,7 @@ SMT = TypeVar('SMT', bound=SavableMeta)
 
 def unknown_annotations_to_kwargs(parameters: List[inspect.Parameter]) -> List[inspect.Parameter]:
     from giskard.models.base import BaseModel
-    from giskard.datasets.base import Dataset
+    from giskard import Dataset
     from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction
     from giskard.ml_worker.testing.registry.transformation_function import TransformationFunction
 

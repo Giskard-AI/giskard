@@ -71,7 +71,7 @@ class SKLearnModel(MLFlowBasedModel):
 
     def save_model(self, local_path, mlflow_meta):
         if self.is_classification:
-            pyfunc_predict_fn = "predict_proba"
+            pyfunc_predict_fn = "model_predict"
         elif self.is_regression:
             pyfunc_predict_fn = "predict"
         else:
@@ -85,7 +85,7 @@ class SKLearnModel(MLFlowBasedModel):
     def load_model(cls, local_dir):
         return mlflow.sklearn.load_model(local_dir)
 
-    def predict_proba(self, df):
+    def model_predict(self, df):
         if self.is_regression:
             return self.model.predict(df)
         else:

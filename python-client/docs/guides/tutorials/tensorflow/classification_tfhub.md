@@ -1,12 +1,13 @@
 # Bert model from `tensorflow_hub`
 
 ## Libraries import
+
 ```python
 import pandas as pd
 import pytest
 import tensorflow as tf
 from sklearn import model_selection
-from giskard import wrap_dataset, wrap_model
+from giskard import Dataset, wrap_model
 ```
 ## Wrap dataset
 ```python
@@ -23,7 +24,7 @@ x_train, x_test, y_train, y_test = model_selection.train_test_split(x, y,
 test_df = pd.DataFrame(list(zip(list(x_test), list(y_test))), columns=["Content", "Target"])
 ```
 ```python
-wrapped_dataset = wrap_dataset(test_df.head(), 
+wrapped_dataset = Dataset(test_df.head(), 
                                name="test dataset", 
                                target="Target")
 ```

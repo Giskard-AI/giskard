@@ -1,11 +1,12 @@
 # `AutoModelForSequenceClassification` pipeline
 
 ## Libraries import
+
 ```python
 # For the complete tutorial, check: https://huggingface.co/docs/transformers/tasks/sequence_classification
 import pandas as pd
 from transformers import pipeline
-from giskard import wrap_model, wrap_dataset
+from giskard import wrap_model, Dataset
 ```
 ## Wrap dataset
 ```python
@@ -18,7 +19,7 @@ raw_data = {
 test_df = pd.DataFrame(raw_data, columns=["text", "label"], index=[0])
 ```
 ```python
-wrapped_dataset = wrap_dataset(test_df, 
+wrapped_dataset = Dataset(test_df, 
                                name="test dataset", 
                                target="label")
 ```

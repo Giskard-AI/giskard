@@ -11,7 +11,7 @@ from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
 
 from giskard.core.core import SupportedModelTypes
-from giskard.datasets.base import Dataset
+from giskard import Dataset
 from giskard.ml_worker.utils.logging import Timer
 from giskard.models.catboost import CatboostModel
 from giskard.models.sklearn import SKLearnModel

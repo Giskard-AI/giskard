@@ -1,7 +1,7 @@
 import pandas as pd
 from giskard.client.python_utils import warning
 from giskard.core.core import SupportedColumnTypes
-from giskard.datasets.base import Dataset
+from giskard import Dataset
 from giskard.datasets import low_stat_threshold
 
 

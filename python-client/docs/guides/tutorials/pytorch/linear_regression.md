@@ -1,6 +1,7 @@
 # Linear regression with neural networks
 
 ## Libraries import
+
 ```python
 import numpy as np
 import pandas as pd
@@ -9,7 +10,7 @@ import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import TensorDataset, DataLoader
 from torch.utils.data.dataset import random_split
-from giskard import wrap_model, wrap_dataset
+from giskard import wrap_model, Dataset
 ```
 
 ## Wrap dataset
@@ -22,7 +23,7 @@ y = true_a + true_b * x + 0.1 * np.random.randn(100, 1)
 df = pd.DataFrame({"x": np.squeeze(x), "y": np.squeeze(y)})
 ```
 ```python
-wrapped_dataset = wrap_dataset(df.head(), 
+wrapped_dataset = Dataset(df.head(), 
                                name="test dataset", 
                                target="y")
 ```

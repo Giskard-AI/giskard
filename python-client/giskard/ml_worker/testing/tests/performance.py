@@ -13,8 +13,7 @@ from sklearn.metrics import (
     roc_auc_score,
 )
 
-from giskard import test
-from giskard.datasets.base import Dataset
+from giskard import test, Dataset
 from giskard.ml_worker.testing.utils import Direction
 from giskard.ml_worker.core.test_result import TestResult
 from giskard.ml_worker.testing.registry.giskard_test import GiskardTest

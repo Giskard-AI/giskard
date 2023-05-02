@@ -2,7 +2,7 @@ from enum import Enum
 from functools import wraps
 from typing import Optional
 
-from giskard.datasets.base import Dataset
+from giskard import Dataset
 from giskard.core.core import SupportedModelTypes
 
 

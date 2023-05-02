@@ -43,7 +43,8 @@ The `pandas.DataFrame` you provide should contain the raw data before prepocessi
 etc.). The preprocessing steps should be wrapped in a function that gets assigned to `data_preprocessing_function` of
 the [wrap_model](../../reference/models/index.rst#giskard.wrap_model) method.
 
-### Usage of [wrap_dataset](../../reference/datasets/index.rst#giskard.wrap_dataset)
+### Usage of [Dataset](../../reference/datasets/index.rst#giskard.wrap_dataset)
+
 ```python
 import pandas as pd
 
@@ -52,15 +53,15 @@ iris_df = pd.DataFrame({"sepal length": [5.1],
                         "size": ["medium"],
                         "species": ["Setosa"]})
 
-from giskard import wrap_dataset
+from giskard import Dataset
 
-wrapped_dataset = wrap_dataset(
-  dataset=iris_df, 
-  target="species", # Optional but a MUST if available
-  cat_columns=["size"] # Optional but a MUST if available. Inferred automatically if not.
+wrapped_dataset = Dataset(
+  dataset=iris_df,
+  target="species",  # Optional but a MUST if available
+  cat_columns=["size"]  # Optional but a MUST if available. Inferred automatically if not.
   # name="my_iris_dataset", # Optional
   # column_types=None # # Optional: if not provided, it is inferred automatically
-  )
+)
 ```
 * <mark style="color:red;">**`Mandatory parameters`**</mark>
   * `dataset`: A `pandas.DataFrame` that contains the raw data (before all the preprocessing steps) and the actual 

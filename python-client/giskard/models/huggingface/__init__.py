@@ -111,7 +111,7 @@ class HuggingFaceModel(WrapperModel):
     def save_model(self, local_path):
         self.model.save_pretrained(local_path)
 
-    def predict_proba(self, df: pd.DataFrame):
+    def model_predict(self, df: pd.DataFrame):
         predictions = self._get_predictions(df)
 
         if self.is_classification and hasattr(predictions, "logits"):
