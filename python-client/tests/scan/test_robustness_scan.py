@@ -3,6 +3,6 @@ from giskard.scanner.robustness.text_perturbation_detector import TextPerturbati
 
 def test_perturbation_classification(enron_model, enron_data):
     # @TODO: add feature-specific tests
-    analyzer = TextPerturbationDetector()
+    analyzer = TextPerturbationDetector(threshold=0.99)
     res = analyzer.run(enron_model, enron_data)
     assert res
