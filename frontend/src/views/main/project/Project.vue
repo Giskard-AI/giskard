@@ -2,12 +2,11 @@
   <div v-if="project" class="vertical-container">
     <v-toolbar flat dense light class="secondary--text text--lighten-2">
       <v-toolbar-title>
-        <router-link to="/main/projects">
-          Projects
+        <router-link :to="{ name: 'project-properties', params: { id } }">
+          <span class="text-subtitle-1">
+            {{ project.name }}
+          </span>
         </router-link>
-        <span class="text-subtitle-1">
-          <span class="mr-1">/</span>{{ project.name }}
-        </span>
       </v-toolbar-title>
       <v-spacer></v-spacer>
       <v-btn small tile color="primaryLight" class="primaryLightBtn mr-2" :to="{ name: 'project-properties' }" @click="tab = null">
