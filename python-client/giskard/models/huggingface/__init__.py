@@ -111,8 +111,8 @@ class HuggingFaceModel(WrapperModel):
     def save_model(self, local_path):
         self.model.save_pretrained(local_path)
 
-    def predict_proba(self, data):
-        predictions = self._get_predictions(data)
+    def predict_proba(self, df: pd.DataFrame):
+        predictions = self._get_predictions(df)
 
         if self.is_classification and hasattr(predictions, "logits"):
             if isinstance(self.model, torch.nn.Module):

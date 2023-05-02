@@ -10,12 +10,12 @@ class PrecookedModel(BaseModel):
     """A dummy model for internal usage."""
 
     def __init__(
-        self,
-        data: Dataset,
-        predictions: ModelPredictionResults,
-        model_type: ModelType,
-        feature_names: Optional[Iterable] = None,
-        classification_labels: Optional[Iterable] = None,
+            self,
+            data: Dataset,
+            predictions: ModelPredictionResults,
+            model_type: ModelType,
+            feature_names: Optional[Iterable] = None,
+            classification_labels: Optional[Iterable] = None,
     ):
         self._data = data
         self._predictions = predictions
@@ -61,6 +61,9 @@ class PrecookedModel(BaseModel):
             probabilities=probabilities,
             all_predictions=all_predictions,
         )
+
+    def predict_proba(self, df: pd.DataFrame):
+        raise NotImplementedError()
 
     def predict_df(self, df: pd.DataFrame):
         raise NotImplementedError()

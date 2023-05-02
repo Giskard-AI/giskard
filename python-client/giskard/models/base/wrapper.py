@@ -92,10 +92,6 @@ class WrapperModel(BaseModel, ABC):
 
         return raw_prediction
 
-    @abstractmethod
-    def predict_proba(self, df):
-        ...
-
     def save(self, local_path: Union[str, Path]) -> None:
         super().save(local_path)
 
