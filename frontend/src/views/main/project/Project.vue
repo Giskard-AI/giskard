@@ -12,7 +12,7 @@
       <v-spacer></v-spacer>
       <v-btn small tile color="primaryLight" class="primaryLightBtn mr-2" :to="{ name: 'project-properties' }" @click="tab = null">
         <v-icon dense left>mdi-file-cog-outline</v-icon>
-        Project properties
+        Properties
       </v-btn>
       <v-tooltip :disabled="mainStore.authAvailable" bottom>
         <template v-slot:activator="{ on, attrs }">
