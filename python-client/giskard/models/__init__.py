@@ -85,23 +85,23 @@ class Model(BaseModel, ABC):
 
     def save(self, local_path: Union[str, Path]) -> None:
         super().save(local_path)
-        self.save_model(local_path)
-
-    def save_model(self, local_path: Union[str, Path]) -> None:
         giskard_class = getattr(importlib.import_module(self.meta.loader_module), self.meta.loader_class)
         if str(giskard_class) in ["SKLearnModel", "CatBoostModel", "PyTorchModel", "TensorFlowModel"]:
             giskard_class.save_model(local_path, mlflow.models.Model(model_uuid=str(self.id)))
         elif str(giskard_class) == "HuggingFaceModel":
             giskard_class.save_model(local_path)
-        else:
-            try:
-                model_file = Path(local_path) / "model.pkl"
-                with open(model_file, "wb") as f:
-                    cloudpickle.dump(self.model, f, protocol=pickle.DEFAULT_PROTOCOL)
-            except ValueError:
-                raise ValueError(
-                    "We couldn't find a suitable method to serialise your model. Please provide us with your own "
-                    "serialisation method by overriding the save_model() and load_model() methods.")
+        else:  # default: cloudpickle
+            self.save_model(local_path)
+
+    def save_model(self, local_path: Union[str, Path]) -> None:
+        try:
+            model_file = Path(local_path) / "model.pkl"
+            with open(model_file, "wb") as f:
+                cloudpickle.dump(self.model, f, protocol=pickle.DEFAULT_PROTOCOL)
+        except ValueError:
+            raise ValueError(
+                "We couldn't find a suitable method to serialise your model. Please provide us with your own "
+                "serialisation method by overriding the save_model() and load_model() methods.")
 
     @classmethod
     def load(cls, local_dir, **kwargs):
