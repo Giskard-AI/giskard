@@ -68,7 +68,7 @@ def wrap_model(model,
         ("giskard.models.catboost", "CatboostModel"): [("catboost", "CatBoost")],
         ("giskard.models.pytorch", "PyTorchModel"): [("torch.nn", "Module")],
         ("giskard.models.tensorflow", "TensorFlowModel"): [("tensorflow", "Module")],
-        ("giskard.models.langchain", "LangchainModel"): [("langchain", "RetrievalQA")]
+        ("giskard.models.langchain", "LangchainModel"): [("langchain.chains", "RetrievalQA")]
     }
     for _giskard_class, _base_libs in _libraries.items():
         try:
