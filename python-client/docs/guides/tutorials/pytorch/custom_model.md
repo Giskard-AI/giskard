@@ -86,7 +86,7 @@ feature_names = ["text"]
 class my_PyTorchModel(PyTorchModel):
     should_save_model_class = True
 
-    def model_predict(self, df):
+    def predict_proba(self, df):
         def predict_proba(text):
             with torch.no_grad():
                 text = torch.tensor(text_pipeline(text))

@@ -85,7 +85,7 @@ class SKLearnModel(MLFlowBasedModel):
     def load_model(cls, local_dir):
         return mlflow.sklearn.load_model(local_dir)
 
-    def model_predict(self, df):
+    def predict_proba(self, df):
         if self.is_regression:
             return self.model.predict(df)
         else:

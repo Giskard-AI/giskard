@@ -139,7 +139,7 @@ def preprocessing_func(test_dataset):
 class tiny_bert_HuggingFaceModel(HuggingFaceModel):
     should_save_model_class = True
 
-    def model_predict(self, data):
+    def predict_proba(self, data):
         with torch.no_grad():
             predictions = self.model(**data).logits
         return predictions.detach().cpu().numpy()

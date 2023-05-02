@@ -14,6 +14,7 @@ import pandas as pd
 
 import pydantic
 import yaml
+import logging
 
 from giskard import Dataset
 from giskard.client.giskard_client import GiskardClient
@@ -22,6 +23,8 @@ from giskard.core.validation import configured_validate_arguments
 from giskard.ml_worker.utils.logging import Timer
 from giskard.path_utils import get_size
 from giskard.settings import settings
+
+logger = logging.getLogger(__name__)
 
 MODEL_CLASS_PKL = "ModelClass.pkl"
 
@@ -274,13 +277,79 @@ class BaseModel(ABC):
         timer.stop(f"Predicted dataset with shape {dataset.df.shape}")
         return result
 
-    @abstractmethod
+    @configured_validate_arguments
     def predict_df(self, df: pd.DataFrame):
+        raw_prediction = self.predict_proba(df)
+        raw_prediction = self._postprocess(raw_prediction)
+        return raw_prediction
+
+    @abstractmethod
+    def predict_proba(self, df: pd.DataFrame):
         """
         Inner method that does the actual inference of a prepared dataframe
         :param df: dataframe to predict
         """
         ...
+
+    def _postprocess(self, raw_predictions):
+
+        # Convert predictions to numpy array
+        raw_predictions = self._convert_to_numpy(raw_predictions)
+
+        # We try to automatically fix issues in the output shape
+        raw_predictions = self._possibly_fix_predictions_shape(raw_predictions)
+
+        return raw_predictions
+
+    def _convert_to_numpy(self, raw_predictions):
+        return np.asarray(raw_predictions)
+
+    def _possibly_fix_predictions_shape(self, raw_predictions):
+        if not self.is_classification:
+            return raw_predictions
+
+        # Ensure this is 2-dimensional
+        if raw_predictions.ndim <= 1:
+            raw_predictions = raw_predictions.reshape(-1, 1)
+
+        # Fix possible extra dimensions (e.g. batch dimension which was not squeezed)
+        if raw_predictions.ndim > 2:
+            logger.warning(
+                f"\nThe output of your model has shape {raw_predictions.shape}, but we expect a shape (n_entries, n_classes). \n"
+                "We will attempt to automatically reshape the output to match this format, please check that the results are consistent.",
+                exc_info=True,
+            )
+
+            raw_predictions = raw_predictions.squeeze(tuple(range(1, raw_predictions.ndim - 1)))
+
+            if raw_predictions.ndim > 2:
+                raise ValueError(
+                    f"The output of your model has shape {raw_predictions.shape}, but we expect it to be (n_entries, n_classes)."
+                )
+
+        # E.g. for binary classification, prediction should be of the form `(p, 1 - p)`.
+        # If a binary classifier returns a single prediction `p`, we try to infer the second class
+        # prediction as `1 - p`.
+        if self.is_binary_classification and raw_predictions.shape[-1] == 1:
+            logger.warning(
+                f"\nYour binary classification model prediction is of the shape {raw_predictions.shape}. \n"
+                f"In Giskard we expect the shape {(raw_predictions.shape[0], 2)} for binary classification models. \n"
+                "We automatically inferred the second class prediction but please make sure that \n"
+                "the probability output of your model corresponds to the first label of the \n"
+                f"classification_labels ({self.meta.classification_labels}) you provided us with.",
+                exc_info=True,
+            )
+
+            raw_predictions = np.append(raw_predictions, 1 - raw_predictions, axis=1)
+
+        # For classification models, the last dimension must be equal to the number of classes
+        if raw_predictions.shape[-1] != len(self.meta.classification_labels):
+            raise ValueError(
+                f"The output of your model has shape {raw_predictions.shape}, but we expect it to be (n_entries, n_classes), \n"
+                f"where `n_classes` is the number of classes in your model output ({len(self.meta.classification_labels)} in this case)."
+            )
+
+        return raw_predictions
 
     def upload(self, client: GiskardClient, project_key, validate_ds=None) -> None:
         """

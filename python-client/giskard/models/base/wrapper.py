@@ -5,7 +5,6 @@ from pathlib import Path
 from typing import Any, Callable, Optional, Iterable, Union
 
 import cloudpickle
-import numpy as np
 import pandas as pd
 
 from giskard.core.core import ModelType
@@ -79,10 +78,8 @@ class WrapperModel(BaseModel, ABC):
             raw_predictions = self.model_postprocessing_function(raw_predictions)
 
         # Convert predictions to numpy array
-        raw_predictions = self._convert_to_numpy(raw_predictions)
-
         # We try to automatically fix issues in the output shape
-        raw_predictions = self._possibly_fix_predictions_shape(raw_predictions)
+        raw_predictions = super()._postprocess(raw_predictions)
 
         return raw_predictions
 
@@ -91,63 +88,12 @@ class WrapperModel(BaseModel, ABC):
         if self.data_preprocessing_function:
             df = self.data_preprocessing_function(df)
 
-        raw_prediction = self.model_predict(df)
-        raw_prediction = self._postprocess(raw_prediction)
+        raw_prediction = super().predict_df(df)
 
         return raw_prediction
 
-    def _convert_to_numpy(self, raw_predictions):
-        return np.asarray(raw_predictions)
-
-    def _possibly_fix_predictions_shape(self, raw_predictions):
-        if not self.is_classification:
-            return raw_predictions
-
-        # Ensure this is 2-dimensional
-        if raw_predictions.ndim <= 1:
-            raw_predictions = raw_predictions.reshape(-1, 1)
-
-        # Fix possible extra dimensions (e.g. batch dimension which was not squeezed)
-        if raw_predictions.ndim > 2:
-            logger.warning(
-                f"\nThe output of your model has shape {raw_predictions.shape}, but we expect a shape (n_entries, n_classes). \n"
-                "We will attempt to automatically reshape the output to match this format, please check that the results are consistent.",
-                exc_info=True,
-            )
-
-            raw_predictions = raw_predictions.squeeze(tuple(range(1, raw_predictions.ndim - 1)))
-
-            if raw_predictions.ndim > 2:
-                raise ValueError(
-                    f"The output of your model has shape {raw_predictions.shape}, but we expect it to be (n_entries, n_classes)."
-                )
-
-        # E.g. for binary classification, prediction should be of the form `(p, 1 - p)`.
-        # If a binary classifier returns a single prediction `p`, we try to infer the second class
-        # prediction as `1 - p`.
-        if self.is_binary_classification and raw_predictions.shape[-1] == 1:
-            logger.warning(
-                f"\nYour binary classification model prediction is of the shape {raw_predictions.shape}. \n"
-                f"In Giskard we expect the shape {(raw_predictions.shape[0], 2)} for binary classification models. \n"
-                "We automatically inferred the second class prediction but please make sure that \n"
-                "the probability output of your model corresponds to the first label of the \n"
-                f"classification_labels ({self.meta.classification_labels}) you provided us with.",
-                exc_info=True,
-            )
-
-            raw_predictions = np.append(raw_predictions, 1 - raw_predictions, axis=1)
-
-        # For classification models, the last dimension must be equal to the number of classes
-        if raw_predictions.shape[-1] != len(self.meta.classification_labels):
-            raise ValueError(
-                f"The output of your model has shape {raw_predictions.shape}, but we expect it to be (n_entries, n_classes), \n"
-                f"where `n_classes` is the number of classes in your model output ({len(self.meta.classification_labels)} in this case)."
-            )
-
-        return raw_predictions
-
     @abstractmethod
-    def model_predict(self, df):
+    def predict_proba(self, df):
         ...
 
     def save(self, local_path: Union[str, Path]) -> None:

@@ -124,7 +124,7 @@ class PyTorchModel(MLFlowBasedModel):
                 "returns an object that can be passed as input for your model. "
             ) from err
 
-    def model_predict(self, data):
+    def predict_proba(self, data):
         self.model.to(self.device)
         self.model.eval()
 

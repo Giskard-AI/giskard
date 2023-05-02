@@ -102,7 +102,7 @@ from giskard import PyTorchModel
 class my_PyTorchModel(PyTorchModel):
     should_save_model_class = True
 
-    def model_predict(self, some_df: pd.DataFrame):
+    def predict_proba(self, some_df: pd.DataFrame):
         # ========= your prediction_function =========
         def prediction_function(some_df: pd.DataFrame):
             preprocessed_data = pandas_to_torch(some_df)
