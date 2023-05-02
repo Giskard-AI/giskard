@@ -340,9 +340,13 @@ class MLWorkerServiceImpl(MLWorkerServicer):
                 all_predictions=self.pandas_df_to_proto_df(predictions.all_predictions),
                 prediction=predictions.prediction.astype(str),
             )
-        else:
+        elif model.is_regression:
             return ml_worker_pb2.RunModelForDataFrameResponse(
                 prediction=predictions.prediction.astype(str), raw_prediction=predictions.prediction
+            )
+        else:
+            return ml_worker_pb2.RunModelForDataFrameResponse(
+                prediction=pd.Series(predictions.prediction[0]).astype(str)
             )
 
     def runModel(self, request: ml_worker_pb2.RunModelRequest, context) -> ml_worker_pb2.RunModelResponse:

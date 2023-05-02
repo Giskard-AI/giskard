@@ -99,65 +99,64 @@
         </v-col>
 
         <v-col cols="12" md="6">
-          <PredictionResults
-              :model="model"
-              :dataset-id="dataset.id"
-              :targetFeature="dataset.target"
-              :modelFeatures="modelFeatures"
-              :classificationLabels="model.classificationLabels"
-              :predictionTask="model.modelType"
-              :inputData="inputData"
-              :modified="dirty || isInputNotOriginal"
-              :debouncingTimeout="debouncingTimeout"
-              @result="setResult"
-          />
-          <v-card class="mb-4">
-            <v-card-title>
-              Explanation
-            </v-card-title>
-            <v-card-text>
-              <v-tabs
-                  :class="{'no-tab-header':  !isClassification(model.modelType) || textFeatureNames.length === 0}">
-                <v-tab v-if='modelFeatures.length>1'>
-                  <v-icon left>mdi-align-horizontal-left</v-icon>
+            <PredictionResults
+                    :model="model"
+                    :dataset-id="dataset.id"
+                    :targetFeature="dataset.target"
+                    :modelFeatures="modelFeatures"
+                    :classificationLabels="model.classificationLabels"
+                    :predictionTask="model.modelType"
+                    :inputData="inputData"
+                    :modified="dirty || isInputNotOriginal"
+                    :debouncingTimeout="debouncingTimeout"
+                    @result="setResult"
+            />
+            <v-card class="mb-4">
+                <v-card-title>
+                    Explanation
+                </v-card-title>
+                <v-card-text>
+                    <v-tabs
+                            :class="{'no-tab-header':  !isClassification(model.modelType) || textFeatureNames.length === 0}">
+                        <v-tab v-if='modelFeatures.length>1'>
+                            <v-icon left>mdi-align-horizontal-left</v-icon>
                   Global
                 </v-tab>
 
                 <v-tooltip bottom :disabled="textFeatureNames.length !== 0">
-                  <template v-slot:activator="{ on, attrs }">
-                    <div class="d-flex" v-on="on" v-bind="attrs">
-                      <v-tab :disabled="!textFeatureNames.length">
-                        <v-icon left>text_snippet</v-icon>
-                        Text
-                      </v-tab>
-                    </div>
-                  </template>
-                  <span>Text explanation is not available because your model does not contain any text features</span>
+                    <template v-slot:activator="{ on, attrs }">
+                        <div class="d-flex" v-on="on" v-bind="attrs">
+                            <v-tab :disabled="!textFeatureNames.length">
+                                <v-icon left>text_snippet</v-icon>
+                                Text
+                            </v-tab>
+                        </div>
+                    </template>
+                    <span>Text explanation is not available because your model does not contain any text features</span>
                 </v-tooltip>
-                
-                  
-                <v-tab-item v-if='modelFeatures.length>1'>
 
-                  <PredictionExplanations :modelId="model.id"
-                                          :datasetId="dataset.id"
-                                          :targetFeature="dataset.target"
-                                          :classificationLabels="model.classificationLabels"
-                                          :predictionTask="model.modelType"
-                                          :inputData="inputData"
-                                          :modelFeatures="modelFeatures"
-                                          :debouncingTimeout="debouncingTimeout"
-                  />
-                </v-tab-item>
-                <v-tab-item v-if='textFeatureNames.length'>
-                  <TextExplanation :modelId="model.id"
-                                   :datasetId="dataset.id"
-                                   :textFeatureNames="textFeatureNames"
-                                   :classificationLabels="model.classificationLabels"
-                                   :classificationResult="classificationResult"
-                                   :inputData="inputData"
-                  />
-                </v-tab-item>
-              </v-tabs>
+
+                        <v-tab-item v-if='modelFeatures.length>1'>
+                            <PredictionExplanations :modelId="model.id"
+                                                    :datasetId="dataset.id"
+                                                    :targetFeature="dataset.target"
+                                                    :classificationLabels="model.classificationLabels"
+                                                    :predictionTask="model.modelType"
+                                                    :inputData="inputData"
+                                                    :modelFeatures="modelFeatures"
+                                                    :debouncingTimeout="debouncingTimeout"
+                            />
+                        </v-tab-item>
+                        <v-tab-item v-if='textFeatureNames.length && model.modelType !== ModelType.LLM'>
+                            <TextExplanation :modelId="model.id"
+                                             :datasetId="dataset.id"
+                                             :textFeatureNames="textFeatureNames"
+                                             :classificationLabels="model.classificationLabels"
+                                             :classificationResult="classificationResult"
+                                             :inputData="inputData"
+                            />
+                        </v-tab-item>
+                    </v-tabs>
             </v-card-text>
           </v-card>
         </v-col>
@@ -175,14 +174,19 @@ import PredictionExplanations from './PredictionExplanations.vue';
 import TextExplanation from './TextExplanation.vue';
 import {api} from '@/api';
 import FeedbackPopover from '@/components/FeedbackPopover.vue';
-import {DatasetDTO, FeatureMetadataDTO, ModelDTO} from "@/generated-sources";
+import {DatasetDTO, FeatureMetadataDTO, ModelDTO, ModelType} from "@/generated-sources";
 import {isClassification} from "@/ml-utils";
 import mixpanel from "mixpanel-browser";
 import {anonymize} from "@/utils";
 import _ from 'lodash';
 
 @Component({
-  components: {OverlayLoader, PredictionResults, FeedbackPopover, PredictionExplanations, TextExplanation}
+    computed: {
+        ModelType() {
+            return ModelType
+        }
+    },
+    components: {OverlayLoader, PredictionResults, FeedbackPopover, PredictionExplanations, TextExplanation}
 })
 export default class Inspector extends Vue {
   @Prop({required: true}) model!: ModelDTO

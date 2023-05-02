@@ -2,17 +2,20 @@
   <v-card class="mb-4" id="resultCard">
     <v-card-title>Result</v-card-title>
     <v-card-text class="text-center card-text" v-if="inputData">
-      <OverlayLoader :show="loading" absolute solid no-fade/>
-      <v-row v-if="prediction && isClassification(predictionTask)">
-        <v-col
-            lg="8"
-            md="12"
-            sm="12"
-            xs="12"
-            v-if="
+        <OverlayLoader :show="loading" absolute solid no-fade/>
+        <v-row v-if="prediction && model.modelType === ModelType.LLM">
+            {{ JSON.stringify(prediction) }}
+        </v-row>
+        <v-row v-if="prediction && isClassification(predictionTask)">
+            <v-col
+                    lg="8"
+                    md="12"
+                    sm="12"
+                    xs="12"
+                    v-if="
             resultProbabilities && Object.keys(resultProbabilities).length > 0
           "
-        >
+            >
           <div>Probabilities <span v-if="Object.keys(resultProbabilities).length > 5"> (5 of {{ Object.keys(resultProbabilities).length }})</span></div>
           <v-chart class="chart" :option="chartOptions" :init-options="chartInit" autoresize/>
         </v-col>

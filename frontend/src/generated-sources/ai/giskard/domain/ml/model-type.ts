@@ -3,5 +3,6 @@
  */
 export enum ModelType {
     CLASSIFICATION = 'CLASSIFICATION',
-    REGRESSION = 'REGRESSION'
+    REGRESSION = 'REGRESSION',
+    LLM = 'LLM'
 }
