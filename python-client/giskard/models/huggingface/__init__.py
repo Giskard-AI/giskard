@@ -35,17 +35,18 @@ class HuggingFaceModel(WrapperModel):
         huggingface_module (Type): The type of the HuggingFace module used by the model.
         pipeline_task (str, optional): The task performed by the HuggingFace pipeline, if applicable.
     """
+
     @configured_validate_arguments
     def __init__(
-        self,
-        model,
-        model_type: ModelType,
-        name: Optional[str] = None,
-        data_preprocessing_function: Callable[[pd.DataFrame], Any] = None,
-        model_postprocessing_function: Callable[[Any], Any] = None,
-        feature_names: Optional[Iterable] = None,
-        classification_threshold: Optional[float] = 0.5,
-        classification_labels: Optional[Iterable] = None
+            self,
+            model,
+            model_type: ModelType,
+            name: Optional[str] = None,
+            data_preprocessing_function: Callable[[pd.DataFrame], Any] = None,
+            model_postprocessing_function: Callable[[Any], Any] = None,
+            feature_names: Optional[Iterable] = None,
+            classification_threshold: Optional[float] = 0.5,
+            classification_labels: Optional[Iterable] = None
     ) -> None:
         """
         Initializes an instance of a HuggingFaceModel with the provided arguments and sets necessary attributes.
@@ -66,15 +67,15 @@ class HuggingFaceModel(WrapperModel):
         """
 
         super().__init__(
-                    model=model,
-                    model_type=model_type,
-                    name=name,
-                    data_preprocessing_function=data_preprocessing_function,
-                    model_postprocessing_function=model_postprocessing_function,
-                    feature_names=feature_names,
-                    classification_threshold=classification_threshold,
-                    classification_labels=classification_labels,
-                )
+            model=model,
+            model_type=model_type,
+            name=name,
+            data_preprocessing_function=data_preprocessing_function,
+            model_postprocessing_function=model_postprocessing_function,
+            feature_names=feature_names,
+            classification_threshold=classification_threshold,
+            classification_labels=classification_labels,
+        )
 
         self.huggingface_module = model.__class__
         self.pipeline_task = model.task if isinstance(model, pipelines.Pipeline) else None
@@ -116,7 +117,7 @@ class HuggingFaceModel(WrapperModel):
         if self.is_classification and hasattr(predictions, "logits"):
             if isinstance(self.model, torch.nn.Module):
                 with torch.no_grad():
-                        logits = predictions.logits.detach().numpy()
+                    logits = predictions.logits.detach().numpy()
             else:
                 logits = predictions.logits
 
