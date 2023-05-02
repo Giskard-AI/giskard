@@ -1,9 +1,8 @@
 import importlib
 import pickle
-from abc import ABC
 from importlib import import_module
 from pathlib import Path
-from typing import Optional, Iterable, Any, Union
+from typing import Callable, Optional, Iterable, Any, Union
 
 import cloudpickle
 import mlflow
@@ -11,7 +10,7 @@ import mlflow
 import pandas as pd
 import yaml
 
-from giskard.models.base import BaseModel
+from giskard.models.base.wrapper import WrapperModel
 from giskard.core.core import ModelType, ModelMeta, SupportedModelTypes
 from giskard.core.validation import configured_validate_arguments
 
@@ -49,18 +48,19 @@ def infer_ml_library(model):
     )
 
 
-class Model(BaseModel, ABC):
+class Model(WrapperModel):
     """
     A subclass of a BaseModel that wraps an existing model object (model) and uses it to make inference
     """
     should_save_model_class = True
-    model: Any
 
     @configured_validate_arguments
     def __init__(
             self,
             model: Any,
             model_type: ModelType,
+            data_preprocessing_function: Callable[[pd.DataFrame], Any] = None,
+            model_postprocessing_function: Callable[[Any], Any] = None,
             name: Optional[str] = None,
             feature_names: Optional[Iterable] = None,
             classification_threshold: Optional[float] = 0.5,
@@ -77,8 +77,8 @@ class Model(BaseModel, ABC):
             classification_threshold (float, optional): The probability threshold for classification. Defaults to 0.5.
             classification_labels (Optional[Iterable], optional): A list of classification labels. Defaults to None.
         """
-        super().__init__(model_type, name, feature_names, classification_threshold, classification_labels)
-        self.model = model
+        super().__init__(model, model_type, data_preprocessing_function, model_postprocessing_function,
+                         name, feature_names, classification_threshold, classification_labels)
         giskard_class = infer_ml_library(self.model)
         self.meta.loader_class = giskard_class.__name__
         self.meta.loader_module = giskard_class.__module__
