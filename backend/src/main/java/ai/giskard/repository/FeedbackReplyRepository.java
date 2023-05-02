@@ -5,4 +5,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface FeedbackReplyRepository extends MappableJpaRepository<FeedbackReply, Long> {
+    FeedbackReply findOneById(Long feedbackReplyId);
 }
