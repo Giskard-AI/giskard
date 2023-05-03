@@ -37,12 +37,12 @@ def _perturb_and_predict(model, ds, idrow, feature, coltype):  # done at each st
     # print(row_perturbed[feature])
     # Predict probabilities for the perturbed input row using the given model
     if model.meta.model_type == SupportedModelTypes.CLASSIFICATION:
-        ref_prob = model.clf.predict(ref_row)
-        probabilities = model.clf.predict(row_perturbed)  # .reshape(1, -1)
+        ref_prob = model.model.predict(ref_row)
+        probabilities = model.model.predict(row_perturbed)  # .reshape(1, -1)
         return Perturbation(passed=ref_prob[0] != probabilities[0], perturbation_value=perturbation_val)
     if model.meta.model_type == SupportedModelTypes.REGRESSION:
-        ref_val = model.clf.predict(ref_row.drop(columns=[ds.target]))
-        new_val = model.clf.predict(row_perturbed.drop(columns=[ds.target]))  # .reshape(1, -1)
+        ref_val = model.model.predict(ref_row.drop(columns=[ds.target]))
+        new_val = model.model.predict(row_perturbed.drop(columns=[ds.target]))  # .reshape(1, -1)
         return Perturbation(passed=(new_val - ref_val) / ref_val >= 0.2, perturbation_value=perturbation_val)
 
 
