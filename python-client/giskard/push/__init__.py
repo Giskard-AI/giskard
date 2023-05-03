@@ -15,8 +15,9 @@ class Push:
     push_details = None
     perturbation_value = None
     slicing_function = None
+    bounds=None
 
-    def __init__(self, push_type, feature, value, perturbation_value=None):
+    def __init__(self, push_type, feature, value, bounds,perturbation_value=None):
         self.perturbation_value = perturbation_value
         self.key = feature
         self.value = value
@@ -99,10 +100,10 @@ class Push:
         return res
 
     def _slicing_function(self):
-        if isinstance(self.value, list):
-            clause = [GreaterThan(self.key, self.value[0], True), LowerThan(self.key, self.value[1], True)]
+        if isinstance(self.bounds, list):
+            clause = [GreaterThan(self.key, self.bounds[0], True), LowerThan(self.key, self.bounds[1], True)]
         else:
-            clause = [EqualTo(self.key, self.value, True)]
+            clause = [EqualTo(self.key, self.bounds, True)]
 
         slicing_func = QueryBasedSliceFunction(Query(clause))
 

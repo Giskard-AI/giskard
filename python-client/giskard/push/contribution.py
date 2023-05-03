@@ -7,6 +7,7 @@ from giskard.ml_worker.testing.tests.performance import test_rmse
 from ..push import Push
 from .utils import slice_bounds
 
+
 def contribution(model, ds, idrow):  # data_aug_dict
     if model.meta.model_type == SupportedModelTypes.CLASSIFICATION:
         shap_res = _contribution_push(model, ds, idrow)
@@ -15,17 +16,23 @@ def contribution(model, ds, idrow):  # data_aug_dict
         prediction = model.model.predict(ds.df.iloc[[idrow]])
         if shap_res is not None:
             for el in shap_res:
-                bound = slice_bounds(feature=el, value=values[el], ds=ds)
+                bounds = slice_bounds(feature=el, value=values[el], ds=ds)
                 # skip for now the following case
                 # if ds.column_types[el] == "category" and training_label != prediction and data_aug_dict(el, values):
                 #    print(f"Data augmentation recommended for the slice.............{el}",
                 #          el, values[el])
                 if training_label != prediction:  # use scan feature ?
-                    res = Push(push_type="contribution_wrong", feature=el, value=bound)
+                    res = Push(push_type="contribution_wrong", feature=el,
+                               value=values[el],
+                               bounds=bounds
+                               )
                     yield res
 
                 else:
-                    res = Push(push_type="contribution_only", feature=el, value=bound)
+                    res = Push(push_type="contribution_only", feature=el,
+                               value=values[el],
+                               bounds=bounds
+                               )
                     yield res
 
     if model.meta.model_type == SupportedModelTypes.REGRESSION:
@@ -40,16 +47,20 @@ def contribution(model, ds, idrow):  # data_aug_dict
         if shap_res is not None:
             for el in shap_res:
                 # print(error, rmse_res)
-                bound = slice_bounds(feature=el, value=values[el], ds=ds)
+                bounds = slice_bounds(feature=el, value=values[el], ds=ds)
                 if abs(error - rmse_res.metric) / rmse_res.metric >= 0.2:  # use scan feature ?
                     res = Push(push_type="contribution_wrong",
                                feature=el,
-                               value=bound
+                               value=values[el],
+                               bounds=bounds
                                )
                     yield res
 
                 else:
-                    res = Push(push_type="contribution_only", feature=el, value=bound)
+                    res = Push(push_type="contribution_only", feature=el,
+                               value=values[el],
+                               bounds=bounds
+                               )
                     yield res
 
 
@@ -74,5 +85,3 @@ def _get_shap_values(model, ds, idrow):  # from gRPC
         return explain(model, ds, ds.df.iloc[idrow])["explanations"][model.meta.classification_labels[0]]
     elif model.meta.model_type == SupportedModelTypes.REGRESSION:
         return explain(model, ds, ds.df.iloc[idrow])["explanations"]["default"]
-
-
