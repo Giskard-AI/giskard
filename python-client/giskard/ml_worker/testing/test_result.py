@@ -1,6 +1,7 @@
 from dataclasses import dataclass, field
 from enum import Enum
 import numpy as np
+from giskard.datasets.base import Dataset
 
 from typing import List, Dict
 
@@ -51,11 +52,10 @@ class TestResult:
     unexpected_percent_nonmissing: float = 0
     partial_unexpected_index_list: List[PartialUnexpectedCounts] = field(default_factory=list, repr=False)
     unexpected_index_list: List[int] = field(default_factory=list, repr=False)
-    output_df: bytes = None
     number_of_perturbed_rows: int = 0
     actual_slices_size: List[int] = field(default_factory=list, repr=False)
     reference_slices_size: List[int] = field(default_factory=list, repr=False)
-    debugging_mask: np.array = None
+    output_ds: Dataset = None
 
     def _repr_html_(self):
         return """
