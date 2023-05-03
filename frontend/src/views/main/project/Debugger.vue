@@ -57,6 +57,7 @@ async function showPastSessions() {
 }
 
 async function createDebuggingSession(debuggingSession: InspectionDTO) {
+  await fetchDebuggingSessions();
   activeDebuggingSessionId.value = debuggingSession.id;
   openInspectionWrapper.value = true;
   await openInspection(props.projectId.toString(), debuggingSession.id.toString());
