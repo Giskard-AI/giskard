@@ -49,5 +49,4 @@ class Model:
                     name=name,
                     feature_names=feature_names,
                     classification_threshold=classification_threshold,
-                    classification_labels=classification_labels,
-                    **kwargs)
+                    classification_labels=classification_labels)
