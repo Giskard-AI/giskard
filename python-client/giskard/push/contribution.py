@@ -18,7 +18,7 @@ def contribution(model, ds, idrow):  # data_aug_dict
         shap_res = _contribution_push(model, ds, idrow)
         values = ds.df.iloc[idrow]
         training_label = values[ds.target]
-        prediction = model.clf.predict(ds.df.iloc[[idrow]])
+        prediction = model.model.predict(ds.df.iloc[[idrow]])
         if shap_res is not None:
             for el in shap_res:
                 bound = slice_bounds(feature=el, value=values[el], ds=ds)
@@ -65,7 +65,7 @@ def contribution(model, ds, idrow):  # data_aug_dict
         values = ds.df.iloc[idrow]
         # re = ds.__dict__
         y = values[ds.target]
-        y_hat = model.clf.predict(ds.df.drop(columns=[ds.target]).iloc[[idrow]])
+        y_hat = model.model.predict(ds.df.drop(columns=[ds.target]).iloc[[idrow]])
         error = abs(y_hat - y)
         rmse_res = test_rmse(ds, model).execute()
         # print(shap_res)
