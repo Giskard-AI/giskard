@@ -42,7 +42,8 @@ public class MLWorkerCacheService {
     private final GiskardMapper giskardMapper;
     private CatalogDTO catalogWithoutPickles = new CatalogDTO();
 
-    @Transactional(readOnly = true)
+    // TODO: decouple transaction from ML worker connexion
+    @Transactional
     public CatalogDTO getCatalog(long projectId) {
         CatalogDTO catalog = findGiskardTest(projectRepository.getMandatoryById(projectId).isUsingInternalWorker());
 
