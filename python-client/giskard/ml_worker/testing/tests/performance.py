@@ -1,7 +1,6 @@
 """Performance tests"""
 
 import numpy as np
-import pandas as pd
 from sklearn.metrics import (
     accuracy_score,
     f1_score,
@@ -21,7 +20,7 @@ from giskard.ml_worker.testing.registry.giskard_test import GiskardTest
 from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction
 from giskard.models.base import BaseModel
 from giskard.ml_worker.testing.utils import check_slice_not_empty
-from .debug_masks import incorrect_rows_mask, nlargest_abs_err_rows_mask
+from .debug_slicing_functions import incorrect_rows_slicing_fn, nlargest_abs_err_rows_slicing_fn
 
 
 def _verify_target_availability(dataset):
@@ -38,7 +37,7 @@ def _get_rmse(y_actual, y_predicted):
 
 
 def _test_classification_score(score_fn, model: BaseModel, dataset: Dataset, threshold: float = 1.0,
-                               debug: bool = True):
+                               debug: bool = False):
     _verify_target_availability(dataset)
     is_binary_classification = len(model.meta.classification_labels) == 2
     targets = dataset.df[dataset.target]
@@ -48,27 +47,29 @@ def _test_classification_score(score_fn, model: BaseModel, dataset: Dataset, thr
     else:
         metric = score_fn(targets, prediction, average="macro")
 
-    debugging_mask = incorrect_rows_mask(dataset.df, targets, prediction) if debug else None
+    passed = bool(metric >= threshold)
+    output_ds = dataset.slice(incorrect_rows_slicing_fn(dataset.target, prediction)) if not passed or debug else None
 
-    return TestResult(actual_slices_size=[len(dataset)], metric=metric, passed=bool(metric >= threshold),
-                      debugging_mask=debugging_mask)
+    return TestResult(actual_slices_size=[len(dataset)], metric=metric, passed=passed,
+                      output_ds=output_ds)
 
 
-def _test_accuracy_score(dataset: Dataset, model: BaseModel, threshold: float = 1.0, debug: bool = True):
+def _test_accuracy_score(dataset: Dataset, model: BaseModel, threshold: float = 1.0, debug: bool = False):
     _verify_target_availability(dataset)
     prediction = model.predict(dataset).prediction
     targets = dataset.df[dataset.target]
 
     metric = accuracy_score(targets, prediction)
 
-    debugging_mask = incorrect_rows_mask(dataset.df, targets, prediction) if debug else None
+    passed = bool(metric >= threshold)
+    output_ds = dataset.slice(incorrect_rows_slicing_fn(dataset.target, prediction)) if not passed or debug else None
 
-    return TestResult(actual_slices_size=[len(dataset)], metric=metric, passed=bool(metric >= threshold),
-                      debugging_mask=debugging_mask)
+    return TestResult(actual_slices_size=[len(dataset)], metric=metric, passed=passed,
+                      output_ds=output_ds)
 
 
 def _test_regression_score(score_fn, model: BaseModel, dataset: Dataset, threshold: float = 1.0, r2=False,
-                           debug_percent_rows: float = 0.3, debug: bool = True):
+                           debug_percent_rows: float = 0.3, debug: bool = False):
     _verify_target_availability(dataset)
 
     targets = dataset.df[dataset.target]
@@ -76,14 +77,16 @@ def _test_regression_score(score_fn, model: BaseModel, dataset: Dataset, thresho
 
     metric = score_fn(targets, raw_prediction)
 
-    debugging_mask = nlargest_abs_err_rows_mask(dataset.df, targets, raw_prediction,
-                                                debug_percent_rows) if debug else None
+    passed = bool(metric >= threshold if r2 else metric <= threshold)
+    output_ds = dataset.slice(
+        nlargest_abs_err_rows_slicing_fn(target=dataset.target, prediction=raw_prediction,
+                                         debug_percent_rows=debug_percent_rows)) if not passed or debug else None
 
     return TestResult(
         actual_slices_size=[len(dataset)],
         metric=metric,
-        passed=bool(metric >= threshold if r2 else metric <= threshold),
-        debugging_mask=debugging_mask
+        passed=passed,
+        output_ds=output_ds
     )
 
 
@@ -162,7 +165,7 @@ class AucTest(GiskardTest):
 
 @test(name='AUC', tags=['performance', 'classification', 'ground_truth'])
 def test_auc(model: BaseModel, dataset: Dataset, slicing_function: SlicingFunction = None, threshold: float = 1.0,
-             debug: bool = True):
+             debug: bool = False):
     """
     Test if the model AUC performance is higher than a threshold for a given slice
 
@@ -207,10 +210,12 @@ def test_auc(model: BaseModel, dataset: Dataset, slicing_function: SlicingFuncti
 
         metric = roc_auc_score(targets, predictions, multi_class="ovo")
 
-    debugging_mask = incorrect_rows_mask(dataset.df, targets, _predictions.prediction) if debug else None
+    passed = bool(metric >= threshold)
+    output_ds = dataset.slice(incorrect_rows_slicing_fn(dataset.target, prediction=_predictions.prediction)) \
+        if not passed or debug else None
 
-    return TestResult(actual_slices_size=[len(dataset)], metric=metric, passed=bool(metric >= threshold),
-                      debugging_mask=debugging_mask)
+    return TestResult(actual_slices_size=[len(dataset)], metric=metric, passed=passed,
+                      output_ds=output_ds)
 
 
 @test(name='F1', tags=['performance', 'classification', 'ground_truth'])
@@ -343,7 +348,8 @@ def test_recall(model: BaseModel, dataset: Dataset, slicing_function: SlicingFun
 
 
 @test(name='RMSE', tags=['performance', 'regression', 'ground_truth'])
-def test_rmse(model: BaseModel, dataset: Dataset, slicing_function: SlicingFunction = None, threshold: float = 1.0):
+def test_rmse(model: BaseModel, dataset: Dataset, slicing_function: SlicingFunction = None, threshold: float = 1.0,
+              debug: bool = False):
     """
     Test if the model RMSE is lower than a threshold
 
@@ -370,11 +376,12 @@ def test_rmse(model: BaseModel, dataset: Dataset, slicing_function: SlicingFunct
     if slicing_function:
         dataset = dataset.slice(slicing_function)
         check_slice_not_empty(sliced_dataset=dataset, dataset_name="dataset", test_name="test_rmse")
-    return _test_regression_score(_get_rmse, model, dataset, threshold)
+    return _test_regression_score(_get_rmse, model, dataset, threshold, debug=debug)
 
 
 @test(name='MAE', tags=['performance', 'regression', 'ground_truth'])
-def test_mae(model: BaseModel, dataset: Dataset, slicing_function: SlicingFunction = None, threshold: float = 1.0):
+def test_mae(model: BaseModel, dataset: Dataset, slicing_function: SlicingFunction = None, threshold: float = 1.0,
+             debug: bool = False):
     """
     Test if the model Mean Absolute Error is lower than a threshold
 
@@ -404,11 +411,12 @@ def test_mae(model: BaseModel, dataset: Dataset, slicing_function: SlicingFuncti
     if slicing_function:
         dataset = dataset.slice(slicing_function)
         check_slice_not_empty(sliced_dataset=dataset, dataset_name="dataset", test_name="test_mae")
-    return _test_regression_score(mean_absolute_error, model, dataset, threshold)
+    return _test_regression_score(mean_absolute_error, model, dataset, threshold, debug=debug)
 
 
 @test(name='R2', tags=['performance', 'regression', 'ground_truth'])
-def test_r2(model: BaseModel, dataset: Dataset, slicing_function: SlicingFunction = None, threshold: float = 1.0):
+def test_r2(model: BaseModel, dataset: Dataset, slicing_function: SlicingFunction = None, threshold: float = 1.0,
+            debug: bool = False):
     """
     Test if the model R-Squared is higher than a threshold
 
@@ -436,7 +444,7 @@ def test_r2(model: BaseModel, dataset: Dataset, slicing_function: SlicingFunctio
     if slicing_function:
         dataset = dataset.slice(slicing_function)
         check_slice_not_empty(sliced_dataset=dataset, dataset_name="dataset", test_name="test_r2")
-    return _test_regression_score(r2_score, model, dataset, threshold, r2=True)
+    return _test_regression_score(r2_score, model, dataset, threshold, r2=True, debug=debug)
 
 
 @test(name='Accuracy difference', tags=['performance', 'classification', 'ground_truth'])
