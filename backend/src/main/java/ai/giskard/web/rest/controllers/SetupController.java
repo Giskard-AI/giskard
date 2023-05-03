@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.transaction.Transactional;
 import java.io.IOException;
 
 @RestController
@@ -21,7 +20,6 @@ public class SetupController {
     private final LicenseService licenseService;
 
     @PostMapping("")
-    @Transactional
     public void finalizeSetup(@RequestBody SetupDTO body) throws IOException {
         // THIS ENDPOINT DOES NOTHING ONCE WE ARE SETUP!
         if (licenseService.getCurrentLicense().isActive()) {

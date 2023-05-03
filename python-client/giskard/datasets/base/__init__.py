@@ -10,7 +10,6 @@ from pandas.api.types import is_list_like
 import pandas as pd
 import numpy as np
 import yaml
-from pandas.api.types import is_numeric_dtype
 from zstandard import ZstdDecompressor
 
 from giskard.client.giskard_client import GiskardClient
@@ -23,6 +22,7 @@ from giskard.ml_worker.testing.registry.transformation_function import (
     TransformationFunctionType,
 )
 from giskard.settings import settings
+from ..metadata.indexing import ColumnMetadataMixin
 
 logger = logging.getLogger(__name__)
 
@@ -86,7 +86,7 @@ class DataProcessor:
         return f"DataProcessor: {len(self.pipeline)} steps"
 
 
-class Dataset:
+class Dataset(ColumnMetadataMixin):
     """
     A class for constructing and processing datasets.
 
@@ -121,13 +121,13 @@ class Dataset:
 
     @configured_validate_arguments
     def __init__(
-        self,
-        df: pd.DataFrame,
-        name: Optional[str] = None,
-        target: Optional[str] = None,
-        cat_columns: Optional[List[str]] = [],
-        column_types: Optional[Dict[str, str]] = None,
-        id: Optional[uuid.UUID] = None,
+            self,
+            df: pd.DataFrame,
+            name: Optional[str] = None,
+            target: Optional[str] = None,
+            cat_columns: Optional[List[str]] = [],
+            column_types: Optional[Dict[str, str]] = None,
+            id: Optional[uuid.UUID] = None,
     ) -> None:
         """
         Initializes a Dataset object.
@@ -222,7 +222,8 @@ class Dataset:
 
     @configured_validate_arguments
     def transform(
-        self, transformation_function: Union[TransformationFunction, TransformationFunctionType], row_level: bool = True
+            self, transformation_function: Union[TransformationFunction, TransformationFunctionType],
+            row_level: bool = True
     ):
         """
         Transform the data in the current Dataset by applying a transformation function.
@@ -319,9 +320,10 @@ class Dataset:
                     column_types[col] = SupportedColumnTypes.CATEGORY.value
                     continue
             # inference of text and numeric columns
-            if is_numeric_dtype(self.df[col]):
+            try:
+                pd.to_numeric(self.df[col])
                 column_types[col] = SupportedColumnTypes.NUMERIC.value
-            else:
+            except ValueError:
                 column_types[col] = SupportedColumnTypes.TEXT.value
         return column_types
 

@@ -1,6 +1,5 @@
 package ai.giskard.web.dto.ml;
 
-import ai.giskard.utils.GRPCUtils;
 import ai.giskard.worker.SingleTestResult;
 import com.dataiku.j2ts.annotations.UIModel;
 import lombok.Getter;

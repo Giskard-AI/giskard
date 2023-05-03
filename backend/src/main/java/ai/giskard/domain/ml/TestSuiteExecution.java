@@ -1,7 +1,6 @@
 package ai.giskard.domain.ml;
 
 import ai.giskard.domain.BaseEntity;
-import ai.giskard.utils.SimpleJSONStringAttributeConverter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -11,7 +10,6 @@ import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 
 @Entity
 @NoArgsConstructor
@@ -24,9 +22,9 @@ public class TestSuiteExecution extends BaseEntity {
     @JsonIgnore
     private TestSuite suite;
 
-    @Column(columnDefinition = "VARCHAR")
-    @Convert(converter = SimpleJSONStringAttributeConverter.class)
-    private Map<String, String> inputs;
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "test_suite_execution_id")
+    private List<FunctionInput> inputs;
 
     @Enumerated(EnumType.STRING)
     private TestResult result;
