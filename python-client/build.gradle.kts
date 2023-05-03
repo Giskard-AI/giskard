@@ -1,3 +1,4 @@
+import ru.vyarus.gradle.plugin.python.PythonExtension.Scope.USER
 import ru.vyarus.gradle.plugin.python.PythonExtension.Scope.VIRTUALENV
 import ru.vyarus.gradle.plugin.python.task.PythonTask
 
@@ -22,8 +23,13 @@ tasks {
 
     create<PythonTask>("install") {
         dependsOn("pipInstall")
+        var cmd = "install"
+        if (project.hasProperty("prod")) {
+            cmd += " --prod"
+        }
+
         module = "pdm"
-        command = "install"
+        command = cmd
     }
 
     clean {
@@ -36,6 +42,31 @@ tasks {
         command = "$script_path $fout giskard.ml_worker.generated"
     }
 
+    create<PythonTask>("sphinx-autobuild") {
+        module = "sphinx_autobuild"
+        command = "docs docs/_build/html"
+    }
+
+    create<PythonTask>("generateProto") {
+        dependsOn("install")
+        environment("PATH", file(virtualEnvDirectory).resolve("bin"))
+
+        val fout = file(protoGeneratedPath)
+        val pdir = file("../common/proto")
+
+        doFirst {
+            mkdir(fout)
+        }
+
+        finalizedBy("fixGeneratedFiles")
+
+        module = "grpc_tools.protoc"
+
+        command =
+                "-I$pdir --python_out=$fout --grpc_python_out=$fout --mypy_out=$fout --mypy_grpc_out=$fout $pdir/ml-worker.proto"
+
+    }
+
     create<PythonTask>("lint") {
         dependsOn("install")
         module = "pdm"
@@ -45,13 +76,13 @@ tasks {
     create<PythonTask>("test") {
         dependsOn("install")
         module = "pdm"
-        // add "-n auto" to the pytest command to parallelize the execution
         command = "test"
     }
 
     idea {
         module {
             excludeDirs.add(file(virtualEnvDirectory))
+            excludeDirs.add(file("dist"))
 
             // "generated" directory should be marked as both source and generatedSource,
             // otherwise intellij doesn"t recognize it as a generated source 🤷‍
@@ -70,6 +101,8 @@ tasks {
     }
 
     create<PythonTask>("package") {
+        dependsOn("pipInstall")
+
         module = "pdm"
         command = "build"
     }

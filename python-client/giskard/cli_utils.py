@@ -1,34 +1,63 @@
 import asyncio
 import collections
+import functools
 import hashlib
 import logging
 import os
 import sys
 from time import sleep
 
+import click
 from lockfile.pidlockfile import PIDLockFile
 from pydantic import AnyHttpUrl, parse_obj_as
 
+from giskard.client.analytics_collector import GiskardAnalyticsCollector
 from giskard.path_utils import run_dir
 from giskard.settings import settings
 
 logger = logging.getLogger(__name__)
+logging.getLogger().setLevel(logging.INFO)
+logging.getLogger("giskard").setLevel(logging.INFO)
+analytics = GiskardAnalyticsCollector()
+
+
+def common_options(func):
+    @click.option(
+        "--verbose",
+        "-v",
+        is_flag=True,
+        callback=set_verbose,
+        default=False,
+        expose_value=False,
+        is_eager=True,
+        help="Enable verbose logging",
+    )
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        return func(*args, **kwargs)
+
+    return wrapper
+
+
+def set_verbose(_ctx, _param, value):
+    if value:
+        logging.getLogger("giskard").setLevel(logging.DEBUG)
 
 
 def remove_stale_pid_file(pid_file):
     pid = pid_file.read_pid()
-    if pid is not None and check_pid(pid):
+    if pid is not None and is_pid_stale(pid):
         logger.debug("Stale PID file found, removing it")
         pid_file.break_lock()
 
 
-def check_pid(pid):
+def is_pid_stale(pid):
     try:
-        os.kill(pid, 0)
-    except OSError:
-        return False
-    else:
+        os.kill(pid, 0)  # NOSONAR
+    except (OSError, TypeError):
         return True
+    else:
+        return False
 
 
 def create_pid_file_path(is_server, url):

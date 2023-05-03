@@ -15,22 +15,30 @@
                 </v-col>
                 <v-col class="input-column">
                     <template v-if="!editing">
-            <span v-if="props.testInputs[input.name]?.isAlias">
-                    {{ props.testInputs[input.name].value }}
-                  </span>
-                        <span v-else-if="input.name in props.testInputs && input.type === 'BaseModel'">
-                    {{
-                            models[props.testInputs[input.name].value].name ?? models[props.testInputs[input.name].value].id
+                        <span v-if="!props.functionInputs"/>
+                        <span v-else-if="props.functionInputs[input.name]?.isAlias">
+                        {{ props.functionInputs[input.name].value }}
+                      </span>
+                        <span v-else-if="input.name in props.functionInputs && input.type === 'BaseModel'">
+                      {{
+                            models[props.functionInputs[input.name].value].name ?? models[props.functionInputs[input.name].value].id
                             }}
-                  </span>
-                        <span v-else-if="input.name in props.testInputs && input.type === 'Dataset'">
-                    {{
-                            datasets[props.testInputs[input.name].value].name ?? datasets[props.testInputs[input.name].value].id
+                    </span>
+                        <span v-else-if="input.name in props.functionInputs && input.type === 'Dataset'">
+                      {{
+                            datasets[props.functionInputs[input.name].value].name ?? datasets[props.functionInputs[input.name].value].id
                             }}
-                  </span>
-                        <span v-else-if="input && input.name in props.testInputs">{{
-                            props.testInputs[input.name].value
-                            }}</span>
+                          </span>
+                        <span v-else-if="input.name in props.functionInputs && input.type === 'SlicingFunction'">
+                      {{
+                            slicingFunctionsByUuid[props.functionInputs[input.name].value].displayName
+                            ?? slicingFunctionsByUuid[props.functionInputs[input.name].value].name
+                            }}
+                    </span>
+                        <span v-else-if="input && input.name in props.functionInputs">{{
+                            props.functionInputs[input.name].value
+                            }}
+                        </span>
                     </template>
                     <template v-else-if="props.modelValue">
                         <DatasetSelector :project-id="projectId" :label="input.name" :return-object="false"
@@ -39,6 +47,16 @@
                         <ModelSelector :project-id="projectId" :label="input.name" :return-object="false"
                                        v-else-if="input.type === 'BaseModel'"
                                        :value.sync="props.modelValue[input.name].value"/>
+                        <SlicingFunctionSelector :project-id="projectId" :label="input.name"
+                                                 v-else-if="input.type === 'SlicingFunction'"
+                                                 :value.sync="props.modelValue[input.name].value"
+                                                 :args.sync="props.modelValue[input.name].params"/>
+                        <TransformationFunctionSelector :project-id="projectId" :label="input.name"
+                                                        v-else-if="input.type === 'TransformationFunction'"
+                                                        :value.sync="props.modelValue[input.name].value"
+                                                        :args.sync="props.modelValue[input.name].params"/>
+                        <KwargsCodeEditor v-else-if="input.type === 'Kwargs'"
+                                          :value.sync="props.modelValue[input.name].value"/>
                         <v-text-field
                                 :step='input.type === "float" ? 0.1 : 1'
                                 v-model="props.modelValue[input.name].value"
@@ -69,20 +87,25 @@
 import DatasetSelector from '@/views/main/utils/DatasetSelector.vue';
 import ModelSelector from '@/views/main/utils/ModelSelector.vue';
 import {computed} from 'vue';
-import {TestFunctionDTO, TestInputDTO} from '@/generated-sources';
+import {FunctionInputDTO, TestFunctionDTO} from '@/generated-sources';
 import {storeToRefs} from 'pinia';
 import {useTestSuiteStore} from '@/stores/test-suite';
+import SlicingFunctionSelector from "@/views/main/utils/SlicingFunctionSelector.vue";
+import {useCatalogStore} from "@/stores/catalog";
+import TransformationFunctionSelector from "@/views/main/utils/TransformationFunctionSelector.vue";
+import KwargsCodeEditor from "@/views/main/utils/KwargsCodeEditor.vue";
 
 const props = defineProps<{
-    testInputs?: { [key: string]: TestInputDTO },
+    functionInputs?: { [key: string]: FunctionInputDTO },
     test?: TestFunctionDTO,
     projectId: number,
     inputs: { [name: string]: string },
-    modelValue?: { [name: string]: TestInputDTO },
+    modelValue?: { [name: string]: FunctionInputDTO },
     editing: boolean
 }>();
 
 const {models, datasets} = storeToRefs(useTestSuiteStore());
+const {slicingFunctionsByUuid} = storeToRefs(useCatalogStore());
 
 const inputs = computed(() => Object.keys(props.inputs).map((name) => ({
     name,

@@ -2,6 +2,7 @@ import numpy as np
 import pytest
 
 import giskard.ml_worker.testing.tests.drift as drift
+from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction
 
 
 @pytest.mark.parametrize(
@@ -11,11 +12,9 @@ import giskard.ml_worker.testing.tests.drift as drift
 def test_drift_data_psi(data, threshold, expected_metric, column_name, request):
     data = request.getfixturevalue(data)
     results = drift.test_drift_psi(
-        reference_ds=data.slice(lambda df: df.head(len(df) // 2), row_level=False),
-        actual_ds=data.slice(lambda df: df.tail(len(df) // 2), row_level=False),
-        column_name=column_name,
-        threshold=threshold,
-    ).execute()
+        actual_dataset=data.slice(SlicingFunction(lambda df: df.tail(len(df) // 2), row_level=False)),
+        reference_dataset=data.slice(SlicingFunction(lambda df: df.head(len(df) // 2), row_level=False)),
+        column_name=column_name, threshold=threshold).execute()
 
     assert round(results.metric, 2) == expected_metric
     assert results.passed
@@ -31,12 +30,10 @@ def test_drift_data_psi(data, threshold, expected_metric, column_name, request):
 def test_drift_data_psi_max_categories(data, threshold, expected_metric, column_name, max_categories, request):
     data = request.getfixturevalue(data)
     results = drift.test_drift_psi(
-        reference_ds=data.slice(lambda df: df.head(len(df) // 2), row_level=False),
-        actual_ds=data.slice(lambda df: df.tail(len(df) // 2), row_level=False),
-        column_name=column_name,
-        max_categories=max_categories,
-        threshold=threshold,
-    ).execute()
+        actual_dataset=data.slice(SlicingFunction(lambda df: df.tail(len(df) // 2), row_level=False)),
+        reference_dataset=data.slice(SlicingFunction(lambda df: df.head(len(df) // 2), row_level=False)),
+        column_name=column_name, threshold=threshold,
+        max_categories=max_categories).execute()
 
     assert round(results.metric, 2) == expected_metric
     assert results.passed
@@ -49,11 +46,9 @@ def test_drift_data_psi_max_categories(data, threshold, expected_metric, column_
 def test_drift_data_chi_square(data, threshold, expected_metric, column_name, request):
     data = request.getfixturevalue(data)
     results = drift.test_drift_chi_square(
-        reference_ds=data.slice(lambda df: df.head(len(df) // 2), row_level=False),
-        actual_ds=data.slice(lambda df: df.tail(len(df) // 2), row_level=False),
-        column_name=column_name,
-        threshold=threshold,
-    ).execute()
+        actual_dataset=data.slice(SlicingFunction(lambda df: df.tail(len(df) // 2), row_level=False)),
+        reference_dataset=data.slice(SlicingFunction(lambda df: df.head(len(df) // 2), row_level=False)),
+        column_name=column_name, threshold=threshold).execute()
 
     assert round(results.metric, 2) == expected_metric
     assert results.passed
@@ -69,12 +64,10 @@ def test_drift_data_chi_square(data, threshold, expected_metric, column_name, re
 def test_drift_data_chi_square_max_categories(data, threshold, expected_metric, column_name, max_categories, request):
     data = request.getfixturevalue(data)
     results = drift.test_drift_chi_square(
-        reference_ds=data.slice(lambda df: df.head(len(df) // 2), row_level=False),
-        actual_ds=data.slice(lambda df: df.tail(len(df) // 2), row_level=False),
-        column_name=column_name,
-        max_categories=max_categories,
-        threshold=threshold,
-    ).execute()
+        actual_dataset=data.slice(SlicingFunction(lambda df: df.tail(len(df) // 2), row_level=False)),
+        reference_dataset=data.slice(SlicingFunction(lambda df: df.head(len(df) // 2), row_level=False)),
+        column_name=column_name, threshold=threshold,
+        max_categories=max_categories).execute()
 
     assert round(results.metric, 2) == expected_metric
     assert results.passed
@@ -87,11 +80,10 @@ def test_drift_data_chi_square_max_categories(data, threshold, expected_metric, 
 def test_drift_data_ks(data, threshold, expected_metric, column_name, request):
     data = request.getfixturevalue(data)
     results = drift.test_drift_ks(
-        reference_ds=data.slice(lambda df: df.head(len(df) // 2), row_level=False),
-        actual_ds=data.slice(lambda df: df.tail(len(df) // 2), row_level=False),
+        actual_dataset=data.slice(SlicingFunction(lambda df: df.tail(len(df) // 2), row_level=False)),
+        reference_dataset=data.slice(SlicingFunction(lambda df: df.head(len(df) // 2), row_level=False)),
         column_name=column_name,
-        threshold=threshold,
-    ).execute()
+        threshold=threshold).execute()
 
     assert round(results.metric, 2) == expected_metric
     assert results.passed
@@ -106,11 +98,10 @@ def test_drift_data_ks_with_nan(data, threshold, expected_metric, column_name, r
     data.df.replace({1169: np.nan}, inplace=True)
 
     results = drift.test_drift_ks(
-        reference_ds=data.slice(lambda df: df.head(len(df) // 2), row_level=False),
-        actual_ds=data.slice(lambda df: df.tail(len(df) // 2), row_level=False),
+        actual_dataset=data.slice(SlicingFunction(lambda df: df.tail(len(df) // 2), row_level=False)),
+        reference_dataset=data.slice(SlicingFunction(lambda df: df.head(len(df) // 2), row_level=False)),
         column_name=column_name,
-        threshold=threshold,
-    ).execute()
+        threshold=threshold).execute()
 
     assert round(results.metric, 2) == expected_metric
     assert results.passed
@@ -122,12 +113,11 @@ def test_drift_data_ks_with_nan(data, threshold, expected_metric, column_name, r
 )
 def test_drift_data_ks_unique_values(data, threshold, expected_metric, column_name, request):
     data = request.getfixturevalue(data)
-    results = drift.test_drift_ks(
-        reference_ds=data.slice(lambda df: df[df["duration_in_month"] == 6], row_level=False),
-        actual_ds=data.slice(lambda df: df[df["duration_in_month"].isin([6, 48])], row_level=False),
-        column_name=column_name,
-        threshold=threshold,
-    ).execute()
+    results = drift.test_drift_ks(actual_dataset=data.slice(
+        SlicingFunction(lambda df: df[df["duration_in_month"].isin([6, 48])], row_level=False)),
+        reference_dataset=data.slice(
+            SlicingFunction(lambda df: df[df["duration_in_month"] == 6], row_level=False)),
+        column_name=column_name, threshold=threshold).execute()
 
     assert round(results.metric, 2) == expected_metric
     assert not results.passed
@@ -140,11 +130,9 @@ def test_drift_data_ks_unique_values(data, threshold, expected_metric, column_na
 def test_drift_data_earth_movers_distance(data, threshold, expected_metric, column_name, request):
     data = request.getfixturevalue(data)
     results = drift.test_drift_earth_movers_distance(
-        reference_ds=data.slice(lambda df: df.head(len(df) // 2), row_level=False),
-        actual_ds=data.slice(lambda df: df.tail(len(df) // 2), row_level=False),
-        column_name=column_name,
-        threshold=threshold,
-    ).execute()
+        actual_dataset=data.slice(SlicingFunction(lambda df: df.tail(len(df) // 2), row_level=False)),
+        reference_dataset=data.slice(SlicingFunction(lambda df: df.head(len(df) // 2), row_level=False)),
+        column_name=column_name, threshold=threshold).execute()
 
     assert round(results.metric, 2) == expected_metric
     assert results.passed
@@ -160,12 +148,9 @@ def test_drift_data_earth_movers_distance(data, threshold, expected_metric, colu
 def test_drift_prediction_psi(data, model, threshold, expected_metric, request):
     data = request.getfixturevalue(data)
     model = request.getfixturevalue(model)
-    results = drift.test_drift_prediction_psi(
-        reference_slice=data.slice(lambda df: df.head(len(df) // 2), row_level=False),
-        actual_slice=data.slice(lambda df: df.tail(len(df) // 2), row_level=False),
-        model=model,
-        threshold=threshold,
-    ).execute()
+    results = drift.test_drift_prediction_psi(model=model, actual_dataset=data.slice(
+        SlicingFunction(lambda df: df.tail(len(df) // 2), row_level=False)), reference_dataset=data.slice(
+        SlicingFunction(lambda df: df.head(len(df) // 2), row_level=False)), threshold=threshold).execute()
 
     assert round(results.metric, 2) == expected_metric
     assert results.passed
@@ -177,12 +162,9 @@ def test_drift_prediction_psi(data, model, threshold, expected_metric, request):
 )
 def test_drift_prediction_chi_square(data, model, threshold, expected_metric, request):
     data = request.getfixturevalue(data)
-    results = drift.test_drift_prediction_chi_square(
-        reference_slice=data.slice(lambda df: df.head(len(df) // 2), row_level=False),
-        actual_slice=data.slice(lambda df: df.tail(len(df) // 2), row_level=False),
-        model=request.getfixturevalue(model),
-        threshold=threshold,
-    ).execute()
+    results = drift.test_drift_prediction_chi_square(model=request.getfixturevalue(model), actual_dataset=data.slice(
+        SlicingFunction(lambda df: df.tail(len(df) // 2), row_level=False)), reference_dataset=data.slice(
+        SlicingFunction(lambda df: df.head(len(df) // 2), row_level=False)), threshold=threshold).execute()
 
     assert round(results.metric, 2) == expected_metric
     assert results.passed
@@ -194,12 +176,9 @@ def test_drift_prediction_chi_square(data, model, threshold, expected_metric, re
 )
 def test_drift_reg_output_ks(data, model, threshold, expected_metric, request):
     data = request.getfixturevalue(data)
-    results = drift.test_drift_prediction_ks(
-        reference_slice=data.slice(lambda df: df.head(len(df) // 2), row_level=False),
-        actual_slice=data.slice(lambda df: df.tail(len(df) // 2), row_level=False),
-        model=request.getfixturevalue(model),
-        threshold=threshold,
-    ).execute()
+    results = drift.test_drift_prediction_ks(model=request.getfixturevalue(model), actual_dataset=data.slice(
+        SlicingFunction(lambda df: df.tail(len(df) // 2), row_level=False)), reference_dataset=data.slice(
+        SlicingFunction(lambda df: df.head(len(df) // 2), row_level=False)), threshold=threshold).execute()
 
     assert round(results.metric, 2) == expected_metric
     assert results.passed
@@ -212,15 +191,12 @@ def test_drift_reg_output_ks(data, model, threshold, expected_metric, request):
         ("enron_data", "enron_model", 0.05, 0.29, "CALIFORNIA CRISIS"),
     ],
 )
-def test_drift_clf_prob_ks(data, model, threshold, expected_metric, classification_label, request):
+def test_drift_model_prob_ks(data, model, threshold, expected_metric, classification_label, request):
     data = request.getfixturevalue(data)
-    results = drift.test_drift_prediction_ks(
-        reference_slice=data.slice(lambda df: df.head(len(df) // 2), row_level=False),
-        actual_slice=data.slice(lambda df: df.tail(len(df) // 2), row_level=False),
-        model=request.getfixturevalue(model),
-        threshold=threshold,
-        classification_label=classification_label,
-    ).execute()
+    results = drift.test_drift_prediction_ks(model=request.getfixturevalue(model), actual_dataset=data.slice(
+        SlicingFunction(lambda df: df.tail(len(df) // 2), row_level=False)), reference_dataset=data.slice(
+        SlicingFunction(lambda df: df.head(len(df) // 2), row_level=False)), classification_label=classification_label,
+                                             threshold=threshold).execute()
 
     assert round(results.metric, 2) == expected_metric
     assert results.passed
@@ -236,17 +212,14 @@ def test_drift_clf_prob_ks(data, model, threshold, expected_metric, classificati
         ("german_credit_data", "german_credit_model", 0.05, 0.83, "Default", 11),
     ],
 )
-def test_drift_clf_prob_ks_small_dataset(
-    data, model, threshold, expected_metric, classification_label, num_rows, request
+def test_drift_model_prob_ks_small_dataset(
+        data, model, threshold, expected_metric, classification_label, num_rows, request
 ):
     data = request.getfixturevalue(data)
-    results = drift.test_drift_prediction_ks(
-        reference_slice=data.slice(lambda df: df.head(num_rows), row_level=False),
-        actual_slice=data.slice(lambda df: df.tail(num_rows), row_level=False),
-        model=request.getfixturevalue(model),
-        threshold=threshold,
-        classification_label=classification_label,
-    ).execute()
+    results = drift.test_drift_prediction_ks(model=request.getfixturevalue(model), actual_dataset=data.slice(
+        SlicingFunction(lambda df: df.tail(num_rows), row_level=False)), reference_dataset=data.slice(
+        SlicingFunction(lambda df: df.head(num_rows), row_level=False)), classification_label=classification_label,
+                                             threshold=threshold).execute()
 
     assert round(results.metric, 2) == expected_metric
     assert results.passed
@@ -257,15 +230,15 @@ def test_drift_clf_prob_ks_small_dataset(
     [("german_credit_data", "german_credit_model", 0.05, 0.29, "Default")],
 )
 @pytest.mark.skip(reason="#585")
-def test_drift_clf_prob_ks_small_unique_dataset(data, model, threshold, expected_metric, classification_label, request):
+def test_drift_model_prob_ks_small_unique_dataset(data, model, threshold, expected_metric, classification_label,
+                                                  request):
     data = request.getfixturevalue(data)
-    results = drift.test_drift_prediction_ks(
-        reference_slice=data.slice(lambda df: df[df["housing"] == "own"], row_level=False),
-        actual_slice=data.slice(lambda df: df[df["housing"].isin(["own", "rent"])], row_level=False),
-        model=request.getfixturevalue(model),
-        threshold=threshold,
-        classification_label=classification_label,
-    )
+    results = drift.test_drift_prediction_ks(model=request.getfixturevalue(model), actual_dataset=data.slice(
+        SlicingFunction(lambda df: df[df["housing"].isin(["own", "rent"])], row_level=False)),
+                                             reference_dataset=data.slice(
+                                                 SlicingFunction(lambda df: df[df["housing"] == "own"],
+                                                                 row_level=False)),
+                                             classification_label=classification_label, threshold=threshold)
 
     assert round(results.metric, 2) == expected_metric
     assert results.passed
@@ -277,12 +250,14 @@ def test_drift_clf_prob_ks_small_unique_dataset(data, model, threshold, expected
 )
 def test_drift_reg_output_earth_movers_distance(data, model, threshold, expected_metric, request):
     data = request.getfixturevalue(data)
-    results = drift.test_drift_prediction_earth_movers_distance(
-        reference_slice=data.slice(lambda df: df.head(len(df) // 2), row_level=False),
-        actual_slice=data.slice(lambda df: df.tail(len(df) // 2), row_level=False),
-        model=request.getfixturevalue(model),
-        threshold=threshold,
-    ).execute()
+    results = drift.test_drift_prediction_earth_movers_distance(model=request.getfixturevalue(model),
+                                                                actual_dataset=data.slice(
+                                                                    SlicingFunction(lambda df: df.tail(len(df) // 2),
+                                                                                    row_level=False)),
+                                                                reference_dataset=data.slice(
+                                                                    SlicingFunction(lambda df: df.head(len(df) // 2),
+                                                                                    row_level=False)),
+                                                                threshold=threshold).execute()
 
     assert round(results.metric, 2) == expected_metric
     assert results.passed
@@ -295,30 +270,29 @@ def test_drift_reg_output_earth_movers_distance(data, model, threshold, expected
         ("enron_data", "enron_model", 0.2, 0.12, "CALIFORNIA CRISIS"),
     ],
 )
-def test_drift_clf_prob_earth_movers_distance(data, model, threshold, expected_metric, classification_label, request):
+def test_drift_model_prob_earth_movers_distance(data, model, threshold, expected_metric, classification_label, request):
     data = request.getfixturevalue(data)
-    results = drift.test_drift_prediction_earth_movers_distance(
-        reference_slice=data.slice(lambda df: df.head(len(df) // 2), row_level=False),
-        actual_slice=data.slice(lambda df: df.tail(len(df) // 2), row_level=False),
-        model=request.getfixturevalue(model),
-        classification_label=classification_label,
-        threshold=threshold,
-    ).execute()
+    results = drift.test_drift_prediction_earth_movers_distance(model=request.getfixturevalue(model),
+                                                                actual_dataset=data.slice(
+                                                                    SlicingFunction(lambda df: df.tail(len(df) // 2),
+                                                                                    row_level=False)),
+                                                                reference_dataset=data.slice(
+                                                                    SlicingFunction(lambda df: df.head(len(df) // 2),
+                                                                                    row_level=False)),
+                                                                classification_label=classification_label,
+                                                                threshold=threshold).execute()
 
     assert round(results.metric, 2) == expected_metric
     assert results.passed
 
 
-def test_drift_clf_prob_ks_exception(german_credit_data, german_credit_model, threshold=0.02):
+def test_drift_model_prob_ks_exception(german_credit_data, german_credit_model, threshold=0.02):
     with pytest.raises(Exception):
         ds = german_credit_data
-        drift.test_drift_prediction_ks(
-            reference_slice=ds.slice(lambda df: df.head(len(df) // 2), row_level=False),
-            actual_slice=ds.slice(lambda df: df.tail(len(df) // 2), row_level=False),
-            model=german_credit_model,
-            threshold=threshold,
-            classification_label="random_value",
-        ).execute()
+        drift.test_drift_prediction_ks(model=german_credit_model, actual_dataset=ds.slice(
+            SlicingFunction(lambda df: df.tail(len(df) // 2), row_level=False)), reference_dataset=ds.slice(
+            SlicingFunction(lambda df: df.head(len(df) // 2), row_level=False)), classification_label="random_value",
+                                       threshold=threshold).execute()
 
 
 @pytest.mark.parametrize(
@@ -329,11 +303,10 @@ def test_drift_data_chi_square_exception(data, threshold, expected_metric, colum
     with pytest.raises(Exception):
         data = request.getfixturevalue(data)
         drift.test_drift_chi_square(
-            reference_ds=data.slice(lambda df: df.head(len(df) // 2), row_level=False),
-            actual_ds=data.slice(lambda df: df.tail(len(df) // 2), row_level=False),
+            actual_dataset=data.slice(SlicingFunction(lambda df: df.tail(len(df) // 2), row_level=False)),
+            reference_dataset=data.slice(SlicingFunction(lambda df: df.head(len(df) // 2), row_level=False)),
             column_name=column_name,
-            threshold=threshold,
-        ).execute()
+            threshold=threshold).execute()
 
 
 @pytest.mark.parametrize(
@@ -344,8 +317,7 @@ def test_drift_data_ks_exception(data, threshold, expected_metric, column_name, 
     with pytest.raises(Exception):
         data = request.getfixturevalue(data)
         drift.test_drift_ks(
-            reference_ds=data.slice(lambda df: df.head(len(df) // 2), row_level=False),
-            actual_ds=data.slice(lambda df: df.tail(len(df) // 2), row_level=False),
+            actual_dataset=data.slice(SlicingFunction(lambda df: df.tail(len(df) // 2), row_level=False)),
+            reference_dataset=data.slice(SlicingFunction(lambda df: df.head(len(df) // 2), row_level=False)),
             column_name=column_name,
-            threshold=threshold,
-        ).execute()
+            threshold=threshold).execute()

@@ -37,12 +37,71 @@
                   </v-list-item>
                 </v-list>
               </v-menu>
+
             </v-card-title>
             <v-card-text v-if="!errorLoadingMetadata && Object.keys(inputMetaData).length > 0" id="inputTextCard">
               <div class="caption error--text">{{ dataErrorMsg }}</div>
               <v-form lazy-validation>
                 <div v-for="c in datasetNonTargetColumns" :key="c.name"
                      v-show="featuresToView.includes(c.name)">
+                  <<<<<<< refs/remotes/origin/feature/transformation-in-ai-debug
+                  <ValidationProvider
+                      :name="c.name"
+                      v-slot="{ dirty }"
+                  >
+                    <div class="py-1 d-flex" v-if="isFeatureEditable(c.name)">
+                      <label class="info--text">{{ c.name }}</label>
+                      <input type="number" v-if="c.type === 'numeric'"
+                             v-model="inputData[c.name]"
+                             class="common-style-input"
+                             :class="{
+                                 'is-transformed': !dirty && transformationModifications.hasOwnProperty(c.name) && inputData[c.name] === transformationModifications[c.name],
+                                 'is-dirty': dirty || inputData[c.name] !== originalData[c.name]
+                             }"
+                             @change="onValuePerturbation(c)"
+                             required
+                      />
+                      <textarea v-if="c.type === 'text'"
+                                v-model="inputData[c.name]"
+                                :rows="!inputData[c.name] ? 1 : Math.min(15, parseInt(inputData[c.name].length / 40) + 1)"
+                                class="common-style-input"
+                                :class="{
+                                 'is-transformed': !dirty && transformationModifications.hasOwnProperty(c.name) && inputData[c.name] === transformationModifications[c.name],
+                                 'is-dirty': dirty || inputData[c.name] !== originalData[c.name]
+                             }"
+                                @change="onValuePerturbation(c)"
+                                required
+                      ></textarea>
+                      <select v-if="c.type === 'category'"
+                              v-model="inputData[c.name]"
+                              class="common-style-input"
+                              :class="{
+                                 'is-transformed': !dirty && transformationModifications.hasOwnProperty(c.name) && inputData[c.name] === transformationModifications[c.name],
+                                 'is-dirty': dirty || inputData[c.name] !== originalData[c.name]
+                             }"
+                              @change="onValuePerturbation(c)"
+                              required
+                      >
+                        <option v-for="k in c.values" :key="k" :value="k">{{ k }}</option>
+                      </select>
+                      <div class="d-flex flex-column">
+                        <FeedbackPopover
+                            v-if="!isMiniMode"
+                            :inputLabel="c.name"
+                            :inputValue="inputData[c.name]"
+                            :originalValue="originalData[c.name]"
+                            :inputType="c.type"
+                            @submit="$emit(dirty ? 'submitValueVariationFeedback' : 'submitValueFeedback', arguments[0])"
+                        />
+                        <TransformationPopover v-if="c.type === 'text'" :column="c.name"/>
+                      </div>
+                    </div>
+                    <div class="py-1 d-flex" v-else>
+                      <label class="info--text">{{ c.name }}</label>
+                      <span>{{ inputData[c.name] }}</span>
+                    </div>
+                  </ValidationProvider>
+                  =======
                   <ValidationProvider
                       :name="c.name"
                       v-slot="{ dirty }"
@@ -94,6 +153,7 @@
                       <span>{{ inputData[c.name] }}</span>
                     </div>
                   </ValidationProvider>
+                  >>>>>>> Start of front and backend
                 </div>
               </v-form>
             </v-card-text>
@@ -115,6 +175,7 @@
               :predictionTask="model.modelType"
               :inputData="inputData"
               :modified="dirty || isInputNotOriginal"
+              :debouncingTimeout="debouncingTimeout"
               @result="setResult"
           />
           <v-card class="mb-4">
@@ -151,6 +212,7 @@
                                           :predictionTask="model.modelType"
                                           :inputData="inputData"
                                           :modelFeatures="modelFeatures"
+                                          :debouncingTimeout="debouncingTimeout"
                   />
                 </v-tab-item>
                 <v-tab-item v-if='textFeatureNames.length'>
@@ -185,12 +247,12 @@ import {isClassification} from "@/ml-utils";
 import mixpanel from "mixpanel-browser";
 import {anonymize} from "@/utils";
 import _ from 'lodash';
-import SuggestionPopover from "@/components/SuggestionPopover.vue";
+import TransformationPopover from "@/components/TransformationPopover.vue";
 import {usePushStore} from "@/stores/suggestions";
 
 @Component({
   components: {
-    SuggestionPopover,
+    TransformationPopover,
     OverlayLoader, PredictionResults, FeedbackPopover, PredictionExplanations, TextExplanation
   }
 })
@@ -198,10 +260,10 @@ export default class Inspector extends Vue {
   @Prop({required: true}) model!: ModelDTO
   @Prop({required: true}) dataset!: DatasetDTO
   @Prop({required: true}) originalData!: object // used for the variation feedback
+  @Prop({required: true}) transformationModifications!: object // used for the variation feedback
   @Prop({required: true}) inputData!: { [key: string]: string }
   @Prop({default: false}) isMiniMode!: boolean;
   @Prop({default: 0}) rowNb!: number;
-
   loadingData = false;
   inputMetaData: FeatureMetadataDTO[] = [];
   featuresToView: string[] = []
@@ -209,6 +271,8 @@ export default class Inspector extends Vue {
   dataErrorMsg = ""
   classificationResult = null
   isClassification = isClassification
+  debouncingTimeout: number = 500;
+
 
   async mounted() {
     await this.loadMetaData();
@@ -236,16 +300,16 @@ export default class Inspector extends Vue {
     }
   }
 
+  get isInputNotOriginal() { // used in case of opening a feedback where original data and input data passed are different
+    return JSON.stringify(this.inputData) !== JSON.stringify({...this.originalData, ...this.transformationModifications})
+  }
+
   @Watch('rowNb')
   async onRowNbChange(newValue, oldValue) {
     if (newValue != oldValue) {
       const pushStore = usePushStore();
       await pushStore.fetchPushSuggestions(this.model.id, this.dataset.id, newValue ?? 0);
     }
-  }
-
-  get isInputNotOriginal() { // used in case of opening a feedback where original data and input data passed are different
-    return JSON.stringify(this.inputData) !== JSON.stringify(this.originalData)
   }
 
   get textFeatureNames() {
@@ -323,6 +387,10 @@ select.common-style-input {
 
 .common-style-input.is-dirty {
   background-color: #AD14572B; /* accent color but with opacity */
+}
+
+.common-style-input.is-transformed {
+  background-color: #d1ecf1;
 }
 
 .v-card__subtitle, .v-card__text, .v-card__title {

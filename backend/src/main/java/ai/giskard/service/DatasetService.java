@@ -5,27 +5,27 @@ import ai.giskard.domain.ml.Dataset;
 import ai.giskard.repository.ml.DatasetRepository;
 import ai.giskard.security.PermissionEvaluator;
 import ai.giskard.web.dto.DatasetMetadataDTO;
+import ai.giskard.web.dto.DatasetPageDTO;
 import ai.giskard.web.dto.FeatureMetadataDTO;
+import ai.giskard.web.dto.RowFilterDTO;
 import ai.giskard.web.dto.ml.DatasetDetailsDTO;
 import ai.giskard.web.rest.errors.Entity;
 import ai.giskard.web.rest.errors.EntityNotFoundException;
 import com.univocity.parsers.common.TextParsingException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import tech.tablesaw.api.IntColumn;
 import tech.tablesaw.api.Table;
 import tech.tablesaw.io.csv.CsvReadOptions;
 
 import javax.validation.constraints.NotNull;
+import java.io.IOException;
 import java.nio.file.Path;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
-@Transactional
 @RequiredArgsConstructor
 public class DatasetService {
     public static final String GISKARD_DATASET_INDEX_COLUMN_NAME = "_GISKARD_INDEX_";
@@ -34,6 +34,7 @@ public class DatasetService {
     private final FileLocationService locationService;
     private final FileUploadService fileUploadService;
     private final PermissionEvaluator permissionEvaluator;
+    private final InspectionService inspectionService;
 
     /**
      * Read table from file
@@ -42,7 +43,7 @@ public class DatasetService {
      * @return the table
      */
     public Table readTableByDatasetId(@NotNull UUID datasetId) {
-        Dataset dataset = datasetRepository.findById(datasetId).orElseThrow(() -> new EntityNotFoundException(Entity.DATASET, datasetId.toString()));
+        Dataset dataset = datasetRepository.getMandatoryById(datasetId);
         Map<String, tech.tablesaw.api.ColumnType> columnDtypes = dataset.getColumnTypes().entrySet().stream()
             .collect(Collectors.toMap(Map.Entry::getKey, e -> ColumnType.featureToColumn.get(e.getValue())));
         Path filePath = locationService.datasetsDirectory(dataset.getProject().getKey())
@@ -79,7 +80,7 @@ public class DatasetService {
     }
 
     public DatasetMetadataDTO getMetadata(@NotNull UUID id) {
-        Dataset dataset = this.datasetRepository.getById(id);
+        Dataset dataset = this.datasetRepository.getMandatoryById(id);
         DatasetMetadataDTO metadata = new DatasetMetadataDTO();
         metadata.setId(id);
         metadata.setColumnDtypes(dataset.getColumnDtypes());
@@ -96,15 +97,31 @@ public class DatasetService {
      * @param rangeMax max range of the dataset
      * @return filtered table
      */
-    public Table getRows(@NotNull UUID id, @NotNull int rangeMin, @NotNull int rangeMax) {
+    public DatasetPageDTO getRows(@NotNull UUID id, @NotNull int rangeMin, @NotNull int rangeMax, RowFilterDTO rowFilter) throws IOException {
         Table table = readTableByDatasetId(id);
         table.addColumns(IntColumn.indexColumn(GISKARD_DATASET_INDEX_COLUMN_NAME, table.rowCount(), 0));
-        return table.inRange(rangeMin, Math.min(table.rowCount(), rangeMax));
+
+        if (rowFilter.getFilter() != null) {
+            table = inspectionService.getRowsFiltered(table, rowFilter.getFilter());
+        }
+
+        if (rowFilter.getRemoveRows() != null) {
+            Table finalTable = table;
+            table = table.dropRows(Arrays.stream(rowFilter.getRemoveRows())
+                .mapToObj(idx -> finalTable.stream().filter(row -> row.getInt(GISKARD_DATASET_INDEX_COLUMN_NAME) == idx).findFirst())
+                .filter(Optional::isPresent)
+                .mapToInt(row -> row.get().getRowNumber())
+                .toArray());
+        }
+
+        return new DatasetPageDTO(table.rowCount(), table.inRange(rangeMin, Math.min(table.rowCount(), rangeMax)).stream()
+            .map(row -> row.columnNames().stream()
+                .collect(Collectors.toMap(Function.identity(), row::getObject)))
+            .toList());
     }
 
-    @Transactional
     public List<FeatureMetadataDTO> getFeaturesWithDistinctValues(UUID datasetId) {
-        Dataset dataset = datasetRepository.getById(datasetId);
+        Dataset dataset = datasetRepository.getMandatoryById(datasetId);
         permissionEvaluator.validateCanReadProject(dataset.getProject().getId());
 
         Table data = readTableByDatasetId(datasetId);
@@ -123,7 +140,6 @@ public class DatasetService {
         }).toList();
     }
 
-    @Transactional
     public Dataset renameDataset(UUID datasetId, String name) {
         Dataset dataset = datasetRepository.findById(datasetId)
             .orElseThrow(() -> new EntityNotFoundException(Entity.DATASET, datasetId.toString()));

@@ -1,12 +1,17 @@
 import inspect
 import logging
 import re
+from abc import ABC
 from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
 from typing import Optional, Dict, List, Union, Literal, TypeVar, Callable, Type, Any
 
 logger = logging.getLogger(__name__)
+
+
+class Kwargs:
+    pass
 
 
 def _get_plugin_method_full_name(func):
@@ -92,7 +97,7 @@ class DatasetMeta:
 
 
 @dataclass
-class TestFunctionArgument:
+class FunctionArgument:
     name: str
     type: str
     default: any
@@ -100,7 +105,7 @@ class TestFunctionArgument:
     argOrder: int
 
 
-class CallableMeta(SavableMeta):
+class CallableMeta(SavableMeta, ABC):
     code: str
     name: str
     display_name: str
@@ -110,13 +115,15 @@ class CallableMeta(SavableMeta):
     tags: List[str]
     version: Optional[int]
     full_name: str
+    type: str
+    args: Dict[str, FunctionArgument]
 
     def __init__(self,
                  callable_obj: Union[Callable, Type] = None,
-                 name: str = None,
+                 name: Optional[str] = None,
                  tags: List[str] = None,
-                 version: Optional[int] = None
-                 ):
+                 version: Optional[int] = None,
+                 type: str = None):
         if callable_obj:
             from giskard.ml_worker.testing.registry.registry import get_object_uuid
 
@@ -135,13 +142,37 @@ class CallableMeta(SavableMeta):
             self.module_doc = self.extract_module_doc(func_doc)
             self.tags = self.populate_tags(tags)
             self.version = version
+            self.type = type
+
+            parameters = self.extract_parameters(callable_obj)
+
+            self.args = {
+                parameter.name: FunctionArgument(
+                    name=parameter.name,
+                    type=parameter.annotation.__qualname__,
+                    optional=parameter.default != inspect.Parameter.empty and parameter.default is not None,
+                    default=None if parameter.default == inspect.Parameter.empty
+                    else parameter.default,
+                    argOrder=idx
+                )
+                for idx, parameter in enumerate(parameters.values())
+                if name != 'self'
+            }
+
+    def extract_parameters(self, callable_obj):
+        if inspect.isclass(callable_obj):
+            parameters = list(inspect.signature(callable_obj.__init__).parameters.values())[1:]
+        else:
+            parameters = list(inspect.signature(callable_obj).parameters.values())
+
+        return parameters
 
     @staticmethod
     def extract_module_doc(func_doc):
         return inspect.getmodule(func_doc).__doc__.strip() if inspect.getmodule(func_doc).__doc__ else None
 
     def populate_tags(self, tags=None):
-        tags = [] if not tags else tags
+        tags = [] if not tags else tags.copy()
         if self.full_name.partition(".")[0] == "giskard":
             tags.append("giskard")
         elif self.full_name.startswith('__main__'):
@@ -177,6 +208,16 @@ class CallableMeta(SavableMeta):
             "module_doc": self.module_doc,
             "code": self.code,
             "tags": self.tags,
+            "type": self.type,
+            "args": [
+                {
+                    "name": arg.name,
+                    "type": arg.type,
+                    "default": arg.default,
+                    "optional": arg.optional,
+                    "argOrder": arg.argOrder,
+                } for arg in self.args.values()
+            ]
         }
 
     def init_from_json(self, json: Dict[str, Any]):
@@ -189,68 +230,9 @@ class CallableMeta(SavableMeta):
         self.code = json["code"]
         self.tags = json["tags"]
         self.version = json["version"]
-
-
-def __repr__(self) -> str:
-    return f"CallableMeta: {self.module}.{self.name}"
-
-
-class TestFunctionMeta(CallableMeta):
-    args: Dict[str, TestFunctionArgument]
-
-    def __init__(self,
-                 callable_obj: Union[Callable, Type] = None,
-                 name: str = None,
-                 tags: List[str] = None,
-                 version: Optional[int] = None):
-        if callable_obj:
-            super().__init__(callable_obj, name, tags, version)
-            parameters = self.extract_parameters(callable_obj)
-
-            self.args = {
-                parameter.name: TestFunctionArgument(
-                    name=parameter.name,
-                    type=parameter.annotation.__qualname__,
-                    optional=parameter.default != inspect.Parameter.empty and parameter.default is not None,
-                    default=None if parameter.default == inspect.Parameter.empty
-                    else parameter.default,
-                    argOrder=idx
-                )
-                for idx, parameter in enumerate(parameters.values())
-                if name != 'self'
-            }
-
-    @staticmethod
-    def extract_parameters(callable_obj):
-        if inspect.isclass(callable_obj):
-            parameters = list(inspect.signature(callable_obj.__init__).parameters.values())[1:]
-        else:
-            parameters = list(inspect.signature(callable_obj).parameters.values())
-        args_without_type = [p.name for p in parameters if p.annotation == inspect.Parameter.empty]
-        if len(args_without_type):
-            msg = f'Test function definition "{callable_obj.__module__}.{callable_obj.__name__}" ' \
-                  f'is missing argument type: {", ".join(args_without_type)}'
-            logger.warning(msg)
-            raise ValueError(msg)
-        return {p.name: p for p in parameters}
-
-    def to_json(self):
-        obj = super().to_json()
-        obj["args"] = [
-            {
-                "name": arg.name,
-                "type": arg.type,
-                "default": arg.default,
-                "optional": arg.optional,
-                "argOrder": arg.argOrder,
-            } for arg in self.args.values()
-        ]
-        return obj
-
-    def init_from_json(self, json: Dict[str, Any]):
-        super().init_from_json(json)
+        self.type = json["type"]
         self.args = {
-            arg["name"]: TestFunctionArgument(
+            arg["name"]: FunctionArgument(
                 name=arg["name"],
                 type=arg["type"],
                 default=arg["defaultValue"],
@@ -260,5 +242,43 @@ class TestFunctionMeta(CallableMeta):
         }
 
 
+def __repr__(self) -> str:
+    return f"CallableMeta: {self.module}.{self.name}"
+
+
+class TestFunctionMeta(CallableMeta):
+    def extract_parameters(self, callable_obj):
+        parameters = unknown_annotations_to_kwargs(CallableMeta.extract_parameters(self, callable_obj))
+
+        return {p.name: p for p in parameters}
+
+
+class DatasetProcessFunctionMeta(CallableMeta):
+    def extract_parameters(self, callable_obj):
+        parameters = unknown_annotations_to_kwargs(CallableMeta.extract_parameters(self, callable_obj)[1:])
+
+        return {p.name: p for p in parameters}
+
+
 DT = TypeVar('DT')
 SMT = TypeVar('SMT', bound=SavableMeta)
+
+
+def unknown_annotations_to_kwargs(parameters: List[inspect.Parameter]) -> List[inspect.Parameter]:
+    from giskard.models.base import BaseModel
+    from giskard.datasets.base import Dataset
+    from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction
+    from giskard.ml_worker.testing.registry.transformation_function import TransformationFunction
+
+    allowed_types = [str, bool, int, float, BaseModel, Dataset, SlicingFunction, TransformationFunction]
+
+    has_kwargs = any([param for param in parameters if
+                      not any([param.annotation == allowed_type for allowed_type in allowed_types])])
+
+    parameters = [param for param in parameters if
+                  any([param.annotation == allowed_type for allowed_type in allowed_types])]
+
+    if has_kwargs:
+        parameters.append(inspect.Parameter(name='kwargs', kind=4, annotation=Kwargs))
+
+    return parameters

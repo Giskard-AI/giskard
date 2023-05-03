@@ -10,13 +10,12 @@ from urllib.parse import urlparse
 
 from tenacity import retry, wait_exponential, stop_after_attempt, after_log
 
-from giskard.cli import analytics
+from giskard.cli_utils import analytics
 from giskard.client.analytics_collector import anonymize
 from giskard.client.giskard_client import GiskardClient
 from giskard.ml_worker.bridge.data_encryptor import DataEncryptor
 from giskard.ml_worker.bridge.error import ConnectionLost
 from giskard.ml_worker.bridge.service_messages import CREATE_CLIENT_CHANNEL, START_INNER_SERVER
-from giskard.ml_worker.testing.registry.registry import tests_registry
 from giskard.ml_worker.utils.network import readable_hex
 
 CHANNEL_ID_LENGTH = 8
@@ -58,9 +57,6 @@ class MLWorkerBridge:
 
     @retry(wait=wait_exponential(min=0.1, max=5, multiplier=0.1))
     async def start(self):
-        if self.client is not None:
-            self.client.save_test_function_registry(tests_registry.get_all().values())
-
         try:
             await self.connect_to_remote_host()
             await self.send_start_inner_server_message()
@@ -159,7 +155,14 @@ class MLWorkerBridge:
             remote_writer.write(self.encryptor.encrypt(message, additional_data=self.key_id.encode()))
             await remote_writer.drain()
 
-            grpc_reader, grpc_writer = await asyncio.open_unix_connection(urlparse(self.local_address).path)
+            # On Windows, we go over TCP because UDS are not supported yet.
+            # Check on gRPC every once in a while for eventual support.
+            if sys.platform == "win32":
+                address_parts = self.local_address.split(':')
+                grpc_reader, grpc_writer = await asyncio.open_connection(address_parts[0], address_parts[1])
+            # On Linux, we can use Unix Domain Sockets.
+            else:
+                grpc_reader, grpc_writer = await asyncio.open_unix_connection(urlparse(self.local_address).path)
 
             readers.add(grpc_reader)
             writers.add(grpc_writer)

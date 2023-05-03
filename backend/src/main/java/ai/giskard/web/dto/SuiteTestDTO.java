@@ -17,5 +17,6 @@ public class SuiteTestDTO {
     @JsonAlias("test_uuid")
     @NotNull
     private UUID testUuid;
-    private Map<@NotBlank String, @Valid TestInputDTO> testInputs;
+    private TestFunctionDTO test;
+    private Map<@NotBlank String, @Valid FunctionInputDTO> functionInputs;
 }

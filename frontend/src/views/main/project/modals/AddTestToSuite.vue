@@ -64,7 +64,7 @@
 
 import {computed, onMounted, ref} from 'vue';
 import {api} from '@/api';
-import {SuiteTestDTO, TestFunctionDTO, TestInputDTO, TestSuiteDTO} from '@/generated-sources';
+import {FunctionInputDTO, SuiteTestDTO, TestFunctionDTO, TestSuiteDTO} from '@/generated-sources';
 import SuiteInputListSelector from '@/components/SuiteInputListSelector.vue';
 import {chain} from 'lodash';
 import {useMainStore} from "@/stores/main";
@@ -73,13 +73,13 @@ const {projectId, test, suiteId, testArguments} = defineProps<{
   projectId: number,
   test: TestFunctionDTO,
   suiteId?: number,
-  testArguments: { [name: string]: string }
+    testArguments: { [name: string]: FunctionInputDTO }
 }>();
 
 const dialog = ref<boolean>(false);
 const testSuites = ref<TestSuiteDTO[]>([]);
 const selectedSuite = ref<number | null>(null);
-const testInputs = ref<{ [name: string]: TestInputDTO }>({});
+const testInputs = ref<{ [name: string]: FunctionInputDTO }>({});
 
 onMounted(() => loadData());
 
@@ -87,14 +87,15 @@ async function loadData() {
   testSuites.value = await api.getTestSuites(projectId);
   selectedSuite.value = testSuites.value.find(({id}) => id === suiteId)?.id ?? null
   testInputs.value = test.args.reduce((result, arg) => {
-    result[arg.name] = {
-      name: arg.name,
-      type: arg.type,
-      isAlias: false,
-      value: testArguments[arg.name] ?? ''
-    }
-    return result
-  }, {} as { [name: string]: TestInputDTO })
+      result[arg.name] = testArguments[arg.name] ?? {
+          name: arg.name,
+          type: arg.type,
+          isAlias: false,
+          value: '',
+          params: []
+      }
+      return result
+  }, {} as { [name: string]: FunctionInputDTO })
 }
 
 
@@ -109,12 +110,13 @@ const mainStore = useMainStore();
 
 async function submit(close) {
     const suiteTest: SuiteTestDTO = {
+        test,
         testUuid: test.uuid,
-        testInputs: chain(testInputs.value)
+        functionInputs: chain(testInputs.value)
             .omitBy(({value}) => value === null
                 || (typeof value === 'string' && value.trim() === '')
                 || (typeof value === 'number' && Number.isNaN(value)))
-            .value() as { [name: string]: TestInputDTO }
+            .value() as { [name: string]: FunctionInputDTO }
     }
 
     await api.addTestToSuite(projectId, selectedSuite.value!, suiteTest);

@@ -15,12 +15,12 @@
 
 logging:
   level:
-    ROOT: DEBUG
+    ROOT: INFO
     tech.jhipster: INFO
     org.hibernate.SQL: INFO
-    ai.giskard: DEBUG
+    ai.giskard: INFO
     com.zaxxer.hikari.HikariConfig: DEBUG
-    com.zaxxer.hikari: TRACE
+    com.zaxxer.hikari: INFO
 
 spring:
   devtools:
@@ -35,9 +35,6 @@ spring:
   datasource:
     type: com.zaxxer.hikari.HikariDataSource
     url: "jdbc:h2:file:${giskard.home}/database/giskard;AUTO_SERVER=TRUE"
-#    url: jdbc:postgresql://localhost:5432/app
-#    username: postgres
-#    password: y1QYbF2BtFUC
     hikari:
       poolName: Hikari
       auto-commit: false
@@ -47,7 +44,7 @@ spring:
       leak-detection-threshold: 10000
   jpa:
     database-platform: tech.jhipster.domain.util.FixedH2Dialect
-    show-sql: true
+    show-sql: false
   liquibase:
     # Remove 'faker' if you do not want the sample data to be loaded automatically
     contexts: dev, faker

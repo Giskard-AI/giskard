@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import math
 import os
 import platform
 import sys
@@ -32,6 +33,9 @@ from giskard.ml_worker.generated import ml_worker_pb2
 from giskard.ml_worker.generated.ml_worker_pb2_grpc import MLWorkerServicer
 from giskard.ml_worker.ml_worker import MLWorker
 from giskard.ml_worker.testing.registry.giskard_test import GiskardTest
+from giskard.ml_worker.testing.registry.registry import tests_registry
+from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction
+from giskard.ml_worker.testing.registry.transformation_function import TransformationFunction
 from giskard.models.base import BaseModel
 from giskard.path_utils import model_path, dataset_path
 
@@ -46,6 +50,34 @@ def file_already_exists(meta: ml_worker_pb2.FileUploadMetadata):
     else:
         raise ValueError(f"Illegal file type: {meta.file_type}")
     return path.exists(), path
+
+
+def map_function_meta(callable_type):
+    return {
+        test.uuid: ml_worker_pb2.FunctionMeta(
+            uuid=test.uuid,
+            name=test.name,
+            displayName=test.display_name,
+            module=test.module,
+            doc=test.doc,
+            code=test.code,
+            moduleDoc=test.module_doc,
+            tags=test.tags,
+            type=test.type,
+            args=[
+                ml_worker_pb2.TestFunctionArgument(
+                    name=a.name,
+                    type=a.type,
+                    optional=a.optional,
+                    default=str(a.default),
+                    argOrder=a.argOrder
+                ) for a
+                in test.args.values()
+            ],
+        )
+        for test in tests_registry.get_all().values()
+        if test.type == callable_type
+    }
 
 
 class MLWorkerServiceImpl(MLWorkerServicer):
@@ -131,7 +163,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
 
         test: GiskardTest = GiskardTest.load(request.testUuid, self.client, None)
 
-        arguments = self.parse_test_arguments(request.arguments)
+        arguments = self.parse_function_arguments(request.arguments)
 
         logger.info(f"Executing {test.meta.display_name or f'{test.meta.module}.{test.meta.name}'}")
         test_result = test.get_builder()(**arguments).execute()
@@ -141,17 +173,51 @@ class MLWorkerServiceImpl(MLWorkerServicer):
                                                 result=map_result_to_single_test_result(test_result))
         ])
 
+    def datasetProcessing(
+            self, request: ml_worker_pb2.DatasetProcessingRequest, context: grpc.ServicerContext
+    ) -> ml_worker_pb2.DatasetProcessingResultMessage:
+        dataset = Dataset.download(self.client, request.dataset.project_key, request.dataset.id)
+
+        for function in request.functions:
+            arguments = self.parse_function_arguments(function.arguments)
+            if function.HasField("slicingFunction"):
+                dataset.add_slicing_function(
+                    SlicingFunction.load(function.slicingFunction.id, self.client, None)(**arguments))
+            else:
+                dataset.add_transformation_function(
+                    TransformationFunction.load(function.transformationFunction.id, self.client, None)(**arguments))
+
+        result = dataset.process()
+
+        filtered_rows_idx = dataset.df.index.difference(result.df.index)
+        modified_rows = dataset.df[dataset.df.iloc[result.df.index].ne(result.df)].dropna(how='all')
+
+        return ml_worker_pb2.DatasetProcessingResultMessage(
+            datasetId=request.dataset.id,
+            totalRows=len(dataset.df.index),
+            filteredRows=filtered_rows_idx,
+            modifications=[
+                ml_worker_pb2.DatasetRowModificationResult(
+                    rowId=row[0],
+                    modifications={key: str(value) for key, value in row[1].items() if
+                                   not type(value) == float or not math.isnan(value)}
+                )
+                for row
+                in modified_rows.iterrows()
+            ]
+        )
+
     def runTestSuite(self, request: ml_worker_pb2.RunTestSuiteRequest,
                      context: grpc.ServicerContext) -> ml_worker_pb2.TestSuiteResultMessage:
         log_listener = LogListener()
         try:
             tests = [{
                 'test': GiskardTest.load(t.testUuid, self.client, None),
-                'arguments': self.parse_test_arguments(t.arguments),
+                'arguments': self.parse_function_arguments(t.arguments),
                 'id': t.id
             } for t in request.tests]
 
-            global_arguments = self.parse_test_arguments(request.globalArguments)
+            global_arguments = self.parse_function_arguments(request.globalArguments)
 
             test_names = list(
                 map(lambda t: t['test'].meta.display_name or f"{t['test'].meta.module + '.' + t['test'].meta.name}",
@@ -189,24 +255,33 @@ class MLWorkerServiceImpl(MLWorkerServicer):
                 logs=log_listener.close()
             )
 
-    def parse_test_arguments(self, request_arguments):
-        arguments = {}
+    def parse_function_arguments(self, request_arguments):
+        arguments = dict()
         for arg in request_arguments:
             if arg.HasField("dataset"):
-                value = Dataset.download(self.client, arg.dataset.project_key, arg.dataset.id)
+                arguments[arg.name] = Dataset.download(self.client, arg.dataset.project_key, arg.dataset.id)
             elif arg.HasField("model"):
-                value = BaseModel.download(self.client, arg.model.project_key, arg.model.id)
+                arguments[arg.name] = BaseModel.download(self.client, arg.model.project_key, arg.model.id)
+            elif arg.HasField("slicingFunction"):
+                arguments[arg.name] = SlicingFunction.load(arg.slicingFunction.id, self.client, None)(
+                    **self.parse_function_arguments(arg.args))
+            elif arg.HasField("transformationFunction"):
+                arguments[arg.name] = TransformationFunction.load(arg.transformationFunction.id, self.client, None)(
+                    **self.parse_function_arguments(arg.args))
             elif arg.HasField("float"):
-                value = float(arg.float)
+                arguments[arg.name] = float(arg.float)
             elif arg.HasField("int"):
-                value = int(arg.int)
+                arguments[arg.name] = int(arg.int)
             elif arg.HasField("str"):
-                value = str(arg.str)
+                arguments[arg.name] = str(arg.str)
             elif arg.HasField("bool"):
-                value = bool(arg.bool)
+                arguments[arg.name] = bool(arg.bool)
+            elif arg.HasField("kwargs"):
+                kwargs = dict()
+                exec(arg.kwargs, {'kwargs': kwargs})
+                arguments.update(kwargs)
             else:
                 raise IllegalArgumentError("Unknown argument type")
-            arguments[arg.name] = value
         return arguments
 
     def explain(self, request: ml_worker_pb2.ExplainRequest, context) -> ml_worker_pb2.ExplainResponse:
@@ -246,11 +321,8 @@ class MLWorkerServiceImpl(MLWorkerServicer):
 
     def runModelForDataFrame(self, request: ml_worker_pb2.RunModelForDataFrameRequest, context):
         model = BaseModel.download(self.client, request.model.project_key, request.model.id)
-        ds = Dataset(
-            pd.DataFrame([r.columns for r in request.dataframe.rows]),
-            target=request.target,
-            column_types=request.column_types,
-        )
+        ds = Dataset(pd.DataFrame([r.columns for r in request.dataframe.rows]), target=None,
+                     column_types=request.column_types)
         predictions = model.predict(ds)
         if model.is_classification:
             return ml_worker_pb2.RunModelForDataFrameResponse(
@@ -438,7 +510,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
                             value=i.value,
                             is_alias=i.is_alias
                         )
-                        for i in test.testInputs.values()
+                        for i in test.functionInputs.values()
                     ]
                 )
                 for test in suite.tests
@@ -450,6 +522,14 @@ class MLWorkerServiceImpl(MLWorkerServicer):
         logger.info('Received request to stop the worker')
         self.loop.create_task(self.ml_worker.stop())
         return google.protobuf.empty_pb2.Empty()
+
+    def getCatalog(self, request: google.protobuf.empty_pb2.Empty,
+                   context: grpc.ServicerContext) -> ml_worker_pb2.CatalogResponse:
+        return ml_worker_pb2.CatalogResponse(
+            tests=map_function_meta('TEST'),
+            slices=map_function_meta('SLICE'),
+            transformations=map_function_meta('TRANSFORMATION')
+        )
 
     @staticmethod
     def pandas_df_to_proto_df(df):

@@ -13,15 +13,16 @@ package worker;
 service MLWorker {
   rpc getInfo(MLWorkerInfoRequest) returns (MLWorkerInfo){}
   rpc runAdHocTest (RunAdHocTestRequest) returns (TestResultMessage) {}
+  rpc datasetProcessing (DatasetProcessingRequest) returns (DatasetProcessingResultMessage) {}
   rpc runTestSuite (RunTestSuiteRequest) returns (TestSuiteResultMessage) {}
   rpc runModel(RunModelRequest) returns (google.protobuf.Empty) {}
   rpc runModelForDataFrame(RunModelForDataFrameRequest) returns (RunModelForDataFrameResponse) {}
   rpc explain(ExplainRequest) returns (ExplainResponse) {}
   rpc explainText(ExplainTextRequest) returns (ExplainTextResponse) {}
   rpc echo(EchoMsg) returns (EchoMsg){}
-  rpc filterDataset(stream FilterDatasetRequest) returns (stream FilterDatasetResponse) {}
   rpc generateTestSuite(GenerateTestSuiteRequest) returns (GenerateTestSuiteResponse) {}
   rpc stopWorker(google.protobuf.Empty) returns (google.protobuf.Empty) {}
+  rpc getCatalog(google.protobuf.Empty) returns (CatalogResponse) {}
   rpc suggestFilter(SuggestFilterRequest) returns (SuggestFilterResponse) {}
 }
 
@@ -141,21 +142,34 @@ message RunModelResponse{
 
 message RunAdHocTestRequest {
   string testUuid = 1;
-  repeated TestArgument arguments = 2;
+  repeated FuncArgument arguments = 2;
+}
+
+message DatasetProcessingRequest {
+  ArtifactRef dataset = 1;
+  repeated DatasetProcessingFunction functions = 2;
+}
+
+message DatasetProcessingFunction {
+  oneof function {
+    ArtifactRef slicingFunction = 1;
+    ArtifactRef transformationFunction = 2;
+  }
+  repeated FuncArgument arguments = 3;
 }
 
 message SuiteTestArgument {
   int64 id = 1;
   string testUuid = 2;
-  repeated TestArgument arguments = 3;
+  repeated FuncArgument arguments = 3;
 }
 
 message RunTestSuiteRequest {
   repeated SuiteTestArgument tests = 1;
-  repeated TestArgument globalArguments = 2;
+  repeated FuncArgument globalArguments = 2;
 }
 
-message TestArgument{
+message FuncArgument{
   string name = 1;
   oneof argument{
     ArtifactRef model = 2;
@@ -164,8 +178,11 @@ message TestArgument{
     int32 int = 5;
     string str = 6;
     bool bool = 7;
-
+    ArtifactRef slicingFunction = 8;
+    ArtifactRef transformationFunction = 9;
+    string kwargs = 10;
   }
+  repeated FuncArgument args = 11;
 }
 
 message RunTestResponse {
@@ -220,6 +237,18 @@ message SingleTestResult{
 
 message TestResultMessage {
   repeated NamedSingleTestResult results = 1;
+}
+
+message DatasetProcessingResultMessage {
+  string datasetId = 1;
+  uint32 totalRows = 2;
+  repeated uint32 filteredRows = 3;
+  repeated DatasetRowModificationResult modifications = 4;
+}
+
+message DatasetRowModificationResult {
+  uint32 rowId = 1;
+  map<string, string> modifications = 2;
 }
 
 message TestSuiteResultMessage {
@@ -291,23 +320,33 @@ message GeneratedTestInput{
   bool is_alias = 3;
 }
 
-message FilterDatasetRequest {
-  FilterDatasetMetadata meta = 1;
-  Chunk data = 2;
-  uint32 idx = 3;
+message CatalogResponse{
+  map<string, FunctionMeta> tests = 1;
+  map<string, FunctionMeta> slices = 2;
+  map<string, FunctionMeta> transformations = 3;
 }
 
-message FilterDatasetMetadata {
-  string function = 1;
-  string headers = 2; // Since we are going to stream the CSV rows, we store the headers first
-  map<string, string> column_dtypes = 3;
+message FunctionMeta {
+  string uuid = 1;
+  string name = 2;
+  string displayName = 3;
+  uint32 version = 4;
+  string module = 5;
+  string doc = 6;
+  string moduleDoc = 7;
+  repeated TestFunctionArgument args = 8;
+  repeated string tags = 9;
+  string code = 10;
+  string type = 11;
 }
 
-message FilterDatasetResponse {
-  StatusCode code = 1;
-  uint32 idx = 2;
-  repeated uint32 rows = 3; // Will we ever have >4 billion rows in a chunk?
-  string error_message = 4;
+
+message TestFunctionArgument{
+  string name = 1;
+  string type = 2;
+  bool optional = 3;
+  string default = 4;
+  uint32 argOrder = 5;
 }
 
 message SuggestFilterRequest {

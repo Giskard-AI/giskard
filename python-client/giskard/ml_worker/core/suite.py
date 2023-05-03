@@ -7,14 +7,16 @@ from giskard.client.dtos import TestSuiteDTO, TestInputDTO, SuiteTestDTO
 from giskard.client.giskard_client import GiskardClient
 from giskard.core.core import TestFunctionMeta
 from giskard.datasets.base import Dataset
+from giskard.ml_worker.core.savable import Savable
 from giskard.ml_worker.core.test_result import TestResult
 from giskard.ml_worker.testing.registry.giskard_test import GiskardTest, Test, GiskardTestMethod
 from giskard.ml_worker.testing.registry.registry import tests_registry
+from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction
 from giskard.models.base import BaseModel
 
 logger = logging.getLogger(__name__)
 
-suite_input_types: List[type] = [Dataset, BaseModel, str, bool, int, float]
+suite_input_types: List[type] = [Dataset, BaseModel, str, bool, int, float, SlicingFunction, SlicingFunction]
 
 
 class TestSuiteResult(tuple):
@@ -78,10 +80,41 @@ def single_binary_result(test_results: List):
     return passed
 
 
+def build_test_input_dto(client, p, pname, ptype, project_key, uploaded_uuids):
+    if issubclass(type(p), Dataset) or issubclass(type(p), BaseModel):
+        if str(p.id) not in uploaded_uuids:
+            p.upload(client, project_key)
+        uploaded_uuids.append(str(p.id))
+        return TestInputDTO(name=pname, value=str(p.id), type=ptype)
+    elif issubclass(type(p), Savable):
+        if str(p.meta.uuid) not in uploaded_uuids:
+            p.upload(client)
+        uploaded_uuids.append(str(p.meta.uuid))
+        return TestInputDTO(name=pname, value=str(p.meta.uuid), type=ptype,
+                            params=[
+                                build_test_input_dto(client, value, pname, p.meta.args[pname].type, project_key,
+                                                     uploaded_uuids) for pname, value in
+                                p.params.items()])
+    elif isinstance(p, SuiteInput):
+        return TestInputDTO(name=pname, value=p.name, is_alias=True, type=ptype)
+    else:
+        return TestInputDTO(name=pname, value=str(p), type=ptype)
+
+
 class Suite:
     """
-    The Test Suite class is used to group and execute a collection of test cases. It provides methods to add new tests,
-    execute all tests, and save the suite to a Giskard instance.
+    A class representing a test suite that groups a collection of test cases together. The Suite class provides
+    methods to add new tests, execute all tests, and save the suite to a Giskard instance.
+
+    Attributes:
+        id : int
+            An integer identifying the suite.
+        tests : List[TestPartial]
+            A list of TestPartial objects representing the test cases in the suite.
+        suite_params : Mapping[str, SuiteInput]
+            A mapping of suite parameters with their corresponding SuiteInput objects.
+        name : str
+            A string representing the name of the suite.
     """
 
     id: int
@@ -152,7 +185,7 @@ class Suite:
                 test_params[pname] = kwargs[pname]
         return test_params
 
-    def save(self, client: GiskardClient, project_key: str):
+    def upload(self, client: GiskardClient, project_key: str):
         """
         Saves the test suite to the Giskard backend and sets its ID.
 
@@ -172,25 +205,16 @@ class Suite:
         uploaded_uuids: List[str] = []
 
         for t in self.tests:
-            inputs = {}
-            for pname, p in t.provided_inputs.items():
-                if issubclass(type(p), Dataset) or issubclass(type(p), BaseModel):
-                    if str(p.id) not in uploaded_uuids:
-                        p.upload(client, project_key)
-                    inputs[pname] = TestInputDTO(name=pname, value=str(p.id))
-                elif isinstance(p, SuiteInput):
-                    inputs[pname] = TestInputDTO(name=pname, value=p.name, is_alias=True)
-                else:
-                    inputs[pname] = TestInputDTO(name=pname, value=str(p))
-
             suite_tests.append(SuiteTestDTO(
                 testUuid=t.giskard_test.upload(client),
-                testInputs=inputs
+                functionInputs={
+                    pname: build_test_input_dto(client, p, pname, t.giskard_test.meta.args[pname].type, project_key,
+                                                uploaded_uuids) for pname, p in t.provided_inputs.items()}
             ))
 
         return TestSuiteDTO(name=self.name, project_key=project_key, tests=suite_tests)
 
-    def add_test(self, test_fn: Test, test_name: Optional[Union[int, str]] = None, **params):
+    def add_test(self, test_fn: Test, test_name: Optional[Union[int, str]] = None, **params) -> 'Suite':
         """
          Add a test to the suite.
 

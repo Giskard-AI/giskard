@@ -12,10 +12,10 @@ def test_custom_model(linear_regression_diabetes: BaseModel):
     with MockedClient() as (client, mr):
         class MyModel(WrapperModel):
             @classmethod
-            def load_clf(cls, local_dir):
+            def load_model(cls, local_dir):
                 pass
 
-            def clf_predict(self, df):
+            def model_predict(self, df):
                 pass
 
             def save(self, local_path: Union[str, Path]) -> None:
@@ -30,8 +30,8 @@ def test_custom_model(linear_regression_diabetes: BaseModel):
                          re.match(artifact_url_prefix + MODEL_CLASS_PKL, i.url)]) > 0
             )
 
-        SKLearnModel(linear_regression_diabetes.clf, model_type=SupportedModelTypes.REGRESSION).upload(client, "pk")
+        SKLearnModel(linear_regression_diabetes.model, model_type=SupportedModelTypes.REGRESSION).upload(client, "pk")
         assert not has_model_class_been_sent()
 
-        MyModel(clf=linear_regression_diabetes.clf, model_type=SupportedModelTypes.REGRESSION).upload(client, "pk")
+        MyModel(model=linear_regression_diabetes.model, model_type=SupportedModelTypes.REGRESSION).upload(client, "pk")
         assert has_model_class_been_sent()
