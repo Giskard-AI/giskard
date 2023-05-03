@@ -69,26 +69,24 @@ class SKLearnModel(MLFlowBasedModel):
             classification_labels=classification_labels,
         )
 
-    @classmethod
-    def save_model(cls, local_path, mlflow_meta):
-        if cls.is_classification:
+    def save_model(self, local_path, mlflow_meta):
+        if self.is_classification:
             pyfunc_predict_fn = "model_predict"
-        elif cls.is_regression:
+        elif self.is_regression:
             pyfunc_predict_fn = "predict"
         else:
             raise ValueError("Unsupported model type")
 
         mlflow.sklearn.save_model(
-            cls.model, path=local_path, pyfunc_predict_fn=pyfunc_predict_fn, mlflow_model=mlflow_meta
+            self.model, path=local_path, pyfunc_predict_fn=pyfunc_predict_fn, mlflow_model=mlflow_meta
         )
 
     @classmethod
     def load_model(cls, local_dir):
         return mlflow.sklearn.load_model(local_dir)
 
-    @classmethod
-    def model_predict(cls, df):
-        if cls.is_regression:
-            return cls.model.predict(df)
+    def model_predict(self, df):
+        if self.is_regression:
+            return self.model.predict(df)
         else:
-            return cls.model.predict_proba(df)
+            return self.model.predict_proba(df)
