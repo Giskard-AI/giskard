@@ -4,7 +4,6 @@ import tensorflow as tf
 
 from sklearn import model_selection
 
-import giskard.models.base.model
 from giskard import TensorFlowModel, Dataset
 
 import tests.utils
@@ -41,7 +40,7 @@ def test_text_classification_tfhub():
         net = outputs['pooled_output']
         net = tf.keras.layers.Dropout(0.1)(net)
         net = tf.keras.layers.Dense(4, activation='softmax', name='classifier')(net)
-        return giskard.models.base.model._Model(inputs=text_input, outputs=net)
+        return tf.keras.Model(inputs=text_input, outputs=net)
 
     model = build_classifier_model()
 
