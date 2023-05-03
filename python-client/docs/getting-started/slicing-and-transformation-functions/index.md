@@ -8,7 +8,7 @@ see [🔬 Scan your ML model](../scan/index.md)
 ## Apply a slicing function to your dataset
 
 :::{hint}
-You can see all our slicing function in the [🔪 Slicing Function Catalog](../slicing-function-catalog/index.rst)
+You can see all our slicing function in the [🔪 Slicing Function Catalog](../../guides/slicing-function-catalog/index.rst)
 :::
 
 ::::{tab-set}
@@ -71,7 +71,7 @@ ten_firsts_slice.df.head()
 ## Apply a transformation function to your dataset
 
 :::{hint}
-You can see all our slicing function in the [🔪 Slicing Function Catalog](../slicing-function-catalog/index.rst)
+You can see all our slicing function in the [🔪 Slicing Function Catalog](../../guides/slicing-function-catalog/index.rst)
 :::
 
 ::::{tab-set}
@@ -83,7 +83,7 @@ from giskard.ml_worker.testing.functions.transformation import keyboard_typo_tra
 
 wrapped_dataset = wrap_dataset(...)
 
-keyboard_typo = wrapped_dataset.slice(keyboard_typo_transformation(column_name='content'))
+keyboard_typo = wrapped_dataset.transform(keyboard_typo_transformation(column_name='content'))
 
 keyboard_typo.df.head()
 
@@ -105,7 +105,7 @@ def uppercase_transformation(df: pandas.DataFrame, column_name: str) -> pd.DataF
     return df.head(column_name)
 
 
-uppercase = wrapped_dataset.slice(uppercase_transformation('content'))
+uppercase = wrapped_dataset.transform(uppercase_transformation('content'))
 
 uppercase.df.head()
 
@@ -113,3 +113,22 @@ uppercase.df.head()
 
 :::
 ::::
+
+## Chaining slicing and transformation functions
+
+:::{hint}
+You can chain as many slicing and transformation as you need
+:::
+
+```python
+from giskard import wrap_dataset
+from giskard.ml_worker.testing.functions.slicing import positive_sentiment_analysis
+from giskard.ml_worker.testing.functions.transformation import keyboard_typo_transformation
+
+wrapped_dataset = wrap_dataset(...)
+
+positive_sentiment_with_typo = wrapped_dataset.slice(positive_sentiment_analysis(column_name='content')).transform(
+    keyboard_typo_transformation(column_name='content'))
+
+positive_sentiment_with_typo.df.head()
+```

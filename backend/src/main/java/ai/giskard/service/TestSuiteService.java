@@ -1,6 +1,7 @@
 package ai.giskard.service;
 
 import ai.giskard.domain.FunctionArgument;
+import ai.giskard.domain.MLWorkerType;
 import ai.giskard.domain.Project;
 import ai.giskard.domain.ml.FunctionInput;
 import ai.giskard.domain.ml.SuiteTest;
@@ -9,9 +10,11 @@ import ai.giskard.domain.ml.TestSuiteExecution;
 import ai.giskard.jobs.JobType;
 import ai.giskard.ml.MLWorkerClient;
 import ai.giskard.repository.ProjectRepository;
+import ai.giskard.repository.TestSuiteExecutionRepository;
 import ai.giskard.repository.ml.TestFunctionRepository;
 import ai.giskard.repository.ml.TestSuiteRepository;
 import ai.giskard.service.ml.MLWorkerService;
+import ai.giskard.utils.TransactionUtils;
 import ai.giskard.web.dto.*;
 import ai.giskard.web.dto.mapper.GiskardMapper;
 import ai.giskard.web.rest.errors.EntityNotFoundException;
@@ -30,12 +33,12 @@ import static ai.giskard.web.rest.errors.Entity.TEST_SUITE;
 
 
 @Service
-@Transactional
 @RequiredArgsConstructor
 public class TestSuiteService {
     private final GiskardMapper giskardMapper;
     private final TestSuiteRepository testSuiteRepository;
     private final TestSuiteExecutionService testSuiteExecutionService;
+    private final TestSuiteExecutionRepository testSuiteExecutionRepository;
     private final JobService jobService;
     private final ProjectRepository projectRepository;
     private final MLWorkerService mlWorkerService;
@@ -75,30 +78,33 @@ public class TestSuiteService {
         return res;
     }
 
-
     @Transactional
-    public UUID scheduleTestSuiteExecution(Long projectId, Long suiteId, Map<String, String> inputs) {
-        TestSuite testSuite = testSuiteRepository.getById(suiteId);
+    public UUID scheduleTestSuiteExecution(Long projectId, Long suiteId, List<FunctionInputDTO> inputs) {
+        TestSuite testSuite = testSuiteRepository.getMandatoryById(suiteId);
+        TransactionUtils.initializeTestSuite(testSuite);
 
         TestSuiteExecution execution = new TestSuiteExecution(testSuite);
-        execution.setInputs(inputs.entrySet().stream()
-            .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)));
+        execution.setInputs(inputs.stream().map(giskardMapper::fromDTO).toList());
 
         Map<String, String> suiteInputs = getSuiteInputs(projectId, suiteId).entrySet().stream()
             .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().getType()));
 
         verifyAllInputProvided(inputs, testSuite, suiteInputs);
 
-        return jobService.undetermined(() ->
-                testSuiteExecutionService.executeScheduledTestSuite(execution, suiteInputs), projectId, JobType.TEST_SUITE_EXECUTION,
-            testSuite.getProject().getMlWorkerType());
+        MLWorkerType mlWorkerType = testSuite.getProject().getMlWorkerType();
+        return jobService.undetermined(() -> {
+            testSuiteExecutionService.executeScheduledTestSuite(execution, suiteInputs);
+            testSuiteExecutionRepository.save(execution);
+        }, projectId, JobType.TEST_SUITE_EXECUTION, mlWorkerType);
     }
 
-    private static void verifyAllInputProvided(Map<String, String> providedInputs,
+    private static void verifyAllInputProvided(List<FunctionInputDTO> providedInputs,
                                                TestSuite testSuite,
                                                Map<String, String> requiredInputs) {
+        Set<String> names = providedInputs.stream().map(FunctionInputDTO::getName).collect(Collectors.toSet());
+
         List<String> missingInputs = requiredInputs.keySet().stream()
-            .filter(requiredInput -> !providedInputs.containsKey(requiredInput))
+            .filter(requiredInput -> !names.contains(requiredInput))
             .toList();
         if (!missingInputs.isEmpty()) {
             throw new IllegalArgumentException("Inputs '%s' required to execute test suite %s"
@@ -107,7 +113,7 @@ public class TestSuiteService {
     }
 
     public TestSuiteDTO updateTestInputs(long suiteId, long testId, List<FunctionInputDTO> inputs) {
-        TestSuite testSuite = testSuiteRepository.getById(suiteId);
+        TestSuite testSuite = testSuiteRepository.getMandatoryById(suiteId);
 
         SuiteTest test = testSuite.getTests().stream()
             .filter(t -> testId == t.getId())
@@ -157,7 +163,6 @@ public class TestSuiteService {
         return testSuiteRepository.save(suite);
     }
 
-    @Transactional
     public Long generateTestSuite(String projectKey, GenerateTestSuiteDTO dto) {
 
         Project project = projectRepository.getOneByKey(projectKey);
@@ -179,7 +184,7 @@ public class TestSuiteService {
                 .map(giskardMapper::fromDTO)
                 .toList());
             suite.getTests().addAll(response.getTestsList().stream()
-                .map(test -> new SuiteTest(suite, test, testFunctionRepository.getById(UUID.fromString(test.getTestUuid()))))
+                .map(test -> new SuiteTest(suite, test, testFunctionRepository.getMandatoryById(UUID.fromString(test.getTestUuid()))))
                 .toList());
 
             return testSuiteRepository.save(suite).getId();
@@ -205,16 +210,15 @@ public class TestSuiteService {
     }
 
     public TestSuiteDTO removeSuiteTest(long suiteId, long suiteTestId) {
-        TestSuite testSuite = testSuiteRepository.getById(suiteId);
+        TestSuite testSuite = testSuiteRepository.getMandatoryById(suiteId);
 
         testSuite.getTests().removeIf(suiteTest -> suiteTest.getId() == suiteTestId);
 
         return giskardMapper.toDTO(testSuiteRepository.save(testSuite));
     }
 
-    @Transactional
     public TestSuiteDTO updateTestSuite(long suiteId, TestSuiteDTO testSuiteDTO) {
-        TestSuite testSuite = testSuiteRepository.getById(suiteId);
+        TestSuite testSuite = testSuiteRepository.getMandatoryById(suiteId);
 
         testSuite.setName(testSuiteDTO.getName());
         testSuite.getFunctionInputs().clear();
@@ -225,7 +229,6 @@ public class TestSuiteService {
         return giskardMapper.toDTO(testSuiteRepository.save(testSuite));
     }
 
-    @Transactional
 
     public void deleteTestSuite(long suiteId) {
         testSuiteRepository.deleteById(suiteId);

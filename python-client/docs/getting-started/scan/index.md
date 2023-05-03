@@ -19,7 +19,7 @@ In order to scan your model for vulnerabilities, you'll need to install the `gis
 :::{tab-item} Windows
 
 ```sh
-pip install "git+https://github.com/Giskard-AI/giskard.git@feature/ai-test-v2-merged#subdirectory=python-client" --user
+pip install "giskard[scan] @ git+https://github.com/Giskard-AI/giskard.git@feature/ai-test-v2-merged#subdirectory=python-client" --user
 ```
 
 :::
@@ -27,7 +27,7 @@ pip install "git+https://github.com/Giskard-AI/giskard.git@feature/ai-test-v2-me
 :::{tab-item} Mac and Linux
 
 ```sh
-pip install "git+https://github.com/Giskard-AI/giskard.git@feature/ai-test-v2-merged#subdirectory=python-client"
+pip install "giskard[scan] @ git+https://github.com/Giskard-AI/giskard.git@feature/ai-test-v2-merged#subdirectory=python-client"
 ```
 
 :::
@@ -49,15 +49,16 @@ import pandas as pd
 
 iris_df = pd.DataFrame({"sepal length": [5.1],
                         "sepal width": [3.5],
-                        "iris_type": ["Setosa"]})
+                        "size": ["medium"],
+                        "species": ["Setosa"]})
 
 from giskard import wrap_dataset
 
 wrapped_dataset = wrap_dataset(
   dataset=iris_df, 
-  target="iris_type", # Optional but a MUST if available
+  target="species", # Optional but a MUST if available
+  cat_columns=["size"] # Optional but a MUST if available. Inferred automatically if not.
   # name="my_iris_dataset", # Optional
-  # cat_columns=None # Optional: if not provided, it is inferred automatically
   # column_types=None # # Optional: if not provided, it is inferred automatically
   )
 ```
@@ -69,15 +70,14 @@ wrapped_dataset = wrap_dataset(
   * `target`: The column name in `dataset` corresponding to the actual target variable (ground truth).
   * `name`: Name of the wrapped dataset.
   * One of:
-    * `cat_columns`: A list of strings representing the names of categorical columns. 
+    * `cat_columns`: A list of strings representing the names of categorical columns. These are columns that are 
+       processed by the model with common categorical preprocessing, such as one hot encoding. It can be binary, 
+       numerical or textual with few unique values.
        If not provided, the columns types will be automatically inferred.
     * `column_types`: A dictionary of column names and their types (numeric, category or text) for all columns of `dataset`. 
-       If not provided, the categorical columns will be automatically inferred.
+       If not provided, the types will be automatically inferred.
 
 ## 3. Wrap your model
-
-We currently support **tabular** and **NLP** models from `sklearn`, `catboost`, `pytorch`, `tensorflow`
-and `huggingface`.
 
 To use your model with Giskard, you can simply wrap your model
 with [wrap_model](../../reference/models/index.rst#giskard.wrap_model). The objective of this wrapper is to encapsulate 
@@ -86,14 +86,21 @@ the entire prediction process, starting from the **raw** `pandas.DataFrame` and 
 If your ML model contains preprocessing functions (categorical encoding, scaling, etc.), it should be either inside your
 `model` or inside the `data_preprocessing_function` of the Giskard model you create.
 
-### General usage of [wrap_model](../../reference/models/index.rst#giskard.wrap_model)
+:::{important}
+- For model-specific usages, try our [tutorials](../../guides/tutorials/index.md).
+- For wrapping any python function in Giskard, try this [guide](../../guides/custom-wrapper/index.md).
+:::
+
+### Usage of [wrap_model](../../reference/models/index.rst#giskard.wrap_model)
 :::::::{tab-set}
 ::::::{tab-item} Classification
 ```python
 from giskard import wrap_model
 
+clf = LogisticRegression()
+
 wrapped_model = wrap_model(
-  model=some_classifier,
+  model=clf,
   model_type="classification",
   classification_labels=['Setosa', 'Versicolor', 'Virginica'],
   # name="my_iris_classification_model", # Optional
@@ -105,7 +112,10 @@ wrapped_model = wrap_model(
   )
 ```
 * <mark style="color:red;">**`Mandatory parameters`**</mark>
-  * `model`: Could be any model from `sklearn`, `catboost`, `pytorch`, `tensorflow` or `huggingface`.
+  * `model`: Could be any model from `sklearn`, `catboost`, `pytorch`, `tensorflow` or `huggingface` (check 
+    the [tutorials](../../guides/tutorials/index.md)). If none of these
+    libraries apply to you, or if you ML model is a custom python function: check our "Wrap any python function with Giskard" 
+    [guide](../../guides/custom-wrapper/index.md).
   * `model_type`: The type of the model, either `regression` or `classification`.
   * `classification_labels`: The list of unique categories contained in your dataset target variable.
 
@@ -119,13 +129,15 @@ wrapped_model = wrap_model(
      an object of the same type and shape as the `model` output.
   * `**kwargs`: Additional model-specific arguments (See [Models](../../reference/models/index.rst)).
 
-  ::::::
+::::::
 ::::::{tab-item} Regression
 ```python
 from giskard import wrap_model
 
+reg = LinearRegression()
+
 wrapped_model = wrap_model(
-  model=some_regressor,
+  model=reg,
   model_type="regression",
   # name="my_regression_model", # Optional
   # feature_names=['x', 'y'], # Default: all columns of your dataset
@@ -150,8 +162,16 @@ wrapped_model = wrap_model(
 ::::::
 :::::::
 
-### Model-specific [tutorials](../tutorials/index.md)
+### Model-specific [tutorials](../../guides/tutorials/index.md)
 :::::{tab-set}
+::::{tab-item} Any function
+:::{important} 
+Check first our "Wrap any python function with Giskard" [guide](../../guides/custom-wrapper/index.md).
+:::
+- **<project:../../guides/tutorials/pytorch/custom_model.md>**
+- **<project:../../guides/tutorials/huggingface/BertForSequenceClassification_custom.md>**
+::::
+
 ::::{tab-item} sklearn
 
 :::{hint}
@@ -165,7 +185,7 @@ and [feature_names_in_](https://scikit-learn.org/stable/modules/generated/sklear
 respectively.
 :::
 
-- **<project:../tutorials/sklearn/credit_scoring.md>**
+- **<project:../../guides/tutorials/sklearn/credit_scoring.md>**
 ::::
 
 ::::{tab-item} catboost
@@ -181,32 +201,27 @@ and [feature_names_in_](https://scikit-learn.org/stable/modules/generated/sklear
 respectively.
 :::
 
-- **<project:../tutorials/catboost/credit_scoring.md>**
+- **<project:../../guides/tutorials/catboost/credit_scoring.md>**
 ::::
 
 ::::{tab-item} pytorch
-- **<project:../tutorials/pytorch/linear_regression.md>**
-- **<project:../tutorials/pytorch/sst2_iterable.md>**
-- **<project:../tutorials/pytorch/torch_dataset.md>**
-- **<project:../tutorials/pytorch/custom_model.md>**
+- **<project:../../guides/tutorials/pytorch/linear_regression.md>**
+- **<project:../../guides/tutorials/pytorch/sst2_iterable.md>**
+- **<project:../../guides/tutorials/pytorch/torch_dataset.md>**
+- **<project:../../guides/tutorials/pytorch/custom_model.md>**
 ::::
 
 ::::{tab-item} tensorflow
-- **<project:../tutorials/tensorflow/classification_1d.md>**
-- **<project:../tutorials/tensorflow/classification_tfhub.md>**
+- **<project:../../guides/tutorials/tensorflow/classification_1d.md>**
+- **<project:../../guides/tutorials/tensorflow/classification_tfhub.md>**
 ::::
 
 ::::{tab-item} huggingface
-- **<project:../tutorials/huggingface/BertForSequenceClassification.md>**
-- **<project:../tutorials/huggingface/BertForSequenceClassification_custom.md>**
-- **<project:../tutorials/huggingface/pytorch.md>**
-- **<project:../tutorials/huggingface/pytorch_pipeline.md>**
-- **<project:../tutorials/huggingface/tensorflow.md>**
-::::
-
-::::{tab-item} custom wrapper
-- **<project:../tutorials/pytorch/custom_model.md>**
-- **<project:../tutorials/huggingface/BertForSequenceClassification_custom.md>**
+- **<project:../../guides/tutorials/huggingface/BertForSequenceClassification.md>**
+- **<project:../../guides/tutorials/huggingface/BertForSequenceClassification_custom.md>**
+- **<project:../../guides/tutorials/huggingface/pytorch.md>**
+- **<project:../../guides/tutorials/huggingface/pytorch_pipeline.md>**
+- **<project:../../guides/tutorials/huggingface/tensorflow.md>**
 ::::
 :::::
 
@@ -217,7 +232,7 @@ Finally 🎉, you can scan your model for vulnerabilities using:
 ```python
 import giskard
 
-results = giskard.scan(wrapped_model, wrapped_dataset, tests=["f1", "accuracy"])
+results = giskard.scan(wrapped_model, wrapped_dataset)
 
 display(results)  # in your notebook
 ```

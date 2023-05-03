@@ -13,7 +13,7 @@ In order to test your model, you'll need to install the `giskard` library with `
 :::{tab-item} Windows
 
 ```sh
-pip install "git+https://github.com/Giskard-AI/giskard.git@feature/ai-test-v2-merged#subdirectory=python-client" --user
+pip install "giskard[scan] @ git+https://github.com/Giskard-AI/giskard.git@feature/ai-test-v2-merged#subdirectory=python-client" --user
 ```
 
 :::
@@ -21,7 +21,7 @@ pip install "git+https://github.com/Giskard-AI/giskard.git@feature/ai-test-v2-me
 :::{tab-item} Mac and Linux
 
 ```sh
-pip install "git+https://github.com/Giskard-AI/giskard.git@feature/ai-test-v2-merged#subdirectory=python-client"
+pip install "giskard[scan] @ git+https://github.com/Giskard-AI/giskard.git@feature/ai-test-v2-merged#subdirectory=python-client"
 ```
 
 :::
@@ -31,7 +31,7 @@ pip install "git+https://github.com/Giskard-AI/giskard.git@feature/ai-test-v2-me
 ## 2. Execute a Giskard test
 
 :::{hint}
-You can see all our tests in the [📖 Test Catalog](../test-catalog/index.rst)
+You can see all our tests in the [📖 Test Catalog](../../guides/test-catalog/index.rst)
 :::
 
 ::::{tab-set}
@@ -113,7 +113,95 @@ print(f"result: {result.passed} with metric {result.metric}")
 :::
 ::::
 
-## 3. Create a custom test
+## 3. Create & Execute a test suite
+
+::::{tab-set}
+
+:::{tab-item} Model as input
+Example using a two performance tests
+
+```python
+from giskard import wrap_model, wrap_dataset, test_f1, test_accuracy, Suite
+
+# Define our Giskard Model
+wrapped_dataset = wrap_dataset(...)
+
+# Create a suite and add a F1 test and an accuracy test
+# Note that all the parameters are specified excect dataset
+# Which means that we will need to specify dataset everytime we run the suite
+suite = Suite()
+.add_test(test_f1(dataset=wrapped_dataset))
+.add_test(test_accuracy(dataset=wrapped_dataset))
+
+# Create our first model
+my_first_model = wrap_model(...)
+
+# Run the suite by specifying our model and display the results
+passed, results = suite.run(model=my_first_model)
+
+# Create an improved version of our model
+my_improved_model = wrap_model(...)
+
+# Run the suite with our new version and check if the results improved
+suite.run(model=my_improved_model)
+```
+
+#### Description
+
+In this example we create a Suite with two tests, `test_f1` and `test_accuracy`. We specified all the parameters expect
+the dataset to "expose" it as a run input. We can see that the way to set parameters differ whenever we are dealing with
+a test class or a test function.
+
+:::
+
+:::{tab-item} Dataset as input
+1 metamorphic + 1 disparate impact (fairness)
+:::
+
+:::{tab-item} Shared test input
+![](../../assets/tests_examples.png)
+:::
+::::
+
+## 4. Save a test suite
+
+::::{tab-set}
+:::{tab-item} Test suite saving
+
+```python
+from giskard import test_f1, test_accuracy, Suite, GiskardClient
+
+url = "http://localhost:19000"  # If Giskard is installed locally (for installation, see: https://docs.giskard.ai/start/guides/installation)
+# url = "http://app.giskard.ai" # If you want to upload on giskard URL
+token = "API_TOKEN"  # you can generate your API token in the Admin tab of the Giskard application (for installation, see: https://docs.giskard.ai/start/guides/installation)
+project_name = "enron"
+
+# Create a giskard client to communicate with Giskard
+client = GiskardClient(url, token)
+
+# Create a project
+client.create_project(project_name, "Project name", "Small description of the project")
+
+suite = Suite()
+.add_test(test_f1(dataset=wrapped_dataset))
+.add_test(test_accuracy(dataset=wrapped_dataset))
+.upload(client, project_name)
+```
+
+#### Description
+
+In this example we create a Suite with two tests, `test_f1` and `test_accuracy`. We specified all the parameters expect
+the dataset to "expose" it as a run input. We then save it to the 'enron' project created previously
+
+```{eval-rst}
+.. autoclass:: giskard.Suite
+   :members:
+```
+
+:::
+::::
+
+## 5. Create a custom test
 
 ::::{tab-set}
 :::{tab-item} Using function
@@ -206,95 +294,6 @@ In order to define a custom test class, you need to extends `GiskardTest` and im
     * `TestResult` An object containing more details:
         * `passed` A required bool to know if the test passed
         * `metric` A float value with the score of the test
-
-:::
-::::
-
-## 4. Create & Execute a test suite
-
-::::{tab-set}
-
-:::{tab-item} Model as input
-Example using a performance test and the DataQuality test created previously
-
-```python
-from giskard import wrap_model, wrap_dataset, test_f1, Suite
-
-# Define our Giskard Model
-wrapped_dataset = wrap_dataset(...)
-
-# Create a suite and add a F1 test and a DataQuality test
-# Note that all the parameters are specified excect dataset
-# Which means that we will need to specify dataset everytime we run the suite
-suite = Suite()
-.add_test(test_f1(dataset=wrapped_dataset))
-.add_test(DataQuality(dataset=wrapped_dataset, column_name='Month', category='August'))
-
-# Create our first model
-my_first_model = wrap_model(...)
-
-# Run the suite by specifying our model and display the results
-passed, results = suite.run(model=my_first_model)
-
-# Create an improved version of our model
-my_improved_model = wrap_model(...)
-
-# Run the suite with our new version and check if the results improved
-suite.run(model=my_improved_model)
-```
-
-#### Description
-
-In this example we create a Suite with two tests, `test_f1` and `DataQuality`. We specified all the parameters expect
-the dataset to "expose" it as a run input. We can see that the way to set parameters differ whenever we are dealing with
-a test class or a test function.
-
-:::
-
-:::{tab-item} Dataset as input
-1 metamorphic + 1 disparate impact (fairness)
-:::
-
-:::{tab-item} Shared test input
-![](../../assets/tests_examples.png)
-:::
-::::
-
-## 5. Save a test suite
-
-::::{tab-set}
-:::{tab-item} Test suite saving
-
-```python
-from giskard import test_f1, Suite, GiskardClient
-
-url = "http://localhost:19000"  # If Giskard is installed locally (for installation, see: https://docs.giskard.ai/start/guides/installation)
-# url = "http://app.giskard.ai" # If you want to upload on giskard URL
-token = "API_TOKEN"  # you can generate your API token in the Admin tab of the Giskard application (for installation, see: https://docs.giskard.ai/start/guides/installation)
-project_name = "enron"
-
-# Create a giskard client to communicate with Giskard
-client = GiskardClient(url, token)
-
-# Create a project
-client.create_project(project_name, "Project name", "Small description of the project")
-
-suite = Suite()
-.add_test(test_f1(dataset=wrapped_dataset))
-.add_test(DataQuality(dataset=wrapped_dataset, column_name='Month', category='August'))
-.save(client, project_name)
-```
-
-#### Description
-
-In this example we create a Suite with two tests, `test_f1` and `DataQuality`. We specified all the parameters expect
-the dataset to "expose" it as a run input. We then save it to the 'enron' project created previously
-
-
-```{eval-rst}
-.. autoclass:: giskard.Suite
-   :members:
-```
 
 :::
 ::::

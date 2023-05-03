@@ -78,7 +78,6 @@
 <script setup lang="ts">
 
 import {computed, onMounted, ref} from 'vue';
-import {api} from '@/api';
 import mixpanel from 'mixpanel-browser';
 import SuiteInputListSelector from '@/components/SuiteInputListSelector.vue';
 import {useMainStore} from "@/stores/main";
@@ -142,16 +141,16 @@ function createInputs(inputs: (RequiredInputDTO & { name: string })[]) {
 }
 
 onMounted(() => {
-  testSuiteInputs.value = props.compareMode ? [{
-    globalInput: createInputs(globalInputs.value),
-    sharedInputs: createInputs(sharedInputs.value),
-  }, {
-    globalInput: createInputs(globalInputs.value),
-    sharedInputs: createInputs(sharedInputs.value),
-  }] : [{
-    globalInput: createInputs(globalInputs.value),
-    sharedInputs: createInputs(sharedInputs.value),
-  }];
+    testSuiteInputs.value = props.compareMode ? [{
+        globalInput: createInputs(globalInputs.value),
+        sharedInputs: createInputs(sharedInputs.value),
+    }, {
+        globalInput: createInputs(globalInputs.value),
+        sharedInputs: createInputs(sharedInputs.value),
+    }] : [{
+        globalInput: createInputs(globalInputs.value),
+        sharedInputs: createInputs(sharedInputs.value),
+    }];
 })
 
 function isAllParamsSet() {
@@ -169,35 +168,24 @@ async function executeTestSuite(close) {
   running.value = true;
 
   try {
-    const jobUuids = await Promise.all(testSuiteInputs.value.map(input => {
-      new Promise<Promise<void>>((resolve, reject) => {
-        api.executeTestSuite(props.projectId, props.suiteId, [
-          ...Object.values(input.globalInput),
-          ...Object.values(input.sharedInputs)
-        ]
-            .reduce((result, input) => {
-              result[input.name] = input.value;
-              return result;
-            }, {}))
-            .then(jobUuid => {
-              resolve(testSuiteStore.trackJob(jobUuid));
-            })
-            .catch(err => reject(err));
-      })
-    }));
+      const jobUuids = await Promise.all(testSuiteInputs.value.map(input =>
+          testSuiteStore.runTestSuite([
+              ...Object.values(input.globalInput),
+              ...Object.values(input.sharedInputs)
+          ])
+      ));
 
-    if (props.compareMode) {
-      await Promise.all(jobUuids);
-      router.push({name: 'test-suite-compare-executions', query: {latestCount: jobUuids.length.toString()}})
-    } else {
-      mainStore.addNotification({content: 'Test suite execution has been scheduled', color: 'success'});
-    }
-    // Track job asynchronously
+      if (props.compareMode) {
+          await Promise.all(jobUuids);
+          await router.push({name: 'test-suite-compare-executions', query: {latestCount: jobUuids.length.toString()}})
+      } else {
+          mainStore.addNotification({content: 'Test suite execution has been scheduled', color: 'success'});
+      }
+      // Track job asynchronously
   } finally {
-    running.value = false;
-    close();
+      running.value = false;
+      close();
   }
-
 }
 </script>
 

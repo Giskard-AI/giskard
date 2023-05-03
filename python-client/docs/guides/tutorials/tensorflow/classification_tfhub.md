@@ -23,7 +23,9 @@ x_train, x_test, y_train, y_test = model_selection.train_test_split(x, y,
 test_df = pd.DataFrame(list(zip(list(x_test), list(y_test))), columns=["Content", "Target"])
 ```
 ```python
-wrapped_dataset = wrap_dataset(test_df.head(), name="test dataset", target="Target")
+wrapped_dataset = wrap_dataset(test_df.head(), 
+                               name="test dataset", 
+                               target="Target")
 ```
 ## Wrap model
 ```python

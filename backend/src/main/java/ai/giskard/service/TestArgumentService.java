@@ -9,18 +9,16 @@ import ai.giskard.worker.FuncArgument;
 import ai.giskard.worker.SuiteTestArgument;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
-@Transactional
 @RequiredArgsConstructor
 public class TestArgumentService {
 
-    public SuiteTestArgument buildFixedTestArgument(Map<String, String> globalArguments, SuiteTest test, String projectKey) {
+    public SuiteTestArgument buildFixedTestArgument(Map<String, FunctionInput> globalArguments, SuiteTest test, String projectKey) {
         TestFunction testFunction = test.getTestFunction();
         SuiteTestArgument.Builder builder = SuiteTestArgument.newBuilder()
             .setTestUuid(testFunction.getUuid().toString())
@@ -31,8 +29,13 @@ public class TestArgumentService {
 
 
         for (FunctionInput input : test.getFunctionInputs()) {
-            builder.addArguments(buildTestArgument(argumentTypes, input.getName(),
-                input.isAlias() ? globalArguments.get(input.getValue()) : input.getValue(), projectKey, input.getParams()));
+            if (input.isAlias()) {
+                FunctionInput shared = globalArguments.get(input.getValue());
+                builder.addArguments(buildTestArgument(argumentTypes, shared.getName(), shared.getValue(), projectKey, shared.getParams()));
+            } else {
+                builder.addArguments(buildTestArgument(argumentTypes, input.getName(), input.getValue(), projectKey, input.getParams()));
+            }
+
         }
 
         return builder.build();
@@ -67,8 +70,10 @@ public class TestArgumentService {
                 throw new IllegalArgumentException(String.format("Unknown test execution input type %s", inputType));
         }
 
-        params.forEach(child -> argumentBuilder.addArgs(
-            buildTestArgument(child.getName(), child.getValue(), projectKey, child.getType(), child.getParams())));
+        if (params != null) {
+            params.forEach(child -> argumentBuilder.addArgs(
+                buildTestArgument(child.getName(), child.getValue(), projectKey, child.getType(), child.getParams())));
+        }
 
         return argumentBuilder.build();
     }
