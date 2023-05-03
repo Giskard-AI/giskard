@@ -44,7 +44,6 @@
               <v-form lazy-validation>
                 <div v-for="c in datasetNonTargetColumns" :key="c.name"
                      v-show="featuresToView.includes(c.name)">
-                  <<<<<<< refs/remotes/origin/feature/transformation-in-ai-debug
                   <ValidationProvider
                       :name="c.name"
                       v-slot="{ dirty }"
@@ -94,6 +93,13 @@
                             @submit="$emit(dirty ? 'submitValueVariationFeedback' : 'submitValueFeedback', arguments[0])"
                         />
                         <TransformationPopover v-if="c.type === 'text'" :column="c.name"/>
+
+                        <SuggestionPopover
+                            :modelId="model.id"
+                            :datasetId="dataset.id"
+                            :row-nb="rowNb"
+                            :column="c.name"
+                        />
                       </div>
                     </div>
                     <div class="py-1 d-flex" v-else>
@@ -101,59 +107,6 @@
                       <span>{{ inputData[c.name] }}</span>
                     </div>
                   </ValidationProvider>
-                  =======
-                  <ValidationProvider
-                      :name="c.name"
-                      v-slot="{ dirty }"
-                  >
-                    <div class="py-1 d-flex" v-if="isFeatureEditable(c.name)">
-                      <label class="info--text">{{ c.name }}</label>
-                      <input type="number" v-if="c.type === 'numeric'"
-                             v-model="inputData[c.name]"
-                             class="common-style-input"
-                             :class="{'is-dirty': dirty || inputData[c.name] !== originalData[c.name]}"
-                             @change="onValuePerturbation(c)"
-                             required
-                      />
-                      <textarea v-if="c.type === 'text'"
-                                v-model="inputData[c.name]"
-                                :rows="!inputData[c.name] ? 1 : Math.min(15, parseInt(inputData[c.name].length / 40) + 1)"
-                                class="common-style-input"
-                                :class="{'is-dirty': dirty || inputData[c.name] !== originalData[c.name]}"
-                                @change="onValuePerturbation(c)"
-                                required
-                      ></textarea>
-                      <select v-if="c.type === 'category'"
-                              v-model="inputData[c.name]"
-                              class="common-style-input"
-                              :class="{'is-dirty': dirty || inputData[c.name] !== originalData[c.name]}"
-                              @change="onValuePerturbation(c)"
-                              required
-                      >
-                        <option v-for="k in c.values" :key="k" :value="k">{{ k }}</option>
-                      </select>
-                      <FeedbackPopover
-                          v-if="!isMiniMode"
-                          :inputLabel="c.name"
-                          :inputValue="inputData[c.name]"
-                          :originalValue="originalData[c.name]"
-                          :inputType="c.type"
-                          @submit="$emit(dirty ? 'submitValueVariationFeedback' : 'submitValueFeedback', arguments[0])"
-                      />
-
-                      <SuggestionPopover
-                          :modelId="model.id"
-                          :datasetId="dataset.id"
-                          :row-nb="rowNb"
-                          :column="c.name"
-                      />
-                    </div>
-                    <div class="py-1 d-flex" v-else>
-                      <label class="info--text">{{ c.name }}</label>
-                      <span>{{ inputData[c.name] }}</span>
-                    </div>
-                  </ValidationProvider>
-                  >>>>>>> Start of front and backend
                 </div>
               </v-form>
             </v-card-text>
