@@ -84,8 +84,9 @@ class PyTorchModel(MLFlowBasedModel):
     def load_model(cls, local_dir):
         return mlflow.pytorch.load_model(local_dir)
 
-    def save_model(self, local_path, mlflow_meta: mlflow.models.Model):
-        mlflow.pytorch.save_model(self.model, path=local_path, mlflow_model=mlflow_meta)
+    @classmethod
+    def save_model(cls, local_path, mlflow_meta: mlflow.models.Model):
+        mlflow.pytorch.save_model(cls.model, path=local_path, mlflow_model=mlflow_meta)
 
     def _get_predictions_from_iterable(self, data):
         # Fault tolerance: try to convert to the right format in special cases
@@ -124,14 +125,15 @@ class PyTorchModel(MLFlowBasedModel):
                 "returns an object that can be passed as input for your model. "
             ) from err
 
-    def model_predict(self, data):
-        self.model.to(self.device)
-        self.model.eval()
+    @classmethod
+    def model_predict(cls, data):
+        cls.model.to(cls.device)
+        cls.model.eval()
 
-        if self.iterate_dataset:
-            predictions = self._get_predictions_from_iterable(data)
+        if cls.iterate_dataset:
+            predictions = cls._get_predictions_from_iterable(data)
         else:
-            predictions = self._get_predictions_from_object(data)
+            predictions = cls._get_predictions_from_object(data)
 
         return predictions
 

@@ -35,10 +35,12 @@ class TensorFlowModel(MLFlowBasedModel):
     def load_model(cls, local_path):
         return mlflow.tensorflow.load_model(local_path)
 
-    def save_model(self, local_path, mlflow_meta: mlflow.models.Model):
-        mlflow.tensorflow.save_model(self.model,
+    @classmethod
+    def save_model(cls, local_path, mlflow_meta: mlflow.models.Model):
+        mlflow.tensorflow.save_model(cls.model,
                                      path=local_path,
                                      mlflow_model=mlflow_meta)
 
-    def model_predict(self, data):
-        return self.model.predict(data)
+    @classmethod
+    def model_predict(cls, data):
+        return cls.model.predict(data)

@@ -16,9 +16,10 @@ class CatboostModel(SKLearnModel):
     """
     _feature_names_attr = "feature_names_"
 
-    def save_model(self, local_path, mlflow_meta: mlflow.models.Model):
+    @classmethod
+    def save_model(cls, local_path, mlflow_meta: mlflow.models.Model):
         mlflow.catboost.save_model(
-            self.model, path=local_path, mlflow_model=mlflow_meta
+            cls.model, path=local_path, mlflow_model=mlflow_meta
         )
 
     @classmethod

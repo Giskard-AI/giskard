@@ -108,20 +108,22 @@ class HuggingFaceModel(WrapperModel):
         self.save_model(local_path)
         self.save_huggingface_meta(local_path)
 
-    def save_model(self, local_path):
-        self.model.save_pretrained(local_path)
+    @classmethod
+    def save_model(cls, local_path):
+        cls.model.save_pretrained(local_path)
 
-    def model_predict(self, df: pd.DataFrame):
-        predictions = self._get_predictions(df)
+    @classmethod
+    def model_predict(cls, df: pd.DataFrame):
+        predictions = cls._get_predictions(df)
 
-        if self.is_classification and hasattr(predictions, "logits"):
-            if isinstance(self.model, torch.nn.Module):
+        if cls.is_classification and hasattr(predictions, "logits"):
+            if isinstance(cls.model, torch.nn.Module):
                 with torch.no_grad():
                     logits = predictions.logits.detach().numpy()
             else:
                 logits = predictions.logits
 
-            if self.model_postprocessing_function:
+            if cls.model_postprocessing_function:
                 logger.warning(
                     "Your model output is logits. In Giskard, we expect the output to be probabilities."
                     "Since you provided a model_postprocessing_function, we assume that you included softmax() yourself.",
