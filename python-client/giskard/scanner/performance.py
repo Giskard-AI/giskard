@@ -2,12 +2,11 @@ import pandas as pd
 from sklearn import metrics
 from typing import Optional
 
-from giskard.scanner.issue import Issue
+from .issue import Issue
 from ..models.base import BaseModel
 from ..models._precooked import PrecookedModel
 from ..datasets.base import Dataset
 
-from .result import ScanResult
 from ..slicing.utils import get_slicer
 from ..slicing.text_slicer import TextSlicer
 from ..slicing.category_slicer import CategorySlicer
@@ -19,6 +18,7 @@ from ..ml_worker.testing.tests.performance import (
     test_diff_recall,
     test_diff_precision,
 )
+from .common import GSK_LOSS_COLUMN
 
 
 class PerformanceScan:
@@ -40,6 +40,12 @@ class PerformanceScan:
     ):
         model = model or self.model
         dataset = dataset or self.dataset
+
+        if model is None:
+            raise ValueError("You need to provide a model to test.")
+        if dataset is None:
+            raise ValueError("You need to provide an evaluation dataset.")
+
         test_names = test_names or self.test_names
         tests = []
 
@@ -52,19 +58,14 @@ class PerformanceScan:
             for test_name in test_names:
                 if test_name == "f1":
                     tests.append(test_diff_f1)
-                if test_name == "accuracy":
+                elif test_name == "accuracy":
                     tests.append(test_diff_accuracy)
-                if test_name == "recall":
+                elif test_name == "recall":
                     tests.append(test_diff_recall)
-                if test_name == "precision":
+                elif test_name == "precision":
                     tests.append(test_diff_precision)
-                if test_name == "rmse":
+                elif test_name == "rmse":
                     tests.append(test_diff_rmse)
-
-        if model is None:
-            raise ValueError("You need to provide a model to test.")
-        if dataset is None:
-            raise ValueError("You need to provide an evaluation dataset.")
 
         # …
 
@@ -127,15 +128,15 @@ class PerformanceScan:
             for true_label, probs in zip(true_target, pred.raw)
         ]
 
-        return pd.DataFrame({"__gsk__loss": loss_values}, index=dataset.df.index)
+        return pd.DataFrame({GSK_LOSS_COLUMN: loss_values}, index=dataset.df.index)
 
     def _find_slices(self, dataset, model, meta: pd.DataFrame, slicer_name):
         df_with_meta = dataset.df.join(meta)
-        target_col = "__gsk__loss"
+        target_col = GSK_LOSS_COLUMN
 
         # @TODO: Handle this properly once we have support for metadata in datasets
         column_types = dataset.column_types.copy()
-        column_types["__gsk__loss"] = "numeric"
+        column_types[GSK_LOSS_COLUMN] = "numeric"
         dataset_with_meta = Dataset(df_with_meta, target=dataset.target, column_types=column_types)
 
         # Columns by type
@@ -169,7 +170,7 @@ class PerformanceScan:
         return slices
 
 
-class PerformanceScanResult(ScanResult):
+class PerformanceScanResult:
     def __init__(self, issues):
         self.issues = issues
 
