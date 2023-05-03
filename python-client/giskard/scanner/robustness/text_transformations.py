@@ -5,6 +5,7 @@ import pandas as pd
 from .entity_swap import typos
 from ...ml_worker.testing.registry.transformation_function import TransformationFunction
 from ...ml_worker.testing.registry.transformation_function import transformation_function
+from giskard.scanner.robustness.entity_swap import gender_switch_en
 
 
 @transformation_function(row_level=False)
@@ -75,14 +76,14 @@ class TextTypoTransformation(TextTransformation):
                 return word
             elif perturbation_type == 'delete':
                 idx = random.randint(0, len(word) - 1)
-                word = word[:idx] + word[idx + 1 :]
+                word = word[:idx] + word[idx + 1:]
                 return word
             elif perturbation_type == 'replace':
                 j = random.randint(0, len(word) - 1)
                 c = word[j]
                 if c in typos:
                     replacement = random.choice(typos[c])
-                    text_modified = word[:j] + replacement + word[j + 1 :]
+                    text_modified = word[:j] + replacement + word[j + 1:]
                     return text_modified
         return word
 
@@ -99,3 +100,23 @@ class TextPunctuationRemovalTransformation(TextTransformation):
 
     def _remove_punc(self, text):
         return text.translate(str.maketrans('', '', string.punctuation))
+
+
+class TextGenderTransformation(TextTransformation):
+    name = "Switch gender"
+
+    def make_perturbation(self, x):
+        split_text = x.split(" ")
+        new_text = []
+        for token in split_text:
+            new_text.append(self._switch(token))
+        return " ".join(new_text)
+
+    def _switch(self, word):
+        for pair in gender_switch_en:
+            if word == pair[0]:
+                return pair[1]
+            elif word == pair[1]:
+                return pair[0]
+            else:
+                return word
