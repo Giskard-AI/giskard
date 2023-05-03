@@ -57,6 +57,7 @@ async function showPastSessions() {
 }
 
 async function createDebuggingSession(debuggingSession: InspectionDTO) {
+  await fetchDebuggingSessions();
   activeDebuggingSessionId.value = debuggingSession.id;
   openInspectionWrapper.value = true;
   await openInspection(props.projectId.toString(), debuggingSession.id.toString());
@@ -209,7 +210,7 @@ onActivated(async () => {
 
 <style scoped>
 .debugger-logo {
-  max-width: 30%;
+  width: max(20vw, 150px);
   margin-top: 2rem;
 }
 
