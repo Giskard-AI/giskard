@@ -5,8 +5,9 @@ def perturbation(model, ds, idrow):
     for feat, coltype in ds.column_types.items():
         perturbation_res = _perturb_and_predict(model, ds, idrow, feat, coltype)
         if coltype == "numeric" and perturbation_res.passed:
-            bound = slice_bounds(feature=feat,value=ds.df.iloc[idrow][feat],ds=ds)
-            res = Push(push_type="perturbation", feature=feat, value=bound,
+            bounds = slice_bounds(feature=feat,value=ds.df.iloc[idrow][feat],ds=ds)
+            res = Push(push_type="perturbation", feature=feat, value=ds.df.iloc[idrow][feat],
+                       bounds=bounds,
                        perturbation_value=perturbation_res.perturbation_value)
             yield res
 

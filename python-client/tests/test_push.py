@@ -9,8 +9,8 @@ def test_perturbation(german_credit_model, german_credit_data):
         res = perturbation(german_credit_model, german_credit_data, i)
         if res is not None:
             testl.append(res)
-    assert len(testl)>0
-
+            print(res.slicing_function)
+    assert len(testl) > 0
 
 
 def test_contribution(german_credit_model, german_credit_data):
@@ -19,7 +19,7 @@ def test_contribution(german_credit_model, german_credit_data):
         res = contribution(german_credit_model, german_credit_data, i)
         if res is not None:
             testl.append(res)
-    assert  len(testl)>0
+    assert len(testl) > 0
 
 
 # def test_perturbation_text(enron_model, enron_data):
@@ -40,7 +40,9 @@ def test_contribution_reg(linear_regression_diabetes, diabetes_dataset_with_targ
         res = contribution(linear_regression_diabetes, diabetes_dataset_with_target, i)
         if res is not None:
             testl.append(res)
-    assert len(testl)>0
+            print(res.slicing_function)
+    assert len(testl) > 0
+
 
 def test_perturbation_reg(linear_regression_diabetes, diabetes_dataset_with_target):
     testl = []
@@ -48,7 +50,8 @@ def test_perturbation_reg(linear_regression_diabetes, diabetes_dataset_with_targ
         res = perturbation(linear_regression_diabetes, diabetes_dataset_with_target, i)
         if res is not None:
             testl.append(res)
-    assert len(testl)>0
+            print(res.slicing_function)
+    assert len(testl) > 0
 
 
 # def test_perturbation_text(enron_model, enron_data):
