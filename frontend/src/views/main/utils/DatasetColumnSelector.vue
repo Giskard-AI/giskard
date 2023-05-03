@@ -6,8 +6,11 @@
               label="Column name"
               :items="availableColumns"
               hide-details
+              dense
+              :value="value"
+              @input="v => emit('update:value', v)"
     ></v-select>
-    <v-input v-else label="Column name" type="text"/>
+    <v-input v-else label="Column name" dense/>
 </template>
 
 <script setup lang="ts">
@@ -23,6 +26,7 @@ const props = defineProps<{
     projectId: number,
     dataset?: string,
     columnType: string,
+    value?: string
 }>();
 
 const emit = defineEmits(['update:value']);

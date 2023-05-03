@@ -220,7 +220,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
         result = dataset.process()
 
         filtered_rows_idx = dataset.df.index.difference(result.df.index)
-        modified_rows = dataset.df[dataset.df.iloc[result.df.index].ne(result.df)].dropna(how='all')
+        modified_rows = result.df[dataset.df.iloc[result.df.index].ne(result.df)].dropna(how='all')
 
         return ml_worker_pb2.DatasetProcessingResultMessage(
             datasetId=request.dataset.id,
