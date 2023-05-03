@@ -263,11 +263,18 @@ class DatasetProcessFunctionMeta(CallableMeta):
                  tags: List[str] = None,
                  version: Optional[int] = None,
                  type: str = None,
-                 cell_level: bool = False,
-                 column_type: Optional[str] = None):
+                 cell_level: bool = False):
         super(DatasetProcessFunctionMeta, self).__init__(callable_obj, name, tags, version, type)
         self.cell_level = cell_level
-        self.column_type = column_type
+
+        if cell_level:
+            if inspect.isclass(callable_obj):
+                parameters = list(inspect.signature(callable_obj.__init__).parameters.values())[1:]
+            else:
+                parameters = list(inspect.signature(callable_obj).parameters.values())
+            self.column_type = parameters[0].annotation.__qualname__
+        else:
+            self.column_type = None
 
     def extract_parameters(self, callable_obj):
         parameters = unknown_annotations_to_kwargs(CallableMeta.extract_parameters(self, callable_obj)[1:])
