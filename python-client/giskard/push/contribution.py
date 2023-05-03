@@ -5,7 +5,7 @@ from giskard.core.core import SupportedModelTypes
 from giskard.ml_worker.core.model_explanation import explain
 from giskard.ml_worker.testing.tests.performance import test_rmse
 from ..push import Push
-
+from .utils import slice_bounds
 
 def contribution(model, ds, idrow):  # data_aug_dict
     if model.meta.model_type == SupportedModelTypes.CLASSIFICATION:
@@ -15,16 +15,17 @@ def contribution(model, ds, idrow):  # data_aug_dict
         prediction = model.clf.predict(ds.df.iloc[[idrow]])
         if shap_res is not None:
             for el in shap_res:
+                bound = slice_bounds(feature=el, value=values[el], ds=ds)
                 # skip for now the following case
                 # if ds.column_types[el] == "category" and training_label != prediction and data_aug_dict(el, values):
                 #    print(f"Data augmentation recommended for the slice.............{el}",
                 #          el, values[el])
                 if training_label != prediction:  # use scan feature ?
-                    res = Push(push_type="contribution_wrong", feature=el, value=values[el])
+                    res = Push(push_type="contribution_wrong", feature=el, value=bound)
                     yield res
 
                 else:
-                    res = Push(push_type="contribution_only", feature=el, value=values[el])
+                    res = Push(push_type="contribution_only", feature=el, value=bound)
                     yield res
 
     if model.meta.model_type == SupportedModelTypes.REGRESSION:
@@ -39,15 +40,16 @@ def contribution(model, ds, idrow):  # data_aug_dict
         if shap_res is not None:
             for el in shap_res:
                 # print(error, rmse_res)
+                bound = slice_bounds(feature=el, value=values[el], ds=ds)
                 if abs(error - rmse_res.metric) / rmse_res.metric >= 0.2:  # use scan feature ?
                     res = Push(push_type="contribution_wrong",
                                feature=el,
-                               value=values[el]
+                               value=bound
                                )
                     yield res
 
                 else:
-                    res = Push(push_type="contribution_only", feature=el, value=values[el])
+                    res = Push(push_type="contribution_only", feature=el, value=bound)
                     yield res
 
 
@@ -74,19 +76,3 @@ def _get_shap_values(model, ds, idrow):  # from gRPC
         return explain(model, ds, ds.df.iloc[idrow])["explanations"]["default"]
 
 
-def bins_count(model, dataframe):  # done at the beggining
-    df = dataframe
-
-    columns_to_encode = [key for key in model.column_types.keys() if
-                         model.column_types[key] == "category"]
-    value_counts = {}
-    for column in columns_to_encode:
-        nunique = df[column].nunique()
-        ratio = len(df) / nunique
-        counts = df[column].value_counts().to_dict()
-        flag = {value: count < ratio for value, count in counts.items()}
-        value_counts[column] = {'value_counts': counts,
-                                'nunique': nunique,
-                                'ratio': ratio,
-                                'flag': flag}
-    return value_counts

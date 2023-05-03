@@ -1,12 +1,12 @@
 from giskard.core.core import SupportedModelTypes
 from ..push import Push, Perturbation
-
-
+from .utils import slice_bounds
 def perturbation(model, ds, idrow):
     for feat, coltype in ds.column_types.items():
         perturbation_res = _perturb_and_predict(model, ds, idrow, feat, coltype)
         if coltype == "numeric" and perturbation_res.passed:
-            res = Push(push_type="perturbation", feature=feat, value=ds.df.iloc[idrow][feat],
+            bound = slice_bounds(feature=feat,value=ds.df.iloc[idrow][feat],ds=ds)
+            res = Push(push_type="perturbation", feature=feat, value=bound,
                        perturbation_value=perturbation_res.perturbation_value)
             yield res
 
