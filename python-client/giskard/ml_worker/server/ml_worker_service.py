@@ -39,6 +39,7 @@ from giskard.models.model_explanation import (
     explain_text,
 )
 from giskard.path_utils import model_path, dataset_path
+from ml_worker_pb2 import PushUploadKind
 
 logger = logging.getLogger(__name__)
 
@@ -514,13 +515,25 @@ class MLWorkerServiceImpl(MLWorkerServicer):
 
         for c in contribs:
             if c is not None:
-                pushes.append(c.to_grpc())
+                pushes.append(c)
         for p in perturbs:
             if p is not None:
-                pushes.append(p.to_grpc())
+                pushes.append(p)
+
+        if request.upload_kind is not 0:
+            # Get the push upload request
+            if request.upload_kind is PushUploadKind.Slice:
+                push_upload_request = PushUploadRequest(
+                    project_key=request.project_key,
+                    dataset_id=request.dataset.id,
+                    model_id=request.model.id,
+                    rowidx=request.rowidx,
+                    slice=request.slice,
+                )
 
         return ml_worker_pb2.SuggestFilterResponse(
-            pushes=pushes
+            # Map pushes to pushes to_grpc
+            pushes=[p.to_grpc() for p in pushes],
         )
 
     @staticmethod

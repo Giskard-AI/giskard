@@ -418,10 +418,22 @@ message PushDetails {
 message SuggestFilterResponse {
   repeated Push pushes = 1;
 }
+enum PushUploadKind {
+  None = 0;
+  Slice = 1;
+  Test = 2;
+}
+
 message SuggestFilterRequest {
   ArtifactRef model = 1;
   ArtifactRef dataset = 2;
   uint64 rowidx = 3;
+  PushUploadKind upload_kind = 4;
+}
+
+message PushUploadRequest {
+  uint32 push_index = 1;
+  uint32 push_detail_index = 2;
 }
 
 message Push {

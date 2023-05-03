@@ -44,7 +44,6 @@
               <v-form lazy-validation>
                 <div v-for="c in datasetNonTargetColumns" :key="c.name"
                      v-show="featuresToView.includes(c.name)">
-                  <<<<<<< refs/remotes/origin/feature/transformation-in-ai-debug
                   <ValidationProvider
                       :name="c.name"
                       v-slot="{ dirty }"
@@ -150,19 +149,19 @@
                           @submit="$emit(dirty ? 'submitValueVariationFeedback' : 'submitValueFeedback', arguments[0])"
                       />
 
-                      <SuggestionPopover
-                          :modelId="model.id"
-                          :datasetId="dataset.id"
-                          :row-nb="rowNb"
-                          :column="c.name"
-                      />
+                        <SuggestionPopover
+                            :modelId="model.id"
+                            :datasetId="dataset.id"
+                            :row-nb="rowNb"
+                            :column="c.name"
+                        />
+                      </div>
                     </div>
                     <div class="py-1 d-flex" v-else>
                       <label class="info--text">{{ c.name }}</label>
                       <span>{{ inputData[c.name] }}</span>
                     </div>
                   </ValidationProvider>
-                  >>>>>>> Start of front and backend
                 </div>
               </v-form>
             </v-card-text>

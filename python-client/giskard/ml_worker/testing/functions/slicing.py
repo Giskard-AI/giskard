@@ -13,12 +13,12 @@ def short_comment_slicing_fn(text: str, max_words: int = 5) -> bool:
     return not pd.isnull(text) and len(text.split()) <= max_words
 
 
-@slicing_function(name="Keyword lookup", tags=["text"], cell_level=True)
-def keyword_lookup_slicing_fn(text: str, keywords: List[str]) -> bool:
-    """
-    Filter the rows where the specified 'column_name' contains at least one of the specified 'keywords'.
-    """
-    return not pd.isnull(text) and any(word in text.lower() for word in keywords)
+# @slicing_function(name="Keyword lookup", tags=["text"], cell_level=True)
+# def keyword_lookup_slicing_fn(text: str, keywords: List[str]) -> bool:
+#     """
+#     Filter the rows where the specified 'column_name' contains at least one of the specified 'keywords'.
+#     """
+#     return not pd.isnull(text) and any(word in text.lower() for word in keywords)
 
 
 @slicing_function(name="Positive sentiment", row_level=False, tags=["sentiment", "text"])

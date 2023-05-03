@@ -15,9 +15,9 @@ class Push:
     push_details = None
     perturbation_value = None
     slicing_function = None
-    bounds=None
+    bounds = None
 
-    def __init__(self, push_type, feature, value, bounds,perturbation_value=None):
+    def __init__(self, push_type, feature, value, bounds, perturbation_value=None):
         self.perturbation_value = perturbation_value
         self.key = feature
         self.value = value
@@ -116,7 +116,6 @@ class Push:
             value=self.value,
             push_title=self.push_title,
             push_details=self.push_details,
-            perturbation_value=self.perturbation_value,
-            slicing_function=self.slicing_function  # SlicingFunction added
+            # perturbation_value=self.perturbation_value,
+            # slicing_function=self.slicing_function  # SlicingFunction added
         )
-
