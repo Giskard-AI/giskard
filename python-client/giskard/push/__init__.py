@@ -21,6 +21,7 @@ class Push:
         self.perturbation_value = perturbation_value
         self.key = feature
         self.value = value
+        self.bounds = bounds
         if push_type == "contribution_wrong":
             self._high_contribution_wrong_prediction(feature, value)
         if push_type == "contribution_only":
