@@ -66,6 +66,8 @@ class TextSlicer(BaseSlicer):
         column_types["__gsk__meta__charset"] = "category"
         column_types["__gsk__meta__avg_word_length"] = "numeric"
         column_types["__gsk__meta__text_length"] = "numeric"
+        column_types["__gsk__meta__avg_whitespace"] = "numeric"
+        column_types["__gsk__meta__avg_digits"] = "numeric"
         dataset_with_meta = Dataset(data_with_meta, target=self.dataset.target, column_types=column_types)
 
         # Run a slicer for numeric
@@ -136,12 +138,28 @@ def _calculate_text_metadata(feature_data: pd.Series):
             "text_length": feature_data.map(len),
             "avg_word_length": feature_data.map(_avg_word_length),
             "charset": pd.Categorical(feature_data.map(lambda x: chardet.detect(x.encode())["encoding"])),
+            "avg_whitespace": feature_data.map(_avg_whitespace),
+            "avg_digits": feature_data.map(_avg_digits),
         },
         index=feature_data.index,
     )
 
 
-def _avg_word_length(text):
+def _avg_whitespace(text: str):
+    chars = list(text)
+    if len(chars) == 0:
+        return 0.0
+    return np.mean([c.isspace() for c in chars])
+
+
+def _avg_digits(text: str):
+    chars = list(text)
+    if len(chars) == 0:
+        return 0.0
+    return np.mean([c.isdigit() for c in chars])
+
+
+def _avg_word_length(text: str):
     words = text.split()
     if len(words) == 0:
         return 0.0
