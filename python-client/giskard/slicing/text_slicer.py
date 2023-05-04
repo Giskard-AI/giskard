@@ -141,7 +141,7 @@ class TextSlicer(BaseSlicer):
 
         # Find tokens which are most correlated with loss
         rank_corrs = np.asarray([stats.spearmanr(tfidf[:, n].toarray().squeeze(), lrank)[0] for n in token_ns])
-        token_idx = token_ns[np.argpartition(rank_corrs, max_tokens - 1)[:max_tokens]]
+        token_idx = token_ns[rank_corrs.argsort()[:max_tokens]]
 
         tokens = list(vectorizer.get_feature_names_out()[token_idx])
         logging.debug(f"TextSlicer: high loss tokens for {feature} = {tokens}")
@@ -183,7 +183,7 @@ class TextSlicer(BaseSlicer):
             if pvalue < 1e-3:
                 _data.append({"statistic": stat, "p_value": pvalue, "token": token})
 
-        df = pd.DataFrame(_data)
+        df = pd.DataFrame(_data, columns=["statistic", "p_value", "token"])
         tokens = df.sort_values("statistic").head(max_tokens).token.tolist()
 
         return tokens
