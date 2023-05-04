@@ -48,7 +48,7 @@ def _perturb_and_predict(model, ds, idrow, feature, coltype):  # done at each st
 
 
 def _num_perturb(val, mad):
-    return val + mad  # 1.2  # 20% perturbation
+    return val + 4*mad  # 1.2  # 20% perturbation
 
 
 def _text_perturb(val):
