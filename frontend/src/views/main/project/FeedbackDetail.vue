@@ -139,7 +139,7 @@ function deleteReply(replyId: number) {
     },
     on: {
       async confirm(close) {
-        await api.deleteFeedbackReply(replyId);
+        await api.deleteFeedbackReply(data.value!.id, replyId);
         await reloadFeedback();
         close();
       }
