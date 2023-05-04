@@ -1,6 +1,6 @@
 <template>
   <v-main class="fill-height vertical-container">
-    <v-navigation-drawer fixed app persistent class="background" mobile-breakpoint="sm" width="72" color="primaryLight">
+    <v-navigation-drawer fixed app persistent class="background" mobile-breakpoint="sm" width="75" color="primaryLight">
       <v-layout column fill-height>
         <v-list subheader class="align-center">
           <v-list-item to="/">
@@ -11,12 +11,43 @@
             </v-list-item-content>
           </v-list-item>
           <v-divider />
-          <v-list-item to="/main/projects">
-            <v-list-item-content>
-              <v-icon>web</v-icon>
-              <div class="caption">Projects</div>
-            </v-list-item-content>
-          </v-list-item>
+          <div v-show="showProjectTabs">
+            <v-list-item :to="{ name: 'project-catalog-tests' }" value="catalog-tests">
+              <v-list-item-content>
+                <v-icon>mdi-book-open-page-variant-outline</v-icon>
+                <div class="caption">Catalog</div>
+              </v-list-item-content>
+            </v-list-item>
+            <v-divider />
+            <v-list-item :to="{ name: 'project-test-suites' }" value="test-suites">
+              <v-list-item-content>
+                <v-icon>mdi-list-status</v-icon>
+                <div class="caption">Test</div>
+              </v-list-item-content>
+            </v-list-item>
+            <v-divider />
+            <v-list-item :to="{ name: 'project-debugger' }" value="debugger">
+              <v-list-item-content>
+                <v-icon>mdi-shield-search</v-icon>
+                <div class="caption">Debugger</div>
+              </v-list-item-content>
+            </v-list-item>
+            <v-divider />
+            <v-list-item :to="{ name: 'project-feedbacks' }" value="feedbacks">
+              <v-list-item-content>
+                <v-icon>mdi-comment-multiple-outline</v-icon>
+                <div class="caption">Feedback</div>
+              </v-list-item-content>
+            </v-list-item>
+            <v-divider />
+            <v-list-item :to="{ name: 'project-properties' }" value="properties">
+              <v-list-item-content>
+                <v-icon>mdi-file-cog-outline</v-icon>
+                <div class="caption">Properties</div>
+              </v-list-item-content>
+            </v-list-item>
+            <v-divider />
+          </div>
         </v-list>
         <v-spacer></v-spacer>
         <v-list>
@@ -28,6 +59,13 @@
                 </template>
                 <span>{{ warningMessage }}</span>
               </v-tooltip>
+            </v-list-item-content>
+          </v-list-item>
+          <v-divider />
+          <v-list-item to="/main/projects" exact>
+            <v-list-item-content>
+              <v-icon>web</v-icon>
+              <div class="caption">Projects</div>
             </v-list-item-content>
           </v-list-item>
           <v-divider />
@@ -64,8 +102,10 @@
 import { useUserStore } from "@/stores/user";
 import { useMainStore } from "@/stores/main";
 import { computed, ref } from "vue";
+import { useRoute } from 'vue-router/composables';
 import moment from "moment/moment";
 
+const route = useRoute();
 const mainStore = useMainStore();
 const userStore = useUserStore();
 
@@ -98,6 +138,10 @@ const userId = computed(() => {
   } else {
     return "Guest";
   }
+});
+
+const showProjectTabs = computed(() => {
+  return route.params.id !== undefined;
 });
 
 async function logout() {
