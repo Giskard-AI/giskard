@@ -30,8 +30,8 @@ class Model:
         model (Union[BaseEstimator, PreTrainedModel, CatBoost, Module]):
             Could be any ML model. The standard model output required for Giskard is:
 
-            * if classification: an array of probabilities corresponding to d   ata entries (rows of pandas.DataFrame)
-                and classification_labels. In the case of binary classification, an array of probabilities is also accepted.
+            * if classification: an array (nxm) of probabilities corresponding to n data entries (rows of pandas.DataFrame)
+                and m classification_labels. In the case of binary classification, an array of (nx1) probabilities is also accepted.
                 Make sure that the probability provided is for the first label provided in classification_labels.
             * if regression: an array of predictions corresponding to data entries (rows of pandas.DataFrame) and outputs.
         name (Optional[str]):
