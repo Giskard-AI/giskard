@@ -92,7 +92,9 @@
                                         :inputType="c.type"
                                         @submit="$emit(dirty ? 'submitValueVariationFeedback' : 'submitValueFeedback', arguments[0])"
                                 />
-                                <TransformationPopover v-if="c.type === 'text'" :column="c.name"/>
+                                <TransformationPopover
+                                        v-if="catalogStore.transformationFunctionsByColumnType.hasOwnProperty(c.type)"
+                                        :column="c.name" :column-type="c.type"/>
                             </div>
                         </div>
                         <div class="py-1 d-flex" v-else>
@@ -194,6 +196,7 @@ import mixpanel from "mixpanel-browser";
 import {anonymize} from "@/utils";
 import _ from 'lodash';
 import TransformationPopover from "@/components/TransformationPopover.vue";
+import {useCatalogStore} from "@/stores/catalog";
 
 @Component({
     components: {
@@ -216,6 +219,8 @@ export default class Inspector extends Vue {
     classificationResult = null
     isClassification = isClassification
     debouncingTimeout: number = 500;
+
+    catalogStore = useCatalogStore()
 
     async mounted() {
         await this.loadMetaData();
