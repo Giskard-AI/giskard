@@ -39,8 +39,22 @@
     <v-container v-else class="vc mt-6">
       <v-alert class="text-center">
         <p class="headline font-weight-medium grey--text text--darken-2">
-          Get your first model feedback by clicking on <v-icon class="mx-2" color="primary">mdi-message-plus</v-icon> in a debugging session.
+          No feedbacks were added to this project yet. <br>
+          Get your first model feedback by clicking on
+          <v-btn id="feedback-button" icon large flat color="primary" class="ma-1">
+            <v-icon color="primary">mdi-message-plus</v-icon>
+          </v-btn>
+          in a debugging session.
         </p>
+        <div v-show="debuggingSessionsStore.debuggingSessions.length > 0" class="pt-2">
+          <v-btn color="primaryLight" class="primaryLightBtn" @click="moveToDebugger">
+            Open last session
+            <v-icon right>mdi-arrow-right</v-icon>
+          </v-btn>
+        </div>
+        <div v-show="debuggingSessionsStore.debuggingSessions.length == 0" class="pt-2">
+          <AddDebuggingSessionModal v-bind:project-id="projectId" v-on:createDebuggingSession="createDebuggingSession"></AddDebuggingSessionModal>
+        </div>
       </v-alert>
       <div class="d-flex justify-center mb-6">
         <img src="@/assets/logo_feedback.png" class="feedback-logo" title="Feedback tab logo" alt="Two turtles talking in front of a computer">
@@ -55,12 +69,21 @@ import { FeedbackMinimalDTO } from "@/generated-sources";
 import { computed, onActivated, onMounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router/composables';
 import { $vfm } from 'vue-final-modal';
+import AddDebuggingSessionModal from '@/components/AddDebuggingSessionModal.vue';
 import ConfirmModal from "@/views/main/project/modals/ConfirmModal.vue";
+import { useDebuggingSessionsStore } from "@/stores/debugging-sessions";
+
 
 const route = useRoute();
 const router = useRouter();
 
-const { projectId } = defineProps<{ projectId: number }>();
+const debuggingSessionsStore = useDebuggingSessionsStore();
+
+interface Props {
+  projectId: number;
+}
+
+const { projectId } = defineProps<Props>();
 
 const feedbacks = ref<FeedbackMinimalDTO[]>([]);
 const search = ref<string>('');
@@ -76,6 +99,7 @@ onActivated(() => {
 });
 
 onMounted(() => {
+  debuggingSessionsStore.loadDebuggingSessions(projectId);
   fetchFeedbacks();
   handleRouteChanged();
 });
@@ -189,6 +213,25 @@ function deleteFeedback(feedback: FeedbackMinimalDTO) {
     }
   });
 }
+
+async function createDebuggingSession(debuggingSession) {
+  await router.push({
+    name: 'inspection',
+    params: {
+      id: projectId.toString(),
+      inspectionId: debuggingSession.id.toString()
+    }
+  });
+}
+
+async function moveToDebugger() {
+  await router.push({
+    name: 'project-debugger',
+    params: {
+      id: projectId.toString()
+    }
+  });
+}
 </script>
 
 <style scoped>
@@ -205,5 +248,10 @@ div.v-input.flex-1 {
 .feedback-logo {
   height: max(35vh, 150px);
   margin-top: 2rem;
+}
+
+#feedback-button {
+  background-color: rgba(49, 110, 62, 0.2);
+  cursor: default;
 }
 </style>
