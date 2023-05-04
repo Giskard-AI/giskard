@@ -38,22 +38,10 @@
               <v-card class="scrollable max75vh">
                 <v-card-title>Discussion</v-card-title>
                 <v-card-text>
-                  <MessageReply
-                      :author="data.user"
-                      :created-on="data.createdOn"
-                      :content="data.feedbackMessage"
-                      :repliable="true"
-                      :hideableBox="false"
-                      @reply="doSendReply($event)"/>
+                  <MessageReply :replyId="data.id" :author="data.user" :created-on="data.createdOn" :content="data.feedbackMessage" :repliable="true" :replies=firstLevelReplies :type="'feedback'" :hideableBox="false" @reply="doSendReply($event)" @delete="deleteFeedback" />
                   <div v-for="(r, idx) in firstLevelReplies" :key="r.id">
                     <v-divider class="my-1" v-show="idx < firstLevelReplies.length"></v-divider>
-                    <MessageReply
-                        :author="r.user"
-                        :created-on="r.createdOn"
-                        :content="r.content"
-                        :repliable="true"
-                        :replies="secondLevelReplies(r.id)"
-                        @reply="doSendReply($event, r.id)"/>
+                    <MessageReply :replyId="r.id" :author="r.user" :created-on="r.createdOn" :content="r.content" :repliable="true" :replies="secondLevelReplies(r.id)" :type="'reply'" @reply="doSendReply($event, r.id)" @delete="deleteReply" />
                   </div>
                 </v-card-text>
               </v-card>
@@ -65,33 +53,29 @@
       </div>
     </v-tab-item>
     <v-tab-item class="height85vh scrollable">
-      <Inspector
-          :model="data.model"
-          :dataset="data.dataset"
-          :originalData="originalData"
-          :inputData="userData"
-          :isMiniMode="true"
-          @reset="resetInput"
-      />
+      <Inspector :model="data.model" :dataset="data.dataset" :originalData="originalData" :inputData="userData" :isMiniMode="true" @reset="resetInput" />
     </v-tab-item>
   </v-tabs>
   <div v-else>Feedback #{{ id }} non existent</div>
 </template>
 
 <script setup lang="ts">
-import {api} from "@/api";
+import { api } from "@/api";
 import Inspector from "./Inspector.vue";
 import MessageReply from "@/components/MessageReply.vue";
-import {FeedbackDTO, FeedbackReplyDTO} from "@/generated-sources";
+import { FeedbackDTO, FeedbackReplyDTO } from "@/generated-sources";
 import mixpanel from "mixpanel-browser";
-import {computed, onMounted, ref} from 'vue';
+import { computed, onMounted, ref } from 'vue';
+import { useRouter } from 'vue-router/composables';
+
+const router = useRouter();
 
 const props = defineProps({
-  id: {type: Number, required: true },
+  id: { type: Number, required: true },
 });
 
 const data = ref<FeedbackDTO | null>(null);
-const userData = ref<{[key: string]: string} | null>(null);
+const userData = ref<{ [key: string]: string } | null>(null);
 const originalData = ref<object | null>(null);
 
 onMounted(() => {
@@ -113,13 +97,23 @@ function onInspectorActivated() {
 
 function resetInput() {
   if (data.value) {
-    userData.value = {...originalData.value}
+    userData.value = { ...originalData.value }
   }
 }
 
 async function doSendReply(content: string, replyToId: number | null = null) {
-  mixpanel.track('Reply to feedback', {replyTo: replyToId});
+  mixpanel.track('Reply to feedback', { replyTo: replyToId });
   await api.replyToFeedback(props.id, content, replyToId);
+  await reloadFeedback();
+}
+
+async function deleteFeedback(data) {
+  await api.deleteFeedback(data.id);
+  await router.push({ name: 'project-feedbacks' });
+}
+
+async function deleteReply(data) {
+  await api.deleteFeedbackReply(data.id);
   await reloadFeedback();
 }
 
