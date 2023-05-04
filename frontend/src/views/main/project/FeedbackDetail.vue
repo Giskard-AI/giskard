@@ -67,6 +67,9 @@ import { FeedbackDTO, FeedbackReplyDTO } from "@/generated-sources";
 import mixpanel from "mixpanel-browser";
 import { computed, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router/composables';
+import { $vfm } from 'vue-final-modal';
+import ConfirmModal from "@/views/main/project/modals/ConfirmModal.vue";
+
 
 const router = useRouter();
 
@@ -77,7 +80,6 @@ const props = defineProps({
 const data = ref<FeedbackDTO | null>(null);
 const userData = ref<{ [key: string]: string } | null>(null);
 const originalData = ref<object | null>(null);
-
 onMounted(() => {
   reloadFeedback();
 })
@@ -107,14 +109,40 @@ async function doSendReply(content: string, replyToId: number | null = null) {
   await reloadFeedback();
 }
 
-async function deleteFeedback(data) {
-  await api.deleteFeedback(data.id);
-  await router.push({ name: 'project-feedbacks' });
+function deleteFeedback(feedbackId: number) {
+  $vfm.show({
+    component: ConfirmModal,
+    bind: {
+      title: 'Delete feedback',
+      text: `Are you sure that you want to delete this feedback permanently? All replies will be deleted as well.`,
+      isWarning: true
+    },
+    on: {
+      async confirm(close) {
+        await api.deleteFeedback(feedbackId);
+        await router.push({ name: 'project-feedbacks' });
+        close();
+      }
+    }
+  });
 }
 
-async function deleteReply(data) {
-  await api.deleteFeedbackReply(data.id);
-  await reloadFeedback();
+function deleteReply(replyId: number) {
+  $vfm.show({
+    component: ConfirmModal,
+    bind: {
+      title: 'Delete reply',
+      text: `Are you sure that you want to delete this reply permanently? All replies to this reply will be deleted as well.`,
+      isWarning: true
+    },
+    on: {
+      async confirm(close) {
+        await api.deleteFeedbackReply(replyId);
+        await reloadFeedback();
+        close();
+      }
+    }
+  });
 }
 
 const firstLevelReplies = computed<FeedbackReplyDTO[]>(() => {
