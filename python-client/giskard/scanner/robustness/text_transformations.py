@@ -1,6 +1,7 @@
 import string
 import random
 import pandas as pd
+import re
 
 from .entity_swap import typos
 from ...ml_worker.testing.registry.transformation_function import TransformationFunction
@@ -107,13 +108,19 @@ class TextGenderTransformation(TextTransformation):
 
     def make_perturbation(self, x):
         split_text = x.split()
-        new_text = []
+        new_words = []
         for token in split_text:
-            new_text.append(self._switch(token))
-        return " ".join(new_text)
+            new_word = self._switch(token)
+            if new_word != token:
+                new_words.append(new_word)
+
+        new_text = x
+        for original_word,switched_word in new_words:
+            new_text = re.sub(fr"\b{original_word}\b", switched_word, new_text)
+        return new_text
 
     def _switch(self, word):
-        if word in gender_switch_en:
-            return gender_switch_en[word]
+        if word.lower() in gender_switch_en:
+            return [word, gender_switch_en[word.lower()]]
         else:
             return word
