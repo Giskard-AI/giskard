@@ -95,7 +95,7 @@ class TextPerturbationDetector(Detector):
             perturbed_pred = model.predict(perturbed_data)
 
             if model.is_classification:
-                passed = np.isclose(original_pred.raw_prediction, perturbed_pred.raw_prediction)
+                passed = original_pred.raw_prediction == perturbed_pred.raw_prediction
             elif model.is_regression:
                 rel_delta = _relative_delta(perturbed_pred.raw_prediction, original_pred.raw_prediction)
                 passed = np.abs(rel_delta) < self.output_sensitivity
@@ -113,9 +113,10 @@ class TextPerturbationDetector(Detector):
                 info = RobustnessIssueInfo(
                     feature=feature,
                     fail_ratio=fail_ratio,
-                    perturbation_name=getattr(transformation, "name"),
+                    perturbation_name=getattr(transformation, "name", str(transformation)),
                     perturbed_data_slice=perturbed_data,
-                    fail_data_idx=original_data.df.index[~passed].values,
+                    perturbed_data_slice_predictions=perturbed_pred,
+                    fail_data_idx=original_data.df[~passed].index.values,
                 )
                 issue = RobustnessIssue(
                     model,
