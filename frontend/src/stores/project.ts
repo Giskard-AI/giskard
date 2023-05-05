@@ -71,6 +71,8 @@ export const useProjectStore = defineStore('project', {
                 mainStore.removeNotification(loadingNotification);
                 mainStore.addNotification({content: 'Success', color: 'success'});
             } catch (error) {
+                mainStore.removeNotification(loadingNotification);
+                mainStore.addNotification({content: `Error: ${error.message}`, color: 'error'});
                 await mainStore.checkApiError(error);
             }
         },
@@ -85,7 +87,7 @@ export const useProjectStore = defineStore('project', {
                 this.setProject(response);
             } catch (error) {
                 mainStore.removeNotification(loadingNotification);
-
+                mainStore.addNotification({content: `Error: ${error.message}`, color: 'error'});
                 await mainStore.checkApiError(error);
             }
         },
