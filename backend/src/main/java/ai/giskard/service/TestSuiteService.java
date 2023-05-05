@@ -44,6 +44,7 @@ public class TestSuiteService {
     private final MLWorkerService mlWorkerService;
     private final TestFunctionRepository testFunctionRepository;
 
+    @Transactional(readOnly = true)
     public Map<String, RequiredInputDTO> getSuiteInputs(Long projectId, Long suiteId) {
         TestSuite suite = testSuiteRepository.findOneByProjectIdAndId(projectId, suiteId);
 
@@ -93,14 +94,27 @@ public class TestSuiteService {
 
         MLWorkerType mlWorkerType = testSuite.getProject().getMlWorkerType();
         return jobService.undetermined(() -> {
-            testSuiteExecutionService.executeScheduledTestSuite(execution, suiteInputs);
+            testSuiteExecutionService.executeScheduledTestSuite(execution, suiteInputs, false);
             testSuiteExecutionRepository.save(execution);
         }, projectId, JobType.TEST_SUITE_EXECUTION, mlWorkerType);
     }
 
-    private static void verifyAllInputProvided(List<FunctionInputDTO> providedInputs,
-                                               TestSuite testSuite,
-                                               Map<String, String> requiredInputs) {
+    public TestSuiteExecution tryTestSuiteExecution(TestSuite testSuite,
+                                                    Map<String, String> suiteInputs,
+                                                    List<FunctionInputDTO> inputs) {
+        TestSuiteExecution execution = new TestSuiteExecution(testSuite);
+        execution.setInputs(inputs.stream().map(giskardMapper::fromDTO).toList());
+
+        verifyAllInputProvided(inputs, testSuite, suiteInputs);
+
+        testSuiteExecutionService.executeScheduledTestSuite(execution, suiteInputs, true);
+
+        return execution;
+    }
+
+    public static void verifyAllInputProvided(List<FunctionInputDTO> providedInputs,
+                                              TestSuite testSuite,
+                                              Map<String, String> requiredInputs) {
         Set<String> names = providedInputs.stream().map(FunctionInputDTO::getName).collect(Collectors.toSet());
 
         List<String> missingInputs = requiredInputs.keySet().stream()
@@ -232,5 +246,12 @@ public class TestSuiteService {
 
     public void deleteTestSuite(long suiteId) {
         testSuiteRepository.deleteById(suiteId);
+    }
+
+    @Transactional(readOnly = true)
+    public TestSuite getInitialized(Long suiteId) {
+        TestSuite testSuite = testSuiteRepository.getMandatoryById(suiteId);
+        TransactionUtils.initializeTestSuite(testSuite);
+        return testSuite;
     }
 }
