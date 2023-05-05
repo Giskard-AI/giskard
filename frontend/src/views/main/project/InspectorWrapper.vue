@@ -422,9 +422,11 @@ async function handleSwitchSample() {
                     sample: !inspection.value!.sample
                 });
 
-                await updateRow(true);
-
-                close();
+                try {
+                    await updateRow(true);
+                } finally {
+                    close();
+                }
             }
         }
     });
