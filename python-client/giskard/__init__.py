@@ -32,6 +32,7 @@ from giskard.models import wrap_model, model_from_catboost, model_from_huggingfa
     model_from_pytorch, model_from_sklearn
 from giskard.models.base import WrapperModel, CustomModel, MLFlowBasedModel, BaseModel, CloudpickleBasedModel
 from giskard.models.automodel import Model
+
 from .scanner import scan
 
 configure_logging()
