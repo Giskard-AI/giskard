@@ -7,8 +7,9 @@ import java.util.List;
 
 @Data
 @UIModel
-public class TransformationResultDTO {
+public class DatasetProcessingResultDTO {
     private String datasetId;
     private int totalRows;
+    private List<Integer> filteredRows;
     private List<TransformationResultMessageDTO> modifications;
 }

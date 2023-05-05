@@ -11,6 +11,6 @@ import java.io.Serializable;
 @Entity
 @DiscriminatorValue("TRANSFORMATION")
 @Setter
-public class TransformationFunction extends Callable implements Serializable {
+public class TransformationFunction extends DatasetProcessFunction implements Serializable {
 
 }
