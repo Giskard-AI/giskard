@@ -218,6 +218,7 @@ async function tryTestSuite(close) {
         ]);
     } finally {
         running.value = false;
+        await router.push({name: 'test-suite-overview'})
         close();
     }
 }
