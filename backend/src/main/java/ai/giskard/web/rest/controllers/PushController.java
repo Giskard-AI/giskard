@@ -10,6 +10,7 @@ import ai.giskard.security.PermissionEvaluator;
 import ai.giskard.service.GRPCMapper;
 import ai.giskard.service.PushService;
 import ai.giskard.service.ml.MLWorkerService;
+import ai.giskard.web.dto.ApplyPushDTO;
 import ai.giskard.web.dto.PushDTO;
 import ai.giskard.worker.ArtifactRef;
 import ai.giskard.worker.SuggestFilterRequest;
@@ -56,24 +57,24 @@ public class PushController {
                 .map(PushDTO::fromGrpc)
                 .collect(Collectors.toList());
         }
-        //return pushService.getPushes(
-        //    model,
-        //  dataset,
-        // idx
-        //);
     }
 
-    @PostMapping("/push/apply{modelId}/{datasetId}/{idx}/{pushIdx}/{pushDetailIdx}")
-    public String applyPushSuggestion(@PathVariable @NotNull UUID modelId, @PathVariable @NotNull UUID datasetId, @PathVariable @NotNull int idx, @PathVariable @NotNull int pushIdx, @PathVariable @NotNull int pushDetailIdx) {
-        ProjectModel model = modelRepository.getById(modelId);
-        permissionEvaluator.validateCanReadProject(model.getProject().getId());
-        Dataset dataset = datasetRepository.getById(datasetId);
+    @PostMapping("/push/apply")
+    public String applyPushSuggestion(@RequestBody ApplyPushDTO applyPushDTO) {
+        ProjectModel model = modelRepository.getById(applyPushDTO.getModelId());
+        Dataset dataset = datasetRepository.getMandatoryById(applyPushDTO.getDatasetId());
+        Project project = dataset.getProject();
+
+        ArtifactRef datasetRef = ArtifactRef.newBuilder().setProjectKey(project.getKey()).setId(dataset.getId().toString()).build();
+        ArtifactRef modelRef = ArtifactRef.newBuilder().setProjectKey(project.getKey()).setId(model.getId().toString()).build();
+
         return pushService.applyPushSuggestion(
-            model,
-            dataset,
-            idx,
-            pushIdx,
-            pushDetailIdx
+            project.getKey(),
+            modelRef,
+            datasetRef,
+            applyPushDTO.getRowIdx(),
+            applyPushDTO.getPushIdx(),
+            applyPushDTO.getKind()
         );
     }
 }

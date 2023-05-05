@@ -201,12 +201,13 @@ import mixpanel from "mixpanel-browser";
 import {anonymize} from "@/utils";
 import _ from 'lodash';
 import TransformationPopover from "@/components/TransformationPopover.vue";
+import SuggestionPopover from "@/components/SuggestionPopover.vue";
 import {usePushStore} from "@/stores/suggestions";
 
 @Component({
   components: {
     TransformationPopover,
-    OverlayLoader, PredictionResults, FeedbackPopover, PredictionExplanations, TextExplanation
+    OverlayLoader, PredictionResults, FeedbackPopover, PredictionExplanations, TextExplanation, SuggestionPopover
   }
 })
 export default class Inspector extends Vue {

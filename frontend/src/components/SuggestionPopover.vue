@@ -1,5 +1,5 @@
 <template>
-  <v-menu offset-x :close-on-content-click="false" v-model="opened" v-if="value">
+  <v-menu offset-x bottom :close-on-content-click="false" v-model="opened" v-if="value">
     <template v-slot:activator="{ on: onMenu }">
       <v-tooltip right>
         <template v-slot:activator='{ on: onTooltip }'>
@@ -50,6 +50,7 @@
 import {ref, watch} from 'vue';
 import {usePushStore} from "@/stores/suggestions";
 import {PushDTO} from "@/generated-sources";
+import {api} from "@/api";
 
 const pushStore = usePushStore();
 
@@ -71,7 +72,7 @@ watch(() => props.rowNb, () => {
 });
 
 async function dbg_GetSuggestion() {
-
+  await api.applyPush(props.modelId ?? "", props.datasetId ?? "", props.rowNb ?? 0, 0, 1)
 }
 </script>
 

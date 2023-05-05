@@ -38,7 +38,6 @@ from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction
 from giskard.ml_worker.testing.registry.transformation_function import TransformationFunction
 from giskard.models.base import BaseModel
 from giskard.path_utils import model_path, dataset_path
-from ml_worker_pb2 import PushUploadKind
 
 logger = logging.getLogger(__name__)
 
@@ -479,16 +478,12 @@ class MLWorkerServiceImpl(MLWorkerServicer):
             if p is not None:
                 pushes.append(p)
 
-        if request.upload_kind is not 0:
+        if request.upload_kind != 0:
             # Get the push upload request
-            if request.upload_kind is PushUploadKind.Slice:
-                push_upload_request = PushUploadRequest(
-                    project_key=request.project_key,
-                    dataset_id=request.dataset.id,
-                    model_id=request.model.id,
-                    rowidx=request.rowidx,
-                    slice=request.slice,
-                )
+            if request.upload_kind == 1:
+                slicingfunc = pushes[request.upload_index].slicing_function
+                # Need to figure out how to upload the sliiiiice
+                # slicingfunc.upload()
 
         return ml_worker_pb2.SuggestFilterResponse(
             # Map pushes to pushes to_grpc

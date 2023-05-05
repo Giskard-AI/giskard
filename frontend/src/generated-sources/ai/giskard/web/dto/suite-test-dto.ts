@@ -8,5 +8,5 @@ export interface SuiteTestDTO {
     functionInputs: {[key: string]: FunctionInputDTO};
     id?: number | null;
     test: TestFunctionDTO;
-    testUuid: string;
+    testUuid: any /* TODO: Missing translation of java.util.UUID */;
 }
