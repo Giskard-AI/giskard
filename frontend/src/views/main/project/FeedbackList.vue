@@ -13,8 +13,8 @@
       </v-toolbar>
       <v-container fluid>
         <v-data-table dense :group-by="groupByFeature ? 'featureName' : null" :items="feedbacks" :headers="tableHeaders" :search="search" :items-per-page="25" :footer-props="{
-            'items-per-page-options': [10, 25, 50, 100]
-          }" @click:row="openFeedback">
+          'items-per-page-options': [10, 25, 50, 100]
+        }" @click:row="openFeedback">
           <!-- eslint-disable-next-line vue/valid-v-slot -->
           <template v-slot:item.createdOn="{ item }">
             <span>{{ item.createdOn | date }}</span>
@@ -48,7 +48,7 @@
         </p>
         <div v-show="debuggingSessionsStore.debuggingSessions.length > 0" class="pt-2">
           <v-btn color="primaryLight" class="primaryLightBtn" @click="moveToDebugger">
-            Open last session
+            Open debugging session
             <v-icon right>mdi-arrow-right</v-icon>
           </v-btn>
         </div>
