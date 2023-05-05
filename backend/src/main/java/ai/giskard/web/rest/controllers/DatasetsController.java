@@ -107,11 +107,6 @@ public class DatasetsController {
         return usageService.prepareDeleteDataset(datasetId);
     }
 
-    @GetMapping("/dataset/{datasetId}/features")
-    public List<FeatureMetadataDTO> datasetFeaturesMetadata(@PathVariable @NotNull UUID datasetId) {
-        return datasetService.getFeaturesWithDistinctValues(datasetId);
-    }
-
     @PostMapping("project/{projectKey}/datasets")
     @PreAuthorize("@permissionEvaluator.canWriteProjectKey(#projectKey)")
     public void createDatasetMeta(@PathVariable("projectKey") @NotNull String projectKey, @RequestBody @NotNull DatasetDTO dto) {

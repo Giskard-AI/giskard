@@ -14,7 +14,6 @@ import {
     DatasetProcessingResultDTO,
     ExplainResponseDTO,
     ExplainTextResponseDTO,
-    FeatureMetadataDTO,
     FeedbackDTO,
     FeedbackMinimalDTO,
     FunctionInputDTO,
@@ -333,9 +332,6 @@ export const api = {
     },
     async getDatasetRows(datasetId: string, offset: number, size: number, filtered: RowFilterDTO = {}) {
         return apiV2.post<unknown, DatasetPageDTO>(`/dataset/${datasetId}/rows`, filtered, {params: {offset, size}});
-    },
-    async getFeaturesMetadata(datasetId: string) {
-        return apiV2.get<unknown, FeatureMetadataDTO[]>(`/dataset/${datasetId}/features`);
     },
     async editDatasetName(datasetId: string, name: string) {
         return apiV2.patch<unknown, DatasetDTO>(`/dataset/${datasetId}/name/${encodeURIComponent(name)}`, null)

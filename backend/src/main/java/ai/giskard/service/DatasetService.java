@@ -5,7 +5,6 @@ import ai.giskard.domain.ml.Dataset;
 import ai.giskard.repository.ml.DatasetRepository;
 import ai.giskard.security.PermissionEvaluator;
 import ai.giskard.web.dto.DatasetPageDTO;
-import ai.giskard.web.dto.FeatureMetadataDTO;
 import ai.giskard.web.dto.RowFilterDTO;
 import ai.giskard.web.dto.ml.DatasetDetailsDTO;
 import ai.giskard.web.rest.errors.Entity;
@@ -20,7 +19,10 @@ import tech.tablesaw.io.csv.CsvReadOptions;
 import javax.validation.constraints.NotNull;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -120,33 +122,6 @@ public class DatasetService {
             .map(row -> row.columnNames().stream()
                 .collect(Collectors.toMap(Function.identity(), row::getObject)))
             .toList());
-    }
-
-    public List<FeatureMetadataDTO> getFeaturesWithDistinctValues(UUID datasetId) {
-        Dataset dataset = datasetRepository.getMandatoryById(datasetId);
-        permissionEvaluator.validateCanReadProject(dataset.getProject().getId());
-
-        Table data = readTableByDatasetId(datasetId, false);
-
-        Set<String> categoryFeatures = dataset.getColumnTypes().entrySet().stream()
-            .filter(entry -> entry.getValue() == ColumnType.CATEGORY)
-            .map(Map.Entry::getKey)
-            .collect(Collectors.toSet());
-
-        return dataset.getColumnTypes().entrySet().stream().map(featureAndType -> {
-            String featureName = featureAndType.getKey();
-            ColumnType type = featureAndType.getValue();
-            FeatureMetadataDTO meta = new FeatureMetadataDTO();
-            meta.setType(type);
-            meta.setName(featureName);
-            if (type == ColumnType.CATEGORY) {
-                categoryFeatures.add(featureName);
-                meta.setValues(data.column(featureName).unique().asStringColumn().asSet());
-            }
-            return meta;
-
-        }).toList();
-
     }
 
     public Dataset renameDataset(UUID datasetId, String name) {
