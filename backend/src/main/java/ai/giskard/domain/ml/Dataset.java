@@ -58,4 +58,5 @@ public class Dataset extends AbstractAuditingEntity {
     private Long originalSizeBytes;
 
     private Long compressedSizeBytes;
+
 }

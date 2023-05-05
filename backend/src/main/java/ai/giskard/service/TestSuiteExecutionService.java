@@ -51,7 +51,7 @@ public class TestSuiteExecutionService {
         RunTestSuiteRequest.Builder builder = RunTestSuiteRequest.newBuilder();
         for (FunctionInput input : execution.getInputs()) {
             builder.addGlobalArguments(testArgumentService.buildTestArgument(arguments, input.getName(),
-                input.getValue(), suite.getProject().getKey(), input.getParams()));
+                input.getValue(), suite.getProject().getKey(), input.getParams(), false));
         }
 
         Map<String, FunctionInput> suiteInputsAndShared = Stream.concat(

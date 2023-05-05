@@ -78,8 +78,9 @@ public class DatasetsController {
 
     @PostMapping("/dataset/{datasetId}/rows")
     public DatasetPageDTO getRows(@PathVariable @NotNull UUID datasetId, @NotNull int offset, @NotNull int size,
-                                  @RequestBody RowFilterDTO rowFilter) throws IOException {
-        return datasetService.getRows(datasetId, offset, offset + size, rowFilter);
+                                  @RequestBody RowFilterDTO rowFilter,
+                                  @RequestParam(required = false, defaultValue = "true") boolean sample) throws IOException {
+        return datasetService.getRows(datasetId, offset, offset + size, rowFilter, sample);
     }
 
     /**
@@ -133,7 +134,7 @@ public class DatasetsController {
     public DatasetProcessingResultDTO datasetProcessing(@PathVariable("projectId") @NotNull long projectId,
                                                         @PathVariable("datasetUuid") @NotNull UUID datasetUuid,
                                                         @RequestBody List<ParameterizedCallableDTO> processingFunctions,
-                                                        @RequestParam(required = false, defaultValue = "false") boolean cache) {
+                                                        @RequestParam(required = false, defaultValue = "true") boolean sample) {
         Dataset dataset = datasetRepository.getMandatoryById(datasetUuid);
         Project project = dataset.getProject();
 
@@ -150,6 +151,7 @@ public class DatasetsController {
                 .setDataset(ArtifactRef.newBuilder()
                     .setId(dataset.getId().toString())
                     .setProjectKey(dataset.getProject().getKey())
+                    .setSample(sample)
                     .build());
 
             processingFunctions.forEach(processingFunction -> {
@@ -175,7 +177,7 @@ public class DatasetsController {
 
                 for (FunctionInputDTO input : processingFunction.getParams()) {
                     functionBuilder.addArguments(testArgumentService
-                        .buildTestArgument(arguments, input.getName(), input.getValue(), project.getKey(), Collections.emptyList()));
+                        .buildTestArgument(arguments, input.getName(), input.getValue(), project.getKey(), Collections.emptyList(), sample));
                 }
 
                 builder.addFunctions(functionBuilder.build());
