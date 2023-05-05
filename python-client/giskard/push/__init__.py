@@ -1,11 +1,11 @@
 from giskard.ml_worker.generated import ml_worker_pb2
 from giskard.slicing.slice import GreaterThan, LowerThan, EqualTo, Query, QueryBasedSliceFunction
+from enum import Enum
 
 
-class Perturbation:
-    def __init__(self, passed, perturbation_value):
-        self.passed = passed
-        self.perturbation_value = perturbation_value
+class SupportedPerturbationType(Enum):
+    NUMERIC = "numeric"
+    TEXT = "text"
 
 
 class Push:
@@ -13,6 +13,19 @@ class Push:
     value = None  # list of numerical value or category
     push_title = None
     push_details = None
+
+    def to_grpc(self):
+        return ml_worker_pb2.Push(
+            key=self.key,
+            value=str(self.value),
+            push_title=self.push_title,
+            push_details=self.push_details,
+            # perturbation_value=self.perturbation_value,
+            # slicing_function=self.slicing_function  # SlicingFunction added
+        )
+
+
+class NumericPush(Push):
     perturbation_value = None
     slicing_function = None
     bounds = None
@@ -110,12 +123,36 @@ class Push:
 
         self.slicing_function = slicing_func
 
-    def to_grpc(self):
-        return ml_worker_pb2.Push(
-            key=self.key,
-            value=str(self.value),
-            push_title=self.push_title,
-            push_details=self.push_details,
-            # perturbation_value=self.perturbation_value,
-            # slicing_function=self.slicing_function  # SlicingFunction added
-        )
+
+class TextPush(Push):
+    text_perturbed: list = None
+    transformation_function: list = None
+
+    def __init__(self, push_type, feature, value, text_perturbed, transformation_function):
+        self.key = feature
+        self.value = value
+        self.text_perturbed = text_perturbed
+        self.transformation_function = transformation_function
+        if push_type == "perturbation":
+            self._perturbation(feature, value)
+
+    def _perturbation(self, feature, value):
+        res = {"push_title": f"A slight modification of the {str(feature)} feature makes the prediction change",
+               "push_details":
+                   [{
+                       "action": "",
+                       "explanation": "",
+                       "button": ""
+                   },
+                       {
+                           "action": "",
+                           "explanation": "",
+                           "button": ""
+                       }
+                   ]
+               }
+
+        # Details about the perturbation for textual feature - Transforming into upper-case, Shuffeling ,
+        # Swapping tokens makes the prediction change
+        self.push_title = res["push_title"]
+        self.push_details = res["push_details"]

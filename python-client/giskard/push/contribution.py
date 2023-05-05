@@ -4,7 +4,7 @@ from scipy.stats import zscore
 from giskard.core.core import SupportedModelTypes
 from giskard.ml_worker.core.model_explanation import explain
 from giskard.ml_worker.testing.tests.performance import test_rmse
-from ..push import Push
+from ..push import NumericPush
 from .utils import slice_bounds
 
 from giskard.core.core import SupportedModelTypes
@@ -27,15 +27,14 @@ def contribution(model, ds, idrow):  # data_aug_dict
                 #    print(f"Data augmentation recommended for the slice.............{el}",
                 #          el, values[el])
                 if training_label != prediction:  # use scan feature ?
-                    res = Push(push_type="contribution_wrong", feature=el,
-                              value=values[el])
-                            yield res
+                    res = NumericPush(push_type="contribution_wrong", feature=el,
+                                      value=values[el])
+                                   yield res
 
                 else:
                     res = Push(push_type="contribution_only", feature=el,
-                    value=values[el],
-                               bounds=bounds
-                               )yield res
+                    value=values[el],   bounds=bounds
+                                      )yield res
 
                     if model.meta.model_type == SupportedModelTypes.REGRESSION:
         shap_res = _contribution_push(model, ds, idrow)
@@ -57,10 +56,10 @@ def contribution(model, ds, idrow):  # data_aug_dict
                     yield res
 
                 else:
-                    res = Push(push_type="contribution_only", feature=el,
-                               value=values[el],
-                               bounds=bounds
-                               )
+                    res = NumericPush(push_type="contribution_only", feature=el,
+                                      value=values[el],
+                                      bounds=bounds
+                                      )
                     yield res
 
     if model.meta.model_type == SupportedModelTypes.REGRESSION:
@@ -76,8 +75,8 @@ def contribution(model, ds, idrow):  # data_aug_dict
             for el in shap_res:
                 # print(error, rmse_res)
                 bounds = slice_bounds(feature=el, value=values[el], ds=ds)
-                if abs(error - rmse_res.metric) / rmse_res.metric >= 0.2:  # use scan feature ?
-                    res = Push(push_type="contribution_wrong",
+                if abs(error - y) / y >= 0.2:  # use scan feature ?
+                    res = NumericPush(push_type="contribution_wrong",
                                feature=el,
                                value=values[el],
                                bounds=bounds
@@ -85,7 +84,7 @@ def contribution(model, ds, idrow):  # data_aug_dict
                     yield res
 
                 else:
-                    res = Push(push_type="contribution_only", feature=el,
+                    res = NumericPush(push_type="contribution_only", feature=el,
                                value=values[el],
                                bounds=bounds
                                )

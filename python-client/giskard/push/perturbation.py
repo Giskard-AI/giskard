@@ -1,8 +1,8 @@
 from giskard.core.core import SupportedModelTypes
-from ..push import Push, Perturbation
+from ..push import NumericPush, TextPush
 from .utils import slice_bounds
 import numpy as np
-
+from giskard.push import SupportedPerturbationType
 from giskard.scanner.robustness.text_transformations import text_lowercase, \
     text_uppercase, \
     text_titlecase, \
@@ -10,81 +10,97 @@ from giskard.scanner.robustness.text_transformations import text_lowercase, \
     TextPunctuationRemovalTransformation, \
     TextGenderTransformation
 
-text_transfo_list = (text_lowercase,
+text_transfo_list = [text_lowercase,
                      text_uppercase,
                      text_titlecase,
                      TextTypoTransformation,
                      TextPunctuationRemovalTransformation,
-                     TextGenderTransformation)
+                     TextGenderTransformation]
 
 
 def perturbation(model, ds, idrow):
     for feat, coltype in ds.column_types.items():
-        perturbation_res_list = _perturb_and_predict(model, ds, idrow, feat, coltype)
-        for perturbation_res in perturbation_res_list:
-            if coltype == "numeric" and perturbation_res.passed:
-                bounds = slice_bounds(feature=feat, value=ds.df.iloc[idrow][feat], ds=ds)
-                res = Push(push_type="perturbation", feature=feat, value=ds.df.iloc[idrow][feat],
-                           bounds=bounds,
-                           perturbation_value=perturbation_res.perturbation_value)
-                yield res
+        perturbation_res = Perturbation(model, ds, idrow, feat, coltype)
+        if perturbation_res.coltype == SupportedPerturbationType.NUMERIC and perturbation_res.passed:
+            bounds = slice_bounds(feature=feat, value=ds.df.iloc[idrow][feat], ds=ds)
+            res = NumericPush(push_type="perturbation", feature=feat, value=ds.df.iloc[idrow][feat],
+                              bounds=bounds,
+                              perturbation_value=perturbation_res.perturbation_value)
+            yield res
 
-            # if coltype == "text" and _perturb_and_predict(model, ds, idrow, feat, coltype):
-            #     bounds = slice_bounds(feature=feat, value=ds.df.iloc[idrow][feat], ds=ds)
-            #     res = Push(push_type="perturbation", feature=feat, value=ds.df.iloc[idrow][feat],
-            #                bounds=bounds,
-            #                perturbation_value=perturbation_res.perturbation_value)
-
-            # {
-            #     "sentence": "A small variation of the text makes the prediction change, do you want to "
-            #                 "check if this unrobust behavior generalizes to the whole dataset ?",
-            #     "action": "Test",
-            #     "value": str(ds.df.iloc[idrow][feat]),
-            #     "key": str(feat),
-            # # }
-            #
-            # yield res
+        if perturbation_res.coltype == SupportedPerturbationType.TEXT and perturbation_res.passed:
+            res = TextPush(push_type="perturbation", feature=feat, value=ds.df.iloc[idrow][feat],
+                           text_perturbed=perturbation_res.text_perturbed,
+                           transformation_function=perturbation_res.transformation_function
+                           )
+            yield res
 
 
-def _perturb_and_predict(model, ds, idrow, feature, coltype):  # done at each step
-    def mad(x):
-        med = np.median(x)
-        x = abs(x - med)
-        mad = np.median(x)
-        return mad
+class Perturbation:
+    model = None
+    ds = None
+    idrow = None
+    feat = None
+    coltype = None
+    passed = None
+    perturbation_value = None
+    text_perturbed = None
+    transformation_function = None
 
-    ref_row = ds.df.iloc[[idrow]]
-    row_perturbed = ref_row.copy()
-    perturbation_val = None
+    def __init__(self, model, ds, idrow, feature, coltype):
+        self.model = model
+        self.ds = ds
+        self.idrow = idrow
+        self.feature = feature
+        if coltype == "numeric":
+            self.coltype = SupportedPerturbationType.NUMERIC
+        elif coltype == "text":
+            self.coltype = SupportedPerturbationType.TEXT
+        self.transformation_function = list()
+        self.text_perturbed = list()
+        self._perturb_and_predict()
 
-    perturbations = []
-    if coltype == "numeric":
-        mad = mad(ds.df[feature])
-        row_perturbed[feature] = _num_perturb(row_perturbed[feature], mad)
-        perturbation_val = mad
-        perturbations.append(_generate_perturbation(model, ds, ref_row, row_perturbed, perturbation_val))
-    elif coltype == "text":
-        for text_transformation in text_transfo_list:
-            ds_slice = ds.slice(lambda df: df.loc[idrow], row_level=False)
-            row_perturbed[feature] = _text_perturb(text_transformation, feature, ds_slice)
-            perturbation_val = None  # @TODO: Add text support
-            perturbations.append(_generate_perturbation(model, ds, ref_row, row_perturbed, perturbation_val))
-    return perturbations
+    def _perturb_and_predict(self):  # done at each step
+        def mad(x):
+            med = np.median(x)
+            x = abs(x - med)
+            mad = np.median(x)
+            return mad
 
+        ref_row = self.ds.df.iloc[[self.idrow]]
+        row_perturbed = ref_row.copy()
+        perturbation_val = None
+        if self.coltype == SupportedPerturbationType.NUMERIC:
+            mad = mad(self.ds.df[self.feature])
+            row_perturbed[self.feature] = self._num_perturb(row_perturbed[self.feature], mad)
+            perturbation_val = mad
+            self._generate_perturbation(ref_row, row_perturbed, perturbation_val)
+        elif self.coltype == SupportedPerturbationType.TEXT:
+            for text_transformation in text_transfo_list:
+                ds_slice = self.ds.slice(lambda x: x.loc[x.index == self.idrow], row_level=False)
+                row_perturbed[self.feature] = self._text_perturb(text_transformation, self.feature, ds_slice)
+                perturbation_val = None  # @TODO: To fix
+                self._generate_perturbation(ref_row, row_perturbed, perturbation_val)
+                if self.passed:
+                    self.text_perturbed.append(row_perturbed[self.feature])
+                    self.transformation_function.append(text_transformation)
+            if len(self.text_perturbed) > 0:
+                self.passed = True
 
-def _generate_perturbation(model, ds, ref_row, row_perturbed, perturbation_val):
-    if model.meta.model_type == SupportedModelTypes.CLASSIFICATION:
-        ref_prob = model.model.predict(ref_row)
-        probabilities = model.model.predict(row_perturbed)  # .reshape(1, -1)
-        return Perturbation(passed=ref_prob[0] != probabilities[0], perturbation_value=perturbation_val)
-    elif model.meta.model_type == SupportedModelTypes.REGRESSION:
-        ref_val = model.model.predict(ref_row.drop(columns=[ds.target]))
-        new_val = model.model.predict(row_perturbed.drop(columns=[ds.target]))  # .reshape(1, -1)
-        return Perturbation(passed=(new_val - ref_val) / ref_val >= 0.2, perturbation_value=perturbation_val)
+    def _generate_perturbation(self, ref_row, row_perturbed, perturbation_val):
+        if self.model.meta.model_type == SupportedModelTypes.CLASSIFICATION:
+            ref_prob = self.model.model.predict(ref_row)
+            probabilities = self.model.model.predict(row_perturbed)  # .reshape(1, -1)
+            self.passed = ref_prob[0] != probabilities[0]
+            self.perturbation_value = perturbation_val
+        elif self.model.meta.model_type == SupportedModelTypes.REGRESSION:
+            ref_val = self.model.model.predict(ref_row.drop(columns=[self.ds.target]))
+            new_val = self.model.model.predict(row_perturbed.drop(columns=[self.ds.target]))  # .reshape(1, -1)
+            self.passed = (new_val - ref_val) / ref_val >= 0.2
+            self.perturbation_value = perturbation_val
 
-
-def _num_perturb(val, mad):
-    return val + 3 * mad  # 1.2  # 20% perturbation
+    def _num_perturb(self, val, mad):
+        return val + 3 * mad  # 1.2  # 20% perturbation
 
 
 def _text_perturb(val):
@@ -147,3 +163,8 @@ def _text_perturb(val):
     # Augment the text
     aug_text = aug.augment(data=val)
     return aug_text
+    def _text_perturb(self, transformation_function, col, ds_slice):
+        t = transformation_function(column=col)
+        transformed = ds_slice.transform(t)
+        transformed_text = transformed.df[self.feature].values
+        return str(transformed_text)
