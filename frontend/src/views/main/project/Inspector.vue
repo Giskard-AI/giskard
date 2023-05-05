@@ -258,12 +258,11 @@ import TransformationPopover from "@/components/TransformationPopover.vue";
 import {useCatalogStore} from "@/stores/catalog";
 import SuggestionPopover from "@/components/SuggestionPopover.vue";
 import {usePushStore} from "@/stores/suggestions";
-import {usePushStore} from "@/stores/suggestions";
 
 @Component({
   components: {
     TransformationPopover, SuggestionPopover,
-    OverlayLoader, PredictionResults, FeedbackPopover, PredictionExplanations, TextExplanation
+    OverlayLoader, PredictionResults, FeedbackPopover, PredictionExplanations, TextExplanation, SuggestionPopover
   }
 })
 export default class Inspector extends Vue {

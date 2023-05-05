@@ -13,6 +13,7 @@ export const GENERATED_MAPPING = {
     'ai.giskard.jobs.JobState' : 'JobState',
     'ai.giskard.jobs.JobType' : 'JobType',
     'ai.giskard.service.ee.FeatureFlag' : 'FeatureFlag',
+    'ai.giskard.web.dto.ApplyPushDTO' : 'ApplyPushDTO',
     'ai.giskard.web.dto.CallableDTO' : 'CallableDTO',
     'ai.giskard.web.dto.CatalogDTO' : 'CatalogDTO',
     'ai.giskard.web.dto.ComparisonClauseDTO' : 'ComparisonClauseDTO',
@@ -111,6 +112,7 @@ export * from './ai/giskard/domain/mlworker-type';
 export * from './ai/giskard/jobs/job-state';
 export * from './ai/giskard/jobs/job-type';
 export * from './ai/giskard/service/ee/feature-flag';
+export * from './ai/giskard/web/dto/apply-push-dto';
 export * from './ai/giskard/web/dto/callable-dto';
 export * from './ai/giskard/web/dto/catalog-dto';
 export * from './ai/giskard/web/dto/comparison-clause-dto';

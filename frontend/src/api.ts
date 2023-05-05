@@ -6,7 +6,8 @@ import Vue from 'vue';
 import {
   AdminUserDTO,
   AppConfigDTO,
-  CatalogDTO,
+  ApplyPushDTO,
+    CatalogDTO,
   ComparisonClauseDTO,
   CreateFeedbackDTO,
   CreateFeedbackReplyDTO,
@@ -496,5 +497,14 @@ export const api = {
   },
   async getPushes(modelId: string, datasetId: string, idx: number) {
     return apiV2.get<unknown, PushDTO[]>(`/pushes/${modelId}/${datasetId}/${idx}`);
-  }
+  },
+    async applyPush(modelId: string, datasetId: string, idx: number, pushIdx: number, kind: number) {
+        return apiV2.post<ApplyPushDTO, void>(`/push/apply`, {
+            modelId,
+            datasetId,
+            rowIdx: idx,
+            pushIdx: pushIdx,
+            kind
+        });
+    }
 };

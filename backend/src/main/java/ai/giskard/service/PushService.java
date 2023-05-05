@@ -5,7 +5,7 @@ import ai.giskard.domain.ml.ProjectModel;
 import ai.giskard.ml.MLWorkerClient;
 import ai.giskard.service.ml.MLWorkerService;
 import ai.giskard.web.dto.PushDTO;
-import ai.giskard.worker.PushUploadRequest;
+import ai.giskard.worker.ArtifactRef;
 import ai.giskard.worker.SuggestFilterRequest;
 import ai.giskard.worker.SuggestFilterResponse;
 import lombok.RequiredArgsConstructor;
@@ -38,13 +38,15 @@ public class PushService {
     }
 
     // Applying a push suggestion should always return the ID of the created object :)
-    public String applyPushSuggestion(ProjectModel model, Dataset dataset, int idx, int pushIdx, int pushDetailIdx) {
+    public String applyPushSuggestion(String projectKey, ArtifactRef model, ArtifactRef dataset, int idx, int pushIdx, int uploadKind) {
         try (MLWorkerClient client = mlWorkerService.createClient(true)) {
             SuggestFilterResponse resp = client.getBlockingStub().suggestFilter(SuggestFilterRequest.newBuilder()
-                .setDataset(grpcMapper.createRef(dataset))
-                .setModel(grpcMapper.createRef(model))
+                .setDataset(dataset)
+                .setModel(model)
                 .setRowidx(idx)
-                .setPushUploadRequest(PushUploadRequest.newBuilder().setPushIndex(pushIdx).setPushDetailIndex(pushDetailIdx).build())
+                .setUploadKindValue(uploadKind)
+                .setUploadIndex(pushIdx)
+                .setProjectKey(projectKey)
                 .build());
 
             return "";

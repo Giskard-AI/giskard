@@ -419,7 +419,7 @@ message SuggestFilterResponse {
   repeated Push pushes = 1;
 }
 enum PushUploadKind {
-  None = 0;
+  Nothing = 0;
   Slice = 1;
   Test = 2;
 }
@@ -429,6 +429,8 @@ message SuggestFilterRequest {
   ArtifactRef dataset = 2;
   uint64 rowidx = 3;
   PushUploadKind upload_kind = 4;
+  uint32 upload_index = 5;
+  string project_key = 6;
 }
 
 message PushUploadRequest {
