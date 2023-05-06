@@ -79,28 +79,24 @@ wrapped_dataset = wrap_dataset(
 
 ## 3. Wrap your model
 
-To use your model with Giskard, you can wrap either your:
-- <b>prediction function</b> that contains all your data preprocessing steps.
-- <b>model object</b> in addition to a data preprocessing function.
+To use your model with Giskard, you can either:
+- <b> Wrap a prediction function</b> that contains all your data preprocessing steps.
+- <b> Wrap a model object</b> in addition to a data preprocessing function.
 
 :::{hint}
-The main difference between the two is that,
-upon the [upload](#upload-your-model-and-dataset-to-giskard-ui) to the Giskard server, we use `cloudpickle` to serialise 
-the <b>prediction function</b> while we use a model-tailored serialization for the <b>model object</b> case.
+Choose <b>"Wrap a model object"</b> if your model is not serializable by `cloudpickle` (e.g. TensorFlow models).
 :::
 
 :::::::{tab-set}
 ::::::{tab-item} Wrap a prediction function
-Your prediction function should encapsulate all the data preprocessing steps.
-It takes as input, the <b>raw</b> pandas dataframe filtered according to the `feature_names` and 
-returns a `numpy.array` of predictions. You can also define a prediction function that calls
-your model from an online API.
-
 :::::{tab-set}
 ::::{tab-item} Classification
-The expected output from your prediction function is an array ($n\times m$) of probabilities corresponding to $n$ data entries (rows of pandas.DataFrame)
-and $m$ classification_labels. In the case of binary classification, an array of ($n\times 1$) probabilities is also accepted.
-In this case, make sure that the probability provided is for the first label provided in classification_labels.
+Prediction function is any Python function that takes as input the <b>raw</b> pandas dataframe (wrapped in the 
+[previous section](#wrap-your-dataset)) and returns the <b>probabilities</b> for each classification labels. 
+
+<b><u>Make sure that:</b></u>
+1. `prediction_function` encapsulates all the <b>data preprocessing steps</b> (categorical encoding, numerical scaling, etc.).
+2. `prediction_function(df[feature_names])` <b>does not return an error message</b>.
 
 ```python
 import pandas as pd
@@ -130,18 +126,29 @@ wrapped_model = wrap_model(
 )
 ```
 * <mark style="color:red;">**`Mandatory parameters`**</mark>
-  * `model`: A prediction function that takes a `pandas.DataFrame` as input and returns a `numpy.ndarray` of predictions.
+  * `model`: A prediction function that takes a `pandas.DataFrame` as input and returns an array ($n\times m$) of probabilities corresponding
+    to $n$ data entries (rows of `pandas.DataFrame`) and $m$ `classification_labels`. In the case of binary classification, an array  
+    ($n\times 1$) of probabilities is also accepted.
   * `model_type`: The type of the model, either `regression` or `classification`.
-  * `classification_labels`: The list of unique categories contained in your dataset target variable.
+  * `classification_labels`: The list of unique categories contained in your dataset target variable. If `classification_labels`
+    is a list of $m$ elements, make sure that:
+    * `prediction_function` is returning a ($n\times m$) array of probabilities.
+    * `classification_labels` have the same order as the output of `prediction_function`.
 
 * <mark style="color:red;">**`Optional parameters`**</mark>
   * `name`: Name of the wrapped model.
-  * `feature_names`: An optional list of the feature names. By default, `feature_names` are all the columns in your dataset.
+  * `feature_names`: An optional list of the feature names. By default, `feature_names` are all the columns in your dataset. 
+     Make sure these features have the same order as in your training dataset.
   * `classification_threshold`: Model threshold for binary classification problems.
 
 ::::
 ::::{tab-item} Regression
-The expected output from your prediction function is an array of predictions corresponding to data entries (rows of pandas.DataFrame).
+Prediction function is any Python function that takes as input the <b>raw</b> pandas dataframe (wrapped in the
+[previous section](#wrap-your-dataset)) and returns the <b>predictions</b> for your regression task.
+
+<b><u>Make sure that:</b></u>
+1. `prediction_function` encapsulates all the <b>data preprocessing steps</b> (categorical encoding, numerical scaling, etc.).
+2. `prediction_function(df[feature_names])` <b>does not return an error message</b>.
 ```python
 import pandas as pd
 from sklearn.linear_model import LinearRegression
@@ -161,12 +168,14 @@ wrapped_model = wrap_model(
   )
 ```
 * <mark style="color:red;">**`Mandatory parameters`**</mark>
-  * `model`: A prediction function that takes a `pandas.DataFrame` as input and returns a `numpy.ndarray` of predictions.
+  * `model`: A prediction function that takes a `pandas.DataFrame` as input and returns an array $n$ of predictions corresponding
+    to $n$ data entries (rows of `pandas.DataFrame`).
   * `model_type`: The type of the model, either `regression` or `classification`.
 
 * <mark style="color:red;">**`Optional parameters`**</mark>
   * `name`: Name of the wrapped model.
   * `feature_names`: An optional list of the feature names. By default, `feature_names` are all the columns in your dataset.
+    Make sure these features have the same order as in your training dataset.
 
 ::::
 :::::
@@ -217,11 +226,16 @@ wrapped_model = wrap_model(
     the [tutorials](../../guides/tutorials/index.md)). If none of these
     libraries apply to you: check out <b>"Customize the wrapper"</b>.
   * `model_type`: The type of the model, either `regression` or `classification`.
-  * `classification_labels`: The list of unique categories contained in your dataset target variable.
+  * `classification_labels`: The list of unique categories contained in your dataset target variable. If `classification_labels`
+    is a list of $m$ elements, make sure that:
+    * `prediction_function` is returning a ($n\times m$) array of probabilities.
+    * `classification_labels` have the same order as the output of `prediction_function`.
+
 
 * <mark style="color:red;">**`Optional parameters`**</mark>
   * `name`: Name of the wrapped model.
   * `feature_names`: An optional list of the feature names. By default, `feature_names` are all the columns in your dataset.
+    Make sure these features have the same order as in your training dataset.
   * `classification_threshold`: Model threshold for binary classification problems.
   * `data_preprocessing_function`: A function that takes a `pandas.DataFrame` as raw input, applies preprocessing and
     returns any object that could be directly fed to `model`.
@@ -261,6 +275,7 @@ wrapped_model = wrap_model(
 * <mark style="color:red;">**`Optional parameters`**</mark>
   * `name`: Name of the wrapped model.
   * `feature_names`: An optional list of the feature names. By default, `feature_names` are all the columns in your dataset.
+    Make sure these features have the same order as in your training dataset.
   * `data_preprocessing_function`: A function that takes a `pandas.DataFrame` as raw input, applies preprocessing and
     returns any object that could be directly fed to `model`.
   * `model_postprocessing_function`: A function that takes a `model` output as input, applies postprocessing and returns
@@ -311,11 +326,16 @@ wrapped_model = MyCustomModel(
     libraries apply to you, we try to serialize your model with `cloudpickle`, if that also does not work, we
     ask you to provide us with your own serialization method.
   * `model_type`: The type of the model, either `regression` or `classification`.
-  * `classification_labels`: The list of unique categories contained in your dataset target variable.
+  * `classification_labels`: The list of unique categories contained in your dataset target variable. If `classification_labels`
+    is a list of $m$ elements, make sure that:
+    * `prediction_function` is returning a ($n\times m$) array of probabilities.
+    * `classification_labels` have the same order as the output of `prediction_function`.
+
 
 * <mark style="color:red;">**`Optional parameters`**</mark>
   * `name`: Name of the wrapped model.
   * `feature_names`: An optional list of the feature names. By default, `feature_names` are all the columns in your dataset.
+    Make sure these features have the same order as in your training dataset.
   * `classification_threshold`: Model threshold for binary classification problems.
   * `data_preprocessing_function`: A function that takes a `pandas.DataFrame` as raw input, applies preprocessing and
     returns any object that could be directly fed to `model`.
@@ -356,6 +376,7 @@ wrapped_model = MyCustomModel(
 * <mark style="color:red;">**`Optional parameters`**</mark>
   * `name`: Name of the wrapped model.
   * `feature_names`: An optional list of the feature names. By default, `feature_names` are all the columns in your dataset.
+    Make sure these features have the same order as in your training dataset.
   * `data_preprocessing_function`: A function that takes a `pandas.DataFrame` as raw input, applies preprocessing and
     returns any object that could be directly fed to `model`.
   * `model_postprocessing_function`: A function that takes a `model` output as input, applies postprocessing and returns
