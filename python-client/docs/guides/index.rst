@@ -7,6 +7,5 @@ User Guide
    test-catalog/index
    slicing-function-catalog/index
    transformation-function-catalog/index
-   custom-wrapper/index
    installation/index
    tutorials/index
