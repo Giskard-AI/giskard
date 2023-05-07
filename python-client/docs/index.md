@@ -23,7 +23,6 @@ reference/index
 - **<project:/guides/transformation-function-catalog/index.rst>**
 
 **Additional useful information can also be found here:**
-- **<project:/guides/custom-wrapper/index.md>**
 - **<project:/guides/installation/index.md>**
 - **<project:/guides/tutorials/index.md>**
 
