@@ -1,4 +1,5 @@
 from giskard.models import infer_giskard_cls
+from giskard.models.function import PredictionFunctionModel
 from giskard.models.sklearn import SKLearnModel
 from giskard.models.catboost import CatboostModel
 from giskard.models.pytorch import PyTorchModel
@@ -33,7 +34,7 @@ def huggingface_model():
 
 def test_infer_giskard_cls(german_credit_raw_model, german_credit_catboost_raw_model):
     giskard_cls = infer_giskard_cls(lambda x: x ** 2)
-    assert giskard_cls == None
+    assert giskard_cls == PredictionFunctionModel
 
     giskard_cls = infer_giskard_cls(german_credit_raw_model)
     assert giskard_cls == SKLearnModel
