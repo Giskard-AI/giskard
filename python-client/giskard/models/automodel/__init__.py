@@ -93,7 +93,7 @@ class Model(CloudpickleBasedModel):
         else:
             giskard_cls = infer_giskard_cls(model)
             # if the Model class is overriden (thus != Model) -> get the methods from the subclass
-            # if the Model class is called (thus == Model) -> get the methods from the inferred class
+            # if the Model class is instantiated (thus == Model) -> get the methods from the inferred class
             # if giskard_cls == None -> get the methods from CloudpickleBasedModel
             is_overriden = cls.__name__ != 'Model'
             possibly_overriden_cls = cls if is_overriden else giskard_cls if giskard_cls else CloudpickleBasedModel
