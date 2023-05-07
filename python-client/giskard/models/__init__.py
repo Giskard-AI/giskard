@@ -6,6 +6,7 @@ import pandas as pd
 
 from giskard.core.core import ModelType
 from giskard.models.base import CloudpickleBasedModel
+from giskard.models.function import PredictionFunctionModel
 from giskard.core.validation import configured_validate_arguments
 
 ml_libraries = {
@@ -23,12 +24,7 @@ def get_class(_lib, _class):
 
 def infer_giskard_cls(model: Any):
     if inspect.isfunction(model):
-        class WrappedPredictionFunction(CloudpickleBasedModel):
-            def model_predict(self, df):
-                return model(df)
-
-        return WrappedPredictionFunction
-
+        return PredictionFunctionModel
     else:
         for _giskard_class, _base_libs in ml_libraries.items():
             try:
