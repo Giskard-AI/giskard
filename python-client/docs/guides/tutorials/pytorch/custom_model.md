@@ -12,7 +12,7 @@ from torchtext.datasets import AG_NEWS
 from torchtext.vocab import build_vocab_from_iterator
 
 import tests.utils
-from giskard import PyTorchModel, wrap_dataset
+from giskard import Model, wrap_dataset
 ```
 ## Wrap dataset
 ```python
@@ -83,14 +83,13 @@ model = TextClassificationModel(vocab_size, emsize, num_class).to(device)
 
 feature_names = ["text"]
 
-class my_PyTorchModel(PyTorchModel):
-    should_save_model_class = True
+class MyPyTorchModel(Model):
 
     def model_predict(self, df):
         def predict_proba(text):
             with torch.no_grad():
                 text = torch.tensor(text_pipeline(text))
-                output = model(text, torch.tensor([0]))
+                output = self.model(text, torch.tensor([0]))
                 np_output = output.numpy()[0]
                 return softmax(np_output)
 
@@ -101,7 +100,7 @@ class my_PyTorchModel(PyTorchModel):
         return prediction_function(df)
 ```
 ```python
-wrapped_model = my_PyTorchModel(model=model,
+wrapped_model = MyPyTorchModel(model=model,
                                 feature_names=feature_names,
                                 model_type="classification",
                                 classification_labels=list(ag_news_label.values()))
