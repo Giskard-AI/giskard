@@ -97,58 +97,60 @@ interface FilterType {
 
 @Component({components: {CustomInspectionFilter}})
 export default class InspectionFilter extends Vue {
-  RowFilterType = RowFilterType;
-  @Prop({required: true}) modelType!: ModelType;
-  @Prop({default: false}) isTargetAvailable!: boolean;
-  @Prop({required: true}) labels!: string[];
+    RowFilterType = RowFilterType;
+    @Prop({required: true}) modelType!: ModelType;
+    @Prop({required: true}) inspectionId!: number;
+    @Prop({default: false}) isTargetAvailable!: boolean;
+    @Prop({required: true}) labels!: string[];
 
-  menu = false;
+    menu = false;
 
-  @Watch('menu')
-  onMenuChange(nv) {
-    if (nv) {
-      this.dirtyFilterValue = _.cloneDeep(this.filter);
+    @Watch('menu')
+    onMenuChange(nv) {
+        if (nv) {
+            this.dirtyFilterValue = _.cloneDeep(this.filter);
+        }
     }
-  }
 
 
-  filterTypes: FilterType[] = [
-    {value: RowFilterType.ALL, label: 'All', description: 'Entire dataset'},
-    {
-      value: RowFilterType.CORRECT,
-      label: isClassification(this.modelType) ? 'Correct Predictions' : 'Closest predictions (top 15%)',
-      disabled: !this.isTargetAvailable,
-      description: isClassification(this.modelType) ?
+    filterTypes: FilterType[] = [
+        {value: RowFilterType.ALL, label: 'All', description: 'Entire dataset'},
+        {
+            value: RowFilterType.CORRECT,
+            label: isClassification(this.modelType) ? 'Correct Predictions' : 'Closest predictions (top 15%)',
+            disabled: !this.isTargetAvailable,
+            description: isClassification(this.modelType) ?
           'Predicted value is equal to actual value in dataset target column' :
           'Top 15% of most accurate predictions'
-    },
-    {
-      value: RowFilterType.WRONG,
-      label: isClassification(this.modelType) ? 'Incorrect Predictions' : 'Most distant predictions (top 15%)',
-      disabled: !this.isTargetAvailable
-    },
-    {value: RowFilterType.BORDERLINE, label: 'Borderline', disabled: !this.isTargetAvailable},
-    {value: RowFilterType.CUSTOM, label: 'Custom'}
-  ];
-  filterTypesByKey = _.keyBy(this.filterTypes, e => e.value);
-  dirtyFilterValue: Filter = InspectionFilter.initFilter();
-  filter: Filter = InspectionFilter.initFilter();
+        },
+        {
+            value: RowFilterType.WRONG,
+            label: isClassification(this.modelType) ? 'Incorrect Predictions' : 'Most distant predictions (top 15%)',
+            disabled: !this.isTargetAvailable
+        },
+        {value: RowFilterType.BORDERLINE, label: 'Borderline', disabled: !this.isTargetAvailable},
+        {value: RowFilterType.CUSTOM, label: 'Custom'}
+    ];
+    filterTypesByKey = _.keyBy(this.filterTypes, e => e.value);
+    dirtyFilterValue: Filter = this.initFilter();
+    filter: Filter = this.initFilter();
 
-  private static initFilter(): Filter {
-    return {
-      type: RowFilterType.ALL
+    private initFilter(): Filter {
+        return {
+            inspectionId: this.inspectionId,
+            type: RowFilterType.ALL
+        }
     }
-  }
 
-  mounted() {
-    this.$emit('input', this.filter); // send an initial value outside
-  }
+    mounted() {
+        this.$emit('input', this.filter); // send an initial value outside
+    }
 
-  selectFilter(filter: FilterType) {
-    if (this.dirtyFilterValue) {
-      this.dirtyFilterValue.type = filter.value;
-      if (this.dirtyFilterValue.type !== RowFilterType.CUSTOM) {
-        this.save();
+    selectFilter(filter: FilterType) {
+        if (this.dirtyFilterValue) {
+            this.dirtyFilterValue.type = filter.value;
+            if (this.dirtyFilterValue.type !== RowFilterType.CUSTOM) {
+                this.save();
       }
     }
   }

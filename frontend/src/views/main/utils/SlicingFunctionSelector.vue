@@ -1,8 +1,8 @@
 <template>
-    <div class="d-flex w100">
+    <div class="d-flex" :class="{w100: fullWidth}">
         <v-select
             clearable
-            outlined
+            :outlined="fullWidth"
             class="slice-function-selector"
             :label="label"
             :value="value"
@@ -11,8 +11,9 @@
             item-value="uuid"
             :return-object="false"
             @input="onInput"
-            dense
+            :dense="fullWidth"
             hide-details
+            :prepend-inner-icon="icon ? 'mdi-knife' : null"
         ></v-select>
         <v-btn icon v-if="hasArguments" @click="updateArgs">
             <v-icon>settings</v-icon>
@@ -31,14 +32,19 @@ import {$vfm} from "vue-final-modal";
 import FunctionInputsModal from "@/views/main/project/modals/FunctionInputsModal.vue";
 import {chain} from "lodash";
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
     projectId: number,
     label: string,
+    fullWidth: boolean,
     value?: string,
-    args?: Array<FunctionInputDTO>
-}>()
+    args?: Array<FunctionInputDTO>,
+    icon: boolean
+}>(), {
+    fullWidth: true,
+    icon: false
+});
 
-const emit = defineEmits(['update:value', 'update:args']);
+const emit = defineEmits(['update:value', 'update:args', 'onChanged']);
 
 const {slicingFunctions, slicingFunctionsByUuid} = storeToRefs(useCatalogStore())
 
@@ -47,8 +53,10 @@ function extractName(SlicingFunctionDTO: SlicingFunctionDTO) {
 }
 
 async function onInput(value) {
-    if (!value) {
+    if (!value || slicingFunctionsByUuid.value[value].args.length === 0) {
         emit('update:value', value);
+        emit('update:args', []);
+        emit('onChanged');
         return;
     }
 
@@ -67,6 +75,7 @@ async function onInput(value) {
         on: {
             async save(args: Array<FunctionInputDTO>) {
                 emit('update:args', args);
+                emit('onChanged');
             },
             async cancel() {
                 // Rollback changes
@@ -90,6 +99,7 @@ async function updateArgs() {
         on: {
             async save(args: Array<FunctionInputDTO>) {
                 emit('update:args', args);
+                emit('onChanged');
             }
         },
         cancel: {}

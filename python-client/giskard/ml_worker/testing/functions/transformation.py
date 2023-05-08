@@ -36,14 +36,14 @@ nearbykeys = {
 }
 
 
-@transformation_function(name="Keyboard typo")
-def keyboard_typo_transformation(x: pd.Series, column_name: str, rate: float = 0.1) -> pd.Series:
+@transformation_function(name="Keyboard typo", tags=['text'], cell_level=True)
+def keyboard_typo_transformation(text: str, rate: float = 0.1) -> str:
     """
     Generate a random typo from words of the text of 'column_name'
     Typos are generated through character substitution based on keyboard proximity
     """
     # Split the text into words
-    words = x[column_name].split(" ")
+    words = text.split(" ")
 
     # Introduce typos into some of the words
     for i in range(len(words)):
@@ -57,38 +57,34 @@ def keyboard_typo_transformation(x: pd.Series, column_name: str, rate: float = 0
                     words[i] = word[:j] + replacement + word[j + 1:]
 
     # Join the words back into a string
-    x[column_name] = ' '.join(words)
-    return x
+    return ' '.join(words)
 
 
-@transformation_function(name="To uppercase")
-def uppercase_transformation(x: pd.Series, column_name: str) -> pd.Series:
+@transformation_function(name="To uppercase", tags=['text'], cell_level=True)
+def uppercase_transformation(text: str) -> str:
     """
-    Transform the text of the column 'column_name' to uppercase
+    Transform the text to uppercase
     """
-    x[column_name] = x[column_name].upper()
-    return x
+    return text.upper()
 
 
-@transformation_function(name="To lowercase")
-def lowercase_transformation(x: pd.Series, column_name: str) -> pd.Series:
+@transformation_function(name="To lowercase", tags=['text'], cell_level=True)
+def lowercase_transformation(text: str) -> str:
     """
     Transform the text of the column 'column_name' to lowercase
     """
-    x[column_name] = x[column_name].lower()
-    return x
+    return text.lower()
 
 
-@transformation_function(name="Strip punctuation")
-def strip_punctuation(x: pd.Series, column_name: str):
+@transformation_function(name="Strip punctuation", tags=['text'], cell_level=True)
+def strip_punctuation(text: str) -> str:
     """
     Remove all punctuation symbols (e.g., ., !, ?) from the text of the column 'column_name'
     """
-    x[column_name] = x[column_name].translate(str.maketrans('', '', string.punctuation))
-    return x
+    return text.translate(str.maketrans('', '', string.punctuation))
 
 
-@transformation_function(name="Change writing style", row_level=False)
+@transformation_function(name="Change writing style", row_level=False, tags=['text'])
 def change_writing_style(x: pd.DataFrame, index: int, column_name: str, style: str,
                          OPENAI_API_KEY: str) -> pd.DataFrame:
     os.environ["OPENAI_API_KEY"] = OPENAI_API_KEY
