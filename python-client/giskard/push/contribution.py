@@ -70,7 +70,7 @@ def contribution(model, ds, idrow):  # data_aug_dict
         y = values[ds.target]
         y_hat = model.model.predict(ds.df.drop(columns=[ds.target]).iloc[[idrow]])
         error = abs(y_hat - y)
-        rmse_res = test_rmse(ds, model).execute()
+        rmse_res = test_rmse(ds, model).execute() # @TODO: Try to compute it first
         # print(shap_res)
         if shap_res is not None:
             for el in shap_res:
