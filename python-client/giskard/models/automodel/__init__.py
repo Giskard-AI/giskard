@@ -99,7 +99,10 @@ class Model(CloudpickleBasedModel, ABC):
             # if giskard_cls == None -> get the methods from CloudpickleBasedModel
             is_overriden = cls.__name__ != 'Model'  # TODO: Improve this
             if is_overriden:
+                # if save_model and load_model are overriden, replace them, if not, these equalities will be identities.
                 possibly_overriden_cls = cls
+                possibly_overriden_cls.save_model = giskard_cls.save_model
+                possibly_overriden_cls.load_model = giskard_cls.load_model
             elif giskard_cls:
                 possibly_overriden_cls = giskard_cls
             else:  # possibly_overriden_cls = CloudpickleBasedModel
@@ -114,15 +117,9 @@ class Model(CloudpickleBasedModel, ABC):
                     '\n- pytorch'
                     '\n- tensorflow'
                     '\n- huggingface'
-                    '\nWe recommend that you follow our documentation page: https://giskard.readthedocs.io/en/latest/getting-started/scan'
+                    '\nWe recommend that you follow our documentation page: '
+                    'https://giskard.readthedocs.io/en/latest/getting-started/scan'
                 )
-
-            # No need to override save_model and load_model except if we don't support the model library, in which
-            # case giskard_cls == CloudpickleBasedModel.
-            # if save_model and load_model are overriden, replace them, if not, these equalities will be identities.
-            if is_overriden:
-                possibly_overriden_cls.save_model = giskard_cls.save_model
-                possibly_overriden_cls.load_model = giskard_cls.load_model
 
             methods = dict(possibly_overriden_cls.__dict__)
             output_cls = type(possibly_overriden_cls.__name__, (giskard_cls,), methods)
