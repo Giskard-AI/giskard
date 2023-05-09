@@ -1,44 +1,3 @@
-<script setup lang="ts">
-import { onMounted, ref } from "vue";
-import { api } from "@/api";
-import { MLWorkerInfoDTO } from "@/generated-sources";
-import CodeSnippet from "./CodeSnippet.vue";
-import StartWorkerInstructions from "./StartWorkerInstructions.vue";
-
-const step = ref(1);
-const toggleArtifactType = ref<string>("dataset");
-const toggleTestType = ref<string>("scan");
-
-const allMLWorkerSettings = ref<MLWorkerInfoDTO[]>([]);
-const externalWorker = ref<MLWorkerInfoDTO | null>(null);
-
-const clientCodeContent = "# Code to create Giskard client here";
-const datasetCodeContent = "# Code to upload dataset here";
-const modelCodeContent = "# Code to upload model here";
-const scanCodeContent = "# Code to upload scan here";
-const manualTestCodeContent = "# Code to upload manual test here";
-
-const emit = defineEmits(["close"]);
-
-const close = () => {
-  emit("close");
-  step.value = 1;
-}
-
-onMounted(async () => {
-  try {
-    allMLWorkerSettings.value = await api.getMLWorkerSettings();
-    externalWorker.value = allMLWorkerSettings.value.find(worker => worker.isRemote === true) || null;
-  } catch (error) { }
-
-  if (externalWorker.value) {
-    step.value = 2;
-  }
-})
-
-
-</script>
-
 <template>
   <v-stepper v-model="step" flat>
     <v-stepper-header id="stepper-header">
@@ -113,6 +72,45 @@ onMounted(async () => {
     </v-stepper-items>
   </v-stepper>
 </template>
+
+<script setup lang="ts">
+import { onMounted, ref } from "vue";
+import { api } from "@/api";
+import { MLWorkerInfoDTO } from "@/generated-sources";
+import CodeSnippet from "./CodeSnippet.vue";
+import StartWorkerInstructions from "./StartWorkerInstructions.vue";
+
+const step = ref<number>(1);
+const toggleArtifactType = ref<string>("dataset");
+const toggleTestType = ref<string>("scan");
+
+const allMLWorkerSettings = ref<MLWorkerInfoDTO[]>([]);
+const externalWorker = ref<MLWorkerInfoDTO | null>(null);
+
+const clientCodeContent: string = "# Code to create Giskard client here";
+const datasetCodeContent: string = "# Code to create dataset here";
+const modelCodeContent: string = "# Code to create model here";
+const scanCodeContent: string = "# Code to upload scan here";
+const manualTestCodeContent: string = "# Code to upload manual test here";
+
+const emit = defineEmits(["close"]);
+
+const close = () => {
+  emit("close");
+  step.value = 1;
+}
+
+onMounted(async () => {
+  try {
+    allMLWorkerSettings.value = await api.getMLWorkerSettings();
+    externalWorker.value = allMLWorkerSettings.value.find(worker => worker.isRemote === true) || null;
+  } catch (error) { }
+
+  if (externalWorker.value) {
+    step.value = 2;
+  }
+});
+</script>
 
 <style scoped>
 #stepper-header {
