@@ -33,9 +33,9 @@ export const useProjectArtifactsStore = defineStore('projectArtifacts', {
     },
     async loadProjectArtifacts(displayNotification: boolean = true) {
       if (this.projectId === null) return;
-      const mainStore = useMainStore();
 
       if (displayNotification) {
+        const mainStore = useMainStore();
         const loadingNotification = { content: 'Loading project artifacts', showProgress: true };
         try {
           mainStore.addNotification(loadingNotification);
@@ -47,6 +47,9 @@ export const useProjectArtifactsStore = defineStore('projectArtifacts', {
           mainStore.addNotification({ content: `Error: ${error.message}`, color: 'error' });
           await mainStore.checkApiError(error);
         }
+      } else {
+        await this.loadDatasets();
+        await this.loadModels();
       }
     },
     updateDataset(newDataset: DatasetDTO) {
