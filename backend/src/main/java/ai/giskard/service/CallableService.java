@@ -3,12 +3,13 @@ package ai.giskard.service;
 import ai.giskard.domain.Callable;
 import ai.giskard.domain.FunctionArgument;
 import ai.giskard.repository.ml.CallableRepository;
+import ai.giskard.utils.TransactionUtils;
 import ai.giskard.web.dto.CallableDTO;
 import ai.giskard.web.dto.TestFunctionArgumentDTO;
 import ai.giskard.web.dto.mapper.GiskardMapper;
 import lombok.RequiredArgsConstructor;
+import org.springframework.transaction.annotation.Transactional;
 
-import javax.transaction.Transactional;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -19,8 +20,15 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public abstract class CallableService<E extends Callable, D extends CallableDTO> {
 
-    private final CallableRepository<E> callableRepository;
-    private final GiskardMapper giskardMapper;
+    protected final CallableRepository<E> callableRepository;
+    protected final GiskardMapper giskardMapper;
+
+    @Transactional(readOnly = true)
+    public E getInitialized(UUID uuid) {
+        E callable = callableRepository.getMandatoryById(uuid);
+        TransactionUtils.initializeCallable(callable);
+        return callable;
+    }
 
     @Transactional
     public void saveAll(Collection<D> functions) {

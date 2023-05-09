@@ -1,33 +1,23 @@
 <template>
   <div class="vertical-container">
-    <v-container class="mt-2 mb-0" v-if="isProjectOwnerOrAdmin">
-      <div class="d-flex justify-end align-center">
-        <v-btn tile small class="mx-2" href="https://docs.giskard.ai/start/guides/upload-your-model" target="_blank">
-          Upload with API
-        </v-btn>
-        <v-btn text @click="loadModelPickles()" color="secondary">Reload
-          <v-icon right>refresh</v-icon>
-        </v-btn>
-      </div>
-    </v-container>
-    <v-container v-if="models.length > 0">
+    <v-container v-if="projectArtifactsStore.models.length > 0" fluid class="vc">
       <v-card flat>
         <v-row class="px-2 py-1 caption secondary--text text--lighten-3">
-          <v-col cols="4">Name</v-col>
-          <v-col cols="1">Python</v-col>
+          <v-col cols="3">Name</v-col>
+          <v-col cols="2">Python</v-col>
           <v-col cols="1">Size</v-col>
           <v-col cols="2">Uploaded on</v-col>
           <v-col cols="1">Id</v-col>
           <v-col cols="3">Actions</v-col>
         </v-row>
       </v-card>
-      <v-card outlined tile class="grey lighten-5" v-for="m in           models          " :key="m.id">
+      <v-card class="grey lighten-5" v-for="m in        projectArtifactsStore.models      " :key="m.id" outlined tiled>
         <v-row class="px-2 py-1 align-center">
-          <v-col cols="4">
+          <v-col cols="3" class="font-weight-bold">
             <InlineEditText :text="m.name" :can-edit="isProjectOwnerOrAdmin" @save="(name) => renameModel(m.id, name)">
             </InlineEditText>
           </v-col>
-          <v-col cols="1">
+          <v-col cols="2">
             <div>{{ m.languageVersion }}</div>
           </v-col>
           <v-col cols="1">
@@ -43,7 +33,7 @@
             <div>
               <v-btn small tile color="primaryLight" class="primaryLightBtn" @click="showInspectDialog = true; modelToInspect = m">
                 <v-icon dense left>policy</v-icon>
-                Inspect
+                Debug
               </v-btn>
               <v-tooltip bottom>
                 <template v-slot:activator=" { on, attrs } ">
@@ -77,10 +67,13 @@ import { api } from '@/api';
 import InspectorLauncher from './InspectorLauncher.vue';
 import { ModelDTO } from '@/generated-sources';
 import mixpanel from "mixpanel-browser";
-import { onActivated, ref } from 'vue';
+import { onBeforeMount, ref } from 'vue';
 import DeleteModal from '@/views/main/project/modals/DeleteModal.vue';
 import InlineEditText from '@/components/InlineEditText.vue';
 import { useMainStore } from "@/stores/main";
+import { useProjectArtifactsStore } from "@/stores/project-artifacts";
+
+const projectArtifactsStore = useProjectArtifactsStore();
 
 const props = withDefaults(defineProps<{
   projectId: number,
@@ -89,23 +82,16 @@ const props = withDefaults(defineProps<{
   isProjectOwnerOrAdmin: false
 });
 
-const models = ref<ModelDTO[]>([]);
 const showInspectDialog = ref<boolean>(false);
 const modelToInspect = ref<ModelDTO | null>(null);
 
-onActivated(() => loadModelPickles());
-
-async function loadModelPickles() {
-  models.value = await api.getProjectModels(props.projectId)
-  models.value.sort((a, b) => new Date(a.createdDate) < new Date(b.createdDate) ? 1 : -1);
-}
 
 async function deleteModelPickle(id: string) {
   mixpanel.track('Delete model', { id });
 
   let messageDTO = await api.deleteModelFiles(id);
   useMainStore().addNotification({ content: messageDTO.message });
-  await loadModelPickles();
+  await projectArtifactsStore.loadModels();
 }
 
 function downloadModelPickle(id: number) {
@@ -119,12 +105,13 @@ function cancelLaunchInspector() {
 
 async function renameModel(id: string, name: string) {
   mixpanel.track('Update model name', { id });
-  const savedDataset = await api.editModelName(id, name);
-  const idx = models.value.findIndex(f => f.id === id);
-  models.value[idx] = savedDataset;
-  models.value = [...models.value];
+  const savedModel = await api.editModelName(id, name);
+  projectArtifactsStore.updateModel(savedModel);
 }
 
+onBeforeMount(async () => {
+  await projectArtifactsStore.setProjectId(props.projectId);
+})
 </script>
 
 <style>

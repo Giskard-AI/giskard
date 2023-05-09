@@ -17,17 +17,17 @@
                     <v-col cols="4" class="vc fill-height">
                         <v-text-field label="Search filter" append-icon="search" outlined
                                       v-model="searchFilter"></v-text-field>
-                        <v-list three-line>
+                        <v-list three-line class="vc fill-height">
                             <v-list-item-group v-model="selected" color="primary" mandatory>
-                                <template v-for="filter in filteredTestFunctions">
+                                <template v-for="slicingFunction in filteredTestFunctions">
                                     <v-divider/>
-                                    <v-list-item :value="filter">
+                                    <v-list-item :value="slicingFunction">
                                         <v-list-item-content>
                                             <v-list-item-title class="test-title">
                                                 <div class="d-flex align-center">
-                                                    {{ filter.name }}
+                                                    {{ slicingFunction.displayName ?? slicingFunction.name }}
                                                     <v-spacer class="flex-grow-1"/>
-                                                    <v-tooltip bottom v-if="filter.potentiallyUnavailable">
+                                                    <v-tooltip bottom v-if="slicingFunction.potentiallyUnavailable">
                                                         <template v-slot:activator="{ on, attrs }">
                                                             <div v-bind="attrs" v-on="on">
                                                                 <v-icon color="orange">warning</v-icon>
@@ -37,8 +37,8 @@
                                                     </v-tooltip>
                                                 </div>
                                             </v-list-item-title>
-                                            <v-list-item-subtitle v-if="filter.tags">
-                                                <v-chip class="mr-2" v-for="tag in sorted(filter.tags)" x-small
+                                            <v-list-item-subtitle v-if="slicingFunction.tags">
+                                                <v-chip class="mr-2" v-for="tag in sorted(slicingFunction.tags)" x-small
                                                         :color="pasterColor(tag)">
                                                     {{ tag }}
                                                 </v-chip>
@@ -89,6 +89,25 @@
                                                                  label="Dataset"
                                                                  :return-object="false"
                                                                  :value.sync="selectedDataset"/>
+                                            </v-col>
+                                        </v-row>
+                                    </v-list-item>
+                                    <v-list-item class="pl-0 pr-0">
+                                        <v-row v-if="selected.cellLevel">
+                                            <v-col>
+                                                <v-list-item-content>
+                                                    <v-list-item-title>Column</v-list-item-title>
+                                                    <v-list-item-subtitle class="text-caption">
+                                                        str
+                                                    </v-list-item-subtitle>
+                                                </v-list-item-content>
+                                            </v-col>
+                                            <v-col>
+                                                <DatasetColumnSelector v-if="tryMode"
+                                                                       :project-id="projectId"
+                                                                       :dataset="selectedDataset"
+                                                                       :column-type="selected.columnType"
+                                                                       :value.sync="selectedColumn"/>
                                             </v-col>
                                         </v-row>
                                     </v-list-item>
@@ -165,6 +184,7 @@ import DatasetSelector from "@/views/main/utils/DatasetSelector.vue";
 import {api} from "@/api";
 import DatasetTable from "@/components/DatasetTable.vue";
 import SuiteInputListSelector from "@/components/SuiteInputListSelector.vue";
+import DatasetColumnSelector from "@/views/main/utils/DatasetColumnSelector.vue";
 import IEditorOptions = editor.IEditorOptions;
 
 const l = MonacoEditor;
@@ -181,6 +201,7 @@ const selected = ref<SlicingFunctionDTO | null>(null);
 const sliceResult = ref<SlicingResultDTO | null>(null);
 const tryMode = ref<boolean>(false);
 const selectedDataset = ref<string | null>(null);
+const selectedColumn = ref<string | null>(null);
 let slicingArguments = ref<{ [name: string]: TestInputDTO }>({})
 
 const monacoOptions: IEditorOptions = inject('monacoOptions');
@@ -215,6 +236,7 @@ const filteredTestFunctions = computed(() => {
                 || func.displayName?.toLowerCase()?.includes(keyword)
             ).length === keywords.length;
         })
+        .sortBy(t => t.displayName ?? t.name)
         .value();
 })
 
@@ -225,9 +247,23 @@ onActivated(async () => {
 });
 
 async function runSlicingFunction() {
-    sliceResult.value = await api.runAdHocSlicingFunction(selected.value.uuid, selectedDataset.value, chain(slicingArguments.value)
-        .mapValues('value')
-        .value());
+    const params = Object.values(slicingArguments.value);
+    if (selected.value!.cellLevel) {
+        params.push({
+            isAlias: false,
+            name: 'column_name',
+            params: [],
+            type: 'str',
+            value: selectedColumn.value
+        })
+    }
+
+    sliceResult.value = await api.datasetProcessing(props.projectId, selectedDataset.value!, [{
+        uuid: selected.value!.uuid,
+        params,
+        type: 'SLICING'
+    }]);
+
 }
 
 watch(() => selected.value, () => {

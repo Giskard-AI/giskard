@@ -57,6 +57,7 @@ def map_function_meta(callable_type):
         test.uuid: ml_worker_pb2.FunctionMeta(
             uuid=test.uuid,
             name=test.name,
+            displayName=test.display_name,
             module=test.module,
             doc=test.doc,
             code=test.code,
@@ -73,6 +74,36 @@ def map_function_meta(callable_type):
                 ) for a
                 in test.args.values()
             ],
+        )
+        for test in tests_registry.get_all().values()
+        if test.type == callable_type
+    }
+
+
+def map_dataset_process_function_meta(callable_type):
+    return {
+        test.uuid: ml_worker_pb2.DatasetProcessFunctionMeta(
+            uuid=test.uuid,
+            name=test.name,
+            displayName=test.display_name,
+            module=test.module,
+            doc=test.doc,
+            code=test.code,
+            moduleDoc=test.module_doc,
+            tags=test.tags,
+            type=test.type,
+            args=[
+                ml_worker_pb2.TestFunctionArgument(
+                    name=a.name,
+                    type=a.type,
+                    optional=a.optional,
+                    default=str(a.default),
+                    argOrder=a.argOrder
+                ) for a
+                in test.args.values()
+            ],
+            cellLevel=test.cell_level,
+            columnType=test.column_type,
         )
         for test in tests_registry.get_all().values()
         if test.type == callable_type
@@ -162,7 +193,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
 
         test: GiskardTest = GiskardTest.load(request.testUuid, self.client, None)
 
-        arguments = self.parse_test_arguments(request.arguments)
+        arguments = self.parse_function_arguments(request.arguments)
 
         logger.info(f"Executing {test.meta.display_name or f'{test.meta.module}.{test.meta.name}'}")
         test_result = test.get_builder()(**arguments).execute()
@@ -172,37 +203,29 @@ class MLWorkerServiceImpl(MLWorkerServicer):
                                                 result=map_result_to_single_test_result(test_result))
         ])
 
-    def runAdHocSlicing(
-            self, request: ml_worker_pb2.RunAdHocTestRequest, context: grpc.ServicerContext
-    ) -> ml_worker_pb2.SlicingResultMessage:
-        slicing_function = SlicingFunction.load(request.slicingFunctionUuid, self.client, None)
+    def datasetProcessing(
+            self, request: ml_worker_pb2.DatasetProcessingRequest, context: grpc.ServicerContext
+    ) -> ml_worker_pb2.DatasetProcessingResultMessage:
         dataset = Dataset.download(self.client, request.dataset.project_key, request.dataset.id)
 
-        arguments = self.parse_test_arguments(request.arguments)
+        for function in request.functions:
+            arguments = self.parse_function_arguments(function.arguments)
+            if function.HasField("slicingFunction"):
+                dataset.add_slicing_function(
+                    SlicingFunction.load(function.slicingFunction.id, self.client, None)(**arguments))
+            else:
+                dataset.add_transformation_function(
+                    TransformationFunction.load(function.transformationFunction.id, self.client, None)(**arguments))
 
-        result = dataset.slice(slicing_function(**arguments))
+        result = dataset.process()
 
-        return ml_worker_pb2.SlicingResultMessage(
+        filtered_rows_idx = dataset.df.index.difference(result.df.index)
+        modified_rows = result.df[dataset.df.iloc[result.df.index].ne(result.df)].dropna(how='all')
+
+        return ml_worker_pb2.DatasetProcessingResultMessage(
             datasetId=request.dataset.id,
             totalRows=len(dataset.df.index),
-            filteredRows=dataset.df.index.difference(result.df.index)
-        )
-
-    def runAdHocTransformation(
-            self, request: ml_worker_pb2.RunAdHocTestRequest, context: grpc.ServicerContext
-    ) -> ml_worker_pb2.TransformationResultMessage:
-        transformation_function = TransformationFunction.load(request.transformationFunctionUuid, self.client, None)
-        dataset = Dataset.download(self.client, request.dataset.project_key, request.dataset.id)
-
-        arguments = self.parse_test_arguments(request.arguments)
-
-        result = dataset.transform(transformation_function(**arguments))
-
-        modified_rows = result.df[dataset.df.ne(result.df)].dropna(how='all')
-
-        return ml_worker_pb2.TransformationResultMessage(
-            datasetId=request.dataset.id,
-            totalRows=len(dataset.df.index),
+            filteredRows=filtered_rows_idx,
             modifications=[
                 ml_worker_pb2.DatasetRowModificationResult(
                     rowId=row[0],
@@ -220,11 +243,11 @@ class MLWorkerServiceImpl(MLWorkerServicer):
         try:
             tests = [{
                 'test': GiskardTest.load(t.testUuid, self.client, None),
-                'arguments': self.parse_test_arguments(t.arguments),
+                'arguments': self.parse_function_arguments(t.arguments),
                 'id': t.id
             } for t in request.tests]
 
-            global_arguments = self.parse_test_arguments(request.globalArguments)
+            global_arguments = self.parse_function_arguments(request.globalArguments)
 
             test_names = list(
                 map(lambda t: t['test'].meta.display_name or f"{t['test'].meta.module + '.' + t['test'].meta.name}",
@@ -262,28 +285,36 @@ class MLWorkerServiceImpl(MLWorkerServicer):
                 logs=log_listener.close()
             )
 
-    def parse_test_arguments(self, request_arguments):
-        arguments = {}
+    def parse_function_arguments(self, request_arguments):
+        arguments = dict()
+
         for arg in request_arguments:
+            if arg.none:
+                continue
             if arg.HasField("dataset"):
-                value = Dataset.download(self.client, arg.dataset.project_key, arg.dataset.id)
+                arguments[arg.name] = Dataset.download(self.client, arg.dataset.project_key, arg.dataset.id)
             elif arg.HasField("model"):
-                value = BaseModel.download(self.client, arg.model.project_key, arg.model.id)
+                arguments[arg.name] = BaseModel.download(self.client, arg.model.project_key, arg.model.id)
             elif arg.HasField("slicingFunction"):
-                value = SlicingFunction.load(arg.slicingFunction.id, self.client, None)
+                arguments[arg.name] = SlicingFunction.load(arg.slicingFunction.id, self.client, None)(
+                    **self.parse_function_arguments(arg.args))
             elif arg.HasField("transformationFunction"):
-                value = TransformationFunction.load(arg.transformationFunction.id, self.client, None)
+                arguments[arg.name] = TransformationFunction.load(arg.transformationFunction.id, self.client, None)(
+                    **self.parse_function_arguments(arg.args))
             elif arg.HasField("float"):
-                value = float(arg.float)
+                arguments[arg.name] = float(arg.float)
             elif arg.HasField("int"):
-                value = int(arg.int)
+                arguments[arg.name] = int(arg.int)
             elif arg.HasField("str"):
-                value = str(arg.str)
+                arguments[arg.name] = str(arg.str)
             elif arg.HasField("bool"):
-                value = bool(arg.bool)
+                arguments[arg.name] = bool(arg.bool)
+            elif arg.HasField("kwargs"):
+                kwargs = dict()
+                exec(arg.kwargs, {'kwargs': kwargs})
+                arguments.update(kwargs)
             else:
                 raise IllegalArgumentError("Unknown argument type")
-            arguments[arg.name] = value
         return arguments
 
     def explain(self, request: ml_worker_pb2.ExplainRequest, context) -> ml_worker_pb2.ExplainResponse:
@@ -323,7 +354,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
 
     def runModelForDataFrame(self, request: ml_worker_pb2.RunModelForDataFrameRequest, context):
         model = BaseModel.download(self.client, request.model.project_key, request.model.id)
-        ds = Dataset(pd.DataFrame([r.columns for r in request.dataframe.rows]), target=request.target,
+        ds = Dataset(pd.DataFrame([r.columns for r in request.dataframe.rows]), target=None,
                      column_types=request.column_types)
         predictions = model.predict(ds)
         if model.is_classification:
@@ -386,10 +417,12 @@ class MLWorkerServiceImpl(MLWorkerServicer):
         with tempfile.TemporaryDirectory(prefix="giskard-") as f:
             dir = Path(f)
             results.to_csv(index=False, path_or_buf=dir / "predictions.csv")
-            self.ml_worker.tunnel.client.log_artifact(dir / "predictions.csv", f"{request.project_key}/models/inspections/{request.inspectionId}")
+            self.ml_worker.tunnel.client.log_artifact(dir / "predictions.csv",
+                                                      f"{request.project_key}/models/inspections/{request.inspectionId}")
 
             calculated.to_csv(index=False, path_or_buf=dir / "calculated.csv")
-            self.ml_worker.tunnel.client.log_artifact(dir / "calculated.csv", f"{request.project_key}/models/inspections/{request.inspectionId}")
+            self.ml_worker.tunnel.client.log_artifact(dir / "calculated.csv",
+                                                      f"{request.project_key}/models/inspections/{request.inspectionId}")
         return google.protobuf.empty_pb2.Empty()
 
     def filterDataset(self, request_iterator, context: grpc.ServicerContext):
@@ -472,7 +505,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
                             value=i.value,
                             is_alias=i.is_alias
                         )
-                        for i in test.testInputs.values()
+                        for i in test.functionInputs.values()
                     ]
                 )
                 for test in suite.tests
@@ -489,8 +522,8 @@ class MLWorkerServiceImpl(MLWorkerServicer):
                    context: grpc.ServicerContext) -> ml_worker_pb2.CatalogResponse:
         return ml_worker_pb2.CatalogResponse(
             tests=map_function_meta('TEST'),
-            slices=map_function_meta('SLICE'),
-            transformations=map_function_meta('TRANSFORMATION')
+            slices=map_dataset_process_function_meta('SLICE'),
+            transformations=map_dataset_process_function_meta('TRANSFORMATION')
         )
 
     @staticmethod

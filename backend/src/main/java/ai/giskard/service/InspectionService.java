@@ -5,15 +5,12 @@ import ai.giskard.domain.ml.Inspection;
 import ai.giskard.domain.ml.ModelType;
 import ai.giskard.domain.ml.table.Filter;
 import ai.giskard.repository.InspectionRepository;
-import ai.giskard.web.rest.errors.EntityNotFoundException;
-import com.google.common.primitives.Ints;
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.FileSystemUtils;
-import tech.tablesaw.api.*;
+import tech.tablesaw.api.DoubleColumn;
+import tech.tablesaw.api.StringColumn;
+import tech.tablesaw.api.Table;
 import tech.tablesaw.io.csv.CsvReadOptions;
 import tech.tablesaw.selection.Selection;
 
@@ -26,21 +23,15 @@ import java.nio.file.Path;
 import java.util.List;
 
 import static ai.giskard.domain.ml.table.RowFilterType.CUSTOM;
-import static ai.giskard.service.DatasetService.GISKARD_DATASET_INDEX_COLUMN_NAME;
-import static ai.giskard.web.rest.errors.Entity.INSPECTION;
 
 @Service
-@Transactional
 @RequiredArgsConstructor
 public class InspectionService {
-    private final Logger log = LoggerFactory.getLogger(InspectionService.class);
 
 
     private final InspectionRepository inspectionRepository;
-    private final DatasetService datasetService;
     private final ApplicationProperties applicationProperties;
     private final FileLocationService fileLocationService;
-    private final SliceService sliceService;
 
     public Table getTableFromBucketFile(String location) throws FileNotFoundException {
         InputStreamReader reader = new InputStreamReader(new FileInputStream(location));
@@ -192,18 +183,10 @@ public class InspectionService {
      *
      * @return filtered table
      */
-    @Transactional
-    public Table getRowsFiltered(@NotNull Long inspectionId, @NotNull Filter filter) throws IOException {
-        Inspection inspection = inspectionRepository.findById(inspectionId).orElseThrow(() -> new EntityNotFoundException(INSPECTION, inspectionId));
-        Table table = datasetService.readTableByDatasetId(inspection.getDataset().getId());
-        table.addColumns(IntColumn.indexColumn(GISKARD_DATASET_INDEX_COLUMN_NAME, table.rowCount(), 0));
+    public Table getRowsFiltered(@NotNull Table table, @NotNull Filter filter) throws IOException {
+        Inspection inspection = inspectionRepository.getMandatoryById(filter.getInspectionId());
         Selection selection = (inspection.getModel().getModelType() == ModelType.CLASSIFICATION) ? getSelection(inspection, filter) : getSelectionRegression(inspection, filter);
 
-        if (filter.getSliceId() != null && filter.getSliceId() > 0) {
-            List<Integer> filteredRowIds = sliceService.getSlicedRowsForDataset(filter.getSliceId(), inspection.getDataset());
-            Selection withFilteredRowIds = Selection.with(Ints.toArray(filteredRowIds));
-            selection = selection != null ? selection.and(Selection.with(Ints.toArray(filteredRowIds))) : withFilteredRowIds;
-        }
         return selection == null ? table : table.where(selection);
     }
 
@@ -212,9 +195,8 @@ public class InspectionService {
      *
      * @return filtered table
      */
-    @Transactional
     public List<String> getLabels(@NotNull Long inspectionId) {
-        Inspection inspection = inspectionRepository.getById(inspectionId);
+        Inspection inspection = inspectionRepository.getMandatoryById(inspectionId);
         return inspection.getModel().getClassificationLabels();
     }
 
@@ -234,5 +216,23 @@ public class InspectionService {
         } catch (Exception e) {
             throw new GiskardRuntimeException("Failed to delete inspections", e);
         }
+    }
+
+    public List<Inspection> getInspections() {
+        return inspectionRepository.findAll();
+    }
+
+    public List<Inspection> getInspectionsByProjectId(long projectId) {
+        return inspectionRepository.findAllByModelProjectId(projectId);
+    }
+
+    public void deleteInspection(Long inspectionId) {
+        inspectionRepository.deleteById(inspectionId);
+    }
+
+    public Inspection updateInspectionName(long inspectionId, String name) {
+        Inspection inspection = inspectionRepository.getMandatoryById(inspectionId);
+        inspection.setName(name);
+        return inspectionRepository.save(inspection);
     }
 }

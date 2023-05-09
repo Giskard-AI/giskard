@@ -5,12 +5,11 @@ import tempfile
 import uuid
 from pathlib import Path
 from typing import Dict, Optional, List, Hashable, Union
-from pandas.api.types import is_list_like
 
-import pandas as pd
 import numpy as np
+import pandas as pd
 import yaml
-from pandas.api.types import is_numeric_dtype
+from pandas.api.types import is_list_like
 from zstandard import ZstdDecompressor
 
 from giskard.client.giskard_client import GiskardClient
@@ -23,6 +22,7 @@ from giskard.ml_worker.testing.registry.transformation_function import (
     TransformationFunctionType,
 )
 from giskard.settings import settings
+from ..metadata.indexing import ColumnMetadataMixin
 
 logger = logging.getLogger(__name__)
 
@@ -86,7 +86,7 @@ class DataProcessor:
         return f"DataProcessor: {len(self.pipeline)} steps"
 
 
-class Dataset:
+class Dataset(ColumnMetadataMixin):
     """
     A class for constructing and processing datasets.
 
@@ -121,13 +121,13 @@ class Dataset:
 
     @configured_validate_arguments
     def __init__(
-        self,
-        df: pd.DataFrame,
-        name: Optional[str] = None,
-        target: Optional[str] = None,
-        cat_columns: Optional[List[str]] = [],
-        column_types: Optional[Dict[str, str]] = None,
-        id: Optional[uuid.UUID] = None,
+            self,
+            df: pd.DataFrame,
+            name: Optional[str] = None,
+            target: Optional[str] = None,
+            cat_columns: Optional[List[str]] = [],
+            column_types: Optional[Dict[str, str]] = None,
+            id: Optional[uuid.UUID] = None,
     ) -> None:
         """
         Initializes a Dataset object.
@@ -196,7 +196,8 @@ class Dataset:
         return self
 
     @configured_validate_arguments
-    def slice(self, slicing_function: Union[SlicingFunction, SlicingFunctionType], row_level: bool = True):
+    def slice(self, slicing_function: Union[SlicingFunction, SlicingFunctionType], row_level: bool = True,
+              cell_level=False, column_name: Optional[str] = None):
         """
         Slice the dataset using the specified `slicing_function`.
 
@@ -217,12 +218,17 @@ class Dataset:
             Raises TypeError: If `slicing_function` is not a callable or a `SlicingFunction` object.
         """
         if inspect.isfunction(slicing_function):
-            slicing_function = SlicingFunction(slicing_function, row_level=row_level)
+            slicing_function = SlicingFunction(slicing_function, row_level=row_level, cell_level=cell_level)
+
+        if slicing_function.cell_level and column_name is not None:
+            slicing_function = slicing_function(column_name=column_name, **slicing_function.params)
+
         return self.data_processor.add_step(slicing_function).apply(self, apply_only_last=True)
 
     @configured_validate_arguments
     def transform(
-        self, transformation_function: Union[TransformationFunction, TransformationFunctionType], row_level: bool = True
+            self, transformation_function: Union[TransformationFunction, TransformationFunctionType],
+            row_level: bool = True, cell_level=False, column_name: Optional[str] = None
     ):
         """
         Transform the data in the current Dataset by applying a transformation function.
@@ -242,8 +248,15 @@ class Dataset:
         Notes:
             Raises TypeError: If `transformation_function` is not a callable or a `TransformationFunction` object.
         """
+
         if inspect.isfunction(transformation_function):
-            transformation_function = TransformationFunction(transformation_function, row_level=row_level)
+            transformation_function = TransformationFunction(transformation_function, row_level=row_level,
+                                                             cell_level=cell_level)
+
+        if transformation_function.cell_level and column_name is not None:
+            transformation_function = transformation_function(column_name=column_name, **transformation_function.params)
+
+        assert not transformation_function.cell_level or 'column_name' in transformation_function.params, "column_name should be provided for TransformationFunction at cell level"
         return self.data_processor.add_step(transformation_function).apply(self, apply_only_last=True)
 
     def process(self):
@@ -319,9 +332,10 @@ class Dataset:
                     column_types[col] = SupportedColumnTypes.CATEGORY.value
                     continue
             # inference of text and numeric columns
-            if is_numeric_dtype(self.df[col]):
+            try:
+                pd.to_numeric(self.df[col])
                 column_types[col] = SupportedColumnTypes.NUMERIC.value
-            else:
+            except ValueError:
                 column_types[col] = SupportedColumnTypes.TEXT.value
         return column_types
 

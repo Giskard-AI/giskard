@@ -50,7 +50,6 @@ public interface GiskardMapper {
     @Mapping(target = "lastModifiedDate", ignore = true)
     @Mapping(target = "datasets", ignore = true)
     @Mapping(target = "feedbacks", ignore = true)
-    @Mapping(target = "slices", ignore = true)
     @Mapping(target = "guests", ignore = true)
     @Mapping(target = "models", ignore = true)
     @Mapping(target = "owner", ignore = true)
@@ -58,21 +57,12 @@ public interface GiskardMapper {
     @Mapping(target = "mlWorkerType", ignore = true)
     void updateProjectFromDto(ProjectPostDTO dto, @MappingTarget Project entity);
 
-    @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
-    @Mapping(target = "createdBy", ignore = true)
-    @Mapping(target = "createdDate", ignore = true)
-    @Mapping(target = "lastModifiedBy", ignore = true)
-    @Mapping(target = "lastModifiedDate", ignore = true)
-    @Mapping(target = "project", ignore = true)
-    void updateSliceFromDto(SlicePutDTO dto, @MappingTarget Slice entity);
-
     @Mapping(target = "createdBy", ignore = true)
     @Mapping(target = "createdDate", ignore = true)
     @Mapping(target = "lastModifiedBy", ignore = true)
     @Mapping(target = "lastModifiedDate", ignore = true)
     @Mapping(target = "datasets", ignore = true)
     @Mapping(target = "feedbacks", ignore = true)
-    @Mapping(target = "slices", ignore = true)
     @Mapping(target = "guests", ignore = true)
     @Mapping(target = "models", ignore = true)
     @Mapping(target = "owner", ignore = true)
@@ -84,9 +74,6 @@ public interface GiskardMapper {
 
     ProjectDTO projectToProjectDTO(Project project);
 
-    SliceDTO sliceToSliceDTO(Slice slice);
-
-    List<SliceDTO> slicesToSlicesDTO(List<Slice> slice);
 
     List<ProjectDTO> projectsToProjectDTOs(List<Project> projects);
 
@@ -101,13 +88,17 @@ public interface GiskardMapper {
     @Mapping(source = "columnTypes", target = "columnTypes")
     DatasetDTO datasetToDatasetDTO(Dataset dataset);
 
+
     UserDTO userToUserDTO(User user);
 
     default List<UserDTO> usersToUserDTOs(List<User> dtos) {
         return dtos.stream().filter(Objects::nonNull).map(this::userToUserDTO).toList();
     }
 
+
     InspectionDTO toDTO(Inspection inspection);
+
+    List<InspectionDTO> inspectionsToInspectionDTOs(List<Inspection> inspections);
 
     AdminUserDTO userToAdminUserDTO(User user);
 
@@ -141,14 +132,6 @@ public interface GiskardMapper {
     @Mapping(target = "lastModifiedBy", ignore = true)
     @Mapping(target = "lastModifiedDate", ignore = true)
     Dataset fromDTO(DatasetDTO dto);
-    @Mapping(source = "projectId", target = "project")
-    @Mapping(target = "id", ignore = true)
-    @Mapping(target = "createdBy", ignore = true)
-    @Mapping(target = "createdDate", ignore = true)
-    @Mapping(target = "lastModifiedBy", ignore = true)
-    @Mapping(target = "lastModifiedDate", ignore = true)
-    Slice fromDTO(SliceCreateDTO dto);
-
 
     @Mapping(target = "message", source = "feedbackMessage")
     @Mapping(target = "projectId", source = "project.id")
@@ -176,17 +159,11 @@ public interface GiskardMapper {
         suite.getTests().forEach(e -> e.setSuite(suite));
     }
 
-    @AfterMapping
-    default void afterMapping(@MappingTarget SuiteTest test) {
-        test.getTestInputs().forEach(e -> e.setTest(test));
-    }
-
     @Mapping(target = "id", ignore = true)
-    @Mapping(target = "test", ignore = true)
-    @Mapping(target = "suite", ignore = true)
     @Mapping(target = "alias", source = "alias")
-    TestInput fromDTO(TestInputDTO dto);
-    TestInputDTO toDTO(TestInput obj);
+    FunctionInput fromDTO(FunctionInputDTO dto);
+
+    FunctionInputDTO toDTO(FunctionInput obj);
 
 
     List<TestSuiteDTO> toDTO(List<TestSuite> suites);
@@ -198,11 +175,11 @@ public interface GiskardMapper {
     @Mapping(target = "test", source = "testFunction")
     SuiteTestDTO toDTO(SuiteTest dto);
 
-    default Map<String, TestInputDTO> map(List<TestInput> value) {
-        return value.stream().collect(Collectors.toMap(TestInput::getName, this::toDTO));
+    default Map<String, FunctionInputDTO> map(List<FunctionInput> value) {
+        return value.stream().collect(Collectors.toMap(FunctionInput::getName, this::toDTO));
     }
 
-    default List<TestInput> map(Map<String, TestInputDTO> value) {
+    default List<FunctionInput> map(Map<String, FunctionInputDTO> value) {
         return value.values().stream().map(this::fromDTO).toList();
     }
 

@@ -25,7 +25,7 @@ import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -50,6 +50,7 @@ public class ModelController {
     private final PermissionEvaluator permissionEvaluator;
     private final ModelService modelService;
     private final ProjectFileDeletionService deletionService;
+    private final TransactionTemplate tt;
 
 
     /**
@@ -65,11 +66,10 @@ public class ModelController {
     }
 
     @PostMapping("models/{modelId}/explain/{datasetId}")
-    @Transactional
     public ExplainResponseDTO explain(@PathVariable @NotNull UUID modelId, @PathVariable @NotNull UUID datasetId, @RequestBody @NotNull PredictionInputDTO data) throws IOException {
-        ProjectModel model = modelRepository.getById(modelId);
+        ProjectModel model = modelRepository.getMandatoryById(modelId);
         permissionEvaluator.validateCanReadProject(model.getProject().getId());
-        Dataset dataset = datasetRepository.getById(datasetId);
+        Dataset dataset = datasetRepository.getMandatoryById(datasetId);
         ExplainResponse explanations = modelService.explain(model, dataset, data.getFeatures());
         ExplainResponseDTO result = new ExplainResponseDTO();
         explanations.getExplanationsMap().forEach((label, perFeatureExplanations) ->
@@ -80,15 +80,13 @@ public class ModelController {
 
     @GetMapping("project/{projectKey}/models/{modelId}")
     @PreAuthorize("@permissionEvaluator.canWriteProjectKey(#projectKey)")
-    @Transactional
     public ModelDTO getModelMeta(@PathVariable("projectKey") @NotNull String projectKey,
                                  @PathVariable("modelId") @NotNull UUID modelId) {
-        return giskardMapper.modelToModelDTO(modelRepository.getById(modelId));
+        return giskardMapper.modelToModelDTO(modelRepository.getMandatoryById(modelId));
     }
 
     @PostMapping("project/{projectKey}/models")
     @PreAuthorize("@permissionEvaluator.canWriteProjectKey(#projectKey)")
-    @Transactional
     public void createModelMeta(@PathVariable("projectKey") @NotNull String projectKey, @RequestBody @NotNull ModelDTO dto) {
         Project project = projectRepository.getOneByKey(projectKey);
         if (modelRepository.existsById(dto.getId())) {
@@ -101,12 +99,11 @@ public class ModelController {
 
 
     @PostMapping("models/explain-text/{featureName}")
-    @Transactional
     public ExplainTextResponseDTO explainText(@RequestParam @NotNull UUID modelId, @RequestParam @NotNull UUID datasetId, @PathVariable @NotNull String featureName, @RequestBody @NotNull PredictionInputDTO data) throws IOException {
-        ProjectModel model = modelRepository.getById(modelId);
-        Dataset dataset = datasetRepository.getById(datasetId);
+        ProjectModel model = modelRepository.getMandatoryById(modelId);
+        Dataset dataset = datasetRepository.getMandatoryById(datasetId);
         long projectId = model.getProject().getId();
-        InspectionSettings inspectionSettings = projectRepository.getById(projectId).getInspectionSettings();
+        InspectionSettings inspectionSettings = projectRepository.getMandatoryById(projectId).getInspectionSettings();
         permissionEvaluator.validateCanReadProject(model.getProject().getId());
         ExplainTextResponseDTO explanationRes = new ExplainTextResponseDTO();
         ExplainTextResponse textResponse = modelService.explainText(model, dataset, inspectionSettings, featureName, data.getFeatures());
@@ -124,10 +121,9 @@ public class ModelController {
     }
 
     @PostMapping("models/{modelId}/predict")
-    @Transactional
     public PredictionDTO predict(@PathVariable @NotNull UUID modelId, @RequestBody @NotNull PredictionInputDTO data) {
-        ProjectModel model = modelRepository.getById(modelId);
-        Dataset dataset = datasetRepository.getById(data.getDatasetId());
+        ProjectModel model = modelRepository.getMandatoryById(modelId);
+        Dataset dataset = datasetRepository.getMandatoryById(data.getDatasetId());
         permissionEvaluator.validateCanReadProject(model.getProject().getId());
         RunModelForDataFrameResponse result = modelService.predict(model, dataset, data.getFeatures());
         Map<String, Float> allPredictions = new HashMap<>();
@@ -145,7 +141,6 @@ public class ModelController {
     }
 
     @PatchMapping("models/{modelId}/name/{name}")
-    @Transactional
     public ModelDTO renameModel(@PathVariable UUID modelId, @PathVariable @Valid @NotBlank String name) {
         ProjectModel model = modelRepository.findById(modelId)
             .orElseThrow(() -> new EntityNotFoundException(Entity.PROJECT_MODEL, modelId.toString()));

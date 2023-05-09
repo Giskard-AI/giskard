@@ -104,10 +104,10 @@ class HuggingFaceModel(WrapperModel):
 
     def save(self, local_path: Union[str, Path]) -> None:
         super().save(local_path)
-        self.save_with_huggingface(local_path)
+        self.save_model(local_path)
         self.save_huggingface_meta(local_path)
 
-    def save_with_huggingface(self, local_path):
+    def save_model(self, local_path):
         self.model.save_pretrained(local_path)
 
     def model_predict(self, data):

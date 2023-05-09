@@ -14,7 +14,7 @@
             </v-card>
         </v-row>
     </v-container>
-    <v-container v-else class="d-flex flex-column vc fill-height">
+    <v-container v-else class="vc mt-6 fill-height">
         <v-alert class="text-center">
             <p class="headline font-weight-medium grey--text text--darken-2">You haven't created any test suite for this project. <br>Please create a new one.</p>
         </v-alert>
@@ -64,7 +64,7 @@ async function createTestSuite() {
 
 <style scoped>
 .test-suite-logo {
-    max-width: 30%;
+    width: max(17.5vw, 150px);
     margin-top: 2rem;
 }
 </style>

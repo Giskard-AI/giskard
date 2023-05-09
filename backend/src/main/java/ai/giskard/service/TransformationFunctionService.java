@@ -6,11 +6,9 @@ import ai.giskard.web.dto.TransformationFunctionDTO;
 import ai.giskard.web.dto.mapper.GiskardMapper;
 import org.springframework.stereotype.Service;
 
-import javax.transaction.Transactional;
-
 @Service
 
-public class TransformationFunctionService extends CallableService<TransformationFunction, TransformationFunctionDTO> {
+public class TransformationFunctionService extends DatasetProcessFunctionService<TransformationFunction, TransformationFunctionDTO> {
 
     private final GiskardMapper giskardMapper;
     private final TransformationFunctionRepository transformationFunctionRepository;
@@ -21,7 +19,6 @@ public class TransformationFunctionService extends CallableService<Transformatio
         this.transformationFunctionRepository = transformationFunctionRepository;
     }
 
-    @Transactional
     public TransformationFunctionDTO save(TransformationFunctionDTO transformationFunction) {
         return giskardMapper.toDTO(transformationFunctionRepository.save(transformationFunctionRepository.findById(transformationFunction.getUuid())
             .map(existing -> update(existing, transformationFunction))

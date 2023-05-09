@@ -9,16 +9,16 @@
                 <v-row class="fill-height">
                     <v-col cols="4" class="vc fill-height">
                         <v-text-field label="Search test" append-icon="search" outlined v-model="searchFilter"></v-text-field>
-                        <v-list three-line>
+                        <v-list three-line class="vc fill-height">
                             <v-list-item-group v-model="selected" color="primary" mandatory>
                                 <template v-for="test in filteredTestFunctions">
-                                    <v-divider />
+                                    <v-divider/>
                                     <v-list-item :value="test">
                                         <v-list-item-content>
                                             <v-list-item-title class="test-title">
                                                 <div class="d-flex align-center">
-                                                    {{ test.name }}
-                                                    <v-spacer class="flex-grow-1" />
+                                                    {{ test.displayName ?? test.name }}
+                                                    <v-spacer class="flex-grow-1"/>
                                                     <v-tooltip bottom v-if="test.potentiallyUnavailable">
                                                         <template v-slot:activator="{ on, attrs }">
                                                             <div v-bind="attrs" v-on="on">
@@ -104,19 +104,19 @@
 </template>
 
 <script setup lang="ts">
-import { api } from "@/api";
-import _, { chain } from "lodash";
-import { computed, inject, onActivated, ref, watch } from "vue";
-import { pasterColor } from "@/utils";
+import {api} from "@/api";
+import _, {chain} from "lodash";
+import {computed, inject, onActivated, ref, watch} from "vue";
+import {pasterColor} from "@/utils";
 import MonacoEditor from 'vue-monaco';
 import TestExecutionResultBadge from "@/views/main/project/TestExecutionResultBadge.vue";
-import { editor } from "monaco-editor";
-import { TestFunctionDTO, TestInputDTO, TestTemplateExecutionResultDTO } from "@/generated-sources";
+import {editor} from "monaco-editor";
+import {TestFunctionDTO, TestInputDTO, TestTemplateExecutionResultDTO} from "@/generated-sources";
 import AddTestToSuite from '@/views/main/project/modals/AddTestToSuite.vue';
-import { $vfm } from 'vue-final-modal';
+import {$vfm} from 'vue-final-modal';
 import StartWorkerInstructions from "@/components/StartWorkerInstructions.vue";
-import { storeToRefs } from "pinia";
-import { useCatalogStore } from "@/stores/catalog";
+import {storeToRefs} from "pinia";
+import {useCatalogStore} from "@/stores/catalog";
 import SuiteInputListSelector from "@/components/SuiteInputListSelector.vue";
 import IEditorOptions = editor.IEditorOptions;
 
@@ -140,9 +140,7 @@ const monacoOptions: IEditorOptions = inject('monacoOptions');
 monacoOptions.readOnly = true;
 
 async function runTest() {
-    testResult.value = await api.runAdHocTest(props.projectId, selected.value!.uuid, chain(testArguments.value)
-        .mapValues('value')
-        .value());
+    testResult.value = await api.runAdHocTest(props.projectId, selected.value!.uuid, Object.values(testArguments.value));
 }
 
 
@@ -195,6 +193,7 @@ const filteredTestFunctions = computed(() => {
                 || func.displayName?.toLowerCase()?.includes(keyword)
             ).length === keywords.length;
         })
+        .sortBy(t => t.displayName ?? t.name)
         .value();
 })
 
