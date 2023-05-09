@@ -3,6 +3,7 @@ import { onMounted, ref } from "vue";
 import { api } from "@/api";
 import { MLWorkerInfoDTO } from "@/generated-sources";
 import CodeSnippet from "./CodeSnippet.vue";
+import StartWorkerInstructions from "./StartWorkerInstructions.vue";
 
 const step = ref(1);
 const toggleArtifactType = ref<string>("dataset");
@@ -52,8 +53,12 @@ onMounted(async () => {
 
     <v-stepper-items>
       <v-stepper-content step="1">
-        <div class="mb-6">
-          Is your External ML worker running? {{ externalWorker !== null }}
+        <div class="mb-6" v-if="externalWorker !== null">
+          <p>ML Worker is already running!</p>
+          <p>You can skip this step.</p>
+        </div>
+        <div class="mb-6" v-else>
+          <StartWorkerInstructions></StartWorkerInstructions>
         </div>
         <v-btn color="primary" @click="step = 2">Continue</v-btn>
         <v-btn class="ml-2" @click="close" flat>Cancel</v-btn>
