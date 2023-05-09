@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { computed, ref, onActivated, watch } from "vue";
-import { $vfm } from 'vue-final-modal';
-import { api } from '@/api';
-import { useRoute, useRouter } from 'vue-router/composables';
-import { InspectionDTO } from "@/generated-sources";
+import {computed, onActivated, ref, watch} from "vue";
+import {$vfm} from 'vue-final-modal';
+import {api} from '@/api';
+import {useRoute, useRouter} from 'vue-router/composables';
+import {InspectionDTO} from "@/generated-sources";
 import AddDebuggingSessionModal from '@/components/AddDebuggingSessionModal.vue';
 import InlineEditText from '@/components/InlineEditText.vue';
 import ConfirmModal from './modals/ConfirmModal.vue';
@@ -68,9 +68,10 @@ async function renameSession(id: number, name: string) {
   if (currentSession) {
     currentSession.name = name;
     await api.updateInspectionName(id, {
-      name: name,
-      datasetId: currentSession.dataset.id,
-      modelId: currentSession.model.id
+        name: name,
+        datasetId: currentSession.dataset.id,
+        modelId: currentSession.model.id,
+        sample: currentSession.sample
     });
   }
 }

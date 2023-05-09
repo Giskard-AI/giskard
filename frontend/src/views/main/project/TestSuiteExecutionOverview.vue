@@ -1,7 +1,7 @@
 <template>
     <LoadingFullscreen v-if="suite === null" name="suite"/>
     <v-container class="main-container vc" v-else-if="hasTest">
-        <TestSuiteExecutionHeader :execution="execution" :tests="filteredTest" :compact="false"/>
+        <TestSuiteExecutionHeader :execution="execution" :tests="filteredTest" :compact="false" :try-mode="tryMode"/>
         <div class="d-flex mt-4 mb-4">
             <v-select v-model="statusFilter" label="Status" :items="statusFilterOptions" item-text="label"
                       variant="underlined" hide-details="auto" dense class="mr-4">
@@ -33,7 +33,12 @@ import SuiteTestExecutionList from '@/views/main/project/SuiteTestExecutionList.
 import TestSuiteExecutionHeader from '@/views/main/project/TestSuiteExecutionHeader.vue';
 import LoadingFullscreen from "@/components/LoadingFullscreen.vue";
 
-const props = defineProps<{ execution?: TestSuiteExecutionDTO }>();
+const props = withDefaults(defineProps<{
+    execution?: TestSuiteExecutionDTO
+    tryMode?: boolean
+}>(), {
+    tryMode: false
+});
 
 const testSuiteStore = useTestSuiteStore();
 const {models, datasets, inputs, suite, projectId, hasTest} = storeToRefs(testSuiteStore);

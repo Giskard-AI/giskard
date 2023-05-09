@@ -188,9 +188,8 @@ import OverlayLoader from '@/components/OverlayLoader.vue';
 import PredictionResults from './PredictionResults.vue';
 import PredictionExplanations from './PredictionExplanations.vue';
 import TextExplanation from './TextExplanation.vue';
-import {api} from '@/api';
 import FeedbackPopover from '@/components/FeedbackPopover.vue';
-import {DatasetDTO, FeatureMetadataDTO, ModelDTO} from "@/generated-sources";
+import {DatasetDTO, ModelDTO} from "@/generated-sources";
 import {isClassification} from "@/ml-utils";
 import mixpanel from "mixpanel-browser";
 import {anonymize} from "@/utils";
@@ -212,7 +211,6 @@ export default class Inspector extends Vue {
     @Prop({required: true}) inputData!: { [key: string]: string }
     @Prop({default: false}) isMiniMode!: boolean;
     loadingData = false;
-    inputMetaData: FeatureMetadataDTO[] = [];
     featuresToView: string[] = []
     errorLoadingMetadata = ""
     dataErrorMsg = ""
@@ -232,20 +230,22 @@ export default class Inspector extends Vue {
         (this.$refs.dataFormObserver as HTMLFormElement).reset();
     }
 
-    @Watch('model.id')
-    @Watch('dataset.id')
-    async loadMetaData() {
-        this.loadingData = true;
-        try {
-            this.inputMetaData = await api.getFeaturesMetadata(this.dataset.id)
-            this.featuresToView = this.inputMetaData.map(e => e.name)
-
-            this.errorLoadingMetadata = ""
-        } catch (e) {
-            this.errorLoadingMetadata = e.response.data.detail
-        } finally {
-            this.loadingData = false;
+    get inputMetaData() {
+        if (!this.model) {
+            return [];
         }
+
+        return Object.entries(this.dataset.columnTypes)
+            .map(([name, type]) => ({
+                name,
+                type,
+                values: this.dataset.categoryFeatures[name]
+            }))
+    }
+
+    @Watch('inputMetaData')
+    async loadMetaData() {
+        this.featuresToView = this.inputMetaData.map(e => e.name)
     }
 
     get isInputNotOriginal() { // used in case of opening a feedback where original data and input data passed are different
@@ -262,7 +262,7 @@ export default class Inspector extends Vue {
         }
     }
 
-    async onValuePerturbation(featureMeta: FeatureMetadataDTO) {
+    async onValuePerturbation(featureMeta) {
         mixpanel.track("Feature perturbation", {
             columnType: featureMeta.type,
             featureName: anonymize(featureMeta.name),

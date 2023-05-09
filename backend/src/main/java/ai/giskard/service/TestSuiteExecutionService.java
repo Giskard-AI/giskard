@@ -37,7 +37,8 @@ public class TestSuiteExecutionService {
     }
 
     public void executeScheduledTestSuite(TestSuiteExecution execution,
-                                          Map<String, String> suiteInputTypes) {
+                                          Map<String, String> suiteInputTypes,
+                                          boolean sample) {
         TestSuite suite = execution.getSuite();
 
         Map<String, FunctionArgument> arguments = suiteInputTypes.entrySet().stream()
@@ -51,7 +52,7 @@ public class TestSuiteExecutionService {
         RunTestSuiteRequest.Builder builder = RunTestSuiteRequest.newBuilder();
         for (FunctionInput input : execution.getInputs()) {
             builder.addGlobalArguments(testArgumentService.buildTestArgument(arguments, input.getName(),
-                input.getValue(), suite.getProject().getKey(), input.getParams()));
+                input.getValue(), suite.getProject().getKey(), input.getParams(), sample));
         }
 
         Map<String, FunctionInput> suiteInputsAndShared = Stream.concat(
@@ -60,7 +61,8 @@ public class TestSuiteExecutionService {
         ).collect(Collectors.toMap(FunctionInput::getName, Function.identity()));
 
         for (SuiteTest suiteTest : suite.getTests()) {
-            builder.addTests(testArgumentService.buildFixedTestArgument(suiteInputsAndShared, suiteTest, suite.getProject().getKey()));
+            builder.addTests(testArgumentService.buildFixedTestArgument(suiteInputsAndShared, suiteTest,
+                suite.getProject().getKey(), sample));
         }
 
         Map<Long, SuiteTest> tests = suite.getTests().stream()
@@ -73,7 +75,8 @@ public class TestSuiteExecutionService {
             execution.setResult(getResult(testSuiteResultMessage));
             execution.setResults(testSuiteResultMessage.getResultsList().stream()
                 .map(identifierSingleTestResult ->
-                    new SuiteTestExecution(tests.get(identifierSingleTestResult.getId()), execution, identifierSingleTestResult.getResult()))
+                    new SuiteTestExecution(tests.get(identifierSingleTestResult.getId()), execution,
+                        identifierSingleTestResult.getResult()))
                 .collect(Collectors.toList()));
             execution.setLogs(testSuiteResultMessage.getLogs());
         } catch (Exception e) {
@@ -85,6 +88,7 @@ public class TestSuiteExecutionService {
             execution.setCompletionDate(new Date());
         }
     }
+
 
     private static TestResult getResult(TestSuiteResultMessage testSuiteResultMessage) {
         if (testSuiteResultMessage.getIsError()) {

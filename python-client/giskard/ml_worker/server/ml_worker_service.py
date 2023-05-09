@@ -36,6 +36,7 @@ from giskard.ml_worker.testing.registry.giskard_test import GiskardTest
 from giskard.ml_worker.testing.registry.registry import tests_registry
 from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction
 from giskard.ml_worker.testing.registry.transformation_function import TransformationFunction
+from giskard.ml_worker.utils.file_utils import get_file_name
 from giskard.models.base import BaseModel
 from giskard.path_utils import model_path, dataset_path
 
@@ -206,7 +207,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
     def datasetProcessing(
             self, request: ml_worker_pb2.DatasetProcessingRequest, context: grpc.ServicerContext
     ) -> ml_worker_pb2.DatasetProcessingResultMessage:
-        dataset = Dataset.download(self.client, request.dataset.project_key, request.dataset.id)
+        dataset = Dataset.download(self.client, request.dataset.project_key, request.dataset.id, request.dataset.sample)
 
         for function in request.functions:
             arguments = self.parse_function_arguments(function.arguments)
@@ -292,7 +293,8 @@ class MLWorkerServiceImpl(MLWorkerServicer):
             if arg.none:
                 continue
             if arg.HasField("dataset"):
-                arguments[arg.name] = Dataset.download(self.client, arg.dataset.project_key, arg.dataset.id)
+                arguments[arg.name] = Dataset.download(self.client, arg.dataset.project_key, arg.dataset.id,
+                                                       arg.dataset.sample)
             elif arg.HasField("model"):
                 arguments[arg.name] = BaseModel.download(self.client, arg.model.project_key, arg.model.id)
             elif arg.HasField("slicingFunction"):
@@ -319,7 +321,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
 
     def explain(self, request: ml_worker_pb2.ExplainRequest, context) -> ml_worker_pb2.ExplainResponse:
         model = BaseModel.download(self.client, request.model.project_key, request.model.id)
-        dataset = Dataset.download(self.client, request.dataset.project_key, request.dataset.id)
+        dataset = Dataset.download(self.client, request.dataset.project_key, request.dataset.id, request.dataset.sample)
         explanations = explain(model, dataset, request.columns)
 
         return ml_worker_pb2.ExplainResponse(
@@ -370,7 +372,8 @@ class MLWorkerServiceImpl(MLWorkerServicer):
     def runModel(self, request: ml_worker_pb2.RunModelRequest, context) -> ml_worker_pb2.RunModelResponse:
         try:
             model = BaseModel.download(self.client, request.model.project_key, request.model.id)
-            dataset = Dataset.download(self.client, request.dataset.project_key, request.dataset.id)
+            dataset = Dataset.download(self.client, request.dataset.project_key, request.dataset.id,
+                                       sample=request.dataset.sample)
         except ValueError as e:
             if "unsupported pickle protocol" in str(e):
                 raise ValueError(
@@ -416,12 +419,14 @@ class MLWorkerServiceImpl(MLWorkerServicer):
 
         with tempfile.TemporaryDirectory(prefix="giskard-") as f:
             dir = Path(f)
-            results.to_csv(index=False, path_or_buf=dir / "predictions.csv")
-            self.ml_worker.tunnel.client.log_artifact(dir / "predictions.csv",
+            predictions_csv = get_file_name("predictions", "csv", request.dataset.sample)
+            results.to_csv(index=False, path_or_buf=dir / predictions_csv)
+            self.ml_worker.tunnel.client.log_artifact(dir / predictions_csv,
                                                       f"{request.project_key}/models/inspections/{request.inspectionId}")
 
-            calculated.to_csv(index=False, path_or_buf=dir / "calculated.csv")
-            self.ml_worker.tunnel.client.log_artifact(dir / "calculated.csv",
+            calculated_csv = get_file_name("calculated", "csv", request.dataset.sample)
+            calculated.to_csv(index=False, path_or_buf=dir / calculated_csv)
+            self.ml_worker.tunnel.client.log_artifact(dir / calculated_csv,
                                                       f"{request.project_key}/models/inspections/{request.inspectionId}")
         return google.protobuf.empty_pb2.Empty()
 

@@ -1,0 +1,24 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.1.xsd">
+    <changeSet author="kevinmessiaen (generated)" id="1683214373146-3">
+        <addColumn tableName="inspections">
+            <column name="sample" type="boolean" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
+    <changeSet author="kevinmessiaen (generated)" id="1683214373146-4">
+        <addColumn tableName="datasets">
+            <column name="category_features" type="VARCHAR"/>
+        </addColumn>
+    </changeSet>
+    <changeSet author="kevinmessiaen (generated)" id="1683214373146-5">
+        <addColumn tableName="datasets">
+            <column name="number_of_rows" type="int8">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
+</databaseChangeLog>

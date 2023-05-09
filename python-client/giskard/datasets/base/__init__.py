@@ -23,6 +23,7 @@ from giskard.ml_worker.testing.registry.transformation_function import (
 )
 from giskard.settings import settings
 from ..metadata.indexing import ColumnMetadataMixin
+from ...ml_worker.utils.file_utils import get_file_name
 
 logger = logging.getLogger(__name__)
 
@@ -127,7 +128,7 @@ class Dataset(ColumnMetadataMixin):
             target: Optional[str] = None,
             cat_columns: Optional[List[str]] = [],
             column_types: Optional[Dict[str, str]] = None,
-            id: Optional[uuid.UUID] = None,
+            id: Optional[uuid.UUID] = None
     ) -> None:
         """
         Initializes a Dataset object.
@@ -374,6 +375,12 @@ class Dataset(ColumnMetadataMixin):
                 self.meta,
                 original_size_bytes=original_size_bytes,
                 compressed_size_bytes=compressed_size_bytes,
+                number_of_rows=len(self.df.index),
+                category_features={
+                    column: list(self.df[column].dropna().unique())
+                    for column, column_type in self.meta.column_types.items()
+                    if column_type == 'category'
+                }
             )
         return dataset_id
 
@@ -404,7 +411,7 @@ class Dataset(ColumnMetadataMixin):
             )
 
     @classmethod
-    def download(cls, client: GiskardClient, project_key, dataset_id):
+    def download(cls, client: GiskardClient, project_key, dataset_id, sample: bool = False):
         """
         Downloads a dataset from a Giskard project and returns a Dataset object.
         If the client is None, then the function assumes that it is running in an internal worker and looks for the dataset locally.
@@ -415,6 +422,7 @@ class Dataset(ColumnMetadataMixin):
                 If None, the function looks for the dataset locally.
             project_key (str): The key of the Giskard project that the dataset belongs to.
             dataset_id (str): The ID of the dataset to download.
+            sample (bool): Only open a sample of 1000 rows if True
 
         Returns:
             Dataset: A Dataset object that represents the downloaded dataset.
@@ -436,9 +444,10 @@ class Dataset(ColumnMetadataMixin):
             client.load_artifact(local_dir, posixpath.join(project_key, "datasets", dataset_id))
             meta: DatasetMeta = client.load_dataset_meta(project_key, dataset_id)
 
-        df = cls.load(local_dir / "data.csv.zst")
+        df = cls.load(local_dir / get_file_name("data", "csv.zst", sample))
         df = cls.cast_column_to_dtypes(df, meta.column_dtypes)
-        return cls(df=df, name=meta.name, target=meta.target, column_types=meta.column_types, id=uuid.UUID(dataset_id))
+        return cls(df=df, name=meta.name, target=meta.target, column_types=meta.column_types,
+                   id=uuid.uuid4() if sample else uuid.UUID(dataset_id))
 
     @staticmethod
     def _cat_columns(meta):
@@ -453,11 +462,15 @@ class Dataset(ColumnMetadataMixin):
         return self._cat_columns(self.meta)
 
     def save(self, local_path: Path, dataset_id):
-        with open(local_path / "data.csv.zst", "wb") as f:
+        with open(local_path / "data.csv.zst", "wb") as f, open(local_path / "data.sample.csv.zst", "wb") as f_sample:
             uncompressed_bytes = save_df(self.df)
             compressed_bytes = compress(uncompressed_bytes)
             f.write(compressed_bytes)
             original_size_bytes, compressed_size_bytes = len(uncompressed_bytes), len(compressed_bytes)
+
+            uncompressed_bytes = save_df(self.df.sample(min(1000, len(self.df.index))))
+            compressed_bytes = compress(uncompressed_bytes)
+            f_sample.write(compressed_bytes)
 
             with open(Path(local_path) / "giskard-dataset-meta.yaml", "w") as meta_f:
                 yaml.dump(

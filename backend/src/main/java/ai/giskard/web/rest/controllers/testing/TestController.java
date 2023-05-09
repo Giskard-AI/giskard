@@ -16,10 +16,7 @@ import ai.giskard.web.dto.ml.TestTemplateExecutionResultDTO;
 import ai.giskard.worker.RunAdHocTestRequest;
 import ai.giskard.worker.TestResultMessage;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 import java.util.UUID;
@@ -38,7 +35,8 @@ public class TestController {
     private final TestFunctionRepository testFunctionRepository;
 
     @PostMapping("/run-test")
-    public TestTemplateExecutionResultDTO runAdHocTest(@RequestBody RunAdhocTestRequest request) {
+    public TestTemplateExecutionResultDTO runAdHocTest(@RequestBody RunAdhocTestRequest request,
+                                                       @RequestParam(required = false, defaultValue = "true") boolean sample) {
         TestFunction testFunction = testFunctionRepository.getWithArgsByUuid(UUID.fromString(request.getTestUuid()));
         Map<String, FunctionArgument> arguments = testFunction.getArgs().stream()
             .collect(Collectors.toMap(FunctionArgument::getName, Function.identity()));
@@ -55,7 +53,7 @@ public class TestController {
 
                 builder.addArguments(testArgumentService
                     .buildTestArgument(arguments, input.getName(), input.getValue(), project.getKey(),
-                        giskardMapper.fromDTO(input).getParams()));
+                        giskardMapper.fromDTO(input).getParams(), sample));
             }
 
             TestResultMessage testResultMessage = client.getBlockingStub().runAdHocTest(builder.build());
