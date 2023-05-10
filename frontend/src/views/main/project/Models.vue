@@ -66,6 +66,7 @@
 
 <script setup lang="ts">
 import { api } from '@/api';
+import { apiURL } from "@/env";
 import InspectorLauncher from './InspectorLauncher.vue';
 import { ModelDTO } from '@/generated-sources';
 import mixpanel from "mixpanel-browser";
@@ -92,7 +93,7 @@ const modelToInspect = ref<ModelDTO | null>(null);
 const codeContent = computed(() =>
   `# Create a Giskard client
 from giskard import GiskardClient
-url = "http://localhost:19000" # URL of your Giskard instance
+url = "${apiURL}" # URL of your Giskard instance
 token = "my_API_Access_Token" # Your API Access Token (generate one in Settings > API Access Token > Generate)
 client = GiskardClient(url, token)
 
