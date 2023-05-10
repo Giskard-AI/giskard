@@ -154,6 +154,13 @@ class Dataset(ColumnMetadataMixin):
         self.name = name
         self.df = pd.DataFrame(df)
         self.target = target
+        self.number_of_rows = len(self.df.index),
+        self.category_features = {
+            column: list(map(lambda x: str(x), self.df[column].dropna().unique()))
+            for column, column_type in self.meta.column_types.items()
+            if column_type == 'category'
+        }
+
         from giskard.core.dataset_validation import validate_target
 
         validate_target(self)
@@ -178,12 +185,6 @@ class Dataset(ColumnMetadataMixin):
 
         validate_numeric_columns(self)
 
-        self.number_of_rows = len(self.df.index),
-        self.category_features = {
-            column: list(map(lambda x: str(x), self.df[column].dropna().unique()))
-            for column, column_type in self.meta.column_types.items()
-            if column_type == 'category'
-        }
 
     def add_slicing_function(self, slicing_function: SlicingFunction):
         """
