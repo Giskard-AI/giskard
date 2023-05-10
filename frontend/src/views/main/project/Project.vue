@@ -1,15 +1,18 @@
 <template>
   <div v-if="project" class="vertical-container">
     <v-toolbar flat dense light class="secondary--text text--lighten-2">
-      <v-toolbar-title>
-        <router-link :to="{ name: 'project-properties', params: { id } }">
-          <v-btn block color="primary" rounded="xl" text>
-            <v-icon left>mdi-file-cog-outline</v-icon>
-            <span class="text-subtitle-1 project-name">
-              {{ project.name }}
-            </span>
-          </v-btn>
+      <v-toolbar-title class="mt-4">
+        <router-link to="/main/projects">
+          Projects
         </router-link>
+        <span>/</span>
+        <router-link :to="{ name: 'project-properties', params: { id } }">
+          {{ project.name }}
+        </router-link>
+        <span v-show="currentTab !== null">
+          <span>/</span>
+          {{ currentTabString }}
+        </span>
       </v-toolbar-title>
       <v-spacer></v-spacer>
       <v-tooltip :disabled="mainStore.authAvailable" bottom>
@@ -84,7 +87,7 @@
 
     <v-container fluid id="container-project-tab" class="vertical-container pb-0">
       <keep-alive>
-        <router-view :isProjectOwnerOrAdmin=" isProjectOwnerOrAdmin "></router-view>
+        <router-view :isProjectOwnerOrAdmin="isProjectOwnerOrAdmin"></router-view>
       </keep-alive>
     </v-container>
 
@@ -96,13 +99,14 @@ import { computed, onMounted, ref, watch } from "vue";
 import { IUserProfileMinimal } from "@/interfaces";
 import { Role } from "@/enums";
 import mixpanel from "mixpanel-browser";
-import { useRouter } from "vue-router/composables";
+import { useRouter, useRoute } from "vue-router/composables";
 import { useMainStore } from "@/stores/main";
 import { useUserStore } from "@/stores/user";
 import { useProjectStore } from "@/stores/project";
 import { getUserFullDisplayName } from "@/utils";
 
 const router = useRouter();
+const route = useRoute();
 
 const mainStore = useMainStore();
 const userStore = useUserStore();
@@ -117,7 +121,19 @@ const props = defineProps<Props>();
 const userToInvite = ref<Partial<IUserProfileMinimal>>({});
 const openShareDialog = ref<boolean>(false);
 const openDeleteDialog = ref<boolean>(false);
-const tab = ref<string | null>(null);
+const currentTab = ref<string | null>(null);
+
+const tabsMap = new Map([
+  ["properties", "Properties"],
+  ["project-catalog", "Catalog"],
+  ["test-suites", "Test"],
+  ["debugger", "Debugger"],
+  ["feedbacks", "Feedback"],
+]);
+
+const currentTabString = computed(() => {
+  return currentTab.value ? tabsMap.get(currentTab.value) : null;
+});
 
 const userProfile = computed(() => {
   return userStore.userProfile;
@@ -172,20 +188,24 @@ async function deleteProject() {
   }
 }
 
+function updateCurrentTab() {
+  currentTab.value = route.fullPath.split('/')[4] || null;
+}
+
+
+watch(() => route.fullPath, async () => {
+  updateCurrentTab();
+})
+
 onMounted(async () => {
-  // make sure project is loaded first
   await projectStore.getProject({ id: props.id });
   await mainStore.getCoworkers();
+  updateCurrentTab();
 })
 </script>
 
 <style scoped>
 #container-project-tab {
   padding-top: 4px !important;
-}
-
-.project-name {
-  text-transform: none;
-  font-weight: 500;
 }
 </style>
