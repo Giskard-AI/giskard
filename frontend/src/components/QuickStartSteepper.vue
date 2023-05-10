@@ -5,9 +5,9 @@
       <v-divider></v-divider>
       <v-stepper-step :complete="step > 2" step="2">Create Giskard client</v-stepper-step>
       <v-divider></v-divider>
-      <v-stepper-step :complete="step > 3" step="3">Create Giskard artifacts</v-stepper-step>
+      <v-stepper-step :complete="step > 3" step="3">Wrap Giskard artifacts</v-stepper-step>
       <v-divider></v-divider>
-      <v-stepper-step step="4">Upload test suite</v-stepper-step>
+      <v-stepper-step step="4">Test your model</v-stepper-step>
     </v-stepper-header>
 
     <v-stepper-items>
@@ -53,7 +53,7 @@
 
       <v-stepper-content step="4">
         <div class="mb-6">
-          <p class="mb-2">Choose the type of test you want to upload:</p>
+          <p class="mb-2">Choose the type of test you want to perform:</p>
           <v-btn-toggle v-model="toggleTestType" borderless mandatory color="primary">
             <v-btn value="scan" class="py-5 px-4">
               <span>Scan</span>
@@ -62,7 +62,7 @@
               <span>Manual</span>
             </v-btn>
           </v-btn-toggle>
-          <p class="mt-4 mb-2">Then, upload the test with the following Python code:</p>
+          <p class="mt-4 mb-2">Then, run the following Python code:</p>
           <CodeSnippet v-show="toggleTestType === 'scan'" :codeContent="scanCodeContent"></CodeSnippet>
           <CodeSnippet v-show="toggleTestType === 'manual'" :codeContent="manualTestCodeContent"></CodeSnippet>
         </div>
@@ -74,7 +74,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
 import { api } from "@/api";
 import { MLWorkerInfoDTO } from "@/generated-sources";
 import CodeSnippet from "./CodeSnippet.vue";
@@ -87,11 +87,83 @@ const toggleTestType = ref<string>("scan");
 const allMLWorkerSettings = ref<MLWorkerInfoDTO[]>([]);
 const externalWorker = ref<MLWorkerInfoDTO | null>(null);
 
-const clientCodeContent: string = "# Code to create Giskard client here";
-const datasetCodeContent: string = "# Code to create dataset here";
-const modelCodeContent: string = "# Code to create model here";
-const scanCodeContent: string = "# Code to upload scan here";
-const manualTestCodeContent: string = "# Code to upload manual test here";
+const backendUrl: string = "http://localhost:19000";
+const projectKey: string = "my_project_key";
+const apiAccessToken: string = "my_API_Access_Token";
+
+const clientCodeContent = computed(() => {
+  return `# Create a Giskard client
+from giskard import GiskardClient
+url = "${backendUrl}" # URL of your Giskard instance
+token = "${apiAccessToken}" # Your API Access Token (generate one in Settings > API Access Token > Generate)
+client = GiskardClient(url, token)`
+})
+
+const datasetCodeContent = computed(() => {
+  return `import pandas as pd
+
+iris_df = pd.DataFrame({"sepal length": [5.1],
+                        "sepal width": [3.5],
+                        "petal size": ["medium"],
+                        "species": ["Setosa"]})
+
+from giskard import wrap_dataset
+
+wrapped_dataset = wrap_dataset(
+  df=iris_df, 
+  target="species", # Optional but a MUST if available
+  cat_columns=["petal size"] # Optional but a MUST if available. Inferred automatically if not.
+  # name="my_iris_dataset", # Optional
+  # column_types=None # # Optional: if not provided, it is inferred automatically
+)
+  
+dataset_id = wrapped_dataset.upload(client, "${projectKey}")`
+})
+
+const modelCodeContent = computed(() => {
+  return `import pandas as pd
+import numpy as np
+from sklearn.preprocessing import StandardScaler
+from sklearn.linear_model import LogisticRegression
+from giskard import wrap_model
+
+scaler = StandardScaler()
+clf = LogisticRegression()
+
+def prediction_function(df: pd.DataFrame) -> np.ndarray:
+  #Scale all the numerical variables
+  num_cols = ["sepal length", "sepal width"]
+  df[num_cols] = scaler.transform(df[num_cols])
+  
+  return clf.predict_proba(df)
+
+
+wrapped_model = wrap_model(
+  prediction_function,
+  model_type="classification",
+  classification_labels=['Setosa', 'Versicolor', 'Virginica'],
+  feature_names=['sepal length', 'sepal width'],  # Default: all columns of your dataset
+  # name="my_iris_classification_model", # Optional
+  # classification_threshold=0.5, # Default: 0.5
+)
+
+model_id = wrapped_model.upload(client, "${projectKey}")`
+})
+
+const scanCodeContent: string = `import giskard
+
+results = giskard.scan(wrapped_model, wrapped_dataset)
+
+display(results)  # in your notebook`;
+
+const manualTestCodeContent = computed(() => {
+  return `from giskard import Suite, test_f1, DataQuality
+
+suite = Suite()
+  .add_test(test_f1(actual_slice=wrapped_dataset))
+  .add_test(DataQuality(dataset=wrapped_dataset, column_name='species', category='Setosa'))
+  .save(client, "${projectKey}")`
+});
 
 const emit = defineEmits(["close"]);
 
