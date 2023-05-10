@@ -178,6 +178,13 @@ class Dataset(ColumnMetadataMixin):
 
         validate_numeric_columns(self)
 
+        self.number_of_rows = len(self.df.index),
+        self.category_features = {
+            column: list(map(lambda x: str(x), self.df[column].dropna().unique()))
+            for column, column_type in self.meta.column_types.items()
+            if column_type == 'category'
+        }
+
     def add_slicing_function(self, slicing_function: SlicingFunction):
         """
         Adds a slicing function to the data processor.
@@ -378,19 +385,16 @@ class Dataset(ColumnMetadataMixin):
                 self.meta,
                 original_size_bytes=original_size_bytes,
                 compressed_size_bytes=compressed_size_bytes,
-                number_of_rows=len(self.df.index),
-                category_features={
-                    column: list(map(lambda x: str(x), self.df[column].dropna().unique()))
-                    for column, column_type in self.meta.column_types.items()
-                    if column_type == 'category'
-                }
+
             )
         return dataset_id
 
     @property
     def meta(self):
         return DatasetMeta(
-            name=self.name, target=self.target, column_types=self.column_types, column_dtypes=self.column_dtypes,
+            name=self.name, target=self.target, column_types=self.column_types,
+            column_dtypes=self.column_dtypes, number_of_rows=self.number_of_rows,
+            category_features=self.category_features
         )
 
     @staticmethod
@@ -441,7 +445,9 @@ class Dataset(ColumnMetadataMixin):
                     name=saved_meta["name"],
                     target=saved_meta["target"],
                     column_types=saved_meta["column_types"],
-                    column_dtypes=saved_meta["number_of_rows"]
+                    column_dtypes=saved_meta["column_dtypes"],
+                    number_of_rows=saved_meta["number_of_rows"],
+                    category_features=saved_meta["category_features"]
                 )
         else:
             client.load_artifact(local_dir, posixpath.join(project_key, "datasets", dataset_id))
@@ -485,6 +491,8 @@ class Dataset(ColumnMetadataMixin):
                         "column_dtypes": self.meta.column_dtypes,
                         "original_size_bytes": original_size_bytes,
                         "compressed_size_bytes": compressed_size_bytes,
+                        "number_of_rows": self.meta.number_of_rows,
+                        "category_features": self.meta.category_features
                     },
                     meta_f,
                     default_flow_style=False,
