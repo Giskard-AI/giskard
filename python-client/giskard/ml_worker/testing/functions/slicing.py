@@ -14,7 +14,7 @@ def short_comment_slicing_fn(text: str, max_words: int = 5) -> bool:
 
 
 @slicing_function(name="Keyword lookup", tags=["text"], cell_level=True)
-def keyword_lookup_slicing_fn(text: str, keywords: list[str]) -> bool:
+def keyword_lookup_slicing_fn(text: str, keywords: List[str]) -> bool:
     """
     Filter the rows where the specified 'column_name' contains at least one of the specified 'keywords'.
     """
