@@ -1,5 +1,5 @@
 """Performance tests"""
-
+import inspect
 import numpy as np
 from sklearn.metrics import (
     accuracy_score,
@@ -48,10 +48,17 @@ def _test_classification_score(score_fn, model: BaseModel, dataset: Dataset, thr
         metric = score_fn(targets, prediction, average="macro")
 
     passed = bool(metric >= threshold)
-    output_ds = dataset.slice(incorrect_rows_slicing_fn(dataset.target, prediction)) if not passed or debug else None
+
+    # --- debug ---
+    output_ds = None
+    if not passed and debug:
+        output_ds = dataset.slice(incorrect_rows_slicing_fn(dataset.target, prediction=prediction))
+        test_name = inspect.stack()[1][3]
+        output_ds.name = "Debug: " + test_name
+    # ---
 
     return TestResult(actual_slices_size=[len(dataset)], metric=metric, passed=passed,
-                      output_ds=output_ds)
+                      output_df=output_ds)
 
 
 def _test_accuracy_score(dataset: Dataset, model: BaseModel, threshold: float = 1.0, debug: bool = False):
@@ -60,12 +67,18 @@ def _test_accuracy_score(dataset: Dataset, model: BaseModel, threshold: float = 
     targets = dataset.df[dataset.target]
 
     metric = accuracy_score(targets, prediction)
-
     passed = bool(metric >= threshold)
-    output_ds = dataset.slice(incorrect_rows_slicing_fn(dataset.target, prediction)) if not passed or debug else None
+
+    # --- debug ---
+    output_ds = None
+    if not passed and debug:
+        output_ds = dataset.slice(incorrect_rows_slicing_fn(dataset.target, prediction=prediction))
+        test_name = inspect.stack()[1][3]
+        output_ds.name = "Debug: " + test_name
+    # ---
 
     return TestResult(actual_slices_size=[len(dataset)], metric=metric, passed=passed,
-                      output_ds=output_ds)
+                      output_df=output_ds)
 
 
 def _test_regression_score(score_fn, model: BaseModel, dataset: Dataset, threshold: float = 1.0, r2=False,
@@ -78,15 +91,22 @@ def _test_regression_score(score_fn, model: BaseModel, dataset: Dataset, thresho
     metric = score_fn(targets, raw_prediction)
 
     passed = bool(metric >= threshold if r2 else metric <= threshold)
-    output_ds = dataset.slice(
-        nlargest_abs_err_rows_slicing_fn(target=dataset.target, prediction=raw_prediction,
-                                         debug_percent_rows=debug_percent_rows)) if not passed or debug else None
+
+    # --- debug ---
+    output_ds = None
+    if not passed and debug:
+        output_ds = dataset.slice(
+            nlargest_abs_err_rows_slicing_fn(target=dataset.target, prediction=raw_prediction,
+                                             debug_percent_rows=debug_percent_rows))
+        test_name = inspect.stack()[1][3]
+        output_ds.name = "Debug: " + test_name
+    # ---
 
     return TestResult(
         actual_slices_size=[len(dataset)],
         metric=metric,
         passed=passed,
-        output_ds=output_ds
+        output_df=output_ds
     )
 
 
@@ -165,7 +185,7 @@ class AucTest(GiskardTest):
 
 @test(name='AUC', tags=['performance', 'classification', 'ground_truth'])
 def test_auc(model: BaseModel, dataset: Dataset, slicing_function: SlicingFunction = None, threshold: float = 1.0,
-             debug: bool = False):
+             debug: bool = True):
     """
     Test if the model AUC performance is higher than a threshold for a given slice
 
@@ -211,11 +231,17 @@ def test_auc(model: BaseModel, dataset: Dataset, slicing_function: SlicingFuncti
         metric = roc_auc_score(targets, predictions, multi_class="ovo")
 
     passed = bool(metric >= threshold)
-    output_ds = dataset.slice(incorrect_rows_slicing_fn(dataset.target, prediction=_predictions.prediction)) \
-        if not passed or debug else None
+
+    # --- debug ---
+    output_ds = None
+    if not passed and debug:
+        output_ds = dataset.slice(incorrect_rows_slicing_fn(dataset.target, prediction=_predictions.prediction))
+        test_name = inspect.stack()[0][3]
+        output_ds.name = "Debug: " + test_name
+    # ---
 
     return TestResult(actual_slices_size=[len(dataset)], metric=metric, passed=passed,
-                      output_ds=output_ds)
+                      output_df=output_ds)
 
 
 @test(name='F1', tags=['performance', 'classification', 'ground_truth'])
