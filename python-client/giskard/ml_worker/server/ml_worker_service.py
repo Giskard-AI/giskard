@@ -200,6 +200,21 @@ class MLWorkerServiceImpl(MLWorkerServicer):
         logger.info(f"Executing {test.meta.display_name or f'{test.meta.module}.{test.meta.name}'}")
         test_result = test.get_builder()(**arguments).execute()
 
+        if test_result.output_df:
+            dataset_id, model_id = None, None
+            for arg in request.arguments:
+                if arg.HasField("dataset"):
+                    dataset_id = arg.dataset.id
+                if arg.HasField("model"):
+                    project_key = arg.model.project_key
+                    model_id = arg.model.id
+            model_id = " | <model:" + model_id + ">" if model_id else ""
+            dataset_id = " | <dataset:" + dataset_id + ">" if dataset_id else ""
+            test_result.output_df.name += model_id + dataset_id
+            test_result.output_df.upload(client=self.client, project_key=project_key)
+            # for now, we won't return output_df from grpc, rather upload it
+            test_result.output_df = None
+
         return ml_worker_pb2.TestResultMessage(results=[
             ml_worker_pb2.NamedSingleTestResult(testUuid=test.meta.uuid,
                                                 result=map_result_to_single_test_result(test_result))
@@ -574,7 +589,7 @@ def map_result_to_single_test_result(result) -> ml_worker_pb2.SingleTestResult:
                 for puc in result.partial_unexpected_index_list
             ],
             unexpected_index_list=result.unexpected_index_list,
-            output_df=result.output_df,
+            output_df=None,
             number_of_perturbed_rows=result.number_of_perturbed_rows,
             actual_slices_size=result.actual_slices_size,
             reference_slices_size=result.reference_slices_size,

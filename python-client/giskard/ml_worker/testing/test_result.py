@@ -55,7 +55,7 @@ class TestResult:
     number_of_perturbed_rows: int = 0
     actual_slices_size: List[int] = field(default_factory=list, repr=False)
     reference_slices_size: List[int] = field(default_factory=list, repr=False)
-    output_ds: Dataset = None
+    output_df: bytes = None
 
     def _repr_html_(self):
         return """

@@ -143,6 +143,7 @@ message RunModelResponse{
 message RunAdHocTestRequest {
   string testUuid = 1;
   repeated FuncArgument arguments = 2;
+  bool debug = 3;
 }
 
 message DatasetProcessingRequest {
