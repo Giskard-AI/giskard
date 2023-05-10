@@ -270,14 +270,10 @@ class BaseModel(ABC):
         raw_prediction = np.array(self.predict_df(df))
 
         labels = self.meta.classification_labels if self.meta.classification_labels is not None else ['raw_prediction']
-        dims = len(raw_prediction.shape)
 
         self.prediction_cache = pd.concat([
             self.prediction_cache,
-            pd.DataFrame(data={
-                label: raw_prediction if dims == 1 else raw_prediction[:, idx]
-                for idx, label in enumerate(labels)
-            }, index=dataset.df[GISKARD_HASH_COLUMN][~cached_predictions])
+            pd.DataFrame(raw_prediction, columns=labels, index=dataset.df[GISKARD_HASH_COLUMN][~cached_predictions])
         ])
 
         raw_prediction = self.prediction_cache.loc[dataset.df[GISKARD_HASH_COLUMN]][labels].values
