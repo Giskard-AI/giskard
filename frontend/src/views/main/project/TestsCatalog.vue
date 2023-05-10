@@ -56,26 +56,28 @@
                                 <pre></pre>
                                 <StartWorkerInstructions />
                             </v-alert>
-                            <pre class="test-doc caption pt-5">{{ selected.doc }}</pre>
+                            <pre class="test-doc caption pt-5">{{ doc.body }}</pre>
                             <div class="pt-5">
                                 <div class="d-flex justify-space-between">
                                     <span class="text-h6">Inputs</span>
                                     <v-btn width="100" small tile outlined @click="tryMode = !tryMode">{{
-                                        tryMode ? 'Cancel' : 'Try it'
-                                    }}
+                                            tryMode ? 'Cancel' : 'Try it'
+                                        }}
                                     </v-btn>
                                 </div>
-                                <SuiteInputListSelector :editing="tryMode" :model-value="testArguments" :inputs="inputType" :project-id="props.projectId" />
+                                <SuiteInputListSelector :editing="tryMode" :model-value="testArguments"
+                                                        :inputs="inputType" :doc="doc" :project-id="props.projectId"/>
                                 <v-row v-show="tryMode">
                                     <v-col :align="'right'">
-                                        <v-btn width="100" small tile outlined class="primary" color="white" @click="runTest">
+                                        <v-btn width="100" small tile outlined class="primary" color="white"
+                                               @click="runTest">
                                             Run
                                         </v-btn>
                                     </v-col>
                                 </v-row>
                                 <v-row style="height: 150px" v-if="testResult">
                                     <v-col>
-                                        <TestExecutionResultBadge :result="testResult" />
+                                        <TestExecutionResultBadge :result="testResult"/>
                                     </v-col>
                                 </v-row>
                                 <v-row>
@@ -118,6 +120,7 @@ import StartWorkerInstructions from "@/components/StartWorkerInstructions.vue";
 import {storeToRefs} from "pinia";
 import {useCatalogStore} from "@/stores/catalog";
 import SuiteInputListSelector from "@/components/SuiteInputListSelector.vue";
+import {extractArgumentDocumentation} from "@/utils/python-doc.utils";
 import IEditorOptions = editor.IEditorOptions;
 
 const l = MonacoEditor;
@@ -169,6 +172,7 @@ watch(selected, (value) => {
         .value()
 });
 
+const doc = computed(() => extractArgumentDocumentation(selected.value));
 
 function sorted(arr: any[]) {
     const res = _.cloneDeep(arr);
