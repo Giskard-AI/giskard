@@ -203,6 +203,7 @@ class BaseModel(ABC):
             ValueError: If a specified feature name is not found in the dataset.
         """
         df = dataset.df.copy()
+        df = df[[col for col in dataset.df.columns if not col.startswith(GISKARD_COLUMN_PREFIX)]]
         column_dtypes = dict(dataset.column_dtypes) if dataset.column_dtypes else None
 
         if column_dtypes:
@@ -263,9 +264,7 @@ class BaseModel(ABC):
         # Read cache
         cached_predictions = dataset.df[GISKARD_HASH_COLUMN].isin(self.prediction_cache)
 
-        non_giskard_column = [col for col in dataset.df.columns if not col.startswith(GISKARD_COLUMN_PREFIX)]
-        df = self.prepare_dataframe(
-            dataset.slice(lambda x: dataset.df[~cached_predictions][non_giskard_column], row_level=False))
+        df = self.prepare_dataframe(dataset.slice(lambda x: dataset.df[~cached_predictions], row_level=False))
 
         raw_prediction = np.array(self.predict_df(df))
 
