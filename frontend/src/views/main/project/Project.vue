@@ -131,6 +131,7 @@ const tabsMap = new Map([
   ["properties", "Properties"],
   ["project-catalog", "Catalog"],
   ["test-suites", "Test"],
+  ["test-suite", "Test"],
   ["debugger", "Debugger"],
   ["feedbacks", "Feedback"],
 ]);
