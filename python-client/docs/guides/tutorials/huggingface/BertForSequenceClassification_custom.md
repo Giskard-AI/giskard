@@ -13,7 +13,7 @@ import pandas as pd
 from dateutil import parser
 from scipy import special
 from transformers import BertTokenizer, BertForSequenceClassification
-from giskard import Model, wrap_dataset
+from giskard import Model, Dataset
 ```
 
 ## Wrap dataset
@@ -107,7 +107,7 @@ excluded_category = [idx_to_cat[i] for i in [11, 12, 13]]
 data_filtered = data_filtered[-data_filtered["Target"].isin(excluded_category)]
 ```
 ```python
-wrapped_dataset = wrap_dataset(data_filtered.head(5), 
+wrapped_dataset = Dataset(data_filtered.head(5), 
                                name="test dataset", 
                                target="Target",
                                cat_columns=['Week_day', 'Month'])
