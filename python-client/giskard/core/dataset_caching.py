@@ -11,8 +11,8 @@ def generate_row_hashes(dataset: Dataset):
         unknown_values = list(df[GISKARD_HASH_COLUMN].isna())
         df.loc[unknown_values, GISKARD_HASH_COLUMN] = list(
             map(lambda row: hashlib.md5(f"({', '.join(map(lambda x: str(x), row))}".encode('utf-8')).hexdigest(),
-                df.loc[unknown_values][non_giskard_column]))
+                df.loc[unknown_values][non_giskard_column].values))
     else:
         df[GISKARD_HASH_COLUMN] = list(
             map(lambda row: hashlib.md5(f"({', '.join(map(lambda x: str(x), row))}".encode('utf-8')).hexdigest(),
-                df[non_giskard_column]))
+                df[non_giskard_column].values))
