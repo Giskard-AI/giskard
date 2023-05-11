@@ -271,7 +271,10 @@ class BaseModel(ABC):
             raw_prediction = self.predict_df(df)
             self.model_cache.set_cache(dataset.df[missing][GISKARD_HASH_COLUMN], raw_prediction)
 
-            cached_predictions[missing] = raw_prediction
+            try:
+                cached_predictions[missing] = raw_prediction
+            except TypeError:
+                assert False, f'{list(map(self.model_cache.prediction_cache.get, dataset.df[GISKARD_HASH_COLUMN].values))} - {raw_prediction.shape}'
 
         if self.is_regression:
             result = ModelPredictionResults(
