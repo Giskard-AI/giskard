@@ -27,6 +27,9 @@ class Scanner:
         # Collect the detectors
         detectors = self.get_detectors(tags=[model.meta.model_type.value])
 
+        if not detectors:
+            raise RuntimeError("No issue detectors available. Scan will not be performed.")
+
         logger.debug(f"Running detectors: {[d.__class__.__name__ for d in detectors]}")
 
         # @TODO: this should be selective to specific warnings
