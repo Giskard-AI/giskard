@@ -9,7 +9,24 @@ from transformers import BertTokenizer, BertForSequenceClassification
 
 from tests.huggingface.email_classification_utils import get_email_files
 import tests.utils
-from giskard import HuggingFaceModel, Dataset
+from giskard import HuggingFaceModel, Dataset, Model
+
+
+class MyHuggingFaceModel(HuggingFaceModel):
+    should_save_model_class = True
+
+    def model_predict(self, data):
+        with torch.no_grad():
+            predictions = self.model(**data).logits
+        return predictions.detach().cpu().numpy()
+
+
+class MyAutoHuggingFaceModel(Model):
+    def model_predict(self, data):
+        with torch.no_grad():
+            predictions = self.model(**data).logits
+        return predictions.detach().cpu().numpy()
+
 
 idx_to_cat = {
     1: 'REGULATION',
@@ -113,14 +130,6 @@ def test_email_classification_bert_custom_model():
         X_test_tokenized = tokenizer(X_test, padding=True, truncation=True, max_length=512, return_tensors="pt")
         return X_test_tokenized
 
-    class MyHuggingFaceModel(HuggingFaceModel):
-        should_save_model_class = True
-
-        def model_predict(self, data):
-            with torch.no_grad():
-                predictions = self.model(**data).logits
-            return predictions.detach().cpu().numpy()
-
     # ---------------------------------------------------------------------------------------
 
     my_model = MyHuggingFaceModel(name=model_name,
@@ -135,3 +144,15 @@ def test_email_classification_bert_custom_model():
                               cat_columns=['Week_day', 'Month'])
 
     tests.utils.verify_model_upload(my_model, my_test_dataset)
+
+    # ---------------------------------------------------------------------------------------
+
+    my_auto_model = MyAutoHuggingFaceModel(name=model_name,
+                                           model=model,
+                                           feature_names=['Content'],
+                                           model_type="classification",
+                                           classification_labels=list(classification_labels_mapping.keys()),
+                                           data_preprocessing_function=preprocessing_func,
+                                           model_postprocessing_function=my_softmax)
+
+    tests.utils.verify_model_upload(my_auto_model, my_test_dataset)
