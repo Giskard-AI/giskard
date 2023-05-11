@@ -41,7 +41,7 @@ class ModelCache:
     def to_df(self):
         is_array = len(self.classification_labels) > 1
         data = np.array(
-            [[key] + values if is_array else [key, values] for key, values in self.prediction_cache.items()])
+            [[key] + list(values) if is_array else [key, values] for key, values in self.prediction_cache.items()])
 
         if len(data) > 0:
             return pd.DataFrame([data[:, i + 1] for i in range(len(self.classification_labels))],
