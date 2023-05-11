@@ -76,7 +76,6 @@ class BaseModel(ABC):
             feature_names: Optional[Iterable] = None,
             classification_threshold: Optional[float] = 0.5,
             classification_labels: Optional[Iterable] = None,
-            model_cache: Optional[ModelCache] = None
     ) -> None:
         """
         Initialize a new instance of the BaseModel class.
@@ -113,8 +112,7 @@ class BaseModel(ABC):
                     "Duplicates are found in 'classification_labels', please only provide unique values."
                 )
 
-        self.model_cache = ModelCache(
-            classification_labels=classification_labels) if model_cache is None else ModelCache
+        self.model_cache = ModelCache(classification_labels=classification_labels)
 
         self.meta = ModelMeta(
             name=name if name is not None else self.__class__.__name__,
@@ -412,8 +410,10 @@ class BaseModel(ABC):
         constructor_params = meta.__dict__
         del constructor_params["loader_module"]
         del constructor_params["loader_class"]
-        return clazz.load(local_dir, model_cache=ModelCache(prediction_cache, meta.classification_labels),
-                          **constructor_params)
+
+        model = clazz.load(local_dir, **constructor_params)
+        model.model_cache = ModelCache(prediction_cache, meta.classification_labels)
+        return model
 
     @classmethod
     def load(cls, local_dir, **kwargs):
@@ -450,7 +450,7 @@ class WrapperModel(BaseModel, ABC):
             name: Optional[str] = None,
             feature_names: Optional[Iterable] = None,
             classification_threshold: Optional[float] = 0.5,
-            classification_labels: Optional[Iterable] = None,
+            classification_labels: Optional[Iterable] = None
     ) -> None:
         """
         Initialize a new instance of the WrapperModel class.
