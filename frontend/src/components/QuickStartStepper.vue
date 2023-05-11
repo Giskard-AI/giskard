@@ -111,7 +111,6 @@ const props = defineProps<Props>();
 
 const step = ref<number>(1);
 const artifactsStep = ref<number>(1);
-const toggleArtifactType = ref<string>("dataset");
 const toggleTestType = ref<string>("scan");
 const apiAccessToken = ref<JWTToken | null>(null);
 const allMLWorkerSettings = ref<MLWorkerInfoDTO[]>([]);
