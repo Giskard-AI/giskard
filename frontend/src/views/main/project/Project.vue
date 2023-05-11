@@ -88,7 +88,7 @@
         <v-card-title flat>
           Quick start guide
         </v-card-title>
-        <QuickStartSteepper :project="project" @close="openQuickStart = false"></QuickStartSteepper>
+        <QuickStartStepper :project="project" @close="openQuickStart = false"></QuickStartStepper>
       </v-card>
     </v-dialog>
 
@@ -112,7 +112,7 @@ import { useUserStore } from "@/stores/user";
 import { useProjectArtifactsStore } from "@/stores/project-artifacts";
 import { useProjectStore } from "@/stores/project";
 import { getUserFullDisplayName } from "@/utils";
-import QuickStartSteepper from "@/components/QuickStartSteepper.vue";
+import QuickStartStepper from "@/components/QuickStartStepper.vue";
 
 const router = useRouter();
 
