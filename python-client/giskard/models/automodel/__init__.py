@@ -71,7 +71,7 @@ class Model(CloudpickleBasedModel, ABC):
                 name: Optional[str] = None,
                 feature_names: Optional[Iterable] = None,
                 classification_threshold: Optional[float] = 0.5,
-                classification_labels: Optional[Iterable] = None,
+                classification_labels: Optional[Any] = None,
                 **kwargs
                 ):
         """
@@ -86,7 +86,6 @@ class Model(CloudpickleBasedModel, ABC):
         2. the user will be asked to provide his own :code:`model_predict` method.
 
         """
-
         if not model:
             raise ValueError(
                 "The 'Model' class cannot be initiated without a `model` argument. "

@@ -70,7 +70,7 @@ class BaseModel(ABC):
             name: Optional[str] = None,
             feature_names: Optional[Iterable] = None,
             classification_threshold: Optional[float] = 0.5,
-            classification_labels: Optional[Iterable] = None,
+            classification_labels: Optional[Any] = None,
     ) -> None:
         """
         Initialize a new instance of the BaseModel class.
@@ -100,8 +100,24 @@ class BaseModel(ABC):
                     f'Invalid model type value "{model_type}". Available values are: {available_values}'
                 ) from e
 
+        if model_type == SupportedModelTypes.CLASSIFICATION and classification_labels is None:
+            raise ValueError(
+                "The argument 'classification_labels' is required. "
+                "It is the list of unique categories contained in your dataset target variable.")
+
         if classification_labels is not None:
-            classification_labels = list(classification_labels)
+            if isinstance(classification_labels, dict):
+                labels_keys_are_ints = issubclass(np.array(list(classification_labels.keys())).dtype.type, np.integer)
+                if not labels_keys_are_ints:
+                    raise ValueError(
+                        "The keys in 'classification_labels' must be integer numbers, indicating the mapping"
+                        "between the labels and their ids.")
+            else:
+                try:
+                    classification_labels = list(classification_labels)
+                except ValueError as e:
+                    raise ValueError("'classification_labels' must be iterable (a list, array or a dict).")
+
             if len(classification_labels) != len(set(classification_labels)):
                 raise ValueError(
                     "Duplicates are found in 'classification_labels', please only provide unique values."
@@ -253,7 +269,13 @@ class BaseModel(ABC):
                 prediction=raw_prediction, raw_prediction=raw_prediction, raw=raw_prediction
             )
         elif self.is_classification:
+            id2label = None
             labels = np.array(self.meta.classification_labels)
+            labels_as_map = isinstance(self.meta.classification_labels, dict)
+            if labels_as_map:
+                id2label = self.meta.classification_labels
+                labels = np.array(list(id2label.values()))
+
             threshold = self.meta.classification_threshold
 
             if threshold is not None and len(labels) == 2:
@@ -263,7 +285,11 @@ class BaseModel(ABC):
 
             all_predictions = pd.DataFrame(raw_prediction, columns=labels)
 
-            predicted_labels = labels[predicted_lbl_idx]
+            if labels_as_map:
+                predicted_labels = [id2label[lbl_idx] for lbl_idx in predicted_lbl_idx]
+            else:
+                predicted_labels = labels[predicted_lbl_idx]
+
             probability = raw_prediction[range(len(predicted_lbl_idx)), predicted_lbl_idx]
 
             result = ModelPredictionResults(
@@ -400,7 +426,7 @@ class WrapperModel(BaseModel, ABC):
             name: Optional[str] = None,
             feature_names: Optional[Iterable] = None,
             classification_threshold: Optional[float] = 0.5,
-            classification_labels: Optional[Iterable] = None,
+            classification_labels: Optional[Any] = None,
     ) -> None:
         """
         Initialize a new instance of the WrapperModel class.

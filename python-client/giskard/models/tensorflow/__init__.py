@@ -21,7 +21,7 @@ class TensorFlowModel(MLFlowBasedModel):
                  model_postprocessing_function: Callable[[Any], Any] = None,
                  feature_names: Optional[Iterable] = None,
                  classification_threshold: Optional[float] = 0.5,
-                 classification_labels: Optional[Iterable] = None):
+                 classification_labels: Optional[Any] = None):
         super().__init__(model=model,
                          model_type=model_type,
                          name=name,

@@ -44,7 +44,7 @@ def wrap_model(model,
                name: Optional[str] = None,
                feature_names: Optional[Iterable] = None,
                classification_threshold: Optional[float] = 0.5,
-               classification_labels: Optional[Iterable] = None,
+               classification_labels: Optional[Any] = None,
                **kwargs):
     """
     Wraps a trained model from :code:`sklearn`, :code:`catboost`, :code:`pytorch`, :code:`tensorflow` or
@@ -117,7 +117,7 @@ def model_from_sklearn(model, model_type: ModelType, name: Optional[str] = None,
                        data_preprocessing_function: Callable[[pd.DataFrame], Any] = None,
                        model_postprocessing_function: Callable[[Any], Any] = None,
                        feature_names: Optional[Iterable] = None, classification_threshold: Optional[float] = 0.5,
-                       classification_labels: Optional[Iterable] = None):
+                       classification_labels: Optional[Any] = None):
     """
     Factory method that creates an instance of the `SKLearnModel` class.
 
@@ -136,7 +136,7 @@ def model_from_sklearn(model, model_type: ModelType, name: Optional[str] = None,
             A list of feature names.
         classification_threshold: float, default=0.5
             The threshold value used for classification models.
-        classification_labels: Optional[Iterable], default=None
+        classification_labels: Optional[Any], default=None
             A list of classification labels.
 
     Returns:
@@ -159,7 +159,7 @@ def model_from_catboost(model, model_type: ModelType, name: Optional[str] = None
                         data_preprocessing_function: Callable[[pd.DataFrame], Any] = None,
                         model_postprocessing_function: Callable[[Any], Any] = None,
                         feature_names: Optional[Iterable] = None, classification_threshold: Optional[float] = 0.5,
-                        classification_labels: Optional[Iterable] = None):
+                        classification_labels: Optional[Any] = None):
     """
     Factory method that creates an instance of the `CatboostModel` class.
 
@@ -198,7 +198,7 @@ def model_from_pytorch(model, model_type: ModelType, torch_dtype=None, device: O
                        data_preprocessing_function: Callable[[pd.DataFrame], Any] = None,
                        model_postprocessing_function: Callable[[Any], Any] = None,
                        feature_names: Optional[Iterable] = None, classification_threshold: Optional[float] = 0.5,
-                       classification_labels: Optional[Iterable] = None, iterate_dataset=True):
+                       classification_labels: Optional[Any] = None, iterate_dataset=True):
     """
     Factory method that creates an instance of the `PyTorchModel` class.
 
@@ -249,7 +249,7 @@ def model_from_tensorflow(model, model_type: ModelType, name: Optional[str] = No
                           data_preprocessing_function: Callable[[pd.DataFrame], Any] = None,
                           model_postprocessing_function: Callable[[Any], Any] = None,
                           feature_names: Optional[Iterable] = None, classification_threshold: Optional[float] = 0.5,
-                          classification_labels: Optional[Iterable] = None):
+                          classification_labels: Optional[Any] = None):
     """
     Factory method that creates an instance of the `TensorFlowModel` class.
 
@@ -287,7 +287,7 @@ def model_from_huggingface(model, model_type: ModelType, name: Optional[str] = N
                            data_preprocessing_function: Callable[[pd.DataFrame], Any] = None,
                            model_postprocessing_function: Callable[[Any], Any] = None,
                            feature_names: Optional[Iterable] = None, classification_threshold: Optional[float] = 0.5,
-                           classification_labels: Optional[Iterable] = None):
+                           classification_labels: Optional[Any] = None):
     """
     Factory method that creates an instance of the `HuggingFaceModel` class.
 
