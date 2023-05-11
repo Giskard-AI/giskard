@@ -9,8 +9,10 @@ def generate_row_hashes(dataset: Dataset):
 
     if GISKARD_HASH_COLUMN in df:
         unknown_values = list(df[GISKARD_HASH_COLUMN].isna())
-        df.loc[unknown_values, GISKARD_HASH_COLUMN] = df.loc[unknown_values][non_giskard_column].apply(
-            lambda x: hashlib.md5(str(x).encode('utf-8')).hexdigest(), axis=1)
+        df.loc[unknown_values, GISKARD_HASH_COLUMN] = list(
+            map(lambda row: hashlib.md5(f"({', '.join(map(lambda x: str(x), row))}".encode('utf-8')).hexdigest(),
+                df.loc[unknown_values][non_giskard_column]))
     else:
-        df[GISKARD_HASH_COLUMN] = df[non_giskard_column].apply(
-            lambda x: hashlib.md5(str(x).encode('utf-8')).hexdigest(), axis=1)
+        df[GISKARD_HASH_COLUMN] = list(
+            map(lambda row: hashlib.md5(f"({', '.join(map(lambda x: str(x), row))}".encode('utf-8')).hexdigest(),
+                df[non_giskard_column]))
