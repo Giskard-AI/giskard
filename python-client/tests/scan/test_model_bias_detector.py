@@ -1,7 +1,7 @@
 import pytest
 import pandas as pd
 from unittest import mock
-from giskard import wrap_dataset
+from giskard import Dataset
 from giskard.scanner.issues import Issue
 from giskard.scanner.performance import ModelBiasDetector
 
@@ -51,7 +51,7 @@ def test_model_bias_detector_with_tabular(german_credit_model, german_credit_dat
 def test_model_bias_detector_with_text_features(enron_model, enron_data):
     # Augment the dataset with random data
     df = pd.DataFrame({col: enron_data.df[col].sample(500, replace=True).values for col in enron_data.columns})
-    dataset = wrap_dataset(df, target=enron_data.target, column_types=enron_data.column_types)
+    dataset = Dataset(df, target=enron_data.target, column_types=enron_data.column_types)
     detector = ModelBiasDetector()
 
     issues = detector.run(enron_model, dataset)
