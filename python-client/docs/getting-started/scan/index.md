@@ -119,7 +119,7 @@ def prediction_function(df: pd.DataFrame) -> np.ndarray:
 wrapped_model = Model(
   prediction_function,
   model_type="classification",
-  classification_labels=['Setosa', 'Versicolor', 'Virginica'],
+  classification_labels={0: 'Setosa', 1: 'Versicolor', 2: 'Virginica'},
   feature_names=['sepal length', 'sepal width'],  # Default: all columns of your dataset
   # name="my_iris_classification_model", # Optional
   # classification_threshold=0.5, # Default: 0.5
@@ -213,7 +213,7 @@ wrapped_model = Model(
   data_preprocessing_function=preprocessing_function, # Optional
   model=clf,
   model_type="classification",
-  classification_labels=['Setosa', 'Versicolor', 'Virginica'],
+  classification_labels={0: 'Setosa', 1: 'Versicolor', 2: 'Virginica'},
   feature_names=['sepal length', 'sepal width'], # Default: all columns of your dataset
   # name="my_iris_classification_model", # Optional
   # classification_threshold=0.5, # Default: 0.5
@@ -313,7 +313,7 @@ class MyCustomModel(Model):
 wrapped_model = MyCustomModel(
   model=clf,
   model_type="classification",
-  classification_labels=['Setosa', 'Versicolor', 'Virginica']
+  classification_labels={0: 'Setosa', 1: 'Versicolor', 2: 'Virginica'}
   # name="my_iris_classification_model", # Optional
   # classification_threshold=0.5, # Default: 0.5
   # model_postprocessing_function=None, # Optional
