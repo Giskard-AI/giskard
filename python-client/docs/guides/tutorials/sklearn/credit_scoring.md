@@ -11,7 +11,7 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
 from sklearn import model_selection
-from giskard import wrap_model, wrap_dataset
+from giskard import Model, Dataset
 ```
 
 ## Wrapping dataset
@@ -48,7 +48,7 @@ df = pd.read_csv(
 )
 ```
 ```python
-wrapped_dataset = wrap_dataset(df,
+wrapped_dataset = Dataset(df,
                                name='Test german credit scoring dataset',
                                target="default",
                                column_types=column_types)
@@ -84,7 +84,7 @@ X_train, X_test, Y_train, Y_test = model_selection.train_test_split(
 clf.fit(X_train, Y_train)
 ```
 ```python
-wrapped_model = wrap_model(model=clf,
+wrapped_model = Model(model=clf,
                            model_type="classification",
                            feature_names=list(column_types.keys()))
 ```

@@ -12,7 +12,7 @@ class MetadataIndexer:
     The metadata are generated on first access and cached for subsequent requests.
 
     Example:
-        dataset = wrap_dataset(...)
+        dataset = Dataset(...)
         text_metadata_for_my_column = dataset.column_meta["my_column", "text"]
 
     """

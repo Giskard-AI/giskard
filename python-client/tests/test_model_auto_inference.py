@@ -1,4 +1,4 @@
-from giskard.models import wrap_model
+from giskard.models.automodel import Model
 
 
 def test_sklearn():
@@ -7,7 +7,7 @@ def test_sklearn():
 
     my_model = LogisticRegression()
     kwargs = {"model": my_model, "model_type": "classification"}
-    my_automodel = wrap_model(**kwargs)
+    my_automodel = Model(**kwargs)
     assert isinstance(my_automodel, SKLearnModel)
 
 
@@ -17,7 +17,7 @@ def test_catboost():
 
     my_model = CatBoostClassifier()
     kwargs = {"model": my_model, "model_type": "classification", "classification_labels": [""], "feature_names": [""]}
-    my_automodel = wrap_model(**kwargs)
+    my_automodel = Model(**kwargs)
     assert isinstance(my_automodel, CatboostModel)
 
 
@@ -28,7 +28,7 @@ def test_huggingface():
     my_model = BertForSequenceClassification.from_pretrained(model_name, num_labels=4, ignore_mismatched_sizes=True)
 
     kwargs = {"model": my_model, "model_type": "classification"}
-    my_automodel = wrap_model(**kwargs)
+    my_automodel = Model(**kwargs)
     assert isinstance(my_automodel, HuggingFaceModel)
 
 
@@ -38,7 +38,7 @@ def test_pytorch():
 
     my_model = FeedforwardNeuralNetModel(1, 1, 1)
     kwargs = {"model": my_model, "model_type": "regression"}
-    my_automodel = wrap_model(**kwargs)
+    my_automodel = Model(**kwargs)
     assert isinstance(my_automodel, PyTorchModel)
 
 
@@ -52,5 +52,5 @@ def test_tensorflow():
         keras.layers.Dropout(0.2),
         keras.layers.Dense(10, activation='softmax')])
     kwargs = {"model": my_model, "model_type": "classification"}
-    my_automodel = wrap_model(**kwargs)
+    my_automodel = Model(**kwargs)
     assert isinstance(my_automodel, TensorFlowModel)
