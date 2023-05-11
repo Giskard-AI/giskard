@@ -106,7 +106,7 @@ class TextPerturbationDetector(Detector):
             fail_ratio = 1 - pass_ratio
 
             logger.debug(
-                f"TextPerturbationDetector: Testing for perturbation `{transformation.name}`\tFail rate: {fail_ratio:.3f}"
+                f"TextPerturbationDetector: Testing `{feature}` for perturbation `{transformation.name}`\tFail rate: {fail_ratio:.3f}"
             )
 
             if fail_ratio >= self.threshold:
