@@ -370,7 +370,7 @@ class Dataset(ColumnMetadataMixin):
             dict: A dictionary where the keys are the column names and the values are the corresponding data types as strings.
         """
         return {key: value for key, value in df.dtypes.apply(lambda x: x.name).to_dict().items() if
-                not key.startswith(GISKARD_COLUMN_PREFIX)}
+                not type(key) == str or not key.startswith(GISKARD_COLUMN_PREFIX)}
 
     def upload(self, client: GiskardClient, project_key: str):
         """
@@ -393,13 +393,7 @@ class Dataset(ColumnMetadataMixin):
                 dataset_id,
                 self.meta,
                 original_size_bytes=original_size_bytes,
-                compressed_size_bytes=compressed_size_bytes,
-                number_of_rows=len(self.df.index),
-                category_features={
-                    column: list(self.df[column].dropna().unique())
-                    for column, column_type in self.meta.column_types.items()
-                    if column_type == 'category'
-                }
+                compressed_size_bytes=compressed_size_bytes
             )
         return dataset_id
 
@@ -515,7 +509,7 @@ class Dataset(ColumnMetadataMixin):
 
     @property
     def columns(self):
-        return [col for col in self.df.columns if not col.startswith(GISKARD_COLUMN_PREFIX)]
+        return [col for col in self.df.columns if not type(col) == str or not col.startswith(GISKARD_COLUMN_PREFIX)]
 
     def __len__(self):
         return len(self.df)
