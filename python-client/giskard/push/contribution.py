@@ -27,7 +27,7 @@ def contribution(model, ds, idrow):  # data_aug_dict
                                bounds=bounds,
                                model_type=SupportedModelTypes.CLASSIFICATION
                                )
-                    return res
+                    yield res
 
                 else:
                     res = Push(push_type="contribution_only", feature=el,
@@ -35,7 +35,7 @@ def contribution(model, ds, idrow):  # data_aug_dict
                                bounds=bounds,
                                model_type=SupportedModelTypes.CLASSIFICATION
                                )
-                    return res
+                    yield res
 
     if model.meta.model_type == SupportedModelTypes.REGRESSION:
         shap_res = _contribution_push(model, ds, idrow)
@@ -56,7 +56,7 @@ def contribution(model, ds, idrow):  # data_aug_dict
                                bounds=bounds,
                                model_type=SupportedModelTypes.REGRESSION
                                )
-                    return res
+                    yield res
 
                 else:
                     res = Push(push_type="contribution_only", feature=el,
@@ -64,7 +64,7 @@ def contribution(model, ds, idrow):  # data_aug_dict
                                bounds=bounds,
                                model_type=SupportedModelTypes.REGRESSION
                                )
-                    return res
+                    yield res
 
 
 def _contribution_push(model, ds, idrow):  # done at each step
