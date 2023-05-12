@@ -340,7 +340,7 @@ class Dataset(ColumnMetadataMixin):
                     column_types[cat_col] = SupportedColumnTypes.CATEGORY.value
             df_columns = set(df_columns) - set(cat_columns)
 
-        for col in self.columns:
+        for col in df_columns:
             if col == self.target:
                 continue
             # inference of categorical columns
@@ -394,7 +394,12 @@ class Dataset(ColumnMetadataMixin):
                 self.meta,
                 original_size_bytes=original_size_bytes,
                 compressed_size_bytes=compressed_size_bytes,
-
+                number_of_rows=len(self.df.index),
+                category_features={
+                    column: list(self.df[column].dropna().unique())
+                    for column, column_type in self.meta.column_types.items()
+                    if column_type == 'category'
+                }
             )
         return dataset_id
 
