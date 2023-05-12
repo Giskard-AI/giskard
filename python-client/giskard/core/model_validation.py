@@ -148,7 +148,7 @@ def validate_model_type(model_type: ModelType):
 
 
 @configured_validate_arguments
-def validate_classification_labels(classification_labels: Union[np.ndarray, List, None],
+def validate_classification_labels(classification_labels: Any,
                                    model_type: ModelType):
     if model_type == SupportedModelTypes.CLASSIFICATION:
         if classification_labels is not None and isinstance(classification_labels, Iterable):
@@ -180,7 +180,7 @@ def validate_features(feature_names: Optional[List[str]] = None, validate_df: Op
 
 
 @configured_validate_arguments
-def validate_classification_threshold_label(classification_labels: Union[np.ndarray, List, None],
+def validate_classification_threshold_label(classification_labels: Any,
                                             classification_threshold: float = None):
     if classification_labels is None:
         raise ValueError("Missing classification_labels parameter for classification model.")
@@ -236,7 +236,7 @@ def validate_prediction_output(ds: Dataset, model_type: ModelType, prediction):
 
 
 @configured_validate_arguments
-def validate_classification_prediction(classification_labels: Union[np.ndarray, List, None], prediction):
+def validate_classification_prediction(classification_labels: Any, prediction):
     if not np.all(np.logical_and(prediction >= 0, prediction <= 1)):
         warning("Output of model.predict returns values out of range [0,1]. "
                 "The output of Multiclass and Binary classifications should be within the range [0,1]")
