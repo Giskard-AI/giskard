@@ -33,7 +33,8 @@ def contribution(model, ds, idrow):  # data_aug_dict
 
                 else:
                     res = Push(push_type="contribution_only", feature=el,
-                    value=values[el],   bounds=bounds
+                    value=values[el],   bounds=bounds,
+                                      model_type=SupportedModelTypes.CLASSIFICATION
                                       )yield res
 
                     if model.meta.model_type == SupportedModelTypes.REGRESSION:
@@ -58,7 +59,8 @@ def contribution(model, ds, idrow):  # data_aug_dict
                 else:
                     res = NumericPush(push_type="contribution_only", feature=el,
                                       value=values[el],
-                                      bounds=bounds
+                                      bounds=bounds,
+                                      model_type=SupportedModelTypes.CLASSIFICATION
                                       )
                     yield res
 
@@ -77,17 +79,19 @@ def contribution(model, ds, idrow):  # data_aug_dict
                 bounds = slice_bounds(feature=el, value=values[el], ds=ds)
                 if abs(error - y) / y >= 0.2:  # use scan feature ?
                     res = NumericPush(push_type="contribution_wrong",
-                               feature=el,
-                               value=values[el],
-                               bounds=bounds
-                               )
+                                      feature=el,
+                                      value=values[el],
+                                      bounds=bounds,
+                                      model_type=SupportedModelTypes.REGRESSION
+                                      )
                     yield res
 
                 else:
                     res = NumericPush(push_type="contribution_only", feature=el,
-                               value=values[el],
-                               bounds=bounds
-                               )
+                                      value=values[el],
+                                      bounds=bounds,
+                                      model_type=SupportedModelTypes.REGRESSION
+                                      )
                     yield res
 
 
