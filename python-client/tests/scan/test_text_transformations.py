@@ -1,9 +1,9 @@
 import pandas as pd
-from giskard import wrap_dataset
+from giskard import Dataset
 
 
 def _dataset_from_dict(data):
-    return wrap_dataset(pd.DataFrame(data), target=None)
+    return Dataset(pd.DataFrame(data), target=None)
 
 
 def test_gender_transformation():
