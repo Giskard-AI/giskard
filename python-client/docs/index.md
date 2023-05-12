@@ -9,32 +9,59 @@ guides/index
 reference/index
 ```
 
-## <project:/getting-started/index.rst>
+# Giskard Documentation
 
-**Follow our handy guides to get started on the basics as quickly as possible:**
-1. **<project:/getting-started/scan/index.rst>**
-2. **<project:/getting-started/test-suite/index.md>**
-3. **<project:/getting-started/slicing-and-transformation-functions/index.rst>**
+<b>Giskard creates interfaces for humans to inspect & test AI models. It is open-source and self-hosted.</b>
 
-## <project:/guides/index.rst>
-**Pick one of our catalogs to explore:**
-- **<project:/guides/test-catalog/index.rst>**
-- **<project:/guides/slicing-function-catalog/index.rst>**
-- **<project:/guides/transformation-function-catalog/index.rst>**
+Giskard lets you instantly see your model's prediction for a given set of feature values. You can set the values directly in Giskard and see the prediction change.
 
-**Additional useful information can also be found here:**
-- **<project:/guides/installation/index.md>**
-- **<project:/guides/tutorials/index.md>**
+Saw anything strange? Leave feedback directly within Giskard, so that your team can explore the query that generated the faulty result. 
 
-## <project:/reference/index.rst>
+Designed for both tech and business users, Giskard is super intuitive to use!
 
-**The reference guide contains a detailed description of the functions, modules, and objects included in Giskard.
-The reference describes how the methods work and which parameters can be used.**
+Want to ensure your model is right? Giskard enables you to turn your business feedback into actionable tests. Create in a few clicks automatic tests and execute them in your CI/CD pipeline each time, you create a new version of your model.
+And of course, Giskard works with any model, any environment and integrates seemlessly with your favorite tools.
 
-- **<project:/cli/index.rst>**
-- **<project:/reference/models/index.rst>**
-- **<project:/reference/datasets/index.rst>**
-- **<project:/reference/tests/index.rst>**
-- **<project:/reference/suite/index.rst>**
-- **<project:/reference/slicing-functions/index.rst>**
-- **<project:/reference/transformation-functions/index.rst>**
+::::::{grid} 1 1 2 2
+:gutter: 1
+
+:::::{grid-item}
+
+::::{grid} 1 1 1 1
+:gutter: 1
+
+(cards-clickable)=
+:::{card} <h2><center> Getting Started </center></h2>
+:link: getting-started/index.html
+<img src="assets/intro/coffee.png" alt="coffee" width="100%">
+:::
+
+(cards-clickable)=
+:::{card} <h2><center> API Reference </center></h2>
+:link: reference/index.html
+<img src="assets/intro/Giskard_Turtle_Computer.png" alt="test" width="100%">
+::::
+
+:::::
+
+:::::{grid-item}
+
+::::{grid} 1 1 1 1
+:gutter: 1
+
+(cards-clickable)=
+:::{card} <h2><center> User Guide </center></h2>
+:link: guides/index.html
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="assets/intro/ninja.png" alt="ninja" width="79.5%">
+:::
+
+(cards-clickable)=
+:::{card} <h2><center> Contributor's Guide </center></h2>
+:link: contribute/index.html
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="assets/intro/hey.png" alt="hey" width="58.5%">
+::::
+
+:::::
+
+::::::
