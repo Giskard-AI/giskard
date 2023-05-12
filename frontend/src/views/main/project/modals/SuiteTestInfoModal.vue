@@ -50,6 +50,8 @@ import {useTestSuiteStore} from '@/stores/test-suite';
 import {api} from '@/api';
 import TestInputListSelector from "@/components/TestInputListSelector.vue";
 import {useCatalogStore} from "@/stores/catalog";
+import {$vfm} from "vue-final-modal";
+import RunTestModal from "@/views/main/project/modals/RunTestModal.vue";
 import {extractArgumentDocumentation} from "@/utils/python-doc.utils";
 import {$vfm} from "vue-final-modal";
 import ConfirmModal from "@/views/main/project/modals/ConfirmModal.vue";
@@ -58,7 +60,7 @@ import mixpanel from "mixpanel-browser";
 import {anonymize} from "@/utils";
 
 const props = defineProps<{
-    suiteTest: SuiteTestDTO
+  suiteTest: SuiteTestDTO
 }>();
 
 const {projectId, suite} = storeToRefs(useTestSuiteStore());
@@ -70,9 +72,9 @@ const result = ref<{ [input: string]: FunctionInputDTO }>({});
 const {testFunctionsByUuid} = storeToRefs(useCatalogStore())
 
 const sortedArguments = computed(() => {
-    return _.sortBy(_.values(props.suiteTest.test.args), value => {
-        return !_.isUndefined(props.suiteTest.functionInputs[value.name]);
-    }, 'name');
+  return _.sortBy(_.values(props.suiteTest.test.args), value => {
+    return !_.isUndefined(props.suiteTest.functionInputs[value.name]);
+  }, 'name');
 })
 
 const doc = computed(() => extractArgumentDocumentation(props.suiteTest.test))
@@ -80,22 +82,28 @@ const doc = computed(() => extractArgumentDocumentation(props.suiteTest.test))
 
 const invalid = ref(false);
 
+function resizeEditor() {
+  setTimeout(() => {
+    editor.value.editor.layout();
+  })
+}
+
 onMounted(() => {
-    editedInputs.value = Object.values(props.suiteTest.functionInputs)
-        .reduce((e, arg) => {
-            e[arg.name] = {
-                ...arg
-            };
-            return e;
-        }, {});
+  editedInputs.value = Object.values(props.suiteTest.functionInputs)
+      .reduce((e, arg) => {
+        e[arg.name] = {
+          ...arg
+        };
+        return e;
+      }, {});
 
 });
 
 async function saveEditedInputs(close) {
-    await api.updateTestInputs(projectId.value!, suite.value!.id!, props.suiteTest.id!, Object.values(result.value))
+  await api.updateTestInputs(projectId.value!, suite.value!.id!, props.suiteTest.id!, Object.values(result.value))
 
-    await reload();
-    close();
+  await reload();
+  close();
 
     mixpanel.track('Edit test inputs of test suite', {
         suiteId: suite.value!.id,
@@ -114,6 +122,21 @@ const inputType = computed(() => chain(sortedArguments.value)
     .mapValues('type')
     .value()
 );
+
+async function runDebug() {
+  await $vfm.show({
+    component: RunTestModal,
+    bind: {
+      projectId: projectId.value,
+      suiteId: suite.value!.id,
+      inputs: inputs.value,
+      testUuid: props.suiteTest.testUuid,
+      compareMode: false,
+      previousParams: {},
+      debug: true
+    }
+  });
+}
 
 async function removeTest(close) {
     await $vfm.show({
@@ -144,29 +167,28 @@ async function removeTest(close) {
 
 <style scoped>
 ::v-deep(.modal-container) {
-    display: flex;
-    justify-content: center;
-    align-items: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 ::v-deep(.modal-content) {
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    margin: 0 1rem;
-    padding: 1rem;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  margin: 0 1rem;
+  padding: 1rem;
 }
 
 .modal-card {
-    max-height: 80vh;
-    min-width: 72rem;
-    display: flex;
-    flex-direction: column;
+  max-height: 80vh;
+  min-width: 72rem;display: flex;
+  flex-direction: column;
 }
 
 .card-content {
-    text-align: start;
-    flex-grow: 1;
-    overflow: auto;
+  text-align: start;
+  flex-grow: 1;
+  overflow: auto;
 }
 </style>
