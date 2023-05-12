@@ -1,5 +1,6 @@
 """Performance tests"""
 import inspect
+
 import numpy as np
 from sklearn.metrics import (
     accuracy_score,
@@ -14,12 +15,12 @@ from sklearn.metrics import (
 
 from giskard import test
 from giskard.datasets.base import Dataset
-from giskard.ml_worker.testing.utils import Direction
 from giskard.ml_worker.core.test_result import TestResult
 from giskard.ml_worker.testing.registry.giskard_test import GiskardTest
 from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction
-from giskard.models.base import BaseModel
+from giskard.ml_worker.testing.utils import Direction
 from giskard.ml_worker.testing.utils import check_slice_not_empty
+from giskard.models.base import BaseModel
 from .debug_slicing_functions import incorrect_rows_slicing_fn, nlargest_abs_err_rows_slicing_fn
 
 
@@ -185,7 +186,7 @@ class AucTest(GiskardTest):
 
 @test(name='AUC', tags=['performance', 'classification', 'ground_truth'])
 def test_auc(model: BaseModel, dataset: Dataset, slicing_function: SlicingFunction = None, threshold: float = 1.0,
-             debug: bool = False):
+             debug: bool = True):
     """
     Test if the model AUC performance is higher than a threshold for a given slice
 
