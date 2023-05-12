@@ -150,7 +150,7 @@ class CallableMeta(SavableMeta, ABC):
                 parameter.name: FunctionArgument(
                     name=parameter.name,
                     type=parameter.annotation.__qualname__,
-                    optional=parameter.default != inspect.Parameter.empty and parameter.default is not None,
+                    optional=parameter.default != inspect.Parameter.empty,
                     default=None if parameter.default == inspect.Parameter.empty
                     else parameter.default,
                     argOrder=idx
@@ -254,10 +254,45 @@ class TestFunctionMeta(CallableMeta):
 
 
 class DatasetProcessFunctionMeta(CallableMeta):
+    cell_level: bool
+    column_type: Optional[str]
+
+    def __init__(self,
+                 callable_obj: Union[Callable, Type] = None,
+                 name: Optional[str] = None,
+                 tags: List[str] = None,
+                 version: Optional[int] = None,
+                 type: str = None,
+                 cell_level: bool = False):
+        super(DatasetProcessFunctionMeta, self).__init__(callable_obj, name, tags, version, type)
+        self.cell_level = cell_level
+
+        if cell_level:
+            if inspect.isclass(callable_obj):
+                parameters = list(inspect.signature(callable_obj.__init__).parameters.values())[1:]
+            else:
+                parameters = list(inspect.signature(callable_obj).parameters.values())
+            self.column_type = parameters[0].annotation.__qualname__
+        else:
+            self.column_type = None
+
     def extract_parameters(self, callable_obj):
         parameters = unknown_annotations_to_kwargs(CallableMeta.extract_parameters(self, callable_obj)[1:])
 
         return {p.name: p for p in parameters}
+
+    def to_json(self):
+        json = super().to_json()
+        return {
+            **json,
+            'cellLevel': self.cell_level,
+            'columnType': self.column_type
+        }
+
+    def init_from_json(self, json: Dict[str, Any]):
+        super().init_from_json(json)
+        self.cell_level = json["cellLevel"]
+        self.column_type = json["columnType"]
 
 
 DT = TypeVar('DT')
