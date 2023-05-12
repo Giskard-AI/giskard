@@ -1,5 +1,5 @@
 from giskard.core.core import SupportedModelTypes
-from ..push import NumericPush, TextPush
+from ..push import Push
 from .utils import slice_bounds
 import numpy as np
 from giskard.push import SupportedPerturbationType
@@ -9,6 +9,8 @@ from giskard.scanner.robustness.text_transformations import text_lowercase, \
     TextTypoTransformation, \
     TextPunctuationRemovalTransformation, \
     TextGenderTransformation
+from giskard.ml_worker.testing.registry.transformation_function import TransformationFunction
+import pandas as pd
 
 text_transfo_list = [text_lowercase,
                      text_uppercase,
@@ -23,17 +25,17 @@ def perturbation(model, ds, idrow):
         perturbation_res = Perturbation(model, ds, idrow, feat, coltype)
         if perturbation_res.coltype == SupportedPerturbationType.NUMERIC and perturbation_res.passed:
             bounds = slice_bounds(feature=feat, value=ds.df.iloc[idrow][feat], ds=ds)
-            res = NumericPush(push_type="perturbation", feature=feat, value=ds.df.iloc[idrow][feat],
-                              bounds=bounds,
-                              perturbation_value=perturbation_res.perturbation_value)
-            yield res
+            res = Push(push_type="perturbation", feature=feat, value=ds.df.iloc[idrow][feat],
+                       transformation_function=perturbation_res.transformation_function,
+                       bounds=bounds)
+            return res
 
         if perturbation_res.coltype == SupportedPerturbationType.TEXT and perturbation_res.passed:
-            res = TextPush(push_type="perturbation", feature=feat, value=ds.df.iloc[idrow][feat],
-                           text_perturbed=perturbation_res.text_perturbed,
-                           transformation_function=perturbation_res.transformation_function
-                           )
-            yield res
+            res = Push(push_type="perturbation", feature=feat, value=ds.df.iloc[idrow][feat],
+                       text_perturbed=perturbation_res.text_perturbed,
+                       transformation_function=perturbation_res.transformation_function
+                       )
+            return res
 
 
 class Perturbation:
@@ -69,38 +71,40 @@ class Perturbation:
 
         ref_row = self.ds.df.iloc[[self.idrow]]
         row_perturbed = ref_row.copy()
-        perturbation_val = None
         if self.coltype == SupportedPerturbationType.NUMERIC:
             mad = mad(self.ds.df[self.feature])
-            row_perturbed[self.feature] = self._num_perturb(row_perturbed[self.feature], mad)
-            perturbation_val = mad
-            self._generate_perturbation(ref_row, row_perturbed, perturbation_val)
+            ds_slice = self.ds.slice(lambda x: x.loc[x.index == self.idrow], row_level=False)
+            t, row_perturbed[self.feature] = self._num_perturb(3 * mad, self.feature, ds_slice)
+            self._generate_perturbation(ref_row, row_perturbed)
+            if self.passed:
+                self.transformation_function.append(t)
+
         elif self.coltype == SupportedPerturbationType.TEXT:
             for text_transformation in text_transfo_list:
                 ds_slice = self.ds.slice(lambda x: x.loc[x.index == self.idrow], row_level=False)
-                row_perturbed[self.feature] = self._text_perturb(text_transformation, self.feature, ds_slice)
-                perturbation_val = None  # @TODO: To fix
-                self._generate_perturbation(ref_row, row_perturbed, perturbation_val)
+                t, row_perturbed[self.feature] = self._text_perturb(text_transformation, self.feature, ds_slice)
+                self._generate_perturbation(ref_row, row_perturbed)
                 if self.passed:
                     self.text_perturbed.append(row_perturbed[self.feature])
-                    self.transformation_function.append(text_transformation)
+                    self.transformation_function.append(t)
             if len(self.text_perturbed) > 0:
                 self.passed = True
 
-    def _generate_perturbation(self, ref_row, row_perturbed, perturbation_val):
+    def _generate_perturbation(self, ref_row, row_perturbed):
         if self.model.meta.model_type == SupportedModelTypes.CLASSIFICATION:
             ref_prob = self.model.model.predict(ref_row)
             probabilities = self.model.model.predict(row_perturbed)  # .reshape(1, -1)
             self.passed = ref_prob[0] != probabilities[0]
-            self.perturbation_value = perturbation_val
         elif self.model.meta.model_type == SupportedModelTypes.REGRESSION:
             ref_val = self.model.model.predict(ref_row.drop(columns=[self.ds.target]))
             new_val = self.model.model.predict(row_perturbed.drop(columns=[self.ds.target]))  # .reshape(1, -1)
             self.passed = (new_val - ref_val) / ref_val >= 0.2
-            self.perturbation_value = perturbation_val
 
-    def _num_perturb(self, val, mad):
-        return val + 3 * mad  # 1.2  # 20% perturbation
+    def _num_perturb(self, perturbation_value, col, ds_slice):
+        t = NumTransformation(column=col, perturbation_value=perturbation_value)
+        transformed = ds_slice.transform(t)
+        transformed_num = transformed.df[self.feature].values
+        return t, transformed_num
 
 
 def _text_perturb(val):
@@ -167,4 +171,18 @@ def _text_perturb(val):
         t = transformation_function(column=col)
         transformed = ds_slice.transform(t)
         transformed_text = transformed.df[self.feature].values
-        return str(transformed_text)
+        return t, str(transformed_text)
+
+
+class NumTransformation(TransformationFunction):
+    row_level = False
+    name = "mad perturbation"
+
+    def __init__(self, column, perturbation_value):
+        self.column = column
+        self.perturbation_value = perturbation_value
+
+    def execute(self, data: pd.DataFrame):
+        data = data.copy()
+        data[self.column] = data[self.column].apply(lambda x: x + self.perturbation_value)
+        return data
