@@ -2,7 +2,7 @@
   <div class="vertical-container">
     <div class="d-flex mb-6">
       <v-spacer></v-spacer>
-      <v-btn @click="reloadProjectArtifacts">
+      <v-btn @click="reloadDatasets">
         Reload
         <v-icon right>refresh</v-icon>
       </v-btn>
@@ -150,7 +150,7 @@ async function renameDataset(id: string, name: string) {
   projectArtifactsStore.updateDataset(savedDataset);
 }
 
-async function reloadProjectArtifacts() {
+async function reloadDatasets() {
   await projectArtifactsStore.loadDatasetsWithNotification();
 }
 
