@@ -17,9 +17,9 @@ export const useProjectArtifactsStore = defineStore('projectArtifacts', {
   }),
   getters: {},
   actions: {
-    async setProjectId(projectId: number) {
+    async setProjectId(projectId: number, displayNotification: boolean = true) {
       this.projectId = projectId;
-      await this.loadProjectArtifacts();
+      await this.loadProjectArtifacts(displayNotification);
     },
     async loadDatasetsWithNotification() {
       if (this.projectId === null) return;
@@ -59,19 +59,25 @@ export const useProjectArtifactsStore = defineStore('projectArtifacts', {
       this.models = await api.getProjectModels(this.projectId!);
       this.models = this.models.sort((a, b) => (new Date(a.createdDate) < new Date(b.createdDate) ? 1 : -1));
     },
-    async loadProjectArtifacts() {
+    async loadProjectArtifacts(displayNotification: boolean = true) {
       if (this.projectId === null) return;
-      const mainStore = useMainStore();
-      const loadingNotification = { content: 'Loading project artifacts', showProgress: true };
-      try {
-        mainStore.addNotification(loadingNotification);
+
+      if (displayNotification) {
+        const mainStore = useMainStore();
+        const loadingNotification = { content: 'Loading project artifacts', showProgress: true };
+        try {
+          mainStore.addNotification(loadingNotification);
+          await this.loadDatasets();
+          await this.loadModels();
+          mainStore.removeNotification(loadingNotification);
+        } catch (error) {
+          mainStore.removeNotification(loadingNotification);
+          mainStore.addNotification({ content: `Error: ${error.message}`, color: 'error' });
+          await mainStore.checkApiError(error);
+        }
+      } else {
         await this.loadDatasets();
         await this.loadModels();
-        mainStore.removeNotification(loadingNotification);
-      } catch (error) {
-        mainStore.removeNotification(loadingNotification);
-        mainStore.addNotification({ content: `Error: ${error.message}`, color: 'error' });
-        await mainStore.checkApiError(error);
       }
     },
     updateDataset(newDataset: DatasetDTO) {
