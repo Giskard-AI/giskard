@@ -1,24 +1,25 @@
 <template>
-    <LoadingFullscreen v-if="suite === null" name="suite"/>
-    <v-container class="main-container vc" v-else-if="hasTest">
-        <TestSuiteExecutionHeader :execution="execution" :tests="filteredTest" :compact="false"/>
-        <div class="d-flex mt-4 mb-4">
-            <v-select v-model="statusFilter" label="Status" :items="statusFilterOptions" item-text="label"
-                      variant="underlined" hide-details="auto" dense class="mr-4">
-            </v-select>
-            <v-text-field v-model="searchFilter" append-icon="search" label="Search" type="text" dense></v-text-field>
-        </div>
-        <SuiteTestExecutionList :tests="filteredTest" :compact="false"/>
-    </v-container>
-    <v-container v-else class="d-flex flex-column vc fill-height">
-        <v-alert class="text-center">
-            <p class="headline font-weight-medium grey--text text--darken-2">No tests have been added to the suite.</p>
-        </v-alert>
-        <v-btn tile color="primaryLight" class="primaryLightBtn" :to="{ name: 'project-catalog-tests', query: { suiteId: suite?.id } }">
-            <v-icon left>add</v-icon>
-            Add test
-        </v-btn>
-    </v-container>
+  <LoadingFullscreen v-if="suite === null" name="suite"/>
+  <v-container class="main-container vc" v-else-if="hasTest">
+    <TestSuiteExecutionHeader :execution="execution" :tests="filteredTest" :compact="false"/>
+    <div class="d-flex mt-4 mb-4">
+      <v-select v-model="statusFilter" label="Status" :items="statusFilterOptions" item-text="label"
+                variant="underlined" hide-details="auto" dense class="mr-4">
+      </v-select>
+      <v-text-field v-model="searchFilter" append-icon="search" label="Search" type="text" dense></v-text-field>
+    </div>
+    <SuiteTestExecutionList :tests="filteredTest" :compact="false" :execution="execution"/>
+  </v-container>
+  <v-container v-else class="d-flex flex-column vc fill-height">
+    <v-alert class="text-center">
+      <p class="headline font-weight-medium grey--text text--darken-2">No tests have been added to the suite.</p>
+    </v-alert>
+    <v-btn tile color="primaryLight" class="primaryLightBtn"
+           :to="{ name: 'project-catalog-tests', query: { suiteId: suite?.id } }">
+      <v-icon left>add</v-icon>
+      Add test
+    </v-btn>
+  </v-container>
 </template>
 
 <script setup lang="ts">
@@ -40,25 +41,25 @@ const {models, datasets, inputs, suite, projectId, hasTest} = storeToRefs(testSu
 const testSuiteCompareStore = useTestSuiteCompareStore();
 
 onMounted(() => {
-    testSuiteCompareStore.setCurrentExecution(props.execution ? props.execution.id : null);
+  testSuiteCompareStore.setCurrentExecution(props.execution ? props.execution.id : null);
 })
 
 watch(() => props.execution,
     () => testSuiteCompareStore.setCurrentExecution(props.execution ? props.execution.id : null),
-    { deep: true });
+    {deep: true});
 
 const statusFilterOptions = [{
-    label: 'All',
-    filter: (_) => true
+  label: 'All',
+  filter: (_) => true
 }, {
-    label: 'Passed',
-    filter: (result) => result !== undefined && result.passed
+  label: 'Passed',
+  filter: (result) => result !== undefined && result.passed
 }, {
-    label: 'Failed',
-    filter: (result) => result !== undefined && !result.passed
+  label: 'Failed',
+  filter: (result) => result !== undefined && !result.passed
 }, {
-    label: 'Not executed',
-    filter: (result) => result === undefined
+  label: 'Not executed',
+  filter: (result) => result === undefined
 }];
 
 const statusFilter = ref<string>(statusFilterOptions[0].label);
@@ -67,22 +68,22 @@ const searchFilter = ref<string>("");
 
 const filteredTest = computed(() => suite.value === null ? [] : chain(suite.value!.tests)
     .map(suiteTest => ({
-        suiteTest,
-        result: props.execution?.results?.find(result => result.test.id === suiteTest.id)
+      suiteTest,
+      result: props.execution?.results?.find(result => result.test.id === suiteTest.id)
     }))
-    .filter(({ result }) => statusFilterOptions.find(opt => statusFilter.value === opt.label)!.filter(result))
-    .filter(({ suiteTest }) => {
-        const test = suiteTest.test;
+    .filter(({result}) => statusFilterOptions.find(opt => statusFilter.value === opt.label)!.filter(result))
+    .filter(({suiteTest}) => {
+      const test = suiteTest.test;
 
-        const keywords = searchFilter.value.split(' ')
-            .map(keyword => keyword.trim().toLowerCase())
-            .filter(keyword => keyword !== '');
-        return keywords.filter(keyword =>
-            test.name.toLowerCase().includes(keyword)
-            || test.doc?.toLowerCase()?.includes(keyword)
-            || test.displayName?.toLowerCase()?.includes(keyword)
-            || test.tags?.filter(tag => tag.includes(keyword))?.length > 0
-        ).length === keywords.length;
+      const keywords = searchFilter.value.split(' ')
+          .map(keyword => keyword.trim().toLowerCase())
+          .filter(keyword => keyword !== '');
+      return keywords.filter(keyword =>
+          test.name.toLowerCase().includes(keyword)
+          || test.doc?.toLowerCase()?.includes(keyword)
+          || test.displayName?.toLowerCase()?.includes(keyword)
+          || test.tags?.filter(tag => tag.includes(keyword))?.length > 0
+      ).length === keywords.length;
     })
     .value()
 );
@@ -90,8 +91,8 @@ const filteredTest = computed(() => suite.value === null ? [] : chain(suite.valu
 
 <style scoped lang="scss">
 .log-viewer {
-    overflow: auto;
-    max-height: 400px;
+  overflow: auto;
+  max-height: 400px;
 }
 </style>
 

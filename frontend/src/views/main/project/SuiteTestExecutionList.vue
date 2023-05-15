@@ -1,37 +1,37 @@
 <template>
   <v-list-item-group>
-      <template v-for="({result, suiteTest}) in props.tests">
-          <v-divider/>
-          <v-list-item :value="result" @click="testInfo(suiteTest)">
-              <v-list-item-icon>
-                  <v-icon :color="getColor(result)" size="40">{{
-                      getIcon(result)
-                      }}
-                  </v-icon>
-              </v-list-item-icon>
-              <v-list-item-content>
-                  <v-list-item-title>
-                      <div class="d-flex justify-space-between">
-                          <span>{{ getTestName(suiteTest.test) }}</span>
-                          <div>
-                              <v-btn
-                                      v-if="result !== undefined && !result.passed"
-                                      text
-                                      icon
-                                      color="green"
-                                      disabled
-                              >
-                                  <v-icon>mdi-bug</v-icon>
-                              </v-btn>
-                              <v-btn
-                                      v-if="!compact"
-                                      text
-                                      icon
-                                      color="error"
-                                      @click.stop="removeTest(suiteTest)"
-                              >
-                                  <v-icon>delete</v-icon>
-                  </v-btn>
+    <template v-for="({result, suiteTest}) in props.tests">
+      <v-divider/>
+      <v-list-item :value="result" @click="testInfo(suiteTest)">
+        <v-list-item-icon>
+          <v-icon :color="getColor(result)" size="40">{{
+              getIcon(result)
+            }}
+          </v-icon>
+        </v-list-item-icon>
+        <v-list-item-content>
+          <v-list-item-title>
+            <div class="d-flex justify-space-between">
+              <span>{{ getTestName(suiteTest.test) }}</span>
+              <div>
+                <v-btn
+                    v-if="result !== undefined && !result.passed"
+                    text
+                    color="green"
+                    @click.stop="debugTest(result, suiteTest)"
+                >
+                  <v-icon>mdi-bug</v-icon>
+                  Debug
+                </v-btn>
+                <v-btn
+                    v-if="!compact"
+                    text
+                    icon
+                    color="error"
+                    @click.stop="removeTest(suiteTest)"
+                >
+                  <v-icon>delete</v-icon>
+                </v-btn>
               </div>
             </div>
           </v-list-item-title>
@@ -40,7 +40,7 @@
           </v-list-item-subtitle>
           <v-list-item-subtitle v-else>
             {{ result ? `Metric : ${result.metric}` : "Not executed" }}<br/>
-              UUID: {{ suiteTest.test.uuid }}
+            UUID: {{ suiteTest.test.uuid }}
           </v-list-item-subtitle>
         </v-list-item-content>
       </v-list-item>
@@ -52,7 +52,7 @@
 
 import {storeToRefs} from 'pinia';
 import {useTestSuiteStore} from '@/stores/test-suite';
-import {SuiteTestDTO, SuiteTestExecutionDTO, TestFunctionDTO} from '@/generated-sources';
+import {SuiteTestDTO, SuiteTestExecutionDTO, TestFunctionDTO, TestSuiteExecutionDTO} from '@/generated-sources';
 import {Colors} from '@/utils/colors';
 import {$vfm} from 'vue-final-modal';
 import SuiteTestInfoModal from '@/views/main/project/modals/SuiteTestInfoModal.vue';
@@ -64,7 +64,8 @@ const props = withDefaults(defineProps<{
     suiteTest: SuiteTestDTO,
     result?: SuiteTestExecutionDTO
   }[],
-  compact: boolean
+  compact: boolean,
+  execution: TestSuiteExecutionDTO
 }>(), {
   compact: false
 });
@@ -111,12 +112,12 @@ function getIcon(result?: SuiteTestExecutionDTO): string {
 }
 
 async function testInfo(suiteTest: SuiteTestDTO) {
-    await $vfm.show({
-        component: SuiteTestInfoModal,
-        bind: {
-            suiteTest
-        }
-    });
+  await $vfm.show({
+    component: SuiteTestInfoModal,
+    bind: {
+      suiteTest
+    }
+  });
 }
 
 async function removeTest(suiteTest: SuiteTestDTO) {
@@ -134,6 +135,21 @@ async function removeTest(suiteTest: SuiteTestDTO) {
         close();
       }
     }
+  });
+}
+
+async function debugTest(result: SuiteTestExecutionDTO, suiteTest: SuiteTestDTO) {
+
+  let model = props.execution.inputs.filter(input => input.name === 'model')[0].value;
+
+  let res = await api.runAdHocTest(10, suiteTest.testUuid, props.execution.inputs);
+
+  let dataset = res.result[0].result.outputDfUuid;
+
+  const debuggingSession = await api.prepareInspection({
+    datasetId: dataset,
+    modelId: model as string,
+    name: "Debugging session ..."
   });
 }
 </script>
