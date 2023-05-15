@@ -10,7 +10,12 @@
 
 import {storeToRefs} from 'pinia';
 import {useTestSuiteStore} from '@/stores/test-suite';
-import {SuiteTestDTO, SuiteTestExecutionDTO} from '@/generated-sources';
+import {SuiteTestDTO, SuiteTestExecutionDTO, TestFunctionDTO, TestSuiteExecutionDTO} from '@/generated-sources';
+import {Colors} from '@/utils/colors';
+import {$vfm} from 'vue-final-modal';
+import SuiteTestInfoModal from '@/views/main/project/modals/SuiteTestInfoModal.vue';
+import {api} from '@/api';
+import ConfirmModal from "@/views/main/project/modals/ConfirmModal.vue";
 import SuiteTestExecutionCard from "@/views/main/project/SuiteTestExecutionCard.vue";
 
 const props = withDefaults(defineProps<{
@@ -19,7 +24,8 @@ const props = withDefaults(defineProps<{
         result?: SuiteTestExecutionDTO
     }[],
     compact: boolean,
-    isPastExecution: boolean
+    isPastExecution: boolean,
+  execution: TestSuiteExecutionDTO
 }>(), {
     compact: false,
     isPastExecution: false
@@ -27,6 +33,21 @@ const props = withDefaults(defineProps<{
 
 const testSuiteStore = useTestSuiteStore();
 const {suite} = storeToRefs(testSuiteStore);
+
+async function debugTest(result: SuiteTestExecutionDTO, suiteTest: SuiteTestDTO) {
+
+  let model = props.execution.inputs.filter(input => input.name === 'model')[0].value;
+
+  let res = await api.runAdHocTest(10, suiteTest.testUuid, props.execution.inputs);
+
+  let dataset = res.result[0].result.outputDfUuid;
+
+  const debuggingSession = await api.prepareInspection({
+    datasetId: dataset,
+    modelId: model as string,
+    name: "Debugging session ..."
+  });
+}
 </script>
 
 <style scoped lang="scss">

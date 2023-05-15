@@ -17,4 +17,5 @@ export interface SingleTestResultDTO {
     unexpectedPercent: number;
     unexpectedPercentNonmissing: number;
     unexpectedPercentTotal: number;
+    outputDfUuid: string;
 }

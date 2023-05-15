@@ -211,9 +211,10 @@ class MLWorkerServiceImpl(MLWorkerServicer):
             model_id = " | <model:" + model_id + ">" if model_id else ""
             dataset_id = " | <dataset:" + dataset_id + ">" if dataset_id else ""
             test_result.output_df.name += model_id + dataset_id
-            test_result.output_df.upload(client=self.client, project_key=project_key)
+            new_ds_uuid = test_result.output_df.upload(client=self.client, project_key=project_key)
             # for now, we won't return output_df from grpc, rather upload it
             test_result.output_df = None
+            test_result.output_df_id = new_ds_uuid
 
         return ml_worker_pb2.TestResultMessage(results=[
             ml_worker_pb2.NamedSingleTestResult(testUuid=test.meta.uuid,
@@ -593,6 +594,7 @@ def map_result_to_single_test_result(result) -> ml_worker_pb2.SingleTestResult:
             number_of_perturbed_rows=result.number_of_perturbed_rows,
             actual_slices_size=result.actual_slices_size,
             reference_slices_size=result.reference_slices_size,
+            output_df_id=result.output_df_id
         )
     elif isinstance(result, bool):
         return ml_worker_pb2.SingleTestResult(passed=result)
