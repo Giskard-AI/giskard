@@ -358,8 +358,7 @@ def clean(delete_data):
     """
     data_deletion_confirmed = delete_data and click.confirm(
         "Are you sure you want to delete user data (giskard-home volume)? "
-        "This will permanently erase all of the Giskard activity results"
-    )
+        "This will permanently erase all of the Giskard activity results")
 
     client = create_docker_client()
     container_name = get_container_name()
