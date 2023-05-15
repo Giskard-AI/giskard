@@ -8,7 +8,42 @@ from torchtext.datasets import AG_NEWS
 from torchtext.vocab import build_vocab_from_iterator
 
 import tests.utils
-from giskard import PyTorchModel, Dataset
+from giskard import PyTorchModel, Dataset, Model
+
+
+class MyPyTorchModel(PyTorchModel):
+    should_save_model_class = True
+
+    def model_predict(self, df):
+        def predict_proba(text):
+            with torch.no_grad():
+                text = torch.tensor(text_pipeline(text))
+                output = self.model(text, torch.tensor([0]))
+                np_output = output.numpy()[0]
+                return softmax(np_output)
+
+        def prediction_function(df):
+            series = df["text"].apply(predict_proba)
+            return np.array(series.tolist())
+
+        return prediction_function(df)
+
+
+class MyAutoPyTorchModel(Model):
+    def model_predict(self, df):
+        def predict_proba(text):
+            with torch.no_grad():
+                text = torch.tensor(text_pipeline(text))
+                output = self.model(text, torch.tensor([0]))
+                np_output = output.numpy()[0]
+                return softmax(np_output)
+
+        def prediction_function(df):
+            series = df["text"].apply(predict_proba)
+            return np.array(series.tolist())
+
+        return prediction_function(df)
+
 
 train_iter = AG_NEWS(split="train")
 test_iter = AG_NEWS(split="test")
@@ -70,23 +105,6 @@ def test_newspaper_classification_pytorch_custom_model():
 
     feature_names = ["text"]
 
-    class MyPyTorchModel(PyTorchModel):
-        should_save_model_class = True
-
-        def model_predict(self, df):
-            def predict_proba(text):
-                with torch.no_grad():
-                    text = torch.tensor(text_pipeline(text))
-                    output = model(text, torch.tensor([0]))
-                    np_output = output.numpy()[0]
-                    return softmax(np_output)
-
-            def prediction_function(df):
-                series = df["text"].apply(predict_proba)
-                return np.array(series.tolist())
-
-            return prediction_function(df)
-
     my_model = MyPyTorchModel(
         name="my_custom_BertForSequenceClassification",
         model=model,
@@ -101,3 +119,14 @@ def test_newspaper_classification_pytorch_custom_model():
     my_model.predict(my_test_dataset)
 
     tests.utils.verify_model_upload(my_model, my_test_dataset)
+
+    # ---- testing Model class
+    my_automodel = MyAutoPyTorchModel(
+        name="my_custom_BertForSequenceClassification",
+        model=model,
+        feature_names=feature_names,
+        model_type="classification",
+        classification_labels=list(ag_news_label.values()),
+    )
+
+    tests.utils.verify_model_upload(my_automodel, my_test_dataset)
