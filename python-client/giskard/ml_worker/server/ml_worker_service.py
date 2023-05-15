@@ -194,6 +194,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
         test: GiskardTest = GiskardTest.load(request.testUuid, self.client, None)
 
         arguments = self.parse_function_arguments(request.arguments)
+        arguments["debug"] = request.debug;
 
         logger.info(f"Executing {test.meta.display_name or f'{test.meta.module}.{test.meta.name}'}")
         test_result = test.get_builder()(**arguments).execute()

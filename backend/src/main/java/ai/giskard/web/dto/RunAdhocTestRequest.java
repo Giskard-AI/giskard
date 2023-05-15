@@ -15,4 +15,5 @@ public class RunAdhocTestRequest {
     private Long projectId;
     private String testUuid;
     private List<FunctionInputDTO> inputs;
+    private boolean debug;
 }

@@ -194,7 +194,7 @@ function downloadURL(urlString) {
 
 export const api = {
     async logInGetToken(username: string, password: string) {
-        return apiV2.post<unknown, JWTToken>(`/authenticate`, { username, password });
+        return apiV2.post<unknown, JWTToken>(`/authenticate`, {username, password});
     },
     async getLicense() {
         return apiV2.get<unknown, LicenseDTO>(`/settings/license`);
@@ -246,7 +246,7 @@ export const api = {
         return apiV2.patch<unknown, void>(`/admin/users/${login}/enable`);
     },
     async passwordRecovery(email: string) {
-        return apiV2.post<unknown, void>(`/account/password-recovery`, <PasswordResetRequest>{ email });
+        return apiV2.post<unknown, void>(`/account/password-recovery`, <PasswordResetRequest>{email});
     },
     async resetPassword(password: string) {
         return apiV2.post<unknown, void>(`/account/reset-password`, <TokenAndPasswordVM>{
@@ -274,7 +274,7 @@ export const api = {
         return apiV2.get<unknown, ProjectDTO[]>(`projects`);
     },
     async getProject(id: number) {
-        return axiosProject.get<unknown, ProjectDTO>(`/`, { params: { id } });
+        return axiosProject.get<unknown, ProjectDTO>(`/`, {params: {id}});
     },
     async createProject(data: ProjectPostDTO) {
         return axiosProject.post<unknown, ProjectDTO>(`/`, data);
@@ -296,7 +296,7 @@ export const api = {
         return axiosProject.get<unknown, ModelDTO[]>(`/${id}/models`);
     },
     async prepareImport(formData: FormData) {
-        const headers = { 'Content-Type': 'multipart/form-data' };
+        const headers = {'Content-Type': 'multipart/form-data'};
         return axiosProject.post<unknown, PrepareImportProjectDTO>(`/import/prepare`, formData, {
             headers: headers
         });
@@ -400,7 +400,7 @@ export const api = {
             datasetId: datasetId,
             features: inputData
         }
-        return apiV2.post<unknown, PredictionDTO>(`/models/${modelId}/predict`, data, { signal: controller.signal });
+        return apiV2.post<unknown, PredictionDTO>(`/models/${modelId}/predict`, data, {signal: controller.signal});
     },
 
     async prepareInspection(payload: InspectionCreateDTO) {
@@ -408,14 +408,14 @@ export const api = {
     },
     async explain(modelId: string, datasetId: string, inputData: object, controller: AbortController) {
         return apiV2.post<unknown, ExplainResponseDTO>(`/models/${modelId}/explain/${datasetId}`,
-            { features: inputData },
-            { signal: controller.signal });
+            {features: inputData},
+            {signal: controller.signal});
     },
     async explainText(modelId: string, datasetId: string, inputData: object, featureName: string) {
         return apiV2.post<unknown, ExplainTextResponseDTO>(`/models/explain-text/${featureName}`,
             {
                 features: inputData
-            }, { params: { modelId, datasetId } });
+            }, {params: {modelId, datasetId}});
     },
     // feedbacks
     async submitFeedback(payload: CreateFeedbackDTO, projectId: number) {
@@ -437,11 +437,12 @@ export const api = {
     async deleteFeedback(id: number) {
         return apiV2.delete<unknown, void>(`/feedbacks/${id}`);
     },
-    async runAdHocTest(projectId: number, testUuid: string, inputs: Array<TestInputDTO>) {
+    async runAdHocTest(projectId: number, testUuid: string, inputs: Array<TestInputDTO>, debug: boolean = false) {
         return apiV2.post<unknown, TestTemplateExecutionResultDTO>(`/testing/tests/run-test`, {
             projectId,
             testUuid,
-            inputs
+            inputs,
+            debug
         });
     },
     async getCatalog(projectId: number) {

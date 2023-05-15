@@ -186,7 +186,7 @@ class AucTest(GiskardTest):
 
 @test(name='AUC', tags=['performance', 'classification', 'ground_truth'])
 def test_auc(model: BaseModel, dataset: Dataset, slicing_function: SlicingFunction = None, threshold: float = 1.0,
-             debug: bool = True):
+             debug: bool = False):
     """
     Test if the model AUC performance is higher than a threshold for a given slice
 
