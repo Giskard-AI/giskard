@@ -1,5 +1,16 @@
 <template>
   <div class="vertical-container">
+    <div class="d-flex mb-6">
+      <v-spacer></v-spacer>
+      <v-btn @click="reloadProjectArtifacts">
+        Reload
+        <v-icon right>refresh</v-icon>
+      </v-btn>
+      <v-btn color="primary" class="mx-2" href="https://docs.giskard.ai/start/guides/upload-your-model" target="_blank">
+        Upload with API
+        <v-icon right>mdi-application-braces-outline</v-icon>
+      </v-btn>
+    </div>
     <v-container v-if="projectArtifactsStore.datasets.length > 0" fluid class="vc">
       <v-expansion-panels flat>
         <v-row dense no-gutters class="mr-6 ml-3 caption secondary--text text--lighten-3 pb-2">
@@ -137,6 +148,10 @@ async function renameDataset(id: string, name: string) {
   mixpanel.track('Update dataset name', { id });
   const savedDataset = await api.editDatasetName(id, name);
   projectArtifactsStore.updateDataset(savedDataset);
+}
+
+async function reloadProjectArtifacts() {
+  await projectArtifactsStore.loadDatasetsWithNotification();
 }
 
 onBeforeMount(async () => {
