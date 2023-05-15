@@ -2,7 +2,7 @@ import pytest
 import pandas as pd
 import numpy as np
 
-from giskard import wrap_dataset
+from giskard import Dataset
 from giskard.slicing.slice import QueryBasedSliceFunction
 from giskard.slicing.slice import GreaterThan, LowerThan
 from giskard.slicing.text_slicer import TextSlicer
@@ -22,7 +22,7 @@ def _make_demo_dataset():
 
     df = pd.DataFrame({"feature1": feature1, "loss": loss})
 
-    return wrap_dataset(df)
+    return Dataset(df)
 
 
 def _get_slice_interval(slice_fn: QueryBasedSliceFunction, column: str):
@@ -80,7 +80,7 @@ def test_text_slicer_enforces_cast_to_string():
 
 def test_text_slicer_warns_if_vocabulary_is_empty():
     df = pd.DataFrame({"feature1": ["and", "", "and", "to"], "loss": [1, 2, 1, 2]})
-    dataset = wrap_dataset(df)
+    dataset = Dataset(df)
     slicer = TextSlicer(dataset)
     with pytest.warns(match="Could not get meaningful tokens"):
         slices = slicer.find_top_tokens_slices("feature1", "loss")
