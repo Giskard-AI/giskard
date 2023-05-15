@@ -97,19 +97,14 @@
 
 <script setup lang="ts">
 import { getUserFullDisplayName } from '@/utils';
-import Models from '@/views/main/project/Models.vue';
-import Datasets from '@/views/main/project/Datasets.vue';
 import { IUserProfileMinimal } from '@/interfaces';
 import mixpanel from "mixpanel-browser";
 import { useProjectStore } from "@/stores/project";
-import { useProjectArtifactsStore } from "@/stores/project-artifacts";
-import { computed, onBeforeMount, ref } from 'vue';
+import { computed } from 'vue';
 import { $vfm } from 'vue-final-modal';
 import ConfirmModal from '@/views/main/project/modals/ConfirmModal.vue';
 import InlineEditText from '@/components/InlineEditText.vue';
 import { ProjectPostDTO } from '@/generated-sources';
-import { useRouter } from "vue-router/composables";
-
 
 
 interface Props {
@@ -121,18 +116,10 @@ const props = withDefaults(defineProps<Props>(), {
   isProjectOwnerOrAdmin: false
 });
 
-const router = useRouter();
 
 const projectStore = useProjectStore();
-const projectArtifactsStore = useProjectArtifactsStore();
-const openDeleteDialog = ref(false);
-const toggleObject = ref<string>("datasets");
 
 const project = computed(() => useProjectStore().project(props.projectId))
-
-async function reloadProjectArtifacts() {
-  await projectArtifactsStore.loadProjectArtifacts();
-}
 
 async function cancelUserInvitation(user: IUserProfileMinimal) {
   $vfm.show({
@@ -199,18 +186,6 @@ async function renameLimeNumberSamples(newLimeSamples: string) {
 async function editProject(data: ProjectPostDTO) {
   await projectStore.editProject({ id: project.value!.id, data })
 }
-
-async function deleteProject() {
-  if (project.value) {
-    mixpanel.track('Delete project', { id: project.value!.id });
-    await projectStore.deleteProject({ id: project.value!.id })
-    await router.push('/main/dashboard');
-  }
-}
-
-onBeforeMount(async () => {
-  await projectArtifactsStore.setProjectId(props.projectId);
-})
 </script>
 
 <style scoped lang="scss">
