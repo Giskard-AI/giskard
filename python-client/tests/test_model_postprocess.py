@@ -2,7 +2,7 @@ import pytest
 import numpy as np
 from unittest.mock import Mock
 
-from giskard import WrapperModel
+from giskard.models.base import WrapperModel
 from giskard.core.core import ModelMeta
 from functools import partial
 
