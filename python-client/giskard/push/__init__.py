@@ -1,27 +1,38 @@
 from giskard.ml_worker.generated import ml_worker_pb2
 from giskard.slicing.slice import GreaterThan, LowerThan, EqualTo, Query, QueryBasedSliceFunction
+from enum import Enum
+from giskard.core.core import SupportedModelTypes
+from giskard.ml_worker.testing.tests.performance import test_f1, test_rmse
 
 
-class Perturbation:
-    def __init__(self, passed, perturbation_value):
-        self.passed = passed
-        self.perturbation_value = perturbation_value
+class SupportedPerturbationType(Enum):
+    NUMERIC = "numeric"
+    TEXT = "text"
 
 
 class Push:
     key = None
     value = None  # list of numerical value or category
+
     push_title = None
-    push_details = None
-    perturbation_value = None
+    details = None
+
+    selected_test = None
+    _model_type = None
+
     slicing_function = None
     bounds = None
+    text_perturbed: list = None
+    transformation_function: list = None
 
-    def __init__(self, push_type, feature, value, bounds, perturbation_value=None):
-        self.perturbation_value = perturbation_value
+    def __init__(self, push_type, feature, value, bounds=None, model_type=None,
+                 text_perturbed=None, transformation_function=None):
         self.key = feature
         self.value = value
         self.bounds = bounds
+        self._model_type = model_type
+        self.text_perturbed = text_perturbed
+        self.transformation_function = transformation_function
         if push_type == "contribution_wrong":
             self._high_contribution_wrong_prediction(feature, value)
         if push_type == "contribution_only":
@@ -29,10 +40,25 @@ class Push:
         if push_type == "perturbation":
             self._perturbation(feature, value)
         self._slicing_function()
+        self.test_selection()
+
+    def to_grpc(self):
+        return ml_worker_pb2.Push(
+            key=self.key,
+            value=str(self.value),
+            push_title=self.push_title,
+            push_details=self.details,
+        )
+
+    def test_selection(self):
+        if self._model_type == SupportedModelTypes.REGRESSION:
+            self.selected_test = test_f1
+        elif self._model_type == SupportedModelTypes.CLASSIFICATION:
+            self.selected_test = test_rmse
 
     def _high_contribution_wrong_prediction(self, feature, value):
         res = {"push_title": f"{str(feature)}=={str(value)} is responsible for the incorrect prediction",
-               "push_details":
+               "details":
                    [{
                        "action": "Open a new debugger session with similar spurious examples",
                        "explanation": "Debugging similar examples may help you find common spurious patterns",
@@ -40,7 +66,8 @@ class Push:
                    },
                        {
                            "action": "Generate a new performance difference test in the catalog",
-                           "explanation": "This may help ensure this spurious pattern is not common to the whole dataset",
+                           "explanation": "This may help ensure this spurious pattern is not common to the whole "
+                                          "dataset",
                            "button": "Create test"
                        },
                        {
@@ -51,12 +78,12 @@ class Push:
                    ]
                }
         self.push_title = res["push_title"]
-        self.push_details = res["push_details"]
+        self.details = res["details"]
         return res
 
     def _high_contribution_only(self, feature, value):
         res = {"push_title": f"{str(feature)}=={str(value)} contributes a lot to the prediction",
-               "push_details":
+               "details":
                    [{
                        "action": "Open a new debugger session with similar examples",
                        "explanation": "Debugging similar examples may help you find common patterns",
@@ -75,15 +102,16 @@ class Push:
                    ]
                }
         self.push_title = res["push_title"]
-        self.push_details = res["push_details"]
+        self.details = res["details"]
         return res
 
     def _perturbation(self, feature, value):
         res = {"push_title": f"A small variation of {str(feature)}=={str(value)} makes the prediction change",
-               "push_details":
+               "details":
                    [{
                        "action": "Generate a robustness test in the catalog that slightly perturb this feature",
-                       "explanation": "This will enable you to make sure the model is robust against small similar changes",
+                       "explanation": "This will enable you to make sure the model is robust against small similar "
+                                      "changes",
                        "button": "Create test"
                    },
                        {
@@ -97,7 +125,7 @@ class Push:
         # Details about the perturbation for textual feature - Transforming into upper-case, Shuffeling ,
         # Swapping tokens makes the prediction change
         self.push_title = res["push_title"]
-        self.push_details = res["push_details"]
+        self.details = res["details"]
         return res
 
     def _slicing_function(self):
@@ -109,13 +137,3 @@ class Push:
         slicing_func = QueryBasedSliceFunction(Query(clause))
 
         self.slicing_function = slicing_func
-
-    def to_grpc(self):
-        return ml_worker_pb2.Push(
-            key=self.key,
-            value=str(self.value),
-            push_title=self.push_title,
-            push_details=self.push_details,
-            # perturbation_value=self.perturbation_value,
-            # slicing_function=self.slicing_function  # SlicingFunction added
-        )
