@@ -208,7 +208,7 @@ const regressionThreshold = ref(0.1);
 const percentRegressionUnit = ref(true);
 
 const canPrevious = computed(() => !shuffleMode.value && rowNb.value > 0);
-const canNext = computed(() => !shuffleMode.value && rowNb.value < totalRows.value - 1);
+const canNext = computed(() => rowNb.value < totalRows.value - 1);
 const {transformationFunctions} = storeToRefs(useInspectionStore());
 
 function commonFeedbackData(): CreatedFeedbackCommonDTO {
@@ -326,7 +326,7 @@ async function fetchRows(rowIdxInResults: number, forceFetch: boolean) {
                   inspectionId: props.inspectionId
               },
               removeRows: dataProcessingResult.value?.filteredRows
-          }, inspection.value!.sample)
+          }, inspection.value!.sample, shuffleMode.value)
       rows.value = result.content;
       numberOfRows.value = result.totalItems;
   }

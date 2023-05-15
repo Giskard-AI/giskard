@@ -331,12 +331,13 @@ export const api = {
         return this.getDatasetRows(datasetId, 0, 10);
     },
     async getDatasetRows(datasetId: string, offset: number, size: number,
-                         filtered: RowFilterDTO = {}, sample: boolean = true) {
+                         filtered: RowFilterDTO = {}, sample: boolean = true, shuffle: boolean = false) {
         return apiV2.post<unknown, DatasetPageDTO>(`/dataset/${datasetId}/rows`, filtered, {
             params: {
                 offset,
                 size,
-                sample
+                sample,
+                shuffle
             }
         });
     },
