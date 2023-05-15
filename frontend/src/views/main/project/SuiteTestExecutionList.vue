@@ -39,7 +39,7 @@ async function debugTest(result: SuiteTestExecutionDTO, suiteTest: SuiteTestDTO)
 
   let model = props.execution.inputs.filter(input => input.name === 'model')[0].value;
 
-  let res = await api.runAdHocTest(testSuiteStore.projectId!, suiteTest.testUuid, props.execution.inputs);
+  let res = await api.runAdHocTest(testSuiteStore.projectId!, suiteTest.testUuid, props.execution.inputs, true);
 
   let dataset = res.result[0].result.outputDfUuid;
 

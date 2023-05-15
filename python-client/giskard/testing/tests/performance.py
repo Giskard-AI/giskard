@@ -163,7 +163,7 @@ def _test_diff_prediction(
 def test_auc(
     model: BaseModel, dataset: Dataset, slicing_function: Optional[SlicingFunction] = None, threshold: float = 1.0
 ,
-             debug: bool = True):
+             debug: bool = False):
     """
     Test if the model AUC performance is higher than a threshold for a given slice
 
