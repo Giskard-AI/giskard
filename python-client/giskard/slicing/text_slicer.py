@@ -1,22 +1,23 @@
 """
 @TODO: This is a hackish implementation of the text slices.
 """
+import os
 import numpy as np
 import pandas as pd
 from typing import Optional, Sequence
 
-from giskard.datasets.base import Dataset
-from giskard.slicing.category_slicer import CategorySlicer
-from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction
-
+from ..datasets.base import Dataset
+from ..slicing.category_slicer import CategorySlicer
+from ..ml_worker.testing.registry.slicing_function import SlicingFunction
+from ..client.python_utils import warning
 from .base import BaseSlicer
-from .stop_words import sw_en, sw_fr
 from .slice import Query, QueryBasedSliceFunction, StringContains
 from .utils import get_slicer
-from ..client.python_utils import warning
 
 
 class TextSlicer(BaseSlicer):
+    MAX_TOKENS = int(os.getenv("GSK_TEXT_SLICER_MAX_TOKENS", 1000))
+
     def __init__(
         self,
         dataset: Dataset,
@@ -44,14 +45,9 @@ class TextSlicer(BaseSlicer):
         metadata_slices = self.find_metadata_slices(feature, target)
 
         # Make top token slices
-        top_tokens_slices = self.find_top_tokens_slices(feature, target)
+        token_slices = self.find_token_based_slices(feature, target)
 
-        slice_candidates = metadata_slices + top_tokens_slices
-
-        # @TODO: filter slices
-        slices = slice_candidates
-
-        return slices
+        return metadata_slices + token_slices
 
     def find_metadata_slices(self, feature, target):
         slices = []
@@ -66,16 +62,18 @@ class TextSlicer(BaseSlicer):
         column_types["__gsk__meta__charset"] = "category"
         column_types["__gsk__meta__avg_word_length"] = "numeric"
         column_types["__gsk__meta__text_length"] = "numeric"
+        column_types["__gsk__meta__avg_whitespace"] = "numeric"
+        column_types["__gsk__meta__avg_digits"] = "numeric"
         dataset_with_meta = Dataset(data_with_meta, target=self.dataset.target, column_types=column_types)
 
         # Run a slicer for numeric
         slicer = get_slicer(self.slicer, dataset_with_meta, target=target)
-        for col in filter(lambda x: column_types[x] == "numeric", meta.columns):
+        for col in filter(lambda x: column_types[x] == "numeric" and x.startswith("__gsk__meta__"), meta.columns):
             slices.extend(slicer.find_slices([col]))
 
         # Run a slicer for categorical
         slicer = CategorySlicer(dataset_with_meta, target=target)
-        for col in filter(lambda x: column_types[x] == "category", meta.columns):
+        for col in filter(lambda x: column_types[x] == "category" and x.startswith("__gsk__meta__"), meta.columns):
             slices.extend(slicer.find_slices([col]))
 
         # @TODO: previous code will create non-working slices, since those are query-based but
@@ -85,44 +83,103 @@ class TextSlicer(BaseSlicer):
 
         return slices
 
-    def find_top_tokens_slices(self, feature, target):
-        slices = []
-
+    def find_token_based_slices(self, feature, target):
         try:
-            tokens = self._get_top_tokens(self.dataset.df[feature])
-        except ValueError:
+            tokens = set(
+                self._get_high_loss_tokens(feature, target)
+                + self._get_deviant_tokens(feature, target)
+                + self._get_top_tokens(feature, target)
+            )
+        except VectorizerError:
             # Could not get meaningful tokens (e.g. all stop words)
-            warning(f"Could not get meaningful tokens for textual feature {feature}. Are you sure this is text?")
+            warning(f"Could not get meaningful tokens for textual feature `{feature}`. Are you sure this is text?")
             return []
 
-        for token in tokens:
-            slices.append(QueryBasedSliceFunction(Query([StringContains(feature, token)])))
+        return [QueryBasedSliceFunction(Query([StringContains(feature, token)])) for token in tokens]
 
-        return slices
+    def _get_top_tokens(self, feature, target):
+        vectorizer = _make_vectorizer(self.dataset.df[feature], tfidf=True)
+        tfidf = vectorizer.transform(self.dataset.df[feature])
 
-    def _get_top_tokens(self, feature_data, n=30):
-        from sklearn.feature_extraction.text import TfidfVectorizer
+        # Get top tokens by TF-IDF
+        order = np.argsort(tfidf.max(axis=0).toarray().squeeze())[::-1]
+        top_tokens = vectorizer.get_feature_names_out()[order[: self.MAX_TOKENS]]
 
-        raw_stopwords = sw_en + sw_fr
+        return list(top_tokens)
 
-        tokenizer = TfidfVectorizer().build_tokenizer()
-        tokenized_stopwords = sum([tokenizer(stop_word) for stop_word in raw_stopwords], [])
+    def _get_high_loss_tokens(self, feature, target):
+        from scipy import stats
 
-        text_data = feature_data.values.astype("U")
-        vectorizer = TfidfVectorizer(stop_words=tokenized_stopwords)
-        tfidf = vectorizer.fit_transform(text_data)
+        max_tokens = self.MAX_TOKENS
+        vectorizer = _make_vectorizer(self.dataset.df[feature], tfidf=True)
+        tfidf = vectorizer.transform(self.dataset.df[feature])
 
-        vocab = vectorizer.vocabulary_
-        inv_vocab = {v: k for k, v in vocab.items()}
+        lrank = self.dataset.df[target].rank(pct=True)
 
-        # Compute the global TF-IDF score for each word.
-        global_tfidf = np.asarray(tfidf.mean(axis=0)).squeeze()
-        sorted_global_tfidf_indices = global_tfidf.argsort()[::-1]
+        # If the vocabulary is too large, prefilter top tokens
+        # @TODO: check this
+        vocab_size = tfidf.shape[1]
+        if vocab_size > max_tokens * 10:
+            token_ns = np.argpartition(tfidf.max(axis=0).toarray().squeeze(), max_tokens * 10 - 1)[: max_tokens * 10]
+        else:
+            token_ns = np.arange(vocab_size)
 
-        # Get the top n words sorted by global TF-IDF score.
-        top_words = [inv_vocab[idx] for idx in sorted_global_tfidf_indices[:n]]
+        # Find tokens which are most correlated with loss
+        rank_corrs = np.asarray([stats.spearmanr(tfidf[:, n].toarray().squeeze(), lrank)[0] for n in token_ns])
+        token_idx = token_ns[rank_corrs.argsort()[:max_tokens]]
 
-        return top_words
+        return list(vectorizer.get_feature_names_out()[token_idx])
+
+    def _get_deviant_tokens(self, feature, target):
+        from scipy import stats
+
+        vectorizer = _make_vectorizer(self.dataset.df[feature], tfidf=False, binary=True)
+        X = vectorizer.transform(self.dataset.df[feature])
+
+        critical_target = self.dataset.df[target].quantile(0.75)
+        y = self.dataset.df[target] > critical_target
+        Y = np.stack((1 - y, y), axis=1)
+
+        counts = X.T @ Y
+        totals = Y.sum(axis=0)
+        remainders = counts - totals
+        tokens = vectorizer.get_feature_names_out()
+
+        mask = (counts.max(axis=-1) > 5) & (counts.min(axis=-1) > 0) & (remainders.min(axis=-1) > 0)
+
+        _data = []
+        for token, token_counts, token_remainders in zip(tokens[mask], counts[mask], remainders[mask]):
+            stat, pvalue, *_ = stats.chi2_contingency([token_counts, token_remainders])
+            if pvalue < 1e-3:
+                _data.append({"statistic": stat, "token": token})
+
+        df = pd.DataFrame(_data, columns=["statistic", "token"])
+        tokens = df.sort_values("statistic").head(self.MAX_TOKENS).token.tolist()
+
+        return tokens
+
+
+class VectorizerError(ValueError):
+    """Raised when a vectorizer could not be created (e.g. empty dictionary)."""
+
+
+def _make_vectorizer(data: pd.Series, tfidf=False, **kwargs):
+    from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer
+    from .stop_words import sw_en, sw_fr
+
+    raw_stopwords = sw_en + sw_fr
+    vectorizer = TfidfVectorizer(**kwargs) if tfidf else CountVectorizer(**kwargs)
+    tokenizer = vectorizer.build_tokenizer()
+
+    tokenized_stopwords = sum([tokenizer(stop_word) for stop_word in raw_stopwords], [])
+    vectorizer.set_params(stop_words=tokenized_stopwords)
+
+    try:
+        vectorizer.fit(data)
+    except ValueError as err:
+        raise VectorizerError(str(err)) from err
+
+    return vectorizer
 
 
 def _calculate_text_metadata(feature_data: pd.Series):
@@ -136,12 +193,28 @@ def _calculate_text_metadata(feature_data: pd.Series):
             "text_length": feature_data.map(len),
             "avg_word_length": feature_data.map(_avg_word_length),
             "charset": pd.Categorical(feature_data.map(lambda x: chardet.detect(x.encode())["encoding"])),
+            "avg_whitespace": feature_data.map(_avg_whitespace),
+            "avg_digits": feature_data.map(_avg_digits),
         },
         index=feature_data.index,
     )
 
 
-def _avg_word_length(text):
+def _avg_whitespace(text: str):
+    chars = list(text)
+    if len(chars) == 0:
+        return 0.0
+    return np.mean([c.isspace() for c in chars])
+
+
+def _avg_digits(text: str):
+    chars = list(text)
+    if len(chars) == 0:
+        return 0.0
+    return np.mean([c.isdigit() for c in chars])
+
+
+def _avg_word_length(text: str):
     words = text.split()
     if len(words) == 0:
         return 0.0
@@ -176,5 +249,6 @@ class TextMetadataSliceFunction(SlicingFunction):
 
     def __str__(self):
         # @TODO: hard coded for now!
-        col = list(self.query.clauses.keys())[0].removeprefix("__gsk__meta__")
+        col = list(self.query.clauses.keys())[0]
+        col = col.split("__gsk__meta__")[-1]
         return self.query.to_pandas().replace(f"__gsk__meta__{col}", f"{col}({self.feature})")
