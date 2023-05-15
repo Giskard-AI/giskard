@@ -13,15 +13,15 @@ class ModelCache:
     vectorized_get_cache_or_na = None
     nan_val = None
 
-    def __init__(self, cache: Optional[pd.DataFrame] = None, classification_labels: Optional[List[str]] = None):
+    def __init__(self, cache: Optional[pd.DataFrame] = None, is_classification: bool = False,
+                 classification_labels: Optional[List[str]] = None):
         cache = cache if cache is not None else pd.DataFrame(data={}, index=[])
 
         self.prediction_cache = cache.to_dict()
         self.classification_labels = [
             'raw_prediction'] if classification_labels is None else classification_labels.copy()
 
-        self.nan_val = NaN if len(self.classification_labels) == 1 else np.full(shape=len(self.classification_labels),
-                                                                                fill_value=NaN)
+        self.nan_val = np.full(shape=len(self.classification_labels), fill_value=NaN) if is_classification else NaN
 
         self.vectorized_get_cache_or_na = np.vectorize(self.get_cache_or_na, otypes=[object])
 

@@ -147,7 +147,7 @@ class Dataset(ColumnMetadataMixin):
             name (Optional[str]): The name of the dataset.
             target (Optional[str]): The column name in df corresponding to the actual target variable (ground truth).
             cat_columns (Optional[List[str]]): A list of column names that are categorical.
-            column_types (Optional[Dict[str, str]]): A dictionary mapping column names to their types.
+            column_types (Optional[Dict[Union[str, int], str]]): A dictionary mapping column names to their types.
             id (Optional[uuid.UUID]): A UUID that uniquely identifies this dataset.
 
         Notes:
@@ -349,6 +349,7 @@ class Dataset(ColumnMetadataMixin):
         for col in self.columns:
             if col == self.target:
                 continue
+
             # inference of categorical columns
             # in case cat_columns were provided by the user, we don't try to infer the categorical for the rest
             # we raise a warning instead in validate_column_categorization
@@ -362,6 +363,7 @@ class Dataset(ColumnMetadataMixin):
                 column_types[col] = SupportedColumnTypes.NUMERIC.value
             except ValueError:
                 column_types[col] = SupportedColumnTypes.TEXT.value
+
         return column_types
 
     @staticmethod
@@ -376,7 +378,7 @@ class Dataset(ColumnMetadataMixin):
             dict: A dictionary where the keys are the column names and the values are the corresponding data types as strings.
         """
         return {key: value for key, value in df.dtypes.apply(lambda x: x.name).to_dict().items() if
-                not key.startswith(GISKARD_COLUMN_PREFIX)}
+                not str(key).startswith(GISKARD_COLUMN_PREFIX)}
 
     def upload(self, client: GiskardClient, project_key: str):
         """
@@ -519,7 +521,7 @@ class Dataset(ColumnMetadataMixin):
 
     @property
     def columns(self):
-        return [col for col in self.df.columns if not col.startswith(GISKARD_COLUMN_PREFIX)]
+        return [col for col in self.df.columns if not str(col).startswith(GISKARD_COLUMN_PREFIX)]
 
     def __len__(self):
         return len(self.df)
