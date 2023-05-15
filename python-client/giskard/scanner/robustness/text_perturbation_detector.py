@@ -67,6 +67,7 @@ class TextPerturbationDetector(Detector):
         features: Sequence[str],
     ) -> Sequence[Issue]:
         issues = []
+        # @TODO: integrate this with Giskard metamorphic tests already present
         for feature in features:
             transformation_fn = transformation(column=feature)
             transformed = dataset.transform(transformation_fn)

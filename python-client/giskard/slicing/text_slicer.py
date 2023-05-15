@@ -1,6 +1,7 @@
 """
 @TODO: This is a hackish implementation of the text slices.
 """
+import os
 import numpy as np
 import pandas as pd
 from typing import Optional, Sequence
@@ -15,6 +16,8 @@ from .utils import get_slicer
 
 
 class TextSlicer(BaseSlicer):
+    MAX_TOKENS = int(os.getenv("GSK_TEXT_SLICER_MAX_TOKENS", 1000))
+
     def __init__(
         self,
         dataset: Dataset,
@@ -84,19 +87,20 @@ class TextSlicer(BaseSlicer):
 
         return [QueryBasedSliceFunction(Query([StringContains(feature, token)])) for token in tokens]
 
-    def _get_top_tokens(self, feature, target, max_tokens=1000):
+    def _get_top_tokens(self, feature, target):
         vectorizer = _make_vectorizer(self.dataset.df[feature], tfidf=True)
         tfidf = vectorizer.transform(self.dataset.df[feature])
 
         # Get top tokens by TF-IDF
         order = np.argsort(tfidf.max(axis=0).toarray().squeeze())[::-1]
-        top_tokens = vectorizer.get_feature_names_out()[order[:max_tokens]]
+        top_tokens = vectorizer.get_feature_names_out()[order[: self.MAX_TOKENS]]
 
         return list(top_tokens)
 
-    def _get_high_loss_tokens(self, feature, target, max_tokens=1000):
+    def _get_high_loss_tokens(self, feature, target):
         from scipy import stats
 
+        max_tokens = self.MAX_TOKENS
         vectorizer = _make_vectorizer(self.dataset.df[feature], tfidf=True)
         tfidf = vectorizer.transform(self.dataset.df[feature])
 
@@ -116,7 +120,7 @@ class TextSlicer(BaseSlicer):
 
         return list(vectorizer.get_feature_names_out()[token_idx])
 
-    def _get_deviant_tokens(self, feature, target, max_tokens=100):
+    def _get_deviant_tokens(self, feature, target):
         from scipy import stats
 
         vectorizer = _make_vectorizer(self.dataset.df[feature], tfidf=False, binary=True)
@@ -128,18 +132,19 @@ class TextSlicer(BaseSlicer):
 
         counts = X.T @ Y
         totals = Y.sum(axis=0)
+        remainders = counts - totals
         tokens = vectorizer.get_feature_names_out()
 
-        mask = (counts.max(axis=-1) > 5) & (counts.min(axis=-1) > 0)
+        mask = (counts.max(axis=-1) > 5) & (counts.min(axis=-1) > 0) & (remainders.min(axis=-1) > 0)
 
         _data = []
-        for token, token_counts in zip(tokens[mask], counts[mask]):
-            stat, pvalue, *_ = stats.chi2_contingency([token_counts, totals - token_counts])
+        for token, token_counts, token_remainders in zip(tokens[mask], counts[mask], remainders[mask]):
+            stat, pvalue, *_ = stats.chi2_contingency([token_counts, token_remainders])
             if pvalue < 1e-3:
                 _data.append({"statistic": stat, "token": token})
 
         df = pd.DataFrame(_data, columns=["statistic", "token"])
-        tokens = df.sort_values("statistic").head(max_tokens).token.tolist()
+        tokens = df.sort_values("statistic").head(self.MAX_TOKENS).token.tolist()
 
         return tokens
 
