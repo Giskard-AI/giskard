@@ -1,7 +1,5 @@
 from dataclasses import dataclass, field
 from enum import Enum
-import numpy as np
-from giskard.datasets.base import Dataset
 
 from typing import List, Dict
 
@@ -56,6 +54,7 @@ class TestResult:
     actual_slices_size: List[int] = field(default_factory=list, repr=False)
     reference_slices_size: List[int] = field(default_factory=list, repr=False)
     output_df: bytes = None
+    output_df_id: str = None
 
     def _repr_html_(self):
         return """
