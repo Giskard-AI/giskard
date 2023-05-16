@@ -1,10 +1,13 @@
 # @TODO: simplify this module, don’t need this complexity.
 import itertools
-import numpy as np
-import pandas as pd
 from collections import defaultdict
 from typing import Sequence
 
+import numpy as np
+import pandas as pd
+
+from ..core.core import DatasetProcessFunctionMeta
+from ..ml_worker.testing.registry.registry import get_object_uuid
 from ..ml_worker.testing.registry.slicing_function import SlicingFunction
 
 
@@ -133,14 +136,25 @@ def _optimize_column_clauses(clauses: Sequence[Clause]):
 
 
 class QueryBasedSliceFunction(SlicingFunction):
-    row_level = False
+    query: Query
 
     def __init__(self, query: Query):
+        super().__init__(None, row_level=False, cell_level=False)
         self.query = query
-        super().__init__(self.query.run, row_level=False, cell_level=False)
+        self.meta = DatasetProcessFunctionMeta(type='SLICE')
+        self.meta.uuid = get_object_uuid(query)
+        self.meta.code = str(self)
+        self.meta.name = str(self)
+        self.meta.display_name = str(self)
+        self.meta.tags = ["pickle", "scan"]
+        self.meta.doc = 'Automatically generated slicing function'
+
 
     def execute(self, data: pd.DataFrame):
         return self.query.run(data)
 
     def __str__(self):
         return str(self.query)
+
+    def _should_save_locally(self) -> bool:
+        return True

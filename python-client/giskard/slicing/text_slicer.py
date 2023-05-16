@@ -2,17 +2,18 @@
 @TODO: This is a hackish implementation of the text slices.
 """
 import os
-import numpy as np
-import pandas as pd
 from typing import Optional, Sequence
 
-from ..datasets.base import Dataset
-from ..slicing.category_slicer import CategorySlicer
-from ..ml_worker.testing.registry.slicing_function import SlicingFunction
-from ..client.python_utils import warning
+import numpy as np
+import pandas as pd
+
 from .base import BaseSlicer
 from .slice import Query, QueryBasedSliceFunction, StringContains
 from .utils import get_slicer
+from ..client.python_utils import warning
+from ..datasets.base import Dataset
+from ..ml_worker.testing.registry.slicing_function import SlicingFunction
+from ..slicing.category_slicer import CategorySlicer
 
 
 class TextSlicer(BaseSlicer):
@@ -192,3 +193,8 @@ class MetadataSliceFunction(SlicingFunction):
         col = list(self.query.clauses.keys())[0]
         col = col.split("__gsk__meta__")[-1]
         return self.query.to_pandas().replace(f"__gsk__meta__{col}", f"{col}({self.feature})")
+
+    def _should_save_locally(self) -> bool:
+        return True
+
+
