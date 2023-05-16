@@ -3863,6 +3863,10 @@ content_hash = "sha256:ebff430ca6a6a60e7ee20bb240cf5a92f4ac8417ff9fd614f277b2ee0
     {url = "https://files.pythonhosted.org/packages/d0/b0/7afcd1d66834f43d08ec47c861a5540d7ad57eab47605ccd83429c147755/jupyter_events-0.6.3.tar.gz", hash = "sha256:9a6e9995f75d1b7146b436ea24d696ce3a35bfa8bfe45e0c33c334c79464d0b3"},
     {url = "https://files.pythonhosted.org/packages/ee/14/e11a93c1b47a69432ee7898f1b55f1da27f2f93b009a34dbdafb9b903f81/jupyter_events-0.6.3-py3-none-any.whl", hash = "sha256:57a2749f87ba387cd1bfd9b22a0875b889237dbf2edc2121ebb22bde47036c17"},
 ]
+"jupyter-lsp 2.1.0" = [
+    {url = "https://files.pythonhosted.org/packages/88/b5/4937ebc29944cbd30ba8504c4d64f9d0f4e083582f0f26a6cc73c8b04ba6/jupyter_lsp-2.1.0-py3-none-any.whl", hash = "sha256:d7c058cfe8bd7a76859734f3a142edb50a2d1e265a7e323c2fdcd8b1db80a91b"},
+    {url = "https://files.pythonhosted.org/packages/b3/41/d718b890bda70d4fd3b402efff7fc6847cf646fcae0d53abfac8cbc37b05/jupyter-lsp-2.1.0.tar.gz", hash = "sha256:3aa2cbd81d3446256c34e3647d71b8f50617d07862a1c60fbe123f901cdb0dd2"},
+]
 "jupyter-lsp 2.2.0" = [
     {url = "https://files.pythonhosted.org/packages/01/f9/85c8361175208e279f63c3896db14b547d821c9cb8a52675e51a7bdb336f/jupyter-lsp-2.2.0.tar.gz", hash = "sha256:8ebbcb533adb41e5d635eb8fe82956b0aafbf0fd443b6c4bfa906edeeb8635a1"},
     {url = "https://files.pythonhosted.org/packages/8f/b6/a1571e48550855a79898f851f57e5858b00eb36b09ea3b1a8bb65c53a290/jupyter_lsp-2.2.0-py3-none-any.whl", hash = "sha256:9e06b8b4f7dd50300b70dd1a78c0c3b0c3d8fa68e0f2d8a5d1fbab62072aca3f"},
