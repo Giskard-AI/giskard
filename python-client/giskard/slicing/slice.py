@@ -149,7 +149,6 @@ class QueryBasedSliceFunction(SlicingFunction):
         self.meta.tags = ["pickle", "scan"]
         self.meta.doc = 'Automatically generated slicing function'
 
-
     def execute(self, data: pd.DataFrame):
         return self.query.run(data)
 
