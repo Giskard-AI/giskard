@@ -335,7 +335,7 @@ class Dataset(ColumnMetadataMixin):
         """
         column_types = {}
         nuniques = self.df.nunique()
-        df_columns = list(self.df.columns)
+        df_columns = list(self.columns)
 
         if cat_columns:
             if not set(cat_columns).issubset(df_columns):
@@ -349,7 +349,7 @@ class Dataset(ColumnMetadataMixin):
                     column_types[cat_col] = SupportedColumnTypes.CATEGORY.value
             df_columns = set(df_columns) - set(cat_columns)
 
-        for col in self.columns:
+        for col in df_columns:
             if col == self.target:
                 continue
 
