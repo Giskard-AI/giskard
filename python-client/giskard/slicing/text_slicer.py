@@ -1,3 +1,6 @@
+"""
+@TODO: This is a hackish implementation of the text slices.
+"""
 import os
 import copy
 from typing import Optional, Sequence
@@ -22,13 +25,13 @@ class TextSlicer(BaseSlicer):
     MAX_TOKENS = int(os.getenv("GSK_TEXT_SLICER_MAX_TOKENS", 1000))
 
     def __init__(
-        self,
-        dataset: Dataset,
-        features: Optional[Sequence[str]] = None,
-        target: Optional[str] = None,
-        min_deviation: float = 0.05,
-        abs_deviation: bool = False,
-        slicer="tree",
+            self,
+            dataset: Dataset,
+            features: Optional[Sequence[str]] = None,
+            target: Optional[str] = None,
+            min_deviation: float = 0.05,
+            abs_deviation: bool = False,
+            slicer="tree",
     ):
         self.dataset = dataset
         self.features = features
