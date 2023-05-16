@@ -43,6 +43,21 @@ from giskard.path_utils import model_path, dataset_path
 logger = logging.getLogger(__name__)
 
 
+def extract_debug_info(request_arguments):
+    template_info = " | <xxx:xxx_id>"
+    info = {"suffix": "", "project_key": ""}
+    for arg in request_arguments:
+        if arg.HasField("model"):
+            filled_info = template_info.replace('xxx', arg.name)
+            info["suffix"] += filled_info.replace(arg.name + '_id', arg.model.id)
+            info['project_key'] = arg.model.project_key  # in case model is in the args and dataset is not
+        elif arg.HasField("dataset"):
+            filled_info = template_info.replace('xxx', arg.name)
+            info["suffix"] += filled_info.replace(arg.name + '_id', arg.dataset.id)
+            info['project_key'] = arg.dataset.project_key  # in case dataset is in the args and model is not
+    return info
+
+
 def file_already_exists(meta: ml_worker_pb2.FileUploadMetadata):
     if meta.file_type == ml_worker_pb2.FileType.MODEL:
         path = model_path(meta.project_key, meta.name)
@@ -196,26 +211,19 @@ class MLWorkerServiceImpl(MLWorkerServicer):
         test: GiskardTest = GiskardTest.download(request.testUuid, self.client, None)
 
         arguments = self.parse_function_arguments(request.arguments)
-        arguments["debug"] = request.debug;
+        arguments["debug"] = request.debug
 
         logger.info(f"Executing {test.meta.display_name or f'{test.meta.module}.{test.meta.name}'}")
         test_result = test.get_builder()(**arguments).execute()
 
-        if test_result.output_df:
-            dataset_id, model_id = None, None
-            for arg in request.arguments:
-                if arg.HasField("dataset"):
-                    dataset_id = arg.dataset.id
-                if arg.HasField("model"):
-                    project_key = arg.model.project_key
-                    model_id = arg.model.id
-            model_id = " | <model:" + model_id + ">" if model_id else ""
-            dataset_id = " | <dataset:" + dataset_id + ">" if dataset_id else ""
-            test_result.output_df.name += model_id + dataset_id
-            new_ds_uuid = test_result.output_df.upload(client=self.client, project_key=project_key)
+        if test_result.output_df:  # if debug is True and test has failed
+            debug_info = extract_debug_info(request.arguments)
+            test_result.output_df.name += debug_info['suffix']
+
+            test_result.output_df_id = test_result.output_df.upload(client=self.client,
+                                                                    project_key=debug_info['project_key'])
             # for now, we won't return output_df from grpc, rather upload it
             test_result.output_df = None
-            test_result.output_df_id = new_ds_uuid
 
         return ml_worker_pb2.TestResultMessage(results=[
             ml_worker_pb2.NamedSingleTestResult(testUuid=test.meta.uuid,

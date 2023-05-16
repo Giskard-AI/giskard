@@ -157,7 +157,6 @@ def _test_diff_prediction(
     # --- debug ---
     output_ds = None
     if not passed and debug:
-        print(len(result_actual.output_df.df),len(result_reference.output_df.df))
         output_ds = result_reference.output_df  # copy all properties
         output_ds.df = pd.concat([result_actual.output_df.df,
                                   result_reference.output_df.df], ignore_index=True)
