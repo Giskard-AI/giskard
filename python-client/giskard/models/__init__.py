@@ -1,10 +1,15 @@
+import inspect
 from importlib import import_module
 from typing import Callable, Optional, Iterable, Any
 
 import pandas as pd
+import logging
 
 from giskard.core.core import ModelType
+from giskard.models.function import PredictionFunctionModel
 from giskard.core.validation import configured_validate_arguments
+
+logger = logging.getLogger(__name__)
 
 ml_libraries = {
     ("giskard.models.huggingface", "HuggingFaceModel"): [("transformers", "PreTrainedModel")],
@@ -20,14 +25,18 @@ def get_class(_lib, _class):
 
 
 def infer_giskard_cls(model: Any):
-    for _giskard_class, _base_libs in ml_libraries.items():
-        try:
-            giskard_cls = get_class(*_giskard_class)
-            base_libs = [get_class(*_base_lib) for _base_lib in _base_libs]
-            if isinstance(model, tuple(base_libs)):
-                return giskard_cls
-        except ImportError:
-            return None
+    if inspect.isfunction(model):
+        return PredictionFunctionModel
+    else:
+        for _giskard_class, _base_libs in ml_libraries.items():
+            try:
+                giskard_cls = get_class(*_giskard_class)
+                base_libs = [get_class(*_base_lib) for _base_lib in _base_libs]
+                if isinstance(model, tuple(base_libs)):
+                    return giskard_cls
+            except ImportError:
+                pass
+    return None
 
 
 @configured_validate_arguments
@@ -49,8 +58,8 @@ def wrap_model(model,
             Could be any model from :code:`sklearn`, :code:`catboost`, :code:`pytorch`, :code:`tensorflow` or :code:`huggingface`.
             The standard model output required for Giskard is:
 
-            * if classification: an array of probabilities corresponding to d   ata entries (rows of pandas.DataFrame)
-                and classification_labels. In the case of binary classification, an array of probabilities is also accepted.
+            * if classification: an array (nxm) of probabilities corresponding to n data entries (rows of pandas.DataFrame)
+                and m classification_labels. In the case of binary classification, an array of (nx1) probabilities is also accepted.
                 Make sure that the probability provided is for the first label provided in classification_labels.
             * if regression: an array of predictions corresponding to data entries (rows of pandas.DataFrame) and outputs.
         name (Optional[str]):
@@ -83,6 +92,8 @@ def wrap_model(model,
     """
     giskard_cls = infer_giskard_cls(model)
     if giskard_cls:
+        logger.info("Your model is successfully wrapped by Giskard's '"
+                    + str(giskard_cls.__name__) + "' wrapper class.")
         return giskard_cls(model=model,
                            model_type=model_type,
                            data_preprocessing_function=data_preprocessing_function,
@@ -92,11 +103,9 @@ def wrap_model(model,
                            classification_threshold=classification_threshold,
                            classification_labels=classification_labels,
                            **kwargs)
-        print("Your model is successfully wrapped by Giskard's '"
-              + giskard_cls.__class__ + "' wrapper class.")
     else:
         raise ValueError(
-            'We could not infer your model library. We currently only support models from:'
+            'We could not infer your model library. We currently only support functions or models from:'
             '\n- sklearn'
             '\n- catboost'
             '\n- pytorch'

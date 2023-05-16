@@ -11,6 +11,11 @@ def filter_with_parenthesis(x: pd.Series) -> bool:
     return x.credit_amount > 1000
 
 
+@slicing_function(name='slice cell level', cell_level=True)
+def filter_cell_level(amount: int) -> bool:
+    return amount > 1000
+
+
 @slicing_function
 def filter_without_parenthesis(x: pd.Series) -> bool:
     return x.credit_amount > 2000
@@ -53,6 +58,15 @@ def test_slicing_using_lambda(german_credit_data: Dataset):
     ds = german_credit_data.slice(lambda x: x.credit_amount > 1000)
     assert len(ds.df) == 884
     ds = ds.slice(lambda x: x.credit_amount > 2000)
+    assert len(ds.df) == 568
+
+
+def test_slicing_cell_level(german_credit_data: Dataset):
+    assert len(german_credit_data.df) == 1000
+    assert isinstance(filter_with_parenthesis, SlicingFunction), f"{type(filter_with_parenthesis)}"
+    ds = german_credit_data.slice(filter_cell_level, column_name='credit_amount')
+    assert len(ds.df) == 884
+    ds = ds.slice(lambda amount: amount > 2000, cell_level=True, column_name='credit_amount')
     assert len(ds.df) == 568
 
 

@@ -1,18 +1,23 @@
-import pytest
-import pandas as pd
+import logging
 from unittest import mock
-from giskard import wrap_dataset
+
+import pandas as pd
+
+from giskard import Dataset
 from giskard.scanner.issues import Issue
 from giskard.scanner.performance import ModelBiasDetector
 
 
-@pytest.mark.skip(reason="need to fix this with new logger")
-def test_model_bias_detector_skips_small_datasets(german_credit_model, german_credit_data):
+def test_model_bias_detector_skips_small_datasets(german_credit_model, german_credit_data, caplog):
     small_dataset = german_credit_data.slice(lambda df: df.sample(50), row_level=False)
     detector = ModelBiasDetector()
-    with pytest.warns(match="Skipping model bias scan"):
+    with caplog.at_level(logging.WARNING):
         issues = detector.run(german_credit_model, small_dataset)
+    record = caplog.records[-1]
+
     assert len(issues) == 0
+    assert record.levelname == "WARNING"
+    assert "Skipping scan because the dataset is too small" in record.message
 
 
 def test_model_bias_detector_trims_large_dataset(german_credit_model, german_credit_data):
@@ -52,7 +57,7 @@ def test_model_bias_detector_with_tabular(german_credit_model, german_credit_dat
 def test_model_bias_detector_with_text_features(enron_model, enron_data):
     # Augment the dataset with random data
     df = pd.DataFrame({col: enron_data.df[col].sample(500, replace=True).values for col in enron_data.columns})
-    dataset = wrap_dataset(df, target=enron_data.target, column_types=enron_data.column_types)
+    dataset = Dataset(df, target=enron_data.target, column_types=enron_data.column_types)
     detector = ModelBiasDetector()
 
     issues = detector.run(enron_model, dataset)

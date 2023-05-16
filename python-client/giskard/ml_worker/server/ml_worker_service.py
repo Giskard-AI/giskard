@@ -80,6 +80,36 @@ def map_function_meta(callable_type):
     }
 
 
+def map_dataset_process_function_meta(callable_type):
+    return {
+        test.uuid: ml_worker_pb2.DatasetProcessFunctionMeta(
+            uuid=test.uuid,
+            name=test.name,
+            displayName=test.display_name,
+            module=test.module,
+            doc=test.doc,
+            code=test.code,
+            moduleDoc=test.module_doc,
+            tags=test.tags,
+            type=test.type,
+            args=[
+                ml_worker_pb2.TestFunctionArgument(
+                    name=a.name,
+                    type=a.type,
+                    optional=a.optional,
+                    default=str(a.default),
+                    argOrder=a.argOrder
+                ) for a
+                in test.args.values()
+            ],
+            cellLevel=test.cell_level,
+            columnType=test.column_type,
+        )
+        for test in tests_registry.get_all().values()
+        if test.type == callable_type
+    }
+
+
 class MLWorkerServiceImpl(MLWorkerServicer):
     def __init__(self, ml_worker: MLWorker, client: GiskardClient, address=None, remote=None,
                  loop=asyncio.get_event_loop()) -> None:
@@ -190,7 +220,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
         result = dataset.process()
 
         filtered_rows_idx = dataset.df.index.difference(result.df.index)
-        modified_rows = dataset.df[dataset.df.iloc[result.df.index].ne(result.df)].dropna(how='all')
+        modified_rows = result.df[dataset.df.iloc[result.df.index].ne(result.df)].dropna(how='all')
 
         return ml_worker_pb2.DatasetProcessingResultMessage(
             datasetId=request.dataset.id,
@@ -257,7 +287,10 @@ class MLWorkerServiceImpl(MLWorkerServicer):
 
     def parse_function_arguments(self, request_arguments):
         arguments = dict()
+
         for arg in request_arguments:
+            if arg.none:
+                continue
             if arg.HasField("dataset"):
                 arguments[arg.name] = Dataset.download(self.client, arg.dataset.project_key, arg.dataset.id)
             elif arg.HasField("model"):
@@ -535,8 +568,8 @@ class MLWorkerServiceImpl(MLWorkerServicer):
                    context: grpc.ServicerContext) -> ml_worker_pb2.CatalogResponse:
         return ml_worker_pb2.CatalogResponse(
             tests=map_function_meta('TEST'),
-            slices=map_function_meta('SLICE'),
-            transformations=map_function_meta('TRANSFORMATION')
+            slices=map_dataset_process_function_meta('SLICE'),
+            transformations=map_dataset_process_function_meta('TRANSFORMATION')
         )
 
     @staticmethod

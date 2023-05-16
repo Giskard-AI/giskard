@@ -183,6 +183,7 @@ message FuncArgument{
     string kwargs = 10;
   }
   repeated FuncArgument args = 11;
+  bool none = 12;
 }
 
 message RunTestResponse {
@@ -322,8 +323,8 @@ message GeneratedTestInput{
 
 message CatalogResponse{
   map<string, FunctionMeta> tests = 1;
-  map<string, FunctionMeta> slices = 2;
-  map<string, FunctionMeta> transformations = 3;
+  map<string, DatasetProcessFunctionMeta> slices = 2;
+  map<string, DatasetProcessFunctionMeta> transformations = 3;
 }
 
 message FunctionMeta {
@@ -338,6 +339,22 @@ message FunctionMeta {
   repeated string tags = 9;
   string code = 10;
   string type = 11;
+}
+
+message DatasetProcessFunctionMeta {
+  string uuid = 1;
+  string name = 2;
+  string displayName = 3;
+  uint32 version = 4;
+  string module = 5;
+  string doc = 6;
+  string moduleDoc = 7;
+  repeated TestFunctionArgument args = 8;
+  repeated string tags = 9;
+  string code = 10;
+  string type = 11;
+  bool cellLevel = 12;
+  optional string columnType = 13;
 }
 
 

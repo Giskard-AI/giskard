@@ -1,9 +1,8 @@
 <template>
   <v-container v-if="inspection" fluid class="vc">
     <v-row align="center" no-gutters style='height: 60px;'>
-
-      <v-toolbar id='data-explorer-toolbar' flat>
-        <v-tooltip bottom>
+      <v-toolbar class='data-explorer-toolbar' flat>
+        <v-tooltip bottom min-width="400">
           <template v-slot:activator="{ on, attrs }">
             <v-icon v-on="on" class="pr-5" medium>info</v-icon>
           </template>
@@ -73,10 +72,9 @@
     </v-row>
     <Inspector :dataset='inspection.dataset' :inputData.sync='inputData' :model='inspection.model'
                :originalData='originalData'
-               :transformationModifications="{}"
+               :transformationModifications="modifications"
                class='px-0' @reset='resetInput' @submitValueFeedback='submitValueFeedback'
-               @submitValueVariationFeedback='submitValueVariationFeedback' v-if="totalRows > 0"
-               :row-nb="rowNb"/>
+               @submitValueVariationFeedback='submitValueVariationFeedback' :row-nb="rowNb" v-if="totalRows > 0"/>
     <v-alert v-else border="bottom" colored-border type="warning" class="mt-8" elevation="2">
       No data matches the selected filter.<br/>
       In order to show data, please refine the filter's criteria.
@@ -339,10 +337,13 @@ function assignCurrentRow(forceFetch: boolean) {
   }
 }
 
+
+const modifications = computed(() => dataProcessingResult.value?.modifications?.find(m => m.rowId === originalData.value['_GISKARD_INDEX_'])?.modifications ?? {});
+
 function resetInput() {
   inputData.value = {
     ...originalData.value,
-    ...dataProcessingResult.value?.modifications?.find(m => m.rowId === this.originalData['Index'])?.modifications ?? {}
+    ...modifications.value
   };
 }
 
@@ -357,8 +358,13 @@ async function doSubmitFeedback(payload: CreateFeedbackDTO) {
   await api.submitFeedback(payload, payload.projectId);
 }
 
+const transformationPipeline = computed(() => Object.values(transformationFunctions.value))
+
+watch(() => transformationPipeline.value, processDataset, {deep: true})
+
 async function processDataset() {
-  const pipeline = [selectedSlicingFunction.value, ...Object.values(transformationFunctions.value)]
+  console.log(transformationFunctions.value)
+  const pipeline = [selectedSlicingFunction.value, ...transformationPipeline.value]
       .filter(callable => !!callable.uuid) as Array<ParameterizedCallableDTO>;
 
   loadingProcessedDataset.value = true;
@@ -393,7 +399,7 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-#data-explorer-toolbar .v-btn {
+.data-explorer-toolbar .v-btn {
   height: 36px;
   width: 36px;
 }

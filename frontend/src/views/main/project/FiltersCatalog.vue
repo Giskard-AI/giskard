@@ -17,7 +17,7 @@
                     <v-col cols="4" class="vc fill-height">
                         <v-text-field label="Search filter" append-icon="search" outlined
                                       v-model="searchFilter"></v-text-field>
-                        <v-list three-line>
+                        <v-list three-line class="vc fill-height">
                             <v-list-item-group v-model="selected" color="primary" mandatory>
                                 <template v-for="slicingFunction in filteredTestFunctions">
                                     <v-divider/>
@@ -92,6 +92,25 @@
                                             </v-col>
                                         </v-row>
                                     </v-list-item>
+                                    <v-list-item class="pl-0 pr-0">
+                                        <v-row v-if="selected.cellLevel">
+                                            <v-col>
+                                                <v-list-item-content>
+                                                    <v-list-item-title>Column</v-list-item-title>
+                                                    <v-list-item-subtitle class="text-caption">
+                                                        str
+                                                    </v-list-item-subtitle>
+                                                </v-list-item-content>
+                                            </v-col>
+                                            <v-col>
+                                                <DatasetColumnSelector v-if="tryMode"
+                                                                       :project-id="projectId"
+                                                                       :dataset="selectedDataset"
+                                                                       :column-type="selected.columnType"
+                                                                       :value.sync="selectedColumn"/>
+                                            </v-col>
+                                        </v-row>
+                                    </v-list-item>
                                 </v-list>
                                 <SuiteInputListSelector
                                     :editing="tryMode"
@@ -146,7 +165,7 @@
         </div>
     </div>
     <v-container v-else class="d-flex flex-column vc fill-height">
-        <h1 class="pt-16">You haven't started any ML worker yet!</h1>
+        <h1 class="pt-16">ML Worker is not connected</h1>
         <StartWorkerInstructions/>
     </v-container>
 </template>
@@ -165,6 +184,7 @@ import DatasetSelector from "@/views/main/utils/DatasetSelector.vue";
 import {api} from "@/api";
 import DatasetTable from "@/components/DatasetTable.vue";
 import SuiteInputListSelector from "@/components/SuiteInputListSelector.vue";
+import DatasetColumnSelector from "@/views/main/utils/DatasetColumnSelector.vue";
 import IEditorOptions = editor.IEditorOptions;
 
 const l = MonacoEditor;
@@ -181,6 +201,7 @@ const selected = ref<SlicingFunctionDTO | null>(null);
 const sliceResult = ref<SlicingResultDTO | null>(null);
 const tryMode = ref<boolean>(false);
 const selectedDataset = ref<string | null>(null);
+const selectedColumn = ref<string | null>(null);
 let slicingArguments = ref<{ [name: string]: TestInputDTO }>({})
 
 const monacoOptions: IEditorOptions = inject('monacoOptions');
@@ -226,9 +247,20 @@ onActivated(async () => {
 });
 
 async function runSlicingFunction() {
+    const params = Object.values(slicingArguments.value);
+    if (selected.value!.cellLevel) {
+        params.push({
+            isAlias: false,
+            name: 'column_name',
+            params: [],
+            type: 'str',
+            value: selectedColumn.value
+        })
+    }
+
     sliceResult.value = await api.datasetProcessing(props.projectId, selectedDataset.value!, [{
         uuid: selected.value!.uuid,
-        params: Object.values(slicingArguments.value),
+        params,
         type: 'SLICING'
     }]);
 
