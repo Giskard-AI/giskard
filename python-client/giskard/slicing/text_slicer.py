@@ -7,6 +7,10 @@ from typing import Optional, Sequence
 import numpy as np
 import pandas as pd
 
+from ..ml_worker.testing.registry.registry import get_object_uuid
+
+from ..core.core import DatasetProcessFunctionMeta
+
 from .base import BaseSlicer
 from .slice import Query, QueryBasedSliceFunction, StringContains
 from .utils import get_slicer
@@ -178,9 +182,17 @@ class MetadataSliceFunction(SlicingFunction):
     needs_dataset = True
 
     def __init__(self, query: Query, feature: str, provider: str):
+        super().__init__(None, row_level=False, cell_level=False)
         self.query = query
         self.feature = feature
         self.provider = provider
+        self.meta = DatasetProcessFunctionMeta(type='SLICE')
+        self.meta.uuid = get_object_uuid(query)
+        self.meta.code = str(self)
+        self.meta.name = str(self)
+        self.meta.display_name = str(self)
+        self.meta.tags = ["pickle", "scan"]
+        self.meta.doc = 'Automatically generated slicing function'
 
     def execute(self, dataset: Dataset) -> pd.DataFrame:
         metadata = dataset.column_meta[self.feature, self.provider]
