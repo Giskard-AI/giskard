@@ -5,6 +5,8 @@ import pandas as pd
 
 from giskard.scanner.robustness.entity_swap import gender_switch_en
 from .entity_swap import typos
+from ...core.core import DatasetProcessFunctionMeta
+from ...ml_worker.testing.registry.registry import get_object_uuid
 from ...ml_worker.testing.registry.transformation_function import TransformationFunction
 from ...ml_worker.testing.registry.transformation_function import transformation_function
 
@@ -41,16 +43,18 @@ text_titlecase.name = "Transform to title case"
 
 class TextTransformation(TransformationFunction):
     name: str
-    row_level = False
 
     def __init__(self, column):
+        super().__init__(None, row_level=False, cell_level=False)
         self.column = column
+        self.meta = DatasetProcessFunctionMeta(type='TRANSFORMATION')
+        self.meta.uuid = get_object_uuid(self)
+        self.meta.code = self.name
+        self.meta.name = self.name
+        self.meta.display_name = self.name
+        self.meta.tags = ["pickle", "scan"]
+        self.meta.doc = 'Automatically generated transformation function'
 
-        # @TODO: fix this
-        def func(x):
-            return x
-
-        super().__init__(func, row_level=False, cell_level=False)
 
     def execute(self, data: pd.DataFrame):
         data = data.copy()
