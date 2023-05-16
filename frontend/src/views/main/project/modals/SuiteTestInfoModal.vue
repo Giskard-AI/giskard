@@ -47,10 +47,6 @@
         </v-card-text>
         <v-card-actions>
           <v-spacer/>
-          <v-btn color="green" @click="runDebug">
-            <v-icon>mdi-bug</v-icon>
-            Debug
-          </v-btn>
           <v-btn color="primary" @click="() => saveEditedInputs(close)" :disabled="invalid">
             <v-icon>save</v-icon>
             Save
@@ -73,8 +69,6 @@ import {api} from '@/api';
 import {editor} from 'monaco-editor';
 import TestInputListSelector from "@/components/TestInputListSelector.vue";
 import {useCatalogStore} from "@/stores/catalog";
-import {$vfm} from "vue-final-modal";
-import RunTestModal from "@/views/main/project/modals/RunTestModal.vue";
 import IEditorOptions = editor.IEditorOptions;
 
 const l = MonacoEditor;
@@ -132,21 +126,6 @@ const inputType = computed(() => chain(sortedArguments.value)
     .mapValues('type')
     .value()
 );
-
-async function runDebug() {
-  await $vfm.show({
-    component: RunTestModal,
-    bind: {
-      projectId: projectId.value,
-      suiteId: suite.value!.id,
-      inputs: inputs.value,
-      testUuid: props.suiteTest.testUuid,
-      compareMode: false,
-      previousParams: {},
-      debug: true
-    }
-  });
-}
 
 </script>
 
