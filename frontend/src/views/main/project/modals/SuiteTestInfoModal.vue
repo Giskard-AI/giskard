@@ -50,8 +50,6 @@ import {useTestSuiteStore} from '@/stores/test-suite';
 import {api} from '@/api';
 import TestInputListSelector from "@/components/TestInputListSelector.vue";
 import {useCatalogStore} from "@/stores/catalog";
-import {$vfm} from "vue-final-modal";
-import RunTestModal from "@/views/main/project/modals/RunTestModal.vue";
 import {extractArgumentDocumentation} from "@/utils/python-doc.utils";
 import {$vfm} from "vue-final-modal";
 import ConfirmModal from "@/views/main/project/modals/ConfirmModal.vue";
@@ -123,46 +121,6 @@ const inputType = computed(() => chain(sortedArguments.value)
     .value()
 );
 
-async function runDebug() {
-  await $vfm.show({
-    component: RunTestModal,
-    bind: {
-      projectId: projectId.value,
-      suiteId: suite.value!.id,
-      inputs: inputs.value,
-      testUuid: props.suiteTest.testUuid,
-      compareMode: false,
-      previousParams: {},
-      debug: true
-    }
-  });
-}
-
-async function removeTest(close) {
-    await $vfm.show({
-        component: ConfirmModal,
-        bind: {
-            title: 'Remove test',
-            text: `Are you sure that you want to remove this test from the test suite?`,
-            isWarning: true
-        },
-        on: {
-            async confirm(closeConfirm) {
-                await api.removeTest(suite.value!.projectKey!, suite.value!.id!, props.suiteTest.id!);
-                await useTestSuiteStore().reload();
-                closeConfirm();
-                close();
-
-                mixpanel.track('Removed test form test suite', {
-                    suiteId: suite.value!.id,
-                    projectKey: suite.value!.projectKey,
-                    testUuid: props.suiteTest.testUuid,
-                    testName: props.suiteTest.test.displayName ?? props.suiteTest.test.name
-                });
-            }
-        }
-    });
-}
 </script>
 
 <style scoped>
