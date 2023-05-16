@@ -3,10 +3,13 @@ from importlib import import_module
 from typing import Callable, Optional, Iterable, Any
 
 import pandas as pd
+import logging
 
 from giskard.core.core import ModelType
 from giskard.models.function import PredictionFunctionModel
 from giskard.core.validation import configured_validate_arguments
+
+logger = logging.getLogger(__name__)
 
 ml_libraries = {
     ("giskard.models.huggingface", "HuggingFaceModel"): [("transformers", "PreTrainedModel")],
@@ -89,8 +92,8 @@ def wrap_model(model,
     """
     giskard_cls = infer_giskard_cls(model)
     if giskard_cls:
-        print("Your model is successfully wrapped by Giskard's '"
-              + str(giskard_cls.__name__) + "' wrapper class.")
+        logger.info("Your model is successfully wrapped by Giskard's '"
+                    + str(giskard_cls.__name__) + "' wrapper class.")
         return giskard_cls(model=model,
                            model_type=model_type,
                            data_preprocessing_function=data_preprocessing_function,

@@ -1,10 +1,8 @@
-import random
 import re
-
+import random
 import pandas as pd
 
-from giskard.scanner.robustness.entity_swap import gender_switch_en
-from .entity_swap import typos
+from .entity_swap import typos, gender_switch_en
 from ...core.core import DatasetProcessFunctionMeta
 from ...ml_worker.testing.registry.registry import get_object_uuid
 from ...ml_worker.testing.registry.transformation_function import TransformationFunction
@@ -54,7 +52,6 @@ class TextTransformation(TransformationFunction):
         self.meta.display_name = self.name
         self.meta.tags = ["pickle", "scan"]
         self.meta.doc = 'Automatically generated transformation function'
-
 
     def execute(self, data: pd.DataFrame):
         data = data.copy()
