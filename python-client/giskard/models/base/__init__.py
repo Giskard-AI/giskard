@@ -260,6 +260,9 @@ class BaseModel(ABC):
               The `probabilities` field will contain the predicted probabilities for the predicted class label.
               The `all_predictions` field will contain the predicted probabilities for all class labels for each example in the input dataset.
         """
+        # TODO: check if modelid/hashdataset.csv exists
+        dataset.data_hash
+
         timer = Timer()
 
         # Read cache

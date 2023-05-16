@@ -70,9 +70,11 @@
 
         <SlicingFunctionSelector label="Slice to apply" :project-id="projectId"
                                  :full-width="false" :icon="true" class="mr-3"
+                                 :allow-no-code-slicing="true"
                                  @onChanged="processDataset"
                                  :value.sync="selectedSlicingFunction.uuid"
-                                 :args.sync="selectedSlicingFunction.params"/>
+                                 :args.sync="selectedSlicingFunction.params"
+                                 :dataset="inspection.dataset"/>
 
         <InspectionFilter :is-target-available="isDefined(inspection.dataset.target)" :labels="labels"
                           :model-type="inspection.model.modelType" @input="f => filter = f"/>
@@ -409,7 +411,7 @@ onUnmounted(() => {
 
 async function handleSwitchSample() {
     if (inspection.value!.sample) {
-        const confirmed = await confirm($vfm, 'Inspect whole dataset', 'Opening the debugger on the whole data might cause performance issues', true);
+        const confirmed = await confirm($vfm, 'Inspect whole dataset', 'Opening the debugger on the whole data might cause performance issues');
         if (!confirmed) {
             return;
         }
