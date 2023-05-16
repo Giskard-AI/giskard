@@ -119,6 +119,7 @@ def _test_diff_prediction(
         threshold: float = 0.5,
         direction: Direction = Direction.Invariant,
         test_name=None,
+        debug: bool = False
 ):
     metric_reference = test_fn(dataset=reference_dataset, model=model).metric
     metric_actual = test_fn(dataset=actual_dataset, model=model).metric
@@ -159,7 +160,7 @@ class AucTest(GiskardTest):
     model: BaseModel
     threshold: float
 
-    def __init__(self, model: BaseModel = None, dataset: Dataset = None, threshold: float = None):
+    def __init__(self, model: BaseModel = None, dataset: Dataset = None, threshold: float = None, debug: bool = False):
         """
         :param model: Model used to compute the test
         :param dataset: dataset used to compute the test
@@ -168,6 +169,7 @@ class AucTest(GiskardTest):
         self.dataset = dataset
         self.model = model
         self.threshold = threshold
+        self.debug = debug
         super().__init__()
 
     def execute(self) -> TestResult:
@@ -181,7 +183,7 @@ class AucTest(GiskardTest):
           passed:
             TRUE if AUC metrics >= threshold
         """
-        return test_auc.test_fn(dataset=self.dataset, model=self.model, threshold=self.threshold)
+        return test_auc.test_fn(dataset=self.dataset, model=self.model, threshold=self.threshold, debug=self.debug)
 
 
 @test(name='AUC', tags=['performance', 'classification', 'ground_truth'])
@@ -246,7 +248,8 @@ def test_auc(model: BaseModel, dataset: Dataset, slicing_function: SlicingFuncti
 
 
 @test(name='F1', tags=['performance', 'classification', 'ground_truth'])
-def test_f1(model: BaseModel, dataset: Dataset, slicing_function: SlicingFunction = None, threshold: float = 1.0):
+def test_f1(model: BaseModel, dataset: Dataset, slicing_function: SlicingFunction = None, threshold: float = 1.0,
+            debug: bool = False):
     """
     Test if the model F1 score is higher than a defined threshold for a given slice
 
@@ -275,11 +278,12 @@ def test_f1(model: BaseModel, dataset: Dataset, slicing_function: SlicingFunctio
     if slicing_function:
         dataset = dataset.slice(slicing_function)
         check_slice_not_empty(sliced_dataset=dataset, dataset_name="dataset", test_name="test_f1")
-    return _test_classification_score(f1_score, model, dataset, threshold)
+    return _test_classification_score(f1_score, model, dataset, threshold, debug)
 
 
 @test(name='Accuracy', tags=['performance', 'classification', 'ground_truth'])
-def test_accuracy(model: BaseModel, dataset: Dataset, slicing_function: SlicingFunction = None, threshold: float = 1.0):
+def test_accuracy(model: BaseModel, dataset: Dataset, slicing_function: SlicingFunction = None, threshold: float = 1.0,
+                  debug: bool = False):
     """
     Test if the model Accuracy is higher than a threshold for a given slice
 
@@ -307,12 +311,13 @@ def test_accuracy(model: BaseModel, dataset: Dataset, slicing_function: SlicingF
     if slicing_function:
         dataset = dataset.slice(slicing_function)
         check_slice_not_empty(sliced_dataset=dataset, dataset_name="dataset", test_name="test_accuracy")
-    return _test_accuracy_score(dataset, model, threshold)
+    return _test_accuracy_score(dataset, model, threshold, debug)
 
 
 @test(name='Precision', tags=['performance', 'classification', 'ground_truth'])
 def test_precision(
-        model: BaseModel, dataset: Dataset, slicing_function: SlicingFunction = None, threshold: float = 1.0
+        model: BaseModel, dataset: Dataset, slicing_function: SlicingFunction = None, threshold: float = 1.0,
+        debug: bool = False
 ):
     """
     Test if the model Precision is higher than a threshold for a given slice
@@ -340,11 +345,12 @@ def test_precision(
     if slicing_function:
         dataset = dataset.slice(slicing_function)
         check_slice_not_empty(sliced_dataset=dataset, dataset_name="dataset", test_name="test_precision")
-    return _test_classification_score(precision_score, model, dataset, threshold)
+    return _test_classification_score(precision_score, model, dataset, threshold, debug)
 
 
 @test(name='Recall', tags=['performance', 'classification', 'ground_truth'])
-def test_recall(model: BaseModel, dataset: Dataset, slicing_function: SlicingFunction = None, threshold: float = 1.0):
+def test_recall(model: BaseModel, dataset: Dataset, slicing_function: SlicingFunction = None, threshold: float = 1.0,
+                debug: bool = False):
     """
     Test if the model Recall is higher than a threshold for a given slice
 
@@ -371,7 +377,7 @@ def test_recall(model: BaseModel, dataset: Dataset, slicing_function: SlicingFun
     if slicing_function:
         dataset = dataset.slice(slicing_function)
         check_slice_not_empty(sliced_dataset=dataset, dataset_name="dataset", test_name="test_recall")
-    return _test_classification_score(recall_score, model, dataset, threshold)
+    return _test_classification_score(recall_score, model, dataset, threshold, debug)
 
 
 @test(name='RMSE', tags=['performance', 'regression', 'ground_truth'])
