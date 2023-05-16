@@ -36,11 +36,37 @@ const testSuiteStore = useTestSuiteStore();
 const {suite} = storeToRefs(testSuiteStore);
 
 async function debugTest(result: SuiteTestExecutionDTO, suiteTest: SuiteTestDTO) {
+  let inputs = [];
+  if (props.execution.inputs.length > 0) {
+    inputs = props.execution.inputs;
+  } else {
+    // This is a bit hacky, but there is no other way because the test suite input list is never guaranteed to be present :(
+    inputs.push({
+      name: "model",
+      type: "BaseModel",
+      isAlias: false,
+      value: result.inputs["model"],
+      params: []
+    });
 
-  let model = props.execution.inputs.filter(input => input.name === 'model')[0].value;
+    inputs.push({
+      name: "dataset",
+      type: "Dataset",
+      isAlias: false,
+      value: result.inputs["dataset"],
+      params: []
+    });
 
-  let res = await api.runAdHocTest(testSuiteStore.projectId!, suiteTest.testUuid, props.execution.inputs, true);
+    // name: arg.name,
+    // type: arg.type,
+    // isAlias: false,
+    // value: '',
+    // params: []
+  }
 
+  let model = inputs.filter(i => i.name == "model")[0].value;
+
+  let res = await api.runAdHocTest(testSuiteStore.projectId!, suiteTest.testUuid, inputs, true);
   let dataset = res.result[0].result.outputDfUuid;
 
   const debuggingSession = await api.prepareInspection({
