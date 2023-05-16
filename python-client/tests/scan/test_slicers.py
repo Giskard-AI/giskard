@@ -83,6 +83,20 @@ def test_text_slicer_warns_if_vocabulary_is_empty():
     dataset = Dataset(df)
     slicer = TextSlicer(dataset)
     with pytest.warns(match="Could not get meaningful tokens"):
-        slices = slicer.find_top_tokens_slices("feature1", "loss")
+        slices = slicer.find_token_based_slices("feature1", "loss")
 
     assert len(slices) == 0
+
+
+def test_text_slicer_does_not_fail_when_loss_is_constant():
+    df = pd.DataFrame(
+        {
+            "text": ["All that is solid", "melts into air", "Все твердое растворяется в воздухе"] * 100,
+            "loss": [1, 1, 1] * 100,
+        }
+    )
+    dataset = Dataset(df)
+    slicer = TextSlicer(dataset)
+    slices = slicer.find_slices(["text"], "loss")
+
+    assert len(slices) > 0

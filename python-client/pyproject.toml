@@ -148,6 +148,7 @@ scan = [
     "optbinning>=0.17.0",
     "chardet",
     "jinja2>=3",
+    "spacy",
 ]
 
 
