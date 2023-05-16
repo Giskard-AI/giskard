@@ -25,7 +25,7 @@ class Push:
     text_perturbed: list = None
     transformation_function: list = None
 
-    def __init__(self, push_type, feature, value, bounds=None, model_type=None,
+    def __init__(self, push_type, value=None, feature=None, bounds=None, model_type=None,
                  text_perturbed=None, transformation_function=None):
         self.key = feature
         self.value = value
@@ -39,6 +39,12 @@ class Push:
             self._high_contribution_only(feature, value)
         if push_type == "perturbation":
             self._perturbation(feature, value)
+        if push_type == "overconfidence":
+            self._overconfidence()
+        if push_type == "borderline":
+            self._borderline()
+        if push_type == "stochasticity":
+            self._stochasticity()
         self._slicing_function()
         self.test_selection()
 
@@ -65,7 +71,7 @@ class Push:
                        "button": "Open debugger"
                    },
                        {
-                           "action": "Generate a new performance difference test in the catalog",
+                           "action": "Generate a new performance difference test",
                            "explanation": "This may help ensure this spurious pattern is not common to the whole "
                                           "dataset",
                            "button": "Create test"
@@ -109,7 +115,7 @@ class Push:
         res = {"push_title": f"A small variation of {str(feature)}=={str(value)} makes the prediction change",
                "details":
                    [{
-                       "action": "Generate a robustness test in the catalog that slightly perturb this feature",
+                       "action": "Generate a robustness test that slightly perturb this feature",
                        "explanation": "This will enable you to make sure the model is robust against small similar "
                                       "changes",
                        "button": "Create test"
@@ -137,3 +143,57 @@ class Push:
         slicing_func = QueryBasedSliceFunction(Query(clause))
 
         self.slicing_function = slicing_func
+
+    def _overconfidence(self):
+        res = {"push_title": "This example is incorrect while having a high confidence.",
+               "details":
+                   [{
+                       "action": "Save this example for further inspection and testing",
+                       "explanation": "This may help you identify spurious correlation and create unit test based on "
+                                      "these examples",
+                       "button": "Save Example"
+                   },
+                       {
+                           "action": "Generate an overconfidence test",
+                           "explanation": "This may help you ensure this overconfidence pattern is not common to the "
+                                          "whole dataset",
+                           "button": "Create test"
+                       }
+                   ]
+               }
+        self.push_title = res["push_title"]
+        self.details = res["details"]
+
+    def _borderline(self):
+        res = {"push_title": "This example was predicted with very low confidence",
+               "details":
+                   [{
+                       "action": "Save this example for further inspection and testing",
+                       "explanation": "This may help you identify inconsistent patterns and create a unit test based "
+                                      "on these examples",
+                       "button": "Save Example"
+                   },
+                       {
+                           "action": "Generate an inconsistency test",
+                           "explanation": "This may help you ensure this inconsistent pattern is not common to the "
+                                          "whole dataset",
+                           "button": "Create test"
+                       }
+                   ]
+               }
+        self.push_title = res["push_title"]
+        self.details = res["details"]
+
+    def _stochasticity(self):
+        res = {"push_title": "This example generates different predictions at each run",
+               "details":
+                   [{
+                       "action": "Save this example for further inspection and testing",
+                       "explanation": "Some stochastic behavior has been found in your model. You may need to fix the "
+                                      "random seed of your model",
+                       "button": "Save Example"
+                   }
+                   ]
+               }
+        self.push_title = res["push_title"]
+        self.details = res["details"]

@@ -39,11 +39,18 @@ def test_perturbation_text(enron_model, enron_data):
     assert testl != []
 
 
-def test_contribution_reg(linear_regression_diabetes, diabetes_dataset_with_target):
 def test_overconfidence(german_credit_model, german_credit_data):
     testl = []
     for i in range(200):
         res = overconfidence(german_credit_model, german_credit_data, i)
+        if res is not None:
+            testl.append(res)
+    assert len(testl) > 0
+
+def test_overconfidence(enron_model, enron_data):
+    testl = []
+    for i in range(40):
+        res = overconfidence(enron_model, enron_data, i)
         if res is not None:
             testl.append(res)
     assert len(testl) > 0
@@ -57,6 +64,13 @@ def test_borderline(german_credit_model, german_credit_data):
             testl.append(res)
     assert len(testl) > 0
 
+def test_borderline_enron(enron_model, enron_data):
+    testl = []
+    for i in range(40):
+        res = borderline(enron_model, enron_data, i)
+        if res is not None:
+            testl.append(res)
+    assert len(testl) > 0
 
 def test_stochasticity_german(german_credit_model, german_credit_data):
     testl = []
