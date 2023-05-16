@@ -42,10 +42,10 @@
                         </v-list>
                     </v-col>
                     <v-col cols="8" v-if="selected" class="vc fill-height">
-                        <div class="d-flex justify-space-between">
+                        <div class="d-flex justify-space-between py-2 mb-4">
                             <span class="text-h5" id="test-name">{{ selected.displayName ?? selected.name }}</span>
-                            <v-btn small tile color="primaryLight" class="primaryLightBtn" @click="addToTestSuite">
-                                <v-icon dense class="pr-2">mdi-plus</v-icon>
+                            <v-btn color="primaryLight" class="primaryLightBtn" @click="addToTestSuite">
+                                <v-icon left>mdi-plus</v-icon>
                                 Add to test suite
                             </v-btn>
                         </div>
@@ -61,35 +61,32 @@
                                 <StartWorkerInstructions />
                             </v-alert>
 
-                            <div id="description-group" class="mt-8 py-4">
-                                <div class="description-group-title">
+                            <div id="description-group" class="py-4">
+                                <div class="d-flex">
                                     <span class="group-title">Description</span>
                                     <v-icon right class="group-icon pb-1 ml-1">mdi-text-box</v-icon>
                                 </div>
-                                <p class="test-doc">{{ selected.doc }}</p>
+                                <p class="test-description pt-2">{{ selected.doc }}</p>
                             </div>
 
                             <v-divider></v-divider>
 
                             <div id="inputs-group" class="py-4">
-                                <div class="inputs-group-title">
+                                <div class="d-flex">
                                     <span class="group-title">Inputs</span>
                                     <v-icon right class="group-icon pb-1 ml-1">mdi-pencil-box</v-icon>
-
+                                    <v-spacer></v-spacer>
+                                    <v-btn width="100" small class="primaryLightBtn" color="primaryLight" @click="runTest">
+                                        Run
+                                    </v-btn>
                                 </div>
                                 <SuiteInputListSelector :editing="true" :model-value="testArguments" :inputs="inputType" :project-id="props.projectId" />
-                                <v-row>
-                                    <v-col :align="'right'">
-                                        <v-btn width="100" small tile outlined class="primary" color="white" @click="runTest">
-                                            Run
-                                        </v-btn>
-                                    </v-col>
-                                </v-row>
-                                <v-row style="height: 150px" v-if="testResult">
+                                <TestExecutionResultBadge v-if="testResult" :result="testResult" />
+                                <!-- <v-row style="height: 150px" v-if="testResult">
                                     <v-col>
-                                        <TestExecutionResultBadge :result="testResult" />
+                                        
                                     </v-col>
-                                </v-row>
+                                </v-row> -->
 
                             </div>
 
@@ -97,7 +94,7 @@
 
 
                             <div id="code-group" class="py-4">
-                                <div class="inputs-group-title">
+                                <div class="d-flex">
                                     <span class="group-title">Code</span>
                                     <v-icon right class="group-icon pb-1 ml-1">mdi-code-braces-box</v-icon>
                                 </div>
@@ -127,11 +124,9 @@
 <script setup lang="ts">
 import { api } from "@/api";
 import _, { chain } from "lodash";
-import { computed, inject, onActivated, ref, watch } from "vue";
+import { computed, onActivated, ref, watch } from "vue";
 import { pasterColor } from "@/utils";
-import MonacoEditor from 'vue-monaco';
 import TestExecutionResultBadge from "@/views/main/project/TestExecutionResultBadge.vue";
-import { editor } from "monaco-editor";
 import { TestFunctionDTO, TestInputDTO, TestTemplateExecutionResultDTO } from "@/generated-sources";
 import AddTestToSuite from '@/views/main/project/modals/AddTestToSuite.vue';
 import { $vfm } from 'vue-final-modal';
@@ -139,16 +134,13 @@ import StartWorkerInstructions from "@/components/StartWorkerInstructions.vue";
 import { storeToRefs } from "pinia";
 import { useCatalogStore } from "@/stores/catalog";
 import SuiteInputListSelector from "@/components/SuiteInputListSelector.vue";
-import IEditorOptions = editor.IEditorOptions;
 import CodeSnippet from "@/components/CodeSnippet.vue";
 
-const l = MonacoEditor;
 let props = defineProps<{
     projectId: number,
     suiteId?: number
 }>();
 
-const editor = ref(null)
 
 const searchFilter = ref<string>("");
 let { testFunctions } = storeToRefs(useCatalogStore());
@@ -157,19 +149,10 @@ let testArguments = ref<{ [name: string]: TestInputDTO }>({})
 let testResult = ref<TestTemplateExecutionResultDTO | null>(null);
 
 
-const monacoOptions: IEditorOptions = inject('monacoOptions');
-monacoOptions.readOnly = true;
-
 async function runTest() {
     testResult.value = await api.runAdHocTest(props.projectId, selected.value!.uuid, Object.values(testArguments.value));
 }
 
-
-function resizeEditor() {
-    setTimeout(() => {
-        editor.value.editor.layout();
-    })
-}
 
 watch(selected, (value) => {
     testResult.value = null;
@@ -267,24 +250,23 @@ const inputType = computed(() => chain(selected.value?.args ?? [])
     padding: 0;
 }
 
-.test-doc {
+.test-description {
     font-family: 'Roboto', sans-serif;
     white-space: break-spaces;
     font-size: 1rem;
     line-height: 1.5rem;
-    opacity: 0.9;
 }
 
 .group-title {
-    font-size: 1.2rem;
+    font-size: 1.25rem;
     font-weight: 500;
-    line-height: 2rem;
     letter-spacing: normal;
 }
 
 .group-icon {
     color: rgba($color: #000000, $alpha: 0.7);
     font-size: 1.25rem;
+    margin-top: 0.4rem;
 }
 
 #test-name {
