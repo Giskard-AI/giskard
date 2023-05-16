@@ -154,6 +154,7 @@
                             :datasetId="dataset.id"
                             :row-nb="rowNb"
                             :column="c.name"
+                            :suggestion="suggestion"
                         />
                       </div>
                     </div>
@@ -249,7 +250,7 @@ import PredictionResults from './PredictionResults.vue';
 import PredictionExplanations from './PredictionExplanations.vue';
 import TextExplanation from './TextExplanation.vue';
 import FeedbackPopover from '@/components/FeedbackPopover.vue';
-import {DatasetDTO, ModelDTO} from "@/generated-sources";
+import {DatasetDTO, ModelDTO, PushDTO} from "@/generated-sources";
 import {isClassification} from "@/ml-utils";
 import mixpanel from "mixpanel-browser";
 import {anonymize} from "@/utils";
@@ -281,6 +282,7 @@ export default class Inspector extends Vue {
   classificationResult = null
   isClassification = isClassification
   debouncingTimeout: number = 500;
+  suggestion: PushDTO[] = [];
 
     catalogStore = useCatalogStore()
 
@@ -326,7 +328,7 @@ export default class Inspector extends Vue {
   async onRowNbChange(newValue, oldValue) {
     if (newValue != oldValue) {
       const pushStore = usePushStore();
-      await pushStore.fetchPushSuggestions(this.model.id, this.dataset.id, newValue ?? 0);
+      this.suggestion = await pushStore.fetchPushSuggestions(this.model.id, this.dataset.id, newValue ?? 0);
     }
   }
 
