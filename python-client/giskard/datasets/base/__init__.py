@@ -130,7 +130,7 @@ class Dataset(ColumnMetadataMixin):
             name: Optional[str] = None,
             target: Optional[str] = None,
             cat_columns: Optional[List[str]] = [],
-            column_types: Optional[Dict[str, str]] = None,
+            column_types: Optional[Dict[str, str]] = {},
             id: Optional[uuid.UUID] = None,
             validation=True
     ) -> None:
@@ -167,14 +167,11 @@ class Dataset(ColumnMetadataMixin):
 
         # used in the inference of category columns
         self.category_threshold = round(np.log10(len(self.df))) if len(self.df) >= 100 else 2
-        if column_types:
-            column_types.pop(self.target, None)  # no need for target type
-            self.column_types = column_types
-            if validation:
-                from giskard.core.dataset_validation import validate_column_types
-                validate_column_types(self)
-        else:
-            self.column_types = self._infer_column_types(cat_columns)
+
+        self.column_types = self._infer_column_types(column_types, cat_columns)
+        if validation:
+            from giskard.core.dataset_validation import validate_column_types
+            validate_column_types(self)
 
         if validation:
             from giskard.core.dataset_validation import validate_column_categorization, validate_numeric_columns
@@ -303,7 +300,7 @@ class Dataset(ColumnMetadataMixin):
                 f"We currently support only hashable column types such as int, bool, str, tuple and not list or dict."
             )
 
-    def _infer_column_types(self, cat_columns: List[str]):
+    def _infer_column_types(self, column_types: Dict[str, str], cat_columns: List[str]):
         """
         Infer column types of a given DataFrame based on the number of unique values and column data types.
 
@@ -315,39 +312,39 @@ class Dataset(ColumnMetadataMixin):
         Returns:
             dict: A dictionary that maps column names to their inferred types, one of 'text', 'numeric', or 'category'.
         """
-        column_types = {}
-        nuniques = self.df.nunique()
-        df_columns = list(self.df.columns)
+        _column_types = column_types.copy()
+        df_columns = set(self.df.drop([self.target], axis=1).columns) if self.target else set(self.df.columns)
 
+        # priority of cat_columns over column_types (for categorical columns)
         if cat_columns:
             if not set(cat_columns).issubset(df_columns):
                 raise ValueError(
                     "The provided 'cat_columns' are not all part of your dataset 'columns'. "
                     "Please make sure that `cat_columns` refers to existing columns in your dataset."
                 )
-
             for cat_col in cat_columns:
                 if cat_col != self.target:
-                    column_types[cat_col] = SupportedColumnTypes.CATEGORY.value
-            df_columns = set(df_columns) - set(cat_columns)
+                    _column_types[cat_col] = SupportedColumnTypes.CATEGORY.value
 
-        for col in df_columns:
+        given_columns = set(_column_types.keys())
+        missing_columns = df_columns - given_columns
+        if not missing_columns:
+            return column_types
+
+        nuniques = self.df.nunique()
+        for col in missing_columns:
             if col == self.target:
                 continue
-            # inference of categorical columns
-            # in case cat_columns were provided by the user, we don't try to infer the categorical for the rest
-            # we raise a warning instead in validate_column_categorization
-            if not cat_columns:
-                if nuniques[col] <= self.category_threshold:
-                    column_types[col] = SupportedColumnTypes.CATEGORY.value
-                    continue
+            if nuniques[col] <= self.category_threshold:
+                _column_types[col] = SupportedColumnTypes.CATEGORY.value
+                continue
             # inference of text and numeric columns
             try:
                 pd.to_numeric(self.df[col])
-                column_types[col] = SupportedColumnTypes.NUMERIC.value
+                _column_types[col] = SupportedColumnTypes.NUMERIC.value
             except ValueError:
-                column_types[col] = SupportedColumnTypes.TEXT.value
-        return column_types
+                _column_types[col] = SupportedColumnTypes.TEXT.value
+        return _column_types
 
     @staticmethod
     def extract_column_dtypes(df):
