@@ -2,6 +2,7 @@
 import inspect
 
 import numpy as np
+import pandas as pd
 from sklearn.metrics import (
     accuracy_score,
     f1_score,
@@ -121,10 +122,11 @@ def _test_diff_prediction(
         test_name=None,
         debug: bool = False
 ):
-    metric_reference = test_fn(dataset=reference_dataset, model=model).metric
-    metric_actual = test_fn(dataset=actual_dataset, model=model).metric
+    result_reference = test_fn(dataset=reference_dataset, model=model, debug=debug)
+    result_actual = test_fn(dataset=actual_dataset, model=model, debug=debug)
+
     try:
-        rel_change = (metric_actual - metric_reference) / metric_reference
+        rel_change = (result_actual.metric - result_reference.metric) / result_reference.metric
     except ZeroDivisionError:
         raise ZeroDivisionError(
             f"Unable to calculate performance difference: the {test_name} inside the"
@@ -140,11 +142,23 @@ def _test_diff_prediction(
     else:
         raise ValueError(f"Invalid direction: {direction}")
 
+    # --- debug ---
+    output_ds = None
+    if not passed and debug:
+        print(len(result_actual.output_df.df),len(result_reference.output_df.df))
+        output_ds = result_reference.output_df  # copy all properties
+        output_ds.df = pd.concat([result_actual.output_df.df,
+                                  result_reference.output_df.df], ignore_index=True)
+        test_name = inspect.stack()[1][3]
+        output_ds.name = "Debug: " + test_name
+    # ---
+
     return TestResult(
         actual_slices_size=[len(actual_dataset)],
         reference_slices_size=[len(reference_dataset)],
         metric=rel_change,
         passed=passed,
+        output_df=output_ds
     )
 
 
@@ -488,6 +502,7 @@ def test_diff_accuracy(
         slicing_function: SlicingFunction = None,
         threshold: float = 0.1,
         direction: Direction = Direction.Invariant,
+        debug: bool = False
 ):
     """
 
@@ -535,6 +550,7 @@ def test_diff_accuracy(
         threshold=threshold,
         direction=direction,
         test_name="Accuracy",
+        debug=debug
     )
 
 
@@ -546,6 +562,7 @@ def test_diff_f1(
         slicing_function: SlicingFunction = None,
         threshold: float = 0.1,
         direction: Direction = Direction.Invariant,
+        debug: bool = False
 ):
     """
     Test if the absolute percentage change in model F1 Score between two samples is lower than a threshold
@@ -593,6 +610,7 @@ def test_diff_f1(
         threshold=threshold,
         direction=direction,
         test_name="F1 Score",
+        debug=debug
     )
 
 
@@ -604,6 +622,7 @@ def test_diff_precision(
         slicing_function: SlicingFunction = None,
         threshold: float = 0.1,
         direction: Direction = Direction.Invariant,
+        debug: bool = False
 ):
     """
     Test if the absolute percentage change of model Precision between two samples is lower than a threshold
@@ -650,6 +669,7 @@ def test_diff_precision(
         threshold=threshold,
         direction=direction,
         test_name="Precision",
+        debug=debug
     )
 
 
@@ -661,6 +681,7 @@ def test_diff_recall(
         slicing_function: SlicingFunction = None,
         threshold: float = 0.1,
         direction: Direction = Direction.Invariant,
+        debug: bool = False
 ):
     """
     Test if the absolute percentage change of model Recall between two samples is lower than a threshold
@@ -707,6 +728,7 @@ def test_diff_recall(
         threshold=threshold,
         direction=direction,
         test_name="Recall",
+        debug=debug
     )
 
 
@@ -718,6 +740,7 @@ def test_diff_reference_actual_f1(
         slicing_function: SlicingFunction = None,
         threshold: float = 0.1,
         direction: Direction = Direction.Invariant,
+        debug: bool = False
 ):
     """
     Test if the absolute percentage change in model F1 Score between reference and actual data
@@ -765,6 +788,7 @@ def test_diff_reference_actual_f1(
         threshold=threshold,
         direction=direction,
         test_name="F1 Score",
+        debug=debug
     )
 
 
@@ -776,6 +800,7 @@ def test_diff_reference_actual_accuracy(
         slicing_function: SlicingFunction = None,
         threshold: float = 0.1,
         direction: Direction = Direction.Invariant,
+        debug: bool = False
 ):
     """
     Test if the absolute percentage change in model Accuracy between reference and actual data
@@ -823,6 +848,7 @@ def test_diff_reference_actual_accuracy(
         threshold=threshold,
         direction=direction,
         test_name="Accuracy",
+        debug=debug
     )
 
 
@@ -834,6 +860,7 @@ def test_diff_rmse(
         slicing_function: SlicingFunction = None,
         threshold: float = 0.1,
         direction: Direction = Direction.Invariant,
+        debug: bool = False
 ):
     """
     Test if the absolute percentage change of model RMSE between two samples is lower than a threshold
@@ -881,6 +908,7 @@ def test_diff_rmse(
         threshold=threshold,
         direction=direction,
         test_name="RMSE",
+        debug=debug
     )
 
 
@@ -892,6 +920,7 @@ def test_diff_reference_actual_rmse(
         slicing_function: SlicingFunction = None,
         threshold: float = 0.1,
         direction: Direction = Direction.Invariant,
+        debug: bool = False
 ):
     """
     Test if the absolute percentage change in model RMSE between reference and actual data
@@ -939,4 +968,5 @@ def test_diff_reference_actual_rmse(
         threshold=threshold,
         direction=direction,
         test_name="RMSE",
+        debug=debug
     )
