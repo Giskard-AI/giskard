@@ -2,25 +2,17 @@
     <div class="vc mt-2 pb-0" v-if="transformationFunctions.length > 0">
         <div class="vc">
             <v-container class="main-container vc">
-                <v-alert
-                    v-if="!hasGiskardFilters"
-                    color="warning"
-                    border="left"
-                    outlined
-                    colored-border
-                    icon="warning"
-                >
+                <v-alert v-if="!hasGiskardFilters" color="warning" border="left" outlined colored-border icon="warning">
                     <span>Giskard filters are not available.</span>
-                    <StartWorkerInstructions/>
+                    <StartWorkerInstructions />
                 </v-alert>
                 <v-row class="fill-height">
                     <v-col cols="4" class="vc fill-height">
-                        <v-text-field label="Search filter" append-icon="search" outlined
-                                      v-model="searchFilter"></v-text-field>
+                        <v-text-field label="Search filter" append-icon="search" outlined v-model="searchFilter"></v-text-field>
                         <v-list three-line class="vc fill-height">
                             <v-list-item-group v-model="selected" color="primary" mandatory>
                                 <template v-for="transformationFunction in filteredTestFunctions">
-                                    <v-divider/>
+                                    <v-divider />
                                     <v-list-item :value="transformationFunction">
                                         <v-list-item-content>
                                             <v-list-item-title class="test-title">
@@ -28,9 +20,8 @@
                                                     {{
                                                         transformationFunction.displayName ?? transformationFunction.name
                                                     }}
-                                                    <v-spacer class="flex-grow-1"/>
-                                                    <v-tooltip bottom
-                                                               v-if="transformationFunction.potentiallyUnavailable">
+                                                    <v-spacer class="flex-grow-1" />
+                                                    <v-tooltip bottom v-if="transformationFunction.potentiallyUnavailable">
                                                         <template v-slot:activator="{ on, attrs }">
                                                             <div v-bind="attrs" v-on="on">
                                                                 <v-icon color="orange">warning</v-icon>
@@ -41,9 +32,7 @@
                                                 </div>
                                             </v-list-item-title>
                                             <v-list-item-subtitle v-if="transformationFunction.tags">
-                                                <v-chip class="mr-2" v-for="tag in sorted(transformationFunction.tags)"
-                                                        x-small
-                                                        :color="pasterColor(tag)">
+                                                <v-chip class="mr-2" v-for="tag in sorted(transformationFunction.tags)" x-small :color="pasterColor(tag)">
                                                     {{ tag }}
                                                 </v-chip>
                                             </v-list-item-subtitle>
@@ -56,26 +45,15 @@
                     <v-col cols="8" v-if="selected" class="vc fill-height">
                         <span class="text-h5">{{ selected.displayName ?? selected.name }}</span>
                         <div class="vc overflow-x-hidden pr-5">
-                            <v-alert
-                                v-if="selected.potentiallyUnavailable"
-                                color="warning"
-                                border="left"
-                                outlined
-                                colored-border
-                                icon="warning"
-                            >
+                            <v-alert v-if="selected.potentiallyUnavailable" color="warning" border="left" outlined colored-border icon="warning">
                                 <span>This filter is potentially unavailable. Start your external ML worker to display available filters.</span>
                                 <pre></pre>
-                                <StartWorkerInstructions/>
+                                <StartWorkerInstructions />
                             </v-alert>
                             <pre class="test-doc caption pt-5">{{ selected.doc }}</pre>
                             <div class="pt-5">
                                 <div class="d-flex justify-space-between">
                                     <span class="text-h6">Inputs</span>
-                                    <v-btn width="100" small tile outlined @click="tryMode = !tryMode">{{
-                                            tryMode ? 'Cancel' : 'Try it'
-                                        }}
-                                    </v-btn>
                                 </div>
                                 <v-list>
                                     <v-list-item class="pl-0 pr-0">
@@ -89,10 +67,7 @@
                                                 </v-list-item-content>
                                             </v-col>
                                             <v-col>
-                                                <DatasetSelector v-if="tryMode" :project-id="projectId"
-                                                                 label="Dataset"
-                                                                 :return-object="false"
-                                                                 :value.sync="selectedDataset"/>
+                                                <DatasetSelector :project-id="projectId" label="Dataset" :return-object="false" :value.sync="selectedDataset" />
                                             </v-col>
                                         </v-row>
                                     </v-list-item>
@@ -107,25 +82,15 @@
                                                 </v-list-item-content>
                                             </v-col>
                                             <v-col>
-                                                <DatasetColumnSelector v-if="tryMode"
-                                                                       :project-id="projectId"
-                                                                       :dataset="selectedDataset"
-                                                                       :column-type="selected.columnType"
-                                                                       :value.sync="selectedColumn"/>
+                                                <DatasetColumnSelector :project-id="projectId" :dataset="selectedDataset" :column-type="selected.columnType" :value.sync="selectedColumn" />
                                             </v-col>
                                         </v-row>
                                     </v-list-item>
                                 </v-list>
-                                <SuiteInputListSelector
-                                    :editing="tryMode"
-                                    :model-value="transformationArguments"
-                                    :inputs="inputType"
-                                    :project-id="props.projectId"
-                                />
-                                <v-row v-show="tryMode">
+                                <SuiteInputListSelector :editing="true" :model-value="transformationArguments" :inputs="inputType" :project-id="props.projectId" />
+                                <v-row>
                                     <v-col :align="'right'">
-                                        <v-btn width="100" small tile outlined class="primary" color="white"
-                                               @click="runSlicingFunction">
+                                        <v-btn width="100" small tile outlined class="primary" color="white" @click="runSlicingFunction">
                                             Run
                                         </v-btn>
                                     </v-col>
@@ -140,8 +105,7 @@
                                             {{
                                                 transformationResult.totalRows
                                             }}</p>
-                                        <DatasetTable :dataset-id="transformationResult.datasetId"
-                                                      :modifications="transformationResult.modifications"/>
+                                        <DatasetTable :dataset-id="transformationResult.datasetId" :modifications="transformationResult.modifications" />
                                     </v-col>
                                 </v-row>
                                 <v-row>
@@ -150,14 +114,7 @@
                                             <v-expansion-panel>
                                                 <v-expansion-panel-header class="pa-0">Code</v-expansion-panel-header>
                                                 <v-expansion-panel-content class="pa-0">
-                                                    <MonacoEditor
-                                                        ref="editor"
-                                                        v-model='selected.code'
-                                                        class='editor'
-                                                        language='python'
-                                                        style="height: 300px; min-height: 300px"
-                                                        :options="monacoOptions"
-                                                    />
+                                                    <MonacoEditor ref="editor" v-model='selected.code' class='editor' language='python' style="height: 300px; min-height: 300px" :options="monacoOptions" />
                                                 </v-expansion-panel-content>
                                             </v-expansion-panel>
                                         </v-expansion-panels>
@@ -173,22 +130,22 @@
     </div>
     <v-container v-else class="d-flex flex-column vc fill-height">
         <h1 class="pt-16">ML Worker is not connected</h1>
-        <StartWorkerInstructions/>
+        <StartWorkerInstructions />
     </v-container>
 </template>
 
 <script setup lang="ts">
-import _, {chain} from "lodash";
-import {computed, inject, onActivated, ref, watch} from "vue";
-import {pasterColor} from "@/utils";
+import _, { chain } from "lodash";
+import { computed, inject, onActivated, ref, watch } from "vue";
+import { pasterColor } from "@/utils";
 import MonacoEditor from 'vue-monaco';
-import {editor} from "monaco-editor";
-import {FunctionInputDTO, TransformationFunctionDTO} from "@/generated-sources";
+import { editor } from "monaco-editor";
+import { FunctionInputDTO, TransformationFunctionDTO } from "@/generated-sources";
 import StartWorkerInstructions from "@/components/StartWorkerInstructions.vue";
-import {storeToRefs} from "pinia";
-import {useCatalogStore} from "@/stores/catalog";
+import { storeToRefs } from "pinia";
+import { useCatalogStore } from "@/stores/catalog";
 import DatasetSelector from "@/views/main/utils/DatasetSelector.vue";
-import {api} from "@/api";
+import { api } from "@/api";
 import DatasetTable from "@/components/DatasetTable.vue";
 import SuiteInputListSelector from "@/components/SuiteInputListSelector.vue";
 import DatasetColumnSelector from "@/views/main/utils/DatasetColumnSelector.vue";
@@ -203,10 +160,9 @@ let props = defineProps<{
 const editor = ref(null)
 
 const searchFilter = ref<string>("");
-let {transformationFunctions} = storeToRefs(useCatalogStore());
+let { transformationFunctions } = storeToRefs(useCatalogStore());
 const selected = ref<TransformationFunctionDTO | null>(null);
 const transformationResult = ref<FunctionInputDTO | null>(null);
-const tryMode = ref<boolean>(false);
 const selectedDataset = ref<string | null>(null);
 const selectedColumn = ref<string | null>(null);
 let transformationArguments = ref<{ [name: string]: FunctionInputDTO }>({})
@@ -274,7 +230,6 @@ async function runSlicingFunction() {
 
 watch(() => selected.value, () => {
     transformationResult.value = null;
-    tryMode.value = false;
 
     if (!selected.value) {
         return;
@@ -310,11 +265,13 @@ const inputType = computed(() => chain(selected.value?.args ?? [])
 }
 
 .box-grow {
-    flex: 1; /* formerly flex: 1 0 auto; */
+    flex: 1;
+    /* formerly flex: 1 0 auto; */
     background: green;
     padding: 5px;
     margin: 5px;
-    min-height: 0; /* new */
+    min-height: 0;
+    /* new */
 }
 
 ::v-deep .v-expansion-panel-content__wrap {
@@ -331,6 +288,4 @@ const inputType = computed(() => chain(selected.value?.args ?? [])
     overflow: hidden;
     white-space: nowrap;
 }
-
-
 </style>
