@@ -1,32 +1,32 @@
 """
 @TODO: This is a hackish implementation of the text slices.
 """
-import logging
 import os
-import numpy as np
-import pandas as pd
 from typing import Optional, Sequence
 
-from ..datasets.base import Dataset
-from ..slicing.category_slicer import CategorySlicer
-from ..ml_worker.testing.registry.slicing_function import SlicingFunction
-from ..client.python_utils import warning
+import numpy as np
+import pandas as pd
+
 from .base import BaseSlicer
 from .slice import Query, QueryBasedSliceFunction, StringContains
 from .utils import get_slicer
+from ..client.python_utils import warning
+from ..datasets.base import Dataset
+from ..ml_worker.testing.registry.slicing_function import SlicingFunction
+from ..slicing.category_slicer import CategorySlicer
 
 
 class TextSlicer(BaseSlicer):
     MAX_TOKENS = int(os.getenv("GSK_TEXT_SLICER_MAX_TOKENS", 1000))
 
     def __init__(
-        self,
-        dataset: Dataset,
-        features: Optional[Sequence[str]] = None,
-        target: Optional[str] = None,
-        min_deviation: float = 0.05,
-        abs_deviation: bool = False,
-        slicer="tree",
+            self,
+            dataset: Dataset,
+            features: Optional[Sequence[str]] = None,
+            target: Optional[str] = None,
+            min_deviation: float = 0.05,
+            abs_deviation: bool = False,
+            slicer="tree",
     ):
         self.dataset = dataset
         self.features = features
