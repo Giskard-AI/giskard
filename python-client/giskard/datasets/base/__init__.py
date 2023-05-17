@@ -63,31 +63,30 @@ class DataProcessor:
         return self
 
     def apply(self, dataset: "Dataset", apply_only_last=False):
-        df = dataset.df.copy()
+        ds = dataset.copy()
 
         while len(self.pipeline):
             step = self.pipeline.pop(-1 if apply_only_last else 0)
 
-            df = step.execute(df)
+            df = step.execute(ds) if getattr(step, "needs_dataset", False) else step.execute(ds.df)
+            ds = Dataset(
+                df=df,
+                name=ds.name,
+                target=ds.target,
+                cat_columns=ds.cat_columns,
+                column_types=ds.column_types,
+            )
 
             if apply_only_last:
                 break
 
-        ret = Dataset(
-            df=df,
-            name=dataset.name,
-            target=dataset.target,
-            cat_columns=dataset.cat_columns,
-            column_types=dataset.column_types,
-            validation=False
-        )
-
         if len(self.pipeline):
-            ret.data_processor = self
-        return ret
+            ds.data_processor = self
+
+        return ds
 
     def __repr__(self) -> str:
-        return f"DataProcessor: {len(self.pipeline)} steps"
+        return f"<DataProcessor ({len(self.pipeline)} steps)>"
 
 
 class Dataset(ColumnMetadataMixin):
@@ -125,14 +124,14 @@ class Dataset(ColumnMetadataMixin):
 
     @configured_validate_arguments
     def __init__(
-            self,
-            df: pd.DataFrame,
-            name: Optional[str] = None,
-            target: Optional[str] = None,
-            cat_columns: Optional[List[str]] = [],
-            column_types: Optional[Dict[str, str]] = None,
-            id: Optional[uuid.UUID] = None,
-            validation=True
+        self,
+        df: pd.DataFrame,
+        name: Optional[str] = None,
+        target: Optional[str] = None,
+        cat_columns: Optional[List[str]] = [],
+        column_types: Optional[Dict[str, str]] = None,
+        id: Optional[uuid.UUID] = None,
+        validation=True,
     ) -> None:
         """
         Initializes a Dataset object.
@@ -159,6 +158,7 @@ class Dataset(ColumnMetadataMixin):
 
         if validation:
             from giskard.core.dataset_validation import validate_target
+
             validate_target(self)
 
         if not self.df.empty:
@@ -172,12 +172,14 @@ class Dataset(ColumnMetadataMixin):
             self.column_types = column_types
             if validation:
                 from giskard.core.dataset_validation import validate_column_types
+
                 validate_column_types(self)
         else:
             self.column_types = self._infer_column_types(cat_columns)
 
         if validation:
             from giskard.core.dataset_validation import validate_column_categorization, validate_numeric_columns
+
             validate_column_categorization(self)
             validate_numeric_columns(self)
 
@@ -206,8 +208,13 @@ class Dataset(ColumnMetadataMixin):
         return self
 
     @configured_validate_arguments
-    def slice(self, slicing_function: Union[SlicingFunction, SlicingFunctionType], row_level: bool = True,
-              cell_level=False, column_name: Optional[str] = None):
+    def slice(
+        self,
+        slicing_function: Union[SlicingFunction, SlicingFunctionType],
+        row_level: bool = True,
+        cell_level=False,
+        column_name: Optional[str] = None,
+    ):
         """
         Slice the dataset using the specified `slicing_function`.
 
@@ -237,8 +244,11 @@ class Dataset(ColumnMetadataMixin):
 
     @configured_validate_arguments
     def transform(
-            self, transformation_function: Union[TransformationFunction, TransformationFunctionType],
-            row_level: bool = True, cell_level=False, column_name: Optional[str] = None
+        self,
+        transformation_function: Union[TransformationFunction, TransformationFunctionType],
+        row_level: bool = True,
+        cell_level=False,
+        column_name: Optional[str] = None,
     ):
         """
         Transform the data in the current Dataset by applying a transformation function.
@@ -260,13 +270,16 @@ class Dataset(ColumnMetadataMixin):
         """
 
         if inspect.isfunction(transformation_function):
-            transformation_function = TransformationFunction(transformation_function, row_level=row_level,
-                                                             cell_level=cell_level)
+            transformation_function = TransformationFunction(
+                transformation_function, row_level=row_level, cell_level=cell_level
+            )
 
         if transformation_function.cell_level and column_name is not None:
             transformation_function = transformation_function(column_name=column_name, **transformation_function.params)
 
-        assert not transformation_function.cell_level or 'column_name' in transformation_function.params, "column_name should be provided for TransformationFunction at cell level"
+        assert (
+            not transformation_function.cell_level or 'column_name' in transformation_function.params
+        ), "column_name should be provided for TransformationFunction at cell level"
         return self.data_processor.add_step(transformation_function).apply(self, apply_only_last=True)
 
     def process(self):
@@ -520,6 +533,9 @@ class Dataset(ColumnMetadataMixin):
             column_types={key: val for key, val in self.column_types.items() if key in df.columns},
             validation=False,
         )
+
+    def copy(self):
+        return Dataset(df=self.df.copy(), target=self.target, column_types=self.column_types.copy(), validation=False)
 
 
 def _cast_to_list_like(object):
