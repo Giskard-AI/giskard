@@ -114,10 +114,12 @@ class TextPerturbationDetector(Detector):
                 info = RobustnessIssueInfo(
                     feature=feature,
                     fail_ratio=fail_ratio,
-                    perturbation_name=getattr(transformation, "name", str(transformation)),
+                    transformation_fn=transformation_fn,
                     perturbed_data_slice=perturbed_data,
                     perturbed_data_slice_predictions=perturbed_pred,
                     fail_data_idx=original_data.df[~passed].index.values,
+                    threshold=self.threshold,
+                    output_sensitivity=self.output_sensitivity,
                 )
                 issue = RobustnessIssue(
                     model,
