@@ -56,3 +56,6 @@ class Issue(ABC):
     @abstractmethod
     def importance(self) -> float:
         ...
+
+    def generate_tests(self) -> list:
+        return []
