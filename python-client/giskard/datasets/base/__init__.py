@@ -345,6 +345,8 @@ class Dataset(ColumnMetadataMixin):
                 column_types[col] = SupportedColumnTypes.NUMERIC.value
             except ValueError:
                 column_types[col] = SupportedColumnTypes.TEXT.value
+
+        column_types.pop(self.target, None)  # no need for target type
         return column_types
 
     @staticmethod
