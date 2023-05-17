@@ -76,10 +76,15 @@ def test_inference_priority():
     column_types = {'categorical_column': 'text'}
     expected_df_column_types = {'categorical_column': 'text', 'text_column': 'text', 'numeric_column': 'numeric'}
 
-    # Option 1: only one column in column_types is provided
+    # Case 1: only one column in column_types is provided
     my_dataset = Dataset(valid_df, column_types=column_types)
     assert my_dataset.column_types == expected_df_column_types
 
-    # Option 2: one column in column_types is provided, one in cat_columns
+    # Case 2: one column in column_types is provided, one in cat_columns
+    my_dataset = Dataset(valid_df, column_types=column_types, cat_columns=['categorical_column'])
+    assert my_dataset.column_types == valid_df_column_types
+
+    # Case 3: an unknown column in column_types is provided
+    column_types = {'unknown_column': 'text'}
     my_dataset = Dataset(valid_df, column_types=column_types, cat_columns=['categorical_column'])
     assert my_dataset.column_types == valid_df_column_types

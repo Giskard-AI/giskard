@@ -22,6 +22,7 @@ from giskard.ml_worker.testing.registry.transformation_function import (
     TransformationFunctionType,
 )
 from giskard.settings import settings
+from giskard.client.python_utils import warning
 from ..metadata.indexing import ColumnMetadataMixin
 
 logger = logging.getLogger(__name__)
@@ -339,7 +340,16 @@ class Dataset(ColumnMetadataMixin):
                     column_types[cat_col] = SupportedColumnTypes.CATEGORY.value
 
         given_columns = set(column_types.keys())
+        unknown_columns = given_columns - df_columns
         missing_columns = df_columns - given_columns
+
+        if unknown_columns:
+            warning(
+                f"The provided keys {list(unknown_columns)} in 'column_types' are not part of your dataset "
+                "'columns'. Please make sure that the column names in `column_types` refers to existing "
+                "columns in your dataset.")
+            [column_types.pop(i) for i in unknown_columns]
+
         if not missing_columns:
             column_types.pop(self.target, None)  # no need for target type
             return column_types
