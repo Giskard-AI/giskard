@@ -34,7 +34,7 @@ import {useTestSuiteStore} from "@/stores/test-suite";
 import {computed, ref} from "vue";
 import {chain} from "lodash";
 import {extend} from "vee-validate";
-import {TestInputDTO} from "@/generated-sources/ai/giskard/web/dto/test-input-dto";
+import {FunctionInputDTO} from '@/generated-sources';
 
 const props = defineProps<{
     name: string,
@@ -76,7 +76,7 @@ function saveAlias(close) {
         name: props.name,
         type: props.type,
         value: aliasName.value
-    } as TestInputDTO)
+    } as FunctionInputDTO)
     close()
 }
 
