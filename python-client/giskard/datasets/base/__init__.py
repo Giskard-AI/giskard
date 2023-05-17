@@ -312,7 +312,7 @@ class Dataset(ColumnMetadataMixin):
                 f"We currently support only hashable column types such as int, bool, str, tuple and not list or dict."
             )
 
-    def _infer_column_types(self, column_types: Dict[str, str], cat_columns: List[str]):
+    def _infer_column_types(self, column_types: Optional[Dict[str, str]], cat_columns: Optional[List[str]]):
         """
         Infer column types of a given DataFrame based on the number of unique values and column data types.
 
