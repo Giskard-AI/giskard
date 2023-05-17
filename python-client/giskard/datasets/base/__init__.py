@@ -129,8 +129,8 @@ class Dataset(ColumnMetadataMixin):
             df: pd.DataFrame,
             name: Optional[str] = None,
             target: Optional[str] = None,
-            cat_columns: Optional[List[str]] = [],
-            column_types: Optional[Dict[str, str]] = {},
+            cat_columns: Optional[List[str]] = None,
+            column_types: Optional[Dict[str, str]] = None,
             id: Optional[uuid.UUID] = None,
             validation=True
     ) -> None:
@@ -312,8 +312,9 @@ class Dataset(ColumnMetadataMixin):
         Returns:
             dict: A dictionary that maps column names to their inferred types, one of 'text', 'numeric', or 'category'.
         """
-        _column_types = column_types.copy()
-        df_columns = set(self.df.drop([self.target], axis=1).columns) if self.target else set(self.df.columns)
+        if not column_types:
+            column_types = {}
+        df_columns = set(self.df.columns.drop(self.target)) if self.target else set(self.df.columns)
 
         # priority of cat_columns over column_types (for categorical columns)
         if cat_columns:
@@ -324,9 +325,9 @@ class Dataset(ColumnMetadataMixin):
                 )
             for cat_col in cat_columns:
                 if cat_col != self.target:
-                    _column_types[cat_col] = SupportedColumnTypes.CATEGORY.value
+                    column_types[cat_col] = SupportedColumnTypes.CATEGORY.value
 
-        given_columns = set(_column_types.keys())
+        given_columns = set(column_types.keys())
         missing_columns = df_columns - given_columns
         if not missing_columns:
             return column_types
@@ -336,15 +337,15 @@ class Dataset(ColumnMetadataMixin):
             if col == self.target:
                 continue
             if nuniques[col] <= self.category_threshold:
-                _column_types[col] = SupportedColumnTypes.CATEGORY.value
+                column_types[col] = SupportedColumnTypes.CATEGORY.value
                 continue
             # inference of text and numeric columns
             try:
                 pd.to_numeric(self.df[col])
-                _column_types[col] = SupportedColumnTypes.NUMERIC.value
+                column_types[col] = SupportedColumnTypes.NUMERIC.value
             except ValueError:
-                _column_types[col] = SupportedColumnTypes.TEXT.value
-        return _column_types
+                column_types[col] = SupportedColumnTypes.TEXT.value
+        return column_types
 
     @staticmethod
     def extract_column_dtypes(df):
