@@ -252,16 +252,4 @@ public class InspectionService {
 
         return inspectionRepository.save(inspection);
     }
-//    public ExplainResponse explain(ProjectModel model, Dataset dataset, Map<String, String> features) {
-//        try (MLWorkerClient client = mlWorkerService.createClient(model.getProject().isUsingInternalWorker())) {
-//            ExplainRequest request = ExplainRequest.newBuilder()
-//                .setModel(grpcMapper.createRef(model))
-//                .setDataset(grpcMapper.createRef(dataset))
-//                .putAllColumns(Maps.filterValues(features, Objects::nonNull))
-//                .build();
-//
-//            return client.getBlockingStub().explain(request);
-//        }
-//    }
-
 }
