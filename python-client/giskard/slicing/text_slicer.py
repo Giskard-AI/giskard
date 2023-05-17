@@ -1,7 +1,5 @@
-"""
-@TODO: This is a hackish implementation of the text slices.
-"""
 import os
+import copy
 from typing import Optional, Sequence
 
 import numpy as np
@@ -196,15 +194,17 @@ class MetadataSliceFunction(SlicingFunction):
 
     def execute(self, dataset: Dataset) -> pd.DataFrame:
         metadata = dataset.column_meta[self.feature, self.provider]
-        filtered = self.query.run(metadata)
+        mask = self.query.mask(metadata)
 
-        return dataset.df.loc[filtered.index]
+        return dataset.df[mask]
 
     def __str__(self):
-        # @TODO: hard coded for now!
-        col = list(self.query.clauses.keys())[0]
-        col = col.split("__gsk__meta__")[-1]
-        return self.query.to_pandas().replace(f"__gsk__meta__{col}", f"{col}({self.feature})")
+        # Clauses should have format like "avg_word_length(my_column) > x"
+        q = copy.deepcopy(self.query)
+        for c in q.get_all_clauses():
+            c.column += f"({self.feature})"
+
+        return str(q)
 
     def _should_save_locally(self) -> bool:
         return True
