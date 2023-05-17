@@ -500,7 +500,7 @@ my_project = client.create_project("my_project", "PROJECT_NAME", "DESCRIPTION")
 test_suite.upload(client, "my_project")
 ```
 
-Head over the to the UI (on http://localhost:8080 if you are running Giskard from a local Docker container) and you will find your new test suite ready to be debugged.
+Head over the to the UI (on http://localhost:19000 if you are running Giskard from a local Docker container) and you will find your new test suite ready to be debugged.
 
 
 ## 6. Upload your model and dataset to giskard UI
