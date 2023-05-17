@@ -204,11 +204,11 @@ class Dataset(ColumnMetadataMixin):
 
     @configured_validate_arguments
     def slice(
-        self,
-        slicing_function: Union[SlicingFunction, SlicingFunctionType],
-        row_level: bool = True,
-        cell_level=False,
-        column_name: Optional[str] = None,
+            self,
+            slicing_function: Union[SlicingFunction, SlicingFunctionType],
+            row_level: bool = True,
+            cell_level=False,
+            column_name: Optional[str] = None,
     ):
         """
         Slice the dataset using the specified `slicing_function`.
@@ -239,11 +239,11 @@ class Dataset(ColumnMetadataMixin):
 
     @configured_validate_arguments
     def transform(
-        self,
-        transformation_function: Union[TransformationFunction, TransformationFunctionType],
-        row_level: bool = True,
-        cell_level=False,
-        column_name: Optional[str] = None,
+            self,
+            transformation_function: Union[TransformationFunction, TransformationFunctionType],
+            row_level: bool = True,
+            cell_level=False,
+            column_name: Optional[str] = None,
     ):
         """
         Transform the data in the current Dataset by applying a transformation function.
@@ -273,7 +273,7 @@ class Dataset(ColumnMetadataMixin):
             transformation_function = transformation_function(column_name=column_name, **transformation_function.params)
 
         assert (
-            not transformation_function.cell_level or 'column_name' in transformation_function.params
+                not transformation_function.cell_level or 'column_name' in transformation_function.params
         ), "column_name should be provided for TransformationFunction at cell level"
         return self.data_processor.add_step(transformation_function).apply(self, apply_only_last=True)
 
@@ -341,6 +341,7 @@ class Dataset(ColumnMetadataMixin):
         given_columns = set(column_types.keys())
         missing_columns = df_columns - given_columns
         if not missing_columns:
+            column_types.pop(self.target, None)  # no need for target type
             return column_types
 
         nuniques = self.df.nunique()
@@ -357,7 +358,6 @@ class Dataset(ColumnMetadataMixin):
             except ValueError:
                 column_types[col] = SupportedColumnTypes.TEXT.value
 
-        column_types.pop(self.target, None)  # no need for target type
         return column_types
 
     @staticmethod
