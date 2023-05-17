@@ -51,8 +51,6 @@ def get_version(version=None):
         else:
             version = app_settings["version"]
     else:
-        pattern = r"^(\d+)\.(\d+)\.(\d+)$"
-        assert re.match(pattern, version), f"Invalid version format, version should match {pattern}"
         current_settings = _get_settings() or {}
         current_settings['version'] = version
         _write_settings(current_settings)
