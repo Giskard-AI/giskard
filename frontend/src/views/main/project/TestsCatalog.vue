@@ -77,7 +77,7 @@
                                     <span class="group-title">Inputs</span>
                                     <v-spacer></v-spacer>
                                 </div>
-                                <SuiteInputListSelector :editing="true" :model-value="testArguments" :inputs="inputType" :project-id="props.projectId" />
+                                <SuiteInputListSelector :editing="true" :model-value="testArguments" :inputs="inputType" :project-id="props.projectId" :test="selected" />
                                 <div class="d-flex">
                                     <v-spacer></v-spacer>
                                     <v-btn width="100" small class="primaryLightBtn" color="primaryLight" @click="runTest">
@@ -249,11 +249,12 @@ const inputType = computed(() => chain(selected.value?.args ?? [])
 }
 
 .test-description {
+    font-family: 'Roboto Mono', monospace;
     white-space: break-spaces;
     font-size: 1rem;
     line-height: 1.5rem;
-    word-spacing: 0.25rem;
-    opacity: 0.8;
+    // word-spacing: 0.25rem;
+    opacity: 0.875;
     font-weight: 500;
 }
 
