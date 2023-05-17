@@ -1,4 +1,4 @@
-import pytest
+import logging
 import pandas as pd
 from unittest import mock
 from giskard import Dataset
@@ -6,12 +6,16 @@ from giskard.scanner.issues import Issue
 from giskard.scanner.performance import ModelBiasDetector
 
 
-def test_model_bias_detector_skips_small_datasets(german_credit_model, german_credit_data):
+def test_model_bias_detector_skips_small_datasets(german_credit_model, german_credit_data, caplog):
     small_dataset = german_credit_data.slice(lambda df: df.sample(50), row_level=False)
     detector = ModelBiasDetector()
-    with pytest.warns(match="Skipping model bias scan"):
+    with caplog.at_level(logging.WARNING):
         issues = detector.run(german_credit_model, small_dataset)
+    record = caplog.records[-1]
+
     assert len(issues) == 0
+    assert record.levelname == "WARNING"
+    assert "Skipping scan because the dataset is too small" in record.message
 
 
 def test_model_bias_detector_trims_large_dataset(german_credit_model, german_credit_data):
