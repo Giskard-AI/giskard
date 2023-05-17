@@ -10,7 +10,7 @@ export interface DatasetDTO {
     columnTypes: {[key: string]: ColumnType};
     compressedSizeBytes: number;
     createdDate: any /* TODO: Missing translation of java.time.Instant */;
-    id: any /* TODO: Missing translation of java.util.UUID */;
+    id: string;
     name: string;
     numberOfRows: number;
     originalSizeBytes: number;

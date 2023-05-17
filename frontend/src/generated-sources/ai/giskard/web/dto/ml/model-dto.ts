@@ -10,7 +10,7 @@ export interface ModelDTO {
     classificationLabelsDtype: string;
     createdDate: any /* TODO: Missing translation of java.time.Instant */;
     featureNames?: string[] | null;
-    id: any /* TODO: Missing translation of java.util.UUID */;
+    id: string;
     language: ModelLanguage;
     languageVersion: string;
     modelType: ModelType;
