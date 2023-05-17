@@ -1,5 +1,5 @@
 from giskard.core.core import SupportedModelTypes
-from ..push import Push
+from ..push import PerturbationPush
 from .utils import slice_bounds
 import numpy as np
 from giskard.push import SupportedPerturbationType
@@ -24,17 +24,15 @@ def perturbation(model, ds, idrow):
     for feat, coltype in ds.column_types.items():
         perturbation_res = Perturbation(model, ds, idrow, feat, coltype)
         if perturbation_res.coltype == SupportedPerturbationType.NUMERIC and perturbation_res.passed:
-            bounds = slice_bounds(feature=feat, value=ds.df.iloc[idrow][feat], ds=ds)
-            res = Push(push_type="perturbation", feature=feat, value=ds.df.iloc[idrow][feat],
-                       transformation_function=perturbation_res.transformation_function,
-                       bounds=bounds)
+            res = PerturbationPush(feature=feat, value=ds.df.iloc[idrow][feat],
+                                   transformation_function=perturbation_res.transformation_function)
             yield res
 
         if perturbation_res.coltype == SupportedPerturbationType.TEXT and perturbation_res.passed:
-            res = Push(push_type="perturbation", feature=feat, value=ds.df.iloc[idrow][feat],
-                       text_perturbed=perturbation_res.text_perturbed,
-                       transformation_function=perturbation_res.transformation_function
-                       )
+            res = PerturbationPush(feature=feat, value=ds.df.iloc[idrow][feat],
+                                   text_perturbed=perturbation_res.text_perturbed,
+                                   transformation_function=perturbation_res.transformation_function
+                                   )
             yield res
 
 

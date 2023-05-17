@@ -4,7 +4,7 @@ from scipy.stats import zscore
 from giskard.core.core import SupportedModelTypes
 from giskard.ml_worker.core.model_explanation import explain
 from giskard.ml_worker.testing.tests.performance import test_rmse
-from ..push import Push
+from ..push import ContributionPush
 from .utils import slice_bounds
 
 from giskard.core.core import SupportedModelTypes
@@ -56,11 +56,12 @@ def contribution(model, ds, idrow):  # data_aug_dict
                     yield res
 
                 else:
-                    res = Push(push_type="contribution_only", feature=el,
-                               value=values[el],
-                               bounds=bounds,
-                               model_type=SupportedModelTypes.CLASSIFICATION
-                               )
+                    res = ContributionPush(feature=el,
+                                           value=values[el],
+                                           bounds=bounds,
+                                           model_type=SupportedModelTypes.CLASSIFICATION,
+                                           correct_prediction=True
+                                           )
                     yield res
 
     if model.meta.model_type == SupportedModelTypes.REGRESSION:
@@ -77,20 +78,21 @@ def contribution(model, ds, idrow):  # data_aug_dict
                 # print(error, rmse_res)
                 bounds = slice_bounds(feature=el, value=values[el], ds=ds)
                 if abs(error - y) / y >= 0.2:  # use scan feature ?
-                    res = Push(push_type="contribution_wrong",
-                               feature=el,
-                               value=values[el],
-                               bounds=bounds,
-                               model_type=SupportedModelTypes.REGRESSION
-                               )
+                    res = ContributionPush(feature=el,
+                                           value=values[el],
+                                           bounds=bounds,
+                                           model_type=SupportedModelTypes.REGRESSION,
+                                           correct_prediction=False
+                                           )
                     yield res
 
                 else:
-                    res = Push(push_type="contribution_only", feature=el,
-                               value=values[el],
-                               bounds=bounds,
-                               model_type=SupportedModelTypes.REGRESSION
-                               )
+                    res = ContributionPush(feature=el,
+                                           value=values[el],
+                                           bounds=bounds,
+                                           model_type=SupportedModelTypes.REGRESSION,
+                                           correct_prediction=True
+                                           )
                     yield res
 
 
