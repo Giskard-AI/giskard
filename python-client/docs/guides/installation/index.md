@@ -9,7 +9,7 @@ In order to scan your model for vulnerabilities, you'll need to install the `gis
 :::{tab-item} Windows
 
 ```sh
-pip install "giskard[scan] @ git+https://github.com/Giskard-AI/giskard.git@feature/ai-test-v2-merged#subdirectory=python-client" --user
+pip install "giskard[scan] @ git+https://github.com/Giskard-AI/giskard.git@task/GSK-1000-robustness-numerical#subdirectory=python-client" --user
 ```
 
 :::
@@ -17,7 +17,7 @@ pip install "giskard[scan] @ git+https://github.com/Giskard-AI/giskard.git@featu
 :::{tab-item} Mac and Linux
 
 ```sh
-pip install "giskard[scan] @ git+https://github.com/Giskard-AI/giskard.git@feature/ai-test-v2-merged#subdirectory=python-client"
+pip install "giskard[scan] @ git+https://github.com/Giskard-AI/giskard.git@task/GSK-1000-robustness-numerical#subdirectory=python-client"
 ```
 
 :::
@@ -38,3 +38,9 @@ To see the available commands, you can execute:
 giskard server --help  
 ```
 For the full documentation, go to <project:/cli/index.rst>.
+
+## 3. Connect the Giskard ML worker
+In order to connect the ML worker, Execute the following command in your terminal:
+```sh
+giskard worker start -u http://localhost:19000/
+```
