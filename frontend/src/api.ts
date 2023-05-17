@@ -32,6 +32,7 @@ import {
     ModelDTO,
     ParameterizedCallableDTO,
     PasswordResetRequest,
+    PostImportProjectDTO,
     PredictionDTO,
     PredictionInputDTO,
     PrepareDeleteDTO,
@@ -41,6 +42,7 @@ import {
     PushDTO,
     RoleDTO,
     RowFilterDTO,
+    SetupDTO,
     SuiteTestDTO,
     TestSuiteCompleteDTO,
     TestSuiteDTO,
@@ -50,14 +52,11 @@ import {
     UpdateMeDTO,
     UserDTO
 } from './generated-sources';
-import {PostImportProjectDTO} from './generated-sources/ai/giskard/web/dto/post-import-project-dto';
 import {TYPE} from "vue-toastification";
 import ErrorToast from "@/views/main/utils/ErrorToast.vue";
 import router from "@/router";
 import mixpanel from "mixpanel-browser";
 import {useUserStore} from "@/stores/user";
-import {SetupDTO} from "@/generated-sources/ai/giskard/web/dto/setup-dto";
-import {TestInputDTO} from "@/generated-sources/ai/giskard/web/dto/test-input-dto";
 import AdminUserDTOWithPassword = AdminUserDTO.AdminUserDTOWithPassword;
 
 function jwtRequestInterceptor(config) {
@@ -442,7 +441,7 @@ export const api = {
     async deleteFeedbackReply(feedbackId: number, replyId: number) {
         return apiV2.delete<unknown, void>(`/feedbacks/${feedbackId}/replies/${replyId}`);
     },
-    async runAdHocTest(projectId: number, testUuid: string, inputs: Array<TestInputDTO>) {
+    async runAdHocTest(projectId: number, testUuid: string, inputs: Array<FunctionInputDTO>) {
         return apiV2.post<unknown, TestTemplateExecutionResultDTO>(`/testing/tests/run-test`, {
             projectId,
             testUuid,
