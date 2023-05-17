@@ -5,16 +5,7 @@
                 <v-col>
                     <v-list-item-content class="py-2">
                         <v-list-item-title class="input-name">{{ input.name }}: <span class="input-type">{{ input.type }}</span> <span v-if="test?.args[index].optional" class="input-type">= {{ test.args[index].defaultValue }}</span>
-                            <span v-if="(test?.args[index].optional === false) && (test?.args[index].type !== 'Kwargs')" class="input-required">Required</span>
                         </v-list-item-title>
-                        <!-- <v-list-item-subtitle v-if="test?.args[index]">
-                            <span v-if="test.args[index].optional" class="input-optional">Optional</span>
-                            <span v-else class="input-required">Required</span>
-                        </v-list-item-subtitle> -->
-                        <!-- <v-list-item-action-text v-if="props.test && !!props.test.args.find(a => a.name === input.name).optional">
-                            Optional. Default:
-                            <code>{{ props.test.args.find(a => a.name === input.name).defaultValue }}</code>
-                        </v-list-item-action-text> -->
                     </v-list-item-content>
                 </v-col>
                 <v-col class="input-column">
@@ -50,8 +41,8 @@
                         <SlicingFunctionSelector :project-id="projectId" :label="input.name" v-else-if="input.type === 'SlicingFunction'" :value.sync="props.modelValue[input.name].value" :args.sync="props.modelValue[input.name].params" />
                         <TransformationFunctionSelector :project-id="projectId" :label="input.name" v-else-if="input.type === 'TransformationFunction'" :value.sync="props.modelValue[input.name].value" :args.sync="props.modelValue[input.name].params" />
                         <KwargsCodeEditor v-else-if="input.type === 'Kwargs'" :value.sync="props.modelValue[input.name].value" />
-                        <v-text-field :step='input.type === "float" ? 0.1 : 1' v-model="props.modelValue[input.name].value" v-else-if="['float', 'int'].includes(input.type)" hide-details single-line type="number" outlined dense />
-                        <v-text-field v-model="props.modelValue[input.name].value" v-else-if="input.type === 'str'" hide-details single-line type="text" outlined dense />
+                        <v-text-field :step='input.type === "float" ? 0.1 : 1' v-model="props.modelValue[input.name].value" v-else-if="['float', 'int'].includes(input.type)" hide-details type="number" outlined dense :label="input.name"></v-text-field>
+                        <v-text-field v-model="props.modelValue[input.name].value" v-else-if="input.type === 'str'" hide-details type="text" outlined dense :label="input.name"></v-text-field>
                     </template>
                 </v-col>
             </v-row>
@@ -104,29 +95,5 @@ const inputs = computed(() => Object.keys(props.inputs).map((name) => ({
 .input-type {
     font-size: 0.875rem;
     opacity: 0.875;
-}
-
-.input-required {
-    text-transform: uppercase;
-    font-size: 0.625rem;
-    font-weight: 600;
-    letter-spacing: 0.05em;
-    color: #FFC70A;
-    border: 1px solid #FFC70A;
-    border-radius: 4px;
-    padding: 0 4px;
-    background-color: rgba(255, 199, 10, 0.1);
-}
-
-.input-optional {
-    text-transform: uppercase;
-    font-size: 0.625rem;
-    font-weight: 600;
-    letter-spacing: 0.05em;
-    color: #4caf50;
-    border: 1px solid #4caf50;
-    border-radius: 4px;
-    padding: 0 4px;
-    background-color: rgba(76, 175, 80, 0.1);
 }
 </style>
