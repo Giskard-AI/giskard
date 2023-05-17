@@ -16,6 +16,8 @@ import ai.giskard.worker.DatasetProcessingFunction;
 import ai.giskard.worker.DatasetProcessingRequest;
 import ai.giskard.worker.DatasetProcessingResultMessage;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -36,6 +38,7 @@ import static ai.giskard.utils.GRPCUtils.convertGRPCObject;
 @RequiredArgsConstructor
 @RequestMapping("/api/v2/")
 public class DatasetsController {
+    private final Logger log = LoggerFactory.getLogger(DatasetsController.class);
 
     private final DatasetRepository datasetRepository;
     private final GiskardMapper giskardMapper;
@@ -103,10 +106,11 @@ public class DatasetsController {
     @PostMapping("project/{projectKey}/datasets")
     @PreAuthorize("@permissionEvaluator.canWriteProjectKey(#projectKey)")
     public void createDatasetMeta(@PathVariable("projectKey") @NotNull String projectKey, @RequestBody @NotNull DatasetDTO dto) {
-        Project project = projectRepository.getOneByKey(projectKey);
         if (datasetRepository.existsById(dto.getId())) {
-            throw new GiskardRuntimeException(String.format("Dataset already exists %s", dto.getId()));
+            log.info("Dataset already exists {}", dto.getId());
+            return;
         }
+        Project project = projectRepository.getOneByKey(projectKey);
         Dataset dataset = giskardMapper.fromDTO(dto);
         dataset.setProject(project);
         datasetRepository.save(dataset);
