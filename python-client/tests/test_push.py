@@ -1,4 +1,3 @@
-from giskard.push.perturbation import perturbation
 from giskard.push.contribution import contribution
 from giskard.push.prediction import overconfidence, borderline, stochasticity
 from giskard.push import Push

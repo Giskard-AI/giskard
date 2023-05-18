@@ -519,10 +519,10 @@ class MLWorkerServiceImpl(MLWorkerServicer):
             if p is not None:
                 pushes.append(p)
 
-        if request.upload_kind != 0:
+        # if request.upload_kind != 0:
             # Get the push upload request
-            if request.upload_kind == 1:
-                slicingfunc = pushes[request.upload_index].slicing_function
+            # if request.upload_kind == 1:
+                # slicingfunc = pushes[request.upload_index].slicing_function
                 # Need to figure out how to upload the sliiiiice
                 # slicingfunc.upload()
 
