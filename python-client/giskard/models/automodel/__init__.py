@@ -2,11 +2,14 @@ from abc import ABC
 from typing import Callable, Optional, Iterable, Any
 
 import pandas as pd
+import logging
 
 from giskard.core.core import ModelType
 from giskard.models import infer_giskard_cls
 from giskard.models.base import CloudpickleBasedModel
 from giskard.models.function import PredictionFunctionModel
+
+logger = logging.getLogger(__name__)
 
 
 class Model(CloudpickleBasedModel, ABC):
@@ -105,8 +108,8 @@ class Model(CloudpickleBasedModel, ABC):
                 possibly_overriden_cls.load_model = giskard_cls.load_model
             elif giskard_cls:
                 input_type = "'prediction_function'" if giskard_cls == PredictionFunctionModel else "'model'"
-                print("Your "+input_type+" is successfully wrapped by Giskard's '"
-                      + str(giskard_cls.__name__) + "' wrapper class.")
+                logger.info("Your " + input_type + " is successfully wrapped by Giskard's '"
+                            + str(giskard_cls.__name__) + "' wrapper class.")
                 possibly_overriden_cls = giskard_cls
             else:  # possibly_overriden_cls = CloudpickleBasedModel
                 raise NotImplementedError(
