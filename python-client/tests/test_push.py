@@ -1,6 +1,5 @@
-from giskard.push.perturbation import perturbation
 from giskard.push.contribution import contribution
-from tests.fixtures.regression import linear_regression_diabetes, linear_regression_diabetes_raw
+from giskard.push.perturbation import perturbation
 
 
 def test_perturbation(german_credit_model, german_credit_data):
