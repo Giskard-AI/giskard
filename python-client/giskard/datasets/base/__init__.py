@@ -76,6 +76,7 @@ class DataProcessor:
                 target=ds.target,
                 cat_columns=ds.cat_columns,
                 column_types=ds.column_types,
+                validation=False
             )
 
             if apply_only_last:
