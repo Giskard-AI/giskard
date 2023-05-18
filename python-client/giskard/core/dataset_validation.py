@@ -1,5 +1,4 @@
 import pandas as pd
-from pandas.core.dtypes.common import is_string_dtype
 
 from giskard.client.python_utils import warning
 from giskard.core.core import SupportedColumnTypes
