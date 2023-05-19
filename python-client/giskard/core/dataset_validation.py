@@ -1,5 +1,4 @@
 import pandas as pd
-from pandas.core.dtypes.common import is_string_dtype
 
 from giskard.client.python_utils import warning
 from giskard.core.core import SupportedColumnTypes
@@ -17,14 +16,6 @@ def validate_target(ds: Dataset):
             raise ValueError(
                 f"Invalid target parameter:"
                 f" '{ds.target}' column is not present in the dataset with columns: {list(ds.df.columns)}"
-            )
-
-        target_values = ds.df[ds.target].unique()
-        if not is_string_dtype(target_values):
-            print(
-                'Hint: "Your target variable values are numeric. '
-                "It is recommended to have Human readable string as your target values "
-                'to make results more understandable in Giskard."'
             )
 
 
@@ -49,13 +40,7 @@ def validate_column_types(ds: Dataset):
     column_types_set = set(ds.column_types.keys())
     column_types_set.discard(ds.target)
 
-    if column_types_set > df_columns_set:
-        unknown_columns = column_types_set - df_columns_set
-        raise ValueError(
-            f"The provided keys {list(unknown_columns)} in 'column_types' are not part of your dataset "
-            "'columns'. Please make sure that the column names in `column_types` refers to existing "
-            "columns in your dataset.")
-    elif column_types_set < df_columns_set:
+    if column_types_set < df_columns_set:
         missing_columns = df_columns_set - column_types_set
         raise ValueError(
             f"The following keys {list(missing_columns)} are missing from 'column_types'. "
