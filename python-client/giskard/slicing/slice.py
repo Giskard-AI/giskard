@@ -4,7 +4,7 @@ import itertools
 from collections import defaultdict
 from abc import ABC, abstractmethod
 from typing import Callable, Sequence
-
+import re
 import numpy as np
 import pandas as pd
 
@@ -35,7 +35,7 @@ class ComparisonClause(Clause):
         return self._operator(df[self.column], self.value)
 
 
-class StringContains(Clause):
+class ContainsWord(Clause):
     def __init__(self, column, value):
         self.column = column
         self.value = value
@@ -44,7 +44,7 @@ class StringContains(Clause):
         return f"`{self.column}` contains \"{self.value}\""
 
     def mask(self, df: pd.DataFrame) -> pd.Series:
-        return df[self.column].str.lower().str.contains(self.value.lower())
+        return df[self.column].str.contains(rf"\b{re.escape(self.value)}\b", case=False)
 
 
 class GreaterThan(ComparisonClause):
