@@ -94,6 +94,12 @@ class StochasticityPush(ExamplePush):
                        "explanation": "Some stochastic behavior has been found in your model. You may need to fix the "
                                       "random seed of your model",
                        "button": "Save Example"
+                   },
+                   {
+                       "action": "Generate a stochasticity test",
+                       "explanation": "This may help you ensure this stochastic pattern is not common to the whole "
+                                      "dataset",
+                       "button": "Create test"
                    }
                    ]
                }
