@@ -11,6 +11,7 @@ import {
     CreateFeedbackReplyDTO,
     DatasetDTO,
     DatasetPageDTO,
+    DatasetProcessingResultDTO,
     ExplainResponseDTO,
     ExplainTextResponseDTO,
     FeatureMetadataDTO,
@@ -28,7 +29,9 @@ import {
     MessageDTO,
     MLWorkerInfoDTO,
     ModelDTO,
+    ParameterizedCallableDTO,
     PasswordResetRequest,
+    PostImportProjectDTO,
     PredictionDTO,
     PredictionInputDTO,
     PrepareDeleteDTO,
@@ -36,26 +39,22 @@ import {
     ProjectDTO,
     ProjectPostDTO,
     RoleDTO,
-    SliceDTO,
-    SlicingResultDTO,
+    RowFilterDTO,
+    SetupDTO,
     SuiteTestDTO,
     TestSuiteCompleteDTO,
     TestSuiteDTO,
     TestSuiteExecutionDTO,
     TestTemplateExecutionResultDTO,
     TokenAndPasswordVM,
-    TransformationResultDTO,
     UpdateMeDTO,
     UserDTO
 } from './generated-sources';
-import {PostImportProjectDTO} from './generated-sources/ai/giskard/web/dto/post-import-project-dto';
 import {TYPE} from "vue-toastification";
 import ErrorToast from "@/views/main/utils/ErrorToast.vue";
 import router from "@/router";
 import mixpanel from "mixpanel-browser";
 import {useUserStore} from "@/stores/user";
-import {SetupDTO} from "@/generated-sources/ai/giskard/web/dto/setup-dto";
-import {TestInputDTO} from "@/generated-sources/ai/giskard/web/dto/test-input-dto";
 import AdminUserDTOWithPassword = AdminUserDTO.AdminUserDTOWithPassword;
 
 function jwtRequestInterceptor(config) {
@@ -331,23 +330,14 @@ export const api = {
     async peekDataFile(datasetId: string) {
         return this.getDatasetRows(datasetId, 0, 10);
     },
-    async getDatasetRows(datasetId: string, offset: number, size: number) {
-        return apiV2.get<unknown, DatasetPageDTO>(`/dataset/${datasetId}/rows`, {params: {offset, size}});
+    async getDatasetRows(datasetId: string, offset: number, size: number, filtered: RowFilterDTO = {}) {
+        return apiV2.post<unknown, DatasetPageDTO>(`/dataset/${datasetId}/rows`, filtered, {params: {offset, size}});
     },
     async getFeaturesMetadata(datasetId: string) {
         return apiV2.get<unknown, FeatureMetadataDTO[]>(`/dataset/${datasetId}/features`);
     },
-    async filterDataset(datasetId: number, sliceName: string, code: string) {
-        return apiV2.post<unknown, unknown>(`/dataset/${datasetId}/filter`, { sliceName: sliceName, code: code });
-    },
-    async getDataFilteredByRange(inspectionId, props, filter) {
-        return apiV2.post<unknown, any>(`/inspection/${inspectionId}/rowsFiltered`, filter, { params: props });
-    },
     async editDatasetName(datasetId: string, name: string) {
         return apiV2.patch<unknown, DatasetDTO>(`/dataset/${datasetId}/name/${encodeURIComponent(name)}`, null)
-    },
-    async getDataFilteredBySlice(inspectionId, sliceId) {
-        return apiV2.post<unknown, any>(`/inspection/${inspectionId}/slice/${sliceId}`);
     },
     async getLabelsForTarget(inspectionId: number) {
         return apiV2.get<unknown, string[]>(`/inspection/${inspectionId}/labels`);
@@ -379,9 +369,6 @@ export const api = {
     async addTestToSuite(projectId: number, suiteId: number, suiteTest: SuiteTestDTO) {
         return apiV2.post<unknown, TestSuiteDTO>(`testing/project/${projectId}/suite/${suiteId}/test`,
             suiteTest);
-    },
-    async getProjectSlices(id: number) {
-        return axiosProject.get<unknown, SliceDTO[]>(`/${id}/slices`);
     },
     async executeTestSuite(projectId: number, suiteId: number, inputs: Array<FunctionInputDTO>) {
         return apiV2.post<unknown, any>(`testing/project/${projectId}/suite/${suiteId}/schedule-execution`, inputs);
@@ -449,31 +436,10 @@ export const api = {
     async deleteFeedback(id: number) {
         return apiV2.delete<unknown, void>(`/feedbacks/${id}`);
     },
-    async createSlice(projectId: number, name: string, code: string) {
-        return apiV2.post<unknown, SliceDTO>(`/slices`, {
-            name: name,
-            projectId: projectId,
-            code: code
-        })
+    async deleteFeedbackReply(feedbackId: number, replyId: number) {
+        return apiV2.delete<unknown, void>(`/feedbacks/${feedbackId}/replies/${replyId}`);
     },
-    async editSlice(projectId: number, name: string, code: string, id: number) {
-        return apiV2.put<unknown, SliceDTO>(`/slices`, {
-            name: name,
-            projectId: projectId,
-            code: code,
-            id: id
-        })
-    },
-    async deleteSlice(projectId: number, sliceId: number) {
-        return apiV2.delete(`/project/${projectId}/slices/${sliceId}`);
-    },
-    async validateSlice(datasetId: number, code: string) {
-        return apiV2.post("/slices/validate", {
-            datasetId: datasetId,
-            code: code
-        });
-    },
-    async runAdHocTest(projectId: number, testUuid: string, inputs: Array<TestInputDTO>) {
+    async runAdHocTest(projectId: number, testUuid: string, inputs: Array<FunctionInputDTO>) {
         return apiV2.post<unknown, TestTemplateExecutionResultDTO>(`/testing/tests/run-test`, {
             projectId,
             testUuid,
@@ -500,14 +466,8 @@ export const api = {
             license: license
         });
     },
-    async runAdHocSlicingFunction(slicingFnUuid: string, datasetUuid: string, inputs: { [key: string]: string }) {
-        return apiV2.post<unknown, SlicingResultDTO>(
-            `/slices/${encodeURIComponent(slicingFnUuid)}/dataset/${encodeURIComponent(datasetUuid)}`, inputs);
-    },
-    async runAdHocTransformationFunction(transformationFnUuid: string, datasetUuid: string, inputs: {
-        [key: string]: string
-    }) {
-        return apiV2.post<unknown, TransformationResultDTO>(
-            `/transformations/${encodeURIComponent(transformationFnUuid)}/dataset/${encodeURIComponent(datasetUuid)}`, inputs);
+    async datasetProcessing(projectId: number, datasetUuid: string, functions: Array<ParameterizedCallableDTO>) {
+        return apiV2.post<unknown, DatasetProcessingResultDTO>(
+            `/project/${projectId}/datasets/${encodeURIComponent(datasetUuid)}/process`, functions);
     },
 };

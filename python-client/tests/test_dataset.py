@@ -1,4 +1,3 @@
-from giskard.datasets import wrap_dataset
 from giskard.datasets.base import Dataset
 import pandas as pd
 import pytest
@@ -14,7 +13,7 @@ nonvalid_df = pd.DataFrame({"categorical_column": [['turtle'], ['crocodile'], ['
 
 
 def test_factory():
-    my_dataset = wrap_dataset(valid_df)
+    my_dataset = Dataset(valid_df)
     assert isinstance(my_dataset, Dataset)
 
 
@@ -22,22 +21,23 @@ def test_valid_df_column_types():
     # Option 0: none of column_types, cat_columns, infer_column_types = True are provided
     with pytest.warns(
             UserWarning,
-            match="You did not provide the optional argument 'target'\. 'target' is the column name " # noqa
-                  "in df corresponding to the actual target variable \(ground truth\)\."): # noqa
-        my_dataset = wrap_dataset(valid_df)
-    assert my_dataset.column_types == {'categorical_column': 'category', 'text_column': 'text', 'numeric_column': 'numeric'}
+            match="You did not provide the optional argument 'target'\. 'target' is the column name "  # noqa
+                  "in df corresponding to the actual target variable \(ground truth\)\."):  # noqa
+        my_dataset = Dataset(valid_df)
+    assert my_dataset.column_types == {'categorical_column': 'category', 'text_column': 'text',
+                                       'numeric_column': 'numeric'}
 
     # Option 1: column_types is provided
-    my_dataset = wrap_dataset(valid_df, column_types=valid_df_column_types)
+    my_dataset = Dataset(valid_df, column_types=valid_df_column_types)
     assert my_dataset.column_types == valid_df_column_types
 
     # Option 2: cat_columns is provided
     cat_columns = ['categorical_column']
-    my_dataset = wrap_dataset(valid_df, cat_columns=cat_columns)
+    my_dataset = Dataset(valid_df, cat_columns=cat_columns)
     assert my_dataset.column_types == valid_df_column_types
 
     # Option 3: infer_column_types is provided
-    my_dataset = wrap_dataset(valid_df)
+    my_dataset = Dataset(valid_df)
     assert my_dataset.column_types == valid_df_column_types
 
 
@@ -45,28 +45,46 @@ def test_nonvalid_df_column_types():
     # Option 0: none of column_types, cat_columns, infer_column_types = True are provided
     with pytest.raises(
             TypeError,
-            match="The following columns in your df: \['categorical_column', 'text_column'\] are not hashable\. " # noqa
-                  "We currently support only hashable column types such as int, bool, str, tuple and not list or dict\."): # noqa
-        wrap_dataset(nonvalid_df)
+            match="The following columns in your df: \['categorical_column', 'text_column'\] are not hashable\. "  # noqa
+                  "We currently support only hashable column types such as int, bool, str, tuple and not list or dict\."):  # noqa
+        Dataset(nonvalid_df)
 
     # Option 1: column_types is provided
     with pytest.raises(
             TypeError,
-            match="The following columns in your df: \['categorical_column', 'text_column'\] are not hashable\. " # noqa
-                  "We currently support only hashable column types such as int, bool, str, tuple and not list or dict\."): # noqa
-        wrap_dataset(nonvalid_df, column_types=valid_df_column_types)
+            match="The following columns in your df: \['categorical_column', 'text_column'\] are not hashable\. "  # noqa
+                  "We currently support only hashable column types such as int, bool, str, tuple and not list or dict\."):  # noqa
+        Dataset(nonvalid_df, column_types=valid_df_column_types)
 
     # Option 2: cat_columns is provided
     cat_columns = ['categorical_column']
     with pytest.raises(
             TypeError,
-            match="The following columns in your df: \['categorical_column', 'text_column'\] are not hashable\. " # noqa
-                  "We currently support only hashable column types such as int, bool, str, tuple and not list or dict\."): # noqa
-        wrap_dataset(nonvalid_df, cat_columns=cat_columns)
+            match="The following columns in your df: \['categorical_column', 'text_column'\] are not hashable\. "  # noqa
+                  "We currently support only hashable column types such as int, bool, str, tuple and not list or dict\."):  # noqa
+        Dataset(nonvalid_df, cat_columns=cat_columns)
 
     # Option 3: infer_column_types is provided
     with pytest.raises(
             TypeError,
-            match="The following columns in your df: \['categorical_column', 'text_column'\] are not hashable\. " # noqa
-                  "We currently support only hashable column types such as int, bool, str, tuple and not list or dict\."): # noqa
-        wrap_dataset(nonvalid_df)
+            match="The following columns in your df: \['categorical_column', 'text_column'\] are not hashable\. "  # noqa
+                  "We currently support only hashable column types such as int, bool, str, tuple and not list or dict\."):  # noqa
+        Dataset(nonvalid_df)
+
+
+def test_inference_priority():
+    column_types = {'categorical_column': 'text'}
+    expected_df_column_types = {'categorical_column': 'text', 'text_column': 'text', 'numeric_column': 'numeric'}
+
+    # Case 1: only one column in column_types is provided
+    my_dataset = Dataset(valid_df, column_types=column_types)
+    assert my_dataset.column_types == expected_df_column_types
+
+    # Case 2: one column in column_types is provided, one in cat_columns
+    my_dataset = Dataset(valid_df, column_types=column_types, cat_columns=['categorical_column'])
+    assert my_dataset.column_types == valid_df_column_types
+
+    # Case 3: an unknown column in column_types is provided
+    column_types = {'unknown_column': 'text'}
+    my_dataset = Dataset(valid_df, column_types=column_types, cat_columns=['categorical_column'])
+    assert my_dataset.column_types == valid_df_column_types

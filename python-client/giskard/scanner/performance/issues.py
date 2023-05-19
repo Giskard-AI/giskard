@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from ..issues import Issue, IssueInfo
+from ..issues import Issue
 from ...models.base import BaseModel
 from ...datasets.base import Dataset
 from .metrics import PerformanceMetric
@@ -8,12 +8,13 @@ from ...ml_worker.testing.registry.slicing_function import SlicingFunction
 
 
 @dataclass
-class PerformanceIssueInfo(IssueInfo):
+class PerformanceIssueInfo:
     metric: PerformanceMetric
     metric_value_reference: float
     metric_value_slice: float
     slice_fn: SlicingFunction
     slice_size: int
+    threshold: float
 
     @property
     def metric_rel_delta(self):
@@ -48,7 +49,7 @@ class PerformanceIssue(Issue):
 
     @property
     def metric(self):
-        return self.info.metric.name
+        return f"{self.info.metric.name} = {self.info.metric_value_slice:.2f}"
 
     @property
     def deviation(self):
@@ -78,3 +79,36 @@ class PerformanceIssue(Issue):
             return -self.info.metric_rel_delta
 
         return self.info.metric_rel_delta
+
+    def generate_tests(self) -> list:
+        test_fn = _metric_to_test_object(self.info.metric)
+
+        if test_fn is None:
+            return []
+
+        # Convert the relative threshold to an absolute one.
+        delta = (self.info.metric.greater_is_better * 2 - 1) * self.info.threshold * self.info.metric_value_reference
+        abs_threshold = self.info.metric_value_reference - delta
+
+        return [test_fn(self.model, self.dataset, self.info.slice_fn, abs_threshold)]
+
+
+_metric_test_mapping = {
+    "F1Score": "test_f1",
+    "Precision": "test_precision",
+    "Accuracy": "test_accuracy",
+    "Recall": "test_recall",
+    "AUC": "test_auc",
+    "MeanSquaredError": "test_mse",
+    "MeanAbsoluteError": "test_mae",
+}
+
+
+def _metric_to_test_object(metric: PerformanceMetric):
+    from ...ml_worker.testing.tests import performance as performance_tests
+
+    try:
+        test_name = _metric_test_mapping[metric.__class__.__name__]
+        return getattr(performance_tests, test_name)
+    except (KeyError, AttributeError):
+        return None
