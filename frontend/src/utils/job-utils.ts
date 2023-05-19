@@ -39,3 +39,21 @@ export function schedulePeriodicJob(task: () => Promise<void>, delayMs: number):
 
     return () => state.cancelled = true;
 }
+
+const MAX_DELAY = 5000;
+const BASE_DELAY = 1000;
+const EXPONENT = 1.01;
+
+export async function exponentialRetry<T>(task: () => Promise<T>): Promise<T> {
+    let delay = 0;
+
+    while (true) {
+        try {
+            return await task();
+        } catch (e) {
+            delay = Math.min(MAX_DELAY, Math.max(BASE_DELAY, Math.pow(delay, EXPONENT)));
+            console.log(delay);
+            await sleep(delay);
+        }
+    }
+}
