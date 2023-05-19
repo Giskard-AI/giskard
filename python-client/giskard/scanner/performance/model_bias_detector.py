@@ -29,8 +29,8 @@ class ModelBiasDetector:
         )
 
         # Check if we have enough data to run the scan
-        if len(dataset) < 100:
-            logger.warning("ModelBiasDetector: Skipping scan because the dataset is too small.")
+        if len(dataset) < 400:
+            logger.warning("ModelBiasDetector: Skipping scan because the dataset is too small (< 400 samples).")
             return []
 
         # If the dataset is very large, limit to a subsample
