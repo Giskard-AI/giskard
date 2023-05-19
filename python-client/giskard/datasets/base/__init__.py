@@ -22,6 +22,7 @@ from giskard.ml_worker.testing.registry.transformation_function import (
     TransformationFunctionType,
 )
 from giskard.settings import settings
+from giskard.client.python_utils import warning
 from ..metadata.indexing import ColumnMetadataMixin
 
 logger = logging.getLogger(__name__)
@@ -125,14 +126,14 @@ class Dataset(ColumnMetadataMixin):
 
     @configured_validate_arguments
     def __init__(
-        self,
-        df: pd.DataFrame,
-        name: Optional[str] = None,
-        target: Optional[str] = None,
-        cat_columns: Optional[List[str]] = [],
-        column_types: Optional[Dict[str, str]] = None,
-        id: Optional[uuid.UUID] = None,
-        validation=True,
+            self,
+            df: pd.DataFrame,
+            name: Optional[str] = None,
+            target: Optional[str] = None,
+            cat_columns: Optional[List[str]] = None,
+            column_types: Optional[Dict[str, str]] = None,
+            id: Optional[uuid.UUID] = None,
+            validation=True
     ) -> None:
         """
         Initializes a Dataset object.
@@ -168,15 +169,10 @@ class Dataset(ColumnMetadataMixin):
 
         # used in the inference of category columns
         self.category_threshold = round(np.log10(len(self.df))) if len(self.df) >= 100 else 2
-        if column_types:
-            column_types.pop(self.target, None)  # no need for target type
-            self.column_types = column_types
-            if validation:
-                from giskard.core.dataset_validation import validate_column_types
-
-                validate_column_types(self)
-        else:
-            self.column_types = self._infer_column_types(cat_columns)
+        self.column_types = self._infer_column_types(column_types, cat_columns)
+        if validation:
+            from giskard.core.dataset_validation import validate_column_types
+            validate_column_types(self)
 
         if validation:
             from giskard.core.dataset_validation import validate_column_categorization, validate_numeric_columns
@@ -210,11 +206,11 @@ class Dataset(ColumnMetadataMixin):
 
     @configured_validate_arguments
     def slice(
-        self,
-        slicing_function: Union[SlicingFunction, SlicingFunctionType],
-        row_level: bool = True,
-        cell_level=False,
-        column_name: Optional[str] = None,
+            self,
+            slicing_function: Union[SlicingFunction, SlicingFunctionType],
+            row_level: bool = True,
+            cell_level=False,
+            column_name: Optional[str] = None,
     ):
         """
         Slice the dataset using the specified `slicing_function`.
@@ -245,11 +241,11 @@ class Dataset(ColumnMetadataMixin):
 
     @configured_validate_arguments
     def transform(
-        self,
-        transformation_function: Union[TransformationFunction, TransformationFunctionType],
-        row_level: bool = True,
-        cell_level=False,
-        column_name: Optional[str] = None,
+            self,
+            transformation_function: Union[TransformationFunction, TransformationFunctionType],
+            row_level: bool = True,
+            cell_level=False,
+            column_name: Optional[str] = None,
     ):
         """
         Transform the data in the current Dataset by applying a transformation function.
@@ -279,7 +275,7 @@ class Dataset(ColumnMetadataMixin):
             transformation_function = transformation_function(column_name=column_name, **transformation_function.params)
 
         assert (
-            not transformation_function.cell_level or 'column_name' in transformation_function.params
+                not transformation_function.cell_level or 'column_name' in transformation_function.params
         ), "column_name should be provided for TransformationFunction at cell level"
         return self.data_processor.add_step(transformation_function).apply(self, apply_only_last=True)
 
@@ -317,7 +313,7 @@ class Dataset(ColumnMetadataMixin):
                 f"We currently support only hashable column types such as int, bool, str, tuple and not list or dict."
             )
 
-    def _infer_column_types(self, cat_columns: List[str]):
+    def _infer_column_types(self, column_types: Optional[Dict[str, str]], cat_columns: Optional[List[str]]):
         """
         Infer column types of a given DataFrame based on the number of unique values and column data types.
 
@@ -329,38 +325,50 @@ class Dataset(ColumnMetadataMixin):
         Returns:
             dict: A dictionary that maps column names to their inferred types, one of 'text', 'numeric', or 'category'.
         """
-        column_types = {}
-        nuniques = self.df.nunique()
-        df_columns = list(self.df.columns)
+        if not column_types:
+            column_types = {}
+        df_columns = set(self.df.columns.drop(self.target)) if self.target else set(self.df.columns)
 
+        # priority of cat_columns over column_types (for categorical columns)
         if cat_columns:
             if not set(cat_columns).issubset(df_columns):
                 raise ValueError(
                     "The provided 'cat_columns' are not all part of your dataset 'columns'. "
                     "Please make sure that `cat_columns` refers to existing columns in your dataset."
                 )
-
             for cat_col in cat_columns:
                 if cat_col != self.target:
                     column_types[cat_col] = SupportedColumnTypes.CATEGORY.value
-            df_columns = set(df_columns) - set(cat_columns)
 
-        for col in df_columns:
+        given_columns = set(column_types.keys())
+        unknown_columns = given_columns - df_columns
+        missing_columns = df_columns - given_columns
+
+        if unknown_columns:
+            warning(
+                f"The provided keys {list(unknown_columns)} in 'column_types' are not part of your dataset "
+                "'columns'. Please make sure that the column names in `column_types` refers to existing "
+                "columns in your dataset.")
+            [column_types.pop(i) for i in unknown_columns]
+
+        if not missing_columns:
+            column_types.pop(self.target, None)  # no need for target type
+            return column_types
+
+        nuniques = self.df.nunique()
+        for col in missing_columns:
             if col == self.target:
                 continue
-            # inference of categorical columns
-            # in case cat_columns were provided by the user, we don't try to infer the categorical for the rest
-            # we raise a warning instead in validate_column_categorization
-            if not cat_columns:
-                if nuniques[col] <= self.category_threshold:
-                    column_types[col] = SupportedColumnTypes.CATEGORY.value
-                    continue
+            if nuniques[col] <= self.category_threshold:
+                column_types[col] = SupportedColumnTypes.CATEGORY.value
+                continue
             # inference of text and numeric columns
             try:
                 pd.to_numeric(self.df[col])
                 column_types[col] = SupportedColumnTypes.NUMERIC.value
             except ValueError:
                 column_types[col] = SupportedColumnTypes.TEXT.value
+
         return column_types
 
     @staticmethod
