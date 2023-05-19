@@ -60,7 +60,6 @@ export const useCatalogStore = defineStore('catalog', {
     },
     actions: {
         async loadCatalog(projectId: number) {
-            this.catalog = null;
             this.catalog = await api.getCatalog(projectId);
         },
     }
