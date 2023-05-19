@@ -23,11 +23,12 @@
 </template>
 
 <script setup lang="ts">
-import { onActivated } from "vue";
-import { useCatalogStore } from "@/stores/catalog";
-import { storeToRefs } from "pinia";
+import {onActivated, onDeactivated, ref} from "vue";
+import {useCatalogStore} from "@/stores/catalog";
+import {storeToRefs} from "pinia";
 import LoadingFullscreen from "@/components/LoadingFullscreen.vue";
-import { useRouter } from "vue-router/composables";
+import {schedulePeriodicJob} from "@/utils/job-utils";
+import {useRouter} from "vue-router/composables";
 
 const router = useRouter();
 
@@ -39,6 +40,15 @@ let props = defineProps<{
 const catalogStore = useCatalogStore();
 const { catalog } = storeToRefs(catalogStore);
 
+const refreshingRef = ref<() => void>();
+
+onActivated(() => refreshingRef.value = schedulePeriodicJob(async () => await catalogStore.loadCatalog(props.projectId), 1000));
+
+onDeactivated(() => {
+
+    console.log('onUnmounted')
+    refreshingRef.value!()
+})
 const defaultRoute = 'project-catalog-datasets';
 
 onActivated(async () => {
