@@ -74,7 +74,7 @@ import { api } from "@/api";
 import { Role } from "@/enums";
 import mixpanel from "mixpanel-browser";
 import DeleteModal from "@/views/main/project/modals/DeleteModal.vue";
-import {computed, onBeforeMount, ref, computed } from "vue";
+import {computed, onBeforeMount, ref } from "vue";
 import InlineEditText from "@/components/InlineEditText.vue";
 import { useUserStore } from "@/stores/user";
 import { useProjectStore } from "@/stores/project";

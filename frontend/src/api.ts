@@ -51,7 +51,7 @@ import {
     TokenAndPasswordVM,
     UpdateMeDTO,
     UserDTO
-} from './generated-sources';
+} from '@/generated-sources';
 import {TYPE} from "vue-toastification";
 import ErrorToast from "@/views/main/utils/ErrorToast.vue";
 import router from "@/router";
@@ -441,7 +441,7 @@ export const api = {
     async deleteFeedbackReply(feedbackId: number, replyId: number) {
         return apiV2.delete<unknown, void>(`/feedbacks/${feedbackId}/replies/${replyId}`);
     },
-    async runAdHocTest(projectId: number, testUuid: string, inputs: Array<TestInputDTO>, debug: boolean = false) {
+    async runAdHocTest(projectId: number, testUuid: string, inputs: Array<FunctionInputDTO>, debug: boolean = false) {
         return apiV2.post<unknown, TestTemplateExecutionResultDTO>(`/testing/tests/run-test`, {
             projectId,
             testUuid,
