@@ -1,7 +1,6 @@
 <template>
   <div id="app">
     <v-app>
-
         <v-main v-if="loggedIn === null || !backendReady">
             <v-container fill-height>
                 <v-layout align-center justify-center>
@@ -19,7 +18,7 @@
           </v-layout>
         </v-container>
       </v-main>
-      <router-view v-else/>
+        <router-view/>
       <modals-container></modals-container>
     </v-app>
   </div>
