@@ -17,7 +17,6 @@ from sklearn.metrics import (
 from giskard import test
 from giskard.datasets.base import Dataset
 from giskard.ml_worker.core.test_result import TestResult
-from giskard.ml_worker.testing.registry.giskard_test import GiskardTest
 from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction
 from giskard.ml_worker.testing.utils import Direction
 from giskard.ml_worker.testing.utils import check_slice_not_empty
@@ -47,7 +46,7 @@ def _test_classification_score(score_fn, model: BaseModel, dataset: Dataset, thr
     if is_binary_classification:
         metric = score_fn(targets, prediction, pos_label=model.meta.classification_labels[1])
     else:
-        metric = score_fn(targets, prediction, average="macro")
+        metric = score_fn(actual_target, prediction, average="micro")
 
     passed = bool(metric >= threshold)
 
@@ -159,44 +158,6 @@ def _test_diff_prediction(
         passed=passed,
         output_df=output_ds
     )
-
-
-@test(name="AUC test class", tags=['performance', 'classification', 'ground_truth'])
-class AucTest(GiskardTest):
-    """
-    Test if the model AUC performance is higher than a threshold for a given slice
-
-    Example : The test is passed when the AUC for females is higher than 0.7
-    """
-
-    dataset: Dataset
-    model: BaseModel
-    threshold: float
-
-    def __init__(self, model: BaseModel = None, dataset: Dataset = None, threshold: float = None, debug: bool = False):
-        """
-        :param model: Model used to compute the test
-        :param dataset: dataset used to compute the test
-        :param threshold: Threshold value of AUC metrics
-        """
-        self.dataset = dataset
-        self.model = model
-        self.threshold = threshold
-        self.debug = debug
-        super().__init__()
-
-    def execute(self) -> TestResult:
-        """
-
-        :return:
-          actual_slices_size:
-            Length of dataset tested
-          metric:
-            The AUC performance metric
-          passed:
-            TRUE if AUC metrics >= threshold
-        """
-        return test_auc.test_fn(dataset=self.dataset, model=self.model, threshold=self.threshold, debug=self.debug)
 
 
 @test(name='AUC', tags=['performance', 'classification', 'ground_truth'])
