@@ -54,16 +54,25 @@ def validate_model(model: BaseModel, validate_ds: Optional[Dataset] = None):
 
 @configured_validate_arguments
 def validate_model_execution(model: BaseModel, dataset: Dataset) -> None:
+    # testing multiple entries
     validation_size = min(len(dataset), 10)
-    validation_ds = dataset.slice(SlicingFunction(lambda x: x.head(validation_size), row_level=False))
+    validation_ds = dataset.slice(SlicingFunction(lambda x: x.sample(validation_size), row_level=False))
+    error_message = "Invalid model.predict() input.\nPlease make sure that model.predict(dataset) does not return an " \
+                    "error message before uploading to Giskard."
     try:
         prediction = model.predict(validation_ds)
     except Exception as e:
+        raise ValueError(error_message) from e
+
+    # testing one entry
+    validation_size = min(len(dataset), 1)
+    validation_ds_1 = dataset.slice(SlicingFunction(lambda x: x.sample(validation_size), row_level=False))
+    try:
+        model.predict(validation_ds_1)
+    except Exception as e:
         raise ValueError(
-            "Invalid model.predict() input.\n"
-            "Please make sure that model.predict(dataset) does not return an error "
-            "message before uploading in Giskard"
-        ) from e
+            error_message + " Hint: Make sure that you are not fitting any preprocessor inside your model or prediction"
+                            " function.") from e
 
     validate_deterministic_model(model, validation_ds, prediction)
     validate_prediction_output(validation_ds, model.meta.model_type, prediction.raw)
