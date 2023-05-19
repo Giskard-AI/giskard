@@ -9,6 +9,7 @@ export interface SingleTestResultDTO {
     metric: number;
     missingCount: number;
     missingPercent: number;
+    outputDfUuid: string;
     partialUnexpectedIndexList: number[];
     passed: boolean;
     referenceSlicesSize: number[];
@@ -17,5 +18,4 @@ export interface SingleTestResultDTO {
     unexpectedPercent: number;
     unexpectedPercentNonmissing: number;
     unexpectedPercentTotal: number;
-    outputDfUuid: string;
 }
