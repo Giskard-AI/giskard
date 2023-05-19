@@ -141,14 +141,14 @@
 
 
     <!-- Modal dialog to create new projects -->
-    <v-dialog v-model="openCreateDialog" width="500" persistent>
+    <v-dialog v-model="openCreateDialog" width="500">
       <v-card>
         <ValidationObserver ref="dialogForm">
           <v-form @submit.prevent="submitNewProject()">
             <v-card-title>New project details</v-card-title>
             <v-card-text>
               <ValidationProvider name="Name" mode="eager" rules="required" v-slot="{ errors }">
-                <v-text-field label="Project Name*" type="text" v-model="newProjectName" :error-messages="errors"></v-text-field>
+                <v-text-field label="Project Name*" type="text" v-model="newProjectName" :error-messages="errors" autofocus></v-text-field>
               </ValidationProvider>
               <ValidationProvider name="Key" mode="eager" rules="required" v-slot="{ errors }">
                 <v-text-field label="Project Key*" type="text" v-model="newProjectKey" :error-messages="errors"></v-text-field>
@@ -170,16 +170,16 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from "vue";
-import { ValidationObserver } from "vee-validate";
-import { Role } from "@/enums";
-import { PostImportProjectDTO, ProjectPostDTO } from "@/generated-sources";
-import { toSlug } from "@/utils";
-import { useRoute, useRouter } from "vue-router/composables";
+import {computed, onMounted, ref, watch} from "vue";
+import {ValidationObserver} from "vee-validate";
+import {Role} from "@/enums";
+import {PostImportProjectDTO, ProjectPostDTO} from "@/generated-sources";
+import {toSlug} from "@/utils";
+import {useRoute, useRouter} from "vue-router/composables";
 import moment from "moment";
-import { useUserStore } from "@/stores/user";
-import { useProjectStore } from "@/stores/project";
-import { api } from "@/api";
+import {useUserStore} from "@/stores/user";
+import {useProjectStore} from "@/stores/project";
+import {api} from "@/api";
 import mixpanel from "mixpanel-browser";
 
 const route = useRoute();

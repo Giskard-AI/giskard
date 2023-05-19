@@ -1,6 +1,7 @@
-import inspect
-import pickle
 import sys
+import copy
+import pickle
+import inspect
 from abc import abstractmethod, ABC
 from pathlib import Path
 from typing import Union, Callable, Optional, Type
@@ -9,6 +10,7 @@ from giskard.core.core import TestFunctionMeta, SMT
 from giskard.ml_worker.core.savable import Savable
 from giskard.ml_worker.core.test_result import TestResult
 from giskard.ml_worker.testing.registry.registry import tests_registry, get_object_uuid
+from giskard.ml_worker.testing.registry.utils import is_local_function
 
 Result = Union[TestResult, bool]
 
@@ -27,6 +29,7 @@ class GiskardTest(Savable[Type, TestFunctionMeta], ABC):
         if meta is None:
             # equivalent to adding @test decorator
             from giskard import test
+
             test(type(self))
             meta = tests_registry.get_test(test_uuid)
         super(GiskardTest, self).__init__(type(self), meta)
@@ -52,14 +55,14 @@ class GiskardTest(Savable[Type, TestFunctionMeta], ABC):
         return get_object_uuid(type(self))
 
     def _should_save_locally(self) -> bool:
-        return self.data.__module__.startswith('__main__')
+        return is_local_function(self.data.__module__)
 
     def _should_upload(self) -> bool:
         return self.meta.version is None
 
     @classmethod
     def _read_from_local_dir(cls, local_dir: Path, meta: TestFunctionMeta):
-        if not meta.module.startswith('__main__'):
+        if not is_local_function(meta.module):
             func = getattr(sys.modules[meta.module], meta.name)
         else:
             if not local_dir.exists():
@@ -95,28 +98,30 @@ Test = Union[GiskardTest, Function]
 
 
 class GiskardTestMethod(GiskardTest):
-    params = None
-    is_initialized = False
-
     def __init__(self, test_fn: Function) -> None:
+        self.params = {}
+        self.is_initialized = False
         self.test_fn = test_fn
         test_uuid = get_object_uuid(test_fn)
         meta = tests_registry.get_test(test_uuid)
         if meta is None:
             # equivalent to adding @test decorator
             from giskard import test
+
             test()(test_fn)
             meta = tests_registry.get_test(test_uuid)
         super(GiskardTest, self).__init__(test_fn, meta)
 
     def __call__(self, *args, **kwargs) -> 'GiskardTestMethod':
-        self.is_initialized = True
-        self.params = kwargs
+        instance = copy.deepcopy(self)
+
+        instance.is_initialized = True
+        instance.params = kwargs
 
         for idx, arg in enumerate(args):
-            self.params[next(iter([arg.name for arg in self.meta.args.values() if arg.argOrder == idx]))] = arg
+            instance.params[next(iter([arg.name for arg in instance.meta.args.values() if arg.argOrder == idx]))] = arg
 
-        return self
+        return instance
 
     def execute(self) -> Result:
         return self.test_fn(**self.params)

@@ -113,7 +113,7 @@ import {pasterColor} from "@/utils";
 import MonacoEditor from 'vue-monaco';
 import TestExecutionResultBadge from "@/views/main/project/TestExecutionResultBadge.vue";
 import {editor} from "monaco-editor";
-import {TestFunctionDTO, TestInputDTO, TestTemplateExecutionResultDTO} from "@/generated-sources";
+import {FunctionInputDTO, TestFunctionDTO, TestTemplateExecutionResultDTO} from "@/generated-sources";
 import AddTestToSuite from '@/views/main/project/modals/AddTestToSuite.vue';
 import {$vfm} from 'vue-final-modal';
 import StartWorkerInstructions from "@/components/StartWorkerInstructions.vue";
@@ -135,7 +135,7 @@ const searchFilter = ref<string>("");
 let { testFunctions } = storeToRefs(useCatalogStore());
 let selected = ref<TestFunctionDTO | null>(null);
 let tryMode = ref(true)
-let testArguments = ref<{ [name: string]: TestInputDTO }>({})
+let testArguments = ref<{ [name: string]: FunctionInputDTO }>({})
 let testResult = ref<TestTemplateExecutionResultDTO | null>(null);
 
 
