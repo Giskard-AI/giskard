@@ -83,16 +83,16 @@ def test_postprocess_fixes_missing_binary_class():
     result = WrapperModel._postprocess(model, data)
 
     assert result.shape == (10, 2)
-    assert (result[:, 0] == data).all()
-    assert np.allclose(result[:, 1], 1 - data)
+    assert (result[:, 1] == data).all()
+    assert np.allclose(result[:, 0], 1 - data)
 
     # Same for 2d data with a single class
     data = np.random.uniform(size=(10, 1))
     result = WrapperModel._postprocess(model, data)
 
     assert result.shape == (10, 2)
-    assert (result[:, 0] == data[:, 0]).all()
-    assert np.allclose(result[:, 1], 1 - data[:, 0])
+    assert (result[:, 1] == data[:, 0]).all()
+    assert np.allclose(result[:, 0], 1 - data[:, 0])
 
 
 def test_raises_error_if_classifier_shape_is_not_right():
