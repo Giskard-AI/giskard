@@ -13,7 +13,7 @@ In order to test your model, you'll need to install the `giskard` library with `
 :::{tab-item} Windows
 
 ```sh
-pip install "giskard[scan] @ git+https://github.com/Giskard-AI/giskard.git@task/GSK-1000-robustness-numerical#subdirectory=python-client" --user
+pip install "giskard[scan] @ git+https://github.com/Giskard-AI/giskard.git@user-test/19-05-2023#subdirectory=python-client" --user
 ```
 
 :::
@@ -21,7 +21,7 @@ pip install "giskard[scan] @ git+https://github.com/Giskard-AI/giskard.git@task/
 :::{tab-item} Mac and Linux
 
 ```sh
-pip install "giskard[scan] @ git+https://github.com/Giskard-AI/giskard.git@task/GSK-1000-robustness-numerical#subdirectory=python-client"
+pip install "giskard[scan] @ git+https://github.com/Giskard-AI/giskard.git@user-test/19-05-2023#subdirectory=python-client"
 ```
 
 :::

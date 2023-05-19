@@ -9,7 +9,7 @@ In order to scan your model for vulnerabilities, you'll need to install the `gis
 :::{tab-item} Windows
 
 ```sh
-pip install "giskard[scan] @ git+https://github.com/Giskard-AI/giskard.git@task/GSK-1000-robustness-numerical#subdirectory=python-client" --user
+pip install "giskard[scan] @ git+https://github.com/Giskard-AI/giskard.git@user-test/19-05-2023#subdirectory=python-client" --user
 ```
 
 :::
@@ -17,7 +17,7 @@ pip install "giskard[scan] @ git+https://github.com/Giskard-AI/giskard.git@task/
 :::{tab-item} Mac and Linux
 
 ```sh
-pip install "giskard[scan] @ git+https://github.com/Giskard-AI/giskard.git@task/GSK-1000-robustness-numerical#subdirectory=python-client"
+pip install "giskard[scan] @ git+https://github.com/Giskard-AI/giskard.git@user-test/19-05-2023#subdirectory=python-client"
 ```
 
 :::
@@ -31,7 +31,7 @@ Check our installation guide for more details on the installation procedures.
 ## 2. Install Giskard's docker images
 In order to install the Giskard server, Execute the following command in your terminal:
 ```sh
-giskard server start --version 2.0.0
+giskard server start --version 2.0.0-user-test
 ```
 To see the available commands, you can execute:
 ```sh
