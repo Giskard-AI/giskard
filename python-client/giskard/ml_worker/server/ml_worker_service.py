@@ -42,6 +42,21 @@ from giskard.path_utils import model_path, dataset_path
 logger = logging.getLogger(__name__)
 
 
+def extract_debug_info(request_arguments):
+    template_info = " | <xxx:xxx_id>"
+    info = {"suffix": "", "project_key": ""}
+    for arg in request_arguments:
+        if arg.HasField("model"):
+            filled_info = template_info.replace('xxx', arg.name)
+            info["suffix"] += filled_info.replace(arg.name + '_id', arg.model.id)
+            info['project_key'] = arg.model.project_key  # in case model is in the args and dataset is not
+        elif arg.HasField("dataset"):
+            filled_info = template_info.replace('xxx', arg.name)
+            info["suffix"] += filled_info.replace(arg.name + '_id', arg.dataset.id)
+            info['project_key'] = arg.dataset.project_key  # in case dataset is in the args and model is not
+    return info
+
+
 def file_already_exists(meta: ml_worker_pb2.FileUploadMetadata):
     if meta.file_type == ml_worker_pb2.FileType.MODEL:
         path = model_path(meta.project_key, meta.name)
@@ -194,9 +209,19 @@ class MLWorkerServiceImpl(MLWorkerServicer):
         test: GiskardTest = GiskardTest.load(request.testUuid, self.client, None)
 
         arguments = self.parse_function_arguments(request.arguments)
+        arguments["debug"] = request.debug
 
         logger.info(f"Executing {test.meta.display_name or f'{test.meta.module}.{test.meta.name}'}")
         test_result = test.get_builder()(**arguments).execute()
+
+        if test_result.output_df:  # if debug is True and test has failed
+            debug_info = extract_debug_info(request.arguments)
+            test_result.output_df.name += debug_info['suffix']
+
+            test_result.output_df_id = test_result.output_df.upload(client=self.client,
+                                                                    project_key=debug_info['project_key'])
+            # for now, we won't return output_df from grpc, rather upload it
+            test_result.output_df = None
 
         return ml_worker_pb2.TestResultMessage(results=[
             ml_worker_pb2.NamedSingleTestResult(testUuid=test.meta.uuid,
@@ -611,10 +636,11 @@ def map_result_to_single_test_result(result) -> ml_worker_pb2.SingleTestResult:
                 for puc in result.partial_unexpected_index_list
             ],
             unexpected_index_list=result.unexpected_index_list,
-            output_df=result.output_df,
+            output_df=None,
             number_of_perturbed_rows=result.number_of_perturbed_rows,
             actual_slices_size=result.actual_slices_size,
             reference_slices_size=result.reference_slices_size,
+            output_df_id=result.output_df_id
         )
     elif isinstance(result, bool):
         return ml_worker_pb2.SingleTestResult(passed=result)

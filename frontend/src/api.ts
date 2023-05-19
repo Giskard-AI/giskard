@@ -441,11 +441,12 @@ export const api = {
     async deleteFeedbackReply(feedbackId: number, replyId: number) {
         return apiV2.delete<unknown, void>(`/feedbacks/${feedbackId}/replies/${replyId}`);
     },
-    async runAdHocTest(projectId: number, testUuid: string, inputs: Array<FunctionInputDTO>) {
+    async runAdHocTest(projectId: number, testUuid: string, inputs: Array<TestInputDTO>, debug: boolean = false) {
         return apiV2.post<unknown, TestTemplateExecutionResultDTO>(`/testing/tests/run-test`, {
             projectId,
             testUuid,
-            inputs
+            inputs,
+            debug
         });
     },
     async getCatalog(projectId: number) {

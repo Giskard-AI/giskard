@@ -12,6 +12,7 @@
       </v-btn>
     </div>
     <v-container v-if="projectArtifactsStore.datasets.length > 0" fluid class="vc">
+    <v-checkbox v-model="showDebugDatasets" label="Show debug datasets"></v-checkbox>
       <v-expansion-panels flat>
         <v-row dense no-gutters class="mr-6 ml-3 caption secondary--text text--lighten-3 pb-2">
           <v-col cols="4">Name</v-col>
@@ -21,11 +22,12 @@
           <v-col cols="1">Id</v-col>
           <v-col cols="2">Actions</v-col>
         </v-row>
-        <v-expansion-panel v-for="f in projectArtifactsStore.datasets" :key="f.id">
+        <v-expansion-panel v-for="f in datasets" :key="f.id">
           <v-expansion-panel-header @click="peakDataFile(f.id)" class="grey lighten-5 py-1 pl-2">
             <v-row class="px-2 py-1 align-center">
               <v-col cols="4" class="font-weight-bold">
-                <InlineEditText :text="f.name" :can-edit="isProjectOwnerOrAdmin" @save="(name) => renameDataset(f.id, name)">
+                <InlineEditText :text="f.name" :can-edit="isProjectOwnerOrAdmin"
+                                @save="(name) => renameDataset(f.id, name)">
                 </InlineEditText>
               </v-col>
               <v-col cols="1">{{ f.originalSizeBytes | fileSize }}</v-col>
@@ -42,14 +44,16 @@
                     </template>
                     <span>Download</span>
                   </v-tooltip>
-                  <DeleteModal v-if="isProjectOwnerOrAdmin" :id="f.id" :file-name="f.name" type="dataset" @submit="deleteDataFile(f.id)" />
+                  <DeleteModal v-if="isProjectOwnerOrAdmin" :id="f.id" :file-name="f.name" type="dataset"
+                               @submit="deleteDataFile(f.id)"/>
                 </span>
               </v-col>
             </v-row>
           </v-expansion-panel-header>
           <v-divider></v-divider>
           <v-expansion-panel-content class="expansion-panel-content">
-            <v-data-table :headers="filePreviewHeader" :items="filePreviewData" dense :hide-default-footer="true" v-if="filePreviewHeader.length > 0 && filePreviewData.length > 0">
+            <v-data-table :headers="filePreviewHeader" :items="filePreviewData" dense :hide-default-footer="true"
+                          v-if="filePreviewHeader.length > 0 && filePreviewData.length > 0">
             </v-data-table>
             <div class="caption" v-else>Could not properly load data</div>
           </v-expansion-panel-content>
@@ -70,12 +74,12 @@ import { api } from "@/api";
 import { Role } from "@/enums";
 import mixpanel from "mixpanel-browser";
 import DeleteModal from "@/views/main/project/modals/DeleteModal.vue";
-import { onBeforeMount, ref, computed } from "vue";
+import {computed, onBeforeMount, ref, computed } from "vue";
 import InlineEditText from "@/components/InlineEditText.vue";
 import { useUserStore } from "@/stores/user";
 import { useProjectStore } from "@/stores/project";
-import { useMainStore } from "@/stores/main";
-import { useProjectArtifactsStore } from "@/stores/project-artifacts";
+import {useMainStore} from "@/stores/main";
+import {useProjectArtifactsStore} from "@/stores/project-artifacts";
 import CodeSnippet from '@/components/CodeSnippet.vue';
 
 const userStore = useUserStore();
@@ -110,7 +114,7 @@ my_column_types = {"categorical_column": "category",
 
 # Create a Giskard Dataset
 from giskard import Dataset
-my_dataset = Dataset(df=my_df, 
+my_dataset = Dataset(df=my_df,
                      target="numeric_column",
                      column_types=my_column_types,
                      name="My Dataset")
@@ -136,16 +140,26 @@ const isUserProjectOwner = computed(() => {
   return project.value && userProfile.value ? project.value?.owner.id == userProfile.value?.id : false;
 });
 
+const showDebugDatasets = ref<boolean>(false);
+
 async function deleteDataFile(id: string) {
-  mixpanel.track('Delete dataset', { id });
+  mixpanel.track('Delete dataset', {id});
 
   let messageDTO = await api.deleteDatasetFile(id);
-  useMainStore().addNotification({ content: messageDTO.message });
+  useMainStore().addNotification({content: messageDTO.message});
   await projectArtifactsStore.loadDatasets();
 }
 
+const datasets = computed(() => {
+  if (showDebugDatasets.value) {
+    return projectArtifactsStore.datasets;
+  } else {
+    return projectArtifactsStore.datasets.filter(e => !e.name.startsWith('Debug: '))
+  }
+});
+
 function downloadDataFile(id: string) {
-  mixpanel.track('Download dataset file', { id });
+  mixpanel.track('Download dataset file', {id});
   api.downloadDataFile(id)
 }
 
@@ -156,7 +170,7 @@ async function peakDataFile(id: string) {
       const response = await api.peekDataFile(id)
       const headers = Object.keys(response.content[0])
       filePreviewHeader.value = headers.filter(e => e != GISKARD_INDEX_COLUMN_NAME).map(e => {
-        return { text: e.trim(), value: e, sortable: false }
+        return {text: e.trim(), value: e, sortable: false}
       });
       if (headers.includes(GISKARD_INDEX_COLUMN_NAME)) {
         filePreviewHeader.value = [{
@@ -167,7 +181,7 @@ async function peakDataFile(id: string) {
       }
       filePreviewData.value = response.content
     } catch (error) {
-      useMainStore().addNotification({ content: error.response.statusText, color: 'error' });
+      useMainStore().addNotification({content: error.response.statusText, color: 'error'});
       filePreviewHeader.value = [];
       filePreviewData.value = [];
     }
@@ -175,7 +189,7 @@ async function peakDataFile(id: string) {
 }
 
 async function renameDataset(id: string, name: string) {
-  mixpanel.track('Update dataset name', { id });
+  mixpanel.track('Update dataset name', {id});
   const savedDataset = await api.editDatasetName(id, name);
   projectArtifactsStore.updateDataset(savedDataset);
 }

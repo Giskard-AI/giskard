@@ -58,6 +58,8 @@ public class TestController {
                         giskardMapper.fromDTO(input).getParams()));
             }
 
+            builder.setDebug(request.isDebug());
+
             TestResultMessage testResultMessage = client.getBlockingStub().runAdHocTest(builder.build());
             TestTemplateExecutionResultDTO res = new TestTemplateExecutionResultDTO(testFunction.getUuid());
             res.setResult(testResultMessage);

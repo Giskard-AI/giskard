@@ -1,4 +1,5 @@
 import pandas as pd
+import inspect
 
 from giskard import test
 from giskard.core.core import SupportedModelTypes
@@ -134,42 +135,43 @@ def _compare_probabilities_wilcoxon(result_df, direction, window_size=0.2, criti
     return p_value
 
 
-def _test_metamorphic(
-    model,
-    direction: Direction,
-    dataset: Dataset,
-    transformation_function: TransformationFunction,
-    threshold: float,
-    classification_label=None,
-    output_sensitivity=None,
-    output_proba=True,
-) -> TestResult:
-    results_df, modified_rows_count = _perturb_and_predict(
-        model, dataset, transformation_function, output_proba=output_proba, classification_label=classification_label
-    )
+def _test_metamorphic(model, direction: Direction, dataset: Dataset, transformation_function: TransformationFunction,
+                      threshold: float, classification_label=None, output_sensitivity=None,
+                      output_proba=True, debug: bool = False) -> TestResult:
+    results_df, modified_rows_count = _perturb_and_predict(model, dataset, transformation_function,
+                                                           output_proba=output_proba,
+                                                           classification_label=classification_label)
 
-    passed_idx, _ = _compare_prediction(results_df, model.meta.model_type, direction, output_sensitivity)
+    passed_idx, failed_idx = _compare_prediction(
+        results_df, model.meta.model_type, direction, output_sensitivity)
+
     passed_ratio = len(passed_idx) / modified_rows_count if modified_rows_count != 0 else 1
 
     messages = [TestMessage(type=TestMessageLevel.INFO, text=f"{modified_rows_count} rows were perturbed")]
 
+    passed = bool(passed_ratio > threshold)
+    # --- debug ---
+    output_ds = None
+    if not passed and debug:
+        output_ds = dataset.df.iloc[failed_idx]
+        test_name = inspect.stack()[1][3]
+        output_ds.name = "Debug: " + test_name
+    # ---
+
     return TestResult(
         actual_slices_size=[len(dataset)],
         metric=passed_ratio,
-        passed=bool(passed_ratio > threshold),
+        passed=passed,
         messages=messages,
+        output_df=output_ds
     )
 
 
 @test(name="Invariance (proportion)")
-def test_metamorphic_invariance(
-    model: BaseModel,
-    dataset: Dataset,
-    transformation_function: TransformationFunction,
-    slicing_function: SlicingFunction = None,
-    threshold: float = 0.5,
-    output_sensitivity: float = None,
-) -> TestResult:
+
+def test_metamorphic_invariance(model: BaseModel, dataset: Dataset, transformation_function: TransformationFunction,
+                                slicing_function: SlicingFunction = None, threshold: float = 0.5,
+                                output_sensitivity: float = None, debug: bool = False) -> TestResult:
     """
     Summary: Tests if the model prediction is invariant when the feature values are perturbed
 
@@ -222,19 +224,15 @@ def test_metamorphic_invariance(
         threshold=threshold,
         output_sensitivity=output_sensitivity,
         output_proba=False,
+        debug=debug
     )
 
 
 @test(name="Increasing (proportion)")
 @validate_classification_label
-def test_metamorphic_increasing(
-    model: BaseModel,
-    dataset: Dataset,
-    transformation_function: TransformationFunction,
-    slicing_function: SlicingFunction = None,
-    threshold: float = 0.5,
-    classification_label: str = None,
-):
+def test_metamorphic_increasing(model: BaseModel, dataset: Dataset, transformation_function: TransformationFunction,
+                                slicing_function: SlicingFunction = None, threshold: float = 0.5,
+                                classification_label: str = None, debug: bool = False):
     """
     Summary: Tests if the model probability increases when the feature values are perturbed
 
@@ -284,19 +282,15 @@ def test_metamorphic_increasing(
         transformation_function=transformation_function,
         classification_label=classification_label,
         threshold=threshold,
+        debug=debug
     )
 
 
 @test(name="Decreasing (proportion)")
 @validate_classification_label
-def test_metamorphic_decreasing(
-    model: BaseModel,
-    dataset: Dataset,
-    transformation_function: TransformationFunction,
-    slicing_function: SlicingFunction = None,
-    threshold: float = 0.5,
-    classification_label: str = None,
-):
+def test_metamorphic_decreasing(model: BaseModel, dataset: Dataset, transformation_function: TransformationFunction,
+                                slicing_function: SlicingFunction = None, threshold: float = 0.5,
+                                classification_label: str = None, debug: bool = False):
     """
     Summary: Tests if the model probability decreases when the feature values are perturbed
 
@@ -346,6 +340,7 @@ def test_metamorphic_decreasing(
         transformation_function=transformation_function,
         classification_label=classification_label,
         threshold=threshold,
+        debug=debug
     )
 
 
