@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 from typing import Sequence, Optional
 
 from .text_transformations import TextTransformation
@@ -28,6 +29,10 @@ class TextPerturbationDetector(Detector):
     def run(self, model: BaseModel, dataset: Dataset) -> Sequence[Issue]:
         transformations = self.transformations or self._get_default_transformations(model, dataset)
         features = [col for col, col_type in dataset.column_types.items() if col_type == "text"]
+
+        # Also check that the text column is string
+        # @TODO: fix thix in the dataset internals
+        features = [col for col in features if pd.api.types.is_string_dtype(dataset.df[col].dtype)]
 
         logger.debug(
             f"TextPerturbationDetector: Running with transformations={[t.name for t in transformations]} "
