@@ -1,5 +1,16 @@
 <template>
   <div class="vertical-container">
+    <div class="d-flex mb-6">
+      <v-spacer></v-spacer>
+      <v-btn @click="reloadDatasets">
+        Reload
+        <v-icon right>refresh</v-icon>
+      </v-btn>
+      <v-btn color="primary" class="mx-2" href="https://docs.giskard.ai/start/guides/upload-your-model" target="_blank">
+        Upload with API
+        <v-icon right>mdi-application-braces-outline</v-icon>
+      </v-btn>
+    </div>
     <v-container v-if="projectArtifactsStore.datasets.length > 0" fluid class="vc">
       <v-expansion-panels flat>
         <v-row dense no-gutters class="mr-6 ml-3 caption secondary--text text--lighten-3 pb-2">
@@ -45,35 +56,85 @@
         </v-expansion-panel>
       </v-expansion-panels>
     </v-container>
-    <v-container v-else class="font-weight-light font-italic secondary--text">
-      No files uploaded yet.
+    <v-container v-else>
+      <p class="font-weight-medium secondary--text">There are no datasets in this project yet. Follow the code snippet below to upload a dataset 👇</p>
+      <CodeSnippet :code-content="codeContent" :language="'python'"></CodeSnippet>
+      <p class="mt-4 font-weight-medium secondary--text">Check out the <a href="https://docs.giskard.ai/start/~/changes/QkDrbY9gX75RDMmAWKjX/guides/upload-your-model#3.-create-a-giskard-dataset" target="_blank">full documentation</a> for more information.</p>
     </v-container>
   </div>
 </template>
 
 <script setup lang="ts">
-import { api } from '@/api';
+import { apiURL } from "@/env";
+import { api } from "@/api";
+import { Role } from "@/enums";
 import mixpanel from "mixpanel-browser";
-import DeleteModal from '@/views/main/project/modals/DeleteModal.vue';
-import { onBeforeMount, ref } from 'vue';
-import InlineEditText from '@/components/InlineEditText.vue';
+import DeleteModal from "@/views/main/project/modals/DeleteModal.vue";
+import { onBeforeMount, ref, computed } from "vue";
+import InlineEditText from "@/components/InlineEditText.vue";
+import { useUserStore } from "@/stores/user";
+import { useProjectStore } from "@/stores/project";
 import { useMainStore } from "@/stores/main";
 import { useProjectArtifactsStore } from "@/stores/project-artifacts";
+import CodeSnippet from '@/components/CodeSnippet.vue';
 
+const userStore = useUserStore();
+const projectStore = useProjectStore();
 const projectArtifactsStore = useProjectArtifactsStore();
 
 const GISKARD_INDEX_COLUMN_NAME = '_GISKARD_INDEX_';
 
-const props = withDefaults(defineProps<{
+interface Props {
   projectId: number,
-  isProjectOwnerOrAdmin: boolean
-}>(), {
-  isProjectOwnerOrAdmin: false
-});
+}
+
+const props = defineProps<Props>();
 
 const lastVisitedFileId = ref<string | null>(null);
 const filePreviewHeader = ref<{ text: string, value: string, sortable: boolean }[]>([]);
 const filePreviewData = ref<any[]>([]);
+
+const codeContent = computed(() =>
+  `# Create a Giskard client
+from giskard import GiskardClient
+url = "${apiURL}" # URL of your Giskard instance
+token = "my_API_Access_Token" # Your API Access Token (generate one in Settings > API Access Token > Generate)
+client = GiskardClient(url, token)
+
+# Load your data (example: from a csv file as a pandas dataframe)
+import pandas as pd
+my_df = pd.read_csv("data.csv")
+my_column_types = {"categorical_column": "category",
+                   "text_column": "text",
+                   "numeric_column": "numeric"} # Declare the type of each column in your data (example: category, numeric, text)
+
+# Create a Giskard Dataset
+from giskard import Dataset
+my_dataset = Dataset(df=my_df, 
+                     target="numeric_column",
+                     column_types=my_column_types,
+                     name="My Dataset")
+
+# Upload your dataset on Giskard
+project_key = "${project.key}" # Current project key
+my_dataset.upload(client, project_key)`
+)
+
+const project = computed(() => {
+  return projectStore.project(props.projectId)
+});
+
+const userProfile = computed(() => {
+  return userStore.userProfile;
+});
+
+const isProjectOwnerOrAdmin = computed(() => {
+  return isUserProjectOwner.value || userProfile.value?.roles?.includes(Role.ADMIN)
+});
+
+const isUserProjectOwner = computed(() => {
+  return project.value && userProfile.value ? project.value?.owner.id == userProfile.value?.id : false;
+});
 
 async function deleteDataFile(id: string) {
   mixpanel.track('Delete dataset', { id });
@@ -119,9 +180,13 @@ async function renameDataset(id: string, name: string) {
   projectArtifactsStore.updateDataset(savedDataset);
 }
 
+async function reloadDatasets() {
+  await projectArtifactsStore.loadDatasetsWithNotification();
+}
+
 onBeforeMount(async () => {
-  await projectArtifactsStore.setProjectId(props.projectId);
-})
+  await projectArtifactsStore.setProjectId(props.projectId, false);
+});
 </script>
 
 <style lang="scss" scoped>

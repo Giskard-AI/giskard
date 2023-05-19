@@ -1,5 +1,16 @@
 <template>
   <div class="vertical-container">
+    <div class="d-flex mb-6">
+      <v-spacer></v-spacer>
+      <v-btn @click="reloadModels">
+        Reload
+        <v-icon right>refresh</v-icon>
+      </v-btn>
+      <v-btn color="primary" class="mx-2" href="https://docs.giskard.ai/start/guides/upload-your-model" target="_blank">
+        Upload with API
+        <v-icon right>mdi-application-braces-outline</v-icon>
+      </v-btn>
+    </div>
     <v-container v-if="projectArtifactsStore.models.length > 0" fluid class="vc">
       <v-card flat>
         <v-row class="px-2 py-1 caption secondary--text text--lighten-3">
@@ -36,14 +47,14 @@
                 Debug
               </v-btn>
               <v-tooltip bottom>
-                <template v-slot:activator=" { on, attrs } ">
-                  <v-btn icon color="info" @click=" downloadModelPickle(m.id) " v-bind=" attrs " v-on=" on ">
+                <template v-slot:activator="{ on, attrs }">
+                  <v-btn icon color="info" @click=" downloadModelPickle(m.id)" v-bind="attrs" v-on="on">
                     <v-icon>download</v-icon>
                   </v-btn>
                 </template>
                 <span>Download</span>
               </v-tooltip>
-              <DeleteModal v-if=" isProjectOwnerOrAdmin " :id=" m.id " :file-name=" m.fileName " type="model" @submit=" deleteModelPickle(m.id) " />
+              <DeleteModal v-if="isProjectOwnerOrAdmin" :id="m.id" :file-name="m.fileName" type="model" @submit=" deleteModelPickle(m.id)" />
             </div>
           </v-col>
         </v-row>
@@ -51,40 +62,85 @@
       </v-card>
 
       <!-- Dialog for launching model inspection -->
-      <v-dialog persistent max-width="600" v-model=" showInspectDialog " class="inspector-launcher-container">
-        <InspectorLauncher :projectId=" projectId " :model=" modelToInspect " @cancel=" cancelLaunchInspector() " />
+      <v-dialog persistent max-width="600" v-model="showInspectDialog" class="inspector-launcher-container">
+        <InspectorLauncher :projectId="projectId" :model="modelToInspect" @cancel=" cancelLaunchInspector()" />
       </v-dialog>
 
     </v-container>
-    <v-container v-else class="font-weight-light font-italic secondary--text">
-      No models uploaded yet.
+    <v-container v-else>
+      <p class="font-weight-medium secondary--text">There are no models in this project yet. Follow the code snippet below to upload a model 👇</p>
+      <CodeSnippet :code-content="codeContent" :language="'python'"></CodeSnippet>
+      <p class="mt-4 font-weight-medium secondary--text">Check out the <a href="https://docs.giskard.ai/start/~/changes/QkDrbY9gX75RDMmAWKjX/guides/upload-your-model#2.-create-a-giskard-model" target="_blank">full documentation</a> for more information.</p>
     </v-container>
   </div>
 </template>
 
 <script setup lang="ts">
 import { api } from '@/api';
+import { apiURL } from "@/env";
+import { Role } from "@/enums";
 import InspectorLauncher from './InspectorLauncher.vue';
 import { ModelDTO } from '@/generated-sources';
 import mixpanel from "mixpanel-browser";
-import { onBeforeMount, ref } from 'vue';
+import { onBeforeMount, ref, computed } from 'vue';
 import DeleteModal from '@/views/main/project/modals/DeleteModal.vue';
 import InlineEditText from '@/components/InlineEditText.vue';
+import { useUserStore } from "@/stores/user";
+import { useProjectStore } from "@/stores/project";
 import { useMainStore } from "@/stores/main";
 import { useProjectArtifactsStore } from "@/stores/project-artifacts";
+import CodeSnippet from '@/components/CodeSnippet.vue';
 
+const userStore = useUserStore();
+const projectStore = useProjectStore();
 const projectArtifactsStore = useProjectArtifactsStore();
 
-const props = withDefaults(defineProps<{
+interface Props {
   projectId: number,
-  isProjectOwnerOrAdmin: boolean
-}>(), {
-  isProjectOwnerOrAdmin: false
-});
+}
+
+const props = defineProps<Props>();
 
 const showInspectDialog = ref<boolean>(false);
 const modelToInspect = ref<ModelDTO | null>(null);
 
+const codeContent = computed(() =>
+  `# Create a Giskard client
+from giskard import GiskardClient
+url = "${apiURL}" # URL of your Giskard instance
+token = "my_API_Access_Token" # Your API Access Token (generate one in Settings > API Access Token > Generate)
+client = GiskardClient(url, token)
+
+# Load your model (example: SKLearn model)
+from joblib import load
+my_sklearn_regressor = load("sklearn_regressor.joblib")
+
+# Create a Giskard Model
+from giskard import SKLearnModel
+my_giskard_model = SKLearnModel(my_sklearn_regressor, 
+                                model_type="regression",
+                                name="My SKLearn Regressor")
+
+# Upload your model on Giskard
+project_key = "${project.key}" # Current project key
+my_giskard_model.upload(client, project_key)`
+)
+
+const project = computed(() => {
+  return projectStore.project(props.projectId)
+});
+
+const userProfile = computed(() => {
+  return userStore.userProfile;
+});
+
+const isProjectOwnerOrAdmin = computed(() => {
+  return isUserProjectOwner.value || userProfile.value?.roles?.includes(Role.ADMIN)
+});
+
+const isUserProjectOwner = computed(() => {
+  return project.value && userProfile.value ? project.value?.owner.id == userProfile.value?.id : false;
+});
 
 async function deleteModelPickle(id: string) {
   mixpanel.track('Delete model', { id });
@@ -109,8 +165,12 @@ async function renameModel(id: string, name: string) {
   projectArtifactsStore.updateModel(savedModel);
 }
 
+async function reloadModels() {
+  await projectArtifactsStore.loadModelsWithNotification();
+}
+
 onBeforeMount(async () => {
-  await projectArtifactsStore.setProjectId(props.projectId);
+  await projectArtifactsStore.setProjectId(props.projectId, false);
 })
 </script>
 
