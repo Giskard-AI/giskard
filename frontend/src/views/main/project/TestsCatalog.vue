@@ -84,7 +84,7 @@
                                         Run
                                     </v-btn>
                                 </div>
-                                <TestExecutionResultBadge v-if="testResult" :result="testResult" />
+                                <TestExecutionResultBadge class="mt-4" v-if="testResult" :result="testResult" />
                             </div>
 
                             <!-- <v-divider></v-divider> -->
