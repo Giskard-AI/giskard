@@ -35,7 +35,7 @@ class OverconfidenceDetector:
                                  columns=["__gsk__loss"])
         incorrect_only = self.dataset.df.join(self.cost)
         incorrect_only = incorrect_only[incorrect_only["__gsk__loss"] != 0]
-
+        incorrect_only.dropna(subset=["__gsk__loss"],inplace=True)
         # @TODO: Handle this properly once we have support for metadata in datasets
         column_types = self.dataset.column_types.copy()
         column_types["__gsk__loss"] = "numeric"
@@ -53,6 +53,9 @@ class OverconfidenceDetector:
         return self.incorrect_dataset
 
     def get_proba_rmse(self):
+        # res1=self.incorrect_dataset.df["__gsk__loss"].sum()/len(self.incorrect_dataset.df.index)
+        # res2=self.incorrect_dataset.df["__gsk__loss"].mean()
         return self.incorrect_dataset.df["__gsk__loss"].mean()
+
 
 
