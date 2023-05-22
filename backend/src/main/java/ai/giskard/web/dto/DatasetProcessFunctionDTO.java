@@ -12,4 +12,5 @@ import lombok.NoArgsConstructor;
 public class DatasetProcessFunctionDTO extends CallableDTO {
     private boolean cellLevel;
     private String columnType;
+    private boolean noCode;
 }
