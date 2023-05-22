@@ -157,9 +157,14 @@ def _test_diff_prediction(
     # --- debug ---
     output_ds = None
     if not passed and debug:
-        output_ds = result_reference.output_df  # copy all properties
-        output_ds.df = pd.concat([result_actual.output_df.df,
-                                  result_reference.output_df.df], ignore_index=True)
+        if result_reference.output_df is None:
+            output_ds = result_actual.output_df
+        elif result_actual.output_df is None:
+            output_ds = result_reference.output_df
+        else:
+            output_ds = result_reference.output_df  # copy all properties
+            output_ds.df = pd.concat([result_actual.output_df.df,
+                                      result_reference.output_df.df], ignore_index=True)
         test_name = inspect.stack()[1][3]
         output_ds.name = "Debug: " + test_name
     # ---
@@ -417,7 +422,7 @@ def test_recall(
 def test_rmse(
     model: BaseModel, dataset: Dataset, slicing_function: Optional[SlicingFunction] = None, threshold: float = 1.0
 ,
-              debug: bool = False):
+              debug_percent_rows: float = 0.3, debug: bool = False):
     """
     Test if the model RMSE is lower than a threshold
 
@@ -444,7 +449,8 @@ def test_rmse(
     if slicing_function:
         dataset = dataset.slice(slicing_function)
         check_slice_not_empty(sliced_dataset=dataset, dataset_name="dataset", test_name="test_rmse")
-    return _test_regression_score(_get_rmse, model, dataset, threshold, debug=debug)
+    return _test_regression_score(_get_rmse, model, dataset, threshold, debug_percent_rows=debug_percent_rows,
+                                  debug=debug)
 
 
 @test(name='MSE', tags=['performance', 'regression', 'ground_truth'])
@@ -484,7 +490,7 @@ def test_mse(
 def test_mae(
     model: BaseModel, dataset: Dataset, slicing_function: Optional[SlicingFunction] = None, threshold: float = 1.0
 ,
-             debug: bool = False):
+             debug_percent_rows: float = 0.3, debug: bool = False):
     """
     Test if the model Mean Absolute Error is lower than a threshold
 
@@ -514,14 +520,15 @@ def test_mae(
     if slicing_function:
         dataset = dataset.slice(slicing_function)
         check_slice_not_empty(sliced_dataset=dataset, dataset_name="dataset", test_name="test_mae")
-    return _test_regression_score(mean_absolute_error, model, dataset, threshold, debug=debug)
+    return _test_regression_score(mean_absolute_error, model, dataset, threshold, debug_percent_rows=debug_percent_rows,
+                                  debug=debug)
 
 
 @test(name='R2', tags=['performance', 'regression', 'ground_truth'])
 def test_r2(
     model: BaseModel, dataset: Dataset, slicing_function: Optional[SlicingFunction] = None, threshold: float = 1.0
 ,
-            debug: bool = False):
+            debug_percent_rows: float = 0.3, debug: bool = False):
     """
     Test if the model R-Squared is higher than a threshold
 
@@ -549,7 +556,8 @@ def test_r2(
     if slicing_function:
         dataset = dataset.slice(slicing_function)
         check_slice_not_empty(sliced_dataset=dataset, dataset_name="dataset", test_name="test_r2")
-    return _test_regression_score(r2_score, model, dataset, threshold, r2=True, debug=debug)
+    return _test_regression_score(r2_score, model, dataset, threshold, r2=True, debug_percent_rows=debug_percent_rows,
+                                  debug=debug)
 
 
 @test(name='Accuracy difference', tags=['performance', 'classification', 'ground_truth'])
