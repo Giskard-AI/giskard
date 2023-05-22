@@ -268,6 +268,7 @@ class TestFunctionMeta(CallableMeta):
 class DatasetProcessFunctionMeta(CallableMeta):
     cell_level: bool
     column_type: Optional[str]
+    no_code: bool
 
     def __init__(self,
                  callable_obj: Union[Callable, Type] = None,
@@ -275,9 +276,11 @@ class DatasetProcessFunctionMeta(CallableMeta):
                  tags: List[str] = None,
                  version: Optional[int] = None,
                  type: str = None,
+                 no_code: bool = False,
                  cell_level: bool = False):
         super(DatasetProcessFunctionMeta, self).__init__(callable_obj, name, tags, version, type)
         self.cell_level = cell_level
+        self.no_code = no_code
 
         if cell_level:
             if inspect.isclass(callable_obj):
@@ -298,13 +301,15 @@ class DatasetProcessFunctionMeta(CallableMeta):
         return {
             **json,
             'cellLevel': self.cell_level,
-            'columnType': self.column_type
+            'columnType': self.column_type,
+            'noCode': self.no_code
         }
 
     def init_from_json(self, json: Dict[str, Any]):
         super().init_from_json(json)
         self.cell_level = json["cellLevel"]
         self.column_type = json["columnType"]
+        self.no_code = json["noCode"]
 
 
 DT = TypeVar('DT')

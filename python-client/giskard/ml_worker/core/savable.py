@@ -89,6 +89,9 @@ class Savable(Generic[DT, SMT]):
         else:
             meta = client.load_meta(cls._get_meta_endpoint(uuid, project_key), cls._get_meta_class())
 
+        if hasattr(meta, 'no_code') and meta.no_code:
+            return cls._load_no_code(meta)
+
         name = cls._get_name()
 
         local_dir = settings.home_dir / settings.cache_dir / (project_key or "global") / name / uuid
@@ -108,3 +111,7 @@ class Savable(Generic[DT, SMT]):
             return None
         with open(Path(local_dir) / 'data.pkl', 'rb') as f:
             return cls(cloudpickle.load(f), meta)
+
+    @classmethod
+    def _load_no_code(cls, meta: SMT):
+        pass

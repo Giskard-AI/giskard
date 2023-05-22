@@ -11,8 +11,13 @@ from ..ml_worker.testing.registry.registry import get_object_uuid
 from ..ml_worker.testing.registry.slicing_function import SlicingFunction
 
 
+def escape(value) -> str:
+    return str(value) if type(value) is not str else "%s" % value
+
+
 class Clause:
-    pass
+    def init_code(self):
+        pass
 
 
 class ComparisonClause(Clause):
@@ -37,6 +42,9 @@ class ComparisonClause(Clause):
         val = f"'{self.value}'" if isinstance(self.value, str) else self.value
         return f"`{self.column}` {self.operator} {val}"
 
+    def init_code(self):
+        return f"{self.__class__}({repr(self.column)}', {repr(self.value)}', equals={repr(self.equal)})"
+
 
 class StringContains(Clause):
     def __init__(self, column, value):
@@ -52,6 +60,9 @@ class StringContains(Clause):
     def to_pandas(self):
         value = self.value.lower().replace("'", "\\'")
         return f"`{self.column}`.str.lower().str.contains('{value}')"
+
+    def init_code(self):
+        return f"{self.__class__}({repr(self.column)}, {repr(self.value)})"
 
 
 class GreaterThan(ComparisonClause):
@@ -111,6 +122,9 @@ class Query:
     def __str__(self) -> str:
         return " & ".join([str(c) for c in self.get_all_clauses()])
 
+    def init_code(self):
+        return f"Query([{', '.join([clause.init_code() for clause in self.clauses.values()])}])"
+
 
 def _optimize_column_clauses(clauses: Sequence[Clause]):
     if len(clauses) < 2:
@@ -141,9 +155,9 @@ class QueryBasedSliceFunction(SlicingFunction):
     def __init__(self, query: Query):
         super().__init__(None, row_level=False, cell_level=False)
         self.query = query
-        self.meta = DatasetProcessFunctionMeta(type='SLICE')
+        self.meta = DatasetProcessFunctionMeta(type='SLICE', no_code=True)
         self.meta.uuid = get_object_uuid(query)
-        self.meta.code = str(self)
+        self.meta.code = self.query._init_code()
         self.meta.name = str(self)
         self.meta.display_name = str(self)
         self.meta.tags = ["pickle", "scan"]
@@ -157,3 +171,6 @@ class QueryBasedSliceFunction(SlicingFunction):
 
     def _should_save_locally(self) -> bool:
         return True
+
+    def init_code(self):
+        return f"QueryBasedSliceFunction({self.query.init_code()})"
