@@ -171,6 +171,3 @@ class QueryBasedSliceFunction(SlicingFunction):
 
     def _should_save_locally(self) -> bool:
         return True
-
-    def init_code(self):
-        return f"{self.__class__.__module__}.{self.__class__.__name__}({self.query.init_code()})"
