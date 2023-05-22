@@ -29,8 +29,8 @@ class ModelBiasDetector:
         )
 
         # Check if we have enough data to run the scan
-        if len(dataset) < 400:
-            logger.warning("ModelBiasDetector: Skipping scan because the dataset is too small (< 400 samples).")
+        if len(dataset) < 100:
+            logger.warning("ModelBiasDetector: Skipping scan because the dataset is too small (< 100 samples).")
             return []
 
         # If the dataset is very large, limit to a subsample
@@ -46,8 +46,8 @@ class ModelBiasDetector:
         dataset_to_slice = dataset.select_columns(model.meta.feature_names) if model.meta.feature_names else dataset
         slices = self._find_slices(dataset_to_slice, meta)
 
-        # Keep only slices of size at least 5% of the dataset
-        slices = [s for s in slices if 0.05 * len(dataset) <= len(dataset.slice(s))]
+        # Keep only slices of size at least 5% of the dataset or 20 samples (whatever is larger)
+        slices = [s for s in slices if max(0.05 * len(dataset), 20) <= len(dataset.slice(s))]
 
         # Create issues from the slices
         issues = self._find_issues(slices, model, dataset)
