@@ -163,7 +163,8 @@ def _test_metamorphic(
     # --- debug ---
     output_ds = None
     if not passed and debug:
-        output_ds = dataset.df.iloc[failed_idx]
+        output_ds = dataset.copy()  # copy all properties
+        output_ds.df = dataset.df.iloc[failed_idx]
         test_name = inspect.stack()[1][3]
         output_ds.name = "Debug: " + test_name
     # ---
