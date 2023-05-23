@@ -167,7 +167,7 @@ let selected = ref<TestFunctionDTO | null>(null);
 let testArguments = ref<{ [name: string]: TestInputDTO }>({})
 let testResult = ref<TestTemplateExecutionResultDTO | null>(null);
 
-const panel = ref<number[]>([]);
+const panel = ref<number[]>([0]);
 
 
 async function runTest() {
