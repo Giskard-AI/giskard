@@ -14,10 +14,10 @@ from ..push import Push
 
 
 def contribution(model, ds, idrow):  # data_aug_dict
-    if model.meta.model_type == SupportedModelTypes.CLASSIFICATION:
+    if model.meta.model_type == SupportedModelTypes.CLASSIFICATION and _existing_shap_values(ds):
         shap_res = _contribution_push(model, ds, idrow)
         slice_df = ds.slice(lambda df: df.loc[[idrow]], row_level=False)  # Should fix the error
-        values = slice_df.df # It was ds.df.iloc[idrow] before
+        values = slice_df.df  # It was ds.df.iloc[idrow] before
         training_label = values[ds.target].values
         prediction = model.predict(slice_df).prediction  # Should be fixed
         if shap_res is not None:
@@ -65,7 +65,7 @@ def contribution(model, ds, idrow):  # data_aug_dict
                                            )
                     yield res
 
-    if model.meta.model_type == SupportedModelTypes.REGRESSION:
+    if model.meta.model_type == SupportedModelTypes.REGRESSION and _existing_shap_values(ds):
         shap_res = _contribution_push(model, ds, idrow)
         values = ds.df.iloc[idrow]
         # re = ds.__dict__
@@ -118,3 +118,8 @@ def _get_shap_values(model, ds, idrow):  # from gRPC
         return explain(model, ds, ds.df.iloc[idrow])["explanations"][model.meta.classification_labels[0]]
     elif model.meta.model_type == SupportedModelTypes.REGRESSION:
         return explain(model, ds, ds.df.iloc[idrow])["explanations"]["default"]
+
+
+def _existing_shap_values(ds):
+    shap_values_exist = ('category' in ds.column_types.values()) or ('numeric' in ds.column_types.values())
+    return shap_values_exist
