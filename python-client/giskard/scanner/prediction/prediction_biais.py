@@ -1,9 +1,9 @@
 from ...models.base import BaseModel
 from ...datasets.base import Dataset
 from ..logger import logger
-from giskard.scanner.prediction.metric import OverconfidenceDetector
-from giskard.scanner.performance.model_bias_detector import ModelBiasDetector, IssueFinder
-
+from giskard.scanner.prediction.metric import OverconfidenceDetector,BorderlineDetector
+from giskard.scanner.performance.model_bias_detector import ModelBiasDetector
+from abc import abstractmethod
 
 class PredictionBiasDetector(ModelBiasDetector):
 
@@ -23,8 +23,7 @@ class PredictionBiasDetector(ModelBiasDetector):
             logger.debug(f"ModelBiasDetector: Limiting dataset size to {max_data_size} samples.")
             dataset = dataset.slice(lambda df: df.sample(max_data_size, random_state=42), row_level=False)
 
-        oc = OverconfidenceDetector(model, dataset)
-        meta = oc.get_dataset()
+        meta = self._get_meta(model,dataset)
 
         # Find slices
         slices = self._find_slices(meta.select_columns(columns=dataset.df.columns), meta.df["__gsk__loss"])
@@ -36,3 +35,26 @@ class PredictionBiasDetector(ModelBiasDetector):
         issues = self._find_issues(slices, model, meta.select_columns(columns=dataset.df.columns))
 
         return issues
+    @abstractmethod
+    def _get_meta(self,model,dataset):
+        ...
+
+
+class OverconfidenceBiaisDetector(PredictionBiasDetector):
+    def _get_meta(self,model,dataset):
+        # oc = OverconfidenceDetector(model, dataset)
+        bd = OverconfidenceDetector(model,dataset)
+        meta = bd.get_dataset()
+        return meta
+
+class BorderlineBiaisDetector(PredictionBiasDetector):
+    def _get_meta(self,model,dataset):
+        oc = BorderlineDetector(model, dataset)
+        meta = oc.get_dataset()
+        return meta
+
+# class DataLeakageBiaisDetector(PredictionBiasDetector):
+#     def _get_meta(self,model,dataset):
+#         oc = BorderlineDetector(model, dataset)
+#         meta = oc.get_dataset()
+#         return meta
