@@ -127,7 +127,11 @@ class BaseModel(ABC):
             The initialized object contains the following attributes:
                 - meta: a ModelMeta object containing metadata about the model.
         """
-        self.id = uuid.UUID(kwargs.get("id", uuid.uuid4().hex))
+        if id is None:
+            self.id = uuid.UUID(kwargs.get("id", uuid.uuid4().hex))
+        else:
+            self.id = id
+
         if type(model_type) == str:
             try:
                 model_type = SupportedModelTypes(model_type)
