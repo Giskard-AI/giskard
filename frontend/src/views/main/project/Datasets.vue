@@ -115,7 +115,7 @@ giskard_dataset = Dataset(df,
                           target="Survived",
                           name="Titanic dataset")
 
-# Upload to the current project
+# Upload to the current project ✉️
 giskard_dataset.upload(client, "${project.value!.key}")
 `
 )
