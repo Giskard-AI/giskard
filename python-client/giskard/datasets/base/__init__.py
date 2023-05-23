@@ -145,7 +145,7 @@ class Dataset(ColumnMetadataMixin):
             cat_columns: Optional[List[str]] = None,
             column_types: Optional[Dict[str, str]] = None,
             id: Optional[uuid.UUID] = None,
-        validation=True,
+            validation=True,
     ) -> None:
         """
         Initializes a Dataset object.
@@ -205,14 +205,6 @@ class Dataset(ColumnMetadataMixin):
 
         self.data_processor = DataProcessor()
 
-    def copy(self):
-        return Dataset(df=self.df.copy(),
-                       name=self.name,
-                       target=self.target,
-                       cat_columns=self.cat_columns,
-                       column_types=self.column_types,
-                       validation=False)
-
     def add_slicing_function(self, slicing_function: SlicingFunction):
         """
         Adds a slicing function to the data processor's list of steps.
@@ -269,8 +261,7 @@ class Dataset(ColumnMetadataMixin):
             self,
             slicing_function: Union[SlicingFunction, SlicingFunctionType],
             row_level: bool = True,
-            get_mask: bool = False,
-            cell_level=False,
+            get_mask: bool = False,cell_level=False,
             column_name: Optional[str] = None
     ):
         """
@@ -308,10 +299,11 @@ class Dataset(ColumnMetadataMixin):
 
     @configured_validate_arguments
     def transform(
-            self, transformation_function: Union[TransformationFunction, TransformationFunctionType],
+            self,
+            transformation_function: Union[TransformationFunction, TransformationFunctionType],
             row_level: bool = True,
-        cell_level=False,
-        column_name: Optional[str] = None,
+            cell_level=False,
+            column_name: Optional[str] = None,
     ):
         """
         Transform the data in the current Dataset by applying a transformation function.
@@ -346,7 +338,7 @@ class Dataset(ColumnMetadataMixin):
                                                                  key != 'column_name'})
 
         assert (
-            not transformation_function.cell_level or 'column_name' in transformation_function.params
+                not transformation_function.cell_level or 'column_name' in transformation_function.params
         ), "column_name should be provided for TransformationFunction at cell level"
         return self.data_processor.add_step(transformation_function).apply(self, apply_only_last=True)
 

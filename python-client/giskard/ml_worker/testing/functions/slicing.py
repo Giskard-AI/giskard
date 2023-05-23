@@ -1,8 +1,7 @@
 from typing import List
 
 import pandas as pd
-import numpy as np
-from typing import Any, List
+from typing import List
 
 from giskard.ml_worker.testing.registry.slicing_function import slicing_function
 

@@ -12,6 +12,7 @@ from giskard.ml_worker.testing.utils import validate_classification_label
 from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction
 from giskard.models.base import BaseModel
 from giskard.ml_worker.testing.utils import check_slice_not_empty
+from typing import Union
 
 
 @test(name="Right Label", tags=["heuristic", "classification"])
@@ -167,7 +168,7 @@ def test_disparate_impact(
     dataset: Dataset,
     protected_slicing_function: SlicingFunction,
     unprotected_slicing_function: SlicingFunction,
-    positive_outcome: str,
+    positive_outcome: Union[str, float],
     slicing_function: Optional[SlicingFunction] = None,
     min_threshold: float = 0.8,
     max_threshold: float = 1.25,
