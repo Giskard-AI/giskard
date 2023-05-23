@@ -115,8 +115,7 @@ class BaseModel(ABC):
                     "Duplicates are found in 'classification_labels', please only provide unique values."
                 )
 
-        self.model_cache = ModelCache(is_classification=model_type == SupportedModelTypes.CLASSIFICATION,
-                                      classification_labels=classification_labels)
+        self.model_cache = ModelCache()
 
         self.meta = ModelMeta(
             name=name if name is not None else self.__class__.__name__,
@@ -265,37 +264,39 @@ class BaseModel(ABC):
         # Read cache
         dataset_hash = dataset.dataset_hash()
         cached_predictions = self.model_cache.read_from_cache(dataset_hash)
-        missing = pd.isna(cached_predictions)
+        missing = cached_predictions.isna()
         if len(missing.shape) > 1:
-            missing = np.any(missing, axis=1)
+            missing = missing.any(axis=1)
 
         df = self.prepare_dataframe(dataset.slice(lambda x: dataset.df[missing], row_level=False))
 
         if len(df) > 0:
             raw_prediction = self.predict_df(df)
             self.model_cache.set_cache(dataset_hash[missing], raw_prediction)
-            cached_predictions[missing] = raw_prediction
+            cached_predictions.loc[missing] = raw_prediction.tolist()
+
+        raw_prediction = np.array(np.array(cached_predictions).tolist())
 
         if self.is_regression:
             result = ModelPredictionResults(
-                prediction=cached_predictions, raw_prediction=cached_predictions, raw=cached_predictions
+                prediction=raw_prediction, raw_prediction=raw_prediction, raw=raw_prediction
             )
         elif self.is_classification:
             labels = np.array(self.meta.classification_labels)
             threshold = self.meta.classification_threshold
 
             if threshold is not None and len(labels) == 2:
-                predicted_lbl_idx = (cached_predictions[:, 1] > threshold).astype(int)
+                predicted_lbl_idx = (raw_prediction[:, 1] > threshold).astype(int)
             else:
-                predicted_lbl_idx = cached_predictions.argmax(axis=1)
+                predicted_lbl_idx = raw_prediction.argmax(axis=1)
 
-            all_predictions = pd.DataFrame(cached_predictions, columns=labels)
+            all_predictions = pd.DataFrame(raw_prediction, columns=labels)
 
             predicted_labels = labels[predicted_lbl_idx]
-            probability = cached_predictions[range(len(predicted_lbl_idx)), predicted_lbl_idx]
+            probability = raw_prediction[range(len(predicted_lbl_idx)), predicted_lbl_idx]
 
             result = ModelPredictionResults(
-                raw=cached_predictions,
+                raw=raw_prediction,
                 prediction=predicted_labels,
                 raw_prediction=predicted_lbl_idx,
                 probabilities=probability,
@@ -413,8 +414,7 @@ class BaseModel(ABC):
         del constructor_params["loader_class"]
 
         model = clazz.load(local_dir, **constructor_params)
-        model.model_cache = ModelCache(prediction_cache, meta.model_type == SupportedModelTypes.CLASSIFICATION,
-                                       meta.classification_labels)
+        model.model_cache = ModelCache(prediction_cache)
         return model
 
     @classmethod
