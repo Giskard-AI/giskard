@@ -46,7 +46,7 @@ def test_slicer_on_numerical_feature(german_credit_model, german_credit_data):
     # issues = self._find_issues(slices, model, dataset)
 
 def test_prediction_biais_detector(german_credit_model, german_credit_data):
-    PBD = PredictionBiasDetector()
+    PBD = PredictionBiasDetector(metrics=["probamae"])
     res = PBD.run(german_credit_model, german_credit_data)
     print(res)
 
