@@ -11,9 +11,10 @@ from .utils import slice_bounds
 def contribution(model, ds, idrow):  # data_aug_dict
     if model.meta.model_type == SupportedModelTypes.CLASSIFICATION:
         shap_res = _contribution_push(model, ds, idrow)
-        values = ds.df.iloc[idrow]
-        training_label = values[ds.target]
-        prediction = model.model.predict(ds.df.iloc[[idrow]])
+        slice_df = ds.slice(lambda df: df.loc[[idrow]], row_level=False)  # Should fix the error
+        values = slice_df.df # It was ds.df.iloc[idrow] before
+        training_label = values[ds.target].values
+        prediction = model.predict(slice_df).prediction  # Should be fixed
         if shap_res is not None:
             for el in shap_res:
                 bounds = slice_bounds(feature=el, value=values[el], ds=ds)
@@ -26,14 +27,14 @@ def contribution(model, ds, idrow):  # data_aug_dict
                                value=values[el],
                                bounds=bounds
                                )
-                    yield res
+                    return res
 
                 else:
                     res = Push(push_type="contribution_only", feature=el,
                                value=values[el],
                                bounds=bounds
                                )
-                    yield res
+                    return res
 
     if model.meta.model_type == SupportedModelTypes.REGRESSION:
         shap_res = _contribution_push(model, ds, idrow)
@@ -54,14 +55,14 @@ def contribution(model, ds, idrow):  # data_aug_dict
                                value=values[el],
                                bounds=bounds
                                )
-                    yield res
+                    return res
 
                 else:
                     res = Push(push_type="contribution_only", feature=el,
                                value=values[el],
                                bounds=bounds
                                )
-                    yield res
+                    return res
 
 
 def _contribution_push(model, ds, idrow):  # done at each step
