@@ -85,7 +85,7 @@ def test_predict_only_recompute_transformed_values():
     second_prediction = wrapped_model.predict(transformed_dataset)
 
     assert called_indexes == list(wrapped_dataset.df.index) + [
-        1], 'The  prediction should have been called once for row 0 and twice of row 2'
+        1], 'The  prediction should have been called once for row 0 and twice of row 1'
     assert list(prediction.raw) != list(second_prediction.raw)
     assert list(prediction.raw_prediction) != list(second_prediction.raw_prediction)
     assert list(prediction.prediction) != list(second_prediction.prediction)
