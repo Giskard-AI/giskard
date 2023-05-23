@@ -11,11 +11,11 @@ from pathlib import Path
 from typing import Optional, Any, Union, Callable, Iterable
 
 import cloudpickle
+import mlflow
 import numpy as np
 import pandas as pd
-import yaml
-import mlflow
 import pydantic
+import yaml
 
 from giskard.client.giskard_client import GiskardClient
 from giskard.core.core import ModelMeta, SupportedModelTypes, ModelType
@@ -128,6 +128,10 @@ class BaseModel(ABC):
     @property
     def is_regression(self):
         return self.meta.model_type == SupportedModelTypes.REGRESSION
+
+    @property
+    def is_generative(self):
+        return self.meta.model_type == SupportedModelTypes.GENERATIVE
 
     @classmethod
     def determine_model_class(cls, meta, local_dir):
@@ -248,7 +252,7 @@ class BaseModel(ABC):
 
         raw_prediction = self.predict_df(df)
 
-        if self.is_regression:
+        if self.is_regression or self.is_generative:
             result = ModelPredictionResults(
                 prediction=raw_prediction, raw_prediction=raw_prediction, raw=raw_prediction
             )
