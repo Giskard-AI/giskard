@@ -27,6 +27,7 @@
 import {computed, ref} from "vue";
 import {useUserStore} from "@/stores/user";
 import {useMainStore} from "@/stores/main";
+import {TYPE} from "vue-toastification";
 
 const userStore = useUserStore();
 const mainStore = useMainStore();
@@ -49,8 +50,8 @@ async function submit() {
     }
   } else {
     mainStore.addNotification({
-      content: 'Please enter credentials',
-      color: 'error',
+        content: 'Please enter credentials',
+        color: TYPE.ERROR,
     });
   }
 }
