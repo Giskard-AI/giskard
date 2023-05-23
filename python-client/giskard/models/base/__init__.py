@@ -106,6 +106,7 @@ class BaseModel(ABC):
         feature_names: Optional[Iterable] = None,
         classification_threshold: Optional[float] = 0.5,
         classification_labels: Optional[Iterable] = None,
+        id: Optional[uuid.UUID] = None,
         **kwargs,
     ) -> None:
         """
@@ -127,6 +128,7 @@ class BaseModel(ABC):
             The initialized object contains the following attributes:
                 - meta: a ModelMeta object containing metadata about the model.
         """
+
         if id is None:
             self.id = uuid.UUID(kwargs.get("id", uuid.uuid4().hex))
         else:
@@ -440,9 +442,8 @@ class BaseModel(ABC):
 
         del constructor_params["loader_module"]
         del constructor_params["loader_class"]
-
-        model = clazz.load(local_dir, **constructor_params)
-        return model
+        constructor_params['id'] = uuid.UUID(model_id)
+        return clazz.load(local_dir, **constructor_params)
 
     @classmethod
     def read_meta_from_local_dir(cls, local_dir):
