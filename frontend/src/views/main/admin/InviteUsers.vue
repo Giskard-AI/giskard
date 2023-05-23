@@ -44,11 +44,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
+import {ref} from "vue";
 import mixpanel from "mixpanel-browser";
-import { api } from "@/api";
-import { copyToClipboard } from "@/global-keys";
-import { useMainStore } from "@/stores/main";
+import {api} from "@/api";
+import {copyToClipboard} from "@/global-keys";
+import {useMainStore} from "@/stores/main";
+import {TYPE} from "vue-toastification";
 
 const mainStore = useMainStore();
 
@@ -62,12 +63,12 @@ async function sendEmail() {
     try {
       mainStore.addNotification(loadingNotification);
       await api.inviteToSignup(emailToInvite.value);
-      mainStore.removeNotification(loadingNotification);
-      mainStore.addNotification({ content: 'User is invited', color: 'success' });
-      emailToInvite.value = "";
+        mainStore.removeNotification(loadingNotification);
+        mainStore.addNotification({content: 'User is invited', color: TYPE.SUCCESS});
+        emailToInvite.value = "";
     } catch (error) {
-      mainStore.removeNotification(loadingNotification);
-      mainStore.addNotification({ content: error.response.data.detail, color: 'error' });
+        mainStore.removeNotification(loadingNotification);
+        mainStore.addNotification({content: error.response.data.detail, color: TYPE.ERROR});
     }
   }
 }
@@ -81,13 +82,13 @@ async function generateLink() {
     mainStore.removeNotification(loadingNotification);
     link.value = response;
   } catch (error) {
-    mainStore.removeNotification(loadingNotification);
-    mainStore.addNotification({ content: 'Could not reach server', color: 'error' });
+      mainStore.removeNotification(loadingNotification);
+      mainStore.addNotification({content: 'Could not reach server', color: TYPE.ERROR});
   }
 }
 
 async function copyLink() {
-  await copyToClipboard(link.value);
-  mainStore.addNotification({ content: "Copied to clipboard", color: "success" });
+    await copyToClipboard(link.value);
+    mainStore.addNotification({content: "Copied to clipboard", color: TYPE.SUCCESS});
 }
 </script>
