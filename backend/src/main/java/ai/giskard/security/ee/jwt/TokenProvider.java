@@ -143,7 +143,7 @@ public class TokenProvider {
                 .filter(auth -> !auth.trim().isEmpty())
                 .map(SimpleGrantedAuthority::new).forEach(authorities::add);
         }
-        if (JWTTokenType.API.equals(claims.get(TOKEN_TYPE_KEY))) {
+        if (JWTTokenType.API.name().equals(claims.get(TOKEN_TYPE_KEY))) {
             authorities.add(new SimpleGrantedAuthority(AuthoritiesConstants.API));
         }
 
