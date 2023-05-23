@@ -261,13 +261,13 @@ def test_disparate_impact(
     passed = bool((disparate_impact_score > min_threshold) * (disparate_impact_score < max_threshold))
 
     # --- debug ---
-    failed_protected = list(_protected_predictions != protected_ds.df[dataset.target])
-    failed_unprotected = list(_unprotected_predictions != unprotected_ds.df[dataset.target])
-    failed_idx_protected = [i for i, x in enumerate(failed_protected) if x]
-    failed_idx_unprotected = [i for i, x in enumerate(failed_unprotected) if x]
-    failed_idx = failed_idx_protected + failed_idx_unprotected
     output_ds = None
     if not passed and debug:
+        failed_protected = list(_protected_predictions != protected_ds.df[dataset.target])
+        failed_unprotected = list(_unprotected_predictions != unprotected_ds.df[dataset.target])
+        failed_idx_protected = [i for i, x in enumerate(failed_protected) if x]
+        failed_idx_unprotected = [i for i, x in enumerate(failed_unprotected) if x]
+        failed_idx = failed_idx_protected + failed_idx_unprotected
         output_ds = dataset.copy()  # copy all properties
         output_ds.df = dataset.df.iloc[failed_idx]
         test_name = inspect.stack()[1][3]
