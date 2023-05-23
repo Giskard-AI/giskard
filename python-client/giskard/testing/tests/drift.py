@@ -5,6 +5,7 @@ import uuid
 from collections import Counter
 from typing import Optional, List
 
+import inspect
 import numpy as np
 import pandas as pd
 from scipy.stats import chi2, ks_2samp
@@ -178,6 +179,7 @@ def test_drift_psi(
     threshold: float = 0.2,
     max_categories: int = 20,
     psi_contribution_percent: float = 0.2,
+    debug: bool = False
 ) -> TestResult:
     """
     Test if the PSI score between the actual and reference datasets is below the threshold for
@@ -222,7 +224,7 @@ def test_drift_psi(
 
     actual_series, reference_series = _extract_series(actual_dataset, reference_dataset, column_name, "category")
 
-    messages, passed, total_psi = _test_series_drift_psi(
+    messages, passed, total_psi, output_data = _test_series_drift_psi(
         actual_series,
         reference_series,
         "data",
@@ -231,12 +233,29 @@ def test_drift_psi(
         threshold,
     )
 
+    # --- debug ---
+    output_ds = None
+    if not passed and debug:
+        main_drifting_modalities_bool = output_data["Psi"] > psi_contribution_percent * total_psi
+        modalities_list = output_data[main_drifting_modalities_bool]["Modality"].tolist()
+        filtered_modalities = [w for w in modalities_list if not re.match(other_modalities_pattern, w)]
+        output_ds = actual_dataset.copy()  # copy all properties
+        output_ds.df = actual_dataset.df.loc[actual_series.isin(filtered_modalities)]
+        test_name = inspect.stack()[0][3]
+        if output_ds.df.empty:
+            raise ValueError(
+                test_name + f": the categories {filtered_modalities} completely drifted as they are not present in the "
+                            f"'actual_dataset'")
+        output_ds.name = "Debug: " + test_name
+    # ---
+
     return TestResult(
         actual_slices_size=[len(actual_series)],
         reference_slices_size=[len(reference_series)],
         passed=passed,
         metric=total_psi,
         messages=messages,
+        output_df=output_ds
     )
 
 
@@ -249,6 +268,7 @@ def test_drift_chi_square(
     threshold: float = 0.05,
     max_categories: int = 20,
     chi_square_contribution_percent: float = 0.2,
+    debug: bool = False
 ) -> TestResult:
     """
     Test if the p-value of the chi square test between the actual and reference datasets is
@@ -295,7 +315,7 @@ def test_drift_chi_square(
 
     actual_series, reference_series = _extract_series(actual_dataset, reference_dataset, column_name, "category")
 
-    messages, p_value, passed = _test_series_drift_chi(
+    messages, chi_square, p_value, passed, output_data = _test_series_drift_chi(
         actual_series,
         reference_series,
         "data",
@@ -304,12 +324,25 @@ def test_drift_chi_square(
         threshold,
     )
 
+    # --- debug ---
+    output_ds = None
+    if not passed and debug:
+        main_drifting_modalities_bool = output_data["Chi_square"] > chi_square_contribution_percent * chi_square
+        modalities_list = output_data[main_drifting_modalities_bool]["Modality"].tolist()
+        filtered_modalities = [w for w in modalities_list if not re.match(other_modalities_pattern, w)]
+        output_ds = actual_dataset.copy()  # copy all properties
+        output_ds.df = actual_dataset.df.loc[actual_series.isin(filtered_modalities)]
+        test_name = inspect.stack()[0][3]
+        output_ds.name = "Debug: " + test_name
+    # ---
+
     return TestResult(
         actual_slices_size=[len(actual_series)],
         reference_slices_size=[len(reference_series)],
         passed=passed,
         metric=p_value,
         messages=messages,
+        output_df=output_ds
     )
 
 
@@ -320,6 +353,7 @@ def test_drift_ks(
     column_name: str,
     slicing_function: Optional[SlicingFunction] = None,
     threshold: float = 0.05,
+    debug: bool = False
 ) -> TestResult:
     """
     Test if the pvalue of the KS test between the actual and reference datasets is above
@@ -382,6 +416,7 @@ def test_drift_earth_movers_distance(
     column_name: str,
     slicing_function: Optional[SlicingFunction] = None,
     threshold: float = 0.2,
+    debug: bool = False
 ) -> TestResult:
     """
     Test if the earth movers distance between the actual and reference datasets is
@@ -453,6 +488,7 @@ def test_drift_prediction_psi(
     max_categories: int = 10,
     threshold: float = 0.2,
     psi_contribution_percent: float = 0.2,
+    debug: bool = False
 ):
     """
     Test if the PSI score between the reference and actual datasets is below the threshold
@@ -500,7 +536,7 @@ def test_drift_prediction_psi(
 
     prediction_reference = pd.Series(model.predict(reference_dataset).prediction)
     prediction_actual = pd.Series(model.predict(actual_dataset).prediction)
-    messages, passed, total_psi = _test_series_drift_psi(
+    messages, passed, total_psi, output_data = _test_series_drift_psi(
         prediction_actual,
         prediction_reference,
         "prediction",
@@ -530,7 +566,7 @@ def _test_series_drift_psi(
     passed = True if threshold is None else bool(total_psi <= threshold)
     main_drifting_modalities_bool = output_data["Psi"] > psi_contribution_percent * total_psi
     messages = _generate_message_modalities(main_drifting_modalities_bool, output_data, test_data)
-    return messages, passed, total_psi
+    return messages, passed, total_psi, output_data
 
 
 def _generate_message_modalities(main_drifting_modalities_bool, output_data, test_data):
@@ -556,6 +592,7 @@ def test_drift_prediction_chi_square(
     max_categories: int = 10,
     threshold: float = 0.05,
     chi_square_contribution_percent: float = 0.2,
+    debug: bool = False
 ):
     """
     Test if the Chi Square value between the reference and actual datasets is below the threshold
@@ -604,7 +641,7 @@ def test_drift_prediction_chi_square(
     prediction_reference = pd.Series(model.predict(reference_dataset).prediction)
     prediction_actual = pd.Series(model.predict(actual_dataset).prediction)
 
-    messages, p_value, passed = _test_series_drift_chi(
+    messages, chi_square, p_value, passed, output_data = _test_series_drift_chi(
         prediction_actual,
         prediction_reference,
         "prediction",
@@ -634,7 +671,7 @@ def _test_series_drift_chi(
     passed = bool(p_value > threshold)
     main_drifting_modalities_bool = output_data["Chi_square"] > chi_square_contribution_percent * chi_square
     messages = _generate_message_modalities(main_drifting_modalities_bool, output_data, test_data)
-    return messages, p_value, passed
+    return messages, chi_square, p_value, passed, output_data
 
 
 @test(name='Classification Probability drift (Kolmogorov-Smirnov)', tags=['classification'])
@@ -646,6 +683,7 @@ def test_drift_prediction_ks(
     slicing_function: Optional[SlicingFunction] = None,
     classification_label: Optional[str] = None,
     threshold: Optional[float] = None,
+    debug: bool = False
 ) -> TestResult:
     """
     Test if the pvalue of the KS test for prediction between the reference and actual datasets for
@@ -743,6 +781,7 @@ def test_drift_prediction_earth_movers_distance(
     slicing_function: Optional[SlicingFunction] = None,
     classification_label: Optional[str] = None,
     threshold: float = 0.2,
+    debug: bool = False
 ) -> TestResult:
     """
     Test if the Earth Mover’s Distance value between the reference and actual datasets is
