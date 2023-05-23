@@ -98,29 +98,26 @@ const filePreviewData = ref<any[]>([]);
 const apiAccessToken = ref<JWTToken | null>(null);
 
 const codeContent = computed(() =>
-  `# Create a Giskard client
-from giskard import GiskardClient
-url = "${apiURL}" # URL of your Giskard instance
-token = "${apiAccessToken.value!.id_token}" # Your API Access Token
-client = GiskardClient(url, token)
+  `from giskard import Dataset, GiskardClient
+from giskard.demo import titanic  # for demo purposes only 🛳️
 
-# Load your data (example: from a csv file as a pandas dataframe)
-import pandas as pd
-my_df = pd.read_csv("data.csv")
-my_column_types = {"categorical_column": "category",
-                   "text_column": "text",
-                   "numeric_column": "numeric"} # Declare the type of each column in your data (example: category, numeric, text)
+_, df = titanic()  # Replace with your dataframe creation
 
-# Create a Giskard Dataset
-from giskard import Dataset
-my_dataset = Dataset(df=my_df, 
-                     target="numeric_column",
-                     column_types=my_column_types,
-                     name="My Dataset")
+# Create a Giskard client
+token = "${apiAccessToken.value!.id_token}"
+client = GiskardClient(
+    url="${apiURL}",  # URL of your Giskard instance
+    token=token
+)
 
-# Upload your dataset on Giskard
-project_key = "${project.value!.key}" # Current project key
-my_dataset.upload(client, project_key)`
+# Create a Giskard Dataset based on a Pandas Dataframe
+giskard_dataset = Dataset(df,
+                          target="Survived",
+                          name="Titanic dataset")
+
+# Upload to the current project
+giskard_dataset.upload(client, "${project.value!.key}")
+`
 )
 
 const project = computed(() => {
