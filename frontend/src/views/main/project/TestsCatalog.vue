@@ -114,7 +114,7 @@
                             <div id="usage-group" class="py-4 mb-4">
                                 <div class="d-flex">
                                     <v-icon left class="group-icon pb-1 mr-1">mdi-code-greater-than</v-icon>
-                                    <span class="group-title">Usage</span>
+                                    <span class="group-title">How to use</span>
                                 </div>
                                 <CodeSnippet class="mt-2"></CodeSnippet>
                             </div>
@@ -124,9 +124,9 @@
                             <div id="code-group" class="py-4">
                                 <div class="d-flex">
                                     <v-icon left class="group-icon pb-1 mr-1">mdi-code-braces-box</v-icon>
-                                    <span class="group-title">Code</span>
+                                    <span class="group-title">Source code</span>
                                 </div>
-                                <CodeSnippet class="mt-2" :codeContent="selected.code"></CodeSnippet>
+                                <CodeSnippet class="mt-2" :codeContent="selected.code" :key="selected.name"></CodeSnippet>
                             </div>
                         </div>
                     </v-col>
