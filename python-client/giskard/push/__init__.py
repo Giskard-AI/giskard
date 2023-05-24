@@ -16,22 +16,23 @@ class Push:
     details = None
     test = None
 
+
+
+
+class ExamplePush(Push):
+
     def to_grpc(self):
         return ml_worker_pb2.Push(
-            key=self.key,
-            value=str(self.value),
             push_title=self.push_title,
             push_details=self.details,
         )
 
 
-class ExamplePush(Push):
-    pass
-
-
 class OverconfidencePush(ExamplePush):
-    def __init__(self):
+    def __init__(self, prediction_proba, training_true_proba):
         self._overconfidence()
+        self.prediction_proba = prediction_proba
+        self.training_true_proba = training_true_proba
         # self.test = test_overconfidence @TODO: add this test
 
     def _overconfidence(self):
@@ -43,11 +44,16 @@ class OverconfidencePush(ExamplePush):
                                       "these examples",
                        "button": "Save Example"
                    },
+                   {
+                       "action": "Generate a unit test to check if this example has the right label",
+                       "explanation": "This enables you to make sure this specific example has the right label "
+                                      "with enough confidence",
+                       "button": "Create test"
+                   },
                        {
-                           "action": "Generate an overconfidence test",
-                           "explanation": "This may help you ensure this overconfidence pattern is not common to the "
-                                          "whole dataset",
-                           "button": "Create test"
+                           "action": "Open the debugger session on similar examples",
+                           "explanation": "Debugging similar examples may help you find common patterns",
+                           "button": "Open debugger"
                        }
                    ]
                }
@@ -56,8 +62,10 @@ class OverconfidencePush(ExamplePush):
 
 
 class BorderlinePush(ExamplePush):
-    def __init__(self):
+    def __init__(self, max, second):
         self._borderline()
+        self.max = max
+        self.second = second
         # self.test = test_borderline @TODO: add this test
 
     def _borderline(self):
@@ -74,7 +82,13 @@ class BorderlinePush(ExamplePush):
                            "explanation": "This may help you ensure this inconsistent pattern is not common to the "
                                           "whole dataset",
                            "button": "Create test"
+                       },
+                       {
+                           "action": "Open the debugger session on similar examples",
+                           "explanation": "Debugging similar examples may help you find common patterns",
+                           "button": "Open debugger"
                        }
+
                    ]
                }
         self.push_title = res["push_title"]
@@ -95,12 +109,12 @@ class StochasticityPush(ExamplePush):
                                       "random seed of your model",
                        "button": "Save Example"
                    },
-                   {
-                       "action": "Generate a stochasticity test",
-                       "explanation": "This may help you ensure this stochastic pattern is not common to the whole "
-                                      "dataset",
-                       "button": "Create test"
-                   }
+                       {
+                           "action": "Generate a stochasticity test",
+                           "explanation": "This may help you ensure this stochastic pattern is not common to the whole "
+                                          "dataset",
+                           "button": "Create test"
+                       }
                    ]
                }
         self.push_title = res["push_title"]
@@ -110,6 +124,14 @@ class StochasticityPush(ExamplePush):
 class FeaturePush(Push):
     key = None
     value = None
+
+    def to_grpc(self):
+        return ml_worker_pb2.Push(
+            key=self.key,
+            value=str(self.value),
+            push_title=self.push_title,
+            push_details=self.details,
+        )
 
 
 class ContributionPush(FeaturePush):
@@ -140,7 +162,7 @@ class ContributionPush(FeaturePush):
         res = {"push_title": f"{str(feature)}=={str(value)} is responsible for the incorrect prediction",
                "details":
                    [{
-                       "action": "Open a new debugger session with similar spurious examples",
+                       "action": "Open the debugger session on similar examples",
                        "explanation": "Debugging similar examples may help you find common spurious patterns",
                        "button": "Open debugger"
                    },
@@ -165,7 +187,7 @@ class ContributionPush(FeaturePush):
         res = {"push_title": f"{str(feature)}=={str(value)} contributes a lot to the prediction",
                "details":
                    [{
-                       "action": "Open a new debugger session with similar examples",
+                       "action": "Open the debugger session on similar examples",
                        "explanation": "Debugging similar examples may help you find common patterns",
                        "button": "Open debugger"
                    },

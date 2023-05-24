@@ -17,7 +17,7 @@ def contribution(model, ds, idrow):  # data_aug_dict
         prediction = model.predict(slice_df).prediction  # Should be fixed
         if shap_res is not None:
             for el in shap_res:
-                bounds = slice_bounds(feature=el, value=values[el], ds=ds)
+                bounds = slice_bounds(feature=el, value=values[el].values, ds=ds)
                 # skip for now the following case
                 # if ds.column_types[el] == "category" and training_label != prediction and data_aug_dict(el, values):
                 #    print(f"Data augmentation recommended for the slice.............{el}",
@@ -29,7 +29,7 @@ def contribution(model, ds, idrow):  # data_aug_dict
                                            model_type=SupportedModelTypes.CLASSIFICATION,
                                            correct_prediction=False
                                            )
-                    yield res
+                    return res
 
                 else:
                     res = ContributionPush(feature=el,
@@ -38,7 +38,7 @@ def contribution(model, ds, idrow):  # data_aug_dict
                                            model_type=SupportedModelTypes.CLASSIFICATION,
                                            correct_prediction=True
                                            )
-                    yield res
+                    return res
 
     if model.meta.model_type == SupportedModelTypes.REGRESSION and _existing_shap_values(ds):
         shap_res = _contribution_push(model, ds, idrow)
@@ -59,7 +59,7 @@ def contribution(model, ds, idrow):  # data_aug_dict
                                            model_type=SupportedModelTypes.REGRESSION,
                                            correct_prediction=False
                                            )
-                    yield res
+                    return res
 
                 else:
                     res = ContributionPush(feature=el,
@@ -68,12 +68,13 @@ def contribution(model, ds, idrow):  # data_aug_dict
                                            model_type=SupportedModelTypes.REGRESSION,
                                            correct_prediction=True
                                            )
-                    yield res
+                    return res
 
 
 def _contribution_push(model, ds, idrow):  # done at each step
     feature_shap = _get_shap_values(model, ds, idrow)
     keys = list(feature_shap.keys())
+    # normed = [i / sum(list(feature_shap.values())) for i in list(feature_shap.values())]
     zscore_array = np.round(zscore(list(feature_shap.values())) * 2) / 2
     # print(zscore_array)
     k1, k2 = keys[-1], keys[-2]
