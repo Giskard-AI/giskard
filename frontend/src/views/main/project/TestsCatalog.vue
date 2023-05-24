@@ -17,7 +17,7 @@
                                         <v-list-item-content>
                                             <v-list-item-title class="test-title">
                                                 <div class="d-flex align-center">
-                                                    {{ test.displayName ?? test.name }}
+                                                    <span class="list-test-name">{{ test.displayName ?? test.name }}</span>
                                                     <v-spacer class="flex-grow-1" />
                                                     <v-tooltip bottom v-if="test.potentiallyUnavailable">
                                                         <template v-slot:activator="{ on, attrs }">
@@ -43,7 +43,7 @@
                     </v-col>
                     <v-col cols="8" v-if="selected" class="vc fill-height">
                         <div class="d-flex justify-space-between py-2 mb-4">
-                            <span class="text-h5" id="test-name">{{ selected.displayName ?? selected.name }}</span>
+                            <span class="selected-test-name">{{ selected.displayName ?? selected.name }}</span>
                             <v-btn color="primaryLight" class="primaryLightBtn" @click="addToTestSuite">
                                 <v-icon left>mdi-plus</v-icon>
                                 Add to test suite
@@ -236,7 +236,7 @@ watch(selected, (value) => {
             name: arg.name,
             isAlias: false,
             type: arg.type,
-            value: null
+            value: arg.optional ? arg.defaultValue : null,
         }))
         .value()
 });
@@ -342,7 +342,12 @@ const inputType = computed(() => chain(selected.value?.args ?? [])
     margin-top: 0.3rem;
 }
 
-#test-name {
+.selected-test-name {
+    font-weight: 600;
+    font-size: 1.75rem;
+}
+
+.list-test-name {
     font-weight: 500;
 }
 </style>
