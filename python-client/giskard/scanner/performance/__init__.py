@@ -1,4 +1,4 @@
-from .model_bias_detector import ModelBiasDetector
+from .model_bias_detector import PerformanceBiasDetector
 from .issues import PerformanceIssue
 
-__all__ = ["ModelBiasDetector", "PerformanceIssue"]
+__all__ = ["PerformanceBiasDetector", "PerformanceIssue"]
