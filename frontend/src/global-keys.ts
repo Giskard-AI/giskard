@@ -1,7 +1,6 @@
 import Mousetrap from 'mousetrap';
-import {getLocalToken} from '@/utils';
 import {useMainStore} from "@/stores/main";
-import {TYPE} from "vue-toastification";
+import {api} from "@/api";
 
 export function copyToClipboard(textToCopy) {
     // navigator clipboard api needs a secure context (https)
@@ -28,11 +27,10 @@ export function copyToClipboard(textToCopy) {
 }
 
 Mousetrap.bind('@ j j', () => {
-    let localToken = getLocalToken();
-    if (localToken) {
-        const mainStore = useMainStore();
-        copyToClipboard(localToken).then(() => {
-            mainStore.addNotification({content: 'Copied JWT token to clipboard', color: TYPE.INFO});
+    const mainStore = useMainStore();
+    api.getApiAccessToken().then(token => {
+        copyToClipboard(token.id_token).then(() => {
+            mainStore.addNotification({content: 'Copied JWT token to clipboard'});
         });
-    }
+    })
 });
