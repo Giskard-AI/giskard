@@ -3,7 +3,7 @@
     <ValidationObserver ref="dataFormObserver" v-slot="{ dirty }">
       <v-row v-if='modelFeatures.length'>
         <v-col cols="12" md="6">
-          <v-card>
+          <v-card outlined>
             <OverlayLoader :show="loadingData"/>
             <v-card-title>
               Input Data
@@ -92,13 +92,15 @@
                             :inputType="c.type"
                             @submit="$emit(dirty ? 'submitValueVariationFeedback' : 'submitValueFeedback', arguments[0])"
                         />
-                        <TransformationPopover v-if="c.type === 'text'" :column="c.name"/>
-
+                        <TransformationPopover
+                            v-if="catalogStore.transformationFunctionsByColumnType.hasOwnProperty(c.type)"
+                            :column="c.name" :column-type="c.type"/>
                         <SuggestionPopover
                             :modelId="model.id"
                             :datasetId="dataset.id"
                             :row-nb="rowNb"
                             :column="c.name"
+                            :suggestion="suggestion"
                         />
                       </div>
                     </div>
@@ -131,7 +133,7 @@
               :debouncingTimeout="debouncingTimeout"
               @result="setResult"
           />
-          <v-card class="mb-4">
+          <v-card class="mb-4" outlined>
             <v-card-title>
               Explanation
             </v-card-title>
@@ -195,7 +197,7 @@ import PredictionExplanations from './PredictionExplanations.vue';
 import TextExplanation from './TextExplanation.vue';
 import {api} from '@/api';
 import FeedbackPopover from '@/components/FeedbackPopover.vue';
-import {DatasetDTO, FeatureMetadataDTO, ModelDTO} from "@/generated-sources";
+import {DatasetDTO, FeatureMetadataDTO, ModelDTO, PushDTO} from "@/generated-sources";
 import {isClassification} from "@/ml-utils";
 import mixpanel from "mixpanel-browser";
 import {anonymize} from "@/utils";
@@ -203,6 +205,7 @@ import _ from 'lodash';
 import TransformationPopover from "@/components/TransformationPopover.vue";
 import SuggestionPopover from "@/components/SuggestionPopover.vue";
 import {usePushStore} from "@/stores/suggestions";
+import {useCatalogStore} from "@/stores/catalog";
 
 @Component({
   components: {
@@ -226,7 +229,9 @@ export default class Inspector extends Vue {
   classificationResult = null
   isClassification = isClassification
   debouncingTimeout: number = 500;
+  suggestion: PushDTO[] = [];
 
+  catalogStore = useCatalogStore()
 
   async mounted() {
     await this.loadMetaData();
@@ -262,7 +267,7 @@ export default class Inspector extends Vue {
   async onRowNbChange(newValue, oldValue) {
     if (newValue != oldValue) {
       const pushStore = usePushStore();
-      await pushStore.fetchPushSuggestions(this.model.id, this.dataset.id, newValue ?? 0);
+      this.suggestion = await pushStore.fetchPushSuggestions(this.model.id, this.dataset.id, newValue ?? 0);
     }
   }
 

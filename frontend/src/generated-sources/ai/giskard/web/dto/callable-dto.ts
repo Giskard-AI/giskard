@@ -13,6 +13,6 @@ export interface CallableDTO {
     name: string;
     potentiallyUnavailable: boolean;
     tags: string[];
-    uuid: any /* TODO: Missing translation of java.util.UUID */;
+    uuid: string;
     version: number;
 }

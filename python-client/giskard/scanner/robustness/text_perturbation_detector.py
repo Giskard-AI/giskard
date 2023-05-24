@@ -1,25 +1,25 @@
-import numpy as np
 from typing import Sequence, Optional
 
-from .text_transformations import TextTransformation
+import numpy as np
 
+from .issues import RobustnessIssue, RobustnessIssueInfo
+from .text_transformations import TextTransformation
+from ..decorators import detector
 from ..issues import Issue
+from ..logger import logger
+from ..registry import Detector
 from ...datasets.base import Dataset
 from ...models.base import BaseModel
-from ..registry import Detector
-from .issues import RobustnessIssue, RobustnessIssueInfo
-from ..decorators import detector
-from ..logger import logger
 
 
 @detector(name="text_perturbation", tags=["text_perturbation", "robustness", "nlp", "classification", "regression"])
 class TextPerturbationDetector(Detector):
     def __init__(
-        self,
-        transformations: Optional[Sequence[TextTransformation]] = None,
-        threshold: float = 0.05,
-        output_sensitivity=0.05,
-        num_samples: int = 1_000,
+            self,
+            transformations: Optional[Sequence[TextTransformation]] = None,
+            threshold: float = 0.05,
+            output_sensitivity=0.05,
+            num_samples: int = 1_000,
     ):
         self.transformations = transformations
         self.threshold = threshold
@@ -61,13 +61,14 @@ class TextPerturbationDetector(Detector):
         ]
 
     def _detect_issues(
-        self,
-        model: BaseModel,
-        dataset: Dataset,
-        transformation: TextTransformation,
-        features: Sequence[str],
+            self,
+            model: BaseModel,
+            dataset: Dataset,
+            transformation: TextTransformation,
+            features: Sequence[str],
     ) -> Sequence[Issue]:
         issues = []
+        # @TODO: integrate this with Giskard metamorphic tests already present
         for feature in features:
             transformation_fn = transformation(column=feature)
             transformed = dataset.transform(transformation_fn)
@@ -106,17 +107,19 @@ class TextPerturbationDetector(Detector):
             fail_ratio = 1 - pass_ratio
 
             logger.debug(
-                f"TextPerturbationDetector: Testing for perturbation `{transformation.name}`\tFail rate: {fail_ratio:.3f}"
+                f"TextPerturbationDetector: Testing `{feature}` for perturbation `{transformation.name}`\tFail rate: {fail_ratio:.3f}"
             )
 
             if fail_ratio >= self.threshold:
                 info = RobustnessIssueInfo(
                     feature=feature,
                     fail_ratio=fail_ratio,
-                    perturbation_name=getattr(transformation, "name", str(transformation)),
+                    transformation_fn=transformation_fn,
                     perturbed_data_slice=perturbed_data,
                     perturbed_data_slice_predictions=perturbed_pred,
                     fail_data_idx=original_data.df[~passed].index.values,
+                    threshold=self.threshold,
+                    output_sensitivity=self.output_sensitivity,
                 )
                 issue = RobustnessIssue(
                     model,

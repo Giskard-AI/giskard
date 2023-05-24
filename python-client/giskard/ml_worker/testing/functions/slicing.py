@@ -1,22 +1,24 @@
+from typing import List
+
 import pandas as pd
 
 from giskard.ml_worker.testing.registry.slicing_function import slicing_function
 
 
-@slicing_function(name='Short comment', tags=["text"])
-def short_comment_slicing_fn(x: pd.Series, column_name: str, max_words: int = 5) -> bool:
+@slicing_function(name='Short comment', tags=["text"], cell_level=True)
+def short_comment_slicing_fn(text: str, max_words: int = 5) -> bool:
     """
     Filter the rows where the specified 'column_name' contains a short comment, defined as one with at most 'max_words'.
     """
-    return len(x[column_name].split()) <= max_words
+    return len(text.split()) <= max_words
 
 
-# @slicing_function(name="Keyword lookup", tags=["text"])
-# def keyword_lookup_slicing_fn(x: pd.Series, column_name: str, keywords: list[str]) -> bool:
-#     """
-#     Filter the rows where the specified 'column_name' contains at least one of the specified 'keywords'.
-#     """
-#     return any(word in x[column_name].lower() for word in keywords)
+@slicing_function(name="Keyword lookup", tags=["text"], cell_level=True)
+def keyword_lookup_slicing_fn(text: str, keywords: List[str]) -> bool:
+    """
+    Filter the rows where the specified 'column_name' contains at least one of the specified 'keywords'.
+    """
+    return any(word in text.lower() for word in keywords)
 
 
 @slicing_function(name="Positive sentiment", row_level=False, tags=["sentiment", "text"])
@@ -69,9 +71,9 @@ def _sentiment_analysis(x, column_name, threshold, model, emotion):
         map(lambda s: s['label'] == emotion and s['score'] >= threshold, sentiment_pipeline(sentences)))]
 
 
-@slicing_function(name='Outlier Filter', tags=['number'])
-def outlier_filter(x: pd.Series, column_name: str, lower_bound: float, upper_bound: float) -> bool:
+@slicing_function(name='Outlier Filter', tags=['number'], cell_level=True)
+def outlier_filter(value: float, lower_bound: float, upper_bound: float) -> bool:
     """
     Filter rows where the specified column values fall outside the specified range.
     """
-    return x[column_name] < lower_bound or x[column_name] > upper_bound
+    return value < lower_bound or value > upper_bound

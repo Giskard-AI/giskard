@@ -87,6 +87,11 @@ def run_daemon(is_server, url, api_key):
     pid_file = PIDLockFile(create_pid_file_path(is_server, url))
 
     with DaemonContext(pidfile=pid_file, stdout=open(log_path, "w+t")):
+        # For some reason requests.utils.should_bypass_proxies that's called inside every request made by requests
+        # hangs when the process runs as a daemon. A dirty temporary fix is to disable proxies for daemon mode.
+        # True reasons for this to happen to be investigated
+        os.environ['no_proxy'] = '*'
+
         workdir = settings.home_dir / "tmp" / f"daemon-run-{os.getpid()}"
         workdir.mkdir(exist_ok=True, parents=True)
         change_working_directory(workdir)

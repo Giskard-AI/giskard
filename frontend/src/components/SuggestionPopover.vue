@@ -48,11 +48,8 @@
 
 <script setup lang="ts">
 import {ref, watch} from 'vue';
-import {usePushStore} from "@/stores/suggestions";
 import {PushDTO} from "@/generated-sources";
 import {api} from "@/api";
-
-const pushStore = usePushStore();
 
 const value = ref<PushDTO | undefined>(undefined);
 
@@ -61,14 +58,14 @@ const props = defineProps({
   datasetId: String,
   rowNb: Number,
   disabled: Boolean,
-  column: String
+  column: String,
+  suggestion: []
 });
 
 const opened = ref<boolean>(false);
 
-watch(() => props.rowNb, () => {
-  const list = pushStore.getPushSuggestions(props.modelId ?? "", props.datasetId ?? "", props.rowNb ?? 0);
-  value.value = list ? list.filter((s) => s.key == props.column)[0] : undefined;
+watch(() => props.suggestion, () => {
+  value.value = props.suggestion ? props.suggestion.filter((s) => s.key == props.column)[0] : undefined;
 });
 
 async function dbg_GetSuggestion() {
@@ -77,5 +74,4 @@ async function dbg_GetSuggestion() {
 </script>
 
 <style scoped>
-
 </style>

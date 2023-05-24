@@ -9,5 +9,5 @@ export interface TestTemplateExecutionResultDTO {
     message: string;
     result: NamedSingleTestResultDTO[];
     status: TestResult;
-    testUuid: any /* TODO: Missing translation of java.util.UUID */;
+    testUuid: string;
 }

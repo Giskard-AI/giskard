@@ -1,15 +1,13 @@
 package ai.giskard.web.rest.controllers;
 
-import ai.giskard.domain.Callable;
-import ai.giskard.domain.FunctionArgument;
-import ai.giskard.domain.Project;
-import ai.giskard.domain.SlicingFunction;
+import ai.giskard.domain.*;
 import ai.giskard.domain.ml.Dataset;
 import ai.giskard.ml.MLWorkerClient;
 import ai.giskard.repository.ProjectRepository;
 import ai.giskard.repository.ml.DatasetRepository;
 import ai.giskard.service.*;
 import ai.giskard.service.ml.MLWorkerService;
+import ai.giskard.utils.FunctionArguments;
 import ai.giskard.web.dto.*;
 import ai.giskard.web.dto.mapper.GiskardMapper;
 import ai.giskard.web.dto.ml.DatasetDTO;
@@ -19,6 +17,8 @@ import ai.giskard.worker.DatasetProcessingFunction;
 import ai.giskard.worker.DatasetProcessingRequest;
 import ai.giskard.worker.DatasetProcessingResultMessage;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -39,6 +39,7 @@ import static ai.giskard.utils.GRPCUtils.convertGRPCObject;
 @RequiredArgsConstructor
 @RequestMapping("/api/v2/")
 public class DatasetsController {
+    private final Logger log = LoggerFactory.getLogger(DatasetsController.class);
 
     private final DatasetRepository datasetRepository;
     private final GiskardMapper giskardMapper;
@@ -116,10 +117,11 @@ public class DatasetsController {
     @PostMapping("project/{projectKey}/datasets")
     @PreAuthorize("@permissionEvaluator.canWriteProjectKey(#projectKey)")
     public void createDatasetMeta(@PathVariable("projectKey") @NotNull String projectKey, @RequestBody @NotNull DatasetDTO dto) {
-        Project project = projectRepository.getOneByKey(projectKey);
         if (datasetRepository.existsById(dto.getId())) {
-            throw new GiskardRuntimeException(String.format("Dataset already exists %s", dto.getId()));
+            log.info("Dataset already exists {}", dto.getId());
+            return;
         }
+        Project project = projectRepository.getOneByKey(projectKey);
         Dataset dataset = giskardMapper.fromDTO(dto);
         dataset.setProject(project);
         datasetRepository.save(dataset);
@@ -139,13 +141,13 @@ public class DatasetsController {
         Dataset dataset = datasetRepository.getMandatoryById(datasetUuid);
         Project project = dataset.getProject();
 
-        Map<UUID, Callable> callables = processingFunctions.stream()
+        Map<UUID, DatasetProcessFunction> callables = processingFunctions.stream()
             .map(processingFunction -> switch (processingFunction.getType()) {
                 case "SLICING" -> slicingFunctionService.getInitialized(processingFunction.getUuid());
                 case "TRANSFORMATION" -> transformationFunctionService.getInitialized(processingFunction.getUuid());
                 default -> throw new IllegalStateException("Unexpected value: " + processingFunction.getType());
             })
-            .collect(Collectors.toMap(Callable::getUuid, Function.identity()));
+            .collect(Collectors.toMap(Callable::getUuid, Function.identity(), (l, r) -> l));
 
         try (MLWorkerClient client = mlWorkerService.createClient(project.isUsingInternalWorker())) {
             DatasetProcessingRequest.Builder builder = DatasetProcessingRequest.newBuilder()
@@ -157,9 +159,13 @@ public class DatasetsController {
             processingFunctions.forEach(processingFunction -> {
                 DatasetProcessingFunction.Builder functionBuilder = DatasetProcessingFunction.newBuilder();
 
-                Callable callable = callables.get(processingFunction.getUuid());
-                Map<String, String> argumentTypes = callable.getArgs().stream()
-                    .collect(Collectors.toMap(FunctionArgument::getName, FunctionArgument::getType));
+                DatasetProcessFunction callable = callables.get(processingFunction.getUuid());
+                Map<String, FunctionArgument> arguments = callable.getArgs().stream()
+                    .collect(Collectors.toMap(FunctionArgument::getName, Function.identity()));
+
+                if (callable.isCellLevel()) {
+                    arguments.put("column_name", FunctionArguments.COLUMN_NAME);
+                }
 
                 ArtifactRef artifactRef = ArtifactRef.newBuilder()
                     .setId(callable.getUuid().toString())
@@ -173,7 +179,7 @@ public class DatasetsController {
 
                 for (FunctionInputDTO input : processingFunction.getParams()) {
                     functionBuilder.addArguments(testArgumentService
-                        .buildTestArgument(argumentTypes, input.getName(), input.getValue(), project.getKey(), Collections.emptyList()));
+                        .buildTestArgument(arguments, input.getName(), input.getValue(), project.getKey(), Collections.emptyList()));
                 }
 
                 builder.addFunctions(functionBuilder.build());

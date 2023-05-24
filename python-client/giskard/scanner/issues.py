@@ -1,18 +1,12 @@
 import pandas as pd
-from typing import Optional
-from dataclasses import dataclass
+from typing import Optional, Any
 from abc import ABC, abstractmethod
 
 from ..datasets import Dataset
 from ..models.base import BaseModel
 
 
-@dataclass
-class IssueInfo(ABC):
-    """Abstract class for issue information."""
-
-
-class Issue:
+class Issue(ABC):
     group: str = "Other"
 
     def __init__(
@@ -20,7 +14,7 @@ class Issue:
         model: BaseModel,
         dataset: Dataset,
         level: str,
-        info: Optional[IssueInfo] = None,
+        info: Optional[Any] = None,
     ):
         self.model = model
         self.dataset = dataset
@@ -62,3 +56,6 @@ class Issue:
     @abstractmethod
     def importance(self) -> float:
         ...
+
+    def generate_tests(self) -> list:
+        return []
