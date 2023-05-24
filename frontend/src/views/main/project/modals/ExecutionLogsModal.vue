@@ -30,6 +30,7 @@
 
 import {useMainStore} from '@/stores/main';
 import {copyToClipboard} from '@/global-keys';
+import {TYPE} from "vue-toastification";
 
 const props = (defineProps<{
   logs: string,
@@ -39,8 +40,8 @@ const props = (defineProps<{
 const mainStore = useMainStore()
 
 async function copyLogs() {
-  await copyToClipboard(props.logs);
-  mainStore.addNotification({content: "Copied to clipboard", color: "success"});
+    await copyToClipboard(props.logs);
+    mainStore.addNotification({content: "Copied to clipboard", color: TYPE.SUCCESS});
 }
 
 </script>
