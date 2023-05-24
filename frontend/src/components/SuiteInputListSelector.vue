@@ -90,6 +90,7 @@ const inputs = computed(() => Object.keys(props.inputs).map((name) => ({
 .input-name {
     font-family: 'Roboto Mono', monospace;
     opacity: 0.875;
+    white-space: break-spaces;
 }
 
 .input-type {
