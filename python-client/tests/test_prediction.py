@@ -1,24 +1,9 @@
-from giskard.scanner.prediction.prediction_issue_detector import PredictionIssueDetector,\
-                                                                    OverConfidence,\
-                                                                    Borderline
+
 from giskard.scanner.prediction.metric import OverconfidenceDetector
 from giskard.slicing.tree_slicer import DecisionTreeSlicer
 from giskard.slicing.category_slicer import CategorySlicer
 from giskard.scanner.prediction.prediction_biais import PredictionBiasDetector
-def test_perturbation_classification(enron_model, enron_data):
-    oc = OverConfidence(enron_model, enron_data)
-    bl = Borderline(enron_model, enron_data)
-    oc.run()
-    bl.run()
-    print("finished")
 
-
-def test_perturbation_classification_german(german_credit_model, german_credit_data):
-    oc = OverConfidence(german_credit_model, german_credit_data)
-    bl = Borderline(german_credit_model, german_credit_data)
-    oc.run()
-    bl.run()
-    print("finished")
 
 
 
