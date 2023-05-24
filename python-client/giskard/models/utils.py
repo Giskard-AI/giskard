@@ -15,9 +15,9 @@ def map_to_tuples(data: Iterator):
 
 
 def numpy_encoder(l: List):
-    e = l[0]
-    if isinstance(e, np.integer):
-        return [int(i) for i in l]
-    if isinstance(e, np.floating):
-        return [float(i) for i in l]
+    if l is not None:
+        if isinstance(l[0], np.integer):
+            return [int(i) for i in l]
+        if isinstance(l[0], np.floating):
+            return [float(i) for i in l]
     return l
