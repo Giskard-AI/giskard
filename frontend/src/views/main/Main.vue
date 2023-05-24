@@ -12,7 +12,7 @@
           </v-list-item>
           <v-divider />
           <div v-show="showProjectTabs">
-            <v-list-item :to="{ name: 'project-catalog' }" value="catalog">
+            <v-list-item :to="{ name: 'project-catalog-tests' }" value="catalog-tests">
               <v-list-item-content>
                 <v-icon>mdi-book-open-page-variant-outline</v-icon>
                 <div class="caption">Catalog</div>
@@ -40,6 +40,13 @@
               </v-list-item-content>
             </v-list-item>
             <v-divider />
+            <v-list-item :to="{ name: 'project-properties' }" value="properties">
+              <v-list-item-content>
+                <v-icon>mdi-file-cog-outline</v-icon>
+                <div class="caption">Properties</div>
+              </v-list-item-content>
+            </v-list-item>
+            <v-divider />
           </div>
         </v-list>
         <v-spacer></v-spacer>
@@ -52,6 +59,13 @@
                 </template>
                 <span>{{ warningMessage }}</span>
               </v-tooltip>
+            </v-list-item-content>
+          </v-list-item>
+          <v-divider />
+          <v-list-item to="/main/projects" exact>
+            <v-list-item-content>
+              <v-icon>web</v-icon>
+              <div class="caption">Projects</div>
             </v-list-item-content>
           </v-list-item>
           <v-divider />

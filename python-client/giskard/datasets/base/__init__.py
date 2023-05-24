@@ -4,7 +4,7 @@ import posixpath
 import tempfile
 import uuid
 from pathlib import Path
-from typing import Dict, Optional, List, Union
+from typing import Dict, Optional, List, Hashable, Union
 
 import numpy as np
 import pandas as pd
@@ -76,7 +76,7 @@ class DataProcessor:
                 target=ds.target,
                 cat_columns=ds.cat_columns,
                 column_types=ds.column_types,
-                validation=False,
+                validation=False
             )
 
             if apply_only_last:
@@ -126,14 +126,14 @@ class Dataset(ColumnMetadataMixin):
 
     @configured_validate_arguments
     def __init__(
-        self,
-        df: pd.DataFrame,
-        name: Optional[str] = None,
-        target: Optional[str] = None,
-        cat_columns: Optional[List[str]] = None,
-        column_types: Optional[Dict[str, str]] = None,
-        id: Optional[uuid.UUID] = None,
-        validation=True,
+            self,
+            df: pd.DataFrame,
+            name: Optional[str] = None,
+            target: Optional[str] = None,
+            cat_columns: Optional[List[str]] = None,
+            column_types: Optional[Dict[str, str]] = None,
+            id: Optional[uuid.UUID] = None,
+            validation=True
     ) -> None:
         """
         Initializes a Dataset object.
@@ -159,11 +159,12 @@ class Dataset(ColumnMetadataMixin):
         self.target = target
 
         if validation:
-            from giskard.core.dataset_validation import validate_dtypes, validate_target
+            from giskard.core.dataset_validation import validate_target
 
-            validate_dtypes(self)
             validate_target(self)
 
+        if not self.df.empty:
+            self.check_hashability(self.df)
         self.column_dtypes = self.extract_column_dtypes(self.df)
 
         # used in the inference of category columns
@@ -171,7 +172,6 @@ class Dataset(ColumnMetadataMixin):
         self.column_types = self._infer_column_types(column_types, cat_columns)
         if validation:
             from giskard.core.dataset_validation import validate_column_types
-
             validate_column_types(self)
 
         if validation:
@@ -206,11 +206,11 @@ class Dataset(ColumnMetadataMixin):
 
     @configured_validate_arguments
     def slice(
-        self,
-        slicing_function: Union[SlicingFunction, SlicingFunctionType],
-        row_level: bool = True,
-        cell_level=False,
-        column_name: Optional[str] = None,
+            self,
+            slicing_function: Union[SlicingFunction, SlicingFunctionType],
+            row_level: bool = True,
+            cell_level=False,
+            column_name: Optional[str] = None,
     ):
         """
         Slice the dataset using the specified `slicing_function`.
@@ -241,11 +241,11 @@ class Dataset(ColumnMetadataMixin):
 
     @configured_validate_arguments
     def transform(
-        self,
-        transformation_function: Union[TransformationFunction, TransformationFunctionType],
-        row_level: bool = True,
-        cell_level=False,
-        column_name: Optional[str] = None,
+            self,
+            transformation_function: Union[TransformationFunction, TransformationFunctionType],
+            row_level: bool = True,
+            cell_level=False,
+            column_name: Optional[str] = None,
     ):
         """
         Transform the data in the current Dataset by applying a transformation function.
@@ -275,7 +275,7 @@ class Dataset(ColumnMetadataMixin):
             transformation_function = transformation_function(column_name=column_name, **transformation_function.params)
 
         assert (
-            not transformation_function.cell_level or 'column_name' in transformation_function.params
+                not transformation_function.cell_level or 'column_name' in transformation_function.params
         ), "column_name should be provided for TransformationFunction at cell level"
         return self.data_processor.add_step(transformation_function).apply(self, apply_only_last=True)
 
@@ -287,6 +287,31 @@ class Dataset(ColumnMetadataMixin):
             The processed dataset after applying all the transformation and slicing functions.
         """
         return self.data_processor.apply(self)
+
+    @staticmethod
+    def check_hashability(df):
+        """
+        This is a static method that checks if a given pandas DataFrame is hashable or not.
+        It checks if all the columns containing object types in the input DataFrame are hashable or not.
+        If any column is not hashable, it raises a TypeError indicating which columns are not hashable.
+
+        Args:
+        df (pandas.DataFrame): The DataFrame to be checked for hashability.
+
+        Raises:
+        TypeError: If any column containing object types in the input DataFrame is not hashable.
+        """
+        df_objects = df.select_dtypes(include='object')
+        non_hashable_cols = []
+        for col in df_objects.columns:
+            if not isinstance(df[col].iat[0], Hashable):
+                non_hashable_cols.append(col)
+
+        if non_hashable_cols:
+            raise TypeError(
+                f"The following columns in your df: {non_hashable_cols} are not hashable. "
+                f"We currently support only hashable column types such as int, bool, str, tuple and not list or dict."
+            )
 
     def _infer_column_types(self, column_types: Optional[Dict[str, str]], cat_columns: Optional[List[str]]):
         """
@@ -323,8 +348,7 @@ class Dataset(ColumnMetadataMixin):
             warning(
                 f"The provided keys {list(unknown_columns)} in 'column_types' are not part of your dataset "
                 "'columns'. Please make sure that the column names in `column_types` refers to existing "
-                "columns in your dataset."
-            )
+                "columns in your dataset.")
             [column_types.pop(i) for i in unknown_columns]
 
         if not missing_columns:

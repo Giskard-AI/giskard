@@ -1,10 +1,8 @@
 # @TODO: simplify this module, don’t need this complexity.
-import operator
 import itertools
 from collections import defaultdict
-from abc import ABC, abstractmethod
-from typing import Callable, Sequence
-import re
+from typing import Sequence
+
 import numpy as np
 import pandas as pd
 
@@ -13,67 +11,59 @@ from ..ml_worker.testing.registry.registry import get_object_uuid
 from ..ml_worker.testing.registry.slicing_function import SlicingFunction
 
 
-class Clause(ABC):
-    column: str
-
-    @abstractmethod
-    def mask(self, df: pd.DataFrame) -> pd.Series:
-        ...
-
-    def __repr__(self) -> str:
-        return f"<Clause {str(self)}>"
+class Clause:
+    pass
 
 
 class ComparisonClause(Clause):
-    _operator: Callable
+    _operator: str
 
-    def __init__(self, column, value):
+    def __init__(self, column, value, equal=False):
         self.column = column
         self.value = value
+        self.equal = equal
 
-    def mask(self, df: pd.DataFrame) -> pd.Series:
-        return self._operator(df[self.column], self.value)
+    @property
+    def operator(self):
+        return self._operator + ("=" if self.equal else "")
 
-
-class ContainsWord(Clause):
-    def __init__(self, column, value):
-        self.column = column
-        self.value = value
+    def __repr__(self) -> str:
+        return f"<Clause (`{self.column}` {self.operator} {self.value})>"
 
     def __str__(self) -> str:
-        return f"`{self.column}` contains \"{self.value}\""
+        return self.to_pandas()
 
-    def mask(self, df: pd.DataFrame) -> pd.Series:
-        return df[self.column].str.contains(rf"\b{re.escape(self.value)}\b", case=False)
+    def to_pandas(self):
+        val = f"'{self.value}'" if isinstance(self.value, str) else self.value
+        return f"`{self.column}` {self.operator} {val}"
+
+
+class StringContains(Clause):
+    def __init__(self, column, value):
+        self.column = column
+        self.value = value
+
+    def __repr__(self) -> str:
+        return f"<Clause ('{self.value}' in `{self.column}`)>"
+
+    def __str__(self) -> str:
+        return f"{self.column} contains '{self.value}'"
+
+    def to_pandas(self):
+        value = self.value.lower().replace("'", "\\'")
+        return f"`{self.column}`.str.lower().str.contains('{value}')"
 
 
 class GreaterThan(ComparisonClause):
-    def __init__(self, column, value, equal=False):
-        super().__init__(column, value)
-        self.equal = equal
-        self._operator = operator.ge if equal else operator.gt
-
-    def __str__(self) -> str:
-        operator = ">=" if self.equal else ">"
-        return f"`{self.column}` {operator} {_pretty_str(self.value)}"
+    _operator = ">"
 
 
 class LowerThan(ComparisonClause):
-    def __init__(self, column, value, equal=False):
-        super().__init__(column, value)
-        self.equal = equal
-        self._operator = operator.le if equal else operator.lt
-
-    def __str__(self) -> str:
-        operator = "<=" if self.equal else "<"
-        return f"`{self.column}` {operator} {_pretty_str(self.value)}"
+    _operator = "<"
 
 
 class EqualTo(ComparisonClause):
-    _operator = operator.eq
-
-    def __str__(self) -> str:
-        return f"`{self.column}` == {_pretty_str(self.value)}"
+    _operator = "=="
 
 
 class Query:
@@ -107,16 +97,19 @@ class Query:
         if len(self.clauses) < 1:
             return df
 
-        return df[self.mask(df)]
+        return df.query(self.to_pandas())
 
     def mask(self, df: pd.DataFrame):
-        mask = pd.Series(np.ones(len(df), dtype=bool), index=df.index)
-        for c in self.get_all_clauses():
-            mask &= c.mask(df)
-        return mask
+        if len(self.clauses) < 1:
+            return pd.Series(np.ones(len(df), dtype=bool), index=df.index)
+
+        return df.eval(self.to_pandas())
+
+    def to_pandas(self):
+        return " & ".join([c.to_pandas() for c in self.get_all_clauses()])
 
     def __str__(self) -> str:
-        return " AND ".join([str(c) for c in self.get_all_clauses()])
+        return " & ".join([str(c) for c in self.get_all_clauses()])
 
 
 def _optimize_column_clauses(clauses: Sequence[Clause]):
@@ -164,13 +157,3 @@ class QueryBasedSliceFunction(SlicingFunction):
 
     def _should_save_locally(self) -> bool:
         return True
-
-
-def _pretty_str(value):
-    if isinstance(value, float):
-        return f"{value:.3f}"
-
-    if isinstance(value, str):
-        return f'"{value}"'
-
-    return str(value)

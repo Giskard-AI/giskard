@@ -93,6 +93,48 @@
       </v-col>
     </v-row>
 
+    <div class="pt-8 pb-4 d-flex">
+      <div class="d-flex justify-end align-center flex-grow-1">
+        <v-btn @click="reloadProjectArtifacts()" class="pa-2 text--secondary">
+          Reload
+          <v-icon right>refresh</v-icon>
+        </v-btn>
+        <v-btn color="primary" class="mx-2" href="https://docs.giskard.ai/start/guides/upload-your-model" target="_blank">
+          Upload with API
+          <v-icon right>mdi-application-braces-outline</v-icon>
+        </v-btn>
+      </div>
+    </div>
+
+    <v-row class="mb-8">
+      <v-col cols="12">
+        <v-card height="100%" outlined>
+          <v-card-title class="justify-space-between">
+            <h3 class="flex-1 font-weight-light secondary--text">Project Artifacts</h3>
+            <v-btn-toggle v-model="toggleObject" borderless mandatory color="primary">
+              <v-btn value="datasets" class="py-5 px-4">
+                <span>Datasets</span>
+                <v-icon end class="pb-1 pl-1" :color="toggleObject === 'datasets' ? 'primary' : ''">
+                  stacked_bar_chart
+                </v-icon>
+              </v-btn>
+              <v-btn value="models" class="py-5 px-4">
+                <span>Models</span>
+                <v-icon end class="pb-1 pl-1" :color="toggleObject === 'models' ? 'primary' : ''">
+                  settings_suggest
+                </v-icon>
+              </v-btn>
+            </v-btn-toggle>
+            <div class="flex-1"></div>
+          </v-card-title>
+          <v-card-text>
+            <Datasets v-show="toggleObject === 'datasets'" :projectId="projectId" :isProjectOwnerOrAdmin="isProjectOwnerOrAdmin"></Datasets>
+            <Models v-show="toggleObject === 'models'" :projectId="projectId" :isProjectOwnerOrAdmin="isProjectOwnerOrAdmin"></Models>
+          </v-card-text>
+        </v-card>
+      </v-col>
+    </v-row>
+
     <v-dialog persistent max-width="340" v-model="openDeleteDialog">
       <v-card>
         <v-card-title>
@@ -113,17 +155,19 @@
 
 <script setup lang="ts">
 import { getUserFullDisplayName } from '@/utils';
+import Models from '@/views/main/project/Models.vue';
+import Datasets from '@/views/main/project/Datasets.vue';
 import { IUserProfileMinimal } from '@/interfaces';
 import mixpanel from "mixpanel-browser";
 import { useProjectStore } from "@/stores/project";
-import { computed, ref } from 'vue';
+import { useProjectArtifactsStore } from "@/stores/project-artifacts";
+import { computed, onBeforeMount, ref } from 'vue';
 import { $vfm } from 'vue-final-modal';
 import ConfirmModal from '@/views/main/project/modals/ConfirmModal.vue';
 import InlineEditText from '@/components/InlineEditText.vue';
 import { ProjectPostDTO } from '@/generated-sources';
 import { useRouter } from "vue-router/composables";
 
-const router = useRouter();
 
 
 interface Props {
@@ -135,12 +179,18 @@ const props = withDefaults(defineProps<Props>(), {
   isProjectOwnerOrAdmin: false
 });
 
+const router = useRouter();
 
 const projectStore = useProjectStore();
-
+const projectArtifactsStore = useProjectArtifactsStore();
 const openDeleteDialog = ref(false);
+const toggleObject = ref<string>("datasets");
 
 const project = computed(() => useProjectStore().project(props.projectId))
+
+async function reloadProjectArtifacts() {
+  await projectArtifactsStore.loadProjectArtifacts();
+}
 
 async function cancelUserInvitation(user: IUserProfileMinimal) {
   $vfm.show({
@@ -215,6 +265,10 @@ async function deleteProject() {
     await router.push('/main/dashboard');
   }
 }
+
+onBeforeMount(async () => {
+  await projectArtifactsStore.setProjectId(props.projectId);
+})
 </script>
 
 <style scoped lang="scss">
