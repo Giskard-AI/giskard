@@ -1805,7 +1805,6 @@ var hljs = function () {
         tabh.classList.remove("active");
       });
       tabHeader.classList.add("active");
-      console.log(tabId);
       document.getElementById(tabId).classList.remove("hidden");
     });
   });
