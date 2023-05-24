@@ -1,5 +1,8 @@
 from typing import Callable, Iterable, Any, Optional
 
+import pandas as pd
+import uuid
+
 import mlflow
 import pandas as pd
 
@@ -32,6 +35,7 @@ class SKLearnModel(MLFlowBasedModel):
         feature_names: Optional[Iterable] = None,
         classification_threshold: Optional[float] = 0.5,
         classification_labels: Optional[Iterable] = None,
+        id: Optional[uuid.UUID] = None,
         **kwargs,
     ) -> None:
         """
@@ -71,6 +75,7 @@ class SKLearnModel(MLFlowBasedModel):
             feature_names=feature_names,
             classification_threshold=classification_threshold,
             classification_labels=classification_labels,
+            id=id,
             **kwargs,
         )
 

@@ -2,6 +2,7 @@ from typing import Any, Callable, Optional, Iterable
 
 import numpy
 import pandas as pd
+import uuid
 
 from giskard.core.core import ModelType
 from giskard.core.validation import configured_validate_arguments
@@ -20,6 +21,7 @@ class PredictionFunctionModel(CloudpickleBasedModel):
         feature_names: Optional[Iterable] = None,
         classification_threshold: Optional[float] = 0.5,
         classification_labels: Optional[Iterable] = None,
+        id: Optional[uuid.UUID] = None,
         **kwargs,
     ) -> None:
         super().__init__(
@@ -31,6 +33,7 @@ class PredictionFunctionModel(CloudpickleBasedModel):
             feature_names,
             classification_threshold,
             classification_labels,
+            id=id,
             **kwargs,
         )
 

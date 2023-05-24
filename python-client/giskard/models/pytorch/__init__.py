@@ -8,6 +8,7 @@ import numpy as np
 import pandas as pd
 import torch
 import yaml
+import uuid
 from torch.utils.data import DataLoader
 from torch.utils.data import Dataset as torch_dataset
 
@@ -82,6 +83,7 @@ class PyTorchModel(MLFlowBasedModel):
         classification_threshold=0.5,
         classification_labels=None,
         iterate_dataset=True,
+        id: Optional[uuid.UUID] = None,
         **kwargs,
     ) -> None:
         super().__init__(
@@ -93,6 +95,7 @@ class PyTorchModel(MLFlowBasedModel):
             feature_names=feature_names,
             classification_threshold=classification_threshold,
             classification_labels=classification_labels,
+            id=id,
             **kwargs,
         )
 

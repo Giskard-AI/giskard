@@ -106,7 +106,7 @@ class BaseModel(ABC):
         feature_names: Optional[Iterable] = None,
         classification_threshold: Optional[float] = 0.5,
         classification_labels: Optional[Iterable] = None,
-        id: Optional[uuid.UUID] = None,
+        id: Union[uuid.UUID, str] = None,
         **kwargs,
     ) -> None:
         """
@@ -132,7 +132,7 @@ class BaseModel(ABC):
         if id is None:
             self.id = uuid.UUID(kwargs.get("id", uuid.uuid4().hex))
         else:
-            self.id = id
+            self.id = uuid.UUID(id)
 
         if type(model_type) == str:
             try:
@@ -516,6 +516,7 @@ class WrapperModel(BaseModel, ABC):
         feature_names: Optional[Iterable] = None,
         classification_threshold: Optional[float] = 0.5,
         classification_labels: Optional[Iterable] = None,
+        id: Optional[uuid.UUID] = None,
         **kwargs,
     ) -> None:
         """
@@ -535,7 +536,7 @@ class WrapperModel(BaseModel, ABC):
             ValueError: If `data_preprocessing_function` takes more than one argument.
             ValueError: If `model_postprocessing_function` takes more than one argument.
         """
-        super().__init__(model_type, name, feature_names, classification_threshold, classification_labels, **kwargs)
+        super().__init__(model_type, name, feature_names, classification_threshold, classification_labels, id, **kwargs)
         self.model = model
         self.data_preprocessing_function = data_preprocessing_function
         self.model_postprocessing_function = model_postprocessing_function
