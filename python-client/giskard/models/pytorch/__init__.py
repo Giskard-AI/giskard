@@ -83,7 +83,7 @@ class PyTorchModel(MLFlowBasedModel):
         classification_threshold=0.5,
         classification_labels=None,
         iterate_dataset=True,
-        id: Optional[uuid.UUID] = None,
+        id: Optional[str] = None,
         **kwargs,
     ) -> None:
         super().__init__(

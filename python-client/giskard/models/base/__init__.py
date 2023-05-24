@@ -106,7 +106,7 @@ class BaseModel(ABC):
         feature_names: Optional[Iterable] = None,
         classification_threshold: Optional[float] = 0.5,
         classification_labels: Optional[Iterable] = None,
-        id: Union[uuid.UUID, str] = None,
+        id: Optional[str] = None,
         **kwargs,
     ) -> None:
         """
@@ -442,7 +442,7 @@ class BaseModel(ABC):
 
         del constructor_params["loader_module"]
         del constructor_params["loader_class"]
-        constructor_params['id'] = uuid.UUID(model_id)
+        constructor_params['id'] = str(model_id)
         return clazz.load(local_dir, **constructor_params)
 
     @classmethod
@@ -516,7 +516,7 @@ class WrapperModel(BaseModel, ABC):
         feature_names: Optional[Iterable] = None,
         classification_threshold: Optional[float] = 0.5,
         classification_labels: Optional[Iterable] = None,
-        id: Optional[uuid.UUID] = None,
+        id: Optional[str] = None,
         **kwargs,
     ) -> None:
         """
