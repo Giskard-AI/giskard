@@ -84,7 +84,7 @@
                                     <span class="group-title">Inputs</span>
                                     <v-spacer></v-spacer>
                                 </div>
-                                <SuiteInputListSelector :editing="true" :model-value="testArguments" :inputs="inputType" :project-id="props.projectId" :test="selected" />
+                                <SuiteInputListSelector :editing="true" :modelValue="testArguments" :inputs="inputType" :project-id="props.projectId" :test="selected" />
                                 <div class="d-flex">
                                     <v-spacer></v-spacer>
                                     <v-btn width="100" small class="primaryLightBtn" color="primaryLight" @click="runTest">
