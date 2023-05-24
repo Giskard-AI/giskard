@@ -187,20 +187,20 @@ async function peakDataFile(id: string) {
       const response = await api.peekDataFile(id)
       const headers = Object.keys(response.content[0])
       filePreviewHeader.value = headers.filter(e => e != GISKARD_INDEX_COLUMN_NAME).map(e => {
-        return {text: e.trim(), value: e, sortable: false}
+          return {text: e.trim(), value: e, sortable: false}
       });
-      if (headers.includes(GISKARD_INDEX_COLUMN_NAME)) {
-        filePreviewHeader.value = [{
-          text: '#',
-          value: GISKARD_INDEX_COLUMN_NAME,
-          sortable: false
-        }].concat(filePreviewHeader.value);
-      }
-      filePreviewData.value = response.content
+        if (headers.includes(GISKARD_INDEX_COLUMN_NAME)) {
+            filePreviewHeader.value = [{
+                text: '#',
+                value: GISKARD_INDEX_COLUMN_NAME,
+                sortable: false
+            }].concat(filePreviewHeader.value);
+        }
+        filePreviewData.value = response.content
     } catch (error) {
       useMainStore().addNotification({content: error.response.statusText, color: TYPE.ERROR});
       filePreviewHeader.value = [];
-      filePreviewData.value = [];
+        filePreviewData.value = [];
     }
   }
 }
