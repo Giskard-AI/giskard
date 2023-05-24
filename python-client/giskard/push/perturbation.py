@@ -26,14 +26,14 @@ def perturbation(model, ds, idrow):
         if perturbation_res.coltype == SupportedPerturbationType.NUMERIC and perturbation_res.passed:
             res = PerturbationPush(feature=feat, value=ds.df.iloc[idrow][feat],
                                    transformation_function=perturbation_res.transformation_function)
-            yield res
+            return res
 
         if perturbation_res.coltype == SupportedPerturbationType.TEXT and perturbation_res.passed:
             res = PerturbationPush(feature=feat, value=ds.df.iloc[idrow][feat],
                                    text_perturbed=perturbation_res.text_perturbed,
                                    transformation_function=perturbation_res.transformation_function
                                    )
-            yield res
+            return res
 
 
 class Perturbation:
