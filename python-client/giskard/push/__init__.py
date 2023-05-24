@@ -3,6 +3,9 @@ from giskard.slicing.slice import GreaterThan, LowerThan, EqualTo, Query, QueryB
 from enum import Enum
 from giskard.core.core import SupportedModelTypes
 from giskard.ml_worker.testing.tests.performance import test_f1, test_rmse
+from giskard.ml_worker.core.test_result import TestResult
+from giskard.models.base import BaseModel
+from giskard.datasets.base import Dataset
 
 
 class SupportedPerturbationType(Enum):
@@ -17,9 +20,10 @@ class Push:
     test = None
 
 
-
-
 class ExamplePush(Push):
+    dataset_row = None
+    training_label = None
+    training_label_proba = None
 
     def to_grpc(self):
         return ml_worker_pb2.Push(
@@ -27,13 +31,30 @@ class ExamplePush(Push):
             push_details=self.details,
         )
 
+    def _increase_proba(self):
+        def _custom_unit_test(model: BaseModel, dataset: Dataset, threshold: float = 1) -> TestResult:
+            proba = model.predict(self.dataset_row).all_predictions[self.training_label].values
+            return TestResult(passed=proba > self.training_label_proba, metric=proba - self.training_label_proba)
+
+        return _custom_unit_test
+
+    def _check_if_correct(self):
+        def _custom_unit_test(model: BaseModel, dataset: Dataset, threshold: float = 1) -> TestResult:
+            prediction = model.predict(self.dataset_row).prediction.values
+            return TestResult(passed=prediction == self.training_label, metric=prediction == self.training_label)
+
+        return _custom_unit_test
+
 
 class OverconfidencePush(ExamplePush):
-    def __init__(self, prediction_proba, training_true_proba):
+    def __init__(self, training_label, training_label_proba, dataset_row):
         self._overconfidence()
-        self.prediction_proba = prediction_proba
-        self.training_true_proba = training_true_proba
-        # self.test = test_overconfidence @TODO: add this test
+
+        self.training_label_proba = training_label_proba
+        self.training_label = training_label
+        self.dataset_row = dataset_row
+
+        self.tests = [self._increase_proba(), self._check_if_correct]
 
     def _overconfidence(self):
         res = {"push_title": "This example is incorrect while having a high confidence.",
@@ -44,12 +65,12 @@ class OverconfidencePush(ExamplePush):
                                       "these examples",
                        "button": "Save Example"
                    },
-                   {
-                       "action": "Generate a unit test to check if this example has the right label",
-                       "explanation": "This enables you to make sure this specific example has the right label "
-                                      "with enough confidence",
-                       "button": "Create test"
-                   },
+                       {
+                           "action": "Generate a unit test to check if this example has the right label",
+                           "explanation": "This enables you to make sure this specific example has the right label "
+                                          "with enough confidence",
+                           "button": "Create test"
+                       },
                        {
                            "action": "Open the debugger session on similar examples",
                            "explanation": "Debugging similar examples may help you find common patterns",
@@ -62,11 +83,16 @@ class OverconfidencePush(ExamplePush):
 
 
 class BorderlinePush(ExamplePush):
-    def __init__(self, max, second):
+    def __init__(self, max_proba, second_proba, training_label, training_label_proba, dataset_row):
         self._borderline()
-        self.max = max
-        self.second = second
-        # self.test = test_borderline @TODO: add this test
+        self.max_proba = max_proba
+        self.second_proba = second_proba
+
+        self.training_label_proba = training_label_proba
+        self.training_label = training_label
+        self.dataset_row = dataset_row
+
+        self.tests = [self._increase_proba(), self._check_if_correct]
 
     def _borderline(self):
         res = {"push_title": "This example was predicted with very low confidence",

@@ -16,26 +16,31 @@ def overconfidence(model, ds, idrow):
     prediction_proba = model_prediction_results.all_predictions[prediction].values
 
     if model.meta.model_type == SupportedModelTypes.CLASSIFICATION:
-        if training_label != prediction and 2*(prediction_proba-training_label_proba)/(prediction_proba+
-                                                                                       training_label_proba)>= 0.8:
-        # if training_label != prediction and prediction_proba >= 2* training_label_proba:
+        if training_label != prediction and 2 * (prediction_proba - training_label_proba) / (prediction_proba +
+                                                                                             training_label_proba) >= 0.8:
+            # if training_label != prediction and prediction_proba >= 2* training_label_proba:
             # res = Push(push_type="contribution_wrong", feature=el,
             #            value=values[el],
             #            bounds=bounds
             #            )
-            res = OverconfidencePush(prediction_proba,training_label_proba)
+            res = OverconfidencePush(training_label, training_label_proba, row_slice)
             return res
-
 
 
 def borderline(model, ds, idrow):
     if model.meta.model_type == SupportedModelTypes.CLASSIFICATION:
+
         row_slice = ds.slice(lambda x: x.loc[[idrow]], row_level=False)
         model_prediction_results = model.predict(row_slice)
         all_predictions = model_prediction_results.all_predictions
         diff, max, second = _var_rate(all_predictions)
+
+        values = ds.df.loc[[idrow]]
+        training_label = values[ds.target].values
+        training_label_proba = model_prediction_results.all_predictions[training_label].values
+
         if diff <= 0.2:
-            return BorderlinePush(max, second)
+            return BorderlinePush(max, second, training_label, training_label_proba, row_slice)
 
 
 def _var_rate(x):
