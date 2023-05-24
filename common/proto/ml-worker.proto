@@ -204,6 +204,7 @@ message NamedSingleTestResult{
 message IdentifierSingleTestResult{
   int64 id = 1;
   SingleTestResult result = 2;
+  repeated FuncArgument arguments = 3;
 }
 
 

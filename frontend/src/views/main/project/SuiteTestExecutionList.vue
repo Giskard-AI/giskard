@@ -10,7 +10,13 @@
 
 import {storeToRefs} from 'pinia';
 import {useTestSuiteStore} from '@/stores/test-suite';
-import {SuiteTestDTO, SuiteTestExecutionDTO, TestFunctionDTO, TestSuiteExecutionDTO} from '@/generated-sources';
+import {
+  FunctionInputDTO,
+  SuiteTestDTO,
+  SuiteTestExecutionDTO,
+  TestFunctionDTO,
+  TestSuiteExecutionDTO
+} from '@/generated-sources';
 import {Colors} from '@/utils/colors';
 import {$vfm} from 'vue-final-modal';
 import SuiteTestInfoModal from '@/views/main/project/modals/SuiteTestInfoModal.vue';
@@ -36,32 +42,22 @@ const testSuiteStore = useTestSuiteStore();
 const {suite} = storeToRefs(testSuiteStore);
 
 async function debugTest(result: SuiteTestExecutionDTO, suiteTest: SuiteTestDTO) {
-  let inputs = [];
+  let inputs: FunctionInputDTO[] = [];
   if (props.execution.inputs.length > 0) {
     inputs = props.execution.inputs;
   } else {
     // This is a bit hacky, but there is no other way because the test suite input list is never guaranteed to be present :(
     inputs.push({
       name: "model",
-      type: "BaseModel",
-      isAlias: false,
       value: result.inputs["model"],
       params: []
     });
 
     inputs.push({
       name: "dataset",
-      type: "Dataset",
-      isAlias: false,
       value: result.inputs["dataset"],
       params: []
     });
-
-    // name: arg.name,
-    // type: arg.type,
-    // isAlias: false,
-    // value: '',
-    // params: []
   }
 
   let model = inputs.filter(i => i.name == "model")[0].value;

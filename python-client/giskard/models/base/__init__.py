@@ -161,7 +161,7 @@ class BaseModel(ABC):
             classification_labels=np_types_to_native(classification_labels),
             loader_class=self.__class__.__name__,
             loader_module=self.__module__,
-            classification_threshold=classification_threshold,
+            classification_threshold=classification_threshold
         )
 
     @property
@@ -218,7 +218,7 @@ class BaseModel(ABC):
                     "loader_class": self.meta.loader_class,
                     "id": str(self.id),
                     "name": self.meta.name,
-                    "size": get_size(local_path),
+                    "size": get_size(local_path)
                 },
                 f,
                 default_flow_style=False,

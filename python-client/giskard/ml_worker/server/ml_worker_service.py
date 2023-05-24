@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import math
 import os
 import platform
 import sys
@@ -7,10 +8,10 @@ import tempfile
 import time
 from io import StringIO
 from pathlib import Path
+from typing import Dict, Any
 
 import google
 import grpc
-import math
 import numpy as np
 import pandas as pd
 import pkg_resources
@@ -39,6 +40,7 @@ from giskard.models.model_explanation import (
     explain_text,
 )
 from giskard.path_utils import model_path, dataset_path
+from ml_worker_pb2 import ArtifactRef, FuncArgument
 
 logger = logging.getLogger(__name__)
 
@@ -289,10 +291,11 @@ class MLWorkerServiceImpl(MLWorkerServicer):
             is_pass, results = suite.run(**global_arguments)
 
             identifier_single_test_results = []
-            for identifier, result in results:
+            for identifier, result, args in results:
                 identifier_single_test_results.append(
                     ml_worker_pb2.IdentifierSingleTestResult(
-                        id=identifier, result=map_result_to_single_test_result(result)
+                        id=identifier, result=map_result_to_single_test_result(result),
+                        arguments=function_argument_to_proto(args)
                     )
                 )
 
@@ -609,3 +612,36 @@ def map_result_to_single_test_result(result) -> ml_worker_pb2.SingleTestResult:
         return ml_worker_pb2.SingleTestResult(passed=result)
     else:
         raise ValueError("Result of test can only be 'TestResult' or 'bool'")
+
+
+def function_argument_to_proto(value: Dict[str, Any]):
+    args = list()
+
+    for v in value:
+        funcargs = FuncArgument()
+        obj = value[v]
+        if isinstance(obj, Dataset):
+            funcargs = FuncArgument(name=v, dataset=ArtifactRef(project_key="test", id=str(obj.id)))
+        elif isinstance(obj, BaseModel):
+            funcargs = FuncArgument(name=v, model=ArtifactRef(project_key="test", id=str(obj.id)))
+        # elif arg.HasField("slicingFunction"):
+        #     arguments[arg.name] = SlicingFunction.load(arg.slicingFunction.id, self.client, None)(
+        #         **self.parse_function_arguments(arg.args))
+        # elif arg.HasField("transformationFunction"):
+        #     arguments[arg.name] = TransformationFunction.load(arg.transformationFunction.id, self.client, None)(
+        #         **self.parse_function_arguments(arg.args))
+        elif isinstance(obj, float):
+            funcargs = FuncArgument(name=v, float=obj)
+        elif isinstance(obj, int):
+            funcargs = FuncArgument(name=v, int=obj)
+        elif isinstance(obj, str):
+            funcargs = FuncArgument(name=v, str=obj)
+        elif isinstance(obj, bool):
+            funcargs = FuncArgument(name=v, bool=obj)
+        elif isinstance(obj, dict):
+            funcargs = FuncArgument(name=v, kwargs=str(obj))
+        else:
+            raise IllegalArgumentError("Unknown argument type")
+        args.append(funcargs)
+
+    return args
