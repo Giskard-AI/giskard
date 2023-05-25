@@ -4,7 +4,7 @@ from typing import Optional, Union, Callable
 
 def make_all_optional_or_suite_input(fn: Callable):
     from inspect import signature, Parameter
-    from giskard.ml_worker.core.suite import SuiteInput
+    from giskard.core.suite import SuiteInput
 
     sig = signature(fn)
     sig = sig.replace(
