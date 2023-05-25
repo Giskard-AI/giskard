@@ -2,9 +2,9 @@ from enum import Enum
 
 from giskard.core.core import SupportedModelTypes
 from giskard.datasets.base import Dataset
-from giskard.ml_worker.core.test_result import TestResult
+from giskard.ml_worker.testing.test_result import TestResult
 from giskard.ml_worker.generated import ml_worker_pb2
-from giskard.ml_worker.testing.tests.performance import test_f1, test_rmse
+from giskard.testing.tests.performance import test_f1, test_rmse
 from giskard.models.base import BaseModel
 from giskard.slicing.slice import GreaterThan, LowerThan, EqualTo, Query, QueryBasedSliceFunction
 
