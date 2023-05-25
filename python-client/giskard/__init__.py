@@ -56,7 +56,6 @@ from giskard.ml_worker.testing.tests.performance import (
 from giskard.ml_worker.testing.tests.statistic import test_right_label, test_output_in_range, test_disparate_impact
 from giskard.ml_worker.utils.logging import configure_logging
 from giskard.models.automodel import Model
-
 from .scanner import scan
 
 configure_logging()
@@ -127,37 +126,3 @@ __all__ = [
     'TestResult',
     'GiskardTest',
 ]
-try:
-    from giskard.models.catboost import CatboostModel
-
-    __all__.append('CatboostModel')
-except ImportError:
-    pass
-
-try:
-    from giskard.models.huggingface import HuggingFaceModel
-
-    __all__.append('HuggingFaceModel')
-except ImportError:
-    pass
-
-try:
-    from giskard.models.pytorch import PyTorchModel
-
-    __all__.append('PyTorchModel')
-except ImportError:
-    pass
-
-try:
-    from giskard.models.sklearn import SKLearnModel
-
-    __all__.append('SKLearnModel')
-except ImportError:
-    pass
-
-try:
-    from giskard.models.tensorflow import TensorFlowModel
-
-    __all__.append('TensorFlowModel')
-except ImportError:
-    pass
