@@ -17,7 +17,7 @@ def create_contribution_push(model, ds, idrow):
         slice_df = ds.slice(lambda df: df.loc[[idrow]], row_level=False)
         values = slice_df.df
         training_label = values[ds.target].values[0]
-        prediction = model.predict(slice_df).prediction
+        prediction = model.predict(slice_df).prediction[0]
         if shap_res is not None:
             for el in shap_res:
                 bounds = slice_bounds(feature=el, value=values[el].values[0], ds=ds)

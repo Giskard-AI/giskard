@@ -65,42 +65,44 @@ class Perturbation:
             mad = np.median(x)
             return mad
 
-        ref_row = self.ds.df.iloc[[self.idrow]]
-        row_perturbed = ref_row.copy()
+        ds_slice = self.ds.slice(lambda df: df.loc[df.index == self.idrow], row_level=False)
+        row_perturbed = ds_slice.copy()
         if self.coltype == SupportedPerturbationType.NUMERIC:
             mad = mad(self.ds.df[self.feature])
-            ds_slice = self.ds.slice(lambda x: x.loc[x.index == self.idrow], row_level=False)
-            t, row_perturbed[self.feature] = self._num_perturb(3 * mad, self.feature, ds_slice)
-            self._generate_perturbation(ref_row, row_perturbed)
+
+            t, row_perturbed = self._num_perturb(3 * mad, self.feature, ds_slice)
+            self._generate_perturbation(ds_slice, row_perturbed)
+
             if self.passed:
                 self.transformation_function.append(t)
 
         elif self.coltype == SupportedPerturbationType.TEXT:
             for text_transformation in text_transfo_list:
-                ds_slice = self.ds.slice(lambda x: x.loc[x.index == self.idrow], row_level=False)
-                t, row_perturbed[self.feature] = self._text_perturb(text_transformation, self.feature, ds_slice)
-                self._generate_perturbation(ref_row, row_perturbed)
+
+                t, row_perturbed = self._text_perturb(text_transformation, self.feature, ds_slice)
+                self._generate_perturbation(ds_slice, row_perturbed)
+
                 if self.passed:
-                    self.text_perturbed.append(row_perturbed[self.feature])
+                    self.text_perturbed.append(row_perturbed.df[self.feature])
                     self.transformation_function.append(t)
+
             if len(self.text_perturbed) > 0:
                 self.passed = True
 
     def _generate_perturbation(self, ref_row, row_perturbed):
         if self.model.meta.model_type == SupportedModelTypes.CLASSIFICATION:
-            ref_prob = self.model.model.predict(ref_row)
-            probabilities = self.model.model.predict(row_perturbed)
+            ref_prob = self.model.predict(ref_row).prediction[0]
+            probabilities = self.model.predict(row_perturbed).prediction[0]
             self.passed = ref_prob[0] != probabilities[0]
         elif self.model.meta.model_type == SupportedModelTypes.REGRESSION:
-            ref_val = self.model.model.predict(ref_row.drop(columns=[self.ds.target]))
-            new_val = self.model.model.predict(row_perturbed.drop(columns=[self.ds.target]))  
+            ref_val = self.model.predict(ref_row).prediction[0]
+            new_val = self.model.predict(row_perturbed).prediction[0]
             self.passed = (new_val - ref_val) / ref_val >= 0.2
 
     def _num_perturb(self, perturbation_value, col, ds_slice):
         t = NumTransformation(column=col, perturbation_value=perturbation_value)
         transformed = ds_slice.transform(t)
-        transformed_num = transformed.df[self.feature].values
-        return t, transformed_num
+        return t, transformed
 
 
 def _text_perturb(val):
@@ -166,8 +168,7 @@ def _text_perturb(val):
     def _text_perturb(self, transformation_function, col, ds_slice):
         t = transformation_function(column=col)
         transformed = ds_slice.transform(t)
-        transformed_text = transformed.df[self.feature].values
-        return t, str(transformed_text)
+        return t, transformed
 
 
 class NumTransformation(TransformationFunction):
