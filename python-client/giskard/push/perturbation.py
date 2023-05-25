@@ -18,7 +18,7 @@ text_transfo_list = [TextLowercase,
                      TextGenderTransformation]
 
 
-def perturbation(model, ds, idrow):
+def create_perturbation_push(model, ds, idrow):
     for feat, coltype in ds.column_types.items():
         perturbation_res = Perturbation(model, ds, idrow, feat, coltype)
         if perturbation_res.coltype == SupportedPerturbationType.NUMERIC and perturbation_res.passed:
@@ -58,7 +58,7 @@ class Perturbation:
         self.text_perturbed = list()
         self._perturb_and_predict()
 
-    def _perturb_and_predict(self):  # done at each step
+    def _perturb_and_predict(self):
         def mad(x):
             med = np.median(x)
             x = abs(x - med)
@@ -89,11 +89,11 @@ class Perturbation:
     def _generate_perturbation(self, ref_row, row_perturbed):
         if self.model.meta.model_type == SupportedModelTypes.CLASSIFICATION:
             ref_prob = self.model.model.predict(ref_row)
-            probabilities = self.model.model.predict(row_perturbed)  # .reshape(1, -1)
+            probabilities = self.model.model.predict(row_perturbed)
             self.passed = ref_prob[0] != probabilities[0]
         elif self.model.meta.model_type == SupportedModelTypes.REGRESSION:
             ref_val = self.model.model.predict(ref_row.drop(columns=[self.ds.target]))
-            new_val = self.model.model.predict(row_perturbed.drop(columns=[self.ds.target]))  # .reshape(1, -1)
+            new_val = self.model.model.predict(row_perturbed.drop(columns=[self.ds.target]))  
             self.passed = (new_val - ref_val) / ref_val >= 0.2
 
     def _num_perturb(self, perturbation_value, col, ds_slice):

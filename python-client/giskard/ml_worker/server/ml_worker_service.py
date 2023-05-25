@@ -507,8 +507,8 @@ class MLWorkerServiceImpl(MLWorkerServicer):
             ) from e
         from giskard.push.perturbation import perturbation
 
-        # contribs = contribution(model, dataset, request.rowidx)
-        perturbs = perturbation(model, dataset, request.rowidx)
+        # contribs = create_contribution_push(model, dataset, request.rowidx)
+        perturbs = create_perturbation_push(model, dataset, request.rowidx)
         overconf = overconfidence(model, dataset, request.rowidx)
         borderl = borderline(model, dataset, request.rowidx)
 
