@@ -2,9 +2,14 @@ from giskard.testing.tests.drift import test_drift_psi, test_drift_chi_square, \
     test_drift_prediction_chi_square, test_drift_prediction_psi
 from giskard.datasets.base import Dataset
 from collections import Counter
-import pytest
+
 import numpy as np
 import pandas as pd
+import pytest
+
+from giskard.datasets.base import Dataset
+from giskard.testing.tests.drift import test_drift_psi, test_drift_chi_square, \
+    test_drift_prediction_chi_square, test_drift_prediction_psi
 
 
 @pytest.mark.parametrize("dataset, male_drift_samples", [("german_credit_data", 2), ("german_credit_data", 0)])

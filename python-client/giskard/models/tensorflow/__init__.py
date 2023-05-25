@@ -2,7 +2,6 @@ import logging
 from typing import Optional, Iterable, Any, Callable
 
 import mlflow
-import uuid
 import pandas as pd
 
 from giskard.core.core import ModelType

@@ -4,7 +4,6 @@ from typing import Union, Optional, Iterable, Any, Callable
 
 import pandas as pd
 import yaml
-import uuid
 from scipy import special
 
 from giskard.core.core import ModelType

@@ -1,8 +1,8 @@
+import logging
 from abc import ABC
 from typing import Callable, Optional, Iterable, Any
 
 import pandas as pd
-import logging
 
 from giskard.core.core import ModelType
 from giskard.models import infer_giskard_cls

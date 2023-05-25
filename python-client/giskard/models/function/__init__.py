@@ -1,8 +1,8 @@
+import uuid
 from typing import Any, Callable, Optional, Iterable
 
 import numpy
 import pandas as pd
-import uuid
 
 from giskard.core.core import ModelType
 from giskard.core.validation import configured_validate_arguments

@@ -1,8 +1,5 @@
 from typing import Callable, Iterable, Any, Optional
 
-import pandas as pd
-import uuid
-
 import mlflow
 import pandas as pd
 
