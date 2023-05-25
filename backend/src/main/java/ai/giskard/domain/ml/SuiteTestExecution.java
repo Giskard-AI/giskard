@@ -6,7 +6,6 @@ import ai.giskard.web.dto.ml.TestResultMessageDTO;
 import ai.giskard.worker.FuncArgument;
 import ai.giskard.worker.SingleTestResult;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -107,43 +106,39 @@ public class SuiteTestExecution extends BaseEntity {
     }
 
     private String getFuncArgValue(FuncArgument funcArgument) {
-        try {
-            String result = "";
-            switch (funcArgument.getArgumentCase()) {
-                case MODEL:
-                    result = funcArgument.getModel().getId();
-                    break;
-                case DATASET:
-                    result = funcArgument.getDataset().getId();
-                    break;
-                case SLICINGFUNCTION:
-                    // Not sure how to handle this cleanly yet.
-                    break;
-                case TRANSFORMATIONFUNCTION:
-                    // Not sure how to handle this cleanly yet.
-                    break;
-                case KWARGS:
-                    // Not sure how to handle this cleanly yet.
-                    break;
-                case ARGUMENT_NOT_SET:
-                    break;
-                case BOOL:
-                    result = String.valueOf(funcArgument.getBool());
-                    break;
-                case FLOAT:
-                    result = String.valueOf(funcArgument.getFloat());
-                    break;
-                case INT:
-                    result = String.valueOf(funcArgument.getInt());
-                    break;
-                case STR:
-                    result = funcArgument.getStr();
-                    break;
-            }
-
-            return result;
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
+        String result = "";
+        switch (funcArgument.getArgumentCase()) {
+            case MODEL:
+                result = funcArgument.getModel().getId();
+                break;
+            case DATASET:
+                result = funcArgument.getDataset().getId();
+                break;
+            case SLICINGFUNCTION:
+                // Not sure how to handle this cleanly yet.
+                break;
+            case TRANSFORMATIONFUNCTION:
+                // Not sure how to handle this cleanly yet.
+                break;
+            case KWARGS:
+                // Not sure how to handle this cleanly yet.
+                break;
+            case ARGUMENT_NOT_SET:
+                break;
+            case BOOL:
+                result = String.valueOf(funcArgument.getBool());
+                break;
+            case FLOAT:
+                result = String.valueOf(funcArgument.getFloat());
+                break;
+            case INT:
+                result = String.valueOf(funcArgument.getInt());
+                break;
+            case STR:
+                result = funcArgument.getStr();
+                break;
         }
+
+        return result;
     }
 }
