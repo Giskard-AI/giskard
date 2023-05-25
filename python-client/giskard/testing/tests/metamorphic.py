@@ -169,7 +169,7 @@ def test_metamorphic_invariance(
     slicing_function: SlicingFunction = None,
     threshold: float = 0.5,
     output_sensitivity: float = None,
-) -> TestResult:
+):
     """
     Summary: Tests if the model prediction is invariant when the feature values are perturbed
 
