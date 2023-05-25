@@ -43,7 +43,6 @@ def titanic():
                                                                         stratify=Y)
 
     clf.fit(X_train, Y_train)
-    print("accuracy = ", round(clf.score(X_test, Y_test) * 100, 2), "%")
 
     test_data = pd.concat([X_test, Y_test], axis=1)
 

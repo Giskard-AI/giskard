@@ -2,7 +2,7 @@
     <v-list>
         <v-list-item v-for="input in inputs" :track-by="input" class="pl-0 pr-0">
             <v-row>
-                <v-col>
+                <v-col cols="4">
                     <v-list-item-content>
                         <v-list-item-title>{{ input.name }}</v-list-item-title>
                         <v-list-item-subtitle class="text-caption">{{ input.type }}</v-list-item-subtitle>
@@ -13,7 +13,7 @@
                         </v-list-item-action-text>
                     </v-list-item-content>
                 </v-col>
-                <v-col class="input-column">
+                <v-col cols="8" class="input-column">
                     <template v-if="!editing">
                         <span v-if="!props.functionInputs"/>
                         <span v-else-if="props.functionInputs[input.name]?.isAlias">

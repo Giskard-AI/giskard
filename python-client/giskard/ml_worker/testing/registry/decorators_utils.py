@@ -4,7 +4,7 @@ from typing import Optional, Union, Callable
 
 def make_all_optional_or_suite_input(fn: Callable):
     from inspect import signature, Parameter
-    from giskard.ml_worker.core.suite import SuiteInput
+    from giskard.core.suite import SuiteInput
 
     sig = signature(fn)
     sig = sig.replace(
@@ -30,12 +30,11 @@ def set_return_type(fn: Callable, return_type: type):
 
 def validate_arg_type(fn: Callable, pos: int, arg_type: type):
     from inspect import signature
-    # TODO: allow to not define type
 
     sig = signature(fn)
     if len(sig.parameters) <= pos:
         raise TypeError(f"Required arg {pos} of {fn.__name__} to be {arg_type}, but none was defined")
-    elif list(sig.parameters.values())[0].annotation != arg_type:
+    elif list(sig.parameters.values())[0].annotation not in [inspect._empty, arg_type]:
         raise TypeError(
             f"Required arg {pos} of {fn.__name__} to be {arg_type}, but {list(sig.parameters.values())[0].annotation} was defined")
 

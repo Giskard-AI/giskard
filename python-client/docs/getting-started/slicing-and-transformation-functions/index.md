@@ -55,7 +55,7 @@ wrapped_dataset = Dataset(...)
 
 # Define the slicing function
 @slicing_function(row_level=False)
-def n_firsts(df: pandas.DataFrame, n: int = 5) -> pd.DataFrame:
+def n_firsts(df: pd.DataFrame, n: int = 5) -> pd.DataFrame:
   return df.head(n)
 
 
