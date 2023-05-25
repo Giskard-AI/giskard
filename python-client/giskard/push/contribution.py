@@ -7,8 +7,7 @@ from ..models.model_explanation import explain
 from ..push import ContributionPush
 
 from giskard.core.core import SupportedModelTypes
-from giskard.ml_worker.core.model_explanation import explain
-from giskard.ml_worker.testing.tests.performance import test_rmse
+from giskard.models.model_explanation import explain
 from ..push import Push
 
 

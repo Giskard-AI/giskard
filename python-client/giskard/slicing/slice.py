@@ -10,7 +10,7 @@ import numpy as np
 import pandas as pd
 
 from ..utils.display import format_number
-from ml_worker_pb2 import DatasetProcessFunctionMeta, DatasetProcessFunctionType
+from giskard.ml_worker.generated.ml_worker_pb2  import DatasetProcessFunctionMeta, DatasetProcessFunctionType
 from ..ml_worker.testing.registry.registry import get_object_uuid
 from ..ml_worker.testing.registry.slicing_function import SlicingFunction
 
