@@ -4,8 +4,9 @@ import pandas as pd
 from transformers import AutoTokenizer
 from transformers import TFAutoModelForSequenceClassification
 
-from giskard import HuggingFaceModel, Dataset
+from giskard import Dataset
 import tests.utils
+from giskard.models.huggingface import HuggingFaceModel
 
 
 def test_sequence_classification_distilbert_base_uncased_tensorflow():

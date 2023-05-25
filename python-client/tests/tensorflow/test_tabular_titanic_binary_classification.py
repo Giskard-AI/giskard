@@ -5,7 +5,8 @@ from huggingface_hub import hf_hub_url, cached_download
 from tensorflow.keras.models import load_model
 
 import tests.utils
-from giskard import TensorFlowModel, Dataset
+from giskard import Dataset
+from giskard.models.tensorflow import TensorFlowModel
 
 
 @pytest.mark.skip(reason="it uses uncompatible version of scikit-learn==1.1.1")
