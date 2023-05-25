@@ -132,8 +132,7 @@ def test_save_suite_real_debug(german_credit_data: Dataset, german_credit_model:
         return df.head()
 
     from giskard.client.giskard_client import GiskardClient
-    client = GiskardClient("http://localhost:9000",
-                               "API_KEY")
+    client = GiskardClient("http://localhost:9000", "API_KEY")
     client.create_project("test_debug", "test_debug", "test_debug")
 
     german_credit_data.upload(client, 'test_debug')
