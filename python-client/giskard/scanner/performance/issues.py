@@ -112,7 +112,7 @@ class PerformanceIssue(Issue):
 
         return self.info.metric_rel_delta
 
-    def generate_tests(self) -> list:
+    def generate_tests(self, with_names=True) -> list:
         test_fn = _metric_to_test_object(self.info.metric)
 
         if test_fn is None:
@@ -122,7 +122,13 @@ class PerformanceIssue(Issue):
         delta = (self.info.metric.greater_is_better * 2 - 1) * self.info.threshold * self.info.metric_value_reference
         abs_threshold = self.info.metric_value_reference - delta
 
-        return [test_fn(self.model, self.dataset, self.info.slice_fn, abs_threshold)]
+        tests = [test_fn(self.model, self.dataset, self.info.slice_fn, abs_threshold)]
+
+        if with_names:
+            names = [f"{self.info.metric.name} on data slice “{self.info.slice_fn}”"]
+            return list(zip(tests, names))
+
+        return tests
 
 
 _metric_test_mapping = {
