@@ -40,7 +40,7 @@ from giskard.models.model_explanation import (
     explain_text,
 )
 from giskard.path_utils import model_path, dataset_path
-from ml_worker_pb2 import ArtifactRef, FuncArgument
+from giskard.ml_worker.generated.ml_worker_pb2 import ArtifactRef, FuncArgument
 
 logger = logging.getLogger(__name__)
 
