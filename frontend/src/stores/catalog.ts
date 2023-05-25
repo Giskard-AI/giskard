@@ -1,4 +1,11 @@
-import {CallableDTO, CatalogDTO, DatasetProcessFunctionDTO, SlicingFunctionDTO} from '@/generated-sources';
+import {
+    CallableDTO,
+    CatalogDTO,
+    ColumnType,
+    ComparisonClauseDTO,
+    DatasetDTO,
+    DatasetProcessFunctionDTO
+} from '@/generated-sources';
 import {defineStore} from 'pinia';
 import {api} from '@/api';
 import {chain} from "lodash";
@@ -62,8 +69,19 @@ export const useCatalogStore = defineStore('catalog', {
         async loadCatalog(projectId: number) {
             this.catalog = await api.getCatalog(projectId);
         },
-        async saveSlicingFunction(slicingFunction: SlicingFunctionDTO) {
-            this.catalog!.slices.push(await api.saveSlicingFunction(slicingFunction))
+        async createSlicingFunction(dataset: DatasetDTO, clauses: Array<ComparisonClauseDTO & {
+            columnType: ColumnType
+        }>) {
+            const slicingFunction = await api.createSlicingFunction(clauses.map(c => {
+                const {columnType, ...clause} = c;
+                return {
+                    ...clause,
+                    columnDtype: dataset.columnDtypes[clause.columnName]
+                }
+            }));
+
+            this.catalog!.slices.push(slicingFunction);
+            return slicingFunction;
         }
     }
 });

@@ -2,6 +2,7 @@ package ai.giskard.web.rest.controllers;
 
 import ai.giskard.repository.ml.SlicingFunctionRepository;
 import ai.giskard.service.SlicingFunctionService;
+import ai.giskard.web.dto.ComparisonClauseDTO;
 import ai.giskard.web.dto.SlicingFunctionDTO;
 import ai.giskard.web.dto.mapper.GiskardMapper;
 import lombok.RequiredArgsConstructor;
@@ -10,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -32,5 +34,11 @@ public class SlicingFunctionController {
                                                     @Valid @RequestBody SlicingFunctionDTO slicingFunction) {
         return slicingFunctionService.save(slicingFunction);
     }
+
+    @PostMapping("/slices/no-code")
+    public SlicingFunctionDTO updateSlicingFunction(@Valid @RequestBody List<@NotNull ComparisonClauseDTO> comparisonClauses) {
+        return slicingFunctionService.generate(comparisonClauses);
+    }
+
 
 }

@@ -57,15 +57,14 @@
 
 <script setup lang="ts">
 
-import {ColumnType, DatasetDTO} from "@/generated-sources";
+import {ColumnType, ComparisonType, DatasetDTO} from "@/generated-sources";
 import {computed} from "vue";
-import {NoCodeSlicingType} from "@/utils/no-code-slicing-type.enum";
 
 const props = defineProps<{
     dataset: DatasetDTO,
     columnName?: string,
     columnType?: ColumnType,
-    slicingType?: NoCodeSlicingType,
+    slicingType?: ComparisonType,
     value?: string | null
 }>()
 
@@ -73,30 +72,30 @@ const emit = defineEmits(['update:columnName', 'update:columnType', 'update:slic
 
 const columnNames = computed(() => Object.keys(props.dataset.columnTypes));
 
-const AVAILABLE_SLICING_TYPE: { [columnType in ColumnType]: Array<NoCodeSlicingType> } = {
-    [ColumnType.TEXT]: Object.values(NoCodeSlicingType),
-    [ColumnType.NUMERIC]: [NoCodeSlicingType.IS, NoCodeSlicingType.IS_NOT, NoCodeSlicingType.IS_EMPTY, NoCodeSlicingType.IS_NOT_EMPTY],
-    [ColumnType.CATEGORY]: [NoCodeSlicingType.IS, NoCodeSlicingType.IS_NOT, NoCodeSlicingType.IS_EMPTY, NoCodeSlicingType.IS_NOT_EMPTY],
+const AVAILABLE_SLICING_TYPE: { [columnType in ColumnType]: Array<ComparisonType> } = {
+    [ColumnType.TEXT]: Object.values(ComparisonType),
+    [ColumnType.NUMERIC]: [ComparisonType.IS, ComparisonType.IS_NOT, ComparisonType.IS_EMPTY, ComparisonType.IS_NOT_EMPTY],
+    [ColumnType.CATEGORY]: [ComparisonType.IS, ComparisonType.IS_NOT, ComparisonType.IS_EMPTY, ComparisonType.IS_NOT_EMPTY],
 }
 
-const SLICING_TYPE_WITH_VALUE: Array<NoCodeSlicingType> = [
-    NoCodeSlicingType.IS,
-    NoCodeSlicingType.IS_NOT,
-    NoCodeSlicingType.CONTAINS,
-    NoCodeSlicingType.DOES_NOT_CONTAINS,
-    NoCodeSlicingType.STARTS_WITH,
-    NoCodeSlicingType.ENDS_WITH
+const SLICING_TYPE_WITH_VALUE: Array<ComparisonType> = [
+    ComparisonType.IS,
+    ComparisonType.IS_NOT,
+    ComparisonType.CONTAINS,
+    ComparisonType.DOES_NOT_CONTAINS,
+    ComparisonType.STARTS_WITH,
+    ComparisonType.ENDS_WITH
 ];
 
-const SLICING_TYPE_DISPLAY_NAME: { [slicingType in NoCodeSlicingType]: String } = {
-    [NoCodeSlicingType.IS]: 'Equals',
-    [NoCodeSlicingType.IS_NOT]: 'Is not equal',
-    [NoCodeSlicingType.CONTAINS]: 'Contains',
-    [NoCodeSlicingType.DOES_NOT_CONTAINS]: 'Does not contain',
-    [NoCodeSlicingType.STARTS_WITH]: 'Starts with',
-    [NoCodeSlicingType.ENDS_WITH]: 'Ends with',
-    [NoCodeSlicingType.IS_EMPTY]: 'Is empty',
-    [NoCodeSlicingType.IS_NOT_EMPTY]: 'Is not empty',
+const SLICING_TYPE_DISPLAY_NAME: { [slicingType in ComparisonType]: String } = {
+    [ComparisonType.IS]: 'Equals',
+    [ComparisonType.IS_NOT]: 'Is not equal',
+    [ComparisonType.CONTAINS]: 'Contains',
+    [ComparisonType.DOES_NOT_CONTAINS]: 'Does not contain',
+    [ComparisonType.STARTS_WITH]: 'Starts with',
+    [ComparisonType.ENDS_WITH]: 'Ends with',
+    [ComparisonType.IS_EMPTY]: 'Is empty',
+    [ComparisonType.IS_NOT_EMPTY]: 'Is not empty',
 }
 
 
