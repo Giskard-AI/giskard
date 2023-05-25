@@ -16,11 +16,11 @@ def create_contribution_push(model, ds, idrow):
         prediction = model.predict(slice_df).prediction
         if shap_res is not None:
             for el in shap_res:
-                bounds = slice_bounds(feature=el, value=values[el].values, ds=ds)
+                bounds = slice_bounds(feature=el, value=values[el].values[0], ds=ds)
 
                 if training_label != prediction:
                     res = ContributionPush(feature=el,
-                                           value=values[el],
+                                           value=values[el].values[0],
                                            bounds=bounds,
                                            model_type=SupportedModelTypes.CLASSIFICATION,
                                            correct_prediction=False
@@ -29,7 +29,7 @@ def create_contribution_push(model, ds, idrow):
 
                 else:
                     res = ContributionPush(feature=el,
-                                           value=values[el],
+                                           value=values[el].values[0],
                                            bounds=bounds,
                                            model_type=SupportedModelTypes.CLASSIFICATION,
                                            correct_prediction=True
@@ -50,7 +50,7 @@ def create_contribution_push(model, ds, idrow):
                 bounds = slice_bounds(feature=el, value=values[el], ds=ds)
                 if abs(error - y) / y >= 0.2:
                     res = ContributionPush(feature=el,
-                                           value=values[el],
+                                           value=values[el].values[0],
                                            bounds=bounds,
                                            model_type=SupportedModelTypes.REGRESSION,
                                            correct_prediction=False
@@ -59,7 +59,7 @@ def create_contribution_push(model, ds, idrow):
 
                 else:
                     res = ContributionPush(feature=el,
-                                           value=values[el],
+                                           value=values[el].values[0],
                                            bounds=bounds,
                                            model_type=SupportedModelTypes.REGRESSION,
                                            correct_prediction=True
