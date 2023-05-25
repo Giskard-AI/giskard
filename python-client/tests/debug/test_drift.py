@@ -1,4 +1,4 @@
-from giskard.ml_worker.testing.tests.drift import test_drift_psi, test_drift_chi_square, \
+from giskard.testing.tests.drift import test_drift_psi, test_drift_chi_square, \
     test_drift_prediction_chi_square, test_drift_prediction_psi
 from giskard.datasets.base import Dataset
 from collections import Counter

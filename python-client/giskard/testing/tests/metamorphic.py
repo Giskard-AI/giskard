@@ -67,6 +67,7 @@ def _compare_prediction(results_df, prediction_task, direction, output_sensitivi
                 lambda x: _prediction_ratio(x["prediction"], x["perturbed_prediction"]),
                 axis=1,
             )
+            output_sensitivity = 0.1 if not output_sensitivity else output_sensitivity
             passed_idx = results_df.loc[results_df["predict_difference_ratio"] < output_sensitivity].index.values
         else:
             raise ValueError(f"Invalid prediction task: {prediction_task}")
@@ -170,7 +171,7 @@ def _test_metamorphic(
     # ---
 
     return TestResult(
-        actual_slices_size=[len(dataset)],
+        actual_slices_size=[len(dataset.df)],
         metric=passed_ratio,
         passed=passed,
         messages=messages,
@@ -377,6 +378,7 @@ def _test_metamorphic_t_test(
         critical_quantile: float,
         classification_label=None,
         output_proba=True,
+        debug=False,
 ) -> TestResult:
     result_df, modified_rows_count = _perturb_and_predict(
         model, dataset, transformation_function, output_proba=output_proba, classification_label=classification_label
@@ -386,11 +388,24 @@ def _test_metamorphic_t_test(
 
     messages = [TestMessage(type=TestMessageLevel.INFO, text=f"{modified_rows_count} rows were perturbed")]
 
+    passed = bool(p_value < critical_quantile)
+    # --- debug ---
+    output_ds = None
+    if not passed and debug:
+        passed_idx, failed_idx = _compare_prediction(
+            result_df, model.meta.model_type, direction, None)
+        output_ds = dataset.copy()  # copy all properties
+        output_ds.df = dataset.df.iloc[failed_idx]
+        test_name = inspect.stack()[1][3]
+        output_ds.name = "Debug: " + test_name
+    # ---
+
     return TestResult(
-        actual_slices_size=[len(dataset)],
+        actual_slices_size=[len(dataset.df)],
         metric=p_value,
-        passed=bool(p_value < critical_quantile),
+        passed=passed,
         messages=messages,
+        output_df=output_ds
     )
 
 
@@ -403,6 +418,7 @@ def test_metamorphic_decreasing_t_test(
         slicing_function: Optional[SlicingFunction] = None,
         critical_quantile: float = 0.05,
         classification_label: str = None,
+        debug: bool = False
 ):
     """
     Summary: Tests if the model probability decreases when the feature values are perturbed
@@ -451,6 +467,7 @@ def test_metamorphic_decreasing_t_test(
         window_size=float("nan"),
         critical_quantile=critical_quantile,
         classification_label=classification_label,
+        debug=debug
     )
 
 
@@ -463,6 +480,7 @@ def test_metamorphic_increasing_t_test(
         slicing_function: Optional[SlicingFunction] = None,
         critical_quantile: float = 0.05,
         classification_label: str = None,
+        debug: bool = False
 ):
     """
     Summary: Tests if the model probability increases when the feature values are perturbed
@@ -511,6 +529,7 @@ def test_metamorphic_increasing_t_test(
         window_size=float("nan"),
         critical_quantile=critical_quantile,
         classification_label=classification_label,
+        debug=debug
     )
 
 
@@ -522,6 +541,7 @@ def test_metamorphic_invariance_t_test(
         slicing_function: Optional[SlicingFunction] = None,
         window_size: float = 0.2,
         critical_quantile: float = 0.05,
+        debug: bool = False
 ) -> TestResult:
     """
     Summary: Tests if the model predictions are statistically invariant when the feature values are perturbed.
@@ -574,6 +594,8 @@ def test_metamorphic_invariance_t_test(
         transformation_function=transformation_function,
         window_size=window_size,
         critical_quantile=critical_quantile,
+        output_proba=False,
+        debug=debug
     )
 
 
@@ -586,6 +608,7 @@ def _test_metamorphic_wilcoxon(
         critical_quantile: float,
         classification_label=None,
         output_proba=True,
+        debug=False,
 ) -> TestResult:
     result_df, modified_rows_count = _perturb_and_predict(
         model, dataset, transformation_function, output_proba=output_proba, classification_label=classification_label
@@ -594,12 +617,25 @@ def _test_metamorphic_wilcoxon(
     p_value = _compare_probabilities_wilcoxon(result_df, direction, window_size, critical_quantile)
 
     messages = [TestMessage(type=TestMessageLevel.INFO, text=f"{modified_rows_count} rows were perturbed")]
+    passed = bool(p_value < critical_quantile)
+
+    # --- debug ---
+    output_ds = None
+    if not passed and debug:
+        passed_idx, failed_idx = _compare_prediction(
+            result_df, model.meta.model_type, direction, None)
+        output_ds = dataset.copy()  # copy all properties
+        output_ds.df = dataset.df.iloc[failed_idx]
+        test_name = inspect.stack()[1][3]
+        output_ds.name = "Debug: " + test_name
+    # ---
 
     return TestResult(
-        actual_slices_size=[len(dataset)],
+        actual_slices_size=[len(dataset.df)],
         metric=p_value,
-        passed=bool(p_value < critical_quantile),
+        passed=passed,
         messages=messages,
+        output_df=output_ds
     )
 
 
@@ -612,6 +648,7 @@ def test_metamorphic_decreasing_wilcoxon(
         slicing_function: Optional[SlicingFunction] = None,
         critical_quantile: float = 0.05,
         classification_label: str = None,
+        debug: bool = False
 ):
     """
     Summary: Tests if the model probability decreases when the feature values are perturbed
@@ -660,6 +697,7 @@ def test_metamorphic_decreasing_wilcoxon(
         classification_label=classification_label,
         window_size=float("nan"),
         critical_quantile=critical_quantile,
+        debug=debug
     )
 
 
@@ -672,6 +710,7 @@ def test_metamorphic_increasing_wilcoxon(
         slicing_function: Optional[SlicingFunction] = None,
         critical_quantile: float = 0.05,
         classification_label: str = None,
+        debug: bool = False
 ):
     """
     Summary: Tests if the model probability increases when the feature values are perturbed
@@ -720,6 +759,7 @@ def test_metamorphic_increasing_wilcoxon(
         classification_label=classification_label,
         window_size=float("nan"),
         critical_quantile=critical_quantile,
+        debug=debug
     )
 
 
@@ -731,6 +771,7 @@ def test_metamorphic_invariance_wilcoxon(
         slicing_function: Optional[SlicingFunction] = None,
         window_size: float = 0.2,
         critical_quantile: float = 0.05,
+        debug: bool = False
 ) -> TestResult:
     """
     Summary: Tests if the model predictions are statistically invariant when the feature values are perturbed.
@@ -783,4 +824,6 @@ def test_metamorphic_invariance_wilcoxon(
         transformation_function=transformation_function,
         window_size=window_size,
         critical_quantile=critical_quantile,
+        output_proba=False,
+        debug=debug
     )

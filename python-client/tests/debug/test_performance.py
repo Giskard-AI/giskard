@@ -1,6 +1,6 @@
-from giskard.ml_worker.testing.tests.performance import test_auc, test_recall, test_accuracy, test_precision, test_f1
-from giskard.ml_worker.testing.tests.performance import test_mae, test_r2, test_rmse
-from giskard.ml_worker.testing.tests.performance import test_diff_f1, test_diff_accuracy, test_diff_recall, \
+from giskard.testing.tests.performance import test_auc, test_recall, test_accuracy, test_precision, test_f1
+from giskard.testing.tests.performance import test_mae, test_r2, test_rmse
+from giskard.testing.tests.performance import test_diff_f1, test_diff_accuracy, test_diff_recall, \
     test_diff_precision
 from giskard.datasets.base import Dataset
 import pytest

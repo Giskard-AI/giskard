@@ -116,15 +116,48 @@ def test_save_suite(german_credit_data: Dataset, german_credit_model: BaseModel)
     #     ).upload(client, "test_project_key")
     scan(german_credit_model, german_credit_data)
 
-# def test_save_suite_real(german_credit_data: Dataset, german_credit_model: BaseModel):
-#     from giskard.client.giskard_client import GiskardClient
-#     client = GiskardClient("http://localhost:9000",
-#                            "")
-#
-#     german_credit_data.upload(client, 'test')
-#     german_credit_model.upload(client, 'test')
-#
-#     Suite(name="Test Suite 1") \
-#         .add_test(test_auc, threshold=0.2, dataset=german_credit_data) \
-#         .add_test(test_f1, threshold=0.2, dataset=german_credit_data) \
-#         .save(client, 'credit')
+@pytest.mark.skip(reason="For active testing")
+def test_save_suite_real_debug(german_credit_data: Dataset, german_credit_model: BaseModel):
+    from giskard.testing import test_metamorphic_invariance, test_auc, test_diff_accuracy
+    from giskard import transformation_function, slicing_function
+    import pandas as pd
+
+    @transformation_function
+    def transform(df: pd.Series) -> pd.Series:
+        df['age'] = df['age'] + 10
+        return df
+
+    @slicing_function(row_level=False, name='DF Head')
+    def slice(df: pd.DataFrame) -> pd.DataFrame:
+        return df.head()
+
+    from giskard.client.giskard_client import GiskardClient
+    client = GiskardClient("http://localhost:9000",
+                               "API_KEY")
+    client.create_project("test_debug", "test_debug", "test_debug")
+
+    german_credit_data.upload(client, 'test_debug')
+    german_credit_data_actual = german_credit_data.copy()
+    german_credit_data_actual.df = german_credit_data.df.head(100)
+    german_credit_data_actual.upload(client, 'test_debug')
+
+    german_credit_data_reference = german_credit_data.copy()
+    german_credit_data_reference.df = german_credit_data.df.tail(100)
+    german_credit_data_reference.upload(client, 'test_debug')
+
+    german_credit_model.upload(client, 'test_debug')
+    invariance = test_metamorphic_invariance(model=german_credit_model, threshold=0.2,
+                                             dataset=german_credit_data,
+                                             transformation_function=transform)
+
+    auc = test_auc(model=german_credit_model, threshold=0.2, dataset=german_credit_data, slicing_function=slice)
+
+    diff_accuracy = test_diff_accuracy(model=german_credit_model, threshold=0.2,
+                                       actual_dataset=german_credit_data_actual,
+                                       reference_dataset=german_credit_data_reference)
+
+    Suite(name="Test Suite 1") \
+        .add_test(auc) \
+        .add_test(diff_accuracy) \
+        .add_test(invariance) \
+        .upload(client, 'test_debug')
