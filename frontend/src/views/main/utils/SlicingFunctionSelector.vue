@@ -16,7 +16,6 @@
             :prepend-inner-icon="icon ? 'mdi-knife' : null"
         >
             <template v-slot:append-item v-if="allowNoCodeSlicing">
-                <!-- TODO add NO CODE slices -->
                 <v-list-item @click="createSlice">
                     <v-list-item-content>
                         <v-list-item-title>
@@ -127,7 +126,12 @@ async function createSlice() {
         component: CreateSliceModal,
         bind: {
             dataset: props.dataset
-        }
+        },
+        on: {
+            async created(uuid: string) {
+                await onInput(uuid);
+            }
+        },
     })
 }
 
