@@ -115,5 +115,8 @@ def _get_shap_values(model, ds, idrow):
 
 
 def _existing_shap_values(ds):
-    shap_values_exist = ('category' in ds.column_types.values()) or ('numeric' in ds.column_types.values())
+    feature_types = list(ds.column_types.values())
+    if 'text' in feature_types:
+        feature_types.remove("text")
+    shap_values_exist = len(feature_types) >= 2
     return shap_values_exist
