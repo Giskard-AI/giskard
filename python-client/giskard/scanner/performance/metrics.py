@@ -86,7 +86,7 @@ class AUC(PerformanceMetric):
 
     def __call__(self, model: BaseModel, dataset: Dataset) -> float:
         y_true = dataset.df[dataset.target]
-        y_score = model.predict(dataset).raw_prediction
+        y_score = model.predict(dataset).raw
 
         return sklearn.metrics.roc_auc_score(
             y_true,
