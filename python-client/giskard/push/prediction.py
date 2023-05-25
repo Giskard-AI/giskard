@@ -22,7 +22,7 @@ def overconfidence(model, ds, idrow):
             #            value=values[el],
             #            bounds=bounds
             #            )
-            res = OverconfidencePush(training_label, training_label_proba, row_slice)
+            res = OverconfidencePush(training_label, training_label_proba, row_slice,prediction)
             return res
 
 

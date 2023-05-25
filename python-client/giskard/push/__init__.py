@@ -48,7 +48,9 @@ class ExamplePush(Push):
 
 
 class OverconfidencePush(ExamplePush):
-    def __init__(self, training_label, training_label_proba, dataset_row,predicted_label,):
+    pushkind = PushKind.Overconfidence
+
+    def __init__(self, training_label, training_label_proba, dataset_row, predicted_label):
         self._overconfidence()
 
         self.training_label_proba = training_label_proba
@@ -56,13 +58,8 @@ class OverconfidencePush(ExamplePush):
         self.saved_example = dataset_row
 
         self.tests = [self._increase_proba(), self._check_if_correct]
-        # @TODO: TO FIX
         # To complete debugger filter
-        # self.actual_label =
-        # self.predicted_label=
-        # self.probability_of=self.predicted_label
-
-
+        self.predicted_label = predicted_label
 
     def _overconfidence(self):
         res = {"push_title": "This example is incorrect while having a high confidence.",
@@ -94,6 +91,8 @@ class OverconfidencePush(ExamplePush):
 
 
 class BorderlinePush(ExamplePush):
+    pushkind = PushKind.Borderline
+
     def __init__(self, max_proba, second_proba, training_label, training_label_proba, dataset_row):
         self._borderline()
         self.max_proba = max_proba
@@ -149,6 +148,7 @@ class FeaturePush(Push):
 
 
 class ContributionPush(FeaturePush):
+    pushkind = PushKind.Contribution
     slicing_function = None
     bounds = None
     model_type = None
@@ -244,6 +244,7 @@ class ContributionPush(FeaturePush):
 
 
 class PerturbationPush(FeaturePush):
+    pushkind = PushKind.Perturbation
     text_perturbed: list = None
     transformation_function: list = None
 
