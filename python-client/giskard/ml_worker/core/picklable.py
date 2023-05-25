@@ -1,11 +1,16 @@
+import importlib
 import logging
 import os
 import pickle
+import platform
 import posixpath
+import uuid
+from abc import ABC
 from pathlib import Path
-from typing import Optional, Generic
+from typing import Optional, Generic, Union
 
 import cloudpickle
+import yaml
 
 from giskard.client.giskard_client import GiskardClient
 from giskard.core.core import DT, SMT, SavableMeta, DatasetProcessFunctionType
@@ -13,8 +18,52 @@ from giskard.settings import settings
 
 logger = logging.getLogger(__name__)
 
+# TODO: abstract
+SAVABLE_CLASS_PKL = "SavableClass.pkl"
+META_FILENAME = "giskard-model-meta.yaml"
 
-class Savable(Generic[DT, SMT]):
+
+class Savable(ABC):
+    should_save_class = False
+    id: uuid.UUID = None
+
+    @classmethod
+    def determine_class(cls, meta, local_dir):
+        class_file = Path(local_dir) / SAVABLE_CLASS_PKL
+        if class_file.exists():
+            with open(class_file, "rb") as f:
+                clazz = cloudpickle.load(f)
+                if not issubclass(clazz, Savable):
+                    raise ValueError(f"Unknown class: {clazz}. Savable should inherit from 'Savable' class")
+                return clazz
+        else:
+            return getattr(importlib.import_module(meta.loader_module), meta.loader_class)
+
+    # TODO: abstract
+    def save_meta(self, local_path):
+        with open(Path(local_path) / META_FILENAME, "w") as f:
+            yaml.dump({
+                "language_version": platform.python_version(),
+                "language": "PYTHON"
+            },
+                f,
+                default_flow_style=False,
+            )
+
+    def save(self, local_path: Union[str, Path]) -> None:
+        if self.id is None:
+            self.id = uuid.uuid4()
+        if self.should_save_class:
+            self.save_class(local_path)
+        self.save_meta(local_path)
+
+    def save_class(self, local_path):
+        class_file = Path(local_path) / SAVABLE_CLASS_PKL
+        with open(class_file, "wb") as f:
+            cloudpickle.dump(self.__class__, f, protocol=pickle.DEFAULT_PROTOCOL)
+
+
+class Picklable(Generic[DT, SMT]):
     data: DT
     meta: SMT
 

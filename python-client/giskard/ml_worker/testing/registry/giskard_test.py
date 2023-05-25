@@ -6,8 +6,9 @@ from abc import abstractmethod, ABC
 from pathlib import Path
 from typing import Union, Callable, Optional, Type
 
+from giskard.ml_worker.core.savable import Picklable
+
 from giskard.core.core import TestFunctionMeta, SMT
-from giskard.ml_worker.core.savable import Savable
 from giskard.ml_worker.core.test_result import TestResult
 from giskard.ml_worker.testing.registry.registry import tests_registry, get_object_uuid
 from giskard.ml_worker.testing.registry.utils import is_local_function
@@ -15,7 +16,7 @@ from giskard.ml_worker.testing.registry.utils import is_local_function
 Result = Union[TestResult, bool]
 
 
-class GiskardTest(Savable[Type, TestFunctionMeta], ABC):
+class GiskardTest(Picklable[Type, TestFunctionMeta], ABC):
     """
     The base class of all Giskard's tests.
 

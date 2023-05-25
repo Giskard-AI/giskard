@@ -6,10 +6,10 @@ from typing import Optional, List, Union, Type, Callable
 
 import cloudpickle
 import pandas as pd
+from giskard.ml_worker.core.savable import Picklable
 
 from giskard.core.core import DatasetProcessFunctionMeta
 from giskard.core.validation import configured_validate_arguments
-from giskard.ml_worker.core.savable import Savable
 from giskard.ml_worker.testing.registry.decorators_utils import (
     validate_arg_type,
     drop_arg,
@@ -24,7 +24,7 @@ TransformationFunctionType = Callable[..., Union[pd.Series, pd.DataFrame]]
 default_tags = ['transformation']
 
 
-class TransformationFunction(Savable[TransformationFunctionType, DatasetProcessFunctionMeta]):
+class TransformationFunction(Picklable[TransformationFunctionType, DatasetProcessFunctionMeta]):
     func: TransformationFunctionType = None
     row_level: bool = True
     cell_level: bool = False

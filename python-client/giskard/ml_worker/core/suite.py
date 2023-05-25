@@ -3,11 +3,12 @@ import logging
 from dataclasses import dataclass
 from typing import List, Any, Union, Dict, Mapping, Optional
 
+from giskard.ml_worker.core.savable import Picklable
+
 from giskard.client.dtos import TestSuiteDTO, TestInputDTO, SuiteTestDTO
 from giskard.client.giskard_client import GiskardClient
 from giskard.core.core import TestFunctionMeta
 from giskard.datasets.base import Dataset
-from giskard.ml_worker.core.savable import Savable
 from giskard.ml_worker.core.test_result import TestResult
 from giskard.ml_worker.testing.registry.giskard_test import GiskardTest, Test, GiskardTestMethod
 from giskard.ml_worker.testing.registry.registry import tests_registry
@@ -86,7 +87,7 @@ def build_test_input_dto(client, p, pname, ptype, project_key, uploaded_uuids):
             p.upload(client, project_key)
         uploaded_uuids.append(str(p.id))
         return TestInputDTO(name=pname, value=str(p.id), type=ptype)
-    elif issubclass(type(p), Savable):
+    elif issubclass(type(p), Picklable):
         if str(p.meta.uuid) not in uploaded_uuids:
             p.upload(client)
         uploaded_uuids.append(str(p.meta.uuid))
