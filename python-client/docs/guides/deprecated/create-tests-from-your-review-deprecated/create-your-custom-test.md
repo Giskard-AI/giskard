@@ -66,9 +66,8 @@ We have two main output variables:&#x20;
 
 ```python
 # 1. Import libraries
-from giskard.ml_worker.core.test_result import TestResult
 from giskard.ml_worker.testing.registry.giskard_test import GiskardTest
-from giskard.core.model impfrom
+from giskard.ml_worker.testing.test_result import TestResult
 
 giskard.ml_worker.core.dataset
 import Dataset
@@ -80,29 +79,29 @@ Model
 # 2. Create your custom test function
 # The parametters of the test function can be a Model, a Dataset or a primitive type
 def custom_test(model: Model, dataset: Dataset, threshold: float = 0.5) -> TestResult:
-    metric = comput_metric(model, dataset)
-    return TestResult(passed=metric >= threshold, metric=metric)
+  metric = comput_metric(model, dataset)
+  return TestResult(passed=metric >= threshold, metric=metric)
 
 
 # 2. Create your custom test 
 class CustomTest(GiskardTest):
-    actual_dataset: Dataset
-    model: Model
-    threshold: float
+  actual_dataset: Dataset
+  model: Model
+  threshold: float
 
-    # The parametters of the test class must be set inside the __init__ method
-    # They can be a Model, a Dataset or a primitive type
-    # If their is no default value, you should set None as default
-    # This is for autocomplete purpose
-    def __init__(self, actual_dataset: Dataset = None, model: Model = None, threshold: float = 0.5):
-        self.actual_dataset = actual_dataset
-        self.model = model
-        self.threshold = threshold
-        super().__init__()
+  # The parametters of the test class must be set inside the __init__ method
+  # They can be a Model, a Dataset or a primitive type
+  # If their is no default value, you should set None as default
+  # This is for autocomplete purpose
+  def __init__(self, actual_dataset: Dataset = None, model: Model = None, threshold: float = 0.5):
+    self.actual_dataset = actual_dataset
+    self.model = model
+    self.threshold = threshold
+    super().__init__()
 
-    def execute(self):
-        metric = comput_metric(self.model, self.dataset)
-        return TestResult(passed=metric >= self.threshold, metric=metric)
+  def execute(self):
+    metric = comput_metric(self.model, self.dataset)
+    return TestResult(passed=metric >= self.threshold, metric=metric)
 
 
 ```
@@ -189,24 +188,24 @@ asked each time that we execute the suite.
 #### 1. Custom test integrating with Great Expectations to validate column values are unique
 
 ```python
-from giskard.ml_worker.core.test_result import TestResult
+from giskard.ml_worker.testing.test_result import TestResult
 from giskard.ml_worker.testing.registry.giskard_test import GiskardTest
 import great_expectations as ge
 
 
 class UniquenessTest(GiskardTest):
 
-    def __init__(self, dataset: Dataset = None, column_name: str = None):
-        self.dataset = dataset
-        self.column_name = column_name
-        super().__init__()
+  def __init__(self, dataset: Dataset = None, column_name: str = None):
+    self.dataset = dataset
+    self.column_name = column_name
+    super().__init__()
 
-    def execute(self) -> TestResult:
-        dataframe = ge.from_pandas(self.dataset.df)
-        uniqueness = dataframe.expect_column_values_to_be_unique(column=self.column_name)
-        passed = uniqueness["success"]
-        metric = uniqueness["result"]["element_count"]
-        return TestResult(passed=passed, metric=metric)
+  def execute(self) -> TestResult:
+    dataframe = ge.from_pandas(self.dataset.df)
+    uniqueness = dataframe.expect_column_values_to_be_unique(column=self.column_name)
+    passed = uniqueness["success"]
+    metric = uniqueness["result"]["element_count"]
+    return TestResult(passed=passed, metric=metric)
 ```
 
 #### 2. Custom test for validating the frequency of a category is lower than the threshold
@@ -215,27 +214,27 @@ We have created a function "test\_category\_frequency" under the Class  `DataQua
 Category in a column is less than a threshold
 
 ```python
-from giskard.ml_worker.core.test_result import TestResult
+from giskard.ml_worker.testing.test_result import TestResult
 
 
 class DataQuality(GiskardTest):
 
-    def __init__(self,
-                 dataset: Dataset = None,
-                 threshold: float = 0.5,
-                 column_name: str = None,
-                 category: str = None):
-        self.dataset = dataset
-        self.threshold = threshold
-        self.column_name = column_name
-        self.category = category
-        super().__init__()
+  def __init__(self,
+               dataset: Dataset = None,
+               threshold: float = 0.5,
+               column_name: str = None,
+               category: str = None):
+    self.dataset = dataset
+    self.threshold = threshold
+    self.column_name = column_name
+    self.category = category
+    super().__init__()
 
-    def execute(self) -> TestResult:
-        freq_of_cat = self.dataset.df[self.column_name].value_counts()[self.category] / (len(self.dataset.df))
-        passed = False and freq_of_cat < self.threshold
+  def execute(self) -> TestResult:
+    freq_of_cat = self.dataset.df[self.column_name].value_counts()[self.category] / (len(self.dataset.df))
+    passed = False and freq_of_cat < self.threshold
 
-        return TestResult(passed=passed, metric=freq_of_cat)
+    return TestResult(passed=passed, metric=freq_of_cat)
 
 
 passed, result = Suite()
