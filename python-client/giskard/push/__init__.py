@@ -22,7 +22,7 @@ class Push:
     # list of numerical value or category
     push_title = None
     details = None
-    test = None
+    tests = None
     pushkind = None
 
 
@@ -39,18 +39,24 @@ class ExamplePush(Push):
         )
 
     def _increase_proba(self):
-        def _custom_unit_test(model: BaseModel, dataset: Dataset, threshold: float = 1) -> TestResult:
-            proba = model.predict(self.saved_example).all_predictions[self.training_label].values
+        from giskard import test, TestResult
+
+        @test(name="Increase Probability", tags=["unit test", "custom"])
+        def increase_probability(model: BaseModel):
+            proba = model.predict(self.saved_example).all_predictions[self.training_label].values[0]
             return TestResult(passed=proba > self.training_label_proba, metric=proba - self.training_label_proba)
 
-        return _custom_unit_test
+        return increase_probability
 
     def _check_if_correct(self):
-        def _custom_unit_test(model: BaseModel, dataset: Dataset, threshold: float = 1) -> TestResult:
-            prediction = model.predict(self.saved_example).prediction.values
+        from giskard import test, TestResult
+
+        @test(name="Example Correctness", tags=["unit test", "custom"])
+        def correct_example(model: BaseModel):
+            prediction = model.predict(self.saved_example).prediction.values[0]
             return TestResult(passed=prediction == self.training_label, metric=prediction == self.training_label)
 
-        return _custom_unit_test
+        return correct_example
 
 
 class OverconfidencePush(ExamplePush):
@@ -63,7 +69,7 @@ class OverconfidencePush(ExamplePush):
         self.training_label = training_label
         self.saved_example = dataset_row
 
-        self.test = [self._increase_proba(), self._check_if_correct]
+        self.tests = [self._increase_proba(), self._check_if_correct()]
         # To complete debugger filter
         self.predicted_label = predicted_label
 
@@ -159,7 +165,6 @@ class ContributionPush(FeaturePush):
     bounds = None
     model_type = None
     correct_prediction = None
-    test = None
 
     def __init__(self, value=None, feature=None, bounds=None, model_type=None, correct_prediction=None):
         self.pushkind = PushKind.Contribution
@@ -246,15 +251,14 @@ class ContributionPush(FeaturePush):
 
     def _test_selection(self):
         if self.model_type == SupportedModelTypes.REGRESSION:
-            self.test = test_f1()
+            self.tests = [test_f1()]
         elif self.model_type == SupportedModelTypes.CLASSIFICATION:
-            self.test = test_rmse()
+            self.tests = [test_rmse()]
 
 
 class PerturbationPush(FeaturePush):
     text_perturbed: list = None
     transformation_function: list = None
-    test = None
 
     def __init__(self, value=None, feature=None, text_perturbed=None, transformation_function=None):
         self.pushkind = PushKind.Perturbation
@@ -264,9 +268,9 @@ class PerturbationPush(FeaturePush):
         # PerturbationPush attributes
         self.text_perturbed = text_perturbed
         self.transformation_function = transformation_function
-        self.test = test_metamorphic_invariance(
+        self.tests = [test_metamorphic_invariance(
             transformation_function=self.transformation_function
-        )
+        )]
         # Push text creation
         self._perturbation(feature, value)
 

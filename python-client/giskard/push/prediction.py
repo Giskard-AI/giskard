@@ -7,14 +7,15 @@ def create_overconfidence_push(model, ds, idrow):
     training_label = values[ds.target].values[0]
 
     row_slice = ds.slice(lambda df: df.loc[[idrow]], row_level=False)
-    model_prediction_results = model.predict(row_slice)
-
-    prediction = model_prediction_results.prediction[0]
-
-    training_label_proba = model_prediction_results.all_predictions[training_label].values[0]
-    prediction_proba = model_prediction_results.all_predictions[prediction].values
 
     if model.meta.model_type == SupportedModelTypes.CLASSIFICATION:
+        model_prediction_results = model.predict(row_slice)
+
+        prediction = model_prediction_results.prediction[0]
+
+        training_label_proba = model_prediction_results.all_predictions[training_label].values[0]
+        prediction_proba = model_prediction_results.all_predictions[prediction].values
+
         if training_label != prediction and prediction_proba >= 1.5 * training_label_proba:
             # if training_label != prediction and prediction_proba >= 2* training_label_proba:
             # res = Push(push_type="contribution_wrong", feature=el,
