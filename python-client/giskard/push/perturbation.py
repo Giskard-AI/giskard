@@ -1,20 +1,19 @@
 from giskard.core.core import SupportedModelTypes
 from ..push import PerturbationPush
-from .utils import slice_bounds
 import numpy as np
 from giskard.push import SupportedPerturbationType
-from giskard.scanner.robustness.text_transformations import text_lowercase, \
-    text_uppercase, \
-    text_titlecase, \
+from giskard.scanner.robustness.text_transformations import TextLowercase, \
+    TextUppercase, \
+    TextTitleCase, \
     TextTypoTransformation, \
     TextPunctuationRemovalTransformation, \
     TextGenderTransformation
 from giskard.ml_worker.testing.registry.transformation_function import TransformationFunction
 import pandas as pd
 
-text_transfo_list = [text_lowercase,
-                     text_uppercase,
-                     text_titlecase,
+text_transfo_list = [TextLowercase,
+                     TextUppercase,
+                     TextTitleCase,
                      TextTypoTransformation,
                      TextPunctuationRemovalTransformation,
                      TextGenderTransformation]

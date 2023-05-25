@@ -1,5 +1,4 @@
 from giskard.core.core import SupportedModelTypes
-from giskard.ml_worker.testing.tests.performance import test_rmse
 from ..push import OverconfidencePush, BorderlinePush
 
 

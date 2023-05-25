@@ -9,6 +9,7 @@ from giskard.models.base import BaseModel
 from giskard.slicing.slice import GreaterThan, LowerThan, EqualTo, Query, QueryBasedSliceFunction
 from giskard.testing.tests.metamorphic import test_metamorphic_invariance
 
+from giskard.ml_worker.generated.ml_worker_pb2  import CallToActionKind, PushKind
 
 class SupportedPerturbationType(Enum):
     NUMERIC = "numeric"
@@ -233,7 +234,7 @@ class ContributionPush(FeaturePush):
         if isinstance(self.bounds, list):
             clause = [GreaterThan(self.key, self.bounds[0], True), LowerThan(self.key, self.bounds[1], True)]
         else:
-            clause = [EqualTo(self.key, self.bounds, True)]
+            clause = [EqualTo(self.key, self.bounds)]
         slicing_func = QueryBasedSliceFunction(Query(clause))
         self.slicing_function = slicing_func
 
@@ -268,7 +269,7 @@ class PerturbationPush(FeaturePush):
                        "explanation": "This will enable you to make sure the model is robust against small similar "
                                       "changes",
                        "button": "Create test",
-                       "cta": CallToActionKind.RobustnessTest
+                       "cta": CallToActionKind.CreateTest
                    },
                        {
                            "action": "Save the perturbation that made the model change and continue debugging session",
