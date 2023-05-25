@@ -85,6 +85,7 @@ import {useTestSuiteStore} from '@/stores/test-suite';
 import {FunctionInputDTO, RequiredInputDTO} from '@/generated-sources';
 import {useRouter} from 'vue-router/composables';
 import {chain} from 'lodash';
+import {TYPE} from "vue-toastification";
 
 const props = defineProps<{
   projectId: number,
@@ -179,7 +180,7 @@ async function executeTestSuite(close) {
           await Promise.all(jobUuids);
           await router.push({name: 'test-suite-compare-executions', query: {latestCount: jobUuids.length.toString()}})
       } else {
-          mainStore.addNotification({content: 'Test suite execution has been scheduled', color: 'success'});
+          mainStore.addNotification({content: 'Test suite execution has been scheduled', color: TYPE.SUCCESS});
       }
       // Track job asynchronously
   } finally {

@@ -3,7 +3,7 @@ import pandas as pd
 from giskard import test
 from giskard.core.core import SupportedModelTypes
 from giskard.datasets.base import Dataset
-from giskard.ml_worker.core.test_result import TestResult, TestMessage, TestMessageLevel
+from giskard.ml_worker.testing.test_result import TestResult, TestMessage, TestMessageLevel
 from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction
 from giskard.ml_worker.testing.registry.transformation_function import TransformationFunction
 from giskard.ml_worker.testing.stat_utils import equivalence_t_test, paired_t_test
@@ -11,7 +11,7 @@ from giskard.ml_worker.testing.stat_utils import equivalence_wilcoxon, paired_wi
 from giskard.ml_worker.testing.utils import Direction, validate_classification_label
 from giskard.ml_worker.utils.logging import timer
 from giskard.models.base import BaseModel
-from ..utils import check_slice_not_empty
+from giskard.ml_worker.testing.utils import check_slice_not_empty
 
 
 def _predict_numeric_result(model: BaseModel, ds: Dataset, output_proba=True, classification_label=None):
@@ -644,7 +644,7 @@ def test_metamorphic_decreasing_wilcoxon(
     )
 
 
-@test()
+@test(name="Increasing (Wilcoxon)")
 @validate_classification_label
 def test_metamorphic_increasing_wilcoxon(
     model: BaseModel,

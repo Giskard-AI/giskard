@@ -11,8 +11,8 @@ class OptSlicer(BaseSlicer):
             from optbinning import ContinuousOptimalBinning
         except ImportError as err:
             raise ImportError(
-                "Please install the optional package `giskard[scan]` to use this functionality."
-                "You can do this by running `pip install giskard[scan]` in your environment."
+                "Please install the optional library `optbinning` to use this functionality."
+                "You can do this by running `pip install optbinning` in your environment."
             ) from err
 
         target = target or self.target

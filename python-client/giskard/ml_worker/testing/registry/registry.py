@@ -34,7 +34,7 @@ def get_object_uuid(obj) -> str:
 
 
 def load_plugins():
-    giskard_tests_module = "giskard.ml_worker.testing.tests"
+    giskard_tests_module = "giskard.testing.tests"
     if giskard_tests_module not in sys.modules:
         importlib.import_module(giskard_tests_module)
     else:
