@@ -9,7 +9,7 @@
                 <span v-if="slicingFunction"> on {{ slicingFunction.displayName ?? slicingFunction.name }}</span>
             </span>
             <div class="d-flex flex-row gap-4">
-                <v-chip v-for="tag in sorted(suiteTest.test.tags)" x-small :color="pasterColor(tag)">
+                <v-chip v-for="tag in sorted(suiteTest.test.tags)" x-small :color="pasterColor(tag)" label>
                     {{ tag }}
                 </v-chip>
             </div>
@@ -20,11 +20,12 @@
                 >Measured <b>Metric = {{
                         result.metric
                     }}</b></span>
-                <v-chip v-if="result.passed" :color="Colors.PASS">
+                <v-chip v-if="result.passed" small :color="Colors.PASS_SURFACE" :text-color="Colors.ON_PASS_SURFACE"
+                        label>
                     <v-icon>done</v-icon>
                     Passed
                 </v-chip>
-                <v-chip v-else="result.passed" small :color="Colors.FAIL">
+                <v-chip v-else small :color="Colors.FAIL_SURFACE" :text-color="Colors.ON_FAIL_SURFACE" label>
                     <v-icon>block</v-icon>
                     Failed
                 </v-chip>
@@ -138,17 +139,18 @@ async function editTests() {
     border-radius: 4px 4px 4px 4px;
     -webkit-border-radius: 4px 4px 4px 4px;
     -moz-border-radius: 4px 4px 4px 4px;
-    border: 1px solid #000000;
+    border: 1px solid #dee2e6;
+    background: white;
 }
 
 .test-card-header {
-    padding: 4px;
+    padding: 8px;
     gap: 16px;
 }
 
 .test-card-footer {
-    border-top: 1px solid #000000;
-    padding: 4px;
+    border-top: 1px solid #dee2e6;
+    padding: 8px;
     gap: 16px;
 }
 
