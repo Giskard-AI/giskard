@@ -114,4 +114,4 @@ class Savable(Generic[DT, SMT]):
 
     @classmethod
     def _load_no_code(cls, meta: SMT):
-        pass
+        raise RuntimeError(f"No code function are not supported for {cls.__class__}")
