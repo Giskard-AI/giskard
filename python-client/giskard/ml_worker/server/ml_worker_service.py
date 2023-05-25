@@ -19,14 +19,9 @@ import tqdm
 
 import giskard
 from giskard.client.giskard_client import GiskardClient
+from giskard.core.suite import Suite, ModelInput, DatasetInput, SuiteInput
 from giskard.datasets.base import Dataset
 from giskard.ml_worker.core.log_listener import LogListener
-from giskard.models.model_explanation import (
-    explain,
-    explain_text,
-)
-from giskard.core.suite import Suite, ModelInput, DatasetInput, SuiteInput
-from giskard.ml_worker.testing.test_result import TestResult, TestMessageLevel
 from giskard.ml_worker.exceptions.IllegalArgumentError import IllegalArgumentError
 from giskard.ml_worker.exceptions.giskard_exception import GiskardException
 from giskard.ml_worker.generated import ml_worker_pb2
@@ -36,7 +31,12 @@ from giskard.ml_worker.testing.registry.giskard_test import GiskardTest
 from giskard.ml_worker.testing.registry.registry import tests_registry
 from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction
 from giskard.ml_worker.testing.registry.transformation_function import TransformationFunction
+from giskard.ml_worker.testing.test_result import TestResult, TestMessageLevel
 from giskard.models.base import BaseModel
+from giskard.models.model_explanation import (
+    explain,
+    explain_text,
+)
 from giskard.path_utils import model_path, dataset_path
 from giskard.push.prediction import overconfidence, borderline
 
@@ -497,18 +497,17 @@ class MLWorkerServiceImpl(MLWorkerServicer):
                 f"Make sure it's installed in the ML Worker environment."
                 "To have more information on ML Worker, please see: https://docs.giskard.ai/start/guides/installation/ml-worker"
             ) from e
-        from giskard.push.contribution import contribution
         from giskard.push.perturbation import perturbation
 
-        contribs = contribution(model, dataset, request.rowidx)
+        # contribs = contribution(model, dataset, request.rowidx)
         perturbs = perturbation(model, dataset, request.rowidx)
         overconf = overconfidence(model, dataset, request.rowidx)
         borderl = borderline(model, dataset, request.rowidx)
 
-        if contribs is not None:
-            contrib_grpc = contribs.to_grpc()
-        else:
-            contrib_grpc = None
+        # if contribs is not None:
+        #     contrib_grpc = contribs.to_grpc()
+        # else:
+        contrib_grpc = None
 
         if perturbs is not None:
             perturb_grpc = perturbs.to_grpc()

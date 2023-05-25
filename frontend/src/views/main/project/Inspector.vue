@@ -96,11 +96,12 @@
                             v-if="catalogStore.transformationFunctionsByColumnType.hasOwnProperty(c.type)"
                             :column="c.name" :column-type="c.type"/>
                         <SuggestionPopover
-                            :modelId="model.id"
-                            :datasetId="dataset.id"
-                            :row-nb="rowNb"
+                            type="contribution"
                             :column="c.name"
-                            :suggestion="[suggestion.perturbation, suggestion.contribution]"
+                        />
+                        <SuggestionPopover
+                            type="perturbation"
+                            :column="c.name"
                         />
                       </div>
                     </div>
@@ -132,13 +133,6 @@
               :modified="dirty || isInputNotOriginal"
               :debouncingTimeout="debouncingTimeout"
               @result="setResult"
-          />
-          <SuggestionPopover
-              :modelId="model.id"
-              :datasetId="dataset.id"
-              :row-nb="rowNb"
-              column=""
-              :suggestion="[suggestion.overconfidence, suggestion.borderline]"
           />
           <v-card class="mb-4" outlined>
             <v-card-title>

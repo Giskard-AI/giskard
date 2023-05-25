@@ -1,6 +1,9 @@
 <template>
   <v-card class="mb-4" id="resultCard" outlined>
-    <v-card-title>Result</v-card-title>
+    <v-card-title>Result
+      <suggestion-popover type="overconfidence"/>
+      <suggestion-popover type="borderline"/>
+    </v-card-title>
     <v-card-text class="text-center card-text" v-if="inputData">
       <OverlayLoader :show="loading" absolute solid no-fade/>
       <v-row v-if="prediction && isClassification(predictionTask)">
@@ -13,7 +16,9 @@
             resultProbabilities && Object.keys(resultProbabilities).length > 0
           "
         >
-          <div>Probabilities <span v-if="Object.keys(resultProbabilities).length > 5"> (5 of {{ Object.keys(resultProbabilities).length }})</span></div>
+          <div>Probabilities <span v-if="Object.keys(resultProbabilities).length > 5"> (5 of {{
+              Object.keys(resultProbabilities).length
+            }})</span></div>
           <v-chart class="chart" :option="chartOptions" :init-options="chartInit" autoresize/>
         </v-col>
         <v-col lg="4">
@@ -21,13 +26,14 @@
             <div>Prediction</div>
             <v-tooltip bottom>
               <template v-slot:activator="{ on, attrs }">
-                <div class="text-h6" :class="classColorPrediction" v-on="prediction.length > maxLengthDisplayedCategory ? on : ''"> 
-                  {{  abbreviateMiddle(prediction, maxLengthDisplayedCategory) }}
+                <div class="text-h6" :class="classColorPrediction"
+                     v-on="prediction.length > maxLengthDisplayedCategory ? on : ''">
+                  {{ abbreviateMiddle(prediction, maxLengthDisplayedCategory) }}
                 </div>
               </template>
-              <span> {{ prediction}}</span>
+              <span> {{ prediction }}</span>
             </v-tooltip>
-              
+
           </div>
           <div>
             <div class="mb-2">
@@ -36,11 +42,13 @@
               <v-tooltip bottom>
                 <template v-slot:activator="{ on, attrs }">
                   <div class="text-h6">
-                    <div v-if="isDefined(actual)" v-on="actual.length > maxLengthDisplayedCategory ? on : ''">{{ abbreviateMiddle(actual, maxLengthDisplayedCategory) }}</div>
+                    <div v-if="isDefined(actual)" v-on="actual.length > maxLengthDisplayedCategory ? on : ''">
+                      {{ abbreviateMiddle(actual, maxLengthDisplayedCategory) }}
+                    </div>
                     <div v-else>-</div>
                   </div>
                 </template>
-                <span>{{actual}}</span>
+                <span>{{ actual }}</span>
               </v-tooltip>
 
             </div>
@@ -62,7 +70,7 @@
         </v-col>
         <v-col lg="4">
           <div>Actual <span v-show="isDefined(actual) && modified">(before modification)</span></div>
-          <div v-if="isDefined(actual)" class="text-h6">{{  actual | formatTwoDigits }}</div>
+          <div v-if="isDefined(actual)" class="text-h6">{{ actual | formatTwoDigits }}</div>
           <div v-else>-</div>
         </v-col>
         <v-col lg="4">
@@ -84,7 +92,8 @@
     </v-card-text>
 
     <v-card-actions v-show="Object.keys(resultProbabilities).length > predCategoriesN">
-      <ResultPopover :resultProbabilities='resultProbabilities' :prediction='prediction' :actual='actual' :classColorPrediction='classColorPrediction'></ResultPopover>
+      <ResultPopover :resultProbabilities='resultProbabilities' :prediction='prediction' :actual='actual'
+                     :classColorPrediction='classColorPrediction'></ResultPopover>
     </v-card-actions>
 
   </v-card>
@@ -105,12 +114,13 @@ import {isClassification} from "@/ml-utils";
 import {abbreviateMiddle, maxLengthDisplayedCategory} from "@/results-utils";
 import * as _ from "lodash";
 import {CanceledError} from "axios";
+import SuggestionPopover from "@/components/SuggestionPopover.vue";
 
 use([CanvasRenderer, BarChart, GridComponent]);
 Vue.component("v-chart", ECharts);
 
 @Component({
-  components: {OverlayLoader, ResultPopover}
+  components: {SuggestionPopover, OverlayLoader, ResultPopover}
 })
 export default class PredictionResults extends Vue {
   @Prop({required: true}) model!: ModelDTO;
@@ -140,7 +150,7 @@ export default class PredictionResults extends Vue {
     this.sizeResultCard = this.$parent?.$el.querySelector('#resultCard')?.clientWidth;
     await this.submitPrediction()
     window.addEventListener('resize', () => {
-        this.sizeResultCard = this.$parent?.$el.querySelector('#resultCard')?.clientWidth;
+      this.sizeResultCard = this.$parent?.$el.querySelector('#resultCard')?.clientWidth;
     })
   }
 
@@ -193,7 +203,7 @@ export default class PredictionResults extends Vue {
   }
 
 
-  get classColorPrediction(){
+  get classColorPrediction() {
     if (!this.isDefined(this.actual)) return 'info--text text--darken-2'
     else return this.isCorrectPrediction ? 'primary--text' : 'error--text'
   }
@@ -211,7 +221,7 @@ export default class PredictionResults extends Vue {
     else return undefined
   }
 
-  get maxLengthDisplayedCategory(){
+  get maxLengthDisplayedCategory() {
     return maxLengthDisplayedCategory(this.sizeResultCard);
   }
 
@@ -223,10 +233,10 @@ export default class PredictionResults extends Vue {
    * @param n number of entries to keep
    * @private
    */
-   private firstNSortedByKey(obj: Object, n: number) {
+  private firstNSortedByKey(obj: Object, n: number) {
 
     let listed = Object.entries(obj)
-        .sort(([,a],[,b]) => a-b)
+        .sort(([, a], [, b]) => a - b)
         .slice(-n);
     return Object.fromEntries(listed)
   }
@@ -240,9 +250,9 @@ export default class PredictionResults extends Vue {
    * @param n number of slice to keep
    * @private
    */
-  private sliceLongCategoryName(obj, max_size){
-    let res = Object.fromEntries(Object.entries(obj).map(function(elt) {
-      return ["".concat(...[abbreviateMiddle(elt[0], max_size)]),elt[1]]
+  private sliceLongCategoryName(obj, max_size) {
+    let res = Object.fromEntries(Object.entries(obj).map(function (elt) {
+      return ["".concat(...[abbreviateMiddle(elt[0], max_size)]), elt[1]]
     }))
     return res
   }
@@ -251,10 +261,10 @@ export default class PredictionResults extends Vue {
     return !_.isNil(val);
   }
 
-  get chartInit(){
-      return {
-          renderer: 'svg'
-      }
+  get chartInit() {
+    return {
+      renderer: 'svg'
+    }
   }
 
   get chartOptions() {
@@ -332,8 +342,9 @@ div.caption {
 .v-data-table tbody td {
   font-size: 10px !important;
 }
+
 .v-tooltip__content {
-        max-width: 400px !important;
-        overflow-wrap: anywhere;
-    }
+  max-width: 400px !important;
+  overflow-wrap: anywhere;
+}
 </style>

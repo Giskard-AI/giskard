@@ -2,12 +2,13 @@ from enum import Enum
 
 from giskard.core.core import SupportedModelTypes
 from giskard.datasets.base import Dataset
-from giskard.ml_worker.testing.test_result import TestResult
 from giskard.ml_worker.generated import ml_worker_pb2
-from giskard.testing.tests.performance import test_f1, test_rmse
+from giskard.ml_worker.testing.test_result import TestResult
 from giskard.models.base import BaseModel
 from giskard.slicing.slice import GreaterThan, LowerThan, EqualTo, Query, QueryBasedSliceFunction
 from giskard.testing.tests.metamorphic import test_metamorphic_invariance
+from giskard.testing.tests.performance import test_f1, test_rmse
+from ml_worker_pb2 import CallToActionKind, PushKind
 
 
 class SupportedPerturbationType(Enum):
@@ -20,6 +21,7 @@ class Push:
     push_title = None
     details = None
     test = None
+    pushkind = None
 
 
 class ExamplePush(Push):
@@ -29,6 +31,7 @@ class ExamplePush(Push):
 
     def to_grpc(self):
         return ml_worker_pb2.Push(
+            kind=self.pushkind,
             push_title=self.push_title,
             push_details=self.details,
         )
@@ -49,10 +52,10 @@ class ExamplePush(Push):
 
 
 class OverconfidencePush(ExamplePush):
-    pushkind = PushKind.Overconfidence
 
     def __init__(self, training_label, training_label_proba, dataset_row, predicted_label):
         self._overconfidence()
+        self.pushkind = PushKind.Overconfidence
 
         self.training_label_proba = training_label_proba
         self.training_label = training_label
@@ -92,10 +95,10 @@ class OverconfidencePush(ExamplePush):
 
 
 class BorderlinePush(ExamplePush):
-    pushkind = PushKind.Borderline
 
     def __init__(self, max_proba, second_proba, training_label, training_label_proba, dataset_row):
         self._borderline()
+        self.pushkind = PushKind.Borderline
         self.max_proba = max_proba
         self.second_proba = second_proba
 
@@ -141,6 +144,7 @@ class FeaturePush(Push):
 
     def to_grpc(self):
         return ml_worker_pb2.Push(
+            kind=self.pushkind,
             key=self.key,
             value=str(self.value),
             push_title=self.push_title,
@@ -149,7 +153,6 @@ class FeaturePush(Push):
 
 
 class ContributionPush(FeaturePush):
-    pushkind = PushKind.Contribution
     slicing_function = None
     bounds = None
     model_type = None
@@ -157,6 +160,7 @@ class ContributionPush(FeaturePush):
     test = None
 
     def __init__(self, value=None, feature=None, bounds=None, model_type=None, correct_prediction=None):
+        self.pushkind = PushKind.Contribution
         # FeaturePush attributes initialisation
         self.value = value
         self.bounds = bounds
@@ -245,12 +249,12 @@ class ContributionPush(FeaturePush):
 
 
 class PerturbationPush(FeaturePush):
-    pushkind = PushKind.Perturbation
     text_perturbed: list = None
     transformation_function: list = None
     test = test_metamorphic_invariance
 
     def __init__(self, value=None, feature=None, text_perturbed=None, transformation_function=None):
+        self.pushkind = PushKind.Perturbation
         # FeaturePush attributes
         self.key = feature
         self.value = value
