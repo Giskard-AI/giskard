@@ -497,11 +497,11 @@ class MLWorkerServiceImpl(MLWorkerServicer):
                 f"Make sure it's installed in the ML Worker environment."
                 "To have more information on ML Worker, please see: https://docs.giskard.ai/start/guides/installation/ml-worker"
             ) from e
-        from giskard.push.contribution import contribution
-        from giskard.push.perturbation import perturbation
+        from giskard.push.contribution import create_contribution_push
+        from giskard.push.perturbation import create_perturbation_push
 
-        contribs = contribution(model, dataset, request.rowidx)
-        perturbs = perturbation(model, dataset, request.rowidx)
+        contribs = create_contribution_push(model, dataset, request.rowidx)
+        perturbs = create_perturbation_push(model, dataset, request.rowidx)
         overconf = overconfidence(model, dataset, request.rowidx)
         borderl = borderline(model, dataset, request.rowidx)
 
