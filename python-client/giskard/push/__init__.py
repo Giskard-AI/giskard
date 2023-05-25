@@ -6,11 +6,12 @@ from giskard.ml_worker.generated import ml_worker_pb2
 from giskard.ml_worker.testing.test_result import TestResult
 from giskard.models.base import BaseModel
 from giskard.slicing.slice import GreaterThan, LowerThan, EqualTo, Query, QueryBasedSliceFunction
+
+from giskard.ml_worker.generated.ml_worker_pb2 import CallToActionKind, PushKind
 from giskard.testing.tests.metamorphic import test_metamorphic_invariance
 from giskard.testing.tests.performance import test_f1, test_rmse
 from ml_worker_pb2 import CallToActionKind, PushKind
 
-from giskard.ml_worker.generated.ml_worker_pb2  import CallToActionKind, PushKind
 
 class SupportedPerturbationType(Enum):
     NUMERIC = "numeric"
@@ -244,15 +245,15 @@ class ContributionPush(FeaturePush):
 
     def _test_selection(self):
         if self.model_type == SupportedModelTypes.REGRESSION:
-            self.test = test_f1
+            self.test = test_f1()
         elif self.model_type == SupportedModelTypes.CLASSIFICATION:
-            self.test = test_rmse
+            self.test = test_rmse()
 
 
 class PerturbationPush(FeaturePush):
     text_perturbed: list = None
     transformation_function: list = None
-    test = test_metamorphic_invariance
+    test = None
 
     def __init__(self, value=None, feature=None, text_perturbed=None, transformation_function=None):
         self.pushkind = PushKind.Perturbation
@@ -262,6 +263,9 @@ class PerturbationPush(FeaturePush):
         # PerturbationPush attributes
         self.text_perturbed = text_perturbed
         self.transformation_function = transformation_function
+        self.test = test_metamorphic_invariance(
+            transformation_function=self.transformation_function
+        )
         # Push text creation
         self._perturbation(feature, value)
 
