@@ -16,7 +16,7 @@ def create_contribution_push(model, ds, idrow):
         shap_res = _contribution_push(model, ds, idrow)
         slice_df = ds.slice(lambda df: df.loc[[idrow]], row_level=False)
         values = slice_df.df
-        training_label = values[ds.target].values
+        training_label = values[ds.target].values[0]
         prediction = model.predict(slice_df).prediction
         if shap_res is not None:
             for el in shap_res:
@@ -62,17 +62,18 @@ def create_contribution_push(model, ds, idrow):
 
     if model.meta.model_type == SupportedModelTypes.REGRESSION and _existing_shap_values(ds):
         shap_res = _contribution_push(model, ds, idrow)
-        values = ds.df.iloc[idrow]
+        slice_df = ds.slice(lambda df: df.loc[[idrow]], row_level=False)
+        values = slice_df.df
 
-        y = values[ds.target]
-        y_hat = model.model.predict(ds.df.drop(columns=[ds.target]).iloc[[idrow]])
+        y = values[ds.target].values[0]
+        y_hat = model.predict(slice_df).prediction[0]
         error = abs(y_hat - y)
         rmse_res = test_rmse(ds, model).execute() # @TODO: Try to compute it first
         # print(shap_res)
         if shap_res is not None:
             for el in shap_res:
 
-                bounds = slice_bounds(feature=el, value=values[el], ds=ds)
+                bounds = slice_bounds(feature=el, value=values[el].values[0], ds=ds)
                 if abs(error - y) / y >= 0.2:
                     res = ContributionPush(feature=el,
                                            value=values[el].values[0],
