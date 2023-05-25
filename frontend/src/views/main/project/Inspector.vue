@@ -100,7 +100,7 @@
                             :datasetId="dataset.id"
                             :row-nb="rowNb"
                             :column="c.name"
-                            :suggestion="suggestion"
+                            :suggestion="[suggestion.perturbation, suggestion.contribution]"
                         />
                       </div>
                     </div>
@@ -132,6 +132,13 @@
               :modified="dirty || isInputNotOriginal"
               :debouncingTimeout="debouncingTimeout"
               @result="setResult"
+          />
+          <SuggestionPopover
+              :modelId="model.id"
+              :datasetId="dataset.id"
+              :row-nb="rowNb"
+              column=""
+              :suggestion="[suggestion.overconfidence, suggestion.borderline]"
           />
           <v-card class="mb-4" outlined>
             <v-card-title>
@@ -197,7 +204,7 @@ import PredictionExplanations from './PredictionExplanations.vue';
 import TextExplanation from './TextExplanation.vue';
 import {api} from '@/api';
 import FeedbackPopover from '@/components/FeedbackPopover.vue';
-import {DatasetDTO, FeatureMetadataDTO, ModelDTO, PushDTO} from "@/generated-sources";
+import {DatasetDTO, FeatureMetadataDTO, ModelDTO} from "@/generated-sources";
 import {isClassification} from "@/ml-utils";
 import mixpanel from "mixpanel-browser";
 import {anonymize} from "@/utils";
@@ -229,7 +236,7 @@ export default class Inspector extends Vue {
   classificationResult = null
   isClassification = isClassification
   debouncingTimeout: number = 500;
-  suggestion: PushDTO[] = [];
+  suggestion: any = {};
 
   catalogStore = useCatalogStore()
 

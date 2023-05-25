@@ -6,7 +6,7 @@ from typing import Sequence
 import numpy as np
 import pandas as pd
 
-from ..core.core import DatasetProcessFunctionMeta
+from ml_worker_pb2 import DatasetProcessFunctionMeta
 from ..ml_worker.testing.registry.registry import get_object_uuid
 from ..ml_worker.testing.registry.slicing_function import SlicingFunction
 
@@ -145,8 +145,8 @@ class QueryBasedSliceFunction(SlicingFunction):
         self.meta.uuid = get_object_uuid(query)
         self.meta.code = str(self)
         self.meta.name = str(self)
-        self.meta.display_name = str(self)
-        self.meta.tags = ["pickle", "scan"]
+        # self.meta.display_name = str(self)
+        # self.meta.tags = ["pickle", "scan"]
         self.meta.doc = 'Automatically generated slicing function'
 
     def execute(self, data: pd.DataFrame):
