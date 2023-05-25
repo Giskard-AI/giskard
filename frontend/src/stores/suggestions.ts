@@ -3,7 +3,14 @@ import {defineStore} from "pinia";
 import {api} from "@/api";
 
 interface State {
-    pushes: { [modelId: string]: { [datasetId: string]: { [rowNb: number]: PushDTO[] } } };
+    pushes: { [modelId: string]: { [datasetId: string]: { [rowNb: number]: Pushes } } };
+}
+
+interface Pushes {
+    perturbation: PushDTO,
+    contribution: PushDTO,
+    borderline: PushDTO,
+    overconfidence: PushDTO
 }
 
 export const usePushStore = defineStore('push', {

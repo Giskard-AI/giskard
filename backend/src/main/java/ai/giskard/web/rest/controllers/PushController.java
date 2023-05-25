@@ -19,9 +19,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.constraints.NotNull;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @RestController
 @RequiredArgsConstructor
@@ -38,7 +38,7 @@ public class PushController {
 
 
     @GetMapping("/pushes/{modelId}/{datasetId}/{idx}")
-    public List<PushDTO> getPushes(@PathVariable @NotNull UUID modelId, @PathVariable @NotNull UUID datasetId, @PathVariable @NotNull int idx) {
+    public Map<String, PushDTO> getPushes(@PathVariable @NotNull UUID modelId, @PathVariable @NotNull UUID datasetId, @PathVariable @NotNull int idx) {
         ProjectModel model = modelRepository.getById(modelId);
         Dataset dataset = datasetRepository.getMandatoryById(datasetId);
         Project project = dataset.getProject();
@@ -46,16 +46,21 @@ public class PushController {
         ArtifactRef datasetRef = ArtifactRef.newBuilder().setProjectKey(project.getKey()).setId(dataset.getId().toString()).build();
         ArtifactRef modelRef = ArtifactRef.newBuilder().setProjectKey(project.getKey()).setId(model.getId().toString()).build();
 
-        try (MLWorkerClient client = mlWorkerService.createClient(true)) {
+        try (MLWorkerClient client = mlWorkerService.createClient(project.isUsingInternalWorker())) {
             SuggestFilterResponse resp = client.getBlockingStub().suggestFilter(SuggestFilterRequest.newBuilder()
                 .setDataset(datasetRef)
                 .setModel(modelRef)
                 .setRowidx(idx)
                 .build());
 
-            return resp.getPushesList().stream()
-                .map(PushDTO::fromGrpc)
-                .collect(Collectors.toList());
+            Map<String, PushDTO> dtos = new HashMap<>();
+
+            dtos.put("perturbation", PushDTO.fromGrpc(resp.getPerturbation()));
+            dtos.put("contribution", PushDTO.fromGrpc(resp.getContribution()));
+            dtos.put("borderline", PushDTO.fromGrpc(resp.getBorderline()));
+            dtos.put("overconfidence", PushDTO.fromGrpc(resp.getOverconfidence()));
+
+            return dtos;
         }
     }
 

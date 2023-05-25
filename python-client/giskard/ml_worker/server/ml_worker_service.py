@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import math
 import os
 import platform
 import sys
@@ -10,7 +11,6 @@ from pathlib import Path
 
 import google
 import grpc
-import math
 import numpy as np
 import pandas as pd
 import pkg_resources
@@ -39,6 +39,7 @@ from giskard.models.model_explanation import (
     explain_text,
 )
 from giskard.path_utils import model_path, dataset_path
+from giskard.push.prediction import overconfidence, borderline
 
 logger = logging.getLogger(__name__)
 
@@ -509,26 +510,34 @@ class MLWorkerServiceImpl(MLWorkerServicer):
 
         contribs = contribution(model, dataset, request.rowidx)
         perturbs = perturbation(model, dataset, request.rowidx)
+        overconf = overconfidence(model, dataset, request.rowidx)
+        borderl = borderline(model, dataset, request.rowidx)
 
-        pushes = []
+        if contribs is not None:
+            contrib_grpc = contribs.to_grpc()
+        else:
+            contrib_grpc = None
 
-        for c in contribs:
-            if c is not None:
-                pushes.append(c)
-        for p in perturbs:
-            if p is not None:
-                pushes.append(p)
+        if perturbs is not None:
+            perturb_grpc = perturbs.to_grpc()
+        else:
+            perturb_grpc = None
 
-        # if request.upload_kind != 0:
-            # Get the push upload request
-            # if request.upload_kind == 1:
-                # slicingfunc = pushes[request.upload_index].slicing_function
-                # Need to figure out how to upload the sliiiiice
-                # slicingfunc.upload()
+        if overconf is not None:
+            overconf_grpc = overconf.to_grpc()
+        else:
+            overconf_grpc = None
+
+        if borderl is not None:
+            borderl_grpc = borderl.to_grpc()
+        else:
+            borderl_grpc = None
 
         return ml_worker_pb2.SuggestFilterResponse(
-            # Map pushes to pushes to_grpc
-            pushes=[p.to_grpc() for p in pushes],
+            contribution=contrib_grpc,
+            perturbation=perturb_grpc,
+            overconfidence=overconf_grpc,
+            borderline=borderl_grpc,
         )
 
     @staticmethod

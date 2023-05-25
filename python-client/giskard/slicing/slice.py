@@ -10,7 +10,7 @@ import numpy as np
 import pandas as pd
 
 from ..utils.display import format_number
-from ..core.core import DatasetProcessFunctionMeta, DatasetProcessFunctionType
+from ml_worker_pb2 import DatasetProcessFunctionMeta, DatasetProcessFunctionType
 from ..ml_worker.testing.registry.registry import get_object_uuid
 from ..ml_worker.testing.registry.slicing_function import SlicingFunction
 
@@ -313,8 +313,8 @@ class QueryBasedSliceFunction(SlicingFunction):
         self.meta.clauses = self.query.to_clauses()
         self.meta.code = ""
         self.meta.name = str(self)
-        self.meta.display_name = str(self)
-        self.meta.tags = ["pickle", "scan"]
+        # self.meta.display_name = str(self)
+        # self.meta.tags = ["pickle", "scan"]
         self.meta.doc = 'Automatically generated slicing function'
 
     def execute(self, data: pd.DataFrame):
