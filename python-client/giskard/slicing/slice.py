@@ -9,7 +9,7 @@ from typing import Callable, Sequence
 import numpy as np
 import pandas as pd
 
-from ..core.core import DatasetProcessFunctionMeta
+from ..core.core import DatasetProcessFunctionMeta, DatasetProcessFunctionType
 from ..ml_worker.testing.registry.registry import get_object_uuid
 from ..ml_worker.testing.registry.slicing_function import SlicingFunction
 
@@ -223,7 +223,7 @@ class QueryBasedSliceFunction(SlicingFunction):
     def __init__(self, query: Query):
         super().__init__(None, row_level=False, cell_level=False)
         self.query = query
-        self.meta = DatasetProcessFunctionMeta(type='SLICE', no_code=True)
+        self.meta = DatasetProcessFunctionMeta(type='SLICE', process_type=DatasetProcessFunctionType.CLAUSES)
         self.meta.uuid = get_object_uuid(query)
         self.meta.code = self.query.init_code()
         self.meta.name = str(self)
