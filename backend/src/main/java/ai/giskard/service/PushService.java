@@ -24,8 +24,7 @@ public class PushService {
                 .setDataset(dataset)
                 .setModel(model)
                 .setRowidx(idx)
-                .setUploadKindValue(uploadKind)
-                .setUploadIndex(pushIdx)
+                .setCtaKindValue(uploadKind)
                 .setProjectKey(projectKey)
                 .build());
 
