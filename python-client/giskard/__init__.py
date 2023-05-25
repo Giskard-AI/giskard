@@ -7,7 +7,7 @@ from giskard.client.giskard_client import GiskardClient
 from giskard.client.project import Project
 from giskard.datasets.base import Dataset
 from giskard.core.suite import Suite, SuiteInput
-from giskard.ml_worker.core.test_result import TestResult
+from giskard.ml_worker.testing.test_result import TestResult
 from giskard.ml_worker.generated.ml_worker_pb2 import SingleTestResult
 from giskard.ml_worker.testing.registry.decorators import test
 from giskard.ml_worker.testing.registry.giskard_test import GiskardTest

@@ -26,7 +26,7 @@ from giskard.ml_worker.core.model_explanation import (
     explain_text,
 )
 from giskard.core.suite import Suite, ModelInput, DatasetInput, SuiteInput
-from giskard.ml_worker.core.test_result import TestResult, TestMessageLevel
+from giskard.ml_worker.testing.test_result import TestResult, TestMessageLevel
 from giskard.ml_worker.exceptions.IllegalArgumentError import IllegalArgumentError
 from giskard.ml_worker.exceptions.giskard_exception import GiskardException
 from giskard.ml_worker.generated import ml_worker_pb2
