@@ -7,6 +7,7 @@ from giskard.ml_worker.generated import ml_worker_pb2
 from giskard.testing.tests.performance import test_f1, test_rmse
 from giskard.models.base import BaseModel
 from giskard.slicing.slice import GreaterThan, LowerThan, EqualTo, Query, QueryBasedSliceFunction
+from giskard.testing.tests.metamorphic import test_metamorphic_invariance
 
 
 class SupportedPerturbationType(Enum):
@@ -247,8 +248,7 @@ class PerturbationPush(FeaturePush):
     pushkind = PushKind.Perturbation
     text_perturbed: list = None
     transformation_function: list = None
-
-    # @TODO: Add metamorphic test
+    test = test_metamorphic_invariance
 
     def __init__(self, value=None, feature=None, text_perturbed=None, transformation_function=None):
         # FeaturePush attributes
