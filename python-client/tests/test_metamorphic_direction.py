@@ -1,7 +1,7 @@
 import pandas as pd
 import pytest
 
-import giskard.ml_worker.testing.tests.metamorphic as metamorphic
+import giskard.testing.tests.metamorphic as metamorphic
 from giskard.datasets.base import Dataset
 from giskard.ml_worker.testing.registry.transformation_function import transformation_function
 

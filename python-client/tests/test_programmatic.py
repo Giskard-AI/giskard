@@ -4,7 +4,7 @@ from giskard import test
 from giskard.datasets.base import Dataset
 from giskard.ml_worker.core.suite import Suite, SuiteInput
 from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction
-from giskard.ml_worker.testing.tests.performance import test_auc, test_f1, test_diff_f1
+from giskard.testing.tests.performance import test_auc, test_f1, test_diff_f1
 from giskard.models.base import BaseModel
 from tests.utils import MockedClient
 

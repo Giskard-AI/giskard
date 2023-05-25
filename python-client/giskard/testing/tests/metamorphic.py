@@ -11,7 +11,7 @@ from giskard.ml_worker.testing.stat_utils import equivalence_wilcoxon, paired_wi
 from giskard.ml_worker.testing.utils import Direction, validate_classification_label
 from giskard.ml_worker.utils.logging import timer
 from giskard.models.base import BaseModel
-from ..utils import check_slice_not_empty
+from giskard.ml_worker.testing.utils import check_slice_not_empty
 
 
 def _predict_numeric_result(model: BaseModel, ds: Dataset, output_proba=True, classification_label=None):

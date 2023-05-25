@@ -15,7 +15,7 @@ from giskard.ml_worker.testing.registry.decorators import test
 from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction
 from giskard.ml_worker.testing.utils import validate_classification_label
 from giskard.models.base import BaseModel
-from ..utils import check_slice_not_empty
+from giskard.ml_worker.testing.utils import check_slice_not_empty
 
 other_modalities_pattern = "^other_modalities_[a-z0-9]{32}$"
 
