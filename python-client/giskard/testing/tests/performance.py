@@ -20,6 +20,7 @@ from giskard.ml_worker.testing.test_result import TestResult
 from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction
 from giskard.models.base import BaseModel
 from giskard.ml_worker.testing.utils import check_slice_not_empty
+from giskard.models.utils import np_types_to_native, np_type_to_native
 
 
 def _verify_target_availability(dataset):
@@ -106,7 +107,7 @@ def _test_diff_prediction(
         actual_slices_size=[len(actual_dataset)],
         reference_slices_size=[len(reference_dataset)],
         metric=rel_change,
-        passed=passed,
+        passed=np_type_to_native(passed),
     )
 
 
