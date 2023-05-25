@@ -1,8 +1,8 @@
 """Statistical tests"""
 import numpy as np
 import pandas as pd
-from scipy.stats import chisquare
 
+from giskard.core.core import SupportedModelTypes
 from giskard import test
 from giskard.datasets.base import Dataset
 from giskard.ml_worker.testing.test_result import TestResult, TestMessage, TestMessageLevel
@@ -230,23 +230,28 @@ def test_disparate_impact(model: BaseModel, dataset: Dataset, protected_slicing_
 
 @test(name="Right Label", tags=["heuristic", "classification"])
 def test_independence_chi_square(model: BaseModel, dataset: Dataset, column_name: str,
-                                 slicing_function: SlicingFunction = None, threshold: float = 0.1) -> TestResult:
+                                 slicing_function: SlicingFunction, threshold: float = 0.1) -> TestResult:
+    sliced_dataset = dataset.slice(slicing_function)
+    check_slice_not_empty(sliced_dataset=sliced_dataset, dataset_name="dataset",
+                          test_name="test_independence_chi_square")
+    overlapping_idx = dataset.df[dataset.df.isin(sliced_dataset.df)].dropna().index.values
+    overlapping_array = np.zeros(len(dataset.df))
+    overlapping_array[overlapping_idx] = 1
 
-    if slicing_function:
-        dataset = dataset.slice(slicing_function)
-    check_slice_not_empty(sliced_dataset=dataset, dataset_name="dataset", test_name="test_disparate_impact")
-
-
-    predictions = model.predict(dataset).prediction
-    crosstab = pd.crosstab(dataset.df[column_name], predictions)
-    chisquare_metric = chisquare(crosstab, axis=None)
-
-    pvalue = chisquare_metric.pvalue
-    passed = pvalue < threshold
-
+    if model.meta.model_type == SupportedModelTypes.CLASSIFICATION:
+        from scipy.stats import chi2_contingency
+        predictions = model.predict(dataset).prediction
+        crosstab = pd.crosstab(overlapping_array, predictions)
+        p_value = chi2_contingency(crosstab)[1]
+        passed = p_value < threshold
+    elif model.meta.model_type == SupportedModelTypes.REGRESSION:
+        from scipy.stats import ttest_ind
+        predictions = model.predict(dataset).prediction
+        p_value = ttest_ind(overlapping_array, predictions, alternative="two-sided", equal_var=True).pvalue
+        passed = p_value < threshold
 
     return TestResult(
         actual_slices_size=[len(dataset)],
-        metric=pvalue,
+        metric=p_value,
         passed=passed,
     )
