@@ -11,7 +11,7 @@ from torch.hub import load_state_dict_from_url
 from torchdata.datapipes.iter import IterableWrapper
 from torchtext.datasets import SST2
 from torchtext.models import RobertaClassificationHead, XLMR_BASE_ENCODER
-from giskard import wrap_model, wrap_dataset
+from giskard import Model, Dataset
 ```
 
 ## Wrap dataset
@@ -20,7 +20,7 @@ dev_datapipe = SST2(split="dev")
 dev_dataframe = pd.DataFrame(dev_datapipe, columns=["text", "label"])
 ```
 ```python
-wrapped_dataset = wrap_dataset(dev_dataframe.head(), 
+wrapped_dataset = Dataset(dev_dataframe.head(), 
                                name="test dataset", 
                                target="label")
 ```
@@ -71,7 +71,7 @@ def my_softmax(x):
     return torch_softmax(x)
 ```
 ```python
-wrapped_model = wrap_model(name="SST2-XLMR_BASE_ENCODER",
+wrapped_model = Model(name="SST2-XLMR_BASE_ENCODER",
                            model=model,
                            feature_names=["text"],
                            model_type="classification",

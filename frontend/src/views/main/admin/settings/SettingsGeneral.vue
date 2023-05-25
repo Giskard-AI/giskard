@@ -84,24 +84,25 @@
               <span>ML Worker</span>
               <v-spacer/>
               <v-tabs class="worker-tabs" v-model="selectedWorkerTab">
-                <v-tab :disabled="mlWorkerSettingsLoading" class="worker-tab">
-                  <span>external</span>
-                  <v-icon v-show="!mlWorkerSettingsLoading" size="10"
-                          :color="isWorkerAvailable(false) ? 'green': 'red'">mdi-circle
-                  </v-icon>
-                  <v-progress-circular size="20" indeterminate v-show="mlWorkerSettingsLoading"/>
-                </v-tab>
-                <v-tab :disabled="mlWorkerSettingsLoading" class="worker-tab">
-                  <span>internal</span>
-                  <v-icon v-show="!mlWorkerSettingsLoading" size="10" :color="isWorkerAvailable(true) ? 'green': 'red'">
-                    mdi-circle
-                  </v-icon>
-                  <v-progress-circular size="20" indeterminate v-show="mlWorkerSettingsLoading"/>
-                </v-tab>
+                  <v-tab :disabled="mlWorkerSettingsLoading" class="worker-tab">
+                      <span>external</span>
+                      <v-icon v-show="!mlWorkerSettingsLoading" size="10"
+                              :color="isWorkerAvailable(false) ? 'green': 'red'">mdi-circle
+                      </v-icon>
+                      <v-progress-circular size="20" indeterminate v-show="mlWorkerSettingsLoading"/>
+                  </v-tab>
+                  <v-tab :disabled="mlWorkerSettingsLoading" class="worker-tab">
+                      <span>internal</span>
+                      <v-icon v-show="!mlWorkerSettingsLoading" size="10"
+                              :color="isWorkerAvailable(true) ? 'green': 'red'">
+                          mdi-circle
+                      </v-icon>
+                      <v-progress-circular size="20" indeterminate v-show="mlWorkerSettingsLoading"/>
+                  </v-tab>
               </v-tabs>
-              <v-btn icon @click="initMLWorkerInfo">
-                <v-icon>refresh</v-icon>
-              </v-btn>
+                <v-btn icon @click="initMLWorkerInfo">
+                    <v-icon>refresh</v-icon>
+                </v-btn>
             </v-card-title>
             <v-card-text>
               <v-alert
@@ -179,7 +180,7 @@
                 <v-container v-show="!mlWorkerSettingsLoading" class="pa-0">
                   <div v-show="!externalWorkerSelected">
                     <p>Not available. Check that internal ML Worker is running or start it with</p>
-                    <p><code class="text-body-1">docker-compose up -d ml-worker</code></p>
+                    <p><code class="text-body-1">giskard server restart worker</code></p>
                   </div>
                   <div v-show="externalWorkerSelected">
                     <v-alert
@@ -234,28 +235,27 @@ const installedPackagesSearch = ref<string>("");
 const upgradeModal = ref<boolean>(false);
 
 const installedPackagesHeaders = [{text: 'Name', value: 'name', width: '70%'}, {
-  text: 'Version',
-  value: 'version',
-  width: '30%'
+    text: 'Version',
+    value: 'version',
+    width: '30%'
 }];
 
 
 onBeforeMount(async () => {
-  // TODO: Vue 2 does not support top level await in <script setup>, this can be moved when we migrate to Vue 3
-  await initMLWorkerInfo();
+    await initMLWorkerInfo();
 })
 
 const externalWorkerSelected = computed(() => selectedWorkerTab.value == 0);
 
 watch(() => [externalWorkerSelected.value, allMLWorkerSettings.value], () => {
-  if (allMLWorkerSettings.value.length) {
-    currentWorker.value = allMLWorkerSettings.value.find(value => value.isRemote === externalWorkerSelected.value) || null;
-    installedPackagesData.value = currentWorker.value !== null ?
-        Object.entries(currentWorker.value?.installedPackages).map(([key, value]) => ({
-          name: key,
-          version: value
-        })) : [];
-  }
+    if (allMLWorkerSettings.value.length) {
+        currentWorker.value = allMLWorkerSettings.value.find(value => value.isRemote === externalWorkerSelected.value) || null;
+        installedPackagesData.value = currentWorker.value !== null ?
+            Object.entries(currentWorker.value?.installedPackages).map(([key, value]) => ({
+                name: key,
+                version: value
+            })) : [];
+    }
 }, {deep: true})
 
 function isWorkerAvailable(isInternal: boolean): boolean {
@@ -272,15 +272,15 @@ async function saveGeneralSettings(settings: GeneralSettings) {
 }
 
 async function initMLWorkerInfo() {
-  try {
-    currentWorker.value = null;
-    mlWorkerSettingsLoading.value = true;
-    allMLWorkerSettings.value = await api.getMLWorkerSettings();
-    currentWorker.value = allMLWorkerSettings.value.find(value => value.isRemote === externalWorkerSelected.value) || null;
-  } catch (error) {
-  } finally {
-    mlWorkerSettingsLoading.value = false;
-  }
+    try {
+        currentWorker.value = null;
+        mlWorkerSettingsLoading.value = true;
+        allMLWorkerSettings.value = await api.getMLWorkerSettings();
+        currentWorker.value = allMLWorkerSettings.value.find(value => value.isRemote === externalWorkerSelected.value) || null;
+    } catch (error) {
+    } finally {
+        mlWorkerSettingsLoading.value = false;
+    }
 }
 
 function epochToDate(epoch: number) {
@@ -289,7 +289,6 @@ function epochToDate(epoch: number) {
 
 async function stopMLWorker() {
   await api.stopMLWorker(!externalWorkerSelected.value);
-  await initMLWorkerInfo();
 }
 </script>
 

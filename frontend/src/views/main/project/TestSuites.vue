@@ -30,11 +30,11 @@
 
 <script lang="ts" setup>
 
-import { api } from "@/api";
-import { onMounted } from "vue";
+import {api} from "@/api";
+import {onActivated} from "vue";
 import router from '@/router';
-import { useTestSuitesStore } from "@/stores/test-suites";
-import { storeToRefs } from "pinia";
+import {useTestSuitesStore} from "@/stores/test-suites";
+import {storeToRefs} from "pinia";
 
 const props = defineProps<{
     projectId: number
@@ -44,7 +44,7 @@ const props = defineProps<{
 const testSuitesStore = useTestSuitesStore();
 const { testSuites } = storeToRefs(testSuitesStore);
 
-onMounted(async () => await testSuitesStore.loadTestSuites(props.projectId))
+onActivated(async () => await testSuitesStore.loadTestSuites(props.projectId))
 
 async function createTestSuite() {
     const project = await api.getProject(props.projectId)
@@ -64,7 +64,7 @@ async function createTestSuite() {
 
 <style scoped>
 .test-suite-logo {
-    width: max(17.5vw, 150px);
+    width: min(17.5vw, 150px);
     margin-top: 2rem;
 }
 </style>

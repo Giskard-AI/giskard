@@ -9,7 +9,6 @@ import ai.giskard.repository.ProjectRepository;
 import ai.giskard.repository.ml.DatasetRepository;
 import ai.giskard.repository.ml.ModelRepository;
 import ai.giskard.security.PermissionEvaluator;
-import ai.giskard.service.GiskardRuntimeException;
 import ai.giskard.service.ModelService;
 import ai.giskard.service.ProjectFileDeletionService;
 import ai.giskard.service.UsageService;
@@ -88,10 +87,11 @@ public class ModelController {
     @PostMapping("project/{projectKey}/models")
     @PreAuthorize("@permissionEvaluator.canWriteProjectKey(#projectKey)")
     public void createModelMeta(@PathVariable("projectKey") @NotNull String projectKey, @RequestBody @NotNull ModelDTO dto) {
-        Project project = projectRepository.getOneByKey(projectKey);
         if (modelRepository.existsById(dto.getId())) {
-            throw new GiskardRuntimeException(String.format("Model already exists %s", dto.getId()));
+            log.info("Model already exists {}", dto.getId());
+            return;
         }
+        Project project = projectRepository.getOneByKey(projectKey);
         ProjectModel model = giskardMapper.fromDTO(dto);
         model.setProject(project);
         modelRepository.save(model);

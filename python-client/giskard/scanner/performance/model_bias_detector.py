@@ -13,35 +13,41 @@ from ...ml_worker.testing.registry.slicing_function import SlicingFunction
 from .issues import PerformanceIssue, PerformanceIssueInfo
 from .metrics import PerformanceMetric, get_metric
 from ..decorators import detector
-from ...client.python_utils import warning
+from ..logger import logger
 
 
 @detector(name="model_bias", tags=["model_bias", "classification", "regression"])
 class ModelBiasDetector:
-    def __init__(self, metrics: Optional[Sequence] = None, threshold: float = 0.1, method: str = "tree"):
+    def __init__(self, metrics: Optional[Sequence] = None, threshold: float = 0.05, method: str = "tree"):
         self.metrics = metrics
         self.threshold = threshold
         self.method = method
 
     def run(self, model: BaseModel, dataset: Dataset):
+        logger.debug(
+            f"ModelBiasDetector: Running with metrics={self.metrics}, threshold={self.threshold}, method={self.method}"
+        )
+
         # Check if we have enough data to run the scan
         if len(dataset) < 100:
-            warning("Skipping model bias scan: the dataset is too small.")
+            logger.warning("ModelBiasDetector: Skipping scan because the dataset is too small (< 100 samples).")
             return []
 
         # If the dataset is very large, limit to a subsample
-        max_data_size = 1_000_000 // len(model.meta.feature_names)
+        max_data_size = 10_000_000 // len(model.meta.feature_names or dataset.columns)
         if len(dataset) > max_data_size:
+            logger.debug(f"ModelBiasDetector: Limiting dataset size to {max_data_size} samples.")
             dataset = dataset.slice(lambda df: df.sample(max_data_size, random_state=42), row_level=False)
 
         # Calculate loss
         meta = self._calculate_meta(model, dataset)
 
         # Find slices
-        slices = self._find_slices(dataset.select_columns(model.meta.feature_names), meta)
+        dataset_to_slice = dataset.select_columns(model.meta.feature_names) if model.meta.feature_names else dataset
+        slices = self._find_slices(dataset_to_slice, meta)
 
-        # Keep only slices of size at least 5% of the dataset
-        slices = [s for s in slices if 0.05 * len(dataset) <= len(dataset.slice(s))]
+        # Keep only slices of size at least 5% of the dataset or 20 samples (whatever is larger)
+        slices = [s for s in slices if max(0.05 * len(dataset), 20) <= len(dataset.slice(s))]
 
         # Create issues from the slices
         issues = self._find_issues(slices, model, dataset)
@@ -105,6 +111,10 @@ class ModelBiasDetector:
         detector = IssueFinder(self.metrics, self.threshold)
         issues = detector.detect(precooked, dataset, slices)
 
+        # Restore the original model
+        for issue in issues:
+            issue.model = model
+
         return issues
 
 
@@ -114,6 +124,8 @@ class IssueFinder:
         self.threshold = threshold
 
     def detect(self, model: BaseModel, dataset: Dataset, slices: Sequence[SlicingFunction]):
+        logger.debug(f"ModelBiasDetector: Testing {len(slices)} slices for performance issues.")
+
         # Prepare metrics
         metrics = self._get_default_metrics(model) if self.metrics is None else self.metrics
         metrics = [get_metric(m) for m in metrics]
@@ -156,6 +168,10 @@ class IssueFinder:
             else:
                 is_issue = relative_delta > self.threshold
 
+            logger.debug(
+                f"ModelBiasDetector: Testing slice {slice_fn}\t{metric.name} = {metric_val:.3f} (global {ref_metric_val:.3f}) Δm = {relative_delta:.3f}\tis_issue = {is_issue}"
+            )
+
             if is_issue:
                 level = "major" if abs(relative_delta) > 2 * self.threshold else "medium"
 
@@ -165,6 +181,7 @@ class IssueFinder:
                     metric_value_slice=metric_val,
                     metric_value_reference=ref_metric_val,
                     slice_size=len(sliced_dataset),
+                    threshold=self.threshold,
                 )
 
                 issues.append(

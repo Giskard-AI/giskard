@@ -4,6 +4,7 @@ import {Role} from "@/enums";
 import {api} from "@/api";
 import {getLocalToken, removeLocalToken, saveLocalToken} from "@/utils";
 import {useMainStore} from "@/stores/main";
+import {TYPE} from "vue-toastification";
 
 interface State {
     token: string,
@@ -39,7 +40,7 @@ export const useUserStore = defineStore('user', {
                     this.loginError = null;
                     await mainStore.getUserProfile();
                     await this.routeLoggedIn();
-                    mainStore.addNotification({content: 'Logged in', color: 'success'});
+                    mainStore.addNotification({content: 'Logged in', color: TYPE.SUCCESS});
                 } else {
                     await this.logout();
                 }
@@ -55,7 +56,7 @@ export const useUserStore = defineStore('user', {
                 mainStore.addNotification(loadingNotification);
                 this.userProfile = await api.updateMe(payload);
                 mainStore.removeNotification(loadingNotification);
-                mainStore.addNotification({content: 'Profile successfully updated', color: 'success'});
+                mainStore.addNotification({content: 'Profile successfully updated', color: TYPE.SUCCESS});
             } catch (error) {
                 await mainStore.checkApiError(error);
                 throw new Error(error.response.data.detail);
@@ -104,7 +105,7 @@ export const useUserStore = defineStore('user', {
         async userLogout() {
             const mainStore = useMainStore();
             await this.logout();
-            mainStore.addNotification({content: 'Logged out', color: 'success'});
+            mainStore.addNotification({content: 'Logged out', color: TYPE.SUCCESS});
         },
         async routeLogout() {
             // @ts-ignore
@@ -127,7 +128,7 @@ export const useUserStore = defineStore('user', {
                 mainStore.addNotification(loadingNotification);
                 await api.passwordRecovery(payload.userId);
                 mainStore.removeNotification(loadingNotification);
-                mainStore.addNotification({color: 'success', content: 'Password recovery link has been sent'});
+                mainStore.addNotification({color: TYPE.SUCCESS, content: 'Password recovery link has been sent'});
                 await this.logout();
             } catch (error) {
                 mainStore.removeNotification(loadingNotification);
@@ -138,7 +139,7 @@ export const useUserStore = defineStore('user', {
                 } else {
                     errMessage = data.detail;
                 }
-                mainStore.addNotification({color: 'error', content: errMessage});
+                mainStore.addNotification({color: TYPE.ERROR, content: errMessage});
             }
         },
         async resetPassword(payload: { password: string, token: string }) {
@@ -147,7 +148,7 @@ export const useUserStore = defineStore('user', {
             mainStore.addNotification(loadingNotification);
             await api.resetPassword(payload.password);
             mainStore.removeNotification(loadingNotification);
-            mainStore.addNotification({color: 'success', content: 'Password successfully changed'});
+            mainStore.addNotification({color: TYPE.SUCCESS, content: 'Password successfully changed'});
             await this.logout();
         },
         async signupUser(payload: { userData: ManagedUserVM }) {
@@ -157,7 +158,7 @@ export const useUserStore = defineStore('user', {
                 mainStore.addNotification(loadingNotification);
                 await api.signupUser(payload.userData);
                 mainStore.removeNotification(loadingNotification);
-                mainStore.addNotification({content: 'Success! Please proceed to login', color: 'success'});
+                mainStore.addNotification({content: 'Success! Please proceed to login', color: TYPE.SUCCESS});
                 await this.logout();
             } catch (error) {
                 throw new Error(error.response.data.detail);
