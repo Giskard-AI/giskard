@@ -2,6 +2,7 @@ package ai.giskard.security.ee.jwt;
 
 import ai.giskard.config.ApplicationProperties;
 import ai.giskard.management.SecurityMetersService;
+import ai.giskard.security.AuthoritiesConstants;
 import ai.giskard.security.GiskardUser;
 import ai.giskard.web.dto.JWTToken;
 import io.jsonwebtoken.*;
@@ -21,10 +22,10 @@ import tech.jhipster.config.JHipsterProperties;
 import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.security.SecureRandom;
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.Date;
+import java.util.List;
 import java.util.stream.Collectors;
 
 @Component
@@ -134,15 +135,16 @@ public class TokenProvider {
 
     public Authentication getAuthentication(String token) {
         Claims claims = jwtParser.parseClaimsJws(token).getBody();
-        Collection<? extends GrantedAuthority> authorities;
+        List<GrantedAuthority> authorities = new ArrayList<>();
+
         if (claims.get(AUTHORITIES_KEY) != null) {
-            authorities = Arrays
+            Arrays
                 .stream(claims.get(AUTHORITIES_KEY).toString().split(","))
                 .filter(auth -> !auth.trim().isEmpty())
-                .map(SimpleGrantedAuthority::new)
-                .toList();
-        } else {
-            authorities = Collections.emptyList();
+                .map(SimpleGrantedAuthority::new).forEach(authorities::add);
+        }
+        if (JWTTokenType.API.name().equals(claims.get(TOKEN_TYPE_KEY))) {
+            authorities.add(new SimpleGrantedAuthority(AuthoritiesConstants.API));
         }
 
         GiskardUser principal = new GiskardUser(claims.get(ID, Long.class), claims.getSubject(), "", authorities);
