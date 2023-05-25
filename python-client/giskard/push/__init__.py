@@ -48,14 +48,21 @@ class ExamplePush(Push):
 
 
 class OverconfidencePush(ExamplePush):
-    def __init__(self, training_label, training_label_proba, dataset_row):
+    def __init__(self, training_label, training_label_proba, dataset_row,predicted_label,):
         self._overconfidence()
 
         self.training_label_proba = training_label_proba
         self.training_label = training_label
-        self.dataset_row = dataset_row
+        self.saved_example = dataset_row
 
         self.tests = [self._increase_proba(), self._check_if_correct]
+        # @TODO: TO FIX
+        # To complete debugger filter
+        # self.actual_label =
+        # self.predicted_label=
+        # self.probability_of=self.predicted_label
+
+
 
     def _overconfidence(self):
         res = {"push_title": "This example is incorrect while having a high confidence.",
@@ -64,18 +71,21 @@ class OverconfidencePush(ExamplePush):
                        "action": "Save this example for further inspection and testing",
                        "explanation": "This may help you identify spurious correlation and create unit test based on "
                                       "these examples",
-                       "button": "Save Example"
+                       "button": "Save Example",
+                       "cta": CallToActionKind.SaveExample
                    },
                        {
                            "action": "Generate a unit test to check if this example has the right label",
                            "explanation": "This enables you to make sure this specific example has the right label "
                                           "with enough confidence",
-                           "button": "Create test"
+                           "button": "Create test",
+                           "cta": CallToActionKind.AddTestToCatalog
                        },
                        {
                            "action": "Open the debugger session on similar examples",
                            "explanation": "Debugging similar examples may help you find common patterns",
-                           "button": "Open debugger"
+                           "button": "Open debugger",
+                           "cta": CallToActionKind.OpenDebuggerOverconfidence
                        }
                    ]
                }
@@ -91,7 +101,7 @@ class BorderlinePush(ExamplePush):
 
         self.training_label_proba = training_label_proba
         self.training_label = training_label
-        self.dataset_row = dataset_row
+        self.saved_example = dataset_row
 
         self.tests = [self._increase_proba(), self._check_if_correct]
 
@@ -102,46 +112,23 @@ class BorderlinePush(ExamplePush):
                        "action": "Save this example for further inspection and testing",
                        "explanation": "This may help you identify inconsistent patterns and create a unit test based "
                                       "on these examples",
-                       "button": "Save Example"
+                       "button": "Save Example",
+                       "cta": CallToActionKind.SaveExample
                    },
                        {
                            "action": "Generate an inconsistency test",
                            "explanation": "This may help you ensure this inconsistent pattern is not common to the "
                                           "whole dataset",
-                           "button": "Create test"
+                           "button": "Create test",
+                           "cta": CallToActionKind.AddTestToCatalog
                        },
                        {
                            "action": "Open the debugger session on similar examples",
                            "explanation": "Debugging similar examples may help you find common patterns",
-                           "button": "Open debugger"
+                           "button": "Open debugger",
+                           "cta": CallToActionKind.OpenDebuggerBorderline
                        }
 
-                   ]
-               }
-        self.push_title = res["push_title"]
-        self.details = res["details"]
-
-
-class StochasticityPush(ExamplePush):
-    def __init__(self):
-        self._stochasticity()
-        # self.test = test_stochasticity @TODO: add this test
-
-    def _stochasticity(self):
-        res = {"push_title": "This example generates different predictions at each run",
-               "details":
-                   [{
-                       "action": "Save this example for further inspection and testing",
-                       "explanation": "Some stochastic behavior has been found in your model. You may need to fix the "
-                                      "random seed of your model",
-                       "button": "Save Example"
-                   },
-                       {
-                           "action": "Generate a stochasticity test",
-                           "explanation": "This may help you ensure this stochastic pattern is not common to the whole "
-                                          "dataset",
-                           "button": "Create test"
-                       }
                    ]
                }
         self.push_title = res["push_title"]
@@ -166,6 +153,7 @@ class ContributionPush(FeaturePush):
     bounds = None
     model_type = None
     correct_prediction = None
+    test = None
 
     def __init__(self, value=None, feature=None, bounds=None, model_type=None, correct_prediction=None):
         # FeaturePush attributes initialisation
@@ -191,18 +179,21 @@ class ContributionPush(FeaturePush):
                    [{
                        "action": "Open the debugger session on similar examples",
                        "explanation": "Debugging similar examples may help you find common spurious patterns",
-                       "button": "Open debugger"
+                       "button": "Open debugger",
+                       "cta": CallToActionKind.CreateSliceOpenDebugger
                    },
                        {
                            "action": "Generate a new performance difference test",
                            "explanation": "This may help ensure this spurious pattern is not common to the whole "
                                           "dataset",
-                           "button": "Create test"
+                           "button": "Create test",
+                           "cta": CallToActionKind.CreateTest
                        },
                        {
                            "action": "Save slice and continue debugging session",
                            "explanation": "Saving the slice will enable you to create tests more efficiently",
-                           "button": "Save Slice"
+                           "button": "Save Slice",
+                           "cta": CallToActionKind.CreateSlice
                        }
                    ]
                }
@@ -216,17 +207,20 @@ class ContributionPush(FeaturePush):
                    [{
                        "action": "Open the debugger session on similar examples",
                        "explanation": "Debugging similar examples may help you find common patterns",
-                       "button": "Open debugger"
+                       "button": "Open debugger",
+                       "cta": CallToActionKind.CreateSliceOpenDebugger
                    },
                        {
                            "action": "Generate a test to check if this correlation holds with the whole dataset",
                            "explanation": "Correlations may be spurious, double check if it has a business sense",
-                           "button": "Create test"
+                           "button": "Create test",
+                           "cta": CallToActionKind.CreateTest
                        },
                        {
                            "action": "Save slice and continue debugging session",
                            "explanation": "Saving the slice will enable you to create tests more efficiently",
-                           "button": "Save Slice"
+                           "button": "Save Slice",
+                           "cta": CallToActionKind.CreateSlice
                        }
                    ]
                }
@@ -253,6 +247,8 @@ class PerturbationPush(FeaturePush):
     text_perturbed: list = None
     transformation_function: list = None
 
+    # @TODO: Add metamorphic test
+
     def __init__(self, value=None, feature=None, text_perturbed=None, transformation_function=None):
         # FeaturePush attributes
         self.key = feature
@@ -270,12 +266,14 @@ class PerturbationPush(FeaturePush):
                        "action": "Generate a robustness test that slightly perturb this feature",
                        "explanation": "This will enable you to make sure the model is robust against small similar "
                                       "changes",
-                       "button": "Create test"
+                       "button": "Create test",
+                       "cta": CallToActionKind.RobustnessTest
                    },
                        {
                            "action": "Save the perturbation that made the model change and continue debugging session",
                            "explanation": "Saving this perturbation will enable you to create tests more efficiently",
-                           "button": "Save Perturbation"
+                           "button": "Save Perturbation",
+                           "cta": CallToActionKind.SavePerturbation
                        }
                    ]
                }

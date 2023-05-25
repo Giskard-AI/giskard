@@ -1,6 +1,6 @@
 from giskard.core.core import SupportedModelTypes
 from giskard.ml_worker.testing.tests.performance import test_rmse
-from ..push import OverconfidencePush, BorderlinePush, StochasticityPush
+from ..push import OverconfidencePush, BorderlinePush
 
 
 def overconfidence(model, ds, idrow):
@@ -16,8 +16,7 @@ def overconfidence(model, ds, idrow):
     prediction_proba = model_prediction_results.all_predictions[prediction].values
 
     if model.meta.model_type == SupportedModelTypes.CLASSIFICATION:
-        if training_label != prediction and 2 * (prediction_proba - training_label_proba) / (prediction_proba +
-                                                                                             training_label_proba) >= 0.8:
+        if training_label != prediction and prediction_proba >= 1.5*training_label_proba:
             # if training_label != prediction and prediction_proba >= 2* training_label_proba:
             # res = Push(push_type="contribution_wrong", feature=el,
             #            value=values[el],
