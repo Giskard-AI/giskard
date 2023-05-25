@@ -21,7 +21,7 @@ import giskard
 from giskard.client.giskard_client import GiskardClient
 from giskard.datasets.base import Dataset
 from giskard.ml_worker.core.log_listener import LogListener
-from giskard.ml_worker.core.model_explanation import (
+from giskard.models.model_explanation import (
     explain,
     explain_text,
 )
