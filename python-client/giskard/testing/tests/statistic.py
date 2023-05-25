@@ -1,6 +1,7 @@
 """Statistical tests"""
 import numpy as np
 import pandas as pd
+from scipy.stats import chisquare
 
 from giskard import test
 from giskard.datasets.base import Dataset
@@ -141,7 +142,8 @@ def test_output_in_range(model: BaseModel, dataset: Dataset, slicing_function: S
 # TODO: support type in the future
 def test_disparate_impact(model: BaseModel, dataset: Dataset, protected_slicing_function: SlicingFunction,
                           unprotected_slicing_function: SlicingFunction, positive_outcome,
-                          slicing_function: SlicingFunction = None, min_threshold=0.8, max_threshold=1.25) -> TestResult:
+                          slicing_function: SlicingFunction = None, min_threshold=0.8,
+                          max_threshold=1.25) -> TestResult:
     """
     Summary: Tests if the model is biased more towards an unprotected slice of the dataset over a protected slice.
     Note that this test reflects only a possible bias in the model while being agnostic to any bias in the dataset
@@ -223,4 +225,28 @@ def test_disparate_impact(model: BaseModel, dataset: Dataset, protected_slicing_
         metric=disparate_impact_score,
         passed=bool((disparate_impact_score > min_threshold) * (disparate_impact_score < max_threshold)),
         messages=messages,
+    )
+
+
+@test(name="Right Label", tags=["heuristic", "classification"])
+def test_independence_chi_square(model: BaseModel, dataset: Dataset, column_name: str,
+                                 slicing_function: SlicingFunction = None, threshold: float = 0.1) -> TestResult:
+
+    if slicing_function:
+        dataset = dataset.slice(slicing_function)
+    check_slice_not_empty(sliced_dataset=dataset, dataset_name="dataset", test_name="test_disparate_impact")
+
+
+    predictions = model.predict(dataset).prediction
+    crosstab = pd.crosstab(dataset.df[column_name], predictions)
+    chisquare_metric = chisquare(crosstab, axis=None)
+
+    pvalue = chisquare_metric.pvalue
+    passed = pvalue < threshold
+
+
+    return TestResult(
+        actual_slices_size=[len(dataset)],
+        metric=pvalue,
+        passed=passed,
     )
