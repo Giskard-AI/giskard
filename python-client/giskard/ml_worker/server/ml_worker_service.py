@@ -39,7 +39,7 @@ from giskard.models.model_explanation import (
     explain_text,
 )
 from giskard.path_utils import model_path, dataset_path
-from giskard.push.prediction import overconfidence, borderline
+from giskard.push.prediction import create_overconfidence_push, create_borderline_push
 
 logger = logging.getLogger(__name__)
 
@@ -509,8 +509,8 @@ class MLWorkerServiceImpl(MLWorkerServicer):
 
         # contribs = create_contribution_push(model, dataset, request.rowidx)
         perturbs = create_perturbation_push(model, dataset, request.rowidx)
-        overconf = overconfidence(model, dataset, request.rowidx)
-        borderl = borderline(model, dataset, request.rowidx)
+        overconf = create_overconfidence_push(model, dataset, request.rowidx)
+        borderl = create_borderline_push(model, dataset, request.rowidx)
 
         # if contribs is not None:
         #     contrib_grpc = contribs.to_grpc()

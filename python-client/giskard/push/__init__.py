@@ -27,7 +27,7 @@ class Push:
 
 
 class ExamplePush(Push):
-    dataset_row = None
+    saved_example = None
     training_label = None
     training_label_proba = None
 
@@ -40,14 +40,14 @@ class ExamplePush(Push):
 
     def _increase_proba(self):
         def _custom_unit_test(model: BaseModel, dataset: Dataset, threshold: float = 1) -> TestResult:
-            proba = model.predict(self.dataset_row).all_predictions[self.training_label].values
+            proba = model.predict(self.saved_example).all_predictions[self.training_label].values
             return TestResult(passed=proba > self.training_label_proba, metric=proba - self.training_label_proba)
 
         return _custom_unit_test
 
     def _check_if_correct(self):
         def _custom_unit_test(model: BaseModel, dataset: Dataset, threshold: float = 1) -> TestResult:
-            prediction = model.predict(self.dataset_row).prediction.values
+            prediction = model.predict(self.saved_example).prediction.values
             return TestResult(passed=prediction == self.training_label, metric=prediction == self.training_label)
 
         return _custom_unit_test
@@ -63,7 +63,7 @@ class OverconfidencePush(ExamplePush):
         self.training_label = training_label
         self.saved_example = dataset_row
 
-        self.tests = [self._increase_proba(), self._check_if_correct]
+        self.test = [self._increase_proba(), self._check_if_correct]
         # To complete debugger filter
         self.predicted_label = predicted_label
 
@@ -141,13 +141,13 @@ class BorderlinePush(ExamplePush):
 
 
 class FeaturePush(Push):
-    key = None
+    feature = None
     value = None
 
     def to_grpc(self):
         return ml_worker_pb2.Push(
             kind=self.pushkind,
-            key=self.key,
+            key=self.feature,
             value=str(self.value),
             push_title=self.push_title,
             push_details=self.details,
@@ -169,6 +169,7 @@ class ContributionPush(FeaturePush):
         # ContributionPush attributes initialisation
         self.feature = feature
         self.model_type = model_type
+        self.correct_prediction = correct_prediction
         # Push text creation
         if correct_prediction:
             self._contribution_correct(feature, value)
@@ -237,9 +238,9 @@ class ContributionPush(FeaturePush):
 
     def _slicing_function(self):
         if isinstance(self.bounds, list):
-            clause = [GreaterThan(self.key, self.bounds[0], True), LowerThan(self.key, self.bounds[1], True)]
+            clause = [GreaterThan(self.feature, self.bounds[0], True), LowerThan(self.feature, self.bounds[1], True)]
         else:
-            clause = [EqualTo(self.key, self.bounds)]
+            clause = [EqualTo(self.feature, self.bounds)]
         slicing_func = QueryBasedSliceFunction(Query(clause))
         self.slicing_function = slicing_func
 
@@ -258,7 +259,7 @@ class PerturbationPush(FeaturePush):
     def __init__(self, value=None, feature=None, text_perturbed=None, transformation_function=None):
         self.pushkind = PushKind.Perturbation
         # FeaturePush attributes
-        self.key = feature
+        self.feature = feature
         self.value = value
         # PerturbationPush attributes
         self.text_perturbed = text_perturbed

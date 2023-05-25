@@ -2,7 +2,18 @@ from giskard.push.contribution import contribution
 from giskard.push.prediction import overconfidence, borderline, stochasticity
 from giskard.push import Push
 from giskard.slicing.slice import QueryBasedSliceFunction
-from giskard.push.prediction import overconfidence, borderline
+from giskard.push.prediction import create_overconfidence_push, create_borderline_push
+from giskard.push import Push
+
+def test_instance_if_not_None(german_credit_model, german_credit_data):
+    for i in range(50):
+        push_list = [create_contribution_push(german_credit_model, german_credit_data, i),
+                     create_perturbation_push(german_credit_model, german_credit_data, i),
+                     create_overconfidence_push(german_credit_model, german_credit_data, i),
+                     create_borderline_push(german_credit_model, german_credit_data, i)]
+        for push in push_list:
+            if push is not None:
+                assert isinstance(push, Push)
 
 
 def test_contribution(german_credit_model, german_credit_data):
@@ -56,7 +67,7 @@ def test_perturbation_reg(linear_regression_diabetes, diabetes_dataset_with_targ
 def test_overconfidence(german_credit_model, german_credit_data):
     testl = []
     for i in range(200):
-        res = overconfidence(german_credit_model, german_credit_data, i)
+        res = create_overconfidence_push(german_credit_model, german_credit_data, i)
         if res is not None:
             testl.append(res)
     assert len(testl) > 0
@@ -65,7 +76,7 @@ def test_overconfidence(german_credit_model, german_credit_data):
 def test_overconfidence_enron(enron_model, enron_data):
     testl = []
     for i in range(50):
-        res = overconfidence(enron_model, enron_data, i)
+        res = create_overconfidence_push(enron_model, enron_data, i)
         if res is not None:
             testl.append(res)
     assert len(testl) > 0
@@ -74,7 +85,7 @@ def test_overconfidence_enron(enron_model, enron_data):
 def test_borderline(german_credit_model, german_credit_data):
     testl = []
     for i in range(200):
-        res = borderline(german_credit_model, german_credit_data, i)
+        res = create_borderline_push(german_credit_model, german_credit_data, i)
         if res is not None:
             testl.append(res)
     assert len(testl) > 0
