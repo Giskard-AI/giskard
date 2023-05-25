@@ -23,12 +23,15 @@ class ScanResult:
 
     def _repr_html_(self):
         from jinja2 import Environment, PackageLoader, select_autoescape
+        from .visualization.custom_jinja import pluralize
         from html import escape
 
         env = Environment(
             loader=PackageLoader("giskard.scanner", "templates"),
             autoescape=select_autoescape(),
         )
+        env.filters["pluralize"] = pluralize
+
         tpl = env.get_template("scan_results.html")
 
         issues_by_group = defaultdict(list)
@@ -47,20 +50,16 @@ class ScanResult:
         )
 
         escaped = escape(html)
+        uid = id(self)
 
-        return f'''<iframe srcdoc="{escaped}" style="width: 100%; border: none;" class="gsk-scan"></iframe>
+        from pathlib import Path
+        with Path(__file__).parent.joinpath("templates", "static", "external.js").open("r") as f:
+            js_lib = f.read()
+
+        return f'''<iframe id="scan-{uid}" srcdoc="{escaped}" style="width: 100%; border: none;" class="gsk-scan"></iframe>
 <script>
-(function() {{
-    // @TODO: fix this
-    let elements = document.querySelectorAll(".gsk-scan");
-    elements.forEach(el => {{
-        el.style.height = el.contentWindow.document.body.scrollHeight + "px";
-        setTimeout(() => {{
-            el.style.height = el.contentWindow.document.body.scrollHeight + "px";
-        }}, 1000)
-
-    }})
-}})()
+{js_lib}
+(function(){{iFrameResize({{ checkOrigin: false }}, '#scan-{uid}');}})();
 </script>
 '''
 
