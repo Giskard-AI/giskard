@@ -89,7 +89,7 @@ class Savable(Generic[DT, SMT]):
         else:
             meta = client.load_meta(cls._get_meta_endpoint(uuid, project_key), cls._get_meta_class())
 
-        if hasattr(meta, 'process_type') and meta.process_type == DatasetProcessFunctionType.CLAUSES:
+        if hasattr(meta, 'process_type') and meta.process_type == DatasetProcessFunctionType.CLAUSES.name:
             return cls._load_no_code(meta)
 
         name = cls._get_name()

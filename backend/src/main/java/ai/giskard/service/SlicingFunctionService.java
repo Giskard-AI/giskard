@@ -52,9 +52,9 @@ public class SlicingFunctionService extends DatasetProcessFunctionService<Slicin
         ComparisonType comparisonType = comparisonClause.getComparisonType();
         if (comparisonType.isValueRequired()) {
             return String.format(comparisonType.getCodeTemplate(), escapePythonVariable(comparisonClause.getColumnName()),
-                comparisonType.getSymbol(), escapePythonVariable(comparisonClause.getValue(), comparisonClause.getColumnDtype()));
+                escapePythonVariable(comparisonClause.getValue(), comparisonClause.getColumnDtype()));
         } else {
-            return String.format(comparisonType.getCodeTemplate(), escapePythonVariable(comparisonClause.getColumnName()), comparisonType.getSymbol());
+            return String.format(comparisonType.getCodeTemplate(), escapePythonVariable(comparisonClause.getColumnName()));
         }
     }
 
