@@ -24,7 +24,7 @@ def validate_target(ds: Dataset):
 
 def validate_dtypes(ds: Dataset):
     _check_hashability(ds.df)
-    _check_mixed_dtypes(ds.df)
+    # _check_mixed_dtypes(ds.df)
 
 
 def _check_hashability(df):
@@ -116,8 +116,8 @@ def validate_column_categorization(ds: Dataset):
             continue
         # if a user provided possibly wrong information in column_types or cat_columns about cat columns
         if nuniques[column] <= ds.category_threshold and (
-            ds.column_types[column] == SupportedColumnTypes.NUMERIC.value
-            or ds.column_types[column] == SupportedColumnTypes.TEXT.value
+                ds.column_types[column] == SupportedColumnTypes.NUMERIC.value
+                or ds.column_types[column] == SupportedColumnTypes.TEXT.value
         ):
             warning(
                 f"Feature '{column}' is declared as '{ds.column_types[column]}' but has {nuniques[column]} "

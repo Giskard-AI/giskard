@@ -1,12 +1,17 @@
 <template>
   <v-card class="mb-4" id="resultCard" outlined>
-    <v-card-title>Result</v-card-title>
+    <v-card-title>Result
+      <suggestion-popover type="overconfidence"/>
+      <suggestion-popover type="borderline"/>
+    </v-card-title>
     <v-card-text class="text-center card-text" v-if="inputData">
       <LoadingFullscreen v-show="loading" name="result" class="pb-6" />
       <v-row v-if="prediction && isClassification(predictionTask) && !loading">
         <v-col lg="8" md="12" sm="12" xs="12" v-if="resultProbabilities && Object.keys(resultProbabilities).length > 0
           ">
-          <div>Probabilities <span v-if="Object.keys(resultProbabilities).length > 5"> (5 of {{ Object.keys(resultProbabilities).length }})</span></div>
+          <div>Probabilities <span v-if="Object.keys(resultProbabilities).length > 5"> (5 of {{
+              Object.keys(resultProbabilities).length
+            }})</span></div>
           <v-chart class="chart" :option="chartOptions" :init-options="chartInit" autoresize />
         </v-col>
         <v-col lg="4">
@@ -14,7 +19,8 @@
             <div>Prediction</div>
             <v-tooltip bottom>
               <template v-slot:activator="{ on, attrs }">
-                <div class="text-h6" :class="classColorPrediction" v-on="prediction.length > maxLengthDisplayedCategory ? on : ''">
+                <div class="text-h6" :class="classColorPrediction"
+                     v-on="prediction.length > maxLengthDisplayedCategory ? on : ''">
                   {{ abbreviateMiddle(prediction, maxLengthDisplayedCategory) }}
                 </div>
               </template>
@@ -29,7 +35,9 @@
               <v-tooltip bottom>
                 <template v-slot:activator="{ on, attrs }">
                   <div class="text-h6">
-                    <div v-if="isDefined(actual)" v-on="actual.length > maxLengthDisplayedCategory ? on : ''">{{ abbreviateMiddle(actual, maxLengthDisplayedCategory) }}</div>
+                    <div v-if="isDefined(actual)" v-on="actual.length > maxLengthDisplayedCategory ? on : ''">
+                      {{ abbreviateMiddle(actual, maxLengthDisplayedCategory) }}
+                    </div>
                     <div v-else>-</div>
                   </div>
                 </template>
@@ -82,7 +90,8 @@
     </v-card-text>
 
     <v-card-actions v-show="Object.keys(resultProbabilities).length > predCategoriesN">
-      <ResultPopover :resultProbabilities='resultProbabilities' :prediction='prediction' :actual='actual' :classColorPrediction='classColorPrediction'></ResultPopover>
+      <ResultPopover :resultProbabilities='resultProbabilities' :prediction='prediction' :actual='actual'
+                     :classColorPrediction='classColorPrediction'></ResultPopover>
     </v-card-actions>
 
   </v-card>
@@ -103,12 +112,13 @@ import { isClassification } from "@/ml-utils";
 import { abbreviateMiddle, maxLengthDisplayedCategory } from "@/results-utils";
 import * as _ from "lodash";
 import { CanceledError } from "axios";
+import SuggestionPopover from "@/components/SuggestionPopover.vue";
 
 use([CanvasRenderer, BarChart, GridComponent]);
 Vue.component("v-chart", ECharts);
 
 @Component({
-  components: { LoadingFullscreen, ResultPopover }
+  components: { LoadingFullscreen, ResultPopover, SuggestionPopover }
 })
 export default class PredictionResults extends Vue {
   @Prop({ required: true }) model!: ModelDTO;

@@ -4,6 +4,7 @@ import {api} from "@/api";
 
 interface State {
     pushes: { [modelId: string]: { [datasetId: string]: { [rowNb: number]: Pushes } } };
+    current: Pushes | undefined;
 }
 
 interface Pushes {
@@ -15,7 +16,8 @@ interface Pushes {
 
 export const usePushStore = defineStore('push', {
     state: (): State => ({
-        pushes: {}
+        pushes: {},
+        current: undefined
     }),
     getters: {},
     actions: {
@@ -33,6 +35,7 @@ export const usePushStore = defineStore('push', {
 
             // @ts-ignore
             this.pushes[modelId][datasetId][rowNb] = await api.getPushes(modelId, datasetId, rowNb);
+            this.current = this.pushes[modelId][datasetId][rowNb];
             return this.pushes[modelId][datasetId][rowNb];
         },
         getPushSuggestions(modelId: string, datasetId: string, rowNb: number) {

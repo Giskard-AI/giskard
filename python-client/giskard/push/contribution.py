@@ -2,10 +2,9 @@ import numpy as np
 from scipy.stats import zscore
 
 from giskard.core.core import SupportedModelTypes
-from giskard.ml_worker.core.model_explanation import explain
-from giskard.ml_worker.testing.tests.performance import test_rmse
-from ..push import ContributionPush
 from .utils import slice_bounds
+from ..models.model_explanation import explain
+from ..push import ContributionPush
 
 from giskard.core.core import SupportedModelTypes
 from giskard.ml_worker.core.model_explanation import explain

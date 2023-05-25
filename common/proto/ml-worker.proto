@@ -431,13 +431,13 @@ enum CallToActionKind {
   CreateSlice = 1;
   CreateTest = 2;
   CreatePerturbation = 3;
-  SavePerturbation=4;
-  CreateRobustnessTest=5;
-  CreateSliceOpenDebugger=6;
-  OpenDebuggerBorderline=7;
-  AddTestToCatalog=8;
-  SaveExample=9;
-  OpenDebuggerOverconfidence=10;
+  SavePerturbation = 4;
+  CreateRobustnessTest = 5;
+  CreateSliceOpenDebugger = 6;
+  OpenDebuggerBorderline = 7;
+  AddTestToCatalog = 8;
+  SaveExample = 9;
+  OpenDebuggerOverconfidence = 10;
 }
 
 message SuggestFilterRequest {
@@ -455,17 +455,19 @@ message PushUploadRequest {
 }
 
 message Push {
-  string key = 1;
-  string value = 2;
-  string push_title = 3;
-  string perturbation_value = 4;
-  repeated PushDetails push_details = 5;
+  PushKind kind = 1;
+  string key = 2;
+  string value = 3;
+  string push_title = 4;
+  string perturbation_value = 5;
+  repeated PushDetails push_details = 6;
 }
 
 message PushDetails {
   string action = 1;
   string explanation = 2;
   string button = 3;
+  CallToActionKind cta = 4;
 }
 
 message SuggestFilterResponse {
