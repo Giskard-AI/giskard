@@ -4,6 +4,8 @@ from ..issues import Issue
 from ...models.base import BaseModel
 from ...datasets.base import Dataset
 from .metrics import PerformanceMetric
+from ...slicing.slice import QueryBasedSliceFunction
+from ...slicing.text_slicer import MetadataSliceFunction
 from ...ml_worker.testing.registry.slicing_function import SlicingFunction
 
 
@@ -61,13 +63,41 @@ class PerformanceIssue(Issue):
     def description(self):
         return f"{self.info.slice_size} samples ({self.info.slice_size / len(self.dataset) * 100:.2f}%)"
 
+    def _features(self):
+        if isinstance(self.info.slice_fn, QueryBasedSliceFunction):
+            return self.info.slice_fn.query.columns()
+        if isinstance(self.info.slice_fn, MetadataSliceFunction):
+            return [self.info.slice_fn.feature]
+        return self.model.meta.feature_names or self.dataset.columns
+
     def examples(self, n=3):
-        # @TODO: improve this once we support metadata
         ex_dataset = self.dataset.slice(self.info.slice_fn)
         predictions = self.model.predict(ex_dataset).prediction
         examples = ex_dataset.df.copy()
-        examples["predicted_label"] = predictions
-        examples = examples[examples[self.dataset.target] != examples["predicted_label"]]
+        bad_pred_mask = examples[self.dataset.target] != predictions
+        examples = examples[bad_pred_mask]
+
+        # Keep only interesting columns
+        features = self._features()
+        cols_to_show = features + [self.dataset.target]
+        examples = examples.loc[:, cols_to_show]
+
+        # If metadata slice, add the metadata column
+        if isinstance(self.info.slice_fn, MetadataSliceFunction):
+            for col in features:
+                meta_cols = self.info.slice_fn.query.columns()
+                provider = self.info.slice_fn.provider
+                for meta_col in meta_cols:
+                    meta_vals = self.dataset.column_meta[col, provider].loc[examples.index, meta_col]
+                    examples.insert(
+                        loc=examples.columns.get_loc(col) + 1,
+                        column=f"{meta_col}({col})",
+                        value=meta_vals,
+                        allow_duplicates=True,
+                    )
+
+        # Add the model prediction
+        examples[f"Predicted `{self.dataset.target}`"] = predictions[bad_pred_mask]
 
         n = min(len(examples), n)
         if n > 0:
