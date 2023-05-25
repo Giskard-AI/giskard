@@ -31,6 +31,7 @@ export const usePushStore = defineStore('push', {
                 return this.pushes[modelId][datasetId][rowNb];
             }
 
+            // @ts-ignore
             this.pushes[modelId][datasetId][rowNb] = await api.getPushes(modelId, datasetId, rowNb);
             return this.pushes[modelId][datasetId][rowNb];
         },
