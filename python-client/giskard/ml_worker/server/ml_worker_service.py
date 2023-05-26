@@ -506,16 +506,18 @@ class MLWorkerServiceImpl(MLWorkerServicer):
                 "To have more information on ML Worker, please see: https://docs.giskard.ai/start/guides/installation/ml-worker"
             ) from e
         from giskard.push.perturbation import perturbation
+        from giskard.push.contribution import create_contribution_push
+        from giskard.push.perturbation import create_perturbation_push
 
-        # contribs = create_contribution_push(model, dataset, request.rowidx)
+        contribs = create_contribution_push(model, dataset, request.rowidx)
         perturbs = create_perturbation_push(model, dataset, request.rowidx)
         overconf = create_overconfidence_push(model, dataset, request.rowidx)
         borderl = create_borderline_push(model, dataset, request.rowidx)
 
-        # if contribs is not None:
-        #     contrib_grpc = contribs.to_grpc()
-        # else:
-        contrib_grpc = None
+        if contribs is not None:
+            contrib_grpc = contribs.to_grpc()
+        else:
+            contrib_grpc = None
 
         if perturbs is not None:
             perturb_grpc = perturbs.to_grpc()

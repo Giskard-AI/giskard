@@ -30,6 +30,7 @@ export const usePushStore = defineStore('push', {
             }
 
             if (this.pushes[modelId][datasetId][rowNb]) {
+                this.current = this.pushes[modelId][datasetId][rowNb];
                 return this.pushes[modelId][datasetId][rowNb];
             }
 

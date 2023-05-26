@@ -19,29 +19,33 @@
 
     <v-card dark color="primary">
       <v-card-title>
-        {{ value }}
-        <!--        {{ value.pushTitle }}-->
+        {{ push.pushTitle }}
       </v-card-title>
       <v-card-text>
         <v-list light two-line>
-          <!--          <template v-for="detail in value.details">-->
-          <!--            <v-list-item>-->
-          <!--              <v-list-item-content>-->
-          <!--                <v-list-item-title>-->
-          <!--                  {{ detail.action }}-->
-          <!--                </v-list-item-title>-->
-          <!--                <v-list-item-subtitle>-->
-          <!--                  {{ detail.explanation }}-->
-          <!--                </v-list-item-subtitle>-->
-          <!--              </v-list-item-content>-->
-          <!--              <v-list-item-action>-->
-          <!--                <v-btn small text color="primary" @click.stop="dbg_GetSuggestion">-->
-          <!--                  {{ detail.button }}-->
-          <!--                </v-btn>-->
-          <!--              </v-list-item-action>-->
-          <!--            </v-list-item>-->
-          <!--            <v-divider/>-->
-          <!--          </template>-->
+          <template v-for="detail in push.details">
+            <v-list-item>
+              <v-list-item-content>
+                <v-list-item-title>
+                  {{ detail.action }}
+                </v-list-item-title>
+                <v-list-item-subtitle>
+                  {{ detail.explanation }}
+                </v-list-item-subtitle>
+              </v-list-item-content>
+              <v-list-item-action>
+                <v-tooltip top>
+                  <template v-slot:activator="{ on, attrs }">
+                    <v-btn small text color="primary" disabled v-bind="attrs" v-on="on">
+                      {{ detail.button }}
+                    </v-btn>
+                  </template>
+                  This action will be available in Giskard 2.1
+                </v-tooltip>
+              </v-list-item-action>
+            </v-list-item>
+            <v-divider/>
+          </template>
         </v-list>
       </v-card-text>
     </v-card>
@@ -84,9 +88,23 @@ const show = computed(() => {
     case "perturbation":
       return value.value?.perturbation.key == props.column;
     case "overconfidence":
-      return value.value?.overconfidence.value && value.value?.overconfidence.value != "";
+      return value.value?.overconfidence.pushTitle && value.value?.overconfidence.pushTitle != "";
     case "borderline":
-      return value.value?.borderline.value && value.value?.borderline.value != "";
+      return value.value?.borderline.pushTitle && value.value?.borderline.pushTitle != "";
+    default:
+      return false;
+  }
+})
+const push = computed(() => {
+  switch (props.type) {
+    case "contribution":
+      return value.value?.contribution;
+    case "perturbation":
+      return value.value?.perturbation;
+    case "overconfidence":
+      return value.value?.overconfidence;
+    case "borderline":
+      return value.value?.borderline;
     default:
       return false;
   }
