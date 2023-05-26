@@ -2,10 +2,13 @@ User Guide
 ===============
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
 
-   test-catalog/index
-   slicing-function-catalog/index
-   transformation-function-catalog/index
    installation/index
-   tutorials/index
+   scan/index
+   test-suite/index
+   slicing-and-transformation-functions/index
+   debug/index
+   feedback/index
+   cicd/index
+   compare/index

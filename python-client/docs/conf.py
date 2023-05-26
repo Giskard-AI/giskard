@@ -61,7 +61,6 @@ html_theme_options = {
     "light_css_variables": {},
     "sidebar_hide_name": False,
     "navigation_with_keys": True,
-    "announcement": '<p style="color:#FF0000"> 🚧 Please note that this documentation is still a work-in-progress! 🚧</p>',
     "top_of_page_button": "edit",
     "source_repository": "https://github.com/Giskard-AI/giskard",
     "source_branch": "feature/sphinx-documentation",

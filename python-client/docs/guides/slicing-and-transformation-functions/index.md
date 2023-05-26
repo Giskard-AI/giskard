@@ -9,7 +9,7 @@ see [🔬 Scan your ML model](../scan/index.md)
 
 :::{hint}
 You can see all our slicing function in
-the [🔪 Slicing Function Catalog](../../guides/slicing-function-catalog/index.rst)
+the [🔪 Slicing Function Catalog](docs/catalogs/slicing-function-catalog/index.rst)
 :::
 
 :::::{tab-set}
@@ -99,7 +99,7 @@ True to keep the row or False to filter out the row.
 
 :::{hint}
 You can see all our slicing function in
-the [🔪 Slicing Function Catalog](../../guides/slicing-function-catalog/index.rst)
+the [🔪 Slicing Function Catalog](docs/catalogs/slicing-function-catalog/index.rst)
 :::
 
 ::::{tab-set}
