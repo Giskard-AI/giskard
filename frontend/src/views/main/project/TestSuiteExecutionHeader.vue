@@ -8,7 +8,9 @@
                         No execution has been performed yet!
                     </h4>
                     <h4 v-else-if="props.execution.result === TestResult.ERROR" class="text-alert">
-                        An error arose during the execution. Executed <b>{{ timeSince(execution.executionDate) }}</b>.
+                        An error arose during the execution. Executed <strong>{{
+                            timeSince(execution.executionDate)
+                        }}</strong>.
                         Check the <span @click="openLogs" class="clickable">execution logs.</span>
                     </h4>
                     <h4 v-else class="text-alert">Test suite
@@ -17,8 +19,10 @@
                         <span v-if="successRatio.failed > 0 && successRatio.passed > 0">, </span>
                         <span v-if="successRatio.passed > 0">{{ plurialize('test', successRatio.passed) }} passed</span>
                         <span v-if="successRatio.failed > 0 || successRatio.passed > 0">. </span>
-                        Executed <b>{{ timeSince(execution.executionDate) }}</b>.
-                        Check the <b @click="openLogs" class="clickable">execution logs.</b>
+                        Executed
+                        <string>{{ timeSince(execution.executionDate) }}</string>
+                        .
+                        Check the <strong @click="openLogs" class="clickable">execution logs.</strong>
                     </h4>
                 </v-col>
             </v-row>
