@@ -88,6 +88,7 @@ def get_container(version=None, quit_if_not_exists=True) -> Optional[Container]:
         else:
             return None
 
+
 def _start(attached=False, version=None):
     logger.info("Starting Giskard Server")
 
@@ -135,7 +136,8 @@ def _pull_image(version):
         try:
             create_docker_client().images.pull(IMAGE_NAME, tag=version)
         except NotFound:
-            logger.error(f"Image {get_image_name(version)} not found. Use a valid `--version` argument or check the content of $GSK_HOME/server-settings.yml")
+            logger.error(
+                f"Image {get_image_name(version)} not found. Use a valid `--version` argument or check the content of $GSK_HOME/server-settings.yml")
             raise click.Abort()
 
 

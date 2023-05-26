@@ -158,7 +158,6 @@ class Dataset(ColumnMetadataMixin):
         self.df = pd.DataFrame(df)
         self.target = target
 
-
         from giskard.core.dataset_validation import validate_target
 
         validate_target(self)

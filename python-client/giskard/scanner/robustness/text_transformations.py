@@ -1,12 +1,13 @@
-import string
 import random
-import pandas as pd
 import re
+import string
 
+import pandas as pd
+
+from giskard.scanner.robustness.entity_swap import gender_switch_en
 from .entity_swap import typos
 from ...ml_worker.testing.registry.transformation_function import TransformationFunction
 from ...ml_worker.testing.registry.transformation_function import transformation_function
-from giskard.scanner.robustness.entity_swap import gender_switch_en
 
 
 @transformation_function(row_level=False)
@@ -115,7 +116,7 @@ class TextGenderTransformation(TextTransformation):
                 new_words.append(new_word)
 
         new_text = x
-        for original_word,switched_word in new_words:
+        for original_word, switched_word in new_words:
             new_text = re.sub(fr"\b{original_word}\b", switched_word, new_text)
         return new_text
 

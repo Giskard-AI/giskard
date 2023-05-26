@@ -1,7 +1,7 @@
-from giskard.datasets import Dataset
-from giskard.datasets.base import Dataset
 import pandas as pd
 import pytest
+
+from giskard.datasets.base import Dataset
 
 valid_df = pd.DataFrame({"categorical_column": ['turtle', 'crocodile', 'turtle'],
                          "text_column": ['named Giskard', 'a nile crocodile', 'etc'],
