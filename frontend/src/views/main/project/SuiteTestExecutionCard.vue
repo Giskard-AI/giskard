@@ -210,7 +210,7 @@ async function editTests() {
 }
 
 .text-input-value-code {
-    font-family: 'Fira Code';
+    font-family: 'Fira Code', "Helvetica Neue", sans-serif;
     font-style: normal;
     font-weight: 400;
     font-size: 11px;
