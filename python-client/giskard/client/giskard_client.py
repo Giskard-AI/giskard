@@ -15,11 +15,11 @@ from requests.auth import AuthBase
 from requests_toolbelt import sessions
 
 import giskard
-from giskard.client.analytics_collector import GiskardAnalyticsCollector, anonymize
 from giskard.client.dtos import TestSuiteDTO
 from giskard.client.project import Project
 from giskard.client.python_utils import warning
 from giskard.core.core import ModelMeta, DatasetMeta, TestFunctionMeta, SMT
+from giskard.utils.analytics_collector import anonymize, analytics
 
 logger = logging.getLogger(__name__)
 
@@ -77,21 +77,20 @@ class GiskardClient:
         self._session = sessions.BaseUrlSession(base_url=base_url)
         self._session.mount(base_url, ErrorHandlingAdapter())
         self._session.auth = BearerAuth(token)
-        self.analytics = GiskardAnalyticsCollector()
 
         server_settings = self._session.get("settings/ml-worker-connect").json()
-        self.analytics.init(server_settings)
+        analytics.init_server_info(server_settings)
 
-        self.analytics.track("Init GiskardClient", {"client version": giskard.__version__})
+        analytics.track("Init GiskardClient", {"client version": giskard.__version__})
 
     @property
     def session(self):
         return self._session
 
     def list_projects(self) -> List[Project]:
-        self.analytics.track("List Projects")
+        analytics.track("List Projects")
         response = self._session.get("projects").json()
-        return [Project(self._session, p["key"], p["id"], analytics=self.analytics) for p in response]
+        return [Project(self._session, p["key"], p["id"]) for p in response]
 
     def get_project(self, project_key: str):
         """
@@ -103,9 +102,9 @@ class GiskardClient:
             Project:
                 The giskard project that belongs to the project key
         """
-        self.analytics.track("Get Project", {"project_key": anonymize(project_key)})
+        analytics.track("Get Project", {"project_key": anonymize(project_key)})
         response = self._session.get("project", params={"key": project_key}).json()
-        return Project(self._session, response["key"], response["id"], analytics=self.analytics)
+        return Project(self._session, response["key"], response["id"])
 
     def create_project(self, project_key: str, name: str, description: str = None):
         """
@@ -121,7 +120,7 @@ class GiskardClient:
             Project:
                 The project created in giskard
         """
-        self.analytics.track(
+        analytics.track(
             "Create Project",
             {
                 "project_key": anonymize(project_key),
@@ -144,7 +143,7 @@ class GiskardClient:
         actual_project_id = response.get("id")
         if actual_project_key != project_key:
             print(f"Project created with a key : {actual_project_key}")
-        return Project(self._session, actual_project_key, actual_project_id, analytics=self.analytics)
+        return Project(self._session, actual_project_key, actual_project_id)
 
     def load_model_meta(self, project_key: str, uuid: str):
         res = self._session.get(f"project/{project_key}/models/{uuid}").json()
@@ -175,7 +174,7 @@ class GiskardClient:
                 "size": size,
             },
         )
-        self.analytics.track(
+        analytics.track(
             "Upload Model",
             {
                 "name": anonymize(meta.name),
@@ -253,7 +252,7 @@ class GiskardClient:
                 "compressedSizeBytes": compressed_size_bytes,
             },
         )
-        self.analytics.track(
+        analytics.track(
             "Upload Dataset",
             {
                 "project": anonymize(project_key),
