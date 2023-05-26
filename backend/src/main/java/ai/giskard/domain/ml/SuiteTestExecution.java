@@ -6,6 +6,7 @@ import ai.giskard.web.dto.ml.TestResultMessageDTO;
 import ai.giskard.worker.FuncArgument;
 import ai.giskard.worker.SingleTestResult;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -115,10 +116,10 @@ public class SuiteTestExecution extends BaseEntity {
                 result = funcArgument.getDataset().getId();
                 break;
             case SLICINGFUNCTION:
-                // Not sure how to handle this cleanly yet.
+                result = funcArgument.getSlicingFunction().getId();
                 break;
             case TRANSFORMATIONFUNCTION:
-                // Not sure how to handle this cleanly yet.
+                result = funcArgument.getTransformationFunction().getId();
                 break;
             case KWARGS:
                 // Not sure how to handle this cleanly yet.
@@ -139,6 +140,16 @@ public class SuiteTestExecution extends BaseEntity {
                 break;
         }
 
-        return result;
+
+        Map<String, String> args = funcArgument.getArgsList().stream()
+            .collect(Collectors.toMap(FuncArgument::getName, this::getFuncArgValue));
+
+        Map<String, Object> json = Map.of(
+            "value", result,
+            "args", args
+        );
+        
+        // return json as a json
+        return new ObjectMapper().valueToTree(json).toString();
     }
 }

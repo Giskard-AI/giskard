@@ -26,6 +26,7 @@ from giskard.ml_worker.core.log_listener import LogListener
 from giskard.ml_worker.exceptions.IllegalArgumentError import IllegalArgumentError
 from giskard.ml_worker.exceptions.giskard_exception import GiskardException
 from giskard.ml_worker.generated import ml_worker_pb2
+from giskard.ml_worker.generated.ml_worker_pb2 import ArtifactRef, FuncArgument
 from giskard.ml_worker.generated.ml_worker_pb2_grpc import MLWorkerServicer
 from giskard.ml_worker.ml_worker import MLWorker
 from giskard.ml_worker.testing.registry.giskard_test import GiskardTest
@@ -40,7 +41,6 @@ from giskard.models.model_explanation import (
     explain_text,
 )
 from giskard.path_utils import model_path, dataset_path
-from giskard.ml_worker.generated.ml_worker_pb2 import ArtifactRef, FuncArgument
 
 logger = logging.getLogger(__name__)
 
@@ -624,10 +624,15 @@ def function_argument_to_proto(value: Dict[str, Any]):
             funcargs = FuncArgument(name=v, dataset=ArtifactRef(project_key="test", id=str(obj.id)))
         elif isinstance(obj, BaseModel):
             funcargs = FuncArgument(name=v, model=ArtifactRef(project_key="test", id=str(obj.id)))
-        # elif arg.HasField("slicingFunction"):
+        elif isinstance(obj, SlicingFunction):
+            funcargs = FuncArgument(name=v, slicingFunction=ArtifactRef(project_key="test", id=str(obj.meta.uuid)),
+                                    args=function_argument_to_proto(obj.params))
         #     arguments[arg.name] = SlicingFunction.load(arg.slicingFunction.id, self.client, None)(
         #         **self.parse_function_arguments(arg.args))
-        # elif arg.HasField("transformationFunction"):
+        elif isinstance(obj, TransformationFunction):
+            funcargs = FuncArgument(name=v,
+                                    transformationFunction=ArtifactRef(project_key="test", id=str(obj.meta.uuid)),
+                                    args=function_argument_to_proto(obj.params))
         #     arguments[arg.name] = TransformationFunction.load(arg.transformationFunction.id, self.client, None)(
         #         **self.parse_function_arguments(arg.args))
         elif isinstance(obj, float):

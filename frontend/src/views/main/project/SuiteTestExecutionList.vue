@@ -38,13 +38,22 @@ const {suite} = storeToRefs(testSuiteStore);
 async function debugTest(result: SuiteTestExecutionDTO, suiteTest: SuiteTestDTO) {
   console.log("Debugging");
   let inputs: any[] = []; // FunctionInputDTO, ideally
-  Object.keys(result.arguments).forEach(key => {
-    inputs.push({
-      name: key,
-      value: result.arguments[key],
-      params: [] // TODO!!
+
+  function parseArguments(res, args) {
+    Object.keys(args).forEach(key => {
+      var parsed = JSON.parse(args[key]);
+      var params = [];
+      parseArguments(params, parsed.args);
+
+      res.push({
+        name: key,
+        value: parsed.value,
+        params: params
+      })
     })
-  });
+  }
+  
+  parseArguments(inputs, result.arguments);
 
   let model = inputs.filter(i => i.name == "model")[0].value;
 
