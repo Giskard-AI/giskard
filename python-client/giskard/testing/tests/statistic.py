@@ -247,12 +247,12 @@ def test_independence_chi_square(model: BaseModel, dataset: Dataset,
         predictions = model.predict(dataset).prediction
         crosstab = pd.crosstab(overlapping_array, predictions)
         p_value = chi2_contingency(crosstab)[1]
-        passed = p_value < threshold
     elif model.meta.model_type == SupportedModelTypes.REGRESSION:
         from scipy.stats import ttest_ind
         predictions = model.predict(dataset).prediction
         p_value = ttest_ind(overlapping_array, predictions, alternative="two-sided", equal_var=True).pvalue
-        passed = p_value < threshold
+
+    passed = p_value < threshold
 
     return TestResult(
         actual_slices_size=[len(sliced_dataset)],
