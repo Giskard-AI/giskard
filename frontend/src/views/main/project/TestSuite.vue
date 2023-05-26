@@ -20,12 +20,12 @@
                         <v-icon>history</v-icon>
                         Past executions
                     </v-tab>
-                    <v-tab disabled>
+                    <v-tab :to="{ name: 'test-suite-configuration' }">
                         <v-icon>settings</v-icon>
                         Configuration
                     </v-tab>
                 </v-tabs>
-                <v-row class="mt-0 overview-container pl-3 pr-3">
+                <v-row v-if="!hideHeader" class="mt-0 overview-container pl-3 pr-3 pb-3">
                     <v-col>
                         <div class="d-flex align-center justify-center">
                             <v-select v-model="statusFilter" label="Test execution status" :items="statusFilterOptions"
@@ -50,7 +50,7 @@
                         </div>
                     </v-col>
                 </v-row>
-                <v-row class="vc overview-container pl-3 pr-3">
+                <v-row class="vc overview-container pl-3  mt-0">
                     <v-col class="vc" cols="12">
                         <router-view/>
                     </v-col>
@@ -77,7 +77,6 @@ const props = defineProps<{
 }>();
 
 const mainStore = useMainStore();
-const {setStatusFilter, setSearchFilter} = useTestSuiteStore()
 const {suite, inputs, executions, hasTest, hasInput, statusFilter, searchFilter} = storeToRefs(useTestSuiteStore())
 
 onActivated(() => loadData());
@@ -89,7 +88,7 @@ const {loadCatalog} = useCatalogStore();
 const router = useRouter();
 const route = useRoute();
 
-const latestExecution = computed(() => executions.value.length === 0 ? null : executions.value[0]);
+const hideHeader = computed(() => route.name === 'test-suite-configuration')
 
 async function loadData() {
     await loadTestSuites(props.projectId, props.suiteId);
