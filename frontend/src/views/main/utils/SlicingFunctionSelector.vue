@@ -13,7 +13,7 @@
             @input="onInput"
             :dense="fullWidth"
             hide-details
-            :prepend-inner-icon="icon ? 'mdi-knife' : null"
+            :prepend-inner-icon="icon ? 'mdi-filter' : null"
         >
             <template v-slot:append-item v-if="allowNoCodeSlicing">
                 <v-list-item @click="createSlice">
