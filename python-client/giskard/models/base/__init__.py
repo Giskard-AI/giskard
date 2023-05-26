@@ -11,11 +11,11 @@ from pathlib import Path
 from typing import Optional, Any, Union, Callable, Iterable
 
 import cloudpickle
+import mlflow
 import numpy as np
 import pandas as pd
-import yaml
-import mlflow
 import pydantic
+import yaml
 
 from giskard.client.giskard_client import GiskardClient
 from giskard.core.core import ModelMeta, SupportedModelTypes, ModelType
@@ -174,7 +174,7 @@ class BaseModel(ABC):
         with open(class_file, "wb") as f:
             cloudpickle.dump(self.__class__, f, protocol=pickle.DEFAULT_PROTOCOL)
 
-    def prepare_dataframe(self, dataset: Dataset):
+    def prepare_dataframe(self, df, column_dtypes=None, target=None):
         """
         Prepares a Pandas DataFrame for inference by ensuring the correct columns are present and have the correct data types.
 
@@ -188,19 +188,19 @@ class BaseModel(ABC):
             ValueError: If the target column is found in the dataset.
             ValueError: If a specified feature name is not found in the dataset.
         """
-        df = dataset.df.copy()
-        column_dtypes = dict(dataset.column_dtypes) if dataset.column_dtypes else None
+        df = df.copy()
+        column_dtypes = dict(column_dtypes) if column_dtypes else None
 
         if column_dtypes:
             for cname, ctype in column_dtypes.items():
                 if cname not in df:
                     df[cname] = None
 
-        if dataset.target:
-            if dataset.target in df.columns:
-                df.drop(dataset.target, axis=1, inplace=True)
-            if column_dtypes and dataset.target in column_dtypes:
-                del column_dtypes[dataset.target]
+        if target:
+            if target in df.columns:
+                df.drop(target, axis=1, inplace=True)
+            if column_dtypes and target in column_dtypes:
+                del column_dtypes[target]
 
         if self.meta.feature_names:
             if set(self.meta.feature_names) > set(df.columns):
@@ -245,7 +245,7 @@ class BaseModel(ABC):
               The `all_predictions` field will contain the predicted probabilities for all class labels for each example in the input dataset.
         """
         timer = Timer()
-        df = self.prepare_dataframe(dataset)
+        df = dataset.df
 
         raw_prediction = self.predict_df(df)
 
@@ -276,7 +276,7 @@ class BaseModel(ABC):
             )
         else:
             raise ValueError(f"Prediction task is not supported: {self.meta.model_type}")
-        timer.stop(f"Predicted dataset with shape {dataset.df.shape}")
+        timer.stop(f"Predicted dataset with shape {df.shape}")
         return result
 
     @abstractmethod
