@@ -1,5 +1,5 @@
 from giskard.scanner.prediction.computing.overconfidence import ComputeOverconfidence
-from giskard.scanner.prediction.prediction_bias_detectors import PredictionBiasDetector
+from giskard.scanner.prediction import PredictionBiasDetector
 
 
 class OverconfidenceBiasDetector(PredictionBiasDetector):

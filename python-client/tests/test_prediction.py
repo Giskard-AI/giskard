@@ -1,5 +1,5 @@
-from giskard.scanner.prediction.prediction_bias_detectors.overconfidence import OverconfidenceBiasDetector
-from giskard.scanner.prediction.prediction_bias_detectors.borderline import BorderlineBiasDetector
+from giskard.scanner.prediction.overconfidence import OverconfidenceBiasDetector
+from giskard.scanner.prediction.borderline import BorderlineBiasDetector
 from giskard.scanner.prediction.metrics import OverconfidenceMAE, BorderlineMAE
 
 
