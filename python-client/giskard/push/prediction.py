@@ -2,19 +2,20 @@ from giskard.core.core import SupportedModelTypes
 from ..push import OverconfidencePush, BorderlinePush
 
 
-def overconfidence(model, ds, idrow):
+def create_overconfidence_push(model, ds, idrow):
     values = ds.df.loc[[idrow]]
-    training_label = values[ds.target].values
+    training_label = values[ds.target].values[0]
 
     row_slice = ds.slice(lambda df: df.loc[[idrow]], row_level=False)
-    model_prediction_results = model.predict(row_slice)
-
-    prediction = model_prediction_results.prediction
-
-    training_label_proba = model_prediction_results.all_predictions[training_label].values
-    prediction_proba = model_prediction_results.all_predictions[prediction].values
 
     if model.meta.model_type == SupportedModelTypes.CLASSIFICATION:
+        model_prediction_results = model.predict(row_slice)
+
+        prediction = model_prediction_results.prediction[0]
+
+        training_label_proba = model_prediction_results.all_predictions[training_label].values[0]
+        prediction_proba = model_prediction_results.all_predictions[prediction].values
+
         if training_label != prediction and prediction_proba >= 1.5 * training_label_proba:
             # if training_label != prediction and prediction_proba >= 2* training_label_proba:
             # res = Push(push_type="contribution_wrong", feature=el,
@@ -25,17 +26,16 @@ def overconfidence(model, ds, idrow):
             return res
 
 
-def borderline(model, ds, idrow):
+def create_borderline_push(model, ds, idrow):
     if model.meta.model_type == SupportedModelTypes.CLASSIFICATION:
 
         row_slice = ds.slice(lambda x: x.loc[[idrow]], row_level=False)
         model_prediction_results = model.predict(row_slice)
         all_predictions = model_prediction_results.all_predictions
         diff, max, second = _var_rate(all_predictions)
-
         values = ds.df.loc[[idrow]]
-        training_label = values[ds.target].values
-        training_label_proba = model_prediction_results.all_predictions[training_label].values
+        training_label = values[ds.target].values[0]
+        training_label_proba = model_prediction_results.all_predictions[training_label].values[0]
 
         if diff <= 0.2:
             return BorderlinePush(max, second, training_label, training_label_proba, row_slice)

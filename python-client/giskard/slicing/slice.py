@@ -8,7 +8,7 @@ import re
 import numpy as np
 import pandas as pd
 
-from ml_worker_pb2 import DatasetProcessFunctionMeta
+from giskard.ml_worker.generated.ml_worker_pb2  import DatasetProcessFunctionMeta
 from ..ml_worker.testing.registry.registry import get_object_uuid
 from ..ml_worker.testing.registry.slicing_function import SlicingFunction
 
