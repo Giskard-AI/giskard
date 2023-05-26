@@ -1,6 +1,6 @@
-from ...models.base import BaseModel
-from ...datasets.base import Dataset
-from ..logger import logger
+from models.base import BaseModel
+from datasets.base import Dataset
+from scanner.logger import logger
 import pandas as pd
 
 
@@ -16,7 +16,6 @@ class DataLeakageDetector:
         return issues
 
     def _find_issues(self, model, dataset):
-        existing_leak = False
         results = model.predict(dataset)
         prediction = pd.DataFrame(results.prediction)
         for i in range(len(dataset.df)):
@@ -24,9 +23,8 @@ class DataLeakageDetector:
             pre_computed_output = prediction.iloc[i:i+1]
             online_computed_output = pd.Series(model.predict(row).prediction)
             if pre_computed_output.values != online_computed_output.values:
-                existing_leak = True
-        if existing_leak:
-            return DataLeakageIssue()
+                return DataLeakageIssue()
+
 
 
 class DataLeakageIssue:
