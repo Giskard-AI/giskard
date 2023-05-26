@@ -20,9 +20,9 @@
             <div v-if="result"
                  :class="`d-flex flex-row align-center gap-8 ${result.passed ? 'test-passed' : 'test-failed'}`">
                 <span v-if="result.metric" class="metric"
-                >Measured <b>Metric = {{
+                >Measured <strong>Metric = {{
                         result.metric
-                    }}</b></span>
+                    }}</strong></span>
                 <v-chip v-if="result.passed" x-small :color="Colors.PASS_SURFACE" :text-color="Colors.ON_PASS_SURFACE"
                         label>
                     <v-icon x-small>done</v-icon>
