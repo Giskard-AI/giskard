@@ -46,8 +46,8 @@
                     }}</span>
             </div>
             <div class="flex-grow-1"/>
-            <v-btn text x-small @click="editTests">
-                <v-icon>settings</v-icon>
+            <v-btn text x-small @click="editTests" color="rgba(0, 0, 0, 0.6)">
+                <v-icon x-small class="mr-1">settings</v-icon>
                 Edit parameters
             </v-btn>
         </div>
@@ -196,14 +196,14 @@ async function editTests() {
     font-style: normal;
     font-weight: 400;
     font-size: 14px;
-    line-height: 16px;
+    line-height: 12px;
     letter-spacing: 0.0025em;
 }
 
 .text-input-value {
     font-style: normal;
     font-weight: 400;
-    font-size: 16px;
+    font-size: 12px;
     line-height: 24px;
     font-feature-settings: 'liga' off;
     color: #000000;
@@ -213,7 +213,7 @@ async function editTests() {
     font-family: 'Fira Code';
     font-style: normal;
     font-weight: 400;
-    font-size: 15px;
+    font-size: 11px;
     line-height: 24px;
     font-feature-settings: 'liga' off;
     color: #000000;
