@@ -1,8 +1,8 @@
 from giskard.scanner.performance.metrics import PerformanceMetric
 from giskard.models.base import BaseModel
 from giskard.datasets.base import Dataset
-from scanner.prediction.loss_generators.borderline import BorderlineDatasetGenerator
-from scanner.prediction.loss_generators.overconfidence import OverconfidenceDatasetGenerator
+from giskard.scanner.prediction.loss_generators.borderline import BorderlineDatasetGenerator
+from giskard.scanner.prediction.loss_generators.overconfidence import OverconfidenceDatasetGenerator
 
 
 class OverconfidenceMAE(PerformanceMetric):
