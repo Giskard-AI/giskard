@@ -195,7 +195,7 @@ async function editTests() {
 .text-input-name {
     font-style: normal;
     font-weight: 400;
-    font-size: 14px;
+    font-size: 12px;
     line-height: 12px;
     letter-spacing: 0.0025em;
 }

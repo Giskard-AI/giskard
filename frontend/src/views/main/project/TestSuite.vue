@@ -5,6 +5,9 @@
                 <div class="d-flex pl-3 pr-3">
                     <h1 class="test-suite-name">{{ suite.name }}</h1>
                     <div class="flex-grow-1"/>
+                    <v-btn text @click="() => openSettings()">
+                        Edit test suite
+                    </v-btn>
                     <v-btn outlined class='mx-1' v-if="hasTest"
                            :to="{ name: 'project-catalog-tests', query: { suiteId: suiteId } }" color="secondary">
                         Add test
@@ -70,6 +73,8 @@ import {useRoute, useRouter} from 'vue-router/composables';
 import {$vfm} from 'vue-final-modal';
 import RunTestSuiteModal from '@/views/main/project/modals/RunTestSuiteModal.vue';
 import {useCatalogStore} from "@/stores/catalog";
+import EditTestSuiteModal from "@/views/main/project/modals/EditTestSuiteModal.vue";
+import {api} from "@/api";
 
 const props = defineProps<{
     projectId: number,
@@ -112,6 +117,17 @@ async function openRunTestSuite(compareMode: boolean) {
     }
 }
 
+async function openSettings() {
+    const project = await api.getProject(props.projectId)
+    $vfm.show({
+        component: EditTestSuiteModal,
+        bind: {
+            projectKey: project.key,
+            projectId: project.id,
+            suite: suite.value
+        }
+    });
+}
 
 </script>
 
