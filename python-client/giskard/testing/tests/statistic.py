@@ -229,13 +229,17 @@ def test_disparate_impact(model: BaseModel, dataset: Dataset, protected_slicing_
 
 
 @test(name="Right Label", tags=["heuristic", "classification"])
-def test_independence_chi_square(model: BaseModel, dataset: Dataset, column_name: str,
+def test_independence_chi_square(model: BaseModel, dataset: Dataset,
                                  slicing_function: SlicingFunction, threshold: float = 0.1) -> TestResult:
+
     sliced_dataset = dataset.slice(slicing_function)
     check_slice_not_empty(sliced_dataset=sliced_dataset, dataset_name="dataset",
                           test_name="test_independence_chi_square")
-    overlapping_idx = dataset.df[dataset.df.isin(sliced_dataset.df)].dropna().index.values
     overlapping_array = np.zeros(len(dataset.df))
+
+    original_df = dataset.df.reset_index(drop=True)
+    sliced_df = sliced_dataset.df.reset_index(drop=True)
+    overlapping_idx = original_df[original_df.isin(sliced_df)].dropna().index.values
     overlapping_array[overlapping_idx] = 1
 
     if model.meta.model_type == SupportedModelTypes.CLASSIFICATION:
@@ -251,7 +255,7 @@ def test_independence_chi_square(model: BaseModel, dataset: Dataset, column_name
         passed = p_value < threshold
 
     return TestResult(
-        actual_slices_size=[len(dataset)],
+        actual_slices_size=[len(sliced_dataset)],
         metric=p_value,
         passed=passed,
     )
