@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 
 from giskard import Dataset
-from giskard.ml_worker.testing.tests.performance import test_accuracy
+from test_performance import test_accuracy
 
 
 def test_dataset_index_is_preserved(german_credit_data, german_credit_model):
