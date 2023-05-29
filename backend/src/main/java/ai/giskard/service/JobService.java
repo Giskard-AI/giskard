@@ -15,7 +15,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -53,7 +52,7 @@ public class JobService {
     public List<JobDTO> getRunningWorkerJobs() {
         return jobs.values().stream()
             .map(GiskardJob::toDTO)
-            .collect(Collectors.toList());
+            .toList();
     }
 
 }
