@@ -1,4 +1,4 @@
-# 🔬 Install the Giskard library
+# Install the Giskard library
 
 In order to scan your model for vulnerabilities, you'll need to install the `giskard` library with `pip`:
 
