@@ -1,4 +1,4 @@
-# 🔬 Scan your ML model
+# Scan your ML model
 
 How to scan your Machine Learning model for vulnerabilities with Giskard?
 
