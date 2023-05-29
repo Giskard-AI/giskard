@@ -29,7 +29,9 @@ XXXX
 
 ## What should I do if I have dependency issues?
 
-While installing Giskard, if you have any conflicts with the Giskard dependencies (see the list of dependencies for Giskard), please change the version of the conflicting library if possible. For instance, if you have dependency conflicts with pandas, please do
+While installing Giskard, if you have any conflicts with the Giskard dependencies (see the list of dependencies for Giskard), please change the version of the conflicting libraries. 
+
+For instance, if you have dependency conflicts with `pandas`, please do
 ```sh
 pip uninstall giskard
 pip uninstall pandas
