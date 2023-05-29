@@ -45,8 +45,11 @@
 
             </div>
             <div class="caption">
-              <div v-if="targetFeature">target: {{ targetFeature }}</div>
-              <div v-if="model && model.threshold">threshold: {{ model.threshold }}</div>
+                <div v-if="targetFeature">target: {{ targetFeature }}</div>
+                <div v-if="model && model.threshold && (model.modelType != ModelType.CLASSIFICATION || model.classificationLabels.length == 2)">
+                    threshold:
+                    {{ model.threshold }}
+                </div>
             </div>
           </div>
         </v-col>
