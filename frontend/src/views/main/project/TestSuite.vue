@@ -24,7 +24,7 @@
                     <v-icon>compare</v-icon>
                     Compare
                 </v-btn>
-                <v-btn tile class='mx-1' v-if="hasTest" @click='() => openRunTestSuite(false)' color="primary">
+                <v-btn tile class='mx-1' v-if="hasTest" @click='openRunTestSuite(false)' color="primary">
                     <v-icon>arrow_right</v-icon>
                     Run test suite
                 </v-btn>
