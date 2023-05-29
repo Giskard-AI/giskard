@@ -18,40 +18,56 @@
       </v-container>
       <v-row v-else class="fill-height">
         <v-col cols="3" class="vc fill-height">
-          <v-btn text class='mx-1' @click='compare()' color="primary">
-            <v-icon>compare</v-icon>
-            Compare past executions
-          </v-btn>
-          <v-list three-line>
-            <v-list-item-group color="primary" mandatory>
-              <div v-for="e in executionsAndJobs" :key="e.execution?.id ?? e.date">
-                <v-divider />
-                <v-list-item :disabled="e.disabled" :to="e.disabled ? null : { name: 'test-suite-execution', params: { executionId: e.execution.id } }">
-                  <v-list-item-icon>
-                    <v-icon :color="e.color" size="40">{{
-                      e.icon
-                    }}
-                    </v-icon>
-                  </v-list-item-icon>
-                  <v-list-item-content>
-                    <v-list-item-title>
-                      <div class="d-flex justify-space-between">
-                          <div>
-                              <span v-if="getModel(e)">Model: {{ getModel(e) }}<br/></span>
-                              <span>{{ (e.disabled ? e.date : e.execution.executionDate) | date }}</span>
-                          </div>
-                          <template v-if="!e.disabled">
-                              <TestResultHeatmap v-if="compareSelectedItems === null"
-                                                 :results="executionResults(e.execution)"/>
-                              <v-checkbox v-else v-model="compareSelectedItems" :value="e.execution.id"/>
-                          </template>
-                      </div>
-                    </v-list-item-title>
-                  </v-list-item-content>
-                </v-list-item>
-              </div>
-            </v-list-item-group>
-          </v-list>
+            <v-tooltip top>
+                <template v-slot:activator="{ on, attrs }">
+                    <div v-bind="attrs" v-on="on">
+                        <v-btn text class='mx-1' @click='compare()' color="primary"
+                               :disabled="compareSelectedItems.length < 2">
+                            <v-icon>compare</v-icon>
+                            Compare selected executions
+                        </v-btn>
+                    </div>
+                </template>
+                <span v-if="compareSelectedItems.length < 2">Select at least two executions to compare</span>
+                <span v-else>Show comparison of selected executions</span>
+            </v-tooltip>
+
+            <v-list three-line>
+                <v-list-item-group color="primary" mandatory>
+                    <div v-for="e in executionsAndJobs" :key="e.execution?.id ?? e.date">
+                        <v-divider/>
+                        <v-list-item :disabled="e.disabled"
+                                     :to="e.disabled ? null : { name: 'test-suite-execution', params: { executionId: e.execution.id } }">
+                            <v-list-item-icon>
+                                <v-icon :color="e.color" size="40">{{
+                                    e.icon
+                                    }}
+                                </v-icon>
+                            </v-list-item-icon>
+                            <v-list-item-content>
+                                <v-list-item-title>
+                                    <div class="d-flex justify-space-between">
+                                        <div>
+                                            <span v-if="getModel(e)">Model: {{ getModel(e) }}<br/></span>
+                                            <span>{{ (e.disabled ? e.date : e.execution.executionDate) | date }}</span>
+                                        </div>
+                                        <v-tooltip bottom v-if="!e.disabled">
+                                            <template v-slot:activator="{ on, attrs }">
+                                                <div v-bind="attrs" v-on="on">
+                                                    <v-checkbox v-model="compareSelectedItems"
+                                                                :value="e.execution.id"/>
+                                                </div>
+                                            </template>
+                                            <span v-if="compareSelectedItems.includes(e.execution.id)">Remove from comparison</span>
+                                            <span v-else>Add to comparison</span>
+                                        </v-tooltip>
+                                    </div>
+                                </v-list-item-title>
+                            </v-list-item-content>
+                        </v-list-item>
+                    </div>
+                </v-list-item-group>
+            </v-list>
         </v-col>
         <v-col class="vc fill-height">
           <router-view></router-view>
@@ -65,7 +81,6 @@
 
 import {computed, onMounted} from 'vue';
 import {JobDTO, JobState, TestResult, TestSuiteExecutionDTO} from '@/generated-sources';
-import TestResultHeatmap from '@/components/TestResultHeatmap.vue';
 import {Colors} from '@/utils/colors';
 import {Comparators} from '@/utils/comparators';
 import {storeToRefs} from 'pinia';
@@ -129,10 +144,6 @@ const route = useRoute();
 const testSuiteCompareStore = useTestSuiteCompareStore()
 const { compareSelectedItems } = storeToRefs(testSuiteCompareStore);
 
-function executionResults(execution: TestSuiteExecutionDTO): boolean[] {
-  return execution.results ? execution.results.map(result => result.passed) : [];
-}
-
 type ExecutionTabItem = {
   date: any,
   disabled: boolean,
@@ -175,15 +186,11 @@ onMounted(() => {
 })
 
 async function compare() {
-  if (compareSelectedItems.value === null) {
-    testSuiteCompareStore.startComparing();
-  } else {
     await router.push({
-      name: 'test-suite-compare-executions',
-      query: { selectedIds: JSON.stringify(compareSelectedItems.value) }
+        name: 'test-suite-compare-executions',
+        query: {selectedIds: JSON.stringify(compareSelectedItems.value)}
     })
     testSuiteCompareStore.reset();
-  }
 }
 
 async function openRunTestSuite(compareMode: boolean) {
