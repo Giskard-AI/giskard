@@ -1,4 +1,4 @@
-# 🧪 Create a test suite
+# Test your ML model
 
 :::{warning}
 First you'll need to create a Model and a dataset (And scan your model),
