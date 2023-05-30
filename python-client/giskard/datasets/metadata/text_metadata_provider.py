@@ -17,6 +17,8 @@ class TextMetadataProvider(MetadataProvider):
                 "text_length": values.map(len),
                 "avg_word_length": values.map(_avg_word_length),
                 "charset": pd.Categorical(values.map(_detect_charset)),
+                "avg_whitespace": values.map(_avg_whitespace),
+                "avg_digits": values.map(_avg_digits),
             },
             index=values.index,
         )
@@ -32,9 +34,23 @@ def _detect_charset(text: str):
     return charset or "undefined"
 
 
-def _avg_word_length(text: str) -> float:
+def _avg_word_length(text: str):
     # @TODO: improve this
     words = text.split()
     if len(words) == 0:
         return 0.0
     return np.mean([len(w) for w in words])
+
+
+def _avg_whitespace(text: str):
+    chars = list(text)
+    if len(chars) == 0:
+        return 0.0
+    return np.mean([c.isspace() for c in chars])
+
+
+def _avg_digits(text: str):
+    chars = list(text)
+    if len(chars) == 0:
+        return 0.0
+    return np.mean([c.isdigit() for c in chars])

@@ -3,10 +3,13 @@ from importlib import import_module
 from typing import Callable, Optional, Iterable, Any
 
 import pandas as pd
+import logging
 
 from giskard.core.core import ModelType
 from giskard.models.function import PredictionFunctionModel
 from giskard.core.validation import configured_validate_arguments
+
+logger = logging.getLogger(__name__)
 
 ml_libraries = {
     ("giskard.models.huggingface", "HuggingFaceModel"): [("transformers", "PreTrainedModel")],
@@ -89,8 +92,8 @@ def wrap_model(model,
     """
     giskard_cls = infer_giskard_cls(model)
     if giskard_cls:
-        print("Your model is successfully wrapped by Giskard's '"
-              + str(giskard_cls.__name__) + "' wrapper class.")
+        logger.info("Your model is successfully wrapped by Giskard's '"
+                    + str(giskard_cls.__name__) + "' wrapper class.")
         return giskard_cls(model=model,
                            model_type=model_type,
                            data_preprocessing_function=data_preprocessing_function,
@@ -143,7 +146,7 @@ def model_from_sklearn(model, model_type: ModelType, name: Optional[str] = None,
         SKLearnModel
             An instance of the `SKLearnModel` class.
     """
-    from giskard import SKLearnModel
+    from giskard.models.sklearn import SKLearnModel
     return SKLearnModel(model,
                         model_type,
                         name,
@@ -181,7 +184,7 @@ def model_from_catboost(model, model_type: ModelType, name: Optional[str] = None
     Returns:
         CatboostModel: An instance of the `CatboostModel` class.
     """
-    from giskard import CatboostModel
+    from giskard.models.catboost import CatboostModel
     return CatboostModel(model,
                          model_type,
                          name,
@@ -224,13 +227,13 @@ def model_from_pytorch(model, model_type: ModelType, torch_dtype=None, device: O
     Returns:
         PyTorchModel: An instance of the `PyTorchModel` class.
     """
-    from giskard import PyTorchModel
     try:
         import torch
     except ImportError as e:
         raise ImportError("Please install it via 'pip install torch'") from e
 
     torch_dtype = torch.float32 if not torch_dtype else torch_dtype
+    from giskard.models.pytorch import PyTorchModel
     return PyTorchModel(model,
                         model_type,
                         torch_dtype,
@@ -271,7 +274,7 @@ def model_from_tensorflow(model, model_type: ModelType, name: Optional[str] = No
     Returns:
         TensorFlowModel: An instance of the `TensorFlowModel` class.
     """
-    from giskard import TensorFlowModel
+    from giskard.models.tensorflow import TensorFlowModel
     return TensorFlowModel(model,
                            model_type,
                            name,
@@ -309,7 +312,7 @@ def model_from_huggingface(model, model_type: ModelType, name: Optional[str] = N
     Returns:
         HuggingFaceModel: An instance of the `HuggingFaceModel` class.
     """
-    from giskard import HuggingFaceModel
+    from giskard.models.huggingface import HuggingFaceModel
     return HuggingFaceModel(model,
                             model_type,
                             name,

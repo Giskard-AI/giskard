@@ -7,11 +7,12 @@ import Vue from "vue";
 import {api} from "@/api";
 import {AxiosError} from "axios";
 import {useUserStore} from "@/stores/user";
+import {TYPE} from "vue-toastification";
 import AppInfoDTO = AppConfigDTO.AppInfoDTO;
 
 export interface AppNotification {
     content: string;
-    color?: string;
+    color?: TYPE
     showProgress?: boolean;
 }
 
@@ -20,6 +21,7 @@ interface State {
     license: LicenseDTO | null;
     coworkers: IUserProfileMinimal[];
     notifications: AppNotification[];
+    backendReady: boolean;
 }
 
 export const useMainStore = defineStore('main', {
@@ -27,7 +29,8 @@ export const useMainStore = defineStore('main', {
         appSettings: null,
         license: null,
         coworkers: [],
-        notifications: []
+        notifications: [],
+        backendReady: false
     }),
     getters: {
         authAvailable(state: State) {
@@ -52,7 +55,7 @@ export const useMainStore = defineStore('main', {
                     "Giskard Instance": instanceId,
                     "Giskard Version": this.appSettings.version,
                     "Giskard Plan": this.appSettings.planCode,
-                    "Giskard LicenseID": this.license?.id ?? "NONE"
+                    "Giskard LicenseID": this.license?.licenseId ?? "NONE"
                 }
             );
             mixpanel.track("Read App Settings")
@@ -69,12 +72,13 @@ export const useMainStore = defineStore('main', {
             });
         },
         addSimpleNotification(text: string) {
-            this.addNotification({content: text, color: 'success'})
+            this.addNotification({content: text, color: TYPE.SUCCESS})
         },
         addNotification(payload: AppNotification) {
             Vue.$toast(payload.content, {
                 closeButton: false,
                 icon: payload.showProgress ? 'notification-spinner fas fa-spinner fa-spin' : true,
+                type: payload.color
             });
         },
         removeNotification(payload: AppNotification) {
@@ -85,7 +89,13 @@ export const useMainStore = defineStore('main', {
             this.setAppSettings(response.app);
         },
         async fetchLicense() {
-            this.license = await api.getLicense();
+            try {
+                this.license = await api.getLicense();
+                this.backendReady = true;
+            } catch (e) {
+                this.backendReady = false
+                throw e;
+            }
         },
         async getUserProfile() {
             const userStore = useUserStore();

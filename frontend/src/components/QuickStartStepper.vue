@@ -19,8 +19,11 @@
         <div class="mb-6" v-else>
           <StartWorkerInstructions></StartWorkerInstructions>
         </div>
-        <v-btn color="primary" @click="step = 2">Continue</v-btn>
-        <v-btn class="ml-2" @click="close" flat>Cancel</v-btn>
+        <div class="d-flex">
+          <v-btn color="primary" @click="step = 2">Continue</v-btn>
+          <v-spacer></v-spacer>
+          <v-btn @click="close" text>Cancel</v-btn>
+        </div>
       </v-stepper-content>
 
       <v-stepper-content step="2">
@@ -36,8 +39,12 @@
           <p class="my-2">Then, create a Giskard client with the following Python code:</p>
           <CodeSnippet :codeContent="clientCodeContent"></CodeSnippet>
         </div>
-        <v-btn color="primary" @click="step = 3">Continue</v-btn>
-        <v-btn class="ml-2" @click="close" flat>Cancel</v-btn>
+        <div class="d-flex">
+          <v-btn color="primary" @click="step = 3">Continue</v-btn>
+          <v-btn color="ml-2" @click="step = 1">Back</v-btn>
+          <v-spacer></v-spacer>
+          <v-btn @click="close" text>Cancel</v-btn>
+        </div>
       </v-stepper-content>
 
       <v-stepper-content step="3" class="pl-0">
@@ -58,15 +65,25 @@
           </v-stepper-content>
         </v-stepper>
 
-        <v-btn color="primary" class="ml-6" @click="() => {
-          if (artifactsStep === 1) {
-            artifactsStep = 2
-          } else {
-            step = 4
-            artifactsStep = 1
-          }
-        }">Continue</v-btn>
-        <v-btn class="ml-2" @click="close" flat>Cancel</v-btn>
+        <div class="d-flex">
+          <v-btn color="primary" class="ml-6" @click="() => {
+            if (artifactsStep === 1) {
+              artifactsStep = 2
+            } else {
+              step = 4
+              artifactsStep = 1
+            }
+          }">Continue</v-btn>
+          <v-btn color="ml-2" @click="() => {
+            if (artifactsStep === 1) {
+              step = 2
+            } else {
+              artifactsStep = 1
+            }
+          }">Back</v-btn>
+          <v-spacer></v-spacer>
+          <v-btn @click="close" text>Cancel</v-btn>
+        </div>
       </v-stepper-content>
       <v-stepper-content step="4">
         <div class="mb-6">
@@ -88,8 +105,12 @@
             <CodeSnippet :codeContent="manualTestCodeContent"></CodeSnippet>
           </div>
         </div>
-        <v-btn color="primary" @click="close">Close</v-btn>
-        <v-btn class="ml-2" @click="step = 1; artifactsStep = 1" flat>Restart</v-btn>
+        <div class="d-flex">
+          <v-btn color="primary" @click="close">Close</v-btn>
+          <v-btn color="ml-2" @click="step = 3">Back</v-btn>
+          <v-spacer></v-spacer>
+          <v-btn class="ml-2" @click="step = 1; artifactsStep = 1" text>Restart</v-btn>
+        </div>
       </v-stepper-content>
     </v-stepper-items>
   </v-stepper>
@@ -209,6 +230,8 @@ onMounted(async () => {
     allMLWorkerSettings.value = await api.getMLWorkerSettings();
     externalWorker.value = allMLWorkerSettings.value.find(worker => worker.isRemote === true) || null;
   } catch (error) { }
+
+  await generateApiAccessToken();
 
   if (externalWorker.value) {
     step.value = 2;

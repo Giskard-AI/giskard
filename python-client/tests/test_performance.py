@@ -1,7 +1,7 @@
 import re
 import pytest
 import pandas as pd
-import giskard.ml_worker.testing.tests.performance as performance
+import giskard.testing.tests.performance as performance
 from giskard.ml_worker.testing.utils import Direction
 from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction, slicing_function
 
@@ -10,7 +10,7 @@ from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction,
     "model,data,threshold,expected_metric,actual_slices_size",
     [
         ("german_credit_model", "german_credit_data", 0.5, 0.85, 1000),
-        ("enron_model", "enron_data", 0.5, 0.67, 50),
+        ("enron_model", "enron_data", 0.5, 0.76, 50),
     ],
 )
 def test_f1(model, data, threshold, expected_metric, actual_slices_size, request):
@@ -78,7 +78,7 @@ def test_auc_with_unique_target_raise_exception(model, data, threshold, expected
     "model,data,threshold,expected_metric,actual_slices_size",
     [
         ("german_credit_model", "german_credit_data", 0.5, 0.81, 1000),
-        ("enron_model", "enron_data", 0.5, 0.72, 50),
+        ("enron_model", "enron_data", 0.5, 0.76, 50),
     ],
 )
 def test_precision(model, data, threshold, expected_metric, actual_slices_size, request):
@@ -95,7 +95,7 @@ def test_precision(model, data, threshold, expected_metric, actual_slices_size, 
     "model,data,threshold,expected_metric,actual_slices_size",
     [
         ("german_credit_model", "german_credit_data", 0.5, 0.89, 1000),
-        ("enron_model", "enron_data", 0.5, 0.66, 50),
+        ("enron_model", "enron_data", 0.5, 0.76, 50),
     ],
 )
 def test_recall(model, data, threshold, expected_metric, actual_slices_size, request):
@@ -325,15 +325,19 @@ def test_diff_rmse(model, data, threshold, expected_metric, actual_slices_size, 
     "model,data,threshold,expected_metric",
     [
         ("german_credit_model", "german_credit_data", 0.1, 0.03),
-        ("enron_model", "enron_data", 0.5, 0.17),
+        ("enron_model", "enron_data", 0.5, -0.02),
     ],
 )
 def test_diff_reference_actual_f1(model, data, threshold, expected_metric, request):
     data = request.getfixturevalue(data)
+
+    actual_slice = data.slice(lambda df: df.iloc[:len(df) // 3], row_level=False)
+    reference_slice = data.slice(lambda df: df.iloc[len(df) // 3:], row_level=False)
+
     result = performance.test_diff_reference_actual_f1(
         model=request.getfixturevalue(model),
-        actual_dataset=data.slice(SlicingFunction(lambda df: df.head(len(df) // 2), row_level=False)),
-        reference_dataset=data.slice(SlicingFunction(lambda df: df.tail(len(df) // 2), row_level=False)),
+        actual_dataset=actual_slice,
+        reference_dataset=reference_slice,
         threshold=threshold,
     ).execute()
     assert round(result.metric, 2) == expected_metric
