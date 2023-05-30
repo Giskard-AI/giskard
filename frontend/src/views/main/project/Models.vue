@@ -99,19 +99,19 @@
 </template>
 
 <script setup lang="ts">
-import { api } from '@/api';
-import { apiURL } from "@/env";
-import { Role } from "@/enums";
+import {api} from '@/api';
+import {apiURL} from "@/env";
+import {Role} from "@/enums";
 import InspectorLauncher from './InspectorLauncher.vue';
-import { JWTToken, ModelDTO } from '@/generated-sources';
+import {JWTToken, ModelDTO} from '@/generated-sources';
 import mixpanel from "mixpanel-browser";
-import { onBeforeMount, onMounted, ref, computed } from 'vue';
+import {computed, onBeforeMount, onMounted, ref} from 'vue';
 import DeleteModal from '@/views/main/project/modals/DeleteModal.vue';
 import InlineEditText from '@/components/InlineEditText.vue';
-import { useUserStore } from "@/stores/user";
-import { useProjectStore } from "@/stores/project";
-import { useMainStore } from "@/stores/main";
-import { useProjectArtifactsStore } from "@/stores/project-artifacts";
+import {useUserStore} from "@/stores/user";
+import {useProjectStore} from "@/stores/project";
+import {useMainStore} from "@/stores/main";
+import {useProjectArtifactsStore} from "@/stores/project-artifacts";
 import CodeSnippet from '@/components/CodeSnippet.vue';
 
 const userStore = useUserStore();
@@ -119,7 +119,7 @@ const projectStore = useProjectStore();
 const projectArtifactsStore = useProjectArtifactsStore();
 
 interface Props {
-  projectId: number,
+    projectId: number,
 }
 
 const props = defineProps<Props>();
@@ -132,23 +132,23 @@ const apiAccessToken = ref<JWTToken | null>(null);
 const codeContent = computed(
 // language=Python
     () =>
-  `from giskard import Model, GiskardClient
-from giskard.demo import titanic  # for demo purposes only 🛳️
+        `from giskard import Model, GiskardClient
+        from giskard.demo import titanic  # for demo purposes only 🛳️
 
-original_model, _ = titanic()  # Replace with your model creation
+        original_model, _ = titanic()  # Replace with your model creation
 
-# Create a Giskard client
-token = "${apiAccessToken.value!.id_token}"
-client = GiskardClient(
-    url="${apiURL}",  # URL of your Giskard instance
-    token=token
-)
+        # Create a Giskard client
+        token = "${apiAccessToken.value?.id_token}"
+        client = GiskardClient(
+            url="${apiURL}",  # URL of your Giskard instance
+            token=token
+        )
 
-# Wrap your model with Giskard model 🎁
-giskard_model = Model(original_model, model_type="classification", name="Titanic model")
+        # Wrap your model with Giskard model 🎁
+        giskard_model = Model(original_model, model_type="classification", name="Titanic model")
 
-# Upload to the current project ✉️
-giskard_model.upload(client, "${project.value!.key}")`
+        # Upload to the current project ✉️
+        giskard_model.upload(client, "${project.value!.key}")`
 )
 
 const project = computed(() => {
