@@ -1,5 +1,6 @@
 <!-- TAB HEADER -->
-<div class="flex items-center items-stretch h-11">
+<div class="flex items-center h-11 pt-1 dark:bg-zinc-900">
+    {# Giskard logo #}
     <div class="flex items-center px-4 dark:fill-white border-b border-gray-500 h-11">
         <svg xmlns="http://www.w3.org/2000/svg" xml:space="preserve" viewBox="0 0 410 213" height="15">
             <path
@@ -7,12 +8,14 @@
                 style="fill-rule:evenodd;clip-rule:evenodd" />
         </svg>
         <div class="ml-4 py-2">
-            <span class="uppercase text-sm">{{ issues | length }} issues detected</span>
+            <span class="uppercase text-sm">{{ issues | length }} issue{{ issues | pluralize }} detected</span>
         </div>
     </div>
 
+    {# Tabs headers #}
     {% for group, issues in issues_by_group.items() %}
-    <div data-tab-target="{{ group | replace(' ', '_') }}" class="h-12 cursor-pointer group{% if loop.index == 1 %} active{% endif %}">
+    <div data-tab-target="{{ group | replace(' ', '_') }}"
+        class="cursor-pointer group{% if loop.index == 1 %} active{% endif %}">
         <div
             class="group-[.active]:bg-zinc-800 group-[.active]:border-b-zinc-800 group-[.active]:border-gray-500 border-l px-3 py-2 border-r border-t border-b border-gray-600 border-b-gray-500 h-11">
             {{ group}}
@@ -30,6 +33,7 @@
     </div>
     {% endfor %}
 
+    {# Spacer #}
     <div class="flex-grow border-b border-gray-500 h-11"></div>
 </div>
 <!-- TAB HEADER END -->

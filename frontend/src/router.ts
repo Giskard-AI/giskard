@@ -99,6 +99,8 @@ export default new Router({
             },
             {
               path: 'projects/:id',
+              name: 'project-home',
+              redirect: 'projects/:id/catalog',
               component: () => import('./views/main/project/Project.vue'),
               props: route => {
                 return { id: Number(route.params.id) };
@@ -108,22 +110,6 @@ export default new Router({
                   path: 'properties',
                   name: 'project-properties',
                   component: () => import('./views/main/project/ProjectProperties.vue'),
-                  props: route => {
-                    return { projectId: Number(route.params.id) };
-                  },
-                },
-                {
-                  path: 'datasets',
-                  name: 'project-datasets',
-                  component: () => import('./views/main/project/Datasets.vue'),
-                  props: route => {
-                    return { projectId: Number(route.params.id) };
-                  },
-                },
-                {
-                  path: 'models',
-                  name: 'project-models',
-                  component: () => import('./views/main/project/Models.vue'),
                   props: route => {
                     return { projectId: Number(route.params.id) };
                   },
