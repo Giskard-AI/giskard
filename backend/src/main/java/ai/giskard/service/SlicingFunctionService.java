@@ -11,12 +11,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 public class SlicingFunctionService extends DatasetProcessFunctionService<SlicingFunction, SlicingFunctionDTO> {
 
-    private final GiskardMapper giskardMapper;
     private final SlicingFunctionRepository slicingFunctionRepository;
 
     public SlicingFunctionService(SlicingFunctionRepository slicingFunctionRepository, GiskardMapper giskardMapper) {
         super(slicingFunctionRepository, giskardMapper);
-        this.giskardMapper = giskardMapper;
         this.slicingFunctionRepository = slicingFunctionRepository;
     }
 

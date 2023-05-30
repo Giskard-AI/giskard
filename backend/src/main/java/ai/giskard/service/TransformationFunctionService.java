@@ -10,12 +10,10 @@ import org.springframework.stereotype.Service;
 
 public class TransformationFunctionService extends DatasetProcessFunctionService<TransformationFunction, TransformationFunctionDTO> {
 
-    private final GiskardMapper giskardMapper;
     private final TransformationFunctionRepository transformationFunctionRepository;
 
     public TransformationFunctionService(TransformationFunctionRepository transformationFunctionRepository, GiskardMapper giskardMapper) {
         super(transformationFunctionRepository, giskardMapper);
-        this.giskardMapper = giskardMapper;
         this.transformationFunctionRepository = transformationFunctionRepository;
     }
 
