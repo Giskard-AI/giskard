@@ -23,7 +23,7 @@ class ScanResult:
 
     def _repr_html_(self):
         from jinja2 import Environment, PackageLoader, select_autoescape
-        from .visualization.custom_jinja import pluralize
+        from .visualization.custom_jinja import pluralize, format_metric
         from html import escape
 
         env = Environment(
@@ -31,6 +31,7 @@ class ScanResult:
             autoescape=select_autoescape(),
         )
         env.filters["pluralize"] = pluralize
+        env.filters["format_metric"] = format_metric
 
         tpl = env.get_template("scan_results.html")
 

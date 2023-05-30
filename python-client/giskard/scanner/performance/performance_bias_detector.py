@@ -1,7 +1,8 @@
-from collections import defaultdict
+import numpy as np
 import pandas as pd
 from sklearn import metrics
-from typing import Optional, Sequence
+from collections import defaultdict
+from typing import Callable, Optional, Sequence, Union
 
 from ...models.base import BaseModel
 from ...models._precooked import PrecookedModel
@@ -14,14 +15,22 @@ from .issues import PerformanceIssue, PerformanceIssueInfo
 from .metrics import PerformanceMetric, get_metric
 from ..decorators import detector
 from ..logger import logger
+from ...client.python_utils import warning
 
 
 @detector(name="performance_bias", tags=["performance_bias", "classification", "regression"])
 class PerformanceBiasDetector:
-    def __init__(self, metrics: Optional[Sequence] = None, threshold: float = 0.05, method: str = "tree"):
+    def __init__(
+        self,
+        metrics: Optional[Sequence] = None,
+        loss: Union[Optional[str], Callable[[BaseModel, Dataset], np.ndarray]] = None,
+        threshold: float = 0.05,
+        method: str = "tree",
+    ):
         self.metrics = metrics
         self.threshold = threshold
         self.method = method
+        self.loss = loss
 
     def run(self, model: BaseModel, dataset: Dataset):
         logger.debug(
@@ -58,10 +67,37 @@ class PerformanceBiasDetector:
         true_target = dataset.df.loc[:, dataset.target].values
         pred = model.predict(dataset)
 
-        loss_values = [
-            metrics.log_loss([true_label], [probs], labels=model.meta.classification_labels)
-            for true_label, probs in zip(true_target, pred.raw)
-        ]
+        loss = self.loss
+        if loss is None:
+            loss = "log_loss" if model.is_classification else "mse"
+
+        if callable(loss):
+            try:
+                loss_values = loss(model, dataset)
+            except Exception as err:
+                raise RuntimeError("The provided loss function returned an error.") from err
+        else:
+            # Validate string loss function
+            if loss not in ["log_loss", "mse", "mae"]:
+                invalid_loss = loss
+                loss = "log_loss" if model.is_classification == "classification" else "mse"
+                warning(f"PerformanceBiasDetector: Unknown loss function `{invalid_loss}`. Using `{loss}` instead.")
+
+            if loss == "log_loss":
+                loss_values = [
+                    metrics.log_loss([true_label], [probs], labels=model.meta.classification_labels)
+                    for true_label, probs in zip(true_target, pred.raw)
+                ]
+            elif loss == "mse":
+                loss_values = [
+                    metrics.mean_squared_error([y_true], [y_pred]) for y_true, y_pred in zip(true_target, pred.raw)
+                ]
+            elif loss == "mae":
+                loss_values = [
+                    metrics.mean_absolute_error([y_true], [y_pred]) for y_true, y_pred in zip(true_target, pred.raw)
+                ]
+            else:
+                raise ValueError(f"Invalid loss function `{loss}`.")
 
         return pd.DataFrame({"__gsk__loss": loss_values}, index=dataset.df.index)
 
@@ -92,7 +128,6 @@ class PerformanceBiasDetector:
         for col in cols_by_type["category"]:
             slices.extend(slicer.find_slices([col]))
 
-        # @TODO: FIX THIS
         # Text features
         slicer = TextSlicer(dataset_with_meta, target=target_col, slicer=self.method)
         for col in cols_by_type["text"]:
