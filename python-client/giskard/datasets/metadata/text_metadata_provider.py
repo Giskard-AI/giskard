@@ -3,6 +3,9 @@ import numpy as np
 
 from .registry import MetadataProvider
 import langdetect
+from langdetect import DetectorFactory
+
+DetectorFactory.seed = 0
 
 
 class TextMetadataProvider(MetadataProvider):
@@ -59,8 +62,11 @@ def _avg_digits(text: str):
 
 
 def _detect_lang(text: str):
+    if len(text.split()) <= 5:
+        return pd.NA
     try:
-        language = langdetect.detect_langs(text)[0].lang
+        detected = langdetect.detect_langs(text)
+        language = detected[0].lang
     except langdetect.lang_detect_exception.LangDetectException:
         language = "unknown"
     return language
