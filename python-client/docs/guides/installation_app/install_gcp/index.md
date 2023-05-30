@@ -67,4 +67,4 @@ You can stop the instance and restart it when you need to save your GCP compute 
 &#x20;`giskard server start`
 {% endhint %}
 
-That's it, you are now ready to use Giskard in GCP! Now you can start [uploading an artifact](../upload-your-artifact/)! To do that in GCP, you can use a workbench notebook, for example! &#x20;
+That's it, you are now ready to use Giskard in GCP! Now you can start [uploading an artifact](docs/guide/upload/index.md)! To do that in GCP, you can use a workbench notebook, for example! &#x20;
