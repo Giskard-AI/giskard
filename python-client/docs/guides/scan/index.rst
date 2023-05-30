@@ -30,24 +30,27 @@ Scan your model to detect vulnerabilities
 
 After having wrapped your [model](docs/guide/wrap_model/index.md) & [dataset](docs/guide/wrap_dataset/index.md), ou can scan your model for vulnerabilities using:
 
-```python
-import giskard
+.. code-block:: python
 
-scan_results = giskard.scan(wrapped_model, wrapped_dataset)
+    import giskard
 
-display(scan_results)  # in your notebook
-```
+    scan_results = giskard.scan(wrapped_model, wrapped_dataset)
+
+    display(scan_results)  # in your notebook
+
 
 In the notebook, this will produce a widget that allows you to explore the detected issues:
-![](<../../assets/scan_results.png>)
+
+.. image:: ../../assets/scan_results.png
 
 You can also get a table of the scan results as a `pandas.DataFrame`. This is useful if you want to save the results of
 the scan to a CSV or HTML file.
 
-```python
-results_df = scan_results.to_dataframe()
-results_df.to_csv("scan_results_my_model.csv")
-```
+.. code-block:: python
+
+    results_df = scan_results.to_dataframe()
+    results_df.to_csv("scan_results_my_model.csv")
+
 
 Automatically generate a test suite based on the scan results
 ^^^^^^^^^
@@ -56,17 +59,19 @@ If the automatic scan with `giskard.scan` found some issues with your model, you
 tests (a test suite) that will reproduce those issues.
 You can then interactively debug the problems by uploading the generate test suite to Giskard UI.
 
-```python
-scan_results = giskard.scan(wrapped_model, wrapped_dataset)
+.. code-block:: python
 
-test_suite = scan_results.generate_test_suite("My first test suite")
+    scan_results = giskard.scan(wrapped_model, wrapped_dataset)
 
-# You can run the test suite locally to verify that it reproduces the issues
-test_suite.run()
-```
+    test_suite = scan_results.generate_test_suite("My first test suite")
+
+    # You can run the test suite locally to verify that it reproduces the issues
+    test_suite.run()
 
 
-## Troubleshooting
 
-If you encounter any issues, join our [Discord](https://discord.gg/fkv7CAr3FE) on our #support channel. Our community
+Troubleshooting
+^^^^^^^^^
+
+If you encounter any issues, join our `Discord <https://discord.gg/fkv7CAr3FE>`_ on our #support channel. Our community
 will help!
