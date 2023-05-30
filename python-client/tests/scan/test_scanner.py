@@ -1,12 +1,25 @@
 import pytest
-from giskard.core.suite import Suite
+
 from giskard.scanner import Scanner
+from giskard.core.suite import Suite
 from giskard.scanner.result import ScanResult
 
 
-def test_scanner_returns_non_empty_scan_result(german_credit_data, german_credit_model):
+@pytest.mark.parametrize(
+    "dataset_name,model_name",
+    [
+        # ("german_credit_data", "german_credit_model"),
+        # ("enron_data", "enron_model")
+        ("medical_transcript_data", "medical_transcript_model")
+    ],
+)
+def test_scanner_returns_non_empty_scan_result(dataset_name, model_name, request):
     scanner = Scanner()
-    result = scanner.analyze(german_credit_model, german_credit_data)
+
+    dataset = request.getfixturevalue(dataset_name)
+    model = request.getfixturevalue(model_name)
+
+    result = scanner.analyze(model, dataset)
 
     assert isinstance(result, ScanResult)
     assert result.has_issues()
