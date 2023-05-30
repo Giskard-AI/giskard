@@ -11,7 +11,8 @@ import pandas as pd
 class StochasticityDetector:
     def run(self, model: BaseModel, dataset: Dataset):
         logger.info("StochasticityDetector: Running")
-        reduced_dataset = dataset.slice(lambda df: df.sample(100), row_level=False)
+        sample_size = min(100, len(dataset))
+        reduced_dataset = dataset.slice(lambda df: df.sample(sample_size), row_level=False)
 
         prediction_1 = model.predict(reduced_dataset).raw
         prediction_2 = model.predict(reduced_dataset).raw
