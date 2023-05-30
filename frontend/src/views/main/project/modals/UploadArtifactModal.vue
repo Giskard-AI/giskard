@@ -35,16 +35,17 @@ const props = defineProps<Props>();
 
 <style scoped>
 ::v-deep(.modal-container) {
+  height: 100%;
+  padding: 0;
+  margin: 0;
   display: flex;
   justify-content: center;
   align-items: center;
+  overflow-y: auto;
 }
 
 ::v-deep(.modal-content) {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  margin: 0 1rem;
-  padding: 1rem;
+  max-width: 80vw;
+  height: fit-content;
 }
 </style>
