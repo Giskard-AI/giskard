@@ -15,7 +15,7 @@
                 </ValidationProvider>
                 <p class="text-h6 pt-4">Fixed inputs</p>
                 <p>Specify inputs that will be constant during each execution of the test.<br />
-                  The inputs left blank will have to be provided at the test execution time.</p>
+                  The inputs left blank will have to be provided at test execution time.</p>
                 <SuiteInputListSelector class="pt-4" :editing="true" :project-id="projectId" :inputs="inputs" :model-value="testInputs" />
               </v-col>
             </v-row>
