@@ -1,11 +1,5 @@
 <template>
-  <vue-final-modal
-      v-slot="{ close }"
-      v-bind="$attrs"
-      classes="modal-container"
-      content-class="modal-content"
-      v-on="$listeners"
-  >
+  <vue-final-modal v-slot="{ close }" v-bind="$attrs" classes="modal-container" content-class="modal-content" v-on="$listeners">
     <v-form @submit.prevent="">
       <ValidationObserver ref="observer" v-slot="{ invalid }">
         <v-card class="modal-card">
@@ -16,27 +10,13 @@
           <v-card-text>
             <v-row>
               <v-col cols=12>
-                <ValidationProvider name="Tes suite" mode="eager" rules="required" v-slot="{errors}">
-                  <v-select
-                          outlined
-                          label="Test suite"
-                          v-model="selectedSuite"
-                          :items="testSuites"
-                          :item-text="'name'"
-                          :item-value="'id'"
-                          dense
-                          hide-details
-                  ></v-select>
+                <ValidationProvider name="Tes suite" mode="eager" rules="required" v-slot="{ errors }">
+                  <v-select outlined label="Test suite" v-model="selectedSuite" :items="testSuites" :item-text="'name'" :item-value="'id'" dense hide-details></v-select>
                 </ValidationProvider>
-                  <p class="text-h6 pt-4">Fixed inputs</p>
-                  <p>Specify inputs that will be constant during each execution of the test.<br/>
-                      The inputs left blank will have to be provided at the test execution time.</p>
-                  <SuiteInputListSelector
-                          class="pt-4"
-                          :editing="true"
-                          :project-id="projectId"
-                          :inputs="inputs"
-                          :model-value="testInputs"/>
+                <p class="text-h6 pt-4">Fixed inputs</p>
+                <p>Specify inputs that will be constant during each execution of the test.<br />
+                  The inputs left blank will have to be provided at the test execution time.</p>
+                <SuiteInputListSelector class="pt-4" :editing="true" :project-id="projectId" :inputs="inputs" :model-value="testInputs" />
               </v-col>
             </v-row>
           </v-card-text>
@@ -45,12 +25,7 @@
 
           <v-card-actions>
             <v-spacer></v-spacer>
-            <v-btn
-                color="primary"
-                text
-                @click="submit(close)"
-                :disabled="invalid"
-            >
+            <v-btn color="primary" text @click="submit(close)" :disabled="invalid">
               Add to suite
             </v-btn>
           </v-card-actions>
@@ -62,18 +37,18 @@
 
 <script setup lang="ts">
 
-import {computed, onMounted, ref} from 'vue';
-import {api} from '@/api';
-import {FunctionInputDTO, SuiteTestDTO, TestFunctionDTO, TestSuiteDTO} from '@/generated-sources';
+import { computed, onMounted, ref } from 'vue';
+import { api } from '@/api';
+import { FunctionInputDTO, SuiteTestDTO, TestFunctionDTO, TestSuiteDTO } from '@/generated-sources';
 import SuiteInputListSelector from '@/components/SuiteInputListSelector.vue';
-import {chain} from 'lodash';
-import {useMainStore} from "@/stores/main";
+import { chain } from 'lodash';
+import { useMainStore } from "@/stores/main";
 
-const {projectId, test, suiteId, testArguments} = defineProps<{
+const { projectId, test, suiteId, testArguments } = defineProps<{
   projectId: number,
   test: TestFunctionDTO,
   suiteId?: number,
-    testArguments: { [name: string]: FunctionInputDTO }
+  testArguments: { [name: string]: FunctionInputDTO }
 }>();
 
 const dialog = ref<boolean>(false);
@@ -85,46 +60,48 @@ onMounted(() => loadData());
 
 async function loadData() {
   testSuites.value = await api.getTestSuites(projectId);
-  selectedSuite.value = testSuites.value.find(({id}) => id === suiteId)?.id ?? null
+  selectedSuite.value = testSuites.value.find(({ id }) => id === suiteId)?.id ?? null
   testInputs.value = test.args.reduce((result, arg) => {
-      result[arg.name] = testArguments[arg.name] ?? {
-          name: arg.name,
-          type: arg.type,
-          isAlias: false,
-          value: '',
-          params: []
-      }
-      return result
+    result[arg.name] = testArguments[arg.name] ?? {
+      name: arg.name,
+      type: arg.type,
+      isAlias: false,
+      value: '',
+      params: []
+    }
+    return result
   }, {} as { [name: string]: FunctionInputDTO })
+  testInputs.value['model'].value = null;
+  testInputs.value['dataset'].value = null;
 }
 
 
 const inputs = computed(() =>
-    chain(test.args)
-        .keyBy('name')
-        .mapValues('type')
-        .value()
+  chain(test.args)
+    .keyBy('name')
+    .mapValues('type')
+    .value()
 );
 
 const mainStore = useMainStore();
 
 async function submit(close) {
-    const suiteTest: SuiteTestDTO = {
-        test,
-        testUuid: test.uuid,
-        functionInputs: chain(testInputs.value)
-            .omitBy(({value}) => value === null
-                || (typeof value === 'string' && value.trim() === '')
-                || (typeof value === 'number' && Number.isNaN(value)))
-            .value() as { [name: string]: FunctionInputDTO }
-    }
+  const suiteTest: SuiteTestDTO = {
+    test,
+    testUuid: test.uuid,
+    functionInputs: chain(testInputs.value)
+      .omitBy(({ value }) => value === null
+        || (typeof value === 'string' && value.trim() === '')
+        || (typeof value === 'number' && Number.isNaN(value)))
+      .value() as { [name: string]: FunctionInputDTO }
+  }
 
-    await api.addTestToSuite(projectId, selectedSuite.value!, suiteTest);
-    await mainStore.addNotification({
-        content: `'${test.displayName ?? test.name}' has been added to '${testSuites.value.find(({id}) => id === selectedSuite.value)!.name}'`,
-        color: 'success'
-    });
-    close();
+  await api.addTestToSuite(projectId, selectedSuite.value!, suiteTest);
+  await mainStore.addNotification({
+    content: `'${test.displayName ?? test.name}' has been added to '${testSuites.value.find(({ id }) => id === selectedSuite.value)!.name}'`,
+    color: 'success'
+  });
+  close();
 }
 
 </script>
