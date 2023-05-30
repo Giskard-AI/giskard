@@ -13,19 +13,32 @@
             <p>
                 We found some data slices in your dataset on which your model performance is lower than average.
                 Performance bias may happen for different reasons:
-                <ul class="list-disc ml-4 my-1">
-                    <li>Not enough examples in the low-performing data slice in the training set</li>
-                    <li>Wrong labels in the training set in the low-performing data slice</li>
-                    <li>Drift between your training set and test set</li>
-                </ul>
+            <ul class="list-disc ml-4 my-1">
+                <li>Not enough examples in the low-performing data slice in the training set</li>
+                <li>Wrong labels in the training set in the low-performing data slice</li>
+                <li>Drift between your training set and test set</li>
+            </ul>
             </p>
             {% elif issues[0].__class__.__name__ == "RobustnessIssue" %}
-                <p>
-                    Your model seems to be sensitive to input perturbation. Check the issues below to make sure that they do not affect your use case.
-                    Volatile results may be caused by overfitting. When your model learned noise (out of distribution), its results may vary against small changes.
-                </p>
+            <p>
+                Your model seems to be sensitive to input perturbation. Check the issues below to make sure that they do
+                not affect your use case.
+                Volatile results may be caused by overfitting. When your model learned noise (out of distribution), its
+                results may vary against small changes.
+            </p>
+            {% elif issues[0].__class__.__name__ == "RobustnessIssue" %}
+            <p>
+                Your model seems to be sensitive to small perturbations in the input data. These perturbations can
+                include adding typos, changing word order, or turning text into uppercase or lowercase. This happens
+                when:
+            <ul class="list-disc ml-4 my-1">
+                <li>Not enough diversity in the training data</li>
+                <li>Over-reliance on spurious correlations like the presence of specific word</li>
+                <li>Use of complex models with large number of parameters that tend to overfit the training data</li>
+            </ul>
+            </p>
             {% else %}
-                <p>{{ issues[0].group }}</p>
+            <p>{{ issues[0].group }}</p>
             {% endif %}
         </div>
     </div>
