@@ -7,11 +7,12 @@ from ...models.base import BaseModel
 from ...datasets import Dataset
 from ..decorators import detector
 from ..common.loss_based_detector import LossBasedDetector
-from .issues import CalibrationIssue, CalibrationIssueInfo, OverconfidenceIssue
+from .issues import CalibrationIssue, CalibrationIssueInfo, UnderconfidenceIssue
+from ..logger import logger
 
 
-@detector(name="overconfidence", tags=["overconfidence", "classification"])
-class OverconfidenceDetector(LossBasedDetector):
+@detector(name="underconfidence", tags=["underconfidence", "classification"])
+class UnderconfidenceDetector(LossBasedDetector):
     def __init__(self, threshold=0.10, method="tree"):
         self.threshold = threshold
         self.method = method
@@ -22,23 +23,17 @@ class OverconfidenceDetector(LossBasedDetector):
 
     def run(self, model: BaseModel, dataset: Dataset):
         if not model.is_classification:
-            raise ValueError("Overconfidence bias detector only works for classification models.")
+            raise ValueError("Underconfidence detector only works for classification models.")
 
         return super().run(model, dataset)
 
     def _calculate_loss(self, model: BaseModel, dataset: Dataset) -> pd.DataFrame:
-        true_target = dataset.df.loc[:, dataset.target].values
-        pred = model.predict(dataset)
-        label2id = {label: n for n, label in enumerate(model.meta.classification_labels)}
+        # Empirical cost associated to underconfidence: difference between
+        # the two most probable classes.
+        ps = model.predict(dataset).raw
+        loss_values = -np.abs(np.diff(np.partition(-ps, 1, axis=-1)[:, :2], axis=-1).squeeze(-1))
 
-        # Empirical cost associated to overconfidence
-        p_max = pred.probabilities
-        p_true_label = np.array([pred.raw[n, label2id[label]] for n, label in enumerate(true_target)])
-
-        loss_values = p_max - p_true_label
-        mask = loss_values > 0
-
-        return pd.DataFrame({self.LOSS_COLUMN_NAME: loss_values[mask]}, index=dataset.df.index[mask])
+        return pd.DataFrame({self.LOSS_COLUMN_NAME: loss_values}, index=dataset.df.index)
 
     def _find_issues(
         self,
@@ -62,10 +57,14 @@ class OverconfidenceDetector(LossBasedDetector):
             slice_loss = sliced_dataset.df[self.LOSS_COLUMN_NAME].mean()
             relative_delta = (slice_loss - mean_loss) / mean_loss
 
+            logger.debug(
+                f"{self.__class__.__name__}: Testing slice {slice_fn}\tLoss (slice) = {slice_loss:.3f} (global {mean_loss:.3f}) Δm = {relative_delta:.3f}"
+            )
+
             if relative_delta > self.threshold:
                 level = "major" if relative_delta > 2 * self.threshold else "medium"
                 issues.append(
-                    OverconfidenceIssue(
+                    UnderconfidenceIssue(
                         model,
                         dataset,
                         level,

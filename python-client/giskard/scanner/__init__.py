@@ -9,6 +9,7 @@ _default_detectors = [
     ".data_leakage.data_leakage_detector",
     ".stochasticity.stochasticity_detector",
     ".calibration.overconfidence_detector",
+    ".calibration.underconfidence_detector",
 ]
 
 

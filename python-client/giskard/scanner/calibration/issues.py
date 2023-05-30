@@ -1,5 +1,8 @@
+import pandas as pd
+from abc import abstractmethod
 from dataclasses import dataclass
 from functools import lru_cache
+import numpy as np
 
 from ..issues import Issue
 from ...datasets.base import Dataset
@@ -15,6 +18,7 @@ class CalibrationIssueInfo:
     slice_size: int
     metric_value_slice: float
     metric_value_reference: float
+    loss_values: pd.Series
     threshold: float
 
     @property
@@ -27,7 +31,7 @@ class CalibrationIssueInfo:
 
 
 class CalibrationIssue(Issue):
-    group = "Overconfidence"
+    group = "Calibration"
 
     info: CalibrationIssueInfo
 
@@ -45,8 +49,9 @@ class CalibrationIssue(Issue):
         return str(self.info.slice_fn)
 
     @property
+    @abstractmethod
     def metric(self):
-        return "Overconfidence"
+        ...
 
     @property
     def deviation(self):
@@ -62,6 +67,10 @@ class CalibrationIssue(Issue):
         if isinstance(self.info.slice_fn, MetadataSliceFunction):
             return [self.info.slice_fn.feature]
         return self.model.meta.feature_names or self.dataset.columns
+
+    @property
+    def importance(self):
+        return self.info.metric_rel_delta
 
     @lru_cache
     def examples(self, n=3):
@@ -92,8 +101,16 @@ class CalibrationIssue(Issue):
 
         # Add the model prediction
         if model_pred.probabilities is not None:
-            pred_with_p = zip(predictions[bad_pred_mask], model_pred.probabilities[bad_pred_mask])
-            pred_examples = [f"{label} (p = {p:.2f})" for label, p in pred_with_p]
+            num_labels_to_print = min(
+                len(self.model.meta.classification_labels), getattr(self, "_num_labels_display", 1)
+            )
+
+            pred_examples = []
+            for n, ps in enumerate(model_pred.raw[bad_pred_mask]):
+                label_idx = np.argsort(-ps)[:num_labels_to_print]
+                pred_examples.append(
+                    "\n".join([f"{self.model.meta.classification_labels[i]} (p = {ps[i]:.2f})" for i in label_idx])
+                )
         else:
             pred_examples = predictions[bad_pred_mask]
 
@@ -101,17 +118,28 @@ class CalibrationIssue(Issue):
 
         n = min(len(examples), n)
         if n > 0:
-            if model_pred.probabilities is not None:
-                idx = (-model_pred.probabilities[bad_pred_mask]).argpartition(n - 1)[:n]
-                return examples.iloc[idx]
-
-            return examples.sample(n, random_state=142)
+            idx = self.info.loss_values.loc[examples.index].nlargest(n).index
+            return examples.loc[idx]
 
         return examples
 
-    @property
-    def importance(self):
-        return self.info.metric_rel_delta
-
     def generate_tests(self) -> list:
         return []
+
+
+class OverconfidenceIssue(CalibrationIssue):
+    group = "Overconfidence"
+
+    @property
+    def metric(self) -> str:
+        return "Overconfidence"
+
+
+class UnderconfidenceIssue(CalibrationIssue):
+    group = "Underconfidence"
+
+    _num_labels_display = 2
+
+    @property
+    def metric(self) -> str:
+        return "Underconfidence"
