@@ -54,11 +54,11 @@ giskard server start
 You can stop the instance and restart it when you need to save your Azure compute costs. However, note that&#x20;
 
 * the **IP address will not necessarily be the same**. So make sure you copy it again when it's launched.
-* you will need to **re-run docker**, by executing in the Giskard folder:
+* you will need to **re-start the Giskard server**, by executing in the Giskard folder:
 
-&#x20;`sudo docker compose up -d --force-recreate`
+&#x20;`giskard server start`
 {% endhint %}
 
 * The user id is `admin` and the password is `admin`
 
-That's it, you are now ready to use Giskard in Azure! Now you can start [uploading an artefecat](../upload-your-artefact/)!&#x20;
+That's it, you are now ready to use Giskard in Azure! Now you can start [uploading an artifact](docs/guide/upload/index.md)!&#x20;
