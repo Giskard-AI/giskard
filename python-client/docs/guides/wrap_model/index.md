@@ -303,5 +303,5 @@ respectively.
   :::::
   
 {% hint style="success" %}
-To upload your model in Giskard, go to [Upload an artifact](docs/guide/upload/index.md) in the Giskard server.
+To upload your model in Giskard, go to [Upload an object](docs/guide/upload/index.md) in the Giskard server.
 {% endhint %}
