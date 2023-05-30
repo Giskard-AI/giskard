@@ -25,10 +25,7 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.io.IOException;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -86,6 +83,7 @@ public class DatasetsController {
         DatasetPageDTO rows = datasetService.getRows(datasetId, offset, offset + size, rowFilter, sample);
 
         if (shuffle) {
+            rows.setContent(new ArrayList<>(rows.getContent()));
             Collections.shuffle(rows.getContent());
         }
 
