@@ -89,20 +89,20 @@
 </template>
 
 <script setup lang="ts">
-import {apiURL} from "@/env";
-import {api} from "@/api";
-import {Role} from "@/enums";
+import { apiURL } from "@/env";
+import { api } from "@/api";
+import { Role } from "@/enums";
 import mixpanel from "mixpanel-browser";
 import DeleteModal from "@/views/main/project/modals/DeleteModal.vue";
-import {computed, onBeforeMount, onMounted, ref} from "vue";
+import { computed, onBeforeMount, onMounted, ref } from "vue";
 import InlineEditText from "@/components/InlineEditText.vue";
-import {useUserStore} from "@/stores/user";
-import {useProjectStore} from "@/stores/project";
-import {useMainStore} from "@/stores/main";
-import {useProjectArtifactsStore} from "@/stores/project-artifacts";
+import { useUserStore } from "@/stores/user";
+import { useProjectStore } from "@/stores/project";
+import { useMainStore } from "@/stores/main";
+import { useProjectArtifactsStore } from "@/stores/project-artifacts";
 import CodeSnippet from '@/components/CodeSnippet.vue';
-import {JWTToken} from "@/generated-sources";
-import {TYPE} from "vue-toastification";
+import { JWTToken } from "@/generated-sources";
+import { TYPE } from "vue-toastification";
 
 const userStore = useUserStore();
 const projectStore = useProjectStore();
@@ -129,7 +129,7 @@ from giskard.demo import titanic  # for demo purposes only 🛳️
 _, df = titanic()  # Replace with your dataframe creation
 
 # Create a Giskard client
-token = "${apiAccessToken.value!.id_token}"
+token = "${apiAccessToken.value?.id_token}"
 client = GiskardClient(
     url="${apiURL}",  # URL of your Giskard instance
     token=token
@@ -192,8 +192,8 @@ async function peakDataFile(id: string) {
       }
       filePreviewData.value = response.content
     } catch (error) {
-        useMainStore().addNotification({content: error.response.statusText, color: TYPE.ERROR});
-        filePreviewHeader.value = [];
+      useMainStore().addNotification({ content: error.response.statusText, color: TYPE.ERROR });
+      filePreviewHeader.value = [];
       filePreviewData.value = [];
     }
   }
