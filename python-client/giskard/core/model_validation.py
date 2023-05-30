@@ -20,9 +20,6 @@ def validate_model(model: BaseModel, validate_ds: Optional[Dataset] = None):
 
     model = validate_model_loading_and_saving(model)
 
-    if model.meta.model_type == SupportedModelTypes.CLASSIFICATION:
-        validate_order_classifcation_labels(model, validate_ds)
-
     if isinstance(model, WrapperModel) and model.data_preprocessing_function is not None:
         validate_data_preprocessing_function(model.data_preprocessing_function)
 
@@ -51,6 +48,9 @@ def validate_model(model: BaseModel, validate_ds: Optional[Dataset] = None):
             validate_model_execution(model, validate_ds)
         else:  # Classification with target = None
             validate_model_execution(model, validate_ds)
+
+    if model.meta.model_type == SupportedModelTypes.CLASSIFICATION:
+        validate_order_classifcation_labels(model, validate_ds)
 
     print("Your model is successfully validated.")
 
@@ -187,7 +187,7 @@ def validate_features(feature_names: Optional[List[str]] = None, validate_df: Op
     ):
         missing_feature_names = set(feature_names) - set(validate_df.columns)
         raise ValueError(
-            f"Value mentioned in  feature_names is  not available in validate_df: {missing_feature_names} "
+            f"Value mentioned in feature_names is not available in validate_df: {missing_feature_names} "
         )
 
 
@@ -257,28 +257,15 @@ def validate_classification_prediction(classification_labels: Union[np.ndarray, 
 
 
 def validate_order_classifcation_labels(model, dataset):
-    from giskard.testing.tests.performance import test_accuracy
-    result = test_accuracy(model=model, dataset=dataset).execute()
+    from sklearn.metrics import balanced_accuracy_score
+    y_true = dataset.df[dataset.target]
+    y_pred = model.predict(dataset).prediction
+    balanced_accuracy = balanced_accuracy_score(y_true, y_pred)
+    Nclasses = len(model.meta.classification_labels)
 
-    if result.metric <= 0.5:
-        if model.is_binary_classification:
-            cl = model.meta.classification_labels
-            inverted_cl = [cl[1], cl[0]]
-            model.meta.classification_labels = inverted_cl
-            result_inverted = test_accuracy(model=model, dataset=dataset).execute()
-
-            # restore classification labels
-            model.meta.classification_labels = cl
-
-            if result_inverted.metric > result.metric:
-                warning(
-                    f"The accuracy of your model is higher ({round(result_inverted.metric, 2)} > "
-                    f"{round(result.metric, 2)}) if the 'classification_labels' were to be inverted. "
-                    "Make sure you have not inverted the order of the 'classification_labels' when you created "
-                    "the Giskard Model."
-                )
-        else:
-            warning(
-                f"The accuracy of your model is very low ({round(result.metric, 2)}). Make sure you have not inverted "
-                "the order of the 'classification_labels' when you created the Giskard Model."
-            )
+    if balanced_accuracy <= 1./Nclasses:
+        warning(
+            f"The balanced accuracy of your model is very low ({round(balanced_accuracy, 2)}). "
+            "Make sure you have not inverted the order of the 'classification_labels' when you created "
+            "the Giskard Model."
+        )
