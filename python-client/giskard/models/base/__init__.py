@@ -108,6 +108,12 @@ class BaseModel(ABC):
                     "Duplicates are found in 'classification_labels', please only provide unique values."
                 )
 
+        # sklearn and catboost will fill classification_labels before this check
+        if self.meta.model_type == SupportedModelTypes.CLASSIFICATION and not classification_labels:
+            raise ValueError(
+                "The parameter 'classification_labels' is required if 'model_type' is 'classification'."
+            )
+
         self.meta = ModelMeta(
             name=name if name is not None else self.__class__.__name__,
             model_type=model_type,
