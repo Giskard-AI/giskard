@@ -3,7 +3,7 @@ from typing import Iterable, Optional, Callable, Any
 import mlflow
 import pandas as pd
 
-from giskard.core.core import ModelType
+from giskard.core.core import SupportedModelTypes
 from giskard.core.validation import configured_validate_arguments
 from giskard.models.base import MLFlowBasedModel
 
@@ -20,7 +20,7 @@ class LangchainModel(MLFlowBasedModel):
                  feature_names: Optional[Iterable] = None,
                  classification_threshold: Optional[float] = 0.5,
                  classification_labels: Optional[Iterable] = None) -> None:
-        assert model_type == ModelType.GENERATIVE, 'LangchainModel only support generative ModelType'
+        assert model_type == SupportedModelTypes.GENERATIVE, 'LangchainModel only support generative ModelType'
 
         with mlflow.start_run():
             logged_model = mlflow.langchain.log_model(model, "langchain_model")
