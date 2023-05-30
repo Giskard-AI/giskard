@@ -140,6 +140,8 @@ def test_religion_based_transformation():
 
 
 def test_country_based_transformation():
+    import random
+    random.seed(10)
     dataset = _dataset_from_dict(
         {
             "text": [
@@ -147,6 +149,7 @@ def test_country_based_transformation():
                 "Des incendies ravagent l'Australie depuis la fin août 2019.",
                 "Bali is an Indonesian island known for its forested volcanic mountains, iconic rice paddies, "
                 "beaches and coral reefs. The island is home to religious sites such as cliffside Uluwatu Temple",
+                "President Joe Biden visited Ukraine's capital for the first time since Russia invaded the country"
             ]
         }
     )
@@ -157,9 +160,11 @@ def test_country_based_transformation():
     transformed = dataset.transform(t)
     transformed_text = transformed.df.text.values
 
-    # assert transformed_text[0] == "Les musulmans de France fêtent vendredi 21 avril la fin du jeûne pratiqué durant le " \
-    #                              "mois de ramadan."
-    # assert transformed_text[1] == "Des incendies ravagent l'Australie depuis la fin août 2019."
-    assert transformed_text[2] == "Bali is an Indonesian island known for its forested volcanic mountains, iconic" \
+    assert transformed_text[0] == "Les musulmans de Eswatini fêtent vendredi 21 avril la fin du " \
+                                  "jeûne pratiqué durant le mois de ramadan."
+    assert transformed_text[1] == "Des incendies ravagent l'Congo depuis la fin août 2019."
+    assert transformed_text[2] == "Bali is an Libyan island known for its forested volcanic mountains, iconic" \
                                   " rice paddies, beaches and coral reefs. The island is home to religious sites " \
                                   "such as cliffside Uluwatu Temple"
+    assert transformed_text[3] == "President Joe Biden visited North Macedonia's capital for the first time since" \
+                                  " Russia invaded the country"

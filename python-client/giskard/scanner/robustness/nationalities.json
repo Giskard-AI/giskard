@@ -457,7 +457,7 @@
   "en": {
     "country": {
       "high-income": [
-        [
+
           "Aruba",
           "Andorra",
           "U.A.E",
@@ -601,7 +601,6 @@
           "St. Vincent and the Grenadines",
           "Kosovo",
           "South Africa"
-        ]
       ],
       "low-income": [
         "Afghanistan",
