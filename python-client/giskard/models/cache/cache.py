@@ -79,7 +79,7 @@ class ModelCache:
 
         if len(self.prediction_cache.keys()) > 0:
             local_dir = Path(settings.home_dir / settings.cache_dir / "global/prediction_cache" / str(id))
-            os.makedirs(os.path.dirname(local_dir), exist_ok=True)
+            os.makedirs(local_dir, exist_ok=True)
             with open(local_dir / CACHE_CSV_FILENAME, "w") as pred_f:
                 writer = csv.writer(pred_f)
                 for key, value in self.prediction_cache.items():
