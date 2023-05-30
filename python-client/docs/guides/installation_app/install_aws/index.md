@@ -1,7 +1,3 @@
----
-description: Easily install Giskard in AWS in 4 steps
----
-
 # Installation in AWS
 
 ### 1. Initialize EC2 instance
