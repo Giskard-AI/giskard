@@ -14,8 +14,7 @@ Run the Giskard Server
    **Cloud installation:** To install Giskard in the **Cloud**, please go to the `AWS <docs/guide/instal_aws/index.md>`_, `GCP <docs/guide/instal_gcp/index.md>`_, and `Azure <docs/guide/instal_azure/index.md>`_ installation pages.
 
 Requirements
-------------
-
+^^^^^^^^^
 To install Giskard, you need a **Linux** or **macOS** machine or **WSL2 in Windows** with:
 
 - Giskard uses 2 TCP ports: ``19000`` and ``40051``. If you don't use Giskard locally (installation in the cloud for instance), **make sure that these two ports are open** on the machine where Giskard is installed
@@ -27,7 +26,7 @@ To install Giskard, you need a **Linux** or **macOS** machine or **WSL2 in Windo
       sudo sh get-docker.sh
 
 Run the Giskard server
-----------------------
+^^^^^^^^^
 
 In order to start the Giskard server, execute the following command in your terminal:
 
@@ -49,7 +48,7 @@ You'll then be able to open Giskard at `http://localhost:19000/ <http://localhos
 You're all set to try Giskard in action. Upload your first model, dataset or test suite by following the `upload-your-artefacts <../upload-your-model/>`_ tutorial.
 
 Connect the Giskard ML worker
------------------------------
+^^^^^^^^^
 
 Giskard executes your model directly in your Python environment through an ML worker. To connect the ML worker, execute the following command in your terminal within the Python environment that contains all the dependencies of your model:
 
@@ -58,7 +57,7 @@ Giskard executes your model directly in your Python environment through an ML wo
    giskard worker start -u http://localhost:19000/
 
 Troubleshooting[​]()
---------------------
+^^^^^^^^^
 
 .. details::
 
