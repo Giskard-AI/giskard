@@ -12,4 +12,5 @@ User Guide
    transformation/index
    test-suite/index
    cicd/index
-   app/index
+   installation_app/index
+   upload/index
