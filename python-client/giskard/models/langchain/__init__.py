@@ -1,9 +1,8 @@
-from typing import Iterable, Optional, Callable, Any
+from typing import Iterable, Optional
 
 import mlflow
-import pandas as pd
 
-from giskard.core.core import SupportedModelTypes
+from giskard.core.core import ModelType, SupportedModelTypes
 from giskard.core.validation import configured_validate_arguments
 from giskard.models.base import MLFlowBasedModel
 
@@ -15,11 +14,8 @@ class LangchainModel(MLFlowBasedModel):
                  model,
                  model_type: ModelType,
                  name: Optional[str] = None,
-                 data_preprocessing_function: Callable[[pd.DataFrame], Any] = None,
-                 model_postprocessing_function: Callable[[Any], Any] = None,
                  feature_names: Optional[Iterable] = None,
-                 classification_threshold: Optional[float] = 0.5,
-                 classification_labels: Optional[Iterable] = None) -> None:
+                 **kwargs) -> None:
         assert model_type == SupportedModelTypes.GENERATIVE, 'LangchainModel only support generative ModelType'
 
         with mlflow.start_run():
@@ -31,11 +27,7 @@ class LangchainModel(MLFlowBasedModel):
             model=loaded_model,
             model_type=model_type,
             name=name,
-            data_preprocessing_function=data_preprocessing_function,
-            model_postprocessing_function=model_postprocessing_function,
             feature_names=feature_names,
-            classification_threshold=classification_threshold,
-            classification_labels=classification_labels,
         )
 
     def save_model(self, local_path, mlflow_meta):
