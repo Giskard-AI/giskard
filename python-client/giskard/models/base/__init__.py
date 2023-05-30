@@ -109,7 +109,7 @@ class BaseModel(ABC):
                 )
 
         # sklearn and catboost will fill classification_labels before this check
-        if self.meta.model_type == SupportedModelTypes.CLASSIFICATION and not classification_labels:
+        if model_type == SupportedModelTypes.CLASSIFICATION and not classification_labels:
             raise ValueError(
                 "The parameter 'classification_labels' is required if 'model_type' is 'classification'."
             )
@@ -309,7 +309,7 @@ class BaseModel(ABC):
         """
         from giskard.core.model_validation import validate_model
 
-        validate_model(model=self, validate_ds=validate_ds)
+        validate_model(model=self, validate_ds=validate_ds)f
         with tempfile.TemporaryDirectory(prefix="giskard-model-") as f:
             self.save(f)
 
