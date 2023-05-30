@@ -309,7 +309,7 @@ class BaseModel(ABC):
         """
         from giskard.core.model_validation import validate_model
 
-        validate_model(model=self, validate_ds=validate_ds)f
+        validate_model(model=self, validate_ds=validate_ds)
         with tempfile.TemporaryDirectory(prefix="giskard-model-") as f:
             self.save(f)
 
