@@ -8,10 +8,10 @@ from giskard.client.giskard_client import GiskardClient
 from giskard.core.core import TestFunctionMeta
 from giskard.datasets.base import Dataset
 from giskard.ml_worker.core.savable import Savable
-from giskard.ml_worker.testing.test_result import TestResult
 from giskard.ml_worker.testing.registry.giskard_test import GiskardTest, Test, GiskardTestMethod
 from giskard.ml_worker.testing.registry.registry import tests_registry
 from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction
+from giskard.ml_worker.testing.test_result import TestResult
 from giskard.models.base import BaseModel
 
 logger = logging.getLogger(__name__)
@@ -29,7 +29,7 @@ class TestSuiteResult(tuple):
                <h2><span style="color:{0};">{1}</span> Test suite {2}</h2>
                {3}
                """.format('green' if passed else 'red',
-                          '✓' if passed else '𐄂',
+                          '\u2713' if passed else '\u00D7',
                           'succeed' if passed else 'failed',
                           tests_results)
 

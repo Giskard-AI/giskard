@@ -3,9 +3,9 @@
         <code class="mono text-blue-300">{{issue.domain}}</code>
     </td>
     <td class="p-3">
-        {{ issue.info.metric.name }} = {{ issue.info.metric_value_slice|round(2) }}
+        {{ issue.info.metric.name }} = {{ issue.info.metric_value_slice|format_metric }}
         <span class="text-gray-400">
-            (Global = {{ issue.info.metric_value_reference|round(2) }})
+            (Global = {{ issue.info.metric_value_reference|format_metric }})
         </span>
     </td>
     <td class="p-3">
