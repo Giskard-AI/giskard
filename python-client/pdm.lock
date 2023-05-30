@@ -993,6 +993,17 @@ version = "16.0.0"
 summary = "Clang Python Bindings, mirrored from the official LLVM repo: https://github.com/llvm/llvm-project/tree/main/clang/bindings/python, to make the installation process easier."
 
 [[package]]
+name = "lightgbm"
+version = "3.3.5"
+summary = "LightGBM Python Package"
+dependencies = [
+    "numpy",
+    "scikit-learn!=0.22.0",
+    "scipy",
+    "wheel",
+]
+
+[[package]]
 name = "livereload"
 version = "2.6.3"
 summary = "Python LiveReload is an awesome tool for web developers"
@@ -2505,9 +2516,8 @@ dependencies = [
 
 [metadata]
 lock_version = "4.2"
-cross_platform = true
 groups = ["default", "dev", "doc", "proto", "test"]
-content_hash = "sha256:60053cae128e4d4bf334c17bf0ab2560b9b79853020675f2d7780a993bf88faa"
+content_hash = "sha256:c5c9a4550ec763ebf8b33738c264bea0a5b6cccb8de24ea96252f5bdca2834e7"
 
 [metadata.files]
 "absl-py 1.4.0" = [
@@ -3469,6 +3479,13 @@ content_hash = "sha256:60053cae128e4d4bf334c17bf0ab2560b9b79853020675f2d7780a993
     {url = "https://files.pythonhosted.org/packages/55/47/bbcdba9c08b2fd493648af7da2aeb55508d07aeac6010300bb5b57032ea8/libclang-16.0.0-py2.py3-none-macosx_10_9_x86_64.whl", hash = "sha256:65258a6bb3e7dc31dc9b26f8d42f53c9d3b959643ade291fcd1aef4855303ca6"},
     {url = "https://files.pythonhosted.org/packages/96/c4/9ee74622ec248dd86349d3701844452f04194159d84d45dd462d70bef68d/libclang-16.0.0-py2.py3-none-manylinux2014_armv7l.whl", hash = "sha256:7b6686b67a0daa84b4c614bcc119578329fc4fbb52b919565b7376b507c4793b"},
     {url = "https://files.pythonhosted.org/packages/a1/82/1fd88a2df784dbcfdfba7dbb335653f4178c7c73fa7fe95bae888e60d34b/libclang-16.0.0-py2.py3-none-manylinux2010_x86_64.whl", hash = "sha256:a043138caaf2cb076ebb060c6281ec95612926645d425c691991fc9df00e8a24"},
+]
+"lightgbm 3.3.5" = [
+    {url = "https://files.pythonhosted.org/packages/38/5c/d9773cf0ea7938f3b777eaacc6f9d58f69ca76a667771364ffefed9095b4/lightgbm-3.3.5-py3-none-manylinux1_x86_64.whl", hash = "sha256:044f65664c1a32c98cb619bafa97d8cd9d93c2c2d5053376aadfe509a3a3e7fa"},
+    {url = "https://files.pythonhosted.org/packages/6a/31/13f80e5abac627c53375c1dc49404d622d929272a231c05b2f4f7bb98b9e/lightgbm-3.3.5-py3-none-win_amd64.whl", hash = "sha256:02a40745c1972cf4a2cde764c7739228f45178c2237af2df40fde7063a58ac6a"},
+    {url = "https://files.pythonhosted.org/packages/6e/83/0a36914f147486d715338713e25ed997828ed468b0a79607aec8a7dffbb2/lightgbm-3.3.5-py3-none-manylinux2014_aarch64.whl", hash = "sha256:ef01e46939293a0a36729350a7384dc17a36880176d0f17d82b738bbe77e4528"},
+    {url = "https://files.pythonhosted.org/packages/98/1f/fc5c183012f5fdd23e65d54ee09312d8b4dc9e4e39c227236f61942ef293/lightgbm-3.3.5.tar.gz", hash = "sha256:10b8fbdcf851e4f68a1f02f38d99bdc44c7c7fb9b1a62dcf924a0d29ff73395c"},
+    {url = "https://files.pythonhosted.org/packages/a1/42/92bcf0dd8bb498c363580c7ac56651995c455554bc1be64600f717edaaea/lightgbm-3.3.5-py3-none-macosx_10_15_x86_64.macosx_11_6_x86_64.macosx_12_0_x86_64.whl", hash = "sha256:843dd37c00a1096a8898b80e368b3eef7f5a5d327d1fd9eb770b6f3c2e1edc49"},
 ]
 "livereload 2.6.3" = [
     {url = "https://files.pythonhosted.org/packages/bd/60/6640b819e858562ef6684abac60593b7369fe0a8a064df426d3ab0ab894d/livereload-2.6.3.tar.gz", hash = "sha256:776f2f865e59fde56490a56bcc6773b6917366bce0c267c60ee8aaf1a0959869"},
