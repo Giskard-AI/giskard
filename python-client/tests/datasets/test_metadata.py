@@ -104,7 +104,7 @@ def test_lang_detected_proportion():
 
     assert language_counts["fr"] == 10
     assert language_counts["en"] == 10
-    assert meta["language"].isnull().sum() == 8
+    assert meta["language"].isna().sum() == 8
 
 
 
