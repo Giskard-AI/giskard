@@ -25,6 +25,13 @@ def get_class(_lib, _class):
 
 
 def infer_giskard_cls(model: Any):
+    # bound-methods case (like model.predict_proba)
+    if hasattr(model, '__self__'):
+        # wrap bound-method with a function
+        def prediction_function(df): return model(df)
+
+        model = prediction_function
+
     if inspect.isfunction(model):
         return PredictionFunctionModel
     else:
