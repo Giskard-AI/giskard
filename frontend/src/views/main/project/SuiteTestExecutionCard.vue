@@ -23,17 +23,17 @@
                 >Measured <strong>Metric = {{
                         result.metric
                     }}</strong></span>
-                <v-chip v-if="result.passed" x-small :color="Colors.PASS_SURFACE" :text-color="Colors.ON_PASS_SURFACE"
+                <v-chip v-if="result.passed" :color="Colors.PASS_SURFACE" :text-color="Colors.ON_PASS_SURFACE"
                         label>
-                    <v-icon x-small>done</v-icon>
+                    <v-icon>done</v-icon>
                     Passed
                 </v-chip>
-                <v-chip v-else x-small :color="Colors.FAIL_SURFACE" :text-color="Colors.ON_FAIL_SURFACE" label>
-                    <v-icon x-small>close</v-icon>
+                <v-chip v-else small :color="Colors.FAIL_SURFACE" :text-color="Colors.ON_FAIL_SURFACE" label>
+                    <v-icon small>close</v-icon>
                     Failed
                 </v-chip>
-                <v-btn color="primary" outlined x-small>
-                    <v-icon x-small>info</v-icon>
+                <v-btn color="primary" outlined small>
+                    <v-icon small>info</v-icon>
                     Debug
                 </v-btn>
             </div>
@@ -46,8 +46,8 @@
                     }}</span>
             </div>
             <div class="flex-grow-1"/>
-            <v-btn v-if="!isPastExecution" text x-small @click="editTests" color="rgba(0, 0, 0, 0.6)">
-                <v-icon x-small class="mr-1">settings</v-icon>
+            <v-btn v-if="!isPastExecution" text small @click="editTests" color="rgba(0, 0, 0, 0.6)">
+                <v-icon small class="mr-1">settings</v-icon>
                 Edit parameters
             </v-btn>
         </div>
@@ -162,7 +162,7 @@ async function editTests() {
 .test-name {
     font-style: normal;
     font-weight: 500;
-    font-size: 14px;
+    font-size: 1em;
     line-height: 20px;
     letter-spacing: 0.0025em;
     color: #000000;
@@ -179,7 +179,7 @@ async function editTests() {
 .metric {
     font-style: normal;
     font-weight: 400;
-    font-size: 14px;
+    font-size: 0.875em;
     line-height: 16px;
     letter-spacing: 0.0025em;
 }
@@ -193,7 +193,7 @@ async function editTests() {
 .text-input-name {
     font-style: normal;
     font-weight: 400;
-    font-size: 12px;
+    font-size: 0.875em;
     line-height: 12px;
     letter-spacing: 0.0025em;
 }
@@ -201,7 +201,7 @@ async function editTests() {
 .text-input-value {
     font-style: normal;
     font-weight: 400;
-    font-size: 12px;
+    font-size: 0.875em;
     line-height: 24px;
     font-feature-settings: 'liga' off;
     color: #000000;
@@ -211,7 +211,7 @@ async function editTests() {
     font-family: 'Fira Code', "Helvetica Neue", sans-serif;
     font-style: normal;
     font-weight: 400;
-    font-size: 11px;
+    font-size: 0.75em;
     line-height: 24px;
     font-feature-settings: 'liga' off;
     color: #000000;
