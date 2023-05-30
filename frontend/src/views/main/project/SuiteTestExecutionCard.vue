@@ -46,7 +46,7 @@
                     }}</span>
             </div>
             <div class="flex-grow-1"/>
-            <v-btn v-if="!compact" text x-small @click="editTests" color="rgba(0, 0, 0, 0.6)">
+            <v-btn v-if="!isPastExecution" text x-small @click="editTests" color="rgba(0, 0, 0, 0.6)">
                 <v-icon x-small class="mr-1">settings</v-icon>
                 Edit parameters
             </v-btn>
@@ -71,10 +71,15 @@ const {models, datasets} = storeToRefs(useTestSuiteStore())
 const props = defineProps<{
     suiteTest: SuiteTestDTO,
     result?: SuiteTestExecutionDTO,
-    compact: boolean
+    compact: boolean,
+    isPastExecution: boolean
 }>();
 
-const params = computed(() => props.result?.inputs);
+const params = computed(() => props.isPastExecution
+    ? props.result?.inputs
+    : Object.values(props.suiteTest.functionInputs)
+        .filter(input => !input.isAlias)
+        .reduce((r, input) => ({...r, [input.name]: input.value}), {}))
 
 function mapValue(value: string, type: string): string {
     if (type === 'SlicingFunction') {

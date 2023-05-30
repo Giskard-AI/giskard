@@ -5,7 +5,7 @@
 
         </div>
         <TestSuiteExecutionHeader :execution="execution" :tests="filteredTest" :compact="false"/>
-        <SuiteTestExecutionList :tests="filteredTest" :compact="false"/>
+        <SuiteTestExecutionList :tests="filteredTest" :compact="false" :is-past-execution="isPastExecution"/>
     </v-container>
     <v-container v-else class="d-flex flex-column vc fill-height">
         <v-alert class="text-center">
@@ -30,7 +30,10 @@ import SuiteTestExecutionList from '@/views/main/project/SuiteTestExecutionList.
 import TestSuiteExecutionHeader from '@/views/main/project/TestSuiteExecutionHeader.vue';
 import LoadingFullscreen from "@/components/LoadingFullscreen.vue";
 
-const props = defineProps<{ execution?: TestSuiteExecutionDTO }>();
+const props = defineProps<{
+    execution?: TestSuiteExecutionDTO,
+    isPastExecution: boolean
+}>();
 
 const testSuiteStore = useTestSuiteStore();
 const {models, datasets, inputs, suite, projectId, hasTest, statusFilter, searchFilter} = storeToRefs(testSuiteStore);
