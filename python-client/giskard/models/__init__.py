@@ -1,19 +1,20 @@
 import inspect
+import logging
 from importlib import import_module
 from typing import Callable, Optional, Iterable, Any
 
 import pandas as pd
-import logging
 
 from giskard.core.core import ModelType
-from giskard.models.function import PredictionFunctionModel
 from giskard.core.validation import configured_validate_arguments
+from giskard.models.function import PredictionFunctionModel
 
 logger = logging.getLogger(__name__)
 
 ml_libraries = {
     ("giskard.models.huggingface", "HuggingFaceModel"): [("transformers", "PreTrainedModel")],
     ("giskard.models.sklearn", "SKLearnModel"): [("sklearn.base", "BaseEstimator")],
+    ("giskard.models.langchain", "LangchainModel"): [("langchain.chains", "LLMChain")],
     ("giskard.models.catboost", "CatboostModel"): [("catboost", "CatBoost")],
     ("giskard.models.pytorch", "PyTorchModel"): [("torch.nn", "Module")],
     ("giskard.models.tensorflow", "TensorFlowModel"): [("tensorflow", "Module")]
@@ -111,6 +112,7 @@ def wrap_model(model,
             '\n- pytorch'
             '\n- tensorflow'
             '\n- huggingface'
+            '\n- langchain'
             '\nWe recommend that you create your own wrapper using our documentation page: https://giskard.readthedocs.io/en/latest/guides/custom-wrapper'
         )
 
