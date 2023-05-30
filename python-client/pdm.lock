@@ -2463,6 +2463,16 @@ requires_python = "!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*,>=2.7"
 summary = "Module for decorators, wrappers and monkey patching."
 
 [[package]]
+name = "xgboost"
+version = "1.7.5"
+requires_python = ">=3.8"
+summary = "XGBoost Python Package"
+dependencies = [
+    "numpy",
+    "scipy",
+]
+
+[[package]]
 name = "y-py"
 version = "0.5.9"
 summary = "Python bindings for the Y-CRDT built from yrs (Rust)"
@@ -2495,8 +2505,9 @@ dependencies = [
 
 [metadata]
 lock_version = "4.2"
+cross_platform = true
 groups = ["default", "dev", "doc", "proto", "test"]
-content_hash = "sha256:9ca08b66dda7bfe9d16be8879f6d3f2ebf272bd7bea624bb219fd0ceb4036152"
+content_hash = "sha256:60053cae128e4d4bf334c17bf0ab2560b9b79853020675f2d7780a993bf88faa"
 
 [metadata.files]
 "absl-py 1.4.0" = [
@@ -5123,6 +5134,14 @@ content_hash = "sha256:9ca08b66dda7bfe9d16be8879f6d3f2ebf272bd7bea624bb219fd0ceb
     {url = "https://files.pythonhosted.org/packages/fb/bd/ca7fd05a45e7022f3b780a709bbdb081a6138d828ecdb5b7df113a3ad3be/wrapt-1.15.0-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:41d07d029dd4157ae27beab04d22b8e261eddfc6ecd64ff7000b10dc8b3a5727"},
     {url = "https://files.pythonhosted.org/packages/fd/8a/db55250ad0b536901173d737781e3b5a7cc7063c46b232c2e3a82a33c032/wrapt-1.15.0-cp38-cp38-macosx_10_9_x86_64.whl", hash = "sha256:cdb4f085756c96a3af04e6eca7f08b1345e94b53af8921b25c72f096e704e145"},
     {url = "https://files.pythonhosted.org/packages/ff/f6/c044dec6bec4ce64fbc92614c5238dd432780b06293d2efbcab1a349629c/wrapt-1.15.0-cp37-cp37m-musllinux_1_1_aarch64.whl", hash = "sha256:b02f21c1e2074943312d03d243ac4388319f2456576b2c6023041c4d57cd7019"},
+]
+"xgboost 1.7.5" = [
+    {url = "https://files.pythonhosted.org/packages/08/44/65ef54bf0ed613c955cbcada4f22959cae94b3c5c9e223e75734d0e7caf2/xgboost-1.7.5.tar.gz", hash = "sha256:63474265a0194f27889c6fb54e5939ad21bcd5fcfaca7b6a89e143be42ed7ad1"},
+    {url = "https://files.pythonhosted.org/packages/7e/94/164786127eed50283df0b62a3da9521695163b1596a1667e3856438da6e7/xgboost-1.7.5-py3-none-manylinux2014_x86_64.whl", hash = "sha256:1d1dda6b84ea50a2ea1ed18390e93e275d57dc4cffd682014dc30ae5a116c92b"},
+    {url = "https://files.pythonhosted.org/packages/92/57/55ca8d2d179ac1a6fcdcb08aa4ee43898829ef2304ad5a4416047265e7f0/xgboost-1.7.5-py3-none-macosx_10_15_x86_64.macosx_11_0_x86_64.macosx_12_0_x86_64.whl", hash = "sha256:ca9e8455343cc3f1fddc825209ad00623bc82de0364097b31d649bca6a5f8fb4"},
+    {url = "https://files.pythonhosted.org/packages/d0/5e/2ca2bb35e8af2cf897424401bd2beec7083f13c08cbbf8b05fe1dd87634e/xgboost-1.7.5-py3-none-manylinux2014_aarch64.whl", hash = "sha256:af3227dbd839a8e2a215844a6276eae027d5f83a9cb501148dfcdb047a195411"},
+    {url = "https://files.pythonhosted.org/packages/d4/75/cfa1e1379d344724486d2054aabb59f85d4b0e7bf32bd0d19c1886e40294/xgboost-1.7.5-py3-none-macosx_12_0_arm64.whl", hash = "sha256:9eed5629c9008c36d65db6869defac31de635f766f215fc4b09b6a389c637f27"},
+    {url = "https://files.pythonhosted.org/packages/df/40/5549e83ce5c40c94e055de89b162d079fde811f6a076172673f72bdcfdfb/xgboost-1.7.5-py3-none-win_amd64.whl", hash = "sha256:ac17664ff24ea1c160a0d50aff521b654f0911f4684a88bbb46a074c46c9e3f1"},
 ]
 "y-py 0.5.9" = [
     {url = "https://files.pythonhosted.org/packages/00/e2/9b702015e5dffe2b6fcda354663fca4089bab8f7dcb3cb11e0e4441d029f/y_py-0.5.9-cp39-cp39-manylinux_2_5_i686.manylinux1_i686.whl", hash = "sha256:d2da2a9e28dceab4832945a745cad507579f52b4d0c9e2f54ae156eb56875861"},
