@@ -1,7 +1,3 @@
----
-description: Easily install Giskard in Azure
----
-
 # Installation in Azure
 
 Installing Giskard in Azure enables you to inspect & test models that you created in the Microsoft Azure environment (ex: Azure Machine Learning, Synapse Analytics, etc.). Here are the 3 steps to install Giskard in a new VM instance in Azure:
