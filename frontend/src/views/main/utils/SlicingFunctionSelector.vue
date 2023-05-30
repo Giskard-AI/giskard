@@ -18,7 +18,7 @@
 import { FunctionInputDTO, SlicingFunctionDTO } from '@/generated-sources';
 import { storeToRefs } from "pinia";
 import { useCatalogStore } from "@/stores/catalog";
-import { computed, onMounted } from "vue";
+import { computed } from "vue";
 import { $vfm } from "vue-final-modal";
 import FunctionInputsModal from "@/views/main/project/modals/FunctionInputsModal.vue";
 import { chain } from "lodash";

@@ -30,8 +30,7 @@
                                                 </div>
                                             </v-list-item-title>
                                             <v-list-item-subtitle v-if="test.tags">
-                                                <v-chip class="mr-2" v-for="tag in alphabeticallySorted(test.tags)"
-                                                        x-small :color="pasterColor(tag)">
+                                                <v-chip class="mr-2" v-for="tag in alphabeticallySorted(test.tags)" x-small :color="pasterColor(tag)">
                                                     {{ tag }}
                                                 </v-chip>
                                             </v-list-item-subtitle>
@@ -124,14 +123,12 @@
 </template>
 
 <script setup lang="ts">
-import _, { chain } from "lodash";
-import {api} from "@/api";
-import {computed, inject, onActivated, ref, watch} from "vue";
-import {pasterColor} from "@/utils";
-import MonacoEditor from 'vue-monaco';
+import { chain } from "lodash";
+import { api } from "@/api";
+import { computed, onActivated, ref, watch } from "vue";
+import { pasterColor } from "@/utils";
 import TestExecutionResultBadge from "@/views/main/project/TestExecutionResultBadge.vue";
-import {editor} from "monaco-editor";
-import {FunctionInputDTO, TestFunctionDTO, TestInputDTO, TestTemplateExecutionResultDTO} from "@/generated-sources";
+import { FunctionInputDTO, TestFunctionDTO, TestTemplateExecutionResultDTO } from "@/generated-sources";
 import AddTestToSuite from '@/views/main/project/modals/AddTestToSuite.vue';
 import { $vfm } from 'vue-final-modal';
 import StartWorkerInstructions from "@/components/StartWorkerInstructions.vue";
@@ -139,8 +136,7 @@ import { storeToRefs } from "pinia";
 import { useCatalogStore } from "@/stores/catalog";
 import SuiteInputListSelector from "@/components/SuiteInputListSelector.vue";
 import CodeSnippet from "@/components/CodeSnippet.vue";
-import {alphabeticallySorted} from "@/utils/comparators";
-import IEditorOptions = editor.IEditorOptions;
+import { alphabeticallySorted } from "@/utils/comparators";
 
 let props = defineProps<{
     projectId: number,
