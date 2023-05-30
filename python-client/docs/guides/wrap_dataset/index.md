@@ -42,3 +42,7 @@ wrapped_dataset = Dataset(
     * `column_types`: A dictionary of column names and their types (numeric, category or text) for all columns
       of `dataset`.
       If not provided, the types will be automatically inferred.
+      
+{% hint style="success" %}
+To upload your dataset in Giskard, go to [Upload an artifact](docs/guide/upload/index.md) in the Giskard server.
+{% endhint %}
