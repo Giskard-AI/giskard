@@ -8,10 +8,10 @@ from giskard.scanner.result import ScanResult
 @pytest.mark.parametrize(
     "dataset_name,model_name",
     [
-        # ("german_credit_data", "german_credit_model"),
-        # ("enron_data", "enron_model")
+        ("german_credit_data", "german_credit_model"),
+        ("enron_data", "enron_model"),
         ("medical_transcript_data", "medical_transcript_model")
-    ],
+    ]
 )
 def test_scanner_returns_non_empty_scan_result(dataset_name, model_name, request):
     scanner = Scanner()
@@ -26,6 +26,24 @@ def test_scanner_returns_non_empty_scan_result(dataset_name, model_name, request
 
     test_suite = result.generate_test_suite()
     assert isinstance(test_suite, Suite)
+
+
+@pytest.mark.parametrize(
+    "dataset_name,model_name,num_issues_to_detect",
+    [
+        ("medical_transcript_data", "medical_transcript_model", 15)
+    ]
+)
+def test_scanner_num_issues_to_detect(dataset_name, model_name, num_issues_to_detect, request):
+    scanner = Scanner()
+
+    dataset = request.getfixturevalue(dataset_name)
+    model = request.getfixturevalue(model_name)
+
+    result = scanner.analyze(model, dataset)
+    num_issues_detected = len(result.issues)
+
+    assert num_issues_detected == num_issues_to_detect
 
 
 def test_scanner_should_work_with_empty_model_feature_names(german_credit_data, german_credit_model):

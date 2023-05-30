@@ -7,7 +7,6 @@ import pytest
 import pandas as pd
 from sklearn.pipeline import Pipeline
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import FunctionTransformer
 from sklearn.feature_extraction.text import CountVectorizer
 
@@ -33,8 +32,6 @@ TEXT_COLUMN_NAME = "transcription"
 TARGET_COLUMN_NAME = "medical_specialty"
 
 LANGUAGE = "english"
-
-RANDOM_SEED = 8888
 
 # Paths.
 PATH_DATA = os.path.join(".", "datasets", "medical_transcript_classification_dataset", "mtsamples.csv")
@@ -107,22 +104,16 @@ def adapt_vectorizer_input(df: pd.DataFrame) -> Iterable:
 
 @pytest.fixture()
 def medical_transcript_model(medical_transcript_data: Dataset) -> SKLearnModel:
-    # Train-test split.
-    x_train, x_test, y_train, y_test = train_test_split(medical_transcript_data.df[[TEXT_COLUMN_NAME]],
-                                                        medical_transcript_data.df[TARGET_COLUMN_NAME],
-                                                        random_state=RANDOM_SEED,
-                                                        train_size=0.5)
-
     # Define final pipeline.
     pipeline = Pipeline(steps=[
         ("text_preprocessor", FunctionTransformer(preprocess_text)),
         ("vectorizer_input_adapter", FunctionTransformer(adapt_vectorizer_input)),
         ("vectorizer", CountVectorizer(ngram_range=(1, 1))),
-        ("estimator", RandomForestClassifier(random_state=RANDOM_SEED, n_estimators=1, max_depth=3))
+        ("estimator", RandomForestClassifier(n_estimators=1, max_depth=3))
     ])
 
     # Fit pipeline.
-    pipeline.fit(x_train, y_train)
+    pipeline.fit(medical_transcript_data.df[[TEXT_COLUMN_NAME]], medical_transcript_data.df[TARGET_COLUMN_NAME])
 
     # Wrap model with giskard
     wrapped_model = SKLearnModel(pipeline,
