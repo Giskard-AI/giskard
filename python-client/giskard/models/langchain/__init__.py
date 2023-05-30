@@ -39,13 +39,13 @@ class LangchainModel(MLFlowBasedModel):
         )
 
     def save_model(self, local_path, mlflow_meta):
-        mlflow.sklearn.save_model(
+        mlflow.langchain.save_model(
             self.model, path=local_path, pyfunc_predict_fn='predict', mlflow_model=mlflow_meta
         )
 
     @classmethod
     def load_model(cls, local_dir):
-        return mlflow.sklearn.load_model(local_dir)
+        return mlflow.langchain.load_model(local_dir)
 
     def model_predict(self, df):
         return self.model.predict(df)
