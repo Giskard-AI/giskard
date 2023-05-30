@@ -20,6 +20,8 @@ def validate_model(model: BaseModel, validate_ds: Optional[Dataset] = None):
 
     model = validate_model_loading_and_saving(model)
 
+    validate_order_classifcation_labels(model, validate_ds)
+
     if isinstance(model, WrapperModel) and model.data_preprocessing_function is not None:
         validate_data_preprocessing_function(model.data_preprocessing_function)
 
@@ -170,6 +172,7 @@ def validate_classification_labels(classification_labels: Union[np.ndarray, List
                 f"Invalid classification_labels parameter: {classification_labels}. "
                 f"Please specify valid list of strings."
             )
+
     if model_type == SupportedModelTypes.REGRESSION and classification_labels is not None:
         warning("'classification_labels' parameter is ignored for regression model")
 
@@ -250,3 +253,13 @@ def validate_classification_prediction(classification_labels: Union[np.ndarray, 
         )
     if prediction.shape[1] != len(classification_labels):
         raise ValueError("Prediction output label shape and classification_labels shape do not match")
+
+
+def validate_order_classifcation_labels(model, dataset):
+    from giskard.testing.tests.performance import test_accuracy
+    result = test_accuracy(model=model, dataset=dataset).execute()
+    if result.metric <= 0.4:
+        warning(
+            f"The accuracy of your model is very low ({round(result.metric, 2)}). Make sure you have not inverted "
+            "the order of the 'classification_labels' when you created the Giskard Model."
+        )
