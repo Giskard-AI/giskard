@@ -18,7 +18,6 @@ import pydantic
 import yaml
 
 from giskard.client.giskard_client import GiskardClient
-from giskard.client.io_utils import save_df, compress
 from giskard.core.core import ModelMeta, SupportedModelTypes, ModelType
 from giskard.core.validation import configured_validate_arguments
 from giskard.datasets.base import Dataset
@@ -26,13 +25,11 @@ from giskard.ml_worker.utils.logging import Timer
 from giskard.models.cache import ModelCache
 from giskard.path_utils import get_size
 from giskard.settings import settings
-from ..utils import np_types_to_native
 from ..cache import get_cache_enabled
-
+from ..utils import np_types_to_native
 
 META_FILENAME = "giskard-model-meta.yaml"
 
-CACHE_CSV_FILENAME = "giskard-model-cache.csv.zst"
 MODEL_CLASS_PKL = "ModelClass.pkl"
 
 logger = logging.getLogger(__name__)
@@ -152,9 +149,7 @@ class BaseModel(ABC):
             return getattr(importlib.import_module(meta.loader_module), meta.loader_class)
 
     def save_meta(self, local_path):
-        with open(Path(local_path) / META_FILENAME, "w") as f, open(
-            Path(local_path) / CACHE_CSV_FILENAME, "wb"
-        ) as pred_f:
+        with open(Path(local_path) / META_FILENAME, "w") as f:
             yaml.dump(
                 {
                     "language_version": platform.python_version(),
@@ -173,13 +168,10 @@ class BaseModel(ABC):
                 default_flow_style=False,
             )
 
-            uncompressed_bytes = save_df(self._cache.to_df())
-            compressed_bytes = compress(uncompressed_bytes)
-            pred_f.write(compressed_bytes)
-
     def save(self, local_path: Union[str, Path]) -> None:
         if self.id is None:
             self.id = uuid.uuid4()
+            self._cache.set_id(self.id)
         if self.should_save_model_class:
             self.save_model_class(local_path)
         self.save_meta(local_path)
@@ -395,18 +387,6 @@ class BaseModel(ABC):
                     loader_class=file_meta["loader_class"],
                 )
 
-        from zstandard import ZstdDecompressor
-
-        with open(Path(local_dir) / CACHE_CSV_FILENAME, "rb") as pred_f:
-            try:
-                prediction_cache = pd.read_csv(
-                    ZstdDecompressor().stream_reader(pred_f),
-                    keep_default_na=False,
-                    na_values=["_GSK_NA_"],
-                )
-            except pd.errors.EmptyDataError:
-                prediction_cache = None
-
         clazz = cls.determine_model_class(meta, local_dir)
 
         constructor_params = meta.__dict__
@@ -414,7 +394,7 @@ class BaseModel(ABC):
         del constructor_params["loader_class"]
 
         model = clazz.load(local_dir, **constructor_params)
-        model._cache = ModelCache(prediction_cache)
+        model._cache = ModelCache(model.id)
         return model
 
     @classmethod
@@ -634,6 +614,7 @@ class MLFlowBasedModel(WrapperModel, ABC):
         """
         if not self.id:
             self.id = uuid.uuid4()
+            self._cache.set_id(self.id)
         self.save_model(local_path, mlflow.models.Model(model_uuid=str(self.id)))
         super().save(local_path)
 
