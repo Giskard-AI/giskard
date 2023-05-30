@@ -292,11 +292,11 @@ respectively.
 
 ::::{tab-item} huggingface
 
-- **<project:../../guides/tutorials/huggingface/BertForSequenceClassification.md>**
-- **<project:../../guides/tutorials/huggingface/BertForSequenceClassification_custom.md>**
-- **<project:../../guides/tutorials/huggingface/pytorch.md>**
-- **<project:../../guides/tutorials/huggingface/pytorch_pipeline.md>**
-- **<project:../../guides/tutorials/huggingface/tensorflow.md>**
+- **<project:../../tutorials/huggingface/BertForSequenceClassification.md>**
+- **<project:../../tutorials/huggingface/BertForSequenceClassification_custom.md>**
+- **<project:../../tutorials/huggingface/pytorch.md>**
+- **<project:../../tutorials/huggingface/pytorch_pipeline.md>**
+- **<project:../../tutorials/huggingface/tensorflow.md>**
   ::::
   :::::
   
