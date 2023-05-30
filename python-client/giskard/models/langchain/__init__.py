@@ -22,13 +22,8 @@ class LangchainModel(MLFlowBasedModel):
                  classification_labels: Optional[Iterable] = None) -> None:
         assert model_type == SupportedModelTypes.GENERATIVE, 'LangchainModel only support generative ModelType'
 
-        with mlflow.start_run():
-            logged_model = mlflow.langchain.log_model(model, "langchain_model")
-
-        loaded_model = mlflow.pyfunc.load_model(logged_model.model_uri)
-
         super().__init__(
-            model=loaded_model,
+            model=model,
             model_type=model_type,
             name=name,
             data_preprocessing_function=data_preprocessing_function,
@@ -48,4 +43,4 @@ class LangchainModel(MLFlowBasedModel):
         return mlflow.langchain.load_model(local_dir)
 
     def model_predict(self, df):
-        return self.model.predict(df)
+        return [self.model.predict(**data) for data in df.to_dict('index').values()]
