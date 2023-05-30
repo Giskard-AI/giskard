@@ -25,10 +25,7 @@ class Scanner:
 
     def analyze(self, model: BaseModel, dataset: Dataset, verbose=True) -> ScanResult:
         """Runs the analysis of a model and dataset, detecting issues."""
-        analytics.track("scan", {"model_class": model.__class__.__name__,
-                                 "model_id": str(model.id),
-                                 "model_type": model.meta.model_type.value,
-                                 "dataset_id": str(dataset.id)})
+        self._collect_analytics(model, dataset)
         validate_model(model=model, validate_ds=dataset)
 
         maybe_print("Running scan…", verbose=verbose)
@@ -79,6 +76,17 @@ class Scanner:
             issues = [issue for issue in issues if not isinstance(issue, DataLeakageIssue)]
 
         return issues
+
+    def _collect_analytics(self, model, dataset):
+        analytics.track(
+            "scan",
+            {
+                "model_class": model.__class__.__name__,
+                "model_id": str(model.id),
+                "model_type": model.meta.model_type.value,
+                "dataset_id": str(dataset.id),
+            },
+        )
 
     def get_detectors(self, tags: Optional[Sequence[str]] = None) -> Sequence:
         """Returns the detector instances."""
