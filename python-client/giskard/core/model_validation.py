@@ -20,7 +20,8 @@ def validate_model(model: BaseModel, validate_ds: Optional[Dataset] = None):
 
     model = validate_model_loading_and_saving(model)
 
-    validate_order_classifcation_labels(model, validate_ds)
+    if model.meta.model_type == SupportedModelTypes.CLASSIFICATION:
+        validate_order_classifcation_labels(model, validate_ds)
 
     if isinstance(model, WrapperModel) and model.data_preprocessing_function is not None:
         validate_data_preprocessing_function(model.data_preprocessing_function)
@@ -258,8 +259,26 @@ def validate_classification_prediction(classification_labels: Union[np.ndarray, 
 def validate_order_classifcation_labels(model, dataset):
     from giskard.testing.tests.performance import test_accuracy
     result = test_accuracy(model=model, dataset=dataset).execute()
-    if result.metric <= 0.4:
-        warning(
-            f"The accuracy of your model is very low ({round(result.metric, 2)}). Make sure you have not inverted "
-            "the order of the 'classification_labels' when you created the Giskard Model."
-        )
+
+    if result.metric <= 0.5:
+        if model.is_binary_classification:
+            cl = model.meta.classification_labels
+            inverted_cl = [cl[1], cl[0]]
+            model.meta.classification_labels = inverted_cl
+            result_inverted = test_accuracy(model=model, dataset=dataset).execute()
+
+            # restore classification labels
+            model.meta.classification_labels = cl
+
+            if result_inverted.metric > result.metric:
+                warning(
+                    f"The accuracy of your model is higher ({round(result_inverted.metric, 2)} > "
+                    f"{round(result.metric, 2)}) if the 'classification_labels' were to be inverted. "
+                    "Make sure you have not inverted the order of the 'classification_labels' when you created "
+                    "the Giskard Model."
+                )
+        else:
+            warning(
+                f"The accuracy of your model is very low ({round(result.metric, 2)}). Make sure you have not inverted "
+                "the order of the 'classification_labels' when you created the Giskard Model."
+            )
