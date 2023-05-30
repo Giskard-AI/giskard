@@ -13,8 +13,7 @@ Choose <b>"Wrap a model object"</b> if your model is not serializable by `cloudp
 ::::::{tab-item} Wrap a prediction function
 :::::{tab-set}
 ::::{tab-item} Classification
-Prediction function is any Python function that takes as input the <b>raw</b> pandas dataframe (wrapped in the
-[previous section](#wrap-your-dataset)) and returns the <b>probabilities</b> for each classification labels.
+Prediction function is any Python function that takes as input the <b>raw</b> pandas dataframe and returns the <b>probabilities</b> for each classification labels.
 
 <b><u>Make sure that:</b></u>
 
@@ -73,8 +72,7 @@ wrapped_model = Model(
 
 ::::
 ::::{tab-item} Regression
-Prediction function is any Python function that takes as input the <b>raw</b> pandas dataframe (wrapped in the
-[previous section](#wrap-your-dataset)) and returns the <b>predictions</b> for your regression task.
+Prediction function is any Python function that takes as input the <b>raw</b> pandas dataframe and returns the <b>predictions</b> for your regression task.
 
 <b><u>Make sure that:</b></u>
 
