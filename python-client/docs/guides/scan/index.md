@@ -1,3 +1,16 @@
+```{toctree}
+:caption: Table of Contents
+:name: mastertoc
+:maxdepth: 2
+:hidden:
+
+performance_bias/index
+robustness/index
+overconfidence/index
+underconfidence/index
+ethics/index
+```
+
 # Scan your ML model
 
 How to scan your Machine Learning model for vulnerabilities with Giskard?
