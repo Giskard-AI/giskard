@@ -40,7 +40,7 @@ class LangchainModel(MLFlowBasedModel):
 
     def save_model(self, local_path, mlflow_meta):
         mlflow.langchain.save_model(
-            self.model, path=local_path, pyfunc_predict_fn='predict', mlflow_model=mlflow_meta
+            self.model, path=local_path, mlflow_model=mlflow_meta
         )
 
     @classmethod
