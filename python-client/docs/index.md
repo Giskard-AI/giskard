@@ -39,7 +39,6 @@ contribute/index
 ::::{grid} 1 1 1 1
 :gutter: 1
 
-
 :::{card} <h2><center> User Guide </center></h2>
 :link: guides/index.html
 
@@ -57,7 +56,6 @@ contribute/index
 
 ::::{grid} 1 1 1 1
 :gutter: 1
-
 
 :::{card} <h2><center> Catalogs </center></h2>
 :link: catalogs/index.html
