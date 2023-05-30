@@ -25,7 +25,7 @@
                 <v-list-item :disabled="true">
                   <v-list-item-content>
                     <v-icon>mdi-list-status</v-icon>
-                    <div class="caption">Test</div>
+                    <div class="caption">Testing</div>
                   </v-list-item-content>
                 </v-list-item>
                 <v-divider />
@@ -59,7 +59,7 @@
             <v-list-item :to="{ name: 'project-test-suites' }" value="test-suites">
               <v-list-item-content>
                 <v-icon>mdi-list-status</v-icon>
-                <div class="caption">Test</div>
+                <div class="caption">Testing</div>
               </v-list-item-content>
             </v-list-item>
             <v-divider />
