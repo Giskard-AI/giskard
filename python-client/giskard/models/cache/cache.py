@@ -1,9 +1,16 @@
-from typing import Optional, Dict, List, Any, Iterable
+import csv
+import os
+from pathlib import Path
+from typing import Dict, List, Any, Iterable, Optional
 
 import numpy as np
 import pandas as pd
 
+from giskard.settings import settings
+
 NaN = float('NaN')
+
+CACHE_CSV_FILENAME = "giskard-model-cache.csv"
 
 
 def flatten(xs):
@@ -15,15 +22,23 @@ def flatten(xs):
 
 
 class ModelCache:
-    # @TODO: improve this
-    prediction_cache: Dict[str, Any]
+    id: Optional[str] = None
+    prediction_cache: Dict[str, Any] = None
 
     vectorized_get_cache_or_na = None
 
-    def __init__(self, cache: Optional[pd.DataFrame] = None):
-        cache = cache if cache is not None else pd.DataFrame(data={}, index=[])
+    def __init__(self, id: Optional[str] = None):
+        self.id = id
 
-        self.prediction_cache = cache.to_dict()
+        if id is not None:
+            local_dir = Path(settings.home_dir / settings.cache_dir / "global/prediction_cache" / id)
+            if local_dir.exists():
+                with open(local_dir / CACHE_CSV_FILENAME, "r") as pred_f:
+                    reader = csv.reader(pred_f)
+                    self.prediction_cache = dict(reader)
+
+        if self.prediction_cache is None:
+            self.prediction_cache = {}
 
         self.vectorized_get_cache_or_na = np.vectorize(self.get_cache_or_na, otypes=[object])
 
@@ -40,7 +55,15 @@ class ModelCache:
         for i in range(len(keys)):
             self.prediction_cache[keys.iloc[i]] = values[i]
 
-    def to_df(self):
+        if self.id:
+            with open(Path(settings.home_dir / settings.cache_dir / "global/prediction_cache" / str(
+                    self.id) / CACHE_CSV_FILENAME),
+                      "a") as pred_f:
+                writer = csv.writer(pred_f)
+                for i in range(len(keys)):
+                    writer.writerow([keys.iloc[i], values[i]])
+
+    def _to_df(self):
         index = [key for key, values in self.prediction_cache.items()]
         data = np.array([list(flatten([values])) for key, values in self.prediction_cache.items()])
 
@@ -48,3 +71,14 @@ class ModelCache:
             return pd.DataFrame(data, index=index)
         else:
             return pd.DataFrame({})
+
+    def set_id(self, id: str):
+        self.id = id
+
+        if len(self.prediction_cache.keys()) > 0:
+            local_dir = Path(settings.home_dir / settings.cache_dir / "global/prediction_cache" / id)
+            os.makedirs(local_dir, exist_ok=True)
+            with open(local_dir / CACHE_CSV_FILENAME, "w") as pred_f:
+                writer = csv.writer(pred_f)
+                for key, value in self.prediction_cache.items():
+                    writer.writerow([key, value])
