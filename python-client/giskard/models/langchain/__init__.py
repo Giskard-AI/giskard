@@ -43,4 +43,4 @@ class LangchainModel(MLFlowBasedModel):
         return mlflow.langchain.load_model(local_dir)
 
     def model_predict(self, df):
-        return [self.model.predict(**data) for data in df.to_dict('index').values()]
+        return [self.model.predict(**data) for data in df.to_dict('records')]
