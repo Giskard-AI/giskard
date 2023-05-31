@@ -77,8 +77,9 @@
             </v-list-item>
             <v-divider />
             <v-list-item v-if="debuggingSessionsStore.currentDebuggingSessionId !== null" :to="{
-              name: 'inspection', params: {
-                projectId: projectStore.currentProjectId,
+              name: 'inspection',
+              params: {
+                id: projectStore.currentProjectId,
                 inspectionId: debuggingSessionsStore.currentDebuggingSessionId,
               }
             }" value="debugger">
