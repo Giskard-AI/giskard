@@ -1,5 +1,13 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
 :root {
     --color-brand-content: #91f7c0;
+}
+
+body {
+    font-family: "Inter", "Helvetica Neue", "Arial", "sans-serif";
+    color: #484848;
+    background: var(--color-background-primary);
 }
 
 .header__search {
@@ -13,6 +21,18 @@
 
 .admonition {
     border-left: none;
+}
+
+.header-logo {
+    max-width: 160px;
+}
+
+.related-pages a svg, .related-pages a svg > use {
+    color: var(--color-foreground-border);
+    flex-shrink: 0;
+    height: 0.75rem;
+    margin: 0 0.5rem;
+    width: 0.75rem;
 }
 
 /* toc */
@@ -61,8 +81,9 @@
 }
 
 .sidebar-logo {
-    max-width: 160px;
+    max-width: 240px;
     margin-top: 2em;
+    margin-left: -1em;
 }
 
 .sidebar-brand {
@@ -180,7 +201,7 @@
 .github-stars {
     display: inline-flex;
     align-items: center;
-    color: var(--social-button-background);
+    color: var(--social-button-text);
 }
 
 .github-stars > a {
@@ -194,7 +215,7 @@
     background: var(--color-brand-content);
     border-top-left-radius: 5px;
     border-bottom-left-radius: 5px;
-    color: var(--social-button-background);
+    color: var(--social-button-text);
     display: flex;
     align-items: center;
     gap: 6px;
@@ -210,6 +231,7 @@
 .github-stars .--right:hover {
     color: var(--color-brand-content);
     border-color: var(--color-brand-content);
+    background: var(--social-button-text);
 }
 
 .github-stars .--right {

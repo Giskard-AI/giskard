@@ -1,4 +1,4 @@
-Scan your ML model
+🔍 Scan your ML model
 ===============
 
 .. toctree::
