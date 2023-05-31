@@ -57,7 +57,7 @@ class TextSlicer(BaseSlicer):
         data = self.dataset.column_meta[feature, "text"].copy()
         data[target] = self.dataset.df[target]
 
-        meta_dataset = Dataset(data, target=target)
+        meta_dataset = Dataset(data, target=target, validation=False)
         column_types = meta_dataset.column_types.copy()
         column_types.pop(target, None)
 
