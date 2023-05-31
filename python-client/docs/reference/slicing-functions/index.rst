@@ -1,6 +1,8 @@
 Slicing functions
 ======
 
+.. autofunction:: giskard.slicing_function
+
 Textual slicing
 ======
 
