@@ -9,6 +9,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -27,4 +28,6 @@ public class DatasetMetadataDTO {
     @UINullable
     @JsonAlias("column_dtypes")
     private Map<String, String> columnDtypes;
+    private long numberOfRows;
+    private Map<String, List<String>> categoryFeatures;
 }

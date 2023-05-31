@@ -12,7 +12,7 @@
                 {{ suiteTest.test.displayName ?? suiteTest.test.name }}
             </v-card-title>
             <v-card-text class="card-content">
-                <pre class="test-doc caption pt-5">{{ suiteTest.test.doc }}</pre>
+                <pre class="test-doc caption pt-5">{{ doc.body }}</pre>
                 <div class="d-flex align-center">
                     <p class="text-h6 pt-4">Inputs</p>
                 </div>
@@ -21,9 +21,10 @@
                                        :test="testFunctionsByUuid[suiteTest.testUuid]"
                                        :model-value="editedInputs"
                                        :project-id="projectId"
-                                     :inputs="inputType"
-                                     @invalid="i => invalid = i"
-                                     @result="v => result = v"
+                                       :inputs="inputType"
+                                       :doc="doc"
+                                       @invalid="i => invalid = i"
+                                       @result="v => result = v"
               />
               <v-row>
                   <v-col>
@@ -73,6 +74,7 @@ import {api} from '@/api';
 import {editor} from 'monaco-editor';
 import TestInputListSelector from "@/components/TestInputListSelector.vue";
 import {useCatalogStore} from "@/stores/catalog";
+import {extractArgumentDocumentation} from "@/utils/python-doc.utils";
 import IEditorOptions = editor.IEditorOptions;
 
 const l = MonacoEditor;
@@ -97,6 +99,8 @@ const sortedArguments = computed(() => {
         return !_.isUndefined(props.suiteTest.functionInputs[value.name]);
     }, 'name');
 })
+
+const doc = computed(() => extractArgumentDocumentation(props.suiteTest.test))
 
 
 const invalid = ref(false);
@@ -130,6 +134,7 @@ const inputType = computed(() => chain(sortedArguments.value)
     .mapValues('type')
     .value()
 );
+
 
 </script>
 
