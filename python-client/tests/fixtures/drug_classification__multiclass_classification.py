@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 
 import pytest
@@ -10,10 +11,12 @@ from imblearn.pipeline import Pipeline as PipelineImb
 
 from giskard import Dataset
 from giskard.models.sklearn import SKLearnModel
+from tests.url_utils import fetch_from_ftp
 
 
-# Paths.
-PATH_DATA = Path.home() / ".giskard" / "drug_classification_dataset" / "drug200.csv"
+# Data.
+DATA_URL = os.path.join("ftp://sys.giskard.ai", "pub", "unit_test_resources", "drug_classification_dataset", "drug200.csv")
+DATA_PATH = Path.home() / ".giskard" / "drug_classification_dataset" / "drug200.csv"
 
 # Constants.
 TARGET_NAME = "Drug"
@@ -23,12 +26,6 @@ AGE_CATEGORIES = ['<20s', '20s', '30s', '40s', '50s', '60s', '>60s']
 
 NA_TO_K_BINS = [0, 9, 19, 29, 50]
 NA_TO_K_CATEGORIES = ['<10', '10-20', '20-30', '>30']
-
-
-def fetch_dataset():
-    if not PATH_DATA.exists():
-        PATH_DATA.parent.mkdir(parents=True)
-        # TODO: Add download logic.
 
 
 def bin_numerical(df: pd.DataFrame) -> np.ndarray:
@@ -53,10 +50,10 @@ def bin_numerical(df: pd.DataFrame) -> np.ndarray:
 @pytest.fixture()
 def drug_classification_data() -> Dataset:
     # Download data.
-    fetch_dataset()
+    fetch_from_ftp(DATA_URL, DATA_PATH)
 
     # Load and wrap data.
-    raw_data = bin_numerical(pd.read_csv(PATH_DATA))
+    raw_data = bin_numerical(pd.read_csv(DATA_PATH))
     wrapped_dataset = Dataset(raw_data,
                               name="drug_classification_dataset",
                               target=TARGET_NAME,
