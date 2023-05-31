@@ -69,6 +69,7 @@ doc = [
     "sphinx-design>=0.4.1",
     "sphinx-copybutton>=0.5.2",
     "sphinx-click>=4.4.0",
+    "nbsphinx>=0.9.2",
 ]
 
 [tool.setuptools.packages.find]
