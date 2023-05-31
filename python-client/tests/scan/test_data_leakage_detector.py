@@ -9,9 +9,11 @@ def test_data_leakage_is_detected(enron_data, enron_model):
     assert len(issues) == 0
 
     # Now we add normalization problems
+    ll = len(enron_data)
+
     def renormalize_df(df):
         numeric_cols = df.select_dtypes("number").columns
-        df.loc[:, numeric_cols] /= len(df)
+        df.loc[:, numeric_cols] /= ll / len(df)
         return df
 
     _prev_func = enron_model.data_preprocessing_function
