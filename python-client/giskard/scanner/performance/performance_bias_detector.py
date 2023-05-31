@@ -48,6 +48,12 @@ class PerformanceBiasDetector:
             logger.debug(f"PerformanceBiasDetector: Limiting dataset size to {max_data_size} samples.")
             dataset = dataset.slice(lambda df: df.sample(max_data_size, random_state=42), row_level=False)
 
+        if not dataset.df.index.is_unique:
+            logger.warning("PerformanceBiasDetector: Resetting dataframe indexes because values are not unique")
+            dataset = Dataset(df=dataset.df.reset_index(drop=True),
+                              name=dataset.name,
+                              target=dataset.target,
+                              column_types=dataset.column_types)
         # Calculate loss
         meta = self._calculate_meta(model, dataset)
 
