@@ -143,6 +143,10 @@ onActivated(async () => {
   await projectStore.getProject({ id: props.projectId });
   allMLWorkerSettings.value = await api.getMLWorkerSettings();
 
+  if (debuggingSessionsStore.projectId !== props.projectId) {
+    debuggingSessionsStore.setCurrentDebuggingSessionId(null);
+  }
+
   if (debuggingSessionsStore.currentDebuggingSessionId !== null) {
     await openInspection(props.projectId.toString(), debuggingSessionsStore.currentDebuggingSessionId.toString());
   } else {
