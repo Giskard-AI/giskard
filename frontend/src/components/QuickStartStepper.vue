@@ -100,24 +100,24 @@ client = GiskardClient(url, token)`
 const uploadSnippet = computed(() => {
     // language=Python
     return `from giskard import Dataset, Model, GiskardClient
-    from giskard.demo import titanic  # for demo purposes only 🛳️
+from giskard.demo import titanic  # for demo purposes only 🛳️
 
-    original_model, original_df = titanic()  # Replace with your dataframe creation
+original_model, original_df = titanic()  # Replace with your dataframe creation
 
-    # Create a Giskard client
-    token = "${apiAccessToken.value!.id_token}"
-    client = GiskardClient(
-        url="${apiURL}",  # URL of your Giskard instance
-        token=token
-    )
+# Create a Giskard client
+token = "${apiAccessToken.value!.id_token}"
+client = GiskardClient(
+    url="${apiURL}",  # URL of your Giskard instance
+    token=token
+)
 
-    # Wrap your Pandas Dataframe and model with Giskard 🎁
-    giskard_dataset = Dataset(original_df, target="Survived", name="Titanic dataset")
-    giskard_model = Model(original_model, model_type="classification", name="Titanic model")
+# Wrap your Pandas Dataframe and model with Giskard 🎁
+giskard_dataset = Dataset(original_df, target="Survived", name="Titanic dataset")
+giskard_model = Model(original_model, model_type="classification", name="Titanic model")
 
-    # Upload to the current project ✉️
-    giskard_dataset.upload(client, "${props.project.key}")
-    giskard_model.upload(client, "${props.project.key}")`
+# Upload to the current project ✉️
+giskard_dataset.upload(client, "${props.project.key}")
+giskard_model.upload(client, "${props.project.key}")`
 });
 
 const datasetCodeContent = computed(() => {
@@ -178,7 +178,7 @@ const scanCodeContent: string = `import giskard
 results = giskard.scan(giskard_model, giskard_dataset)
 
 # Show results in your notebook
-display(results)
+# display(results)
 
 # Upload an automatically created test suite
 results.generate_test_suite("Test suite created by scan").upload(client, "${props.project.key}")`;
