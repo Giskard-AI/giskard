@@ -105,7 +105,7 @@ async function launchInspector() {
         content: 'ML Worker is not connected. Please start the ML Worker first and try again.',
         color: TYPE.ERROR,
       });
-      return;
+      throw new Error('ML Worker is not connected. Please start the ML Worker first and try again.');
     }
     const inspection = await api.prepareInspection({ datasetId: datasetSelected.value!.id, modelId: props.model.id, name: "" });
     debuggingSessionsStore.setCurrentDebuggingSessionId(inspection.id);
