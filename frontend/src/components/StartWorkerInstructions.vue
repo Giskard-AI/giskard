@@ -14,7 +14,11 @@
                 <p class="mt-4 mb-4">then run</p>
                 <CodeSnippet :codeContent="codeContent" />
                 <p class="mt-4 mb-0">to connect to this Giskard server.</p>
-                <p v-if="route.name !== 'admin-general'">You can check the status of an ML Worker and generate a new API token on the
+                <div v-if="apiAccessToken && apiAccessToken.id_token">
+                    <p>Finally, use the following API Access Token to connect:</p>
+                    <CodeSnippet :codeContent="apiAccessToken.id_token" :language="'bash'"></CodeSnippet>
+                </div>
+                <p class="mt-4" v-if="route.name !== 'admin-general'">You can check the status of an ML Worker and generate a new API token on the
                     <router-link :to="{ name: 'admin-general' }">Settings</router-link>
                     page
                 </p>
@@ -24,12 +28,13 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, onMounted, ref } from "vue";
 import { useMainStore } from "@/stores/main";
 import { useRoute } from "vue-router/composables";
 import { apiURL } from "@/env";
-import { MLWorkerType } from "@/generated-sources";
+import { JWTToken, MLWorkerType } from "@/generated-sources";
 import CodeSnippet from "./CodeSnippet.vue";
+import { api } from "@/api";
 
 const appSettings = computed(() => mainStore.appSettings);
 
@@ -44,6 +49,9 @@ const props = withDefaults(defineProps<Props>(), {
     mlWorkerType: MLWorkerType.EXTERNAL
 });
 
+const apiAccessToken = ref<JWTToken | null>(null);
+
+
 const isExternalWorker = computed(() => props.mlWorkerType === MLWorkerType.EXTERNAL);
 
 const codeContent = computed(() => {
@@ -52,5 +60,17 @@ const codeContent = computed(() => {
     } else {
         return `giskard worker start -s -u ${apiURL} # for internal worker`;
     }
+})
+
+const generateApiAccessToken = async () => {
+    try {
+        apiAccessToken.value = await api.getApiAccessToken();
+    } catch (error) {
+        console.log(error);
+    }
+}
+
+onMounted(async () => {
+    await generateApiAccessToken();
 })
 </script>
