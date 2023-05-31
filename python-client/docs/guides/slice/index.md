@@ -1,4 +1,4 @@
-# Slice your dataset
+# 🔪 Slice your dataset
 
 :::{warning}
 First you'll need to create a dataset,
@@ -56,7 +56,7 @@ wrapped_dataset = Dataset(...)
 # Define the slicing function
 @slicing_function(row_level=False)
 def n_firsts(df: pd.DataFrame, n: int = 5) -> pd.DataFrame:
-  return df.head(n)
+    return df.head(n)
 
 
 # Slice the dataset to get the first 5 rows
