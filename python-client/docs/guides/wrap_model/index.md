@@ -301,5 +301,5 @@ respectively.
   :::::
   
 {% hint style="success" %}
-To upload your model in Giskard, go to [Upload an object](docs/guide/upload/index.md) in the Giskard server.
+To upload your model to the Giskard server, go to [Upload objects](docs/guide/upload/index.md) to the Giskard server.
 {% endhint %}
