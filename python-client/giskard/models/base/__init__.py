@@ -175,7 +175,7 @@ class BaseModel(ABC):
     def save(self, local_path: Union[str, Path]) -> None:
         if self.id is None:
             self.id = uuid.uuid4()
-            self._cache.set_id(self.id)
+            self._cache.set_id(str(self.id))
         if self.should_save_model_class:
             self.save_model_class(local_path)
         self.save_meta(local_path)
@@ -619,7 +619,7 @@ class MLFlowBasedModel(WrapperModel, ABC):
         """
         if not self.id:
             self.id = uuid.uuid4()
-            self._cache.set_id(self.id)
+            self._cache.set_id(str(self.id))
         self.save_model(local_path, mlflow.models.Model(model_uuid=str(self.id)))
         super().save(local_path)
 
