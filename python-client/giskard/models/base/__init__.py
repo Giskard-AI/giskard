@@ -1,3 +1,4 @@
+import builtins
 import importlib
 import logging
 import pickle
@@ -25,6 +26,8 @@ from giskard.ml_worker.utils.logging import Timer
 from giskard.models.cache import ModelCache
 from giskard.path_utils import get_size
 from giskard.settings import settings
+
+from ..utils import np_types_to_native, warn_once
 from ..cache import get_cache_enabled
 from ..utils import np_types_to_native
 
@@ -381,11 +384,12 @@ class BaseModel(ABC):
             assert local_dir.exists(), f"Cannot find existing model {project_key}.{model_id} in {local_dir}"
             with open(Path(local_dir) / META_FILENAME) as f:
                 file_meta = yaml.load(f, Loader=yaml.Loader)
+                classification_labels = cls.cast_labels(meta_response)
                 meta = ModelMeta(
                     name=meta_response["name"],
                     model_type=SupportedModelTypes[meta_response["modelType"]],
                     feature_names=meta_response["featureNames"],
-                    classification_labels=meta_response["classificationLabels"],
+                    classification_labels=classification_labels,
                     classification_threshold=meta_response["threshold"],
                     loader_module=file_meta["loader_module"],
                     loader_class=file_meta["loader_class"],
@@ -401,6 +405,15 @@ class BaseModel(ABC):
         model.id = model_id
         model._cache = ModelCache(meta.model_type, model.id)
         return model
+
+    @classmethod
+    def cast_labels(cls, meta_response):
+        labels_ = meta_response["classificationLabels"]
+        labels_dtype = meta_response["classificationLabelsDtype"]
+        if labels_ and labels_dtype and builtins.hasattr(builtins, labels_dtype):
+            dtype = builtins.getattr(builtins, labels_dtype)
+            labels_ = [dtype(i) for i in labels_]
+        return labels_
 
     @classmethod
     def load(cls, local_dir, **kwargs):
@@ -509,11 +522,10 @@ class WrapperModel(BaseModel, ABC):
 
         # Fix possible extra dimensions (e.g. batch dimension which was not squeezed)
         if raw_predictions.ndim > 2:
-            logger.warning(
-                f"\nThe output of your model has shape {raw_predictions.shape}, but we expect a shape (n_entries, n_classes). \n"
-                "We will attempt to automatically reshape the output to match this format, please check that the results are consistent.",
-                exc_info=True,
-            )
+            warn_once(logger,
+                      f"\nThe output of your model has shape {raw_predictions.shape}, but we expect a shape (n_entries, n_classes). \n"
+                      "We will attempt to automatically reshape the output to match this format, please check that the results are consistent."
+                      )
 
             raw_predictions = raw_predictions.squeeze(tuple(range(1, raw_predictions.ndim - 1)))
 
@@ -526,10 +538,10 @@ class WrapperModel(BaseModel, ABC):
         # If a binary classifier returns a single prediction `p`, we try to infer the second class
         # prediction as `1 - p`.
         if self.is_binary_classification and raw_predictions.shape[-1] == 1:
-            logger.warning(
-                "Please make sure that your model's output corresponds to the second label in classification_labels.",
-                exc_info=True,
-            )
+            warn_once(logger,
+                      "Please make sure that your model's output corresponds "
+                      "to the second label in classification_labels."
+                      )
 
             raw_predictions = np.append(1 - raw_predictions, raw_predictions, axis=1)
 
