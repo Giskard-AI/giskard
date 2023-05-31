@@ -12,7 +12,8 @@ from giskard.scanner.result import ScanResult
         ("enron_data", "enron_model"),
         ("medical_transcript_data", "medical_transcript_model"),
         ("breast_cancer_data", "breast_cancer_model"),
-        ("fraud_detection_data", "fraud_detection_model")
+        ("fraud_detection_data", "fraud_detection_model"),
+        ("drug_classification_data", "drug_classification_model")
     ],
 )
 def test_scanner_returns_non_empty_scan_result(dataset_name, model_name, request):
