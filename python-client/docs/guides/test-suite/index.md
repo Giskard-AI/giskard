@@ -63,12 +63,15 @@ one. Then you need to initialize the test and execute it, it will return a **Tes
 :::{tab-item} Performance tests
 
 ```python
-from giskard import Model, Dataset, test_f1
+from giskard import demo, Model, Dataset, testing
 
-wrapped_model = Model(...)
-wrapped_dataset = Dataset(...)
+model, df = demo.titanic()
 
-result = test_f1(dataset=wrapped_dataset, model=wrapped_model).execute()
+wrapped_model = Model(model=model, model_type="classification")
+wrapped_dataset = Dataset(df=df, target="Survived", cat_columns=['Pclass', 'Sex', "SibSp", "Parch", "Embarked"])
+
+result = testing.test_f1(dataset=wrapped_dataset, model=wrapped_model).execute()
+
 
 print(f"result: {result.passed} with metric {result.metric}")
 ```
@@ -78,19 +81,23 @@ print(f"result: {result.passed} with metric {result.metric}")
 :::{tab-item} Metamorphic tets
 
 ```python
-from giskard import Model, Dataset, test_metamorphic_invariance, transformation_function
+from giskard import demo, Model, Dataset, testing, transformation_function
 
-wrapped_model = Model(...)
-wrapped_dataset = Dataset(...)
+model, df = demo.titanic()
 
+wrapped_model = Model(model=model, model_type="classification")
+wrapped_dataset = Dataset(df=df, target="Survived", cat_columns=['Pclass', 'Sex', "SibSp", "Parch", "Embarked"])
 
 @transformation_function
 def add_three_years(row):
     row['Age'] = row['Age'] + 3
     return row
 
+result = testing.test_metamorphic_invariance(model=wrapped_model,
+                                             dataset=wrapped_dataset,
+                                             transformation_function=add_three_years
+                                             ).execute()
 
-result = test_metamorphic_invariance(wrapped_model, wrapped_dataset, add_three_years).execute()
 print(f"result: {result.passed} with metric {result.metric}")
 ```
 
@@ -102,12 +109,14 @@ to see how to create custom transformations
 :::{tab-item} Statistic tests
 
 ```python
-from giskard import Model, Dataset, test_right_label
+from giskard import demo, Model, Dataset, testing
 
-wrapped_model = Model(...)
-wrapped_dataset = Dataset(...)
+model, df = demo.titanic()
 
-result = test_right_label(wrapped_model, wrapped_dataset, 'SUCCESS').execute()
+wrapped_model = Model(model=model, model_type="classification")
+wrapped_dataset = Dataset(df=df, target="Survived", cat_columns=['Pclass', 'Sex', "SibSp", "Parch", "Embarked"])
+
+result = testing.test_right_label(wrapped_model, wrapped_dataset, 'yes').execute()
 print(f"result: {result.passed} with metric {result.metric}")
 ```
 
@@ -125,26 +134,27 @@ through the run method. This allows for flexible and customizable test execution
 Example using a two performance tests
 
 ```python
-from giskard import Model, Dataset, test_f1, test_accuracy, Suite
+from giskard import demo, Model, Dataset, testing, Suite
 
-# Define our Giskard Model
-wrapped_dataset = Dataset(...)
+model, df = demo.titanic()
+
+wrapped_dataset = Dataset(df=df, target="Survived", cat_columns=['Pclass', 'Sex', "SibSp", "Parch", "Embarked"])
 
 # Create a suite and add a F1 test and an accuracy test
 # Note that all the parameters are specified except dataset
 # Which means that we will need to specify dataset everytime we run the suite
-suite = Suite()
-.add_test(test_f1(dataset=wrapped_dataset))
-.add_test(test_accuracy(dataset=wrapped_dataset))
+suite = Suite() \
+    .add_test(testing.test_f1(dataset=wrapped_dataset)) \
+    .add_test(testing.test_accuracy(dataset=wrapped_dataset))
 
 # Create our first model
-my_first_model = Model(...)
+my_first_model = Model(model=model, model_type="classification")
 
 # Run the suite by specifying our model and display the results
 passed, results = suite.run(model=my_first_model)
 
 # Create an improved version of our model
-my_improved_model = Model(...)
+my_improved_model = Model(model=model, model_type="classification")
 
 # Run the suite with our new version and check if the results improved
 suite.run(model=my_improved_model)
@@ -174,7 +184,6 @@ a test class or a test function.
 
 ```python
 from giskard import test, Dataset, TestResult
-
 
 @test(name="Custom Test Example", tags=["quality", "custom"])
 def uniqueness_test_function(dataset: Dataset,
