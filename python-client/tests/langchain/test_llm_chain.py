@@ -3,8 +3,8 @@ from langchain.chains import LLMChain
 from langchain.llms.fake import FakeListLLM
 from langchain.prompts import PromptTemplate
 
+import tests.utils
 from giskard import Dataset, Model
-from giskard.core.model_validation import validate_model
 
 
 def test_llm_chain():
@@ -30,9 +30,4 @@ def test_llm_chain():
         cat_columns=[]
     )
 
-    validate_model(wrapped_model, wrapped_dataset)
-
-    results = wrapped_model.predict(wrapped_dataset)
-
-    assert list(results.raw) == responses[:2], f"{results.raw}"
-    assert list(results.raw_prediction) == responses[:2]
+    tests.utils.verify_model_upload(wrapped_model, wrapped_dataset)
