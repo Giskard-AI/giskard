@@ -73,7 +73,15 @@ class LossBasedDetector:
 
         column_types = dataset.column_types.copy()
         column_types[self.LOSS_COLUMN_NAME] = "numeric"
-        dataset_with_meta = Dataset(df_with_meta, target=dataset.target, column_types=column_types)
+        dataset_with_meta = Dataset(
+            df_with_meta,
+            target=dataset.target,
+            column_types=column_types,
+            validation=False,
+        )
+
+        # For performance
+        dataset_with_meta._load_metadata_from_instance(dataset.column_meta)
 
         # Columns by type
         cols_by_type = {
