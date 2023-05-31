@@ -136,6 +136,10 @@ class BaseModel(ABC):
     def is_regression(self):
         return self.meta.model_type == SupportedModelTypes.REGRESSION
 
+    @property
+    def is_generative(self):
+        return self.meta.model_type == SupportedModelTypes.GENERATIVE
+
     @classmethod
     def determine_model_class(cls, meta, local_dir):
         class_file = Path(local_dir) / MODEL_CLASS_PKL
@@ -260,7 +264,7 @@ class BaseModel(ABC):
                 self.prepare_dataframe(dataset.df, column_dtypes=dataset.column_dtypes, target=dataset.target)
             )
 
-        if self.is_regression:
+        if self.is_regression or self.is_generative:
             result = ModelPredictionResults(
                 prediction=raw_prediction, raw_prediction=raw_prediction, raw=raw_prediction
             )
