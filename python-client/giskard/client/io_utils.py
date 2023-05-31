@@ -30,9 +30,9 @@ def save_df(df: pd.DataFrame, format: str = "csv") -> bytes:
     if format == "csv":
         csv_buffer = BytesIO()
         if pandas_version >= 120:
-            df.to_csv(csv_buffer, index=False, na_rep="_GSK_NA_")
+            df.to_csv(csv_buffer, index=False, na_rep="_GSK_NA_", escapechar="\\")
         else:
-            csv_buffer.write(df.to_csv(index=False, na_rep="_GSK_NA_").encode("utf-8"))
+            csv_buffer.write(df.to_csv(index=False, na_rep="_GSK_NA_", escapechar="\\").encode("utf-8"))
             csv_buffer.seek(0)
         return csv_buffer.getvalue()
     else:

@@ -9,7 +9,7 @@ from giskard.scanner.result import ScanResult
     "dataset_name,model_name",
     [
         ("german_credit_data", "german_credit_model"),
-        ("enron_data", "enron_model"),
+        ("enron_data_full", "enron_model"),
         ("medical_transcript_data", "medical_transcript_model"),
         ("breast_cancer_data", "breast_cancer_model"),
         ("fraud_detection_data", "fraud_detection_model"),

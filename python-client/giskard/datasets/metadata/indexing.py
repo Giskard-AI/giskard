@@ -20,9 +20,9 @@ class MetadataIndexer:
     _metadata: dict
     _registry = MetadataProviderRegistry
 
-    def __init__(self, dataset):
+    def __init__(self, dataset, metadata=None):
         self._dataset = dataset
-        self._metadata = defaultdict(lambda: pd.DataFrame(index=dataset.df.index))
+        self._metadata = metadata or defaultdict(lambda: pd.DataFrame(index=dataset.df.index))
 
     def __getitem__(self, key: tuple):
         try:
@@ -55,7 +55,7 @@ class MetadataIndexer:
         col_index = pd.MultiIndex.from_product([[provider.name], metadata.columns])
         self._metadata[column].loc[:, col_index] = metadata.values
 
-        return self._metadata[column].loc[:, provider_name]
+        return self._metadata[column].loc[self._dataset.df.index, provider_name]
 
     def available_providers(self) -> Sequence[str]:
         """Returns a list of available metadata providers names."""
@@ -73,10 +73,20 @@ class MetadataIndexer:
         except KeyError:
             return False
 
+    def load_meta(self, indexer: "MetadataIndexer"):
+        self._metadata = defaultdict(lambda: pd.DataFrame(index=self._dataset.df.index))
+        for provider, meta in indexer._metadata.items():
+            self._metadata[provider] = meta.loc[self._dataset.df.index].copy()
+
 
 class ColumnMetadataMixin:
     """Decorates a :class:`Dataset` with a `column_meta` property providing a :class:`MetadataIndexer`."""
 
     @property
     def column_meta(self) -> MetadataIndexer:
-        return MetadataIndexer(self)
+        if not hasattr(self, "_column_meta_indexer"):
+            self._column_meta_indexer = MetadataIndexer(self)
+        return self._column_meta_indexer
+
+    def _load_metadata_from_instance(self, indexer: MetadataIndexer):
+        self.column_meta.load_meta(indexer)
