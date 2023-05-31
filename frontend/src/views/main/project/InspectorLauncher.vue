@@ -29,16 +29,20 @@
 
 <script setup lang="ts">
 import { DatasetDTO, ModelDTO } from "@/generated-sources";
-import { onMounted, ref } from "vue";
+import { onMounted, ref, computed } from "vue";
 import { api } from "@/api";
+import { TYPE } from "vue-toastification";
 import mixpanel from "mixpanel-browser";
 import { useRouter } from "vue-router/composables";
 import OverlayLoader from "@/components/OverlayLoader.vue";
+import { useMainStore } from "@/stores/main";
+import { useProjectStore } from '@/stores/project';
 import { useDebuggingSessionsStore } from "@/stores/debugging-sessions";
 
 const router = useRouter();
 
 const debuggingSessionsStore = useDebuggingSessionsStore();
+const projectStore = useProjectStore();
 
 interface Props {
   projectId: number,
@@ -55,8 +59,13 @@ const datasetSelected = ref<DatasetDTO | null>(null);
 const datasetFeatures = ref<string[]>([]);
 const creatingInspection = ref<boolean>(false);
 
-onMounted(() => {
-  loadDatasets();
+const project = computed(() => {
+  return projectStore.project(props.projectId)
+});
+
+onMounted(async () => {
+  await projectStore.getProject({ id: props.projectId });
+  await loadDatasets();
 })
 
 function reset() {
@@ -79,6 +88,25 @@ async function launchInspector() {
   mixpanel.track('Create inspection', { datasetId: datasetSelected.value!.id, modelId: props.model.id });
   try {
     creatingInspection.value = true;
+
+    const mlWorkers = await api.getMLWorkerSettings();
+    const isWorkerAvailable = mlWorkers.find(
+      value => {
+        if (project.value?.mlWorkerType === 'EXTERNAL') {
+          return value.isRemote === true;
+        } else {
+          return value.isRemote === false;
+        }
+      }
+    )
+
+    if (!isWorkerAvailable) {
+      useMainStore().addNotification({
+        content: 'ML Worker is not connected. Please start the ML Worker first and try again.',
+        color: TYPE.ERROR,
+      });
+      return;
+    }
     const inspection = await api.prepareInspection({ datasetId: datasetSelected.value!.id, modelId: props.model.id, name: "" });
     debuggingSessionsStore.setCurrentDebuggingSessionId(inspection.id);
     await router.push({
