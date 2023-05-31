@@ -1,6 +1,8 @@
 from dataclasses import dataclass
 from functools import lru_cache
 
+from ..common.examples import ExampleExtractor
+
 from .metrics import PerformanceMetric
 from ..issues import Issue
 from ...datasets.base import Dataset
@@ -63,7 +65,8 @@ class PerformanceIssue(Issue):
     def description(self):
         return f"{self.info.slice_size} samples ({self.info.slice_size / len(self.dataset) * 100:.2f}%)"
 
-    def _features(self):
+    @property
+    def features(self):
         if isinstance(self.info.slice_fn, QueryBasedSliceFunction):
             return self.info.slice_fn.query.columns()
         if isinstance(self.info.slice_fn, MetadataSliceFunction):
@@ -72,45 +75,14 @@ class PerformanceIssue(Issue):
 
     @lru_cache
     def examples(self, n=3):
-        ex_dataset = self.dataset.slice(self.info.slice_fn)
-        model_pred = self.model.predict(ex_dataset)
-        predictions = model_pred.prediction
-        bad_pred_mask = ex_dataset.df[self.dataset.target] != predictions
-        examples = ex_dataset.df[bad_pred_mask].copy()
+        def filter_examples(issue, dataset):
+            pred = issue.model.predict(dataset)
+            bad_pred_mask = dataset.df[dataset.target] != pred.prediction
 
-        # Keep only interesting columns
-        features = self._features()
-        cols_to_show = features + [self.dataset.target]
-        examples = examples.loc[:, cols_to_show]
+            return dataset.slice(lambda df: df.loc[bad_pred_mask], row_level=False)
 
-        # If metadata slice, add the metadata column
-        if isinstance(self.info.slice_fn, MetadataSliceFunction):
-            for col in features:
-                meta_cols = self.info.slice_fn.query.columns()
-                provider = self.info.slice_fn.provider
-                for meta_col in meta_cols:
-                    meta_vals = self.dataset.column_meta[col, provider].loc[examples.index, meta_col]
-                    examples.insert(
-                        loc=examples.columns.get_loc(col) + 1,
-                        column=f"{meta_col}({col})",
-                        value=meta_vals,
-                        allow_duplicates=True,
-                    )
-
-        # Add the model prediction
-        if model_pred.probabilities is not None:
-            pred_with_p = zip(predictions[bad_pred_mask], model_pred.probabilities[bad_pred_mask])
-            pred_examples = [f"{label} (p = {p:.2f})" for label, p in pred_with_p]
-        else:
-            pred_examples = predictions[bad_pred_mask]
-
-        examples[f"Predicted `{self.dataset.target}`"] = pred_examples
-
-        n = min(len(examples), n)
-        if n > 0:
-            return examples.sample(n, random_state=142)
-
-        return examples
+        extractor = ExampleExtractor(self, filter_examples)
+        return extractor.get_examples_dataframe(n, with_prediction=1)
 
     @property
     def importance(self):
@@ -118,6 +90,10 @@ class PerformanceIssue(Issue):
             return -self.info.metric_rel_delta
 
         return self.info.metric_rel_delta
+
+    @property
+    def slicing_fn(self):
+        return self.info.slice_fn
 
     def generate_tests(self, with_names=False) -> list:
         test_fn = _metric_to_test_object(self.info.metric)
