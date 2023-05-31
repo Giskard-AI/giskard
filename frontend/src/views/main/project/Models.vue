@@ -13,7 +13,8 @@
         </v-btn>
       </div>
     </div>
-    <v-container v-if="projectArtifactsStore.models.length > 0" fluid class="vc">
+    <LoadingFullscreen v-if="isLoading" name="models" />
+    <v-container v-if="projectArtifactsStore.models.length > 0 && !isLoading" fluid class="vc">
       <v-card flat>
         <v-row class="px-2 py-1 caption secondary--text text--lighten-3">
           <v-col cols="3" class="col-container">Name</v-col>
@@ -69,7 +70,7 @@
       </v-dialog>
 
     </v-container>
-    <v-container v-if="projectArtifactsStore.models.length === 0 && apiAccessToken && apiAccessToken.id_token">
+    <v-container v-if="projectArtifactsStore.models.length === 0 && apiAccessToken && apiAccessToken.id_token && !isLoading">
       <p class="font-weight-medium secondary--text">There are no models in this project yet. Follow the code snippet below to upload a model 👇</p>
       <CodeSnippet :code-content="codeContent" :language="'python'"></CodeSnippet>
       <p class="mt-4 font-weight-medium secondary--text">Check out the <a href="https://docs.giskard.ai/start/~/changes/QkDrbY9gX75RDMmAWKjX/guides/upload-your-model#2.-create-a-giskard-model" target="_blank">full documentation</a> for more information.</p>
@@ -85,7 +86,7 @@ import { $vfm } from 'vue-final-modal';
 import InspectorLauncher from './InspectorLauncher.vue';
 import { JWTToken, ModelDTO } from '@/generated-sources';
 import mixpanel from "mixpanel-browser";
-import { onBeforeMount, onMounted, ref, computed } from 'vue';
+import { computed, onBeforeMount, onMounted, ref } from 'vue';
 import DeleteModal from '@/views/main/project/modals/DeleteModal.vue';
 import InlineEditText from '@/components/InlineEditText.vue';
 import { useUserStore } from "@/stores/user";
@@ -94,6 +95,7 @@ import { useMainStore } from "@/stores/main";
 import { useProjectArtifactsStore } from "@/stores/project-artifacts";
 import CodeSnippet from '@/components/CodeSnippet.vue';
 import UploadArtifactModal from "./modals/UploadArtifactModal.vue";
+import LoadingFullscreen from "@/components/LoadingFullscreen.vue";
 
 const userStore = useUserStore();
 const projectStore = useProjectStore();
@@ -105,6 +107,7 @@ interface Props {
 
 const props = defineProps<Props>();
 
+const isLoading = ref<boolean>(false);
 const showInspectDialog = ref<boolean>(false);
 const modelToInspect = ref<ModelDTO | null>(null);
 const apiAccessToken = ref<JWTToken | null>(null);
@@ -124,11 +127,11 @@ client = GiskardClient(
     token=token
 )
 
-# Wrap your model with Giskard model 🎁
-giskard_model = Model(original_model, model_type="classification", name="Titanic model")
+        # Wrap your model with Giskard model 🎁
+        giskard_model = Model(original_model, model_type="classification", name="Titanic model")
 
-# Upload to the current project ✉️
-giskard_model.upload(client, "${project.value!.key}")`
+        # Upload to the current project ✉️
+        giskard_model.upload(client, "${project.value!.key}")`
 )
 
 const project = computed(() => {
@@ -181,7 +184,9 @@ async function renameModel(id: string, name: string) {
 }
 
 async function reloadModels() {
-  await projectArtifactsStore.loadModelsWithNotification();
+  isLoading.value = true;
+  await projectArtifactsStore.loadModels();
+  isLoading.value = false;
 }
 
 const generateApiAccessToken = async () => {
