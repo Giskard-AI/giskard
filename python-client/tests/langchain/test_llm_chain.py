@@ -1,0 +1,38 @@
+import pandas as pd
+from langchain.chains import LLMChain
+from langchain.llms.fake import FakeListLLM
+from langchain.prompts import PromptTemplate
+
+from giskard import Dataset, Model
+from giskard.core.model_validation import validate_model
+
+
+def test_llm_chain():
+    responses = [
+        "\n\nHueFoots.",
+        "\n\nEcoDrive Motors.",
+        "\n\nRainbow Socks.",
+        "\n\nNoOil Motors.",
+    ]
+    llm = FakeListLLM(responses=responses)
+    prompt = PromptTemplate(
+        input_variables=["product"],
+        template="What is a good name for a company that makes {product}?",
+    )
+    chain = LLMChain(llm=llm, prompt=prompt)
+
+    wrapped_model = Model(chain, model_type='generative')
+
+    df = pd.DataFrame(["colorful socks", "electric car"], columns=['product'])
+
+    wrapped_dataset = Dataset(
+        df,
+        cat_columns=[]
+    )
+
+    validate_model(wrapped_model, wrapped_dataset)
+
+    results = wrapped_model.predict(wrapped_dataset)
+
+    assert list(results.raw) == responses[:2], f"{results.raw}"
+    assert list(results.raw_prediction) == responses[:2]
