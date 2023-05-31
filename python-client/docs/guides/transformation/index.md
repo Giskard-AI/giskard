@@ -83,3 +83,6 @@ positive_sentiment_with_typo = wrapped_dataset.slice(positive_sentiment_analysis
 
 positive_sentiment_with_typo.df.head()
 ```
+{% hint style="success" %}
+To upload your transformation function to the Giskard server, go to [Upload objects](docs/guide/upload/index.md) to the Giskard server.
+{% endhint %}
