@@ -19,6 +19,7 @@ class CalibrationIssueInfo:
     metric_value_slice: float
     metric_value_reference: float
     loss_values: pd.Series
+    fail_idx: pd.DataFrame
     threshold: float
 
     @property
@@ -106,7 +107,7 @@ class CalibrationIssue(Issue):
             )
 
             pred_examples = []
-            for n, ps in enumerate(model_pred.raw[bad_pred_mask]):
+            for ps in model_pred.raw[bad_pred_mask]:
                 label_idx = np.argsort(-ps)[:num_labels_to_print]
                 pred_examples.append(
                     "\n".join([f"{self.model.meta.classification_labels[i]} (p = {ps[i]:.2f})" for i in label_idx])

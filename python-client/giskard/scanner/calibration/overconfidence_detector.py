@@ -8,12 +8,14 @@ from ...datasets import Dataset
 from ..decorators import detector
 from ..common.loss_based_detector import LossBasedDetector
 from .issues import CalibrationIssue, CalibrationIssueInfo, OverconfidenceIssue
+from ..logger import logger
 
 
 @detector(name="overconfidence", tags=["overconfidence", "classification"])
 class OverconfidenceDetector(LossBasedDetector):
-    def __init__(self, threshold=0.10, method="tree"):
+    def __init__(self, threshold=0.10, p_threshold=None, method="tree"):
         self.threshold = threshold
+        self.p_threshold = p_threshold
         self.method = method
 
     @property
@@ -53,14 +55,18 @@ class OverconfidenceDetector(LossBasedDetector):
             target=dataset.target,
             column_types=dataset.column_types,
         )
-        mean_loss = dataset_with_meta.df[self.LOSS_COLUMN_NAME].mean()
+        p_threshold = self.p_threshold or _default_overconfidence_threshold(model)
+        logger.debug(f"{self.__class__.__name__}: Using overconfidence threshold = {p_threshold}")
+
+        reference_rate = np.nanmean(dataset_with_meta.df[self.LOSS_COLUMN_NAME] > p_threshold)
 
         issues = []
         for slice_fn in slices:
             sliced_dataset = dataset_with_meta.slice(slice_fn)
 
-            slice_loss = sliced_dataset.df[self.LOSS_COLUMN_NAME].mean()
-            relative_delta = (slice_loss - mean_loss) / mean_loss
+            slice_rate = np.nanmean(sliced_dataset.df[self.LOSS_COLUMN_NAME] > p_threshold)
+            fail_idx = sliced_dataset.df[(sliced_dataset.df[self.LOSS_COLUMN_NAME] > p_threshold)].index
+            relative_delta = (slice_rate - reference_rate) / reference_rate
 
             if relative_delta > self.threshold:
                 level = "major" if relative_delta > 2 * self.threshold else "medium"
@@ -72,12 +78,18 @@ class OverconfidenceDetector(LossBasedDetector):
                         CalibrationIssueInfo(
                             slice_fn=slice_fn,
                             slice_size=len(sliced_dataset),
-                            metric_value_slice=slice_loss,
-                            metric_value_reference=mean_loss,
+                            metric_value_slice=slice_rate,
+                            metric_value_reference=reference_rate,
                             loss_values=meta[self.LOSS_COLUMN_NAME],
+                            fail_idx=fail_idx,
                             threshold=self.threshold,
                         ),
                     )
                 )
 
         return issues
+
+
+def _default_overconfidence_threshold(model: BaseModel) -> float:
+    n = len(model.meta.classification_labels)
+    return 1 / (3e-1 * (n - 2) + 2 - 1e-3 * (n - 2) ** 2)
