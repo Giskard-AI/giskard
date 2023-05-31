@@ -108,8 +108,6 @@ function deleteDebuggingSession(debuggingSession: InspectionDTO) {
 
 async function openDebuggingSession(debuggingSessionId: number, projectId: number) {
   debuggingSessionsStore.setCurrentDebuggingSessionId(debuggingSessionId);
-  // activeDebuggingSessionId.value = debuggingSessionId;
-  // openInspectionWrapper.value = true;
   await openInspection(projectId.toString(), debuggingSessionId.toString());
 }
 
@@ -171,29 +169,30 @@ onActivated(async () => {
 
       <v-expansion-panels v-if="debuggingSessionsStore.currentDebuggingSessionId === null">
         <v-row class="mr-12 ml-6 caption secondary--text text--lighten-3 pb-2">
-          <v-col cols="3">Session name</v-col>
-          <v-col cols="1">Session ID</v-col>
-          <v-col cols="2">Created at</v-col>
-          <v-col cols="1">Dataset name</v-col>
-          <v-col cols="1">Dataset ID</v-col>
-          <v-col cols="2">Model name</v-col>
-          <v-col cols="1">Model ID</v-col>
+          <v-col cols="3" class="col-container" title="Session name">Session name</v-col>
+          <v-col cols="1" class="col-container" title="Session ID">Session ID</v-col>
+          <v-col cols="2" class="col-container" title="Created at">Created at</v-col>
+          <v-col cols="1" class="col-container" title="Dataset name">Dataset name</v-col>
+          <v-col cols="1" class="col-container" title="Dataset ID">Dataset ID</v-col>
+          <v-col cols="2" class="col-container" title="Model name">Model name</v-col>
+          <v-col cols="1" class="col-container" title="Model ID">Model ID</v-col>
           <v-col cols="1"></v-col>
         </v-row>
 
         <v-expansion-panel v-for="session in filteredSessions" :key="session.id" @click.stop="openDebuggingSession(session.id, projectId)" class="expansion-panel">
           <v-expansion-panel-header :disableIconRotate="true" class="grey lighten-5" tile>
             <v-row class="px-2 py-1 align-center">
-              <v-col cols="3">
+              <v-col cols="3" class="font-weight-bold" :title="session.name">
                 <InlineEditText :text="session.name" @save="(name) => renameSession(session.id, name)">
                 </InlineEditText>
               </v-col>
-              <v-col cols="1">{{ session.id }}</v-col>
-              <v-col cols="2">{{ session.createdDate | date }}</v-col>
-              <v-col cols="1">{{ session.dataset.name }}</v-col>
-              <v-col cols="1" class="id-container" :title="session.dataset.id">{{ session.dataset.id }}</v-col>
-              <v-col cols="2">{{ session.model.name }}</v-col>
-              <v-col cols="1" class="id-container" :title="session.dataset.id">{{ session.model.id }}</v-col>
+              <v-col cols="1" class="col-container" :title="session.id">{{ session.id }}</v-col>
+              <v-col cols="2" class="col-container" :title="session.createdDate | date">{{ session.createdDate | date }}</v-col>
+              <v-col cols="1" class="col-container" :title="session.dataset.name ? session.dataset.name : 'Unnamed dataset'">{{ session.dataset.name ? session.dataset.name : 'Unnamed dataset' }}</v-col>
+
+              <v-col cols="1" class="col-container" :title="session.dataset.id">{{ session.dataset.id }}</v-col>
+              <v-col cols="2" class="col-container" :title="session.model.name">{{ session.model.name }}</v-col>
+              <v-col cols="1" class="col-container" :title="session.dataset.id">{{ session.model.id }}</v-col>
               <v-col cols="1">
                 <v-card-actions>
                   <v-btn icon @click.stop="deleteDebuggingSession(session)" @click.stop.prevent>
@@ -232,11 +231,10 @@ onActivated(async () => {
   margin-top: 2rem;
 }
 
-.id-container {
+.col-container {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  padding: 0.5rem;
 }
 
 .expansion-panel {
