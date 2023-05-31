@@ -14,7 +14,6 @@ import {
   DatasetProcessingResultDTO,
   ExplainResponseDTO,
   ExplainTextResponseDTO,
-  FeatureMetadataDTO,
   FeedbackDTO,
   FeedbackMinimalDTO,
   FunctionInputDTO,
@@ -327,11 +326,16 @@ export const api = {
   async peekDataFile(datasetId: string) {
     return this.getDatasetRows(datasetId, 0, 10);
   },
-  async getDatasetRows(datasetId: string, offset: number, size: number, filtered: RowFilterDTO = {}) {
-    return apiV2.post<unknown, DatasetPageDTO>(`/dataset/${datasetId}/rows`, filtered, { params: { offset, size } });
-  },
-  async getFeaturesMetadata(datasetId: string) {
-    return apiV2.get<unknown, FeatureMetadataDTO[]>(`/dataset/${datasetId}/features`);
+  async getDatasetRows(datasetId: string, offset: number, size: number,
+                       filtered: RowFilterDTO = {}, sample: boolean = true, shuffle: boolean = false) {
+    return apiV2.post<unknown, DatasetPageDTO>(`/dataset/${datasetId}/rows`, filtered, {
+      params: {
+        offset,
+        size,
+        sample,
+        shuffle
+      }
+    });
   },
   async editDatasetName(datasetId: string, name: string) {
     return apiV2.patch<unknown, DatasetDTO>(`/dataset/${datasetId}/name/${encodeURIComponent(name)}`, null);
@@ -368,6 +372,9 @@ export const api = {
   },
   async executeTestSuite(projectId: number, suiteId: number, inputs: Array<FunctionInputDTO>) {
     return apiV2.post<unknown, any>(`testing/project/${projectId}/suite/${suiteId}/schedule-execution`, inputs);
+  },
+  async tryTestSuite(projectId: number, suiteId: number, inputs: Array<FunctionInputDTO>) {
+    return apiV2.post<unknown, any>(`testing/project/${projectId}/suite/${suiteId}/try`, inputs);
   },
   async updateTestInputs(projectId: number, suiteId: number, testId: number, inputs: FunctionInputDTO[]) {
     return apiV2.put<unknown, TestSuiteExecutionDTO[]>(
