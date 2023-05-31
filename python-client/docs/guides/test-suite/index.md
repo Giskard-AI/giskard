@@ -1,8 +1,8 @@
-# Test your ML model
+# 🧪 Test your ML model
 
 :::{warning}
 First you'll need to create a Model and a dataset (And scan your model),
-see [🔬 Scan your ML model](../scan/index.md)
+see [🔬 Scan your ML model](../scan/index.rst)
 :::
 
 ## 1. Install the Giskard library
@@ -27,11 +27,10 @@ pip install "giskard[scan] @ git+https://github.com/Giskard-AI/giskard.git@task/
 :::
 ::::
 
-
 ## 2. Execute a Giskard test
 
 :::{hint}
-You can see all our tests in the [📖 Test Catalog](docs/catalogs/test-catalog/index.rst)
+You can see all our tests in the [📖 Test Catalog](../../catalogs/test-catalog/index.rst)
 :::
 
 ::::{tab-set}
@@ -93,7 +92,7 @@ result = test_metamorphic_invariance(wrapped_model, wrapped_dataset, add_three_y
 print(f"result: {result.passed} with metric {result.metric}")
 ```
 
-See [🔪 Create slices and transformations function / Transformation](docs/guides/slicing-and-transformation-functions/index.md#transformation)
+See [🔪 Create slices and transformations function / Transformation](../../guides/slice/index.md)
 to see how to create custom transformations
 
 :::
@@ -166,45 +165,7 @@ a test class or a test function.
 :::
 ::::
 
-## 4. Save a test suite
-
-::::{tab-set}
-:::{tab-item} Test suite saving
-
-```python
-from giskard import test_f1, test_accuracy, Suite, GiskardClient
-
-url = "http://localhost:19000"  # If Giskard is installed locally (for installation, see: https://docs.giskard.ai/start/guides/installation)
-# url = "http://app.giskard.ai" # If you want to upload on giskard URL
-token = "API_TOKEN"  # you can generate your API token in the Admin tab of the Giskard application (for installation, see: https://docs.giskard.ai/start/guides/installation)
-project_name = "enron"
-
-# Create a giskard client to communicate with Giskard
-client = GiskardClient(url, token)
-
-# Create a project
-client.create_project(project_name, "Project name", "Small description of the project")
-
-suite = Suite()
-.add_test(test_f1(dataset=wrapped_dataset))
-.add_test(test_accuracy(dataset=wrapped_dataset))
-.upload(client, project_name)
-```
-
-#### Description
-
-In this example we create a Suite with two tests, `test_f1` and `test_accuracy`. We specified all the parameters expect
-the dataset to "expose" it as a run input. We then save it to the 'enron' project created previously
-
-```{eval-rst}
-.. autoclass:: giskard.Suite
-   :members:
-```
-
-:::
-::::
-
-## 5. Create a custom test
+## 4. Create a custom test
 
 ::::{tab-set}
 :::{tab-item} Using function
@@ -234,8 +195,8 @@ class-based method.
 
 * <mark style="color:red;">**`parameters`**</mark> : **Your parameters need to have a type defined.** Here is the type
   allowed as your test parameters:
-    * `Dataset` A giskard dataset, [wrap your dataset](../scan/index.md#wrap-your-dataset)
-    * `BaseModel` A giskard model, [wrap your model](../scan/index.md#wrap-your-model)
+    * `Dataset` A giskard dataset, [wrap your dataset](../wrap_dataset/index.md)
+    * `BaseModel` A giskard model, [wrap your model](../wrap_model/index.md)
     * `int/float/bool/str`  Any primitive type can be used
 * <mark style="color:red;">**`return`**</mark> The result of your test must be either a bool or a TestResult:
     * `bool` Either `True` if the test passed or `False` if it failed
@@ -288,8 +249,8 @@ In order to define a custom test class, you need to extends `GiskardTest` and im
   required parameters of your test. **It is also required to call the parent initialization method**
   calling `super().__init__()`. **Your parameters need to have a type and default value specified.** You can should use
   **None** as a default value if you require a parameter to be specified. Here is the type allowed in the init method:
-    * `Dataset` A giskard dataset, [wrap your dataset](../scan/index.md#3-wrap-your-dataset)
-    * `BaseModel` A giskard model, [wrap your model](../scan/index.md#2-wrap-your-model)
+    * `Dataset` A giskard dataset, [wrap your dataset](../wrap_dataset/index.md)
+    * `BaseModel` A giskard model, [wrap your model](../wrap_model/index.md)
     * `int/float/bool/str`  Any primitive type can be used
 * <mark style="color:red;">**`execute`**</mark> The execute method will be called to perform the test, you will be able
   to access all the parameters set by the initialization method. Your method can return two type of results:
@@ -300,3 +261,7 @@ In order to define a custom test class, you need to extends `GiskardTest` and im
 
 :::
 ::::
+
+{% hint style="success" %}
+To upload your test suite to the Giskard server, go to [Upload objects](../../guides/upload/index.md) to the Giskard server.
+{% endhint %}

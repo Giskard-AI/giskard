@@ -52,13 +52,36 @@ myst_enable_extensions = [
 # HTML output
 # -----------------------------------------------------------------------------
 
-html_title = "Giskard v2.0 Documentation"
+html_title = "Giskard Documentation"
 
 html_theme = 'furo'
-# html_static_path = ['_static']
+html_static_path = ['_static']
+
+html_css_files = ['css/custom.css']
+html_js_files = ["js/githubStargazers.js"]
 
 html_theme_options = {
-    "light_css_variables": {},
+    "light_logo": "logo_black.png",
+    "dark_logo": "logo_white.png",
+    "light_css_variables": {
+        "color-brand-content": "#173A2F",
+        "color-api-highlight": "#56D793",
+        "color-api-background": "#F5F5F5",
+        "color-sidebar-current-text": "#56D793",
+        "color-sidebar-link-text--top-level": "#0c0c0c",
+        "color-content-foreground": "#484848",
+        "social-button-background": "#FFFFFF",
+        "social-button-text": "#91F6C0",
+    },
+    "dark_css_variables": {
+        "color-brand-primary": "#56D793",
+        "color-brand-content": "#91F6C0",
+        "color-sidebar-current-text": "#56D793",
+        "color-sidebar-link-text--top-level": "#FcFcFc",
+        "color-content-foreground": "#FFFFFF",
+        "social-button-background": "#000000",
+        "social-button-text": "#000000",
+    },
     "sidebar_hide_name": False,
     "navigation_with_keys": True,
     "top_of_page_button": "edit",
@@ -67,8 +90,6 @@ html_theme_options = {
     "source_directory": "python-client/docs/",
     "source_edit_link": "https://github.com/Giskard-AI/giskard/edit/feature/sphinx-documentation/python-client/docs/{filename}",
 }
-
-html_logo = "imgs/giskard_logo.png"
 
 add_function_parentheses = False
 
