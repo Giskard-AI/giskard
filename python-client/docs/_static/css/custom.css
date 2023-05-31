@@ -180,7 +180,7 @@
 .github-stars {
     display: inline-flex;
     align-items: center;
-
+    color: var(--social-button-background);
 }
 
 .github-stars > a {
@@ -191,32 +191,34 @@
 }
 
 .github-stars .--left {
-    background: #56D793;
+    background: var(--color-brand-content);
     border-top-left-radius: 5px;
     border-bottom-left-radius: 5px;
-    color: #ffffff;
+    color: var(--social-button-background);
     display: flex;
     align-items: center;
     gap: 6px;
-    border: 1px solid #56D793;
+    border: 1px solid;
+    border-color: var(--color-brand-content);
 }
 
 .github-stars .--left:hover {
-    background: #91f7c0;
-    border-color: #56D793;
+    background: var(--color-brand-content);
+    border-color: var(--color-brand-content);
 }
 
 .github-stars .--right:hover {
-    color: #56D793;
-    border-color: #56D793;
+    color: var(--color-brand-content);
+    border-color: var(--color-brand-content);
 }
 
 .github-stars .--right {
-    background: white;
+    background: var(--social-button-background);
     border-top-right-radius: 5px;
     border-bottom-right-radius: 5px;
-    color: #56D793;
-    border: 1px solid #56D793;
+    color: var(--color-brand-content);
+    border: 1px solid;
+    border-color: var(--color-brand-content);
     display: flex;
     align-items: center;
 }

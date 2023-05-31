@@ -52,7 +52,7 @@ myst_enable_extensions = [
 # HTML output
 # -----------------------------------------------------------------------------
 
-html_title = "Giskard v2.0 Documentation"
+html_title = "Giskard Documentation"
 
 html_theme = 'furo'
 html_static_path = ['_static']
@@ -62,14 +62,19 @@ html_js_files = ["js/githubStargazers.js"]
 
 html_theme_options = {
     "light_css_variables": {
-        "color-brand-primary": "#56D793",
-        "color-brand-content": "#56D793",
+        "color-brand-content": "#173A2F",
         "color-api-highlight": "#56D793",
         "color-api-background": "#F5F5F5",
+        "color-sidebar-current-text": "#56D793",
+        "color-sidebar-link-text--top-level": "#0c0c0c",
+        "social-button-background": "#FFFFFF"
     },
     "dark_css_variables": {
         "color-brand-primary": "#56D793",
-        "color-brand-content": "#56D793",
+        "color-brand-content": "#91F6C0",
+        "color-sidebar-current-text": "#56D793",
+        "color-sidebar-link-text--top-level": "#FcFcFc",
+        "social-button-background": "#000000"
     },
     "sidebar_hide_name": False,
     "navigation_with_keys": True,
