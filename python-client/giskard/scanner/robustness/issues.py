@@ -79,10 +79,10 @@ class RobustnessIssue(Issue):
     def importance(self) -> float:
         return self.info.fail_ratio
 
-    def generate_tests(self) -> list:
+    def generate_tests(self, with_names=False) -> list:
         from ...testing.tests.metamorphic import test_metamorphic_invariance
 
-        return [
+        tests = [
             test_metamorphic_invariance(
                 self.model,
                 self.dataset,
@@ -91,3 +91,9 @@ class RobustnessIssue(Issue):
                 output_sensitivity=self.info.output_sensitivity,
             )
         ]
+
+        if with_names:
+            names = [f"Invariance to “{self.info.transformation_fn.name}”"]
+            return list(zip(tests, names))
+
+        return tests
