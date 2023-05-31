@@ -6,6 +6,7 @@ from typing import Dict, List, Any, Iterable, Optional
 import numpy as np
 import pandas as pd
 
+from giskard.core.core import SupportedModelTypes
 from giskard.settings import settings
 
 NaN = float('NaN')
@@ -27,18 +28,18 @@ class ModelCache:
 
     vectorized_get_cache_or_na = None
 
-    def __init__(self, id: Optional[str] = None):
+    def __init__(self, model_type: SupportedModelTypes, id: Optional[str] = None):
         self.id = id
+        self.prediction_cache = dict()
 
         if id is not None:
             local_dir = Path(settings.home_dir / settings.cache_dir / "global/prediction_cache" / id)
             if local_dir.exists():
                 with open(local_dir / CACHE_CSV_FILENAME, "r") as pred_f:
                     reader = csv.reader(pred_f)
-                    self.prediction_cache = dict(reader)
-
-        if self.prediction_cache is None:
-            self.prediction_cache = {}
+                    for row in reader:
+                        self.prediction_cache[row[0]] = [i if model_type == SupportedModelTypes.GENERATIVE else float(i)
+                                                         for i in row[1:]]
 
         self.vectorized_get_cache_or_na = np.vectorize(self.get_cache_or_na, otypes=[object])
 
@@ -61,7 +62,7 @@ class ModelCache:
             with open(local_dir / CACHE_CSV_FILENAME, "a") as pred_f:
                 writer = csv.writer(pred_f)
                 for i in range(len(keys)):
-                    writer.writerow([keys.iloc[i], values[i]])
+                    writer.writerow(flatten([keys.iloc[i], values[i]]))
 
     def _to_df(self):
         index = [key for key, values in self.prediction_cache.items()]
