@@ -4,9 +4,9 @@ Run the Giskard Server
 .. toctree::
    :maxdepth: 1
 
-   intall_aws/index
-   intall_gcp/index
-   intall_azure/index
+   install_aws/index
+   install_gcp/index
+   install_azure/index
 
 
 .. hint:: success
