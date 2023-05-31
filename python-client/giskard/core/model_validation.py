@@ -41,6 +41,8 @@ def validate_model(model: BaseModel, validate_ds: Optional[Dataset] = None):
 
         if model.is_regression:
             validate_model_execution(model, validate_ds)
+        elif model.is_generative:
+            validate_model_execution(model, validate_ds, False)
         elif model.is_classification and validate_ds.target is not None:
             target_values = validate_ds.df[validate_ds.target].unique()
             validate_label_with_target(model.meta.name, model.meta.classification_labels, target_values,
@@ -56,7 +58,7 @@ def validate_model(model: BaseModel, validate_ds: Optional[Dataset] = None):
 
 
 @configured_validate_arguments
-def validate_model_execution(model: BaseModel, dataset: Dataset) -> None:
+def validate_model_execution(model: BaseModel, dataset: Dataset, deterministic: bool = True) -> None:
     # testing multiple entries
     validation_size = min(len(dataset), 10)
     validation_ds = dataset.slice(SlicingFunction(lambda x: x.sample(validation_size), row_level=False))
@@ -77,7 +79,8 @@ def validate_model_execution(model: BaseModel, dataset: Dataset) -> None:
             error_message + " Hint: Make sure that you are not fitting any preprocessor inside your model or prediction"
                             " function.") from e
 
-    validate_deterministic_model(model, validation_ds, prediction)
+    if deterministic:
+        validate_deterministic_model(model, validation_ds, prediction)
     validate_prediction_output(validation_ds, model.meta.model_type, prediction.raw)
     if model.is_classification:
         validate_classification_prediction(model.meta.classification_labels, prediction.raw)
@@ -174,7 +177,8 @@ def validate_classification_labels(classification_labels: Union[np.ndarray, List
                 f"Please specify valid list of strings."
             )
 
-    if model_type == SupportedModelTypes.REGRESSION and classification_labels is not None:
+    if (model_type == SupportedModelTypes.REGRESSION or model_type == SupportedModelTypes.GENERATIVE) \
+            and classification_labels is not None:
         warning("'classification_labels' parameter is ignored for regression model")
 
 
@@ -236,6 +240,9 @@ def validate_prediction_output(ds: Dataset, model_type: ModelType, prediction):
         if model_type == SupportedModelTypes.REGRESSION:
             if not any(isinstance(x, (np.floating, float)) for x in prediction):
                 raise ValueError("Model prediction should return float values ")
+        if model_type == SupportedModelTypes.GENERATIVE:
+            if not any(isinstance(x, str) for x in prediction):
+                raise ValueError("Model prediction should return string values ")
     else:
         raise ValueError("Model should return numpy array or a list")
 
