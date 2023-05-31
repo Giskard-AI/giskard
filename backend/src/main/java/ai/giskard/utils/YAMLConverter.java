@@ -1,5 +1,6 @@
 package ai.giskard.utils;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 
@@ -9,6 +10,9 @@ import java.nio.file.Path;
 import java.util.Set;
 
 public class YAMLConverter {
+
+    private static ObjectMapper MAPPER = new ObjectMapper(new YAMLFactory());
+
     private YAMLConverter() {
         throw new IllegalStateException("YAMLConverter is a Utility class. Not meant to be instantiated");
     }
@@ -17,15 +21,19 @@ public class YAMLConverter {
         if (!Files.exists(p)) {
             Files.createFile(p);
         }
-        ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
-        mapper.writeValue(p.toFile(), a);
+
+        MAPPER.writeValue(p.toFile(), a);
     }
 
     public static void exportEntitiesToYAML(Set<?> entities, Path p) throws IOException {
         if (!Files.exists(p)) {
             Files.createFile(p);
         }
-        ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
-        mapper.writeValue(p.toFile(), entities);
+
+        MAPPER.writeValue(p.toFile(), entities);
+    }
+
+    public static String writeValueAsString(Object data) throws JsonProcessingException {
+        return MAPPER.writeValueAsString(data);
     }
 }
