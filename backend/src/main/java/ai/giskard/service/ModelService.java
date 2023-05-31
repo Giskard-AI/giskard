@@ -72,7 +72,7 @@ public class ModelService {
         try (MLWorkerClient client = mlWorkerService.createClient(model.getProject().isUsingInternalWorker())) {
             ExplainRequest request = ExplainRequest.newBuilder()
                 .setModel(grpcMapper.createRef(model))
-                .setDataset(grpcMapper.createRef(dataset))
+                .setDataset(grpcMapper.createRef(dataset, false))
                 .putAllColumns(Maps.filterValues(features, Objects::nonNull))
                 .build();
 
@@ -96,7 +96,7 @@ public class ModelService {
         return response;
     }
 
-    public Inspection createInspection(String name, UUID modelId, UUID datasetId) {
+    public Inspection createInspection(String name, UUID modelId, UUID datasetId, boolean sample) {
         log.info("Creating inspection for model {} and dataset {}", modelId, datasetId);
         ProjectModel model = modelRepository.getMandatoryById(modelId);
         Dataset dataset = datasetRepository.getMandatoryById(datasetId);
@@ -111,18 +111,19 @@ public class ModelService {
 
         inspection.setDataset(dataset);
         inspection.setModel(model);
+        inspection.setSample(sample);
 
         inspection = inspectionRepository.save(inspection);
 
-        predictSerializedDataset(model, dataset, inspection.getId());
+        predictSerializedDataset(model, dataset, inspection.getId(), sample);
         return inspection;
     }
 
-    private void predictSerializedDataset(ProjectModel model, Dataset dataset, Long inspectionId) {
+    protected void predictSerializedDataset(ProjectModel model, Dataset dataset, Long inspectionId, boolean sample) {
         try (MLWorkerClient client = mlWorkerService.createClient(model.getProject().isUsingInternalWorker())) {
             RunModelRequest request = RunModelRequest.newBuilder()
                 .setModel(grpcMapper.createRef(model))
-                .setDataset(grpcMapper.createRef(dataset))
+                .setDataset(grpcMapper.createRef(dataset, sample))
                 .setInspectionId(inspectionId)
                 .setProjectKey(model.getProject().getKey())
                 .build();

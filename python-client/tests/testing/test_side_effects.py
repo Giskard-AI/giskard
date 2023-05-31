@@ -1,7 +1,8 @@
 import numpy as np
 import pandas as pd
 
-from giskard.testing.tests.performance import test_accuracy
+from giskard import Dataset
+from giskard.testing import test_accuracy
 
 
 def test_dataset_index_is_preserved(german_credit_data, german_credit_model):
@@ -22,7 +23,8 @@ def test_dataset_index_is_preserved(german_credit_data, german_credit_model):
     assert (dataset.df.index == original_idx).all()
 
     # Try with an index that is not a sequence of integers
-    dataset.df.set_index(pd.to_datetime(dataset.df.index), inplace=True)
+    dataset = Dataset(dataset.df.set_index(pd.to_datetime(dataset.df.index)), column_types=dataset.column_types,
+                      target=dataset.target)
     original_idx = dataset.df.index.copy()
 
     _ = test_accuracy(
