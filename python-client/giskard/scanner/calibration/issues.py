@@ -78,7 +78,7 @@ class CalibrationIssue(Issue):
         ex_dataset = self.dataset.slice(self.info.slice_fn)
         model_pred = self.model.predict(ex_dataset)
         predictions = model_pred.prediction
-        bad_pred_mask = ex_dataset.df[self.dataset.target] != predictions
+        bad_pred_mask = ex_dataset.df.index.isin(self.info.fail_idx)
         examples = ex_dataset.df[bad_pred_mask].copy()
 
         # Keep only interesting columns
@@ -133,7 +133,7 @@ class OverconfidenceIssue(CalibrationIssue):
 
     @property
     def metric(self) -> str:
-        return "Overconfidence"
+        return "Overconfidence rate"
 
 
 class UnderconfidenceIssue(CalibrationIssue):
@@ -143,8 +143,8 @@ class UnderconfidenceIssue(CalibrationIssue):
 
     @property
     def metric(self) -> str:
-        return "Underconfidence"
+        return "Underconfidence rate"
 
     @property
     def deviation(self):
-        return f"{(1 - self.info.metric_value_slice) * 100:.2f}% probability difference"
+        return f"{self.info.metric_rel_delta * 100:.2f}% than global"
