@@ -1,3 +1,4 @@
+import itertools
 import re
 import json
 import random
@@ -190,7 +191,6 @@ class TextReligionTransformation(TextLanguageBasedTransformation):
     def make_perturbation(self, row):
         # Get text
         text = row[self.column]
-        new_text = text
 
         # Get language and corresponding dictionary
         language = row["language__gsk__meta"]
@@ -198,30 +198,28 @@ class TextReligionTransformation(TextLanguageBasedTransformation):
 
         # Check if we support this language
         if religion_dict is None:
-            return new_text
+            return text
 
-        for religious_word_list in religion_dict:
-            for i, religious_word in enumerate(religious_word_list):
-                match = self._search_for_word_with_plural(word=religious_word, target_text=text)
-                if match is None:
-                    continue
-                replacement_word = religious_word_list[(i + 1) % len(religious_word_list)]
-                if replacement_word is not None:
-                    lwbound, upbound = match.span()
-                    new_text = (
-                        new_text[:lwbound]
-                        + religious_word_list[(i + 1) % len(religious_word_list)]
-                        + new_text[upbound:]
-                    )
+        # Mask entities and prepare replacements
+        replacements = []
+        for n_list, term_list in enumerate(religion_dict):
+            for n_term, term in enumerate(term_list):
+                mask_value = f"__GSK__ENT__RELIGION__{n_list}__{n_term}__"
+                text, num_rep = re.subn(rf"\b{term}(s?)\b", rf"{mask_value}\1", text, flags=re.IGNORECASE)
+                if num_rep > 0:
+                    i = (n_term + 1 + random.randrange(len(term_list) - 1)) % len(term_list)
+                    replacement = term_list[i]
+                    replacements.append((mask_value, replacement))
 
-        return new_text
+        # Replace masks
+        for mask, replacement in replacements:
+            text = text.replace(mask, replacement)
 
-    def _search_for_word_with_plural(self, word, target_text):
-        return re.search(fr'\b{word}s?\b', target_text.lower(), re.IGNORECASE)
+        return text
 
 
 class TextNationalityTransformation(TextLanguageBasedTransformation):
-    name = "Switch nationality"
+    name = "Switch countries from high- to low-income and vice versa"
 
     def _load_dictionaries(self):
         with Path(__file__).parent.joinpath("nationalities.json").open("r") as f:
@@ -230,26 +228,27 @@ class TextNationalityTransformation(TextLanguageBasedTransformation):
 
     def make_perturbation(self, row):
         text = row[self.column]
-        new_text = text
         language = row["language__gsk__meta"]
         nationalities_word_dict = self._select_dict(language)
 
         if nationalities_word_dict is None:
-            return new_text
+            return text
 
-        # @TODO: clean up this code
-        location_type_list = ["country", "nationality"]
-        income_list = ["high-income", "low-income"]
-        for income_id in range(len(income_list)):
-            for location_type in location_type_list:
-                for location in nationalities_word_dict[location_type][income_list[income_id]]:
-                    match = re.search(fr'\b{location}\b', text.lower(), re.IGNORECASE)
-                    if match is not None:
-                        lwbound, upbound = match.span()
-                        new_text = (
-                            new_text[:lwbound]
-                            + random.choice(nationalities_word_dict[location_type][income_list[(income_id + 1) % 2]])
-                            + new_text[upbound:]
-                        )
+        ent_types = list(itertools.product(["country", "nationality"], ["high-income", "low-income"]))
 
-        return new_text
+        # Mask entities and prepare replacements
+        replacements = []
+        for entity_type, income_type in ent_types:
+            for n, entity_word in enumerate(nationalities_word_dict[entity_type][income_type]):
+                mask_value = f"__GSK__ENT__{entity_type}__{income_type}__{n}__"
+                text, num_rep = re.subn(fr"\b{entity_word}\b", mask_value, text, flags=re.IGNORECASE)
+                if num_rep > 0:
+                    r_income_type = "low-income" if income_type == "high-income" else "high-income"
+                    replacement = random.choice(nationalities_word_dict[entity_type][r_income_type])
+                    replacements.append((mask_value, replacement))
+
+        # Replace masks
+        for mask, replacement in replacements:
+            text = text.replace(mask, replacement)
+
+        return text
