@@ -57,5 +57,5 @@ class Issue(ABC):
     def importance(self) -> float:
         ...
 
-    def generate_tests(self) -> list:
+    def generate_tests(self, with_names=False) -> list:
         return []
