@@ -7,6 +7,7 @@ import type {ProjectDTO} from './project-dto';
  */
 export interface ModelDTO {
     classificationLabels: string[];
+    classificationLabelsDtype: string;
     createdDate: any /* TODO: Missing translation of java.time.Instant */;
     featureNames?: string[] | null;
     id: string;
