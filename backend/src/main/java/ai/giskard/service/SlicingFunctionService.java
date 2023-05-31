@@ -73,6 +73,7 @@ public class SlicingFunctionService extends DatasetProcessFunctionService<Slicin
         SlicingFunction slicingFunction = new SlicingFunction();
         slicingFunction.setUuid(UUID.randomUUID());
         slicingFunction.setArgs(Collections.emptyList());
+        slicingFunction.setCode("");
         slicingFunction.setClauses(comparisonClauses.stream().map(this::toCode).collect(Collectors.toList()));
         slicingFunction.setDisplayName(name);
         slicingFunction.setDoc("Automatically generated slicing function");
