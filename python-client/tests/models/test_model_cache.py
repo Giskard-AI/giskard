@@ -56,7 +56,7 @@ def test_model_prediction_is_cached_on_classification_model(german_credit_catboo
     assert list(prediction.prediction) == list(cached_prediction.prediction)
 
     # Test with no cache
-    with giskard.models.no_cache():
+    with giskard.models.cache.no_cache():
         model.predict(dataset)
         assert model.predict_df.num_calls == 2
         model.predict(dataset)
@@ -73,7 +73,7 @@ def test_predict_disabled_cache():
     wrapped_model = Model(prediction_function, model_type="regression")
 
     wrapped_dataset = Dataset(df=pd.DataFrame([0, 1]))
-    with giskard.models.no_cache():
+    with giskard.models.cache.no_cache():
         prediction = wrapped_model.predict(wrapped_dataset)
         second_prediction = wrapped_model.predict(wrapped_dataset)
 

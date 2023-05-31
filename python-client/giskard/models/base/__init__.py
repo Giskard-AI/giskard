@@ -136,6 +136,10 @@ class BaseModel(ABC):
     def is_regression(self):
         return self.meta.model_type == SupportedModelTypes.REGRESSION
 
+    @property
+    def is_generative(self):
+        return self.meta.model_type == SupportedModelTypes.GENERATIVE
+
     @classmethod
     def determine_model_class(cls, meta, local_dir):
         class_file = Path(local_dir) / MODEL_CLASS_PKL
@@ -171,7 +175,7 @@ class BaseModel(ABC):
     def save(self, local_path: Union[str, Path]) -> None:
         if self.id is None:
             self.id = uuid.uuid4()
-            self._cache.set_id(self.id)
+            self._cache.set_id(str(self.id))
         if self.should_save_model_class:
             self.save_model_class(local_path)
         self.save_meta(local_path)
@@ -260,7 +264,7 @@ class BaseModel(ABC):
                 self.prepare_dataframe(dataset.df, column_dtypes=dataset.column_dtypes, target=dataset.target)
             )
 
-        if self.is_regression:
+        if self.is_regression or self.is_generative:
             result = ModelPredictionResults(
                 prediction=raw_prediction, raw_prediction=raw_prediction, raw=raw_prediction
             )
@@ -615,7 +619,7 @@ class MLFlowBasedModel(WrapperModel, ABC):
         """
         if not self.id:
             self.id = uuid.uuid4()
-            self._cache.set_id(self.id)
+            self._cache.set_id(str(self.id))
         self.save_model(local_path, mlflow.models.Model(model_uuid=str(self.id)))
         super().save(local_path)
 

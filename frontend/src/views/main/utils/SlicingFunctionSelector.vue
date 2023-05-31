@@ -1,20 +1,11 @@
 <template>
-    <div class="d-flex" :class="{w100: fullWidth}">
-        <v-select
-            clearable
-            :outlined="fullWidth"
-            class="slice-function-selector"
-            :label="label"
-            :value="value"
-            :items="slicingFunctions"
-            :item-text="extractName"
-            item-value="uuid"
-            :return-object="false"
-            @input="onInput"
-            :dense="fullWidth"
-            hide-details
-            :prepend-inner-icon="icon ? 'mdi-filter' : null"
-        >
+    <div class="d-flex" :class="{ w100: fullWidth }">
+        <v-select clearable :outlined="fullWidth" class="slice-function-selector" :label="label" v-model="value" :items="[{
+            name: 'None',
+            displayName: 'None',
+            uuid: 'None',
+            args: []
+        }, ...slicingFunctions]" :item-text="extractName" item-value="uuid" :return-object="false" @input="onInput" :dense="fullWidth" hide-details :prepend-inner-icon="icon ? 'mdi-knife' : null">
             <template v-slot:append-item v-if="allowNoCodeSlicing">
                 <v-list-item @click="createSlice">
                     <v-list-item-content>
@@ -36,12 +27,12 @@
 
 
 import {DatasetDTO, FunctionInputDTO, SlicingFunctionDTO} from '@/generated-sources';
-import {storeToRefs} from "pinia";
-import {useCatalogStore} from "@/stores/catalog";
-import {computed} from "vue";
-import {$vfm} from "vue-final-modal";
+import { storeToRefs } from "pinia";
+import { useCatalogStore } from "@/stores/catalog";
+import { computed } from "vue";
+import { $vfm } from "vue-final-modal";
 import FunctionInputsModal from "@/views/main/project/modals/FunctionInputsModal.vue";
-import {chain} from "lodash";
+import { chain } from "lodash";
 import CreateSliceModal from "@/views/main/project/modals/CreateSliceModal.vue";
 
 const props = withDefaults(defineProps<{
@@ -61,7 +52,7 @@ const props = withDefaults(defineProps<{
 
 const emit = defineEmits(['update:value', 'update:args', 'onChanged']);
 
-const {slicingFunctions, slicingFunctionsByUuid} = storeToRefs(useCatalogStore())
+const { slicingFunctions, slicingFunctionsByUuid } = storeToRefs(useCatalogStore())
 
 function extractName(SlicingFunctionDTO: SlicingFunctionDTO) {
     return SlicingFunctionDTO.displayName ?? SlicingFunctionDTO.name
@@ -135,7 +126,7 @@ async function createSlice() {
     })
 }
 
-const hasArguments = computed(() => props.value && slicingFunctionsByUuid.value[props.value].args.length > 0)
+const hasArguments = computed(() => props.value && props.value !== "None" && slicingFunctionsByUuid.value[props.value].args.length > 0)
 
 </script>
 
