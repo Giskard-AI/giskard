@@ -129,11 +129,9 @@ class SlicingFunction(Savable[Any, DatasetProcessFunctionMeta]):
 
     @classmethod
     def _load_no_code(cls, meta: DatasetProcessFunctionMeta):
-        import yaml
         from ....slicing.slice import Query, QueryBasedSliceFunction
-        clauses = yaml.load(meta.code, Loader=yaml.Loader)
 
-        return QueryBasedSliceFunction(Query.from_clauses(clauses))
+        return QueryBasedSliceFunction(Query.from_clauses(meta.clauses))
 
 
 def slicing_function(_fn=None, row_level=True, name=None, tags: Optional[List[str]] = None, cell_level=False):

@@ -2,7 +2,6 @@ package ai.giskard.service;
 
 import ai.giskard.domain.SlicingFunction;
 import ai.giskard.repository.ml.SlicingFunctionRepository;
-import ai.giskard.utils.YAMLConverter;
 import ai.giskard.web.dto.ComparisonClauseDTO;
 import ai.giskard.web.dto.ComparisonType;
 import ai.giskard.web.dto.DatasetProcessFunctionType;
@@ -74,7 +73,7 @@ public class SlicingFunctionService extends DatasetProcessFunctionService<Slicin
         SlicingFunction slicingFunction = new SlicingFunction();
         slicingFunction.setUuid(UUID.randomUUID());
         slicingFunction.setArgs(Collections.emptyList());
-        slicingFunction.setCode(YAMLConverter.writeValueAsString(comparisonClauses.stream().map(this::toCode).collect(Collectors.toList())));
+        slicingFunction.setClauses(comparisonClauses.stream().map(this::toCode).collect(Collectors.toList()));
         slicingFunction.setDisplayName(name);
         slicingFunction.setDoc("Automatically generated slicing function");
         slicingFunction.setModule("");
