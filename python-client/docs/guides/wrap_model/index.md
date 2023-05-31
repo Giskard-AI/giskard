@@ -38,8 +38,7 @@ wrapped_model = Model(
     model=prediction_function,
     model_type="classification",
     classification_labels=clf.classes_,  # Their order MUST be identical to the prediction_function's output order
-    feature_names=['PassengerId', 'Pclass', 'Name', 'Sex', 'Age', 'SibSp', 'Parch', 'Fare',
-                 'Embarked', 'Survived'],  # Default: all columns of your dataset
+    feature_names=['PassengerId', 'Pclass', 'Name', 'Sex', 'Age', 'SibSp', 'Parch', 'Fare', 'Embarked'],  # Default: all columns of your dataset
     # name="titanic_model", # Optional
     # classification_threshold=0.5, # Default: 0.5
 )
