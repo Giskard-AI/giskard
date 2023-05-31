@@ -39,125 +39,64 @@ from giskard.ml_worker.testing.functions.slicing import positive_sentiment_analy
 To create a Giskard slicing function, you just need to decorate an existing Python functions with `@slicing_function()`. Depending on the argument of the decorator, you can decorate different Python functions:
 
 :::::{tab-set}
+
 ::::{tab-item} row_level=True (default)
 
 When `row_level=True`, you can decorate a function that takes a pandas dataframe **row** as input and returns a boolean. Make sure that the first argument of your function corresponds to the row you want to filter:
 ```
-@slicing_function(name = )
-def n_firsts(row: pd.DataFrame, n: int = 5) -> pd.DataFrame:
-    return df.head(n)
+from giskard import slicing_function, demo
+import pandas as pd
+
+_, df = demo.titanic()
+dataset = Dataset(df=df, target="Survived", cat_columns=['Pclass', 'Sex', "SibSp", "Parch", "Embarked"])
+
+@slicing_function(row_level=True)
+def my_func2(row: pd.Series, threshold: int):
+    return row['Age'] > threshold
+
+dataset.slice(my_func2(threshold=20))
 ```
 ::::
 
 ::::{tab-item} row_level=False
+
 When `row_level=False`, you can decorate a function that takes a full **pandas dataframe** as input and returns a filtered pandas dataframe. Make sure that the first argument of your function corresponds to the pandas dataframe you want to filter:
 ```
-@slicing_function(name = )
-def n_firsts(row: pd.DataFrame, n: int = 5) -> pd.DataFrame:
-    return df.head(n)
+from giskard import slicing_function, demo
+import pandas as pd
+
+_, df = demo.titanic()
+dataset = Dataset(df=df, target="Survived", cat_columns=['Pclass', 'Sex', "SibSp", "Parch", "Embarked"])
+
+@slicing_function(row_level=False)
+def my_func1(df: pd.DataFrame, threshold: int):
+    df['Age'] = df['Age'] > threshold
+    return df
+
+dataset.slice(my_func1(threshold=20))turn df.head(n)
 ```
 ::::
 
 ::::{tab-item} row_level=False
+
 When `cell_level=True` (False by default), you can decorate a function that takes as argument a **value** (string, numeric or text) and  returns a boolean. Make sure that the first argument of your function corresponds to the value and that the second argument defines the **column name** where you wants to filter the value:
 
 ```
-@slicing_function(name = )
-def n_firsts(row: pd.DataFrame, n: int = 5) -> pd.DataFrame:
-    return df.head(n)
-```
-::::
-:::::
-
- 
-## Apply slicing function to your dataset
-You can easily apply your 
-## Save your slicing function
-
-
-:::::{tab-set}
-::::{tab-item} Sentiment analysis
-
-```python
-from giskard import Dataset
-from giskard.ml_worker.testing.functions.slicing import positive_sentiment_analysis
-
-wrapped_dataset = Dataset(...)
-
-positive_sentiment_slice = wrapped_dataset.slice(positive_sentiment_analysis(column_name='content'))
-
-positive_sentiment_slice.df.head()
-
-```
-
-::::
-
-::::{tab-item} Using a lambda
-
-```python
-from giskard import Dataset
-
-wrapped_dataset = Dataset(...)
-
-afternoon_slice = wrapped_dataset.slice(lambda row: row['Hour'] > 12)
-
-afternoon_slice.df.head()
-
-```
-
-::::
-
-::::{tab-item} Custom slicing function
-
-```python
-from giskard import Dataset, slicing_function
+from giskard import slicing_function, demo
 import pandas as pd
 
-wrapped_dataset = Dataset(...)
+_, df = demo.titanic()
+dataset = Dataset(df=df, target="Survived", cat_columns=['Pclass', 'Sex', "SibSp", "Parch", "Embarked"])
 
+@slicing_function(cell_level=True)
+def my_func3(cell: int, threshold: int):
+    return cell>threshold
 
-# Define the slicing function
-@slicing_function(row_level=False)
-def n_firsts(df: pd.DataFrame, n: int = 5) -> pd.DataFrame:
-    return df.head(n)
-
-
-# Slice the dataset to get the first 5 rows
-five_firsts_slice = wrapped_dataset.slice(n_firsts())
-
-# Slice the dataset to get the first 10 rows
-ten_firsts_slice = wrapped_dataset.slice(n_firsts(10))
-
-ten_firsts_slice.df.head()
-
+train_df.slice(my_func3(threshold=20), column_name='Age')
 ```
-
-* <mark style="color:red;">**`slicing_function`**</mark> : decorator registers a slicing function in Giskard. Slicing
-  functions can be executed at three different levels:
-  * **DataFrame level**: The DataFrame level require `row_level` to be set to `False`
-    * The slicing function must have its first argument and it's return type to
-      be [`pandas.DataFrame`](https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html)
-  * **Row level**: The row level is set by default
-    * The slicing function must have its first argument to be
-      a [pandas.Series](https://pandas.pydata.org/docs/reference/api/pandas.Series.html) and its return type to be
-      a `bool`
-  * **Cell level**: The Cell level require `cell_level` to be set to `True`
-    * The slicing function must have its first input to be of type of the input data and its return type to be a `bool`
-
-:::{hint}
-You can specify any argument after the first one. Those argument will be provided when passing the slicing function in
-the `slice` method
-:::
-
-For the DataFrame level, the slicing function will be called with the DataFrame to be filtered, and the result should be
-the filtered DataFrame.
-
-For row and cell level, the slicing function will be called for each row of the DataFrame, and the result will either be
-True to keep the row or False to filter out the row.
-
 ::::
 :::::
 
-{% hint style="success" %}
+
+## Save your slicing function
 To upload your slicing function to the Giskard server, go to [Upload objects](docs/guide/upload/index.md) to the Giskard server.
-{% endhint %}
