@@ -83,7 +83,7 @@
     </v-dialog>
 
     <!-- Quick start dialog -->
-    <v-dialog v-model="openQuickStart" max-width="70vw">
+    <v-dialog v-model="openQuickStart" width="80vw">
       <v-card flat>
         <v-card-title flat>
           Quick start guide
