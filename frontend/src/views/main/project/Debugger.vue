@@ -72,7 +72,8 @@ async function renameSession(id: number, name: string) {
     debuggingSessionsStore.updateDebuggingSessionName(id, {
       name,
       datasetId: currentSession.dataset.id,
-      modelId: currentSession.model.id
+      modelId: currentSession.model.id,
+        sample: currentSession.sample
     });
   }
 }
