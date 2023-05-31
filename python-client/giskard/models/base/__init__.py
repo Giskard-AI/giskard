@@ -1,3 +1,4 @@
+import builtins
 import importlib
 import logging
 import pickle
@@ -258,7 +259,7 @@ class BaseModel(ABC):
         timer = Timer()
 
         if get_cache_enabled():
-            raw_prediction = self._predict_from_cache(dataset)
+                raw_prediction = self._predict_from_cache(dataset)
         else:
             raw_prediction = self.predict_df(
                 self.prepare_dataframe(dataset.df, column_dtypes=dataset.column_dtypes, target=dataset.target)
@@ -381,11 +382,12 @@ class BaseModel(ABC):
             assert local_dir.exists(), f"Cannot find existing model {project_key}.{model_id} in {local_dir}"
             with open(Path(local_dir) / META_FILENAME) as f:
                 file_meta = yaml.load(f, Loader=yaml.Loader)
+                classification_labels = cls.cast_labels(meta_response)
                 meta = ModelMeta(
                     name=meta_response["name"],
                     model_type=SupportedModelTypes[meta_response["modelType"]],
                     feature_names=meta_response["featureNames"],
-                    classification_labels=meta_response["classificationLabels"],
+                    classification_labels=classification_labels,
                     classification_threshold=meta_response["threshold"],
                     loader_module=file_meta["loader_module"],
                     loader_class=file_meta["loader_class"],
@@ -401,6 +403,15 @@ class BaseModel(ABC):
         model.id = model_id
         model._cache = ModelCache(meta.model_type, model.id)
         return model
+
+    @classmethod
+    def cast_labels(cls, meta_response):
+        labels_ = meta_response["classificationLabels"]
+        labels_dtype = meta_response["classificationLabelsDtype"]
+        if labels_ and labels_dtype and builtins.hasattr(builtins, labels_dtype):
+            dtype = builtins.getattr(builtins, labels_dtype)
+            labels_ = [dtype(i) for i in labels_]
+        return labels_
 
     @classmethod
     def load(cls, local_dir, **kwargs):
