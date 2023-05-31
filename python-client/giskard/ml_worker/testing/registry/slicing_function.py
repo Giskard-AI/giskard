@@ -130,12 +130,16 @@ class SlicingFunction(Savable[Any, DatasetProcessFunctionMeta]):
 
 def slicing_function(_fn=None, row_level=True, name=None, tags: Optional[List[str]] = None, cell_level=False):
     """
-    Decorator that registers a slicing function with the testing registry and returns a SlicingFunction instance.
+    Decorator that registers a function as a slicing function and returns a SlicingFunction instance.
+    It can be used for slicing datasets in a specific way during testing.
 
-    :param _fn: Optional function to decorate.
-    :param row_level: Whether to apply the slicing function row-wise (default) or on the full dataframe.
-    :param name: Optional name to use for the function when registering it with the testing registry.
+    :param _fn: function to decorate. No need to provide this argument, the decorator will automatically take as input the function to decorate.
+    :param name: Optional name to use for the function when registering it.
     :param tags: Optional list of tags to use when registering the function.
+    :param row_level: Whether to apply the slicing function row-wise (default) or on the full dataframe. If `row_level` is True, the slicing function will receive a row (either a Series or DataFrame),
+    and if False, it will receive the entire dataframe.
+    :param cell_level: Whether to apply the slicing function on the cell level. If True, the slicing function
+                       will be applied to individual cells instead of rows or the entire dataframe.
     :return: The wrapped function or a new instance of SlicingFunction.
     """
 
