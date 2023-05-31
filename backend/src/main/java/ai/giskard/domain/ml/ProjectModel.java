@@ -49,4 +49,6 @@ public class ProjectModel extends AbstractAuditingEntity {
     @Column(columnDefinition = "VARCHAR")
     @Convert(converter = SimpleJSONStringAttributeConverter.class)
     private List<String> classificationLabels;
+
+    private String classificationLabelsDtype;
 }
