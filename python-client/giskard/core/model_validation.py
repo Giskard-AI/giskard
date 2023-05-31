@@ -258,12 +258,13 @@ def validate_classification_prediction(classification_labels: Union[np.ndarray, 
 
 def validate_order_classifcation_labels(model, dataset):
     from sklearn.metrics import balanced_accuracy_score
+
     y_true = dataset.df[dataset.target]
     y_pred = model.predict(dataset).prediction
     balanced_accuracy = balanced_accuracy_score(y_true, y_pred)
-    Nclasses = len(model.meta.classification_labels)
+    num_classes = len(model.meta.classification_labels)
 
-    if balanced_accuracy <= 1./Nclasses:
+    if balanced_accuracy <= 1 / num_classes:
         warning(
             f"The balanced accuracy of your model is very low ({round(balanced_accuracy, 2)}). "
             "Make sure you have not inverted the order of the 'classification_labels' when you created "
