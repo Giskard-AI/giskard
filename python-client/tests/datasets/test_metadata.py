@@ -1,5 +1,7 @@
-import pandas as pd
 from unittest import mock
+
+import pandas as pd
+
 from giskard.datasets import Dataset
 from giskard.datasets.metadata import MetadataProviderRegistry, MetadataProvider
 from giskard.datasets.metadata.text_metadata_provider import TextMetadataProvider
@@ -56,7 +58,7 @@ def test_text_metadata_provider():
     assert "charset" in meta.columns
 
     assert meta["text_length"].tolist() == [0, 6, 5, 12, 87]
-    assert meta["avg_word_length"].tolist() == [0.0, 6.0, 5.0, 5.5,7]
+    assert meta["avg_word_length"].tolist() == [0.0, 6.0, 5.0, 5.5, 7]
     assert meta["charset"].tolist() == ["undefined", "ascii", "ascii", "utf-8", "utf-8"]
     assert meta["language"].tolist() == [pd.NA, pd.NA, pd.NA, pd.NA, 'ru']
 
@@ -105,6 +107,3 @@ def test_lang_detected_proportion():
     assert language_counts["fr"] == 10
     assert language_counts["en"] == 10
     assert meta["language"].isna().sum() == 8
-
-
-

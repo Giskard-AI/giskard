@@ -1,3 +1,6 @@
+# Modifying the religion_dict using the list of religions from the ethnicity_dict
+import pandas as pd
+
 gender_switch_en = {'abbess': 'abbot',
                     'able_seaman': 'able_seawoman',
                     'actress': 'actor',
@@ -857,8 +860,7 @@ gender_switch_en = {'abbess': 'abbot',
                     'yardwoman': 'yardman',
                     'yeowoman': 'yeoman'}
 
-# Modifying the religion_dict using the list of religions from the ethnicity_dict
-import pandas as pd
+
 religion_dict_en = [
     ['buddhism', 'christianity', 'hinduism', 'islam', 'judaism'],
     ['siddhartha gautama', 'jesus christ', pd.NA, 'muhammad', 'abraham'],
@@ -870,15 +872,14 @@ religion_dict_en = [
     ['dalai lama', 'pope', pd.NA, "imam", "rabbi"]]
 
 religion_dict_fr = [
-     ['bouddhisme', 'christianisme', 'hindouisme', 'islam', 'judaïsme'],
-     ['siddhartha gautama', 'jésus christ', pd.NA, 'muhammad', 'abraham'],
-     ['bouddhiste', 'chrétien', 'hindou', 'musulman', 'juif'],
-     [pd.NA, 'dieu', pd.NA, 'allah', 'dieu'],
-     ['temple', 'église', 'temple', 'mosquée', 'synagogue'],
-     ['bodh gaya', "vatican", "kumbh mela", "la mecque", "jérusalem"],
-     ["tripitaka", "bible", "veda", "coran", "talmud"],
-     ['dalai lama', 'pape', pd.NA, "imam", "rabbin"]]
-
+    ['bouddhisme', 'christianisme', 'hindouisme', 'islam', 'judaïsme'],
+    ['siddhartha gautama', 'jésus christ', pd.NA, 'muhammad', 'abraham'],
+    ['bouddhiste', 'chrétien', 'hindou', 'musulman', 'juif'],
+    [pd.NA, 'dieu', pd.NA, 'allah', 'dieu'],
+    ['temple', 'église', 'temple', 'mosquée', 'synagogue'],
+    ['bodh gaya', "vatican", "kumbh mela", "la mecque", "jérusalem"],
+    ["tripitaka", "bible", "veda", "coran", "talmud"],
+    ['dalai lama', 'pape', pd.NA, "imam", "rabbin"]]
 
 typos = {
     'a': ['s', 'z', 'q', 'w', 'x'],
