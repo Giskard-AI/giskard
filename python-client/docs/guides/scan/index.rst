@@ -32,12 +32,16 @@ After having wrapped your [model](docs/guide/wrap_model/index.md) & [dataset](do
 
 .. code-block:: python
 
-    import giskard
+    from giskard import demo, Model, Dataset, scan
+
+    model, df = demo.titanic()
+
+    wrapped_model = Model(model=model, model_type="classification")
+    train_df = Dataset(df=df, target="Survived", cat_columns=['Pclass', 'Sex', "SibSp", "Parch", "Embarked"])
 
     scan_results = giskard.scan(wrapped_model, wrapped_dataset)
 
     display(scan_results)  # in your notebook
-
 
 In the notebook, this will produce a widget that allows you to explore the detected issues:
 
@@ -60,8 +64,6 @@ tests (a test suite) that will reproduce those issues.
 You can then interactively debug the problems by uploading the generate test suite to Giskard UI.
 
 .. code-block:: python
-
-    scan_results = giskard.scan(wrapped_model, wrapped_dataset)
 
     test_suite = scan_results.generate_test_suite("My first test suite")
 
