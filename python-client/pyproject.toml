@@ -12,7 +12,7 @@ name = "torch"
 [tool.pdm.scripts]
 proto = "setup.py grpc"
 # add "-n auto" to the pytest command to parallelize the execution
-test = "pytest -c pyproject.toml --cov=giskard tests --cov-report=xml"
+test = "pytest -c pyproject.toml --cov=giskard tests --cov-report=xml -n 4"
 lint = "flake8 giskard tests"
 doc = "python -m sphinx_autobuild docs docs/_build/html"
 
@@ -36,6 +36,7 @@ dev = [
     "isort[colors]>=5.12.0",
     "pip>=23.1.2",
     "langchain>=0.0.27",
+    "pytest-xdist>=3.3.1",
 ]
 proto = [
     "grpcio-tools>=1.46.3",
