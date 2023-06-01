@@ -22,7 +22,7 @@ jobs:
         shell: bash
         run: echo ${{ startsWith(steps.extract_source_branch.outputs.branch, 'dependabot/') }}
 
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v3.1.0
         with:
           submodules: recursive
       - name: Set up JDK 17

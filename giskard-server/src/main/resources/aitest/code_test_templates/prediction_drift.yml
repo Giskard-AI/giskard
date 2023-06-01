@@ -67,7 +67,7 @@ items:
       #        for the classification labels predictions
       #
       #        Example : The test is passed when the  Chi Square value of classification labels prediction
-      #        for females between actual and reference sets is below 0.2
+      #        for females between actual and reference sets is below 0.05
       #
       #        Args:
       #            actual_slice(GiskardDataset):

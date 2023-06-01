@@ -15,17 +15,16 @@ import ai.giskard.web.dto.ml.TestDTO;
 import ai.giskard.web.dto.ml.TestExecutionResultDTO;
 import ai.giskard.web.rest.errors.Entity;
 import ai.giskard.web.rest.errors.EntityNotFoundException;
+import ai.giskard.worker.RunTestRequest;
 import ai.giskard.worker.TestResultMessage;
 import com.google.common.collect.Lists;
-import com.google.protobuf.ByteString;
+import io.grpc.StatusRuntimeException;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -42,7 +41,8 @@ public class TestService {
     private final TestExecutionRepository testExecutionRepository;
 
     private final TestRepository testRepository;
-    private final FileLocationService fileLocationService;
+
+    private final GRPCMapper grpcMapper;
 
     public Optional<TestDTO> saveTest(TestDTO dto) {
         return Optional.of(testRepository.findById(dto.getId())).filter(Optional::isPresent).map(Optional::get).map(test -> {
@@ -69,13 +69,33 @@ public class TestService {
         Dataset referenceDS = test.getTestSuite().getReferenceDataset();
         Dataset actualDS = test.getTestSuite().getActualDataset();
         try (MLWorkerClient client = mlWorkerService.createClient()) {
-            TestResultMessage testResult = client.runTest(
-                model,
-                createDSStream(referenceDS),
-                referenceDS,
-                createDSStream(actualDS),
-                actualDS,
-                test);
+            TestResultMessage testResult;
+
+            mlWorkerService.upload(client, model);
+
+            RunTestRequest.Builder requestBuilder = RunTestRequest.newBuilder()
+                .setCode(test.getCode())
+                .setModel(grpcMapper.serialize(model));
+            if (referenceDS != null) {
+                mlWorkerService.upload(client, referenceDS);
+                requestBuilder.setReferenceDs(grpcMapper.serialize(referenceDS));
+            }
+            if (actualDS != null) {
+                mlWorkerService.upload(client, actualDS);
+                requestBuilder.setActualDs(grpcMapper.serialize(actualDS));
+            }
+            RunTestRequest request = requestBuilder.build();
+            logger.debug("Sending requiest to ML Worker: {}", request);
+
+            try {
+                testResult = client.getBlockingStub().runTest(request);
+            } catch (StatusRuntimeException e) {
+                if (e.getCause() instanceof MLWorkerRuntimeException mlWorkerRE) {
+                    mlWorkerRE.setMessage(String.format("Failed to execute test: %s", test.getName()));
+                    throw mlWorkerRE;
+                }
+                throw e;
+            }
 
             res.setResult(testResult);
             if (testResult.getResultsList().stream().anyMatch(r -> !r.getResult().getPassed())) {
@@ -87,13 +107,6 @@ public class TestService {
         testExecution.setResult(res.getStatus());
         testExecutionRepository.save(testExecution);
         return res;
-    }
-
-    private ByteString createDSStream(Dataset actualDS) throws IOException {
-        if (actualDS == null) {
-            return null;
-        }
-        return ByteString.readFrom(Files.newInputStream(fileLocationService.resolvedDatasetPath(actualDS.getProject().getKey(), actualDS.getId())));
     }
 
     public TestSuite deleteTest(Long testId) {

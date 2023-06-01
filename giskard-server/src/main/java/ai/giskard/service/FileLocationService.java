@@ -1,6 +1,9 @@
 package ai.giskard.service;
 
 import ai.giskard.config.ApplicationProperties;
+import ai.giskard.domain.ProjectFile;
+import ai.giskard.domain.ml.Dataset;
+import ai.giskard.domain.ml.ProjectModel;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -31,6 +34,18 @@ public class FileLocationService {
     public Path resolvedModelPath(String projectKey, Long modelId) {
         return modelsDirectory(projectKey).resolve(createZSTname("model_", modelId));
     }
+
+    public Path resolveFilePath(ProjectFile file) {
+        String projectKey = file.getProject().getKey();
+        if (file instanceof ProjectModel) {
+            return resolvedModelPath(projectKey, file.getId());
+        } else if (file instanceof Dataset) {
+            return resolvedDatasetPath(projectKey, file.getId());
+        } else {
+            throw new IllegalArgumentException("Unknown file type");
+        }
+    }
+
 
     public Path resolvedInspectionPath(String projectKey, Long inspectionId) {
         return modelsDirectory(projectKey).resolve(Paths.get("inspections", inspectionId.toString()));
