@@ -34,7 +34,7 @@ class ModelBiasDetector:
             return []
 
         # If the dataset is very large, limit to a subsample
-        max_data_size = 10_000_000 // len(model.meta.feature_names)
+        max_data_size = 10_000_000 // len(model.meta.feature_names or dataset.columns)
         if len(dataset) > max_data_size:
             logger.debug(f"ModelBiasDetector: Limiting dataset size to {max_data_size} samples.")
             dataset = dataset.slice(lambda df: df.sample(max_data_size, random_state=42), row_level=False)
