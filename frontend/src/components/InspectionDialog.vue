@@ -33,7 +33,8 @@ const emit = defineEmits(['createInspection'])
 async function createNewInspection() {
   const inspection = await api.prepareInspection({
     datasetId: selectedDataset.value!.id,
-    modelId: selectedModel.value!.id
+    modelId: selectedModel.value!.id,
+    name: inspectionName.value
   });
 
   closeDialog();
