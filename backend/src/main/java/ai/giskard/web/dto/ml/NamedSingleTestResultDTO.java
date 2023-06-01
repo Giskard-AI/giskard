@@ -11,11 +11,11 @@ import lombok.Setter;
 @NoArgsConstructor
 @UIModel
 public class NamedSingleTestResultDTO {
-    private String name;
+    private String testUuid;
     private SingleTestResultDTO result;
 
     public NamedSingleTestResultDTO(NamedSingleTestResult result) {
-        this.name = result.getName();
+        this.testUuid = result.getTestUuid();
         this.result = new SingleTestResultDTO(result.getResult());
     }
 }

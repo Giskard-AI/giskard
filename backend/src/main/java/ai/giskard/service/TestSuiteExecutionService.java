@@ -10,10 +10,7 @@ import ai.giskard.service.ml.MLWorkerService;
 import ai.giskard.web.dto.mapper.GiskardMapper;
 import ai.giskard.web.dto.ml.TestSuiteExecutionDTO;
 import ai.giskard.worker.RunTestSuiteRequest;
-import ai.giskard.worker.TestFunction;
-import ai.giskard.worker.TestRegistryResponse;
 import ai.giskard.worker.TestSuiteResultMessage;
-import com.google.protobuf.Empty;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,15 +42,10 @@ public class TestSuiteExecutionService {
 
     @Transactional(noRollbackFor = Exception.class)
     public void executeScheduledTestSuite(TestSuiteExecution execution, Map<String, String> suiteInputs) {
-
         try (MLWorkerClient client = mlWorkerService.createClient(execution.getSuite().getProject().isUsingInternalWorker())) {
-            TestRegistryResponse response = client.getBlockingStub().getTestRegistry(Empty.newBuilder().build());
-            Map<String, TestFunction> registry = response.getTestsMap().values().stream()
-                .collect(Collectors.toMap(TestFunction::getId, Function.identity()));
-
             RunTestSuiteRequest.Builder builder = RunTestSuiteRequest.newBuilder()
-                .addAllTestId(execution.getSuite().getTests().stream()
-                    .map(test -> String.valueOf(test.getTestId()))
+                .addAllTestUuid(execution.getSuite().getTests().stream()
+                    .map(test -> test.getTestFunction().getUuid().toString())
                     .collect(Collectors.toList()));
 
             for (Map.Entry<String, String> entry : execution.getInputs().entrySet()) {
@@ -61,18 +53,18 @@ public class TestSuiteExecutionService {
             }
 
             for (SuiteTest suiteTest : execution.getSuite().getTests()) {
-                builder.addFixedArguments(testArgumentService.buildFixedTestArgument(suiteTest, registry.get(suiteTest.getTestId())));
+                builder.addFixedArguments(testArgumentService.buildFixedTestArgument(suiteTest));
             }
 
             TestSuiteResultMessage testSuiteResultMessage = client.getBlockingStub().runTestSuite(builder.build());
 
             Map<String, SuiteTest> tests = execution.getSuite().getTests().stream()
-                .collect(Collectors.toMap(SuiteTest::getTestId, Function.identity()));
+                .collect(Collectors.toMap(test -> test.getTestFunction().getUuid().toString(), Function.identity()));
 
             execution.setResult(testSuiteResultMessage.getIsPass() ? TestResult.PASSED : TestResult.FAILED);
             execution.setResults(testSuiteResultMessage.getResultsList().stream()
                 .map(namedSingleTestResult ->
-                    new SuiteTestExecution(tests.get(namedSingleTestResult.getName()), execution, namedSingleTestResult.getResult()))
+                    new SuiteTestExecution(tests.get(namedSingleTestResult.getTestUuid()), execution, namedSingleTestResult.getResult()))
                 .collect(Collectors.toList()));
         } catch (Exception e) {
             log.error("Error while executing test suite {}", execution.getSuite().getName(), e);

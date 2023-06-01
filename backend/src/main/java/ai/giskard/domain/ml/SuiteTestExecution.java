@@ -1,7 +1,6 @@
 package ai.giskard.domain.ml;
 
 import ai.giskard.domain.BaseEntity;
-import ai.giskard.utils.GRPCUtils;
 import ai.giskard.utils.SimpleJSONStringAttributeConverter;
 import ai.giskard.web.dto.ml.TestResultMessageDTO;
 import ai.giskard.worker.SingleTestResult;
@@ -77,12 +76,12 @@ public class SuiteTestExecution extends BaseEntity {
                               SingleTestResult message) {
         this.test = test;
         this.execution = execution;
-        this.missingCount = GRPCUtils.convertType(message.getMissingCount());
-        this.missingPercent = GRPCUtils.convertType(message.getMissingPercent());
-        this.unexpectedCount = GRPCUtils.convertType(message.getUnexpectedCount());
-        this.unexpectedPercent = GRPCUtils.convertType(message.getUnexpectedPercent());
-        this.unexpectedPercentTotal = GRPCUtils.convertType(message.getUnexpectedPercentTotal());
-        this.unexpectedPercentNonmissing = GRPCUtils.convertType(message.getUnexpectedPercentNonmissing());
+        this.missingCount = message.getMissingCount();
+        this.missingPercent = message.getMissingPercent();
+        this.unexpectedCount = message.getUnexpectedCount();
+        this.unexpectedPercent = message.getUnexpectedPercent();
+        this.unexpectedPercentTotal = message.getUnexpectedPercentTotal();
+        this.unexpectedPercentNonmissing = message.getUnexpectedPercentNonmissing();
         this.partialUnexpectedIndexList = message.getPartialUnexpectedIndexListList();
         this.unexpectedIndexList = message.getUnexpectedIndexListList();
         this.passed = message.getPassed();
