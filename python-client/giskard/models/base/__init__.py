@@ -7,16 +7,16 @@ import tempfile
 import uuid
 from abc import abstractmethod, ABC
 from pathlib import Path
-from typing import Optional, Any, Union
+from typing import Optional, Any, Union, Callable, Iterable
 import cloudpickle
 import numpy as np
 import pandas as pd
 import yaml
 from pydantic import BaseModel
-from inspect import signature
+from inspect import signature, isfunction
 from giskard.client.giskard_client import GiskardClient
-from giskard.core.core import ModelMeta
-from giskard.core.core import SupportedModelTypes
+from giskard.core.core import ModelMeta, SupportedModelTypes
+from giskard.core.validation import validate_args
 from giskard.datasets.base import Dataset
 from giskard.ml_worker.utils.logging import Timer
 from giskard.path_utils import get_size
@@ -24,9 +24,8 @@ from giskard.settings import settings
 
 try:
     import mlflow
-    from mlflow.pyfunc import PyFuncModel
-except ImportError:
-    pass
+except ImportError as e:
+    raise ImportError("Please install it via 'pip install mlflow-skinny'") from e
 
 MODEL_CLASS_PKL = "ModelClass.pkl"
 
@@ -45,13 +44,14 @@ class BaseModel(ABC):
     should_save_model_class = False
     id: uuid.UUID = None
 
+    @validate_args
     def __init__(
             self,
             model_type: Union[SupportedModelTypes, str],
             name: str = None,
-            feature_names=None,
-            classification_threshold=0.5,
-            classification_labels=None,
+            feature_names: Optional[Iterable] = None,
+            classification_threshold: float = 0.5,
+            classification_labels: Optional[Iterable] = None,
     ) -> None:
         if type(model_type) == str:
             try:
@@ -63,6 +63,7 @@ class BaseModel(ABC):
                 ) from e
 
         if classification_labels is not None:
+            classification_labels = list(classification_labels)
             if len(classification_labels) != len(set(classification_labels)):
                 raise ValueError(
                     "Duplicates are found in 'classification_labels', please only provide unique values."
@@ -72,7 +73,7 @@ class BaseModel(ABC):
             name=name if name is not None else self.__class__.__name__,
             model_type=model_type,
             feature_names=list(feature_names) if feature_names else None,
-            classification_labels=list(classification_labels) if classification_labels is not None else None,
+            classification_labels=classification_labels,
             loader_class=self.__class__.__name__,
             loader_module=self.__module__,
             classification_threshold=classification_threshold,
@@ -285,29 +286,30 @@ class WrapperModel(BaseModel, ABC):
     to the underlying model
     """
 
-    clf: PyFuncModel
-    data_preprocessing_function: any
-    model_postprocessing_function: any
+    clf: Any
+    data_preprocessing_function: Callable[[pd.DataFrame], Any]
+    model_postprocessing_function: Callable[[Any], Any]
 
+    @validate_args
     def __init__(
             self,
-            clf,
+            clf: Any,
             model_type: Union[SupportedModelTypes, str],
-            data_preprocessing_function=None,
-            model_postprocessing_function=None,
+            data_preprocessing_function: Callable[[pd.DataFrame], Any] = None,
+            model_postprocessing_function: Callable[[Any], Any] = None,
             name: str = None,
-            feature_names=None,
-            classification_threshold=0.5,
-            classification_labels=None,
+            feature_names: Optional[Iterable] = None,
+            classification_threshold: float = 0.5,
+            classification_labels: Optional[Iterable] = None,
     ) -> None:
         super().__init__(model_type, name, feature_names, classification_threshold, classification_labels)
         self.clf = clf
         self.data_preprocessing_function = data_preprocessing_function
         self.model_postprocessing_function = model_postprocessing_function
 
-        if self.data_preprocessing_function:
+        # TODO: refactor this into validate_args or another decorator @validate_sign
+        if self.data_preprocessing_function and isfunction(self.data_preprocessing_function):
             sign_len = len(signature(self.data_preprocessing_function).parameters)
-            print(sign_len)
             if sign_len != 1:
                 raise ValueError(
                     f"data_preprocessing_function only takes 1 argument (a pandas.DataFrame) but {sign_len} were provided.")
@@ -330,7 +332,8 @@ class WrapperModel(BaseModel, ABC):
 
         return raw_predictions
 
-    def predict_df(self, df):
+    @validate_args
+    def predict_df(self, df: pd.DataFrame):
         if self.data_preprocessing_function:
             df = self.data_preprocessing_function(df)
 

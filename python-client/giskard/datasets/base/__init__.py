@@ -13,6 +13,7 @@ from giskard.client.giskard_client import GiskardClient
 from giskard.client.python_utils import warning
 from giskard.client.io_utils import save_df, compress
 from giskard.core.core import DatasetMeta, SupportedColumnTypes
+from giskard.core.validation import validate_args
 from giskard.settings import settings
 
 logger = logging.getLogger(__name__)
@@ -30,6 +31,7 @@ class Dataset:
     column_types: Dict[str, str]
     df: pd.DataFrame
 
+    @validate_args
     def __init__(
             self,
             df: pd.DataFrame,
