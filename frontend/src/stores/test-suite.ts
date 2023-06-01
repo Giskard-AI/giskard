@@ -77,7 +77,8 @@ export const useTestSuiteStore = defineStore('testSuite', {
                 .value();
         },
         hasTest: ({suite}) => suite && Object.keys(suite.tests).length > 0,
-        hasInput: ({inputs}) => Object.keys(inputs).length > 0
+        hasInput: ({inputs}) => Object.keys(inputs).length > 0,
+        hasJobInProgress: ({trackedJobs}) => Object.keys(trackedJobs).length > 0
     },
     actions: {
         async reload() {
@@ -105,7 +106,9 @@ export const useTestSuiteStore = defineStore('testSuite', {
             this.suite = await api.updateTestSuite(projectKey, testSuite);
         },
         async runTestSuite(input: Array<FunctionInputDTO>) {
-            return this.trackJob(await api.executeTestSuite(this.projectId!, this.suiteId!, input))
+            return {
+                trackJob: this.trackJob(await api.executeTestSuite(this.projectId!, this.suiteId!, input))
+            }
         },
         async trackJob(uuid: string) {
             const result = await trackJob(uuid, (res) => this.trackedJobs = {

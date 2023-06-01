@@ -37,13 +37,13 @@
                                           dense></v-text-field>
                             <div class="flex-grow-1"/>
                             <v-btn color="primary" large text disabled>Export</v-btn>
-                            <v-btn large outlined class='mx-1' v-if="hasTest && hasInput"
+                            <v-btn large outlined class='mx-1' v-if="hasTest && hasInput && !hasJobInProgress"
                                    @click='openRunTestSuite(true)'
                                    color="primary">
                                 Compare
                             </v-btn>
                             <v-btn large class='mx-1' v-if="hasTest" @click='() => openRunTestSuite(false)'
-                                   color="primary">
+                                   color="primary" :loading="hasJobInProgress">
                                 Run test suite
                             </v-btn>
                         </div>
@@ -78,7 +78,16 @@ const props = defineProps<{
 }>();
 
 const mainStore = useMainStore();
-const {suite, inputs, executions, hasTest, hasInput, statusFilter, searchFilter} = storeToRefs(useTestSuiteStore())
+const {
+    suite,
+    inputs,
+    executions,
+    hasTest,
+    hasInput,
+    statusFilter,
+    searchFilter,
+    hasJobInProgress
+} = storeToRefs(useTestSuiteStore())
 
 onActivated(() => loadData());
 watch(() => props.suiteId, () => loadData());
