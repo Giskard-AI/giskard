@@ -42,7 +42,7 @@ df = pd.read_csv(
 )
 ```
 ```python
-wrapped_dataset = wrap_dataset(df=df, 
+wrapped_dataset = wrap_dataset(df, 
                                name='Test german credit scoring dataset', 
                                target="default", 
                                column_types=column_types)
