@@ -207,11 +207,11 @@ async function submit(close) {
   isLoading.value = true;
 
   if (suite) {
-    await updateTestSuite(projectKey, {
-      ...suite,
-      name: name.value,
-      testInputs: sharedSuiteInputs.value
-    }).finally(() => isLoading.value = false);
+      await updateTestSuite(projectKey, {
+          ...suite,
+          name: name.value,
+          testInputs: sharedSuiteInputs.value
+      }).finally(() => isLoading.value = false);
   } else {
     mixpanel.track('Create test suite v2', {
       projectKey

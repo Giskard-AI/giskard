@@ -26,7 +26,7 @@
                             </template>
                             <span>Set as a suite input</span>
                         </v-tooltip>
-                        <v-tooltip bottom>
+                        <v-tooltip bottom v-if="props.testInputs">
                             <template v-slot:activator="{ on, attrs }">
                                 <v-btn v-on="on" v-bind="attrs">
                                     <span class="hidden-sm-and-down">Alias</span>
