@@ -38,7 +38,7 @@ def make_slices_from_tree(data: pd.DataFrame, tree: SklearnTree, feature_names: 
     # Now aggregate the filters for the leaves
     leaves_clauses = node_clauses[tree.children_left == -1]
 
-    return [QueryBasedSliceFunction(Query(clauses, optimize=True), data) for clauses in leaves_clauses]
+    return [QueryBasedSliceFunction(Query(clauses, optimize=True)) for clauses in leaves_clauses]
 
 
 class DecisionTreeSlicer(BaseSlicer):
