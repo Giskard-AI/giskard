@@ -3,21 +3,35 @@
 """
 import numpy as np
 import pandas as pd
+from typing import Optional, Sequence
 
 from giskard.datasets.base import Dataset
-from giskard.slicing.bruteforce_slicer import BruteForceSlicer
 from giskard.slicing.category_slicer import CategorySlicer
-from giskard.slicing.tree_slicer import DecisionTreeSlicer
-from giskard.slicing.multiscale_slicer import MultiscaleSlicer
 from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction
 
 from .base import BaseSlicer
-from .opt_slicer import OptSlicer
 from .stop_words import sw_en, sw_fr
-from .slice import DataSlice, Query, QueryBasedSliceFunction, StringContains
+from .slice import Query, QueryBasedSliceFunction, StringContains
+from .utils import get_slicer
 
 
 class TextSlicer(BaseSlicer):
+    def __init__(
+        self,
+        dataset: Dataset,
+        features: Optional[Sequence[str]] = None,
+        target: Optional[str] = None,
+        min_deviation: float = 0.05,
+        abs_deviation: bool = False,
+        slicer="tree",
+    ):
+        self.dataset = dataset
+        self.features = features
+        self.target = target
+        self.min_deviation = min_deviation
+        self.abs_deviation = abs_deviation
+        self.slicer = slicer
+
     def find_slices(self, features, target=None):
         target = target or self.target
 
@@ -54,9 +68,7 @@ class TextSlicer(BaseSlicer):
         dataset_with_meta = Dataset(data_with_meta, target=self.dataset.target, column_types=column_types)
 
         # Run a slicer for numeric
-        # slicer = OptSlicer(dataset_with_meta, target=target)
-        # slicer = BruteForceSlicer(dataset_with_meta, target=target)
-        slicer = MultiscaleSlicer(dataset_with_meta, target=target)
+        slicer = get_slicer(self.slicer, dataset_with_meta, target=target)
         for col in filter(lambda x: column_types[x] == "numeric", meta.columns):
             slices.extend(slicer.find_slices([col]))
 
