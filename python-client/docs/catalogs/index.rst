@@ -1,4 +1,4 @@
-Catalogs
+Catalog
 ===============
 
 .. toctree::
