@@ -175,7 +175,7 @@ class Dataset(ColumnMetadataMixin):
         else:
             self.column_types = self._infer_column_types(cat_columns)
 
-        self.number_of_rows = len(self.df.index),
+        self.number_of_rows = len(self.df.index)
         self.category_features = {
             column: list(map(lambda x: str(x), self.df[column].dropna().unique()))
             for column, column_type in self.column_types.items()
