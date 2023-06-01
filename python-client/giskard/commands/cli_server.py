@@ -56,7 +56,7 @@ def get_version(version=None):
         else:
             version = app_settings["version"]
     else:
-        pattern = "^([0-9]+)\.([0-9]+)\.([0-9]+)$"
+        pattern = "^([0-9]+)\\.([0-9]+)\\.([0-9]+)$"
         assert re.match(pattern, version), f"Invalid version format, version should match {pattern}"
         current_settings = _get_settings() or {}
         current_settings['version'] = version
@@ -91,7 +91,7 @@ def _start(attached=False, version=None):
 
     try:
         container = get_container(version)
-    except:
+    except NotFound:
         container = create_docker_client().containers.create(image_name(version),
                                                              detach=not attached,
                                                              name=get_container_name(version),
@@ -234,7 +234,7 @@ def restart(service, hard):
                 command = f"supervisorctl -c /opt/giskard/supervisord.conf restart {service}"
             else:
                 logger.info(f"Restarting all services in {container.name} container")
-                command = f"supervisorctl -c /opt/giskard/supervisord.conf restart all"
+                command = "supervisorctl -c /opt/giskard/supervisord.conf restart all"
             for res in container.exec_run(command, stream=True).output:
                 print(res.decode())
 
@@ -263,13 +263,13 @@ def logs(service, nb_lines, follow):
         if service:
             command = f"tail -{nb_lines} /home/giskard/datadir/run/{service}.log"
         else:
-            command = f"bash -c 'tail /home/giskard/datadir/run/*.log'"
+            command = "bash -c 'tail /home/giskard/datadir/run/*.log'"
         print(container.exec_run(command).output.decode())
     else:
         if service:
             command = f"tail -{nb_lines}f /home/giskard/datadir/run/{service}.log"
         else:
-            command = f"bash -c 'tail -f /home/giskard/datadir/run/*.log'"
+            command = "bash -c 'tail -f /home/giskard/datadir/run/*.log'"
         res = container.exec_run(command, stream=True)
         for out in res.output:
             print(out.decode())
@@ -333,7 +333,7 @@ def status():
     """
     settings = _get_settings()
     if not settings:
-        logger.info(f"Giskard Server is not installed. Install using `giskard server start`")
+        logger.info("Giskard Server is not installed. Install using `giskard server start`")
         return
     else:
         version = settings["version"]
