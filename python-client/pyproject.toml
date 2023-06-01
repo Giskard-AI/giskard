@@ -104,6 +104,7 @@ tensorflow = "^2.11.0"
 tensorflow-hub = "^0.12.0"
 tensorflow-text = "^2.11.0"
 transformers = "^4.26.1"
+nltk = "^3.8.1"
 
 [tool.black]
 # https://github.com/psf/black
