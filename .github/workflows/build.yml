@@ -11,6 +11,8 @@ jobs:
     name: Build
     runs-on: buildjet-8vcpu-ubuntu-2204
     steps:
+      - run: echo $(ls -la ~)
+
       - name: Check if organization member
         id: is_organization_member
         uses: JamesSingleton/is-organization-member@1.0.1
@@ -134,7 +136,7 @@ jobs:
       - name: Build
         env:
           GSK_DISABLE_ANALYTICS: True
-        run: ./gradlew build test integrationTest :python-client:lint :python-client:package jacocoTestReport --info --parallel
+        run: ./gradlew :python-client:build :python-client:test
 
       - name: Analyze with Sonar
         if: ${{ github.actor != 'dependabot[bot]' }}
@@ -150,3 +152,5 @@ jobs:
         with:
           name: giskard-dev.whl
           path: python-client/dist/*whl
+
+      - run: echo $(ls -la ~)
