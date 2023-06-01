@@ -309,7 +309,7 @@
             <column name="name" type="VARCHAR(255)">
                 <constraints nullable="false"/>
             </column>
-            <column name="value" type="VARCHAR(255)"/>
+            <column name="value" type="TEXT"/>
             <column name="test_id" type="BIGINT">
                 <constraints nullable="false"/>
             </column>
