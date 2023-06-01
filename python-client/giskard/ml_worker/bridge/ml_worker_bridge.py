@@ -49,9 +49,10 @@ class MLWorkerBridge:
         self.service_channel_reader: Optional[StreamReader] = None
         self.service_channel_writer: Optional[StreamWriter] = None
 
-    def stop(self):
+    async def stop(self):
         logger.info(f"Stopping the bridge with {self.local_address}")
         self.stopping = True
+        await self.close_service_channel()
         for w in writers:
             w.close()
 
@@ -117,25 +118,24 @@ class MLWorkerBridge:
 
     async def listen_remote_server_service_socket(self):
         try:
-            try:
-                logger.debug("Created remote server listener task")
-                while True:
-                    logger.debug("waiting for a service command")
-                    length = int.from_bytes(await self.service_channel_reader.readexactly(4), "big")
-                    encrypted_data = await self.service_channel_reader.readexactly(length)
-                    if len(encrypted_data):
-                        data = self.encryptor.decrypt(encrypted_data)
-                        client = data[:CHANNEL_ID_LENGTH]
-                        command = data[CHANNEL_ID_LENGTH:]
-                        logger.debug(f"service command received: {client}: {command}")
-                        await self.handle_server_command(client, command)
-                    else:
-                        raise ConnectionLost()
-            finally:
-                await self.close_service_channel()
+            logger.debug("Created remote server listener task")
+            while True:
+                logger.debug("waiting for a service command")
+                length = int.from_bytes(await self.service_channel_reader.readexactly(4), "big")
+                encrypted_data = await self.service_channel_reader.readexactly(length)
+                if len(encrypted_data):
+                    data = self.encryptor.decrypt(encrypted_data)
+                    client = data[:CHANNEL_ID_LENGTH]
+                    command = data[CHANNEL_ID_LENGTH:]
+                    logger.debug(f"service command received: {client}: {command}")
+                    await self.handle_server_command(client, command)
+                else:
+                    raise ConnectionLost()
         except (IncompleteReadError, ConnectionLost, ConnectionResetError) as e:
+            if self.stopping:
+                return
             logger.info("Lost connection to Giskard server, retrying...")
-            self.stop()
+            await self.stop()
             await asyncio.sleep(1 + random() * 2)
             await self.start()
             if isinstance(e, IncompleteReadError) and not self.stopping:
