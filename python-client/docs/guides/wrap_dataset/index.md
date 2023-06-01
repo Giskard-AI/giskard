@@ -1,6 +1,6 @@
 # 📦 Wrap your dataset
 
-To scan, test and debug your model, you need to provide a dataset that can be executed by your model. This dataset can be your train, test, golden or production dataset. 
+To scan, test and debug your model, you need to provide a dataset that can be executed by your model. This dataset can be your train, test, golden or production dataset.
 
 The `pandas.DataFrame` you provide should contain the **raw data before prepocessing** (categorical encoding, scaling,
 etc.). The prediction function that you wrap with the [Giskard Model](../wrap_model/index) should be able to execute this pandas dataframe.
@@ -16,7 +16,8 @@ wrapped_dataset = Dataset(
     # column_types=None # # Optional: if not provided, it is inferred automatically
 )
 ```
-:::{info}
+
+:::{note}
 You can easily convert back your Giskard into a pandas DataFrame. To do so, use the `.df` method. For more information about the methods of Dataset, see the [API Reference](../../reference/datasets/index).
 :::
 
@@ -38,8 +39,10 @@ You can easily convert back your Giskard into a pandas DataFrame. To do so, use 
           If not provided, the types will be automatically inferred.
 
 ## Upload your Dataset in the Giskard server
+
 Uploading your dataset to the Giskard server enables you to:
-* Inspect and debug your dataset 
+
+* Inspect and debug your dataset
 * Use your dataset as input of your tests (unit datasets)
 
 To upload your dataset to the Giskard server, go to the page [Upload an object to the Giskard server](../upload/index.md).
