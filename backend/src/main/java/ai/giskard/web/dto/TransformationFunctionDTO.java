@@ -9,6 +9,6 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(callSuper = true)
 @AllArgsConstructor
 @UIModel
-public class TransformationFunctionDTO extends CallableDTO {
+public class TransformationFunctionDTO extends DatasetProcessFunctionDTO {
 
 }

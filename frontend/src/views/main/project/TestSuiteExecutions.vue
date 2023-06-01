@@ -36,11 +36,15 @@
                   <v-list-item-content>
                     <v-list-item-title>
                       <div class="d-flex justify-space-between">
-                        <span>{{ (e.disabled ? e.date : e.execution.executionDate) | date }}</span>
-                        <template v-if="!e.disabled">
-                          <TestResultHeatmap v-if="compareSelectedItems === null" :results="executionResults(e.execution)" />
-                          <v-checkbox v-else v-model="compareSelectedItems" :value="e.execution.id" />
-                        </template>
+                          <div>
+                              <span v-if="getModel(e)">Model: {{ getModel(e) }}<br/></span>
+                              <span>{{ (e.disabled ? e.date : e.execution.executionDate) | date }}</span>
+                          </div>
+                          <template v-if="!e.disabled">
+                              <TestResultHeatmap v-if="compareSelectedItems === null"
+                                                 :results="executionResults(e.execution)"/>
+                              <v-checkbox v-else v-model="compareSelectedItems" :value="e.execution.id"/>
+                          </template>
                       </div>
                     </v-list-item-title>
                   </v-list-item-content>
@@ -59,27 +63,28 @@
 
 <script setup lang="ts">
 
-import { computed, onMounted } from 'vue';
-import { JobDTO, JobState, TestResult, TestSuiteExecutionDTO } from '@/generated-sources';
+import {computed, onMounted} from 'vue';
+import {JobDTO, JobState, TestResult, TestSuiteExecutionDTO} from '@/generated-sources';
 import TestResultHeatmap from '@/components/TestResultHeatmap.vue';
-import { Colors } from '@/utils/colors';
-import { Comparators } from '@/utils/comparators';
-import { storeToRefs } from 'pinia';
-import { useTestSuiteStore } from '@/stores/test-suite';
-import { useRoute, useRouter } from 'vue-router/composables';
-import { useTestSuiteCompareStore } from '@/stores/test-suite-compare';
-import { $vfm } from 'vue-final-modal';
+import {Colors} from '@/utils/colors';
+import {Comparators} from '@/utils/comparators';
+import {storeToRefs} from 'pinia';
+import {useTestSuiteStore} from '@/stores/test-suite';
+import {useRoute, useRouter} from 'vue-router/composables';
+import {useTestSuiteCompareStore} from '@/stores/test-suite-compare';
+import {$vfm} from 'vue-final-modal';
 import RunTestSuiteModal from '@/views/main/project/modals/RunTestSuiteModal.vue';
+import {chain} from "lodash";
 
 const {
-  models,
-  datasets,
-  inputs,
-  executions,
-  trackedJobs,
-  projectId,
-  suite,
-  hasTest
+    models,
+    datasets,
+    inputs,
+    executions,
+    trackedJobs,
+    projectId,
+    suite,
+    hasTest
 } = storeToRefs(useTestSuiteStore());
 
 
@@ -183,16 +188,36 @@ async function compare() {
 
 async function openRunTestSuite(compareMode: boolean) {
   await $vfm.show({
-    component: RunTestSuiteModal,
-    bind: {
-      projectId: projectId.value,
-      suiteId: suite.value!.id,
-      inputs: inputs.value,
-      compareMode,
-      previousParams: executions.value.length === 0 ? {} : executions.value[0].inputs
-    }
+      component: RunTestSuiteModal,
+      bind: {
+          projectId: projectId.value,
+          suiteId: suite.value!.id,
+          inputs: inputs.value,
+          compareMode,
+          previousParams: executions.value.length === 0 ? {} : executions.value[0].inputs
+      }
   });
 }
+
+const modelByUuid = computed(() => chain(models.value)
+    .keyBy('id')
+    .value()
+)
+
+function getModel(e: ExecutionTabItem): string | null {
+    if (e.disabled || !e.execution) {
+        return null;
+    }
+
+    const value = e.execution.inputs.find(e => e.type === 'BaseModel')?.value;
+
+    console.log(value);
+    if (value) {
+        return modelByUuid.value[value]?.name ?? null;
+    }
+    return value ?? null;
+}
+
 </script>
 
 <style scoped lang="scss">

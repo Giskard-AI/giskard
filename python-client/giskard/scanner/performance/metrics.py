@@ -59,7 +59,7 @@ class SklearnClassificationScoreMixin:
                 average="binary",
             )
 
-        return metric_fn(y_true, y_pred, labels=model.meta.classification_labels, average="macro")
+        return metric_fn(y_true, y_pred, labels=model.meta.classification_labels, average="micro")
 
 
 class F1Score(SklearnClassificationScoreMixin, ClassificationPerformanceMetric):

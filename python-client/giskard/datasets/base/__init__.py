@@ -5,11 +5,11 @@ import tempfile
 import uuid
 from pathlib import Path
 from typing import Dict, Optional, List, Hashable, Union
-from pandas.api.types import is_list_like
 
-import pandas as pd
 import numpy as np
+import pandas as pd
 import yaml
+from pandas.api.types import is_list_like
 from zstandard import ZstdDecompressor
 
 from giskard.client.giskard_client import GiskardClient
@@ -22,6 +22,7 @@ from giskard.ml_worker.testing.registry.transformation_function import (
     TransformationFunctionType,
 )
 from giskard.settings import settings
+from giskard.client.python_utils import warning
 from ..metadata.indexing import ColumnMetadataMixin
 
 logger = logging.getLogger(__name__)
@@ -51,7 +52,10 @@ class DataProcessor:
             Return a string representation of the DataProcessor object, showing the number of steps in its pipeline.
     """
 
-    pipeline: List[Union[SlicingFunction, TransformationFunction]] = []
+    pipeline: List[Union[SlicingFunction, TransformationFunction]]
+
+    def __init__(self):
+        self.pipeline = []
 
     @configured_validate_arguments
     def add_step(self, processor: Union[SlicingFunction, TransformationFunction]):
@@ -60,30 +64,31 @@ class DataProcessor:
         return self
 
     def apply(self, dataset: "Dataset", apply_only_last=False):
-        df = dataset.df.copy()
+        ds = dataset.copy()
 
         while len(self.pipeline):
             step = self.pipeline.pop(-1 if apply_only_last else 0)
 
-            df = step.execute(df)
+            df = step.execute(ds) if getattr(step, "needs_dataset", False) else step.execute(ds.df)
+            ds = Dataset(
+                df=df,
+                name=ds.name,
+                target=ds.target,
+                cat_columns=ds.cat_columns,
+                column_types=ds.column_types,
+                validation=False
+            )
 
             if apply_only_last:
                 break
 
-        ret = Dataset(
-            df=df,
-            name=dataset.name,
-            target=dataset.target,
-            cat_columns=dataset.cat_columns,
-            column_types=dataset.column_types,
-        )
-
         if len(self.pipeline):
-            ret.data_processor = self
-        return ret
+            ds.data_processor = self
+
+        return ds
 
     def __repr__(self) -> str:
-        return f"DataProcessor: {len(self.pipeline)} steps"
+        return f"<DataProcessor ({len(self.pipeline)} steps)>"
 
 
 class Dataset(ColumnMetadataMixin):
@@ -112,12 +117,12 @@ class Dataset(ColumnMetadataMixin):
             An instance of the `DataProcessor` class used for data processing.
     """
 
-    name: str
-    target: str
+    name: Optional[str]
+    target: Optional[str]
     column_types: Dict[str, str]
     df: pd.DataFrame
     id: uuid.UUID
-    data_processor: DataProcessor = DataProcessor()
+    data_processor: DataProcessor
 
     @configured_validate_arguments
     def __init__(
@@ -125,9 +130,10 @@ class Dataset(ColumnMetadataMixin):
             df: pd.DataFrame,
             name: Optional[str] = None,
             target: Optional[str] = None,
-            cat_columns: Optional[List[str]] = [],
+            cat_columns: Optional[List[str]] = None,
             column_types: Optional[Dict[str, str]] = None,
             id: Optional[uuid.UUID] = None,
+            validation=True
     ) -> None:
         """
         Initializes a Dataset object.
@@ -151,29 +157,32 @@ class Dataset(ColumnMetadataMixin):
         self.name = name
         self.df = pd.DataFrame(df)
         self.target = target
-        from giskard.core.dataset_validation import validate_target
 
-        validate_target(self)
+        if validation:
+            from giskard.core.dataset_validation import validate_target
+
+            validate_target(self)
 
         if not self.df.empty:
             self.check_hashability(self.df)
         self.column_dtypes = self.extract_column_dtypes(self.df)
 
-        from giskard.core.dataset_validation import validate_column_categorization, validate_column_types
-
         # used in the inference of category columns
         self.category_threshold = round(np.log10(len(self.df))) if len(self.df) >= 100 else 2
-        if column_types:
-            column_types.pop(self.target, None)  # no need for target type
-            self.column_types = column_types
+        self.column_types = self._infer_column_types(column_types, cat_columns)
+        if validation:
+            from giskard.core.dataset_validation import validate_column_types
             validate_column_types(self)
-        else:
-            self.column_types = self._infer_column_types(cat_columns)
-        validate_column_categorization(self)
 
-        from giskard.core.dataset_validation import validate_numeric_columns
+        if validation:
+            from giskard.core.dataset_validation import validate_column_categorization, validate_numeric_columns
 
-        validate_numeric_columns(self)
+            validate_column_categorization(self)
+            validate_numeric_columns(self)
+
+        logger.info("Your 'pandas.DataFrame' is successfully wrapped by Giskard's 'Dataset' wrapper class.")
+
+        self.data_processor = DataProcessor()
 
     def add_slicing_function(self, slicing_function: SlicingFunction):
         """
@@ -196,7 +205,13 @@ class Dataset(ColumnMetadataMixin):
         return self
 
     @configured_validate_arguments
-    def slice(self, slicing_function: Union[SlicingFunction, SlicingFunctionType], row_level: bool = True):
+    def slice(
+            self,
+            slicing_function: Union[SlicingFunction, SlicingFunctionType],
+            row_level: bool = True,
+            cell_level=False,
+            column_name: Optional[str] = None,
+    ):
         """
         Slice the dataset using the specified `slicing_function`.
 
@@ -217,13 +232,20 @@ class Dataset(ColumnMetadataMixin):
             Raises TypeError: If `slicing_function` is not a callable or a `SlicingFunction` object.
         """
         if inspect.isfunction(slicing_function):
-            slicing_function = SlicingFunction(slicing_function, row_level=row_level)
+            slicing_function = SlicingFunction(slicing_function, row_level=row_level, cell_level=cell_level)
+
+        if slicing_function.cell_level and column_name is not None:
+            slicing_function = slicing_function(column_name=column_name, **slicing_function.params)
+
         return self.data_processor.add_step(slicing_function).apply(self, apply_only_last=True)
 
     @configured_validate_arguments
     def transform(
-            self, transformation_function: Union[TransformationFunction, TransformationFunctionType],
-            row_level: bool = True
+            self,
+            transformation_function: Union[TransformationFunction, TransformationFunctionType],
+            row_level: bool = True,
+            cell_level=False,
+            column_name: Optional[str] = None,
     ):
         """
         Transform the data in the current Dataset by applying a transformation function.
@@ -243,8 +265,18 @@ class Dataset(ColumnMetadataMixin):
         Notes:
             Raises TypeError: If `transformation_function` is not a callable or a `TransformationFunction` object.
         """
+
         if inspect.isfunction(transformation_function):
-            transformation_function = TransformationFunction(transformation_function, row_level=row_level)
+            transformation_function = TransformationFunction(
+                transformation_function, row_level=row_level, cell_level=cell_level
+            )
+
+        if transformation_function.cell_level and column_name is not None:
+            transformation_function = transformation_function(column_name=column_name, **transformation_function.params)
+
+        assert (
+                not transformation_function.cell_level or 'column_name' in transformation_function.params
+        ), "column_name should be provided for TransformationFunction at cell level"
         return self.data_processor.add_step(transformation_function).apply(self, apply_only_last=True)
 
     def process(self):
@@ -281,7 +313,7 @@ class Dataset(ColumnMetadataMixin):
                 f"We currently support only hashable column types such as int, bool, str, tuple and not list or dict."
             )
 
-    def _infer_column_types(self, cat_columns: List[str]):
+    def _infer_column_types(self, column_types: Optional[Dict[str, str]], cat_columns: Optional[List[str]]):
         """
         Infer column types of a given DataFrame based on the number of unique values and column data types.
 
@@ -293,38 +325,50 @@ class Dataset(ColumnMetadataMixin):
         Returns:
             dict: A dictionary that maps column names to their inferred types, one of 'text', 'numeric', or 'category'.
         """
-        column_types = {}
-        nuniques = self.df.nunique()
-        df_columns = list(self.df.columns)
+        if not column_types:
+            column_types = {}
+        df_columns = set(self.df.columns.drop(self.target)) if self.target else set(self.df.columns)
 
+        # priority of cat_columns over column_types (for categorical columns)
         if cat_columns:
             if not set(cat_columns).issubset(df_columns):
                 raise ValueError(
                     "The provided 'cat_columns' are not all part of your dataset 'columns'. "
                     "Please make sure that `cat_columns` refers to existing columns in your dataset."
                 )
-
             for cat_col in cat_columns:
                 if cat_col != self.target:
                     column_types[cat_col] = SupportedColumnTypes.CATEGORY.value
-            df_columns = set(df_columns) - set(cat_columns)
 
-        for col in df_columns:
+        given_columns = set(column_types.keys())
+        unknown_columns = given_columns - df_columns
+        missing_columns = df_columns - given_columns
+
+        if unknown_columns:
+            warning(
+                f"The provided keys {list(unknown_columns)} in 'column_types' are not part of your dataset "
+                "'columns'. Please make sure that the column names in `column_types` refers to existing "
+                "columns in your dataset.")
+            [column_types.pop(i) for i in unknown_columns]
+
+        if not missing_columns:
+            column_types.pop(self.target, None)  # no need for target type
+            return column_types
+
+        nuniques = self.df.nunique()
+        for col in missing_columns:
             if col == self.target:
                 continue
-            # inference of categorical columns
-            # in case cat_columns were provided by the user, we don't try to infer the categorical for the rest
-            # we raise a warning instead in validate_column_categorization
-            if not cat_columns:
-                if nuniques[col] <= self.category_threshold:
-                    column_types[col] = SupportedColumnTypes.CATEGORY.value
-                    continue
+            if nuniques[col] <= self.category_threshold:
+                column_types[col] = SupportedColumnTypes.CATEGORY.value
+                continue
             # inference of text and numeric columns
             try:
                 pd.to_numeric(self.df[col])
                 column_types[col] = SupportedColumnTypes.NUMERIC.value
             except ValueError:
                 column_types[col] = SupportedColumnTypes.TEXT.value
+
         return column_types
 
     @staticmethod
@@ -496,7 +540,11 @@ class Dataset(ColumnMetadataMixin):
             df=df,
             target=self.target if self.target in df.columns else None,
             column_types={key: val for key, val in self.column_types.items() if key in df.columns},
+            validation=False,
         )
+
+    def copy(self):
+        return Dataset(df=self.df.copy(), target=self.target, column_types=self.column_types.copy(), validation=False)
 
 
 def _cast_to_list_like(object):
