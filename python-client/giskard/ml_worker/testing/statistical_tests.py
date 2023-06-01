@@ -193,9 +193,9 @@ class StatisticalTests(AbstractTestCollection):
                   TRUE if the disparate impact ratio > min_threshold && disparate impact ratio < max_threshold
         """
 
-        if positive_outcome not in list(model.classification_labels):
+        if positive_outcome not in list(model.meta.classification_labels):
             raise ValueError(
-                f"The positive outcome chosen {positive_outcome} is not part of the dataset target values {list(model.classification_labels)}."
+                f"The positive outcome chosen {positive_outcome} is not part of the dataset target values {list(model.meta.classification_labels)}."
             )
 
         gsk_dataset.df.reset_index(drop=True, inplace=True)
