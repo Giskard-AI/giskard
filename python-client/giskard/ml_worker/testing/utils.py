@@ -32,7 +32,7 @@ def validate_classification_label(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
         reference_slice = kwargs.get('reference_slice', None)
-        actual_slice = kwargs.get('actual_slice', None)
+        actual_slice = kwargs.get('actual_ds', None)
         model = kwargs.get('model', None)
         classification_label = kwargs.get('classification_label', None)
         target = getattr(reference_slice, 'target', getattr(actual_slice, 'target', None))
