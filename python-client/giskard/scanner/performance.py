@@ -4,6 +4,7 @@ from typing import Optional
 
 from giskard.scanner.issue import Issue
 from ..models.base import BaseModel
+from ..models.precooked import PrecookedModel
 from ..datasets.base import Dataset
 
 from .result import ScanResult
@@ -79,10 +80,12 @@ class PerformanceScan:
         return PerformanceScanResult(issues)
 
     def _find_issues(self, slices, model, dataset, dataset_meta, tests, threshold):
+        # Use a precooked model to speed up the tests
+        precooked = PrecookedModel.from_model(model, dataset)
         issues = []
         for s in slices:
             for test in tests:
-                test_result = self._diff_test(s, model, dataset, test, threshold)
+                test_result = self._diff_test(s, precooked, dataset, test, threshold)
                 if not test_result.passed:
                     issues.append(Issue(s, model, dataset, dataset_meta, test_result, self._get_test_name(test)))
 
