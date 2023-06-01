@@ -73,64 +73,7 @@
                         </v-expansion-panel-header>
                     </v-expansion-panel>
                 </v-expansion-panels>
-
-                <!-- <v-row>
-                    <v-card elevation="2" @click.stop="openTestSuite(suite.id)" class="ma-2 grey lighten-5" style="width: 300px" v-for="suite in testSuites" :key="suite.id">
-                        <v-card-title>
-                            <span>{{ suite.name }}</span>
-                            <v-spacer></v-spacer>
-                            <v-menu right bottom offset-y rounded=0>
-                                <template v-slot:activator="{ on, attrs }">
-                                    <v-btn text small tile v-bind="attrs" v-on="on" class="ml-2">
-                                        <v-icon>mdi-dots-horizontal</v-icon>
-                                    </v-btn>
-                                </template>
-                                <v-list dense tile>
-                                    <v-list-item link>
-                                        <v-list-item-title>
-                                            <v-icon dense left>mdi-tune</v-icon>
-                                            Properties
-                                        </v-list-item-title>
-                                    </v-list-item>
-                                </v-list>
-                            </v-menu>
-                        </v-card-title>
-                        <v-card-subtitle>Tests: {{ suite.tests.length }}</v-card-subtitle>
-                        <v-card-text>{{ suite.projectKey }}</v-card-text>
-                    </v-card>
-                </v-row> -->
             </div>
-
-
-
-
-            <!-- <div v-if="testSuitesStore.currentTestSuiteId === null">
-                <v-row>
-                    <v-card elevation="2" @click.stop="openTestSuite(suite.id)" class="ma-2 grey lighten-5" style="width: 300px" v-for="suite in testSuites" :key="suite.id">
-                        <v-card-title>
-                            <span>{{ suite.name }}</span>
-                            <v-spacer></v-spacer>
-                            <v-menu right bottom offset-y rounded=0>
-                                <template v-slot:activator="{ on, attrs }">
-                                    <v-btn text small tile v-bind="attrs" v-on="on" class="ml-2">
-                                        <v-icon>mdi-dots-horizontal</v-icon>
-                                    </v-btn>
-                                </template>
-                                <v-list dense tile>
-                                    <v-list-item link>
-                                        <v-list-item-title>
-                                            <v-icon dense left>mdi-tune</v-icon>
-                                            Properties
-                                        </v-list-item-title>
-                                    </v-list-item>
-                                </v-list>
-                            </v-menu>
-                        </v-card-title>
-                        <v-card-subtitle>Tests: {{ suite.tests.length }}</v-card-subtitle>
-                        <v-card-text>{{ suite.projectKey }}</v-card-text>
-                    </v-card>
-                </v-row>
-            </div> -->
             <div v-else>
                 <router-view />
             </div>
@@ -162,9 +105,6 @@ import { TYPE } from "vue-toastification";
 import InlineEditText from '@/components/InlineEditText.vue';
 import { $vfm } from "vue-final-modal";
 import ConfirmModal from "@/views/main/project/modals/ConfirmModal.vue";
-import { test } from "node:test";
-
-
 
 const props = defineProps<{
     projectId: number
