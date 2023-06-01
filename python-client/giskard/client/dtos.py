@@ -12,7 +12,7 @@ class TestInputDTO(BaseModel):
 
 class SuiteTestDTO(BaseModel):
     testUuid: str
-    testInputs: Dict[str, TestInputDTO]
+    functionInputs: Dict[str, TestInputDTO]
 
 
 class TestSuiteDTO(BaseModel):
