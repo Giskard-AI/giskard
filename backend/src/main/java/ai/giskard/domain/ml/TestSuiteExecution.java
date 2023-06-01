@@ -2,6 +2,7 @@ package ai.giskard.domain.ml;
 
 import ai.giskard.domain.BaseEntity;
 import ai.giskard.utils.JSONStringAttributeConverter;
+import ai.giskard.utils.SimpleJSONStringAttributeConverter;
 import ai.giskard.web.dto.ml.SingleTestResultDTO;
 import com.fasterxml.jackson.core.type.TypeReference;
 import lombok.Getter;
@@ -30,6 +31,11 @@ public class TestSuiteExecution extends BaseEntity {
     @ManyToOne
     TestSuiteNew suite;
     Date executionDate = new Date();
+
+    @Column(columnDefinition = "VARCHAR")
+    @Convert(converter = SimpleJSONStringAttributeConverter.class)
+    private Map<String, String> inputs;
+    
     @Enumerated(EnumType.STRING)
     TestResult result;
 

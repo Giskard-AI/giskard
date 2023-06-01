@@ -18,6 +18,8 @@ import java.util.Map;
 public class TestSuiteExecutionDTO {
     Long suiteId;
     Date executionDate;
+
+    private Map<String, String> inputs;
     @Enumerated(EnumType.STRING)
     TestResult result;
     private Map<String, SingleTestResultDTO> results;

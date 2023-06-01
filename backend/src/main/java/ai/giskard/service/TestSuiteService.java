@@ -191,6 +191,8 @@ public class TestSuiteService {
             }
 
             TestSuiteExecution execution = new TestSuiteExecution(testSuite);
+            execution.setInputs(inputs.entrySet().stream()
+                .collect(Collectors.toMap(Map.Entry::getKey, entry -> String.valueOf(entry.getValue()))));
             try {
                 TestSuiteResultMessage testSuiteResultMessage = client.getBlockingStub().runTestSuite(builder.build());
 
