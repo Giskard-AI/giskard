@@ -23,10 +23,12 @@ from giskard.core.core import ModelMeta, SupportedModelTypes, ModelType
 from giskard.core.validation import configured_validate_arguments
 from giskard.datasets.base import Dataset
 from giskard.ml_worker.utils.logging import Timer
-from giskard.models.base.cache import ModelCache
+from giskard.models.cache import ModelCache
 from giskard.path_utils import get_size
 from giskard.settings import settings
 from ..utils import np_types_to_native
+from ..cache import get_cache_enabled
+
 
 META_FILENAME = "giskard-model-meta.yaml"
 
@@ -68,18 +70,16 @@ class BaseModel(ABC):
     """
     should_save_model_class = False
     id: uuid.UUID = None
-    model_cache: ModelCache
-    disable_cache: bool
+    _cache: ModelCache
 
     @configured_validate_arguments
     def __init__(
-            self,
-            model_type: ModelType,
-            name: Optional[str] = None,
-            feature_names: Optional[Iterable] = None,
-            classification_threshold: Optional[float] = 0.5,
-            classification_labels: Optional[Iterable] = None,
-            disable_cache: bool = False
+        self,
+        model_type: ModelType,
+        name: Optional[str] = None,
+        feature_names: Optional[Iterable] = None,
+        classification_threshold: Optional[float] = 0.5,
+        classification_labels: Optional[Iterable] = None,
     ) -> None:
         """
         Initialize a new instance of the BaseModel class.
@@ -116,7 +116,7 @@ class BaseModel(ABC):
                     "Duplicates are found in 'classification_labels', please only provide unique values."
                 )
 
-        self.model_cache = ModelCache()
+        self._cache = ModelCache()
 
         self.meta = ModelMeta(
             name=name if name is not None else self.__class__.__name__,
@@ -127,8 +127,6 @@ class BaseModel(ABC):
             loader_module=self.__module__,
             classification_threshold=classification_threshold,
         )
-
-        self.disable_cache = disable_cache
 
     @property
     def is_classification(self):
@@ -175,7 +173,7 @@ class BaseModel(ABC):
                 default_flow_style=False,
             )
 
-            uncompressed_bytes = save_df(self.model_cache.to_df())
+            uncompressed_bytes = save_df(self._cache.to_df())
             compressed_bytes = compress(uncompressed_bytes)
             pred_f.write(compressed_bytes)
 
@@ -263,8 +261,12 @@ class BaseModel(ABC):
         """
         timer = Timer()
 
-        raw_prediction = self.predict_df(self.prepare_dataframe(dataset.df, column_dtypes=dataset.column_dtypes, target=dataset.target)) if self.disable_cache \
-            else self._predict_from_cache(dataset)
+        if get_cache_enabled():
+            raw_prediction = self._predict_from_cache(dataset)
+        else:
+            raw_prediction = self.predict_df(
+                self.prepare_dataframe(dataset.df, column_dtypes=dataset.column_dtypes, target=dataset.target)
+            )
 
         if self.is_regression:
             result = ModelPredictionResults(
@@ -305,18 +307,17 @@ class BaseModel(ABC):
         ...
 
     def _predict_from_cache(self, dataset: Dataset):
-        cached_predictions = self.model_cache.read_from_cache(dataset._row_hashes)
+        cached_predictions = self._cache.read_from_cache(dataset._row_hashes)
         missing = cached_predictions.isna()
-        if len(missing.shape) > 1:
-            missing = missing.any(axis=1)
 
         missing_slice = dataset.slice(lambda x: dataset.df[missing], row_level=False)
-        df = self.prepare_dataframe(missing_slice.df, column_dtypes=missing_slice.column_dtypes,
-                                    target=missing_slice.target)
+        df = self.prepare_dataframe(
+            missing_slice.df, column_dtypes=missing_slice.column_dtypes, target=missing_slice.target
+        )
 
         if len(df) > 0:
             raw_prediction = self.predict_df(df)
-            self.model_cache.set_cache(dataset._row_hashes[missing], raw_prediction)
+            self._cache.set_cache(dataset._row_hashes[missing], raw_prediction)
             cached_predictions.loc[missing] = raw_prediction.tolist()
 
         # TODO: check if there is a better solution
@@ -394,6 +395,8 @@ class BaseModel(ABC):
                     loader_class=file_meta["loader_class"],
                 )
 
+        from zstandard import ZstdDecompressor
+
         with open(Path(local_dir) / CACHE_CSV_FILENAME, "rb") as pred_f:
             try:
                 prediction_cache = pd.read_csv(
@@ -401,7 +404,7 @@ class BaseModel(ABC):
                     keep_default_na=False,
                     na_values=["_GSK_NA_"],
                 )
-            except EmptyDataError:
+            except pd.errors.EmptyDataError:
                 prediction_cache = None
 
         clazz = cls.determine_model_class(meta, local_dir)
@@ -411,7 +414,7 @@ class BaseModel(ABC):
         del constructor_params["loader_class"]
 
         model = clazz.load(local_dir, **constructor_params)
-        model.model_cache = ModelCache(prediction_cache)
+        model._cache = ModelCache(prediction_cache)
         return model
 
     @classmethod

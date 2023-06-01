@@ -4,9 +4,9 @@ import numpy as np
 import pandas as pd
 import xxhash
 
-from giskard import Dataset
-from giskard import Model
-from giskard.models.base import ModelCache
+import giskard
+from giskard import Model, Dataset
+from giskard.models.cache import ModelCache
 
 
 def test_predict_once():
@@ -42,21 +42,16 @@ def test_predict_disabled_cache():
         called_indexes.extend(df.index)
         return np.array(df.values)
 
-    wrapped_model = Model(
-        prediction_function,
-        model_type="regression"
-    )
-    wrapped_model.disable_cache = True
+    wrapped_model = Model(prediction_function, model_type="regression")
 
-    wrapped_dataset = Dataset(
-        df=pd.DataFrame([0, 1])
-    )
-
-    prediction = wrapped_model.predict(wrapped_dataset)
-    second_prediction = wrapped_model.predict(wrapped_dataset)
+    wrapped_dataset = Dataset(df=pd.DataFrame([0, 1]))
+    with giskard.models.no_cache():
+        prediction = wrapped_model.predict(wrapped_dataset)
+        second_prediction = wrapped_model.predict(wrapped_dataset)
 
     assert called_indexes == list(wrapped_dataset.df.index) + list(
-        wrapped_dataset.df.index), 'The prediction should have been called twice'
+        wrapped_dataset.df.index
+    ), 'The prediction should have been called twice'
     assert list(prediction.raw) == list(second_prediction.raw)
     assert list(prediction.raw_prediction) == list(second_prediction.raw_prediction)
     assert list(prediction.prediction) == list(second_prediction.prediction)

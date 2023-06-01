@@ -8,6 +8,7 @@ import logging
 from giskard.core.core import ModelType
 from giskard.models.function import PredictionFunctionModel
 from giskard.core.validation import configured_validate_arguments
+from .cache import no_cache
 
 logger = logging.getLogger(__name__)
 
@@ -321,3 +322,14 @@ def model_from_huggingface(model, model_type: ModelType, name: Optional[str] = N
                             feature_names,
                             classification_threshold,
                             classification_labels)
+
+
+__all__ = [
+    "wrap_model",
+    "model_from_sklearn",
+    "model_from_catboost",
+    "model_from_pytorch",
+    "model_from_tensorflow",
+    "model_from_huggingface",
+    "no_cache",
+]
