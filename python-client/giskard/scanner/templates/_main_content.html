@@ -1,6 +1,6 @@
 {% for group, issues in issues_by_group.items() %}
 <div id="{{ group | replace(' ', '_') }}" role="tabpanel" class="m-4 mb-4{% if loop.index > 1 %} hidden{% endif %}">
-
+    {% if issues[0]|attr("group_message") %}
     <div class="p-3 bg-amber-100/40 rounded-sm w-full flex align-middle">
         <div class="text-amber-100">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
@@ -10,10 +10,10 @@
             </svg>
         </div>
         <p class="ml-2 my-1 text-amber-100 text-sm">
-            We detected some spots in your data where the model has a tendency to make incorrect
-            predictions.
+            {{ issues[0]|attr("group_message") }}
         </p>
     </div>
+    {% endif %}
 
     <div class="flex items-center space-x-1">
         <h2 class="uppercase my-4 mr-2 font-medium">Issues</h2>
