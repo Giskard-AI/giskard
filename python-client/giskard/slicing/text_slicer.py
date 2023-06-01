@@ -122,6 +122,9 @@ class TextSlicer(BaseSlicer):
 def _calculate_text_metadata(feature_data: pd.Series):
     import chardet
 
+    # Ensure this is text encoded as a string
+    feature_data = feature_data.astype(str)
+
     return pd.DataFrame(
         {
             "text_length": feature_data.map(len),
