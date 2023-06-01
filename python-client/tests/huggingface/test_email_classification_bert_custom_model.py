@@ -1,18 +1,13 @@
 import email
-import glob
-import os
-
 from collections import defaultdict
 import pandas as pd
 from dateutil import parser
 import torch
 from transformers import BertTokenizer, BertForSequenceClassification
-
 from giskard import HuggingFaceModel, Dataset
-
 import tests.utils
-
 from scipy import special
+import email_classification_utils
 
 idx_to_cat = {
     1: 'REGULATION',
@@ -50,11 +45,8 @@ def get_labels(filename):
 
 
 def test_email_classification_bert_custom_model():
-    os.system("wget http://bailando.sims.berkeley.edu/enron/enron_with_categories.tar.gz")
-    os.system("tar zxf enron_with_categories.tar.gz")
-    os.system("rm enron_with_categories.tar.gz")
 
-    email_files = [f.replace('.cats', '') for f in glob.glob('enron_with_categories/*/*.cats')]
+    email_files = email_classification_utils.get_email_files()
 
     columns_name = ['Target', 'Subject', 'Content', 'Week_day', 'Year', 'Month', 'Hour', 'Nb_of_forwarded_msg']
 
