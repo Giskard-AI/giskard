@@ -1,5 +1,5 @@
 <template>
-  <div class="h100 oh pb-0 flex-column">
+  <v-container class="vertical-container overflow-x-hidden pl-0 pr-0" fluid>
     <v-row align="center">
       <v-col cols="6" :align="'right'" align-self="end" class="pl-0 pb-0">
         <v-container>
@@ -41,14 +41,14 @@
       </v-col>
     </v-row>
     <v-row class="mt-0 counters text-body-2">
-      <v-col class="pt-0">
+      <v-col>
         Total: {{ nbTotalTests }} tests.&nbsp; &nbsp; Executed: {{ nbTestsExecuted }}.&nbsp; &nbsp;
         Passed: {{ nbTestsPassed }}.&nbsp; &nbsp; Failed: {{ nbTestsFailed }}.
       </v-col>
     </v-row>
 
-    <div class="oh" style="flex: 1">
-      <div class="h100">
+    <div class="vertical-container mt-5">
+      <div>
         <v-list two-line class='tests-list'>
           <template v-for='(test) in filteredTests'>
             <v-divider :inset='false'></v-divider>
@@ -81,7 +81,7 @@
         </v-list>
       </div>
     </div>
-  </div>
+  </v-container>
 </template>
 
 <script lang='ts'>

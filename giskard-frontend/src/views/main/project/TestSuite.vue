@@ -1,5 +1,5 @@
 <template>
-  <v-container fluid v-if="testSuite" class="vertical-container h100 oh">
+  <v-container fluid v-if="testSuite" class="vertical-container">
     <v-row>
       <v-col>
         <span>Test suite: </span>

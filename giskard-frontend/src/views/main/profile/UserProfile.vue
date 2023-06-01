@@ -1,11 +1,11 @@
 <template>
-  <div class="h100 d-flex flex-column">
+  <div class="fill-height d-flex flex-column">
     <v-toolbar flat dense light class="flex-grow-0">
       <v-toolbar-title class="text-h6 font-weight-regular secondary--text text--lighten-1">
         My Profile
       </v-toolbar-title>
     </v-toolbar>
-    <v-container class="flex-grow-1 overflow-y-auto">
+    <v-container class="flex-grow-1 overflow-y-auto" fluid>
       <v-row v-if="userProfile">
         <v-col>
           <v-card height="100%">
