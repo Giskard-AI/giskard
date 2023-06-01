@@ -29,9 +29,8 @@ import {
     ProjectDTO,
     ProjectPostDTO,
     RoleDTO,
-    TestCatalogDTO,
     TestDTO,
-    TestExecutionResultDTO,
+    TestExecutionResultDTO, TestFunctionDTO,
     TestSuiteCreateDTO,
     TestSuiteDTO,
     TestSuiteNewDTO,
@@ -406,10 +405,10 @@ export const api = {
     async executeTestSuite(suiteId: number) {
         return apiV2.post<unknown, Array<TestExecutionResultDTO>>(`/testing/suites/execute`, {suiteId});
     },
-    async getTestsCatalog(projectId: number) {
-        return apiV2.get<unknown, TestCatalogDTO>(`/testing/tests/test-catalog`, {params: {projectId}});
+    async getTestFunctions() {
+        return apiV2.get<unknown, TestFunctionDTO[]>(`/test-functions`);
     },
-    async runAdHocTest(projectId: number, testId: string, inputs: { [key: string]: string }) {
-        return apiV2.post<unknown, TestExecutionResultDTO>(`/testing/tests/run-test`, {projectId, testId, inputs});
+    async runAdHocTest(projectId: number, testUuid: string, inputs: { [key: string]: string }) {
+        return apiV2.post<unknown, TestExecutionResultDTO>(`/testing/tests/run-test`, {projectId, testUuid, inputs});
     },
 };

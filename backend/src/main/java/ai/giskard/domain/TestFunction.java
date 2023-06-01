@@ -1,7 +1,7 @@
 package ai.giskard.domain;
 
+import ai.giskard.domain.ml.SuiteTest;
 import ai.giskard.utils.SimpleJSONStringAttributeConverter;
-import ai.giskard.web.dto.TestFunctionArgumentDTO;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -16,7 +16,6 @@ import java.util.UUID;
 })
 @Setter
 public class TestFunction {
-
     @Id
     private UUID uuid;
     @Column(nullable = false)
@@ -38,7 +37,10 @@ public class TestFunction {
     @Convert(converter = SimpleJSONStringAttributeConverter.class)
     private List<String> tags;
 
-    @OneToMany(mappedBy = "testFunction", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "testFunction", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<TestFunctionArgument> args;
+
+    @OneToMany(mappedBy = "testFunction", cascade = CascadeType.ALL)
+    private List<SuiteTest> suiteTests;
 
 }
