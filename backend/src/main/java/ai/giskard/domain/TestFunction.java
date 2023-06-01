@@ -6,16 +6,17 @@ import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
+import java.io.Serializable;
 import java.util.List;
 import java.util.UUID;
 
 @Getter
 @Entity(name = "test_functions")
-@Table(uniqueConstraints={
+@Table(uniqueConstraints = {
     @UniqueConstraint(columnNames = {"name", "module", "version"})
 })
 @Setter
-public class TestFunction {
+public class TestFunction implements Serializable {
     @Id
     private UUID uuid;
     @Column(nullable = false)

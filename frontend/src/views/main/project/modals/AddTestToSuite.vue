@@ -107,7 +107,7 @@ async function submit(close) {
     testInputs: chain(testInputs.value)
         .omitBy(({value}) => value === null
             || (typeof value === 'string' && value.trim() === '')
-            || (typeof value === 'number' && value === Number.NaN))
+            || (typeof value === 'number' && Number.isNaN(value)))
         .value() as { [name: string]: TestInputDTO }
   }
 
