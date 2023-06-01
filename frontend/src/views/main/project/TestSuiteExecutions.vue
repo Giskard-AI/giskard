@@ -24,19 +24,26 @@
               <div v-for="e in executionsAndJobs" :key="e.date">
                 <v-divider/>
                 <v-list-item v-if="e.disabled" disabled>
+                  <v-list-item-icon>
+                    <v-icon :color="e.color" size="40">{{
+                        e.icon
+                      }}
+                    </v-icon>
+                  </v-list-item-icon>
                   <v-list-item-content>
                     <v-list-item-title>
                       {{ e.date | date }}
                     </v-list-item-title>
-                    <v-list-item-subtitle>
-                      <v-chip class="mr-2" x-small :color="e.color">
-                        {{ e.state }}
-                      </v-chip>
-                    </v-list-item-subtitle>
                   </v-list-item-content>
                 </v-list-item>
                 <v-list-item v-else
                              :to="{name: 'test-suite-execution', params: {executionId: e.execution.id}}">
+                  <v-list-item-icon>
+                    <v-icon :color="e.color" size="40">{{
+                        e.icon
+                      }}
+                    </v-icon>
+                  </v-list-item-icon>
                   <v-list-item-content>
                     <v-list-item-title>
                       <div class="d-flex justify-space-between">
@@ -44,11 +51,6 @@
                         <TestResultHeatmap :results="executionResults(e.execution)"/>
                       </div>
                     </v-list-item-title>
-                    <v-list-item-subtitle>
-                      <v-chip class="mr-2" x-small :color="e.color">
-                        {{ e.state }}
-                      </v-chip>
-                    </v-list-item-subtitle>
                   </v-list-item-content>
                 </v-list-item>
               </div>
@@ -90,14 +92,16 @@ function executionStatusMessage(execution: TestSuiteExecutionDTO): string {
   }
 }
 
-function jobStatusMessage(job: JobDTO): string {
-  switch (job.state) {
-    case JobState.SCHEDULED:
-      return "scheduled";
-    case JobState.RUNNING:
-      return "running";
+function executionStatusIcon(execution: TestSuiteExecutionDTO): string {
+  switch (execution.result) {
+    case TestResult.PASSED:
+      return "done";
+    case TestResult.ERROR:
+      return "error";
+    case TestResult.FAILED:
+      return "close";
     default:
-      return "N/A";
+      return "sync";
   }
 }
 
@@ -149,8 +153,8 @@ function executionResults(execution: TestSuiteExecutionDTO): boolean[] {
 type ExecutionTabItem = {
   date: any,
   disabled: boolean,
-  state: string,
   color: string,
+  icon: string,
   execution?: TestSuiteExecutionDTO
 }
 
@@ -164,16 +168,16 @@ const executionsAndJobs = computed<ExecutionTabItem[] | undefined>(() => {
           .map(e => ({
             date: e.executionDate,
             disabled: false,
-            state: executionStatusMessage(e),
             color: executionStatusColor(e),
+            icon: executionStatusIcon(e),
             execution: e
           })))
       .concat(Object.values(trackedJobs.value)
           .map(j => ({
             date: j.scheduledDate,
             disabled: true,
-            state: jobStatusMessage(j),
-            color: jobStatusColor(j)
+            color: jobStatusColor(j),
+            icon: 'sync'
           })))
       .sort(Comparators.comparing(e => e.date))
       .reverse();
