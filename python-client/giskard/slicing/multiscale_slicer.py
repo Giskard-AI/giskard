@@ -3,13 +3,13 @@ import pandas as pd
 from sklearn.tree import DecisionTreeRegressor
 
 from .base import BaseSlicer
-from .slice import GreaterThan, LowerThan, Query, DataSlice
+from .slice import GreaterThan, LowerThan, Query, DataSlice, QueryBasedSliceFunction
 
 
 class MultiscaleSlicer(BaseSlicer):
     def find_slices(self, features, target=None):
         target = target or self.target
-        data = self.data.dropna()
+        data = self.dataset.df.dropna()
         min_leaf_size = 30
 
         # Adaptive binning via decision tree
@@ -82,6 +82,6 @@ class MultiscaleSlicer(BaseSlicer):
             if np.isfinite(th_max):
                 clauses.append(LowerThan(features[0], th_max, True))
 
-            slices.append(DataSlice(Query(clauses), data))
+            slices.append(QueryBasedSliceFunction(Query(clauses)))
 
         return slices

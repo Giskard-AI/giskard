@@ -4,6 +4,8 @@ from sklearn import metrics
 from typing import Optional
 from collections import defaultdict
 from pandas.api.types import is_numeric_dtype, is_categorical_dtype
+
+from giskard.scanner.issue import Issue
 from ..models.base import BaseModel
 from ..datasets.base import Dataset
 
@@ -39,7 +41,10 @@ class PerformanceScan:
         meta = self._calculate_meta(model, dataset)
         slices = self.find_slices(dataset.select_columns(model.meta.feature_names), meta, slicer)
 
-        return slices
+        # @TODO: filter this @mathieuroques ;)
+        issues = [Issue(slice_fn, model, dataset) for slice_fn in slices]
+
+        return PerformanceScanResult(issues)
 
     def _calculate_meta(self, model, dataset):
         true_target = dataset.df.loc[:, dataset.target].values
@@ -56,6 +61,11 @@ class PerformanceScan:
         df_with_meta = dataset.df.join(meta)
         target_col = "__gsk__loss"
 
+        # @TODO: Handle this properly once we have support for metadata in datasets
+        column_types = dataset.column_types.copy()
+        column_types["__gsk__loss"] = "numeric"
+        dataset_with_meta = Dataset(df_with_meta, target=dataset.target, column_types=column_types)
+
         # Columns by type
         cols_by_type = {
             type_val: [col for col, col_type in dataset.column_types.items() if col_type == type_val]
@@ -63,7 +73,7 @@ class PerformanceScan:
         }
 
         # Numerical features
-        slicer = self._get_slicer(slicer_name, df_with_meta, target_col)
+        slicer = self._get_slicer(slicer_name, dataset_with_meta, target_col)
 
         slices = []
         for col in cols_by_type["numeric"]:
@@ -84,30 +94,30 @@ class PerformanceScan:
         # cleanly also the metadata needed for the plots? Maybe need a wrapper object
         # like Issue or similar.
 
-        return PerformanceScanResult(slices)
+        return slices
 
-    def _get_slicer(self, slicer_name, data, target):
+    def _get_slicer(self, slicer_name, dataset, target):
         if slicer_name == "opt":
-            return OptSlicer(data, target=target)
+            return OptSlicer(dataset, target=target)
         if slicer_name == "tree":
-            return DecisionTreeSlicer(data, target=target)
+            return DecisionTreeSlicer(dataset, target=target)
         if slicer_name == "ms":
-            return MultiscaleSlicer(data, target=target)
+            return MultiscaleSlicer(dataset, target=target)
         raise ValueError(f"Invalid slicer `{slicer_name}`.")
 
 
 class PerformanceScanResult(ScanResult):
-    def __init__(self, slices):
-        self.slices = slices
+    def __init__(self, issues):
+        self.issues = issues
 
     def has_issues(self):
-        return len(self.slices) > 0
+        return len(self.issues) > 0
 
     def __repr__(self):
         if not self.has_issues():
             return "<PerformanceScanResult (no issues)>"
 
-        return f"<PerformanceScanResult ({len(self.slices)} issue{'s' if len(self.slices) > 1 else ''})>"
+        return f"<PerformanceScanResult ({len(self.issues)} issue{'s' if len(self.issues) > 1 else ''})>"
 
     def _repr_html_(self):
         from collections import defaultdict
@@ -118,35 +128,35 @@ class PerformanceScanResult(ScanResult):
             html_output += "<p>No issues detected.</p>"
             return html_output
 
-        # Group slices by feature
-        grouped_slices = defaultdict(list)
-        for s in self.slices:
-            grouped_slices[tuple(s.columns())].append(s)
+        # Group issues by feature
+        grouped_issues = defaultdict(list)
+        for s in self.issues:
+            grouped_issues[tuple(s.columns())].append(s)
 
-        num_issues = len(grouped_slices)
+        num_issues = len(grouped_issues)
         html_output += f"<p style='color:#b91c1c;font-size:1.2rem;'>{num_issues} issue{'s' if num_issues > 1 else ''} detected.</p>"
 
         # Now we render the results for each feature
-        for (feature,), slices in grouped_slices.items():
+        for (feature,), issues in grouped_issues.items():
             html_output += "<div style='display:flex'>"
             html_output += "<div style='width:50%'>"
             html_output += f"<h4>Higher than average loss for some values of <code>{feature}</code></h4>"
             html_output += "<ul>"
-            for s in slices:
+            for s in issues:
                 html_output += "<li><code>" + s.query.to_pandas() + "</code></li>"
             html_output += "</ul>"
 
-            chart_html = self._make_chart_html(feature, slices)
+            chart_html = self._make_chart_html(feature, issues)
             html_output += "<div style='width:48%;margin-left:2%;'>" + chart_html + "</div>"
             html_output += "</div></div>"
 
         return html_output
 
-    def _make_chart_html(self, feature, slices):
+    def _make_chart_html(self, feature, issues):
         import altair as alt
         from altair import Chart
 
-        data = slices[0].data_unsliced.copy()
+        data = issues[0].data_unsliced.copy()
 
         pdata = pd.DataFrame(
             {
@@ -158,7 +168,7 @@ class PerformanceScanResult(ScanResult):
         )
 
         if is_numeric_dtype(data[feature].dtype):
-            for s in slices:
+            for s in issues:
                 s.bind(data)
                 f_min, f_max = s.get_column_interval(feature)
                 if f_min is None:
@@ -212,7 +222,7 @@ class PerformanceScanResult(ScanResult):
             chart = (base + ci + h) | box
 
         if is_categorical_dtype(data[feature].dtype):
-            for s in slices:
+            for s in issues:
                 s.bind(data)
                 pdata.loc[s.mask, "slice"] = s.query.clauses[feature][0].value
                 pdata.loc[s.mask, "slice_color"] = "#b91c1c"
