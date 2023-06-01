@@ -5,7 +5,7 @@ from giskard.scanner.decorators import detector
 def test_detector_registry():
     class MyTestDetector:
         def run(self, model, dataset):
-            pass
+            return []
 
     DetectorRegistry.register("test_detector", MyTestDetector, tags=["tag_1", "tag_2", "classification"])
 
@@ -19,14 +19,14 @@ def test_detector_decorator():
     @detector
     class MyDecoratedDetector:
         def run(self, model, dataset):
-            pass
+            return []
 
     assert "my_decorated_detector" in DetectorRegistry.get_detector_classes().keys()
 
     @detector(name="other_detector", tags=["tag_1", "tag_2"])
     class MyOtherDecoratedDetector:
         def run(self, model, dataset):
-            pass
+            return []
 
     assert "other_detector" in DetectorRegistry.get_detector_classes().keys()
     assert "other_detector" in DetectorRegistry.get_detector_classes(tags=["tag_2"]).keys()

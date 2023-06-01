@@ -1,4 +1,3 @@
-from pandas.core.dtypes.common import is_string_dtype, is_numeric_dtype
 import pandas as pd
 from giskard.client.python_utils import warning
 from giskard.core.core import SupportedColumnTypes
@@ -96,20 +95,21 @@ def validate_column_categorization(ds: Dataset):
         #         f"you sure it is a 'category' feature?"
         #     )
         # if a user provided possibly wrong information in column_types about text columns
-        elif (
-                is_string_dtype(ds.df[column])
-                and ds.column_types[column] == SupportedColumnTypes.NUMERIC.value
-        ):
-            warning(
-                f"Feature '{column}' is declared as '{ds.column_types[column]}'. Are "
-                f"you sure it is not a 'text' feature?"
-            )
-        # if a user provided possibly wrong information in column_types about numeric columns
-        elif (
-                is_numeric_dtype(ds.df[column])
-                and ds.column_types[column] == SupportedColumnTypes.TEXT.value
-        ):
-            warning(
-                f"Feature '{column}' is declared as '{ds.column_types[column]}'. Are "
-                f"you sure it is not a 'numeric' feature?"
-            )
+        else:
+            if ds.column_types[column] == SupportedColumnTypes.TEXT.value:
+                try:
+                    pd.to_numeric(ds.df[column])
+                    warning(
+                        f"Feature '{column}' is declared as '{ds.column_types[column]}'. Are "
+                        f"you sure it is not a 'numeric' feature?"
+                    )
+                except ValueError:
+                    pass
+            elif ds.column_types[column] == SupportedColumnTypes.NUMERIC.value:
+                try:
+                    pd.to_numeric(ds.df[column])
+                except ValueError:
+                    warning(
+                        f"Feature '{column}' is declared as '{ds.column_types[column]}'. Are "
+                        f"you sure it is not a 'text' feature?"
+                    )
