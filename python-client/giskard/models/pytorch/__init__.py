@@ -24,6 +24,35 @@ class TorchMinimalDataset(torch_dataset):
 
 
 class PyTorchModel(MLFlowBasedModel):
+
+    def __init__(self,
+                 clf,
+                 model_type: Union[SupportedModelTypes, str],
+                 torch_dtype=torch.float32,
+                 device='cpu',
+                 name: str = None,
+                 data_preprocessing_function=None,
+                 model_postprocessing_function=None,
+                 feature_names=None,
+                 classification_threshold=0.5,
+                 classification_labels=None) -> None:
+
+        super().__init__(clf=clf,
+                         model_type=model_type,
+                         name=name,
+                         data_preprocessing_function=data_preprocessing_function,
+                         model_postprocessing_function=model_postprocessing_function,
+                         feature_names=feature_names,
+                         classification_threshold=classification_threshold,
+                         classification_labels=classification_labels)
+
+        self.device = device
+        self.torch_dtype = torch_dtype
+
+    @classmethod
+    def read_model_from_local_dir(cls, local_path):
+        return mlflow.pytorch.load_model(local_path)
+
     def save_with_mflow(self, local_path, mlflow_meta: mlflow.models.Model):
         mlflow.pytorch.save_model(self.clf,
                                   path=local_path,
@@ -58,31 +87,3 @@ class PyTorchModel(MLFlowBasedModel):
             predictions = self.model_postprocessing_function(predictions)
 
         return predictions.squeeze()
-
-    def __init__(self,
-                 clf,
-                 model_type: Union[SupportedModelTypes, str],
-                 torch_dtype=torch.float32,
-                 device='cpu',
-                 name: str = None,
-                 data_preprocessing_function=None,
-                 model_postprocessing_function=None,
-                 feature_names=None,
-                 classification_threshold=0.5,
-                 classification_labels=None) -> None:
-
-        super().__init__(clf=clf,
-                         model_type=model_type,
-                         name=name,
-                         data_preprocessing_function=data_preprocessing_function,
-                         model_postprocessing_function=model_postprocessing_function,
-                         feature_names=feature_names,
-                         classification_threshold=classification_threshold,
-                         classification_labels=classification_labels)
-
-        self.device = device
-        self.torch_dtype = torch_dtype
-
-    @classmethod
-    def read_model_from_local_dir(cls, local_path):
-        return mlflow.pytorch.load_model(local_path)
