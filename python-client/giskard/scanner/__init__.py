@@ -4,7 +4,7 @@ from .scanner import Scanner
 from .logger import logger
 
 _default_detectors = [
-    ".performance.model_bias_detector",
+    ".performance.performance_bias_detector",
     ".robustness.text_perturbation_detector",
 ]
 
