@@ -16,8 +16,8 @@ function hexToRgb(hex: string): RGB {
 }
 
 function pickHex(start: RGB, stop: RGB, weight: number): RGB {
-    const w1 = weight;
-    const w2 = 1 - w1;
+    const w1 = 1 - weight;
+    const w2 = weight;
     return {
         r: Math.round(start.r * w1 + stop.r * w2),
         g: Math.round(start.g * w1 + stop.g * w2),
