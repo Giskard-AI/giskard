@@ -8,11 +8,9 @@ def test_hash_generated_once():
     df = pd.DataFrame([{'foo': 'bar', 'baz': 42}, {'foo': 'Hello!', 'baz': 3.14}])
     dataset = Dataset(df, cat_columns=[])
 
-    print(list(map(lambda row: f"{', '.join(map(lambda x: repr(x), row))}",
-                   dataset.df.values)))
     expected_hashes = [
         xxh3_128_hexdigest("'bar', 42.0".encode('utf-8')),
-        xxh3_128_hexdigest("'Hello!', 3.14".encode('utf-8'))
+        xxh3_128_hexdigest("'Hello!', 3.14".encode('utf-8')),
     ]
 
     assert expected_hashes == list(dataset._row_hashes.values)
