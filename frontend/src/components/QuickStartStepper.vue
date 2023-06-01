@@ -5,7 +5,7 @@
       <v-divider></v-divider>
       <v-stepper-step :complete="step > 2" step="2">Create Giskard client</v-stepper-step>
       <v-divider></v-divider>
-      <v-stepper-step :complete="step > 3" step="3">Wrap Giskard artifacts</v-stepper-step>
+      <v-stepper-step :complete="step > 3" step="3">Upload Giskard artifacts</v-stepper-step>
       <v-divider></v-divider>
       <v-stepper-step step="4">Test your model</v-stepper-step>
     </v-stepper-header>
