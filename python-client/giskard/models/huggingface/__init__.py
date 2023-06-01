@@ -39,16 +39,6 @@ class HuggingFaceModel(WrapperModel):
         self.huggingface_module = clf.__class__
         self.pipeline_task = clf.task if isinstance(clf, pipelines.Pipeline) else None
 
-    # This works, but the problem with AutoModels (loaded model in that context) is that their
-    # output are different from the original saved model output
-    """@classmethod
-    def load_clf(cls, local_path):
-        huggingface_meta_file = Path(local_path) / 'giskard-model-huggingface-meta.yaml'
-        if huggingface_meta_file.exists():
-            with open(huggingface_meta_file) as f:
-                huggingface_meta_file = yaml.load(f, Loader=yaml.Loader)
-
-        return AutoModel.from_pretrained(local_path, from_tf=huggingface_meta_file["from_tf"])"""
 
     @classmethod
     def load_clf(cls, local_path):
