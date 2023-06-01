@@ -1,9 +1,13 @@
 <template>
   <div>
-    <div class="d-flex justify-space-between">
+    <div class="d-flex justify-space-between align-center">
       <v-breadcrumbs
           :items="executionBreadcrumbs"
       ></v-breadcrumbs>
+      <v-btn text color="secondary" :to="{name: 'test-suite-new-compare-executions'}">
+        Compare executions
+        <v-icon>compare</v-icon>
+      </v-btn>
     </div>
     <v-progress-linear
         indeterminate
@@ -15,13 +19,29 @@
     <v-row v-else>
       <v-col cols="3">
         <v-list three-line>
-          <v-list-item-group v-model="selectedExecution" color="primary" mandatory>
+          <v-list-item-group color="primary" mandatory>
             <template v-for="e in executionsAndJobs">
               <v-divider/>
-              <v-list-item :value="e.execution" :disabled="e.disabled">
+              <v-list-item v-if="e.disabled" disabled>
                 <v-list-item-content>
                   <v-list-item-title>
                       {{ e.date | moment('MMM Do YY, h:mm:ss a') }}
+                  </v-list-item-title>
+                  <v-list-item-subtitle>
+                    <v-chip class="mr-2" x-small :color="e.color">
+                      {{ e.state }}
+                    </v-chip>
+                  </v-list-item-subtitle>
+                </v-list-item-content>
+              </v-list-item>
+              <v-list-item v-else
+                           :to="{name: 'test-suite-new-execution', params: {executionId: e.execution.id}}">
+                <v-list-item-content>
+                  <v-list-item-title>
+                    <div class="d-flex justify-space-between">
+                      <span>{{ e.execution.executionDate | moment('MMM Do YY, h:mm:ss a') }}</span>
+                      <TestResultHeatmap :results="executionResults(e.execution)"/>
+                    </div>
                   </v-list-item-title>
                   <v-list-item-subtitle>
                     <v-chip class="mr-2" x-small :color="e.color">
@@ -36,15 +56,19 @@
       </v-col>
       <v-col v-if="selectedExecution">
         <div class="pl-4">
-          <p class="text-h6">Inputs</p>
-          <v-list-item v-for="[input, value] in Object.entries(selectedExecution.inputs)" :track-by="input">
-            <v-list-item-content>
-              <v-list-item-title>{{ input }}</v-list-item-title>
-              <v-list-item-subtitle> {{ formatInputValue(input, value) }}</v-list-item-subtitle>
-            </v-list-item-content>
-          </v-list-item>
-          <p class="pt-4 text-h6">Results</p>
-          <TestSuiteExecutionResults :execution="selectedExecution" :registry="props.registry"/>
+          <p class="text-h6">Global inputs</p>
+          <TestInputList :models="props.models" :inputs="selectedExecution.inputs"
+                         :input-types="props.inputTypes" :datasets="props.datasets"/>
+          <div v-if="selectedExecution.result === TestResult.ERROR">
+            <p class="pt-4 text-h6">Error</p>
+            <p>{{ selectedExecution.message }}</p>
+          </div>
+          <div v-else>
+            <p class="pt-4 text-h6">Results</p>
+            <TestSuiteExecutionResults :execution="selectedExecution" :registry="props.registry"
+                                       :models="props.models" :datasets="props.datasets"/>
+          </div>
+
         </div>
       </v-col>
     </v-row>
@@ -53,7 +77,7 @@
 
 <script setup lang="ts">
 
-import {computed, ref} from 'vue';
+import {computed, ref, toRef} from 'vue';
 import {
   DatasetDTO,
   JobDTO,
@@ -64,8 +88,11 @@ import {
   TestSuiteExecutionDTO
 } from '@/generated-sources';
 import TestSuiteExecutionResults from '@/views/main/project/TestSuiteExecutionResults.vue';
+import TestInputList from '@/components/TestInputList.vue';
+import TestResultHeatmap from '@/components/TestResultHeatmap.vue';
 import moment from 'moment';
 import {Colors} from '@/utils/colors';
+import useRouterParamSynchronization from '@/utils/use-router-param-synchronization';
 import {Comparators} from '@/utils/comparators';
 
 const props = defineProps<{
@@ -128,17 +155,6 @@ function jobStatusColor(job: JobDTO): string {
   }
 }
 
-function formatInputValue(input: string, value: string): string {
-  switch (props.inputTypes[input]) {
-    case 'Dataset':
-      return props.datasets[value].name;
-    case 'Model':
-      return props.models[value].name;
-    default:
-      return value;
-  }
-}
-
 const executionItem = {
   text: 'Executions',
   disabled: true
@@ -154,6 +170,11 @@ const executionBreadcrumbs = computed(() =>
       }
     ]);
 
+function executionResults(execution: TestSuiteExecutionDTO): boolean[] {
+  return execution.results ? execution.results.map(result => result.passed) : [];
+}
+
+useRouterParamSynchronization('test-suite-new-execution', 'executionId', toRef(props, 'executions'), selectedExecution, 'id');
 
 type ExecutionTabItem = {
   date: any,

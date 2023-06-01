@@ -53,13 +53,15 @@ import {computed, ref} from 'vue';
 import {api} from '@/api';
 import mixpanel from 'mixpanel-browser';
 import TestInputListSelector from '@/components/TestInputListSelector.vue';
-import {useMainStore} from '@/stores/main';
+import {useMainStore} from "@/stores/main";
 
 const props = defineProps<{
   projectId: number,
   suiteId: number,
   inputs: { [name: string]: string }
 }>();
+
+const mainStore = useMainStore();
 
 const emit = defineEmits(['uuid']);
 
@@ -74,8 +76,6 @@ const inputs = computed(() => Object.keys(props.inputs).map((name) => ({
   name,
   type: props.inputs[name]
 })));
-
-const mainStore = useMainStore();
 
 function isAllParamsSet() {
   return Object.keys(props.inputs)
