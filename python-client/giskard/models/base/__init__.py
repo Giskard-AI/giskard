@@ -215,8 +215,8 @@ class BaseModel(ABC):
                 del column_dtypes[dataset.target]
 
         if self.meta.feature_names:
-            if set(self.meta.feature_names) > set(df.columns):
-                column_names = set(self.meta.feature_names) - set(df.columns)
+            if set(self.meta.feature_names) > set(dataset.columns):
+                column_names = set(self.meta.feature_names) - set(dataset.columns)
                 raise ValueError(
                     f"The following columns are not found in the dataset: {', '.join(sorted(column_names))}"
                 )

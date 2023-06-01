@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import pytest
+
 import tests.utils
 from giskard import Dataset
 from giskard.models.automodel import Model
