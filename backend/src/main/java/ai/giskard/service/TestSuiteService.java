@@ -1,18 +1,22 @@
 package ai.giskard.service;
 
 import ai.giskard.domain.ColumnMeaning;
+import ai.giskard.domain.Project;
 import ai.giskard.domain.ml.*;
 import ai.giskard.domain.ml.testing.Test;
+import ai.giskard.ml.MLWorkerClient;
+import ai.giskard.repository.ProjectRepository;
 import ai.giskard.repository.ml.*;
-import ai.giskard.web.dto.SuiteTestDTO;
-import ai.giskard.web.dto.TestCatalogDTO;
-import ai.giskard.web.dto.TestFunctionArgumentDTO;
-import ai.giskard.web.dto.TestSuiteNewDTO;
+import ai.giskard.service.ml.MLWorkerService;
+import ai.giskard.web.dto.*;
 import ai.giskard.web.dto.mapper.GiskardMapper;
 import ai.giskard.web.dto.ml.TestSuiteDTO;
 import ai.giskard.web.dto.ml.UpdateTestSuiteDTO;
 import ai.giskard.web.rest.errors.Entity;
 import ai.giskard.web.rest.errors.EntityNotFoundException;
+import ai.giskard.worker.ArtifactRef;
+import ai.giskard.worker.GenerateTestSuiteRequest;
+import ai.giskard.worker.GenerateTestSuiteResponse;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import lombok.RequiredArgsConstructor;
@@ -39,6 +43,8 @@ public class TestSuiteService {
     private final CodeTestTemplateService testTemplateService;
     private final TestSuiteNewRepository testSuiteNewRepository;
     private final TestService testService;
+    private final ProjectRepository projectRepository;
+    private final MLWorkerService mlWorkerService;
 
 
     public TestSuite updateTestSuite(UpdateTestSuiteDTO dto) {
@@ -166,5 +172,45 @@ public class TestSuiteService {
         suite.getTests().add(suiteTest);
 
         return giskardMapper.toDTO(testSuiteNewRepository.save(suite));
+    }
+
+    @Transactional
+    public Long generateTestSuite(String projectKey, GenerateTestSuiteDTO dto) {
+
+        Project project = projectRepository.getOneByKey(projectKey);
+        try (MLWorkerClient client = mlWorkerService.createClient(project.isUsingInternalWorker())) {
+            GenerateTestSuiteRequest.Builder request = GenerateTestSuiteRequest.newBuilder()
+                .setProjectKey(projectKey);
+
+            if (dto.getModel() != null) {
+                request.setModel(buildArtifactRef(projectKey, dto.getModel()));
+            }
+
+            if (dto.getActualDataset() != null) {
+                request.setActualDataset(buildArtifactRef(projectKey, dto.getActualDataset()));
+            }
+
+            if (dto.getReferenceDataset() != null) {
+                request.setReferenceDataset(buildArtifactRef(projectKey, dto.getReferenceDataset()));
+            }
+
+            GenerateTestSuiteResponse response = client.getBlockingStub().generateTestSuite(request.build());
+
+            TestSuiteNew suite = new TestSuiteNew();
+            suite.setProject(project);
+            suite.setName(dto.getName());
+            suite.getTests().addAll(response.getTestsList().stream()
+                .map(test -> new SuiteTest(suite, test))
+                .toList());
+
+            return testSuiteNewRepository.save(suite).getId();
+        }
+    }
+
+    private static ArtifactRef buildArtifactRef(String projectKey, String id) {
+        return ArtifactRef.newBuilder()
+            .setProjectKey(projectKey)
+            .setId(id)
+            .build();
     }
 }

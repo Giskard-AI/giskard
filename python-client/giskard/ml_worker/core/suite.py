@@ -10,7 +10,9 @@ from giskard.core.model import Model
 from giskard.ml_worker.core.dataset import Dataset
 from giskard.ml_worker.core.test_runner import run_test
 from giskard.ml_worker.testing.registry.giskard_test import GiskardTest
-from giskard.ml_worker.testing.registry.registry import create_test_function_id
+from giskard.ml_worker.testing.registry.registry import create_test_function_id, tests_registry, TestFunction, \
+    TestFunctionArgument
+from ml_worker_pb2 import ArtifactRef
 
 logger = logging.getLogger(__name__)
 
@@ -81,12 +83,18 @@ class Suite:
         return test_params
 
     def save(self, client: GiskardClient, project_key: str):
-        suite_tests: list[SuiteTestDTO] = list()
+        self.id = client.save_test_suite(self.to_dto(client, project_key))
+        return self
+
+    def to_dto(self, client: GiskardClient, project_key: str):
+        suite_tests: List[SuiteTestDTO] = list()
         for t in self.tests:
             inputs = {}
             for pname, p in t.provided_inputs.items():
-                if issubclass(type(p), Dataset) or issubclass(type(p), Model):
-                    saved_id = p.save(client, project_key)
+                if issubclass(type(p), Tuple) and p[0] is not None:
+                    inputs[pname] = TestInputDTO(name=pname, value=p[0].id)
+                elif issubclass(type(p), Tuple) or issubclass(type(p), Dataset) or issubclass(type(p), Model):
+                    saved_id = without_artifact_ref(p).save(client, project_key)
                     inputs[pname] = TestInputDTO(name=pname, value=saved_id)
                 elif isinstance(p, SuiteInput):
                     inputs[pname] = TestInputDTO(name=pname, value=p.name, is_alias=True)
@@ -97,8 +105,7 @@ class Suite:
                 testId=create_test_function_id(t.test_func),
                 testInputs=inputs
             ))
-        self.id = client.save_test_suite(TestSuiteNewDTO(name=self.name, project_key=project_key, tests=suite_tests))
-        return self
+        return TestSuiteNewDTO(name=self.name, project_key=project_key, tests=suite_tests)
 
     def add_test(self, test_fn: Union[Callable[[Any], Union[bool]], GiskardTest], **params):
         """
@@ -130,3 +137,97 @@ class Suite:
                         res[test_partial.provided_inputs[p.name].name] = p.annotation
         return res
 
+    def generate_tests(
+            self,
+            model: Optional[Union[Model, Tuple[Optional[ArtifactRef], Model]]],
+            actual_dataset: Optional[Union[Model, Tuple[Optional[ArtifactRef], Model]]],
+            reference_dataset: Optional[Union[Model, Tuple[Optional[ArtifactRef], Model]]],
+    ):
+        if model is None:
+            return self
+
+        model = with_artifact_ref(model)
+        actual_dataset = with_artifact_ref(actual_dataset)
+        reference_dataset = with_artifact_ref(reference_dataset)
+
+        giskard_tests = [test for test in tests_registry.get_all().values()
+                         if contains_tag(test, 'giskard') and not self._contains_test(test)]
+
+        for test in giskard_tests:
+            self._add_test_if_suitable(test, model, actual_dataset, reference_dataset)
+
+        return self
+
+    def _add_test_if_suitable(
+            self,
+            test_func: TestFunction,
+            model: Optional[Tuple[Optional[ArtifactRef], Model]],
+            actual_dataset: Optional[Tuple[Optional[ArtifactRef], Dataset]],
+            reference_dataset: Optional[Tuple[Optional[ArtifactRef], Dataset]]
+    ):
+        args = {}
+
+        if model is None or not contains_tag(test_func, model[1].meta.model_type.value):
+            return
+
+        for model_arg in test_func.args.values():
+            if model_arg.type == 'Model':
+                args[model_arg.name] = model
+
+        actual_reference_dataset_arguments = find_actual_reference_dataset_arguments(test_func)
+        if actual_reference_dataset_arguments is not None:
+            if actual_dataset is None or reference_dataset is None:
+                return
+            else:
+                args[actual_reference_dataset_arguments[0].name] = actual_dataset
+                args[actual_reference_dataset_arguments[1].name] = reference_dataset
+        elif actual_dataset is not None:
+            for model_arg in test_func.args.values():
+                if model_arg.type == 'Dataset':
+                    args[model_arg.name] = actual_dataset
+
+        # TODO check isGroundTruthRequired
+
+        self.add_test(test_func.fn, **args)
+
+    def _contains_test(self, test: TestFunction):
+        return any(t.test_func == test for t in self.tests)
+
+
+def find_actual_reference_dataset_arguments(test_func: TestFunction) \
+        -> Optional[Tuple[TestFunctionArgument, TestFunctionArgument]]:
+    actual_dataset = [arg for arg in test_func.args.values()
+                      if match_arg_name_and_type(arg, 'actual_dataset', 'Dataset')]
+
+    reference_dataset = [arg for arg in test_func.args.values()
+                         if match_arg_name_and_type(arg, 'reference_dataset', 'Dataset')]
+
+    if len(actual_dataset) == 1 and len(reference_dataset) == 1:
+        return actual_dataset[0], reference_dataset[0]
+    else:
+        return None
+
+
+def match_arg_name_and_type(arg: TestFunctionArgument, name: str, type: str):
+    return arg.name == name and arg.type == type
+
+
+def contains_tag(func: TestFunction, tag: str):
+    return any([t for t in func.tags if t.upper() == tag.upper()])
+
+
+T = TypeVar('T')
+
+
+def with_artifact_ref(val: Optional[Union[T, Tuple[Optional[ArtifactRef], T]]]) -> Optional[Tuple[Optional[ArtifactRef], T]]:
+    if val is None or isinstance(val, Tuple):
+        return val
+    else:
+        return None, val
+
+
+def without_artifact_ref(val: Optional[Union[T, Tuple[Optional[ArtifactRef], T]]]) -> Optional[T]:
+    if val is None or not isinstance(val, Tuple):
+        return val
+    else:
+        return val[1]

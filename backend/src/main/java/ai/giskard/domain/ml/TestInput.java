@@ -1,5 +1,6 @@
 package ai.giskard.domain.ml;
 
+import ai.giskard.worker.GeneratedTestInput;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -29,4 +30,11 @@ public class TestInput {
     @JoinColumn(name = "test_id")
     @NotNull
     private SuiteTest test;
+
+    public TestInput(SuiteTest test, GeneratedTestInput testInput) {
+        this.name = testInput.getName();
+        this.value = testInput.getValue();
+        this.isAlias = testInput.getIsAlias();
+        this.test = test;
+    }
 }
