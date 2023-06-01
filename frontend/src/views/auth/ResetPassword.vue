@@ -33,56 +33,60 @@
   </v-main>
 </template>
 
-<script lang="ts">
-import { Component, Vue } from 'vue-property-decorator';
-import { appName } from '@/env';
-import { commitAddNotification } from '@/store/main/mutations';
-import { dispatchResetPassword } from '@/store/main/actions';
+<script setup lang="ts">
+import { appName as appname } from '@/env';
 import mixpanel from "mixpanel-browser";
+import {onMounted, ref} from "vue";
+import {useRouter} from "vue-router/composables";
+import {useMainStore} from "@/stores/main";
+import {useUserStore} from "@/stores/user";
 
-@Component
-export default class UserProfileEdit extends Vue {
-  public appName = appName;
-  public password1 = '';
-  public password2 = '';
+const router = useRouter();
+const mainStore = useMainStore();
+const userStore = useUserStore();
 
-  public mounted() {
-    this.checkToken();
+const appName = ref<string>(appname as string);
+const password1 = ref<string>('');
+const password2 = ref<string>('');
+
+const observer = ref<any | null>(null);
+
+onMounted(() => {
+  checkToken();
+})
+
+function reset() {
+  password1.value = '';
+  password2.value = '';
+  observer.value.reset();
+}
+
+function cancel() {
+  router.push('/');
+}
+
+function checkToken() {
+  const token = (router.currentRoute.query.token as string);
+  if (!token) {
+    mainStore.addNotification({
+          content: 'No token provided in the URL, start a new password recovery',
+          color: 'error',
+        });
+    router.push('/recover-password');
+  } else {
+    return token;
   }
+}
 
-  public reset() {
-    this.password1 = '';
-    this.password2 = '';
-    (this.$refs.observer as any).reset();
-  }
-
-  public cancel() {
-    this.$router.push('/');
-  }
-
-  public checkToken() {
-    const token = (this.$router.currentRoute.query.token as string);
-    if (!token) {
-      commitAddNotification(this.$store, {
-        content: 'No token provided in the URL, start a new password recovery',
-        color: 'error',
-      });
-      this.$router.push('/recover-password');
-    } else {
-      return token;
+async function submit() {
+  mixpanel.track('Reset password');
+  observer.value.validate().then(async () => {
+    const token = checkToken();
+    if (token) {
+      await userStore.resetPassword({ token, password: password1.value });
+      await router.push('/');
     }
-  }
-
-  public async submit() {
-    mixpanel.track('Reset password');
-    (this.$refs.observer as any).validate().then(async () => {
-      const token = this.checkToken();
-      if (token) {
-        await dispatchResetPassword(this.$store, { token, password: this.password1 });
-        await this.$router.push('/');
-      }
-    });
-  }
+  });
 }
 </script>
 

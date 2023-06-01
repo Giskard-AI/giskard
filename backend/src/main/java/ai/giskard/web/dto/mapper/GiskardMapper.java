@@ -51,6 +51,7 @@ public interface GiskardMapper {
     @Mapping(target = "lastModifiedDate", ignore = true)
     @Mapping(target = "datasets", ignore = true)
     @Mapping(target = "feedbacks", ignore = true)
+    @Mapping(target = "slices", ignore = true)
     @Mapping(target = "guests", ignore = true)
     @Mapping(target = "models", ignore = true)
     @Mapping(target = "owner", ignore = true)
@@ -58,12 +59,21 @@ public interface GiskardMapper {
     @Mapping(target = "mlWorkerType", ignore = true)
     void updateProjectFromDto(ProjectPostDTO dto, @MappingTarget Project entity);
 
+    @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
+    @Mapping(target = "createdBy", ignore = true)
+    @Mapping(target = "createdDate", ignore = true)
+    @Mapping(target = "lastModifiedBy", ignore = true)
+    @Mapping(target = "lastModifiedDate", ignore = true)
+    @Mapping(target = "project", ignore = true)
+    void updateSliceFromDto(SlicePutDTO dto, @MappingTarget Slice entity);
+
     @Mapping(target = "createdBy", ignore = true)
     @Mapping(target = "createdDate", ignore = true)
     @Mapping(target = "lastModifiedBy", ignore = true)
     @Mapping(target = "lastModifiedDate", ignore = true)
     @Mapping(target = "datasets", ignore = true)
     @Mapping(target = "feedbacks", ignore = true)
+    @Mapping(target = "slices", ignore = true)
     @Mapping(target = "guests", ignore = true)
     @Mapping(target = "models", ignore = true)
     @Mapping(target = "owner", ignore = true)
@@ -76,6 +86,10 @@ public interface GiskardMapper {
     ProjectPostDTO projectToProjectPostDTO(Project project);
 
     ProjectDTO projectToProjectDTO(Project project);
+
+    SliceDTO sliceToSliceDTO(Slice slice);
+
+    List<SliceDTO> slicesToSlicesDTO(List<Slice> slice);
 
     List<ProjectDTO> projectsToProjectDTOs(List<Project> projects);
 
@@ -155,6 +169,14 @@ public interface GiskardMapper {
     @Mapping(target = "lastModifiedBy", ignore = true)
     @Mapping(target = "lastModifiedDate", ignore = true)
     Dataset fromDTO(DatasetDTO dto);
+    @Mapping(source = "projectId", target = "project")
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "createdBy", ignore = true)
+    @Mapping(target = "createdDate", ignore = true)
+    @Mapping(target = "lastModifiedBy", ignore = true)
+    @Mapping(target = "lastModifiedDate", ignore = true)
+    Slice fromDTO(SliceCreateDTO dto);
+
 
     @Mapping(target = "message", source = "feedbackMessage")
     @Mapping(target = "projectId", source = "project.id")
