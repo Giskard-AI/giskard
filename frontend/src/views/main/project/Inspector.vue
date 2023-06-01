@@ -1,5 +1,5 @@
 <template>
-  <v-container fluid v-if="model && dataset">
+  <v-container fluid v-if="model && dataset" class="vc overflow-x-hidden">
     <ValidationObserver ref="dataFormObserver" v-slot="{ dirty }">
       <v-row v-if='modelFeatures.length'>
         <v-col cols="12" md="6">
