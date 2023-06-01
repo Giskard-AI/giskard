@@ -120,8 +120,7 @@ giskard_dataset = Dataset(df,
                           name="Titanic dataset")
 
 # Upload to the current project ✉️
-giskard_dataset.upload(client, "${project.value!.key}")
-`
+giskard_dataset.upload(client, "${project.value!.key}")`
 )
 
 const project = computed(() => {
