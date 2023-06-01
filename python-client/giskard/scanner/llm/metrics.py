@@ -2,7 +2,8 @@ from abc import abstractmethod
 from ctypes import Union
 
 import evaluate
-from typing import List, Union
+from typing import List, Union, Iterable
+
 
 class LlmMetric:
     @abstractmethod
@@ -25,5 +26,12 @@ class RougeScore(LlmMetric):
 
 
 class Rouge1(RougeScore):
-    def __call__(self, predictions: List[str], references: Union[List[List[str]], List[str]]) -> List[float]:
+    def __call__(self, predictions: Iterable[str], references: Union[Iterable[Iterable[str]], Iterable[str]]) -> \
+            Iterable[float]:
         return self._rouge_call(predictions, references, ["rouge1"])
+
+
+class Rouge2(RougeScore):
+    def __call__(self, predictions: Iterable[str], references: Union[Iterable[Iterable[str]], Iterable[str]]) -> \
+            Iterable[float]:
+        return self._rouge_call(predictions, references, ["rouge2"])
