@@ -2,7 +2,7 @@ import pytest
 import numpy as np
 import pandas as pd
 from giskard import slicing_function
-from giskard.models.precooked import PrecookedModel
+from giskard.models._precooked import PrecookedModel
 
 
 @slicing_function(name="random", row_level=False)
@@ -18,7 +18,7 @@ def test_precooked_model(model, dataset, request):
     model = request.getfixturevalue(model)
     dataset = request.getfixturevalue(dataset)
     precooked_model = PrecookedModel.from_model(model, dataset)
-    data_slice = dataset.slice(random_slice)
+    data_slice = dataset.slice(random_slice())
     # assert np.all(data_slice.df.columns == dataset.df.columns)
     # assert np.all(precooked_model.predict(dataset).raw == model.predict(dataset).raw)
 
