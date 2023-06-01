@@ -3,7 +3,7 @@
     <v-row>
       <v-col cols="9">
         <v-card height="100%">
-          <v-card-title class="font-weight-light secondary--text">
+          <v-card-title class="font-weight-light secondary--text py-1">
             Project Settings
             <v-spacer></v-spacer>
             <v-list dense tile class="d-flex">
@@ -21,10 +21,10 @@
               </v-list-item>
             </v-list>
           </v-card-title>
-          <v-card-text class="container">
+          <v-card-text class="container py-0">
             <v-row>
-              <v-col cols="6">
-                <v-simple-table class="properties-table project-properties-table-1">
+              <v-col cols="6" class="py-0">
+                <v-simple-table class="properties-table project-properties-table-1" dense>
                   <tr>
                     <td>Project Name:</td>
                     <td>
@@ -43,14 +43,14 @@
                     <td>Project Unique Key:</td>
                     <td>{{ project.key }}</td>
                   </tr>
+                </v-simple-table>
+              </v-col>
+              <v-col cols="6" class="py-0">
+                <v-simple-table class="properties-table project-properties-table-2" dense>
                   <tr>
                     <td>Project ID:</td>
                     <td>{{ project.id }}</td>
                   </tr>
-                </v-simple-table>
-              </v-col>
-              <v-col cols="6">
-                <v-simple-table class="properties-table project-properties-table-2">
                   <tr>
                     <td>Created by:</td>
                     <td>{{ getUserFullDisplayName(project.owner) }}</td>
