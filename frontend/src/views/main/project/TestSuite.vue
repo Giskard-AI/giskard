@@ -58,7 +58,6 @@ import {storeToRefs} from 'pinia';
 import {useRoute, useRouter} from 'vue-router/composables';
 import {$vfm} from 'vue-final-modal';
 import RunTestSuiteModal from '@/views/main/project/modals/RunTestSuiteModal.vue';
-import {useTestSuiteCompareStore} from '@/stores/test-suite-compare';
 
 const props = defineProps<{
   projectId: number,
@@ -93,8 +92,6 @@ async function openRunTestSuite(compareMode: boolean) {
   });
 }
 
-let testSuiteCompareStore = useTestSuiteCompareStore();
-const {currentExecution} = storeToRefs(testSuiteCompareStore);
 const {hasTest} = storeToRefs(useTestSuiteStore());
 
 </script>
