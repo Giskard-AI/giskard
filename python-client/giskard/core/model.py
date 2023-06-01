@@ -127,18 +127,18 @@ class Model(ABC):
 
     def prepare_dataframe(self, dataset: Dataset):
         df = dataset.df.copy()
-        column_types = dict(dataset.column_types) if dataset.column_types else None
+        column_dtypes = dict(dataset.column_dtypes) if dataset.column_dtypes else None
 
-        if column_types:
-            for cname, ctype in column_types.items():
+        if column_dtypes:
+            for cname, ctype in column_dtypes.items():
                 if cname not in df:
                     df[cname] = None
 
         if dataset.target:
             if dataset.target in df.columns:
                 df.drop(dataset.target, axis=1, inplace=True)
-            if column_types and dataset.target in column_types:
-                del column_types[dataset.target]
+            if column_dtypes and dataset.target in column_dtypes:
+                del column_dtypes[dataset.target]
 
         if self.meta.feature_names:
             if set(self.meta.feature_names) > set(df.columns):
@@ -147,15 +147,15 @@ class Model(ABC):
                     f"The following columns are not found in the dataset: {', '.join(sorted(column_names))}"
                 )
             df = df[self.meta.feature_names]
-            if column_types:
-                column_types = {k: v for k, v in column_types.items() if k in self.meta.feature_names}
+            if column_dtypes:
+                column_dtypes = {k: v for k, v in column_dtypes.items() if k in self.meta.feature_names}
 
-        for cname, ctype in column_types.items():
+        for cname, ctype in column_dtypes.items():
             if cname not in df:
                 df[cname] = None
 
-        if column_types:
-            df = Dataset.cast_column_to_types(df, column_types)
+        if column_dtypes:
+            df = Dataset.cast_column_to_dtypes(df, column_dtypes)
         return df
 
     def predict(self, dataset: Dataset) -> ModelPredictionResults:

@@ -1,6 +1,6 @@
 package ai.giskard.service;
 
-import ai.giskard.domain.FeatureType;
+import ai.giskard.domain.ColumnType;
 import ai.giskard.domain.ml.Dataset;
 import ai.giskard.repository.ml.DatasetRepository;
 import ai.giskard.security.PermissionEvaluator;
@@ -13,7 +13,7 @@ import com.univocity.parsers.common.TextParsingException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import tech.tablesaw.api.ColumnType;
+import tech.tablesaw.api.ColumnDType;
 import tech.tablesaw.api.IntColumn;
 import tech.tablesaw.api.Table;
 import tech.tablesaw.io.csv.CsvReadOptions;
@@ -44,8 +44,8 @@ public class DatasetService {
      */
     public Table readTableByDatasetId(@NotNull UUID datasetId) {
         Dataset dataset = datasetRepository.findById(datasetId).orElseThrow(() -> new EntityNotFoundException(Entity.DATASET, datasetId.toString()));
-        Map<String, ColumnType> columnTypes = dataset.getFeatureTypes().entrySet().stream()
-            .collect(Collectors.toMap(Map.Entry::getKey, e -> FeatureType.featureToColumn.get(e.getValue())));
+        Map<String, ColumnDType> columnDTypes = dataset.getColumnTypes().entrySet().stream()
+            .collect(Collectors.toMap(Map.Entry::getKey, e -> ColumnType.featureToColumn.get(e.getValue())));
         Path filePath = locationService.datasetsDirectory(dataset.getProject().getKey())
             .resolve(dataset.getId().toString()).resolve("data.csv.zst");
         String filePathName = filePath.toAbsolutePath().toString().replace(".zst", "");
@@ -53,7 +53,7 @@ public class DatasetService {
         try {
             CsvReadOptions csvReadOptions = CsvReadOptions
                 .builder(fileUploadService.decompressFileToStream(filePath))
-                .columnTypesPartial(columnTypes)
+                .columnDTypesPartial(columnDTypes)
                 .missingValueIndicator("_GSK_NA_")
                 .maxCharsPerColumn(-1)
                 .build();
@@ -83,9 +83,9 @@ public class DatasetService {
         Dataset dataset = this.datasetRepository.getById(id);
         DatasetMetadataDTO metadata = new DatasetMetadataDTO();
         metadata.setId(id);
-        metadata.setColumnTypes(dataset.getColumnTypes());
+        metadata.setColumnDTypes(dataset.getColumnDTypes());
         metadata.setTarget(dataset.getTarget());
-        metadata.setFeatureTypes(dataset.getFeatureTypes());
+        metadata.setColumnTypes(dataset.getColumnTypes());
         return metadata;
     }
 
@@ -110,13 +110,13 @@ public class DatasetService {
 
         Table data = readTableByDatasetId(datasetId);
 
-        return dataset.getFeatureTypes().entrySet().stream().map(featureAndType -> {
+        return dataset.getColumnTypes().entrySet().stream().map(featureAndType -> {
             String featureName = featureAndType.getKey();
-            FeatureType type = featureAndType.getValue();
+            ColumnType type = featureAndType.getValue();
             FeatureMetadataDTO meta = new FeatureMetadataDTO();
             meta.setType(type);
             meta.setName(featureName);
-            if (type == FeatureType.CATEGORY) {
+            if (type == ColumnType.CATEGORY) {
                 meta.setValues(data.column(featureName).unique().asStringColumn().asSet());
             }
             return meta;
