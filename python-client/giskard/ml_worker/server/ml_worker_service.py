@@ -4,8 +4,10 @@ import os
 import platform
 import re
 import sys
+import tempfile
 import time
 from io import StringIO
+from pathlib import Path
 
 import google
 import grpc
@@ -137,7 +139,8 @@ class MLWorkerServiceImpl(MLWorkerServicer):
         test_result = test.get_builder()(**arguments).execute()
 
         return ml_worker_pb2.TestResultMessage(results=[
-            ml_worker_pb2.NamedSingleTestResult(testUuid=test.meta.uuid, result=map_result_to_single_test_result(test_result))
+            ml_worker_pb2.NamedSingleTestResult(testUuid=test.meta.uuid,
+                                                result=map_result_to_single_test_result(test_result))
         ])
 
     def runTestSuite(self, request: ml_worker_pb2.RunTestSuiteRequest,
@@ -153,7 +156,8 @@ class MLWorkerServiceImpl(MLWorkerServicer):
             global_arguments = self.parse_test_arguments(request.globalArguments)
 
             test_names = list(
-                map(lambda t: t['test'].meta.display_name or f"{t['test'].meta.module + '.' + t['test'].meta.name}", tests)
+                map(lambda t: t['test'].meta.display_name or f"{t['test'].meta.module + '.' + t['test'].meta.name}",
+                    tests)
             )
             logger.info(f"Executing test suite: {test_names}")
 
@@ -336,9 +340,14 @@ class MLWorkerServiceImpl(MLWorkerServicer):
             else:
                 calculated = pd.concat([preds_serie], axis=1)
 
-        return ml_worker_pb2.RunModelResponse(
-            results_csv=results.to_csv(index=False), calculated_csv=calculated.to_csv(index=False)
-        )
+        with tempfile.TemporaryDirectory(prefix="giskard-") as f:
+            dir = Path(f)
+            results.to_csv(index=False, path_or_buf=dir / "predictions.csv")
+            self.ml_worker.tunnel.client.log_artifact(dir / "predictions.csv", f"{request.project_key}/models/inspections/{request.inspectionId}")
+
+            calculated.to_csv(index=False, path_or_buf=dir / "calculated.csv")
+            self.ml_worker.tunnel.client.log_artifact(dir / "calculated.csv", f"{request.project_key}/models/inspections/{request.inspectionId}")
+        return google.protobuf.empty_pb2.Empty()
 
     def filterDataset(self, request_iterator, context: grpc.ServicerContext):
         filterfunc = {}
