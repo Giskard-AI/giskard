@@ -170,6 +170,10 @@ class Suite:
         if model is None or not contains_tag(test_func, model[1].meta.model_type.value):
             return
 
+        if contains_tag(test_func, 'ground_truth'):
+            if actual_dataset is None or actual_dataset[1].target is None or reference_dataset is None or reference_dataset[1].target:
+                return
+
         for model_arg in test_func.args.values():
             if model_arg.type == 'Model':
                 args[model_arg.name] = model
@@ -185,8 +189,6 @@ class Suite:
             for model_arg in test_func.args.values():
                 if model_arg.type == 'Dataset':
                     args[model_arg.name] = actual_dataset
-
-        # TODO check isGroundTruthRequired
 
         self.add_test(test_func.fn, **args)
 
