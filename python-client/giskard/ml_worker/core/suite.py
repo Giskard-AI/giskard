@@ -146,12 +146,11 @@ class Suite:
 
         return TestSuiteDTO(name=self.name, project_key=project_key, tests=suite_tests)
 
-    def add_test(self, test_fn: Test,
-                 test_identifier: Optional[Union[int, str]] = None, **params):
+    def add_test(self, test_fn: Test, test_name: Optional[Union[int, str]] = None, **params):
         """
         Add a test to the Suite
         :param test_fn: A test method that will be executed or an instance of a GiskardTest class
-        :param test_identifier: A unique test identifier used to track the test result
+        :param test_name: A unique test identifier used to track the test result
         :param params: default params to be passed to the test method,
           will be ignored if test_fn is an instance of GiskardTest
         :return: The current instance of the test Suite to allow chained call
@@ -167,15 +166,15 @@ class Suite:
         else:
             test_fn = GiskardTestMethod(test_fn)
 
-        if test_identifier is None:
-            test_identifier = f"{test_fn.meta.module}.{test_fn.meta.name}"
-            if any([test for test in self.tests if test.test_identifier == test_identifier]):
-                test_identifier = f"{test_identifier}-{str(uuid.uuid4())}"
+        if test_name is None:
+            test_name = f"{test_fn.meta.module}.{test_fn.meta.name}"
+            if any([test for test in self.tests if test.test_identifier == test_name]):
+                test_name = f"{test_name}-{str(uuid.uuid4())}"
         else:
             assert not any([test for test in self.tests if
-                            test.test_identifier == test_identifier]), f"The test identifier {test_identifier} as already been assigned to a test"
+                            test.test_identifier == test_name]), f"The test identifier {test_name} as already been assigned to a test"
 
-        self.tests.append(TestPartial(test_fn, params, test_identifier))
+        self.tests.append(TestPartial(test_fn, params, test_name))
 
         return self
 
