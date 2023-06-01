@@ -71,7 +71,6 @@ def test_sst2_pytorch_dataloader():
         model_postprocessing_function=my_softmax,
     )
 
-    # defining the giskard dataset
     my_test_dataset = Dataset(dev_dataframe.head(), name="test dataset", target="label")
 
     tests.utils.verify_model_upload(my_model, my_test_dataset)
