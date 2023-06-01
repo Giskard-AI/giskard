@@ -65,10 +65,11 @@ import {SuiteTestDTO, TestFunctionDTO, TestInputDTO, TestSuiteDTO} from '@/gener
 import TestInputListSelector from '@/components/TestInputListSelector.vue';
 import {chain} from 'lodash';
 
-const {projectId, test, suiteId} = defineProps<{
+const {projectId, test, suiteId, testArguments} = defineProps<{
   projectId: number,
   test: TestFunctionDTO,
-  suiteId?: number
+  suiteId?: number,
+  testArguments: { [name: string]: string }
 }>();
 
 const dialog = ref<boolean>(false);
@@ -86,7 +87,7 @@ async function loadData() {
       name: arg.name,
       type: arg.type,
       isAlias: false,
-      value: ''
+      value: testArguments[arg.name] ?? ''
     }
     return result
   }, {} as { [name: string]: TestInputDTO })

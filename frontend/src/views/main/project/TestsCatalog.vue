@@ -235,7 +235,8 @@ function addToTestSuite() {
     bind: {
       projectId: props.projectId,
       test: selected.value,
-      suiteId: props.suiteId
+      suiteId: props.suiteId,
+      testArguments: testArguments.value
     }
   });
 }
