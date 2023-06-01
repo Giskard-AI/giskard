@@ -16,14 +16,9 @@ def test_predict_once():
         called_indexes.extend(df.index)
         return np.array(df.values)
 
-    wrapped_model = Model(
-        prediction_function,
-        model_type="regression"
-    )
+    wrapped_model = Model(prediction_function, model_type="regression")
 
-    wrapped_dataset = Dataset(
-        df=pd.DataFrame([0, 1])
-    )
+    wrapped_dataset = Dataset(df=pd.DataFrame([0, 1]))
 
     prediction = wrapped_model.predict(wrapped_dataset)
     cached_prediction = wrapped_model.predict(wrapped_dataset)
@@ -65,14 +60,9 @@ def test_predict_only_recompute_transformed_values():
         called_indexes.extend(df.index)
         return np.array(df.values)
 
-    wrapped_model = Model(
-        prediction_function,
-        model_type="regression"
-    )
+    wrapped_model = Model(prediction_function, model_type="regression")
 
-    wrapped_dataset = Dataset(
-        df=pd.DataFrame([0, 1])
-    )
+    wrapped_dataset = Dataset(df=pd.DataFrame([0, 1]))
 
     prediction = wrapped_model.predict(wrapped_dataset)
 
@@ -84,7 +74,8 @@ def test_predict_only_recompute_transformed_values():
     second_prediction = wrapped_model.predict(transformed_dataset)
 
     assert called_indexes == list(wrapped_dataset.df.index) + [
-        1], 'The  prediction should have been called once for row 0 and twice of row 1'
+        1
+    ], 'The  prediction should have been called once for row 0 and twice of row 1'
     assert list(prediction.raw) != list(second_prediction.raw)
     assert list(prediction.raw_prediction) != list(second_prediction.raw_prediction)
     assert list(prediction.prediction) != list(second_prediction.prediction)
@@ -97,16 +88,12 @@ def test_predict_with_complex_dataset():
         called_indexes.extend(df.index)
         return np.array(df['foo'].values)
 
-    wrapped_model = Model(
-        prediction_function,
-        model_type="regression"
-    )
+    wrapped_model = Model(prediction_function, model_type="regression")
 
     wrapped_dataset = Dataset(
-        df=pd.DataFrame([
-            {'foo': 42, 'bar': 'Hello world!', 'baz': True},
-            {'foo': 3.14, 'bar': 'This is a test', 'baz': False}
-        ])
+        df=pd.DataFrame(
+            [{'foo': 42, 'bar': 'Hello world!', 'baz': True}, {'foo': 3.14, 'bar': 'This is a test', 'baz': False}]
+        )
     )
 
     prediction = wrapped_model.predict(wrapped_dataset)
@@ -119,7 +106,8 @@ def test_predict_with_complex_dataset():
     second_prediction = wrapped_model.predict(transformed_dataset)
 
     assert called_indexes == list(wrapped_dataset.df.index) + [
-        1], 'The  prediction should have been called once for row 0 and twice of row 1'
+        1
+    ], 'The  prediction should have been called once for row 0 and twice of row 1'
     assert list(prediction.raw) != list(second_prediction.raw)
     assert list(prediction.raw_prediction) != list(second_prediction.raw_prediction)
     assert list(prediction.prediction) != list(second_prediction.prediction)
