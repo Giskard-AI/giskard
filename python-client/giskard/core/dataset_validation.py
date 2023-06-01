@@ -34,6 +34,8 @@ def validate_column_meanings(ds: Dataset):
 
     columns_with_types = set(ds.column_meanings.keys())
 
+    df = ds.df
+
     if ds.target in ds.df.columns:
         df = ds.df.drop(ds.target, axis=1)
 
