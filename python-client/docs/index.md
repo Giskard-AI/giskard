@@ -14,8 +14,8 @@ getting-started/index
 :hidden:
 
 guides/installation_library/index
-guides/wrap_model/index
 guides/wrap_dataset/index
+guides/wrap_model/index
 guides/scan/index
 guides/slice/index
 guides/transformation/index
