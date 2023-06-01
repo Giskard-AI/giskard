@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.validation.constraints.NotNull;
+import java.util.UUID;
 
 @Getter
 @UIModel
@@ -19,8 +20,8 @@ public class UpdateTestSuiteDTO {
     @NotNull
     private String name;
     @UINullable
-    private String referenceDatasetId;
+    private UUID referenceDatasetId;
     @UINullable
-    private String actualDatasetId;
-    private String modelId;
+    private UUID actualDatasetId;
+    private UUID modelId;
 }

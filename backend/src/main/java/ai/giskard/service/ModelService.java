@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
+import java.util.UUID;
 
 @Service
 @Transactional
@@ -94,7 +95,7 @@ public class ModelService {
         return response;
     }
 
-    public Inspection createInspection(String modelId, String datasetId) throws IOException {
+    public Inspection createInspection(UUID modelId, UUID datasetId) throws IOException {
         log.info("Creating inspection for model {} and dataset {}", modelId, datasetId);
         ProjectModel model = modelRepository.getById(modelId);
         Dataset dataset = datasetRepository.getById(datasetId);

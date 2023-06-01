@@ -7,6 +7,8 @@ import ai.giskard.web.dto.mapper.GiskardMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.UUID;
+
 @Service
 @RequiredArgsConstructor
 public class UsageService {
@@ -15,14 +17,14 @@ public class UsageService {
     private final FeedbackRepository feedbackRepository;
     private final GiskardMapper giskardMapper;
 
-    public PrepareDeleteDTO prepareDeleteDataset(String datasetId) {
+    public PrepareDeleteDTO prepareDeleteDataset(UUID datasetId) {
         PrepareDeleteDTO res = new PrepareDeleteDTO();
         res.setFeedbacks(giskardMapper.toLightFeedbacks(feedbackRepository.findAllByDatasetId(datasetId)));
         res.setSuites(giskardMapper.toLightTestSuites(testSuiteRepository.findByDatasetId(datasetId)));
         return res;
     }
 
-    public PrepareDeleteDTO prepareDeleteModel(String modelId) {
+    public PrepareDeleteDTO prepareDeleteModel(UUID modelId) {
         PrepareDeleteDTO res = new PrepareDeleteDTO();
         res.setFeedbacks(giskardMapper.toLightFeedbacks(feedbackRepository.findAllByModelId(modelId)));
         res.setSuites(giskardMapper.toLightTestSuites(testSuiteRepository.findByModelId(modelId)));

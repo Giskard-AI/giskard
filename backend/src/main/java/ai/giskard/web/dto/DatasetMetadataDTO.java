@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.Map;
+import java.util.UUID;
 
 @Getter
 @Setter
@@ -18,7 +19,7 @@ import java.util.Map;
 @AllArgsConstructor
 public class DatasetMetadataDTO {
     private String name;
-    private String id;
+    private UUID id;
     @UINullable
     private String target;
     @JsonAlias("feature_types")

@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -30,16 +31,16 @@ public class FileLocationService {
         return resolvedDatasetPath(dataset.getProject().getKey(), dataset.getId());
     }
 
-    public Path resolvedDatasetPath(String projectKey, String datasetId) {
-        return datasetsDirectory(projectKey).resolve(datasetId);
+    public Path resolvedDatasetPath(String projectKey, UUID datasetId) {
+        return datasetsDirectory(projectKey).resolve(datasetId.toString());
     }
 
     public Path resolvedModelPath(ProjectModel model) {
         return resolvedModelPath(model.getProject().getKey(), model.getId());
     }
 
-    public Path resolvedModelPath(String projectKey, String modelId) {
-        return modelsDirectory(projectKey).resolve(modelId);
+    public Path resolvedModelPath(String projectKey, UUID modelId) {
+        return modelsDirectory(projectKey).resolve(modelId.toString());
     }
 
     public Path resolvedInspectionPath(String projectKey, Long inspectionId) {

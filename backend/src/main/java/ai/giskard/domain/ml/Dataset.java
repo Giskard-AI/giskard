@@ -17,6 +17,7 @@ import javax.persistence.*;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 @Entity(name = "datasets")
 @NoArgsConstructor
@@ -24,8 +25,7 @@ import java.util.Set;
 @Setter
 public class Dataset extends AbstractAuditingEntity {
     @Id
-    @Column(length = 32)
-    private String id;
+    private UUID id;
 
     @Converter
     public static class FeatureTypesConverter extends JSONStringAttributeConverter<Map<String, FeatureType>> {

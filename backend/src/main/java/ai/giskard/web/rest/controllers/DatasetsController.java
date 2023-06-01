@@ -23,6 +23,7 @@ import tech.tablesaw.api.Table;
 import javax.validation.constraints.NotNull;
 import java.io.IOException;
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequiredArgsConstructor
@@ -52,7 +53,7 @@ public class DatasetsController {
     @PreAuthorize("@permissionEvaluator.canWriteProjectKey(#projectKey)")
     @Transactional
     public DatasetDTO getDatasetMeta(@PathVariable("projectKey") @NotNull String projectKey,
-                                     @PathVariable("datasetId") @NotNull String datasetId) {
+                                     @PathVariable("datasetId") @NotNull UUID datasetId) {
         return giskardMapper.datasetToDatasetDTO(datasetRepository.getById(datasetId));
     }
 
@@ -65,7 +66,7 @@ public class DatasetsController {
      */
 
     @GetMapping("/dataset/{datasetId}/rows")
-    public String getRows(@PathVariable @NotNull String datasetId, @NotNull int offset, @NotNull int size) {
+    public String getRows(@PathVariable @NotNull UUID datasetId, @NotNull int offset, @NotNull int size) {
         Table filteredTable = datasetService.getRows(datasetId, offset, offset + size);
         return filteredTable.write().toString("json");
     }
@@ -79,23 +80,23 @@ public class DatasetsController {
      * @throws IOException
      */
     @GetMapping("/dataset/{datasetId}/details")
-    public DatasetDetailsDTO datasetDetails(@PathVariable @NotNull String datasetId) {
+    public DatasetDetailsDTO datasetDetails(@PathVariable @NotNull UUID datasetId) {
         return datasetService.getDetails(datasetId);
     }
 
     @DeleteMapping("/dataset/{datasetId}")
-    public MessageDTO deleteDataset(@PathVariable @NotNull String datasetId) {
+    public MessageDTO deleteDataset(@PathVariable @NotNull UUID datasetId) {
         deletionService.deleteDataset(datasetId);
         return new MessageDTO("Dataset {} has been deleted", datasetId);
     }
 
     @GetMapping("/dataset/prepare-delete/{datasetId}")
-    public PrepareDeleteDTO prepareDatasetDelete(@PathVariable @NotNull String datasetId) {
+    public PrepareDeleteDTO prepareDatasetDelete(@PathVariable @NotNull UUID datasetId) {
         return usageService.prepareDeleteDataset(datasetId);
     }
 
     @GetMapping("/dataset/{datasetId}/features")
-    public List<FeatureMetadataDTO> datasetFeaturesMetadata(@PathVariable @NotNull String datasetId) {
+    public List<FeatureMetadataDTO> datasetFeaturesMetadata(@PathVariable @NotNull UUID datasetId) {
         return datasetService.getFeaturesWithDistinctValues(datasetId);
     }
 
