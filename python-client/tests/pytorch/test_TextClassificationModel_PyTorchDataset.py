@@ -17,7 +17,17 @@ from torch.utils.data import Dataset as torch_dataset
 from torch import nn
 
 from giskard.core.model_validation import validate_model
+from giskard.client.giskard_client import GiskardClient
 from giskard import PyTorchModel, Dataset
+
+import re
+import httpretty
+url = "http://giskard-host:12345"
+token = "SECRET_TOKEN"
+auth = "Bearer SECRET_TOKEN"
+content_type = "application/json"
+model_name = "uploaded model"
+b_content_type = b"application/json"
 
 class TextClassificationModel(nn.Module):
 
@@ -38,6 +48,7 @@ class TextClassificationModel(nn.Module):
         return self.fc(embedded)
 
 @pytest.mark.skip(reason="WIP")
+@httpretty.activate(verbose=True, allow_net_connect=False)
 def test_text_sentiment_ngrams_tutorial():
 
     train_iter = AG_NEWS(split='train')
@@ -182,9 +193,9 @@ def test_text_sentiment_ngrams_tutorial():
     def prediction_function(df):
         series = df["text"].apply(predict_proba)
         return np.array(series.tolist())
-    
+
     #===
-    
+
     #TODO: generalize the PyTorchModel by taking properly the case where data_preprocessing_function returns a dataloader
     #TODO: Only cases that are spotable by running an if check (like dataloader for instance) should be implemented. Is
     #TODO: the **data a spottable one? What other options could be present?
@@ -194,7 +205,7 @@ def test_text_sentiment_ngrams_tutorial():
 
     #=== new implementation
     feature_names = ['text']
-    
+
     #--- one way of doing things (giskard.PyTorchModel wrapping)
     class my_PyTorchModel(PyTorchModel):
         def _raw_predict(self, df):
@@ -251,7 +262,17 @@ def test_text_sentiment_ngrams_tutorial():
     #print(my_wrapped_model.predict(my_test_dataset))
 
     #validate_model(my_wrapped_model, validate_ds=my_test_dataset)
-    validate_model(my_model, validate_ds=my_test_dataset)
+    #validate_model(my_model, validate_ds=my_test_dataset)
+    artifact_url_pattern = re.compile(
+        "http://giskard-host:12345/api/v2/artifacts/test-project/models/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/.*")
+    models_url_pattern = re.compile("http://giskard-host:12345/api/v2/project/test-project/models")
+
+    httpretty.register_uri(httpretty.POST, artifact_url_pattern)
+    httpretty.register_uri(httpretty.POST, models_url_pattern)
+
+    client = GiskardClient(url, token)
+    enron = client.create_project('test-project', "Email Classification", "Email Classification")
+    model_id = my_model.save(client, 'test-project', my_test_dataset)
 
 if __name__=="__main__":
     test_text_sentiment_ngrams_tutorial()
