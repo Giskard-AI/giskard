@@ -1,3 +1,4 @@
+import datetime
 import warnings
 from typing import Optional, Sequence
 from time import perf_counter
@@ -48,14 +49,14 @@ class Scanner:
                 detected_issues = sorted(detected_issues, key=lambda i: -i.importance)[:MAX_ISSUES_PER_DETECTOR]
                 detector_elapsed = perf_counter() - detector_start
                 maybe_print(
-                    f" {len(detected_issues)} issues detected. (Took {detector_elapsed:.2f} seconds)",
+                    f" {len(detected_issues)} issues detected. (Took {datetime.timedelta(seconds=detector_elapsed)})",
                     verbose=verbose,
                 )
                 issues.extend(detected_issues)
 
         elapsed = perf_counter() - time_start
         maybe_print(
-            f"Scan completed: {len(issues) or 'no'} issue{'s' if len(issues) != 1 else ''} found. (Took {elapsed:.2f} seconds)",
+            f"Scan completed: {len(issues) or 'no'} issue{'s' if len(issues) != 1 else ''} found. (Took {datetime.timedelta(seconds=elapsed)})",
             verbose=verbose,
         )
 
