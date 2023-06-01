@@ -119,7 +119,7 @@ class PerformanceIssue(Issue):
 
         return self.info.metric_rel_delta
 
-    def generate_tests(self, with_names=True) -> list:
+    def generate_tests(self, with_names=False) -> list:
         test_fn = _metric_to_test_object(self.info.metric)
 
         if test_fn is None:
