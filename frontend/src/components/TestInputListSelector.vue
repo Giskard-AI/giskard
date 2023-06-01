@@ -161,8 +161,8 @@ const {models, datasets, suite} = storeToRefs(useTestSuiteStore());
 const editedInputs = ref<{ [input: string]: FunctionInputDTO }>({});
 
 const inputTypeSelector = [{
-    name: 'Suite input (not shared)',
-    description: 'Input to be defined at the execution of the suite',
+    name: 'Suite input',
+    description: 'Input to be defined at the execution time of the suite',
     isSelected: (name) => !editedInputs.value.hasOwnProperty(name),
     select: (name) => {
         delete editedInputs.value[name];
@@ -172,7 +172,7 @@ const inputTypeSelector = [{
     }
 }, {
     name: 'Fixed value',
-    description: 'Value to be set',
+    description: 'Constant value defined before a suite is executed',
     isSelected: (name) => editedInputs.value.hasOwnProperty(name) && !editedInputs.value[name].isAlias,
     select: (name) => {
         editedInputs.value = {
@@ -186,23 +186,8 @@ const inputTypeSelector = [{
         }
     }
 }, {
-    name: 'Suite input (shared)',
-    description: 'Rename of the input name to allow flexibility',
-    isSelected: (name) => editedInputs.value.hasOwnProperty(name) && editedInputs.value[name].isAlias,
-    select: (name) => {
-        editedInputs.value = {
-            ...editedInputs.value,
-            [name]: {
-                isAlias: true,
-                name,
-                type: props.inputs[name],
-                value: null
-            }
-        }
-    }
-}, { // TODO
-    name: 'Shard value',
-    description: 'Value to be set and shared with other tests',
+    name: 'Shared suite input',
+    description: 'A placeholder of an input to be defined at suite execution time. Can be used by multiple tests.',
     isSelected: (name) => editedInputs.value.hasOwnProperty(name) && editedInputs.value[name].isAlias,
     select: (name) => {
         editedInputs.value = {
