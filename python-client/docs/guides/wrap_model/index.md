@@ -22,30 +22,24 @@ Prediction function is any Python function that takes as input the <b>raw</b> pa
 2. `prediction_function(df[feature_names])` <b>does not return an error message</b>.
 
 ```python
-import pandas as pd
 import numpy as np
-from sklearn.preprocessing import StandardScaler
-from sklearn.linear_model import LogisticRegression
-from giskard import Model
+import pandas as pd
+from giskard import demo, Model
 
-scaler = StandardScaler()
-clf = LogisticRegression()
-
+data_preprocessor, clf = demo.titanic_pipeline()
 
 def prediction_function(df: pd.DataFrame) -> np.ndarray:
-  # Scale all the numerical variables
-  num_cols = ["sepal length", "sepal width"]
-  df[num_cols] = scaler.transform(df[num_cols])
-
-  return clf.predict_proba(df)
-
+  # The preprocessor can be a pipeline of one-hot encoding, imputer, scaler, etc.
+  preprocessed_df = data_preprocessor(df)
+  return clf.predict_proba(preprocessed_df)
 
 wrapped_model = Model(
   model=prediction_function,
   model_type="classification",
-  classification_labels=['Setosa', 'Versicolor', 'Virginica'], # Their order MUST be identical to the prediction_function's output order
-  feature_names=['sepal length', 'sepal width'],  # Default: all columns of your dataset
-  # name="my_iris_classification_model", # Optional
+  classification_labels=clf.classes_, # Their order MUST be identical to the prediction_function's output order
+  feature_names=['PassengerId', 'Pclass', 'Name', 'Sex', 'Age', 'SibSp', 'Parch', 'Fare',
+                 'Embarked', 'Survived'],  # Default: all columns of your dataset
+  # name="titanic_model", # Optional
   # classification_threshold=0.5, # Default: 0.5
 )
 ```
@@ -81,23 +75,20 @@ Prediction function is any Python function that takes as input the <b>raw</b> pa
 2. `prediction_function(df[feature_names])` <b>does not return an error message</b>.
 
 ```python
-import pandas as pd
-from sklearn.linear_model import LinearRegression
-from giskard import Model
+import numpy as np
+from giskard import demo, Model
 
-reg = LinearRegression()
+data_preprocessor, reg = demo.linear_pipeline()
 
-
-def prediction_function(df: pd.DataFrame) -> np.ndarray:
-  df['x'] = df['x'] * 2
-  return reg.predict(df)
-
+def prediction_function(df):
+  preprocessed_df = data_preprocessor(df)
+  return np.squeeze(reg.predict(preprocessed_df))
 
 wrapped_model = Model(
   model=prediction_function,
   model_type="regression",
-  feature_names=['x', 'y'],  # Default: all columns of your dataset
-  # name="my_regression_model", # Optional
+  feature_names=['x'],  # Default: all columns of your dataset
+  # name="linear_model", # Optional
 )
 ```
 
@@ -134,26 +125,23 @@ This requires:
 
 ```python
 import pandas as pd
-from sklearn.preprocessing import StandardScaler
-from sklearn.linear_model import LogisticRegression
-from giskard import Model
+from giskard import demo, Model
 
-scaler = StandardScaler()
-clf = LogisticRegression()
-
+data_preprocessor, clf = demo.titanic_pipeline()
 
 class MyCustomModel(Model):
   def model_predict(self, df: pd.DataFrame):
-    num_cols = ["sepal length", "sepal width"]
-    df[num_cols] = scaler.transform(df[num_cols])
-    return self.model.predict_proba(df)
+    preprocessed_df = data_preprocessor(df)
+    return self.model.predict_proba(preprocessed_df)
 
 
 wrapped_model = MyCustomModel(
   model=clf,
   model_type="classification",
-  classification_labels=['Setosa', 'Versicolor', 'Virginica'] # Their order MUST be identical to the prediction_function's output order
-  # name="my_iris_classification_model", # Optional
+  classification_labels=clf.classes_, # Their order MUST be identical to the prediction_function's output order
+  feature_names=['PassengerId', 'Pclass', 'Name', 'Sex', 'Age', 'SibSp', 'Parch', 'Fare',
+                 'Embarked', 'Survived'],  # Default: all columns of your dataset
+  # name="titanic_model", # Optional
   # classification_threshold=0.5, # Default: 0.5
   # model_postprocessing_function=None, # Optional
   # **kwargs # Additional model-specific arguments
@@ -189,23 +177,25 @@ wrapped_model = MyCustomModel(
 ::::{tab-item} Regression
 
 ```python
+import numpy as np
 import pandas as pd
-from sklearn.linear_model import LinearRegression
-from giskard import Model
+from giskard import demo, Model
 
-reg = LinearRegression()
+data_preprocessor, reg = demo.linear_pipeline()
 
+def prediction_function(df):
+  preprocessed_df = data_preprocessor(df)
+  return np.squeeze(reg.predict(preprocessed_df))
 
 class MyCustomModel(Model):
   def model_predict(self, df: pd.DataFrame):
-    df['x'] = df['x'] * 2
-    return self.model.predict(df)
-
+    preprocessed_df = data_preprocessor(df)
+    return np.squeeze(self.model.predict(preprocessed_df))
 
 wrapped_model = MyCustomModel(
   model=reg,
   model_type="regression",
-  feature_names=['x', 'y'],  # Default: all columns of your dataset
+  feature_names=['x'],  # Default: all columns of your dataset
   # name="my_regression_model", # Optional
   # model_postprocessing_function=None, # Optional
   # **kwargs # Additional model-specific arguments
