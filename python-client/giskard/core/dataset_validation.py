@@ -19,14 +19,6 @@ def validate_target(ds: Dataset):
                 f" '{ds.target}' column is not present in the dataset with columns: {list(ds.df.columns)}"
             )
 
-        target_values = ds.df[ds.target].unique()
-        if not is_string_dtype(target_values):
-            print(
-                'Hint: "Your target variable values are numeric. '
-                "It is recommended to have Human readable string as your target values "
-                'to make results more understandable in Giskard."'
-            )
-
 
 def validate_column_types(ds: Dataset):
     """
