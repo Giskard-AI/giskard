@@ -36,14 +36,14 @@
                 Debug
               </v-btn>
               <v-tooltip bottom>
-                <template v-slot:activator=" { on, attrs } ">
-                  <v-btn icon color="info" @click=" downloadModelPickle(m.id) " v-bind=" attrs " v-on=" on ">
+                <template v-slot:activator="{ on, attrs }">
+                  <v-btn icon color="info" @click=" downloadModelPickle(m.id)" v-bind="attrs" v-on="on">
                     <v-icon>download</v-icon>
                   </v-btn>
                 </template>
                 <span>Download</span>
               </v-tooltip>
-              <DeleteModal v-if=" isProjectOwnerOrAdmin " :id=" m.id " :file-name=" m.fileName " type="model" @submit=" deleteModelPickle(m.id) " />
+              <DeleteModal v-if="isProjectOwnerOrAdmin" :id="m.id" :file-name="m.fileName" type="model" @submit=" deleteModelPickle(m.id)" />
             </div>
           </v-col>
         </v-row>
@@ -51,8 +51,8 @@
       </v-card>
 
       <!-- Dialog for launching model inspection -->
-      <v-dialog persistent max-width="600" v-model=" showInspectDialog " class="inspector-launcher-container">
-        <InspectorLauncher :projectId=" projectId " :model=" modelToInspect " @cancel=" cancelLaunchInspector() " />
+      <v-dialog persistent max-width="600" v-model="showInspectDialog" class="inspector-launcher-container">
+        <InspectorLauncher :projectId="projectId" :model="modelToInspect" @cancel=" cancelLaunchInspector()" />
       </v-dialog>
 
     </v-container>
@@ -64,27 +64,46 @@
 
 <script setup lang="ts">
 import { api } from '@/api';
+import { Role } from "@/enums";
 import InspectorLauncher from './InspectorLauncher.vue';
 import { ModelDTO } from '@/generated-sources';
 import mixpanel from "mixpanel-browser";
-import { onBeforeMount, ref } from 'vue';
+import { onBeforeMount, ref, computed } from 'vue';
 import DeleteModal from '@/views/main/project/modals/DeleteModal.vue';
 import InlineEditText from '@/components/InlineEditText.vue';
+import { useUserStore } from "@/stores/user";
+import { useProjectStore } from "@/stores/project";
 import { useMainStore } from "@/stores/main";
 import { useProjectArtifactsStore } from "@/stores/project-artifacts";
 
+const userStore = useUserStore();
+const projectStore = useProjectStore();
 const projectArtifactsStore = useProjectArtifactsStore();
 
-const props = withDefaults(defineProps<{
+interface Props {
   projectId: number,
-  isProjectOwnerOrAdmin: boolean
-}>(), {
-  isProjectOwnerOrAdmin: false
-});
+}
+
+const props = defineProps<Props>();
 
 const showInspectDialog = ref<boolean>(false);
 const modelToInspect = ref<ModelDTO | null>(null);
 
+const project = computed(() => {
+  return projectStore.project(props.projectId)
+});
+
+const userProfile = computed(() => {
+  return userStore.userProfile;
+});
+
+const isProjectOwnerOrAdmin = computed(() => {
+  return isUserProjectOwner.value || userProfile.value?.roles?.includes(Role.ADMIN)
+});
+
+const isUserProjectOwner = computed(() => {
+  return project.value && userProfile.value ? project.value?.owner.id == userProfile.value?.id : false;
+});
 
 async function deleteModelPickle(id: string) {
   mixpanel.track('Delete model', { id });

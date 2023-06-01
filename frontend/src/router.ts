@@ -203,7 +203,7 @@ export default new Router({
                     {
                       path: 'models',
                       name: 'project-catalog-models',
-                      component: () => import('./views/main/project/ModelsCatalog.vue'),
+                      component: () => import('./views/main/project/Models.vue'),
                       props: route => {
                         return {
                           projectId: Number(route.params.id),
