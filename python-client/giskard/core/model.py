@@ -1,5 +1,6 @@
 import logging
 import pickle
+import platform
 import posixpath
 import tempfile
 import uuid
@@ -22,6 +23,8 @@ from giskard.ml_worker.utils.logging import Timer
 from giskard.path_utils import get_size
 from giskard.settings import settings
 
+MODEL_CLASS_PKL = "ModelClass.pkl"
+
 logger = logging.getLogger(__name__)
 
 
@@ -37,6 +40,7 @@ class Model:
     meta: ModelMeta
     clf: PyFuncModel
     data_preprocessing_function: any
+    save_model_class = False
 
     def __init__(self,
                  clf,
@@ -60,8 +64,8 @@ class Model:
         self.meta = ModelMeta(
             name=name if name is not None else self.__class__.__name__,
             model_type=model_type,
-            feature_names=feature_names,
-            classification_labels=classification_labels,
+            feature_names=list(feature_names) if feature_names else None,
+            classification_labels=list(classification_labels) if classification_labels is not None else None,
             classification_threshold=classification_threshold
         )
 
@@ -115,14 +119,21 @@ class Model:
                                       pyfunc_predict_fn=pyfunc_predict_fn,
                                       mlflow_model=meta)
         self._save_giskard_model_meta_to_local_dir(meta, local_path)
+        if self.save_model_class:
+            self._save_model_class_to_local_dir(local_path)
 
         return meta
+
+    def _save_model_class_to_local_dir(self, local_path):
+        class_file = Path(local_path) / MODEL_CLASS_PKL
+        with open(class_file, 'wb') as f:
+            cloudpickle.dump(self.__class__, f, protocol=pickle.DEFAULT_PROTOCOL)
 
     def _save_giskard_model_meta_to_local_dir(self, info, local_path):
         with open(Path(local_path) / 'giskard-model-meta.yaml', 'w') as f:
             yaml.dump(
                 {
-                    "language_version": info.flavors['python_function']['python_version'],
+                    "language_version": platform.python_version(),
                     "language": "PYTHON",
                     "model_type": self.meta.model_type.name.upper(),
                     "threshold": self.meta.classification_threshold,
@@ -149,7 +160,7 @@ class Model:
         local_dir = settings.home_dir / settings.cache_dir / project_key / "models" / model_id
         if client is None:
             # internal worker case, no token based http client
-            assert local_dir.exists(), f"Cannot find existing model {project_key}.{model_id}"
+            assert local_dir.exists(), f"Cannot find existing model {project_key}.{model_id} in {local_dir}"
             with open(Path(local_dir) / 'giskard-model-meta.yaml') as f:
                 saved_meta = yaml.load(f, Loader=yaml.Loader)
                 meta = ModelMeta(
@@ -162,9 +173,10 @@ class Model:
         else:
             client.load_artifact(local_dir, posixpath.join(project_key, "models", model_id))
             meta = client.load_model_meta(project_key, model_id)
-        return cls(
-            clf=cls.read_model_from_local_dir(local_dir),
-            data_preprocessing_function=cls.read_data_preprocessing_function_from_artifact(local_dir),
+        clazz = cls.determine_model_class(local_dir)
+        return clazz(
+            clf=clazz.read_model_from_local_dir(local_dir),
+            data_preprocessing_function=clazz.read_data_preprocessing_function_from_artifact(local_dir),
             **meta.__dict__
         )
 
@@ -180,6 +192,7 @@ class Model:
         timer = Timer()
         df = self.prepare_dataframe(dataset)
         raw_prediction = self.prepare_data_and_predict(df)
+
         if self.is_regression:
             result = ModelPredictionResults(
                 prediction=raw_prediction, raw_prediction=raw_prediction, raw=raw_prediction
@@ -213,6 +226,12 @@ class Model:
     def prepare_dataframe(self, dataset: Dataset):
         df = dataset.df.copy()
         column_types = dict(dataset.column_types) if dataset.column_types else None
+
+        if column_types:
+            for cname, ctype in column_types.items():
+                if cname not in df:
+                    df[cname] = None
+
         if dataset.target:
             if dataset.target in df.columns:
                 df.drop(dataset.target, axis=1, inplace=True)
@@ -236,3 +255,22 @@ class Model:
         if column_types:
             df = Dataset.cast_column_to_types(df, column_types)
         return df
+
+    @classmethod
+    def determine_model_class(cls, local_dir):
+        class_file = Path(local_dir) / MODEL_CLASS_PKL
+        if class_file.exists():
+            with open(class_file, 'rb') as f:
+                clazz = cloudpickle.load(f)
+                if issubclass(clazz, Model):
+                    raise ValueError(f"Unknown model class: {clazz}. Models should inherit from 'Model' class")
+                return clazz
+        else:
+            return cls
+
+
+class CustomModel(Model):
+    """
+    Helper class to extend in case a user needs to extend a Model
+    """
+    save_model_class = True
