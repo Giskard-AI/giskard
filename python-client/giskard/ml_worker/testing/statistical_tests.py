@@ -1,11 +1,12 @@
-import pandas as pd
-import numpy as np
 from typing import Callable
 
+import numpy as np
+import pandas as pd
+
 from giskard.datasets.base import Dataset
-from giskard.models.base import BaseModel
 from giskard.ml_worker.generated.ml_worker_pb2 import SingleTestResult, TestMessage, TestMessageType
 from giskard.ml_worker.testing.abstract_test_collection import AbstractTestCollection
+from giskard.models.base import BaseModel
 
 
 class StatisticalTests(AbstractTestCollection):
@@ -114,7 +115,6 @@ class StatisticalTests(AbstractTestCollection):
 
         if model.is_regression:
             results_df["output"] = prediction_results.raw_prediction
-
         elif model.is_classification:
             assert (
                 classification_label in model.meta.classification_labels

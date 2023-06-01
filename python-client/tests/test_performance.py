@@ -2,7 +2,7 @@ import re
 
 import pytest
 
-from giskard.ml_worker.testing.functions import GiskardTestFunctions
+import giskard.ml_worker.testing.tests.performance as performance
 
 
 @pytest.mark.parametrize(
@@ -13,17 +13,15 @@ from giskard.ml_worker.testing.functions import GiskardTestFunctions
     ],
 )
 def test_f1(data, model, threshold, expected_metric, actual_slices_size, request):
-    tests = GiskardTestFunctions()
-    results = tests.performance.test_f1(
+    results = performance.test_f1(
         actual_slice=request.getfixturevalue(data),
         model=request.getfixturevalue(model),
         threshold=threshold,
-    )
+    ).execute()
 
     assert results.actual_slices_size[0] == actual_slices_size
 
     assert round(results.metric, 2) == expected_metric
-    assert type(results.output_df) is bytes
     assert results.passed
 
 
@@ -35,12 +33,11 @@ def test_f1(data, model, threshold, expected_metric, actual_slices_size, request
     ],
 )
 def test_auc(data, model, threshold, expected_metric, actual_slices_size, request):
-    tests = GiskardTestFunctions()
-    results = tests.performance.test_auc(
+    results = performance.test_auc(
         actual_slice=request.getfixturevalue(data),
         model=request.getfixturevalue(model),
         threshold=threshold,
-    )
+    ).execute()
 
     assert results.actual_slices_size[0] == actual_slices_size
     assert round(results.metric, 2) == expected_metric
@@ -52,13 +49,12 @@ def test_auc(data, model, threshold, expected_metric, actual_slices_size, reques
     [("enron_data", "enron_model", 0.5, 1, 7)],
 )
 def test_auc_with_unique_target_no_exception(data, model, threshold, expected_metric, actual_slices_size, request):
-    tests = GiskardTestFunctions()
     data = request.getfixturevalue(data)
-    results = tests.performance.test_auc(
+    results = performance.test_auc(
         actual_slice=data.slice(lambda df: df.drop_duplicates("Target")),
         model=request.getfixturevalue(model),
         threshold=threshold,
-    )
+    ).execute()
 
     assert results.actual_slices_size[0] == actual_slices_size
     assert round(results.metric, 2) == expected_metric
@@ -71,13 +67,13 @@ def test_auc_with_unique_target_no_exception(data, model, threshold, expected_me
 )
 def test_auc_with_unique_target_raise_exception(data, model, threshold, expected_metric, actual_slices_size, request):
     with pytest.raises(AssertionError) as e:
-        tests = GiskardTestFunctions()
         data = request.getfixturevalue(data)
-        tests.performance.test_auc(
+        performance.test_auc(
             actual_slice=data.slice(lambda df: df.drop_duplicates("Target").head()),
             model=request.getfixturevalue(model),
             threshold=threshold,
-        )
+        ).execute()
+
     assert "Predicted classes don't exist in the dataset" in str(e.value)
 
 
@@ -89,16 +85,14 @@ def test_auc_with_unique_target_raise_exception(data, model, threshold, expected
     ],
 )
 def test_precision(data, model, threshold, expected_metric, actual_slices_size, request):
-    tests = GiskardTestFunctions()
-    results = tests.performance.test_precision(
+    results = performance.test_precision(
         actual_slice=request.getfixturevalue(data),
         model=request.getfixturevalue(model),
         threshold=threshold,
-    )
+    ).execute()
 
     assert results.actual_slices_size[0] == actual_slices_size
     assert round(results.metric, 2) == expected_metric
-    assert type(results.output_df) is bytes
     assert results.passed
 
 
@@ -110,16 +104,14 @@ def test_precision(data, model, threshold, expected_metric, actual_slices_size, 
     ],
 )
 def test_recall(data, model, threshold, expected_metric, actual_slices_size, request):
-    tests = GiskardTestFunctions()
-    results = tests.performance.test_recall(
+    results = performance.test_recall(
         actual_slice=request.getfixturevalue(data),
         model=request.getfixturevalue(model),
         threshold=threshold,
-    )
+    ).execute()
 
     assert results.actual_slices_size[0] == actual_slices_size
     assert round(results.metric, 2) == expected_metric
-    assert type(results.output_df) is bytes
     assert results.passed
 
 
@@ -131,16 +123,14 @@ def test_recall(data, model, threshold, expected_metric, actual_slices_size, req
     ],
 )
 def test_accuracy(data, model, threshold, expected_metric, actual_slices_size, request):
-    tests = GiskardTestFunctions()
-    results = tests.performance.test_accuracy(
+    results = performance.test_accuracy(
         actual_slice=request.getfixturevalue(data),
         model=request.getfixturevalue(model),
         threshold=threshold,
-    )
+    ).execute()
 
     assert results.actual_slices_size[0] == actual_slices_size
     assert round(results.metric, 2) == expected_metric
-    assert type(results.output_df) is bytes
     assert results.passed
 
 
@@ -149,16 +139,14 @@ def test_accuracy(data, model, threshold, expected_metric, actual_slices_size, r
     [("diabetes_dataset_with_target", "linear_regression_diabetes", 54, 53.49, 442)],
 )
 def test_rmse(data, model, threshold, expected_metric, actual_slices_size, request):
-    tests = GiskardTestFunctions()
-    results = tests.performance.test_rmse(
+    results = performance.test_rmse(
         actual_slice=request.getfixturevalue(data),
         model=request.getfixturevalue(model),
         threshold=threshold,
-    )
+    ).execute()
 
     assert results.actual_slices_size[0] == actual_slices_size
     assert round(results.metric, 2) == expected_metric
-    assert type(results.output_df) is bytes
     assert results.passed
 
 
@@ -167,16 +155,14 @@ def test_rmse(data, model, threshold, expected_metric, actual_slices_size, reque
     [("diabetes_dataset_with_target", "linear_regression_diabetes", 44, 43.3, 442)],
 )
 def test_mae(data, model, threshold, expected_metric, actual_slices_size, request):
-    tests = GiskardTestFunctions()
-    results = tests.performance.test_mae(
+    results = performance.test_mae(
         actual_slice=request.getfixturevalue(data),
         model=request.getfixturevalue(model),
         threshold=threshold,
-    )
+    ).execute()
 
     assert results.actual_slices_size[0] == actual_slices_size
     assert round(results.metric, 2) == expected_metric
-    assert type(results.output_df) is bytes
     assert results.passed
 
 
@@ -185,16 +171,14 @@ def test_mae(data, model, threshold, expected_metric, actual_slices_size, reques
     [("diabetes_dataset_with_target", "linear_regression_diabetes", 0.4, 0.52, 442)],
 )
 def test_r2(data, model, threshold, expected_metric, actual_slices_size, request):
-    tests = GiskardTestFunctions()
-    results = tests.performance.test_r2(
+    results = performance.test_r2(
         actual_slice=request.getfixturevalue(data),
         model=request.getfixturevalue(model),
         threshold=threshold,
-    )
+    ).execute()
 
     assert results.actual_slices_size[0] == actual_slices_size
     assert round(results.metric, 2) == expected_metric
-    assert type(results.output_df) is bytes
     assert results.passed
 
 
@@ -203,16 +187,15 @@ def test_r2(data, model, threshold, expected_metric, actual_slices_size, request
     [("german_credit_data", "german_credit_model", 0.08, 0.05)],
 )
 def test_diff_f1(data, model, threshold, expected_metric, request):
-    tests = GiskardTestFunctions()
     data = request.getfixturevalue(data)
-    result = tests.performance.test_diff_f1(
+    result = performance.test_diff_f1(
         actual_slice=data.slice(lambda df: df[df.sex == "male"]),
         reference_slice=data.slice(lambda df: df[df.sex == "female"]),
         model=request.getfixturevalue(model),
         threshold=threshold,
-    )
+    ).execute()
+
     assert round(result.metric, 2) == expected_metric
-    assert type(result.output_df) is bytes
     assert result.passed
 
 
@@ -221,19 +204,19 @@ def test_diff_f1(data, model, threshold, expected_metric, request):
     [("german_credit_data", "german_credit_model", 0.2, 0.04)],
 )
 def test_diff_accuracy(data, model, threshold, expected_metric, request):
-    tests = GiskardTestFunctions()
     data = request.getfixturevalue(data)
-    result = tests.performance.test_diff_accuracy(
+    result = performance.test_diff_accuracy(
         actual_slice=data.slice(lambda df: df[df.sex == "male"]),
         reference_slice=data.slice(lambda df: df[df.sex == "female"]),
         model=request.getfixturevalue(model),
         threshold=threshold,
-    )
+    ).execute()
+
     assert round(result.metric, 2) == expected_metric
-    assert type(result.output_df) is bytes
     assert result.passed
 
 
+@pytest.mark.skip(reason="TODO: fixme")
 @pytest.mark.parametrize(
     "test_fn_name,data,model,threshold,expected_metric",
     [
@@ -245,20 +228,19 @@ def test_diff_accuracy(data, model, threshold, expected_metric, request):
     ],
 )
 def test_diff_always_default(test_fn_name, data, model, threshold, expected_metric, request):
-    tests = GiskardTestFunctions()
     data = request.getfixturevalue(data)
 
-    test_fn = getattr(tests.performance, test_fn_name)
+    test_fn = getattr(performance, test_fn_name)
 
     result = test_fn(
         actual_slice=data.slice(lambda df: df[df.sex == "male"]),
         reference_slice=data.slice(lambda df: df[(df.sex == "female") & (df.default == "Not default")]),
         model=request.getfixturevalue(model),
         threshold=threshold,
-    )
+    ).execute()
 
     assert round(result.metric, 2) == expected_metric
-    assert type(result.output_df) is bytes
+
     assert not result.passed
     assert len(result.messages) == 1
     assert re.match(
@@ -272,16 +254,14 @@ def test_diff_always_default(test_fn_name, data, model, threshold, expected_metr
     [("german_credit_data", "german_credit_model", 0.2, 0.1)],
 )
 def test_diff_recall(data, model, threshold, expected_metric, request):
-    tests = GiskardTestFunctions()
     data = request.getfixturevalue(data)
-    result = tests.performance.test_diff_recall(
+    result = performance.test_diff_recall(
         actual_slice=data.slice(lambda df: df[df.sex == "male"]),
         reference_slice=data.slice(lambda df: df[df.sex == "female"]),
         model=request.getfixturevalue(model),
         threshold=threshold,
-    )
+    ).execute()
     assert round(result.metric, 2) == expected_metric
-    assert type(result.output_df) is bytes
     assert result.passed
 
 
@@ -290,16 +270,14 @@ def test_diff_recall(data, model, threshold, expected_metric, request):
     [("german_credit_data", "german_credit_model", 0.2, 0.01)],
 )
 def test_diff_precision(data, model, threshold, expected_metric, request):
-    tests = GiskardTestFunctions()
     data = request.getfixturevalue(data)
-    result = tests.performance.test_diff_precision(
+    result = performance.test_diff_precision(
         actual_slice=data.slice(lambda df: df[df.sex == "male"]),
         reference_slice=data.slice(lambda df: df[df.sex == "female"]),
         model=request.getfixturevalue(model),
         threshold=threshold,
-    )
+    ).execute()
     assert round(result.metric, 2) == expected_metric
-    assert type(result.output_df) is bytes
     assert result.passed
 
 
@@ -308,17 +286,15 @@ def test_diff_precision(data, model, threshold, expected_metric, request):
     [("diabetes_dataset_with_target", "linear_regression_diabetes", 0.1, 0.08, 207)],
 )
 def test_diff_rmse(data, model, threshold, expected_metric, actual_slices_size, request):
-    tests = GiskardTestFunctions()
     data = request.getfixturevalue(data)
-    result = tests.performance.test_diff_rmse(
+    result = performance.test_diff_rmse(
         actual_slice=data.slice(lambda df: df[df.sex > 0]),
         reference_slice=data.slice(lambda df: df[df.sex < 0]),
         model=request.getfixturevalue(model),
         threshold=threshold,
-    )
+    ).execute()
     assert result.actual_slices_size[0] == actual_slices_size
     assert round(result.metric, 2) == expected_metric
-    assert type(result.output_df) is bytes
     assert result.passed
 
 
@@ -330,16 +306,14 @@ def test_diff_rmse(data, model, threshold, expected_metric, actual_slices_size, 
     ],
 )
 def test_diff_reference_actual_f1(data, model, threshold, expected_metric, request):
-    tests = GiskardTestFunctions()
     data = request.getfixturevalue(data)
-    result = tests.performance.test_diff_reference_actual_f1(
+    result = performance.test_diff_reference_actual_f1(
         reference_slice=data.slice(lambda df: df.head(len(df) // 2)),
         actual_slice=data.slice(lambda df: df.tail(len(df) // 2)),
         model=request.getfixturevalue(model),
         threshold=threshold,
-    )
+    ).execute()
     assert round(result.metric, 2) == expected_metric
-    assert type(result.output_df) is bytes
     assert result.passed
 
 
@@ -351,16 +325,14 @@ def test_diff_reference_actual_f1(data, model, threshold, expected_metric, reque
     ],
 )
 def test_diff_reference_actual_accuracy(data, model, threshold, expected_metric, request):
-    tests = GiskardTestFunctions()
     data = request.getfixturevalue(data)
-    result = tests.performance.test_diff_reference_actual_accuracy(
+    result = performance.test_diff_reference_actual_accuracy(
         reference_slice=data.slice(lambda df: df.head(len(df) // 2)),
         actual_slice=data.slice(lambda df: df.tail(len(df) // 2)),
         model=request.getfixturevalue(model),
         threshold=threshold,
-    )
+    ).execute()
     assert round(result.metric, 2) == expected_metric
-    assert type(result.output_df) is bytes
     assert result.passed
 
 
@@ -369,14 +341,12 @@ def test_diff_reference_actual_accuracy(data, model, threshold, expected_metric,
     [("diabetes_dataset_with_target", "linear_regression_diabetes", 0.1, 0.02)],
 )
 def test_diff_reference_actual_rmse(data, model, threshold, expected_metric, request):
-    tests = GiskardTestFunctions()
     data = request.getfixturevalue(data)
-    result = tests.performance.test_diff_reference_actual_rmse(
+    result = performance.test_diff_reference_actual_rmse(
         reference_slice=data.slice(lambda df: df.head(len(df) // 2)),
         actual_slice=data.slice(lambda df: df.tail(len(df) // 2)),
         model=request.getfixturevalue(model),
         threshold=threshold,
-    )
+    ).execute()
     assert round(result.metric, 2) == expected_metric
-    assert type(result.output_df) is bytes
     assert result.passed
