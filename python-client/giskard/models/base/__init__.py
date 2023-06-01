@@ -11,16 +11,19 @@ from pathlib import Path
 from typing import Optional, Any, Union, Callable, Iterable
 
 import cloudpickle
-import numpy as np
-import pandas as pd
-import yaml
 import mlflow
+import numpy as np
+import pandas
+import pandas as pd
 import pydantic
+import yaml
+from zstandard import ZstdDecompressor
 
 from giskard.client.giskard_client import GiskardClient
+from giskard.client.io_utils import save_df, compress
 from giskard.core.core import ModelMeta, SupportedModelTypes, ModelType
 from giskard.core.validation import configured_validate_arguments
-from giskard.datasets.base import Dataset
+from giskard.datasets.base import Dataset, GISKARD_HASH_COLUMN, GISKARD_COLUMN_PREFIX
 from giskard.ml_worker.utils.logging import Timer
 from giskard.path_utils import get_size
 from giskard.settings import settings
@@ -62,6 +65,7 @@ class BaseModel(ABC):
     """
     should_save_model_class = False
     id: uuid.UUID = None
+    prediction_cache: pandas.DataFrame
 
     @configured_validate_arguments
     def __init__(
@@ -71,6 +75,7 @@ class BaseModel(ABC):
             feature_names: Optional[Iterable] = None,
             classification_threshold: Optional[float] = 0.5,
             classification_labels: Optional[Iterable] = None,
+            prediction_cache: Optional[pandas.DataFrame] = None
     ) -> None:
         """
         Initialize a new instance of the BaseModel class.
@@ -107,6 +112,11 @@ class BaseModel(ABC):
                     "Duplicates are found in 'classification_labels', please only provide unique values."
                 )
 
+        self.prediction_cache = prediction_cache if prediction_cache is not None else pd.DataFrame(data={
+            label: []
+            for label in (classification_labels if classification_labels is not None else ['raw_prediction'])
+        }, index=[])
+
         self.meta = ModelMeta(
             name=name if name is not None else self.__class__.__name__,
             model_type=model_type,
@@ -142,7 +152,8 @@ class BaseModel(ABC):
             return getattr(importlib.import_module(meta.loader_module), meta.loader_class)
 
     def save_meta(self, local_path):
-        with open(Path(local_path) / "giskard-model-meta.yaml", "w") as f:
+        with open(Path(local_path) / "giskard-model-meta.yaml", "w") as f, open(
+                Path(local_path) / "giskard-model-cache.csv.zst", "wb") as pred_f:
             yaml.dump(
                 {
                     "language_version": platform.python_version(),
@@ -160,6 +171,10 @@ class BaseModel(ABC):
                 f,
                 default_flow_style=False,
             )
+
+            uncompressed_bytes = save_df(self.prediction_cache)
+            compressed_bytes = compress(uncompressed_bytes)
+            pred_f.write(compressed_bytes)
 
     def save(self, local_path: Union[str, Path]) -> None:
         if self.id is None:
@@ -244,13 +259,32 @@ class BaseModel(ABC):
               The `all_predictions` field will contain the predicted probabilities for all class labels for each example in the input dataset.
         """
         timer = Timer()
-        df = self.prepare_dataframe(dataset)
 
-        raw_prediction = self.predict_df(df)
+        # Read cache
+        cached_predictions = dataset.df[GISKARD_HASH_COLUMN].isin(self.prediction_cache)
+
+        non_giskard_column = [col for col in dataset.df.columns if not col.startswith(GISKARD_COLUMN_PREFIX)]
+        df = self.prepare_dataframe(
+            dataset.slice(lambda x: dataset.df[~cached_predictions][non_giskard_column], row_level=False))
+
+        raw_prediction = np.array(self.predict_df(df))
+
+        labels = self.meta.classification_labels if self.meta.classification_labels is not None else ['raw_prediction']
+        dims = len(raw_prediction.shape)
+
+        self.prediction_cache = pd.concat([
+            self.prediction_cache,
+            pd.DataFrame(data={
+                label: raw_prediction if dims == 1 else raw_prediction[:, idx]
+                for idx, label in enumerate(labels)
+            }, index=dataset.df[GISKARD_HASH_COLUMN][~cached_predictions])
+        ])
+
+        raw_prediction = self.prediction_cache.loc[dataset.df[GISKARD_HASH_COLUMN]][labels].values
 
         if self.is_regression:
             result = ModelPredictionResults(
-                prediction=raw_prediction, raw_prediction=raw_prediction, raw=raw_prediction
+                prediction=raw_prediction[:, 0], raw_prediction=raw_prediction[:, 0], raw=raw_prediction[:, 0]
             )
         elif self.is_classification:
             labels = np.array(self.meta.classification_labels)
@@ -330,7 +364,8 @@ class BaseModel(ABC):
         if client is None:
             # internal worker case, no token based http client
             assert local_dir.exists(), f"Cannot find existing model {project_key}.{model_id} in {local_dir}"
-            with open(Path(local_dir) / "giskard-model-meta.yaml") as f:
+            with open(Path(local_dir) / "giskard-model-meta.yaml") as f, open(
+                    Path(local_dir) / "giskard-model-cache.csv.zst", "rb") as pred_f:
                 saved_meta = yaml.load(f, Loader=yaml.Loader)
                 meta = ModelMeta(
                     name=saved_meta["name"],
@@ -341,12 +376,19 @@ class BaseModel(ABC):
                     loader_module=saved_meta["loader_module"],
                     loader_class=saved_meta["loader_class"],
                 )
+
+                prediction_cache = pd.read_csv(
+                    ZstdDecompressor().stream_reader(pred_f),
+                    keep_default_na=False,
+                    na_values=["_GSK_NA_"],
+                )
         else:
             client.load_artifact(local_dir, posixpath.join(project_key, "models", model_id))
             meta_response = client.load_model_meta(project_key, model_id)
             # internal worker case, no token based http client
             assert local_dir.exists(), f"Cannot find existing model {project_key}.{model_id} in {local_dir}"
-            with open(Path(local_dir) / "giskard-model-meta.yaml") as f:
+            with open(Path(local_dir) / "giskard-model-meta.yaml") as f, open(
+                    Path(local_dir) / "giskard-model-cache.csv.zst", "rb") as pred_f:
                 file_meta = yaml.load(f, Loader=yaml.Loader)
                 meta = ModelMeta(
                     name=meta_response["name"],
@@ -358,12 +400,18 @@ class BaseModel(ABC):
                     loader_class=file_meta["loader_class"],
                 )
 
+                prediction_cache = pd.read_csv(
+                    ZstdDecompressor().stream_reader(pred_f),
+                    keep_default_na=False,
+                    na_values=["_GSK_NA_"],
+                )
+
         clazz = cls.determine_model_class(meta, local_dir)
 
         constructor_params = meta.__dict__
         del constructor_params["loader_module"]
         del constructor_params["loader_class"]
-        return clazz.load(local_dir, **constructor_params)
+        return clazz.load(local_dir, prediction_cache=prediction_cache, **constructor_params)
 
     @classmethod
     def load(cls, local_dir, **kwargs):
