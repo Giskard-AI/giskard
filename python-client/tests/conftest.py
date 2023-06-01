@@ -1,8 +1,10 @@
 from glob import glob
+from pathlib import Path
 
-pytest_plugins = [
-    fixture_file.replace("/", ".").replace(".py", "") for fixture_file in glob("**/fixtures/**/*.py", recursive=True)
-]
+pytest_plugins = []
+for f in glob("**/fixtures/**/*.py", recursive=True):
+    path = Path(f)
+    pytest_plugins.append('.'.join([*path.parts[:-1], path.stem]))
 
 
 def pytest_collection_modifyitems(session, config, items):
