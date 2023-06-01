@@ -1,29 +1,16 @@
-import hashlib
 import inspect
 import pickle
 import sys
 from pathlib import Path
 from typing import Union, Callable, Any
 
-import cloudpickle
-
 from giskard import test
 from giskard.core.core import TestFunctionMeta, SMT
 from giskard.ml_worker.core.savable import Savable
 from giskard.ml_worker.core.test_result import TestResult
-from giskard.ml_worker.testing.registry.registry import tests_registry, generate_func_id
+from giskard.ml_worker.testing.registry.registry import tests_registry, get_test_uuid
 
 Result = Union[TestResult, bool]
-
-
-def get_test_uuid(func) -> str:
-    func_name = f"{func.__module__}.{func.__name__}"
-
-    if func_name.startswith('__main__'):
-        reference = cloudpickle.dumps(func)
-        func_name += hashlib.sha1(reference).hexdigest()
-
-    return generate_func_id(func_name)
 
 
 class GiskardTest(Savable[Any, TestFunctionMeta]):
@@ -82,9 +69,14 @@ class GiskardTest(Savable[Any, TestFunctionMeta]):
                 func = pickle.load(f)
 
         if inspect.isclass(func):
-            return func()
+            giskard_test = func()
         else:
-            return GiskardTestMethod(func)
+            giskard_test = GiskardTestMethod(func)
+
+        tests_registry.add_func(meta)
+        giskard_test.meta = meta
+
+        return giskard_test
 
 
 Function = Callable[..., Result]

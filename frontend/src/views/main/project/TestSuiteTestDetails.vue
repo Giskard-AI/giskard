@@ -19,7 +19,7 @@
 
     </div>
     <div>
-      <v-list v-if="props.test.arguments && editedInputs === null">
+      <v-list v-if="props.test.args && editedInputs === null">
         <v-list-item v-for="a in sortedArguments" :key="a.name" class="pl-0 pr-0">
           <v-row>
             <v-col>
@@ -42,7 +42,7 @@
           </v-row>
         </v-list-item>
       </v-list>
-      <TestInputListSelector v-else-if="props.test.arguments"
+      <TestInputListSelector v-else-if="props.test.args"
                              :model-value="editedInputs"
                              :project-id="props.projectId"
                              :inputs="inputType"/>
@@ -51,7 +51,7 @@
     <div v-if="props.executions?.length > 0">
       <div class="d-flex justify-space-between align-center">
         <p class="text-h6">Results</p>
-        <v-btn text color="secondary" :to="{name: 'test-suite-new-compare-test', params: { testId: props.test.id}}">
+        <v-btn text color="secondary" :to="{name: 'test-suite-new-compare-test', params: { testId: props.test.uuid}}">
           Compare executions
           <v-icon>compare</v-icon>
         </v-btn>
@@ -64,7 +64,7 @@
 
 <script lang="ts" setup>
 
-import {DatasetDTO, ModelDTO, SuiteTestExecutionDTO, TestDefinitionDTO, TestInputDTO} from "@/generated-sources";
+import {DatasetDTO, ModelDTO, SuiteTestExecutionDTO, TestFunctionDTO, TestInputDTO} from "@/generated-sources";
 import _, {chain} from "lodash";
 import TestResultTimeline from '@/components/TestResultTimeline.vue';
 import {computed, ref, watch} from 'vue';
@@ -74,7 +74,7 @@ import {api} from '@/api';
 const props = defineProps<{
   projectId: number,
   suiteId: number,
-  test: TestDefinitionDTO
+  test: TestFunctionDTO,
   inputs: { [key: string]: TestInputDTO },
   models: { [key: string]: ModelDTO },
   datasets: { [key: string]: DatasetDTO },
@@ -90,13 +90,13 @@ const sortedArguments = computed(() => {
     return [];
   }
 
-  return _.sortBy(_.values(props.test.arguments), value => {
+  return _.sortBy(_.values(props.test.args), value => {
     return !_.isUndefined(props.inputs[value.name]);
   }, 'name');
 })
 
 function editInputs() {
-  editedInputs.value = Object.keys(props.test.arguments)
+  editedInputs.value = Object.keys(props.test.args)
       .reduce((editedInputs, arg) => {
         editedInputs[arg] = props.inputs[arg]?.value;
         return editedInputs;
@@ -108,7 +108,7 @@ async function saveEditedInputs() {
     return;
   }
 
-  const saved = await api.updateTestInputs(props.projectId, props.suiteId, props.test.id, editedInputs.value)
+  const saved = await api.updateTestInputs(props.projectId, props.suiteId, props.test.uuid, editedInputs.value)
   editedInputs.value = null;
 
   emit('updateTestSuite', saved);

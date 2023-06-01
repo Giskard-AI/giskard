@@ -130,7 +130,7 @@ class Suite:
 
         for test_partial in self.tests:
             if isinstance(test_partial.giskard_test, GiskardTestMethod):
-                available_params = test_partial.giskard_test.params.values()
+                available_params = inspect.signature(test_partial.giskard_test.data).parameters.values()
             else:
                 available_params = inspect.signature(test_partial.giskard_test.set_params).parameters.values()
 
