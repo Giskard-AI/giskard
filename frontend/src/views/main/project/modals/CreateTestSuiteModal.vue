@@ -44,12 +44,12 @@
                       <td>
                         <v-select
                             :value="input.name"
-                            @change="handleInputNameChanged(input, value);"
+                            @change="(value) => handleInputNameChanged(input, value)"
                             :items="[input.name, ...availableArguments]"
                         ></v-select>
                       </td>
                       <td>
-                        <span v-if="typesByName[input.name].length === 1">{{ input.type }}</span>
+                        <span v-if="typesByName[input.name]?.length === 1">{{ input.type }}</span>
                         <v-select v-else
                                   v-model="input.type"
                                   :items="typesByName[input.name]"
