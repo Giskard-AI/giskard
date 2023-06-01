@@ -6,6 +6,17 @@ from giskard.core.validation import configured_validate_arguments
 from giskard.datasets.base import Dataset
 
 
+def _register_default_metadata_providers():
+    from .metadata import MetadataProviderRegistry
+    from .metadata.text_metadata_provider import TextMetadataProvider
+
+    MetadataProviderRegistry.register(TextMetadataProvider())
+
+
+# Register metadata providers on import
+_register_default_metadata_providers()
+
+
 @configured_validate_arguments
 def wrap_dataset(dataset: pd.DataFrame, name: Optional[str] = None, target: Optional[str] = None,
                  cat_columns: Optional[List[str]] = None, column_types: Optional[Dict[str, str]] = None):

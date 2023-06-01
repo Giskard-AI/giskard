@@ -13,15 +13,15 @@
     >
         <template v-for="header in headers"
                   v-slot:[`item.${header.value}`]="{ header, value, item }">
-
             <v-tooltip bottom v-if="modificationsMap.hasOwnProperty(item['_GISKARD_INDEX_'])
                   && modificationsMap[item['_GISKARD_INDEX_']].hasOwnProperty(header.text)">
                 <template v-slot:activator="{ on, attrs }">
                     <div class="modified-cell" v-bind="attrs"
+                         @click="() => openDiff(value, modificationsMap[item['_GISKARD_INDEX_']][header.text])"
                          v-on="on">{{ modificationsMap[item['_GISKARD_INDEX_']][header.text] }}
                     </div>
                 </template>
-                <div>Original value: {{ value }}</div>
+                <div>Click to open diff tools</div>
             </v-tooltip>
             <span v-else>{{ value }}</span>
         </template>
@@ -34,6 +34,8 @@ import {computed, onMounted, ref, watch} from "vue";
 import {api} from "@/api";
 import {chain} from "lodash";
 import {DatasetPageDTO, TransformationResultMessageDTO} from "@/generated-sources";
+import {$vfm} from "vue-final-modal";
+import DiffToolModal from "@/views/main/project/modals/DiffToolModal.vue";
 
 const props = defineProps<{
     datasetId: string,
@@ -72,6 +74,16 @@ const modificationsMap = computed(() => chain(props.modifications ?? [])
     .keyBy('rowId')
     .mapValues('modifications')
     .value())
+
+function openDiff(oldValue: string, newValue: string) {
+    $vfm.show({
+        component: DiffToolModal,
+        bind: {
+            oldValue,
+            newValue
+        }
+    });
+}
 </script>
 
 <style>
@@ -89,6 +101,7 @@ const modificationsMap = computed(() => chain(props.modifications ?? [])
 td:has(div.modified-cell) {
     background-color: #d4edda;
     color: #155724;
+    cursor: pointer;
 }
 
 tr:hover td:has(div.modified-cell) {

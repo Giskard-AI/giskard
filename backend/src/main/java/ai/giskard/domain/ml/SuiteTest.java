@@ -32,8 +32,9 @@ public class SuiteTest implements Serializable {
     @JsonIgnore
     private TestSuite suite;
 
-    @OneToMany(mappedBy = "test", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<TestInput> testInputs = new java.util.ArrayList<>();
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "suite_test_id")
+    private List<FunctionInput> functionInputs = new java.util.ArrayList<>();
 
     @OneToMany(mappedBy = "test", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JsonIgnore
@@ -42,8 +43,8 @@ public class SuiteTest implements Serializable {
     public SuiteTest(TestSuite suite, GeneratedTest test, TestFunction testFunction) {
         this.suite = suite;
         this.testFunction = testFunction;
-        this.testInputs.addAll(test.getInputsList().stream()
-            .map(testInput -> new TestInput(this, testInput))
+        this.functionInputs.addAll(test.getInputsList().stream()
+            .map(FunctionInput::new)
             .toList());
     }
 }

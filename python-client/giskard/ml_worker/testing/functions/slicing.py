@@ -9,8 +9,8 @@ def short_comment_slicing_fn(x: pd.Series, column_name: str, max_characters: int
 
 
 @slicing_function(name="Keyword lookup")
-def keyword_lookup_slicing_fn(x: pd.Series, column_name: str, keyword: str) -> bool:
-    return any(word in x[column_name].lower() for word in [keyword])
+def keyword_lookup_slicing_fn(x: pd.Series, column_name: str, keywords: list[str]) -> bool:
+    return any(word in x[column_name].lower() for word in keywords)
 
 
 @slicing_function(name="Positive sentiment", row_level=False, tags=["sentiment"])

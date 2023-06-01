@@ -9,3 +9,5 @@ API reference
    datasets/index
    tests/index
    suite/index
+   slicing-functions/index
+   transformation-functions/index
