@@ -8,6 +8,7 @@ from scipy import special
 from transformers import BertTokenizer, BertForSequenceClassification
 
 import tests.utils
+from giskard import Dataset
 from giskard import Model
 from giskard.models.huggingface import HuggingFaceModel
 from tests.huggingface.email_classification_utils import get_email_files
@@ -28,8 +29,6 @@ class MyAutoHuggingFaceModel(Model):
             predictions = self.model(**data).logits
         return predictions.detach().cpu().numpy()
 
-
-from giskard import Dataset
 
 idx_to_cat = {
     1: 'REGULATION',
