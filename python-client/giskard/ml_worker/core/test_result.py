@@ -14,6 +14,13 @@ class TestMessage:
     type: TestMessageLevel
     text: str
 
+    def _repr_html_(self):
+        return """
+               <li style="color:{0};">{1}</li>
+               """.format('red' if self.type == TestMessageLevel.ERROR else 'inherit', self.text)
+
+    def __repr__(self):
+        return f" - [{self.type}] {self.text}"
 
 @dataclass
 class PartialUnexpectedCounts:
@@ -46,3 +53,23 @@ class TestResult:
     number_of_perturbed_rows: int = 0
     actual_slices_size: List[int] = field(default_factory=list, repr=False)
     reference_slices_size: List[int] = field(default_factory=list, repr=False)
+
+    def _repr_html_(self):
+        return """
+               <h4><span style="color:{0};">{1}</span> Test {2}</h4>
+               <p>Metric: {3}<p>
+               <ul>{4}</ul>
+               """.format('green' if self.passed else 'red',
+                          '✓' if self.passed else '𐄂',
+                          'succeed' if self.passed else 'failed',
+                          self.metric,
+                          ''.join([m._repr_html_() for m in self.messages]))
+
+    def __repr__(self):
+        return """
+               Test {0}
+               Metric: {1}
+               {2}
+               """.format('succeed' if self.passed else 'failed',
+                          self.metric,
+                          ''.join([m.__repr__() for m in self.messages]))
