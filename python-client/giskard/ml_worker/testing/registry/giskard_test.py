@@ -69,6 +69,8 @@ class GiskardTest(Savable[Type, TestFunctionMeta], ABC):
 
         if inspect.isclass(func):
             giskard_test = func()
+        elif isinstance(func, GiskardTest):
+            giskard_test = func
         else:
             giskard_test = GiskardTestMethod(func)
 
