@@ -58,7 +58,7 @@ test = [
     "tensorflow-text>=2.8.0, <2.10; sys_platform != 'darwin' or platform_machine != 'arm64'",
 ]
 doc = [
-    "furo>=2023.3.27",
+    "furo>=2023.5.20",
     "myst-parser>=1.0.0",
     "sphinx-autobuild>=2021.3.14",
     "sphinx>=6.1.3",
@@ -142,8 +142,10 @@ dependencies = [
     "pycryptodome>=3.6.1",
     "pandas>=1.3.4,<2",
     "docker>=6.0.0",
-    "chardet",  # text metadata
-    "jinja2>=3",  # scan template (temporary)
+    "xxhash>=2.0.0",
+    "langdetect>=1.0.9",
+    "chardet", # text metadata
+    "jinja2>=3", # scan template (temporary)
 ]
 
 [tool.black]

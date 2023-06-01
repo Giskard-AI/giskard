@@ -1,4 +1,4 @@
-# Wrap your dataset
+# 📦 Wrap your dataset
 
 The Giskard dataset is a wrapper of `pandas.DataFrame`. It contains additional properties like the name of the target
 column (ground truth variable), etc. This object gets passed to the Giskard model wrapper (
@@ -8,20 +8,13 @@ The `pandas.DataFrame` you provide should contain the raw data before prepocessi
 etc.).
 
 ```python
-import pandas as pd
-
-iris_df = pd.DataFrame({"sepal length": [5.1],
-                        "sepal width": [3.5],
-                        "petal size": ["medium"],
-                        "species": ["Setosa"]})
-
-from giskard import Dataset
+from giskard import demo, Dataset
 
 wrapped_dataset = Dataset(
-  df=iris_df,
-  target="species",  # Optional but a MUST if available
-  cat_columns=["petal size"]  # Optional but a MUST if available. Inferred automatically if not.
-  # name="my_iris_dataset", # Optional
+  df=demo.titanic_df(),
+  target="Survived",  # Optional but a MUST if available
+  cat_columns=['Pclass', 'Sex', "SibSp", "Parch", "Embarked"] # Optional but a MUST if available. Inferred automatically if not.
+  # name="titanic_dataset", # Optional
   # column_types=None # # Optional: if not provided, it is inferred automatically
 )
 ```
@@ -42,3 +35,7 @@ wrapped_dataset = Dataset(
     * `column_types`: A dictionary of column names and their types (numeric, category or text) for all columns
       of `dataset`.
       If not provided, the types will be automatically inferred.
+      
+{% hint style="success" %}
+To upload your dataset to the Giskard server, go to [Upload objects](docs/guide/upload/index.md) to the Giskard server.
+{% endhint %}
