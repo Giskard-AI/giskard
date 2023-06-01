@@ -22,17 +22,7 @@ class TensorFlowModel(Model):
 
 
     def save_to_local_dir(self, local_path):
-        #import pydevd_pycharm
-        #pydevd_pycharm.settrace('localhost', port=11223, stdoutToServer=True, stderrToServer=True)
-
         info = self._new_mlflow_model_meta()
-
-        # mlflow.__version__ == 1.30.0
-        save_model_kwargs = dict(
-            tf_saved_model_dir=local_path,
-            tf_meta_graph_tags=[tag_constants.SERVING],
-            tf_signature_def_key="predict",
-        )
 
         mlflow.tensorflow.save_model(self.clf,
                                   path=local_path,
