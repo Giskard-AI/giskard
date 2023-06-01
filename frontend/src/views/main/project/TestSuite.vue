@@ -2,40 +2,60 @@
   <div class="vc mt-2 pb-0">
     <div class="vc">
       <v-container class="main-container vc">
-        <v-row>
-          <v-col :align="'right'">
-            <div class="d-flex">
-                <v-btn v-if="route.name === 'test-suite-overview'" text :to="{ name: 'test-suite-executions' }"
-                       color="secondary">
-                    <v-icon left>history</v-icon>
-                    Past executions
-                </v-btn>
-                <v-btn v-else text :to="{ name: 'test-suite-overview' }" color="secondary">
-                    <v-icon>arrow_left</v-icon>
-                    Overview
-                </v-btn>
-                <div class="flex-grow-1"/>
-                <v-btn tile class='mx-1' v-if="hasTest"
-                       :to="{ name: 'project-catalog-tests', query: { suiteId: suiteId } }" color="secondary">
-                    <v-icon>add</v-icon>
-                    Add test
-                </v-btn>
-                <v-btn tile class='mx-1' v-if="hasTest && hasInput" @click='openRunTestSuite(true)' color="secondary">
-                    <v-icon>compare</v-icon>
-                    Compare
-                </v-btn>
-                <v-btn tile class='mx-1' v-if="hasTest" @click='() => openRunTestSuite(false)' color="primary">
-                    <v-icon>arrow_right</v-icon>
-                    Run test suite
-                </v-btn>
-            </div>
-          </v-col>
-        </v-row>
-        <v-row class="vc">
-          <v-col class="vc" cols="12">
-            <router-view />
-          </v-col>
-        </v-row>
+          <div class="d-flex">
+              <h1>{{ suite.name }}</h1>
+              <div class="flex-grow-1"/>
+              <v-btn tile class='mx-1' v-if="hasTest"
+                     :to="{ name: 'project-catalog-tests', query: { suiteId: suiteId } }" color="secondary">
+                  <v-icon>add</v-icon>
+                  Add test
+              </v-btn>
+          </div>
+          <v-tabs>
+              <v-tab :to="{ name: 'test-suite-overview' }">
+                  <v-icon>mdi-chart-bar</v-icon>
+                  Report
+              </v-tab>
+              <v-tab :to="{ name: 'test-suite-executions' }">
+                  <v-icon>history</v-icon>
+                  Past executions
+              </v-tab>
+              <v-tab disabled>
+                  <v-icon>settings</v-icon>
+                  Configuration
+              </v-tab>
+          </v-tabs>
+          <v-row>
+              <v-col>
+                  <div class="d-flex align-center">
+                      <div v-if="hasTest && route.name === 'test-suite-overview'"
+                           :to="{ name: 'test-suite-executions' }">
+                          <span>
+                              <b>{{ suite.tests.length }}</b>
+                              test{{ suite.tests.length > 1 ? 's' : '' }} | </span>
+                          <span v-if="latestExecution">
+                              Latest execution <b>{{ timeSince(latestExecution.executionDate) }}</b>
+                          </span>
+                          <span v-else>Never executed</span>
+                      </div>
+                      <div class="flex-grow-1"/>
+                      <v-btn tile class='mx-1' v-if="hasTest && hasInput" @click='openRunTestSuite(true)'
+                             color="secondary">
+                          <v-icon>compare</v-icon>
+                          Compare
+                      </v-btn>
+                      <v-btn tile class='mx-1' v-if="hasTest" @click='() => openRunTestSuite(false)' color="primary">
+                          <v-icon>arrow_right</v-icon>
+                          Run test suite
+                      </v-btn>
+                  </div>
+              </v-col>
+          </v-row>
+          <v-row class="vc">
+              <v-col class="vc" cols="12">
+                  <router-view/>
+              </v-col>
+          </v-row>
       </v-container>
     </div>
   </div>
@@ -43,7 +63,7 @@
 
 <script lang="ts" setup>
 
-import {onActivated, watch} from "vue";
+import {computed, onActivated, watch} from "vue";
 import {useMainStore} from "@/stores/main";
 import {useTestSuiteStore} from '@/stores/test-suite';
 import {storeToRefs} from 'pinia';
@@ -51,6 +71,7 @@ import {useRoute, useRouter} from 'vue-router/composables';
 import {$vfm} from 'vue-final-modal';
 import RunTestSuiteModal from '@/views/main/project/modals/RunTestSuiteModal.vue';
 import {useCatalogStore} from "@/stores/catalog";
+import {timeSince} from "../../../utils/time.utils";
 
 const props = defineProps<{
     projectId: number,
@@ -58,7 +79,7 @@ const props = defineProps<{
 }>();
 
 const mainStore = useMainStore();
-const {inputs, executions, hasTest, hasInput} = storeToRefs(useTestSuiteStore())
+const {suite, inputs, executions, hasTest, hasInput} = storeToRefs(useTestSuiteStore())
 
 onActivated(() => loadData());
 watch(() => props.suiteId, () => loadData());
@@ -68,6 +89,8 @@ const {loadCatalog} = useCatalogStore();
 
 const router = useRouter();
 const route = useRoute();
+
+const latestExecution = computed(() => executions.value.length === 0 ? null : executions.value[0]);
 
 async function loadData() {
     await loadTestSuites(props.projectId, props.suiteId);
