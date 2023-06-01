@@ -33,7 +33,7 @@
             </v-list>
           </v-tab-item>
           <v-tab-item :transition="false">
-            <v-row v-if="registry">
+            <v-row v-if="suite">
               <v-col cols="3">
                 <v-list three-line v-if="suite.tests">
                   <v-list-item-group v-model="selectedTest" color="primary" mandatory>
@@ -41,7 +41,7 @@
                       <v-divider/>
                       <v-list-item :value="test">
                         <v-list-item-content>
-                          <v-list-item-title v-text="registry.tests[test.testId].name"
+                          <v-list-item-title v-text="registry[test.testUuid].name"
                                              class="test-title"></v-list-item-title>
                         </v-list-item-content>
                       </v-list-item>
@@ -55,11 +55,11 @@
                     <TestSuiteTestDetails
                         :project-id="projectId"
                         :suite-id="suiteId"
-                        :test="registry.tests[selectedTest.testId]"
+                        :test="registry[selectedTest.testUuid]"
                         :models="allModels"
                         :datasets="allDatasets"
                         :inputs="selectedTest.testInputs"
-                        :executions="testSuiteResults[selectedTest.testId]"
+                        :executions="testSuiteResults[selectedTest.testUuid]"
                         @updateTestSuite="loadData"/>
                   </v-col>
                 </v-row>
@@ -128,7 +128,7 @@ const props = defineProps<{
 const mainStore = useMainStore();
 
 const suite = ref<TestSuiteNewDTO | null>(null);
-const registry = ref<TestFunctionDTO[]>([]);
+const registry = ref<{ [testUuid: string]: TestFunctionDTO }>({});
 const tab = ref<any>(null);
 const selectedTest = ref<SuiteTestDTO | null>(null);
 const inputs = ref<{ [name: string]: string }>({});
@@ -159,7 +159,7 @@ async function loadData() {
 
   inputs.value = inputResults;
   suite.value = suiteResults;
-  registry.value = registryResult
+  registry.value = chain(registryResult).keyBy('uuid').value();
   executions.value = executionResults;
 
   allDatasets.value = Object.fromEntries(datasets.map(x => [x.id, x]));
@@ -168,7 +168,7 @@ async function loadData() {
 
 watch(() => suite.value, () => {
   if (selectedTest.value !== null && suite.value !== null) {
-    selectedTest.value = suite.value.tests.find(test => test.testId === selectedTest.value?.testId) ?? null;
+    selectedTest.value = suite.value.tests.find(test => test.testUuid === selectedTest.value?.testUuid) ?? null;
   }
 })
 
@@ -185,7 +185,7 @@ const testSuiteResults = computed(() => {
           })
       ))
       .flatten()
-      .groupBy(result => result.testResult.test.testId)
+      .groupBy(result => result.testResult.test.testUuid)
       .values();
 });
 

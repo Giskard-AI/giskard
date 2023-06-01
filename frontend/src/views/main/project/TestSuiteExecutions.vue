@@ -83,7 +83,7 @@ import {
   JobDTO,
   JobState,
   ModelDTO,
-  TestCatalogDTO,
+  TestFunctionDTO,
   TestResult,
   TestSuiteExecutionDTO
 } from '@/generated-sources';
@@ -98,12 +98,12 @@ import {Comparators} from '@/utils/comparators';
 const props = defineProps<{
   projectId: number,
   suiteId: number,
-  registry: TestCatalogDTO,
+  registry: { [testUuid: string]: TestFunctionDTO },
   models: { [key: string]: ModelDTO },
   datasets: { [key: string]: DatasetDTO },
   inputTypes: { [name: string]: string },
   executions?: TestSuiteExecutionDTO[],
-  trackedExecutions: { [uuid: string]: JobDTO}
+  trackedExecutions: { [uuid: string]: JobDTO }
 }>();
 
 const selectedExecution = ref<TestSuiteExecutionDTO | null>(null);
