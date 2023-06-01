@@ -143,7 +143,7 @@ public class DatasetsController {
                 case "TRANSFORMATION" -> transformationFunctionService.getInitialized(processingFunction.getUuid());
                 default -> throw new IllegalStateException("Unexpected value: " + processingFunction.getType());
             })
-            .collect(Collectors.toMap(Callable::getUuid, Function.identity()));
+            .collect(Collectors.toMap(Callable::getUuid, Function.identity(), (l, r) -> l));
 
         try (MLWorkerClient client = mlWorkerService.createClient(project.isUsingInternalWorker())) {
             DatasetProcessingRequest.Builder builder = DatasetProcessingRequest.newBuilder()

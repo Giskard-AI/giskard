@@ -6,7 +6,7 @@
             class="slice-function-selector"
             :label="label"
             :value="value"
-            :items="transformationFunctions"
+            :items="availableTransformation"
             :item-text="extractName"
             item-value="uuid"
             :return-object="false"
@@ -33,12 +33,14 @@ import FunctionInputsModal from "@/views/main/project/modals/FunctionInputsModal
 import {chain} from "lodash";
 
 const props = withDefaults(defineProps<{
-    projectId: number,
+    projectId?: number,
     label: string,
     fullWidth: boolean,
     value?: string,
     args?: Array<FunctionInputDTO>,
-    icon: boolean
+    icon: boolean,
+    columnType?: string,
+    columnName?: string
 }>(), {
     fullWidth: true,
     icon: false
@@ -46,18 +48,31 @@ const props = withDefaults(defineProps<{
 
 const emit = defineEmits(['update:value', 'update:args', 'onChanged']);
 
-const {transformationFunctions, transformationFunctionsByUuid} = storeToRefs(useCatalogStore())
+const {
+    transformationFunctions,
+    transformationFunctionsByUuid,
+    transformationFunctionsByColumnType
+} = storeToRefs(useCatalogStore())
+
+const availableTransformation = computed(() => props.columnType ? transformationFunctionsByColumnType.value[props.columnType] : transformationFunctions.value)
 
 function extractName(SlicingFunctionDTO: SlicingFunctionDTO) {
     return SlicingFunctionDTO.displayName ?? SlicingFunctionDTO.name
 }
 
 async function onInput(value) {
+    const columnNameArg = props.columnName ? {
+        name: 'column_name',
+        isAlias: false,
+        params: [],
+        type: 'str',
+        value: props.columnName
+    } as FunctionInputDTO : null;
+
     if (!value || (!transformationFunctionsByUuid.value[value].args?.length
-        && !transformationFunctionsByUuid.value[value].cellLevel)) {
-        console.log(transformationFunctionsByUuid.value[value].cellLevel)
+        && (!transformationFunctionsByUuid.value[value].cellLevel || props.columnName))) {
         emit('update:value', value);
-        emit('update:args', []);
+        emit('update:args', columnNameArg ? [columnNameArg] : []);
         emit('onChanged');
         return;
     }
@@ -72,7 +87,9 @@ async function onInput(value) {
             projectId: props.projectId,
             title: `Set up parameters for '${func.displayName ?? func.name}'`,
             function: func,
-            defaultValue: {},
+            defaultValue: {
+                column_name: columnNameArg
+            },
         },
         on: {
             async save(args: Array<FunctionInputDTO>) {
