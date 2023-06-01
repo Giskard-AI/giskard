@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="vertical-container">
     <v-container class="mt-2 mb-0" v-if="isProjectOwnerOrAdmin">
       <div class="d-flex justify-end align-center">
         <v-btn tile small class="mx-2" href="https://docs.giskard.ai/start/guides/upload-your-model" target="_blank">
