@@ -41,6 +41,7 @@
                             </v-list-item-group>
                         </v-list>
                     </v-col>
+
                     <v-col cols="8" v-if="selected" class="vc fill-height">
                         <div class="d-flex justify-space-between py-2 mb-4">
                             <span class="selected-test-name">{{ selected.displayName ?? selected.name }}</span>
@@ -190,7 +191,7 @@ const selectedTestUsage = computed(() => {
         if (arg.optional) return `${arg.name}=${arg.defaultValue}`;
         return arg.name;
     });
-    content += `test_result, passed = (${parametersWithDefaults.join(', ')})`;
+    content += `test_result, passed = ${selected.value.name}(${parametersWithDefaults.join(', ')})`;
     content += '\n\n';
 
     content += `print(f"TEST RESULT: {test_result} - PASSED: {passed}")`;
