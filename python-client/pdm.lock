@@ -2219,7 +2219,7 @@ dependencies = [
 
 [metadata]
 lock_version = "4.2"
-groups = ["default", "dev", "oldproto", "test"]
+groups = ["default", "dev", "test"]
 content_hash = "sha256:9deed7374d773fdfcb1a704787ace3924158cc02f53234d36aabc61670efc031"
 
 [metadata.files]
