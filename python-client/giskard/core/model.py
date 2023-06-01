@@ -11,7 +11,7 @@ from typing import Optional, Any, Union
 
 import cloudpickle
 import mlflow
-import numpy
+import numpy as np
 import pandas as pd
 import yaml
 from mlflow.pyfunc import PyFuncModel
@@ -166,7 +166,7 @@ class Model(ABC):
                 prediction=raw_prediction, raw_prediction=raw_prediction, raw=raw_prediction
             )
         elif self.is_classification:
-            labels = numpy.array(self.meta.classification_labels)
+            labels = np.array(self.meta.classification_labels)
             threshold = self.meta.classification_threshold
 
             if threshold is not None and len(labels) == 2:
@@ -289,15 +289,38 @@ class WrapperModel(Model, ABC):
         self.data_preprocessing_function = data_preprocessing_function
         self.model_postprocessing_function = model_postprocessing_function
 
+    def post_processing(self, raw_prediction):
+        warning_message = f"\nYour binary classification model prediction is of the shape {raw_prediction.shape}. \n" + \
+                          f"In Giskard we expect the shape {(raw_prediction.shape[0], 2)} for binary classification models. \n" + \
+                          "We automatically infered the second class prediction but please make sure that \n" + \
+                          "the probability output of your model corresponds to the first label of the \n" + \
+                          f"classification_labels ({self.meta.classification_labels}) you provided us with."
+
+        is_binary_classification = self.is_classification and len(self.meta.classification_labels) == 2
+
+        if is_binary_classification:
+            if len(raw_prediction.shape) < 1:
+                logger.warning(warning_message, exc_info=True)
+                raw_prediction = np.stack([raw_prediction, 1 - raw_prediction], axis=1)
+
+            elif raw_prediction.shape[1] == 1:
+                logger.warning(warning_message, exc_info=True)
+                squeezed_raw_prediction = np.squeeze(raw_prediction)
+                raw_prediction = np.stack([squeezed_raw_prediction, 1 - squeezed_raw_prediction], axis=1)
+
+        if self.model_postprocessing_function:
+            raw_prediction = self.model_postprocessing_function(raw_prediction)
+
+        return raw_prediction
+
     def predict_df(self, df):
         if self.data_preprocessing_function:
             df = self.data_preprocessing_function(df)
-        raw_prediction = self.clf_predict(df)
 
-        if not self.model_postprocessing_function:
-            return raw_prediction
-        else:
-            return self.model_postprocessing_function(raw_prediction)
+        raw_prediction = self.clf_predict(df)
+        raw_prediction = self.post_processing(raw_prediction)
+
+        return raw_prediction
 
     @abstractmethod
     def clf_predict(self, df):
