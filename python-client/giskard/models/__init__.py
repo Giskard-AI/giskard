@@ -5,7 +5,6 @@ from typing import Callable, Optional, Iterable, Any
 import pandas as pd
 
 from giskard.core.core import ModelType
-from giskard.models.base import CloudpickleBasedModel
 from giskard.models.function import PredictionFunctionModel
 from giskard.core.validation import configured_validate_arguments
 
