@@ -27,17 +27,21 @@ def load_config() -> GitConfig:
 
 
 def init_udf_repository() -> bool:
-    config = load_config()
+    try:
+        config = load_config()
 
-    if config.repo is None:
-        logger.warning("UDF repository is not available because the 'GIT_REPOSITORY' environment variable is not set")
+        if config.repo is None:
+            logger.warning(
+                "UDF repository is not available because the 'GIT_REPOSITORY' environment variable is not set")
+            return False
+
+        if udf_root.exists():
+            update_udf_repository()
+        else:
+            clone_udf_repository(config)
+    except Exception as e:
+        logger.exception("Failed to initialize UDF repo", e)
         return False
-
-    if udf_root.exists():
-        update_udf_repository()
-    else:
-        clone_udf_repository(config)
-
     return True
 
 
