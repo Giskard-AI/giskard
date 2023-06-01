@@ -18,6 +18,7 @@ from giskard.models.catboost import CatboostModel
 from giskard.models.pytorch import PyTorchModel
 from giskard.models.tensorflow import TensorFlowModel
 from giskard.models.huggingface import HuggingFaceModel
+from giskard.models.automodel import AutoModel
 
 configure_logging()
 if sys.version_info >= (3, 8):
@@ -49,5 +50,6 @@ __all__ = [
     'CatboostModel',
     'PyTorchModel',
     'TensorFlowModel',
-    'HuggingFaceModel'
+    'HuggingFaceModel',
+    'AutoModel'
 ]
