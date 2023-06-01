@@ -1,20 +1,15 @@
 import logging
 import os
-from pathlib import Path
 
 import click
+import docker
 import requests
-from python_on_whales import DockerClient
+import yaml
 
 giskard_home_path = os.path.expanduser("~/giskard-home")
-dockerfile_location = giskard_home_path + "/docker/docker-compose.yml"
-envfile_location = giskard_home_path + "/docker/.env"
+giskard_settings_path = giskard_home_path + "/giskard-settings.yml"
 
-# TODO: Maybe make it into a release branch to not get a "nightly" one ?
-dockerfile_url = "https://raw.githubusercontent.com/Giskard-AI/giskard/main/docker-compose.yml"
-envfile_url = "https://raw.githubusercontent.com/Giskard-AI/giskard/main/.env"
-
-client = DockerClient(compose_files=[dockerfile_location])
+client = docker.from_env()
 
 logger = logging.getLogger(__name__)
 
@@ -60,11 +55,25 @@ def start(attached):
     You can attach to it by using -a
     """
     logger.info("Starting Giskard Server")
-    # TODO: Update to check for installation/grabbing latest
-    # if not _check_downloaded():
-    #     _update()
+    settings = _get_settings()
+    if not settings:
+        version = _fetch_latest_tag()
+        logger.info(f"Giskard Server not installed. Installing {version} now.")
+        _write_settings({"version": version})
+    else:
+        version = settings["version"]
 
-    client.compose.up(detach=not attached)
+    if not _check_downloaded(version.replace('v', '')):
+        _download_dockerfile(version)
+
+    container = client.containers.get("giskard-server")
+    if container is None:
+        container = client.containers.create(f"giskardai/giskard:{version.replace('v', '')}",
+                                             detach=not attached,
+                                             name="giskard-server",
+                                             ports={19000: 19000, 9080: 9080})
+    container.start()
+    logger.info(f"Giskard Server {version} started. You can access it at http://localhost:19000")
 
 
 @server.command("stop")
@@ -75,7 +84,8 @@ def stop():
     Stops any running Giskard server. Does nothing if Giskard server is not running.
     """
     logger.info("Stopping Giskard Server")
-    client.compose.down()
+    container = client.containers.get("giskard-server")
+    container.stop()
 
 
 @server.command("restart")
@@ -86,7 +96,9 @@ def restart():
     Stops any running Giskard server and starts it again.
     """
     logger.info("Restarting Giskard Server")
-    client.compose.restart()
+    container = client.containers.get("giskard-server")
+    container.stop()
+    container.start()
 
 
 @server.command("logs")
@@ -104,27 +116,24 @@ def update(version):
         version = _fetch_latest_tag()
 
     logger.info(f"Updating Giskard Server to version {version}")
-    if not _check_downloaded():
+    if not _check_downloaded(version.replace('v', '')):
         _download_dockerfile(version)
-    client.compose.pull()
+
     logger.info("Giskard Server updated.")
 
 
-def _check_downloaded():
-    return False
-    # if not os.path.exists(dockerfile_location) or not os.path.exists(envfile_location):
-    #     return False
-    # return True
+def _check_downloaded(ver: str):
+    try:
+        client.images.get(f"giskardai/giskard:{ver}")
+        logger.debug(f"Docker image for version {ver} found.")
+        return True
+    except docker.errors.ImageNotFound:
+        return False
 
 
 def _download_dockerfile(version):
-    logger.info(f"Downloading files for version {version}")
-    Path(os.path.expanduser("~/giskard-home/docker")).mkdir(parents=True, exist_ok=True)
-    r = requests.get(f"https://raw.githubusercontent.com/Giskard-AI/giskard/{version}/docker-compose.yml",
-                     allow_redirects=True)
-    open(dockerfile_location, 'wb').write(r.content)
-    r = requests.get(f"https://raw.githubusercontent.com/Giskard-AI/giskard/{version}/.env", allow_redirects=True)
-    open(envfile_location, 'wb').write(r.content)
+    logger.info(f"Downloading image for version {version}")
+    # TODO: Download the docker image from release artifacts...
 
 
 # Returns the latest tag from the GitHub API
@@ -135,3 +144,17 @@ def _fetch_latest_tag() -> str:
     json_response = response.json()
     tag = json_response["tag_name"]
     return tag
+
+
+def _write_settings(settings):
+    with open(giskard_settings_path, "w") as f:
+        yaml.dump(settings, f)
+
+
+def _get_settings():
+    # Check the file exists first
+    if not os.path.isfile(giskard_settings_path):
+        return None
+
+    # TODO: Maybe cache it ?
+    return yaml.safe_load(open(giskard_settings_path, "r"))
