@@ -12,7 +12,7 @@ def _test_metamorphic_increasing_regression(ds: Dataset, model, threshold):
         x.bmi = x.bmi + x.bmi * 0.1
         return x
 
-    results = metamorphic.test_metamorphic_increasing(dataset=ds, model=model, transformation_function=perturbation,
+    results = metamorphic.test_metamorphic_increasing(model=model, dataset=ds, transformation_function=perturbation,
                                                       threshold=threshold).execute()
 
     assert results.actual_slices_size[0] == 442
@@ -26,7 +26,7 @@ def _test_metamorphic_decreasing_regression(ds: Dataset, model, threshold):
         x.age = x.age - x.age * 0.1
         return x
 
-    results = metamorphic.test_metamorphic_decreasing(dataset=ds, model=model, transformation_function=perturbation,
+    results = metamorphic.test_metamorphic_decreasing(model=model, dataset=ds, transformation_function=perturbation,
                                                       threshold=threshold).execute()
     assert results.actual_slices_size[0] == 442
     assert round(results.metric, 2) == 0.54
@@ -39,7 +39,7 @@ def _test_metamorphic_increasing_classification(df, model, threshold):
         x.duration_in_month = x.duration_in_month + x.duration_in_month * 0.5
         return x
 
-    results = metamorphic.test_metamorphic_increasing(dataset=df, model=model, transformation_function=perturbation,
+    results = metamorphic.test_metamorphic_increasing(model=model, dataset=df, transformation_function=perturbation,
                                                       threshold=threshold,
                                                       classification_label=model.meta.classification_labels[
                                                           0]).execute()
@@ -55,7 +55,7 @@ def _test_metamorphic_decreasing_classification(df, model, threshold):
         x.duration_in_month = x.duration_in_month * 0.5
         return x
 
-    results = metamorphic.test_metamorphic_decreasing(dataset=df, model=model, transformation_function=perturbation,
+    results = metamorphic.test_metamorphic_decreasing(model=model, dataset=df, transformation_function=perturbation,
                                                       threshold=threshold,
                                                       classification_label=model.meta.classification_labels[
                                                           0]).execute()
@@ -90,7 +90,7 @@ def test_metamorphic_decreasing_exception(german_credit_test_data, german_credit
             x.duration_in_month = x.duration_in_month * 0.5
             return x
 
-        metamorphic.test_metamorphic_decreasing(dataset=german_credit_test_data, model=german_credit_model,
+        metamorphic.test_metamorphic_decreasing(model=german_credit_model, dataset=german_credit_test_data,
                                                 transformation_function=perturbation, threshold=0.5,
                                                 classification_label="random_value").execute()
 
@@ -102,7 +102,7 @@ def test_metamorphic_increasing_exception(german_credit_test_data, german_credit
             x.duration_in_month = x.duration_in_month * 0.5
             return x
 
-        metamorphic.test_metamorphic_increasing(dataset=german_credit_test_data, model=german_credit_model,
+        metamorphic.test_metamorphic_increasing(model=german_credit_model, dataset=german_credit_test_data,
                                                 transformation_function=perturbation, threshold=0.5,
                                                 classification_label="random_value").execute()
 
@@ -113,7 +113,7 @@ def test_metamorphic_increasing_t_test(german_credit_test_data, german_credit_mo
         x.sex = "female" if x.sex == "male" else "male"
         return x
 
-    results = metamorphic.test_metamorphic_increasing_t_test(dataset=german_credit_test_data, model=german_credit_model,
+    results = metamorphic.test_metamorphic_increasing_t_test(model=german_credit_model, dataset=german_credit_test_data,
                                                              transformation_function=perturbation,
                                                              critical_quantile=0.05,
                                                              classification_label="Default").execute()
@@ -128,7 +128,7 @@ def test_metamorphic_decreasing_t_test(german_credit_test_data, german_credit_mo
         x.sex = "female" if x.sex == "male" else "male"
         return x
 
-    results = metamorphic.test_metamorphic_decreasing_t_test(dataset=german_credit_test_data, model=german_credit_model,
+    results = metamorphic.test_metamorphic_decreasing_t_test(model=german_credit_model, dataset=german_credit_test_data,
                                                              transformation_function=perturbation,
                                                              critical_quantile=0.05,
                                                              classification_label="Default").execute()
@@ -143,8 +143,8 @@ def test_metamorphic_increasing_wilcoxon(german_credit_test_data, german_credit_
         x.sex = "female" if x.sex == "male" else "male"
         return x
 
-    results = metamorphic.test_metamorphic_increasing_wilcoxon(dataset=german_credit_test_data,
-                                                               model=german_credit_model,
+    results = metamorphic.test_metamorphic_increasing_wilcoxon(model=german_credit_model,
+                                                               dataset=german_credit_test_data,
                                                                transformation_function=perturbation,
                                                                critical_quantile=0.05,
                                                                classification_label="Default").execute()
@@ -159,8 +159,8 @@ def test_metamorphic_decreasing_wilcoxon(german_credit_test_data, german_credit_
         x.sex = "female" if x.sex == "male" else "male"
         return x
 
-    results = metamorphic.test_metamorphic_decreasing_wilcoxon(dataset=german_credit_test_data,
-                                                               model=german_credit_model,
+    results = metamorphic.test_metamorphic_decreasing_wilcoxon(model=german_credit_model,
+                                                               dataset=german_credit_test_data,
                                                                transformation_function=perturbation,
                                                                critical_quantile=0.05,
                                                                classification_label="Default").execute()
@@ -174,7 +174,7 @@ def test_metamorphic_increasing_t_test_nopert(german_credit_test_data, german_cr
     def perturbation(x: pd.Series) -> pd.Series:
         return x
 
-    results = metamorphic.test_metamorphic_increasing_t_test(dataset=german_credit_test_data, model=german_credit_model,
+    results = metamorphic.test_metamorphic_increasing_t_test(model=german_credit_model, dataset=german_credit_test_data,
                                                              transformation_function=perturbation,
                                                              critical_quantile=0.05,
                                                              classification_label="Default").execute()
@@ -188,7 +188,7 @@ def test_metamorphic_decreasing_t_test_nopert(german_credit_test_data, german_cr
     def perturbation(x: pd.Series) -> pd.Series:
         return x
 
-    results = metamorphic.test_metamorphic_decreasing_t_test(dataset=german_credit_test_data, model=german_credit_model,
+    results = metamorphic.test_metamorphic_decreasing_t_test(model=german_credit_model, dataset=german_credit_test_data,
                                                              transformation_function=perturbation,
                                                              critical_quantile=0.05,
                                                              classification_label="Default").execute()
@@ -202,8 +202,8 @@ def test_metamorphic_increasing_wilcoxon_nopert(german_credit_test_data, german_
     def perturbation(x: pd.Series) -> pd.Series:
         return x
 
-    results = metamorphic.test_metamorphic_increasing_wilcoxon(dataset=german_credit_test_data,
-                                                               model=german_credit_model,
+    results = metamorphic.test_metamorphic_increasing_wilcoxon(model=german_credit_model,
+                                                               dataset=german_credit_test_data,
                                                                transformation_function=perturbation,
                                                                critical_quantile=0.05,
                                                                classification_label="Default").execute()
@@ -217,8 +217,8 @@ def test_metamorphic_decreasing_wilcoxon_nopert(german_credit_test_data, german_
     def perturbation(x: pd.Series) -> pd.Series:
         return x
 
-    results = metamorphic.test_metamorphic_decreasing_wilcoxon(dataset=german_credit_test_data,
-                                                               model=german_credit_model,
+    results = metamorphic.test_metamorphic_decreasing_wilcoxon(model=german_credit_model,
+                                                               dataset=german_credit_test_data,
                                                                transformation_function=perturbation,
                                                                critical_quantile=0.05,
                                                                classification_label="Default").execute()

@@ -434,7 +434,7 @@ def test_drift_earth_movers_distance(actual_dataset: Dataset, reference_dataset:
 
 
 @test(name='Label drift (PSI)')
-def test_drift_prediction_psi(actual_dataset: Dataset, reference_dataset: Dataset, model: BaseModel,
+def test_drift_prediction_psi(model: BaseModel, actual_dataset: Dataset, reference_dataset: Dataset,
                               slicing_function: SlicingFunction = None, max_categories: int = 10,
                               threshold: float = 0.2, psi_contribution_percent: float = 0.2):
     """
@@ -445,12 +445,12 @@ def test_drift_prediction_psi(actual_dataset: Dataset, reference_dataset: Datase
     for females between reference and actual sets is below 0.2
 
     Args:
+        model(BaseModel):
+            Model used to compute the test
         actual_dataset(Dataset):
             Actual dataset used to compute the test
         reference_dataset(Dataset):
             Reference dataset used to compute the test
-        model(BaseModel):
-            Model used to compute the test
         slicing_function(SlicingFunction):
             Slicing function to be applied on both actual and reference datasets
         threshold(float):
@@ -533,10 +533,9 @@ def _generate_message_modalities(main_drifting_modalities_bool, output_data, tes
 
 
 @test(name='Label drift (Chi-squared)')
-def test_drift_prediction_chi_square(actual_dataset: Dataset, reference_dataset: Dataset, model: BaseModel,
-                                     slicing_function: SlicingFunction = None,
-                                     max_categories: int = 10, threshold: float = 0.05,
-                                     chi_square_contribution_percent: float = 0.2):
+def test_drift_prediction_chi_square(model: BaseModel, actual_dataset: Dataset, reference_dataset: Dataset,
+                                     slicing_function: SlicingFunction = None, max_categories: int = 10,
+                                     threshold: float = 0.05, chi_square_contribution_percent: float = 0.2):
     """
     Test if the Chi Square value between the reference and actual datasets is below the threshold
     for the classification labels predictions for a given slice
@@ -545,12 +544,12 @@ def test_drift_prediction_chi_square(actual_dataset: Dataset, reference_dataset:
     for females between reference and actual sets is below 0.05
 
     Args:
+        model(BaseModel):
+            Model used to compute the test
         actual_dataset(Dataset):
             Actual dataset used to compute the test
         reference_dataset(Dataset):
             Reference dataset used to compute the test
-        model(BaseModel):
-            Model used to compute the test
         slicing_function(SlicingFunction):
             Slicing function to be applied on both actual and reference datasets
         threshold(float):
@@ -621,9 +620,9 @@ def _test_series_drift_chi(
 
 @test(name='Classification Probability drift (Kolmogorov-Smirnov)', tags=['classification'])
 @validate_classification_label
-def test_drift_prediction_ks(actual_dataset: Dataset, reference_dataset: Dataset, model: BaseModel,
-                             slicing_function: SlicingFunction = None,
-                             classification_label: str = None, threshold: float = None) -> TestResult:
+def test_drift_prediction_ks(model: BaseModel, actual_dataset: Dataset, reference_dataset: Dataset,
+                             slicing_function: SlicingFunction = None, classification_label: str = None,
+                             threshold: float = None) -> TestResult:
     """
     Test if the pvalue of the KS test for prediction between the reference and actual datasets for
      a given subpopulation is above the threshold
@@ -633,12 +632,12 @@ def test_drift_prediction_ks(actual_dataset: Dataset, reference_dataset: Dataset
      rejected at 5% level and that we cannot assume drift for this variable.
 
     Args:
+        model(BaseModel):
+            Model used to compute the test
         actual_dataset(Dataset):
             Actual dataset used to compute the test
         reference_dataset(Dataset):
             Reference dataset used to compute the test
-        model(BaseModel):
-            Model used to compute the test
         slicing_function(SlicingFunction):
             Slicing function to be applied on both actual and reference datasets
         threshold(float):
@@ -709,7 +708,7 @@ def _generate_message_ks(passed, result, threshold, data_type):
 
 @test(name='Classification Probability drift (Earth mover\'s distance)', tags=['classification'])
 @validate_classification_label
-def test_drift_prediction_earth_movers_distance(actual_dataset: Dataset, reference_dataset: Dataset, model: BaseModel,
+def test_drift_prediction_earth_movers_distance(model: BaseModel, actual_dataset: Dataset, reference_dataset: Dataset,
                                                 slicing_function: SlicingFunction = None,
                                                 classification_label: str = None, threshold: float = 0.2) -> TestResult:
     """
@@ -725,12 +724,12 @@ def test_drift_prediction_earth_movers_distance(actual_dataset: Dataset, referen
     for females between reference and actual sets is below 0.2
 
     Args:
+        model(BaseModel):
+            uploaded model
         actual_dataset(Dataset):
             Actual dataset used to compute the test
         reference_dataset(Dataset):
             Reference dataset used to compute the test
-        model(BaseModel):
-            uploaded model
         slicing_function(SlicingFunction):
             Slicing function to be applied on both actual and reference datasets
         classification_label:
