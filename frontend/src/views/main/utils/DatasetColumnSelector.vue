@@ -1,26 +1,16 @@
 <template>
-    <v-select v-if="dataset"
-              outlined
-              clearable
-              class="slice-function-selector"
-              label="Column name"
-              :items="availableColumns"
-              hide-details
-              dense
-              :value="value"
-              @input="v => emit('update:value', v)"
-    ></v-select>
-    <v-text-field v-else label="Column name" outlined dense/>
+    <v-select v-if="dataset" clearable outlined class="slice-function-selector" label="Column name" :value="value" :items="availableColumns" hide-details dense @input="v => emit('update:value', v)"></v-select>
+    <v-text-field v-else label="Column name" outlined dense hide-details />
 </template>
 
 <script setup lang="ts">
 
 
-import {computed, onMounted, ref} from "vue";
-import {DatasetDTO} from "@/generated-sources";
+import { computed, onMounted, ref } from "vue";
+import { DatasetDTO } from "@/generated-sources";
 import axios from "axios";
-import {apiURL} from "@/env";
-import {getColumnType} from "@/utils/column-type-utils";
+import { apiURL } from "@/env";
+import { getColumnType } from "@/utils/column-type-utils";
 
 
 const props = defineProps<{
@@ -53,6 +43,6 @@ const availableColumns = computed(() => {
 <style scoped>
 .slice-function-selector {
     min-width: 200px;
-    flex-grow: 1;
+    /* flex-grow: 1; */
 }
 </style>
