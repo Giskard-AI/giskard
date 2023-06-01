@@ -1,9 +1,9 @@
+import type {GenerateTestSuiteInputDTO} from './generate-test-suite-input-dto';
+
 /**
  * Generated from ai.giskard.web.dto.GenerateTestSuiteDTO
  */
 export interface GenerateTestSuiteDTO {
-    actualDataset?: string | null;
-    model?: string | null;
+    inputs: GenerateTestSuiteInputDTO[];
     name: string;
-    referenceDataset?: string | null;
 }

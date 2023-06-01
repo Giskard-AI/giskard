@@ -17,6 +17,7 @@ import ai.giskard.web.rest.errors.EntityNotFoundException;
 import ai.giskard.worker.ArtifactRef;
 import ai.giskard.worker.GenerateTestSuiteRequest;
 import ai.giskard.worker.GenerateTestSuiteResponse;
+import ai.giskard.worker.TestArgument;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import lombok.RequiredArgsConstructor;
@@ -182,16 +183,19 @@ public class TestSuiteService {
             GenerateTestSuiteRequest.Builder request = GenerateTestSuiteRequest.newBuilder()
                 .setProjectKey(projectKey);
 
-            if (dto.getModel() != null) {
-                request.setModel(buildArtifactRef(projectKey, dto.getModel()));
-            }
-
-            if (dto.getActualDataset() != null) {
-                request.setActualDataset(buildArtifactRef(projectKey, dto.getActualDataset()));
-            }
-
-            if (dto.getReferenceDataset() != null) {
-                request.setReferenceDataset(buildArtifactRef(projectKey, dto.getReferenceDataset()));
+            // TODO: user feature/ai-test-v2-test-suite-execution generic method
+            for (GenerateTestSuiteInputDTO input : dto.getInputs()) {
+                TestArgument.Builder argumentBuilder = TestArgument.newBuilder();
+                argumentBuilder.setName(input.getName());
+                switch (input.getType()) {
+                    case "Dataset" -> argumentBuilder.setDataset(buildArtifactRef(projectKey, input.getValue()));
+                    case "Model" -> argumentBuilder.setModel(buildArtifactRef(projectKey, input.getValue()));
+                    case "float" -> argumentBuilder.setFloat(Float.parseFloat(String.valueOf(input.getValue())));
+                    case "string" -> argumentBuilder.setString(input.getValue());
+                    default ->
+                        throw new IllegalArgumentException(String.format("Unknown test execution input type %s", input.getType()));
+                }
+                request.addArguments(argumentBuilder.build());
             }
 
             GenerateTestSuiteResponse response = client.getBlockingStub().generateTestSuite(request.build());

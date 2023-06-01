@@ -1,17 +1,15 @@
 package ai.giskard.web.dto;
 
 import com.dataiku.j2ts.annotations.UIModel;
-import com.dataiku.j2ts.annotations.UINullable;
 import lombok.Data;
+
+import javax.validation.constraints.NotNull;
+import java.util.List;
 
 @Data
 @UIModel
 public class GenerateTestSuiteDTO {
     private String name;
-    @UINullable
-    private String model;
-    @UINullable
-    private String actualDataset;
-    @UINullable
-    private String referenceDataset;
+    @NotNull
+    private List<@NotNull GenerateTestSuiteInputDTO> inputs;
 }
