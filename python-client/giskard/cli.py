@@ -3,6 +3,7 @@ import logging
 import os
 import platform
 import sys
+from typing import Optional
 
 import click
 import lockfile
@@ -13,7 +14,6 @@ from pydantic import AnyHttpUrl
 
 from giskard.cli_utils import create_pid_file_path, remove_stale_pid_file, run_daemon, validate_url
 from giskard.client.analytics_collector import GiskardAnalyticsCollector, anonymize
-from giskard.ml_worker.ml_worker import start_ml_worker
 from giskard.path_utils import run_dir
 from giskard.settings import settings
 
@@ -101,6 +101,8 @@ def start_command(url: AnyHttpUrl, is_server, api_key, is_daemon):
 
 
 def _start_command(is_server, url: AnyHttpUrl, api_key, is_daemon):
+    from giskard.ml_worker.ml_worker import MLWorker
+
     analytics.track("Start ML Worker", {
         "is_server": is_server,
         "url": anonymize(url),
@@ -117,6 +119,8 @@ def _start_command(is_server, url: AnyHttpUrl, api_key, is_daemon):
     pid_file_path = create_pid_file_path(is_server, url)
     pid_file = PIDLockFile(pid_file_path)
     remove_stale_pid_file(pid_file)
+
+    ml_worker: Optional[MLWorker] = None
     try:
         pid_file.acquire()
         if is_daemon:
@@ -124,11 +128,12 @@ def _start_command(is_server, url: AnyHttpUrl, api_key, is_daemon):
             pid_file.release()
             run_daemon(is_server, url, api_key)
         else:
-            loop = asyncio.new_event_loop()
-            loop.create_task(start_ml_worker(is_server, url, api_key))
-            loop.run_forever()
+            ml_worker = MLWorker(is_server, url, api_key)
+            asyncio.get_event_loop().run_until_complete(ml_worker.start())
     except KeyboardInterrupt:
         logger.info("Exiting")
+        if ml_worker:
+            asyncio.get_event_loop().run_until_complete(ml_worker.stop())
     except lockfile.AlreadyLocked:
         existing_pid = read_pid_from_pidfile(pid_file_path)
         logger.warning(
