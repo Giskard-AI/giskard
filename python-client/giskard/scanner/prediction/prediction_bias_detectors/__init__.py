@@ -2,11 +2,11 @@ from ....models.base import BaseModel
 from ....datasets.base import Dataset
 from ...logger import logger
 
-from giskard.scanner.performance.model_bias_detector import ModelBiasDetector
+from giskard.scanner.performance.performance_bias_detector import PerformanceBiasDetector
 from abc import abstractmethod
 
 
-class PredictionBiasDetector(ModelBiasDetector):
+class PredictionBiasDetector(PerformanceBiasDetector):
 
     def run(self, model: BaseModel, dataset: Dataset):
         logger.debug(
