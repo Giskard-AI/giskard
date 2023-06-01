@@ -15,32 +15,34 @@ logger = logging.getLogger(__name__)
 
 
 class HuggingFaceModel(WrapperModel):
-
-    def __init__(self,
-                 clf,
-                 model_type: Union[SupportedModelTypes, str],
-                 name: str = None,
-                 data_preprocessing_function=None,
-                 model_postprocessing_function=None,
-                 feature_names=None,
-                 classification_threshold=0.5,
-                 classification_labels=None) -> None:
-
-        super().__init__(clf=clf,
-                         model_type=model_type,
-                         name=name,
-                         data_preprocessing_function=data_preprocessing_function,
-                         model_postprocessing_function=model_postprocessing_function,
-                         feature_names=feature_names,
-                         classification_threshold=classification_threshold,
-                         classification_labels=classification_labels)
+    def __init__(
+        self,
+        clf,
+        model_type: Union[SupportedModelTypes, str],
+        name: str = None,
+        data_preprocessing_function=None,
+        model_postprocessing_function=None,
+        feature_names=None,
+        classification_threshold=0.5,
+        classification_labels=None,
+    ) -> None:
+        super().__init__(
+            clf=clf,
+            model_type=model_type,
+            name=name,
+            data_preprocessing_function=data_preprocessing_function,
+            model_postprocessing_function=model_postprocessing_function,
+            feature_names=feature_names,
+            classification_threshold=classification_threshold,
+            classification_labels=classification_labels,
+        )
 
         self.huggingface_module = clf.__class__
         self.pipeline_task = clf.task if isinstance(clf, pipelines.Pipeline) else None
 
     @classmethod
     def load_clf(cls, local_path):
-        huggingface_meta_file = Path(local_path) / 'giskard-model-huggingface-meta.yaml'
+        huggingface_meta_file = Path(local_path) / "giskard-model-huggingface-meta.yaml"
         if huggingface_meta_file.exists():
             with open(huggingface_meta_file) as f:
                 huggingface_meta = yaml.load(f, Loader=yaml.Loader)
@@ -56,7 +58,10 @@ class HuggingFaceModel(WrapperModel):
                 {
                     "huggingface_module": self.huggingface_module,
                     "pipeline_task": self.pipeline_task,
-                }, f, default_flow_style=False)
+                },
+                f,
+                default_flow_style=False,
+            )
 
     def save(self, local_path: Union[str, Path]) -> None:
         super().save(local_path)
@@ -69,7 +74,7 @@ class HuggingFaceModel(WrapperModel):
     def clf_predict(self, data):
         predictions = self._get_predictions(data)
 
-        if self.is_classification and hasattr(predictions, 'logits'):
+        if self.is_classification and hasattr(predictions, "logits"):
             if isinstance(self.clf, torch.nn.Module):
                 with torch.no_grad():
                     logits = predictions.logits.detach().numpy()
@@ -77,9 +82,11 @@ class HuggingFaceModel(WrapperModel):
                 logits = predictions.logits
 
             if self.model_postprocessing_function:
-                logger.warning("Your model output is logits. In Giskard, we expect the output to be probabilities."
-                               "Since you provided a model_postprocessing_function, we assume that you included softmax() yourself.",
-                               exc_info=True)
+                logger.warning(
+                    "Your model output is logits. In Giskard, we expect the output to be probabilities."
+                    "Since you provided a model_postprocessing_function, we assume that you included softmax() yourself.",
+                    exc_info=True,
+                )
             else:
                 predictions = special.softmax(logits, axis=1) if len(logits.shape) == 2 else special.softmax(logits)
 
@@ -89,15 +96,12 @@ class HuggingFaceModel(WrapperModel):
         if isinstance(self.clf, torch.nn.Module):
             with torch.no_grad():
                 return self.clf(**data)
-        
+
         if isinstance(self.clf, pipelines.Pipeline):
-            _predictions = [
-                {p["label"]: p["score"] for p in pl} for pl in self.clf(list(data), top_k=None)
-            ]
+            _predictions = [{p["label"]: p["score"] for p in pl} for pl in self.clf(list(data), top_k=None)]
             return [[p[l] for l in self.meta.classification_labels] for p in _predictions]
 
         if isinstance(data, dict):
-            return  self.clf(**data)
-        
-        return self.clf(data)
+            return self.clf(**data)
 
+        return self.clf(data)

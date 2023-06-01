@@ -8,7 +8,6 @@ import tests.utils
 
 
 def test_sequence_classification_distilbert_base_uncased_pytorch_pipeline():
-
     text = "This was a masterpiece. Not completely faithful to the books, but enthralling from beginning to end. Might be my favorite of the three."
 
     my_classifier = pipeline(task="sentiment-analysis", model="stevhliu/my_awesome_model")
@@ -26,7 +25,7 @@ def test_sequence_classification_distilbert_base_uncased_pytorch_pipeline():
     feature_names = ["text"]
 
     def my_preproccessing_function(df):
-        return df['text'].values
+        return df["text"].values
 
     my_model = HuggingFaceModel(
         name="stevhliu/my_awesome_model",
@@ -34,13 +33,12 @@ def test_sequence_classification_distilbert_base_uncased_pytorch_pipeline():
         feature_names=feature_names,
         model_type="classification",
         classification_labels=list(label2id.keys()),
-        data_preprocessing_function=my_preproccessing_function
+        data_preprocessing_function=my_preproccessing_function,
     )
 
     my_test_dataset = Dataset(test_df, name="test dataset", target="label")
 
     tests.utils.verify_model_upload(my_model, my_test_dataset)
-
 
     # Try with multiple samples
     text2 = "Give me a label 0!"

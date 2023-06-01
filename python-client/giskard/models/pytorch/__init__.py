@@ -18,34 +18,24 @@ from ..utils import map_to_tuples
 
 # There's no casting currently from str to torch.dtype
 str_to_torch_dtype = {
-    'torch.float32' : torch.float32,
-    'torch.float': torch.float,
-
-    'torch.float64' : torch.float64,
-    'torch.double' : torch.double,
-
-    'torch.complex64' : torch.complex64,
-    'torch.cfloat' : torch.cfloat,
-
-    'torch.float16' : torch.float16,
-    'torch.half': torch.half,
-
-    'torch.bfloat16': torch.bfloat16,
-
-    'torch.uint8': torch.uint8,
-
-    'torch.int8': torch.int8,
-
-    'torch.int16': torch.int16,
-    'torch.short': torch.short,
-
-    'torch.int32': torch.int32,
-    'torch.int': torch.int,
-
-    'torch.int64': torch.int64,
-    'torch.long': torch.long,
-
-    'torch.bool': torch.bool
+    "torch.float32": torch.float32,
+    "torch.float": torch.float,
+    "torch.float64": torch.float64,
+    "torch.double": torch.double,
+    "torch.complex64": torch.complex64,
+    "torch.cfloat": torch.cfloat,
+    "torch.float16": torch.float16,
+    "torch.half": torch.half,
+    "torch.bfloat16": torch.bfloat16,
+    "torch.uint8": torch.uint8,
+    "torch.int8": torch.int8,
+    "torch.int16": torch.int16,
+    "torch.short": torch.short,
+    "torch.int32": torch.int32,
+    "torch.int": torch.int,
+    "torch.int64": torch.int64,
+    "torch.long": torch.long,
+    "torch.bool": torch.bool,
 }
 
 
@@ -62,27 +52,29 @@ class TorchMinimalDataset(torch_dataset):
 
 
 class PyTorchModel(MLFlowBasedModel):
-
-    def __init__(self,
-                 clf,
-                 model_type: Union[SupportedModelTypes, str],
-                 torch_dtype=torch.float32,
-                 device='cpu',
-                 name: str = None,
-                 data_preprocessing_function=None,
-                 model_postprocessing_function=None,
-                 feature_names=None,
-                 classification_threshold=0.5,
-                 classification_labels=None) -> None:
-
-        super().__init__(clf=clf,
-                         model_type=model_type,
-                         name=name,
-                         data_preprocessing_function=data_preprocessing_function,
-                         model_postprocessing_function=model_postprocessing_function,
-                         feature_names=feature_names,
-                         classification_threshold=classification_threshold,
-                         classification_labels=classification_labels)
+    def __init__(
+        self,
+        clf,
+        model_type: Union[SupportedModelTypes, str],
+        torch_dtype=torch.float32,
+        device="cpu",
+        name: str = None,
+        data_preprocessing_function=None,
+        model_postprocessing_function=None,
+        feature_names=None,
+        classification_threshold=0.5,
+        classification_labels=None,
+    ) -> None:
+        super().__init__(
+            clf=clf,
+            model_type=model_type,
+            name=name,
+            data_preprocessing_function=data_preprocessing_function,
+            model_postprocessing_function=model_postprocessing_function,
+            feature_names=feature_names,
+            classification_threshold=classification_threshold,
+            classification_labels=classification_labels,
+        )
 
         self.device = device
         self.torch_dtype = str(torch_dtype)
@@ -92,9 +84,7 @@ class PyTorchModel(MLFlowBasedModel):
         return mlflow.pytorch.load_model(local_dir)
 
     def save_with_mlflow(self, local_path, mlflow_meta: mlflow.models.Model):
-        mlflow.pytorch.save_model(self.clf,
-                                  path=local_path,
-                                  mlflow_model=mlflow_meta)
+        mlflow.pytorch.save_model(self.clf, path=local_path, mlflow_model=mlflow_meta)
 
     def _get_predictions(self, data: Iterator):
         with torch.no_grad():
@@ -136,7 +126,10 @@ class PyTorchModel(MLFlowBasedModel):
                 {
                     "device": self.device,
                     "torch_dtype": self.torch_dtype,
-                }, f, default_flow_style=False)
+                },
+                f,
+                default_flow_style=False,
+            )
 
     def save(self, local_path: Union[str, Path]) -> None:
         super().save(local_path)
@@ -144,17 +137,17 @@ class PyTorchModel(MLFlowBasedModel):
 
     @classmethod
     def load(cls, local_dir, **kwargs):
-        pytorch_meta_file = Path(local_dir) / 'giskard-model-pytorch-meta.yaml'
+        pytorch_meta_file = Path(local_dir) / "giskard-model-pytorch-meta.yaml"
         if pytorch_meta_file.exists():
             with open(pytorch_meta_file) as f:
                 pytorch_meta = yaml.load(f, Loader=yaml.Loader)
-                kwargs['device'] = pytorch_meta['device']
-                kwargs['torch_dtype'] = pytorch_meta['torch_dtype']
+                kwargs["device"] = pytorch_meta["device"]
+                kwargs["torch_dtype"] = pytorch_meta["torch_dtype"]
                 return super().load(local_dir, **kwargs)
         else:
             raise ValueError(
-                f"Cannot load model ({cls.__module__}.{cls.__name__}), "
-                f"{pytorch_meta_file} file not found")
+                f"Cannot load model ({cls.__module__}.{cls.__name__}), " f"{pytorch_meta_file} file not found"
+            )
 
 
 def _get_dataset_from_dataloader(dl: DataLoader):
