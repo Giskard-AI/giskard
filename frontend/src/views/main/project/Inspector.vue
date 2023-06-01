@@ -3,7 +3,7 @@
     <ValidationObserver ref="dataFormObserver" v-slot="{ dirty }">
       <v-row v-if='modelFeatures.length'>
         <v-col cols="12" md="6">
-          <v-card>
+          <v-card outlined>
             <OverlayLoader :show="loadingData"/>
             <v-card-title>
               Input Data
@@ -126,7 +126,7 @@
               :debouncingTimeout="debouncingTimeout"
               @result="setResult"
           />
-          <v-card class="mb-4">
+          <v-card class="mb-4" outlined>
             <v-card-title>
               Explanation
             </v-card-title>
