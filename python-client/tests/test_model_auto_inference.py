@@ -1,4 +1,4 @@
-from giskard.models import model
+from giskard.models import wrap_model
 
 
 def test_sklearn():
@@ -6,8 +6,8 @@ def test_sklearn():
     from giskard.models.sklearn import SKLearnModel
 
     my_model = LogisticRegression()
-    kwargs = {"clf": my_model, "model_type": "classification"}
-    my_automodel = model(**kwargs)
+    kwargs = {"model": my_model, "model_type": "classification"}
+    my_automodel = wrap_model(**kwargs)
     assert isinstance(my_automodel, SKLearnModel)
 
 
@@ -16,8 +16,8 @@ def test_catboost():
     from giskard.models.catboost import CatboostModel
 
     my_model = CatBoostClassifier()
-    kwargs = {"clf": my_model, "model_type": "classification", "classification_labels": [""], "feature_names": [""]}
-    my_automodel = model(**kwargs)
+    kwargs = {"model": my_model, "model_type": "classification", "classification_labels": [""], "feature_names": [""]}
+    my_automodel = wrap_model(**kwargs)
     assert isinstance(my_automodel, CatboostModel)
 
 
@@ -27,8 +27,8 @@ def test_huggingface():
     model_name = "cross-encoder/ms-marco-TinyBERT-L-2"
     my_model = BertForSequenceClassification.from_pretrained(model_name, num_labels=4, ignore_mismatched_sizes=True)
 
-    kwargs = {"clf": my_model, "model_type": "classification"}
-    my_automodel = model(**kwargs)
+    kwargs = {"model": my_model, "model_type": "classification"}
+    my_automodel = wrap_model(**kwargs)
     assert isinstance(my_automodel, HuggingFaceModel)
 
 
@@ -37,8 +37,8 @@ def test_pytorch():
     from giskard.models.pytorch import PyTorchModel
 
     my_model = FeedforwardNeuralNetModel(1, 1, 1)
-    kwargs = {"clf": my_model, "model_type": "regression"}
-    my_automodel = model(**kwargs)
+    kwargs = {"model": my_model, "model_type": "regression"}
+    my_automodel = wrap_model(**kwargs)
     assert isinstance(my_automodel, PyTorchModel)
 
 
@@ -51,6 +51,6 @@ def test_tensorflow():
         keras.layers.Dense(512, activation='relu', input_shape=(784,)),
         keras.layers.Dropout(0.2),
         keras.layers.Dense(10, activation='softmax')])
-    kwargs = {"clf": my_model, "model_type": "classification"}
-    my_automodel = model(**kwargs)
+    kwargs = {"model": my_model, "model_type": "classification"}
+    my_automodel = wrap_model(**kwargs)
     assert isinstance(my_automodel, TensorFlowModel)
