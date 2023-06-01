@@ -15,6 +15,7 @@
         <v-row class="vc">
           <v-col cols="2">
             <v-tabs vertical>
+              <v-tab :to="{name:'test-suite'}">Overview</v-tab>
               <v-tab :to="{name:'test-suite-inputs'}">Inputs & parameters</v-tab>
               <v-tab :to="{name:'test-suite-tests'}">Tests</v-tab>
               <v-tab :to="{name:'test-suite-configuration'}">Configuration</v-tab>

@@ -31,7 +31,6 @@
       <TestSuiteExecutionResults :execution="selectedExecution" :registry="registry"
                                  :models="models" :datasets="datasets"/>
     </div>
-
   </div>
 </template>
 
