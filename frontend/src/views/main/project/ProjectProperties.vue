@@ -2,7 +2,7 @@
   <v-container fluid class="font-weight-light mt-3">
     <v-row>
       <v-col cols="9">
-        <v-card height="100%">
+        <v-card height="100%" outlined>
           <v-card-title class="font-weight-light secondary--text py-1">
             Project Settings
             <v-spacer></v-spacer>
@@ -89,7 +89,7 @@
       </v-col>
 
       <v-col cols="3">
-        <v-card height="100%">
+        <v-card height="100%" outlined>
           <v-card-title class="font-weight-light secondary--text">
             Explanation Properties
           </v-card-title>
@@ -108,23 +108,23 @@
       </v-col>
     </v-row>
 
-    <v-divider class="my-6"></v-divider>
-    <div class="mb-6 d-flex">
-      <!-- <h1 class="headline">Data Objects</h1> -->
+    <!-- <v-divider class="my-6"></v-divider> -->
+    <div class="py-8 d-flex">
+      <!-- <h2 class="font-weight-light secondary--text py-1">Data Objects</h2> -->
       <div class="d-flex justify-end align-center flex-grow-1">
-        <v-btn tile small color="primaryLight" class="mx-2 primaryLighBtn" href="https://docs.giskard.ai/start/guides/upload-your-model" target="_blank">
+        <v-btn tile small color="primary" class="mx-2" href="https://docs.giskard.ai/start/guides/upload-your-model" target="_blank">
           Upload with API
         </v-btn>
-        <v-btn text @click="reloadDataObjects()" color="secondary">Reload
+        <v-btn tile small text @click="reloadDataObjects()" color="secondary">Reload
           <v-icon right>refresh</v-icon>
         </v-btn>
       </div>
     </div>
 
-    <v-row>
-      <v-col cols="6">
-        <v-card height="100%" outlined>
-          <v-card-title class="font-weight-light secondary--text">
+    <v-row class="mb-8">
+      <v-col cols="6" class="py-0 my-0">
+        <v-card height="100%" flat class="py-0 my-0">
+          <v-card-title class="font-weight-light secondary--text py-0 my-0">
             <v-icon left class="pb-1">stacked_bar_chart</v-icon>
             Datasets
           </v-card-title>
@@ -133,10 +133,10 @@
           </v-card-text>
         </v-card>
       </v-col>
-
-      <v-col cols="6">
-        <v-card height="100%" outlined>
-          <v-card-title class="font-weight-light secondary--text">
+      <v-divider vertical></v-divider>
+      <v-col cols="6" class="py-0 my-0">
+        <v-card height="100%" flat class="py-0 my-0">
+          <v-card-title class="font-weight-light secondary--text py-0 my-0">
             <v-icon left class="pb-1">settings_suggest</v-icon>
             Models
           </v-card-title>
