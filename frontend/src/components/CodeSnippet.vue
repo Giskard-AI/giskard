@@ -46,6 +46,8 @@ async function copyCode() {
   background-color: #F4F4F4 !important;
   font-family: 'Roboto Mono', monospace;
   padding-left: 0;
+  overflow-wrap: break-word;
+  white-space: pre-wrap;
 }
 
 .copy-button {
