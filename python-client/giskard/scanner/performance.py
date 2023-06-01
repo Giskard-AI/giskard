@@ -39,7 +39,7 @@ class PerformanceScan:
         self,
         model: Optional[BaseModel] = None,
         dataset: Optional[Dataset] = None,
-        slicer="opt",
+        slicer="tree",
         test_names: list = None,
         threshold=-0.1,
     ):
@@ -172,13 +172,13 @@ class PerformanceScan:
         return slices
 
     def _get_slicer(self, slicer_name, dataset, target):
-        if slicer_name == "opt":
+        if slicer_name == "optimized":
             return OptSlicer(dataset, target=target)
         if slicer_name == "tree":
             return DecisionTreeSlicer(dataset, target=target)
-        if slicer_name == "ms":
+        if slicer_name == "multiscale":
             return MultiscaleSlicer(dataset, target=target)
-        if slicer_name == "bf":
+        if slicer_name == "bruteforce":
             return BruteForceSlicer(dataset, target=target)
 
         raise ValueError(f"Invalid slicer `{slicer_name}`.")
