@@ -141,7 +141,7 @@ class GiskardTestRegistry:
             try:
                 code = inspect.getsource(func)
             except Exception as e:
-                logger.debug(f"Failed to extract test function code {full_name}", e)
+                logger.info(f"Failed to extract test function code {full_name}", e)
 
             self._tests[full_name] = TestFunction(
                 id=full_name,
@@ -162,7 +162,7 @@ class GiskardTestRegistry:
                     )
                     for name in parameters}
             )
-            logger.debug(f"Registered test function: {full_name}")
+            logger.info(f"Registered test function: {full_name}")
 
     @staticmethod
     def _extract_doc(func):

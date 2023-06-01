@@ -8,6 +8,7 @@ from giskard.client.dtos import TestSuiteNewDTO, SuiteTestDTO, TestInputDTO
 from giskard.client.giskard_client import GiskardClient
 from giskard.core.model import Model
 from giskard.ml_worker.core.dataset import Dataset
+from giskard.ml_worker.core.test_runner import run_test
 from giskard.ml_worker.testing.registry.registry import create_test_function_id
 
 logger = logging.getLogger(__name__)
@@ -61,7 +62,7 @@ class Suite:
 
         for test_partial in self.tests:
             test_params = self.create_test_params(test_partial, suite_run_args)
-            res.append(test_partial.test_func(**test_params))
+            res.append(run_test(test_partial.test_func, **test_params))
 
         return single_binary_result(res), res
 

@@ -5,7 +5,25 @@ from giskard import test
 from giskard.core.model import Model
 from giskard.ml_worker.core.dataset import Dataset
 from giskard.ml_worker.generated.ml_worker_pb2 import SingleTestResult
+from giskard.ml_worker.testing.registry.giskard_test import GiskardTest
 
+
+@test(name="Example class test", tags=["heuristic"])
+class ExampleClassTest(GiskardTest):
+    actual_slice: Dataset
+    model: Model
+    threshold: float = 0.5
+
+    def __init__(self,
+                 actual_slice: Dataset,
+                 model: Model,
+                 threshold: float = 0.5):
+        self.actual_slice = actual_slice
+        self.model = model
+        self.threshold = threshold
+
+    def execute(self, df: pd.DataFrame) -> SingleTestResult:
+        pass
 
 @test(name="Right Label", tags=["heuristic"])
 def test_right_label(
