@@ -14,6 +14,7 @@ def _make_model_mock(labels=["First", "Second", "Third"]):
     model.meta = meta
     model.model_postprocessing_function = None
 
+    model._convert_to_numpy = partial(WrapperModel._convert_to_numpy, model)
     model._possibly_fix_predictions_shape = partial(WrapperModel._possibly_fix_predictions_shape, model)
 
     return model

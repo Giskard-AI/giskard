@@ -49,4 +49,3 @@ class CatboostModel(MLFlowBasedModel):
             return self.clf.predict(df)
         else:
             raise ValueError("Unsupported model type")
-
