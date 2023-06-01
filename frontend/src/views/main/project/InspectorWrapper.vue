@@ -46,7 +46,9 @@
         <v-btn :disabled='!canNext()' icon @click='next'>
           <v-icon>mdi-skip-next</v-icon>
         </v-btn>
-        <span class='caption grey--text'>Entry #{{ totalRows === 0 ? 0 : rowNb + 1 }} / {{ totalRows }}</span>
+        <span class='caption grey--text' v-if="totalRows > 0">
+          Entry #{{ totalRows === 0 ? 0 : rowNb + 1 }} / {{ totalRows }}
+        </span>
         <span v-show="originalData && isDefined(originalData.Index)" class='caption grey--text'
               style='margin-left: 15px'>Row Index {{ originalData.Index + 1 }}</span>
       </v-toolbar>
@@ -71,7 +73,17 @@
                @reset='resetInput'
                @submitValueFeedback='submitValueFeedback'
                @submitValueVariationFeedback='submitValueVariationFeedback'
+               v-if="totalRows > 0"
     />
+    <v-alert v-else border="bottom"
+             colored-border
+             type="warning"
+             class="mt-8"
+             elevation="2">
+      No data matches the selected filter.<br/>
+      In order to show data, please refine the filter's criteria.
+    </v-alert>
+
 
     <!-- For general feedback -->
     <v-tooltip left>
