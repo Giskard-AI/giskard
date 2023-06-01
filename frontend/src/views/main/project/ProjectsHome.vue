@@ -104,7 +104,7 @@
             <v-card-actions>
               <v-spacer></v-spacer>
               <v-btn color="secondary" text @click="clearAndCloseDialog()">Cancel</v-btn>
-              <v-btn color="primary" text type="submit" :disabled="!file">Next</v-btn>
+              <v-btn color="primary" text type="submit" :disabled="!file" :loading="preparingImport">Next</v-btn>
             </v-card-actions>
           </v-form>
         </ValidationObserver>
@@ -220,6 +220,7 @@ const metadataDirectoryPath = ref<string>("");
 const loginsCurrentInstance = ref<string[]>([]);
 const loginsImportedProject = ref<string[]>([]);
 const mapLogins = ref<{ [key: string]: string }>({});
+const preparingImport = ref<boolean>(false);
 
 // template ref
 const dialogForm = ref<InstanceType<typeof ValidationObserver> | null>(null);
@@ -262,6 +263,7 @@ async function prepareImport() {
   if (!file.value) {
     return;
   }
+  preparingImport.value = true;
   let formData = new FormData();
   formData.append('file', file.value);
   return await api.prepareImport(formData)
@@ -280,6 +282,7 @@ async function prepareImport() {
         });
         newProjectKey.value = response.projectKey;
       })
+      .finally(() => preparingImport.value = false);
 }
 
 async function ImportIfNoConflictKey() {
