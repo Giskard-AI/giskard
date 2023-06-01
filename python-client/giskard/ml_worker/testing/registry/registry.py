@@ -4,15 +4,14 @@ import inspect
 import logging
 import os
 import random
-import re
 import sys
 import uuid
 from pathlib import Path
-from typing import Optional, Dict, Any
+from typing import Optional, Dict
 
 import cloudpickle
 
-from giskard.core.core import TestFunctionMeta, TestFunctionArgument
+from giskard.core.core import SavableMeta
 from giskard.ml_worker.testing.registry.udf_repository import udf_repo_available, udf_root
 from giskard.settings import expand_env_var, settings
 
@@ -28,15 +27,6 @@ logger = logging.getLogger(__name__)
 plugins_root = find_plugin_location()
 
 
-def _get_plugin_method_full_name(func):
-    path_parts = list(Path(inspect.getfile(func)).relative_to(plugins_root).with_suffix("").parts)
-    path_parts.insert(0, "giskard_plugins")
-    if "__init__" in path_parts:
-        path_parts.remove("__init__")
-    path_parts.append(func.__name__)
-    return ".".join(path_parts)
-
-
 def generate_func_id(name) -> str:
     rd = random.Random()
     rd.seed(hashlib.sha512(name.encode('utf-8')).hexdigest())
@@ -44,7 +34,7 @@ def generate_func_id(name) -> str:
     return str(func_id)
 
 
-def get_test_uuid(func) -> str:
+def get_object_uuid(func) -> str:
     func_name = f"{func.__module__}.{func.__name__}"
 
     if func_name.startswith('__main__'):
@@ -98,94 +88,16 @@ def import_plugin(import_path, root=None):
         print(e)
 
 
-def create_test_function_id(func):
-    try:
-        # is_relative_to is only available from python 3.9
-        is_relative = Path(inspect.getfile(func)).relative_to(plugins_root)
-    except ValueError:
-        is_relative = False
-    if is_relative:
-        full_name = _get_plugin_method_full_name(func)
-    else:
-        full_name = f"{func.__module__}.{func.__name__}"
-    return full_name
-
-
 class GiskardTestRegistry:
-    _tests: Dict[str, TestFunctionMeta] = {}
+    _tests: Dict[str, SavableMeta] = {}
 
-    def register(self, func: Any, name=None, tags=None):
-        full_name = create_test_function_id(func)
-        func_uuid = get_test_uuid(func)
+    def register(self, meta: SavableMeta):
+        if meta.uuid not in self._tests:
+            self.add_func(meta)
+            logger.info(f"Registered test function: {meta.uuid}")
 
-        if func_uuid not in self._tests:
-            if inspect.isclass(func):
-                parameters = inspect.signature(func.__init__).parameters
-            else:
-                parameters = inspect.signature(func).parameters
-            args_without_type = [
-                p for p in parameters
-                if p != 'self' and parameters[p].annotation == inspect.Parameter.empty
-            ]
-
-            if len(args_without_type):
-                logger.warning(
-                    f'Test function definition "{func.__module__}.{func.__name__}" is missing argument type: {", ".join(args_without_type)}'
-                )
-                return
-            func.__module__.rpartition(".")
-            func_doc = self._extract_doc(func)
-
-            tags = [] if not tags else tags
-            if full_name.partition(".")[0] == "giskard":
-                tags.append("giskard")
-            elif full_name.startswith('__main__'):
-                tags.append("pickle")
-            else:
-                tags.append("custom")
-
-            code = None
-            try:
-                code = inspect.getsource(func)
-            except Exception as e:
-                logger.info(f"Failed to extract test function code {full_name}", e)
-
-            self.add_func(TestFunctionMeta(
-                uuid=func_uuid,
-                code=code,
-                name=func.__name__,
-                display_name=name or func.__name__,
-                tags=tags,
-                module=func.__module__,
-                doc=func_doc,
-                module_doc=inspect.getmodule(func).__doc__.strip() if inspect.getmodule(func).__doc__ else None,
-                args={
-                    parameter.name: TestFunctionArgument(
-                        name=parameter.name,
-                        type=parameter.annotation.__qualname__,
-                        optional=parameter.default != inspect.Parameter.empty and parameter.default is not None,
-                        default=None if parameter.default == inspect.Parameter.empty
-                        else parameter.default,
-                        argOrder=idx
-                    )
-                    for idx, parameter in enumerate(parameters.values())
-                    if name != 'self'
-                },
-                version=None
-            ))
-            logger.info(f"Registered test function: {full_name}")
-
-    def add_func(self, meta: TestFunctionMeta):
+    def add_func(self, meta: SavableMeta):
         self._tests[meta.uuid] = meta
-
-    @staticmethod
-    def _extract_doc(func):
-        if func.__doc__:
-            func_doc, _, args_doc = func.__doc__.partition("\n\n\n")
-            func_doc = re.sub(r"\n[ \t\n]+", r"\n", func_doc.strip())
-        else:
-            func_doc = None
-        return func_doc
 
     def get_all(self):
         return self._tests
