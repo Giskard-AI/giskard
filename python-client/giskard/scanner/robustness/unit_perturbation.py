@@ -1,6 +1,9 @@
 import pandas as pd
 from giskard.ml_worker.testing.registry.transformation_function import transformation_function
 import random
+from transformers import AutoTokenizer, AutoModelForTokenClassification
+from transformers import pipeline
+from giskard.scanner.robustness.entity_swap import masculine_to_feminine, feminine_to_masculine, minority_groups, religion_dict
 
 
 class TransformationGenerator:
@@ -35,19 +38,9 @@ class TransformationGenerator:
 
 class TextTransformer:
     def __init__(self):
-        import spacy
-
-        language_file = "en_core_web_sm"
-
-        try:
-            self.nlp = spacy.load(language_file)
-        except OSError:
-            from spacy.cli import download
-
-            download(language_file)
-            self.nlp = spacy.load(language_file)
-
         self.text = None
+        self.tokenizer = AutoTokenizer.from_pretrained("dslim/bert-base-NER")
+        self.model = AutoModelForTokenClassification.from_pretrained("dslim/bert-base-NER")
 
     def load(self, text):
         self.text = text
@@ -56,34 +49,77 @@ class TextTransformer:
         self._replace_by_mask()  # replace proper noun, gender,ethnicity,location by a mask
         return self.text
 
-    def tokenize(self):
-        return self.nlp(self.text)
+    # def tokenize(self):
+    #     return self.nlp(self.text)
+    def _switch_gender(self, token):
+        if token in masculine_to_feminine.keys():
+            switch_to = masculine_to_feminine[token]
+            return switch_to
+        elif token in feminine_to_masculine.keys():
+            switch_to = feminine_to_masculine[token]
+            return switch_to
+        else:
+            return token
+
+    def _switch_minority(self, token):
+        if token in minority_groups:
+            switch_to = random.choice(minority_groups.remove(token))
+            return switch_to
+        else:
+            return token
+
+    def _switch_religion(self, token):
+        for key, value in religion_dict.items():
+            if token.lower() in value.values():
+                new_religion = random.choice([k for k in religion_dict.keys() if k != key])
+                new_value = random.choice(
+                    [v for k, v in religion_dict[new_religion].items() if k in value.keys()])
+                return new_value
+            else:
+                return token
 
     def _replace_by_mask(self):
-        doc = self.tokenize()
+        # doc = self.tokenize()
+        self.text = self._ner_task(self.text)
+        splitted_text = self.text.split(" ")
         new_text = []
-        for token in doc:
-            if token.ent_type_ == "GPE":
-                new_text.append("[LOCATION]")
-            elif token.ent_type_ == "NORP":
-                new_text.append("[ETHNICITY]")
-            elif token.tag_ == "PRP" or token.tag_ == "PRP$":  # PRP$
-                new_text.append("[GENDER]")
-            elif token.tag_ == "PROPN":
-                new_text.append("[PROPER NOUN]")
-            else:
-                # Tranformation suite
-                text_transformed = str(token.text)
-                text_transformed = self.add_typos(text_transformed)
-                text_transformed = self.char_perturbation(text_transformed)
-                text_transformed = self.title_case(text_transformed)
-                text_transformed = self.word_perturbation(text_transformed)
-                new_text.append(str(text_transformed))
+        for token in splitted_text:
+            # for token in doc:
+            # if token.ent_type_ == "GPE":
+            #     new_text.append("[LOCATION]")
+            # elif token.ent_type_ == "NORP":
+            #     new_text.append("[ETHNICITY]")
+            # elif token.tag_ == "PRP" or token.tag_ == "PRP$":  # PRP$
+            #     new_text.append("[GENDER]")
+            # elif token.tag_ == "PROPN":
+            #     new_text.append("[PROPER NOUN]")
+            # else:
+            # Tranformation suite
+            text_transformed = str(token).lower()
+            text_transformed = self._switch_gender(text_transformed)
+            text_transformed = self.add_typos(text_transformed)
+            text_transformed = self.char_perturbation(text_transformed)
+            text_transformed = self.title_case(text_transformed)
+            text_transformed = self.word_perturbation(text_transformed)
+            new_text.append(str(text_transformed))
         return " ".join(new_text)
+
+    def _ner_task(self, text):
+
+        nlp = pipeline("ner", model=self.model, tokenizer=self.tokenizer)
+        example = text
+        ner_results = nlp(example)
+        for res in ner_results:
+            if res['score'] >= 0.95:
+                index = res['start']
+                index_delta = res['end'] - res['start']
+                text = text.replace(res["word"], f" [{res['entity']}] ")
+                # text = text[:index] + f"[{str(res['entity'])}]" + text[index + index_delta:]
+        return text
 
     def char_perturbation(self, text):
         # Get the token's text and apply a perturbation with probability 0.1
-        if random.random() < 0.1:
+        if random.random() < 0.1 and len(text) > 1:
             # Choose a perturbation type randomly
             perturbation_type = random.choice(['insert', 'delete', 'replace'])
             # Apply the perturbation
@@ -94,30 +130,17 @@ class TextTransformer:
                 return text
             elif perturbation_type == 'delete':
                 idx = random.randint(0, len(text) - 1)
-                text = text[:idx] + text[idx + 1 :]
+                text = text[:idx] + text[idx + 1:]
                 return text
             elif perturbation_type == 'replace':
                 idx = random.randint(0, len(text) - 1)
                 new_char = chr(random.randint(33, 126))
-                text = text[:idx] + new_char + text[idx + 1 :]
+                text = text[:idx] + new_char + text[idx + 1:]
                 return text
         return text
 
     def word_perturbation(self, text):
-        if random.random() < 0.05:  # 5% of the words
-            # Choose a text augmentation operation randomly
-            op = random.choice(['delete', 'replace'])  # ['delete', 'add', 'swap'], 'swap'
-
-            # Delete the word
-            if op == 'delete':
-                if len(text) > 1:
-                    return ""
-
-            # Replace the word by another random word
-            elif op == 'replace':
-                # Choose a random word from the vocabulary
-                new_word = str(random.choice(list(self.nlp.vocab.strings)))
-                return new_word
+        if random.random() < 0.05 and len(text) > 1: return ""  # 5% of the words
 
     def upper_case(self, text):
         return text.upper()
@@ -164,7 +187,10 @@ class TextTransformer:
                 c = text[j]
                 if c in typos:
                     replacement = random.choice(typos[c])
-                    text_modified = text[:j] + replacement + text[j + 1 :]
+                    text_modified = text[:j] + replacement + text[j + 1:]
                     return text_modified
 
         return text
+
+ts = TextTransformer()
+print(ts._switch_religion("Buddhist"))
