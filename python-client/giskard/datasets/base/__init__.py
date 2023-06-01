@@ -189,6 +189,7 @@ class Dataset(ColumnMetadataMixin):
 
         from giskard.core.dataset_validation import validate_numeric_columns
         validate_numeric_columns(self)
+        print("Your 'pandas.DataFrame' is successfully wrapped by Giskard's 'Dataset' wrapper class.")
 
         from ...core.dataset_caching import generate_row_hashes
         generate_row_hashes(self)
