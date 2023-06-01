@@ -17,11 +17,11 @@ class BaseTextPerturbationDetector(Detector):
     _issue_cls = RobustnessIssue
 
     def __init__(
-            self,
-            transformations: Optional[Sequence[TextTransformation]] = None,
-            threshold: float = 0.05,
-            output_sensitivity=0.05,
-            num_samples: int = 1_000,
+        self,
+        transformations: Optional[Sequence[TextTransformation]] = None,
+        threshold: float = 0.05,
+        output_sensitivity=0.05,
+        num_samples: int = 1_000,
     ):
         self.transformations = transformations
         self.threshold = threshold
@@ -52,11 +52,11 @@ class BaseTextPerturbationDetector(Detector):
         ...
 
     def _detect_issues(
-            self,
-            model: BaseModel,
-            dataset: Dataset,
-            transformation: TextTransformation,
-            features: Sequence[str],
+        self,
+        model: BaseModel,
+        dataset: Dataset,
+        transformation: TextTransformation,
+        features: Sequence[str],
     ) -> Sequence[Issue]:
         issues = []
         # @TODO: integrate this with Giskard metamorphic tests already present
@@ -99,8 +99,7 @@ class BaseTextPerturbationDetector(Detector):
                 passed = np.abs(rel_delta) < self.output_sensitivity
             elif model.is_generative:
                 rouge2 = Rouge2()
-                rel_delta = rouge2(predictions=perturbed_pred.prediction,
-                                   references=original_pred.prediction)
+                rel_delta = rouge2(predictions=perturbed_pred.prediction, references=original_pred.prediction)
                 passed = np.abs(rel_delta) > self.output_sensitivity
             else:
                 raise NotImplementedError("Only classification and regression models are supported.")
