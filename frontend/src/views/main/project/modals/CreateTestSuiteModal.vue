@@ -30,7 +30,7 @@
                       <th class="text-left" id="input-type">
                         Type
                       </th>
-                      <th id="delete-input"></th>
+                      <th id="input-options"></th>
                     </tr>
                     </thead>
                     <tbody>
@@ -50,6 +50,10 @@
                         ></v-select>
                       </td>
                       <td>
+                        <v-btn icon @click="() => handleInputSettingsClick(input)"
+                               v-if="['Model', 'Dataset'].indexOf(input.type) !== -1">
+                          <v-icon>settings</v-icon>
+                        </v-btn>
                         <v-btn icon @click="() => suiteInputs.splice(index, 1)">
                           <v-icon color="accent">delete</v-icon>
                         </v-btn>
@@ -59,7 +63,7 @@
                   </template>
                 </v-simple-table>
                 <v-btn
-                    @click="() => suiteInputs.push({name: '', type: availableTypes[0]})">
+                    @click="() => suiteInputs.push({name: '', type: availableTypes[0], suiteInputType: 'suite'})">
                   Add input
                 </v-btn>
               </v-col>
@@ -93,6 +97,8 @@ import mixpanel from 'mixpanel-browser';
 import {api} from '@/api';
 import {GenerateTestSuiteDTO, GenerateTestSuiteInputDTO, TestCatalogDTO} from '@/generated-sources';
 import {useRouter} from 'vue-router/composables';
+import {$vfm} from 'vue-final-modal';
+import InputSettingsModal from '@/views/main/project/modals/ModelInputSettingsModal.vue';
 
 const {projectKey, projectId} = defineProps<{
   projectKey: string,
@@ -123,7 +129,7 @@ async function submit(close) {
 
   const createdTestSuiteId = await api.generateTestSuite(projectKey, {
     name: name.value,
-    inputs: suiteInputs.value.map(val => ({...val, suiteInputType: 'suite'}))
+    inputs: suiteInputs.value.map(val => ({...val}))
   } as GenerateTestSuiteDTO)
       .finally(() => isLoading.value = false);
 
@@ -131,6 +137,24 @@ async function submit(close) {
   await router.push({name: 'test-suite-new', params: {suiteId: createdTestSuiteId.toString()}});
 
   close();
+}
+
+function handleInputSettingsClick(input: GenerateTestSuiteInputDTO) {
+  $vfm.show({
+    component: InputSettingsModal,
+    bind: {
+      input
+    },
+    on: {
+      async save(meta) {
+        console.log(input)
+        console.log(meta)
+        Object.assign(input, meta);
+        console.log(input)
+
+      }
+    }
+  });
 }
 
 </script>
