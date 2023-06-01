@@ -1,6 +1,6 @@
 <template>
   <div class="vertical-container">
-    <v-container v-if="projectArtifactsStore.getModels.length > 0" fluid class="vc">
+    <v-container v-if="projectArtifactsStore.models.length > 0" fluid class="vc">
       <v-card flat>
         <v-row class="px-2 py-1 caption secondary--text text--lighten-3">
           <v-col cols="3">Name</v-col>
@@ -11,7 +11,7 @@
           <v-col cols="3">Actions</v-col>
         </v-row>
       </v-card>
-      <v-card class="grey lighten-5" v-for="m in       projectArtifactsStore.getModels     " :key="m.id" outlined tiled>
+      <v-card class="grey lighten-5" v-for="m in        projectArtifactsStore.models      " :key="m.id" outlined tiled>
         <v-row class="px-2 py-1 align-center">
           <v-col cols="3" class="font-weight-bold">
             <InlineEditText :text="m.name" :can-edit="isProjectOwnerOrAdmin" @save="(name) => renameModel(m.id, name)">

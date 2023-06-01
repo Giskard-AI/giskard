@@ -15,11 +15,7 @@ export const useProjectArtifactsStore = defineStore('projectArtifacts', {
         datasets: [],
         models: []
     }),
-    getters: {
-        getProjectId: ({projectId}) => projectId,
-        getDatasets: ({datasets}) => datasets,
-        getModels: ({models}) => models
-    },
+    getters: {},
     actions: {
         async setProjectId(projectId: number) {
             this.projectId = projectId;
