@@ -88,7 +88,9 @@ import {UpdateMeDTO} from "@/generated-sources";
 import {Role} from "@/enums";
 import ApiTokenCard from "@/components/ApiTokenCard.vue";
 import RunningWorkerJobs from '@/views/main/profile/RunningWorkerJobs.vue';
-import moment from "moment";
+
+import {useUserStore} from "@/stores/user";
+import {useMainStore} from "@/stores/main";
 
 const userStore = useUserStore();
 const mainStore = useMainStore();
