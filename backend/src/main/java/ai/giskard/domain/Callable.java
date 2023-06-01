@@ -4,17 +4,19 @@ import ai.giskard.utils.SimpleJSONStringAttributeConverter;
 import lombok.Getter;
 import lombok.Setter;
 
-import javax.persistence.Column;
-import javax.persistence.Convert;
-import javax.persistence.Id;
-import javax.persistence.MappedSuperclass;
+import javax.persistence.*;
 import java.io.Serializable;
 import java.util.List;
 import java.util.UUID;
 
 @Getter
-@MappedSuperclass
 @Setter
+@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
+@Entity(name = "callable_functions")
+@Table(uniqueConstraints = {
+    @UniqueConstraint(columnNames = {"name", "module", "version"})
+})
+@DiscriminatorColumn(name = "callable_type", discriminatorType = DiscriminatorType.STRING)
 public class Callable implements Serializable {
     @Id
     private UUID uuid;
@@ -36,5 +38,7 @@ public class Callable implements Serializable {
     @Column(columnDefinition = "VARCHAR")
     @Convert(converter = SimpleJSONStringAttributeConverter.class)
     private List<String> tags;
+    @OneToMany(mappedBy = "function", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<FunctionArgument> args;
 
 }

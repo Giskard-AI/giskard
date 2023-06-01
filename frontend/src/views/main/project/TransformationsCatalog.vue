@@ -150,7 +150,7 @@
 
 <script setup lang="ts">
 import _, {chain} from "lodash";
-import {computed, inject, onActivated, ref} from "vue";
+import {computed, inject, onActivated, ref, watch} from "vue";
 import {pasterColor} from "@/utils";
 import MonacoEditor from 'vue-monaco';
 import {editor} from "monaco-editor";
@@ -223,35 +223,7 @@ async function runSlicingFunction() {
     transformationResult.value = await api.runAdHocTransformationFunction(selected.value!.uuid, selectedDataset.value!);
 }
 
-const infoHeader = {
-    text: '',
-    value: 'info'
-}
-const infoColumns = ['count', 'unique', 'top', 'freq']
-
-const headers = computed(() =>
-    [
-        infoHeader,
-        ...chain(transformationResult.value?.describeColumns ?? [])
-            .map(column => ({
-                text: column.columnName,
-                value: column.columnName,
-                cellClass: 'overflow-ellipsis'
-            }))
-            .value()
-    ]
-);
-
-const resultData = computed(() => chain(infoColumns)
-    .map(info => ({
-        info,
-        ...chain(transformationResult.value?.describeColumns ?? [])
-            .keyBy('columnName')
-            .mapValues(info)
-            .value()
-    }))
-    .value()
-);
+watch(() => selected.value, () => transformationResult.value = null)
 
 </script>
 

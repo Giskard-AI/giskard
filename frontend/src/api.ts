@@ -487,12 +487,14 @@ export const api = {
             license: license
         });
     },
-    async runAdHocSlicingFunction(slicingFnUuid: string, datasetUuid: string) {
-        return apiV2.get<unknown, SlicingResultDTO>(
-            `/slices/${encodeURIComponent(slicingFnUuid)}/dataset/${encodeURIComponent(datasetUuid)}`);
+    async runAdHocSlicingFunction(slicingFnUuid: string, datasetUuid: string, inputs: { [key: string]: string }) {
+        return apiV2.post<unknown, SlicingResultDTO>(
+            `/slices/${encodeURIComponent(slicingFnUuid)}/dataset/${encodeURIComponent(datasetUuid)}`, inputs);
     },
-    async runAdHocTransformationFunction(transformationFnUuid: string, datasetUuid: string) {
-        return apiV2.get<unknown, TransformationResultDTO>(
-            `/transformations/${encodeURIComponent(transformationFnUuid)}/dataset/${encodeURIComponent(datasetUuid)}`);
+    async runAdHocTransformationFunction(transformationFnUuid: string, datasetUuid: string, inputs: {
+        [key: string]: string
+    }) {
+        return apiV2.post<unknown, TransformationResultDTO>(
+            `/transformations/${encodeURIComponent(transformationFnUuid)}/dataset/${encodeURIComponent(datasetUuid)}`, inputs);
     },
 };
