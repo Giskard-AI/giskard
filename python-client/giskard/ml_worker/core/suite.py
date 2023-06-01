@@ -8,9 +8,7 @@ from giskard.client.dtos import TestSuiteNewDTO, SuiteTestDTO, TestInputDTO
 from giskard.client.giskard_client import GiskardClient
 from giskard.core.model import Model
 from giskard.ml_worker.core.dataset import Dataset
-from giskard.ml_worker.core.test_result import TestResult, TestMessageLevel
 from giskard.ml_worker.testing.registry.giskard_test import GiskardTest, Test, GiskardTestMethod
-from ml_worker_pb2 import SingleTestResult, TestMessageType, Partial_unexpected_counts, TestMessage
 
 logger = logging.getLogger(__name__)
 
@@ -63,7 +61,7 @@ class Suite:
 
         for test_partial in self.tests:
             test_params = self.create_test_params(test_partial, suite_run_args)
-            res.append(map_result_to_single_test_result(test_partial.giskard_test.set_params(**test_params).execute()))
+            res.append(test_partial.giskard_test.set_params(**test_params).execute())
 
         return single_binary_result(res), res
 
@@ -150,43 +148,3 @@ class Suite:
         return res
 
 
-def map_result_to_single_test_result(result) -> SingleTestResult:
-    if isinstance(result, SingleTestResult):
-        return result
-    elif isinstance(result, TestResult):
-        return SingleTestResult(
-            passed=result.passed,
-            messages=[
-                TestMessage(
-                    type=TestMessageType.ERROR if message.type == TestMessageLevel.ERROR else TestMessageType.INFO,
-                    text=message.text
-                )
-                for message
-                in result.messages
-            ],
-            props=result.props,
-            metric=result.metric,
-            missing_count=result.missing_count,
-            missing_percent=result.missing_percent,
-            unexpected_count=result.unexpected_count,
-            unexpected_percent=result.unexpected_percent,
-            unexpected_percent_total=result.unexpected_percent_total,
-            unexpected_percent_nonmissing=result.unexpected_percent_nonmissing,
-            partial_unexpected_index_list=[
-                Partial_unexpected_counts(
-                    value=puc.value,
-                    count=puc.count
-                )
-                for puc
-                in result.partial_unexpected_index_list
-            ],
-            unexpected_index_list=result.unexpected_index_list,
-            output_df=result.output_df,
-            number_of_perturbed_rows=result.number_of_perturbed_rows,
-            actual_slices_size=result.actual_slices_size,
-            reference_slices_size=result.reference_slices_size,
-        )
-    elif isinstance(result, bool):
-        return SingleTestResult(passed=result)
-    else:
-        raise ValueError("Result of test can only be 'GiskardTestResult' or 'bool'")
