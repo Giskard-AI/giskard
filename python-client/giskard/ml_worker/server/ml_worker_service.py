@@ -287,7 +287,10 @@ class MLWorkerServiceImpl(MLWorkerServicer):
 
     def parse_function_arguments(self, request_arguments):
         arguments = dict()
+
         for arg in request_arguments:
+            if arg.none:
+                continue
             if arg.HasField("dataset"):
                 arguments[arg.name] = Dataset.download(self.client, arg.dataset.project_key, arg.dataset.id)
             elif arg.HasField("model"):

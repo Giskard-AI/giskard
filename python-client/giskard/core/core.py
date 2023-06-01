@@ -150,7 +150,7 @@ class CallableMeta(SavableMeta, ABC):
                 parameter.name: FunctionArgument(
                     name=parameter.name,
                     type=parameter.annotation.__qualname__,
-                    optional=parameter.default != inspect.Parameter.empty and parameter.default is not None,
+                    optional=parameter.default != inspect.Parameter.empty,
                     default=None if parameter.default == inspect.Parameter.empty
                     else parameter.default,
                     argOrder=idx

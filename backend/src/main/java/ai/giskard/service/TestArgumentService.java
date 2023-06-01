@@ -50,10 +50,12 @@ public class TestArgumentService {
                                           List<FunctionInput> params) {
         FunctionArgument argument = arguments.get(inputName);
         if (Strings.isBlank(inputValue) && !argument.isOptional()) {
-            throw new IllegalArgumentException("The required argument for " + inputName + " was not provided");
+            throw new IllegalArgumentException("The required argument '" + inputName + "' was not provided");
         }
-        return buildTestArgument(inputName, Strings.isBlank(inputValue) ? argument.getDefaultValue() : inputValue,
-            projectKey, argument.getType(), params);
+
+        String value = Strings.isBlank(inputValue) ? argument.getDefaultValue() : inputValue;
+
+        return buildTestArgument(inputName, value, projectKey, argument.getType(), params);
     }
 
 
@@ -61,6 +63,13 @@ public class TestArgumentService {
                                           String inputType, List<FunctionInput> params) {
         FuncArgument.Builder argumentBuilder = FuncArgument.newBuilder()
             .setName(inputName);
+
+        if (inputValue.equals("None")) {
+            argumentBuilder.setNone(true);
+            return argumentBuilder.build();
+        }
+
+        argumentBuilder.setNone(false);
 
         switch (inputType) {
             case "Dataset" -> argumentBuilder.setDataset(buildArtifactRef(projectKey, inputValue));
