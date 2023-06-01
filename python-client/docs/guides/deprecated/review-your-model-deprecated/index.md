@@ -14,7 +14,7 @@ To review your model, you can either
 
 ## Choose a model and a dataset to inspect
 
-After [uploading your model](../upload-your-model/), you can inspect it by:
+After [uploading your model](../upload-your-model-deprecated/), you can inspect it by:
 
 * Clicking on the Models tab
 * Selecting the model version that you want to inspect by clicking on the Inspect button

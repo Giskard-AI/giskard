@@ -12,7 +12,7 @@ reference/index
 
 Follow our handy guides to get started on the basics as quickly as possible:
 
-- **<project:/guides/installation/index.md>**
+- **<project:/guides/deprecated/installation-deprecated/index.md>**
 - **<project:/guides/wrap/index.rst>**
 - **<project:/guides/test-suite/index.rst>**
 - ✅ **<project:/guides/create-slices/index.rst>**

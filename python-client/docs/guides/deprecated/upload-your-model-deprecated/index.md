@@ -10,7 +10,7 @@ To upload the model you want to inspect, you need:
 
 * A model. For example, a _scikit-learn, Tensorflow, HuggingFace, catboost, PyTorch, ... P_ython functions
 * A pandas dataframe composed of the examples you want to inspect. For example, it could be your test dataset or a dataset composed of some wrong predictions of your model
-* The Giskard's platform. To install it, check [installation](../installation/ "mention")
+* The Giskard's platform. To install it, check [installation](../installation-deprecated/ "mention")
 
 ## Steps to upload your data & model
 
@@ -32,7 +32,7 @@ and re-installing again
 
 ### 2. Start ML Worker
 
-[ML worker](../installation/ml-worker.md) is the component in Giskard that connect **your Python environment** to the Giskard server that you just installed. For more technical information, have a look at this [page](../installation/ml-worker.md). To start MLworker, execute the following command line in the terminal of the machine where your model was created:
+[ML worker](../installation-deprecated/ml-worker.md) is the component in Giskard that connect **your Python environment** to the Giskard server that you just installed. For more technical information, have a look at this [page](../installation-deprecated/ml-worker.md). To start MLworker, execute the following command line in the terminal of the machine where your model was created:
 
 `giskard worker start -h [GISKARD IP ADDRESS]`
 
@@ -46,7 +46,7 @@ If ML Worker manages to connect to the Giskard instance, you should see the foll
 * If Giskard is installed **locally**, please only do: `giskard worker start.` That will establish a connection to the Giskard instance installed on localhost:40051. &#x20;
 * If Giskard **is not installed locally**, please specify the IP address (and a port in case a custom port is used). For example, `giskard worker start -h 192.158.1.38`
 
-For more information, see this [page](../installation/ml-worker.md).
+For more information, see this [page](../installation-deprecated/ml-worker.md).
 :::
 
 ### 3. Create a new Giskard project or load an existing project
@@ -135,10 +135,10 @@ credit_scoring.upload_model_and_df(
 **Example notebooks:**
 
 * You can download an **example notebook** [here](https://github.com/Giskard-AI/demo-notebooks) to execute it in your working environment
-* To get started with Giskard as fast as possible we've included a demo python notebook in the platform with all the requirements on [**http://localhost:19000/jupyter**](http://localhost:19000/jupyter) **** (accessible after the [installation](../installation/ "mention")). Feel free to modify it to adapt it to your case! &#x20;
+* To get started with Giskard as fast as possible we've included a demo python notebook in the platform with all the requirements on [**http://localhost:19000/jupyter**](http://localhost:19000/jupyter) **** (accessible after the [installation](../installation-deprecated/ "mention")). Feel free to modify it to adapt it to your case! &#x20;
 :::
 
-Now you uploaded your model, let's [review-your-model](../review-your-model/ "mention")
+Now you uploaded your model, let's [review-your-model](../review-your-model-deprecated/ "mention")
 
 ## Troubleshooting
 

@@ -63,5 +63,5 @@ You can stop the instance and restart it when you need to save your Azure comput
 
 * The user id is `admin` and the password is `admin`
 
-That's it, you are now ready to use Giskard in Azure! Now you can start [uploading a model](../upload-your-model/)!&#x20;
+That's it, you are now ready to use Giskard in Azure! Now you can start [uploading a model](../upload-your-model-deprecated/)!&#x20;
 

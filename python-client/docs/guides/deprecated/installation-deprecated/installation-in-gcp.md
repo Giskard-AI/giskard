@@ -72,5 +72,5 @@ You can stop the instance and restart it when you need to save your GCP compute 
 
 * The user id is `admin` and the password is `admin`
 
-That's it, you are now ready to use Giskard in GCP! Now you can start [uploading a model](../upload-your-model/)! To do that in GCP, you can use a workbench notebook, for example! &#x20;
+That's it, you are now ready to use Giskard in GCP! Now you can start [uploading a model](../upload-your-model-deprecated/)! To do that in GCP, you can use a workbench notebook, for example! &#x20;
 
