@@ -197,4 +197,8 @@ public interface GiskardMapper {
     @Mapping(target = "test", ignore = true)
     TestParameter fromDTO(TestParameterDTO dto);
 
+    List<TestSuiteNewDTO> toDTO(List<TestSuiteNew> suites);
+
+    @Mapping(target = "projectKey", source = "project.key")
+    TestSuiteNewDTO toDTO(TestSuiteNew suite);
 }
