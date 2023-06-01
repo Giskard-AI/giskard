@@ -83,17 +83,22 @@ class Dataset:
 
     Attributes:
         dataset (pandas.DataFrame):
-            The dataframe representing the dataset.
+            A Pandas dataframe that contains some data examples that might interest you to inspect (test set, train set,
+            production data). Some important remarks:
+
+            - df should be the raw data that comes before all the preprocessing steps
+            - df can contain more columns than the features of the model such as the actual ground truth variable,
+            sample_id, metadata, etc.
         name (Optional[str]):
-            The name of the dataset. Default is None.
+            A string representing the name of the dataset (default None).
         target (Optional[str]):
-            The column name in df corresponding to the actual target variable (ground truth). Default is None.
+            The column name in df corresponding to the actual target variable (ground truth).
         cat_columns (Optional[List[str]]):
-            A list of column names to be treated as categorical variables. Default is None.
-        infer_column_types (Optional[bool]):
-            If True, column data types will be inferred from the dataset. Default is False.
+            A list of strings representing the names of categorical columns (default None). If not provided,
+            the categorical columns will be automatically inferred.
         column_types (Optional[Dict[str, str]]):
-            A dictionary that maps column names to their data types. Default is None.
+            A dictionary of column names and their types (numeric, category or text) for all columns of df. If not provided,
+            the categorical columns will be automatically inferred.
         data_processor (DataProcessor):
             An instance of the `DataProcessor` class used for data processing.
     """
