@@ -150,7 +150,7 @@ wrapped_model = wrap_model(
 ::::::
 :::::::
 
-### Model-specific [tutorials](../tutorials/index.md)
+### Model-specific [tutorials](../../guides/tutorials/index.md)
 :::::{tab-set}
 ::::{tab-item} sklearn
 
