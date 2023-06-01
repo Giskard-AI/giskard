@@ -138,10 +138,14 @@ class TextLanguageBasedTransformation(TextTransformation):
 
 
 class TextGenderTransformation(TextLanguageBasedTransformation):
-    from .entity_swap import gender_switch_en, gender_switch_fr
     name = "Switch Gender"
-    dict_with_all_language = {"dict_en": gender_switch_en,
-                              "dict_fr": gender_switch_fr}
+    dict_with_all_language = None
+
+    def __init__(self, column):
+        super().__init__(column)
+        from .entity_swap import gender_switch_en, gender_switch_fr
+        self.dict_with_all_language = {"dict_en": gender_switch_en,
+                                       "dict_fr": gender_switch_fr}
 
     def make_perturbation(self, row):
         text = row[self.column]
@@ -167,11 +171,15 @@ class TextGenderTransformation(TextLanguageBasedTransformation):
 
 
 class TextReligionTransformation(TextLanguageBasedTransformation):
-    from .entity_swap import religion_dict_en, religion_dict_fr
     name = "Switch Religion"
-    dict_with_all_language = {"dict_en": religion_dict_en,
-                              "dict_fr": religion_dict_fr
-                              }
+    dict_with_all_language = None
+
+    def __init__(self, column):
+        super().__init__(column)
+        from .entity_swap import religion_dict_en, religion_dict_fr
+        self.dict_with_all_language = {"dict_en": religion_dict_en,
+                                       "dict_fr": religion_dict_fr
+                                       }
 
     def make_perturbation(self, row):
         # Get text
@@ -198,14 +206,17 @@ class TextReligionTransformation(TextLanguageBasedTransformation):
 
 
 class TextNationalityTransformation(TextLanguageBasedTransformation):
-    import json
-    from pathlib import Path
-    with Path(__file__).parent.joinpath("nationalities.json").open("r") as f:
-        nationalities_dict = json.load(f)
-    dict_with_all_language = {"dict_en": nationalities_dict["en"],
-                              "dict_fr": nationalities_dict["fr"]
-                              }
     name = "Switch nationality"
+    dict_with_all_language = None
+
+    def __init__(self, column):
+        super().__init__(column)
+        import json
+        from pathlib import Path
+        with Path(__file__).parent.joinpath("nationalities.json").open("r") as f:
+            nationalities_dict = json.load(f)
+        self.dict_with_all_language = {"dict_en": nationalities_dict["en"],
+                                       "dict_fr": nationalities_dict["fr"]}
 
     def make_perturbation(self, row):
         text = row[self.column]
