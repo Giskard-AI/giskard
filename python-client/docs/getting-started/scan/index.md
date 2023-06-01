@@ -75,7 +75,7 @@ wrapped_dataset = wrap_dataset(
        numerical or textual with few unique values.
        If not provided, the columns types will be automatically inferred.
     * `column_types`: A dictionary of column names and their types (numeric, category or text) for all columns of `dataset`. 
-       If not provided, the categorical columns will be automatically inferred.
+       If not provided, the types will be automatically inferred.
 
 ## 3. Wrap your model
 
