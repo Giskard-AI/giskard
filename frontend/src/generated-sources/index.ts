@@ -15,6 +15,8 @@ export const GENERATED_MAPPING = {
     'ai.giskard.service.ee.FeatureFlag' : 'FeatureFlag',
     'ai.giskard.web.dto.CallableDTO' : 'CallableDTO',
     'ai.giskard.web.dto.CatalogDTO' : 'CatalogDTO',
+    'ai.giskard.web.dto.ComparisonClauseDTO' : 'ComparisonClauseDTO',
+    'ai.giskard.web.dto.ComparisonType' : 'ComparisonType',
     'ai.giskard.web.dto.config.AppConfigDTO$AppInfoDTO' : 'AppConfigDTO.AppInfoDTO',
     'ai.giskard.web.dto.config.AppConfigDTO' : 'AppConfigDTO',
     'ai.giskard.web.dto.config.LicenseDTO' : 'LicenseDTO',
@@ -26,6 +28,7 @@ export const GENERATED_MAPPING = {
     'ai.giskard.web.dto.DatasetMetadataDTO' : 'DatasetMetadataDTO',
     'ai.giskard.web.dto.DatasetPageDTO' : 'DatasetPageDTO',
     'ai.giskard.web.dto.DatasetProcessFunctionDTO' : 'DatasetProcessFunctionDTO',
+    'ai.giskard.web.dto.DatasetProcessFunctionType' : 'DatasetProcessFunctionType',
     'ai.giskard.web.dto.DatasetProcessingResultDTO' : 'DatasetProcessingResultDTO',
     'ai.giskard.web.dto.ExplainResponseDTO' : 'ExplainResponseDTO',
     'ai.giskard.web.dto.ExplainTextResponseDTO' : 'ExplainTextResponseDTO',
@@ -108,6 +111,8 @@ export * from './ai/giskard/jobs/job-type';
 export * from './ai/giskard/service/ee/feature-flag';
 export * from './ai/giskard/web/dto/callable-dto';
 export * from './ai/giskard/web/dto/catalog-dto';
+export * from './ai/giskard/web/dto/comparison-clause-dto';
+export * from './ai/giskard/web/dto/comparison-type';
 export * from './ai/giskard/web/dto/config/app-config-dto';
 export * from './ai/giskard/web/dto/config/license-dto';
 export * from './ai/giskard/web/dto/config/mlworker-info-dto';
@@ -117,6 +122,7 @@ export * from './ai/giskard/web/dto/data-upload-params-dto';
 export * from './ai/giskard/web/dto/dataset-metadata-dto';
 export * from './ai/giskard/web/dto/dataset-page-dto';
 export * from './ai/giskard/web/dto/dataset-process-function-dto';
+export * from './ai/giskard/web/dto/dataset-process-function-type';
 export * from './ai/giskard/web/dto/dataset-processing-result-dto';
 export * from './ai/giskard/web/dto/explain-response-dto';
 export * from './ai/giskard/web/dto/explain-text-response-dto';
