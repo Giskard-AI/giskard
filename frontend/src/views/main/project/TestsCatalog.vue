@@ -53,7 +53,7 @@
                           border="left"
                           outlined
                           colored-border
-                          icon="info"
+                          icon="warning"
                   >
                       <span>This test is potentially unavailable. Start your external ML worker to display available tests.</span>
                       <pre></pre>
