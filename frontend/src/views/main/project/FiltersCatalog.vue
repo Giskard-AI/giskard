@@ -177,7 +177,7 @@ import {computed, inject, onActivated, ref, watch} from "vue";
 import {pasterColor} from "@/utils";
 import MonacoEditor from 'vue-monaco';
 import {editor} from "monaco-editor";
-import {SlicingFunctionDTO, SlicingResultDTO, TestInputDTO} from "@/generated-sources";
+import {FunctionInputDTO, SlicingFunctionDTO, SlicingResultDTO} from "@/generated-sources";
 import StartWorkerInstructions from "@/components/StartWorkerInstructions.vue";
 import {storeToRefs} from "pinia";
 import {useCatalogStore} from "@/stores/catalog";
@@ -204,7 +204,7 @@ const sliceResult = ref<SlicingResultDTO | null>(null);
 const tryMode = ref<boolean>(false);
 const selectedDataset = ref<string | null>(null);
 const selectedColumn = ref<string | null>(null);
-let slicingArguments = ref<{ [name: string]: TestInputDTO }>({})
+let slicingArguments = ref<{ [name: string]: FunctionInputDTO }>({})
 
 const monacoOptions: IEditorOptions = inject('monacoOptions');
 monacoOptions.readOnly = true;

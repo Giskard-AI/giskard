@@ -92,14 +92,13 @@ def test_validate_column_types(german_credit_data, german_credit_test_data):
         r"The following keys \['sex'\] are missing from 'column_types'\. "
         r"Please make sure that the column names in `column_types` covers all the existing columns in your dataset\.")
 
-    with pytest.raises(ValueError) as e:
+    with pytest.warns(
+            UserWarning,
+            match=r"The provided keys .* in 'column_types' are not part of your.*",
+    ):
         new_ft = dict(original_column_types)
         new_ft["non-existing-column"] = SupportedColumnTypes.CATEGORY.value
-        ds.column_types = new_ft
-        validate_column_types(ds)
-    assert e.match(r"The provided keys \['non-existing-column'\] in 'column_types' are not part of your dataset "
-                   r"'columns'\. Please make sure that the column names in `column_types` refers "
-                   r"to existing columns in your dataset\.")
+        Dataset(ds.df, target=ds.target, column_types=new_ft)
 
     broken_types = dict(test_ds.column_types)
     broken_types["people_under_maintenance"] = SupportedColumnTypes.CATEGORY.value
