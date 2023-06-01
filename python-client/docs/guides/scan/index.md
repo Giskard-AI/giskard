@@ -35,34 +35,28 @@ pip install "git+https://github.com/Giskard-AI/giskard.git@feature/ai-test-v2-me
 
 ## 2. Wrap your model
 
-We currently support all **tabular** and **NLP** models from the following:
+We currently support all **tabular** and **NLP** models from `sklearn`, `catboost`, `pytorch`, `tensorflow` and `huggingface`.
 
-#### Supported libraries
+To create your Giskard model, you can simply wrap your model with [wrap_model](../../reference/models/index.rst#giskard.wrap_model) as shown in the following example:
 
-- sklearn
-- catboost
-- pytorch
-- tensorflow
-- huggingface
-
-To create your Giskard model, you can simply wrap your model with `giskard.wrap_model` as shown in {class}`~.giskard.wrap_model`.
-
+:::::{tab-set}
+::::{tab-item} Classification
+:::{important}
+Click on [wrap_model](../../reference/models/index.rst#giskard.wrap_model) to see the full documentation.
+:::
 :::{warning}
 If your ML model contains preprocessing functions (categorical encoding, scaling, etc.), it should be either inside your
 `model` or inside the `data_preprocessing_function` of the Giskard model you create.
 :::
-
 #### Example
-
 ```python
 from giskard import wrap_model
 
 wrapped_model = wrap_model(some_classifier,
-                           model_type="classification", # or "regression"
-                           feature_names=["column1", "column2", ...],
-                           classification_labels=["label1", "label2", ...]) # not needed in case of "regression"
+                           model_type="classification",
+                           feature_names=['sepal length', 'sepal width', 'petal length'],
+                           classification_labels=['Setosa', 'Versicolor', 'Virginica'])
 ```
-
 :::{hint}
 Most classes in sklearn and catboost
 have [classes_](https://scikit-learn.org/stable/modules/generated/sklearn.feature_selection.RFE.html#sklearn.feature_selection.RFE.classes_)
@@ -74,9 +68,27 @@ and [feature_names_in_](https://scikit-learn.org/stable/modules/generated/sklear
 respectively.
 :::
 
-```{eval-rst}
-.. autofunction:: giskard.wrap_model 
+::::
+
+::::{tab-item} Regression
+:::{important}
+Click on [wrap_model](../../reference/models/index.rst#giskard.wrap_model) to see the full documentation.
+:::
+:::{warning}
+If your ML model contains preprocessing functions (categorical encoding, scaling, etc.), it should be either inside your
+`model` or inside the `data_preprocessing_function` of the Giskard model you create.
+:::
+#### Example
+```python
+from giskard import wrap_model
+
+wrapped_model = wrap_model(some_regressor,
+                           model_type="regression",
+                           feature_names=['x', 'y', 'z'])
 ```
+::::
+:::::
+
 
 ## 3. Wrap your dataset
 
@@ -100,19 +112,14 @@ my_column_types = {"categorical_column": "category",
                    "numeric_column": "numeric"}
 
 # option 2 (preferable)                
-#my_cat_columns = ["categorical_column"]
+# my_cat_columns = ["categorical_column"]
 
 # option 3 (not very accurate)
-#INFER_CAT_COLUMNS = True
+# INFER_CAT_COLUMNS = True
 
 from giskard import wrap_dataset
 
-wrapped_dataset = wrap_dataset(some_df,
-                               target="numeric_column",
-                               column_types=my_column_types,            # option 1
-                               # cat_columns=my_cat_columns,            # option 2
-                               # infer_column_types = INFER_CAT_COLUMNS # option 3
-                               )
+wrapped_dataset = wrap_dataset(some_df, target="numeric_column", column_types=my_column_types)
 ```
 
 ```{eval-rst}
