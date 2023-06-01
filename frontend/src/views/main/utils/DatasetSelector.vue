@@ -12,6 +12,7 @@
       @input="onInput"
       dense
       hide-details
+      :error-messages="errorMessages"
   ></v-select>
 </template>
 
@@ -28,6 +29,7 @@ export default class DatasetSelector extends Vue {
   @Prop({required: true}) projectId!: number;
   @Prop({default: 'Dataset', required: true}) label!: string;
   @Prop({default: true}) returnObject!: boolean;
+  @Prop({default: []}) errorMessages?: string | string[];
   @Prop() value?: DatasetDTO | number;
   projectDatasets: Array<DatasetDTO> = [];
 

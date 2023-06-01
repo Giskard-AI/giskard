@@ -110,20 +110,25 @@
                         ></v-select>
                       </td>
                       <td>
-                        <DatasetSelector :project-id="projectId" :label="input.name" :return-object="false"
-                                         v-if="input.type === 'Dataset'" :value.sync="input.value"/>
-                        <ModelSelector :project-id="projectId" :label="input.name" :return-object="false"
-                                       v-else-if="input.type === 'Model'" :value.sync="input.value"/>
-                        <v-text-field
-                            :step='input.type === "float" ? 0.1 : 1'
-                            v-model="input.value"
-                            v-else-if="['float', 'int'].includes(input.type)"
-                            hide-details
-                            single-line
-                            type="number"
-                            outlined
-                            dense
-                        />
+                        <ValidationProvider name="input value" rules="required" v-slot="{errors}">
+                          <DatasetSelector :project-id="projectId" :label="input.name" :return-object="false"
+                                           v-if="input.type === 'Dataset'" :value.sync="input.value"
+                                           :error-messages="errors"/>
+                          <ModelSelector :project-id="projectId" :label="input.name" :return-object="false"
+                                         v-else-if="input.type === 'Model'" :value.sync="input.value"
+                                         :error-messages="errors"/>
+                          <v-text-field
+                              :step='input.type === "float" ? 0.1 : 1'
+                              v-model="input.value"
+                              v-else-if="['float', 'int'].includes(input.type)"
+                              hide-details
+                              single-line
+                              type="number"
+                              outlined
+                              dense
+                              :error-messages="errors"
+                          />
+                        </ValidationProvider>
                       </td>
                       <td>
                         <v-btn icon @click="() => sharedSuiteInputs.splice(index, 1)">
