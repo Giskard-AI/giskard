@@ -15,6 +15,7 @@ from sklearn.metrics import (
 
 from giskard import test
 from giskard.datasets.base import Dataset
+from giskard.ml_worker.testing.utils import Direction
 from giskard.ml_worker.core.test_result import TestResult
 from giskard.ml_worker.testing.registry.giskard_test import GiskardTest
 from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction
@@ -79,14 +80,14 @@ def _test_regression_score(score_fn, giskard_ds, model: BaseModel, threshold: fl
 def _test_diff_prediction(
     test_fn,
     model,
-    actual_slice,
-    reference_slice,
+    actual_dataset,
+    reference_dataset,
     threshold: float = 0.5,
-    absolute: bool = True,
+    direction: Direction = Direction.Invariant,
     test_name=None,
 ):
-    metric_reference = test_fn(reference_slice, model).metric
-    metric_actual = test_fn(actual_slice, model).metric
+    metric_reference = test_fn(reference_dataset, model).metric
+    metric_actual = test_fn(actual_dataset, model).metric
 
     try:
         rel_change = (metric_actual - metric_reference) / metric_reference
@@ -96,11 +97,18 @@ def _test_diff_prediction(
             " reference_dataset is equal to zero"
         )
 
-    passed = abs(rel_change) < threshold if absolute else rel_change > -threshold
+    if direction == Direction.Invariant:
+        passed = abs(rel_change) < threshold
+    elif direction == Direction.Decreasing:
+        passed = rel_change < threshold
+    elif direction == Direction.Increasing:
+        passed = rel_change > threshold
+    else:
+        raise ValueError(f"Invalid direction: {direction}")
 
     return TestResult(
-        actual_slices_size=[len(actual_slice)],
-        reference_slices_size=[len(reference_slice)],
+        actual_slices_size=[len(actual_dataset)],
+        reference_slices_size=[len(reference_dataset)],
         metric=rel_change,
         passed=passed,
     )
@@ -397,7 +405,7 @@ def test_diff_accuracy(
     model: BaseModel,
     slicing_function: SlicingFunction = None,
     threshold: float = 0.1,
-    absolute: bool = True,
+    direction: Direction = Direction.Invariant,
 ):
     """
 
@@ -436,7 +444,7 @@ def test_diff_accuracy(
         actual_dataset.slice(slicing_function),
         reference_dataset.slice(slicing_function),
         threshold=threshold,
-        absolute=absolute,
+        direction=direction,
         test_name="Accuracy",
     )
 
@@ -448,7 +456,7 @@ def test_diff_f1(
     model: BaseModel,
     slicing_function: SlicingFunction = None,
     threshold: float = 0.1,
-    absolute: bool = True,
+    direction: Direction = Direction.Invariant,
 ):
     """
     Test if the absolute percentage change in model F1 Score between two samples is lower than a threshold
@@ -487,7 +495,7 @@ def test_diff_f1(
         actual_dataset.slice(slicing_function),
         reference_dataset.slice(slicing_function),
         threshold=threshold,
-        absolute=absolute,
+        direction=direction,
         test_name="F1 Score",
     )
 
@@ -499,7 +507,7 @@ def test_diff_precision(
     model: BaseModel,
     slicing_function: SlicingFunction = None,
     threshold: float = 0.1,
-    absolute: bool = True,
+    direction: Direction = Direction.Invariant,
 ):
     """
     Test if the absolute percentage change of model Precision between two samples is lower than a threshold
@@ -537,7 +545,7 @@ def test_diff_precision(
         actual_dataset.slice(slicing_function),
         reference_dataset.slice(slicing_function),
         threshold=threshold,
-        absolute=absolute,
+        direction=direction,
         test_name="Precision",
     )
 
@@ -549,7 +557,7 @@ def test_diff_recall(
     model: BaseModel,
     slicing_function: SlicingFunction = None,
     threshold: float = 0.1,
-    absolute: bool = True,
+    direction: Direction = Direction.Invariant,
 ):
     """
     Test if the absolute percentage change of model Recall between two samples is lower than a threshold
@@ -587,7 +595,7 @@ def test_diff_recall(
         actual_dataset.slice(slicing_function),
         reference_dataset.slice(slicing_function),
         threshold=threshold,
-        absolute=absolute,
+        direction=direction,
         test_name="Recall",
     )
 
@@ -599,7 +607,7 @@ def test_diff_reference_actual_f1(
     model: BaseModel,
     slicing_function: SlicingFunction = None,
     threshold: float = 0.1,
-    absolute: bool = True,
+    direction: Direction = Direction.Invariant,
 ):
     """
     Test if the absolute percentage change in model F1 Score between reference and actual data
@@ -638,7 +646,7 @@ def test_diff_reference_actual_f1(
         actual_dataset.slice(slicing_function),
         reference_dataset.slice(slicing_function),
         threshold=threshold,
-        absolute=absolute,
+        direction=direction,
         test_name="F1 Score",
     )
 
@@ -650,7 +658,7 @@ def test_diff_reference_actual_accuracy(
     model: BaseModel,
     slicing_function: SlicingFunction = None,
     threshold: float = 0.1,
-    absolute: bool = True,
+    direction: Direction = Direction.Invariant,
 ):
     """
     Test if the absolute percentage change in model Accuracy between reference and actual data
@@ -689,7 +697,7 @@ def test_diff_reference_actual_accuracy(
         actual_dataset.slice(slicing_function),
         reference_dataset.slice(slicing_function),
         threshold=threshold,
-        absolute=absolute,
+        direction=direction,
         test_name="Accuracy",
     )
 
@@ -701,7 +709,7 @@ def test_diff_rmse(
     model: BaseModel,
     slicing_function: SlicingFunction = None,
     threshold: float = 0.1,
-    absolute: bool = True,
+    direction: Direction = Direction.Invariant,
 ):
     """
     Test if the absolute percentage change of model RMSE between two samples is lower than a threshold
@@ -740,7 +748,7 @@ def test_diff_rmse(
         actual_dataset.slice(slicing_function),
         reference_dataset.slice(slicing_function),
         threshold=threshold,
-        absolute=absolute,
+        direction=direction,
         test_name="RMSE",
     )
 
@@ -752,7 +760,7 @@ def test_diff_reference_actual_rmse(
     model: BaseModel,
     slicing_function: SlicingFunction = None,
     threshold: float = 0.1,
-    absolute: bool = True,
+    direction: Direction = Direction.Invariant,
 ):
     """
     Test if the absolute percentage change in model RMSE between reference and actual data
@@ -791,6 +799,6 @@ def test_diff_reference_actual_rmse(
         actual_dataset.slice(slicing_function),
         reference_dataset.slice(slicing_function),
         threshold=threshold,
-        absolute=absolute,
+        direction=direction,
         test_name="RMSE",
     )
