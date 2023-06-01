@@ -24,13 +24,23 @@ def test_hash_generated_once():
 
 
 def test_hash_differentiate_str_int():
-    df_int = pd.DataFrame([42, 3.14])
+    df_int = pd.DataFrame([42, 3])
     dataset_int = Dataset(df_int, cat_columns=[])
 
-    df_str = pd.DataFrame(["42", "3.14"])
+    df_str = pd.DataFrame(["42", "3"])
     dataset_str = Dataset(df_str, cat_columns=[])
 
     assert list(dataset_int._row_hashes.values) != list(dataset_str._row_hashes.values)
+
+
+def test_hash_differentiate_str_bool():
+    df_bool = pd.DataFrame([True, False])
+    dataset_bool = Dataset(df_bool, cat_columns=[])
+
+    df_str = pd.DataFrame(["True", "False"])
+    dataset_str = Dataset(df_str, cat_columns=[])
+
+    assert list(dataset_bool._row_hashes.values) != list(dataset_str._row_hashes.values)
 
 
 def test_hash_deterministic():
