@@ -21,7 +21,9 @@ from giskard.ml_worker.testing.registry.giskard_test import GiskardTest
 
 def _verify_target_availability(dataset):
     if not dataset.target:
-        raise ValueError("Target column is not available")
+        raise ValueError("This test requires 'target' in Dataset not to be None. 'target' is the column name in df "
+                         "corresponding to the actual target variable (ground truth). "
+                         "You can set it when creating your giskard dataset.")
 
 
 def _get_rmse(y_actual, y_predicted):
