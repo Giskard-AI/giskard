@@ -490,8 +490,9 @@ class WrapperModel(BaseModel, ABC):
         # prediction as `1 - p`.
         if self.is_binary_classification and raw_predictions.shape[-1] == 1:
             warn_once(logger,
-                "Please make sure that your model's output corresponds to the second label in classification_labels."
-            )
+                      "Please make sure that your model's output corresponds "
+                      "to the second label in classification_labels."
+                      )
 
             raw_predictions = np.append(1 - raw_predictions, raw_predictions, axis=1)
 
