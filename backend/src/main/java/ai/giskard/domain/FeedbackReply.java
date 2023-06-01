@@ -1,10 +1,14 @@
 package ai.giskard.domain;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.annotation.CreatedDate;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.ManyToOne;
 import java.time.Instant;
 
 @Getter
@@ -12,6 +16,7 @@ import java.time.Instant;
 public class FeedbackReply extends BaseEntity{
     @Setter
     @ManyToOne
+    @JsonBackReference
     private Feedback feedback;
 
     @Setter
@@ -25,6 +30,7 @@ public class FeedbackReply extends BaseEntity{
 
     @CreatedDate
     @Column(name = "created_on", updatable = false)
+    @JsonIgnore
     private Instant createdOn = Instant.now();
 
 }
