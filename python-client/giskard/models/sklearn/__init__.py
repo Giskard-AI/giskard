@@ -5,15 +5,15 @@ from giskard.core.model import Model
 
 
 class SKLearnModel(Model):
-    def __init__(self, model, model_type: SupportedModelTypes, name: str = None, data_preparation_function=None,
+    def __init__(self, clf, model_type: SupportedModelTypes, name: str = None, data_preparation_function=None,
                  feature_names=None, classification_threshold=0.5, classification_labels=None) -> None:
 
-        if classification_labels is None and hasattr(model, 'classes_'):
-            classification_labels = list(getattr(model, 'classes_'))
-        if feature_names is None and hasattr(model, 'feature_names_in_'):
-            feature_names = list(getattr(model, 'feature_names_in_'))
+        if classification_labels is None and hasattr(clf, 'classes_'):
+            classification_labels = list(getattr(clf, 'classes_'))
+        if feature_names is None and hasattr(clf, 'feature_names_in_'):
+            feature_names = list(getattr(clf, 'feature_names_in_'))
 
-        super().__init__(model, model_type, name, data_preparation_function, feature_names,
+        super().__init__(clf, model_type, name, data_preparation_function, feature_names,
                          classification_threshold, classification_labels)
 
     @classmethod
@@ -22,6 +22,6 @@ class SKLearnModel(Model):
 
     def _raw_predict(self, data):
         if self.is_regression:
-            return self.model.predict(data)
+            return self.clf.predict(data)
         else:
-            return self.model.predict_proba(data)
+            return self.clf.predict_proba(data)

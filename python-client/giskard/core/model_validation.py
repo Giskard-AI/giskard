@@ -20,7 +20,7 @@ def validate_model(
 
     loaded_model, loaded_data_prep_fn = validate_model_save_load(model)
     model = Model(
-        model=loaded_model,
+        clf=loaded_model,
         data_preparation_function=loaded_data_prep_fn,
         model_type=model.meta.model_type,
         feature_names=model.meta.feature_names,
@@ -152,12 +152,11 @@ def validate_classification_threshold_label(
         )
 
     if classification_threshold is not None:
-        if classification_threshold != 0.5:
-            if len(classification_labels) != 2:
-                raise ValueError(
-                    f"Invalid classification_threshold parameter: {classification_threshold} value is applicable "
-                    f"only for binary classification. "
-                )
+        if classification_threshold != 0.5 and len(classification_labels) != 2:
+            raise ValueError(
+                f"Invalid classification_threshold parameter: {classification_threshold} value is applicable "
+                f"only for binary classification. "
+            )
 
 
 def validate_label_with_target(classification_labels, target_values=None, target_name=None):
