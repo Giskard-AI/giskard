@@ -14,7 +14,7 @@ from giskard.slicing.multiscale_slicer import MultiscaleSlicer
 from .base import BaseSlicer
 from .opt_slicer import OptSlicer
 from .slice import DataSlice, Query, QueryBasedSliceFunction, StringContains
-
+from .stop_words import sw_en,sw_fr
 
 class TextSlicer(BaseSlicer):
     def find_slices(self, features, target=None):
@@ -83,10 +83,8 @@ class TextSlicer(BaseSlicer):
 
     def _get_top_tokens(self, feature_data, n=30):
         from sklearn.feature_extraction.text import TfidfVectorizer
-        from spacy.lang.fr.stop_words import STOP_WORDS as fr_stop
-        from spacy.lang.en.stop_words import STOP_WORDS as en_stop
 
-        final_stopwords_list = list(fr_stop) + list(en_stop)
+        final_stopwords_list = sw_en + sw_fr
 
         text_data = feature_data.values.astype("U")
         vectorizer = TfidfVectorizer(stop_words=final_stopwords_list)
