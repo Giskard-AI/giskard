@@ -9,6 +9,6 @@ import java.util.List;
  */
 public interface TestSuiteExecutionRepository extends WorkerJobRepository<TestSuiteExecution> {
 
-    List<TestSuiteExecution> findAllBySuiteId(long suiteId);
+    List<TestSuiteExecution> findAllBySuiteIdOrderByExecutionDateDesc(long suiteId);
 
 }
