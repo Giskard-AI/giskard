@@ -18,7 +18,7 @@ def validate_target(ds: Dataset):
         if ds.target not in ds.columns:
             raise ValueError(
                 "Invalid target parameter:"
-                f" '{ds.target}' column is not present in the dataset with columns: {ds.columns}"
+                f" '{ds.target}' column is not present in the dataset with columns: {list(ds.columns)}"
             )
 
 
