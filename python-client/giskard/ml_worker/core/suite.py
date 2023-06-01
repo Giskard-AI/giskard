@@ -101,6 +101,13 @@ class Suite:
         return self
 
     def add_test(self, test_fn: Union[Callable[[Any], Union[bool]], GiskardTest], **params):
+        """
+        Add a test to the Suite
+        :param test_fn: A test method that will be executed or an instance of a GiskardTest class
+        :param params: default params to be passed to the test method,
+          will be ignored if test_fn is an instance of GiskardTest
+        :return: The current instance of the test Suite to allow chained execution
+        """
         if isinstance(test_fn, GiskardTest):
             self.tests.append(TestPartial(type(test_fn), {k: v for k, v in test_fn.__dict__.items() if v is not None}))
         else:
