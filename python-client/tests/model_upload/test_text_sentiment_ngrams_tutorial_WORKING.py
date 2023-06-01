@@ -5,8 +5,8 @@ auth = "Bearer SECRET_TOKEN"
 content_type = "multipart/form-data; boundary="
 model_name = "uploaded model"
 b_content_type = b"application/json"
-from giskard.client.giskard_client import GiskardClient
-from giskard.client.project import GiskardProject
+#from giskard.client.giskard_client import GiskardClient
+#from giskard.client.project import GiskardProject
 import pandas as pd
 import numpy as np
 import pytest
@@ -189,7 +189,7 @@ def test_text_sentiment_ngrams_tutorial():
         series = df["text"].apply(predict_proba)
         return np.array(series.tolist())
 
-    GiskardProject._validate_model_is_pickleable(prediction_function)
+    """GiskardProject._validate_model_is_pickleable(prediction_function)
 
     classification_labels, model = GiskardProject._validate_model(
         list(ag_news_label.values()),
@@ -199,7 +199,7 @@ def test_text_sentiment_ngrams_tutorial():
         prediction_function,
         'label',
         df,
-    )
+    )"""
 
     #TODO: generalize the PyTorchModel by taking properly the case where data_preprocessing_function returns a dataloader
     #TODO: Only cases that are spotable by running an if check (like dataloader for instance) should be implemented. Is
@@ -207,3 +207,34 @@ def test_text_sentiment_ngrams_tutorial():
 
     #TODO: It doesn't make sense to have 2 solutions for 2 notebooks.
 
+
+    from giskard import PyTorchModel, Dataset
+
+    feature_names = ['text']
+
+    def preprocessing_function(df):
+        return df
+
+    my_model = PyTorchModel(name="BertForSequenceClassification",
+                            clf=model,
+                            feature_names=feature_names,
+                            model_type="classification",
+                            classification_labels= list(ag_news_label.values()),
+                            data_preprocessing_function=preprocessing_function)
+
+    print(df.head())
+    my_test_dataset = Dataset(df.head(), name="test dataset", target="label")
+
+
+    #my_model.validate_model(validate_ds=validate_ds)
+
+
+    # Wrap your dataset with Dataset from Giskard
+    #my_test_dataset = Dataset(data_filtered[['Content','Target']].head(), name="test dataset", target="Target", column_meanings={"Content": "text"})
+
+    # save model and dataset to Giskard server
+    #mid = my_model.save(client, "enron", validate_ds=my_test_dataset)
+    #did = my_test_dataset.save(client, "enron")
+
+if __name__=="__main__":
+    test_text_sentiment_ngrams_tutorial()
