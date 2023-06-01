@@ -20,7 +20,7 @@
           <v-tab>Execution</v-tab>
         </v-tabs>
       </v-col>
-      <v-col>
+      <v-col cols="10">
         <v-tabs-items v-model="tab">
           <v-tab-item :transition="false">
             <div>Inputs</div>
