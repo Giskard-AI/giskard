@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from functools import cache
+from functools import lru_cache
 
 from .metrics import PerformanceMetric
 from ..issues import Issue
@@ -70,7 +70,7 @@ class PerformanceIssue(Issue):
             return [self.info.slice_fn.feature]
         return self.model.meta.feature_names or self.dataset.columns
 
-    @cache
+    @lru_cache
     def examples(self, n=3):
         ex_dataset = self.dataset.slice(self.info.slice_fn)
         predictions = self.model.predict(ex_dataset).prediction
