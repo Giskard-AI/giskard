@@ -1,7 +1,10 @@
-from giskard.scanner.prediction.prediction_biais import OverconfidenceBiaisDetector,BorderlineBiaisDetector
+from giskard.scanner.prediction.prediction_bias_detectors.overconfidence import OverconfidenceBiasDetector
+from giskard.scanner.prediction.prediction_bias_detectors.borderline import BorderlineBiasDetector
+
+from giskard.scanner.prediction.metrics import OverconfidenceMAE,BorderlineMAE
 def test_prediction_biais_detector(german_credit_model, german_credit_data):
-    res = OverconfidenceBiaisDetector(metrics=["probamae"]).run(german_credit_model, german_credit_data)
-    res2= BorderlineBiaisDetector(metrics=["borderline"]).run(german_credit_model, german_credit_data)
+    res = OverconfidenceBiasDetector(metrics=[OverconfidenceMAE()]).run(german_credit_model, german_credit_data)
+    res2= BorderlineBiasDetector(metrics=[BorderlineMAE()]).run(german_credit_model, german_credit_data)
     
     print(res,res2)
 
