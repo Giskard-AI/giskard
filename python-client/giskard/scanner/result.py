@@ -54,6 +54,7 @@ class ScanResult:
         uid = id(self)
 
         from pathlib import Path
+
         with Path(__file__).parent.joinpath("templates", "static", "external.js").open("r") as f:
             js_lib = f.read()
 
@@ -63,6 +64,15 @@ class ScanResult:
 (function(){{iFrameResize({{ checkOrigin: false }}, '#scan-{uid}');}})();
 </script>
 '''
+
+    def to_html(self, filename=None):
+        html = self._repr_html_()
+
+        if not filename:
+            return html
+
+        with open(filename, "w") as f:
+            f.write(html)
 
     def to_dataframe(self):
         df = pd.DataFrame(
