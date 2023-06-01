@@ -38,7 +38,8 @@ import {
     TokenAndPasswordVM,
     UpdateMeDTO,
     UpdateTestSuiteDTO,
-    UserDTO
+    UserDTO,
+    WorkerJobDTO
 } from './generated-sources';
 import {TYPE} from "vue-toastification";
 import ErrorToast from "@/views/main/utils/ErrorToast.vue";
@@ -191,6 +192,9 @@ export const api = {
     },
     async getMLWorkerSettings() {
         return apiV2.get<unknown, MLWorkerInfoDTO[]>(`/settings/ml-worker-info`);
+    },
+    async getRunningWorkerJobs() {
+        return apiV2.get<unknown, WorkerJobDTO[]>(`/worker/jobs/running`);
     },
     async saveGeneralSettings(settings: GeneralSettings) {
         return apiV2.post<unknown, GeneralSettings>(`/settings`, settings);
