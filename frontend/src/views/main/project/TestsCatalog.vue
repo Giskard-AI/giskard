@@ -66,12 +66,12 @@
                                     <v-icon left class="group-icon pb-1 mr-1">mdi-text-box</v-icon>
                                     <span class="group-title">Description</span>
                                 </div>
-                                <p class="test-description pt-2">{{ selected.doc }}</p>
+                                <p class="test-description pt-2 mb-4">{{ selected.doc }}</p>
                             </div>
 
-                            <v-divider></v-divider>
+                            <!-- <v-divider></v-divider> -->
 
-                            <div id="inputs-group" class="py-4">
+                            <div id="inputs-group" class="py-4 mb-4">
                                 <div class="d-flex">
                                     <v-icon left class="group-icon pb-1 mr-1">mdi-pencil-box</v-icon>
                                     <span class="group-title">Inputs</span>
@@ -87,31 +87,25 @@
                                 <TestExecutionResultBadge v-if="testResult" :result="testResult" />
                             </div>
 
-                            <v-divider></v-divider>
+                            <!-- <v-divider></v-divider> -->
 
 
-                            <div id="usage-group" class="py-4">
+                            <div id="usage-group" class="py-4 mb-4">
                                 <div class="d-flex">
                                     <v-icon left class="group-icon pb-1 mr-1">mdi-code-greater-than</v-icon>
                                     <span class="group-title">Usage</span>
                                 </div>
-
-                                <div class="d-flex flex-column mt-2 mb-4">
-                                    <CodeSnippet></CodeSnippet>
-                                </div>
+                                <CodeSnippet class="mt-2"></CodeSnippet>
                             </div>
 
-                            <v-divider></v-divider>
+                            <!-- <v-divider></v-divider> -->
 
                             <div id="code-group" class="py-4">
                                 <div class="d-flex">
                                     <v-icon left class="group-icon pb-1 mr-1">mdi-code-braces-box</v-icon>
                                     <span class="group-title">Code</span>
                                 </div>
-
-                                <div class="d-flex flex-column mt-2">
-                                    <CodeSnippet :codeContent="selected.code"></CodeSnippet>
-                                </div>
+                                <CodeSnippet class="mt-2" :codeContent="selected.code"></CodeSnippet>
                             </div>
                         </div>
                     </v-col>
