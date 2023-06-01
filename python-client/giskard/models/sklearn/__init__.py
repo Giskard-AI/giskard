@@ -9,6 +9,7 @@ from giskard.models.base import MLFlowBasedModel
 
 
 class SKLearnModel(MLFlowBasedModel):
+    _feature_names_attr = "feature_names_in_"
     @configured_validate_arguments
     def __init__(self,
                  model,
@@ -23,9 +24,9 @@ class SKLearnModel(MLFlowBasedModel):
         if model_type == SupportedModelTypes.CLASSIFICATION:
             if classification_labels is None and hasattr(model, "classes_"):
                 classification_labels = list(getattr(model, "classes_"))
-        if feature_names is None and hasattr(model, "feature_names_in_"):
+        if feature_names is None and hasattr(model, self._feature_names_attr):
             if data_preprocessing_function is None:
-                feature_names = list(getattr(model, "feature_names_in_"))
+                feature_names = list(getattr(model, self._feature_names_attr))
             else:
                 raise ValueError("feature_names must be provided if data_preprocessing_function is not None.")
 
