@@ -37,6 +37,13 @@
                     <v-card-actions>
                         <v-spacer></v-spacer>
                         <v-btn
+                            color="error"
+                            text
+                            @click="deleteSuite(close)"
+                        >
+                            Delete suite
+                        </v-btn>
+                        <v-btn
                             color="primary"
                             text
                             @click="submit(close)"
@@ -60,6 +67,10 @@ import {useRouter} from 'vue-router/composables';
 import {useTestSuiteStore} from '@/stores/test-suite';
 import TestInputListSelector from "@/components/TestInputListSelector.vue";
 import {chain} from "lodash";
+import {$vfm} from "vue-final-modal";
+import {api} from "@/api";
+import ConfirmModal from "@/views/main/project/modals/ConfirmModal.vue";
+import {useTestSuitesStore} from "@/stores/test-suites";
 
 const {projectKey, projectId, suite} = defineProps<{
     projectKey: string,
@@ -78,6 +89,7 @@ const {updateTestSuite, inputs} = useTestSuiteStore();
 const editedInputs = ref<{ [input: string]: TestInputDTO }>({});
 const invalidInputs = ref(false);
 const result = ref<{ [input: string]: TestInputDTO }>({});
+const testSuitesStore = useTestSuitesStore();
 
 const inputTypes = computed(() => Object.entries(inputs)
     .reduce((result, [name, {type}]) => {
@@ -107,6 +119,29 @@ async function submit(close) {
 
     dialog.value = false;
     close();
+}
+
+
+async function deleteSuite(outerClose) {
+    await $vfm.show({
+        component: ConfirmModal,
+        bind: {
+            title: `Delete '${suite.name}'`,
+            text: `Are you sure that you want to delete '${suite.name}' forever?`,
+            isWarning: true
+        },
+        on: {
+            async confirm(close) {
+                await api.deleteSuite(suite.projectKey!, suite.id!);
+                await testSuitesStore.reload()
+                await router.push({
+                    name: 'project-test-suites'
+                })
+                close();
+                outerClose();
+            }
+        }
+    });
 }
 
 </script>

@@ -10,6 +10,7 @@ import ai.giskard.service.TestSuiteService;
 import ai.giskard.web.dto.*;
 import ai.giskard.web.dto.mapper.GiskardMapper;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
@@ -73,6 +74,15 @@ public class TestSuiteController {
                                         @PathVariable("suiteId") long suiteId,
                                         @RequestBody TestSuiteDTO testSuiteDTO) {
         return testSuiteService.updateTestSuite(suiteId, testSuiteDTO);
+    }
+
+    @DeleteMapping("project/{projectKey}/suite/{suiteId}")
+    @PreAuthorize("@permissionEvaluator.canWriteProjectKey(#projectKey)")
+    @Transactional
+    public ResponseEntity<Void> deleteTestSuite(@PathVariable("projectKey") @NotBlank String projectKey,
+                                                @PathVariable("suiteId") long suiteId) {
+        testSuiteService.deleteTestSuite(suiteId);
+        return ResponseEntity.noContent().build();
     }
 
     @GetMapping("project/{projectId}/suite/{suiteId}/complete")
