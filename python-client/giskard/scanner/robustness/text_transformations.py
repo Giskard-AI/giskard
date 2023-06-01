@@ -9,7 +9,6 @@ from ...core.core import DatasetProcessFunctionMeta
 from ...ml_worker.testing.registry.registry import get_object_uuid
 from ...ml_worker.testing.registry.transformation_function import TransformationFunction
 from .entity_swap import religion_dict_en, religion_dict_fr
-import os
 import json
 from pathlib import Path
 
@@ -197,39 +196,37 @@ class TextNationalityTransformation(TextDictBasedTransformation):
         else:
             return new_text
 
-        list_of_changes=[]
-
         for country in nationalities_word_dict["country"]["high-income"]:
             match = re.search(fr'\b{country}\b', text.lower(), re.IGNORECASE)
-            if match is not None and (not country in list_of_changes):
+            if match is not None:
                 lwbound, upbound = match.span()
                 new_text = new_text[:lwbound] + random.choice(nationalities_word_dict["country"]["low-income"]) + \
                            new_text[upbound:]
-                list_of_changes.append(str(country).lower())
-
-        for country in nationalities_word_dict["country"]["low-income"]:
-            match = re.search(fr'\b{country}\b', text.lower(), re.IGNORECASE)
-            if match is not None and (not country in list_of_changes):
-                lwbound, upbound = match.span()
-                new_text = new_text[:lwbound] + random.choice(nationalities_word_dict["country"]["high-income"]) + \
-                           new_text[upbound:]
-                list_of_changes.append(str(country).lower())
 
         for country in nationalities_word_dict["nationality"]["high-income"]:
             match = re.search(fr'\b{country}\b', text.lower(), re.IGNORECASE)
-            if match is not None and (not country in list_of_changes):
+            if match is not None:
                 lwbound, upbound = match.span()
                 new_text = new_text[:lwbound] + random.choice(
                     nationalities_word_dict["nationality"]["low-income"]) + \
                            new_text[upbound:]
-                list_of_changes.append(str(country).lower())
+
+
+        for country in nationalities_word_dict["country"]["low-income"]:
+            match = re.search(fr'\b{country}\b', text.lower(), re.IGNORECASE)
+            if match is not None:
+                lwbound, upbound = match.span()
+                new_text = new_text[:lwbound] + random.choice(nationalities_word_dict["country"]["high-income"]) + \
+                           new_text[upbound:]
 
         for country in nationalities_word_dict["nationality"]["low-income"]:
             match = re.search(fr'\b{country}\b', text.lower(), re.IGNORECASE)
-            if match is not None and (not country in list_of_changes):
+            if match is not None:
                 lwbound, upbound = match.span()
                 new_text = new_text[:lwbound] + random.choice(nationalities_word_dict["nationality"]["high-income"]) + \
                            new_text[upbound:]
-                list_of_changes.append(str(country).lower())
 
         return new_text
+
+
+
