@@ -48,6 +48,8 @@
                                                             v-else-if="input.type === 'TransformationFunction'"
                                                             :value.sync="editedInputs[input.name].value"
                                                             :args.sync="editedInputs[input.name].params"/>
+                            <KwargsCodeEditor v-else-if="input.type === 'Kwargs'"
+                                              :value.sync="editedInputs[input.name].value"/>
                             <ValidationProvider
                                 name="value"
                                 v-else-if="['float', 'int'].includes(input.type)"
@@ -132,6 +134,7 @@ import {$vfm} from "vue-final-modal";
 import CreateAliasModal from "@/views/main/project/modals/CreateAliasModal.vue";
 import SlicingFunctionSelector from "@/views/main/utils/SlicingFunctionSelector.vue";
 import TransformationFunctionSelector from "@/views/main/utils/TransformationFunctionSelector.vue";
+import KwargsCodeEditor from "@/views/main/utils/KwargsCodeEditor.vue";
 
 const props = defineProps<{
     testInputs?: { [key: string]: FunctionInputDTO },

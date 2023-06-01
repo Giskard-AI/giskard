@@ -55,6 +55,8 @@
                                                         v-else-if="input.type === 'TransformationFunction'"
                                                         :value.sync="props.modelValue[input.name].value"
                                                         :args.sync="props.modelValue[input.name].params"/>
+                        <KwargsCodeEditor v-else-if="input.type === 'Kwargs'"
+                                          :value.sync="props.modelValue[input.name].value"/>
                         <v-text-field
                                 :step='input.type === "float" ? 0.1 : 1'
                                 v-model="props.modelValue[input.name].value"
@@ -91,6 +93,7 @@ import {useTestSuiteStore} from '@/stores/test-suite';
 import SlicingFunctionSelector from "@/views/main/utils/SlicingFunctionSelector.vue";
 import {useCatalogStore} from "@/stores/catalog";
 import TransformationFunctionSelector from "@/views/main/utils/TransformationFunctionSelector.vue";
+import KwargsCodeEditor from "@/views/main/utils/KwargsCodeEditor.vue";
 
 const props = defineProps<{
     functionInputs?: { [key: string]: FunctionInputDTO },

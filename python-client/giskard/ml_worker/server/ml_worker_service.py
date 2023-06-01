@@ -263,29 +263,32 @@ class MLWorkerServiceImpl(MLWorkerServicer):
             )
 
     def parse_function_arguments(self, request_arguments):
-        arguments = {}
+        arguments = dict()
         for arg in request_arguments:
             if arg.HasField("dataset"):
-                value = Dataset.download(self.client, arg.dataset.project_key, arg.dataset.id)
+                arguments[arg.name] = Dataset.download(self.client, arg.dataset.project_key, arg.dataset.id)
             elif arg.HasField("model"):
-                value = BaseModel.download(self.client, arg.model.project_key, arg.model.id)
+                arguments[arg.name] = BaseModel.download(self.client, arg.model.project_key, arg.model.id)
             elif arg.HasField("slicingFunction"):
-                value = SlicingFunction.load(arg.slicingFunction.id, self.client, None)(
+                arguments[arg.name] = SlicingFunction.load(arg.slicingFunction.id, self.client, None)(
                     **self.parse_function_arguments(arg.args))
             elif arg.HasField("transformationFunction"):
-                value = TransformationFunction.load(arg.transformationFunction.id, self.client, None)(
+                arguments[arg.name] = TransformationFunction.load(arg.transformationFunction.id, self.client, None)(
                     **self.parse_function_arguments(arg.args))
             elif arg.HasField("float"):
-                value = float(arg.float)
+                arguments[arg.name] = float(arg.float)
             elif arg.HasField("int"):
-                value = int(arg.int)
+                arguments[arg.name] = int(arg.int)
             elif arg.HasField("str"):
-                value = str(arg.str)
+                arguments[arg.name] = str(arg.str)
             elif arg.HasField("bool"):
-                value = bool(arg.bool)
+                arguments[arg.name] = bool(arg.bool)
+            elif arg.HasField("kwargs"):
+                kwargs = dict()
+                exec(arg.kwargs, {'kwargs': kwargs})
+                arguments.update(kwargs)
             else:
                 raise IllegalArgumentError("Unknown argument type")
-            arguments[arg.name] = value
         return arguments
 
     def explain(self, request: ml_worker_pb2.ExplainRequest, context) -> ml_worker_pb2.ExplainResponse:
