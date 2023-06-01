@@ -4,8 +4,6 @@ import { InspectionDTO } from "@/generated-sources";
 import InspectionDialog from "@/components/InspectionDialog.vue";
 import { computed, ref, onActivated } from "vue";
 
-
-
 interface Props {
   projectId: number;
 }
@@ -21,7 +19,8 @@ const showInspectionDialog = ref(false);
 const displayComponents = computed(() => activeInspection.value == null);
 
 async function loadInspections() {
-  inspections.value = await api.getProjectInspections(props.projectId)
+  // inspections.value = await api.getProjectInspections(props.projectId)
+  inspections.value = [];
 }
 
 function toggleActiveInspection(id: number) {
@@ -67,7 +66,6 @@ onActivated(() => loadInspections());
 
 <template>
   <div class="vertical-container">
-    <InspectionDialog :is-visible="showInspectionDialog" @closeDialog="closeInspectionDialog" @createInspection="(newInspection) => { logInspection(newInspection) }"></InspectionDialog>
     <v-container fluid class="vc" v-if="inspections.length > 0">
       <v-row v-show="displayComponents">
         <v-col cols="4">
@@ -75,7 +73,7 @@ onActivated(() => loadInspections());
         </v-col>
         <v-col cols="8">
           <div class="d-flex flex-row-reverse pb-4">
-            <v-btn color="primary" @click="openInspectionDialog"><v-icon>add</v-icon> New Inspection</v-btn>
+            <InspectionDialog v-bind:project-id="projectId"></InspectionDialog>
           </div>
         </v-col>
       </v-row>
@@ -123,13 +121,10 @@ onActivated(() => loadInspections());
       <v-alert class="text-center">
         <h1 class="headline bold">No debugging sessions found</h1>
         <p class="create-inspection-message">You haven't created any debugging session for this project. Please, create a new one in order to use this functionality.</p>
-        <v-btn tile class='mx-1' @click="openInspectionDialog" color="primary">
-          <v-icon>add</v-icon>
-          Create a new debugging session
-        </v-btn>
       </v-alert>
+      <InspectionDialog v-bind:project-id="projectId"></InspectionDialog>
       <div class="d-flex justify-center mb-6">
-        <img src="@/assets/logo_debugger.png" title="Debugger tab logo" alt="A turtle using a magnifying glass" width="30%">
+        <img src="@/assets/logo_debugger.png" class="debugger-logo" title="Debugger tab logo" alt="A turtle using a magnifying glass">
       </div>
     </v-container>
   </div>
@@ -137,7 +132,11 @@ onActivated(() => loadInspections());
 
 <style scoped>
 .create-inspection-message {
-  margin-bottom: 1.5rem;
   font-size: 1.125rem;
+}
+
+.debugger-logo {
+  max-width: 30%;
+  margin-top: 2rem;
 }
 </style>
