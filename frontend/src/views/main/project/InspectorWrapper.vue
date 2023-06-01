@@ -62,7 +62,7 @@
                 style='margin-left: 15px'>Row Index {{ originalData['Index'] + 1 }}</span>
           <v-chip class="ml-2" outlined link
                   :color="inspection.sample ? 'purple' : 'primary'"
-                  @click="handleSwitchSample">
+                  @click="handleSwitchSample" x-small>
               {{ inspection.sample ? 'Sample' : 'Whole' }} data
           </v-chip>
       </v-toolbar>
@@ -150,6 +150,7 @@ import {storeToRefs} from "pinia";
 import {useInspectionStore} from "@/stores/inspection";
 import {$vfm} from "vue-final-modal";
 import BlockingLoadingModal from "@/views/main/project/modals/BlockingLoadingModal.vue";
+import {confirm} from "@/utils/confirmation.utils";
 
 interface CreatedFeedbackCommonDTO {
     targetFeature?: string | null;
@@ -406,6 +407,12 @@ onUnmounted(() => {
 });
 
 async function handleSwitchSample() {
+    if (inspection.value!.sample) {
+        const confirmed = await confirm($vfm, 'Inspect whole dataset', 'Opening the debugger on the whole data might cause performance issues', true);
+        if (!confirmed) {
+            return;
+        }
+    }
 
     await $vfm.show({
         component: BlockingLoadingModal,
