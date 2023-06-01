@@ -1,15 +1,16 @@
-
 from giskard import Dataset
 import numpy as np
 import pandas as pd
 from sklearn import metrics
 from typing import Optional, Sequence
 
+from .issues import LlmIssueInfo, LlmIssue
 from .transformations import DanTransformation
 from ...models.base import BaseModel
 from ...datasets.base import Dataset
 from ..logger import logger
 from ..issues import Issue
+
 
 def _get_default_dan(model: BaseModel) -> str:
     if model.meta.llm_version == "chatgpt":
@@ -21,6 +22,7 @@ def _get_default_dan(model: BaseModel) -> str:
 
 
 class LlmDanDetector:
+    _issue_cls = LlmIssue
     MIN_DATASET_LENGTH = 100  # ??
     MAX_DATASET_SIZE = 100  # ??
 
@@ -56,7 +58,7 @@ class LlmDanDetector:
         for dan_transformation in dan_transformations:
             for tone in tones:
                 for metric in metrics:
-                    issues.extend(self._detect_issues(model, dataset, dan_transformation, features, tone,metric))
+                    issues.extend(self._detect_issues(model, dataset, dan_transformation, features, tone, metric))
 
         return [i for i in issues if i is not None]
 
@@ -64,20 +66,21 @@ class LlmDanDetector:
             self,
             model: BaseModel,
             dataset: Dataset,
-            dan_transformation:DanTransformation,
+            dan_transformation: DanTransformation,
             features: Sequence[str],
-            tone:str,
-            metric:str
+            tone: str,
+            metric: str
     ) -> Sequence[Issue]:
 
         issues = []
         # @TODO: integrate this with Giskard metamorphic tests already present
         for feature in features:
-            transformation_fn = dan_transformation(column=feature,tone=tone)
+            transformation_fn = dan_transformation(column=feature, tone=tone)
             transformed = dataset.transform(transformation_fn)
 
             rng = np.random.default_rng(747)
-            changed_idx = dataset.df.index[rng.choice(len(dataset.df.index), min(self.num_samples,len(dataset.df.index)))]
+            changed_idx = dataset.df.index[
+                rng.choice(len(dataset.df.index), min(self.num_samples, len(dataset.df.index)))]
 
             original_data = Dataset(
                 dataset.df.loc[changed_idx],
@@ -109,15 +112,13 @@ class LlmDanDetector:
             )
 
             if fail_ratio >= self.threshold:
-                info = RobustnessIssueInfo(
-                    feature=feature,
+                info = LlmIssueInfo(
                     fail_ratio=fail_ratio,
                     transformation_fn=transformation_fn,
                     perturbed_data_slice=perturbed_data,
                     perturbed_data_slice_predictions=perturbed_pred,
                     fail_data_idx=original_data.df[~passed].index.values,
                     threshold=self.threshold,
-                    output_sensitivity=self.output_sensitivity,
                 )
                 issue = self._issue_cls(
                     model,
@@ -128,4 +129,3 @@ class LlmDanDetector:
                 issues.append(issue)
 
         return issues
-
