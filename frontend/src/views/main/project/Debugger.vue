@@ -2,6 +2,7 @@
 import { api } from '@/api';
 import { InspectionDTO } from "@/generated-sources";
 import InspectionDialog from "@/components/InspectionDialog.vue";
+import InspectorWrapper from './InspectorWrapper.vue';
 import { computed, ref, onActivated } from "vue";
 
 interface Props {
@@ -14,13 +15,12 @@ const inspections = ref<InspectionDTO[]>([]);
 
 const activeInspection = ref<number | null>(null);
 const searchInspection = ref("");
-const showInspectionDialog = ref(false);
 
 const displayComponents = computed(() => activeInspection.value == null);
 
 async function loadInspections() {
-  // inspections.value = await api.getProjectInspections(props.projectId)
-  inspections.value = [];
+  inspections.value = await api.getProjectInspections(props.projectId)
+  // inspections.value = [];
 }
 
 function toggleActiveInspection(id: number) {
@@ -31,14 +31,9 @@ function toggleActiveInspection(id: number) {
   }
 }
 
-function openInspectionDialog() {
-  closeInspectionDialog();
-  showInspectionDialog.value = true;
 
-}
-
-function closeInspectionDialog() {
-  showInspectionDialog.value = false;
+function checkActiveInspection(inspectionId: number): boolean {
+  return activeInspection.value === inspectionId;
 }
 
 function logInspection(inspection: any) {
@@ -49,13 +44,13 @@ function deleteInspection(id: number) {
   console.log("Delete inspection " + id);
 }
 
-function formatDate(date: Date): string {
-  return date.getFullYear() +
-    "-" + (date.getMonth() + 1).toString().padStart(2, "0") +
-    "-" + date.getDate().toString().padStart(2, "0") +
-    " " + date.getHours().toString().padStart(2, "0") +
-    ":" + date.getMinutes().toString().padStart(2, "0");
-}
+// function formatDate(date: Date): string {
+//   return date.getFullYear() +
+//     "-" + (date.getMonth() + 1).toString().padStart(2, "0") +
+//     "-" + date.getDate().toString().padStart(2, "0") +
+//     " " + date.getHours().toString().padStart(2, "0") +
+//     ":" + date.getMinutes().toString().padStart(2, "0");
+// }
 
 onActivated(() => loadInspections());
 </script>
@@ -107,7 +102,7 @@ onActivated(() => loadInspections());
           </v-expansion-panel-header>
           <v-expansion-panel-content>
             <v-divider></v-divider>
-            <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Earum commodi, maxime molestias temporibus autem harum dignissimos, voluptate animi soluta eos fugiat molestiae rerum et cum, laudantium in ab quisquam? Aperiam possimus, quam quos beatae sit maiores minima asperiores recusandae deleniti, molestiae dignissimos architecto, nobis tenetur dolor quidem ad in incidunt rerum obcaecati velit. Sed, nemo. Vitae, dolorem quia! Libero dolorem ex esse quaerat quas consequuntur voluptates blanditiis perspiciatis doloribus. Doloribus, sit ad consequuntur cumque doloremque, optio ratione veniam et, quas temporibus fuga facilis.</p>
+            <InspectorWrapper :projectId="projectId" :inspectionId="inspection.id" v-if="inspection.id === activeInspection"></InspectorWrapper>
           </v-expansion-panel-content>
         </v-expansion-panel>
       </v-expansion-panels>
