@@ -38,8 +38,8 @@ class MLWorker:
         server = grpc.aio.server(
             interceptors=[ErrorInterceptor()],
             options=[
-                ("grpc.max_send_message_length", settings.max_send_message_length_mb * 1024**2),
-                ("grpc.max_receive_message_length", settings.max_receive_message_length_mb * 1024**2),
+                ("grpc.max_send_message_length", settings.max_send_message_length_mb * 1024 ** 2),
+                ("grpc.max_receive_message_length", settings.max_receive_message_length_mb * 1024 ** 2),
             ],
         )
 
@@ -51,7 +51,7 @@ class MLWorker:
             self.socket_file_location = f"{settings.home_dir / 'run' / f'ml-worker-{worker_id}.sock'}"
             address = f"unix://{self.socket_file_location}"
 
-        add_MLWorkerServicer_to_server(MLWorkerServiceImpl(client, address, not is_server), server)
+        add_MLWorkerServicer_to_server(MLWorkerServiceImpl(self, client, address, not is_server), server)
         server.add_insecure_port(address)
         logger.info(f"Started ML Worker server on {address}")
         logger.debug(f"ML Worker settings: {settings}")
@@ -70,6 +70,6 @@ class MLWorker:
                 await t
 
     async def stop(self):
-        await self.grpc_server.stop(5)
         if self.tunnel:
-            self.tunnel.stop()
+            await self.tunnel.stop()
+        await self.grpc_server.stop(3)
