@@ -106,7 +106,7 @@ class TextGenderTransformation(TextTransformation):
     name = "Switch gender"
 
     def make_perturbation(self, x):
-        split_text = x.split(" ")
+        split_text = x.split()
         new_text = []
         for token in split_text:
             new_text.append(self._switch(token))
