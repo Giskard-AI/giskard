@@ -150,7 +150,6 @@ dependencies = [
     "langdetect>=1.0.9",
     "chardet",  # text metadata
     "jinja2>=3",  # scan template (temporary)
-    "langchain>=0.0.27",
 ]
 
 [tool.black]
