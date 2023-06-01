@@ -14,6 +14,7 @@ public enum Entity {
     USER("User"),
     ROLE("Role"),
     FEEDBACK("Feedback"),
+    FEEDBACK_REPLY("Feedback reply"),
     INSPECTION("Inspection");
 
     @Getter
