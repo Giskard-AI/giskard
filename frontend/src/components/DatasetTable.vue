@@ -88,24 +88,24 @@ function openDiff(oldValue: string, newValue: string) {
 
 <style>
 .deleted-row {
-    background-color: #f8d7da;
-    color: #721c24;
+    background-color: #d6d8d9;
+    color: #1b1e21;
     text-decoration: line-through;
 }
 
 .deleted-row:hover {
-    background-color: #f1afb5 !important;
-    color: #2D0B0E;
+    background-color: #bfc2c4 !important;
+    color: #151719;
 }
 
 td:has(div.modified-cell) {
-    background-color: #d4edda;
-    color: #155724;
+    background-color: #d1ecf1;
+    color: #0c5460;
     cursor: pointer;
 }
 
 tr:hover td:has(div.modified-cell) {
-    background-color: #b4dfbe !important;
-    color: #0B2D13;
+    background-color: #aedde6 !important;
+    color: #062B32;
 }
 </style>
