@@ -1,0 +1,64 @@
+import pytest
+import pandas as pd
+import numpy as np
+
+from giskard import wrap_dataset
+from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction
+from giskard.slicing.slice import QueryBasedSliceFunction
+from giskard.slicing.tree_slicer import DecisionTreeSlicer
+from giskard.slicing.slice import GreaterThan, LowerThan
+
+
+def _make_demo_dataset():
+    feature1 = np.arange(1000)
+    loss = np.zeros(1000)
+    loss[0:200] = 2
+    loss[500:600] = 1
+    # Shuld create 4 slices:
+    # - feature1 <= 199.5
+    # - 199.5 < feature1 <= 499.5
+    # - 499.5 < feature1 <= 599.5
+    # - feature1 > 599.5
+
+    df = pd.DataFrame({"feature1": feature1, "loss": loss})
+
+    return wrap_dataset(df)
+
+
+def _get_slice_interval(slice_fn: QueryBasedSliceFunction, column: str):
+    clauses = slice_fn.query.clauses[column]
+
+    try:
+        low = max(c.value for c in clauses if isinstance(c, GreaterThan))
+    except (StopIteration, ValueError):
+        low = None
+
+    try:
+        high = min(c.value for c in clauses if isinstance(c, LowerThan))
+    except (StopIteration, ValueError):
+        high = None
+
+    return low, high
+
+
+@pytest.mark.parametrize("slicer_cls", [DecisionTreeSlicer])
+def test_slicer_on_numerical_feature(slicer_cls):
+    dataset = _make_demo_dataset()
+    slicer = slicer_cls(dataset)
+    slices = slicer.find_slices(features=["feature1"], target="loss")
+
+    assert len(slices) == 4
+    intervals = [_get_slice_interval(s, "feature1") for s in slices]
+    intervals = sorted(intervals, key=lambda x: (x[0] or -np.inf, x[1] or np.inf))
+
+    assert intervals[0][0] is None
+    assert intervals[0][1] == pytest.approx(199.5, abs=1)
+
+    assert intervals[1][0] == pytest.approx(199.5, abs=1)
+    assert intervals[1][1] == pytest.approx(499.5, abs=1)
+
+    assert intervals[2][0] == pytest.approx(499.5, abs=1)
+    assert intervals[2][1] == pytest.approx(599.5, abs=1)
+
+    assert intervals[3][0] == pytest.approx(599.5, abs=1)
+    assert intervals[3][1] is None
