@@ -5,11 +5,14 @@ import yaml
 import numpy as np
 import pandas as pd
 import torch
+import collections
 from torch.utils.data import DataLoader
 from torch.utils.data import Dataset as torch_dataset
 
 from giskard.core.core import SupportedModelTypes
 from giskard.core.model import MLFlowBasedModel
+
+import giskard.models.utils as models_utils
 
 # There's no casting currently from str to torch.dtype
 str_to_torch_dtype = {
@@ -91,6 +94,38 @@ class PyTorchModel(MLFlowBasedModel):
                                   path=local_path,
                                   mlflow_model=mlflow_meta)
 
+    def get_torch_prediction(self, data):
+        with torch.no_grad():
+            return self.clf(data).detach().squeeze(0).numpy()
+
+    def get_torch_prediction_unpack_input(self, data):
+        with torch.no_grad():
+            return self.clf(*data).detach().squeeze(0).numpy()
+
+    def check_if_one_entry_prediction_is_valid(self, data, to_unpack):
+        for entry in data:
+            try:
+                if to_unpack:
+                    self.get_torch_prediction_unpack_input(entry)
+                else:
+                    self.get_torch_prediction(entry)
+            except ValueError as ve:
+                raise ValueError(
+                    "Calling clf on one element of your dataset or your data_preprocessing_function output fails.") from ve
+            break
+
+    def get_torch_predictions_from_iterable(self, data):
+        to_unpack = models_utils.is_data_unpackable(data)
+        self.check_if_one_entry_prediction_is_valid(data, to_unpack)
+        predictions = []
+        if to_unpack:
+            for entry in data:
+                predictions.append(self.get_torch_prediction_unpack_input(entry))
+        else:
+            for entry in data:
+                predictions.append(self.get_torch_prediction(entry))
+        return predictions
+
     def clf_predict(self, data):
         self.clf.to(self.device)
         self.clf.eval()
@@ -99,31 +134,27 @@ class PyTorchModel(MLFlowBasedModel):
         # Use is to check if the type of o is exactly X, excluding subclasses of X
         if isinstance(data, pd.DataFrame):
             data = TorchMinimalDataset(data, str_to_torch_dtype[self.torch_dtype])
-        elif not isinstance(data, torch_dataset) and not isinstance(data, DataLoader):
-            raise Exception(f"The output of data_preprocessing_function is of type={type(data)}.\n \
-                            Make sure that your data_preprocessing_function outputs one of the following: \n \
-                            - pandas.DataFrame \n \
-                            - torch.Dataset \n \
-                            - torch.DataLoader")
+        elif isinstance(data, DataLoader):
+            if not isinstance(data.dataset, collections.defaultdict):
+                data = data.dataset
+            else:
+                raise ValueError(f"We tried to infer the torch.utils.data.Dataset from your DataLoader. \n \
+                                   The type we found was {data.dataset} which we don't support. Please provide us \n \
+                                   with a different iterable as output of your data_preprocessing_function.")
 
-        predictions = []
+        elif not models_utils.check_if_data_is_iterable(data):
+            try:
+                return self.get_torch_prediction(data)
+            except ValueError as ve:
+                raise ValueError(f"The data exposed to your clf is of type={type(data)}.\n \
+                                We attempted to evaluate your clf with this data but it failed. \
+                                Make sure that your data or your data_preprocessing_function outputs one of the following: \n \
+                                - pandas.DataFrame \n \
+                                - torch.utils.data.Dataset \n \
+                                - torch.utils.data.DataLoader \n \
+                                - iterable with elements that are compatible with your clf") from ve
 
-        # Figuring out the input shape
-        to_unpack = False
-        for entry in data:
-            # to_unpack = True, for the case of 2 inputs or more, like (input1, offset) or (input1, input2)
-            # to_unpack = False, for the case of 1 input
-            to_unpack = True if isinstance(entry, tuple) else False
-            break
-
-        if to_unpack:
-            with torch.no_grad():
-                for entry in data:
-                    predictions.append(self.clf(*entry).detach().squeeze(0).numpy())
-        else:
-            with torch.no_grad():
-                for entry in data:
-                    predictions.append(self.clf(entry).detach().squeeze(0).numpy())
+        predictions = self.get_torch_predictions_from_iterable(data)
 
         return np.array(predictions)
 
