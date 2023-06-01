@@ -15,6 +15,10 @@
         </span>
       </v-toolbar-title>
       <v-spacer></v-spacer>
+      <v-btn small tile color="primary" class="mr-2" :to="{ name: 'project-properties' }">
+        <v-icon dense left>mdi-file-cog-outline</v-icon>
+        Properties
+      </v-btn>
       <v-tooltip :disabled="mainStore.authAvailable" bottom>
         <template v-slot:activator="{ on, attrs }">
           <div v-on="on">
