@@ -7,10 +7,10 @@ from sklearn.dummy import DummyClassifier
 
 from giskard.core.core import SupportedColumnTypes, SupportedModelTypes
 from giskard.core.dataset_validation import validate_column_categorization, validate_column_types
-from giskard.models.base import ModelPredictionResults
 from giskard.core.model_validation import validate_classification_prediction, validate_deterministic_model
 from giskard.core.validation import validate_is_pandasdataframe
 from giskard.datasets.base import Dataset
+from giskard.models.base import ModelPredictionResults
 from giskard.models.sklearn import SKLearnModel
 
 data = np.array(["g", "e", "e", "k", "s"])
@@ -52,7 +52,7 @@ def test_verify_is_pandasdataframe_pass(data):
 
 
 def test_validate_deterministic_model():
-    data = pd.DataFrame(np.random.rand(5, 1))
+    data = pd.DataFrame(np.random.rand(5, 1), columns=['0'])
     ones = np.ones(len(data))
     constant_model = SKLearnModel(
         model=DummyClassifier(strategy="constant", constant=1).fit(data, np.ones(len(data))),

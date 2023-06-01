@@ -27,4 +27,6 @@ public class Inspection extends AbstractAuditingEntity {
 
     @ManyToOne
     private ProjectModel model;
+
+    private boolean sample;
 }

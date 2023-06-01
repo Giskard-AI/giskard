@@ -48,7 +48,8 @@ const props = defineProps<{
         result?: SuiteTestExecutionDTO
     }[],
     execution?: TestSuiteExecutionDTO,
-    compact: boolean
+    compact: boolean,
+    tryMode: boolean
 }>();
 
 const {suite, projectId} = storeToRefs(useTestSuiteStore());
