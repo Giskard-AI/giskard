@@ -9,9 +9,9 @@ from giskard.scanner.result import ScanResult
     "dataset_name,model_name",
     [
         ("german_credit_data", "german_credit_model"),
-        ("enron_data_full", "enron_model")
+        ("enron_data_full", "enron_model"),
         ("medical_transcript_data", "medical_transcript_model"),
-        ("breast_cancer_data", "breast_cancer_model")
+        ("breast_cancer_data", "breast_cancer_model"),
     ],
 )
 def test_scanner_returns_non_empty_scan_result(dataset_name, model_name, request):
@@ -30,10 +30,7 @@ def test_scanner_returns_non_empty_scan_result(dataset_name, model_name, request
 
 
 @pytest.mark.parametrize(
-    "dataset_name,model_name,num_issues_to_detect",
-    [
-        ("medical_transcript_data", "medical_transcript_model", 15)
-    ]
+    "dataset_name,model_name,num_issues_to_detect", [("medical_transcript_data", "medical_transcript_model", 15)]
 )
 def test_scanner_num_issues_to_detect(dataset_name, model_name, num_issues_to_detect, request):
     scanner = Scanner()
