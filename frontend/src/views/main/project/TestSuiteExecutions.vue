@@ -51,13 +51,13 @@
 
 <script setup lang="ts">
 
-import {computed, onMounted, ref, watch} from 'vue';
+import {computed, ref} from 'vue';
 import {DatasetDTO, ModelDTO, TestCatalogDTO, TestResult, TestSuiteExecutionDTO} from '@/generated-sources';
 import TestSuiteExecutionResults from '@/views/main/project/TestSuiteExecutionResults.vue';
 import TestInputList from '@/components/TestInputList.vue';
 import TestResultHeatmap from '@/components/TestResultHeatmap.vue';
 import moment from 'moment';
-import {useRoute} from 'vue-router/composables';
+import useRouterParamSynchronization from '@/utils/use-router-param-synchronization';
 
 const props = defineProps<{
   projectId: number,
@@ -66,7 +66,7 @@ const props = defineProps<{
   models: { [key: string]: ModelDTO },
   datasets: { [key: string]: DatasetDTO },
   inputTypes: { [name: string]: string },
-  executions?: TestSuiteExecutionDTO[]
+  executions: TestSuiteExecutionDTO[]
 }>();
 
 const selectedExecution = ref<TestSuiteExecutionDTO | null>(null);
@@ -115,15 +115,6 @@ function executionResults(execution: TestSuiteExecutionDTO): boolean[] {
   return execution.results ? execution.results.map(result => result.passed) : [];
 }
 
-const route = useRoute();
-watch(() => [route.name, route.params], () => onRouteUpdate());
-onMounted(() => onRouteUpdate());
-
-function onRouteUpdate() {
-  if (route.name === 'test-suite-new-execution') {
-    const executionId = Number(route.params.executionId);
-    selectedExecution.value = props.executions?.find(execution => execution.id === executionId) ?? null;
-  }
-}
+useRouterParamSynchronization('test-suite-new-execution', 'executionId', props.executions, selectedExecution, 'id');
 
 </script>

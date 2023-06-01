@@ -83,7 +83,7 @@
 <script lang="ts" setup>
 
 import {api} from "@/api";
-import {computed, onMounted, ref, watch} from "vue";
+import {computed, onMounted, ref} from "vue";
 import {
   DatasetDTO,
   ModelDTO,
@@ -97,7 +97,7 @@ import TestSuiteTestDetails from "@/views/main/project/TestSuiteTestDetails.vue"
 import RunTestSuiteModal from '@/views/main/project/modals/RunTestSuiteModal.vue';
 import TestSuiteExecutions from '@/views/main/project/TestSuiteExecutions.vue';
 import {groupBy} from '@/utils/array-utils';
-import {useRoute} from 'vue-router/composables';
+import useRouterTabsSynchronization from '@/utils/use-router-tabs-synchronization';
 
 const props = defineProps<{
   projectId: number,
@@ -168,12 +168,11 @@ const testSuiteResults = computed(() => {
       }>(result => result.testResult.test.testId), {})
 })
 
-const route = useRoute();
-watch(() => [route.name, route.params], () => onRouteUpdate());
 
-function onRouteUpdate() {
-  if (route.name === 'test-suite-new-execution') {
-    tab.value = 3;
-  }
-}
+useRouterTabsSynchronization([
+  'test-suite-new-inputs',
+  'test-suite-new-test',
+  'test-suite-new-configuration',
+  'test-suite-new-execution'
+], tab);
 </script>

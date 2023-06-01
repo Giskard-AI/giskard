@@ -143,28 +143,64 @@ export default new Router({
                                             suiteId: Number(route.params.suiteId),
                                         }
                                     },
-                                    children: [{
-                                        path: 'tests',
-                                        name: 'test-suite-new-tests',
-                                        component: () => import('./views/main/project/TestSuiteNewTests.vue'),
-                                        props: (route) => {
-                                            return {
-                                                suiteId: Number(route.params.suiteId),
-                                                projectId: Number(route.params.id)
+                                    children: [
+                                        {
+                                            path: 'tests',
+                                            name: 'test-suite-new-tests',
+                                            component: () => import('./views/main/project/TestSuiteNewTests.vue'),
+                                            props: (route) => {
+                                                return {
+                                                    suiteId: Number(route.params.suiteId),
+                                                    projectId: Number(route.params.id)
+                                                }
+                                            }
+                                        },
+                                        {
+                                            path: 'inputs',
+                                            name: 'test-suite-new-inputs',
+                                            component: () => import('./views/main/project/TestSuiteNew.vue'),
+                                            props: (route) => {
+                                                return {
+                                                    projectId: Number(route.params.id),
+                                                    suiteId: Number(route.params.suiteId),
+                                                }
+                                            }
+                                        },
+                                        {
+                                            path: 'test',
+                                            name: 'test-suite-new-test',
+                                            component: () => import('./views/main/project/TestSuiteNew.vue'),
+                                            props: (route) => {
+                                                return {
+                                                    projectId: Number(route.params.id),
+                                                    suiteId: Number(route.params.suiteId),
+                                                }
+                                            }
+                                        },
+                                        {
+                                            path: 'configuration',
+                                            name: 'test-suite-new-configuration',
+                                            component: () => import('./views/main/project/TestSuiteNew.vue'),
+                                            props: (route) => {
+                                                return {
+                                                    projectId: Number(route.params.id),
+                                                    suiteId: Number(route.params.suiteId),
+                                                }
+                                            }
+                                        },
+                                        {
+                                            path: 'execution/:executionId?',
+                                            name: 'test-suite-new-execution',
+                                            component: () => import('./views/main/project/TestSuiteNew.vue'),
+                                            props: (route) => {
+                                                return {
+                                                    suiteId: Number(route.params.suiteId),
+                                                    projectId: Number(route.params.id),
+                                                    executionDate: Number(route.params.executionId)
+                                                }
                                             }
                                         }
-                                    }, {
-                                        path: 'execution/:executionId',
-                                        name: 'test-suite-new-execution',
-                                        component: () => import('./views/main/project/TestSuiteNew.vue'),
-                                        props: (route) => {
-                                            return {
-                                                suiteId: Number(route.params.suiteId),
-                                                projectId: Number(route.params.id),
-                                                executionDate: Number(route.params.executionId)
-                                            }
-                                        }
-                                    }]
+                                    ]
                                 },
                                 {
                                     path: 'test-suites/:suiteId',
