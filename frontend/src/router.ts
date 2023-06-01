@@ -2,18 +2,23 @@ import Vue from 'vue';
 import Router from 'vue-router';
 
 import RouterComponent from './components/RouterComponent.vue';
-import { useUserStore } from '@/stores/user';
-import { useMainStore } from '@/stores/main';
+import {useUserStore} from "@/stores/user";
+import {useMainStore} from "@/stores/main";
+import {exponentialRetry} from "@/utils/job-utils";
+
 
 async function routeGuard(to, from, next) {
-  const userStore = useUserStore();
-  const mainStore = useMainStore();
-  if (!mainStore.license) {
-    await mainStore.fetchLicense();
-  }
-  if (!mainStore.license?.active) {
-    if (to.path !== '/setup') {
-      next('/setup');
+    const userStore = useUserStore();
+    const mainStore = useMainStore();
+    if (!mainStore.license) {
+        await exponentialRetry(mainStore.fetchLicense);
+    }
+    if (!mainStore.license?.active) {
+        if (to.path !== '/setup') {
+            next('/setup');
+        } else {
+            next();
+        }
     } else {
       next();
     }

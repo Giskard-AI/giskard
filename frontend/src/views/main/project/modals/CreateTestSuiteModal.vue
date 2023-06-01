@@ -170,7 +170,7 @@
 import {onMounted, ref} from 'vue';
 import mixpanel from 'mixpanel-browser';
 import {api} from '@/api';
-import {GenerateTestSuiteDTO, GenerateTestSuiteInputDTO, TestInputDTO, TestSuiteDTO} from '@/generated-sources';
+import {FunctionInputDTO, GenerateTestSuiteDTO, GenerateTestSuiteInputDTO, TestSuiteDTO} from '@/generated-sources';
 import {useRouter} from 'vue-router/composables';
 import {$vfm} from 'vue-final-modal';
 import InputSettingsModal from '@/views/main/project/modals/ModelInputSettingsModal.vue';
@@ -187,7 +187,7 @@ const {projectKey, projectId, suite} = defineProps<{
 const dialog = ref<boolean>(false);
 const name = ref<string>('');
 const suiteInputs = ref<GenerateTestSuiteInputDTO[]>([]);
-const sharedSuiteInputs = ref<TestInputDTO[]>([]);
+const sharedSuiteInputs = ref<FunctionInputDTO[]>([]);
 const isLoading = ref<boolean>(false);
 const showAdvancedSettings = ref<boolean>(false);
 
