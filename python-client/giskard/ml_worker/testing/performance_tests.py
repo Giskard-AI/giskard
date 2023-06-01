@@ -21,7 +21,9 @@ class PerformanceTests(AbstractTestCollection):
     @staticmethod
     def _verify_target_availability(dataset):
         if not dataset.target:
-            raise ValueError("Target column is not available")
+            raise ValueError("This test requires 'target' in Dataset not to be None. 'target' is the column name in df "
+                             "corresponding to the actual target variable (ground truth). "
+                             "You can set it when creating your giskard dataset.")
 
     def test_auc(self, actual_slice: Dataset, model: BaseModel, threshold=1.0):
 

@@ -1,44 +1,35 @@
-from typing import Union
-from pathlib import Path
-import mlflow
-import yaml
-import pandas as pd
-import numpy as np
-import torch
 import collections
+import importlib
+from pathlib import Path
+from typing import Union, Literal, get_args
+
+import mlflow
+import numpy as np
+import pandas as pd
+import torch
+import yaml
 from torch.utils.data import DataLoader
 from torch.utils.data import Dataset as torch_dataset
 
-from giskard.core.core import SupportedModelTypes
+from giskard.core.core import ModelType
 from giskard.models.base import MLFlowBasedModel
-
 from ..utils import map_to_tuples
 
-# There's no casting currently from str to torch.dtype
-str_to_torch_dtype = {
-    "torch.float32": torch.float32,
-    "torch.float": torch.float,
-    "torch.float64": torch.float64,
-    "torch.double": torch.double,
-    "torch.complex64": torch.complex64,
-    "torch.cfloat": torch.cfloat,
-    "torch.float16": torch.float16,
-    "torch.half": torch.half,
-    "torch.bfloat16": torch.bfloat16,
-    "torch.uint8": torch.uint8,
-    "torch.int8": torch.int8,
-    "torch.int16": torch.int16,
-    "torch.short": torch.short,
-    "torch.int32": torch.int32,
-    "torch.int": torch.int,
-    "torch.int64": torch.int64,
-    "torch.long": torch.long,
-    "torch.bool": torch.bool,
-}
+TorchDType = Literal[
+    "float32", "float", "float64", "double", "complex64", "cfloat", "float16",
+    "half", "bfloat16", "uint8", "int8", "int16", "short", "int32", "int", "int64", "long", "bool",]
+
+
+def string_to_torch_dtype(torch_dtype_string: TorchDType):
+    try:
+        return getattr(importlib.import_module("torch"), torch_dtype_string)
+    except AttributeError:
+        raise ValueError(f"Incorrect torch dtype specified: {torch_dtype_string}, "
+                         f"available values are: {get_args(TorchDType)}")
 
 
 class TorchMinimalDataset(torch_dataset):
-    def __init__(self, df: pd.DataFrame, torch_dtype=torch.float32):
+    def __init__(self, df: pd.DataFrame, torch_dtype: TorchDType = "float32"):
         self.entries = df
         self.torch_dtype = torch_dtype
 
@@ -46,23 +37,23 @@ class TorchMinimalDataset(torch_dataset):
         return len(self.entries)
 
     def __getitem__(self, idx):
-        return torch.tensor(self.entries.iloc[idx].to_numpy(), dtype=self.torch_dtype)
+        return torch.tensor(self.entries.iloc[idx].to_numpy(), dtype=string_to_torch_dtype(self.torch_dtype))
 
 
 class PyTorchModel(MLFlowBasedModel):
     def __init__(
-        self,
-        clf,
-        model_type: Union[SupportedModelTypes, str],
-        torch_dtype=torch.float32,
-        device="cpu",
-        name: str = None,
-        data_preprocessing_function=None,
-        model_postprocessing_function=None,
-        feature_names=None,
-        classification_threshold=0.5,
-        classification_labels=None,
-        iterate_dataset=True,
+            self,
+            clf,
+            model_type: ModelType,
+            torch_dtype: TorchDType = "float32",
+            device="cpu",
+            name: str = None,
+            data_preprocessing_function=None,
+            model_postprocessing_function=None,
+            feature_names=None,
+            classification_threshold=0.5,
+            classification_labels=None,
+            iterate_dataset=True,
     ) -> None:
         super().__init__(
             clf=clf,
@@ -76,7 +67,7 @@ class PyTorchModel(MLFlowBasedModel):
         )
 
         self.device = device
-        self.torch_dtype = str(torch_dtype)
+        self.torch_dtype = torch_dtype
         self.iterate_dataset = iterate_dataset
 
     @classmethod
@@ -89,7 +80,7 @@ class PyTorchModel(MLFlowBasedModel):
     def _get_predictions_from_iterable(self, data):
         # Fault tolerance: try to convert to the right format in special cases
         if isinstance(data, pd.DataFrame):
-            data = TorchMinimalDataset(data, str_to_torch_dtype[self.torch_dtype])
+            data = TorchMinimalDataset(data, self.torch_dtype)
         elif isinstance(data, DataLoader):
             data = _get_dataset_from_dataloader(data)
 

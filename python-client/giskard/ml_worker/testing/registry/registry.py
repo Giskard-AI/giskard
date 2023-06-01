@@ -39,7 +39,7 @@ def _get_plugin_method_full_name(func):
 
 def generate_func_id(name) -> str:
     rd = random.Random()
-    rd.seed(hashlib.sha1(name.encode('utf-8')).hexdigest())
+    rd.seed(hashlib.sha512(name.encode('utf-8')).hexdigest())
     func_id = str(uuid.UUID(int=rd.getrandbits(128), version=4))
     return str(func_id)
 
@@ -49,7 +49,7 @@ def get_test_uuid(func) -> str:
 
     if func_name.startswith('__main__'):
         reference = cloudpickle.dumps(func)
-        func_name += hashlib.sha1(reference).hexdigest()
+        func_name += hashlib.sha512(reference).hexdigest()
 
     return generate_func_id(func_name)
 
@@ -160,16 +160,15 @@ class GiskardTestRegistry:
                 doc=func_doc,
                 module_doc=inspect.getmodule(func).__doc__.strip() if inspect.getmodule(func).__doc__ else None,
                 args={
-                    name: TestFunctionArgument(
-                        name=name,
-                        type=parameters[name].annotation.__qualname__,
-                        optional=parameters[name].default != inspect.Parameter.empty and parameters[
-                            name].default is not None,
-                        default=None
-                        if parameters[name].default == inspect.Parameter.empty
-                        else parameters[name].default,
+                    parameter.name: TestFunctionArgument(
+                        name=parameter.name,
+                        type=parameter.annotation.__qualname__,
+                        optional=parameter.default != inspect.Parameter.empty and parameter.default is not None,
+                        default=None if parameter.default == inspect.Parameter.empty
+                        else parameter.default,
+                        argOrder=idx
                     )
-                    for name in parameters
+                    for idx, parameter in enumerate(parameters.values())
                     if name != 'self'
                 },
                 version=None
@@ -209,8 +208,8 @@ def new_getfile(object, _old_getfile=inspect.getfile):
     for name, member in inspect.getmembers(object):
         if inspect.isfunction(member) and object.__qualname__ + '.' + member.__name__ == member.__qualname__:
             return inspect.getfile(member)
-    else:
-        raise TypeError('Source for {!r} not found'.format(object))
+        else:
+            raise TypeError('Source for {!r} not found'.format(object))
 
 
 # Override getfile to have it working over Jupyter Notebook files
