@@ -120,7 +120,7 @@
 
 <script setup lang="ts">
 import {api} from "@/api";
-import _ from "lodash";
+import _, {chain} from "lodash";
 import {computed, inject, onActivated, ref, watch} from "vue";
 import {pasterColor} from "@/utils";
 import ModelSelector from "@/views/main/utils/ModelSelector.vue";
@@ -196,7 +196,12 @@ function sorted(arr: any[]) {
 }
 
 const testFunctions = computed(() => {
-  return _.chain(registry.value)
+  return chain(registry.value)
+      .groupBy(func => `${func.module}.${func.name}`)
+      .mapValues(functions => chain(functions)
+          .maxBy('version')
+          .value())
+      .values()
       .sortBy('name')
       .value();
 })
