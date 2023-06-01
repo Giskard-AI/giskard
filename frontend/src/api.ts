@@ -35,7 +35,7 @@ import {
     ProjectPostDTO,
     RoleDTO,
     SliceDTO,
-    SlicingFunctionDTO,
+    SlicingResultDTO,
     SuiteTestDTO,
     TestInputDTO,
     TestSuiteCompleteDTO,
@@ -43,6 +43,7 @@ import {
     TestSuiteExecutionDTO,
     TestTemplateExecutionResultDTO,
     TokenAndPasswordVM,
+    TransformationResultDTO,
     UpdateMeDTO,
     UserDTO
 } from './generated-sources';
@@ -483,7 +484,11 @@ export const api = {
         });
     },
     async runAdHocSlicingFunction(slicingFnUuid: string, datasetUuid: string) {
-        return apiV2.get<unknown, SlicingFunctionDTO>(
+        return apiV2.get<unknown, SlicingResultDTO>(
             `/slices/${encodeURIComponent(slicingFnUuid)}/dataset/${encodeURIComponent(datasetUuid)}`);
+    },
+    async runAdHocTransformationFunction(transformationFnUuid: string, datasetUuid: string) {
+        return apiV2.get<unknown, TransformationResultDTO>(
+            `/transformations/${encodeURIComponent(transformationFnUuid)}/dataset/${encodeURIComponent(datasetUuid)}`);
     },
 };

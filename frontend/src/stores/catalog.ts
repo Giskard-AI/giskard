@@ -40,6 +40,9 @@ export const useCatalogStore = defineStore('catalog', {
         slicingFunctionsByUuid(state: State) {
             return keyByUuid(state.catalog?.slices)
         },
+        transformationFunctions(state: State) {
+            return latestVersions(state.catalog?.transformations)
+        },
     },
     actions: {
         async loadCatalog(projectId: number) {

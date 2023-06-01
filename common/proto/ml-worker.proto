@@ -14,6 +14,7 @@ service MLWorker {
   rpc getInfo(MLWorkerInfoRequest) returns (MLWorkerInfo){}
   rpc runAdHocTest (RunAdHocTestRequest) returns (TestResultMessage) {}
   rpc runAdHocSlicing (RunAdHocSlicingRequest) returns (SlicingResultMessage) {}
+  rpc runAdHocTransformation (RunAdHocTransformationRequest) returns (TransformationResultMessage) {}
   rpc runTestSuite (RunTestSuiteRequest) returns (TestSuiteResultMessage) {}
   rpc runModel(RunModelRequest) returns (google.protobuf.Empty) {}
   rpc runModelForDataFrame(RunModelForDataFrameRequest) returns (RunModelForDataFrameResponse) {}
@@ -150,6 +151,11 @@ message RunAdHocSlicingRequest {
   ArtifactRef dataset = 2;
 }
 
+message RunAdHocTransformationRequest {
+  string transformationFunctionUuid = 1;
+  ArtifactRef dataset = 2;
+}
+
 message SuiteTestArgument {
   int64 id = 1;
   string testUuid = 2;
@@ -171,6 +177,7 @@ message TestArgument{
     string str = 6;
     bool bool = 7;
     ArtifactRef slicingFunction = 8;
+    ArtifactRef transformationFunction = 9;
   }
 }
 
@@ -234,12 +241,25 @@ message SlicingResultMessage {
   repeated DatasetDescribeColumn describeColumns = 3;
 }
 
+message TransformationResultMessage {
+  uint32 totalRow = 1;
+  uint32 modifiedRow = 2;
+  repeated DatasetDescribeColumn describeColumns = 3;
+}
+
 message DatasetDescribeColumn {
   string columnName = 1;
   uint32 count = 2;
-  uint32 unique = 3;
-  string top = 4;
-  uint32 freq = 5;
+  optional uint32 unique = 3;
+  optional string top = 4;
+  optional uint32 freq = 5;
+  optional float mean = 6;
+  optional float std = 7;
+  optional float min = 8;
+  optional float twentyFive = 9;
+  optional float fifty = 10;
+  optional float seventyFive = 11;
+  optional float max = 12;
 }
 
 
@@ -333,7 +353,8 @@ message FilterDatasetResponse {
 
 message CatalogResponse{
   map<string, TestFunction> tests = 1;
-  map<string, SlicingFunction> slices = 2;
+  map<string, CallableFunction> slices = 2;
+  map<string, CallableFunction> transformations = 3;
 }
 
 message TestFunction {
@@ -350,7 +371,7 @@ message TestFunction {
   string type = 11;
 }
 
-message SlicingFunction {
+message CallableFunction {
   string uuid = 1;
   string name = 2;
   string displayName = 3;

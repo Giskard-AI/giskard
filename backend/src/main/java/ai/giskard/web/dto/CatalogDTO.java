@@ -17,4 +17,5 @@ import java.util.List;
 public class CatalogDTO {
     private List<TestFunctionDTO> tests = new ArrayList<>();
     private List<SlicingFunctionDTO> slices = new ArrayList<>();
+    private List<TransformationFunctionDTO> transformations = new ArrayList<>();
 }

@@ -23,7 +23,8 @@ import java.util.UUID;
 )
 @JsonSubTypes({
     @JsonSubTypes.Type(value = TestFunctionDTO.class, name = "TEST"),
-    @JsonSubTypes.Type(value = SlicingFunctionDTO.class, name = "SLICE")
+    @JsonSubTypes.Type(value = SlicingFunctionDTO.class, name = "SLICE"),
+    @JsonSubTypes.Type(value = TransformationFunctionDTO.class, name = "TRANSFORMATION"),
 })
 public class CallableDTO {
     @NotNull

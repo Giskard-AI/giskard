@@ -177,9 +177,20 @@ export default new Router({
                                             },
                                         },
                                         {
-                                            path: 'filters',
-                                            name: 'project-catalog-filters',
+                                            path: 'slicing-functions',
+                                            name: 'project-catalog-slicing-functions',
                                             component: () => import('./views/main/project/FiltersCatalog.vue'),
+                                            props: (route) => {
+                                                return {
+                                                    projectId: Number(route.params.id),
+                                                    suiteId: route.query.suiteId ? Number(route.query.suiteId) : undefined,
+                                                }
+                                            },
+                                        },
+                                        {
+                                            path: 'transformation-functions',
+                                            name: 'project-catalog-transformation-functions',
+                                            component: () => import('./views/main/project/TransformationsCatalog.vue'),
                                             props: (route) => {
                                                 return {
                                                     projectId: Number(route.params.id),
