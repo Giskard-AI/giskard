@@ -9,7 +9,7 @@
                 <v-divider/>
                 <v-list-item :value="test">
                   <v-list-item-content>
-                    <v-list-item-title v-text="registryByTestUuid[test.testId].name"
+                    <v-list-item-title v-text="registryByTestUuid[test.testUuid].name"
                                        class="test-title"></v-list-item-title>
                   </v-list-item-content>
                 </v-list-item>

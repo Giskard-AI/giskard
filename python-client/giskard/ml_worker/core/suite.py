@@ -160,8 +160,8 @@ class Suite:
           will be ignored if test_fn is an instance of GiskardTest
         :return: The current instance of the test Suite to allow chained call
         """
-        if isinstance(test_fn, GiskardTest):
-            params = {k: v for k, v in test_fn.__dict__.items() if v is not None}
+        if isinstance(test_fn, GiskardTestMethod):
+            params = {k: v for k, v in test_fn.params.items() if v is not None}
         elif isinstance(test_fn, GiskardTest):
             params = {
                 k: test_fn.__dict__[k] for k, v
