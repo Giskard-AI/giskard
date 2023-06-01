@@ -21,22 +21,22 @@ def validate_classification_label(func):
         classification_label = kwargs.get('classification_label', None)
         target = getattr(reference_slice, 'target', getattr(actual_slice, 'target', None))
         if target and classification_label and model:
-            assert (classification_label != target
-                    ), f'By "classification_label", we refer to one of the values: ' \
-                       f'{model.meta.classification_labels} and not the target: "{target}". ' \
-                       f'Please re-assign this argument.'
+            assert classification_label != target, (
+                f'By "classification_label", we refer to one of the values: '
+                f'{model.meta.classification_labels} and not the target: "{target}". '
+                f'Please re-assign this argument.'
+            )
 
-        assert (model.meta.model_type != SupportedModelTypes.CLASSIFICATION
-                or classification_label in model.meta.classification_labels
-                ), f'"{classification_label}" is not part of model labels: {model.meta.classification_labels}'
+        assert (
+            model.meta.model_type != SupportedModelTypes.CLASSIFICATION
+            or classification_label in model.meta.classification_labels
+        ), f'"{classification_label}" is not part of model labels: {model.meta.classification_labels}'
         return func(*args, **kwargs)
 
     return wrapper
 
 
-def check_slice_not_empty(sliced_dataset: Dataset,
-                          dataset_name: Optional[str] = "",
-                          test_name: Optional[str] = ""):
+def check_slice_not_empty(sliced_dataset: Dataset, dataset_name: Optional[str] = "", test_name: Optional[str] = ""):
     if sliced_dataset.df.empty:
         test_name = " in " + test_name
         raise ValueError("The sliced " + dataset_name + test_name + " is empty.")
