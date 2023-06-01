@@ -7,7 +7,9 @@ Getting started
    installation/index
    scan/index
    test-suite/index
-   create-slices-and-transformation-functions/index
+   slicing-and-transformation-functions/index
 
    installation/index
    test-catalog/index
+   slicing-function-catalog/index
+   transformation-function-catalog/index
