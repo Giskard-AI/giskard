@@ -245,7 +245,7 @@ class BaseModel(ABC):
               The `all_predictions` field will contain the predicted probabilities for all class labels for each example in the input dataset.
         """
         timer = Timer()
-        df = dataset.df
+        df = self.prepare_dataframe(dataset.df, column_dtypes=dataset.column_dtypes, target=dataset.target)
 
         raw_prediction = self.predict_df(df)
 
