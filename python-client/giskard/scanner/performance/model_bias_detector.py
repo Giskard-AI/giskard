@@ -1,3 +1,4 @@
+from collections import defaultdict
 import pandas as pd
 from sklearn import metrics
 from typing import Optional, Sequence
@@ -117,7 +118,14 @@ class IssueFinder:
         for metric in metrics:
             issues.extend(self._detect_for_metric(model, dataset, slices, metric))
 
-        return issues
+        # Group issues by slice and keep only the most critical
+        issues_by_slice = defaultdict(list)
+        for issue in issues:
+            issues_by_slice[issue.info.slice_fn].append(issue)
+
+        return sorted(
+            [max(group, key=lambda i: i.importance) for group in issues_by_slice.values()], key=lambda i: i.importance
+        )
 
     def _get_default_metrics(self, model: BaseModel):
         if model.is_classification:
