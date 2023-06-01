@@ -17,6 +17,7 @@ import ai.giskard.worker.ArtifactRef;
 import ai.giskard.worker.RunAdHocTransformationRequest;
 import ai.giskard.worker.TransformationResultMessage;
 import lombok.RequiredArgsConstructor;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -41,6 +42,7 @@ public class TransformationFunctionController {
     private final TestArgumentService testArgumentService;
 
     @GetMapping("/transformations/{uuid}")
+    @Transactional(readOnly = true)
     public TransformationFunctionDTO getTransformationFunction(@PathVariable("uuid") @NotNull UUID uuid) {
         return giskardMapper.toDTO(transformationFunctionRepository.getMandatoryById(uuid));
     }
@@ -49,7 +51,7 @@ public class TransformationFunctionController {
     public TransformationResultDTO runAdHocTransformation(@PathVariable("transformationFnUuid") @NotNull UUID sliceFnUuid,
                                                           @PathVariable("datasetUuid") @NotNull UUID datasetUuid,
                                                           @RequestBody Map<String, String> inputs) {
-        TransformationFunction transformationFunction = transformationFunctionRepository.getMandatoryById(sliceFnUuid);
+        TransformationFunction transformationFunction = transformationFunctionService.getInitialized(sliceFnUuid);
         Dataset dataset = datasetRepository.getMandatoryById(datasetUuid);
         Project project = dataset.getProject();
 
@@ -68,6 +70,7 @@ public class TransformationFunctionController {
                 builder.addArguments(testArgumentService
                     .buildTestArgument(argumentTypes, entry.getKey(), entry.getValue(), project.getKey(), Collections.emptyList()));
             }
+
 
             TransformationResultMessage transformationResultMessage = client.getBlockingStub().runAdHocTransformation(builder.build());
 

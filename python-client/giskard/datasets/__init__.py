@@ -9,6 +9,7 @@ from giskard.datasets.base import Dataset
 # - validate_column_categorization
 low_stat_threshold = 100
 
+
 @configured_validate_arguments
 def wrap_dataset(dataset: pd.DataFrame, name: Optional[str] = None, target: Optional[str] = None,
                  cat_columns: Optional[List[str]] = None, column_types: Optional[Dict[str, str]] = None):

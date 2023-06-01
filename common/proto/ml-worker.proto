@@ -156,6 +156,7 @@ message RunAdHocTransformationRequest {
   string transformationFunctionUuid = 1;
   ArtifactRef dataset = 2;
   repeated FuncArgument arguments = 3;
+  repeated int32 rows = 4;
 }
 
 message SuiteTestArgument {

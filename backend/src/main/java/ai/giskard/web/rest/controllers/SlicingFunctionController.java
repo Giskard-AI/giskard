@@ -51,7 +51,7 @@ public class SlicingFunctionController {
     public SlicingResultDTO runAdHocFunction(@PathVariable("sliceFnUuid") @NotNull UUID sliceFnUuid,
                                              @PathVariable("datasetUuid") @NotNull UUID datasetUuid,
                                              @RequestBody Map<String, String> inputs) {
-        SlicingFunction slicingFunction = slicingFunctionRepository.getMandatoryById(sliceFnUuid);
+        SlicingFunction slicingFunction = slicingFunctionService.getInitialized(sliceFnUuid);
         Dataset dataset = datasetRepository.getMandatoryById(datasetUuid);
         Project project = dataset.getProject();
 
