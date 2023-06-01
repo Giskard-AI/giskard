@@ -59,33 +59,40 @@
 
             <v-card-actions>
                 <v-spacer></v-spacer>
-
-                <v-tooltip bottom v-if="testSuiteInputs.length === 1 && !running">
+                <v-menu offset-y>
                     <template v-slot:activator="{ on, attrs }">
                         <v-btn
-                            color="secondary"
-                            text
-                            @click="tryTestSuite(close)"
-                            v-bind="attrs" v-on="on"
+                            color="primary"
+                            outlined
                             :disabled="!isAllParamsSet()"
+                            :loading="running"
+                            v-bind="attrs"
                         >
-                            <v-icon>science</v-icon>
-                            Try test suite
+                            <v-icon @click="executeTestSuite(close)">arrow_right</v-icon>
+                            <span @click="executeTestSuite(close)" class="pe-2">Run test suite</span>
+                            <v-icon class="ps-2 primary-left-border" v-on="on">mdi-menu-down</v-icon>
                         </v-btn>
                     </template>
-                    <span>Try out the test suite on a dataset sample.<br/>The execution result won't be saved!</span>
-                </v-tooltip>
-                <v-btn
-                    color="primary"
-                    text
-                    @click="executeTestSuite(close)"
-                    :disabled="!isAllParamsSet()"
-                    :loading="running"
-
-                >
-                    <v-icon>arrow_right</v-icon>
-                    Run test suite
-                </v-btn>
+                    <v-list>
+                        <v-list-item>
+                            <v-tooltip bottom v-if="testSuiteInputs.length === 1 && !running">
+                                <template v-slot:activator="{ on, attrs }">
+                                    <v-btn
+                                        color="secondary"
+                                        text
+                                        @click="tryTestSuite(close)"
+                                        v-bind="attrs" v-on="on"
+                                        :disabled="!isAllParamsSet()"
+                                    >
+                                        <v-icon>science</v-icon>
+                                        Try test suite
+                                    </v-btn>
+                                </template>
+                                <span>Try out the test suite on a dataset sample.<br/>The execution result won't be saved!</span>
+                            </v-tooltip>
+                        </v-list-item>
+                    </v-list>
+                </v-menu>
             </v-card-actions>
         </v-card>
       </div>
@@ -218,8 +225,8 @@ async function tryTestSuite(close) {
         ]);
     } finally {
         running.value = false;
-        await router.push({name: 'test-suite-overview'})
         close();
+        await router.push({name: 'test-suite-overview'})
     }
 }
 </script>
@@ -247,6 +254,10 @@ async function tryTestSuite(close) {
     border: 1px solid #000000;
     margin: 8px;
     padding: 4px;
+}
+
+.primary-left-border {
+    border-left: 1px solid #087038;
 }
 
 </style>
