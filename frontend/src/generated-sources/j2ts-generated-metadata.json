@@ -40,6 +40,7 @@
     "ai.giskard.web.dto.ExplainTextResponseDTO": "ExplainTextResponseDTO",
     "ai.giskard.web.dto.JWTToken": "JWTToken",
     "ai.giskard.web.dto.ModelUploadParamsDTO": "ModelUploadParamsDTO",
+    "ai.giskard.web.dto.RequiredInputDTO": "RequiredInputDTO",
     "ai.giskard.web.dto.CreateFeedbackDTO": "CreateFeedbackDTO",
     "ai.giskard.web.dto.ml.write.ModelPostDTO": "ModelPostDTO",
     "ai.giskard.web.rest.vm.ManagedUserVM": "ManagedUserVM",

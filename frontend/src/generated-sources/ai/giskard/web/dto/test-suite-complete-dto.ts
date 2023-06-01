@@ -1,5 +1,6 @@
 import type {DatasetDTO} from './ml/dataset-dto';
 import type {ModelDTO} from './ml/model-dto';
+import type {RequiredInputDTO} from './required-input-dto';
 import type {TestFunctionDTO} from './test-function-dto';
 import type {TestSuiteDTO} from './test-suite-dto';
 import type {TestSuiteExecutionDTO} from './ml/test-suite-execution-dto';
@@ -10,7 +11,7 @@ import type {TestSuiteExecutionDTO} from './ml/test-suite-execution-dto';
 export interface TestSuiteCompleteDTO {
     datasets: DatasetDTO[];
     executions: TestSuiteExecutionDTO[];
-    inputs: {[key: string]: string};
+    inputs: {[key: string]: RequiredInputDTO};
     models: ModelDTO[];
     registry: TestFunctionDTO[];
     suite: TestSuiteDTO;

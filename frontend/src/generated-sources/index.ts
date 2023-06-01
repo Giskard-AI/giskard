@@ -62,6 +62,7 @@ export const GENERATED_MAPPING = {
     'ai.giskard.web.dto.PrepareDeleteDTO$LightFeedback' : 'PrepareDeleteDTO.LightFeedback',
     'ai.giskard.web.dto.PrepareDeleteDTO' : 'PrepareDeleteDTO',
     'ai.giskard.web.dto.PrepareImportProjectDTO' : 'PrepareImportProjectDTO',
+    'ai.giskard.web.dto.RequiredInputDTO' : 'RequiredInputDTO',
     'ai.giskard.web.dto.RunAdhocTestRequest' : 'RunAdhocTestRequest',
     'ai.giskard.web.dto.SliceCreateDTO' : 'SliceCreateDTO',
     'ai.giskard.web.dto.SlicePutDTO' : 'SlicePutDTO',
@@ -143,6 +144,7 @@ export * from './ai/giskard/web/dto/prediction-dto';
 export * from './ai/giskard/web/dto/prediction-input-dto';
 export * from './ai/giskard/web/dto/prepare-delete-dto';
 export * from './ai/giskard/web/dto/prepare-import-project-dto';
+export * from './ai/giskard/web/dto/required-input-dto';
 export * from './ai/giskard/web/dto/run-adhoc-test-request';
 export * from './ai/giskard/web/dto/slice-create-dto';
 export * from './ai/giskard/web/dto/slice-put-dto';

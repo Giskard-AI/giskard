@@ -42,10 +42,10 @@ public class TestSuiteService {
     private final MLWorkerService mlWorkerService;
     private final TestFunctionRepository testFunctionRepository;
 
-    public Map<String, String> getSuiteInputs(Long projectId, Long suiteId) {
+    public Map<String, RequiredInputDTO> getSuiteInputs(Long projectId, Long suiteId) {
         TestSuite suite = testSuiteRepository.findOneByProjectIdAndId(projectId, suiteId);
 
-        Map<String, String> res = new HashMap<>();
+        Map<String, RequiredInputDTO> res = new HashMap<>();
 
 
         suite.getTests().forEach(test -> {
@@ -55,6 +55,7 @@ public class TestSuiteService {
                 .filter(a -> !a.isOptional())
                 .forEach(a -> {
                     String name = null;
+                    boolean isShared = false;
                     if (!providedInputs.containsKey(a.getName())) {
                         name = a.getName();
                     } else if (providedInputs.get(a.getName()).isAlias()) {
@@ -65,13 +66,17 @@ public class TestSuiteService {
                                 && Strings.isNotBlank(shared.getValue()))) {
                             // Shared input value is not set globally
                             name = sharedInputName;
+                            isShared = true;
                         }
                     }
                     if (name != null) {
-                        if (res.containsKey(name) && !a.getType().equals(res.get(name))) {
+                        if (res.containsKey(name) && !a.getType().equals(res.get(name).getType())) {
                             throw new IllegalArgumentException("Variable with name %s is declared as %s and %s at the same time".formatted(a.getName(), res.get(a.getName()), a.getType()));
+                        } else if (res.containsKey(name)) {
+                            res.get(name).setSharedInput(isShared || res.get(name).isSharedInput());
+                        } else {
+                            res.put(name, new RequiredInputDTO(a.getType(), isShared));
                         }
-                        res.put(name, a.getType());
                     }
                 });
         });
@@ -88,12 +93,13 @@ public class TestSuiteService {
         execution.setInputs(inputs.entrySet().stream()
             .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)));
 
-        Map<String, String> suiteInputs = getSuiteInputs(projectId, suiteId);
+        Map<String, String> suiteInputs = getSuiteInputs(projectId, suiteId).entrySet().stream()
+            .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().getType()));
 
         verifyAllInputProvided(inputs, testSuite, suiteInputs);
 
         return jobService.undetermined(() ->
-            testSuiteExecutionService.executeScheduledTestSuite(execution, suiteInputs), projectId, JobType.TEST_SUITE_EXECUTION,
+                testSuiteExecutionService.executeScheduledTestSuite(execution, suiteInputs), projectId, JobType.TEST_SUITE_EXECUTION,
             testSuite.getProject().getMlWorkerType());
     }
 
