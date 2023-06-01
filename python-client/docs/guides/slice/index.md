@@ -5,6 +5,12 @@ First you'll need to create a dataset,
 see [Wrap your dataset](../wrap_dataset/index.md)
 :::
 
+Inspecting specific data slices is essential when building machine learning models. By analyzing subsets based on relevant factors, you can identify biases, disparities, and issues specific to certain groups.
+
+Giskard enables you to **automatically create slicing functions, such as low-performing, underconfident, overconfident or spurious data slice**.
+
+Slicing functions are not sub-datasets! They are functions that can be applied to new datasets such as your production data for testing, debugging and monitoring purposes. This is why saving data slices are key to integrate domain knwowledge inside your tests.
+
 ## Apply a slicing function to your dataset
 
 :::{hint}
