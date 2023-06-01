@@ -1,42 +1,38 @@
-import shutil
-from pathlib import Path
-from typing import Union
+import re
 
-import cloudpickle
+import httpretty
 
+from giskard import Model, SKLearnModel
+from giskard.client.giskard_client import GiskardClient
 from giskard.core.core import SupportedModelTypes
-from giskard.core.model import Model
+from giskard.core.model import CustomModel, MODEL_CLASS_PKL
+
+url = "http://giskard-host:12345"
+token = "SECRET_TOKEN"
+auth = "Bearer SECRET_TOKEN"
+content_type = "application/json"
+model_name = "uploaded model"
+b_content_type = b"application/json"
 
 
-def test_custom_model():
-    class MyModel(Model):
-        def __init__(self, clf, model_type: Union[SupportedModelTypes, str], name: str = None,
-                     data_preprocessing_function=None, feature_names=None, classification_threshold=0.5,
-                     classification_labels=None) -> None:
-            super().__init__(clf, model_type, name, data_preprocessing_function, feature_names,
-                             classification_threshold, classification_labels)
+@httpretty.activate(verbose=True, allow_net_connect=False)
+def test_custom_model(linear_regression_diabetes: Model):
+    artifact_url_prefix = "http://giskard-host:12345/api/v2/artifacts/pk/models/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/"
+    artifact_url_pattern = re.compile(artifact_url_prefix + ".*")
+    httpretty.register_uri(httpretty.POST, artifact_url_pattern)
+    httpretty.register_uri(httpretty.POST, 'http://giskard-host:12345/api/v2/project/pk/models')
 
-        def save_to_local_dir(self, local_path):
-            with open(Path(local_path) / "foo_model", 'w') as f:
-                f.write("model content")
-            with open(Path(local_path) / "ModelClass", 'wb') as f:
-                import cloudpickle
-                content = cloudpickle.dumps(self.__class__)
-                f.write(content)
+    client = GiskardClient(url, token)
 
-            return self._new_mlflow_model_meta()
+    class MyModel(CustomModel):
+        pass
 
-        @staticmethod
-        def read_model_from_local_dir(local_path: str):
-            cloudpickle.loads(open(Path(local_path) / "ModelClass", 'rb').read())
-            return {}
+    def has_model_class_been_sent():
+        return len([i for i in httpretty.latest_requests() if
+                    re.match(artifact_url_prefix + MODEL_CLASS_PKL, i.url)]) > 0
 
-    model_id = MyModel({}, model_type=SupportedModelTypes.REGRESSION, name="test custom model").save(None, "pk")
-    mpath = Path(f'/Users/andreyavtomonov/giskard-home/cache/pk/models/{model_id}')
-    mpath.mkdir(parents=True)
-    shutil.copyfile(
-        '/Users/andreyavtomonov/projects/work/giskard/backend/src/main/resources/demo_projects/credit/models/93112387-7bce-4b71-826e-933cfb235a65/giskard-model-meta.yaml',
-        f'{mpath / "giskard-model-meta.yaml"}')
+    SKLearnModel(linear_regression_diabetes.clf, model_type=SupportedModelTypes.REGRESSION).save(client, "pk")
+    assert not has_model_class_been_sent()
 
-    model = Model.load(None, "pk", model_id)
-    model
+    MyModel(linear_regression_diabetes.clf, model_type=SupportedModelTypes.REGRESSION).save(client, "pk")
+    assert has_model_class_been_sent()
