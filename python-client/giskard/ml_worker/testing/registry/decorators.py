@@ -27,8 +27,6 @@ def test(_fn=None, name=None, tags: Optional[List[str]] = None):
         if inspect.isclass(original) and issubclass(original, GiskardTest):
             return original
 
-        original.__annotations__['return'] = GiskardTestMethod
-
         return _wrap_test_method(original)
 
     if callable(_fn):
