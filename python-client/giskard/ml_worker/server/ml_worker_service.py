@@ -23,7 +23,7 @@ from giskard.ml_worker.core.model_explanation import (
     explain,
     explain_text,
 )
-from giskard.ml_worker.core.suite import Suite
+from giskard.ml_worker.core.suite import Suite, ModelInput, DatasetInput, SuiteInput
 from giskard.ml_worker.core.test_result import TestResult, TestMessageLevel
 from giskard.ml_worker.core.test_runner import run_test
 from giskard.ml_worker.exceptions.IllegalArgumentError import IllegalArgumentError
@@ -141,32 +141,31 @@ class MLWorkerServiceImpl(MLWorkerServicer):
     def runTestSuite(
             self, request: ml_worker_pb2.RunTestSuiteRequest, context: grpc.ServicerContext
     ) -> ml_worker_pb2.TestSuiteResultMessage:
-        tests = list(map(tests_registry.get_test, request.testId))
+        tests = [{
+            'test': tests_registry.get_test(t.testId),
+            'arguments': self.parse_test_arguments(t.arguments),
+            'id': t.id
+        } for t in request.tests]
 
         global_arguments = self.parse_test_arguments(request.globalArguments)
 
-        logger.info(f"Executing test suite: {list(map(lambda t: t.name, tests))}")
+        logger.info(f"Executing test suite: {list(map(lambda t: t['test'].name, tests))}")
 
         suite = Suite()
-        for test in tests:
-            fixed_arguments = self.parse_test_arguments(
-                next(x for x in request.fixedArguments if x.testId == test.id).arguments
-            )
-            suite.add_test(test.fn, **fixed_arguments)
+        for t in tests:
+            suite.add_test(t['test'].fn, t['id'], **t['arguments'])
 
         is_pass, results = suite.run(**global_arguments)
 
-        result_list = list(results.values())
-
-        named_single_test_result = []
-        for i in range(len(tests)):
-            named_single_test_result.append(
-                ml_worker_pb2.NamedSingleTestResult(
-                    name=tests[i].id, result=map_result_to_single_test_result(result_list[i])
+        identifier_single_test_results = []
+        for identifier, result in results.items():
+            identifier_single_test_results.append(
+                ml_worker_pb2.IdentifierSingleTestResult(
+                    id=identifier, result=map_result_to_single_test_result(result)
                 )
             )
 
-        return ml_worker_pb2.TestSuiteResultMessage(is_pass=is_pass, results=named_single_test_result)
+        return ml_worker_pb2.TestSuiteResultMessage(is_pass=is_pass, results=identifier_single_test_results)
 
     def parse_test_arguments(self, request_arguments):
         arguments = {}
@@ -395,6 +394,41 @@ class MLWorkerServiceImpl(MLWorkerServicer):
                 )
                 for test in tests_registry.get_all().values()
             }
+        )
+
+    @staticmethod
+    def map_suite_input(i: ml_worker_pb2.SuiteInput):
+        if i.type == 'Model' and i.model_meta is not None:
+            return ModelInput(i.name, i.model_meta.model_type)
+        elif i.type == 'Dataset' and i.dataset_meta is not None:
+            return DatasetInput(i.name, i.dataset_meta.target)
+        else:
+            return SuiteInput(i.name, i.type)
+
+    def generateTestSuite(
+            self,
+            request: ml_worker_pb2.GenerateTestSuiteRequest,
+            context: grpc.ServicerContext,
+    ) -> ml_worker_pb2.GenerateTestSuiteResponse:
+        inputs = [self.map_suite_input(i) for i in request.inputs]
+
+        suite = Suite().generate_tests(inputs).to_dto(self.client, request.project_key)
+
+        return ml_worker_pb2.GenerateTestSuiteResponse(
+            tests=[
+                ml_worker_pb2.GeneratedTest(
+                    test_id=test.testId,
+                    inputs=[
+                        ml_worker_pb2.GeneratedTestInput(
+                            name=i.name,
+                            value=i.value,
+                            is_alias=i.is_alias
+                        )
+                        for i in test.testInputs.values()
+                    ]
+                )
+                for test in suite.tests
+            ]
         )
 
     @staticmethod
