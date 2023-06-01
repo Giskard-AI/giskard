@@ -53,8 +53,8 @@
                         </div>
                     </v-col>
                 </v-row>
-                <v-row class="vc overview-container pl-3  mt-0">
-                    <v-col class="vc" cols="12">
+                <v-row class="vc overview-container pl-3 mt-0">
+                    <v-col class="vc pb-0" cols="12">
                         <router-view/>
                     </v-col>
                 </v-row>
