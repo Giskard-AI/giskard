@@ -11,7 +11,7 @@ from giskard.ml_worker.core.dataset import Dataset
 from giskard.ml_worker.core.test_runner import run_test
 from giskard.ml_worker.testing.registry.giskard_test import GiskardTest
 from giskard.ml_worker.testing.registry.registry import create_test_function_id
-from giskard.ml_worker.core.test_function import TestFunction
+from giskard.ml_worker.core.test_function import GiskardTestReference
 
 logger = logging.getLogger(__name__)
 
@@ -27,7 +27,7 @@ class SuiteInput:
 
 @dataclass
 class TestPartial:
-    function_reference: TestFunction
+    function_reference: GiskardTestReference
     provided_inputs: Mapping[str, Any]
 
 
@@ -101,7 +101,7 @@ class Suite:
         self.id = client.save_test_suite(TestSuiteNewDTO(name=self.name, project_key=project_key, tests=suite_tests))
         return self
 
-    def add_test(self, test_fn: Union[Callable[[Any], Union[bool]], TestFunction, GiskardTest], **params):
+    def add_test(self, test_fn: Union[Callable[[Any], Union[bool]], GiskardTestReference, GiskardTest], **params):
         """
         Add a test to the Suite
         :param test_fn: A test method that will be executed or an instance of a GiskardTest class
@@ -115,8 +115,8 @@ class Suite:
             params = {k: v for k, v in test_fn.__dict__.items() if v is not None}
             test_fn = type(test_fn)
 
-        if not isinstance(test_fn, TestFunction):
-            func_ref = TestFunction.of(test_fn)
+        if not isinstance(test_fn, GiskardTestReference):
+            func_ref = GiskardTestReference.of(test_fn)
 
         self.tests.append(TestPartial(func_ref, params))
         return self
@@ -137,3 +137,14 @@ class Suite:
                         res[test_partial.provided_inputs[p.name].name] = p.annotation
         return res
 
+
+class GiskardMethodTest(GiskardTest):
+    test_fn: Any # <- save as pickle or reference
+    params: Any
+
+
+    def __init__(self, test_fn, **kwarg):
+        self.test
+
+    def run:
+        test_fn

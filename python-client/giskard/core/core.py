@@ -50,7 +50,6 @@ class TestFunctionMeta(SavableMeta):
     module: str
     doc: str
     module_doc: str
-    fn: types.FunctionType
     args: Dict[str, TestFunctionArgument]
     tags: List[str]
     version: Optional[int]
