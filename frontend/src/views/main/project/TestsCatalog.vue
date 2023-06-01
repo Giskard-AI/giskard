@@ -106,17 +106,21 @@
                                                                      :value.sync="testArguments[a.name]"/>
                                                     <ModelSelector :project-id="projectId" :label="a.name"
                                                                    :return-object="false"
-                                                                   v-if="a.type === 'BaseModel'"
+                                                                   v-else-if="a.type === 'BaseModel'"
                                                                    :value.sync="testArguments[a.name]"/>
+                                                    <SlicingFunctionSelector :project-id="projectId" :label="a.name"
+                                                                           :return-object="false"
+                                                                           v-else-if="a.type === 'SlicingFunction'"
+                                                                           :value.sync="testArguments[a.name]"/>
                                                     <v-text-field
-                                                            :step='a.type === "float" ? 0.1 : 1'
-                                                            v-model="testArguments[a.name]"
-                                                            v-if="['float', 'int'].includes(a.type)"
-                                                            hide-details
-                                                            single-line
-                                                            type="number"
-                                                            outlined
-                                                            dense
+                                                        :step='a.type === "float" ? 0.1 : 1'
+                                                        v-model="testArguments[a.name]"
+                                                        v-else-if="['float', 'int'].includes(a.type)"
+                                                        hide-details
+                                                        single-line
+                                                        type="number"
+                                                        outlined
+                                                        dense
                                                     />
                                                 </template>
                                             </v-col>
@@ -182,18 +186,21 @@ import {TestFunctionArgumentDTO, TestFunctionDTO, TestTemplateExecutionResultDTO
 import AddTestToSuite from '@/views/main/project/modals/AddTestToSuite.vue';
 import {$vfm} from 'vue-final-modal';
 import StartWorkerInstructions from "@/components/StartWorkerInstructions.vue";
+import {storeToRefs} from "pinia";
+import {useCatalogStore} from "@/stores/catalog";
+import SlicingFunctionSelector from "@/views/main/utils/SlicingFunctionSelector.vue";
 import IEditorOptions = editor.IEditorOptions;
 
 const l = MonacoEditor;
 let props = defineProps<{
-  projectId: number,
-  suiteId?: number
+    projectId: number,
+    suiteId?: number
 }>();
 
 const editor = ref(null)
 
 const searchFilter = ref<string>("");
-let registry = ref<TestFunctionDTO[]>([]);
+let {testFunctions} = storeToRefs(useCatalogStore());
 let selected = ref<TestFunctionDTO | null>(null);
 let tryMode = ref(true)
 let testArguments = ref({})
@@ -215,14 +222,18 @@ function resizeEditor() {
 }
 
 function castDefaultValueToType(arg: TestFunctionArgumentDTO) {
-  switch (arg.type) {
-    case 'float':
-      return parseFloat(arg.defaultValue)
-    case 'int':
-      return parseInt(arg.defaultValue)
-    default:
-      return arg.defaultValue;
-  }
+    if (arg.defaultValue === 'None') {
+        return null;
+    }
+    
+    switch (arg.type) {
+        case 'float':
+            return parseFloat(arg.defaultValue)
+        case 'int':
+            return parseInt(arg.defaultValue)
+        default:
+            return arg.defaultValue;
+    }
 }
 
 watch(selected, (value) => {
@@ -245,17 +256,6 @@ function sorted(arr: any[]) {
   return res;
 }
 
-const testFunctions = computed(() => {
-    return chain(registry.value)
-        .groupBy(func => `${func.module}.${func.name}`)
-        .mapValues(functions => chain(functions)
-            .maxBy(func => func.version ?? 1)
-            .value())
-        .values()
-        .sortBy('name')
-        .value();
-})
-
 const hasGiskardTests = computed(() => {
     return testFunctions.value.find(t => t.tags.includes('giskard')) !== undefined
 })
@@ -277,10 +277,9 @@ const filteredTestFunctions = computed(() => {
 })
 
 onActivated(async () => {
-  registry.value = await api.getTestFunctions(props.projectId);
-  if (testFunctions.value.length > 0) {
-    selected.value = testFunctions.value[0];
-  }
+    if (testFunctions.value.length > 0) {
+        selected.value = testFunctions.value[0];
+    }
 });
 
 function addToTestSuite() {

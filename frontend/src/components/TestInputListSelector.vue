@@ -14,28 +14,19 @@
                     </v-list-item-content>
                 </v-col>
                 <v-col cols="3">
-                    <v-btn-toggle
-                            v-model="buttonToggleValues[input.name]"
-                            @change="item => handleTypeSelected(input.name, item)">
-                        <v-tooltip bottom>
-                            <template v-slot:activator="{ on, attrs }">
-                                <v-btn v-on="on" v-bind="attrs">
-                                    <span class="hidden-sm-and-down">Input</span>
-                                    <v-icon right>input</v-icon>
-                                </v-btn>
-                            </template>
-                            <span>Set as a suite input</span>
-                        </v-tooltip>
-                        <v-tooltip bottom v-if="props.testInputs">
-                            <template v-slot:activator="{ on, attrs }">
-                                <v-btn v-on="on" v-bind="attrs">
-                                    <span class="hidden-sm-and-down">Alias</span>
-                                    <v-icon right>link</v-icon>
-                                </v-btn>
-                            </template>
-                            <span>Set an alias to this input</span>
-                        </v-tooltip>
-                    </v-btn-toggle>
+                    <v-select v-model="buttonToggleValues[input.name]"
+                              outlined dense hide-details
+                              :items="inputTypeSelector"
+                              return-object
+                              item-text="name"
+                              @change="item => item.select(input.name)">
+                        <template v-slot:item="data">
+                            <div class="pt-2 pb-2">
+                                <span>{{ data.item.name }}</span><br/>
+                                <span class="text-caption">{{ data.item.description }}</span>
+                            </div>
+                        </template>
+                    </v-select>
                 </v-col>
                 <v-col :cols="6">
                     <div v-if="editedInputs" class="d-flex">
@@ -49,6 +40,9 @@
                             <ModelSelector :project-id="projectId" :label="input.name" :return-object="false"
                                            v-else-if="input.type === 'BaseModel'"
                                            :value.sync="editedInputs[input.name].value"/>
+                            <SlicingFunctionSelector :project-id="projectId" :label="input.name" :return-object="false"
+                                                   v-else-if="input.type === 'SlicingFunction'"
+                                                   :value.sync="editedInputs[input.name].value"/>
                             <ValidationProvider
                                 name="value"
                                 v-else-if="['float', 'int'].includes(input.type)"
@@ -131,6 +125,7 @@ import {useTestSuiteStore} from '@/stores/test-suite';
 import {chain} from "lodash";
 import {$vfm} from "vue-final-modal";
 import CreateAliasModal from "@/views/main/project/modals/CreateAliasModal.vue";
+import SlicingFunctionSelector from "@/views/main/utils/SlicingFunctionSelector.vue";
 
 const props = defineProps<{
     testInputs?: { [key: string]: TestInputDTO },
@@ -145,6 +140,63 @@ const emit = defineEmits(['invalid', 'result']);
 const {models, datasets, suite} = storeToRefs(useTestSuiteStore());
 
 const editedInputs = ref<{ [input: string]: TestInputDTO }>({});
+
+const inputTypeSelector = [{
+    name: 'Suite input (not shared)',
+    description: 'Input to be defined at the execution of the suite',
+    isSelected: (name) => !editedInputs.value.hasOwnProperty(name),
+    select: (name) => {
+        delete editedInputs.value[name];
+        editedInputs.value = {
+            ...editedInputs.value
+        };
+    }
+}, {
+    name: 'Fixed value',
+    description: 'Value to be set',
+    isSelected: (name) => editedInputs.value.hasOwnProperty(name) && !editedInputs.value[name].isAlias,
+    select: (name) => {
+        editedInputs.value = {
+            ...editedInputs.value,
+            [name]: {
+                isAlias: false,
+                name,
+                type: props.inputs[name],
+                value: null
+            }
+        }
+    }
+}, {
+    name: 'Suite input (shared)',
+    description: 'Rename of the input name to allow flexibility',
+    isSelected: (name) => editedInputs.value.hasOwnProperty(name) && editedInputs.value[name].isAlias,
+    select: (name) => {
+        editedInputs.value = {
+            ...editedInputs.value,
+            [name]: {
+                isAlias: true,
+                name,
+                type: props.inputs[name],
+                value: null
+            }
+        }
+    }
+}, { // TODO
+    name: 'Shard value',
+    description: 'Value to be set and shared with other tests',
+    isSelected: (name) => editedInputs.value.hasOwnProperty(name) && editedInputs.value[name].isAlias,
+    select: (name) => {
+        editedInputs.value = {
+            ...editedInputs.value,
+            [name]: {
+                isAlias: true,
+                name,
+                type: props.inputs[name],
+                value: null
+            }
+        }
+    }
+}]
 
 function updateEditedValue() {
     editedInputs.value = {
@@ -164,11 +216,10 @@ const inputs = computed(() => Object.keys(props.inputs).map((name) => ({
     type: props.inputs[name]
 })));
 
-const buttonToggleValues = ref<{ [name: string]: number | null }>({});
+const buttonToggleValues = ref<{ [name: string]: any }>({});
 
 const aliases = computed(() => {
     return chain([
-        ...suite.value!.testInputs,
         ...chain(suite.value!.tests)
             .flatMap(test => Object.values(test.testInputs))
             .filter(input => input.isAlias)
@@ -188,54 +239,12 @@ const aliases = computed(() => {
 watch(() => [editedInputs.value, props.inputs], () => {
     if (editedInputs.value) {
         buttonToggleValues.value = chain(props.inputs)
-            .mapValues((_, name) => {
-                if (!editedInputs.value.hasOwnProperty(name)) {
-                    return 0;
-                } else if (editedInputs.value[name].isAlias) {
-                    return 1;
-                } else {
-                    return null;
-                }
-            })
+            .mapValues((_, name) => inputTypeSelector.find(type => type.isSelected(name)))
             .value();
     } else {
         buttonToggleValues.value = {};
     }
 }, {deep: true});
-
-function handleTypeSelected(input: string, item: number) {
-    switch (item) {
-        case 0:
-            delete editedInputs.value[input];
-            editedInputs.value = {
-                ...editedInputs.value
-            };
-
-            break;
-        case 1:
-            editedInputs.value = {
-                ...editedInputs.value,
-                [input]: {
-                    isAlias: true,
-                    name: input,
-                    type: props.inputs[input],
-                    value: null
-                }
-            }
-            break;
-        default:
-            editedInputs.value = {
-                ...editedInputs.value,
-                [input]: {
-                    isAlias: false,
-                    name: input,
-                    type: props.inputs[input],
-                    value: null
-                }
-            }
-            break;
-    }
-}
 
 async function createAlias(name: string, type: string) {
     await $vfm.show({

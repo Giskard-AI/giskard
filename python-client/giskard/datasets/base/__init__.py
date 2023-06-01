@@ -1,4 +1,3 @@
-import inspect
 import logging
 import posixpath
 import tempfile
@@ -18,7 +17,7 @@ from giskard.client.io_utils import save_df, compress
 from giskard.client.python_utils import warning
 from giskard.core.core import DatasetMeta, SupportedColumnTypes, ColumnType
 from giskard.core.validation import configured_validate_arguments
-from giskard.ml_worker.testing.registry.slice_function import SliceFunction
+from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction
 from giskard.settings import settings
 
 logger = logging.getLogger(__name__)
@@ -31,9 +30,9 @@ class Nuniques(Enum):
 
 
 class DataProcessor:
-    pipeline: List[SliceFunction] = []
+    pipeline: List[Union[SlicingFunction]] = []
 
-    def add_step(self, processor: SliceFunction):
+    def add_step(self, processor: Union[SlicingFunction]):
         if not len(self.pipeline) or self.pipeline[-1] != processor:
             self.pipeline.append(processor)
         return self
@@ -44,16 +43,19 @@ class DataProcessor:
         while len(self.pipeline):
             step = self.pipeline.pop(-1 if apply_only_last else 0)
 
-            if isinstance(step, SliceFunction):
+            if isinstance(step, SlicingFunction):
                 if step.row_level:
                     df = df.loc[df.apply(step, axis=1)]
                 else:
                     df = step(df)
             else:
-                raise ValueError("Unsupported pipeline step, only SliceFunction is supported")
+                raise ValueError("Unsupported pipeline step, only SlicingFunction is supported")
 
             if apply_only_last:
                 break
+
+        if df.empty:
+            raise ValueError("The slicing_function provided is invalid, as it returned an empty dataset.")
 
         ret = Dataset(df=df,
                       name=dataset.name,
@@ -88,6 +90,8 @@ class Dataset:
         column_types: Optional[Dict[str, str]] = None,
         id: Optional[uuid.UUID] = None,
     ) -> None:
+        if df.empty:
+            raise ValueError("Please provide a non-empty df to construct the Dataset object.")
         if id is None:
             self.id = uuid.uuid4()
         else:
@@ -115,14 +119,15 @@ class Dataset:
                 "In this case, we assume that there's no categorical columns in your Dataset."
             )
 
-    def add_slicing_function(self, slicing_function: SliceFunction):
+    def add_slicing_function(self, slicing_function: SlicingFunction):
         self.data_processor.add_step(slicing_function)
         return self
 
-    def slice(self, slicing_function: SliceFunction, row_level=True):
-        if inspect.isfunction(slicing_function):
-            slicing_function = SliceFunction(slicing_function, row_level=row_level)
-        return self.data_processor.add_step(slicing_function).apply(self, apply_only_last=True)
+    def slice(self, slicing_function: Union[SlicingFunction, None]):
+        if slicing_function:
+            return self.data_processor.add_step(slicing_function).apply(self, apply_only_last=True)
+        else:
+            return self
 
     def process(self):
         return self.data_processor.apply(self)

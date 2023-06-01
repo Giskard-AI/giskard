@@ -35,6 +35,9 @@ def generate_func_id(name) -> str:
 
 
 def get_object_uuid(func) -> str:
+    if hasattr(func, 'meta'):
+        return func.meta.uuid
+
     func_name = f"{func.__module__}.{func.__name__}"
 
     if func_name.startswith('__main__'):

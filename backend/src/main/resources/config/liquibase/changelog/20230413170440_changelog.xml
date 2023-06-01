@@ -1,0 +1,30 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext" xmlns:pro="http://www.liquibase.org/xml/ns/pro" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-4.1.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.1.xsd">
+    <changeSet author="kevinmessiaen (generated)" id="1681398286119-2">
+        <createTable tableName="slicing_functions">
+            <column name="uuid" type="UUID">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="slicing_functionsPK"/>
+            </column>
+            <column name="code" type="VARCHAR">
+                <constraints nullable="false"/>
+            </column>
+            <column name="display_name" type="VARCHAR(255)"/>
+            <column name="doc" type="VARCHAR"/>
+            <column name="module" type="VARCHAR(255)"/>
+            <column name="module_doc" type="VARCHAR"/>
+            <column name="name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="tags" type="VARCHAR"/>
+            <column name="version" type="INT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="kevinmessiaen (generated)" id="1681398286119-3">
+        <addUniqueConstraint columnNames="name, module, version" constraintName="UK8jb5nuugyci8au6ju75c73051" tableName="slicing_functions"/>
+    </changeSet>
+    <changeSet author="kevinmessiaen (generated)" id="1681398286119-1">
+        <addNotNullConstraint columnDataType="int" columnName="arg_order" tableName="test_function_arguments" validate="true"/>
+    </changeSet>
+</databaseChangeLog>
