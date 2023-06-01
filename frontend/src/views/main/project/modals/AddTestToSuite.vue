@@ -18,22 +18,25 @@
               <v-col cols=12>
                 <ValidationProvider name="Tes suite" mode="eager" rules="required" v-slot="{errors}">
                   <v-select
-                      outlined
-                      label="Test suite"
-                      v-model="selectedSuite"
-                      :items="testSuites"
-                      :item-text="'name'"
-                      :item-value="'id'"
-                      dense
-                      hide-details
+                          outlined
+                          label="Test suite"
+                          v-model="selectedSuite"
+                          :items="testSuites"
+                          :item-text="'name'"
+                          :item-value="'id'"
+                          dense
+                          hide-details
                   ></v-select>
                 </ValidationProvider>
-                <p class="text-h6 pt-4">Inputs</p>
-                <SuiteInputListSelector
-                        :editing="true"
-                        :project-id="projectId"
-                        :inputs="inputs"
-                        :model-value="testInputs"/>
+                  <p class="text-h6 pt-4">Fixed inputs</p>
+                  <p>Specify inputs that will be constant during each execution of the test.<br/>
+                      The inputs left blank will have to be provided at the test execution time.</p>
+                  <SuiteInputListSelector
+                          class="pt-4"
+                          :editing="true"
+                          :project-id="projectId"
+                          :inputs="inputs"
+                          :model-value="testInputs"/>
               </v-col>
             </v-row>
           </v-card-text>
@@ -64,6 +67,7 @@ import {api} from '@/api';
 import {SuiteTestDTO, TestFunctionDTO, TestInputDTO, TestSuiteDTO} from '@/generated-sources';
 import SuiteInputListSelector from '@/components/SuiteInputListSelector.vue';
 import {chain} from 'lodash';
+import {useMainStore} from "@/stores/main";
 
 const {projectId, test, suiteId, testArguments} = defineProps<{
   projectId: number,
@@ -101,18 +105,24 @@ const inputs = computed(() =>
         .value()
 );
 
-async function submit(close) {
-  const suiteTest: SuiteTestDTO = {
-    testUuid: test.uuid,
-    testInputs: chain(testInputs.value)
-        .omitBy(({value}) => value === null
-            || (typeof value === 'string' && value.trim() === '')
-            || (typeof value === 'number' && Number.isNaN(value)))
-        .value() as { [name: string]: TestInputDTO }
-  }
+const mainStore = useMainStore();
 
-  await api.addTestToSuite(projectId, selectedSuite.value!, suiteTest);
-  close();
+async function submit(close) {
+    const suiteTest: SuiteTestDTO = {
+        testUuid: test.uuid,
+        testInputs: chain(testInputs.value)
+            .omitBy(({value}) => value === null
+                || (typeof value === 'string' && value.trim() === '')
+                || (typeof value === 'number' && Number.isNaN(value)))
+            .value() as { [name: string]: TestInputDTO }
+    }
+
+    await api.addTestToSuite(projectId, selectedSuite.value!, suiteTest);
+    await mainStore.addNotification({
+        content: `'${test.displayName ?? test.name}' has been added to '${testSuites.value.find(({id}) => id === selectedSuite.value)!.name}'`,
+        color: 'success'
+    });
+    close();
 }
 
 </script>
