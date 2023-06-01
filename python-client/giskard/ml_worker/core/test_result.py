@@ -64,7 +64,7 @@ class TestResult:
                           '✓' if self.passed else '𐄂',
                           'succeed' if self.passed else 'failed',
                           self.metric,
-                          ''.join([m._repr_html_() for m in self.messages]))
+                          ''.join([] if self.messages is None else [m._repr_html_() for m in self.messages]))
 
     def __repr__(self):
         return """
