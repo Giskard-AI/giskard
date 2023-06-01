@@ -1,24 +1,27 @@
-import mlflow
-from typing import Union
 import logging
+from typing import Optional, Iterable, Any, Callable
 
-from giskard.core.core import SupportedModelTypes
+import mlflow
+import pandas as pd
+
+from giskard.core.core import ModelType
+from giskard.core.validation import configured_validate_arguments
 from giskard.models.base import MLFlowBasedModel
 
 logger = logging.getLogger(__name__)
 
 
 class TensorFlowModel(MLFlowBasedModel):
+    @configured_validate_arguments
     def __init__(self,
                  clf,
-                 model_type: Union[SupportedModelTypes, str],
-                 name: str = None,
-                 data_preprocessing_function=None,
-                 model_postprocessing_function=None,
-                 feature_names=None,
-                 classification_threshold=0.5,
-                 classification_labels=None) -> None:
-
+                 model_type: ModelType,
+                 name: Optional[str] = None,
+                 data_preprocessing_function: Callable[[pd.DataFrame], Any] = None,
+                 model_postprocessing_function: Callable[[Any], Any] = None,
+                 feature_names: Optional[Iterable] = None,
+                 classification_threshold: float = 0.5,
+                 classification_labels: Optional[Iterable] = None):
         super().__init__(clf=clf,
                          model_type=model_type,
                          name=name,

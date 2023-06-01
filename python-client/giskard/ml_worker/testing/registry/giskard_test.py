@@ -3,27 +3,26 @@ import pickle
 import sys
 from abc import abstractmethod, ABC
 from pathlib import Path
-from typing import Union, Callable, Any, Optional
+from typing import Union, Callable, Optional, Type
 
 from giskard.core.core import TestFunctionMeta, SMT
 from giskard.ml_worker.core.savable import Savable
 from giskard.ml_worker.core.test_result import TestResult
-from giskard.ml_worker.testing.registry.registry import tests_registry, get_test_uuid
+from giskard.ml_worker.testing.registry.registry import tests_registry, get_object_uuid
 
 Result = Union[TestResult, bool]
 
 
-class GiskardTest(Savable[Any, TestFunctionMeta], ABC):
+class GiskardTest(Savable[Type, TestFunctionMeta], ABC):
     """
-    The base class of all Giskard's tests
+    The base class of all Giskard's tests.
 
-    The test are then executed inside the execute method
-    All arguments shall be passed in the __init__ method
-    It is advised to set default value for all arguments (None or actual value) in order to allow autocomplete
+    The tests are executed inside the `execute` method. All arguments should be passed in the `__init__` method. It is
+    required to set default values for all arguments (either `None` or a default values).
     """
 
     def __init__(self):
-        test_uuid = get_test_uuid(type(self))
+        test_uuid = get_object_uuid(type(self))
         meta = tests_registry.get_test(test_uuid)
         if meta is None:
             # equivalent to adding @test decorator
@@ -36,7 +35,8 @@ class GiskardTest(Savable[Any, TestFunctionMeta], ABC):
     def execute(self) -> Result:
         """
         Execute the test
-        :return: A SingleTestResult containing detailed information of the test execution results
+        :return: A TestResult or a bool containing detailed information of the test execution results
+        :rtype: Union[TestResult, bool]
         """
         ...
 
@@ -49,7 +49,7 @@ class GiskardTest(Savable[Any, TestFunctionMeta], ABC):
         return TestFunctionMeta
 
     def _get_uuid(self) -> str:
-        return get_test_uuid(type(self))
+        return get_object_uuid(type(self))
 
     def _should_save_locally(self) -> bool:
         return self.data.__module__.startswith('__main__')
@@ -97,7 +97,7 @@ class GiskardTestMethod(GiskardTest):
 
     def __init__(self, test_fn: Function) -> None:
         self.test_fn = test_fn
-        test_uuid = get_test_uuid(test_fn)
+        test_uuid = get_object_uuid(test_fn)
         meta = tests_registry.get_test(test_uuid)
         if meta is None:
             # equivalent to adding @test decorator
@@ -106,9 +106,17 @@ class GiskardTestMethod(GiskardTest):
             meta = tests_registry.get_test(test_uuid)
         super(GiskardTest, self).__init__(test_fn, meta)
 
-    def __call__(self, **kwargs):
+    def __call__(self, *args, **kwargs) -> 'GiskardTestMethod':
         self.is_initialized = True
         self.params = kwargs
+
+        for idx, arg in enumerate(args):
+            self.params[next(iter([arg.name for arg in self.meta.args.values() if arg.argOrder == idx]))] = arg
+
+        unknown_params = [param for param in self.params if param not in self.meta.args]
+        assert len(unknown_params) == 0, \
+            f"The test '{self.meta.name}' doesn't contain any of those parameters: {', '.join(unknown_params)}"
+
         return self
 
     def execute(self) -> Result:

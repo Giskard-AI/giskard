@@ -2,7 +2,6 @@ import asyncio
 import logging
 import os
 import platform
-import re
 import sys
 import tempfile
 import time
@@ -19,7 +18,6 @@ import tqdm
 
 import giskard
 from giskard.client.giskard_client import GiskardClient
-from giskard.models.base import BaseModel
 from giskard.datasets.base import Dataset
 from giskard.ml_worker.core.log_listener import LogListener
 from giskard.ml_worker.core.model_explanation import (
@@ -34,7 +32,7 @@ from giskard.ml_worker.generated import ml_worker_pb2
 from giskard.ml_worker.generated.ml_worker_pb2_grpc import MLWorkerServicer
 from giskard.ml_worker.ml_worker import MLWorker
 from giskard.ml_worker.testing.registry.giskard_test import GiskardTest
-from giskard.ml_worker.utils.logging import Timer
+from giskard.models.base import BaseModel
 from giskard.path_utils import model_path, dataset_path
 
 logger = logging.getLogger(__name__)
@@ -168,7 +166,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
             is_pass, results = suite.run(**global_arguments)
 
             identifier_single_test_results = []
-            for identifier, result in results.items():
+            for identifier, result in results:
                 identifier_single_test_results.append(
                     ml_worker_pb2.IdentifierSingleTestResult(
                         id=identifier, result=map_result_to_single_test_result(result)
@@ -210,35 +208,6 @@ class MLWorkerServiceImpl(MLWorkerServicer):
                 raise IllegalArgumentError("Unknown argument type")
             arguments[arg.name] = value
         return arguments
-
-    def runTest(
-            self, request: ml_worker_pb2.RunTestRequest, context: grpc.ServicerContext
-    ) -> ml_worker_pb2.TestResultMessage:
-        from giskard.ml_worker.testing.functions import GiskardTestFunctions
-
-        model = BaseModel.download(self.client, request.model.project_key, request.model.id)
-
-        tests = GiskardTestFunctions()
-        _globals = {"model": model, "tests": tests}
-        if request.reference_ds.id:
-            _globals["reference_ds"] = Dataset.download(
-                self.client, request.reference_ds.project_key, request.reference_ds.id
-            )
-        if request.actual_ds.id:
-            _globals["actual_ds"] = Dataset.download(self.client, request.actual_ds.project_key, request.actual_ds.id)
-        try:
-            timer = Timer()
-            exec(request.code, _globals)
-            timer.stop(f"Test {tests.tests_results[0].name}")
-        except NameError as e:
-            missing_name = re.findall(r"name '(\w+)' is not defined", str(e))[0]
-            if missing_name == "reference_ds":
-                raise IllegalArgumentError("Reference Dataset is not specified")
-            if missing_name == "actual_ds":
-                raise IllegalArgumentError("Actual Dataset is not specified")
-            raise e
-
-        return ml_worker_pb2.TestResultMessage(results=tests.tests_results)
 
     def explain(self, request: ml_worker_pb2.ExplainRequest, context) -> ml_worker_pb2.ExplainResponse:
         model = BaseModel.download(self.client, request.model.project_key, request.model.id)

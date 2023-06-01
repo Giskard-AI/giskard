@@ -40,7 +40,7 @@
                 <v-col :cols="6">
                     <div v-if="editedInputs" class="d-flex">
                       <span v-if="!editedInputs.hasOwnProperty(input.name)" class="font-italic">
-                        Suite input
+                        Suite input. Provided at the execution time.
                       </span>
                         <template v-else-if="!editedInputs[input.name].isAlias">
                             <DatasetSelector :project-id="projectId" :label="input.name" :return-object="false"
@@ -85,6 +85,10 @@
                                 outlined
                                 v-model="editedInputs[input.name].value"
                                 :items="aliases[input.type] ?? []"
+                                :menu-props="{
+                                  closeOnClick: true,
+                                  closeOnContentClick: true,
+                                }"
                                 dense
                                 :error-messages="errors"
                             >

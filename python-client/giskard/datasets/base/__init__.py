@@ -1,20 +1,23 @@
+import inspect
 import logging
 import posixpath
 import tempfile
 import uuid
+from enum import Enum
 from pathlib import Path
-from typing import Callable, Dict, Optional, List
+from typing import Dict, Optional, List, Hashable, Union
 
 import pandas as pd
-from pandas.api.types import is_numeric_dtype
-from enum import Enum
 import yaml
+from pandas.api.types import is_numeric_dtype
 from zstandard import ZstdDecompressor
 
 from giskard.client.giskard_client import GiskardClient
-from giskard.client.python_utils import warning
 from giskard.client.io_utils import save_df, compress
+from giskard.client.python_utils import warning
 from giskard.core.core import DatasetMeta, SupportedColumnTypes
+from giskard.core.validation import configured_validate_arguments
+from giskard.ml_worker.testing.registry.slice_function import SliceFunction
 from giskard.settings import settings
 
 logger = logging.getLogger(__name__)
@@ -26,13 +29,55 @@ class Nuniques(Enum):
     TEXT = 1000
 
 
+class DataProcessor:
+    pipeline: List[Union[SliceFunction]] = []
+
+    def add_step(self, processor: Union[SliceFunction]):
+        if not len(self.pipeline) or self.pipeline[-1] != processor:
+            self.pipeline.append(processor)
+        return self
+
+    def apply(self, dataset: 'Dataset', apply_only_last=False):
+        df = dataset.df.copy()
+
+        while len(self.pipeline):
+            step = self.pipeline.pop(-1 if apply_only_last else 0)
+
+            if isinstance(step, SliceFunction):
+                if step.row_level:
+                    df = df.loc[df.apply(step, axis=1)]
+                else:
+                    df = step(df)
+            else:
+                raise ValueError("Unsupported pipeline step, only SliceFunction is supported")
+
+            if apply_only_last:
+                break
+
+        ret = Dataset(df=df,
+                      name=dataset.name,
+                      target=dataset.target,
+                      cat_columns=dataset.cat_columns,
+                      column_types=dataset.column_types,
+                      id=dataset.id)
+
+        if len(self.pipeline):
+            ret.data_processor = self
+        return ret
+
+    def __repr__(self) -> str:
+        return f"DataProcessor: {len(self.pipeline)} steps"
+
+
 class Dataset:
     name: str
     target: str
     column_types: Dict[str, str]
     df: pd.DataFrame
     id: uuid.UUID
+    data_processor: DataProcessor = DataProcessor()
 
+    @configured_validate_arguments
     def __init__(
             self,
             df: pd.DataFrame,
@@ -50,6 +95,11 @@ class Dataset:
         self.name = name
         self.df = pd.DataFrame(df)
         self.target = target
+        if not self.target:
+            warning(
+                "You did not provide the optional argument 'target'. "
+                "'target' is the column name in df corresponding to the actual target variable (ground truth).")
+        self.check_hashability(self.df)
         self.column_dtypes = self.extract_column_dtypes(self.df)
         if column_types:
             self.column_types = column_types
@@ -59,8 +109,34 @@ class Dataset:
             self.column_types = self.infer_column_types(self.df, self.column_dtypes)
         else:
             self.column_types = self.infer_column_types(self.df, self.column_dtypes, no_cat=True)
-            warning("You did not provide any of [column_types, cat_columns, infer_column_types = True] for your Dataset."
-                    "In this case, we assume that there's no categorical columns in your Dataset.")
+            warning(
+                "You did not provide any of [column_types, cat_columns, infer_column_types = True] for your Dataset. "
+                "In this case, we assume that there's no categorical columns in your Dataset.")
+
+    def add_slicing_function(self, slicing_function: SliceFunction):
+        self.data_processor.add_step(slicing_function)
+        return self
+
+    def slice(self, slicing_function: SliceFunction, row_level=True):
+        if inspect.isfunction(slicing_function):
+            slicing_function = SliceFunction(slicing_function, row_level=row_level)
+        return self.data_processor.add_step(slicing_function).apply(self, apply_only_last=True)
+
+    def process(self):
+        return self.data_processor.apply(self)
+
+    @staticmethod
+    def check_hashability(df):
+        df_objects = df.select_dtypes(include='object')
+        non_hashable_cols = []
+        for col in df_objects.columns:
+            if not isinstance(df[col].iat[0], Hashable):
+                non_hashable_cols.append(col)
+
+        if non_hashable_cols:
+            raise TypeError(
+                f"The following columns in your df: {non_hashable_cols} are not hashable. "
+                f"We currently support only hashable column types such as int, bool, str, tuple and not list or dict.")
 
     @staticmethod
     def infer_column_types(df, column_dtypes, no_cat=False):
@@ -195,11 +271,6 @@ class Dataset:
     @property
     def columns(self):
         return self.df.columns
-
-    def slice(self, slice_fn: Callable):
-        if slice_fn is None:
-            return self
-        return Dataset(df=slice_fn(self.df), name=self.name, target=self.target, column_types=self.column_types)
 
     def __len__(self):
         return len(self.df)

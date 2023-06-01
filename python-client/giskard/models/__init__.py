@@ -1,21 +1,25 @@
 from importlib import import_module
-from typing import Union
+from typing import Callable, Optional, Iterable, Any
 
-from giskard.core.core import SupportedModelTypes
+import pandas as pd
+
+from giskard.core.core import ModelType
+from giskard.core.validation import configured_validate_arguments
 
 
 def get_class(_lib, _class):
     return getattr(import_module(_lib), _class)
 
 
+@configured_validate_arguments
 def model(clf,
-          model_type: Union[SupportedModelTypes, str],
-          data_preprocessing_function=None,
-          model_postprocessing_function=None,
-          name: str = None,
-          feature_names=None,
-          classification_threshold=0.5,
-          classification_labels=None,
+          model_type: ModelType,
+          data_preprocessing_function: Callable[[pd.DataFrame], Any] = None,
+          model_postprocessing_function: Callable[[Any], Any] = None,
+          name: Optional[str] = None,
+          feature_names: Optional[Iterable] = None,
+          classification_threshold: float = 0.5,
+          classification_labels: Optional[Iterable] = None,
           **kwargs):
     _libraries = {
         ("giskard.models.huggingface", "HuggingFaceModel"): [("transformers", "PreTrainedModel")],
@@ -30,14 +34,14 @@ def model(clf,
             giskard_class = get_class(*_giskard_class)
             base_libs = [get_class(*_base_lib) for _base_lib in _base_libs]
             if isinstance(clf, tuple(base_libs)):
-                return giskard_class(clf,
-                                     model_type,
-                                     data_preprocessing_function,
-                                     model_postprocessing_function,
-                                     name,
-                                     feature_names,
-                                     classification_threshold,
-                                     classification_labels,
+                return giskard_class(clf=clf,
+                                     model_type=model_type,
+                                     data_preprocessing_function=data_preprocessing_function,
+                                     model_postprocessing_function=model_postprocessing_function,
+                                     name=name,
+                                     feature_names=feature_names,
+                                     classification_threshold=classification_threshold,
+                                     classification_labels=classification_labels,
                                      **kwargs)
         except ImportError:
             pass
@@ -51,14 +55,15 @@ def model(clf,
     )
 
 
+@configured_validate_arguments
 def model_from_sklearn(clf,
-                       model_type: Union[SupportedModelTypes, str],
-                       name: str = None,
-                       data_preprocessing_function=None,
-                       model_postprocessing_function=None,
-                       feature_names=None,
-                       classification_threshold=0.5,
-                       classification_labels=None):
+                       model_type: ModelType,
+                       name: Optional[str] = None,
+                       data_preprocessing_function: Callable[[pd.DataFrame], Any] = None,
+                       model_postprocessing_function: Callable[[Any], Any] = None,
+                       feature_names: Optional[Iterable] = None,
+                       classification_threshold: float = 0.5,
+                       classification_labels: Optional[Iterable] = None):
     from giskard import SKLearnModel
     return SKLearnModel(clf,
                         model_type,
@@ -70,14 +75,15 @@ def model_from_sklearn(clf,
                         classification_labels)
 
 
+@configured_validate_arguments
 def model_from_catboost(clf,
-                        model_type: Union[SupportedModelTypes, str],
-                        name: str = None,
-                        data_preprocessing_function=None,
-                        model_postprocessing_function=None,
-                        feature_names=None,
-                        classification_threshold=0.5,
-                        classification_labels=None):
+                        model_type: ModelType,
+                        name: Optional[str] = None,
+                        data_preprocessing_function: Callable[[pd.DataFrame], Any] = None,
+                        model_postprocessing_function: Callable[[Any], Any] = None,
+                        feature_names: Optional[Iterable] = None,
+                        classification_threshold: float = 0.5,
+                        classification_labels: Optional[Iterable] = None):
     from giskard import CatboostModel
     return CatboostModel(clf,
                          model_type,
@@ -89,19 +95,24 @@ def model_from_catboost(clf,
                          classification_labels)
 
 
+@configured_validate_arguments
 def model_from_pytorch(clf,
-                       model_type: Union[SupportedModelTypes, str],
+                       model_type: ModelType,
                        torch_dtype=None,
-                       device="cpu",
-                       name: str = None,
-                       data_preprocessing_function=None,
-                       model_postprocessing_function=None,
-                       feature_names=None,
-                       classification_threshold=0.5,
-                       classification_labels=None,
+                       device: Optional[str] = "cpu",
+                       name: Optional[str] = None,
+                       data_preprocessing_function: Callable[[pd.DataFrame], Any] = None,
+                       model_postprocessing_function: Callable[[Any], Any] = None,
+                       feature_names: Optional[Iterable] = None,
+                       classification_threshold: float = 0.5,
+                       classification_labels: Optional[Iterable] = None,
                        iterate_dataset=True):
     from giskard import PyTorchModel
-    import torch
+    try:
+        import torch
+    except ImportError as e:
+        raise ImportError("Please install it via 'pip install torch'") from e
+
     torch_dtype = torch.float32 if not torch_dtype else torch_dtype
     return PyTorchModel(clf,
                         model_type,
@@ -116,14 +127,15 @@ def model_from_pytorch(clf,
                         iterate_dataset)
 
 
+@configured_validate_arguments
 def model_from_tensorflow(clf,
-                          model_type: Union[SupportedModelTypes, str],
-                          name: str = None,
-                          data_preprocessing_function=None,
-                          model_postprocessing_function=None,
-                          feature_names=None,
-                          classification_threshold=0.5,
-                          classification_labels=None):
+                          model_type: ModelType,
+                          name: Optional[str] = None,
+                          data_preprocessing_function: Callable[[pd.DataFrame], Any] = None,
+                          model_postprocessing_function: Callable[[Any], Any] = None,
+                          feature_names: Optional[Iterable] = None,
+                          classification_threshold: float = 0.5,
+                          classification_labels: Optional[Iterable] = None):
     from giskard import TensorFlowModel
     return TensorFlowModel(clf,
                            model_type,
@@ -135,14 +147,15 @@ def model_from_tensorflow(clf,
                            classification_labels)
 
 
+@configured_validate_arguments
 def model_from_huggingface(clf,
-                           model_type: Union[SupportedModelTypes, str],
-                           name: str = None,
-                           data_preprocessing_function=None,
-                           model_postprocessing_function=None,
-                           feature_names=None,
-                           classification_threshold=0.5,
-                           classification_labels=None):
+                           model_type: ModelType,
+                           name: Optional[str] = None,
+                           data_preprocessing_function: Callable[[pd.DataFrame], Any] = None,
+                           model_postprocessing_function: Callable[[Any], Any] = None,
+                           feature_names: Optional[Iterable] = None,
+                           classification_threshold: float = 0.5,
+                           classification_labels: Optional[Iterable] = None):
     from giskard import HuggingFaceModel
     return HuggingFaceModel(clf,
                             model_type,
