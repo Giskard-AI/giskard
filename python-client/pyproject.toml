@@ -35,6 +35,7 @@ dev = [
     "httpretty>=1.1.4",
     "isort[colors]>=5.12.0",
     "pip>=23.1.2",
+    "nltk>=3.8.1",
 ]
 proto = [
     "grpcio-tools>=1.46.3",
