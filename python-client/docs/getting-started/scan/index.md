@@ -168,7 +168,7 @@ and [feature_names_in_](https://scikit-learn.org/stable/modules/generated/sklear
 respectively.
 :::
 
-- **<project:../tutorials/sklearn/credit_scoring.md>**
+- **<project:../guides/tutorials/sklearn/credit_scoring.md>**
 ::::
 
 ::::{tab-item} catboost
@@ -184,32 +184,32 @@ and [feature_names_in_](https://scikit-learn.org/stable/modules/generated/sklear
 respectively.
 :::
 
-- **<project:../tutorials/catboost/credit_scoring.md>**
+- **<project:../guides/tutorials/catboost/credit_scoring.md>**
 ::::
 
 ::::{tab-item} pytorch
-- **<project:../tutorials/pytorch/linear_regression.md>**
-- **<project:../tutorials/pytorch/sst2_iterable.md>**
-- **<project:../tutorials/pytorch/torch_dataset.md>**
-- **<project:../tutorials/pytorch/custom_model.md>**
+- **<project:../guides/tutorials/pytorch/linear_regression.md>**
+- **<project:../guides/tutorials/pytorch/sst2_iterable.md>**
+- **<project:../guides/tutorials/pytorch/torch_dataset.md>**
+- **<project:../guides/tutorials/pytorch/custom_model.md>**
 ::::
 
 ::::{tab-item} tensorflow
-- **<project:../tutorials/tensorflow/classification_1d.md>**
-- **<project:../tutorials/tensorflow/classification_tfhub.md>**
+- **<project:../guides/tutorials/tensorflow/classification_1d.md>**
+- **<project:../guides/tutorials/tensorflow/classification_tfhub.md>**
 ::::
 
 ::::{tab-item} huggingface
-- **<project:../tutorials/huggingface/BertForSequenceClassification.md>**
-- **<project:../tutorials/huggingface/BertForSequenceClassification_custom.md>**
-- **<project:../tutorials/huggingface/pytorch.md>**
-- **<project:../tutorials/huggingface/pytorch_pipeline.md>**
-- **<project:../tutorials/huggingface/tensorflow.md>**
+- **<project:../guides/tutorials/huggingface/BertForSequenceClassification.md>**
+- **<project:../guides/tutorials/huggingface/BertForSequenceClassification_custom.md>**
+- **<project:../guides/tutorials/huggingface/pytorch.md>**
+- **<project:../guides/tutorials/huggingface/pytorch_pipeline.md>**
+- **<project:../guides/tutorials/huggingface/tensorflow.md>**
 ::::
 
 ::::{tab-item} custom wrapper
-- **<project:../tutorials/pytorch/custom_model.md>**
-- **<project:../tutorials/huggingface/BertForSequenceClassification_custom.md>**
+- **<project:../guides/tutorials/pytorch/custom_model.md>**
+- **<project:../guides/tutorials/huggingface/BertForSequenceClassification_custom.md>**
 ::::
 :::::
 
