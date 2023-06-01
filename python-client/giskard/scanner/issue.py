@@ -27,7 +27,7 @@ class Issue:
 
     @property
     def is_major(self):
-        return self.test_results.metric > 0.2
+        return self.test_results.metric < -0.2
 
     def examples(self, n=3):
         # @TODO: improve this once we support metadata
