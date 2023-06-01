@@ -1,6 +1,4 @@
 import email
-import glob
-import os
 from collections import defaultdict
 import pandas as pd
 from dateutil import parser
@@ -47,7 +45,7 @@ def get_labels(filename):
 
 
 def test_email_classification_bert_custom_model():
-    
+
     email_files = email_classification_utils.get_email_files()
 
     columns_name = ['Target', 'Subject', 'Content', 'Week_day', 'Year', 'Month', 'Hour', 'Nb_of_forwarded_msg']
