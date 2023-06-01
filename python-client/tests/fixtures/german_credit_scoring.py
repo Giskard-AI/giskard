@@ -11,7 +11,6 @@ from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
 
 from giskard.core.core import SupportedModelTypes
-from giskard.core.model import Model
 from giskard.ml_worker.core.dataset import Dataset
 from giskard.ml_worker.utils.logging import Timer
 from giskard.models.catboost import CatboostModel
@@ -47,7 +46,11 @@ input_types = {
 @pytest.fixture()
 def german_credit_data() -> Dataset:
     logger.info("Reading german_credit_prepared.csv")
-    df = pd.read_csv(path("test_data/german_credit_prepared.csv"), keep_default_na=False, na_values=["_GSK_NA_"], )
+    df = pd.read_csv(
+        path("test_data/german_credit_prepared.csv"),
+        keep_default_na=False,
+        na_values=["_GSK_NA_"],
+    )
     return Dataset(
         df=df,
         target="default",
@@ -102,9 +105,7 @@ def german_credit_raw_model(german_credit_data):
 
     columns_to_scale = [key for key in input_types.keys() if input_types[key] == "numeric"]
 
-    numeric_transformer = Pipeline(
-        [("imputer", SimpleImputer(strategy="median")), ("scaler", StandardScaler())]
-    )
+    numeric_transformer = Pipeline([("imputer", SimpleImputer(strategy="median")), ("scaler", StandardScaler())])
 
     columns_to_encode = [key for key in input_types.keys() if input_types[key] == "category"]
 
@@ -121,9 +122,7 @@ def german_credit_raw_model(german_credit_data):
             ("cat", categorical_transformer, columns_to_encode),
         ]
     )
-    clf = Pipeline(
-        steps=[("preprocessor", preprocessor), ("classifier", LogisticRegression(max_iter=100))]
-    )
+    clf = Pipeline(steps=[("preprocessor", preprocessor), ("classifier", LogisticRegression(max_iter=100))])
 
     Y = german_credit_data.df["default"]
     X = german_credit_data.df.drop(columns="default")
@@ -162,5 +161,5 @@ def german_credit_always_default_model(german_credit_data) -> SKLearnModel:
         model_type=SupportedModelTypes.CLASSIFICATION,
         feature_names=list(input_types),
         classification_threshold=0.5,
-        classification_labels=dummy.classes_
+        classification_labels=dummy.classes_,
     )
