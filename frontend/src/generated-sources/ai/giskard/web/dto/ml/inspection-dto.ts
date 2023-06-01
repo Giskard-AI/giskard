@@ -10,4 +10,5 @@ export interface InspectionDTO {
     id: number;
     model: ModelDTO;
     name: string;
+    sample: boolean;
 }
