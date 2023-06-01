@@ -42,7 +42,8 @@
     "vue-toastification": "^1.7.14",
     "vuetify": "^2.6.13",
     "vuetify-dialog": "^2.0.17",
-    "vuex": "^3.6.2"
+    "vuex": "^3.6.2",
+    "vue-virtual-collection": "1.5.0"
   },
   "devDependencies": {
     "@babel/core": "^7.19.3",

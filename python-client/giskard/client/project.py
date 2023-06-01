@@ -1,10 +1,7 @@
-from typing import Callable, Iterable, Union
 
-import pandas as pd
 from requests_toolbelt.sessions import BaseUrlSession
 
 from giskard.client.analytics_collector import GiskardAnalyticsCollector, anonymize
-from giskard.client.io_utils import compress, pickle_dumps
 
 
 class Project:
@@ -17,16 +14,6 @@ class Project:
         self.url = self._session.base_url.replace("/api/v2/", "")
         self.analytics = analytics or GiskardAnalyticsCollector()
         self.project_id = project_id
-
-    @staticmethod
-    def _serialize(
-            prediction_function: Callable[
-                [pd.DataFrame],
-                Iterable[Union[str, float, int]],
-            ]
-    ) -> bytes:
-        compressed_pickle: bytes = compress(pickle_dumps(prediction_function))
-        return compressed_pickle
 
     def _update_test_suite_params(self, actual_ds_id, reference_ds_id, model_id, test_id=None, test_suite_id=None):
         assert test_id is not None or test_suite_id is not None, "Either test_id or test_suite_id should be specified"

@@ -1,15 +1,16 @@
 package ai.giskard.security;
 
-import java.util.Arrays;
-import java.util.Optional;
-import java.util.stream.Stream;
-
+import ai.giskard.domain.User;
 import ai.giskard.web.rest.controllers.AccountController;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
+
+import java.util.Arrays;
+import java.util.Optional;
+import java.util.stream.Stream;
 
 /**
  * Utility class for Spring Security.
@@ -138,5 +139,16 @@ public final class SecurityUtils {
 
     private static Stream<String> getAuthorities(Authentication authentication) {
         return authentication.getAuthorities().stream().map(GrantedAuthority::getAuthority);
+    }
+
+    /**
+     * Check if the current user is any of this users
+     *
+     * @param users An array of users to match current user for
+     * @return true if the current user is in the array, false otherwise.
+     */
+    public static boolean isCurrentUserInside(User... users) {
+        long currentUserId = SecurityUtils.getCurrentAuthenticatedUserId();
+        return Arrays.stream(users).anyMatch(user -> currentUserId == user.getId());
     }
 }

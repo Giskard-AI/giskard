@@ -22,6 +22,7 @@ export const GENERATED_MAPPING = {
     'ai.giskard.web.dto.DataUploadParamsDTO' : 'DataUploadParamsDTO',
     'ai.giskard.web.dto.DatasetMetadataDTO' : 'DatasetMetadataDTO',
     'ai.giskard.web.dto.ExplainResponseDTO' : 'ExplainResponseDTO',
+    'ai.giskard.web.dto.ExplainTextResponseDTO' : 'ExplainTextResponseDTO',
     'ai.giskard.web.dto.FeatureMetadataDTO' : 'FeatureMetadataDTO',
     'ai.giskard.web.dto.FeedbackDTO' : 'FeedbackDTO',
     'ai.giskard.web.dto.FeedbackMinimalDTO' : 'FeedbackMinimalDTO',
@@ -98,6 +99,7 @@ export * from './ai/giskard/web/dto/create-feedback-reply-dto';
 export * from './ai/giskard/web/dto/data-upload-params-dto';
 export * from './ai/giskard/web/dto/dataset-metadata-dto';
 export * from './ai/giskard/web/dto/explain-response-dto';
+export * from './ai/giskard/web/dto/explain-text-response-dto';
 export * from './ai/giskard/web/dto/feature-metadata-dto';
 export * from './ai/giskard/web/dto/feedback-dto';
 export * from './ai/giskard/web/dto/feedback-minimal-dto';
