@@ -16,7 +16,7 @@
                     {{ props.inputs[a.name].value }}
                   </span>
                   <span v-else-if="a.name in props.inputs && a.type === 'Dataset'">
-                    {{ allDatasets[props.inputs[a.name].value] }}
+                    {{ props.datasets[props.inputs[a.name].value] }}
                   </span>
                   <span v-else-if="a && a.name in props.inputs">{{ props.inputs[a.name].value }}</span>
                 </v-list-item-avatar>
@@ -36,25 +36,15 @@
 <script lang="ts" setup>
 
 import {DatasetDTO, ModelDTO, TestDefinitionDTO, TestFunctionArgumentDTO, TestInputDTO} from "@/generated-sources";
-import {api} from "@/api";
-import {onMounted, ref} from "vue";
 import _ from "lodash";
 
 const props = defineProps<{
   projectId: number,
   test: TestDefinitionDTO
-  inputs: { [key: string]: TestInputDTO }
+  inputs: { [key: string]: TestInputDTO },
+  models: { [key: string]: ModelDTO },
+  datasets: { [key: string]: DatasetDTO },
 }>();
-let allDatasets = ref<{ [key: string]: DatasetDTO }>({});
-let allModels = ref<{ [key: string]: ModelDTO }>({});
-onMounted(async () => {
-  const datasets = await api.getProjectDatasets(props.projectId);
-  allDatasets.value = Object.fromEntries(datasets.map(x => [x.id, x]));
-
-
-  const models = await api.getProjectModels(props.projectId);
-  allModels.value = Object.fromEntries(models.map(x => [x.id, x]));
-});
 
 function sortedArguments(args: { [key: string]: TestFunctionArgumentDTO }) {
   return _.sortBy(_.values(args), value => {
