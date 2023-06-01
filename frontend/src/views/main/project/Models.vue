@@ -1,5 +1,16 @@
 <template>
   <div class="vertical-container">
+    <div class="d-flex mb-6">
+      <v-spacer></v-spacer>
+      <v-btn @click="reloadModels">
+        Reload
+        <v-icon right>refresh</v-icon>
+      </v-btn>
+      <v-btn color="primary" class="mx-2" href="https://docs.giskard.ai/start/guides/upload-your-model" target="_blank">
+        Upload with API
+        <v-icon right>mdi-application-braces-outline</v-icon>
+      </v-btn>
+    </div>
     <v-container v-if="projectArtifactsStore.models.length > 0" fluid class="vc">
       <v-card flat>
         <v-row class="px-2 py-1 caption secondary--text text--lighten-3">
@@ -126,6 +137,10 @@ async function renameModel(id: string, name: string) {
   mixpanel.track('Update model name', { id });
   const savedModel = await api.editModelName(id, name);
   projectArtifactsStore.updateModel(savedModel);
+}
+
+async function reloadModels() {
+  await projectArtifactsStore.loadModelsWithNotification();
 }
 
 onBeforeMount(async () => {
