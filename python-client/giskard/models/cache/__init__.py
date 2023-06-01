@@ -11,6 +11,7 @@ def set_cache_enabled(value: bool):
 
 
 def get_cache_enabled():
+    global _cache_enabled
     return _cache_enabled
 
 
