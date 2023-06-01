@@ -1,11 +1,14 @@
 import mlflow
 from typing import Union
 import logging
+from scipy import special
+import torch
 
 from giskard.core.core import SupportedModelTypes
 from giskard.core.model import MLFlowBasedModel
 
 from transformers import PreTrainedModel
+
 
 logger = logging.getLogger(__name__)
 
@@ -40,5 +43,23 @@ class HuggingFaceModel(MLFlowBasedModel):
 
     # TODO: abstract clf_predict (extreme plan B)
     def clf_predict(self, data):
-        predictions = self.clf.predict(data)
+        if isinstance(self.clf, torch.nn.Module):
+            with torch.no_grad():
+                predictions = self.clf(**data)
+        else:
+            predictions = self.clf(**data)
+
+        if self.is_classification and hasattr(predictions, 'logits'):
+            if isinstance(self.clf, torch.nn.Module):
+                with torch.no_grad():
+                    logits = predictions.logits.detach().numpy()
+            else:
+                 logits = predictions.logits
+
+            if self.model_postprocessing_function:
+                logger.warning("Your model output is logits. In Giskard, we expect the output to be probabilities."
+                               "Since you provided a model_postprocessing_function, we assume that you included softmax() yourself.", exc_info=True)
+            else:
+                predictions = special.softmax(logits, axis=1) if len(logits.shape) == 2 else special.softmax(logits)
+
         return predictions
