@@ -15,7 +15,8 @@
                 </v-col>
                 <v-col class="input-column">
                     <template v-if="!editing">
-                      <span v-if="props.testInputs[input.name]?.isAlias">
+                        <span v-if="!props.testInputs"/>
+                        <span v-else-if="props.testInputs[input.name]?.isAlias">
                         {{ props.testInputs[input.name].value }}
                       </span>
                         <span v-else-if="input.name in props.testInputs && input.type === 'BaseModel'">

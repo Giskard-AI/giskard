@@ -1,10 +1,13 @@
 package ai.giskard.web.rest.controllers;
 
+import ai.giskard.domain.FunctionArgument;
+import ai.giskard.domain.Project;
 import ai.giskard.domain.TransformationFunction;
 import ai.giskard.domain.ml.Dataset;
 import ai.giskard.ml.MLWorkerClient;
 import ai.giskard.repository.ml.DatasetRepository;
 import ai.giskard.repository.ml.TransformationFunctionRepository;
+import ai.giskard.service.TestArgumentService;
 import ai.giskard.service.TransformationFunctionService;
 import ai.giskard.service.ml.MLWorkerService;
 import ai.giskard.web.dto.TransformationFunctionDTO;
@@ -19,7 +22,9 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
+import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import static ai.giskard.utils.GRPCUtils.convertGRPCObject;
 
@@ -33,6 +38,7 @@ public class TransformationFunctionController {
     private final DatasetRepository datasetRepository;
     private final MLWorkerService mlWorkerService;
     private final TransformationFunctionService transformationFunctionService;
+    private final TestArgumentService testArgumentService;
 
     @GetMapping("/transformations/{uuid}")
     @Transactional(readOnly = true)
@@ -40,23 +46,31 @@ public class TransformationFunctionController {
         return giskardMapper.toDTO(transformationFunctionRepository.getById(uuid));
     }
 
-    @GetMapping("/transformations/{transformationFnUuid}/dataset/{datasetUuid}")
+    @PostMapping("/transformations/{transformationFnUuid}/dataset/{datasetUuid}")
     @Transactional(readOnly = true)
     public TransformationResultDTO runAdHocTransformation(@PathVariable("transformationFnUuid") @NotNull UUID sliceFnUuid,
-                                                          @PathVariable("datasetUuid") @NotNull UUID datasetUuid) {
+                                                          @PathVariable("datasetUuid") @NotNull UUID datasetUuid,
+                                                          @RequestBody Map<String, String> inputs) {
         TransformationFunction transformationFunction = transformationFunctionRepository.getById(sliceFnUuid);
         Dataset dataset = datasetRepository.getById(datasetUuid);
+        Project project = dataset.getProject();
 
-        try (MLWorkerClient client = mlWorkerService.createClient(dataset.getProject().isUsingInternalWorker())) {
-            RunAdHocTransformationRequest request = RunAdHocTransformationRequest.newBuilder()
+        try (MLWorkerClient client = mlWorkerService.createClient(project.isUsingInternalWorker())) {
+            Map<String, String> argumentTypes = transformationFunction.getArgs().stream()
+                .collect(Collectors.toMap(FunctionArgument::getName, FunctionArgument::getType));
+
+            RunAdHocTransformationRequest.Builder builder = RunAdHocTransformationRequest.newBuilder()
                 .setTransformationFunctionUuid(transformationFunction.getUuid().toString())
                 .setDataset(ArtifactRef.newBuilder()
                     .setId(dataset.getId().toString())
                     .setProjectKey(dataset.getProject().getKey())
-                    .build())
-                .build();
+                    .build());
 
-            TransformationResultMessage transformationResultMessage = client.getBlockingStub().runAdHocTransformation(request);
+            for (Map.Entry<String, String> entry : inputs.entrySet()) {
+                builder.addArguments(testArgumentService.buildTestArgument(argumentTypes, entry.getKey(), entry.getValue(), project.getKey()));
+            }
+
+            TransformationResultMessage transformationResultMessage = client.getBlockingStub().runAdHocTransformation(builder.build());
 
             return convertGRPCObject(transformationResultMessage, TransformationResultDTO.class);
         }

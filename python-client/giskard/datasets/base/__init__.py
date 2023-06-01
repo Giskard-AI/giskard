@@ -67,7 +67,7 @@ class DataProcessor:
         while len(self.pipeline):
             step = self.pipeline.pop(-1 if apply_only_last else 0)
 
-            df = step(df)
+            df = step.execute(df)
 
             if apply_only_last:
                 break
@@ -204,6 +204,7 @@ class Dataset:
         self.data_processor.add_step(transformation_function)
         return self
 
+    @configured_validate_arguments
     def slice(self, slicing_function: Optional[SlicingFunction] = None):
         """
         Slice the dataset using the specified `SlicingFunction`.
@@ -222,17 +223,20 @@ class Dataset:
             return self
 
     @configured_validate_arguments
-    def transform(self, transformation_function: TransformationFunction):
+    def transform(self, transformation_function: Optional[TransformationFunction] = None):
         """
         Transform the data in the current Dataset by applying a transformation function.
 
         Args:
-            transformation_function (TransformationFunction): A function that takes a pandas DataFrame as input and returns a modified DataFrame.
+            transformation_function (TransformationFunction, optional): A function that takes a pandas DataFrame as input and returns a modified DataFrame.
 
         Returns:
             Dataset: A new Dataset object containing the transformed data.
         """
-        return self.data_processor.add_step(transformation_function).apply(self, apply_only_last=True)
+        if transformation_function:
+            return self.data_processor.add_step(transformation_function).apply(self, apply_only_last=True)
+        else:
+            return self
 
     def process(self):
         """
@@ -342,9 +346,6 @@ class Dataset:
 
         Returns:
             str: The ID of the uploaded dataset.
-
-        Raises:
-            DatasetValidationError: If the dataset is not valid.
         """
         from giskard.core.dataset_validation import validate_dataset
 
@@ -397,7 +398,8 @@ class Dataset:
         If the client is None, then the function assumes that it is running in an internal worker and looks for the dataset locally.
 
         Args:
-            client (GiskardClient or None): The GiskardClient instance to use for downloading the dataset.
+            client (GiskardClient):
+                The GiskardClient instance to use for downloading the dataset.
                 If None, the function looks for the dataset locally.
             project_key (str): The key of the Giskard project that the dataset belongs to.
             dataset_id (str): The ID of the dataset to download.

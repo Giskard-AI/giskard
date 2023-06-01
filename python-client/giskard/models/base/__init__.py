@@ -67,9 +67,9 @@ class BaseModel(ABC):
     def __init__(
             self,
             model_type: ModelType,
-            name: str = None,
+            name: Optional[str] = None,
             feature_names: Optional[Iterable] = None,
-            classification_threshold: float = 0.5,
+            classification_threshold: Optional[float] = 0.5,
             classification_labels: Optional[Iterable] = None,
     ) -> None:
         """
@@ -296,9 +296,6 @@ class BaseModel(ABC):
             project_key (str): The project key to use for the upload.
             validate_ds (Dataset, optional): A validation dataset to use for validating the model. Defaults to None.
 
-        Raises:
-            ValidationError: If the model fails validation.
-
         Notes:
             This method saves the model to a temporary directory before uploading it. The temporary directory
             is deleted after the upload is completed.
@@ -400,9 +397,9 @@ class WrapperModel(BaseModel, ABC):
             model_type: ModelType,
             data_preprocessing_function: Callable[[pd.DataFrame], Any] = None,
             model_postprocessing_function: Callable[[Any], Any] = None,
-            name: str = None,
+            name: Optional[str] = None,
             feature_names: Optional[Iterable] = None,
-            classification_threshold: float = 0.5,
+            classification_threshold: Optional[float] = 0.5,
             classification_labels: Optional[Iterable] = None,
     ) -> None:
         """
