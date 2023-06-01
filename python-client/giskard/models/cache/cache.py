@@ -32,7 +32,7 @@ class ModelCache:
         self.id = id
 
         if id is not None:
-            with open(Path(settings.home_dir / settings.cache_dir / "prediction_cache" / id / CACHE_CSV_FILENAME),
+            with open(Path(settings.home_dir / settings.cache_dir / "prediction_cache" / str(id) / CACHE_CSV_FILENAME),
                       "r") as pred_f:
                 reader = csv.reader(pred_f)
                 self.prediction_cache = dict(reader)
@@ -55,7 +55,8 @@ class ModelCache:
             self.prediction_cache[keys.iloc[i]] = values[i]
 
         if self.id:
-            with open(Path(settings.home_dir / settings.cache_dir / "prediction_cache" / id / CACHE_CSV_FILENAME),
+            with open(Path(settings.home_dir / settings.cache_dir / "prediction_cache" / str(
+                    self.id) / CACHE_CSV_FILENAME),
                       "a") as pred_f:
                 writer = csv.writer(pred_f)
                 for i in range(len(keys)):
@@ -74,7 +75,7 @@ class ModelCache:
         self.id = id
 
         if len(self.prediction_cache.keys()) > 0:
-            with open(Path(settings.home_dir / settings.cache_dir / "prediction_cache" / id / CACHE_CSV_FILENAME),
+            with open(Path(settings.home_dir / settings.cache_dir / "prediction_cache" / str(id) / CACHE_CSV_FILENAME),
                       "w") as pred_f:
                 writer = csv.writer(pred_f)
                 for key, value in self.prediction_cache.items():
