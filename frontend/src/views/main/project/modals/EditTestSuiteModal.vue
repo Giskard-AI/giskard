@@ -110,6 +110,7 @@ async function deleteSuite(outerClose) {
         on: {
             async confirm(close) {
                 await api.deleteSuite(suite.projectKey!, suite.id!);
+                testSuitesStore.setCurrentTestSuiteId(null);
                 await testSuitesStore.reload()
                 await router.push({
                     name: 'project-testing'
