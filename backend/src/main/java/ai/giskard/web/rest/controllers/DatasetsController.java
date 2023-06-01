@@ -11,7 +11,6 @@ import ai.giskard.utils.FunctionArguments;
 import ai.giskard.web.dto.*;
 import ai.giskard.web.dto.mapper.GiskardMapper;
 import ai.giskard.web.dto.ml.DatasetDTO;
-import ai.giskard.web.dto.ml.DatasetDetailsDTO;
 import ai.giskard.worker.ArtifactRef;
 import ai.giskard.worker.DatasetProcessingFunction;
 import ai.giskard.worker.DatasetProcessingRequest;
@@ -81,19 +80,6 @@ public class DatasetsController {
                                   @RequestBody RowFilterDTO rowFilter,
                                   @RequestParam(required = false, defaultValue = "true") boolean sample) throws IOException {
         return datasetService.getRows(datasetId, offset, offset + size, rowFilter, sample);
-    }
-
-    /**
-     * Getting dataset's details, like number of rows, headers..
-     * TODO add the headers
-     *
-     * @param datasetId
-     * @return
-     * @throws IOException
-     */
-    @GetMapping("/dataset/{datasetId}/details")
-    public DatasetDetailsDTO datasetDetails(@PathVariable @NotNull UUID datasetId) {
-        return datasetService.getDetails(datasetId);
     }
 
     @DeleteMapping("/dataset/{datasetId}")
