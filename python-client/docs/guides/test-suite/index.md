@@ -64,11 +64,8 @@ wrapped_model = wrap_model(...)
 train_df = wrap_dataset(...)
 test_df = wrap_dataset(...)
 
-result = test_drift_prediction_ks(reference_dataset=train_df,
-                                  actual_dataset=test_df,
-                                  model=wrapped_model,
-                                  classification_label='CALIFORNIA CRISIS',
-                                  threshold=0.5).execute()
+result = test_drift_prediction_ks(model=wrapped_model, actual_dataset=test_df, reference_dataset=train_df,
+                                  classification_label='CALIFORNIA CRISIS', threshold=0.5).execute()
 
 print("Result for 'Classification Probability drift (Kolmogorov-Smirnov):")
 print(f"Passed: {result.passed}")
@@ -112,7 +109,7 @@ def add_three_years(row):
     return row
 
 
-result = test_metamorphic_invariance(wrapped_dataset, wrapped_model, add_three_years).execute()
+result = test_metamorphic_invariance(wrapped_model, wrapped_dataset, add_three_years).execute()
 print(f"result: {result.passed} with metric {result.metric}")
 ```
 
@@ -129,7 +126,7 @@ from giskard import wrap_model, wrap_dataset, test_right_label
 wrapped_model = wrap_model(...)
 wrapped_dataset = wrap_dataset(...)
 
-result = test_right_label(wrapped_dataset, wrapped_model, 'SUCCESS').execute()
+result = test_right_label(wrapped_model, wrapped_dataset, 'SUCCESS').execute()
 print(f"result: {result.passed} with metric {result.metric}")
 ```
 
