@@ -84,7 +84,7 @@ class Savable(Generic[DT, SMT]):
         return SavableMeta(uuid=uuid)
 
     @classmethod
-    def load(cls, uuid: str, client: GiskardClient, project_key: Optional[str]):
+    def load(cls, uuid: str, client: Optional[GiskardClient], project_key: Optional[str]):
         if client is None:
             meta = cls._read_meta_from_loca_dir(uuid, project_key)
         else:

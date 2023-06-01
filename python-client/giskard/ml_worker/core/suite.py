@@ -2,15 +2,16 @@ import inspect
 import logging
 import uuid
 from dataclasses import dataclass
-from typing import List, Any, Union, Dict, Mapping, Callable, Optional
+from typing import List, Any, Union, Dict, Mapping, Optional
 
 from giskard.client.dtos import TestSuiteNewDTO, SuiteTestDTO, TestInputDTO
 from giskard.client.giskard_client import GiskardClient
+from giskard.core.core import TestFunctionMeta
 from giskard.core.model import Model
 from giskard.ml_worker.core.dataset import Dataset
 from giskard.ml_worker.core.test_result import TestResult
 from giskard.ml_worker.testing.registry.giskard_test import GiskardTest, Test, GiskardTestMethod
-from giskard.ml_worker.testing.registry.registry import create_test_function_id, tests_registry, TestFunction
+from giskard.ml_worker.testing.registry.registry import tests_registry
 
 logger = logging.getLogger(__name__)
 
@@ -84,7 +85,7 @@ class Suite:
 
         for test_partial in self.tests:
             test_params = self.create_test_params(test_partial, suite_run_args)
-            res[test_partial.test_identifier] =  test_partial.giskard_test.set_params(**test_params).execute()
+            res[test_partial.test_identifier] = test_partial.giskard_test.set_params(**test_params).execute()
 
         result = single_binary_result(list(res.values()))
 
@@ -212,7 +213,7 @@ class Suite:
 
         return self
 
-    def _add_test_if_suitable(self, test_func: TestFunction, inputs: List[SuiteInput]):
+    def _add_test_if_suitable(self, test_func: TestFunctionMeta, inputs: List[SuiteInput]):
         required_args = [arg for arg in test_func.args.values() if arg.default is None]
         input_dict: Dict[str, SuiteInput] = {
             i.name: i
@@ -242,13 +243,13 @@ class Suite:
                          if isinstance(dataset, DatasetInput) and dataset.target is None and dataset.target != ""]):
             return
 
-        self.add_test(test_func.fn, **suite_args)
+        self.add_test(GiskardTest.load(test_func.uuid, None, None).set_params(**suite_args))
 
-    def _contains_test(self, test: TestFunction):
+    def _contains_test(self, test: TestFunctionMeta):
         return any(t.giskard_test == test for t in self.tests)
 
 
-def contains_tag(func: TestFunction, tag: str):
+def contains_tag(func: TestFunctionMeta, tag: str):
     return any([t for t in func.tags if t.upper() == tag.upper()])
 
 
