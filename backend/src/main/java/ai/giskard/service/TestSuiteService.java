@@ -200,4 +200,13 @@ public class TestSuiteService {
 
         return giskardMapper.toDTO(testSuiteRepository.save(testSuite));
     }
+
+    @Transactional
+    public TestSuiteDTO updateTestSuite(long suiteId, TestSuiteDTO testSuiteDTO) {
+        TestSuite testSuite = testSuiteRepository.getById(suiteId);
+
+        testSuite.setName(testSuiteDTO.getName());
+
+        return giskardMapper.toDTO(testSuiteRepository.save(testSuite));
+    }
 }

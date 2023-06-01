@@ -1,9 +1,6 @@
 <template>
   <div class="vc">
     <div class="d-flex justify-space-between align-center">
-      <v-breadcrumbs
-          :items="executionBreadcrumbs"
-      ></v-breadcrumbs>
       <v-btn text color="secondary" @click="handleOpenGlobalInputs">
         Global inputs
         <v-icon>info</v-icon>
@@ -74,7 +71,6 @@ import {Colors} from '@/utils/colors';
 import {Comparators} from '@/utils/comparators';
 import {storeToRefs} from 'pinia';
 import {useTestSuiteStore} from '@/stores/test-suite';
-import {formatDate} from '@/filters';
 import {useRoute, useRouter} from 'vue-router/composables';
 import {$vfm} from 'vue-final-modal';
 import TestSuiteExecutionInputsModal from '@/views/main/project/modals/TestSuiteExecutionInputsModal.vue';
@@ -138,15 +134,6 @@ const executionItem = {
 const route = useRoute();
 
 const selectedExecution = computed(() => executions.value.find(e => e.id == route.params.executionId));
-
-const executionBreadcrumbs = computed(() =>
-    !selectedExecution.value ? [executionItem] : [
-      executionItem,
-      {
-        text: formatDate(selectedExecution.value.executionDate),
-        disabled: false
-      }
-    ]);
 
 function executionResults(execution: TestSuiteExecutionDTO): boolean[] {
   return execution.results ? execution.results.map(result => result.passed) : [];
