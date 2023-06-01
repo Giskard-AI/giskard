@@ -92,7 +92,7 @@ const codeContent = computed(() =>
   `# Create a Giskard client
 from giskard import GiskardClient
 url = "http://localhost:19000" # URL of your Giskard instance
-token = "my_API_Access_Token" # Your API Access Token
+token = "my_API_Access_Token" # Your API Access Token (generate one in Settings > API Access Token > Generate)
 client = GiskardClient(url, token)
 
 # Load your model (example: SKLearn model)

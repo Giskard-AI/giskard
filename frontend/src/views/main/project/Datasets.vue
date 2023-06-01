@@ -85,9 +85,9 @@ url = "http://localhost:19000" # URL of your Giskard instance
 token = "my_API_Access_Token" # Your API Access Token (generate one in Settings > API Access Token > Generate)
 client = GiskardClient(url, token)
 
-# Load your data
+# Load your data (example: from a csv file as a pandas dataframe)
 import pandas as pd
-my_df = pd.read_csv("my_data.csv") # Load your data
+my_df = pd.read_csv("data.csv")
 my_column_types = {"categorical_column": "category",
                    "text_column": "text",
                    "numeric_column": "numeric"} # Declare the type of each column in your data (example: category, numeric, text)
@@ -96,7 +96,8 @@ my_column_types = {"categorical_column": "category",
 from giskard import Dataset
 my_dataset = Dataset(df=my_df, 
                      target="numeric_column",
-                     column_types=my_column_types)
+                     column_types=my_column_types,
+                     name="My Dataset")
 
 # Upload your dataset on Giskard
 project_key = "${props.projectKey}" # Current project key
