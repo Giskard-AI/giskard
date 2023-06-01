@@ -11,7 +11,7 @@
         </router-link>
         <span v-show="currentTab !== null">
           <span>/</span>
-          {{ currentTab?.charAt(0).toUpperCase() + currentTab?.slice(1) }}
+          {{ currentTabString }}
         </span>
       </v-toolbar-title>
       <v-spacer></v-spacer>
@@ -141,6 +141,10 @@ const currentTab = ref<string | null>(null);
 
 const userProfile = computed(() => {
   return userStore.userProfile;
+})
+
+const currentTabString = computed(() => {
+  return currentTab.value!.charAt(0).toUpperCase() + currentTab.value!.slice(1)
 })
 
 
