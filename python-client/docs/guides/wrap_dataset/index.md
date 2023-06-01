@@ -17,7 +17,7 @@ wrapped_dataset = Dataset(
 )
 ```
 :::{info}
-For more information about the methods of Dataset, see the [API Reference](../../reference/datasets/index).
+You can easily convert back your Giskard into a pandas DataFrame. To do so, use the `.df` method. For more information about the methods of Dataset, see the [API Reference](../../reference/datasets/index).
 :::
 
 * <mark style="color:red;">**`Mandatory parameters`**</mark>
@@ -42,5 +42,5 @@ Uploading your dataset to the Giskard server enables you to:
 * Inspect and debug your dataset 
 * Use your dataset as input of your tests (unit datasets)
 
-To upload your dataset to the Giskard server, go to [Upload objects](../upload/index.md) to the Giskard server.
+To upload your dataset to the Giskard server, go to the page [Upload an object to the Giskard server](../upload/index.md).
 

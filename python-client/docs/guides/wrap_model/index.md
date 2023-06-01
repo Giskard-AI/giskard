@@ -1,6 +1,6 @@
 # 🎁 Wrap your ML model
 
-To use your model with Giskard, you can either:
+To scan, test and debug your model, you need to wrap it into a Giskard Model. Your model can use any ML library (`HuggingFace`, `PyTorch`, `Tensorflow`, `Sklearn`, etc.) and can be any Python function that respects the right signature. You can wrap your model in 2 different ways:
 
 - <b> Wrap a prediction function</b> that contains all your data preprocessing steps.
 - <b> Wrap a model object</b> in addition to a data preprocessing function.
@@ -291,6 +291,13 @@ respectively.
   ::::
   :::::
 
-:::{hint}
-To upload your model to the Giskard server, go to [Upload objects](../upload/index.md) to the Giskard server.
+## Upload your model to the Giskard server
+
+Uploading the model to the Giskard server enables you to:
+* Compare your model with others using a test suite.
+* Gather feedback from your colleagues regarding your model.
+* Debug your model effectively in case of test failures.
+* Develop new tests that incorporate additional domain knowledge
+
+To upload your model to the Giskard server, go to [Upload an object to the Giskard server](../upload/index.md).
 :::
