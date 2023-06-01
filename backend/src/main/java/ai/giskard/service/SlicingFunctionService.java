@@ -14,10 +14,12 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
 import static ai.giskard.utils.GiskardStringUtils.escapePythonVariable;
+import static ai.giskard.utils.GiskardStringUtils.parsePythonVariable;
 
 @Service
 
@@ -58,13 +60,21 @@ public class SlicingFunctionService extends DatasetProcessFunctionService<Slicin
         }
     }
 
+    private Map<String, Object> toCode(ComparisonClauseDTO clause) {
+        return Map.of(
+            "columnName", clause.getColumnName(),
+            "comparisonType", clause.getComparisonType(),
+            "value", parsePythonVariable(clause.getValue(), clause.getColumnDtype())
+        );
+    }
+
     public SlicingFunctionDTO generate(List<ComparisonClauseDTO> comparisonClauses) throws JsonProcessingException {
         String name = comparisonClauses.stream().map(this::clauseToString).collect(Collectors.joining(" & "));
 
         SlicingFunction slicingFunction = new SlicingFunction();
         slicingFunction.setUuid(UUID.randomUUID());
         slicingFunction.setArgs(Collections.emptyList());
-        slicingFunction.setCode(YAMLConverter.writeValueAsString(comparisonClauses));
+        slicingFunction.setCode(YAMLConverter.writeValueAsString(comparisonClauses.stream().map(this::toCode).collect(Collectors.toList())));
         slicingFunction.setDisplayName(name);
         slicingFunction.setDoc("Automatically generated slicing function");
         slicingFunction.setModule("");
