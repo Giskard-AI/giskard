@@ -45,7 +45,7 @@ def test_text_classification_tfhub():
     model = build_classifier_model()
 
     my_model = TensorFlowModel(name="Tensorflow_text_classification_tfhub",
-                               clf=model,
+                               model=model,
                                feature_names=['Content'],
                                model_type="classification",
                                classification_labels=['0', '1', '2', '3'])

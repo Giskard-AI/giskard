@@ -64,6 +64,6 @@ class RetrievalQAModel(Model):
 
             return cls(RetrievalQA.from_chain_type(llm=OpenAI(), chain_type="stuff", retriever=chroma.as_retriever()))
 
-# For inspect= clf predict
+# For inspect= model predict
 # Should save class to true
 # Example in the unit tests

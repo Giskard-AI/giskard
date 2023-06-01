@@ -61,7 +61,7 @@ def test_sst2_pytorch_list():
 
     my_model = PyTorchModel(
         name="SST2-XLMR_BASE_ENCODER",
-        clf=model,
+        model=model,
         feature_names=["text"],
         model_type="classification",
         classification_labels=classification_labels,

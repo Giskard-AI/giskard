@@ -112,7 +112,7 @@ def test_email_classification_bert_custom_model():
 
     my_model = HuggingFaceModel(
         name=model_name,
-        clf=model,
+        model=model,
         feature_names=['Content'],
         model_type="classification",
         classification_labels=list(classification_labels_mapping.keys()),

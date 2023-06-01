@@ -11,7 +11,7 @@ from giskard.models.base import MLFlowBasedModel
 class SKLearnModel(MLFlowBasedModel):
     @configured_validate_arguments
     def __init__(self,
-                 clf,
+                 model,
                  model_type: ModelType,
                  name: Optional[str] = None,
                  data_preprocessing_function: Callable[[pd.DataFrame], Any] = None,
@@ -20,16 +20,16 @@ class SKLearnModel(MLFlowBasedModel):
                  classification_threshold: float = 0.5,
                  classification_labels: Optional[Iterable] = None) -> None:
 
-        if classification_labels is None and hasattr(clf, "classes_"):
-            classification_labels = list(getattr(clf, "classes_"))
-        if feature_names is None and hasattr(clf, "feature_names_"):
+        if classification_labels is None and hasattr(model, "classes_"):
+            classification_labels = list(getattr(model, "classes_"))
+        if feature_names is None and hasattr(model, "feature_names_"):
             if data_preprocessing_function is None:
-                feature_names = list(getattr(clf, "feature_names_"))
+                feature_names = list(getattr(model, "feature_names_"))
             else:
                 raise ValueError("feature_names must be provided if data_preprocessing_function is not None.")
 
         super().__init__(
-            clf=clf,
+            model=model,
             model_type=model_type,
             name=name,
             data_preprocessing_function=data_preprocessing_function,
@@ -48,15 +48,15 @@ class SKLearnModel(MLFlowBasedModel):
             raise ValueError("Unsupported model type")
 
         mlflow.sklearn.save_model(
-            self.clf, path=local_path, pyfunc_predict_fn=pyfunc_predict_fn, mlflow_model=mlflow_meta
+            self.model, path=local_path, pyfunc_predict_fn=pyfunc_predict_fn, mlflow_model=mlflow_meta
         )
 
     @classmethod
-    def load_clf(cls, local_dir):
+    def load_model(cls, local_dir):
         return mlflow.sklearn.load_model(local_dir)
 
-    def clf_predict(self, df):
+    def model_predict(self, df):
         if self.is_regression:
-            return self.clf.predict(df)
+            return self.model.predict(df)
         else:
-            return self.clf.predict_proba(df)
+            return self.model.predict_proba(df)
