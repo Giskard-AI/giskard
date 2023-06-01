@@ -5,15 +5,13 @@ build:
   tools:
     python: "3.10"
   jobs:
-    #    pre_build:
-    ##      - sphinx-apidoc -o python-client/docs python-client/giskard
     post_create_environment:
       - pip install pdm
-#      - pdm config python.use_venv false
-    post_install:
-      - sh -c "pdm config python.use_venv false && cd python-client && pdm install -G doc"
-#      - pip install -r python-client/requirements.txt
-
+      - pdm export -p python-client --without-hashes -G doc -o requirements-sphinx.txt
 
 sphinx:
   configuration: python-client/docs/conf.py
+
+python:
+  install:
+    - requirements: requirements-sphinx.txt
