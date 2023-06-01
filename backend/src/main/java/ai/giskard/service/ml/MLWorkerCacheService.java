@@ -20,7 +20,6 @@ import com.google.protobuf.Empty;
 import io.grpc.StatusRuntimeException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.stream.Stream;
 
@@ -42,9 +41,8 @@ public class MLWorkerCacheService {
     private final GiskardMapper giskardMapper;
     private CatalogDTO catalogWithoutPickles = new CatalogDTO();
 
-    @Transactional
     public CatalogDTO getCatalog(long projectId) {
-        CatalogDTO catalog = findGiskardTest(projectRepository.getById(projectId).isUsingInternalWorker());
+        CatalogDTO catalog = findGiskardTest(projectRepository.getMandatoryById(projectId).isUsingInternalWorker());
 
         return CatalogDTO.builder()
             .tests(Stream.concat(

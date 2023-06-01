@@ -11,11 +11,9 @@ import ai.giskard.service.TestArgumentService;
 import ai.giskard.service.ml.MLWorkerService;
 import ai.giskard.web.dto.RunAdhocTestRequest;
 import ai.giskard.web.dto.ml.TestTemplateExecutionResultDTO;
-import ai.giskard.web.rest.errors.EntityNotFoundException;
 import ai.giskard.worker.RunAdHocTestRequest;
 import ai.giskard.worker.TestResultMessage;
 import lombok.RequiredArgsConstructor;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -25,8 +23,6 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
-
-import static ai.giskard.web.rest.errors.Entity.TEST_FUNCTION;
 
 
 @RestController
@@ -40,16 +36,15 @@ public class TestController {
     private final TestFunctionRepository testFunctionRepository;
 
     @PostMapping("/run-test")
-    @Transactional(readOnly = true)
     public TestTemplateExecutionResultDTO runAdHocTest(@RequestBody RunAdhocTestRequest request) {
-        TestFunction testFunction = testFunctionRepository.findById(UUID.fromString(request.getTestUuid()))
-            .orElseThrow(() -> new EntityNotFoundException(TEST_FUNCTION, request.getTestUuid()));
+        TestFunction testFunction = testFunctionRepository.getWithArgsByUuid(UUID.fromString(request.getTestUuid()));
+        Map<String, String> argumentTypes = testFunction.getArgs().stream()
+            .collect(Collectors.toMap(FunctionArgument::getName, FunctionArgument::getType));
 
-        Project project = projectRepository.getById(request.getProjectId());
+        Project project = projectRepository.getMandatoryById(request.getProjectId());
 
-        try (MLWorkerClient client = mlWorkerService.createClient(projectRepository.getById(request.getProjectId()).isUsingInternalWorker())) {
-            Map<String, String> argumentTypes = testFunction.getArgs().stream()
-                .collect(Collectors.toMap(FunctionArgument::getName, FunctionArgument::getType));
+        boolean usingInternalWorker = project.isUsingInternalWorker();
+        try (MLWorkerClient client = mlWorkerService.createClient(usingInternalWorker)) {
 
             RunAdHocTestRequest.Builder builder = RunAdHocTestRequest.newBuilder()
                 .setTestUuid(request.getTestUuid());
