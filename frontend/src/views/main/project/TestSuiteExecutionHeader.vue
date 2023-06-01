@@ -4,21 +4,21 @@
                  class="flex-grow-1">
             <v-row align="center">
                 <v-col class="grow">
-                    <h4 v-if="!props.execution">
+                    <h4 v-if="!props.execution" class="text-alert">
                         No execution has been performed yet!
                     </h4>
-                    <h4 v-else-if="props.execution.result === TestResult.ERROR">
+                    <h4 v-else-if="props.execution.result === TestResult.ERROR" class="text-alert">
                         An error arose during the execution. Executed <b>{{ timeSince(execution.executionDate) }}</b>.
                         Check the <span @click="openLogs" class="clickable">execution logs.</span>
                     </h4>
-                    <h4 v-else>Test suite
+                    <h4 v-else class="text-alert">Test suite
                         {{ props.execution.result === TestResult.PASSED ? 'passed' : 'failed' }}:
                         <span v-if="successRatio.failed > 0">{{ plurialize('test', successRatio.failed) }} failed</span>
                         <span v-if="successRatio.failed > 0 && successRatio.passed > 0">, </span>
                         <span v-if="successRatio.passed > 0">{{ plurialize('test', successRatio.passed) }} passed</span>
                         <span v-if="successRatio.failed > 0 || successRatio.passed > 0">. </span>
                         Executed <b>{{ timeSince(execution.executionDate) }}</b>.
-                        Check the <span @click="openLogs" class="clickable">execution logs.</span>
+                        Check the <b @click="openLogs" class="clickable">execution logs.</b>
                     </h4>
                 </v-col>
             </v-row>
@@ -97,6 +97,15 @@ function openLogs() {
 .clickable {
     cursor: pointer;
     text-decoration: underline;
+}
+
+.text-alert {
+    font-style: normal;
+    font-weight: 500;
+    font-size: 16px;
+    line-height: 24px;
+    letter-spacing: 0.005em;
+    font-feature-settings: 'liga' off;
 }
 </style>
 

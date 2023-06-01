@@ -1,5 +1,5 @@
 export class Colors {
-    static FAIL = '#F44336';
+    static FAIL = '#FF5252';
     static FAIL_SURFACE = "rgba(255, 82, 82, 0.2)";
     static ON_FAIL_SURFACE = '#B71C1C';
     static PASS = '#4CAF50';
