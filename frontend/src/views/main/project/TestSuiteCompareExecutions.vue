@@ -28,12 +28,13 @@
 
 <script lang="ts" setup>
 
-import {SuiteTestExecutionDTO, TestResult, TestSuiteExecutionDTO} from '@/generated-sources';
+import {SuiteTestExecutionDTO, TestSuiteExecutionDTO} from '@/generated-sources';
 import {computed, ComputedRef} from 'vue';
 import TestInputList from '@/components/TestInputList.vue';
 import {chain} from 'lodash';
 import {storeToRefs} from 'pinia';
 import {useTestSuiteStore} from '@/stores/test-suite';
+import {useRoute} from 'vue-router/composables';
 
 const {executions, models, datasets, inputs, registry} = storeToRefs(useTestSuiteStore());
 
@@ -47,10 +48,11 @@ type ExecutionComparison = {
   }
 }
 
+const route = useRoute();
+
 const executionComparisons: ComputedRef<ExecutionComparison[]> = computed(() => {
   const results: ExecutionComparison[] = executions.value ?
-      executions.value
-          .filter(execution => execution.result === TestResult.PASSED || execution.result === TestResult.FAILED)
+      [...executions.value].splice(0, Number(route.query.latestCount))
           .map(execution => ({execution} as ExecutionComparison))
       : [];
 

@@ -154,7 +154,8 @@ export default new Router({
                                             props: (route) => {
                                                 return {
                                                     suiteId: Number(route.params.suiteId),
-                                                    projectId: Number(route.params.id)
+                                                    projectId: Number(route.params.id),
+                                                    latestCount: Number(route.query.latestCount)
                                                 }
                                             }
                                         },

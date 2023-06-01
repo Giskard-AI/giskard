@@ -66,6 +66,7 @@ import TestInputListSelector from '@/components/TestInputListSelector.vue';
 import {useMainStore} from "@/stores/main";
 import {useTestSuiteStore} from '@/stores/test-suite';
 import {TestInputDTO} from '@/generated-sources';
+import {useRouter} from 'vue-router/composables';
 
 const props = defineProps<{
   projectId: number,
@@ -114,6 +115,8 @@ function isAllParamsSet() {
       .length === 0;
 }
 
+const router = useRouter();
+
 async function executeTestSuite(close) {
   mixpanel.track('Run test suite', {suiteId: props.suiteId});
   running.value = true;
@@ -135,6 +138,7 @@ async function executeTestSuite(close) {
 
     if (props.compareMode) {
       await Promise.all(jobUuids);
+      router.push({name: 'test-suite-compare-executions', query: {latestCount: jobUuids.length.toString()}})
     } else {
       mainStore.addNotification({content: 'Test suite execution has been scheduled', color: 'success'});
     }
