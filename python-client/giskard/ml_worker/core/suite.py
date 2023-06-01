@@ -215,7 +215,7 @@ class Suite:
         }
 
         if any([arg for arg in required_args if
-                arg.name not in input_dict or not arg.type == input_dict[arg.name].type.__name__]):
+                arg.name not in input_dict or arg.type != input_dict[arg.name].type.__name__]):
             # Test is not added if an input  without default value is not specified
             # or if an input does not match the required type
             return
