@@ -25,8 +25,8 @@ my_slicing_functions = scan_result["ROBUS"].transformation_function
 
 The [Giskard catalog](docs/catalogs/slicing-function-catalog) provides you different transformation functions for NLP, such as *typo addings* or *punctuation stripping*. 
 ```
-#Load sentiment analysis model from the Giskard catalog
-from giskard.ml_worker.testing.functions.slicing import positive_sentiment_analysis
+#Import keyboard typo transformations
+from giskard.ml_worker.testing.functions.transformation import keyboard_typo_transformation
 ```
 
 ## Create your own transformation function
@@ -35,24 +35,22 @@ To create a Giskard slicing function, you just need to decorate an existing Pyth
 
 :::::{tab-set}
 
-#Import keyboard typo transformations
-from giskard.ml_worker.testing.functions.transformation import keyboard_typo_transformation
-
 ::::{tab-item} row_level=True (default)
 
 When `row_level=True`, you can decorate a function that takes a pandas dataframe **row** as input and returns a boolean. Make sure that the first argument of your function corresponds to the row you want to filter:
 ```
-from giskard import slicing_function, demo
+from giskard import transformation_function, demo
 import pandas as pd
 
-_, df = demo.titanic()
-dataset = Dataset(df=df, target="Survived", cat_columns=['Pclass', 'Sex', "SibSp", "Parch", "Embarked"])
+_, my_df = demo.titanic()
+dataset = Dataset(df=my_df, target="Survived", cat_columns=['Pclass', 'Sex', "SibSp", "Parch", "Embarked"])
 
-@slicing_function(row_level=True)
-def my_func2(row: pd.Series, threshold: int):
-    return row['Age'] > threshold
+@transformation_function(row_level=True)
+def my_func2(row: pd.Series, offset: int):
+    row['Age'] = row['Age'] + offset
+    return row
 
-dataset.slice(my_func2(threshold=20))
+transformed_dataset = dataset.transform(my_func2(offset=20))
 ```
 ::::
 
@@ -66,12 +64,12 @@ import pandas as pd
 _, df = demo.titanic()
 dataset = Dataset(df=df, target="Survived", cat_columns=['Pclass', 'Sex', "SibSp", "Parch", "Embarked"])
 
-@slicing_function(row_level=False)
-def my_func1(df: pd.DataFrame, threshold: int):
-    df['Age'] = df['Age'] > threshold
+@transformation_function(row_level=False)
+def my_func1(df: pd.DataFrame, offset: int):
+    df['Age'] = df['Age'] + offset
     return df
 
-dataset.slice(my_func1(threshold=20))
+transformed_dataset = dataset.transform(my_func1(offset=20))
 ```
 ::::
 
@@ -86,11 +84,11 @@ import pandas as pd
 _, df = demo.titanic()
 dataset = Dataset(df=df, target="Survived", cat_columns=['Pclass', 'Sex', "SibSp", "Parch", "Embarked"])
 
-@slicing_function(cell_level=True)
-def my_func3(cell: int, threshold: int):
-    return cell>threshold
+@transformation_function(cell_level=True)
+def my_func3(cell: int, offset: int):
+    return cell + offset
 
-train_df.slice(my_func3(threshold=20), column_name='Age')
+transformed_dataset = dataset.transform(my_func3(offset=20), column_name='Age')
 ```
 ::::
 :::::
