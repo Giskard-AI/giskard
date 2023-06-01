@@ -49,10 +49,12 @@
                                        :value.sync="props.modelValue[input.name].value"/>
                         <SlicingFunctionSelector :project-id="projectId" :label="input.name"
                                                  v-else-if="input.type === 'SlicingFunction'"
-                                                 :value.sync="props.modelValue[input.name].value"/>
+                                                 :value.sync="props.modelValue[input.name].value"
+                                                 :args.sync="props.modelValue[input.name].params"/>
                         <TransformationFunctionSelector :project-id="projectId" :label="input.name"
                                                         v-else-if="input.type === 'TransformationFunction'"
-                                                        :value.sync="props.modelValue[input.name].value"/>
+                                                        :value.sync="props.modelValue[input.name].value"
+                                                        :args.sync="props.modelValue[input.name].params"/>
                         <v-text-field
                                 :step='input.type === "float" ? 0.1 : 1'
                                 v-model="props.modelValue[input.name].value"
