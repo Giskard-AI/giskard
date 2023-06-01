@@ -139,8 +139,6 @@ const executions = ref<TestSuiteExecutionDTO[]>();
 onMounted(() => loadData());
 
 async function loadData() {
-  executions.value = undefined;
-
   // Call api in parallel to shorten loading time
   const [
     inputResults,
