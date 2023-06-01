@@ -1,5 +1,5 @@
 <template>
-    <div class="d-flex flex-column">
+    <div class="d-flex flex-column gap-16">
         <SuiteTestExecutionCard v-for="({result, suiteTest}) in props.tests" :suite-test="suiteTest" :result="result"/>
     </div>
 </template>
@@ -24,4 +24,10 @@ const props = withDefaults(defineProps<{
 const testSuiteStore = useTestSuiteStore();
 const {suite} = storeToRefs(testSuiteStore);
 </script>
+
+<style scoped lang="scss">
+.gap-16 {
+    gap: 16px;
+}
+</style>
 
