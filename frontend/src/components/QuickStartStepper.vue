@@ -25,7 +25,16 @@
 
       <v-stepper-content step="2">
         <div class="mb-6">
-          <p class="mb-2">Create a Giskard client with the following Python code:</p>
+          <p class="mb-2">First, you must have access to an API Access Token.</p>
+          <div v-if="apiAccessToken && apiAccessToken.id_token">
+            <CodeSnippet :codeContent='`
+token = "${apiAccessToken.id_token}" # Your API Access Token`'></CodeSnippet>
+          </div>
+          <div v-else>
+            <p>If you don't have one, you can click on the button below.</p>
+            <v-btn color="primaryLight" class="primaryLightBtn" @click="generateApiAccessToken">Generate</v-btn>
+          </div>
+          <p class="my-2">Then, create a Giskard client with the following Python code:</p>
           <CodeSnippet :codeContent="clientCodeContent"></CodeSnippet>
         </div>
         <v-btn color="primary" @click="step = 3">Continue</v-btn>
@@ -82,7 +91,7 @@
 import { computed, onMounted, ref } from "vue";
 import { api } from "@/api";
 import { apiURL } from "@/env";
-import { MLWorkerInfoDTO, ProjectDTO } from "@/generated-sources";
+import { MLWorkerInfoDTO, ProjectDTO, JWTToken } from "@/generated-sources";
 import CodeSnippet from "./CodeSnippet.vue";
 import StartWorkerInstructions from "./StartWorkerInstructions.vue";
 
@@ -95,19 +104,16 @@ const props = defineProps<Props>();
 const step = ref<number>(1);
 const toggleArtifactType = ref<string>("dataset");
 const toggleTestType = ref<string>("scan");
-
+const apiAccessToken = ref<JWTToken | null>(null);
 const allMLWorkerSettings = ref<MLWorkerInfoDTO[]>([]);
 const externalWorker = ref<MLWorkerInfoDTO | null>(null);
 
-const apiAccessToken: string = "my_API_Access_Token";
-
 const clientCodeContent = computed(() => {
-  return `# Create a Giskard client
-from giskard import GiskardClient
+  return `from giskard import GiskardClient
+
 url = "${apiURL}" # URL of your Giskard instance
-token = "${apiAccessToken}" # Your API Access Token (generate one in Settings > API Access Token > Generate)
 client = GiskardClient(url, token)`
-})
+});
 
 const datasetCodeContent = computed(() => {
   return `import pandas as pd
@@ -180,6 +186,14 @@ const emit = defineEmits(["close"]);
 const close = () => {
   emit("close");
   step.value = 1;
+}
+
+const generateApiAccessToken = async () => {
+  try {
+    apiAccessToken.value = await api.getApiAccessToken();
+  } catch (error) {
+    console.log(error);
+  }
 }
 
 onMounted(async () => {
