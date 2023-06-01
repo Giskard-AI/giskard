@@ -19,6 +19,7 @@ import ai.giskard.worker.*;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import lombok.RequiredArgsConstructor;
+import org.apache.logging.log4j.util.Strings;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -46,6 +47,7 @@ public class TestSuiteService {
 
         Map<String, String> res = new HashMap<>();
 
+
         suite.getTests().forEach(test -> {
             ImmutableMap<String, TestInput> providedInputs = Maps.uniqueIndex(test.getTestInputs(), TestInput::getName);
 
@@ -56,7 +58,14 @@ public class TestSuiteService {
                     if (!providedInputs.containsKey(a.getName())) {
                         name = a.getName();
                     } else if (providedInputs.get(a.getName()).isAlias()) {
-                        name = providedInputs.get(a.getName()).getValue();
+                        String sharedInputName = providedInputs.get(a.getName()).getValue();
+
+                        if (test.getTestInputs().stream()
+                            .noneMatch(shared -> shared.getName().equals(sharedInputName)
+                                && Strings.isNotBlank(shared.getValue()))) {
+                            // Shared input value is not set globally
+                            name = sharedInputName;
+                        }
                     }
                     if (name != null) {
                         if (res.containsKey(name) && !a.getType().equals(res.get(name))) {
@@ -66,6 +75,7 @@ public class TestSuiteService {
                     }
                 });
         });
+
         return res;
     }
 
