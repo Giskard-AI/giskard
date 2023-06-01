@@ -211,22 +211,32 @@ def test_text_sentiment_ngrams_tutorial():
     from giskard import PyTorchModel, Dataset
 
     feature_names = ['text']
+    class my_PyTorchModel(PyTorchModel):
+        def _raw_predict(self, df):
+            def predict_proba(text):
+                with torch.no_grad():
+                    text = torch.tensor(text_pipeline(text))
+                    output = model(text, torch.tensor([0]))
+                    np_output = output.numpy()[0]
+                    return softmax(np_output)
 
-    def preprocessing_function(df):
-        return df
+            def prediction_function(df):
+                series = df["text"].apply(predict_proba)
+                return np.array(series.tolist())
 
-    my_model = PyTorchModel(name="BertForSequenceClassification",
+            return prediction_function(df)
+
+
+    my_model = my_PyTorchModel(name="BertForSequenceClassification",
                             clf=model,
                             feature_names=feature_names,
                             model_type="classification",
-                            classification_labels= list(ag_news_label.values()),
-                            data_preprocessing_function=preprocessing_function)
+                            classification_labels= list(ag_news_label.values()))
 
-    print(df.head())
     my_test_dataset = Dataset(df.head(), name="test dataset", target="label")
 
-
-    #my_model.validate_model(validate_ds=validate_ds)
+    #from giskard.core.model_validation import validate_model
+    #validate_model(my_model, validate_ds=my_test_dataset)
 
 
     # Wrap your dataset with Dataset from Giskard
@@ -235,6 +245,23 @@ def test_text_sentiment_ngrams_tutorial():
     # save model and dataset to Giskard server
     #mid = my_model.save(client, "enron", validate_ds=my_test_dataset)
     #did = my_test_dataset.save(client, "enron")
+
+    def preprocessing_function(df):
+        texts = list(df["text"])
+        modified_texts=[]
+        for text in texts:
+            modified_texts.append(torch.tensor(text_pipeline(text)))
+        return modified_texts
+
+    print(my_model.predict(my_test_dataset))
+    print("---")
+    inter = preprocessing_function(df.head())
+    softmax_func = nn.Softmax(dim=1)
+    for entry in inter:
+        with torch.no_grad():
+            model_output = model(entry, torch.tensor([0]))
+            print(softmax_func(model_output).numpy())
+
 
 if __name__=="__main__":
     test_text_sentiment_ngrams_tutorial()
