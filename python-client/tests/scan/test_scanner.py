@@ -16,7 +16,7 @@ from giskard.scanner.result import ScanResult
         ("drug_classification_data", "drug_classification_model"),
         ("amazon_review_data", "amazon_review_model"),
         ("diabetes_dataset_with_target", "linear_regression_diabetes"),
-        ("hotel_text_data", "hotel_text_model")
+        ("hotel_text_data", "hotel_text_model"),
     ],
 )
 def test_scanner_returns_non_empty_scan_result(dataset_name, model_name, request):
