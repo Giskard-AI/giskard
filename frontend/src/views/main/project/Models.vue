@@ -182,7 +182,7 @@ onBeforeMount(async () => {
 })
 
 onMounted(async () => {
-  await generateApiAccessToken();
+  if (projectArtifactsStore.models.length === 0) await generateApiAccessToken();
 })
 </script>
 
