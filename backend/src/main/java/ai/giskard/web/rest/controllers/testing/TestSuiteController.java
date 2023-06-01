@@ -102,7 +102,6 @@ public class TestSuiteController {
         return testSuiteService.getSuiteInputs(projectId, suiteId);
     }
 
-
     @PostMapping("project/{projectId}/suite-new/{suiteId}/schedule-execution")
     @PreAuthorize("@permissionEvaluator.canReadProject(#projectId)")
     @Transactional
