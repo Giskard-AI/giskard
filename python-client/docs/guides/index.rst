@@ -5,8 +5,8 @@ User Guide
    :maxdepth: 1
 
    installation_library/index
-   wrap_model/index
    wrap_dataset/index
+   wrap_model/index
    scan/index
    slice/index
    transformation/index
