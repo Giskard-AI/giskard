@@ -43,12 +43,16 @@
                     </v-col>
                     <v-col cols="8" v-if="selected" class="vc fill-height">
                         <div class="d-flex justify-space-between">
-                            <span class="text-h5">{{ selected.displayName ?? selected.name }}</span>
+                            <span class="text-h5" id="test-name">{{ selected.displayName ?? selected.name }}</span>
                             <v-btn small tile color="primaryLight" class="primaryLightBtn" @click="addToTestSuite">
                                 <v-icon dense class="pr-2">mdi-plus</v-icon>
                                 Add to test suite
                             </v-btn>
                         </div>
+
+                        <!-- <div class="d-flex justify-space-between">
+
+                        </div> -->
                         <!--            <AddTestToTestSuiteModal style="border: 1px solid lightgrey"></AddTestToTestSuiteModal>-->
                         <div class="vc overflow-x-hidden pr-5">
                             <v-alert v-if="selected.potentiallyUnavailable" color="warning" border="left" outlined colored-border icon="warning">
@@ -56,10 +60,22 @@
                                 <pre></pre>
                                 <StartWorkerInstructions />
                             </v-alert>
-                            <pre class="test-doc caption pt-5">{{ selected.doc }}</pre>
-                            <div class="pt-5">
-                                <div class="d-flex justify-space-between">
-                                    <span class="text-h6">Inputs</span>
+
+                            <div id="description-group" class="mt-8 py-4">
+                                <div class="description-group-title">
+                                    <span class="group-title">Description</span>
+                                    <v-icon right class="group-icon pb-1 ml-1">mdi-text-box</v-icon>
+                                </div>
+                                <p class="test-doc">{{ selected.doc }}</p>
+                            </div>
+
+                            <v-divider></v-divider>
+
+                            <div id="inputs-group" class="py-4">
+                                <div class="inputs-group-title">
+                                    <span class="group-title">Inputs</span>
+                                    <v-icon right class="group-icon pb-1 ml-1">mdi-pencil-box</v-icon>
+
                                 </div>
                                 <SuiteInputListSelector :editing="true" :model-value="testArguments" :inputs="inputType" :project-id="props.projectId" />
                                 <v-row>
@@ -74,19 +90,27 @@
                                         <TestExecutionResultBadge :result="testResult" />
                                     </v-col>
                                 </v-row>
-                                <v-row>
-                                    <v-col>
-                                        <v-expansion-panels flat @change="resizeEditor">
-                                            <v-expansion-panel>
-                                                <v-expansion-panel-header class="grey lighten-5 pl-6 pr-4 py-2">Code</v-expansion-panel-header>
-                                                <v-divider></v-divider>
-                                                <v-expansion-panel-content class="pl-0 pr-1">
-                                                    <MonacoEditor ref="editor" v-model='selected.code' class='editor' language='python' style="height: 300px; min-height: 300px" :options="monacoOptions" />
-                                                </v-expansion-panel-content>
-                                            </v-expansion-panel>
-                                        </v-expansion-panels>
-                                    </v-col>
-                                </v-row>
+
+                            </div>
+
+                            <v-divider></v-divider>
+
+
+                            <div id="code-group" class="py-4">
+                                <div class="inputs-group-title">
+                                    <span class="group-title">Code</span>
+                                    <v-icon right class="group-icon pb-1 ml-1">mdi-code-braces-box</v-icon>
+                                </div>
+
+                                <div class="d-flex flex-column mt-2">
+                                    <span class="py-2">Test definition</span>
+                                    <CodeSnippet :codeContent="selected.code"></CodeSnippet>
+                                </div>
+
+                                <div class="d-flex flex-column mt-4">
+                                    <span class="py-2">Example usage</span>
+                                    <CodeSnippet></CodeSnippet>
+                                </div>
                             </div>
                         </div>
                     </v-col>
@@ -116,6 +140,7 @@ import { storeToRefs } from "pinia";
 import { useCatalogStore } from "@/stores/catalog";
 import SuiteInputListSelector from "@/components/SuiteInputListSelector.vue";
 import IEditorOptions = editor.IEditorOptions;
+import CodeSnippet from "@/components/CodeSnippet.vue";
 
 const l = MonacoEditor;
 let props = defineProps<{
@@ -243,6 +268,26 @@ const inputType = computed(() => chain(selected.value?.args ?? [])
 }
 
 .test-doc {
+    font-family: 'Roboto', sans-serif;
     white-space: break-spaces;
+    font-size: 1rem;
+    line-height: 1.5rem;
+    opacity: 0.9;
+}
+
+.group-title {
+    font-size: 1.2rem;
+    font-weight: 500;
+    line-height: 2rem;
+    letter-spacing: normal;
+}
+
+.group-icon {
+    color: rgba($color: #000000, $alpha: 0.7);
+    font-size: 1.25rem;
+}
+
+#test-name {
+    font-weight: 500;
 }
 </style>
