@@ -7,7 +7,7 @@ import httpretty
 from giskard import Model, SKLearnModel
 from giskard.client.giskard_client import GiskardClient
 from giskard.core.core import SupportedModelTypes
-from giskard.core.model import MODEL_CLASS_PKL, WrapperModel
+from giskard.models.base import MODEL_CLASS_PKL, WrapperModel
 
 url = "http://giskard-host:12345"
 token = "SECRET_TOKEN"

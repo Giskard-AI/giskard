@@ -1,6 +1,6 @@
 import pytest
 
-from giskard.ml_worker.core.dataset import Dataset
+from giskard.datasets.base import Dataset
 from giskard.ml_worker.testing.functions import GiskardTestFunctions
 
 

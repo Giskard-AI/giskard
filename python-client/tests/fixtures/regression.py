@@ -3,9 +3,9 @@ from sklearn import datasets, linear_model
 from sklearn.metrics import mean_squared_error
 
 from giskard.core.core import SupportedModelTypes
-from giskard.ml_worker.core.dataset import Dataset
+from giskard.datasets.base import Dataset
 from giskard.ml_worker.utils.logging import Timer
-from giskard.model.sklearn import SKLearnModel
+from giskard.models.sklearn import SKLearnModel
 
 
 @pytest.fixture()

@@ -4,8 +4,8 @@ import httpretty
 import pytest
 
 from giskard.client.giskard_client import GiskardClient
-from giskard.core.model import Model
-from giskard.ml_worker.core.dataset import Dataset
+from giskard.models.base import Model
+from giskard.datasets.base import Dataset
 from giskard.ml_worker.core.suite import Suite, SuiteInput
 from giskard.ml_worker.testing.tests.performance import test_auc, test_f1, test_diff_f1, AucTest
 

@@ -11,9 +11,9 @@ from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
 
 from giskard.core.core import SupportedModelTypes
-from giskard.ml_worker.core.dataset import Dataset
+from giskard.datasets.base import Dataset
 from giskard.ml_worker.utils.logging import Timer
-from giskard.model.sklearn import SKLearnModel
+from giskard.models.sklearn import SKLearnModel
 from tests import path
 
 logger = logging.getLogger(__name__)

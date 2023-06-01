@@ -20,7 +20,7 @@ from pydantic import BaseModel
 from giskard.client.giskard_client import GiskardClient
 from giskard.core.core import ModelMeta
 from giskard.core.core import SupportedModelTypes
-from giskard.ml_worker.core.dataset import Dataset
+from giskard.datasets.base import Dataset
 from giskard.ml_worker.utils.logging import Timer
 from giskard.path_utils import get_size
 from giskard.settings import settings
