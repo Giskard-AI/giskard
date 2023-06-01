@@ -83,7 +83,7 @@ def get_container(version=None) -> Container:
 def _start(attached=False, version=None):
     logger.info("Starting Giskard Server")
 
-    settings = _get_settings()
+    settings = _get_settings() or {}
     port = settings.get('port', 19000)
     ml_worker_port = settings.get('ml_worker_port', 40051)
 
