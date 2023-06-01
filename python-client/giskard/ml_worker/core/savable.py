@@ -1,7 +1,6 @@
 import logging
 import os
 import posixpath
-
 from pathlib import Path
 from typing import Optional, Generic
 
@@ -82,8 +81,15 @@ class Savable(Generic[DT, SMT]):
         return self.meta.uuid
 
     @classmethod
+    def _read_meta_from_loca_dir(cls, uuid: str, project_key: Optional[str]) -> SMT:
+        return SavableMeta(uuid=uuid)
+
+    @classmethod
     def load(cls, uuid: str, client: GiskardClient, project_key: Optional[str]):
-        meta = client.load_meta(cls._get_meta_endpoint(uuid, project_key), cls._get_meta_class())
+        if client is None:
+            meta = cls._read_meta_from_loca_dir(uuid, project_key)
+        else:
+            meta = client.load_meta(cls._get_meta_endpoint(uuid, project_key), cls._get_meta_class())
 
         name = cls._get_name()
 
