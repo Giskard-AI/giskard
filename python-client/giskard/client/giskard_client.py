@@ -19,7 +19,7 @@ from giskard.client.analytics_collector import GiskardAnalyticsCollector, anonym
 from giskard.client.dtos import TestSuiteDTO
 from giskard.client.project import Project
 from giskard.client.python_utils import warning
-from giskard.core.core import ModelMeta, DatasetMeta
+from giskard.core.core import ModelMeta, DatasetMeta, TestFunctionMeta, SMT
 
 logger = logging.getLogger(__name__)
 
@@ -269,6 +269,20 @@ class GiskardClient:
         )
 
         print(f"Dataset successfully uploaded to project key '{project_key}' with ID = {dataset_id}")
+
+    def save_meta(self, endpoint: str, meta: SMT) -> SMT:
+        json = self._session.put(endpoint, json=meta.to_json()).json()
+        return meta if json is None or 'uuid' not in json else meta.from_json(json)
+
+    def load_meta(self, endpoint: str, meta_class: SMT) -> TestFunctionMeta:
+        return meta_class.from_json(self._session.get(endpoint).json())
+
+    def save_test_function_registry(self, metas: List[TestFunctionMeta]):
+        self._session.post("tests/registry", json=[meta.to_json() for meta in metas])
+
+        print(
+            f"Functions successfully uploaded = {len(metas)} functions"
+        )
 
     def get_server_info(self):
         return self._session.get("settings/ml-worker-connect").json()

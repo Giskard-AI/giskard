@@ -34,7 +34,7 @@ import {
     RoleDTO,
     SliceDTO,
     SuiteTestDTO,
-    TestCatalogDTO,
+    TestFunctionDTO,
     TestSuiteCompleteDTO,
     TestSuiteDTO,
     TestSuiteExecutionDTO,
@@ -432,15 +432,14 @@ export const api = {
             code: code
         });
     },
-    async getTestsCatalog(projectId: number) {
-        return apiV2.get<unknown, TestCatalogDTO>(`/testing/tests/test-catalog`, {params: {projectId}});
-    },
-    async runAdHocTest(projectId: number, testId: string, inputs: { [key: string]: string }) {
+    async runAdHocTest(projectId: number, testUuid: string, inputs: { [key: string]: string }) {
         return apiV2.post<unknown, TestTemplateExecutionResultDTO>(`/testing/tests/run-test`, {
             projectId,
-            testId,
+            testUuid,
             inputs
         });
     },
-
+    async getTestFunctions() {
+        return apiV2.get<unknown, TestFunctionDTO[]>(`/tests`);
+    },
 };

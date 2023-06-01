@@ -1,26 +1,32 @@
 package ai.giskard.service;
 
+import ai.giskard.domain.TestFunction;
+import ai.giskard.domain.TestFunctionArgument;
 import ai.giskard.domain.ml.SuiteTest;
 import ai.giskard.domain.ml.TestInput;
-import ai.giskard.worker.*;
-import com.google.common.collect.Maps;
+import ai.giskard.worker.ArtifactRef;
+import ai.giskard.worker.SuiteTestArgument;
+import ai.giskard.worker.TestArgument;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
 @RequiredArgsConstructor
 public class TestArgumentService {
 
-    public SuiteTestArgument buildFixedTestArgument(SuiteTest test, TestFunction testFunction, String projectKey) {
+    public SuiteTestArgument buildFixedTestArgument(SuiteTest test, String projectKey) {
+        TestFunction testFunction = test.getTestFunction();
         SuiteTestArgument.Builder builder = SuiteTestArgument.newBuilder()
-            .setTestId(test.getTestId())
+            .setTestUuid(testFunction.getUuid().toString())
             .setId(test.getId());
 
-        Map<String, String> argumentTypes = Maps.transformValues(testFunction.getArgumentsMap(), TestFunctionArgument::getType);
+        Map<String, String> argumentTypes = testFunction.getArgs().stream()
+            .collect(Collectors.toMap(TestFunctionArgument::getName, TestFunctionArgument::getType));
 
         for (TestInput input : test.getTestInputs()) {
             builder.addArguments(buildTestArgument(argumentTypes, input.getName(), input.getValue(), projectKey));

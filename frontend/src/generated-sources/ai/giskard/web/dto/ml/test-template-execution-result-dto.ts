@@ -9,5 +9,5 @@ export interface TestTemplateExecutionResultDTO {
     message: string;
     result: NamedSingleTestResultDTO[];
     status: TestResult;
-    testId: string;
+    testUuid: string;
 }

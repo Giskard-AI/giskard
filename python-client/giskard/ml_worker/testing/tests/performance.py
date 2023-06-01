@@ -110,12 +110,12 @@ class AucTest(GiskardTest):
     model: Model
     threshold: float
 
-    def __init__(self,
-                 actual_slice: Dataset = None,
-                 model: Model = None,
-                 threshold: float = 0.5):
+    def __init__(self, ):
+        super().__init__()
+
+    def set_params(self, actual_slice: Dataset = None, model: Model = None, threshold: float = None):
         """
-        Init an AucTest instance, can be passed in Suite.add_test method
+        Set params of the AUC test, can be passed in Suite.add_test method
         :param actual_slice: Slice of the actual dataset
         :param model: Model used to compute the test
         :param threshold: Threshold value of AUC metrics
@@ -123,18 +123,19 @@ class AucTest(GiskardTest):
         self.actual_slice = actual_slice
         self.model = model
         self.threshold = threshold
+        return self
 
     def execute(self) -> TestResult:
         """
 
-        :return:
-          actual_slices_size:
-            Length of actual_slice tested
-          metric:
-            The AUC performance metric
-          passed:
-            TRUE if AUC metrics >= threshold
-        """
+            :return:
+              actual_slices_size:
+                Length of actual_slice tested
+              metric:
+                The AUC performance metric
+              passed:
+                TRUE if AUC metrics >= threshold
+            """
         return test_auc(self.actual_slice, self.model, self.threshold)
 
 

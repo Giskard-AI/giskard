@@ -1,5 +1,6 @@
 package ai.giskard.domain.ml;
 
+import ai.giskard.domain.TestFunction;
 import ai.giskard.worker.GeneratedTest;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
@@ -21,7 +22,8 @@ public class SuiteTest {
     @Column(name = "id", nullable = false)
     private Long id;
 
-    private String testId;
+    @ManyToOne(optional = false)
+    private TestFunction testFunction;
 
     @ManyToOne
     @JoinColumn(name = "test_suite")
@@ -36,9 +38,9 @@ public class SuiteTest {
     @JsonIgnore
     private List<SuiteTestExecution> executions = new java.util.ArrayList<>();
 
-    public SuiteTest(TestSuite suite, GeneratedTest test) {
-        this.testId = test.getTestId();
+    public SuiteTest(TestSuite suite, GeneratedTest test, TestFunction testFunction) {
         this.suite = suite;
+        this.testFunction = testFunction;
         this.testInputs.addAll(test.getInputsList().stream()
             .map(testInput -> new TestInput(this, testInput))
             .toList());

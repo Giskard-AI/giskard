@@ -1,6 +1,7 @@
 package ai.giskard.service;
 
 import ai.giskard.domain.Project;
+import ai.giskard.domain.TestFunctionArgument;
 import ai.giskard.domain.ml.SuiteTest;
 import ai.giskard.domain.ml.TestInput;
 import ai.giskard.domain.ml.TestSuite;
@@ -8,6 +9,7 @@ import ai.giskard.domain.ml.TestSuiteExecution;
 import ai.giskard.jobs.JobType;
 import ai.giskard.ml.MLWorkerClient;
 import ai.giskard.repository.ProjectRepository;
+import ai.giskard.repository.ml.TestFunctionRepository;
 import ai.giskard.repository.ml.TestSuiteRepository;
 import ai.giskard.service.ml.MLWorkerService;
 import ai.giskard.web.dto.*;
@@ -33,23 +35,21 @@ import static ai.giskard.web.rest.errors.Entity.TEST_SUITE;
 public class TestSuiteService {
     private final GiskardMapper giskardMapper;
     private final TestSuiteRepository testSuiteRepository;
-    private final TestService testService;
     private final TestSuiteExecutionService testSuiteExecutionService;
     private final JobService jobService;
     private final ProjectRepository projectRepository;
     private final MLWorkerService mlWorkerService;
+    private final TestFunctionRepository testFunctionRepository;
 
     public Map<String, String> getSuiteInputs(Long projectId, Long suiteId) {
         TestSuite suite = testSuiteRepository.findOneByProjectIdAndId(projectId, suiteId);
-        TestCatalogDTO catalog = testService.listTestsFromRegistry(projectId);
 
         Map<String, String> res = new HashMap<>();
 
         suite.getTests().forEach(test -> {
-            Collection<TestFunctionArgumentDTO> signatureArgs = catalog.getTests().get(test.getTestId()).getArguments().values();
             ImmutableMap<String, TestInput> providedInputs = Maps.uniqueIndex(test.getTestInputs(), TestInput::getName);
 
-            signatureArgs.stream()
+            test.getTestFunction().getArgs().stream()
                 .filter(a -> !a.isOptional())
                 .forEach(a -> {
                     String name = null;
@@ -99,12 +99,12 @@ public class TestSuiteService {
         }
     }
 
-    public TestSuiteDTO updateTestInputs(long suiteId, String testId, Map<String, String> inputs) {
+    public TestSuiteDTO updateTestInputs(long suiteId, String testUuid, Map<String, String> inputs) {
         TestSuite testSuite = testSuiteRepository.getById(suiteId);
 
         SuiteTest test = testSuite.getTests().stream()
-            .filter(t -> testId.equals(t.getTestId()))
-            .findFirst().orElseThrow(() -> new EntityNotFoundException(TEST_SUITE, testId));
+            .filter(t -> testUuid.equals(t.getTestFunction().getUuid().toString()))
+            .findFirst().orElseThrow(() -> new EntityNotFoundException(TEST_SUITE, testUuid));
 
         verifyAllInputExists(inputs, test);
 
@@ -118,20 +118,19 @@ public class TestSuiteService {
     }
 
     private void verifyAllInputExists(Map<String, String> providedInputs,
-                                      SuiteTest test ) {
-        TestCatalogDTO catalog = testService.listTestsFromRegistry(test.getSuite().getProject().getId());
-        TestDefinitionDTO testDefinition = catalog.getTests().get(test.getTestId());
-
-        Map<String, String> requiredInputs = testDefinition.getArguments().entrySet().stream()
-            .collect(Collectors.toMap(Map.Entry::getKey, entry -> entry.getValue().getType()));
+                                      SuiteTest test) {
+        Set<String> requiredInputs = test.getTestFunction().getArgs().stream()
+            .map(TestFunctionArgument::getName)
+            .collect(Collectors.toSet());
 
         List<String> nonExistingInputs = providedInputs.keySet().stream()
-            .filter(providedInput -> !requiredInputs.containsKey(providedInput))
+            .filter(providedInput -> !requiredInputs.contains(providedInput))
             .toList();
 
         if (!nonExistingInputs.isEmpty()) {
             throw new IllegalArgumentException("Inputs '%s' does not exists for test %s"
-                .formatted(String.join(", ", nonExistingInputs), testDefinition.getName()));
+                .formatted(String.join(", ", nonExistingInputs),
+                    Objects.requireNonNullElse(test.getTestFunction().getDisplayName(), test.getTestFunction().getName())));
         }
     }
 
@@ -169,7 +168,7 @@ public class TestSuiteService {
             suite.setProject(project);
             suite.setName(dto.getName());
             suite.getTests().addAll(response.getTestsList().stream()
-                .map(test -> new SuiteTest(suite, test))
+                .map(test -> new SuiteTest(suite, test, testFunctionRepository.getById(UUID.fromString(test.getTestUuid()))))
                 .toList());
 
             return testSuiteRepository.save(suite).getId();

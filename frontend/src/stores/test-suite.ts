@@ -1,4 +1,11 @@
-import {DatasetDTO, JobDTO, ModelDTO, TestCatalogDTO, TestSuiteDTO, TestSuiteExecutionDTO} from '@/generated-sources';
+import {
+    DatasetDTO,
+    JobDTO,
+    ModelDTO,
+    TestFunctionDTO,
+    TestSuiteExecutionDTO,
+    TestSuiteDTO
+} from '@/generated-sources';
 import {defineStore} from 'pinia';
 import {api} from '@/api';
 import {chain} from 'lodash';
@@ -9,7 +16,7 @@ interface State {
     projectId: number | null,
     inputs: { [name: string]: string },
     suite: TestSuiteDTO | null,
-    registry: TestCatalogDTO | null,
+    registry: TestFunctionDTO[],
     datasets: { [key: string]: DatasetDTO },
     models: { [key: string]: ModelDTO },
     executions: TestSuiteExecutionDTO[],
@@ -23,7 +30,7 @@ export const useTestSuiteStore = defineStore('testSuite', {
         projectId: null,
         inputs: {},
         suite: null,
-        registry: null,
+        registry: [],
         datasets: {},
         models: {},
         executions: [],
@@ -44,7 +51,7 @@ export const useTestSuiteStore = defineStore('testSuite', {
                     })
                 ))
                 .flatten()
-                .groupBy(result => result.testResult.test.testId)
+                .groupBy(result => result.testResult.test.testUuid)
                 .value();
         }
     },

@@ -6,12 +6,13 @@ import lombok.Data;
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import java.util.Map;
+import java.util.UUID;
 
 @Data
 public class SuiteTestDTO {
     private long id;
-    @JsonAlias("test_id")
+    @JsonAlias("test_uuid")
     @NotBlank
-    private String testId;
+    private UUID testUuid;;
     private Map<@NotBlank String, @Valid TestInputDTO> testInputs;
 }
