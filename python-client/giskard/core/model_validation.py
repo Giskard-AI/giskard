@@ -6,7 +6,7 @@ from pandas.core.dtypes.common import is_string_dtype
 
 from giskard.client.python_utils import warning
 from giskard.core.core import SupportedModelTypes
-from giskard.core.model import Model
+from giskard.core.model import Model, WrapperModel
 from giskard.core.validation import validate_is_pandasdataframe, validate_target
 from giskard.ml_worker.core.dataset import Dataset
 
@@ -17,7 +17,7 @@ def validate_model(
 ):
     model_type = model.meta.model_type
 
-    if model.data_preprocessing_function is not None:
+    if isinstance(model, WrapperModel) and model.data_preprocessing_function is not None:
         validate_data_preprocessing_function(model.data_preprocessing_function)
 
     validate_classification_labels(model.meta.classification_labels, model_type)

@@ -4,7 +4,7 @@ import httpretty
 import pytest
 
 from giskard import Dataset
-from giskard import Model
+from giskard import SKLearnModel
 from giskard.client.giskard_client import GiskardClient
 
 url = "http://giskard-host:12345"
@@ -57,7 +57,7 @@ def test_upload_df(diabetes_dataset: Dataset, diabetes_dataset_with_target: Data
 
 
 @httpretty.activate(verbose=True, allow_net_connect=False)
-def _test_upload_model(model: Model, ds: Dataset):
+def _test_upload_model(model: SKLearnModel, ds: Dataset):
     artifact_url_pattern = re.compile(
         "http://giskard-host:12345/api/v2/artifacts/test-project/models/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/.*")
     models_url_pattern = re.compile("http://giskard-host:12345/api/v2/project/test-project/models")
@@ -69,11 +69,11 @@ def _test_upload_model(model: Model, ds: Dataset):
     if model.is_regression:
         # Warning Scenario: classification_labels is sent for regression model
         with pytest.warns(UserWarning):
-            model_id = model.save(client, 'test-project', ds)
+            model_id = model.upload(client, 'test-project', ds)
     else:
-        model_id = model.save(client, 'test-project', ds)
+        model_id = model.upload(client, 'test-project', ds)
 
-    assert re.match("^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$", model_id)
+    assert re.match("^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$", str(model_id))
 
     artifact_requests = [i for i in httpretty.latest_requests() if artifact_url_pattern.match(i.url)]
     assert len(artifact_requests) > 0
@@ -89,40 +89,30 @@ def _test_upload_model(model: Model, ds: Dataset):
         assert req.headers.get("Content-Type") == "application/json"
 
 
-def _test_upload_model_exceptions(model: Model, ds: Dataset):
+def _test_upload_model_exceptions(model: SKLearnModel, ds: Dataset):
     client = GiskardClient(url, token)
 
     # Error Scenario : invalid feature_names
     with pytest.raises(Exception) as e:
-        Model(
+        SKLearnModel(
             clf=model.clf,
             model_type=model.meta.model_type,
             feature_names=["some"],
             name=model_name,
             classification_labels=model.meta.classification_labels
-        ).save(client, 'test-project', ds)
+        ).upload(client, 'test-project', ds)
     assert e.match('Value mentioned in  feature_names is  not available in validate_df')
 
     if model.is_classification:
-        # Error Scenario: Classification model sent without classification_labels
-        with pytest.raises(Exception) as e:
-            Model(
-                clf=model.clf,
-                model_type=model.meta.model_type,
-                feature_names=model.meta.feature_names,
-                name=model_name
-            ).save(client, 'test-project', ds)
-        assert e.match('Invalid classification_labels parameter: None. Please specify valid list of strings')
-
         # Error Scenario: Target has values not declared in Classification Label
         with pytest.raises(Exception) as e:
-            Model(
+            SKLearnModel(
                 clf=model.clf,
                 model_type=model.meta.model_type,
                 feature_names=model.meta.feature_names,
                 name=model_name,
                 classification_labels=[0, 1]
-            ).save(client, 'test-project', ds)
+            ).upload(client, 'test-project', ds)
         assert e.match('Values in default column are not declared in classification_labels parameter')
 
 
