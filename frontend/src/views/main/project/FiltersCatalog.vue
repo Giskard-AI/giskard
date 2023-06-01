@@ -104,15 +104,12 @@
                                 <v-row v-if="sliceResult">
                                     <v-col>
                                         <span class="text-h6">Result</span>
-                                        <p>Slice size: {{ sliceResult.filteredRow }} / {{ sliceResult.totalRow }}</p>
-                                        <template>
-                                            <v-data-table
-                                                :headers="headers"
-                                                :items="resultData"
-                                                hide-default-footer
-                                                class="elevation-1"
-                                            ></v-data-table>
-                                        </template>
+                                        <p>Slice size: {{ sliceResult.totalRows - sliceResult.filteredRows.length }} /
+                                            {{
+                                                sliceResult.totalRows
+                                            }}</p>
+                                        <DatasetTable :dataset-id="sliceResult.datasetId"
+                                                      :deleted-rows="sliceResult.filteredRows"/>
                                     </v-col>
                                 </v-row>
                                 <v-row>
@@ -160,6 +157,7 @@ import {storeToRefs} from "pinia";
 import {useCatalogStore} from "@/stores/catalog";
 import DatasetSelector from "@/views/main/utils/DatasetSelector.vue";
 import {api} from "@/api";
+import DatasetTable from "@/components/DatasetTable.vue";
 import IEditorOptions = editor.IEditorOptions;
 
 const l = MonacoEditor;

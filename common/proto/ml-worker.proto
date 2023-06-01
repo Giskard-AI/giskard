@@ -236,30 +236,20 @@ message TestResultMessage {
 }
 
 message SlicingResultMessage {
-  uint32 totalRow = 1;
-  uint32 filteredRow = 2;
-  repeated DatasetDescribeColumn describeColumns = 3;
+  string datasetId = 1;
+  uint32 totalRows = 2;
+  repeated uint32 filteredRows = 3;
 }
 
 message TransformationResultMessage {
-  uint32 totalRow = 1;
-  uint32 modifiedRow = 2;
-  repeated DatasetDescribeColumn describeColumns = 3;
+  string datasetId = 1;
+  uint32 totalRows = 2;
+  repeated DatasetRowModificationResult modifications = 3;
 }
 
-message DatasetDescribeColumn {
-  string columnName = 1;
-  uint32 count = 2;
-  optional uint32 unique = 3;
-  optional string top = 4;
-  optional uint32 freq = 5;
-  optional float mean = 6;
-  optional float std = 7;
-  optional float min = 8;
-  optional float twentyFive = 9;
-  optional float fifty = 10;
-  optional float seventyFive = 11;
-  optional float max = 12;
+message DatasetRowModificationResult {
+  uint32 rowId = 1;
+  map<string, string> modifications = 2;
 }
 
 
