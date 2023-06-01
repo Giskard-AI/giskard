@@ -35,6 +35,7 @@ import {
     ProjectPostDTO,
     RoleDTO,
     SliceDTO,
+    SliceFunctionDTO,
     SuiteTestDTO,
     TestInputDTO,
     TestSuiteCompleteDTO,
@@ -480,5 +481,9 @@ export const api = {
             allowAnalytics: allowAnalytics,
             license: license
         });
+    },
+    async runAdHocSlicingFunction(slicingFnUuid: string, datasetUuid: string) {
+        return apiV2.get<unknown, SliceFunctionDTO>(
+            `/slices/${encodeURIComponent(slicingFnUuid)}/dataset/${encodeURIComponent(datasetUuid)}`);
     },
 };

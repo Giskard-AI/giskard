@@ -13,6 +13,7 @@ package worker;
 service MLWorker {
   rpc getInfo(MLWorkerInfoRequest) returns (MLWorkerInfo){}
   rpc runAdHocTest (RunAdHocTestRequest) returns (TestResultMessage) {}
+  rpc runAdHocSlicing (RunAdHocSlicingRequest) returns (SlicingResultMessage) {}
   rpc runTestSuite (RunTestSuiteRequest) returns (TestSuiteResultMessage) {}
   rpc runModel(RunModelRequest) returns (google.protobuf.Empty) {}
   rpc runModelForDataFrame(RunModelForDataFrameRequest) returns (RunModelForDataFrameResponse) {}
@@ -144,6 +145,11 @@ message RunAdHocTestRequest {
   repeated TestArgument arguments = 2;
 }
 
+message RunAdHocSlicingRequest {
+  string slicingFunctionUuid = 1;
+  ArtifactRef dataset = 2;
+}
+
 message SuiteTestArgument {
   int64 id = 1;
   string testUuid = 2;
@@ -221,6 +227,21 @@ message SingleTestResult{
 message TestResultMessage {
   repeated NamedSingleTestResult results = 1;
 }
+
+message SlicingResultMessage {
+  uint32 totalRow = 1;
+  uint32 filteredRow = 2;
+  repeated DatasetDescribeColumn describeColumns = 3;
+}
+
+message DatasetDescribeColumn {
+  string columnName = 1;
+  uint32 count = 2;
+  uint32 unique = 3;
+  string top = 4;
+  uint32 freq = 5;
+}
+
 
 message TestSuiteResultMessage {
   bool is_error = 1; // True when an unhandled exception happened (!= test failed)

@@ -66,6 +66,55 @@
                             </v-alert>
                             <pre class="test-doc caption pt-5">{{ selected.doc }}</pre>
                             <div class="pt-5">
+                                <div class="d-flex justify-space-between">
+                                    <span class="text-h6">Inputs</span>
+                                    <v-btn width="100" small tile outlined @click="tryMode = !tryMode">{{
+                                            tryMode ? 'Cancel' : 'Try it'
+                                        }}
+                                    </v-btn>
+                                </div>
+                                <v-list>
+                                    <v-list-item class="pl-0 pr-0">
+                                        <v-row>
+                                            <v-col>
+                                                <v-list-item-content>
+                                                    <v-list-item-title>Dataset</v-list-item-title>
+                                                    <v-list-item-subtitle class="text-caption">
+                                                        BaseDataset
+                                                    </v-list-item-subtitle>
+                                                </v-list-item-content>
+                                            </v-col>
+                                            <v-col>
+                                                <DatasetSelector v-if="tryMode" :project-id="projectId"
+                                                                 label="Dataset"
+                                                                 :return-object="false"
+                                                                 :value.sync="selectedDataset"/>
+                                            </v-col>
+                                        </v-row>
+                                    </v-list-item>
+                                </v-list>
+                                <v-row v-show="tryMode">
+                                    <v-col :align="'right'">
+                                        <v-btn width="100" small tile outlined class="primary" color="white"
+                                               @click="runSlicingFunction">
+                                            Run
+                                        </v-btn>
+                                    </v-col>
+                                </v-row>
+                                <v-row v-if="sliceResult">
+                                    <v-col>
+                                        <span class="text-h6">Result</span>
+                                        <p>Slice size: {{ sliceResult.filteredRow }} / {{ sliceResult.totalRow }}</p>
+                                        <template>
+                                            <v-data-table
+                                                :headers="headers"
+                                                :items="resultData"
+                                                hide-default-footer
+                                                class="elevation-1"
+                                            ></v-data-table>
+                                        </template>
+                                    </v-col>
+                                </v-row>
                                 <v-row>
                                     <v-col>
                                         <v-expansion-panels flat @change="resizeEditor">
@@ -87,6 +136,7 @@
                                 </v-row>
                             </div>
                         </div>
+
                     </v-col>
                 </v-row>
             </v-container>
@@ -104,10 +154,12 @@ import {computed, inject, onActivated, ref} from "vue";
 import {pasterColor} from "@/utils";
 import MonacoEditor from 'vue-monaco';
 import {editor} from "monaco-editor";
-import {SliceFunctionDTO} from "@/generated-sources";
+import {SliceFunctionDTO, SlicingResultDTO} from "@/generated-sources";
 import StartWorkerInstructions from "@/components/StartWorkerInstructions.vue";
 import {storeToRefs} from "pinia";
 import {useCatalogStore} from "@/stores/catalog";
+import DatasetSelector from "@/views/main/utils/DatasetSelector.vue";
+import {api} from "@/api";
 import IEditorOptions = editor.IEditorOptions;
 
 const l = MonacoEditor;
@@ -120,7 +172,10 @@ const editor = ref(null)
 
 const searchFilter = ref<string>("");
 let {sliceFunctions} = storeToRefs(useCatalogStore());
-let selected = ref<SliceFunctionDTO | null>(null);
+const selected = ref<SliceFunctionDTO | null>(null);
+const sliceResult = ref<SlicingResultDTO | null>(null);
+const tryMode = ref<boolean>(false);
+const selectedDataset = ref<string | null>(null);
 
 const monacoOptions: IEditorOptions = inject('monacoOptions');
 monacoOptions.readOnly = true;
@@ -163,6 +218,40 @@ onActivated(async () => {
     }
 });
 
+async function runSlicingFunction() {
+    sliceResult.value = await api.runAdHocSlicingFunction(selected.value.uuid, selectedDataset.value);
+}
+
+const infoHeader = {
+    text: '',
+    value: 'info'
+}
+const infoColumns = ['count', 'unique', 'top', 'freq']
+
+const headers = computed(() =>
+    [
+        infoHeader,
+        ...chain(sliceResult.value?.describeColumns ?? [])
+            .map(column => ({
+                text: column.columnName,
+                value: column.columnName,
+                cellClass: 'overflow-ellipsis'
+            }))
+            .value()
+    ]
+);
+
+const resultData = computed(() => chain(infoColumns)
+    .map(info => ({
+        info,
+        ...chain(sliceResult.value?.describeColumns ?? [])
+            .keyBy('columnName')
+            .mapValues(info)
+            .value()
+    }))
+    .value()
+);
+
 </script>
 
 <style scoped lang="scss">
@@ -189,6 +278,13 @@ onActivated(async () => {
 
 .test-doc {
     white-space: break-spaces;
+}
+
+::v-deep .overflow-ellipsis {
+    max-width: 200px;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
 }
 
 
