@@ -56,7 +56,7 @@
               </v-list-item-content>
             </v-list-item>
             <v-divider />
-            <v-list-item :to="{ name: 'project-test-suites' }" value="test-suites">
+            <v-list-item :to="{ name: 'project-testing' }" value="testing">
               <v-list-item-content>
                 <v-icon>mdi-list-status</v-icon>
                 <div class="caption">Testing</div>
@@ -124,10 +124,10 @@
 </template>
 
 <script lang="ts" setup>
-import {useUserStore} from "@/stores/user";
-import {useMainStore} from "@/stores/main";
-import {computed, ref} from "vue";
-import {useRoute} from 'vue-router/composables';
+import { useUserStore } from "@/stores/user";
+import { useMainStore } from "@/stores/main";
+import { computed, ref } from "vue";
+import { useRoute } from 'vue-router/composables';
 import moment from "moment/moment";
 
 const route = useRoute();
@@ -182,9 +182,9 @@ async function logout() {
 }
 
 div.caption {
-    font-size: 0.6875em !important;
-    align-self: center;
-    text-align: center;
+  font-size: 0.6875em !important;
+  align-self: center;
+  text-align: center;
 }
 
 .v-list-item {
