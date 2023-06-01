@@ -1,4 +1,4 @@
-# 🔬 Wrap your ML model to create a Giskard model
+# 🔬 Wrap your ML model
 
 To use your model with Giskard, you can either:
 
