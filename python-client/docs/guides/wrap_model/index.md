@@ -291,6 +291,13 @@ respectively.
   ::::
   :::::
 
-:::{hint}
-To upload your model to the Giskard server, go to [Upload objects](../upload/index.md) to the Giskard server.
+## Upload your model in the Giskard server
+
+Uploading the model to the Giskard server enables you to:
+* Compare your model with others using a test suite.
+* Gather feedback from your colleagues regarding your model.
+* Debug your model effectively in case of test failures.
+* Develop new tests that incorporate additional domain knowledge
+
+To upload your model to the Giskard server, go to [Upload an object to the Giskard server](../upload/index.md).
 :::
