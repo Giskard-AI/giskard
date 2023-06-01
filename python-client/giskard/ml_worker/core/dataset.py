@@ -38,7 +38,7 @@ class Dataset:
         name: Optional[str] = None,
         target: Optional[str] = None,
         cat_columns: Optional[List[str]] = None,
-        infer_cat_columns: Optional[bool] = False,
+        infer_column_types: Optional[bool] = False,
         column_types: Optional[Dict[str, str]] = None,
     ) -> None:
         self.name = name
@@ -49,11 +49,11 @@ class Dataset:
             self.column_types = column_types
         elif cat_columns:
             self.column_types = self.extract_column_types(self.column_dtypes, cat_columns)
-        elif infer_cat_columns:
+        elif infer_column_types:
             self.column_types = self.infer_column_types(self.df, self.column_dtypes)
         else:
             self.column_types = self.infer_column_types(self.df, self.column_dtypes, no_cat=True)
-            warning("You did not provide any of [column_types, cat_columns, infer_cat_columns = True] for your Dataset."
+            warning("You did not provide any of [column_types, cat_columns, infer_column_types = True] for your Dataset."
                     "In this case, we assume that there's no categorical columns in your Dataset.")
 
     @staticmethod
