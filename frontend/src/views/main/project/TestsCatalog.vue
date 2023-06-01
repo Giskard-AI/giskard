@@ -223,7 +223,7 @@ const filteredTestFunctions = computed(() => {
 })
 
 onActivated(async () => {
-  registry.value = await api.getTestFunctions();
+  registry.value = await api.getTestFunctions(props.projectId);
   if (testFunctions.value.length > 0) {
     selected.value = testFunctions.value[0];
   }
