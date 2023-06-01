@@ -1,7 +1,6 @@
 package ai.giskard.domain.ml;
 
 import ai.giskard.worker.GeneratedTestInput;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -9,13 +8,15 @@ import lombok.Setter;
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "test_input")
 @Getter
 @Setter
 @NoArgsConstructor
-public class TestInput implements Serializable {
+public class FunctionInput implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "id", nullable = false)
@@ -31,26 +32,13 @@ public class TestInput implements Serializable {
 
     private boolean isAlias = false;
 
-    @ManyToOne
-    @JoinColumn(name = "test_id")
-    @JsonIgnore
-    private SuiteTest test;
+    @OneToMany
+    @JoinColumn(name = "function_input_id")
+    private List<FunctionInput> params = new ArrayList<>();
 
-    @ManyToOne
-    @JoinColumn(name = "suite_id")
-    @JsonIgnore
-    private TestSuite suite;
-
-    public TestInput(String name, String value, SuiteTest test) {
-        this.name = name;
-        this.value = value;
-        this.test = test;
-    }
-
-    public TestInput(SuiteTest test, GeneratedTestInput testInput) {
+    public FunctionInput(GeneratedTestInput testInput) {
         this.name = testInput.getName();
         this.value = testInput.getValue();
         this.isAlias = testInput.getIsAlias();
-        this.test = test;
     }
 }

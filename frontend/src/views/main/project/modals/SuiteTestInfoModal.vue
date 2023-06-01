@@ -17,7 +17,7 @@
                   <p class="text-h6 pt-4">Inputs</p>
               </div>
               <TestInputListSelector v-if="suiteTest.test.args"
-                                     :test-inputs="suiteTest.testInputs"
+                                     :test-inputs="suiteTest.functionInputs"
                                      :test="testFunctionsByUuid[suiteTest.testUuid]"
                                      :model-value="editedInputs"
                                      :project-id="projectId"
@@ -62,7 +62,7 @@
 
 <script setup lang="ts">
 
-import {SuiteTestDTO, TestInputDTO} from '@/generated-sources';
+import {FunctionInputDTO, SuiteTestDTO} from '@/generated-sources';
 import {computed, inject, onMounted, ref} from 'vue';
 import _, {chain} from 'lodash';
 import {storeToRefs} from 'pinia';
@@ -85,15 +85,15 @@ const props = defineProps<{
 const {models, datasets, projectId, suite, inputs} = storeToRefs(useTestSuiteStore());
 const {reload} = useTestSuiteStore();
 
-const editedInputs = ref<{ [input: string]: TestInputDTO }>({});
-const result = ref<{ [input: string]: TestInputDTO }>({});
+const editedInputs = ref<{ [input: string]: FunctionInputDTO }>({});
+const result = ref<{ [input: string]: FunctionInputDTO }>({});
 const editor = ref(null)
 
 const {testFunctionsByUuid} = storeToRefs(useCatalogStore())
 
 const sortedArguments = computed(() => {
     return _.sortBy(_.values(props.suiteTest.test.args), value => {
-        return !_.isUndefined(props.suiteTest.testInputs[value.name]);
+        return !_.isUndefined(props.suiteTest.functionInputs[value.name]);
     }, 'name');
 })
 
@@ -107,7 +107,7 @@ function resizeEditor() {
 }
 
 onMounted(() => {
-    editedInputs.value = Object.values(props.suiteTest.testInputs)
+    editedInputs.value = Object.values(props.suiteTest.functionInputs)
         .reduce((e, arg) => {
             e[arg.name] = {
                 ...arg
