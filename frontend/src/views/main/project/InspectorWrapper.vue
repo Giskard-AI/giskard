@@ -1,37 +1,45 @@
 <template>
   <v-container v-if="inspection" fluid class="vc">
-    <v-row
-        align="center"
-        no-gutters
-        style='height: 60px;'
-    >
+    <v-row align="center" no-gutters style='height: 60px;'>
 
       <v-toolbar id='data-explorer-toolbar' flat>
         <v-tooltip bottom>
           <template v-slot:activator="{ on, attrs }">
             <v-icon v-on="on" class="pr-5" small>info</v-icon>
           </template>
+          <h3> Inspection </h3>
+          <div class="d-flex">
+            <div> Id</div>
+            <v-spacer />
+            <div> {{ inspection.id }}</div>
+          </div>
+          <div class="d-flex">
+            <div> Name</div>
+            <v-spacer />
+            <div class="pl-5"> {{ inspection.name || "-" }}</div>
+          </div>
+          <br />
           <h3> Model </h3>
           <div class="d-flex">
             <div> Id</div>
-            <v-spacer/>
+            <v-spacer />
             <div> {{ inspection.model.id }}</div>
           </div>
           <div class="d-flex">
             <div> Name</div>
-            <v-spacer/>
+            <v-spacer />
             <div class="pl-5"> {{ inspection.model.name }}</div>
           </div>
-          <br/>
+          <br />
           <h3> Dataset </h3>
           <div class="d-flex">
             <div> Id</div>
-            <v-spacer/>
+            <v-spacer />
             <div> {{ inspection.dataset.id }}</div>
           </div>
           <div class="d-flex pb-3">
             <div> Name</div>
-            <v-spacer/>
+            <v-spacer />
             <div class="pl-5"> {{ inspection.dataset.name }}</div>
           </div>
         </v-tooltip>
@@ -49,38 +57,17 @@
         <span class='caption grey--text' v-if="totalRows > 0">
           Entry #{{ totalRows === 0 ? 0 : rowNb + 1 }} / {{ totalRows }}
         </span>
-        <span v-show="originalData && isDefined(originalData.Index)" class='caption grey--text'
-              style='margin-left: 15px'>Row Index {{ originalData.Index + 1 }}</span>
+        <span v-show="originalData && isDefined(originalData.Index)" class='caption grey--text' style='margin-left: 15px'>Row Index {{ originalData.Index + 1 }}</span>
       </v-toolbar>
-      <v-spacer/>
+      <v-spacer />
 
-      <SliceDropdown :project-id="projectId" :is-project-owner-or-admin="isProjectOwnerOrAdmin" @onSelect="applySlice"
-                     @onClear="clearSlice" :loading="loadingSlice" :default-dataset-id="inspection.dataset.id"
-                     class="mr-3 "/>
+      <SliceDropdown :project-id="projectId" :is-project-owner-or-admin="isProjectOwnerOrAdmin" @onSelect="applySlice" @onClear="clearSlice" :loading="loadingSlice" :default-dataset-id="inspection.dataset.id" class="mr-3 " />
 
-      <InspectionFilter
-          :is-target-available="isDefined(inspection.dataset.target)"
-          :labels="labels"
-          :model-type="inspection.model.modelType"
-          @input="f=>filter = f"
-      />
+      <InspectionFilter :is-target-available="isDefined(inspection.dataset.target)" :labels="labels" :model-type="inspection.model.modelType" @input="f => filter = f" />
     </v-row>
-    <Inspector :dataset='inspection.dataset'
-               :inputData.sync='inputData'
-               :model='inspection.model'
-               :originalData='originalData'
-               class='px-0'
-               @reset='resetInput'
-               @submitValueFeedback='submitValueFeedback'
-               @submitValueVariationFeedback='submitValueVariationFeedback'
-               v-if="totalRows > 0"
-    />
-    <v-alert v-else border="bottom"
-             colored-border
-             type="warning"
-             class="mt-8"
-             elevation="2">
-      No data matches the selected filter.<br/>
+    <Inspector :dataset='inspection.dataset' :inputData.sync='inputData' :model='inspection.model' :originalData='originalData' class='px-0' @reset='resetInput' @submitValueFeedback='submitValueFeedback' @submitValueVariationFeedback='submitValueVariationFeedback' v-if="totalRows > 0" />
+    <v-alert v-else border="bottom" colored-border type="warning" class="mt-8" elevation="2">
+      No data matches the selected filter.<br />
       In order to show data, please refine the filter's criteria.
     </v-alert>
 
@@ -88,12 +75,7 @@
     <!-- For general feedback -->
     <v-tooltip left>
       <template v-slot:activator='{ on, attrs }'>
-        <v-btn :class="feedbackPopupToggle? 'secondary': 'primary'" bottom fab fixed
-               class="zindex-10"
-               right
-               v-bind='attrs'
-               @click='feedbackPopupToggle = !feedbackPopupToggle' v-on='on'
-        >
+        <v-btn :class="feedbackPopupToggle ? 'secondary' : 'primary'" bottom fab fixed class="zindex-10" right v-bind='attrs' @click='feedbackPopupToggle = !feedbackPopupToggle' v-on='on'>
           <v-icon v-if='feedbackPopupToggle'>mdi-close</v-icon>
           <v-icon v-else>mdi-message-plus</v-icon>
         </v-btn>
@@ -101,10 +83,7 @@
       <span v-if='feedbackPopupToggle'>Close</span>
       <span v-else>Feedback</span>
     </v-tooltip>
-    <v-overlay
-        :value='feedbackPopupToggle'
-        :z-index='10'
-    ></v-overlay>
+    <v-overlay :value='feedbackPopupToggle' :z-index='10'></v-overlay>
     <v-card v-if='feedbackPopupToggle' id='feedback-card' color='primary' dark>
       <v-card-title>Is this input case insightful?</v-card-title>
       <v-card-text class='px-3 py-0'>
@@ -113,22 +92,13 @@
           <v-radio label='No' value='no'></v-radio>
           <v-radio label='Other' value='other'></v-radio>
         </v-radio-group>
-        <v-textarea
-            v-model='feedback'
-            :disabled='feedbackSubmitted'
-            hide-details
-            no-resize
-            outlined
-            placeholder='Why?'
-            rows='2'
-        ></v-textarea>
+        <v-textarea v-model='feedback' :disabled='feedbackSubmitted' hide-details no-resize outlined placeholder='Why?' rows='2'></v-textarea>
       </v-card-text>
       <p v-if='feedbackError' class='caption error--text mb-0'>{{ feedbackError }}</p>
       <v-card-actions>
         <v-spacer></v-spacer>
         <v-btn :disabled='feedbackSubmitted' light small text @click='clearFeedback'>Cancel</v-btn>
-        <v-btn :disabled='!(feedback && feedbackChoice) || feedbackSubmitted' class='mx-1' color='white'
-               light small @click='submitGeneralFeedback'>
+        <v-btn :disabled='!(feedback && feedbackChoice) || feedbackSubmitted' class='mx-1' color='white' light small @click='submitGeneralFeedback'>
           Send
         </v-btn>
         <v-icon v-show='feedbackSubmitted' color='white'>mdi-check</v-icon>
@@ -139,16 +109,16 @@
 </template>
 
 <script lang='ts'>
-import {Component, Prop, Vue, Watch} from 'vue-property-decorator';
+import { Component, Prop, Vue, Watch } from 'vue-property-decorator';
 import OverlayLoader from '@/components/OverlayLoader.vue';
 import PredictionResults from './PredictionResults.vue';
 import PredictionExplanations from './PredictionExplanations.vue';
 import TextExplanation from './TextExplanation.vue';
-import {api} from '@/api';
+import { api } from '@/api';
 import FeedbackPopover from '@/components/FeedbackPopover.vue';
 import Inspector from './Inspector.vue';
 import Mousetrap from 'mousetrap';
-import {CreateFeedbackDTO, Filter, InspectionDTO, ModelType, RowFilterType, SliceDTO} from '@/generated-sources';
+import { CreateFeedbackDTO, Filter, InspectionDTO, ModelType, RowFilterType, SliceDTO } from '@/generated-sources';
 import mixpanel from "mixpanel-browser";
 import _ from "lodash";
 import InspectionFilter from './InspectionFilter.vue';
@@ -195,7 +165,7 @@ export default class InspectorWrapper extends Vue {
   feedbackError: string = '';
   feedbackSubmitted: boolean = false;
   labels: string[] = [];
-  filter: Filter = {type: RowFilterType.ALL};
+  filter: Filter = { type: RowFilterType.ALL };
 
   totalRows = 0;
   mt = ModelType;
@@ -325,7 +295,7 @@ export default class InspectorWrapper extends Vue {
 
   @Watch('inspection.id')
   @Watch('regressionThreshold')
-  @Watch('filter', {deep: true, immediate: false})
+  @Watch('filter', { deep: true, immediate: false })
   @Watch('shuffleMode')
   @Watch('percentRegressionUnit')
   async applyFilter(nv, ov) {
@@ -375,7 +345,7 @@ export default class InspectorWrapper extends Vue {
     this.loadingData = true;
 
     this.inputData = this.rows[this.rowIdxInPage];
-    this.originalData = {...this.inputData}; // deep copy to avoid caching mechanisms
+    this.originalData = { ...this.inputData }; // deep copy to avoid caching mechanisms
     this.dataErrorMsg = '';
     this.loadingData = false;
     this.totalRows = this.numberOfRows;
@@ -385,7 +355,7 @@ export default class InspectorWrapper extends Vue {
   }
 
   private resetInput() {
-    this.inputData = {...this.originalData};
+    this.inputData = { ...this.originalData };
   }
 
   private async doSubmitFeedback(payload: CreateFeedbackDTO) {
@@ -404,7 +374,7 @@ export default class InspectorWrapper extends Vue {
     this.filter.sliceId = slice.id;
     await this.updateRow(true);
     this.loadingSlice = false;
-    mixpanel.track('Apply slice', {sliceId: this.filter.sliceId});
+    mixpanel.track('Apply slice', { sliceId: this.filter.sliceId });
   }
 
   private async clearSlice() {
