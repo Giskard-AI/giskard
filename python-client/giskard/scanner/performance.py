@@ -113,6 +113,7 @@ class PerformanceScan:
             reference_slice=dataset,  # Could exclude slice_dataset for independence
             model=model,
             threshold=threshold,
+            absolute=False,
         )
 
         res = test.execute()
