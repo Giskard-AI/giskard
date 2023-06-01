@@ -56,7 +56,7 @@
         </v-expansion-panel>
       </v-expansion-panels>
     </v-container>
-    <v-container v-else>
+    <v-container v-if="projectArtifactsStore.datasets.length === 0 && apiAccessToken && apiAccessToken.id_token">
       <p class="font-weight-medium secondary--text">There are no datasets in this project yet. Follow the code snippet below to upload a dataset 👇</p>
       <CodeSnippet :code-content="codeContent" :language="'python'"></CodeSnippet>
       <p class="mt-4 font-weight-medium secondary--text">Check out the <a href="https://docs.giskard.ai/start/~/changes/QkDrbY9gX75RDMmAWKjX/guides/upload-your-model#3.-create-a-giskard-dataset" target="_blank">full documentation</a> for more information.</p>
@@ -70,13 +70,14 @@ import { api } from "@/api";
 import { Role } from "@/enums";
 import mixpanel from "mixpanel-browser";
 import DeleteModal from "@/views/main/project/modals/DeleteModal.vue";
-import { onBeforeMount, ref, computed } from "vue";
+import { onBeforeMount, ref, computed, onMounted } from "vue";
 import InlineEditText from "@/components/InlineEditText.vue";
 import { useUserStore } from "@/stores/user";
 import { useProjectStore } from "@/stores/project";
 import { useMainStore } from "@/stores/main";
 import { useProjectArtifactsStore } from "@/stores/project-artifacts";
 import CodeSnippet from '@/components/CodeSnippet.vue';
+import { JWTToken } from "@/generated-sources";
 
 const userStore = useUserStore();
 const projectStore = useProjectStore();
@@ -93,12 +94,13 @@ const props = defineProps<Props>();
 const lastVisitedFileId = ref<string | null>(null);
 const filePreviewHeader = ref<{ text: string, value: string, sortable: boolean }[]>([]);
 const filePreviewData = ref<any[]>([]);
+const apiAccessToken = ref<JWTToken | null>(null);
 
 const codeContent = computed(() =>
   `# Create a Giskard client
 from giskard import GiskardClient
 url = "${apiURL}" # URL of your Giskard instance
-token = "my_API_Access_Token" # Your API Access Token (generate one in Settings > API Access Token > Generate)
+token = "${apiAccessToken.value!.id_token}" # Your API Access Token
 client = GiskardClient(url, token)
 
 # Load your data (example: from a csv file as a pandas dataframe)
@@ -116,7 +118,7 @@ my_dataset = Dataset(df=my_df,
                      name="My Dataset")
 
 # Upload your dataset on Giskard
-project_key = "${project.key}" # Current project key
+project_key = "${project.value!.key}" # Current project key
 my_dataset.upload(client, project_key)`
 )
 
@@ -184,8 +186,20 @@ async function reloadDatasets() {
   await projectArtifactsStore.loadDatasetsWithNotification();
 }
 
+const generateApiAccessToken = async () => {
+  try {
+    apiAccessToken.value = await api.getApiAccessToken();
+  } catch (error) {
+    console.log(error);
+  }
+}
+
 onBeforeMount(async () => {
   await projectArtifactsStore.setProjectId(props.projectId, false);
+});
+
+onMounted(async () => {
+  await generateApiAccessToken();
 });
 </script>
 

@@ -67,7 +67,7 @@
       </v-dialog>
 
     </v-container>
-    <v-container v-else>
+    <v-container v-if="projectArtifactsStore.models.length === 0 && apiAccessToken && apiAccessToken.id_token">
       <p class="font-weight-medium secondary--text">There are no models in this project yet. Follow the code snippet below to upload a model 👇</p>
       <CodeSnippet :code-content="codeContent" :language="'python'"></CodeSnippet>
       <p class="mt-4 font-weight-medium secondary--text">Check out the <a href="https://docs.giskard.ai/start/~/changes/QkDrbY9gX75RDMmAWKjX/guides/upload-your-model#2.-create-a-giskard-model" target="_blank">full documentation</a> for more information.</p>
@@ -80,9 +80,9 @@ import { api } from '@/api';
 import { apiURL } from "@/env";
 import { Role } from "@/enums";
 import InspectorLauncher from './InspectorLauncher.vue';
-import { ModelDTO } from '@/generated-sources';
+import { JWTToken, ModelDTO } from '@/generated-sources';
 import mixpanel from "mixpanel-browser";
-import { onBeforeMount, ref, computed } from 'vue';
+import { onBeforeMount, onMounted, ref, computed } from 'vue';
 import DeleteModal from '@/views/main/project/modals/DeleteModal.vue';
 import InlineEditText from '@/components/InlineEditText.vue';
 import { useUserStore } from "@/stores/user";
@@ -103,13 +103,13 @@ const props = defineProps<Props>();
 
 const showInspectDialog = ref<boolean>(false);
 const modelToInspect = ref<ModelDTO | null>(null);
+const apiAccessToken = ref<JWTToken | null>(null);
 
 const codeContent = computed(() =>
   `# Create a Giskard client
 from giskard import GiskardClient
 url = "${apiURL}" # URL of your Giskard instance
-token = "my_API_Access_Token" # Your API Access Token (generate one in Settings > API Access Token > Generate)
-client = GiskardClient(url, token)
+token = "${apiAccessToken.value!.id_token}" # Your API Access Token
 
 # Load your model (example: SKLearn model)
 from joblib import load
@@ -122,7 +122,7 @@ my_giskard_model = SKLearnModel(my_sklearn_regressor,
                                 name="My SKLearn Regressor")
 
 # Upload your model on Giskard
-project_key = "${project.key}" # Current project key
+project_key = "${project.value!.key}" # Current project key
 my_giskard_model.upload(client, project_key)`
 )
 
@@ -169,8 +169,20 @@ async function reloadModels() {
   await projectArtifactsStore.loadModelsWithNotification();
 }
 
+const generateApiAccessToken = async () => {
+  try {
+    apiAccessToken.value = await api.getApiAccessToken();
+  } catch (error) {
+    console.log(error);
+  }
+}
+
 onBeforeMount(async () => {
   await projectArtifactsStore.setProjectId(props.projectId, false);
+})
+
+onMounted(async () => {
+  await generateApiAccessToken();
 })
 </script>
 
