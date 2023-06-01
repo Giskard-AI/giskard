@@ -95,7 +95,7 @@
 
     <div class="pt-8 pb-4 d-flex">
       <div class="d-flex justify-end align-center flex-grow-1">
-        <v-btn @click="reloadDataObjects()" class="pa-2 text--secondary">
+        <v-btn @click="reloadProjectArtifacts()" class="pa-2 text--secondary">
           Reload
           <v-icon right>refresh</v-icon>
         </v-btn>
@@ -128,8 +128,8 @@
             <div class="flex-1"></div>
           </v-card-title>
           <v-card-text>
-            <Datasets v-show="toggleObject === 'datasets'" ref="datasetsComponentRef" :projectId="projectId" :isProjectOwnerOrAdmin="isProjectOwnerOrAdmin"></Datasets>
-            <Models v-show="toggleObject === 'models'" ref="modelsComponentRef" :projectId="projectId" :isProjectOwnerOrAdmin="isProjectOwnerOrAdmin"></Models>
+            <Datasets v-show="toggleObject === 'datasets'" :projectId="projectId" :isProjectOwnerOrAdmin="isProjectOwnerOrAdmin"></Datasets>
+            <Models v-show="toggleObject === 'models'" :projectId="projectId" :isProjectOwnerOrAdmin="isProjectOwnerOrAdmin"></Models>
           </v-card-text>
         </v-card>
       </v-col>
@@ -160,8 +160,8 @@ import Datasets from '@/views/main/project/Datasets.vue';
 import { IUserProfileMinimal } from '@/interfaces';
 import mixpanel from "mixpanel-browser";
 import { useProjectStore } from "@/stores/project";
-import { useMainStore } from "@/stores/main";
-import { computed, ref } from 'vue';
+import { useProjectArtifactsStore } from "@/stores/project-artifacts";
+import { computed, onBeforeMount, ref } from 'vue';
 import { $vfm } from 'vue-final-modal';
 import ConfirmModal from '@/views/main/project/modals/ConfirmModal.vue';
 import InlineEditText from '@/components/InlineEditText.vue';
@@ -182,18 +182,14 @@ const props = withDefaults(defineProps<Props>(), {
 const router = useRouter();
 
 const projectStore = useProjectStore();
-const mainStore = useMainStore();
-
+const projectArtifactsStore = useProjectArtifactsStore();
 const openDeleteDialog = ref(false);
-const datasetsComponentRef = ref<any>(null);
-const modelsComponentRef = ref<any>(null);
 const toggleObject = ref<string>("datasets");
 
 const project = computed(() => useProjectStore().project(props.projectId))
 
-function reloadDataObjects() {
-  datasetsComponentRef.value.loadDatasets();
-  modelsComponentRef.value.loadModelPickles();
+async function reloadProjectArtifacts() {
+  await projectArtifactsStore.loadProjectArtifacts();
 }
 
 async function cancelUserInvitation(user: IUserProfileMinimal) {
@@ -269,6 +265,10 @@ async function deleteProject() {
     await router.push('/main/dashboard');
   }
 }
+
+onBeforeMount(async () => {
+  await projectArtifactsStore.setProjectId(props.projectId);
+})
 </script>
 
 <style scoped lang="scss">
