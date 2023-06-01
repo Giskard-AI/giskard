@@ -91,7 +91,7 @@ def _test_upload_model_exceptions(model: SKLearnModel, ds: Dataset):
                 name=model_name,
                 classification_labels=[0, 1],
             ).upload(client, "test-project", ds)
-        assert e.match("Values in default column are not declared in classification_labels parameter")
+        assert e.match("Values .* in .* column are not declared in classification_labels parameter \[0, 1\] of the model: uploaded model") # noqa
 
 
 @pytest.mark.parametrize(
