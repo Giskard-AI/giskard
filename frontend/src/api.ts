@@ -1,6 +1,6 @@
-import axios, { AxiosError } from 'axios';
-import { apiURL } from '@/env';
-import { getLocalToken, removeLocalToken } from '@/utils';
+import axios, {AxiosError} from 'axios';
+import {apiURL} from '@/env';
+import {getLocalToken, removeLocalToken} from '@/utils';
 import Vue from "vue";
 
 import {
@@ -36,6 +36,7 @@ import {
     ProjectDTO,
     ProjectPostDTO,
     RoleDTO,
+    RunAdHocTransformationDTO,
     SliceDTO,
     SlicingResultDTO,
     SuiteTestDTO,
@@ -48,13 +49,13 @@ import {
     UpdateMeDTO,
     UserDTO
 } from './generated-sources';
-import { PostImportProjectDTO } from './generated-sources/ai/giskard/web/dto/post-import-project-dto';
-import { TYPE } from "vue-toastification";
+import {PostImportProjectDTO} from './generated-sources/ai/giskard/web/dto/post-import-project-dto';
+import {TYPE} from "vue-toastification";
 import ErrorToast from "@/views/main/utils/ErrorToast.vue";
 import router from "@/router";
 import mixpanel from "mixpanel-browser";
-import { useUserStore } from "@/stores/user";
-import { SetupDTO } from "@/generated-sources/ai/giskard/web/dto/setup-dto";
+import {useUserStore} from "@/stores/user";
+import {SetupDTO} from "@/generated-sources/ai/giskard/web/dto/setup-dto";
 import AdminUserDTOWithPassword = AdminUserDTO.AdminUserDTOWithPassword;
 
 function jwtRequestInterceptor(config) {
@@ -503,10 +504,8 @@ export const api = {
         return apiV2.post<unknown, SlicingResultDTO>(
             `/slices/${encodeURIComponent(slicingFnUuid)}/dataset/${encodeURIComponent(datasetUuid)}`, inputs);
     },
-    async runAdHocTransformationFunction(transformationFnUuid: string, datasetUuid: string, inputs: {
-        [key: string]: string
-    }) {
+    async runAdHocTransformationFunction(transformationFnUuid: string, datasetUuid: string, request: RunAdHocTransformationDTO) {
         return apiV2.post<unknown, TransformationResultDTO>(
-            `/transformations/${encodeURIComponent(transformationFnUuid)}/dataset/${encodeURIComponent(datasetUuid)}`, inputs);
+            `/transformations/${encodeURIComponent(transformationFnUuid)}/dataset/${encodeURIComponent(datasetUuid)}`, request);
     },
 };
