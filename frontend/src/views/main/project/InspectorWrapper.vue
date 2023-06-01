@@ -2,8 +2,8 @@
   <v-container v-if="inspection" fluid class="vc">
     <v-row align="center" no-gutters style='height: 60px;'>
 
-      <v-toolbar id='data-explorer-toolbar' flat>
-        <v-tooltip bottom>
+      <v-toolbar class='data-explorer-toolbar' flat>
+        <v-tooltip bottom min-width="400">
             <template v-slot:activator="{ on, attrs }">
                 <v-icon v-on="on" class="pr-5" medium>info</v-icon>
             </template>
@@ -440,7 +440,7 @@ async function handleSwitchSample() {
 </script>
 
 <style scoped>
-#data-explorer-toolbar .v-btn {
+.data-explorer-toolbar .v-btn {
   height: 36px;
   width: 36px;
 }

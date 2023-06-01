@@ -1,10 +1,10 @@
-from giskard.models import wrap_model
+from giskard.models.automodel import Model
 from giskard.models.base import CloudpickleBasedModel
 from tests.fixtures.german_credit_scoring import input_types
 
 
-def test_wrap_model(german_credit_raw_model):
-    my_model = wrap_model(german_credit_raw_model.predict_proba,
+def test_Model(german_credit_raw_model):
+    my_model = Model(german_credit_raw_model.predict_proba,
                           model_type="classification",
                           feature_names=list(input_types),
                           classification_threshold=0.5,

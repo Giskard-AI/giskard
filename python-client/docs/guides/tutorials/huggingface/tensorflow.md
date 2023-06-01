@@ -6,7 +6,7 @@
 import pandas as pd
 from transformers import AutoTokenizer
 from transformers import TFAutoModelForSequenceClassification
-from giskard import wrap_model, wrap_dataset
+from giskard import Model, Dataset
 ```
 
 ## Wrap dataset
@@ -20,7 +20,7 @@ raw_data = {
 test_df = pd.DataFrame(raw_data, columns=["text", "label"], index=[0])
 ```
 ```python
-wrapped_dataset = wrap_dataset(test_df, 
+wrapped_dataset = Dataset(test_df, 
                                name="test dataset", 
                                target="label")
 ```
@@ -42,7 +42,7 @@ def my_preproccessing_function(df):
     return tokenizer_distilbert_base_uncased(list(df['text']), return_tensors="tf")
 ```
 ```python
-wrapped_model = wrap_model(
+wrapped_model = Model(
     name="stevhliu/my_awesome_model",
     model=model_distilbert_base_uncased,
     feature_names=feature_names,
