@@ -2,6 +2,17 @@
     <div class="vc mt-2 pb-0" v-if="testFunctions.length > 0">
         <div class="vc">
             <v-container class="main-container vc">
+                <v-alert
+                    v-if="!hasGiskardTests"
+                    color="warning"
+                    border="left"
+                    outlined
+                    colored-border
+                    icon="warning"
+                >
+                    <span>Giskard test are not available.</span>
+                    <StartWorkerInstructions/>
+                </v-alert>
                 <v-row class="fill-height">
                     <v-col cols="4" class="vc fill-height">
                         <v-text-field label="Search test" append-icon="search" outlined
@@ -235,30 +246,34 @@ function sorted(arr: any[]) {
 }
 
 const testFunctions = computed(() => {
-  return chain(registry.value)
-      .groupBy(func => `${func.module}.${func.name}`)
-      .mapValues(functions => chain(functions)
-          .maxBy(func => func.version ?? 1)
-          .value())
-      .values()
-      .sortBy('name')
-      .value();
+    return chain(registry.value)
+        .groupBy(func => `${func.module}.${func.name}`)
+        .mapValues(functions => chain(functions)
+            .maxBy(func => func.version ?? 1)
+            .value())
+        .values()
+        .sortBy('name')
+        .value();
+})
+
+const hasGiskardTests = computed(() => {
+    return testFunctions.value.find(t => t.tags.includes('giskard')) !== undefined
 })
 
 const filteredTestFunctions = computed(() => {
-  return chain(testFunctions.value)
-      .filter((func) => {
-        const keywords = searchFilter.value.split(' ')
-            .map(keyword => keyword.trim().toLowerCase())
-            .filter(keyword => keyword !== '');
+    return chain(testFunctions.value)
+        .filter((func) => {
+            const keywords = searchFilter.value.split(' ')
+                .map(keyword => keyword.trim().toLowerCase())
+                .filter(keyword => keyword !== '');
 
-        return keywords.filter(keyword =>
-            func.name.toLowerCase().includes(keyword)
-            || func.doc?.toLowerCase()?.includes(keyword)
-            || func.displayName?.toLowerCase()?.includes(keyword)
-        ).length === keywords.length;
-      })
-      .value();
+            return keywords.filter(keyword =>
+                func.name.toLowerCase().includes(keyword)
+                || func.doc?.toLowerCase()?.includes(keyword)
+                || func.displayName?.toLowerCase()?.includes(keyword)
+            ).length === keywords.length;
+        })
+        .value();
 })
 
 onActivated(async () => {
