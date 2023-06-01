@@ -1,6 +1,7 @@
 import itertools
 from collections.abc import Iterator
 from typing import List
+from functools import lru_cache
 import numpy as np
 
 
@@ -22,3 +23,8 @@ def np_types_to_native(some_list: List):
 
 def np_type_to_native(i):
     return i.item() if isinstance(i, np.generic) else i
+
+
+@lru_cache(None)
+def warn_once(logger, msg: str):
+    logger.warning(msg)

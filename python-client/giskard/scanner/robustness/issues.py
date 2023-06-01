@@ -1,12 +1,13 @@
-import pandas as pd
-import numpy as np
-from functools import lru_cache
 from dataclasses import dataclass
+from functools import lru_cache
 
-from ...ml_worker.testing.registry.transformation_function import TransformationFunction
+import numpy as np
+import pandas as pd
+
 from ..issues import Issue
-from ...models.base import BaseModel, ModelPredictionResults
 from ...datasets.base import Dataset
+from ...ml_worker.testing.registry.transformation_function import TransformationFunction
+from ...models.base import BaseModel, ModelPredictionResults
 
 
 @dataclass
@@ -79,10 +80,10 @@ class RobustnessIssue(Issue):
     def importance(self) -> float:
         return self.info.fail_ratio
 
-    def generate_tests(self) -> list:
+    def generate_tests(self, with_names=False) -> list:
         from ...testing.tests.metamorphic import test_metamorphic_invariance
 
-        return [
+        tests = [
             test_metamorphic_invariance(
                 self.model,
                 self.dataset,
@@ -91,3 +92,13 @@ class RobustnessIssue(Issue):
                 output_sensitivity=self.info.output_sensitivity,
             )
         ]
+
+        if with_names:
+            names = [f"Invariance to “{self.info.transformation_fn.name}”"]
+            return list(zip(tests, names))
+
+        return tests
+
+
+class EthicalIssue(RobustnessIssue):
+    group = "Ethics"

@@ -11,7 +11,6 @@ import ai.giskard.utils.FunctionArguments;
 import ai.giskard.web.dto.*;
 import ai.giskard.web.dto.mapper.GiskardMapper;
 import ai.giskard.web.dto.ml.DatasetDTO;
-import ai.giskard.web.dto.ml.DatasetDetailsDTO;
 import ai.giskard.worker.ArtifactRef;
 import ai.giskard.worker.DatasetProcessingFunction;
 import ai.giskard.worker.DatasetProcessingRequest;
@@ -26,10 +25,7 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.io.IOException;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -81,21 +77,17 @@ public class DatasetsController {
 
     @PostMapping("/dataset/{datasetId}/rows")
     public DatasetPageDTO getRows(@PathVariable @NotNull UUID datasetId, @NotNull int offset, @NotNull int size,
-                                  @RequestBody RowFilterDTO rowFilter) throws IOException {
-        return datasetService.getRows(datasetId, offset, offset + size, rowFilter);
-    }
+                                  @RequestBody RowFilterDTO rowFilter,
+                                  @RequestParam(required = false, defaultValue = "false") boolean shuffle,
+                                  @RequestParam(required = false, defaultValue = "true") boolean sample) throws IOException {
+        DatasetPageDTO rows = datasetService.getRows(datasetId, offset, offset + size, rowFilter, sample);
 
-    /**
-     * Getting dataset's details, like number of rows, headers..
-     * TODO add the headers
-     *
-     * @param datasetId
-     * @return
-     * @throws IOException
-     */
-    @GetMapping("/dataset/{datasetId}/details")
-    public DatasetDetailsDTO datasetDetails(@PathVariable @NotNull UUID datasetId) {
-        return datasetService.getDetails(datasetId);
+        if (shuffle) {
+            rows.setContent(new ArrayList<>(rows.getContent()));
+            Collections.shuffle(rows.getContent());
+        }
+
+        return rows;
     }
 
     @DeleteMapping("/dataset/{datasetId}")
@@ -107,11 +99,6 @@ public class DatasetsController {
     @GetMapping("/dataset/prepare-delete/{datasetId}")
     public PrepareDeleteDTO prepareDatasetDelete(@PathVariable @NotNull UUID datasetId) {
         return usageService.prepareDeleteDataset(datasetId);
-    }
-
-    @GetMapping("/dataset/{datasetId}/features")
-    public List<FeatureMetadataDTO> datasetFeaturesMetadata(@PathVariable @NotNull UUID datasetId) {
-        return datasetService.getFeaturesWithDistinctValues(datasetId);
     }
 
     @PostMapping("project/{projectKey}/datasets")
@@ -137,7 +124,7 @@ public class DatasetsController {
     public DatasetProcessingResultDTO datasetProcessing(@PathVariable("projectId") @NotNull long projectId,
                                                         @PathVariable("datasetUuid") @NotNull UUID datasetUuid,
                                                         @RequestBody List<ParameterizedCallableDTO> processingFunctions,
-                                                        @RequestParam(required = false, defaultValue = "false") boolean cache) {
+                                                        @RequestParam(required = false, defaultValue = "true") boolean sample) {
         Dataset dataset = datasetRepository.getMandatoryById(datasetUuid);
         Project project = dataset.getProject();
 
@@ -154,6 +141,7 @@ public class DatasetsController {
                 .setDataset(ArtifactRef.newBuilder()
                     .setId(dataset.getId().toString())
                     .setProjectKey(dataset.getProject().getKey())
+                    .setSample(sample)
                     .build());
 
             processingFunctions.forEach(processingFunction -> {
@@ -179,7 +167,7 @@ public class DatasetsController {
 
                 for (FunctionInputDTO input : processingFunction.getParams()) {
                     functionBuilder.addArguments(testArgumentService
-                        .buildTestArgument(arguments, input.getName(), input.getValue(), project.getKey(), Collections.emptyList()));
+                        .buildTestArgument(arguments, input.getName(), input.getValue(), project.getKey(), Collections.emptyList(), sample));
                 }
 
                 builder.addFunctions(functionBuilder.build());
