@@ -354,6 +354,9 @@ export const api = {
     async createTestSuite(projectKey: string, testSuite: TestSuiteDTO) {
         return apiV2.post<unknown, number>(`testing/project/${projectKey}/suites`, testSuite);
     },
+    async deleteSuite(projectKey: string, testSuiteId: number) {
+        return apiV2.delete<unknown, void>(`testing/project/${projectKey}/suite/${testSuiteId}`);
+    },
     async generateTestSuite(projectKey: string, generateTestSuite: GenerateTestSuiteDTO) {
         return apiV2.post<unknown, number>(`testing/project/${projectKey}/suites/generate`, generateTestSuite);
     },
@@ -477,5 +480,5 @@ export const api = {
             allowAnalytics: allowAnalytics,
             license: license
         });
-    }
+    },
 };
