@@ -61,10 +61,10 @@ onActivated(() => loadInspections());
         </v-col>
         <v-col cols="8">
           <div class="d-flex justify-end">
-            <v-btn v-if="activeInspection !== null" @click="activeInspection = null" class="ma-2 pa-2">
+            <v-btn v-if="activeInspection !== null" @click="activeInspection = null" class="mr-4 pa-2">
               <v-icon>mdi-arrow-u-left-top</v-icon> Show past inspections
             </v-btn>
-            <InspectionDialog v-bind:project-id="projectId" v-on:createInspection="createNewInspection" class="ma-2"></InspectionDialog>
+            <InspectionDialog v-bind:project-id="projectId" v-on:createInspection="createNewInspection"></InspectionDialog>
           </div>
         </v-col>
       </v-row>
