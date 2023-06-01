@@ -22,10 +22,6 @@
                         <v-icon class="mr-2">history</v-icon>
                         <span class="tab-item-text">Past executions</span>
                     </v-tab>
-                    <v-tab disabled>
-                        <v-icon class="mr-2">settings</v-icon>
-                        <span class="tab-item-text">Configuration</span>
-                    </v-tab>
                 </v-tabs>
                 <v-row v-if="!hideHeader" class="mt-0 overview-container pl-3 pr-3 pb-3">
                     <v-col>
