@@ -25,10 +25,14 @@ def test(_fn=None, name=None, tags: Optional[List[str]] = None):
 
         if inspect.isclass(original) and issubclass(original, GiskardTest):
             return original
+
+        original.__annotations__['return'] = GiskardTestMethod
+
         return functools.wraps(original)(GiskardTestMethod(original))
 
     if callable(_fn):
         # in case @test decorator was used without parenthesis
+        _fn.__annotations__['return'] = GiskardTestMethod
         return functools.wraps(_fn)(inner(_fn))
     else:
         return inner
