@@ -1,12 +1,14 @@
-import pandas as pd
-import numpy as np
-from functools import lru_cache
 from dataclasses import dataclass
+from functools import lru_cache
+from typing import List
 
-from ...ml_worker.testing.registry.transformation_function import TransformationFunction
+import numpy as np
+import pandas as pd
+
 from ..issues import Issue
-from ...models.base import BaseModel, ModelPredictionResults
 from ...datasets.base import Dataset
+from ...ml_worker.testing.registry.transformation_function import TransformationFunction
+from ...models.base import BaseModel, ModelPredictionResults
 
 
 @dataclass
@@ -30,8 +32,8 @@ class RobustnessIssue(Issue):
         super().__init__(model, dataset, level, info)
 
     @property
-    def is_major(self) -> bool:
-        return self.level == "major"
+    def features(self) -> List[str]:
+        return [self.info.feature]
 
     @property
     def domain(self) -> str:
@@ -79,6 +81,10 @@ class RobustnessIssue(Issue):
     def importance(self) -> float:
         return self.info.fail_ratio
 
+    @property
+    def transformation_fn(self):
+        return self.info.transformation_fn
+
     def generate_tests(self, with_names=False) -> list:
         from ...testing.tests.metamorphic import test_metamorphic_invariance
 
@@ -97,3 +103,7 @@ class RobustnessIssue(Issue):
             return list(zip(tests, names))
 
         return tests
+
+
+class EthicalIssue(RobustnessIssue):
+    group = "Ethics"
