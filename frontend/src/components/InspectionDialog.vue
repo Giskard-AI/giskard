@@ -26,16 +26,16 @@ const missingValues = computed(() => {
   return false;
 });
 
-const newInspection = computed(() => {
-  return {
-    "name": inspectionName.value,
-    "createdDate": new Date(),
-    "dataset": selectedDataset.value,
-    "model": selectedModel.value
-  }
-});
-
 const emit = defineEmits(['createInspection'])
+
+async function createNewInspection() {
+  const inspection = await api.prepareInspection({
+    datasetId: selectedDataset.value!.id,
+    modelId: selectedModel.value!.id
+  });
+  emit('createInspection', inspection);
+  dialog.value = false;
+}
 
 async function loadDatasets() {
   datasets.value = await api.getProjectDatasets(props.projectId);
@@ -43,10 +43,6 @@ async function loadDatasets() {
 
 async function loadModels() {
   models.value = await api.getProjectModels(props.projectId);
-}
-
-function createInspection() {
-  emit('createInspection', newInspection.value);
 }
 
 onActivated(() => {
@@ -71,12 +67,11 @@ onActivated(() => {
           <ModelSelector :projectId="projectId" :value.sync="selectedModel" class="selector"></ModelSelector>
           <v-spacer></v-spacer>
           <DatasetSelector :projectId="projectId" :value.sync="selectedDataset" :label="'Dataset'" class="selector"></DatasetSelector>
-
         </v-card-text>
         <v-card-actions>
           <v-btn text @click="dialog = false">Cancel</v-btn>
           <v-spacer></v-spacer>
-          <v-btn color="primary" @click="createInspection" :disabled="missingValues">Create</v-btn>
+          <v-btn color="primary" @click="createNewInspection" :disabled="missingValues">Create</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
