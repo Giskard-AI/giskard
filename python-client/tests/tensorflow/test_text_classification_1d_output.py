@@ -77,10 +77,10 @@ def test_text_classification_1d_output():
         return test_dataset
 
     my_model = TensorFlowModel(name="Tensorflow_text_classification",
-                               clf=export_model,
+                               model=export_model,
                                feature_names=['Review'],
                                model_type="classification",
-                               classification_labels=['0', '1'],
+                               classification_labels=[0, 1],
                                data_preprocessing_function=FromPandastoTFModelInput)
 
     # defining the giskard dataset

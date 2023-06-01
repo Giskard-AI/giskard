@@ -85,7 +85,7 @@ def test_newspaper_classification_pytorch_dataset():
 
     my_model = PyTorchModel(
         name="my_BertForSequenceClassification",
-        clf=model,
+        model=model,
         feature_names=feature_names,
         model_type="classification",
         classification_labels=list(ag_news_label.values()),
