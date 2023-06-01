@@ -521,15 +521,9 @@ class WrapperModel(BaseModel, ABC):
         if self.model_postprocessing_function:
             self.save_model_postprocessing_function(local_path)
 
-    def save_model(self, local_path: Union[str, Path], mlflow_meta=None) -> None:
-        try:
-            model_file = Path(local_path) / "model.pkl"
-            with open(model_file, "wb") as f:
-                cloudpickle.dump(self.model, f, protocol=pickle.DEFAULT_PROTOCOL)
-        except ValueError:
-            raise ValueError(
-                "We couldn't save your model with cloudpickle. Please provide us with your own "
-                "serialisation method by overriding the save_model() and load_model() methods.")
+    @abstractmethod
+    def save_model(self, local_path: Union[str, Path]) -> None:
+        ...
 
     def save_data_preprocessing_function(self, local_path: Union[str, Path]):
         with open(Path(local_path) / "giskard-data-preprocessing-function.pkl", "wb") as f:
@@ -546,17 +540,9 @@ class WrapperModel(BaseModel, ABC):
         return cls(model=cls.load_model(local_dir), **kwargs)
 
     @classmethod
+    @abstractmethod
     def load_model(cls, local_dir):
-        local_path = Path(local_dir)
-        model_path = local_path / "model.pkl"
-        if model_path.exists():
-            with open(model_path, "rb") as f:
-                model = cloudpickle.load(f)
-                return model
-        else:
-            raise ValueError(
-                "We couldn't load your model with cloudpickle. Please provide us with your own "
-                "serialisation method by overriding the save_model() and load_model() methods.")
+        ...
 
     @classmethod
     def load_data_preprocessing_function(cls, local_path: Union[str, Path]):
@@ -598,6 +584,41 @@ class MLFlowBasedModel(WrapperModel, ABC):
         self.save_model(local_path, mlflow.models.Model(model_uuid=str(self.id)))
         super().save(local_path)
 
+
+class CloudpickleBasedModel(WrapperModel, ABC):
+    """
+    An abstract base class for models that are serializable by the cloudpickle library.
+    """
+
+    def save(self, local_path: Union[str, Path]) -> None:
+        """
+        TBF
+        """
+        super().save(local_path)
+        self.save_model(local_path)
+
+    def save_model(self, local_path: Union[str, Path]) -> None:
+        try:
+            model_file = Path(local_path) / "model.pkl"
+            with open(model_file, "wb") as f:
+                cloudpickle.dump(self.model, f, protocol=pickle.DEFAULT_PROTOCOL)
+        except ValueError:
+            raise ValueError(
+                "We couldn't save your model with cloudpickle. Please provide us with your own "
+                "serialisation method by overriding the save_model() and load_model() methods.")
+
+    @classmethod
+    def load_model(cls, local_dir):
+        local_path = Path(local_dir)
+        model_path = local_path / "model.pkl"
+        if model_path.exists():
+            with open(model_path, "rb") as f:
+                model = cloudpickle.load(f)
+                return model
+        else:
+            raise ValueError(
+                "We couldn't load your model with cloudpickle. Please provide us with your own "
+                "serialisation method by overriding the save_model() and load_model() methods.")
 
 
 class CustomModel(BaseModel, ABC):

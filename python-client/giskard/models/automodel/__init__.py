@@ -1,9 +1,11 @@
 from re import match
 import pandas as pd
-from typing import Callable, Optional, Iterable, Any
+from typing import Callable, Optional, Iterable, Any, Union
+import cloudpickle, pickle
+from pathlib import Path
 
 from giskard.models import infer_giskard_cls
-from giskard.models.base import WrapperModel
+from giskard.models.base import CloudpickleBasedModel
 from giskard.core.core import ModelType
 
 
@@ -41,7 +43,7 @@ class Model:
                     classification_labels=classification_labels,
                     **kwargs)
             else:
-                return type(cls.__name__, (WrapperModel,), cls_properties)(
+                return type(cls.__name__, (CloudpickleBasedModel,), cls_properties)(
                     model=model,
                     model_type=model_type,
                     data_preprocessing_function=data_preprocessing_function,
@@ -50,3 +52,4 @@ class Model:
                     feature_names=feature_names,
                     classification_threshold=classification_threshold,
                     classification_labels=classification_labels)
+
