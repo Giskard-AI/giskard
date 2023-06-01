@@ -52,7 +52,9 @@ class MLWorker:
             # On Windows, we cannot use Unix sockets, so we use TCP.
             # Port 40052 is only used internally between the worker and the bridge.
             if sys.platform == "win32":
-                address = "localhost:40052"
+                # Find random open port
+                port = find_free_port()
+                address = f"localhost:{port}"
             else:
                 self.socket_file_location = f"{settings.home_dir / 'run' / f'ml-worker-{worker_id}.sock'}"
                 address = f"unix://{self.socket_file_location}"
