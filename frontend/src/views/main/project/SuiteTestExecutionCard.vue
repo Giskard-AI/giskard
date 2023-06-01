@@ -1,7 +1,7 @@
 <template>
     <div class="test-container">
         <div class="d-flex flex-row align-center test-card-header">
-            <span class="test-name">
+            <span class="test-name text-black">
                 Test {{ suiteTest.test.displayName ?? suiteTest.test.name }}
                            <span v-if="transformationFunction"> to {{
                                    transformationFunction.displayName ?? transformationFunction.name
@@ -39,7 +39,7 @@
         <div class="d-flex flex-row align-end test-card-footer">
             <div v-for="({name, value}) in orderedParams" class="d-flex flex-column">
                 <span>{{ name }}</span>
-                <span>{{ value }}</span>
+                <span class="text-black">{{ value }}</span>
             </div>
             <div class="flex-grow-1"/>
             <v-btn text x-small @click="editTests">
@@ -141,7 +141,7 @@ async function editTests() {
     border-radius: 4px 4px 4px 4px;
     -webkit-border-radius: 4px 4px 4px 4px;
     -moz-border-radius: 4px 4px 4px 4px;
-    border: 1px solid #dee2e6;
+    border: 1px solid rgb(224, 224, 224);
     background: white;
 }
 
@@ -179,6 +179,10 @@ async function editTests() {
     .metric {
         color: #dc3545;
     }
+}
+
+.text-black {
+    color: black;
 }
 </style>
 

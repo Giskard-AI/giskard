@@ -3,7 +3,7 @@
         <div class="vc">
             <v-container class="main-container vc">
                 <div class="d-flex pl-3 pr-3">
-                    <h1>{{ suite.name }}</h1>
+                    <h1 class="test-suite-name">{{ suite.name }}</h1>
                     <div class="flex-grow-1"/>
                     <v-btn tile class='mx-1' v-if="hasTest"
                            :to="{ name: 'project-catalog-tests', query: { suiteId: suiteId } }" color="secondary">
@@ -123,6 +123,11 @@ async function openRunTestSuite(compareMode: boolean) {
 .main-container {
     width: 100%;
     max-width: 100%;
+    color: rgb(98, 98, 98);
+
+    b {
+        color: black;
+    }
 }
 
 .parent-container {
@@ -132,5 +137,9 @@ async function openRunTestSuite(compareMode: boolean) {
 
 .overview-container {
     background-color: #f5f5f5;
+}
+
+.test-suite-name {
+    color: rgb(32, 57, 48);
 }
 </style>
