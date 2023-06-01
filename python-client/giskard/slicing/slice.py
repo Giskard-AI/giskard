@@ -51,7 +51,7 @@ class ContainsWord(Clause):
         self.is_not = is_not
 
     def __str__(self) -> str:
-        return f"`{self.column}` ${'does not contain' if self.is_not else 'contains'} \"{self.value}\""
+        return f"`{self.column}` {'does not contain' if self.is_not else 'contains'} \"{self.value}\""
 
     def mask(self, df: pd.DataFrame) -> pd.Series:
         return df[self.column].str.contains(rf"\b{re.escape(self.value)}\b", case=False).ne(self.is_not)
@@ -70,7 +70,7 @@ class IsNa(Clause):
         self.is_not = is_not
 
     def __str__(self) -> str:
-        return f"`{self.column}` ${'is not empty' if self.is_not else 'is empty'}"
+        return f"`{self.column}` {'is not empty' if self.is_not else 'is empty'}"
 
     def mask(self, df: pd.DataFrame) -> pd.Series:
         return df[self.column].isna().ne(self.is_not)
