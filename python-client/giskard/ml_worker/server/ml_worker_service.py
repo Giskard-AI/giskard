@@ -18,7 +18,7 @@ from google.protobuf.wrappers_pb2 import Int32Value, DoubleValue
 
 import giskard
 from giskard.client.giskard_client import GiskardClient
-from giskard.models.base import Model
+from giskard.models.base import BaseModel
 from giskard.datasets.base import Dataset
 from giskard.ml_worker.core.model_explanation import (
     explain,
@@ -179,7 +179,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
             if arg.HasField("dataset"):
                 value = Dataset.download(self.client, arg.dataset.project_key, arg.dataset.id)
             elif arg.HasField("model"):
-                value = Model.download(self.client, arg.model.project_key, arg.model.id)
+                value = BaseModel.download(self.client, arg.model.project_key, arg.model.id)
             elif arg.HasField("float"):
                 value = float(arg.float)
             elif arg.HasField("int"):
@@ -198,7 +198,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
     ) -> ml_worker_pb2.TestResultMessage:
         from giskard.ml_worker.testing.functions import GiskardTestFunctions
 
-        model = Model.download(self.client, request.model.project_key, request.model.id)
+        model = BaseModel.download(self.client, request.model.project_key, request.model.id)
 
         tests = GiskardTestFunctions()
         _globals = {"model": model, "tests": tests}
@@ -223,7 +223,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
         return ml_worker_pb2.TestResultMessage(results=tests.tests_results)
 
     def explain(self, request: ml_worker_pb2.ExplainRequest, context) -> ml_worker_pb2.ExplainResponse:
-        model = Model.download(self.client, request.model.project_key, request.model.id)
+        model = BaseModel.download(self.client, request.model.project_key, request.model.id)
         dataset = Dataset.download(self.client, request.dataset.project_key, request.dataset.id)
         explanations = explain(model, dataset, request.columns)
 
@@ -236,7 +236,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
 
     def explainText(self, request: ml_worker_pb2.ExplainTextRequest, context) -> ml_worker_pb2.ExplainTextResponse:
         n_samples = 500 if request.n_samples <= 0 else request.n_samples
-        model = Model.download(self.client, request.model.project_key, request.model.id)
+        model = BaseModel.download(self.client, request.model.project_key, request.model.id)
         text_column = request.feature_name
 
         if request.column_types[text_column] != "text":
@@ -258,7 +258,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
         )
 
     def runModelForDataFrame(self, request: ml_worker_pb2.RunModelForDataFrameRequest, context):
-        model = Model.download(self.client, request.model.project_key, request.model.id)
+        model = BaseModel.download(self.client, request.model.project_key, request.model.id)
         ds = Dataset(
             pd.DataFrame([r.columns for r in request.dataframe.rows]),
             target=request.target,
@@ -277,7 +277,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
 
     def runModel(self, request: ml_worker_pb2.RunModelRequest, context) -> ml_worker_pb2.RunModelResponse:
         try:
-            model = Model.download(self.client, request.model.project_key, request.model.id)
+            model = BaseModel.download(self.client, request.model.project_key, request.model.id)
             dataset = Dataset.download(self.client, request.dataset.project_key, request.dataset.id)
         except ValueError as e:
             if "unsupported pickle protocol" in str(e):

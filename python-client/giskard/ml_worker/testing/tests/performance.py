@@ -13,7 +13,7 @@ from sklearn.metrics import (
 )
 
 from giskard import test
-from giskard.models.base import Model
+from giskard.models.base import BaseModel
 from giskard.datasets.base import Dataset
 from giskard.ml_worker.core.test_result import TestResult
 from giskard.ml_worker.testing.registry.giskard_test import GiskardTest
@@ -28,7 +28,7 @@ def _get_rmse(y_actual, y_predicted):
     return np.sqrt(mean_squared_error(y_actual, y_predicted))
 
 
-def _test_classification_score(score_fn, gsk_dataset: Dataset, model: Model, threshold: float = 1.0):
+def _test_classification_score(score_fn, gsk_dataset: Dataset, model: BaseModel, threshold: float = 1.0):
     _verify_target_availability(gsk_dataset)
     is_binary_classification = len(model.meta.classification_labels) == 2
     gsk_dataset.df.reset_index(drop=True, inplace=True)
@@ -42,7 +42,7 @@ def _test_classification_score(score_fn, gsk_dataset: Dataset, model: Model, thr
     return TestResult(actual_slices_size=[len(gsk_dataset)], metric=metric, passed=bool(metric >= threshold))
 
 
-def _test_accuracy_score(gsk_dataset: Dataset, model: Model, threshold: float = 1.0):
+def _test_accuracy_score(gsk_dataset: Dataset, model: BaseModel, threshold: float = 1.0):
     _verify_target_availability(gsk_dataset)
     gsk_dataset.df.reset_index(drop=True, inplace=True)
     prediction = model.predict(gsk_dataset).prediction
@@ -53,7 +53,7 @@ def _test_accuracy_score(gsk_dataset: Dataset, model: Model, threshold: float = 
     return TestResult(actual_slices_size=[len(gsk_dataset)], metric=metric, passed=bool(metric >= threshold))
 
 
-def _test_regression_score(score_fn, giskard_ds, model: Model, threshold: float = 1.0, r2=False):
+def _test_regression_score(score_fn, giskard_ds, model: BaseModel, threshold: float = 1.0, r2=False):
     results_df = pd.DataFrame()
     giskard_ds.df.reset_index(drop=True, inplace=True)
     _verify_target_availability(giskard_ds)
@@ -98,14 +98,14 @@ class AucTest(GiskardTest):
     """
 
     actual_slice: Dataset
-    model: Model
+    model: BaseModel
     threshold: float
 
-    def __init__(self, actual_slice: Dataset = None, model: Model = None, threshold: float = None):
+    def __init__(self, actual_slice: Dataset = None, model: BaseModel = None, threshold: float = None):
         """
         Init an AucTest instance, can be passed in Suite.add_test method
         :param actual_slice: Slice of the actual dataset
-        :param model: Model used to compute the test
+        :param model: BaseModel used to compute the test
         :param threshold: Threshold value of AUC metrics
         """
         self.actual_slice = actual_slice
@@ -127,7 +127,7 @@ class AucTest(GiskardTest):
 
 
 @test(name="AUC", tags=["performance"])
-def test_auc(actual_slice: Dataset, model: Model, threshold: float = 1.0):
+def test_auc(actual_slice: Dataset, model: BaseModel, threshold: float = 1.0):
     """
     Test if the model AUC performance is higher than a threshold for a given slice
 
@@ -137,8 +137,8 @@ def test_auc(actual_slice: Dataset, model: Model, threshold: float = 1.0):
     Args:
         actual_slice(Dataset):
           Slice of the actual dataset
-        model(Model):
-          Model used to compute the test
+        model(BaseModel):
+          BaseModel used to compute the test
         threshold(float):
           Threshold value of AUC metrics
 
@@ -166,7 +166,7 @@ def test_auc(actual_slice: Dataset, model: Model, threshold: float = 1.0):
 
 
 @test(name="F1", tags=["performance"])
-def test_f1(actual_slice: Dataset, model: Model, threshold: float = 1.0):
+def test_f1(actual_slice: Dataset, model: BaseModel, threshold: float = 1.0):
     """
     Test if the model F1 score is higher than a defined threshold for a given slice
 
@@ -176,8 +176,8 @@ def test_f1(actual_slice: Dataset, model: Model, threshold: float = 1.0):
     Args:
         actual_slice(Dataset):
           Slice of the actual dataset
-        model(Model):
-          Model used to compute the test
+        model(BaseModel):
+          BaseModel used to compute the test
         threshold(float):
           Threshold value for F1 Score
 
@@ -193,7 +193,7 @@ def test_f1(actual_slice: Dataset, model: Model, threshold: float = 1.0):
 
 
 @test(name="Accuracy", tags=["performance"])
-def test_accuracy(actual_slice: Dataset, model: Model, threshold: float = 1.0):
+def test_accuracy(actual_slice: Dataset, model: BaseModel, threshold: float = 1.0):
     """
     Test if the model Accuracy is higher than a threshold for a given slice
 
@@ -203,8 +203,8 @@ def test_accuracy(actual_slice: Dataset, model: Model, threshold: float = 1.0):
     Args:
         actual_slice(Dataset):
           Slice of the actual dataset
-        model(Model):
-          Model used to compute the test
+        model(BaseModel):
+          BaseModel used to compute the test
         threshold(float):
           Threshold value for Accuracy
 
@@ -220,7 +220,7 @@ def test_accuracy(actual_slice: Dataset, model: Model, threshold: float = 1.0):
 
 
 @test(name="Precision", tags=["performance"])
-def test_precision(actual_slice: Dataset, model: Model, threshold: float = 1.0):
+def test_precision(actual_slice: Dataset, model: BaseModel, threshold: float = 1.0):
     """
     Test if the model Precision is higher than a threshold for a given slice
 
@@ -230,8 +230,8 @@ def test_precision(actual_slice: Dataset, model: Model, threshold: float = 1.0):
     Args:
         actual_slice(Dataset):
           Slice of the actual dataset
-        model(Model):
-          Model used to compute the test
+        model(BaseModel):
+          BaseModel used to compute the test
         threshold(float):
           Threshold value for Precision
     Returns:
@@ -246,7 +246,7 @@ def test_precision(actual_slice: Dataset, model: Model, threshold: float = 1.0):
 
 
 @test(name="Recall", tags=["performance"])
-def test_recall(actual_slice: Dataset, model: Model, threshold: float = 1.0):
+def test_recall(actual_slice: Dataset, model: BaseModel, threshold: float = 1.0):
     """
     Test if the model Recall is higher than a threshold for a given slice
 
@@ -256,8 +256,8 @@ def test_recall(actual_slice: Dataset, model: Model, threshold: float = 1.0):
     Args:
         actual_slice(Dataset):
           Slice of the actual dataset
-        model(Model):
-          Model used to compute the test
+        model(BaseModel):
+          BaseModel used to compute the test
         threshold(float):
           Threshold value for Recall
     Returns:
@@ -272,7 +272,7 @@ def test_recall(actual_slice: Dataset, model: Model, threshold: float = 1.0):
 
 
 @test(name="RMSE", tags=["performance"])
-def test_rmse(actual_slice: Dataset, model: Model, threshold: float = 1.0):
+def test_rmse(actual_slice: Dataset, model: BaseModel, threshold: float = 1.0):
     """
     Test if the model RMSE is lower than a threshold
 
@@ -282,8 +282,8 @@ def test_rmse(actual_slice: Dataset, model: Model, threshold: float = 1.0):
     Args:
         actual_slice(Dataset):
           Slice of actual dataset
-        model(Model):
-          Model used to compute the test
+        model(BaseModel):
+          BaseModel used to compute the test
         threshold(float):
           Threshold value for RMSE
     Returns:
@@ -298,7 +298,7 @@ def test_rmse(actual_slice: Dataset, model: Model, threshold: float = 1.0):
 
 
 @test(name="MAE", tags=["performance"])
-def test_mae(actual_slice: Dataset, model: Model, threshold: float = 1.0):
+def test_mae(actual_slice: Dataset, model: BaseModel, threshold: float = 1.0):
     """
     Test if the model Mean Absolute Error is lower than a threshold
 
@@ -308,8 +308,8 @@ def test_mae(actual_slice: Dataset, model: Model, threshold: float = 1.0):
     Args:
         actual_slice(Dataset):
           Slice of actual dataset
-        model(Model):
-          Model used to compute the test
+        model(BaseModel):
+          BaseModel used to compute the test
         threshold(float):
           Threshold value for MAE
 
@@ -327,7 +327,7 @@ def test_mae(actual_slice: Dataset, model: Model, threshold: float = 1.0):
 
 
 @test(name="R2", tags=["performance"])
-def test_r2(actual_slice: Dataset, model: Model, threshold: float = 1.0):
+def test_r2(actual_slice: Dataset, model: BaseModel, threshold: float = 1.0):
     """
     Test if the model R-Squared is higher than a threshold
 
@@ -337,8 +337,8 @@ def test_r2(actual_slice: Dataset, model: Model, threshold: float = 1.0):
     Args:
         actual_slice(Dataset):
           Slice of actual dataset
-        model(Model):
-          Model used to compute the test
+        model(BaseModel):
+          BaseModel used to compute the test
         threshold(float):
           Threshold value for R-Squared
 
@@ -354,7 +354,7 @@ def test_r2(actual_slice: Dataset, model: Model, threshold: float = 1.0):
 
 
 @test(name="Accuracy difference", tags=["performance"])
-def test_diff_accuracy(actual_slice: Dataset, reference_slice: Dataset, model: Model, threshold: float = 0.1):
+def test_diff_accuracy(actual_slice: Dataset, reference_slice: Dataset, model: BaseModel, threshold: float = 0.1):
     """
 
     Test if the absolute percentage change of model Accuracy between two samples is lower than a threshold
@@ -370,8 +370,8 @@ def test_diff_accuracy(actual_slice: Dataset, reference_slice: Dataset, model: M
           Slice of the actual dataset
         reference_slice(Dataset):
           Slice of the actual dataset
-        model(Model):
-          Model used to compute the test
+        model(BaseModel):
+          BaseModel used to compute the test
         threshold(float):
           Threshold value for Accuracy Score difference
     Returns:
@@ -395,7 +395,7 @@ def test_diff_accuracy(actual_slice: Dataset, reference_slice: Dataset, model: M
 
 
 @test(name="F1 difference", tags=["performance"])
-def test_diff_f1(actual_slice: Dataset, reference_slice: Dataset, model: Model, threshold: float = 0.1):
+def test_diff_f1(actual_slice: Dataset, reference_slice: Dataset, model: BaseModel, threshold: float = 0.1):
     """
     Test if the absolute percentage change in model F1 Score between two samples is lower than a threshold
 
@@ -410,8 +410,8 @@ def test_diff_f1(actual_slice: Dataset, reference_slice: Dataset, model: Model, 
           Slice of the actual dataset
         reference_slice(Dataset):
           Slice of the actual dataset
-        model(Model):
-          Model used to compute the test
+        model(BaseModel):
+          BaseModel used to compute the test
         threshold(float):
           Threshold value for F1 Score difference
 
@@ -429,7 +429,7 @@ def test_diff_f1(actual_slice: Dataset, reference_slice: Dataset, model: Model, 
 
 
 @test(name="Precision difference", tags=["performance"])
-def test_diff_precision(actual_slice: Dataset, reference_slice: Dataset, model: Model, threshold: float = 0.1):
+def test_diff_precision(actual_slice: Dataset, reference_slice: Dataset, model: BaseModel, threshold: float = 0.1):
     """
     Test if the absolute percentage change of model Precision between two samples is lower than a threshold
 
@@ -444,8 +444,8 @@ def test_diff_precision(actual_slice: Dataset, reference_slice: Dataset, model: 
           Slice of the actual dataset
         reference_slice(Dataset):
           Slice of the actual dataset
-        model(Model):
-          Model used to compute the test
+        model(BaseModel):
+          BaseModel used to compute the test
         threshold(float):
           Threshold value for Precision difference
     Returns:
@@ -469,7 +469,7 @@ def test_diff_precision(actual_slice: Dataset, reference_slice: Dataset, model: 
 
 
 @test(name="Recall difference", tags=["performance"])
-def test_diff_recall(actual_slice: Dataset, reference_slice: Dataset, model: Model, threshold: float = 0.1):
+def test_diff_recall(actual_slice: Dataset, reference_slice: Dataset, model: BaseModel, threshold: float = 0.1):
     """
     Test if the absolute percentage change of model Recall between two samples is lower than a threshold
 
@@ -484,8 +484,8 @@ def test_diff_recall(actual_slice: Dataset, reference_slice: Dataset, model: Mod
           Slice of the actual dataset
         reference_slice(Dataset):
           Slice of the actual dataset
-        model(Model):
-          Model used to compute the test
+        model(BaseModel):
+          BaseModel used to compute the test
         threshold(float):
           Threshold value for Recall difference
     Returns:
@@ -503,7 +503,7 @@ def test_diff_recall(actual_slice: Dataset, reference_slice: Dataset, model: Mod
 
 @test(name="F1 Reference Actual difference", tags=["performance"])
 def test_diff_reference_actual_f1(
-    reference_slice: Dataset, actual_slice: Dataset, model: Model, threshold: float = 0.1
+    reference_slice: Dataset, actual_slice: Dataset, model: BaseModel, threshold: float = 0.1
 ):
     """
     Test if the absolute percentage change in model F1 Score between reference and actual data
@@ -520,8 +520,8 @@ def test_diff_reference_actual_f1(
           Slice of actual dataset
         reference_slice(Dataset):
           Slice of reference dataset
-        model(Model):
-          Model used to compute the test
+        model(BaseModel):
+          BaseModel used to compute the test
         threshold(float):
           Threshold value for F1 Score difference
     Returns:
@@ -539,7 +539,7 @@ def test_diff_reference_actual_f1(
 
 @test(name="Accuracy Reference Actual difference", tags=["performance"])
 def test_diff_reference_actual_accuracy(
-    reference_slice: Dataset, actual_slice: Dataset, model: Model, threshold: float = 0.1
+    reference_slice: Dataset, actual_slice: Dataset, model: BaseModel, threshold: float = 0.1
 ):
     """
     Test if the absolute percentage change in model Accuracy between reference and actual data
@@ -556,8 +556,8 @@ def test_diff_reference_actual_accuracy(
           Slice of actual dataset
         reference_slice(Dataset):
           Slice of reference dataset
-        model(Model):
-          Model used to compute the test
+        model(BaseModel):
+          BaseModel used to compute the test
         threshold(float):
           Threshold value for Accuracy difference
     Returns:
@@ -581,7 +581,7 @@ def test_diff_reference_actual_accuracy(
 
 
 @test(name="Accuracy Reference Actual difference", tags=["performance"])
-def test_diff_rmse(actual_slice: Dataset, reference_slice: Dataset, model: Model, threshold: float = 0.1):
+def test_diff_rmse(actual_slice: Dataset, reference_slice: Dataset, model: BaseModel, threshold: float = 0.1):
     """
     Test if the absolute percentage change of model RMSE between two samples is lower than a threshold
 
@@ -596,8 +596,8 @@ def test_diff_rmse(actual_slice: Dataset, reference_slice: Dataset, model: Model
           Slice of the actual dataset
         reference_slice(Dataset):
           Slice of the actual dataset
-        model(Model):
-          Model used to compute the test
+        model(BaseModel):
+          BaseModel used to compute the test
         threshold(float):
           Threshold value for RMSE difference
 
@@ -616,7 +616,7 @@ def test_diff_rmse(actual_slice: Dataset, reference_slice: Dataset, model: Model
 
 @test(name="RMSE Reference Actual difference", tags=["performance"])
 def test_diff_reference_actual_rmse(
-    reference_slice: Dataset, actual_slice: Dataset, model: Model, threshold: float = 0.1
+    reference_slice: Dataset, actual_slice: Dataset, model: BaseModel, threshold: float = 0.1
 ):
     """
     Test if the absolute percentage change in model RMSE between reference and actual data
@@ -633,8 +633,8 @@ def test_diff_reference_actual_rmse(
           Slice of actual dataset
         reference_slice(Dataset):
           Slice of reference dataset
-        model(Model):
-          Model used to compute the test
+        model(BaseModel):
+          BaseModel used to compute the test
         threshold(float):
           Threshold value for RMSE difference
     Returns:

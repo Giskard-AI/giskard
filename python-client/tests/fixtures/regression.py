@@ -33,7 +33,7 @@ def linear_regression_diabetes_raw():
     # Make predictions using the testing set
     diabetes_y_pred = regressor.predict(diabetes_x_test)
 
-    timer.stop(f"Model MSE: {mean_squared_error(diabetes_y_test, diabetes_y_pred)}")
+    timer.stop(f"BaseModel MSE: {mean_squared_error(diabetes_y_test, diabetes_y_pred)}")
 
     return regressor
 

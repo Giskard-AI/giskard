@@ -12,7 +12,7 @@ from sklearn.metrics import (
 )
 
 from giskard.datasets.base import Dataset
-from giskard.models.base import Model
+from giskard.models.base import BaseModel
 from giskard.ml_worker.generated.ml_worker_pb2 import SingleTestResult, TestMessage, TestMessageType
 from giskard.ml_worker.testing.abstract_test_collection import AbstractTestCollection
 
@@ -23,7 +23,7 @@ class PerformanceTests(AbstractTestCollection):
         if not dataset.target:
             raise ValueError("Target column is not available")
 
-    def test_auc(self, actual_slice: Dataset, model: Model, threshold=1.0):
+    def test_auc(self, actual_slice: Dataset, model: BaseModel, threshold=1.0):
 
         """
         Test if the model AUC performance is higher than a threshold for a given slice
@@ -33,8 +33,8 @@ class PerformanceTests(AbstractTestCollection):
         Args:
             actual_slice(Dataset):
               Slice of the actual dataset
-            model(Model):
-              Model used to compute the test
+            model(BaseModel):
+              BaseModel used to compute the test
             threshold(float):
               Threshold value of AUC metrics
 
@@ -63,7 +63,7 @@ class PerformanceTests(AbstractTestCollection):
             SingleTestResult(actual_slices_size=[len(actual_slice)], metric=metric, passed=bool(metric >= threshold))
         )
 
-    def _test_classification_score(self, score_fn, gsk_dataset: Dataset, model: Model, threshold=1.0):
+    def _test_classification_score(self, score_fn, gsk_dataset: Dataset, model: BaseModel, threshold=1.0):
         self._verify_target_availability(gsk_dataset)
         is_binary_classification = len(model.meta.classification_labels) == 2
         gsk_dataset.df.reset_index(drop=True, inplace=True)
@@ -78,7 +78,7 @@ class PerformanceTests(AbstractTestCollection):
             SingleTestResult(actual_slices_size=[len(gsk_dataset)], metric=metric, passed=bool(metric >= threshold))
         )
 
-    def _test_accuracy_score(self, gsk_dataset: Dataset, model: Model, threshold=1.0):
+    def _test_accuracy_score(self, gsk_dataset: Dataset, model: BaseModel, threshold=1.0):
         self._verify_target_availability(gsk_dataset)
         gsk_dataset.df.reset_index(drop=True, inplace=True)
         prediction = model.predict(gsk_dataset).prediction
@@ -90,7 +90,7 @@ class PerformanceTests(AbstractTestCollection):
             SingleTestResult(actual_slices_size=[len(gsk_dataset)], metric=metric, passed=bool(metric >= threshold))
         )
 
-    def _test_regression_score(self, score_fn, giskard_ds, model: Model, threshold=1.0, r2=False):
+    def _test_regression_score(self, score_fn, giskard_ds, model: BaseModel, threshold=1.0, r2=False):
         results_df = pd.DataFrame()
         giskard_ds.df.reset_index(drop=True, inplace=True)
         self._verify_target_availability(giskard_ds)
@@ -108,7 +108,7 @@ class PerformanceTests(AbstractTestCollection):
             )
         )
 
-    def test_f1(self, actual_slice: Dataset, model: Model, threshold=1.0):
+    def test_f1(self, actual_slice: Dataset, model: BaseModel, threshold=1.0):
         """
         Test if the model F1 score is higher than a defined threshold for a given slice
 
@@ -117,8 +117,8 @@ class PerformanceTests(AbstractTestCollection):
         Args:
             actual_slice(Dataset):
               Slice of the actual dataset
-            model(Model):
-              Model used to compute the test
+            model(BaseModel):
+              BaseModel used to compute the test
             threshold(float):
               Threshold value for F1 Score
 
@@ -132,7 +132,7 @@ class PerformanceTests(AbstractTestCollection):
         """
         return self._test_classification_score(f1_score, actual_slice, model, threshold)
 
-    def test_accuracy(self, actual_slice: Dataset, model: Model, threshold=1.0):
+    def test_accuracy(self, actual_slice: Dataset, model: BaseModel, threshold=1.0):
         """
         Test if the model Accuracy is higher than a threshold for a given slice
 
@@ -141,8 +141,8 @@ class PerformanceTests(AbstractTestCollection):
         Args:
             actual_slice(Dataset):
               Slice of the actual dataset
-            model(Model):
-              Model used to compute the test
+            model(BaseModel):
+              BaseModel used to compute the test
             threshold(float):
               Threshold value for Accuracy
 
@@ -156,7 +156,7 @@ class PerformanceTests(AbstractTestCollection):
         """
         return self._test_accuracy_score(actual_slice, model, threshold)
 
-    def test_precision(self, actual_slice, model: Model, threshold=1.0):
+    def test_precision(self, actual_slice, model: BaseModel, threshold=1.0):
         """
         Test if the model Precision is higher than a threshold for a given slice
 
@@ -165,8 +165,8 @@ class PerformanceTests(AbstractTestCollection):
         Args:
             actual_slice(Dataset):
               Slice of the actual dataset
-            model(Model):
-              Model used to compute the test
+            model(BaseModel):
+              BaseModel used to compute the test
             threshold(float):
               Threshold value for Precision
         Returns:
@@ -179,7 +179,7 @@ class PerformanceTests(AbstractTestCollection):
         """
         return self._test_classification_score(precision_score, actual_slice, model, threshold)
 
-    def test_recall(self, actual_slice, model: Model, threshold=1.0):
+    def test_recall(self, actual_slice, model: BaseModel, threshold=1.0):
         """
         Test if the model Recall is higher than a threshold for a given slice
 
@@ -188,8 +188,8 @@ class PerformanceTests(AbstractTestCollection):
         Args:
             actual_slice(Dataset):
               Slice of the actual dataset
-            model(Model):
-              Model used to compute the test
+            model(BaseModel):
+              BaseModel used to compute the test
             threshold(float):
               Threshold value for Recall
         Returns:
@@ -206,7 +206,7 @@ class PerformanceTests(AbstractTestCollection):
     def _get_rmse(y_actual, y_predicted):
         return np.sqrt(mean_squared_error(y_actual, y_predicted))
 
-    def test_rmse(self, actual_slice, model: Model, threshold=1.0):
+    def test_rmse(self, actual_slice, model: BaseModel, threshold=1.0):
         """
         Test if the model RMSE is lower than a threshold
 
@@ -215,8 +215,8 @@ class PerformanceTests(AbstractTestCollection):
         Args:
             actual_slice(Dataset):
               Slice of actual dataset
-            model(Model):
-              Model used to compute the test
+            model(BaseModel):
+              BaseModel used to compute the test
             threshold(float):
               Threshold value for RMSE
         Returns:
@@ -229,7 +229,7 @@ class PerformanceTests(AbstractTestCollection):
         """
         return self._test_regression_score(self._get_rmse, actual_slice, model, threshold)
 
-    def test_mae(self, actual_slice, model: Model, threshold=1.0):
+    def test_mae(self, actual_slice, model: BaseModel, threshold=1.0):
         """
         Test if the model Mean Absolute Error is lower than a threshold
 
@@ -238,8 +238,8 @@ class PerformanceTests(AbstractTestCollection):
         Args:
             actual_slice(Dataset):
               Slice of actual dataset
-            model(Model):
-              Model used to compute the test
+            model(BaseModel):
+              BaseModel used to compute the test
             threshold(float):
               Threshold value for MAE
 
@@ -255,7 +255,7 @@ class PerformanceTests(AbstractTestCollection):
         """
         return self._test_regression_score(mean_absolute_error, actual_slice, model, threshold)
 
-    def test_r2(self, actual_slice, model: Model, threshold=1.0):
+    def test_r2(self, actual_slice, model: BaseModel, threshold=1.0):
         """
         Test if the model R-Squared is higher than a threshold
 
@@ -264,8 +264,8 @@ class PerformanceTests(AbstractTestCollection):
         Args:
             actual_slice(Dataset):
               Slice of actual dataset
-            model(Model):
-              Model used to compute the test
+            model(BaseModel):
+              BaseModel used to compute the test
             threshold(float):
               Threshold value for R-Squared
 
@@ -328,8 +328,8 @@ class PerformanceTests(AbstractTestCollection):
               Slice of the actual dataset
             reference_slice(Dataset):
               Slice of the actual dataset
-            model(Model):
-              Model used to compute the test
+            model(BaseModel):
+              BaseModel used to compute the test
             threshold(float):
               Threshold value for Accuracy Score difference
         Returns:
@@ -365,8 +365,8 @@ class PerformanceTests(AbstractTestCollection):
               Slice of the actual dataset
             reference_slice(Dataset):
               Slice of the actual dataset
-            model(Model):
-              Model used to compute the test
+            model(BaseModel):
+              BaseModel used to compute the test
             threshold(float):
               Threshold value for F1 Score difference
 
@@ -398,8 +398,8 @@ class PerformanceTests(AbstractTestCollection):
               Slice of the actual dataset
             reference_slice(Dataset):
               Slice of the actual dataset
-            model(Model):
-              Model used to compute the test
+            model(BaseModel):
+              BaseModel used to compute the test
             threshold(float):
               Threshold value for Precision difference
         Returns:
@@ -435,8 +435,8 @@ class PerformanceTests(AbstractTestCollection):
               Slice of the actual dataset
             reference_slice(Dataset):
               Slice of the actual dataset
-            model(Model):
-              Model used to compute the test
+            model(BaseModel):
+              BaseModel used to compute the test
             threshold(float):
               Threshold value for Recall difference
         Returns:
@@ -468,8 +468,8 @@ class PerformanceTests(AbstractTestCollection):
               Slice of actual dataset
             reference_slice(Dataset):
               Slice of reference dataset
-            model(Model):
-              Model used to compute the test
+            model(BaseModel):
+              BaseModel used to compute the test
             threshold(float):
               Threshold value for F1 Score difference
         Returns:
@@ -501,8 +501,8 @@ class PerformanceTests(AbstractTestCollection):
               Slice of actual dataset
             reference_slice(Dataset):
               Slice of reference dataset
-            model(Model):
-              Model used to compute the test
+            model(BaseModel):
+              BaseModel used to compute the test
             threshold(float):
               Threshold value for Accuracy difference
         Returns:
@@ -538,8 +538,8 @@ class PerformanceTests(AbstractTestCollection):
               Slice of the actual dataset
             reference_slice(Dataset):
               Slice of the actual dataset
-            model(Model):
-              Model used to compute the test
+            model(BaseModel):
+              BaseModel used to compute the test
             threshold(float):
               Threshold value for RMSE difference
 
@@ -572,8 +572,8 @@ class PerformanceTests(AbstractTestCollection):
               Slice of actual dataset
             reference_slice(Dataset):
               Slice of reference dataset
-            model(Model):
-              Model used to compute the test
+            model(BaseModel):
+              BaseModel used to compute the test
             threshold(float):
               Threshold value for RMSE difference
         Returns:
