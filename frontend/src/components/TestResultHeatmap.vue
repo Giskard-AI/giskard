@@ -1,5 +1,5 @@
 <template>
-  <svg height="32" width="32">
+  <svg :height="svgSize" :width="svgSize">
     <rect
         v-for="square in squares"
         :x="square.x"
@@ -17,10 +17,13 @@ import {computed} from 'vue';
 
 const {results} = defineProps<{ results: boolean[] }>();
 
+const svgSize = 32;
+const paddingRatio = 5 / 100;
+
 const squares = computed(() => {
   const itemPerRow = Math.ceil(Math.sqrt(results.length));
-  const size = 32 / itemPerRow;
-  const padding = size / 20;
+  const size = svgSize / itemPerRow;
+  const padding = size * paddingRatio;
   const sizeWithPadding = size - 2 * padding;
 
   return results.map((result, i) => ({

@@ -1,31 +1,26 @@
 <template>
   <div>
-    <div class="d-flex justify-space-between">
       <v-breadcrumbs
           :items="executionBreadcrumbs"
       ></v-breadcrumbs>
-      <v-btn text @click="loadExecutions()" color="secondary">Reload
-        <v-icon right>refresh</v-icon>
-      </v-btn>
-    </div>
     <v-progress-linear
         indeterminate
-        v-if="executions === null"
+        v-if="!props.executions"
         color="primary"
         class="mt-2"
     ></v-progress-linear>
-    <p v-else-if="executions.length === 0">No execution has been performed yet!</p>
+    <p v-else-if="props.executions.length === 0">No execution has been performed yet!</p>
     <v-row v-else>
       <v-col cols="3">
         <v-list three-line>
           <v-list-item-group v-model="selectedExecution" color="primary" mandatory>
-            <template v-for="execution in executions">
+            <template v-for="execution in props.executions">
               <v-divider/>
               <v-list-item :value="execution" :disabled="!execution.completionDate">
                 <v-list-item-content>
                   <v-list-item-title>
                     <div class="d-flex justify-space-between">
-                      <span>{{ execution.executionDate }}</span>
+                      <span>{{ execution.executionDate | moment('MMM Do YY, h:mm:ss a') }}</span>
                       <TestResultHeatmap :results="executionResults(execution)"/>
                     </div>
                   </v-list-item-title>
@@ -56,12 +51,13 @@
 
 <script setup lang="ts">
 
-import {computed, onMounted, ref} from 'vue';
+import {computed, onMounted, ref, watch} from 'vue';
 import {DatasetDTO, ModelDTO, TestCatalogDTO, TestResult, TestSuiteExecutionDTO} from '@/generated-sources';
-import {api} from '@/api';
 import TestSuiteExecutionResults from '@/views/main/project/TestSuiteExecutionResults.vue';
 import TestInputList from '@/components/TestInputList.vue';
 import TestResultHeatmap from '@/components/TestResultHeatmap.vue';
+import moment from 'moment';
+import {useRoute} from 'vue-router/composables';
 
 const props = defineProps<{
   projectId: number,
@@ -69,18 +65,11 @@ const props = defineProps<{
   registry: TestCatalogDTO,
   models: { [key: string]: ModelDTO },
   datasets: { [key: string]: DatasetDTO },
-  inputTypes: { [name: string]: string }
+  inputTypes: { [name: string]: string },
+  executions?: TestSuiteExecutionDTO[]
 }>();
 
 const selectedExecution = ref<TestSuiteExecutionDTO | null>(null);
-const executions = ref<TestSuiteExecutionDTO[] | null>(null);
-
-onMounted(() => loadExecutions());
-
-async function loadExecutions() {
-  executions.value = null;
-  executions.value = await api.listTestSuiteExecutions(props.projectId, props.suiteId);
-}
 
 function executionStatusMessage(execution: TestSuiteExecutionDTO): string {
   switch (execution.result) {
@@ -116,13 +105,25 @@ const executionBreadcrumbs = computed(() =>
     selectedExecution.value === null ? [executionItem] : [
       executionItem,
       {
-        text: selectedExecution.value.executionDate,
+        text: moment(selectedExecution.value.executionDate)
+            .format('MMM Do YY, h:mm:ss a'),
         disabled: false
       }
     ]);
 
 function executionResults(execution: TestSuiteExecutionDTO): boolean[] {
-  return execution.results?.map(result => result.passed);
+  return execution.results ? execution.results.map(result => result.passed) : [];
+}
+
+const route = useRoute();
+watch(() => [route.name, route.params], () => onRouteUpdate());
+onMounted(() => onRouteUpdate());
+
+function onRouteUpdate() {
+  if (route.name === 'test-suite-new-execution') {
+    const executionId = Number(route.params.executionId);
+    selectedExecution.value = props.executions?.find(execution => execution.id === executionId) ?? null;
+  }
 }
 
 </script>
