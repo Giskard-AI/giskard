@@ -1,16 +1,15 @@
 from requests_toolbelt.sessions import BaseUrlSession
 
-from giskard.client.analytics_collector import GiskardAnalyticsCollector, anonymize
+from giskard.utils.analytics_collector import anonymize, analytics
 
 
 class Project:
     def __init__(
-        self, session: BaseUrlSession, project_key: str, project_id: int, analytics: GiskardAnalyticsCollector = None
+            self, session: BaseUrlSession, project_key: str, project_id: int
     ) -> None:
         self.project_key = project_key
         self._session = session
         self.url = self._session.base_url.replace("/api/v2/", "")
-        self.analytics = analytics or GiskardAnalyticsCollector()
         self.project_id = project_id
 
     def _update_test_suite_params(self, actual_ds_id, reference_ds_id, model_id, test_id=None, test_suite_id=None):
@@ -49,7 +48,7 @@ class Project:
         return res
 
     def execute_test(self, test_id, actual_ds_id=None, reference_ds_id=None, model_id=None):
-        self.analytics.track(
+        analytics.track(
             "execute_test",
             {
                 "test_id": anonymize(test_id),
@@ -65,7 +64,7 @@ class Project:
         return self._execution_dto_filter(answer_json)
 
     def execute_test_suite(self, test_suite_id, actual_ds_id=None, reference_ds_id=None, model_id=None):
-        self.analytics.track(
+        analytics.track(
             "execute_test_suite",
             {
                 "test_suite_id": anonymize(test_suite_id),
