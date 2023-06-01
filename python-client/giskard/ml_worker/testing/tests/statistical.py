@@ -143,7 +143,6 @@ def test_output_in_range(
 
 
 # TODO: support type in the future
-@validate_classification_label
 def test_disparate_impact(
         gsk_dataset: Dataset,
         protected_slice: SliceFunction,
