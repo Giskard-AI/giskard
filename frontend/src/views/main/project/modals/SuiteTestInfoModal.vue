@@ -18,7 +18,7 @@
           </div>
           <TestInputListSelector v-if="test.args"
                                  :test-inputs="suiteTest.testInputs"
-                                 :test="registryByUuid[suiteTest.testUuid]"
+                                 :test="testFunctionsByUuid[suiteTest.testUuid]"
                                  :model-value="editedInputs"
                                  :project-id="projectId"
                                  :inputs="inputType"
@@ -71,6 +71,7 @@ import MonacoEditor from 'vue-monaco';
 import {api} from '@/api';
 import {editor} from 'monaco-editor';
 import TestInputListSelector from "@/components/TestInputListSelector.vue";
+import {useCatalogStore} from "@/stores/catalog";
 import IEditorOptions = editor.IEditorOptions;
 
 const l = MonacoEditor;
@@ -79,15 +80,17 @@ monacoOptions.readOnly = true;
 
 const {suiteTest, test} = defineProps<{
   suiteTest: SuiteTestDTO,
-  test: TestFunctionDTO
+    test: TestFunctionDTO
 }>();
 
-const {models, datasets, projectId, suite, inputs, registry} = storeToRefs(useTestSuiteStore());
+const {models, datasets, projectId, suite, inputs} = storeToRefs(useTestSuiteStore());
 const {reload} = useTestSuiteStore();
 
 const editedInputs = ref<{ [input: string]: TestInputDTO }>({});
 const result = ref<{ [input: string]: TestInputDTO }>({});
 const editor = ref(null)
+
+const {testFunctionsByUuid} = storeToRefs(useCatalogStore())
 
 const sortedArguments = computed(() => {
     if (!test) {
@@ -99,7 +102,6 @@ const sortedArguments = computed(() => {
     }, 'name');
 })
 
-const registryByUuid = computed(() => chain(registry.value).keyBy('uuid').value());
 
 const invalid = ref(false);
 
