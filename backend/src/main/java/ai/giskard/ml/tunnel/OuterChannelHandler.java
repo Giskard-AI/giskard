@@ -83,7 +83,6 @@ public class OuterChannelHandler extends ChannelInboundHandlerAdapter {
                 handleServiceChannelInput(ctx, outerChannel, in);
             }
         }
-
     }
 
     private void handleServiceChannelInput(ChannelHandlerContext ctx, SocketChannel outerChannel, ByteBuf in) {

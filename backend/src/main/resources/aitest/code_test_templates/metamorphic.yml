@@ -3,7 +3,7 @@ id: metamorphic
 order: 2
 items:
   - id: metamorphic_invariance_classification
-    title: Invariance for Classification
+    title: Invariance (proportion)
     hint: Tests if the Classification model prediction is invariant when the feature values are perturbed
     isMultipleDatasets: false
     isGroundTruthRequired: false
@@ -79,7 +79,7 @@ items:
       )
 
   - id: metamorphic_invariance_classification_t_test
-    title: Invariance for Classification (t-test)
+    title: Invariance (t-test)
     hint: Tests if the Classification model predictions are statistically invariant when the feature values are perturbed
     isMultipleDatasets: false
     isGroundTruthRequired: false
@@ -163,7 +163,7 @@ items:
 
 
   - id: metamorphic_invariance_classification_wilcoxon
-    title: Invariance for Classification (Wilcoxon)
+    title: Invariance (Wilcoxon)
     hint: Tests if the Classification model predictions are statistically invariant when the feature values are perturbed
     isMultipleDatasets: false
     isGroundTruthRequired: false
@@ -247,7 +247,7 @@ items:
 
 
   - id: metamorphic_invariance_regression
-    title: Invariance for Regression
+    title: Invariance (proportion)
     hint: Tests if the Regression model prediction is invariant when the feature values are perturbed
     isMultipleDatasets: false
     isGroundTruthRequired: false
@@ -325,7 +325,7 @@ items:
       )
 
   - id: metamorphic_increasing_classification
-    title: Increasing for Classification
+    title: Increasing (proportion)
     hint: Tests if the Model prediction probability is increasing when the feature values are perturbed
     isMultipleDatasets: false
     isGroundTruthRequired: false
@@ -402,7 +402,7 @@ items:
       )
 
   - id: metamorphic_increasing_classification_t_test
-    title: Increasing for Classification (t-test)
+    title: Increasing (t-test)
     hint: Tests if the Classification model predictions are statistically increasing when the feature values are perturbed
     isMultipleDatasets: false
     isGroundTruthRequired: false
@@ -480,7 +480,7 @@ items:
       )
 
   - id: metamorphic_increasing_classification_wilcoxon
-    title: Increasing for Classification (Wilcoxon)
+    title: Increasing (Wilcoxon)
     hint: Tests if the Classification model predictions are statistically increasing when the feature values are perturbed
     isMultipleDatasets: false
     isGroundTruthRequired: false
@@ -558,7 +558,7 @@ items:
       )
 
   - id: metamorphic_increasing_regression
-    title: Increasing for Regression
+    title: Increasing (proportion)
     hint: Tests if the Model prediction  is increasing when the feature values are perturbed
     isMultipleDatasets: false
     isGroundTruthRequired: false
@@ -629,7 +629,7 @@ items:
           threshold=0.5
       )
   - id: metamorphic_decreasing_classification
-    title: Decreasing for Classification
+    title: Decreasing (proportion)
     hint: Tests if the Model prediction probability is decreasing when the feature values are perturbed
     isMultipleDatasets: false
     isGroundTruthRequired: false
@@ -705,7 +705,7 @@ items:
           threshold=0.5
       )
   - id: metamorphic_decreasing_regression
-    title: Decreasing for Regression
+    title: Decreasing (proportion)
     hint: Tests if the Model prediction  is decreasing when the feature values are perturbed
     isMultipleDatasets: false
     isGroundTruthRequired: false
@@ -778,7 +778,7 @@ items:
 
 
   - id: metamorphic_decreasing_classification_t_test
-    title: Decreasing for Classification (t-test)
+    title: Decreasing (t-test)
     hint: Tests if the Classification model predictions are statistically decreasing when the feature values are perturbed
     isMultipleDatasets: false
     isGroundTruthRequired: false
@@ -856,7 +856,7 @@ items:
       )
 
   - id: metamorphic_decreasing_classification_wilcoxon
-    title: Decreasing for Classification (Wilcoxon)
+    title: Decreasing (Wilcoxon)
     hint: Tests if the Classification model predictions statistically decreases when the feature values are perturbed
     isMultipleDatasets: false
     isGroundTruthRequired: false

@@ -1,3 +1,4 @@
+import importlib
 import logging
 import pickle
 import posixpath
@@ -5,7 +6,6 @@ import tempfile
 import uuid
 from pathlib import Path
 from typing import Optional, Any, Union
-import importlib
 
 import cloudpickle
 import mlflow.sklearn
@@ -38,12 +38,14 @@ class Model:
     meta: ModelMeta
     clf: PyFuncModel
     data_preprocessing_function: any
+    model_postprocessing_function: any
 
     def __init__(self,
                  clf,
                  model_type: Union[SupportedModelTypes, str],
                  name: str = None,
                  data_preprocessing_function=None,
+                 model_postprocessing_function=None,
                  feature_names=None,
                  classification_threshold=0.5,
                  classification_labels=None,
@@ -51,6 +53,7 @@ class Model:
                  loader_class: str = 'Model') -> None:
         self.clf = clf
         self.data_preprocessing_function = data_preprocessing_function
+        self.model_postprocessing_function = model_postprocessing_function
 
         if type(model_type) == str:
             try:
@@ -85,6 +88,7 @@ class Model:
         with tempfile.TemporaryDirectory(prefix="giskard-model-") as f:
             info = self.save_to_local_dir(f)
             self.save_data_preprocessing_function(f)
+            self.save_model_postprocessing_function(f)
             if client is not None:
                 client.log_artifacts(f, posixpath.join(project_key, "models", info.model_uuid))
                 client.save_model_meta(project_key,
@@ -96,13 +100,26 @@ class Model:
 
     def save_data_preprocessing_function(self, path):
         if self.data_preprocessing_function:
-            with open(Path(path) / "giskard-data-prep.pkl", 'wb') as f:
+            with open(Path(path) / "giskard-data_preprocessing_function.pkl", 'wb') as f:
                 cloudpickle.dump(self.data_preprocessing_function, f, protocol=pickle.DEFAULT_PROTOCOL)
+
+    def save_model_postprocessing_function(self, path):
+        if self.model_postprocessing_function:
+            with open(Path(path) / "giskard-model_postprocessing_function.pkl", 'wb') as f:
+                cloudpickle.dump(self.model_postprocessing_function, f, protocol=pickle.DEFAULT_PROTOCOL)
 
     @staticmethod
     def read_data_preprocessing_function_from_artifact(local_path: str):
         local_path = Path(local_path)
-        file_path = local_path / "giskard-data-prep.pkl"
+        file_path = local_path / "giskard-data_preprocessing_function.pkl"
+        if file_path.exists():
+            with open(file_path, 'rb') as f:
+                return cloudpickle.load(f)
+
+    @staticmethod
+    def read_model_postprocessing_function_from_artifact(local_path: str):
+        local_path = Path(local_path)
+        file_path = local_path / "giskard-model_postprocessing_function.pkl"
         if file_path.exists():
             with open(file_path, 'rb') as f:
                 return cloudpickle.load(f)
@@ -115,11 +132,15 @@ class Model:
         else:
             raise ValueError('Unsupported model type')
 
-        info = self._new_mlflow_model_meta()
-        mlflow.sklearn.save_model(self.clf,
-                                  path=local_path,
-                                  pyfunc_predict_fn=pyfunc_predict_fn,
-                                  mlflow_model=info)
+        meta = self._new_mlflow_model_meta()
+        self._save_model_to_local_dir(local_path,
+                                      pyfunc_predict_fn=pyfunc_predict_fn,
+                                      mlflow_model=meta)
+        self._save_giskard_model_meta_to_local_dir(meta, local_path)
+
+        return meta
+
+    def _save_giskard_model_meta_to_local_dir(self, info, local_path):
         with open(Path(local_path) / 'giskard-model-meta.yaml', 'w') as f:
             yaml.dump(
                 {
@@ -136,7 +157,8 @@ class Model:
                     "size": get_size(local_path),
                 }, f, default_flow_style=False)
 
-        return info
+    def _save_model_to_local_dir(self, local_path, **kwargs):
+        return mlflow.sklearn.save_model(self.clf, path=local_path, **kwargs)
 
     @staticmethod
     def _new_mlflow_model_meta():
@@ -184,6 +206,7 @@ class Model:
         return loader_class(
             clf=loader_class.read_model_from_local_dir(local_dir),
             data_preprocessing_function=loader_class.read_data_preprocessing_function_from_artifact(local_dir),
+            model_postprocessing_function=loader_class.read_model_postprocessing_function_from_artifact(local_dir),
             **meta.__dict__
         )
 
@@ -193,12 +216,16 @@ class Model:
         return self._raw_predict(data)
 
     def _raw_predict(self, data):
-        return self.clf.predict(data)
+        if not self.model_postprocessing_function:
+            return self.clf.predict(data)
+        else:
+            return self.model_postprocessing_function(self.clf.predict(data))
 
     def predict(self, dataset: Dataset) -> ModelPredictionResults:
         timer = Timer()
         df = self.prepare_dataframe(dataset)
         raw_prediction = self.prepare_data_and_predict(df)
+
         if self.is_regression:
             result = ModelPredictionResults(
                 prediction=raw_prediction, raw_prediction=raw_prediction, raw=raw_prediction
@@ -232,6 +259,12 @@ class Model:
     def prepare_dataframe(self, dataset: Dataset):
         df = dataset.df.copy()
         column_types = dict(dataset.column_types) if dataset.column_types else None
+
+        if column_types:
+            for cname, ctype in column_types.items():
+                if cname not in df:
+                    df[cname] = None
+
         if dataset.target:
             if dataset.target in df.columns:
                 df.drop(dataset.target, axis=1, inplace=True)
@@ -247,6 +280,10 @@ class Model:
             df = df[self.meta.feature_names]
             if column_types:
                 column_types = {k: v for k, v in column_types.items() if k in self.meta.feature_names}
+
+        for cname, ctype in column_types.items():
+            if cname not in df:
+                df[cname] = None
 
         if column_types:
             df = Dataset.cast_column_to_types(df, column_types)

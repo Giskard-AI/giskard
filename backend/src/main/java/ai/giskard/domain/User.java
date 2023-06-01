@@ -27,6 +27,7 @@ import java.util.Set;
 @Getter
 @Setter
 @NotNull
+@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "login")
 public class User extends AbstractAuditingEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -70,6 +71,7 @@ public class User extends AbstractAuditingEntity {
     private String resetKey;
 
     @Column(name = "reset_date")
+    @JsonIgnore
     private Instant resetDate = null;
 
     @JsonIgnore
