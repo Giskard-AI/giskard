@@ -1,8 +1,6 @@
 from re import match
 import pandas as pd
-from typing import Callable, Optional, Iterable, Any, Union
-import cloudpickle, pickle
-from pathlib import Path
+from typing import Callable, Optional, Iterable, Any
 
 from giskard.models import infer_giskard_cls
 from giskard.models.base import CloudpickleBasedModel
@@ -52,4 +50,3 @@ class Model:
                     feature_names=feature_names,
                     classification_threshold=classification_threshold,
                     classification_labels=classification_labels)
-

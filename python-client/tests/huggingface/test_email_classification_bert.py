@@ -6,7 +6,7 @@ from dateutil import parser
 from scipy import special
 from transformers import BertTokenizer, BertForSequenceClassification
 
-import email_classification_utils
+from tests.huggingface.email_classification_utils import get_email_files
 import tests.utils
 from giskard import HuggingFaceModel, Dataset
 
@@ -46,7 +46,7 @@ def get_labels(filename):
 
 
 def test_email_classification_bert_custom_model():
-    email_files = email_classification_utils.get_email_files()
+    email_files = get_email_files()
 
     columns_name = ['Target', 'Subject', 'Content', 'Week_day', 'Year', 'Month', 'Hour', 'Nb_of_forwarded_msg']
 
