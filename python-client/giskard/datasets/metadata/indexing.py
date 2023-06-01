@@ -22,7 +22,7 @@ class MetadataIndexer:
 
     def __init__(self, dataset):
         self._dataset = dataset
-        self._metadata = defaultdict(pd.DataFrame)
+        self._metadata = defaultdict(lambda: pd.DataFrame(index=dataset.df.index))
 
     def __getitem__(self, key: tuple):
         try:

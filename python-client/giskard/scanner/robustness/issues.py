@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 from dataclasses import dataclass
 
+from ...ml_worker.testing.registry.transformation_function import TransformationFunction
 from ..issues import Issue
 from ...models.base import BaseModel, ModelPredictionResults
 from ...datasets.base import Dataset
@@ -10,11 +11,13 @@ from ...datasets.base import Dataset
 @dataclass
 class RobustnessIssueInfo:
     feature: str
-    perturbation_name: str
+    transformation_fn: TransformationFunction
     fail_ratio: float
     perturbed_data_slice: Dataset
     perturbed_data_slice_predictions: ModelPredictionResults
     fail_data_idx: list
+    threshold: float
+    output_sensitivity: float
 
 
 class RobustnessIssue(Issue):
@@ -34,7 +37,7 @@ class RobustnessIssue(Issue):
 
     @property
     def metric(self) -> str:
-        return self.info.perturbation_name
+        return self.info.transformation_fn.name
 
     @property
     def deviation(self) -> str:
@@ -52,3 +55,16 @@ class RobustnessIssue(Issue):
     @property
     def importance(self) -> float:
         return self.info.fail_ratio
+
+    def generate_tests(self) -> list:
+        from ...ml_worker.testing.tests.metamorphic import test_metamorphic_invariance
+
+        return [
+            test_metamorphic_invariance(
+                self.model,
+                self.dataset,
+                self.info.transformation_fn,
+                threshold=1 - self.info.threshold,
+                output_sensitivity=self.info.output_sensitivity,
+            )
+        ]

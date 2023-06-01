@@ -7,6 +7,8 @@ from enum import Enum
 from pathlib import Path
 from typing import Optional, Dict, List, Union, Literal, TypeVar, Callable, Type, Any
 
+from giskard.ml_worker.testing.registry.utils import is_local_function
+
 logger = logging.getLogger(__name__)
 
 
@@ -124,6 +126,17 @@ class CallableMeta(SavableMeta, ABC):
                  tags: List[str] = None,
                  version: Optional[int] = None,
                  type: str = None):
+        self.version = version
+        self.type = type
+        self.name = name
+        self.tags = tags
+        self.code = None
+        self.display_name = None
+        self.module = None
+        self.doc = None
+        self.module_doc = None
+        self.full_name = None
+        self.args = None
         if callable_obj:
             from giskard.ml_worker.testing.registry.registry import get_object_uuid
 
@@ -141,8 +154,6 @@ class CallableMeta(SavableMeta, ABC):
             self.doc = func_doc
             self.module_doc = self.extract_module_doc(func_doc)
             self.tags = self.populate_tags(tags)
-            self.version = version
-            self.type = type
 
             parameters = self.extract_parameters(callable_obj)
 
@@ -175,7 +186,7 @@ class CallableMeta(SavableMeta, ABC):
         tags = [] if not tags else tags.copy()
         if self.full_name.partition(".")[0] == "giskard":
             tags.append("giskard")
-        elif self.full_name.startswith('__main__'):
+        elif is_local_function(self.full_name):
             tags.append("pickle")
         else:
             tags.append("custom")
@@ -216,8 +227,7 @@ class CallableMeta(SavableMeta, ABC):
                     "default": arg.default,
                     "optional": arg.optional,
                     "argOrder": arg.argOrder,
-                } for arg in self.args.values()
-            ]
+                } for arg in self.args.values()] if self.args else None
         }
 
     def init_from_json(self, json: Dict[str, Any]):
@@ -239,7 +249,7 @@ class CallableMeta(SavableMeta, ABC):
                 optional=arg["optional"],
                 argOrder=arg["argOrder"]
             ) for arg in json["args"]
-        }
+        } if json["args"] else None
 
 
 def __repr__(self) -> str:

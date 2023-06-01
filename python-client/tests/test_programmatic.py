@@ -4,14 +4,9 @@ from giskard import test
 from giskard.datasets.base import Dataset
 from giskard.ml_worker.core.suite import Suite, SuiteInput
 from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction
-from giskard.ml_worker.testing.tests.performance import test_auc, test_f1, test_diff_f1, AucTest
+from giskard.ml_worker.testing.tests.performance import test_auc, test_f1, test_diff_f1
 from giskard.models.base import BaseModel
 from tests.utils import MockedClient
-
-
-def _test_dataset_size(ds: Dataset, threshold):
-    print("Running test_dataset_size")
-    return len(ds.df) > threshold
 
 
 @test()
@@ -78,10 +73,7 @@ def test_shared_input(german_credit_model: BaseModel, german_credit_data: Datase
         .add_test(test_auc(dataset=shared_input, threshold=0.2))
         .add_test(test_f1(dataset=shared_input, threshold=0.2))
         .add_test(test_diff_f1(threshold=0.2, actual_dataset=shared_input))
-        .run(
-            model=german_credit_model,
-            dataset=german_credit_data,
-            reference_dataset=last_half)[0]
+        .run(model=german_credit_model, dataset=german_credit_data, reference_dataset=last_half)[0]
     )
 
 
@@ -91,11 +83,18 @@ def test_multiple_execution_of_same_test(german_credit_data: Dataset, german_cre
 
     shared_input = SuiteInput("dataset", Dataset)
 
-    result = Suite() \
-        .add_test(test_auc(dataset=shared_input, threshold=0.2)) \
-        .add_test(test_auc(dataset=shared_input, threshold=0.25)) \
-        .add_test(test_auc(dataset=shared_input, threshold=0.3)) \
-        .run(model=german_credit_model, dataset=german_credit_data, actual_dataset=first_half, reference_dataset=last_half)
+    result = (
+        Suite()
+        .add_test(test_auc(dataset=shared_input, threshold=0.2))
+        .add_test(test_auc(dataset=shared_input, threshold=0.25))
+        .add_test(test_auc(dataset=shared_input, threshold=0.3))
+        .run(
+            model=german_credit_model,
+            dataset=german_credit_data,
+            actual_dataset=first_half,
+            reference_dataset=last_half,
+        )
+    )
 
     assert result[0]
     assert len(result[1]) == 3
@@ -106,7 +105,7 @@ def test_giskard_test_class(german_credit_data: Dataset, german_credit_model: Ba
 
     assert (
         Suite()
-        .add_test(AucTest(dataset=shared_input, threshold=0.2))
+        .add_test(test_auc(dataset=shared_input, threshold=0.2))
         .run(model=german_credit_model, dataset=german_credit_data)[0]
     )
 
@@ -116,6 +115,7 @@ def test_save_suite(german_credit_data: Dataset, german_credit_model: BaseModel)
         Suite().add_test(test_auc(threshold=0.2, dataset=german_credit_data)).add_test(
             test_f1(threshold=0.2, dataset=german_credit_data)
         ).upload(client, "test_project_key")
+
 
 # def test_save_suite_real(german_credit_data: Dataset, german_credit_model: BaseModel):
 #     from giskard.client.giskard_client import GiskardClient
