@@ -381,7 +381,7 @@ def clean(delete_data):
     Delete Docker container, container (and possibly a volume) associated with the current version of Giskard Server
     """
     data_deletion_confirmed = delete_data and click.confirm(
-        "Are you sure you want to delete user data (giskard-home volume)? " \
+        "Are you sure you want to delete user data (giskard-home volume)? "
         "This will permanently erase all of the Giskard activity results")
 
     client = create_docker_client()
