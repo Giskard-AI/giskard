@@ -54,7 +54,7 @@ def test_sst2_pytorch_list():
 
         return data_list
 
-    classification_labels = ["0", "1"]
+    classification_labels = [0, 1]
 
     def my_softmax(x):
         return torch_softmax(x)

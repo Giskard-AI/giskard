@@ -85,7 +85,7 @@ def test_text_classification_2d_output():
                                model=export_model,
                                feature_names=['Review'],
                                model_type="classification",
-                               classification_labels=['0', '1'],
+                               classification_labels=[0, 1],
                                data_preprocessing_function=FromPandastoTFModelInput)
 
     my_test_dataset = Dataset(test_df.head(), name="test dataset", target="Label")
