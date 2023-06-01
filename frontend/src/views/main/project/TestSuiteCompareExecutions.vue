@@ -9,9 +9,9 @@
                          :input-types="inputs" :datasets="datasets"/>
           <p class="text-h6">Test passed: {{ countPassedTests(comparison) }}</p>
           <p class="text-h6">Best performing tests: {{ countBestPerformingTests(comparison) }}</p>
-          <v-list-item v-for="result in comparison.tests" :key="result.test.test.testId">
+          <v-list-item v-for="result in comparison.tests" :key="result.test.test.testUuid">
             <v-list-item-content>
-              <v-list-item-title>{{ registry.tests[result.test.test.testId].name }}</v-list-item-title>
+              <v-list-item-title>{{ registryByUuid[result.test.test.testUuid].name }}</v-list-item-title>
               <v-list-item-subtitle><span :class="{
                 passed: result.test.passed,
                 failed: !result.test.passed,
@@ -57,7 +57,7 @@ const executionComparisons: ComputedRef<ExecutionComparison[]> = computed(() => 
   const groupedTestsResults: { [testId: string]: SuiteTestExecutionDTO[] } = chain(results)
       .map(r => r.execution.results ?? [])
       .flatten()
-      .groupBy(result => result.test.testId)
+      .groupBy(result => result.test.testUuid)
       .value();
 
   const bestPerformingMetrics: { [testId: string]: number } = chain(groupedTestsResults)
@@ -66,10 +66,10 @@ const executionComparisons: ComputedRef<ExecutionComparison[]> = computed(() => 
 
   results.forEach(result => {
     result.tests = result.execution.results ? chain(result.execution.results)
-            .keyBy(t => t.test.testId)
+            .keyBy(t => t.test.testUuid)
             .mapValues(t => ({
               test: t,
-              best: bestPerformingMetrics[t.test.testId] === t.metric
+              best: bestPerformingMetrics[t.test.testUuid] === t.metric
             }))
             .value()
         : {};
@@ -89,6 +89,8 @@ function countBestPerformingTests(comparison: ExecutionComparison): number {
       .filter(result => result.best)
       .length;
 }
+
+const registryByUuid = computed(() => chain(registry.value).keyBy('uuid').value());
 
 </script>
 
