@@ -49,6 +49,7 @@ import pandas as pd
 
 iris_df = pd.DataFrame({"sepal length": [5.1],
                         "sepal width": [3.5],
+                        "color": ["green"],
                         "iris_type": ["Setosa"]})
 
 from giskard import wrap_dataset
@@ -56,8 +57,8 @@ from giskard import wrap_dataset
 wrapped_dataset = wrap_dataset(
   dataset=iris_df, 
   target="iris_type", # Optional but a MUST if available
+  cat_columns=["color"] # Optional but a MUST if available. Inferred automatically if not.
   # name="my_iris_dataset", # Optional
-  # cat_columns=None # Optional: if not provided, it is inferred automatically
   # column_types=None # # Optional: if not provided, it is inferred automatically
   )
 ```
