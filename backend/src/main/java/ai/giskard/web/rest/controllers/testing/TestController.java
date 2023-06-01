@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Map;
 import java.util.UUID;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 
@@ -39,8 +40,8 @@ public class TestController {
     @PostMapping("/run-test")
     public TestTemplateExecutionResultDTO runAdHocTest(@RequestBody RunAdhocTestRequest request) {
         TestFunction testFunction = testFunctionRepository.getWithArgsByUuid(UUID.fromString(request.getTestUuid()));
-        Map<String, String> argumentTypes = testFunction.getArgs().stream()
-            .collect(Collectors.toMap(FunctionArgument::getName, FunctionArgument::getType));
+        Map<String, FunctionArgument> arguments = testFunction.getArgs().stream()
+            .collect(Collectors.toMap(FunctionArgument::getName, Function.identity()));
 
         Project project = projectRepository.getMandatoryById(request.getProjectId());
 
@@ -51,8 +52,9 @@ public class TestController {
                 .setTestUuid(request.getTestUuid());
 
             for (FunctionInputDTO input : request.getInputs()) {
+
                 builder.addArguments(testArgumentService
-                    .buildTestArgument(argumentTypes, input.getName(), input.getValue(), project.getKey(),
+                    .buildTestArgument(arguments, input.getName(), input.getValue(), project.getKey(),
                         giskardMapper.fromDTO(input).getParams()));
             }
 
