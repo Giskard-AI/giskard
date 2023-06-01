@@ -25,6 +25,7 @@ public class SuiteTest {
     @ManyToOne
     @JoinColumn(name = "test_suite")
     @NotNull
+    @JsonIgnore
     private TestSuite suite;
 
     @OneToMany(mappedBy = "test", cascade = CascadeType.ALL, orphanRemoval = true)
