@@ -78,7 +78,7 @@ print(f"result: {result.passed} with metric {result.metric}")
 
 :::
 
-:::{tab-item} Metamorphic tets
+:::{tab-item} Metamorphic tests
 
 ```python
 from giskard import demo, Model, Dataset, testing, transformation_function
@@ -141,8 +141,8 @@ model, df = demo.titanic()
 wrapped_dataset = Dataset(df=df, target="Survived", cat_columns=['Pclass', 'Sex', "SibSp", "Parch", "Embarked"])
 
 # Create a suite and add a F1 test and an accuracy test
-# Note that all the parameters are specified except dataset
-# Which means that we will need to specify dataset everytime we run the suite
+# Note that all the parameters are specified except model
+# Which means that we will need to specify model everytime we run the suite
 suite = Suite() \
     .add_test(testing.test_f1(dataset=wrapped_dataset)) \
     .add_test(testing.test_accuracy(dataset=wrapped_dataset))
@@ -169,7 +169,47 @@ a test class or a test function.
 :::
 
 :::{tab-item} Dataset as input
-1 metamorphic + 1 disparate impact (fairness)
+```python
+import pandas as pd
+from giskard import demo, Model, Dataset, testing, Suite, transformation_function, slicing_function
+
+model, df = demo.titanic()
+
+wrapped_model = Model(model=model, model_type="classification")
+
+@transformation_function
+def transform(df: pd.Series) -> pd.Series:
+    df['Age'] = df['Age'] + 10
+    return df
+
+@slicing_function(row_level=False, name='female')
+def slice_female(df: pd.DataFrame) -> pd.DataFrame:
+    return df[df.Sex == 'female']
+
+@slicing_function(row_level=False, name='male')
+def slice_male(df: pd.DataFrame) -> pd.DataFrame:
+    return df[df.Sex == 'male']
+
+# Create a suite and add a disparate impact test and a metamorphic test
+# Note that all the parameters are specified except dataset
+# Which means that we will need to specify dataset everytime we run the suite
+suite = Suite() \
+    .add_test(testing.test_disparate_impact(model=wrapped_model, protected_slicing_function=slice_female,
+                                                       unprotected_slicing_function=slice_male, positive_outcome="yes")) \
+    .add_test(testing.test_metamorphic_invariance(model=wrapped_model, transformation_function=transform))
+
+# Create our first dataset
+my_first_dataset = Dataset(df=df, target="Survived", cat_columns=['Pclass', 'Sex', "SibSp", "Parch", "Embarked"])
+
+# Run the suite by specifying our model and display the results
+passed, results = suite.run(dataset=my_first_dataset)
+
+# Create an updated version of the dataset
+my_updated_dataset =  Dataset(df=df, target="Survived", cat_columns=['Pclass', 'Sex', "SibSp", "Parch", "Embarked"])
+
+# Run the suite with our new version and check if the results improved
+suite.run(dataset=my_updated_dataset)
+```
 :::
 
 :::{tab-item} Shared test input
