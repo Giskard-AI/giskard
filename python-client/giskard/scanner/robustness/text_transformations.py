@@ -3,10 +3,12 @@ import re
 
 import pandas as pd
 
-from .entity_swap import typos, gender_switch_en
+from .entity_swap import typos
+from ... import Dataset
 from ...core.core import DatasetProcessFunctionMeta
 from ...ml_worker.testing.registry.registry import get_object_uuid
 from ...ml_worker.testing.registry.transformation_function import TransformationFunction
+from .entity_swap import religion_dict_en, religion_dict_fr
 
 
 class TextTransformation(TransformationFunction):
@@ -82,14 +84,14 @@ class TextTypoTransformation(TextTransformation):
                 return word
             elif perturbation_type == 'delete':
                 idx = random.randint(0, len(word) - 1)
-                word = word[:idx] + word[idx + 1 :]
+                word = word[:idx] + word[idx + 1:]
                 return word
             elif perturbation_type == 'replace':
                 j = random.randint(0, len(word) - 1)
                 c = word[j]
                 if c in typos:
                     replacement = random.choice(typos[c])
-                    text_modified = word[:j] + replacement + word[j + 1 :]
+                    text_modified = word[:j] + replacement + word[j + 1:]
                     return text_modified
         return word
 
@@ -110,24 +112,86 @@ class TextPunctuationRemovalTransformation(TextTransformation):
         return text.translate(str.maketrans('', '', self._punctuation))
 
 
-class TextGenderTransformation(TextTransformation):
+class TextDictBasedTransformation(TextTransformation):
     name = "Switch gender"
+    needs_dataset = True
 
-    def make_perturbation(self, x):
-        split_text = x.split()
+    def execute(self, dataset: Dataset) -> pd.DataFrame:
+        feature_data = dataset.df.loc[:, (self.column,)].dropna().astype(str)
+        meta_dataframe = dataset.column_meta[self.column, "text"].add_suffix('__gsk__meta')
+        feature_data = feature_data.join(meta_dataframe)
+        dataset.df.loc[feature_data.index, self.column] = feature_data.apply(self.make_perturbation, axis=1)
+        return dataset.df
+
+    def make_perturbation(self, row):
+        text = row[self.column]
+        language = row["language__gsk__meta"]
+        split_text = text.split()
         new_words = []
         for token in split_text:
-            new_word = self._switch(token)
+            new_word = self._switch(token, language)
             if new_word != token:
                 new_words.append(new_word)
 
-        new_text = x
+        new_text = text
         for original_word, switched_word in new_words:
             new_text = re.sub(fr"\b{original_word}\b", switched_word, new_text)
         return new_text
 
-    def _switch(self, word):
-        if word.lower() in gender_switch_en:
-            return [word, gender_switch_en[word.lower()]]
-        else:
+    def _switch(self, word, language):
+        raise NotImplementedError()
+
+
+class TextGenderTransformation(TextDictBasedTransformation):
+    def __init__(self, column):
+        super().__init__(column)
+        from .entity_swap import gender_switch_en, gender_switch_fr
+
+        self._dictionaries = {"en": gender_switch_en, "fr": gender_switch_fr}
+
+    def _switch(self, word, language):
+        try:
+            return [word, self._dictionaries[language][word.lower()]]
+        except KeyError:
             return word
+
+
+class TextReligionTransformation(TextDictBasedTransformation):
+    def make_perturbation(self, row):
+        text = row[self.column]
+        new_text = text
+        language = row["language__gsk__meta"]
+        if language == "en":
+            religion_dict = religion_dict_en
+        elif language == "fr":
+            religion_dict = religion_dict_fr
+        else:
+            return new_text
+
+        for religious_word_list in religion_dict:
+            for i in range(len(religious_word_list)):
+                if re.search(fr'\b{religious_word_list[i]}[s]\b', text) is not None and religious_word_list[(i + 1) % len(religious_word_list)] != pd.NA:
+                    new_text = re.sub(fr"\b{religious_word_list[i]}[s]\b",
+                                      religious_word_list[(i + 1) % len(religious_word_list)], new_text)
+
+        return new_text
+
+
+class TextNationalityTransformation(TextDictBasedTransformation):
+    def make_perturbation(self, row):
+        text = row[self.column]
+        language = row["language__gsk__meta"]
+        split_text = text.split()
+        new_words = []
+        for token in split_text:
+            new_word = self._switch(token, language)
+            if new_word != token:
+                new_words.append(new_word)
+
+        new_text = text
+        for original_word, switched_word in new_words:
+            new_text = re.sub(fr"\b{original_word}\b", switched_word, new_text)
+        return new_text
+
+    def _switch(self, word, language):
+        pass
