@@ -149,7 +149,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
         test_result = test.set_params(**arguments).execute()
 
         return TestResultMessage(results=[
-            NamedSingleTestResult(name=test.meta.uuid, result=map_result_to_single_test_result(test_result))
+            NamedSingleTestResult(testUuid=test.meta.uuid, result=map_result_to_single_test_result(test_result))
         ])
 
     def runTestSuite(self, request: RunTestSuiteRequest,
@@ -174,7 +174,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
         named_single_test_result = []
         for i in range(len(tests)):
             named_single_test_result.append(
-                NamedSingleTestResult(name=tests[i].meta.uuid, result=map_result_to_single_test_result(results[i]))
+                NamedSingleTestResult(testUuid=tests[i].meta.uuid, result=map_result_to_single_test_result(results[i]))
             )
 
         return TestSuiteResultMessage(is_pass=is_pass, results=named_single_test_result)
@@ -411,6 +411,4 @@ def map_result_to_single_test_result(result) -> SingleTestResult:
     elif isinstance(result, bool):
         return SingleTestResult(passed=result)
     else:
-        raise ValueError("Result of test can only be 'GiskardTestResult' or 'bool'")
-
-
+        raise ValueError("Result of test can only be 'TestResult' or 'bool'")
