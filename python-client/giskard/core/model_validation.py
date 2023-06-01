@@ -1,5 +1,5 @@
 import tempfile
-from typing import List, Iterable, Union, Callable, Any
+from typing import List, Iterable, Union, Callable, Any, Optional
 
 import numpy as np
 import pandas as pd
@@ -9,13 +9,14 @@ from pandas.core.dtypes.common import is_string_dtype
 from giskard.client.python_utils import warning
 from giskard.core.core import ModelMeta, ModelType
 from giskard.core.core import SupportedModelTypes
-from giskard.core.validation import validate_is_pandasdataframe, validate_target, configured_validate_arguments
+from giskard.core.validation import validate_is_pandasdataframe, configured_validate_arguments
 from giskard.datasets.base import Dataset
+from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction
 from giskard.models.base import BaseModel, WrapperModel
 
 
 @configured_validate_arguments
-def validate_model(model: BaseModel, validate_ds: Union[Dataset, None]):
+def validate_model(model: BaseModel, validate_ds: Optional[Dataset] = None):
     model_type = model.meta.model_type
 
     model = validate_model_loading_and_saving(model)
@@ -42,7 +43,6 @@ def validate_model(model: BaseModel, validate_ds: Union[Dataset, None]):
         if model.is_regression:
             validate_model_execution(model, validate_ds)
         elif model.is_classification and validate_ds.target is not None:
-            validate_target(validate_ds.target, validate_ds.df.keys())
             target_values = validate_ds.df[validate_ds.target].unique()
             validate_label_with_target(model.meta.name, model.meta.classification_labels, target_values,
                                        validate_ds.target)
@@ -50,11 +50,13 @@ def validate_model(model: BaseModel, validate_ds: Union[Dataset, None]):
         else:  # Classification with target = None
             validate_model_execution(model, validate_ds)
 
+    print("Your model is successfully validated.")
+
 
 @configured_validate_arguments
 def validate_model_execution(model: BaseModel, dataset: Dataset) -> None:
     validation_size = min(len(dataset), 10)
-    validation_ds = dataset.slice(lambda x: x.head(validation_size), row_level=False)
+    validation_ds = dataset.slice(SlicingFunction(lambda x: x.head(validation_size), row_level=False))
     try:
         prediction = model.predict(validation_ds)
     except Exception as e:
@@ -165,7 +167,7 @@ def validate_classification_labels(classification_labels: Union[np.ndarray, List
 
 
 @configured_validate_arguments
-def validate_features(feature_names: Union[List[str], None] = None, validate_df: Union[pd.DataFrame, None] = None):
+def validate_features(feature_names: Optional[List[str]] = None, validate_df: Optional[pd.DataFrame] = None):
     if (
             feature_names is not None
             and validate_df is not None
@@ -207,7 +209,7 @@ def validate_label_with_target(model_name: str, classification_labels: Union[np.
             )
 
         to_append = " of the model: " + model_name if model_name else ""
-        target_values = target_values if is_string_dtype(target_values) else [str(label) for label in target_values]
+        target_values = list(target_values)
         if not set(target_values).issubset(set(classification_labels)):
             invalid_target_values = set(target_values) - set(classification_labels)
             raise ValueError(

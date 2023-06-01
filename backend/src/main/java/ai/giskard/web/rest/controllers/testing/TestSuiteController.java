@@ -4,10 +4,8 @@ import ai.giskard.domain.ml.TestSuite;
 import ai.giskard.repository.ml.DatasetRepository;
 import ai.giskard.repository.ml.ModelRepository;
 import ai.giskard.repository.ml.TestSuiteRepository;
-import ai.giskard.service.TestFunctionService;
 import ai.giskard.service.TestSuiteExecutionService;
 import ai.giskard.service.TestSuiteService;
-import ai.giskard.service.ml.MLWorkerCacheService;
 import ai.giskard.web.dto.*;
 import ai.giskard.web.dto.mapper.GiskardMapper;
 import lombok.RequiredArgsConstructor;
@@ -34,9 +32,6 @@ public class TestSuiteController {
     private final DatasetRepository datasetRepository;
     private final ModelRepository modelRepository;
     private final TestSuiteExecutionService testSuiteExecutionService;
-    private final TestFunctionService testFunctionService;
-    private final MLWorkerCacheService mlWorkerCacheService;
-
 
     @PostMapping("project/{projectKey}/suites")
     @PreAuthorize("@permissionEvaluator.canWriteProjectKey(#projectKey)")
@@ -94,7 +89,6 @@ public class TestSuiteController {
                                               @PathVariable("suiteId") @NotNull Long suiteId) {
         return new TestSuiteCompleteDTO(
             giskardMapper.toDTO(testSuiteRepository.findOneByProjectIdAndId(projectId, suiteId)),
-            mlWorkerCacheService.getCatalog(projectId),
             giskardMapper.datasetsToDatasetDTOs(datasetRepository.findAllByProjectId(projectId)),
             giskardMapper.modelsToModelDTOs(modelRepository.findAllByProjectId(projectId)),
             testSuiteExecutionService.listAllExecution(suiteId),

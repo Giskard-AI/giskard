@@ -67,8 +67,10 @@ class GiskardTest(Savable[Type, TestFunctionMeta], ABC):
             with open(Path(local_dir) / 'data.pkl', 'rb') as f:
                 func = pickle.load(f)
 
-        if inspect.isclass(func):
+        if inspect.isclass(func) or hasattr(func, 'meta'):
             giskard_test = func()
+        elif isinstance(func, GiskardTest):
+            giskard_test = func
         else:
             giskard_test = GiskardTestMethod(func)
 
@@ -93,7 +95,8 @@ Test = Union[GiskardTest, Function]
 
 
 class GiskardTestMethod(GiskardTest):
-    params: ...
+    params = None
+    is_initialized = False
 
     def __init__(self, test_fn: Function) -> None:
         self.test_fn = test_fn
@@ -112,10 +115,6 @@ class GiskardTestMethod(GiskardTest):
 
         for idx, arg in enumerate(args):
             self.params[next(iter([arg.name for arg in self.meta.args.values() if arg.argOrder == idx]))] = arg
-
-        unknown_params = [param for param in self.params if param not in self.meta.args]
-        assert len(unknown_params) == 0, \
-            f"The test '{self.meta.name}' doesn't contain any of those parameters: {', '.join(unknown_params)}"
 
         return self
 

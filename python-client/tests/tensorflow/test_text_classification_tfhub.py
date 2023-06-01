@@ -45,12 +45,12 @@ def test_text_classification_tfhub():
     model = build_classifier_model()
 
     my_model = TensorFlowModel(name="Tensorflow_text_classification_tfhub",
-                               clf=model,
+                               model=model,
                                feature_names=['Content'],
                                model_type="classification",
-                               classification_labels=['0', '1', '2', '3'])
+                               classification_labels=[0, 1, 2, 3])
 
     # defining the giskard dataset
-    my_test_dataset = Dataset(test_df.head(), name="test dataset", target="Target", cat_columns=['Week_day', 'Month'])
+    my_test_dataset = Dataset(test_df.head(), name="test dataset", target="Target")
 
     tests.utils.verify_model_upload(my_model, my_test_dataset)

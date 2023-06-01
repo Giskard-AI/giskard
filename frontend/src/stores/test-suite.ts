@@ -1,12 +1,4 @@
-import {
-    DatasetDTO,
-    JobDTO,
-    ModelDTO,
-    RequiredInputDTO,
-    TestFunctionDTO,
-    TestSuiteDTO,
-    TestSuiteExecutionDTO
-} from '@/generated-sources';
+import {DatasetDTO, JobDTO, ModelDTO, RequiredInputDTO, TestSuiteDTO, TestSuiteExecutionDTO} from '@/generated-sources';
 import {defineStore} from 'pinia';
 import {api} from '@/api';
 import {chain} from 'lodash';
@@ -19,7 +11,6 @@ interface State {
     projectId: number | null,
     inputs: { [name: string]: RequiredInputDTO },
     suite: TestSuiteDTO | null,
-    registry: TestFunctionDTO[],
     datasets: { [key: string]: DatasetDTO },
     models: { [key: string]: ModelDTO },
     executions: TestSuiteExecutionDTO[],
@@ -34,7 +25,6 @@ export const useTestSuiteStore = defineStore('testSuite', {
         projectId: null,
         inputs: {},
         suite: null,
-        registry: [],
         datasets: {},
         models: {},
         executions: [],
@@ -73,7 +63,6 @@ export const useTestSuiteStore = defineStore('testSuite', {
             this.projectId = projectId;
             this.inputs = completeSuite.inputs;
             this.suite = completeSuite.suite;
-            this.registry = completeSuite.registry;
             this.datasets = Object.fromEntries(completeSuite.datasets.map(x => [x.id, x]));
             this.models = Object.fromEntries(completeSuite.models.map(x => [x.id, x]));
             this.executions = completeSuite.executions;
