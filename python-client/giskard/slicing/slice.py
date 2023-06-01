@@ -43,7 +43,7 @@ class ComparisonClause(Clause):
         return f"`{self.column}` {self.operator} {val}"
 
     def init_code(self):
-        return f"{self.__class__}({repr(self.column)}', {repr(self.value)}', equals={repr(self.equal)})"
+        return f"{self.__class__.__name__}({repr(self.column)}, {repr(self.value)}, equals={repr(self.equal)})"
 
 
 class StringContains(Clause):
@@ -62,7 +62,7 @@ class StringContains(Clause):
         return f"`{self.column}`.str.lower().str.contains('{value}')"
 
     def init_code(self):
-        return f"{self.__class__}({repr(self.column)}, {repr(self.value)})"
+        return f"{self.__class__.__name__}({repr(self.column)}, {repr(self.value)})"
 
 
 class GreaterThan(ComparisonClause):
