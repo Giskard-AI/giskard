@@ -1,7 +1,7 @@
 import logging
 from scipy import stats
 
-from giskard.data.dataset import Dataset
+from giskard.datasets.base import Dataset
 from giskard.ml_worker.testing.tests.performance import test_diff_f1, test_diff_rmse, test_diff_accuracy, \
     test_diff_recall, test_diff_precision
 
@@ -35,10 +35,10 @@ class InternalTestFilter(DataSliceFilter):
 
     def _diff_test(self, data_slice):
         # Convert slice to Giskard Dataframe
-        slice_dataset = Dataset(data_slice.data,
-                                target_col=self.dataset.target,
-                                column_types=self.dataset.column_types
-                                )
+        slice_dataset = Dataset(data_slice.data)
+                                # target_col=self.dataset.target,
+                                # column_types=self.dataset.column_types
+
         # Apply the test
         test_res = self.test(
             actual_slice=slice_dataset,
