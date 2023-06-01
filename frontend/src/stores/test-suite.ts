@@ -17,6 +17,20 @@ import mixpanel from 'mixpanel-browser';
 import {useTestSuiteCompareStore} from '@/stores/test-suite-compare';
 import {TYPE} from "vue-toastification";
 
+export const statusFilterOptions = [{
+    label: 'All',
+    filter: (_) => true
+}, {
+    label: 'Passed',
+    filter: (result) => result !== undefined && result.passed
+}, {
+    label: 'Failed',
+    filter: (result) => result !== undefined && !result.passed
+}, {
+    label: 'Not executed',
+    filter: (result) => result === undefined
+}];
+
 interface State {
     projectId: number | null,
     inputs: { [name: string]: RequiredInputDTO },
@@ -24,12 +38,13 @@ interface State {
     datasets: { [key: string]: DatasetDTO },
     models: { [key: string]: ModelDTO },
     executions: TestSuiteExecutionDTO[],
-    trackedJobs: { [uuid: string]: JobDTO }
+    trackedJobs: { [uuid: string]: JobDTO },
+    statusFilter: string,
+    searchFilter: string
 }
 
 const mainStore = useMainStore();
 const testSuiteCompareStore = useTestSuiteCompareStore();
-
 
 export const useTestSuiteStore = defineStore('testSuite', {
     state: (): State => ({
@@ -39,7 +54,9 @@ export const useTestSuiteStore = defineStore('testSuite', {
         datasets: {},
         models: {},
         executions: [],
-        trackedJobs: {}
+        trackedJobs: {},
+        statusFilter: statusFilterOptions[0].label,
+        searchFilter: ''
     }),
     getters: {
         suiteId: ({suite}) => suite === null ? null : suite.id,
@@ -113,6 +130,12 @@ export const useTestSuiteStore = defineStore('testSuite', {
             }
 
             await this.reload();
+        },
+        setStatusFilter(statusFilter: string) {
+            this.statusFilter = statusFilter
+        },
+        setSearchFilter(searchFilter: string) {
+            this.searchFilter = searchFilter
         }
     }
 });

@@ -169,12 +169,6 @@ async function editTests() {
     gap: 8px;
 }
 
-.test-passed {
-    .metric {
-        color: #28a745;
-    }
-}
-
 .test-failed {
     .metric {
         color: #dc3545;
