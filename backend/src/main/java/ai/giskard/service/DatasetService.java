@@ -4,7 +4,6 @@ import ai.giskard.domain.ColumnType;
 import ai.giskard.domain.ml.Dataset;
 import ai.giskard.repository.ml.DatasetRepository;
 import ai.giskard.security.PermissionEvaluator;
-import ai.giskard.web.dto.DatasetMetadataDTO;
 import ai.giskard.web.dto.DatasetPageDTO;
 import ai.giskard.web.dto.FeatureMetadataDTO;
 import ai.giskard.web.dto.RowFilterDTO;
@@ -30,6 +29,9 @@ import java.util.stream.Collectors;
 public class DatasetService {
     public static final String GISKARD_DATASET_INDEX_COLUMN_NAME = "_GISKARD_INDEX_";
 
+    public static final String DATA_FILE = "data.csv.zst";
+    public static final String DATA_SAMPLE_FILE = "data.sample.csv.zst";
+
     private final DatasetRepository datasetRepository;
     private final FileLocationService locationService;
     private final FileUploadService fileUploadService;
@@ -40,14 +42,16 @@ public class DatasetService {
      * Read table from file
      *
      * @param datasetId id of the dataset
+     * @param sample    whenever only reading the sample file or not
      * @return the table
      */
-    public Table readTableByDatasetId(@NotNull UUID datasetId) {
+    public Table readTableByDatasetId(@NotNull UUID datasetId, boolean sample) {
         Dataset dataset = datasetRepository.getMandatoryById(datasetId);
         Map<String, tech.tablesaw.api.ColumnType> columnDtypes = dataset.getColumnTypes().entrySet().stream()
             .collect(Collectors.toMap(Map.Entry::getKey, e -> ColumnType.featureToColumn.get(e.getValue())));
-        Path filePath = locationService.datasetsDirectory(dataset.getProject().getKey())
-            .resolve(dataset.getId().toString()).resolve("data.csv.zst");
+
+        Path filePath = getDataFile(dataset, sample);
+
         String filePathName = filePath.toAbsolutePath().toString().replace(".zst", "");
         Table table;
         try {
@@ -65,6 +69,12 @@ public class DatasetService {
         return table;
     }
 
+    private Path getDataFile(@NotNull Dataset dataset, boolean sample) {
+        return locationService.datasetsDirectory(dataset.getProject().getKey())
+            .resolve(dataset.getId().toString())
+            .resolve(sample ? DATA_SAMPLE_FILE : DATA_FILE);
+    }
+
     /**
      * Get details of dataset
      *
@@ -72,21 +82,12 @@ public class DatasetService {
      * @return details dto of the dataset
      */
     public DatasetDetailsDTO getDetails(@NotNull UUID id) {
-        Table table = readTableByDatasetId(id);
+        // TODO: this is overkill to load all data in memory in order to get metadata
+        Table table = readTableByDatasetId(id, false);
         DatasetDetailsDTO details = new DatasetDetailsDTO();
         details.setNumberOfRows(table.rowCount());
         details.setColumns(table.columnNames());
         return details;
-    }
-
-    public DatasetMetadataDTO getMetadata(@NotNull UUID id) {
-        Dataset dataset = this.datasetRepository.getMandatoryById(id);
-        DatasetMetadataDTO metadata = new DatasetMetadataDTO();
-        metadata.setId(id);
-        metadata.setColumnDtypes(dataset.getColumnDtypes());
-        metadata.setTarget(dataset.getTarget());
-        metadata.setColumnTypes(dataset.getColumnTypes());
-        return metadata;
     }
 
     /**
@@ -97,8 +98,9 @@ public class DatasetService {
      * @param rangeMax max range of the dataset
      * @return filtered table
      */
-    public DatasetPageDTO getRows(@NotNull UUID id, @NotNull int rangeMin, @NotNull int rangeMax, RowFilterDTO rowFilter) throws IOException {
-        Table table = readTableByDatasetId(id);
+    public DatasetPageDTO getRows(@NotNull UUID id, @NotNull int rangeMin, @NotNull int rangeMax,
+                                  RowFilterDTO rowFilter, boolean sample) throws IOException {
+        Table table = readTableByDatasetId(id, sample);
         table.addColumns(IntColumn.indexColumn(GISKARD_DATASET_INDEX_COLUMN_NAME, table.rowCount(), 0));
 
         if (rowFilter.getFilter() != null) {
@@ -124,7 +126,7 @@ public class DatasetService {
         Dataset dataset = datasetRepository.getMandatoryById(datasetId);
         permissionEvaluator.validateCanReadProject(dataset.getProject().getId());
 
-        Table data = readTableByDatasetId(datasetId);
+        Table data = readTableByDatasetId(datasetId, false);
 
         return dataset.getColumnTypes().entrySet().stream().map(featureAndType -> {
             String featureName = featureAndType.getKey();

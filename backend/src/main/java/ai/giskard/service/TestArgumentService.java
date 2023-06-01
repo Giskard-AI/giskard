@@ -33,9 +33,9 @@ public class TestArgumentService {
         for (FunctionInput input : test.getFunctionInputs()) {
             if (input.isAlias()) {
                 FunctionInput shared = globalArguments.get(input.getValue());
-                builder.addArguments(buildTestArgument(arguments, shared.getName(), shared.getValue(), projectKey, shared.getParams()));
+                builder.addArguments(buildTestArgument(arguments, shared.getName(), shared.getValue(), projectKey, shared.getParams(), false));
             } else {
-                builder.addArguments(buildTestArgument(arguments, input.getName(), input.getValue(), projectKey, input.getParams()));
+                builder.addArguments(buildTestArgument(arguments, input.getName(), input.getValue(), projectKey, input.getParams(), false));
             }
 
         }
@@ -47,7 +47,8 @@ public class TestArgumentService {
                                           String inputName,
                                           String inputValue,
                                           String projectKey,
-                                          List<FunctionInput> params) {
+                                          List<FunctionInput> params,
+                                          boolean sample) {
         FunctionArgument argument = arguments.get(inputName);
         if (Strings.isBlank(inputValue) && !argument.isOptional()) {
             throw new IllegalArgumentException("The required argument '" + inputName + "' was not provided");
@@ -55,12 +56,12 @@ public class TestArgumentService {
 
         String value = Strings.isBlank(inputValue) ? argument.getDefaultValue() : inputValue;
 
-        return buildTestArgument(inputName, value, projectKey, argument.getType(), params);
+        return buildTestArgument(inputName, value, projectKey, argument.getType(), params, sample);
     }
 
 
     public FuncArgument buildTestArgument(String inputName, String inputValue, String projectKey,
-                                          String inputType, List<FunctionInput> params) {
+                                          String inputType, List<FunctionInput> params, boolean sample) {
         FuncArgument.Builder argumentBuilder = FuncArgument.newBuilder()
             .setName(inputName);
 
@@ -72,7 +73,7 @@ public class TestArgumentService {
         argumentBuilder.setNone(false);
 
         switch (inputType) {
-            case "Dataset" -> argumentBuilder.setDataset(buildArtifactRef(projectKey, inputValue));
+            case "Dataset" -> argumentBuilder.setDataset(buildArtifactRef(projectKey, inputValue).setSample(sample));
             case "BaseModel" -> argumentBuilder.setModel(buildArtifactRef(projectKey, inputValue));
             case "SlicingFunction" -> argumentBuilder.setSlicingFunction(buildArtifactRef(projectKey, inputValue));
             case "TransformationFunction" ->
@@ -88,17 +89,16 @@ public class TestArgumentService {
 
         if (params != null) {
             params.forEach(child -> argumentBuilder.addArgs(
-                buildTestArgument(child.getName(), child.getValue(), projectKey, child.getType(), child.getParams())));
+                buildTestArgument(child.getName(), child.getValue(), projectKey, child.getType(), child.getParams(), sample)));
         }
 
         return argumentBuilder.build();
     }
 
-    private static ArtifactRef buildArtifactRef(String projectKey, String id) {
+    private static ArtifactRef.Builder buildArtifactRef(String projectKey, String id) {
         return ArtifactRef.newBuilder()
             .setProjectKey(projectKey)
-            .setId(id)
-            .build();
+            .setId(id);
     }
 
 }
