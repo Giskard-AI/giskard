@@ -43,10 +43,14 @@ class LangchainModel(MLFlowBasedModel):
     def model_predict(self, df):
         return [self.model.predict(**data) for data in df.to_dict('records')]
 
-    def rewrite_prompt(self, template, **kwargs):
+    def rewrite_prompt(self, template, input_variables=None, **kwargs):
         from langchain import LLMChain
 
-        new_prompt = self.model.prompt.copy(update=dict(template=template))
+        update = dict(template=template)
+        if input_variables is not None:
+            update['input_variables'] = input_variables
+
+        new_prompt = self.model.prompt.copy(update=update)
         chain = LLMChain(llm=self.model.llm, prompt=new_prompt)
 
         model_kwargs = dict(
