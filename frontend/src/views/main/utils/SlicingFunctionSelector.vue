@@ -13,7 +13,7 @@
             @input="onInput"
             :dense="fullWidth"
             hide-details
-            :prepend-inner-icon="icon ? 'mdi-knife' : null"
+            :prepend-inner-icon="icon ? 'mdi-filter' : null"
         ></v-select>
         <v-btn icon v-if="hasArguments" @click="updateArgs">
             <v-icon>settings</v-icon>
