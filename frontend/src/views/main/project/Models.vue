@@ -21,7 +21,7 @@
           <v-col cols="3">Actions</v-col>
         </v-row>
       </v-card>
-      <v-card outlined tile class="grey lighten-5" v-for="m in models" :key="m.id">
+      <v-card outlined tile class="grey lighten-5" v-for="m in           models          " :key="m.id">
         <v-row class="px-2 py-1 align-center">
           <v-col cols="4">
             <InlineEditText :text="m.name" :can-edit="isProjectOwnerOrAdmin" @save="(name) => renameModel(m.id, name)">
@@ -41,13 +41,13 @@
           </v-col>
           <v-col cols="3">
             <div>
-              <v-btn small tile color="primary" class="grey--text text--darken-4" @click="showInspectDialog = true; modelToInspect = m">
+              <v-btn small tile color="primaryLight" class="primaryLightBtn" @click="showInspectDialog = true; modelToInspect = m">
                 <v-icon dense left>policy</v-icon>
                 Debug
               </v-btn>
               <v-tooltip bottom>
-                <template v-slot:activator="{ on, attrs }">
-                  <v-btn icon color="info" @click="downloadModelPickle(m.id)" v-bind="attrs" v-on="on">
+                <template v-slot:activator=" { on, attrs } ">
+                  <v-btn icon color="info" @click=" downloadModelPickle(m.id) " v-bind=" attrs " v-on=" on ">
                     <v-icon>download</v-icon>
                   </v-btn>
                 </template>

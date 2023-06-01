@@ -156,3 +156,9 @@ $vt-text-color-error: #bb0000 !default;
     overflow: auto;
   }
 }
+
+
+.primaryLightBtn {
+  @extend .grey--text !optional;
+  @extend .text--darken-4 !optional;
+}
