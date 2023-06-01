@@ -73,7 +73,7 @@
     </v-row>
       <Inspector :dataset='inspection.dataset' :inputData.sync='inputData' :model='inspection.model'
                  :originalData='originalData'
-                 :transformationModifications="{}"
+                 :transformationModifications="modifications"
                  class='px-0' @reset='resetInput' @submitValueFeedback='submitValueFeedback'
                  @submitValueVariationFeedback='submitValueVariationFeedback' v-if="totalRows > 0"/>
       <v-alert v-else border="bottom" colored-border type="warning" class="mt-8" elevation="2">
@@ -325,39 +325,47 @@ async function fetchRows(rowIdxInResults: number, forceFetch: boolean) {
 
 
 function assignCurrentRow(forceFetch: boolean) {
-  rowIdxInPage.value = rowNb.value % itemsPerPage;
-  loadingData.value = true;
+    rowIdxInPage.value = rowNb.value % itemsPerPage;
+    loadingData.value = true;
 
-  inputData.value = rows.value[rowIdxInPage.value];
-  originalData.value = { ...inputData.value }; // deep copy to avoid caching mechanisms
-  dataErrorMsg.value = '';
-  loadingData.value = false;
-  totalRows.value = numberOfRows.value;
-  if (forceFetch) {
-    rowNb.value = 0;
-  }
+    inputData.value = rows.value[rowIdxInPage.value];
+    originalData.value = {...inputData.value}; // deep copy to avoid caching mechanisms
+    dataErrorMsg.value = '';
+    loadingData.value = false;
+    totalRows.value = numberOfRows.value;
+    if (forceFetch) {
+        rowNb.value = 0;
+    }
 }
 
+
+const modifications = computed(() => dataProcessingResult.value?.modifications?.find(m => m.rowId === originalData.value['_GISKARD_INDEX_'])?.modifications ?? {});
+
 function resetInput() {
-  inputData.value = {
-      ...originalData.value,
-      ...dataProcessingResult.value?.modifications?.find(m => m.rowId === this.originalData['Index'])?.modifications ?? {}
-  };
+    inputData.value = {
+        ...originalData.value,
+        ...modifications.value
+    };
 }
 
 async function doSubmitFeedback(payload: CreateFeedbackDTO) {
-  mixpanel.track('Submit feedback', {
-    datasetId: payload.datasetId,
-    feedbackChoice: payload.feedbackChoice,
-    feedbackType: payload.feedbackType,
-    modelId: payload.modelId,
-    projectId: payload.projectId
-  });
-  await api.submitFeedback(payload, payload.projectId);
+    mixpanel.track('Submit feedback', {
+        datasetId: payload.datasetId,
+        feedbackChoice: payload.feedbackChoice,
+        feedbackType: payload.feedbackType,
+        modelId: payload.modelId,
+        projectId: payload.projectId
+    });
+    await api.submitFeedback(payload, payload.projectId);
 }
 
+const transformationPipeline = computed(() => Object.values(transformationFunctions.value))
+
+watch(() => transformationPipeline.value, processDataset, {deep: true})
+
 async function processDataset() {
-    const pipeline = [selectedSlicingFunction.value, ...Object.values(transformationFunctions.value)]
+    console.log(transformationFunctions.value)
+    const pipeline = [selectedSlicingFunction.value, ...transformationPipeline.value]
         .filter(callable => !!callable.uuid) as Array<ParameterizedCallableDTO>;
 
     loadingProcessedDataset.value = true;

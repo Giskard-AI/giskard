@@ -20,6 +20,7 @@ import {computed, onMounted, ref} from "vue";
 import {DatasetDTO} from "@/generated-sources";
 import axios from "axios";
 import {apiURL} from "@/env";
+import {getColumnType} from "@/utils/column-type-utils";
 
 
 const props = defineProps<{
@@ -37,17 +38,7 @@ onMounted(async () => projectDatasets.value = (await axios.get<Array<DatasetDTO>
 
 const selectedDataset = computed(() => projectDatasets.value.find(d => d.id === props.dataset));
 
-const allowedType = computed(() => {
-    switch (props.columnType) {
-        case 'str':
-            return 'text';
-        case 'int':
-        case 'float':
-            return 'numeric';
-        default:
-            return null;
-    }
-});
+const allowedType = computed(() => getColumnType(props.columnType));
 
 const availableColumns = computed(() => {
     if (!selectedDataset.value || !allowedType.value) {

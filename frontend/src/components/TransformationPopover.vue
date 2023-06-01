@@ -17,8 +17,15 @@
 
         <v-card dark color="primary">
             <v-card-title>
+                <p>Transformation for '{{ column }}'</p>
             </v-card-title>
             <v-card-text>
+                <TransformationFunctionSelector label="Transformation to apply"
+                                                :column-type="columnType"
+                                                :column-name="column"
+                                                :value.sync="transformation.uuid"
+                                                :args.sync="transformation.params"
+                                                @onChanged="handleOnChanged"/>
             </v-card-text>
             <v-card-actions>
             </v-card-actions>
@@ -31,16 +38,30 @@
 import {storeToRefs} from "pinia";
 import {useInspectionStore} from "@/stores/inspection";
 import {computed, ref} from "vue";
+import TransformationFunctionSelector from "@/views/main/utils/TransformationFunctionSelector.vue";
+import {ParameterizedCallableDTO} from "@/generated-sources";
 
 const props = defineProps<{
-    column: string
+    projectId: number
+    column: string,
+    columnType: string
 }>()
 
+const transformation = ref<Partial<ParameterizedCallableDTO>>({
+    uuid: undefined,
+    params: [],
+    type: 'TRANSFORMATION'
+})
 const opened = ref<boolean>(false);
 
-const {transformationFunctions} = storeToRefs(useInspectionStore())
+let inspectionStore = useInspectionStore();
+const {transformationFunctions} = storeToRefs(inspectionStore)
 
 const hasTransformation = computed(() => transformationFunctions.hasOwnProperty(props.column));
+
+function handleOnChanged() {
+    inspectionStore.setTransformation(props.column, transformation.value);
+}
 
 </script>
 
