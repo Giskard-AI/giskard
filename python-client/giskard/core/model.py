@@ -289,7 +289,7 @@ class WrapperModel(Model, ABC):
         self.data_preprocessing_function = data_preprocessing_function
         self.model_postprocessing_function = model_postprocessing_function
 
-    def _post_processing(self, raw_prediction):
+    def _postprocess(self, raw_prediction):
 
         is_binary_classification = self.is_classification and len(self.meta.classification_labels) == 2
 
@@ -319,7 +319,7 @@ class WrapperModel(Model, ABC):
             df = self.data_preprocessing_function(df)
 
         raw_prediction = self.clf_predict(df)
-        raw_prediction = self._post_processing(raw_prediction)
+        raw_prediction = self._postprocess(raw_prediction)
 
         return raw_prediction
 
