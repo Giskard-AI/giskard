@@ -127,10 +127,10 @@ onActivated(() => loadDebuggingSessions());
           <v-col cols="1">Dataset ID</v-col>
           <v-col cols="2">Model name</v-col>
           <v-col cols="1">Model ID</v-col>
-          <v-col cols="1">Actions</v-col>
+          <v-col cols="1"></v-col>
         </v-row>
 
-        <v-expansion-panel v-for="session in filteredSessions" :key="session.id" v-show="displayComponents" @click="toggleActiveSession(session.id)">
+        <v-expansion-panel v-for="session in filteredSessions" :key="session.id" v-show="displayComponents" @click.stop="toggleActiveSession(session.id)" class="expansion-panel">
           <v-expansion-panel-header disableIconRotate=true class="grey lighten-5" tile>
             <v-row class="px-2 py-1 align-center">
               <v-col cols="3">
@@ -184,5 +184,9 @@ onActivated(() => loadDebuggingSessions());
   overflow: hidden;
   text-overflow: ellipsis;
   padding: 0.5rem;
+}
+
+.expansion-panel {
+  margin-top: 10px !important;
 }
 </style>
