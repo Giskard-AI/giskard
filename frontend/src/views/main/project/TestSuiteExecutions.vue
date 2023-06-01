@@ -1,68 +1,68 @@
 <template>
   <div class="vc">
     <v-container class="main-container vc">
-      <v-progress-linear
-          indeterminate
-          v-if="executionsAndJobs === undefined"
-          color="primary"
-          class="mt-2"
-      ></v-progress-linear>
-      <v-container v-else-if="executionsAndJobs.length === 0 && hasTest" class="d-flex flex-column vc fill-height">
-        <h1 class="pt-16">No execution has been performed yet!</h1>
-        <v-btn tile class='mx-1'
-               @click='() => openRunTestSuite(false)'
-               color="primary">
-          <v-icon>arrow_right</v-icon>
-          Run test suite
-        </v-btn>
-      </v-container>
-      <v-container v-else-if="executionsAndJobs.length === 0 && hasTest" class="d-flex flex-column vc fill-height">
-        <h1 class="pt-16">No tests has been added to the suite</h1>
-        <v-btn tile class='mx-1'
-               :to="{name: 'project-tests-catalog', query: {suiteId: suite.id}}"
-               color="primary">
-          <v-icon>add</v-icon>
-          Add test
-        </v-btn>
-      </v-container>
-      <v-row v-else class="fill-height">
-        <v-col cols="3" class="vc fill-height">
-          <v-btn tile class='mx-1'
-                 @click='compare()'
-                 color="secondary">
-            <v-icon>compare</v-icon>
-            Compare past executions
-          </v-btn>
-          <v-list three-line>
-            <v-list-item-group color="primary" mandatory>
-              <div v-for="e in executionsAndJobs" :key="e.execution?.id ?? e.date">
-                <v-divider/>
-                <v-list-item :disabled="e.disabled"
-                             :to="e.disabled ? null : {name: 'test-suite-execution', params: {executionId: e.execution.id}}">
-                  <v-list-item-icon>
-                    <v-icon :color="e.color" size="40">{{
-                        e.icon
-                      }}
-                    </v-icon>
-                  </v-list-item-icon>
-                  <v-list-item-content>
-                    <v-list-item-title>
-                      <div class="d-flex justify-space-between">
-                        <span>{{ (e.disabled ? e.date : e.execution.executionDate) | date }}</span>
-                        <template v-if="!e.disabled">
-                          <TestResultHeatmap v-if="compareSelectedItems === null"
-                                             :results="executionResults(e.execution)"/>
-                          <v-checkbox v-else
-                                      v-model="compareSelectedItems"
-                                      :value="e.execution.id"
-                          />
-                        </template>
-                      </div>
-                    </v-list-item-title>
-                  </v-list-item-content>
-                </v-list-item>
-              </div>
-            </v-list-item-group>
+        <v-progress-linear
+                indeterminate
+                v-if="executionsAndJobs === undefined"
+                color="primary"
+                class="mt-2"
+        ></v-progress-linear>
+        <v-container v-else-if="executionsAndJobs.length === 0 && hasTest" class="d-flex flex-column vc fill-height">
+            <h1 class="pt-16">No execution has been performed yet!</h1>
+            <v-btn tile class='mx-1'
+                   @click='() => openRunTestSuite(false)'
+                   color="primary">
+                <v-icon>arrow_right</v-icon>
+                Run test suite
+            </v-btn>
+        </v-container>
+        <v-container v-else-if="executionsAndJobs.length === 0" class="d-flex flex-column vc fill-height">
+            <h1 class="pt-16">No tests has been added to the suite</h1>
+            <v-btn tile class='mx-1'
+                   :to="{name: 'project-tests-catalog', query: {suiteId: suite.id}}"
+                   color="primary">
+                <v-icon>add</v-icon>
+                Add test
+            </v-btn>
+        </v-container>
+        <v-row v-else class="fill-height">
+            <v-col cols="3" class="vc fill-height">
+                <v-btn text class='mx-1'
+                       @click='compare()'
+                       color="primary">
+                    <v-icon>compare</v-icon>
+                    Compare past executions
+                </v-btn>
+                <v-list three-line>
+                    <v-list-item-group color="primary" mandatory>
+                        <div v-for="e in executionsAndJobs" :key="e.execution?.id ?? e.date">
+                            <v-divider/>
+                            <v-list-item :disabled="e.disabled"
+                                         :to="e.disabled ? null : {name: 'test-suite-execution', params: {executionId: e.execution.id}}">
+                                <v-list-item-icon>
+                                    <v-icon :color="e.color" size="40">{{
+                                        e.icon
+                                        }}
+                                    </v-icon>
+                                </v-list-item-icon>
+                                <v-list-item-content>
+                                    <v-list-item-title>
+                                        <div class="d-flex justify-space-between">
+                                            <span>{{ (e.disabled ? e.date : e.execution.executionDate) | date }}</span>
+                                            <template v-if="!e.disabled">
+                                                <TestResultHeatmap v-if="compareSelectedItems === null"
+                                                                   :results="executionResults(e.execution)"/>
+                                                <v-checkbox v-else
+                                                            v-model="compareSelectedItems"
+                                                            :value="e.execution.id"
+                                                />
+                                            </template>
+                                        </div>
+                                    </v-list-item-title>
+                                </v-list-item-content>
+                            </v-list-item>
+                        </div>
+                    </v-list-item-group>
           </v-list>
         </v-col>
         <v-col class="vc fill-height">
