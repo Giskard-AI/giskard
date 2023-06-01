@@ -42,5 +42,3 @@ class TensorFlowModel(MLFlowBasedModel):
 
     def clf_predict(self, data):
         return self.clf.predict(data)
-
-TensorFlowModel(model_type="asd")
