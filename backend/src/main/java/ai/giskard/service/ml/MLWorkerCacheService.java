@@ -42,8 +42,9 @@ public class MLWorkerCacheService {
     private final GiskardMapper giskardMapper;
     private CatalogDTO catalogWithoutPickles = new CatalogDTO();
 
-    @Transactional(readOnly = true)
+    @Transactional
     public CatalogDTO getCatalog(long projectId) {
+        // TODO: Remove from transaction, however it mostly relly on cache so impact is reduced
         CatalogDTO catalog = findGiskardTest(projectRepository.getMandatoryById(projectId).isUsingInternalWorker());
 
         return CatalogDTO.builder()

@@ -1,18 +1,19 @@
 <template>
-    <div class="d-flex w100">
+    <div class="d-flex" :class="{w100: fullWidth}">
         <v-select
             clearable
-            outlined
+            :outlined="fullWidth"
             class="slice-function-selector"
             :label="label"
             :value="value"
-            :items="transformationFunctions"
+            :items="availableTransformation"
             :item-text="extractName"
             item-value="uuid"
             :return-object="false"
             @input="onInput"
-            dense
+            :dense="fullWidth"
             hide-details
+            :prepend-inner-icon="icon ? 'mdi-magic-staff' : null"
         ></v-select>
         <v-btn icon v-if="hasArguments" @click="updateArgs">
             <v-icon>settings</v-icon>
@@ -31,24 +32,48 @@ import {$vfm} from "vue-final-modal";
 import FunctionInputsModal from "@/views/main/project/modals/FunctionInputsModal.vue";
 import {chain} from "lodash";
 
-const props = defineProps<{
-    projectId: number,
+const props = withDefaults(defineProps<{
+    projectId?: number,
     label: string,
+    fullWidth: boolean,
     value?: string,
-    args?: Array<FunctionInputDTO>
-}>()
+    args?: Array<FunctionInputDTO>,
+    icon: boolean,
+    columnType?: string,
+    columnName?: string
+}>(), {
+    fullWidth: true,
+    icon: false
+});
 
-const emit = defineEmits(['update:value', 'update:args']);
+const emit = defineEmits(['update:value', 'update:args', 'onChanged']);
 
-const {transformationFunctions, transformationFunctionsByUuid} = storeToRefs(useCatalogStore())
+const {
+    transformationFunctions,
+    transformationFunctionsByUuid,
+    transformationFunctionsByColumnType
+} = storeToRefs(useCatalogStore())
+
+const availableTransformation = computed(() => props.columnType ? transformationFunctionsByColumnType.value[props.columnType] : transformationFunctions.value)
 
 function extractName(SlicingFunctionDTO: SlicingFunctionDTO) {
     return SlicingFunctionDTO.displayName ?? SlicingFunctionDTO.name
 }
 
 async function onInput(value) {
-    if (!value) {
+    const columnNameArg = props.columnName ? {
+        name: 'column_name',
+        isAlias: false,
+        params: [],
+        type: 'str',
+        value: props.columnName
+    } as FunctionInputDTO : null;
+
+    if (!value || (!transformationFunctionsByUuid.value[value].args?.length
+        && (!transformationFunctionsByUuid.value[value].cellLevel || props.columnName))) {
         emit('update:value', value);
+        emit('update:args', columnNameArg ? [columnNameArg] : []);
+        emit('onChanged');
         return;
     }
 
@@ -62,11 +87,15 @@ async function onInput(value) {
             projectId: props.projectId,
             title: `Set up parameters for '${func.displayName ?? func.name}'`,
             function: func,
-            defaultValue: {},
+            defaultValue: {
+                column_name: columnNameArg
+            },
         },
         on: {
             async save(args: Array<FunctionInputDTO>) {
                 emit('update:args', args);
+                emit('onChanged');
+
             },
             async cancel() {
                 // Rollback changes
@@ -90,17 +119,16 @@ async function updateArgs() {
         on: {
             async save(args: Array<FunctionInputDTO>) {
                 emit('update:args', args);
-            },
-            async cancel() {
-                // Rollback changes
-                emit('update:args', props.args);
+                emit('onChanged');
             }
         },
         cancel: {}
     });
 }
 
-const hasArguments = computed(() => props.value && transformationFunctionsByUuid.value[props.value].args.length > 0)
+const hasArguments = computed(() => props.value &&
+    (transformationFunctionsByUuid.value[props.value].args?.length || transformationFunctionsByUuid.value[props.value].cellLevel))
+
 </script>
 
 <style scoped>

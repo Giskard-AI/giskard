@@ -52,3 +52,16 @@ def drop_arg(fn: Callable, pos: int):
     fn.__signature__ = sig
 
     fn.__annotations__ = {k: v for k, v in fn.__annotations__.items() if k in sig.parameters or k == 'return'}
+
+
+def insert_arg(fn: Callable, pos: int, param: inspect.Parameter):
+    from inspect import signature
+
+    sig = signature(fn)
+    parameters = [par for par in sig.parameters.values()]
+    parameters.insert(pos, param)
+
+    sig = sig.replace(parameters=parameters)
+    fn.__signature__ = sig
+
+    fn.__annotations__ = {k: v for k, v in fn.__annotations__.items() if k in sig.parameters or k == 'return'}
