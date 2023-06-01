@@ -34,18 +34,18 @@ class ModelPredictionResults(BaseModel):
 
 class Model:
     meta: ModelMeta
-    model: PyFuncModel
+    clf: PyFuncModel
     data_preparation_function: any
 
     def __init__(self,
-                 model,
+                 clf,
                  model_type: Union[SupportedModelTypes, str],
                  name: str = None,
                  data_preparation_function=None,
                  feature_names=None,
                  classification_threshold=0.5,
                  classification_labels=None) -> None:
-        self.model = model
+        self.clf = clf
         self.data_preparation_function = data_preparation_function
 
         if type(model_type) == str:
@@ -109,7 +109,7 @@ class Model:
         else:
             raise ValueError('Unsupported model type')
 
-        mlflow.sklearn.save_model(self.model, path=local_path, pyfunc_predict_fn=pyfunc_predict_fn)
+        mlflow.sklearn.save_model(self.clf, path=local_path, pyfunc_predict_fn=pyfunc_predict_fn)
         info = mlflow.models.Model.load(local_path)
 
         with open(Path(local_path) / 'giskard-model-meta.yaml', 'w') as f:
@@ -151,7 +151,7 @@ class Model:
             client.load_artifact(local_dir, posixpath.join(project_key, "models", model_id))
             meta = client.load_model_meta(project_key, model_id)
         return cls(
-            model=cls.read_model_from_local_dir(local_dir),
+            clf=cls.read_model_from_local_dir(local_dir),
             data_preparation_function=cls.read_data_preparation_function_from_artifact(local_dir),
             **meta.__dict__
         )
@@ -162,7 +162,7 @@ class Model:
         return self._raw_predict(data)
 
     def _raw_predict(self, data):
-        return self.model.predict(data)
+        return self.clf.predict(data)
 
     def predict(self, dataset: Dataset) -> ModelPredictionResults:
         timer = Timer()

@@ -43,7 +43,7 @@ def linear_regression_diabetes_raw():
 def linear_regression_diabetes(linear_regression_diabetes_raw) -> Model:
     diabetes = datasets.load_diabetes()
     return SKLearnModel(
-        model=linear_regression_diabetes_raw,
+        clf=linear_regression_diabetes_raw,
         model_type=SupportedModelTypes.REGRESSION,
         feature_names=diabetes["feature_names"],
     )
