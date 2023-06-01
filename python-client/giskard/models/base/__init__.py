@@ -61,7 +61,7 @@ class BaseModel(ABC):
                 ) from e
 
         if classification_labels is not None:
-            classification_labels = list(classification_labels)
+            classification_labels = [str(i) for i in list(classification_labels)]
             if len(classification_labels) != len(set(classification_labels)):
                 raise ValueError(
                     "Duplicates are found in 'classification_labels', please only provide unique values."
