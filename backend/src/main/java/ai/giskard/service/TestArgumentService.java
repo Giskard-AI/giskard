@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class TestArgumentService {
 
-    public SuiteTestArgument buildFixedTestArgument(SuiteTest test, String projectKey) {
+    public SuiteTestArgument buildFixedTestArgument(Map<String, String> globalArguments, SuiteTest test, String projectKey) {
         TestFunction testFunction = test.getTestFunction();
         SuiteTestArgument.Builder builder = SuiteTestArgument.newBuilder()
             .setTestUuid(testFunction.getUuid().toString())
@@ -28,8 +28,10 @@ public class TestArgumentService {
         Map<String, String> argumentTypes = testFunction.getArgs().stream()
             .collect(Collectors.toMap(TestFunctionArgument::getName, TestFunctionArgument::getType));
 
+
         for (TestInput input : test.getTestInputs()) {
-            builder.addArguments(buildTestArgument(argumentTypes, input.getName(), input.getValue(), projectKey));
+            builder.addArguments(buildTestArgument(argumentTypes, input.getName(),
+                input.isAlias() ? globalArguments.get(input.getValue()) : input.getValue(), projectKey));
         }
 
         return builder.build();

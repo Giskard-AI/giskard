@@ -46,6 +46,15 @@
                   outlined
                   dense
               />
+              <v-text-field
+                  v-model="props.modelValue[input.name].value"
+                  v-else-if="input.type === 'str'"
+                  hide-details
+                  single-line
+                  type="text"
+                  outlined
+                  dense
+              />
             </template>
             <v-select
                 v-else
