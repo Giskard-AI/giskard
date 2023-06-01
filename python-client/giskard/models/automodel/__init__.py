@@ -1,40 +1,13 @@
 from pathlib import Path
-from re import match
-import abc
-import cloudpickle, pickle
-from importlib import import_module
 
 import pandas as pd
 import uuid
-import numpy as np
 from typing import Callable, Optional, Iterable, Any, Union
 import mlflow
 
 from giskard.models import infer_giskard_cls
 from giskard.models.base import WrapperModel, MLFlowBasedModel
 from giskard.core.core import ModelType
-
-
-class FormalParserInterface(metaclass=abc.ABCMeta):
-    @classmethod
-    def __subclasshook__(cls, subclass):
-        return (hasattr(subclass, 'model_predict') and
-                callable(subclass.model_predict) and
-                hasattr(subclass, 'save_model') and
-                callable(subclass.model_predict) and
-                hasattr(subclass, 'load_model') and
-                callable(subclass.model_predict) or
-                NotImplemented)
-
-    def model_predict(self, df: pd.DataFrame):
-        raise NotImplementedError
-
-    def save_model(self, local_path, mlflow_meta: mlflow.models.Model):
-        raise NotImplementedError
-
-    @classmethod
-    def load_model(cls, local_dir):
-        raise NotImplementedError
 
 
 class Model(WrapperModel):
