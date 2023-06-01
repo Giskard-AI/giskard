@@ -371,6 +371,9 @@ export const api = {
                 replyToReply: replyToId
             });
     },
+    async deleteFeedback(id: number) {
+        return apiV2.delete<unknown, void>(`/feedbacks/${id}`);
+    },
     async getTestSuites(projectId: number) {
         return apiV2.get<unknown, Array<TestSuiteDTO>>(`/testing/suites/${projectId}`);
     },
