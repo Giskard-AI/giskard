@@ -84,7 +84,7 @@ class Model(ABC):
         if class_file.exists():
             with open(class_file, "rb") as f:
                 clazz = cloudpickle.load(f)
-                if issubclass(clazz, Model):
+                if not issubclass(clazz, Model):
                     raise ValueError(f"Unknown model class: {clazz}. Models should inherit from 'Model' class")
                 return clazz
         else:
