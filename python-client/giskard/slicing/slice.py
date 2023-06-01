@@ -29,7 +29,7 @@ class ComparisonClause(Clause):
         return f"<Clause (`{self.column}` {self.operator} {self.value})>"
 
     def __str__(self) -> str:
-        return self.__repr__()
+        return self.to_pandas()
 
     def to_pandas(self):
         val = f"'{self.value}'" if isinstance(self.value, str) else self.value
@@ -43,6 +43,9 @@ class StringContains(Clause):
 
     def __repr__(self) -> str:
         return f"<Clause ('{self.value}' in `{self.column}`)>"
+
+    def __str__(self) -> str:
+        return f"{self.column} contains '{self.value}'"
 
     def to_pandas(self):
         value = self.value.lower().replace("'", "\\'")
@@ -102,6 +105,9 @@ class Query:
 
     def to_pandas(self):
         return " & ".join([c.to_pandas() for c in self.get_all_clauses()])
+
+    def __str__(self) -> str:
+        return " & ".join([str(c) for c in self.get_all_clauses()])
 
 
 def _optimize_column_clauses(clauses: Sequence[Clause]):
@@ -181,3 +187,6 @@ class QueryBasedSliceFunction(SliceFunction):
 
     def __call__(self, data: pd.DataFrame):
         return self.query.run(data)
+
+    def __str__(self):
+        return str(self.query)
