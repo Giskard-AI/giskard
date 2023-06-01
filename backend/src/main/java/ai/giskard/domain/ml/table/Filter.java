@@ -15,6 +15,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 public class Filter {
+    private long inspectionId;
     private RowFilterType type;
     @UINullable
     private String[] targetLabel;
@@ -45,6 +46,4 @@ public class Filter {
     @UINullable
     private Float maxDiffThreshold;
 
-    @UINullable
-    private Long sliceId;
 }

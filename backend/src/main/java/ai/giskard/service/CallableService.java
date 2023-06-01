@@ -20,8 +20,8 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public abstract class CallableService<E extends Callable, D extends CallableDTO> {
 
-    private final CallableRepository<E> callableRepository;
-    private final GiskardMapper giskardMapper;
+    protected final CallableRepository<E> callableRepository;
+    protected final GiskardMapper giskardMapper;
 
     @Transactional(readOnly = true)
     public E getInitialized(UUID uuid) {
