@@ -1,9 +1,6 @@
 import re
 
-headers_to_match = {
-    "Authorization": "Bearer SECRET_TOKEN",
-    "Content-Type": "application/json"
-}
+headers_to_match = {"Authorization": "Bearer SECRET_TOKEN", "Content-Type": "application/json"}
 
 
 def match_model_id(my_model_id):
