@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import java.util.List;
+import java.util.Map;
 
 import static ai.giskard.web.rest.errors.Entity.TEST_SUITE;
 
@@ -81,6 +82,22 @@ public class TestSuiteController {
     @Transactional
     public List<TestSuiteNewDTO> listTestSuitesNew(@PathVariable("projectId") @NotNull Long projectId) {
         return giskardMapper.toDTO(testSuiteNewRepository.findAllByProjectId(projectId));
+    }
+
+    @GetMapping("project/{projectId}/suite-new/{suiteId}")
+    @PreAuthorize("@permissionEvaluator.canReadProject(#projectId)")
+    @Transactional
+    public TestSuiteNewDTO listTestSuiteNew(@PathVariable("projectId") @NotNull Long projectId,
+                                            @PathVariable("suiteId") @NotNull Long suiteId) {
+        return giskardMapper.toDTO(testSuiteNewRepository.findOneByProjectIdAndId(projectId, suiteId));
+    }
+
+    @GetMapping("project/{projectId}/suite-new/{suiteId}/inputs")
+    @PreAuthorize("@permissionEvaluator.canReadProject(#projectId)")
+    @Transactional
+    public Map<String, String> getSuiteInputs(@PathVariable("projectId") @NotNull Long projectId,
+                                              @PathVariable("suiteId") @NotNull Long suiteId) {
+        return testSuiteService.getSuiteInputs(projectId, suiteId);
     }
 
     @PostMapping("project/{projectKey}/suites")

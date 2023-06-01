@@ -11,6 +11,7 @@ import ai.giskard.service.GRPCMapper;
 import ai.giskard.service.TestService;
 import ai.giskard.service.ml.MLWorkerService;
 import ai.giskard.web.dto.RunAdhocTestRequest;
+import ai.giskard.web.dto.TestCatalogDTO;
 import ai.giskard.web.dto.TestTemplatesResponse;
 import ai.giskard.web.dto.mapper.GiskardMapper;
 import ai.giskard.web.dto.ml.TestDTO;
@@ -22,8 +23,6 @@ import ai.giskard.web.rest.errors.EntityNotFoundException;
 import ai.giskard.worker.*;
 import com.google.common.collect.Maps;
 import com.google.protobuf.Empty;
-import com.google.protobuf.InvalidProtocolBufferException;
-import com.google.protobuf.util.JsonFormat;
 import lombok.RequiredArgsConstructor;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
@@ -109,14 +108,10 @@ public class TestController {
         return codeTestTemplateService.getTemplates(suiteId);
     }
 
-    @GetMapping("/test-templates")
+    @GetMapping("/test-catalog")
     @Transactional
-    public Object getTestTemplates(@RequestParam Long projectId) throws InvalidProtocolBufferException {
-        try (MLWorkerClient client = mlWorkerService.createClient(projectRepository.getById(projectId).isUsingInternalWorker())) {
-            TestRegistryResponse response = client.getBlockingStub().getTestRegistry(Empty.newBuilder().build());
-
-            return JsonFormat.printer().print(response);
-        }
+    public TestCatalogDTO getTestTemplates(@RequestParam Long projectId) {
+        return testService.listTestsFromRegistry(projectId);
     }
 
     @PostMapping("/run-test")
@@ -125,7 +120,7 @@ public class TestController {
         try (MLWorkerClient client = mlWorkerService.createClient(projectRepository.getById(request.getProjectId()).isUsingInternalWorker())) {
             TestRegistryResponse response = client.getBlockingStub().getTestRegistry(Empty.newBuilder().build());
             Map<String, TestFunction> registry = new HashMap<>();
-            response.getFunctionsList().forEach((TestFunction fn) -> {
+            response.getTestsMap().values().forEach((TestFunction fn) -> {
                 registry.put(fn.getId(), fn);
             });
             TestFunction test = registry.get(request.getTestId());
