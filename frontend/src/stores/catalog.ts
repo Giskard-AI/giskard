@@ -19,6 +19,10 @@ function latestVersions<E extends CallableDTO>(data?: Array<E>): Array<E> {
         .value() as Array<E>
 }
 
+function keyByUuid<E extends CallableDTO>(data?: Array<E>): { [uuid: string]: E } {
+    return chain(data ?? []).keyBy('uuid').value()
+}
+
 export const useCatalogStore = defineStore('catalog', {
     state: (): State => ({
         catalog: null
@@ -26,6 +30,9 @@ export const useCatalogStore = defineStore('catalog', {
     getters: {
         testFunctions(state: State) {
             return latestVersions(state.catalog?.tests)
+        },
+        testFunctionsByUuid(state: State) {
+            return keyByUuid(state.catalog?.tests)
         },
         sliceFunctions(state: State) {
             return latestVersions(state.catalog?.slices)

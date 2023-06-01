@@ -150,7 +150,7 @@
               <v-icon left small>mdi-list-status</v-icon>
               Test suites️
           </v-tab>
-          <v-tab :to="{name: 'project-catalog'}">
+          <v-tab :to="{name: 'project-catalog-tests'}">
               <v-icon left small>mdi-list-status</v-icon>
               Catalog
           </v-tab>
