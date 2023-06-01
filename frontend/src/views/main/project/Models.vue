@@ -1,5 +1,16 @@
 <template>
   <div class="vertical-container">
+    <div class="d-flex mb-6">
+      <v-spacer></v-spacer>
+      <v-btn @click="reloadModels">
+        Reload
+        <v-icon right>refresh</v-icon>
+      </v-btn>
+      <v-btn color="primary" class="mx-2" href="https://docs.giskard.ai/start/guides/upload-your-model" target="_blank">
+        Upload with API
+        <v-icon right>mdi-application-braces-outline</v-icon>
+      </v-btn>
+    </div>
     <v-container v-if="projectArtifactsStore.models.length > 0" fluid class="vc">
       <v-card flat>
         <v-row class="px-2 py-1 caption secondary--text text--lighten-3">
@@ -67,25 +78,28 @@
 <script setup lang="ts">
 import { api } from '@/api';
 import { apiURL } from "@/env";
+import { Role } from "@/enums";
 import InspectorLauncher from './InspectorLauncher.vue';
 import { ModelDTO } from '@/generated-sources';
 import mixpanel from "mixpanel-browser";
-import { computed, onBeforeMount, ref } from 'vue';
+import { onBeforeMount, ref, computed } from 'vue';
 import DeleteModal from '@/views/main/project/modals/DeleteModal.vue';
 import InlineEditText from '@/components/InlineEditText.vue';
+import { useUserStore } from "@/stores/user";
+import { useProjectStore } from "@/stores/project";
 import { useMainStore } from "@/stores/main";
 import { useProjectArtifactsStore } from "@/stores/project-artifacts";
 import CodeSnippet from '@/components/CodeSnippet.vue';
 
+const userStore = useUserStore();
+const projectStore = useProjectStore();
 const projectArtifactsStore = useProjectArtifactsStore();
 
-const props = withDefaults(defineProps<{
+interface Props {
   projectId: number,
-  projectKey: string,
-  isProjectOwnerOrAdmin: boolean
-}>(), {
-  isProjectOwnerOrAdmin: false
-});
+}
+
+const props = defineProps<Props>();
 
 const showInspectDialog = ref<boolean>(false);
 const modelToInspect = ref<ModelDTO | null>(null);
@@ -108,9 +122,25 @@ my_giskard_model = SKLearnModel(my_sklearn_regressor,
                                 name="My SKLearn Regressor")
 
 # Upload your model on Giskard
-project_key = "${props.projectKey}" # Current project key
+project_key = "${project.key}" # Current project key
 my_giskard_model.upload(client, project_key)`
 )
+
+const project = computed(() => {
+  return projectStore.project(props.projectId)
+});
+
+const userProfile = computed(() => {
+  return userStore.userProfile;
+});
+
+const isProjectOwnerOrAdmin = computed(() => {
+  return isUserProjectOwner.value || userProfile.value?.roles?.includes(Role.ADMIN)
+});
+
+const isUserProjectOwner = computed(() => {
+  return project.value && userProfile.value ? project.value?.owner.id == userProfile.value?.id : false;
+});
 
 async function deleteModelPickle(id: string) {
   mixpanel.track('Delete model', { id });
@@ -133,6 +163,10 @@ async function renameModel(id: string, name: string) {
   mixpanel.track('Update model name', { id });
   const savedModel = await api.editModelName(id, name);
   projectArtifactsStore.updateModel(savedModel);
+}
+
+async function reloadModels() {
+  await projectArtifactsStore.loadModelsWithNotification();
 }
 
 onBeforeMount(async () => {
