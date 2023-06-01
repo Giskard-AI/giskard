@@ -7,8 +7,6 @@ from enum import Enum
 from pathlib import Path
 from typing import Optional, Dict, List, Union, Literal, TypeVar, Callable, Type, Any
 
-from giskard.ml_worker.testing.registry.utils import is_local_function
-
 logger = logging.getLogger(__name__)
 
 
@@ -184,10 +182,9 @@ class CallableMeta(SavableMeta, ABC):
 
     def populate_tags(self, tags=None):
         tags = [] if not tags else tags.copy()
+        tags.append("pickle")
         if self.full_name.partition(".")[0] == "giskard":
             tags.append("giskard")
-        elif is_local_function(self.full_name):
-            tags.append("pickle")
         else:
             tags.append("custom")
         return tags
