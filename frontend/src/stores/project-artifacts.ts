@@ -26,7 +26,6 @@ export const useProjectArtifactsStore = defineStore('projectArtifacts', {
             await this.loadProjectArtifacts();
         },
         async loadDatasets() {
-          debugger;
           if (this.projectId === null) return;
           this.datasets = await api.getProjectDatasets(this.projectId!);
           this.datasets = this.datasets.sort((a, b) => new Date(a.createdDate) < new Date(b.createdDate) ? 1 : -1);
