@@ -297,7 +297,7 @@ class WrapperModel(Model, ABC):
 
         if is_binary_classification:
 
-            is_one_data_entry = raw_prediction.shape[0] <= 1
+            is_one_data_entry = len(raw_prediction.shape) <= 1 and (raw_prediction.shape[0]==2 or raw_prediction.shape[0]==1)
             is_0d_array = len(raw_prediction.shape) == 0
 
             if is_one_data_entry:  # to be compliant with calling of raw_prediction[:, 1]
