@@ -4,9 +4,9 @@
       <v-breadcrumbs
           :items="executionBreadcrumbs"
       ></v-breadcrumbs>
-      <v-btn text color="secondary" :to="{name: 'test-suite-compare-executions'}">
-        Compare executions
-        <v-icon>compare</v-icon>
+      <v-btn text color="secondary" @click="handleOpenGlobalInputs">
+        Global inputs
+        <v-icon>info</v-icon>
       </v-btn>
     </div>
     <v-container class="main-container vc">
@@ -76,6 +76,8 @@ import {storeToRefs} from 'pinia';
 import {useTestSuiteStore} from '@/stores/test-suite';
 import {formatDate} from '@/filters';
 import {useRoute, useRouter} from 'vue-router/composables';
+import {$vfm} from 'vue-final-modal';
+import TestSuiteExecutionInputsModal from '@/views/main/project/modals/TestSuiteExecutionInputsModal.vue';
 
 const {registry, models, datasets, inputs, executions, trackedJobs} = storeToRefs(useTestSuiteStore());
 
@@ -190,6 +192,15 @@ onMounted(() => {
     router.push({name: 'test-suite-execution', params: {executionId: executions.value[0].id.toString()}})
   }
 })
+
+function handleOpenGlobalInputs() {
+  $vfm.show({
+    component: TestSuiteExecutionInputsModal,
+    bind: {
+      execution: selectedExecution.value
+    }
+  });
+}
 </script>
 
 <style scoped lang="scss">
