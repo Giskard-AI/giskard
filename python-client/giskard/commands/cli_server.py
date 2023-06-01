@@ -67,15 +67,21 @@ def start(attached):
     else:
         version = settings["version"]
 
-    _download_dockerfile(version.replace('v', ''))
+    _pull_image(version.replace('v', ''))
+
+    db_volume, home_volume = _get_volumes()
 
     try:
-        container = client.containers.get("giskard-server")
+        container = client.containers.get(f"giskard-server.{version.replace('v', '')}")
     except:
         container = client.containers.create(f"giskardai/giskard:{version.replace('v', '')}",
                                              detach=not attached,
-                                             name="giskard-server",
-                                             ports={7860: 19000, 9080: 9080})
+                                             name=f"giskard-server.{version.replace('v', '')}",
+                                             ports={7860: 19000},
+                                             volumes={db_volume.name: {'bind': '/var/lib/postgresql/data',
+                                                                       'mode': 'rw'},
+                                                      home_volume.name: {'bind': '/app/giskard-home',
+                                                                         'mode': 'rw'}}, )
     container.start()
     logger.info(f"Giskard Server {version} started. You can access it at http://localhost:19000")
 
@@ -88,7 +94,9 @@ def stop():
     Stops any running Giskard server. Does nothing if Giskard server is not running.
     """
     logger.info("Stopping Giskard Server")
-    container = client.containers.get("giskard-server")
+
+    version = _get_settings()["version"]
+    container = client.containers.get(f"giskard-server.{version.replace('v', '')}")
     container.stop()
 
 
@@ -124,9 +132,9 @@ def update(version):
         version = _fetch_latest_tag()
 
     logger.info(f"Updating Giskard Server to version {version}")
-    _download_dockerfile(version.replace('v', ''))
+    _pull_image(version.replace('v', ''))
 
-    logger.info("Giskard Server updated.")
+    logger.info("Giskard Server updated.")  # Maybe offer to remove old containers here?
 
 
 @server.command("info")
@@ -159,7 +167,7 @@ def _check_downloaded(ver: str):
 
 
 # Version: X.Y.Z
-def _download_dockerfile(version):
+def _pull_image(version):
     if not _check_downloaded(version):
         logger.info(f"Downloading image for version {version}")
         client.images.pull("giskardai/giskard", tag=version.replace('v', ''))
@@ -187,3 +195,17 @@ def _get_settings():
 
     # TODO: Maybe cache it ?
     return yaml.safe_load(open(giskard_settings_path, "r"))
+
+
+def _get_volumes():
+    try:
+        db_volume = client.volumes.get("giskard-db-data")
+    except docker.errors.NotFound:
+        db_volume = client.volumes.create("giskard-db-data")
+
+    try:
+        home_volume = client.volumes.get("giskard-home-data")
+    except docker.errors.NotFound:
+        home_volume = client.volumes.create("giskard-home-data")
+
+    return db_volume, home_volume
