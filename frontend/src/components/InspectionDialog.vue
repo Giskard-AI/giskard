@@ -57,7 +57,7 @@ onActivated(() => {
       <template v-slot:activator="{ on, attrs }">
         <v-btn color="primary" v-bind="attrs" v-on="on">
           <v-icon>add</v-icon>
-          New Debugging Session
+          New Inspection Session
         </v-btn>
       </template>
       <v-card>
