@@ -10,7 +10,7 @@
               :value="value"
               @input="v => emit('update:value', v)"
     ></v-select>
-    <v-input v-else label="Column name" dense/>
+    <v-text-field v-else label="Column name" outlined dense/>
 </template>
 
 <script setup lang="ts">
