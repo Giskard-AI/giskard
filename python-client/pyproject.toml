@@ -6,6 +6,7 @@ build-backend = "setuptools.build_meta"
 proto = "setup.py grpc"
 test = "pytest -c pyproject.toml --cov=giskard tests --cov-report=xml"
 lint = "flake8 giskard tests"
+doc = "python -m sphinx_autobuild docs docs/_build/html"
 
 [tool.pdm.dev-dependencies]
 dev = [
@@ -47,9 +48,11 @@ test = [
 ]
 doc = [
     "furo>=2023.3.27",
-    "sphinx-rtd-theme>=1.2.0",
     "myst-parser>=1.0.0",
     "sphinx-autobuild>=2021.3.14",
+    "sphinx>=6.1.3",
+    "sphinxcontrib-napoleon>=0.7",
+    "sphinx-autoapi>=2.1.0",
 ]
 
 [tool.setuptools.packages.find]
@@ -119,16 +122,6 @@ dependencies = [
     "pycryptodome>=3.17",
     "pandas<2",
 ]
-
-
-[tool.poetry.group.doc.dependencies]
-myst-parser = "^1.0.0"
-furo = "^2023.3.27"
-sphinx-rtd-theme = "^1.2.0"
-sphinx-autobuild = "^2021.3.14"
-sphinx = "^6.1.3"
-sphinxcontrib-napoleon = "^0.7"
-sphinx-autoapi = "^2.1.0"
 
 [tool.black]
 # https://github.com/psf/black

@@ -75,6 +75,7 @@ tasks {
     idea {
         module {
             excludeDirs.add(file(virtualEnvDirectory))
+            excludeDirs.add(file("dist"))
 
             // "generated" directory should be marked as both source and generatedSource,
             // otherwise intellij doesn"t recognize it as a generated source 🤷‍
