@@ -212,8 +212,8 @@ message TestResultMessage {
 }
 
 message TestSuiteResultMessage {
-  repeated bool is_pass = 1;
-  repeated TestResultMessage results = 2;
+  bool is_pass = 1;
+  repeated NamedSingleTestResult results = 2;
 }
 
 message ArtifactRef{
