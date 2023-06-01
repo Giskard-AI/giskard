@@ -81,25 +81,21 @@ public class DatasetService {
     public DatasetPageDTO getRows(@NotNull UUID id, @NotNull int rangeMin, @NotNull int rangeMax,
                                   RowFilterDTO rowFilter, boolean sample) throws IOException {
         Table table = readTableByDatasetId(id, sample);
-        table.addColumns(IntColumn.indexColumn(GISKARD_DATASET_INDEX_COLUMN_NAME, table.rowCount(), 0));
+        IntColumn indexColumn = IntColumn.indexColumn(GISKARD_DATASET_INDEX_COLUMN_NAME, table.rowCount(), 0);
+        table.addColumns(indexColumn);
 
         if (rowFilter.getFilter() != null) {
             table = inspectionService.getRowsFiltered(table, rowFilter.getFilter());
         }
 
         if (rowFilter.getRemoveRows() != null) {
-            Table finalTable = table;
-            table = table.dropRows(Arrays.stream(rowFilter.getRemoveRows())
-                .mapToObj(idx -> finalTable.stream().filter(row -> row.getInt(GISKARD_DATASET_INDEX_COLUMN_NAME) == idx).findFirst())
-                .filter(Optional::isPresent)
-                .mapToInt(row -> row.get().getRowNumber())
-                .toArray());
+            table = table.where(indexColumn.isNotIn(rowFilter.getRemoveRows()));
         }
 
         return new DatasetPageDTO(table.rowCount(), table.inRange(rangeMin, Math.min(table.rowCount(), rangeMax)).stream()
             .map(row -> row.columnNames().stream()
                 .<Map<String, Object>>collect(HashMap::new, (m, column) -> m.put(column, row.getObject(column)), Map::putAll))
-            .toList());
+            .collect(Collectors.toList()));
     }
 
     public Dataset renameDataset(UUID datasetId, String name) {

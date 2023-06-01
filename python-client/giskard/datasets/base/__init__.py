@@ -10,6 +10,7 @@ import numpy as np
 import pandas as pd
 import yaml
 from pandas.api.types import is_list_like
+from xxhash import xxh3_128_hexdigest
 from zstandard import ZstdDecompressor
 
 from giskard.client.giskard_client import GiskardClient
@@ -482,6 +483,10 @@ class Dataset(ColumnMetadataMixin):
     @property
     def cat_columns(self):
         return self._cat_columns(self.meta)
+
+    @property
+    def data_hash(self):
+        return xxh3_128_hexdigest(''.join(self.df[GISKARD_HASH_COLUMN]))
 
     def save(self, local_path: Path, dataset_id):
         with open(local_path / "data.csv.zst", "wb") as f, open(local_path / "data.sample.csv.zst", "wb") as f_sample:

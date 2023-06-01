@@ -78,8 +78,15 @@ public class DatasetsController {
     @PostMapping("/dataset/{datasetId}/rows")
     public DatasetPageDTO getRows(@PathVariable @NotNull UUID datasetId, @NotNull int offset, @NotNull int size,
                                   @RequestBody RowFilterDTO rowFilter,
+                                  @RequestParam(required = false, defaultValue = "false") boolean shuffle,
                                   @RequestParam(required = false, defaultValue = "true") boolean sample) throws IOException {
-        return datasetService.getRows(datasetId, offset, offset + size, rowFilter, sample);
+        DatasetPageDTO rows = datasetService.getRows(datasetId, offset, offset + size, rowFilter, sample);
+
+        if (shuffle) {
+            Collections.shuffle(rows.getContent());
+        }
+
+        return rows;
     }
 
     @DeleteMapping("/dataset/{datasetId}")
