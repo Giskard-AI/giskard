@@ -30,4 +30,5 @@ public class ApplicationProperties {
     private Path home;
     private int externalWorkerHeartbeatIntervalSeconds;
     private String auth;
+    private String licensePublicKey;
 }

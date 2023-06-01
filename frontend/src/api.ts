@@ -19,6 +19,7 @@ import {
     InspectionDTO,
     JobDTO,
     JWTToken,
+    LicenseDTO,
     ManagedUserVM,
     MessageDTO,
     MLWorkerInfoDTO,
@@ -53,6 +54,7 @@ import router from "@/router";
 import mixpanel from "mixpanel-browser";
 import {useUserStore} from "@/stores/user";
 import AdminUserDTOWithPassword = AdminUserDTO.AdminUserDTOWithPassword;
+import {SetupDTO} from "@/generated-sources/ai/giskard/web/dto/setup-dto";
 
 function jwtRequestInterceptor(config) {
     // Do something before request is sent
@@ -192,8 +194,8 @@ export const api = {
     async logInGetToken(username: string, password: string) {
         return apiV2.post<unknown, JWTToken>(`/authenticate`, {username, password});
     },
-    async getFeatureFlags() {
-        return apiV2.get<unknown, unknown>(`/settings/featureFlags`);
+    async getLicense() {
+        return apiV2.get<unknown, LicenseDTO>(`/settings/license`);
     },
     async getUserAndAppSettings() {
         return apiV2.get<unknown, AppConfigDTO>(`/settings`);
@@ -485,4 +487,18 @@ export const api = {
         return apiV2.post<unknown, TestExecutionResultDTO>(`/testing/tests/run-test`, {projectId, testId, inputs});
     },
 
+    },
+    async uploadLicense(form: FormData) {
+        return apiV2.post<unknown, unknown>(`/ee/license`, form, {
+            headers: {
+                'Content-Type': 'multipart/form-data'
+            }
+        })
+    },
+    async finalizeSetup(allowAnalytics: boolean, license: string) {
+        return apiV2.post<SetupDTO, unknown>(`/setup`, {
+            allowAnalytics: allowAnalytics,
+            license: license
+        });
+    }
 };
