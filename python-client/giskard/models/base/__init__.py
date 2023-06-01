@@ -70,6 +70,7 @@ class BaseModel(ABC):
     should_save_model_class = False
     id: uuid.UUID = None
     model_cache: ModelCache
+    disable_cache: bool
 
     @configured_validate_arguments
     def __init__(
@@ -79,6 +80,7 @@ class BaseModel(ABC):
             feature_names: Optional[Iterable] = None,
             classification_threshold: Optional[float] = 0.5,
             classification_labels: Optional[Iterable] = None,
+            disable_cache: bool = False
     ) -> None:
         """
         Initialize a new instance of the BaseModel class.
@@ -126,6 +128,8 @@ class BaseModel(ABC):
             loader_module=self.__module__,
             classification_threshold=classification_threshold,
         )
+
+        self.disable_cache = disable_cache
 
     @property
     def is_classification(self):
@@ -261,21 +265,8 @@ class BaseModel(ABC):
         """
         timer = Timer()
 
-        # Read cache
-        dataset_hash = dataset.dataset_hash()
-        cached_predictions = self.model_cache.read_from_cache(dataset_hash)
-        missing = cached_predictions.isna()
-        if len(missing.shape) > 1:
-            missing = missing.any(axis=1)
-
-        df = self.prepare_dataframe(dataset.slice(lambda x: dataset.df[missing], row_level=False))
-
-        if len(df) > 0:
-            raw_prediction = self.predict_df(df)
-            self.model_cache.set_cache(dataset_hash[missing], raw_prediction)
-            cached_predictions.loc[missing] = raw_prediction.tolist()
-
-        raw_prediction = np.array(np.array(cached_predictions).tolist())
+        raw_prediction = self.predict_df(self.prepare_dataframe(dataset)) if self.disable_cache \
+            else self._predict_from_cache(dataset)
 
         if self.is_regression:
             result = ModelPredictionResults(
@@ -314,6 +305,23 @@ class BaseModel(ABC):
         :param df: dataframe to predict
         """
         ...
+
+    def _predict_from_cache(self, dataset: Dataset):
+        dataset_hash = dataset.dataset_hash()
+        cached_predictions = self.model_cache.read_from_cache(dataset_hash)
+        missing = cached_predictions.isna()
+        if len(missing.shape) > 1:
+            missing = missing.any(axis=1)
+
+        df = self.prepare_dataframe(dataset.slice(lambda x: dataset.df[missing], row_level=False))
+
+        if len(df) > 0:
+            raw_prediction = self.predict_df(df)
+            self.model_cache.set_cache(dataset_hash[missing], raw_prediction)
+            cached_predictions.loc[missing] = raw_prediction.tolist()
+
+        # TODO: check if there is a better solution
+        return np.array(np.array(cached_predictions).tolist())
 
     def upload(self, client: GiskardClient, project_key, validate_ds=None) -> None:
         """
