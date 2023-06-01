@@ -46,45 +46,42 @@
 </div>
 </template>
 
-<script lang="ts">
-import {Component, Vue} from 'vue-property-decorator';
-import {readUserProfile} from '@/store/main/getters';
-import {dispatchUpdateUserProfile} from '@/store/main/actions';
-import ButtonModalConfirmation from '@/components/ButtonModalConfirmation.vue';
-import {AdminUserDTO, UpdateMeDTO} from '@/generated-sources';
+<script setup lang="ts">
+import {computed, ref} from "vue";
+import {useUserStore} from "@/stores/user";
+import {UpdateMeDTO} from "@/generated-sources";
+import {useRouter} from "vue-router/composables";
 
-@Component({
-  components: {
-    ButtonModalConfirmation,
-  },
-})
-export default class UserProfileEdit extends Vue {
-  public valid = true;
-  public password1 = '';
-  public password2 = '';
+const userStore = useUserStore();
+const router = useRouter();
 
-  get userProfile() {
-    return readUserProfile(this.$store);
-  }
+const valid = ref<boolean>(true);
+const password1 = ref<string>('');
+const password2 = ref<string>('');
 
-  public reset() {
-    this.password1 = '';
-    this.password2 = '';
-    (this.$refs.observer as any).reset();
-  }
+const observer = ref<any | null>(null);
 
-  public cancel() {
-    this.$router.back();
-  }
+const userProfile = computed(() => {
+  return userStore.userProfile;
+});
 
-  public submit() {
-    (this.$refs.observer as any).validate().then(async () => {
-      const updatedProfile: UpdateMeDTO = {
-        password : this.password1
-      };
-      await dispatchUpdateUserProfile(this.$store, updatedProfile);
-      await this.$router.push('/main/profile');
-    })
-  }
+function reset() {
+  password1.value = '';
+  password2.value = '';
+  observer.value.reset();
+}
+
+function cancel() {
+  router.back();
+}
+
+function submit() {
+  observer.value.validate().then(async () => {
+    const updatedProfile: UpdateMeDTO = {
+      password : password1.value
+    };
+    await userStore.updateUserProfile(updatedProfile);
+    await router.push('/main/profile');
+  })
 }
 </script>

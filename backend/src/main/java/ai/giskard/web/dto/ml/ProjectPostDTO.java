@@ -1,7 +1,6 @@
 package ai.giskard.web.dto.ml;
 
 import ai.giskard.domain.InspectionSettings;
-
 import com.dataiku.j2ts.annotations.UIModel;
 import com.dataiku.j2ts.annotations.UINullable;
 import lombok.Getter;

@@ -60,8 +60,8 @@ class Model:
         self.meta = ModelMeta(
             name=name if name is not None else self.__class__.__name__,
             model_type=model_type,
-            feature_names=feature_names,
-            classification_labels=classification_labels,
+            feature_names=list(feature_names) if feature_names else None,
+            classification_labels=list(classification_labels) if classification_labels else None,
             classification_threshold=classification_threshold
         )
 
@@ -180,6 +180,7 @@ class Model:
         timer = Timer()
         df = self.prepare_dataframe(dataset)
         raw_prediction = self.prepare_data_and_predict(df)
+
         if self.is_regression:
             result = ModelPredictionResults(
                 prediction=raw_prediction, raw_prediction=raw_prediction, raw=raw_prediction
@@ -213,6 +214,12 @@ class Model:
     def prepare_dataframe(self, dataset: Dataset):
         df = dataset.df.copy()
         column_types = dict(dataset.column_types) if dataset.column_types else None
+
+        if column_types:
+            for cname, ctype in column_types.items():
+                if cname not in df:
+                    df[cname] = None
+
         if dataset.target:
             if dataset.target in df.columns:
                 df.drop(dataset.target, axis=1, inplace=True)
