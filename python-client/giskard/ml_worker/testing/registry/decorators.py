@@ -41,13 +41,13 @@ def test(_fn=None, name=None, tags: Optional[List[str]] = None):
 
 def _wrap_test_method(original):
     giskard_test_method = functools.wraps(original)(GiskardTestMethod(original))
-    _make_all_optional(giskard_test_method)
+    _make_all_optional_or_suite_input(giskard_test_method)
     _set_return_type(giskard_test_method, GiskardTestMethod)
 
     return configured_validate_arguments(giskard_test_method)
 
 
-def _make_all_optional(fn):
+def _make_all_optional_or_suite_input(fn):
     from inspect import signature, Parameter
     sig = signature(fn)
     sig = sig.replace(
