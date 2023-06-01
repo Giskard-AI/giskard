@@ -53,3 +53,25 @@ class TestFunctionMeta:
     args: Dict[str, TestFunctionArgument]
     tags: List[str]
     version: Optional[int]
+
+
+def test_function_meta_to_json(meta: TestFunctionMeta):
+    return {
+        "uuid": meta.uuid,
+        "name": meta.name,
+        "display_name": meta.display_name,
+        "module": meta.module,
+        "doc": meta.code,
+        "module_doc": meta.module_doc,
+        "code": meta.code,
+        "tags": meta.tags,
+        "args":
+            [
+                {
+                    "name": arg.name,
+                    "type": arg.type,
+                    "default": arg.default,
+                    "optional": arg.optional
+                } for arg in meta.args.values()
+            ]
+    }

@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.UUID;
 
 @RestController
@@ -34,6 +36,12 @@ public class TestFunctionController {
     @Transactional
     public TestFunctionDTO getTestFunction(@Valid @RequestBody TestFunctionDTO testFunction) {
         return testFunctionService.save(testFunction);
+    }
+
+    @PostMapping("/test-functions/registry")
+    @Transactional
+    public void getTestFunction(@Valid @RequestBody Collection<TestFunctionDTO> testFunctions) {
+        testFunctionService.saveAll(testFunctions);
     }
 
 }

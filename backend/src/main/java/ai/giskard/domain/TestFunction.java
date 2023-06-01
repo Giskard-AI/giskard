@@ -27,9 +27,12 @@ public class TestFunction {
     @Column(nullable = false)
     private int version;
     private String module;
+
+    @Column(columnDefinition = "VARCHAR")
     private String doc;
+    @Column(columnDefinition = "VARCHAR")
     private String moduleDoc;
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "VARCHAR")
     private String code;
     @Column(columnDefinition = "VARCHAR")
     @Convert(converter = SimpleJSONStringAttributeConverter.class)
