@@ -102,8 +102,8 @@ torchtext = "^0.14.1"
 requests-mock = "^1.10.0"
 tensorflow-hub = "^0.12.0"
 transformers = "^4.26.1"
-tensorflow-macos = {version = "2.8.0", platform = "darwin"}
-tensorflow = {version = "2.8.0", platform = "linux"}
+tensorflow-macos = {version = "2.8.0", markers = "sys_platform == 'darwin' and platform_machine == 'arm64'"}
+tensorflow = {version = "2.8.0", markers = "sys_platform != 'darwin' or platform_machine != 'arm64'"}
 tensorflow-text = {version = "2.8.2", markers = "sys_platform != 'darwin' or platform_machine != 'arm64'"}
 
 [tool.black]
