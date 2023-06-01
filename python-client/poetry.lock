@@ -3369,7 +3369,7 @@ cffi = ["cffi (>=1.11)"]
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.7.5,<3.11"
-content-hash = "ab395b32bae3d8f089d29af688a2fa9155c5bb0011640413f5d969791995e94e"
+content-hash = "54d9761799cd2cac19b1cde1f19dee34481d725482e09b85ee09764c602696aa"
 
 [metadata.files]
 absl-py = [
