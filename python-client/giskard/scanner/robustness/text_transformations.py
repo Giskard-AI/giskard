@@ -3,7 +3,7 @@ import re
 
 import pandas as pd
 
-from .entity_swap import typos, gender_switch_en, gender_switch_fr
+from .entity_swap import typos
 from ... import Dataset
 from ...core.core import DatasetProcessFunctionMeta
 from ...ml_worker.testing.registry.registry import get_object_uuid
@@ -143,20 +143,20 @@ class TextDictBasedTransformation(TextTransformation):
 
 
 class TextGenderTransformation(TextDictBasedTransformation):
+    def __init__(self, column):
+        super().__init__(column)
+        from .entity_swap import gender_switch_en, gender_switch_fr
+
+        self._dictionaries = {"en": gender_switch_en, "fr": gender_switch_fr}
 
     def _switch(self, word, language):
-        if pd.isna(language):
-            return word
-        elif (language == "en") and (word.lower() in gender_switch_en):
-            return [word, gender_switch_en[word.lower()]]
-        elif (language == "fr") and (word.lower() in gender_switch_fr):
-            return [word, gender_switch_fr[word.lower()]]
-        else:
+        try:
+            return [word, self._dictionaries[language][word.lower()]]
+        except KeyError:
             return word
 
 
 class TextReligionTransformation(TextDictBasedTransformation):
-
     def make_perturbation(self, row):
         text = row[self.column]
         new_text = text
