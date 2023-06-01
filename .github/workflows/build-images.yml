@@ -32,7 +32,7 @@ jobs:
           SANITIZED_BRANCH=${BRANCH//"/"/-}
           
           echo $BRANCH
-          echo SANITIZED_BRANCH
+          echo $SANITIZED_BRANCH
           
           echo "branch=$BRANCH" >> $GITHUB_OUTPUT
           echo "tag=$SANITIZED_BRANCH" >> $GITHUB_OUTPUT
