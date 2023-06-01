@@ -1,11 +1,13 @@
 package ai.giskard.domain;
 
-import ai.giskard.domain.ml.SuiteTest;
 import ai.giskard.utils.SimpleJSONStringAttributeConverter;
 import lombok.Getter;
 import lombok.Setter;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Convert;
+import javax.persistence.Id;
+import javax.persistence.MappedSuperclass;
 import java.io.Serializable;
 import java.util.List;
 import java.util.UUID;
@@ -34,8 +36,5 @@ public class Callable implements Serializable {
     @Column(columnDefinition = "VARCHAR")
     @Convert(converter = SimpleJSONStringAttributeConverter.class)
     private List<String> tags;
-
-    @OneToMany(mappedBy = "testFunction", cascade = CascadeType.ALL)
-    private List<SuiteTest> suiteTests;
 
 }

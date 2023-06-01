@@ -6,6 +6,7 @@ import Vue from "vue";
 import {
     AdminUserDTO,
     AppConfigDTO,
+    CatalogDTO,
     CreateFeedbackDTO,
     CreateFeedbackReplyDTO,
     DatasetDTO,
@@ -35,7 +36,6 @@ import {
     RoleDTO,
     SliceDTO,
     SuiteTestDTO,
-    TestFunctionDTO,
     TestInputDTO,
     TestSuiteCompleteDTO,
     TestSuiteDTO,
@@ -461,8 +461,8 @@ export const api = {
             inputs
         });
     },
-    async getTestFunctions(projectId: number) {
-        return apiV2.get<unknown, TestFunctionDTO[]>(`/tests`, {
+    async getCatalog(projectId: number) {
+        return apiV2.get<unknown, CatalogDTO>(`/catalog`, {
             params: {
                 projectId
             }

@@ -140,17 +140,20 @@
         </v-tab>
         <v-tab :to="{name: 'project-inspector', params: tempInspectorParams}" v-if="showInspector">
           <v-icon left>model_training</v-icon>
-          Inspector
+            Inspector
         </v-tab>
-        <v-tab :to="{name: 'project-feedbacks'}">
-          <v-icon left small>mdi-comment-multiple-outline</v-icon>
-          Feedback
-        </v-tab>
-				<v-tab :to="{name: 'project-test-suites'}">
-          <v-icon left small>mdi-list-status</v-icon>
-          Test suites️
-        </v-tab>
-				<v-tab :to="{name: 'project-tests-catalog'}"><v-icon left small>mdi-list-status</v-icon>Test catalog</v-tab>
+          <v-tab :to="{name: 'project-feedbacks'}">
+              <v-icon left small>mdi-comment-multiple-outline</v-icon>
+              Feedback
+          </v-tab>
+          <v-tab :to="{name: 'project-test-suites'}">
+              <v-icon left small>mdi-list-status</v-icon>
+              Test suites️
+          </v-tab>
+          <v-tab :to="{name: 'project-catalog'}">
+              <v-icon left small>mdi-list-status</v-icon>
+              Catalog
+          </v-tab>
       </v-tabs>
       <keep-alive>
         <router-view :isProjectOwnerOrAdmin="isProjectOwnerOrAdmin"></router-view>

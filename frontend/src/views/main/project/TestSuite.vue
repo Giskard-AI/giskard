@@ -18,7 +18,7 @@
               <div class="flex-grow-1"/>
               <v-btn tile class='mx-1'
                      v-if="hasTest"
-                     :to="{name: 'project-tests-catalog', query: {suiteId: suiteId}}"
+                     :to="{name: 'project-catalog', query: {suiteId: suiteId}}"
                      color="secondary">
                 <v-icon>add</v-icon>
                 Add test
