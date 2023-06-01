@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="vc">
     <v-tabs v-if="tabs.length > 1">
       <v-tab v-for="tab in tabs" :to="tab.to">
         <v-icon left>{{ tab.icon }}</v-icon>
