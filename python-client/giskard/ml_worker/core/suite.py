@@ -1,8 +1,7 @@
 import inspect
 import logging
 from dataclasses import dataclass
-from typing import *
-from typing import List, Any
+from typing import List, Any, Union, Dict, Mapping, Callable
 
 from giskard.client.dtos import TestSuiteNewDTO, SuiteTestDTO, TestInputDTO
 from giskard.client.giskard_client import GiskardClient
@@ -36,7 +35,7 @@ def single_binary_result(test_results: List):
     for r in test_results:
         if type(r) == bool:
             passed = passed and r
-        elif hasattr(r, 'passed'):
+        elif hasattr(r, "passed"):
             passed = passed and r.passed
         else:
             logger.error(f"Invalid test result: {r.__class__.__name__}")
@@ -64,8 +63,9 @@ class Suite:
 
         for test_partial in self.tests:
             test_params = self.create_test_params(test_partial, suite_run_args)
-            res[f'{test_partial.test_func.__module__}.{test_partial.test_func.__name__}'] = \
-                run_test(test_partial.test_func, test_params)
+            res[f"{test_partial.test_func.__module__}.{test_partial.test_func.__name__}"] = run_test(
+                test_partial.test_func, test_params
+            )
 
         result = single_binary_result(list(res.values()))
 
@@ -118,10 +118,7 @@ class Suite:
                 else:
                     inputs[pname] = TestInputDTO(name=pname, value=str(p))
 
-            suite_tests.append(SuiteTestDTO(
-                testId=create_test_function_id(t.test_func),
-                testInputs=inputs
-            ))
+            suite_tests.append(SuiteTestDTO(testId=create_test_function_id(t.test_func), testInputs=inputs))
         return TestSuiteNewDTO(name=self.name, project_key=project_key, tests=suite_tests)
 
     def add_test(self, test_fn: Union[Callable[[Any], Union[bool]], GiskardTest], **params):
@@ -148,9 +145,10 @@ class Suite:
                     elif isinstance(test_partial.provided_inputs[p.name], SuiteInput):
                         if test_partial.provided_inputs[p.name].type != p.annotation:
                             raise ValueError(
-                                f'Test {test_partial.test_func.__name__} requires {p.name} input to '
-                                f'be {p.annotation.__name__} '
-                                f'but {test_partial.provided_inputs[p.name].type.__name__} was provided')
+                                f"Test {test_partial.test_func.__name__} requires {p.name} input to "
+                                f"be {p.annotation.__name__} "
+                                f"but {test_partial.provided_inputs[p.name].type.__name__} was provided"
+                            )
                         res[test_partial.provided_inputs[p.name].name] = p.annotation
         return res
 
@@ -212,4 +210,4 @@ def format_test_result(result: Union[bool, TestResult]) -> str:
     if isinstance(result, TestResult):
         return f"{{{'passed' if result.passed else 'failed'}, metric={result.metric}}}"
     else:
-        return 'passed' if result else 'failed'
+        return "passed" if result else "failed"

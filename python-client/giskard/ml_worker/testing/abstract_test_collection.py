@@ -22,7 +22,7 @@ class AbstractTestCollection(ABC):
         for frame in stack:
             if frame.function.startswith("test_"):
                 return frame.function
-        logger.warning(f"Failed to extract test method name")
+        logger.warning("Failed to extract test method name")
 
     def save_results(self, result: SingleTestResult, test_name=None):
         if not self.do_save_results:

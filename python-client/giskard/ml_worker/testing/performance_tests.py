@@ -48,32 +48,22 @@ class PerformanceTests(AbstractTestCollection):
         """
         self._verify_target_availability(actual_slice)
         if len(model.meta.classification_labels) == 2:
-            metric = roc_auc_score(
-                actual_slice.df[actual_slice.target], model.predict(actual_slice).raw_prediction
-            )
+            metric = roc_auc_score(actual_slice.df[actual_slice.target], model.predict(actual_slice).raw_prediction)
         else:
             predictions = model.predict(actual_slice).all_predictions
-            non_declared_categories = set(predictions.columns) - set(
-                actual_slice.df[actual_slice.target].unique()
+            non_declared_categories = set(predictions.columns) - set(actual_slice.df[actual_slice.target].unique())
+            assert not len(non_declared_categories), (
+                f"Predicted classes don't exist in "
+                f'the dataset "{actual_slice.target}" column: {non_declared_categories}'
             )
-            assert not len(
-                non_declared_categories
-            ), f'Predicted classes don\'t exist in ' \
-               f'the dataset "{actual_slice.target}" column: {non_declared_categories}'
 
-            metric = roc_auc_score(
-                actual_slice.df[actual_slice.target], predictions, multi_class="ovr"
-            )
+            metric = roc_auc_score(actual_slice.df[actual_slice.target], predictions, multi_class="ovr")
 
         return self.save_results(
-            SingleTestResult(
-                actual_slices_size=[len(actual_slice)], metric=metric, passed=metric >= threshold
-            )
+            SingleTestResult(actual_slices_size=[len(actual_slice)], metric=metric, passed=metric >= threshold)
         )
 
-    def _test_classification_score(
-        self, score_fn, gsk_dataset: Dataset, model: Model, threshold=1.0
-    ):
+    def _test_classification_score(self, score_fn, gsk_dataset: Dataset, model: Model, threshold=1.0):
         self._verify_target_availability(gsk_dataset)
         is_binary_classification = len(model.meta.classification_labels) == 2
         gsk_dataset.df.reset_index(drop=True, inplace=True)
@@ -85,9 +75,7 @@ class PerformanceTests(AbstractTestCollection):
             metric = score_fn(actual_target, prediction, average="macro")
 
         return self.save_results(
-            SingleTestResult(
-                actual_slices_size=[len(gsk_dataset)], metric=metric, passed=metric >= threshold
-            )
+            SingleTestResult(actual_slices_size=[len(gsk_dataset)], metric=metric, passed=metric >= threshold)
         )
 
     def _test_accuracy_score(self, gsk_dataset: Dataset, model: Model, threshold=1.0):
@@ -99,14 +87,10 @@ class PerformanceTests(AbstractTestCollection):
         metric = accuracy_score(actual_target, prediction)
 
         return self.save_results(
-            SingleTestResult(
-                actual_slices_size=[len(gsk_dataset)], metric=metric, passed=metric >= threshold
-            )
+            SingleTestResult(actual_slices_size=[len(gsk_dataset)], metric=metric, passed=metric >= threshold)
         )
 
-    def _test_regression_score(
-        self, score_fn, giskard_ds, model: Model, threshold=1.0, r2=False
-    ):
+    def _test_regression_score(self, score_fn, giskard_ds, model: Model, threshold=1.0, r2=False):
         results_df = pd.DataFrame()
         giskard_ds.df.reset_index(drop=True, inplace=True)
         self._verify_target_availability(giskard_ds)
@@ -295,26 +279,28 @@ class PerformanceTests(AbstractTestCollection):
         """
         return self._test_regression_score(r2_score, actual_slice, model, threshold, r2=True)
 
-    def _test_diff_prediction(
-        self, test_fn, model, actual_slice, reference_slice, threshold=0.5, test_name=None
-    ):
+    def _test_diff_prediction(self, test_fn, model, actual_slice, reference_slice, threshold=0.5, test_name=None):
         self.do_save_results = False
         metric_1 = test_fn(reference_slice, model).metric
         metric_2 = test_fn(actual_slice, model).metric
         self.do_save_results = True
 
         if metric_1 == 0:
-            return self.save_results(SingleTestResult(
-                actual_slices_size=[len(actual_slice)],
-                reference_slices_size=[len(reference_slice)],
-                metric=0,
-                passed=False,
-                messages=[TestMessage(
-                    type=TestMessageType.ERROR,
-                    text=f"Unable to calculate performance difference: the {test_name} inside the"
-                         " reference_slice is equal to zero"
-                )]
-            ))
+            return self.save_results(
+                SingleTestResult(
+                    actual_slices_size=[len(actual_slice)],
+                    reference_slices_size=[len(reference_slice)],
+                    metric=0,
+                    passed=False,
+                    messages=[
+                        TestMessage(
+                            type=TestMessageType.ERROR,
+                            text=f"Unable to calculate performance difference: the {test_name} inside the"
+                            " reference_slice is equal to zero",
+                        )
+                    ],
+                )
+            )
 
         change_pct = abs(metric_1 - metric_2) / metric_1
 
@@ -500,9 +486,7 @@ class PerformanceTests(AbstractTestCollection):
             self.test_f1, model, reference_slice, actual_slice, threshold, test_name="F1 Score"
         )
 
-    def test_diff_reference_actual_accuracy(
-        self, reference_slice, actual_slice, model, threshold=0.1
-    ):
+    def test_diff_reference_actual_accuracy(self, reference_slice, actual_slice, model, threshold=0.1):
         """
         Test if the absolute percentage change in model Accuracy between reference and actual data
         is lower than a threshold
