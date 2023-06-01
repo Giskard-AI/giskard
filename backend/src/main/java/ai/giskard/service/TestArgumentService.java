@@ -20,7 +20,8 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class TestArgumentService {
 
-    public SuiteTestArgument buildFixedTestArgument(Map<String, FunctionInput> globalArguments, SuiteTest test, String projectKey) {
+    public SuiteTestArgument buildFixedTestArgument(Map<String, FunctionInput> globalArguments, SuiteTest test, String projectKey,
+                                                    boolean sample) {
         TestFunction testFunction = test.getTestFunction();
         SuiteTestArgument.Builder builder = SuiteTestArgument.newBuilder()
             .setTestUuid(testFunction.getUuid().toString())
@@ -33,9 +34,9 @@ public class TestArgumentService {
         for (FunctionInput input : test.getFunctionInputs()) {
             if (input.isAlias()) {
                 FunctionInput shared = globalArguments.get(input.getValue());
-                builder.addArguments(buildTestArgument(arguments, shared.getName(), shared.getValue(), projectKey, shared.getParams(), false));
+                builder.addArguments(buildTestArgument(arguments, shared.getName(), shared.getValue(), projectKey, shared.getParams(), sample));
             } else {
-                builder.addArguments(buildTestArgument(arguments, input.getName(), input.getValue(), projectKey, input.getParams(), false));
+                builder.addArguments(buildTestArgument(arguments, input.getName(), input.getValue(), projectKey, input.getParams(), sample));
             }
 
         }
