@@ -15,9 +15,7 @@ import ai.giskard.web.dto.ml.TestSuiteDTO;
 import ai.giskard.web.dto.ml.UpdateTestSuiteDTO;
 import ai.giskard.web.rest.errors.Entity;
 import ai.giskard.web.rest.errors.EntityNotFoundException;
-import ai.giskard.worker.ArtifactRef;
-import ai.giskard.worker.GenerateTestSuiteRequest;
-import ai.giskard.worker.GenerateTestSuiteResponse;
+import ai.giskard.worker.*;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import lombok.RequiredArgsConstructor;
@@ -51,7 +49,6 @@ public class TestSuiteService {
     private final JobService jobService;
     private final ProjectRepository projectRepository;
     private final MLWorkerService mlWorkerService;
-    private final TestArgumentService testArgumentService;
 
     public TestSuite updateTestSuite(UpdateTestSuiteDTO dto) {
         TestSuite suite = testSuiteRepository.getById(dto.getId());
@@ -217,10 +214,9 @@ public class TestSuiteService {
             GenerateTestSuiteRequest.Builder request = GenerateTestSuiteRequest.newBuilder()
                 .setProjectKey(projectKey);
 
-            request.addAllArguments(dto.getInputs()
+            request.addAllInputs(dto.getInputs()
                 .stream()
-                .map(input -> testArgumentService
-                    .buildTestArgument(input.getName(), input.getValue(), projectKey, input.getType()))
+                .map(TestSuiteService::generateSuiteInput)
                 .toList());
 
             GenerateTestSuiteResponse response = client.getBlockingStub().generateTestSuite(request.build());
@@ -236,10 +232,22 @@ public class TestSuiteService {
         }
     }
 
-    private static ArtifactRef buildArtifactRef(String projectKey, String id) {
-        return ArtifactRef.newBuilder()
-            .setProjectKey(projectKey)
-            .setId(id)
-            .build();
+    private static SuiteInput generateSuiteInput(GenerateTestSuiteInputDTO input) {
+        SuiteInput.Builder builder = SuiteInput.newBuilder()
+            .setName(input.getName())
+            .setType(input.getType());
+
+        if (input instanceof GenerateTestModelInputDTO) {
+            builder.setModelMeta(ModelMeta.newBuilder()
+                .setModelType(((GenerateTestModelInputDTO) input).getModelType())
+                .build());
+        } else if (input instanceof GenerateTestDatasetInputDTO) {
+            builder.setDatasetMeta(DatasetMeta.newBuilder()
+                .setTarget(((GenerateTestDatasetInputDTO) input).getTarget())
+                .build());
+        }
+
+        return builder.build();
     }
+
 }

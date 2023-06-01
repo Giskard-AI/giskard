@@ -13,18 +13,18 @@ import pandas as pd
 import pkg_resources
 import psutil
 import tqdm
-from google.protobuf.wrappers_pb2 import Int32Value, DoubleValue
 from google.protobuf.empty_pb2 import Empty
+from google.protobuf.wrappers_pb2 import Int32Value, DoubleValue
 
 import giskard
 from giskard.client.giskard_client import GiskardClient
-from giskard.core.model import Model, WrapperModel
+from giskard.core.model import Model
 from giskard.ml_worker.core.dataset import Dataset
 from giskard.ml_worker.core.model_explanation import (
     explain,
     explain_text,
 )
-from giskard.ml_worker.core.suite import Suite
+from giskard.ml_worker.core.suite import Suite, ModelInput, DatasetInput, SuiteInput
 from giskard.ml_worker.core.test_result import TestResult, TestMessageLevel
 from giskard.ml_worker.core.test_runner import run_test
 from giskard.ml_worker.exceptions.IllegalArgumentError import IllegalArgumentError
@@ -391,14 +391,23 @@ class MLWorkerServiceImpl(MLWorkerServicer):
             }
         )
 
+    @staticmethod
+    def map_suite_input(i: ml_worker_pb2.SuiteInput):
+        if i.type == 'Model' and i.model_meta is not None:
+            return ModelInput(i.name, i.model_meta.model_type)
+        elif i.type == 'Dataset' and i.dataset_meta is not None:
+            return DatasetInput(i.name, i.dataset_meta.target)
+        else:
+            return SuiteInput(i.name, i.type)
+
     def generateTestSuite(
             self,
             request: ml_worker_pb2.GenerateTestSuiteRequest,
             context: grpc.ServicerContext,
     ) -> ml_worker_pb2.GenerateTestSuiteResponse:
-        args = self.parse_test_arguments(request.arguments)
+        inputs = [self.map_suite_input(i) for i in request.inputs]
 
-        suite = Suite().generate_tests(args).to_dto(self.client, request.project_key)
+        suite = Suite().generate_tests(inputs).to_dto(self.client, request.project_key)
 
         return ml_worker_pb2.GenerateTestSuiteResponse(
             tests=[

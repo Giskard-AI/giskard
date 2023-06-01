@@ -1,7 +1,7 @@
 import inspect
 import logging
 from dataclasses import dataclass
-from typing import List, Any, Union, Dict, Mapping, Callable
+from typing import List, Any, Union, Dict, Mapping, Callable, Optional
 
 from giskard.client.dtos import TestSuiteNewDTO, SuiteTestDTO, TestInputDTO
 from giskard.client.giskard_client import GiskardClient
@@ -14,14 +14,34 @@ from giskard.ml_worker.testing.registry.registry import create_test_function_id,
 
 logger = logging.getLogger(__name__)
 
+suite_input_types: List[type] = [Dataset, Model, str, bool, int, float]
+
 
 class SuiteInput:
     type: Any
     name: str
 
     def __init__(self, name: str, ptype: Any) -> None:
+        if type not in suite_input_types:
+            assert f'Type should be one of those: {suite_input_types}'
         self.name = name
         self.type = ptype
+
+
+class DatasetInput(SuiteInput):
+    target: Optional[str] = None
+
+    def __init__(self, name: str, target: Optional[str] = None) -> None:
+        super().__init__(name, Dataset)
+        self.target = target
+
+
+class ModelInput(SuiteInput):
+    model_type: Optional[str] = None
+
+    def __init__(self, name: str, model_type: Optional[str] = None) -> None:
+        super().__init__(name, Model)
+        self.model_type = model_type
 
 
 @dataclass
@@ -152,39 +172,43 @@ class Suite:
                         res[test_partial.provided_inputs[p.name].name] = p.annotation
         return res
 
-    def generate_tests(self, args: Dict[str, Any]):
+    def generate_tests(self, inputs: List[SuiteInput]):
         giskard_tests = [test for test in tests_registry.get_all().values()
                          if contains_tag(test, 'giskard') and not self._contains_test(test)]
 
         for test in giskard_tests:
-            self._add_test_if_suitable(test, args)
+            self._add_test_if_suitable(test, inputs)
 
         return self
 
-    def _add_test_if_suitable(self, test_func: TestFunction, suite_args: Dict[str, Any]):
+    def _add_test_if_suitable(self, test_func: TestFunction, inputs: List[SuiteInput]):
         required_args = [arg for arg in test_func.args.values() if arg.default is None]
+        input_dict: Dict[str, SuiteInput] = {
+            i.name: i
+            for i in inputs
+        }
 
         if any([arg for arg in required_args if
-                arg.name not in suite_args or not is_same_type(arg.type, suite_args[arg.name])]):
+                arg.name not in input_dict or not arg.type == input_dict[arg.name].type.__name__]):
             # Test is not added if an input  without default value is not specified
             # or if an input does not match the required type
             return
 
-        args = {
-            arg.name: suite_args[arg.name]
-            for arg in required_args
-        }
+        suite_args = {}
 
-        for arg in [arg for arg in test_func.args.values() if arg.default is not None and arg.name not in args]:
+        for arg in [arg for arg in test_func.args.values() if arg.default is not None and arg.name not in input_dict]:
             # Set default value if not provided
             suite_args[arg.name] = arg.default
 
-        models = [model for model in args if type(model) is Model]
-        if any(models) and not contains_tag(test_func, next(iter(models)).arg.meta.model_type.value):
+        models = [modelInput for modelInput in input_dict.values() if
+                  isinstance(modelInput, ModelInput)
+                  and modelInput.model_type is not None and modelInput.model_type != ""]
+        if any(models) and not contains_tag(test_func, next(iter(models)).model_type):
             return
 
         if contains_tag(test_func, 'ground_truth') \
-                and any([dataset for dataset in args if type(dataset) is Dataset and dataset.target is None]):
+                and any([dataset for dataset in input_dict.values()
+                         if isinstance(dataset, DatasetInput) and dataset.target is None and dataset.target != ""]):
             return
 
         self.add_test(test_func.fn, **suite_args)
@@ -195,15 +219,6 @@ class Suite:
 
 def contains_tag(func: TestFunction, tag: str):
     return any([t for t in func.tags if t.upper() == tag.upper()])
-
-
-def is_same_type(require_type: str, obj: Any) -> bool:
-    if require_type == 'Model':
-        return isinstance(obj, Model)
-    if require_type == 'Dataset':
-        return isinstance(obj, Dataset)
-    else:
-        return require_type == type(obj).__name__
 
 
 def format_test_result(result: Union[bool, TestResult]) -> str:

@@ -30,9 +30,6 @@
                       <th class="text-left" id="input-type">
                         Type
                       </th>
-                      <th class="text-left" id="input-value">
-                        Value
-                      </th>
                       <th id="delete-input"></th>
                     </tr>
                     </thead>
@@ -42,40 +39,15 @@
                         :key="index"
                     >
                       <td>
+                        <ValidationProvider name="input name" rules="required" v-slot="{errors}">
+                          <v-text-field v-model="input.name" :error-messages="errors"></v-text-field>
+                        </ValidationProvider>
+                      </td>
+                      <td>
                         <v-select
-                            :value="input.name"
-                            @change="(value) => handleInputNameChanged(input, value)"
-                            :items="[input.name, ...availableArguments]"
+                            v-model="input.type"
+                            :items="availableTypes"
                         ></v-select>
-                      </td>
-                      <td>
-                        <span v-if="typesByName[input.name]?.length === 1">{{ input.type }}</span>
-                        <v-select v-else
-                                  v-model="input.type"
-                                  :items="typesByName[input.name]"
-                        ></v-select>
-                      </td>
-                      <td>
-                        <DatasetSelector :project-id="projectId" :label="input.name" :return-object="false"
-                                         v-if="input.type === 'Dataset'" :value.sync="input.value"/>
-                        <ModelSelector :project-id="projectId" :label="input.name" :return-object="false"
-                                       v-else-if="input.type === 'Model'" :value.sync="input.value"/>
-                        <v-text-field
-                            :step='input.type === "float" ? 0.1 : 1'
-                            v-model="input.value"
-                            v-else-if="['float', 'int'].includes(input.type)"
-                            hide-details
-                            single-line
-                            type="number"
-                            outlined
-                            dense
-                        />
-                        <v-text-field
-                            v-model="input.value"
-                            v-else-if="'str' === input.type"
-                            outlined
-                            dense
-                        />
                       </td>
                       <td>
                         <v-btn icon @click="() => suiteInputs.splice(index, 1)">
@@ -86,8 +58,8 @@
                     </tbody>
                   </template>
                 </v-simple-table>
-                <v-btn :disabled="availableArguments.length === 0"
-                       @click="() => suiteInputs.push({name: availableArguments[0], type: typesByName[availableArguments[0]][0], value: null})">
+                <v-btn
+                    @click="() => suiteInputs.push({name: '', type: availableTypes[0]})">
                   Add input
                 </v-btn>
               </v-col>
@@ -116,14 +88,11 @@
 
 <script setup lang="ts">
 
-import {computed, onMounted, ref} from 'vue';
+import {onMounted, ref} from 'vue';
 import mixpanel from 'mixpanel-browser';
 import {api} from '@/api';
 import {GenerateTestSuiteDTO, GenerateTestSuiteInputDTO, TestCatalogDTO} from '@/generated-sources';
 import {useRouter} from 'vue-router/composables';
-import {chain} from 'lodash';
-import DatasetSelector from '@/views/main/utils/DatasetSelector.vue';
-import ModelSelector from '@/views/main/utils/ModelSelector.vue';
 
 const {projectKey, projectId} = defineProps<{
   projectKey: string,
@@ -138,6 +107,7 @@ const isLoading = ref<boolean>(false);
 
 const router = useRouter();
 
+const availableTypes = ['Model', 'Dataset', 'str', 'bool', 'int', 'float']
 
 onMounted(async () => {
   registry.value = await api.getTestsCatalog(projectId);
@@ -153,7 +123,7 @@ async function submit(close) {
 
   const createdTestSuiteId = await api.generateTestSuite(projectKey, {
     name: name.value,
-    inputs: suiteInputs.value
+    inputs: suiteInputs.value.map(val => ({...val, suiteInputType: 'suite'}))
   } as GenerateTestSuiteDTO)
       .finally(() => isLoading.value = false);
 
@@ -163,28 +133,6 @@ async function submit(close) {
   close();
 }
 
-const typesByName = computed(() => registry.value === null ? {} :
-    chain(registry.value.tests)
-        .values()
-        .flatMap(definition => Object.values(definition.arguments))
-        .filter(argument => !argument.optional)
-        .groupBy('name')
-        .mapValues(args => chain(args)
-            .map('type')
-            .uniq()
-            .value())
-        .value()
-)
-
-const argumentNames = computed(() => Object.keys(typesByName.value));
-const availableArguments = computed(() => argumentNames.value
-    .filter(name => suiteInputs.value.find(input => input.name === name) === undefined))
-
-function handleInputNameChanged(input: GenerateTestSuiteInputDTO, value: string) {
-  input.name = value;
-  input.type = typesByName[value][0];
-  input.value = null
-}
 </script>
 
 <style scoped>
