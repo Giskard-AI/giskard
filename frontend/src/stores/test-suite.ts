@@ -57,7 +57,8 @@ export const useTestSuiteStore = defineStore('testSuite', {
                 .flatten()
                 .groupBy(result => result.testResult.test.testUuid)
                 .value();
-        }
+        },
+        hasTest: ({suite}) => suite && Object.keys(suite.tests).length > 0
     },
     actions: {
         async reload() {

@@ -1,5 +1,5 @@
 <template>
-  <v-container>
+  <v-container v-if="hasTest">
     <TestSuiteExecutionHeader :execution="execution" :tests="filteredTest" :compact="false"/>
 
 
@@ -20,6 +20,15 @@
     </div>
     <SuiteTestExecutionList :tests="filteredTest" :compact="false"/>
   </v-container>
+  <v-container v-else class="d-flex flex-column vc fill-height">
+    <h1 class="pt-16">No tests has been added to the suite</h1>
+    <v-btn tile class='mx-1'
+           :to="{name: 'project-tests-catalog', query: {suiteId: suite.id}}"
+           color="primary">
+      <v-icon>add</v-icon>
+      Add test
+    </v-btn>
+  </v-container>
 </template>
 
 <script setup lang="ts">
@@ -36,7 +45,7 @@ import TestSuiteExecutionHeader from '@/views/main/project/TestSuiteExecutionHea
 const props = defineProps<{ execution?: TestSuiteExecutionDTO }>();
 
 const testSuiteStore = useTestSuiteStore();
-const {registry, models, datasets, inputs, suite, projectId} = storeToRefs(testSuiteStore);
+const {registry, models, datasets, inputs, suite, projectId, hasTest} = storeToRefs(testSuiteStore);
 const testSuiteCompareStore = useTestSuiteCompareStore();
 
 onMounted(() => {
