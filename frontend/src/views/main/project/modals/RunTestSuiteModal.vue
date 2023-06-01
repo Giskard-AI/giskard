@@ -59,7 +59,7 @@
               color="primary"
               text
               @click="executeTestSuite()"
-              :disabled="!isAllParamsSet()"
+              :disabled="!isAllParamsSet() || running"
           >
             <v-icon>arrow_right</v-icon>
             Run test suite
@@ -119,9 +119,12 @@ async function executeTestSuite() {
   running.value = true;
 
   try {
-    await api.executeTestSuiteNew(props.projectId, props.suiteId, testSuiteInputs.value)
+    const results = await api.executeTestSuiteNew(props.projectId, props.suiteId, testSuiteInputs.value);
+    // TODO: redirect to execution results once implemented
   } finally {
     running.value = false;
+    dialog.value = false;
   }
+
 }
 </script>
