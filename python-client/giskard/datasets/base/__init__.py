@@ -94,7 +94,7 @@ class DataProcessor:
 
         # If dataset had metadata, copy it to the new dataset
         if is_slicing_only and hasattr(dataset, "column_meta"):
-            ds._load_metadata_from_instance(dataset.column_meta)
+            ds.load_metadata_from_instance(dataset.column_meta)
 
         return ds
 
@@ -576,7 +576,7 @@ class Dataset(ColumnMetadataMixin):
         )
 
         if hasattr(self, "column_meta"):
-            dataset._load_metadata_from_instance(self.column_meta)
+            dataset.load_metadata_from_instance(self.column_meta)
 
         return dataset
 
