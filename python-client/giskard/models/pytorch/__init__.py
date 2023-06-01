@@ -79,7 +79,7 @@ class PyTorchModel(MLFlowBasedModel):
             for entry in data:
                 try:  # for the case of 1 input
                     predictions.append(self.clf(entry).detach().numpy())
-                except:  # for the case of 2 inputs or more, like (input1, offset) or (input1, input2)
+                except self.clf(entry):  # for the case of 2 inputs or more, like (input1, offset) or (input1, input2)
                     predictions.append(self.clf(*entry).detach().numpy())
 
         predictions = np.squeeze(np.array(predictions))
@@ -109,8 +109,8 @@ class PyTorchModel(MLFlowBasedModel):
         if pytorch_meta_file.exists():
             with open(pytorch_meta_file) as f:
                 pytorch_meta = yaml.load(f, Loader=yaml.Loader)
-                kwargs['device']=pytorch_meta.device
-                kwargs['torch_dtype']=pytorch_meta.torch_dtype
+                kwargs['device'] = pytorch_meta.device
+                kwargs['torch_dtype'] =     pytorch_meta.torch_dtype
                 super().load(local_dir, **kwargs)
         else:
             raise ValueError(
