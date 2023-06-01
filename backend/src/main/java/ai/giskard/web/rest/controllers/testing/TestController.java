@@ -120,7 +120,7 @@ public class TestController {
     @Transactional
     public TestTemplateExecutionResultDTO runAdHocTest(@RequestBody RunAdhocTestRequest request) {
         TestFunction testFunction = testFunctionRepository.findById(UUID.fromString(request.getTestUuid()))
-            .orElseThrow(() -> new EntityNotFoundException(TEST_FUNCTION, request.getTestUuid().toString()));
+            .orElseThrow(() -> new EntityNotFoundException(TEST_FUNCTION, request.getTestUuid()));
 
         Project project = projectRepository.getById(request.getProjectId());
 
@@ -129,7 +129,7 @@ public class TestController {
                 .collect(Collectors.toMap(TestFunctionArgument::getName, TestFunctionArgument::getType));
 
             RunAdHocTestRequest.Builder builder = RunAdHocTestRequest.newBuilder()
-                .setTestUuid(request.getTestUuid().toString());
+                .setTestUuid(request.getTestUuid());
 
             for (Map.Entry<String, String> entry : request.getInputs().entrySet()) {
                 builder.addArguments(testArgumentService.buildTestArgument(argumentTypes, entry.getKey(), entry.getValue(), project.getKey()));
