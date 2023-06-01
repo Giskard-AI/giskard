@@ -41,7 +41,6 @@
     "vue-property-decorator": "^9.1.2",
     "vue-router": "^3.5.3",
     "vue-toastification": "^1.7.14",
-    "vue-virtual-collection": "1.5.0",
     "vuetify": "^2.6.13",
     "vuetify-dialog": "^2.0.17",
     "vue-virtual-collection": "1.5.0"

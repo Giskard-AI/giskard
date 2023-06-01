@@ -3,11 +3,11 @@ package ai.giskard.web.rest.controllers.testing;
 import ai.giskard.domain.ml.TestSuite;
 import ai.giskard.domain.ml.TestSuiteNew;
 import ai.giskard.domain.ml.testing.Test;
-import ai.giskard.repository.ml.TestRepository;
-import ai.giskard.repository.ml.TestSuiteNewRepository;
-import ai.giskard.repository.ml.TestSuiteRepository;
+import ai.giskard.repository.ml.*;
 import ai.giskard.service.TestService;
+import ai.giskard.service.TestSuiteExecutionService;
 import ai.giskard.service.TestSuiteService;
+import ai.giskard.web.dto.TestSuiteCompleteDTO;
 import ai.giskard.web.dto.GenerateTestSuiteDTO;
 import ai.giskard.web.dto.SuiteTestDTO;
 import ai.giskard.web.dto.TestSuiteCreateDTO;
@@ -40,6 +40,9 @@ public class TestSuiteController {
     private final TestService testService;
     private final GiskardMapper giskardMapper;
     private final TestSuiteNewRepository testSuiteNewRepository;
+    private final DatasetRepository datasetRepository;
+    private final ModelRepository modelRepository;
+    private final TestSuiteExecutionService testSuiteExecutionService;
 
 
     @PutMapping("suites/update_params")
@@ -83,7 +86,6 @@ public class TestSuiteController {
         return savedSuite.getId();
     }
 
-
     @PostMapping("project/{projectKey}/suites-new/generate")
     @PreAuthorize("@permissionEvaluator.canWriteProjectKey(#projectKey)")
     @Transactional
@@ -102,17 +104,24 @@ public class TestSuiteController {
     @GetMapping("project/{projectId}/suite-new/{suiteId}")
     @PreAuthorize("@permissionEvaluator.canReadProject(#projectId)")
     @Transactional
-    public TestSuiteNewDTO listTestSuiteNew(@PathVariable("projectId") @NotNull Long projectId,
-                                            @PathVariable("suiteId") @NotNull Long suiteId) {
+    public TestSuiteNewDTO listTestSuiteComplete(@PathVariable("projectId") @NotNull Long projectId,
+                                                 @PathVariable("suiteId") @NotNull Long suiteId) {
         return giskardMapper.toDTO(testSuiteNewRepository.findOneByProjectIdAndId(projectId, suiteId));
     }
 
-    @GetMapping("project/{projectId}/suite-new/{suiteId}/inputs")
+    @GetMapping("project/{projectId}/suite-new/{suiteId}/complete")
     @PreAuthorize("@permissionEvaluator.canReadProject(#projectId)")
-    @Transactional
-    public Map<String, String> getSuiteInputs(@PathVariable("projectId") @NotNull Long projectId,
-                                              @PathVariable("suiteId") @NotNull Long suiteId) {
-        return testSuiteService.getSuiteInputs(projectId, suiteId);
+    @Transactional(readOnly = true)
+    public TestSuiteCompleteDTO listTestSuiteNew(@PathVariable("projectId") @NotNull Long projectId,
+                                                 @PathVariable("suiteId") @NotNull Long suiteId) {
+        return new TestSuiteCompleteDTO(
+            giskardMapper.toDTO(testSuiteNewRepository.findOneByProjectIdAndId(projectId, suiteId)),
+            testService.listTestsFromRegistry(projectId),
+            giskardMapper.datasetsToDatasetDTOs(datasetRepository.findAllByProjectId(projectId)),
+            giskardMapper.modelsToModelDTOs(modelRepository.findAllByProjectId(projectId)),
+            testSuiteExecutionService.listAllExecution(suiteId),
+            testSuiteService.getSuiteInputs(projectId, suiteId)
+        );
     }
 
     @PostMapping("project/{projectId}/suite-new/{suiteId}/test")
@@ -131,6 +140,16 @@ public class TestSuiteController {
                                            @PathVariable("suiteId") @NotNull Long suiteId,
                                            @Valid @RequestBody Map<@NotBlank String, @NotNull String> inputs) {
         return testSuiteService.scheduleTestSuiteExecution(projectId, suiteId, inputs);
+    }
+
+    @PutMapping("project/{projectId}/suite-new/{suiteId}/test/{testId}/inputs")
+    @PreAuthorize("@permissionEvaluator.canWriteProject(#projectId)")
+    @Transactional
+    public TestSuiteNewDTO updateTestInputs(@PathVariable("projectId") long projectId,
+                                            @PathVariable("suiteId") long suiteId,
+                                            @PathVariable("testId") @NotBlank String testId,
+                                            @Valid @RequestBody Map<@NotBlank String, @NotNull String> inputs) {
+       return testSuiteService.updateTestInputs(suiteId, testId, inputs);
     }
 
     @PostMapping("project/{projectKey}/suites")
