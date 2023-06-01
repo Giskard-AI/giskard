@@ -32,10 +32,7 @@
                                                 </div>
                                             </v-list-item-title>
                                             <v-list-item-subtitle v-if="transformationFunction.tags">
-                                                <v-chip class="mr-2"
-                                                        v-for="tag in alphabeticallySorted(transformationFunction.tags)"
-                                                        x-small
-                                                        :color="pasterColor(tag)">
+                                                <v-chip class="mr-2" v-for="tag in alphabeticallySorted(transformationFunction.tags)" x-small :color="pasterColor(tag)">
                                                     {{ tag }}
                                                 </v-chip>
                                             </v-list-item-subtitle>
@@ -154,7 +151,6 @@
 import _, { chain } from "lodash";
 import { computed, inject, onActivated, ref, watch } from "vue";
 import { pasterColor } from "@/utils";
-import MonacoEditor from 'vue-monaco';
 import { editor } from "monaco-editor";
 import { FunctionInputDTO, TransformationFunctionDTO } from "@/generated-sources";
 import StartWorkerInstructions from "@/components/StartWorkerInstructions.vue";
@@ -165,11 +161,10 @@ import { api } from "@/api";
 import DatasetTable from "@/components/DatasetTable.vue";
 import SuiteInputListSelector from "@/components/SuiteInputListSelector.vue";
 import DatasetColumnSelector from "@/views/main/utils/DatasetColumnSelector.vue";
-import {alphabeticallySorted} from "@/utils/comparators";
+import { alphabeticallySorted } from "@/utils/comparators";
 import IEditorOptions = editor.IEditorOptions;
 import CodeSnippet from "@/components/CodeSnippet.vue";
 
-const l = MonacoEditor;
 let props = defineProps<{
     projectId: number,
     suiteId?: number
