@@ -24,16 +24,16 @@
                   <template v-slot:default>
                     <thead>
                     <tr>
-                      <th class="text-left">
+                      <th class="text-left" id="input-name">
                         Name
                       </th>
-                      <th class="text-left">
+                      <th class="text-left" id="input-type">
                         Type
                       </th>
-                      <th class="text-left">
+                      <th class="text-left" id="input-value">
                         Value
                       </th>
-                      <th></th>
+                      <th id="delete-input"></th>
                     </tr>
                     </thead>
                     <tbody>

@@ -199,4 +199,4 @@ def is_same_type(require_type: str, obj: Any) -> bool:
     if require_type == 'Dataset':
         return isinstance(obj, Dataset)
     else:
-        require_type == type(obj).__name__
+        return require_type == type(obj).__name__
