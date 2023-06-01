@@ -73,7 +73,7 @@ async function renameSession(id: number, name: string) {
       name,
       datasetId: currentSession.dataset.id,
       modelId: currentSession.model.id,
-        sample: currentSession.sample
+      sample: currentSession.sample
     });
   }
 }
@@ -158,8 +158,9 @@ onActivated(async () => {
         </v-col>
         <v-col cols="8">
           <div class="d-flex justify-end">
-            <v-btn v-if="debuggingSessionsStore.currentDebuggingSessionId !== null" @click="showPastSessions" class="mr-4 pa-2 text--secondary">
-              <v-icon left>history</v-icon>Past sessions
+            <v-btn v-if="debuggingSessionsStore.currentDebuggingSessionId !== null" text @click="showPastSessions" class="mr-3">
+              <v-icon class="mr-2">mdi-arrow-left</v-icon>
+              Back to all sessions
             </v-btn>
             <AddDebuggingSessionModal v-show="debuggingSessionsStore.currentDebuggingSessionId === null" :projectId="projectId" @createDebuggingSession="createDebuggingSession"></AddDebuggingSessionModal>
           </div>
