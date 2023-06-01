@@ -101,7 +101,7 @@ class BaseTextPerturbationDetector(Detector):
                 rouge2 = Rouge2()
                 rel_delta = rouge2(predictions=perturbed_pred.prediction,
                                    references=original_pred.prediction)
-                passed = np.abs(rel_delta) < self.output_sensitivity
+                passed = np.abs(rel_delta) > self.output_sensitivity
             else:
                 raise NotImplementedError("Only classification and regression models are supported.")
 
