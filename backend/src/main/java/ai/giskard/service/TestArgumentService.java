@@ -1,7 +1,7 @@
 package ai.giskard.service;
 
+import ai.giskard.domain.FunctionArgument;
 import ai.giskard.domain.TestFunction;
-import ai.giskard.domain.TestFunctionArgument;
 import ai.giskard.domain.ml.SuiteTest;
 import ai.giskard.domain.ml.TestInput;
 import ai.giskard.worker.ArtifactRef;
@@ -26,7 +26,7 @@ public class TestArgumentService {
             .setId(test.getId());
 
         Map<String, String> argumentTypes = testFunction.getArgs().stream()
-            .collect(Collectors.toMap(TestFunctionArgument::getName, TestFunctionArgument::getType));
+            .collect(Collectors.toMap(FunctionArgument::getName, FunctionArgument::getType));
 
 
         for (TestInput input : test.getTestInputs()) {
@@ -51,6 +51,9 @@ public class TestArgumentService {
         switch (inputType) {
             case "Dataset" -> argumentBuilder.setDataset(buildArtifactRef(projectKey, inputValue));
             case "BaseModel" -> argumentBuilder.setModel(buildArtifactRef(projectKey, inputValue));
+            case "SlicingFunction" -> argumentBuilder.setSlicingFunction(buildArtifactRef(projectKey, inputValue));
+            case "TransformationFunction" ->
+                argumentBuilder.setTransformationFunction(buildArtifactRef(projectKey, inputValue));
             case "float" -> argumentBuilder.setFloat(Float.parseFloat(inputValue));
             case "int" -> argumentBuilder.setInt(Integer.parseInt(inputValue));
             case "str" -> argumentBuilder.setStr(inputValue);

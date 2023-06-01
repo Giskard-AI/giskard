@@ -1,7 +1,7 @@
 package ai.giskard.service;
 
+import ai.giskard.domain.FunctionArgument;
 import ai.giskard.domain.Project;
-import ai.giskard.domain.TestFunctionArgument;
 import ai.giskard.domain.ml.SuiteTest;
 import ai.giskard.domain.ml.TestInput;
 import ai.giskard.domain.ml.TestSuite;
@@ -128,7 +128,7 @@ public class TestSuiteService {
     private void verifyAllInputExists(List<TestInputDTO> providedInputs,
                                       SuiteTest test) {
         Set<String> requiredInputs = test.getTestFunction().getArgs().stream()
-            .map(TestFunctionArgument::getName)
+            .map(FunctionArgument::getName)
             .collect(Collectors.toSet());
 
         List<String> nonExistingInputs = providedInputs.stream()

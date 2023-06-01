@@ -7,15 +7,15 @@ import javax.persistence.*;
 
 @Getter
 @Entity(name = "test_function_arguments")
-@Table(uniqueConstraints={
-    @UniqueConstraint(columnNames = {"test_function_uuid", "name"})
+@Table(uniqueConstraints = {
+    @UniqueConstraint(columnNames = {"function_uuid", "name"})
 })
 @Setter
-public class TestFunctionArgument extends BaseEntity {
+public class FunctionArgument extends BaseEntity {
 
     @ManyToOne
-    @JoinColumn(name = "test_function_uuid")
-    private TestFunction testFunction;
+    @JoinColumn(name = "function_uuid")
+    private Callable function;
     @Column(nullable = false)
     private String name;
     @Column(nullable = false)
