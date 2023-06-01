@@ -1,6 +1,7 @@
 """Statistical tests"""
 import numpy as np
 import pandas as pd
+from typing import Optional, Iterable
 
 from giskard import test
 from giskard.datasets.base import Dataset
@@ -138,13 +139,14 @@ def test_output_in_range(model: BaseModel, dataset: Dataset, slicing_function: S
     )
 
 
-# TODO: support type in the future
+@test(name="Disparate impact", tags=["heuristic", "classification"])
 def test_disparate_impact(model: BaseModel, dataset: Dataset, protected_slicing_function: SlicingFunction,
-                          unprotected_slicing_function: SlicingFunction, positive_outcome,
-                          slicing_function: SlicingFunction = None, min_threshold=0.8, max_threshold=1.25) -> TestResult:
+                          unprotected_slicing_function: SlicingFunction, positive_outcome: Optional[Iterable],
+                          slicing_function: SlicingFunction = None, min_threshold: float = 0.8,
+                          max_threshold: float = 1.25) -> TestResult:
     """
     Summary: Tests if the model is biased more towards an unprotected slice of the dataset over a protected slice.
-    Note that this test reflects only a possible bias in the model while being agnostic to any bias in the dataset
+    Note that this test reflects only a possible bias in the model while being agnostic to any biaas in the dataset
     it trained on. The Disparate Impact (DI) is only valid for classification models and is computed as the ratio
     between the average count of correct predictions for the protected slice over the unprotected one given a
     certain positive_outcome.
