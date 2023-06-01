@@ -43,6 +43,8 @@ class Model:
     data_preprocessing_function: any
     model_postprocessing_function: any
     save_model_class = False
+    loader_module = 'giskard.core.model'
+    loader_class = 'Model'
 
     def __init__(self,
                  clf,
@@ -52,9 +54,7 @@ class Model:
                  model_postprocessing_function=None,
                  feature_names=None,
                  classification_threshold=0.5,
-                 classification_labels=None,
-                 loader_module: str = 'giskard.core.model',
-                 loader_class: str = 'Model') -> None:
+                 classification_labels=None) -> None:
         self.clf = clf
         self.data_preprocessing_function = data_preprocessing_function
         self.model_postprocessing_function = model_postprocessing_function
@@ -73,8 +73,8 @@ class Model:
             feature_names=list(feature_names) if feature_names else None,
             classification_labels=list(classification_labels) if classification_labels is not None else None,
             classification_threshold=classification_threshold,
-            loader_module=loader_module,  # self.__name__
-            loader_class=loader_class
+            loader_module=self.loader_module,
+            loader_class=self.loader_class
         )
 
     @property
