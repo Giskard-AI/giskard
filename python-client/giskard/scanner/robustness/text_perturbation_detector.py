@@ -111,7 +111,11 @@ class TextPerturbationDetector(Detector):
 
             if fail_ratio >= self.threshold:
                 info = RobustnessIssueInfo(
-                    feature=feature, fail_ratio=fail_ratio, perturbation_name=getattr(transformation, "name")
+                    feature=feature,
+                    fail_ratio=fail_ratio,
+                    perturbation_name=getattr(transformation, "name"),
+                    perturbed_data_slice=perturbed_data,
+                    fail_data_idx=original_data.df.index[~passed].values,
                 )
                 issue = RobustnessIssue(
                     model,

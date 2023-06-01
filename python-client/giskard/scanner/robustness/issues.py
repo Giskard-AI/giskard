@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 from dataclasses import dataclass
 
 from ..issues import Issue, IssueInfo
@@ -11,6 +12,8 @@ class RobustnessIssueInfo(IssueInfo):
     feature: str
     perturbation_name: str
     fail_ratio: float
+    perturbed_data_slice: Dataset
+    fail_data_idx: list
 
 
 class RobustnessIssue(Issue):
@@ -34,14 +37,20 @@ class RobustnessIssue(Issue):
 
     @property
     def deviation(self) -> str:
-        return f"{self.info.fail_ratio * 100:.2f}% of samples are sensible"
+        return f"{self.info.fail_ratio * 100:.2f}% of samples changed prediction after perturbation"
 
     @property
     def description(self) -> str:
         return ""
 
     def examples(self, n=3) -> pd.DataFrame:
-        return pd.DataFrame()
+        idx = np.random.choice(self.info.fail_data_idx, min(len(self.info.fail_data_idx), n))
+
+        pert_data = self.info.perturbed_data_slice.df.loc[idx, (self.info.feature, self.dataset.target)]
+        examples = self.dataset.df.loc[idx]
+        examples = examples.join(pert_data, rsuffix="_perturbed")
+
+        return examples
 
     @property
     def importance(self) -> float:
