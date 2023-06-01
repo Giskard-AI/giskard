@@ -34,6 +34,7 @@ import {
     RoleDTO,
     SliceDTO,
     SuiteTestDTO,
+    TestFunctionDTO,
     TestSuiteCompleteDTO,
     TestSuiteDTO,
     TestSuiteExecutionDTO,
@@ -437,5 +438,8 @@ export const api = {
             testUuid,
             inputs
         });
+    },
+    async getTestFunctions() {
+        return apiV2.get<unknown, TestFunctionDTO[]>(`/tests`);
     },
 };

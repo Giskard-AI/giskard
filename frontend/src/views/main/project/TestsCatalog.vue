@@ -128,7 +128,7 @@ import DatasetSelector from "@/views/main/utils/DatasetSelector.vue";
 import MonacoEditor from 'vue-monaco';
 import TestExecutionResultBadge from "@/views/main/project/TestExecutionResultBadge.vue";
 import {editor} from "monaco-editor";
-import {TestExecutionResultDTO, TestFunctionArgumentDTO, TestFunctionDTO} from "@/generated-sources";
+import {TestFunctionArgumentDTO, TestFunctionDTO, TestTemplateExecutionResultDTO} from "@/generated-sources";
 import AddTestToSuite from '@/views/main/project/modals/AddTestToSuite.vue';
 import {$vfm} from 'vue-final-modal';
 import IEditorOptions = editor.IEditorOptions;
@@ -144,7 +144,7 @@ let registry = ref<TestFunctionDTO[]>([]);
 let selected = ref<TestFunctionDTO | null>(null);
 let tryMode = ref(true)
 let testArguments = ref({})
-let testResult = ref<TestExecutionResultDTO | null>(null);
+let testResult = ref<TestTemplateExecutionResultDTO | null>(null);
 
 let openFeedbackDetail = false
 
