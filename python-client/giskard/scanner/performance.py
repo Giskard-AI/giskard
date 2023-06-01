@@ -29,27 +29,29 @@ class PerformanceScan:
         self.dataset = dataset
         self.test_names = test_names
 
-    def run(self, model: Optional[BaseModel] = None, dataset: Optional[Dataset] = None, slicer="opt", test_names=None,
+    def run(self, model: Optional[BaseModel] = None, dataset: Optional[Dataset] = None, slicer="opt",
+            test_names: list = None,
             threshold=0.1):
         model = model or self.model
         dataset = dataset or self.dataset
         test_names = test_names or self.test_names
+        tests = []
 
-        if test_names == "f1":
-            test = test_diff_f1
-        if test_names == "accuracy":
-            test = test_diff_accuracy
-        if test_names == "recall":
-            test = test_diff_recall
-        if test_names == "precision":
-            test = test_diff_precision
-        if test_names == "rmse":
-            test = test_diff_rmse
+        if "f1" in test_names:
+            tests.append(test_diff_f1)
+        if "accuracy" in test_names:
+            tests.append(test_diff_accuracy)
+        if "recall" in test_names:
+            tests.append(test_diff_recall)
+        if "precision" in test_names:
+            tests.append(test_diff_precision)
+        if "rmse" in test_names:
+            tests.append(test_diff_rmse)
         if test_names is None:
             if model.is_classification:
-                test = test_diff_f1
+                tests.append(test_diff_f1)
             else:
-                test = test_diff_rmse
+                tests.append(test_diff_rmse)
 
         if model is None:
             raise ValueError("You need to provide a model to test.")
@@ -61,30 +63,31 @@ class PerformanceScan:
         # Calculate loss
         meta = self._calculate_meta(model, dataset)
         slices = self.find_slices(dataset.select_columns(model.meta.feature_names), meta, slicer)
-        issues = self._find_issues(slices, model, dataset, test, threshold)
+        issues = self._find_issues(slices, model, dataset, tests, threshold)
 
         return PerformanceScanResult(issues)
 
-    def _find_issues(self, slices, model, dataset, test, threshold):
+    def _find_issues(self, slices, model, dataset, tests, threshold):
         issues = []
         for s in slices:
-            actual_slices_size, reference_slices_size, metric, passed = self._diff_test(s, test, threshold)
-            if not passed:
-                issues.append(Issue(s, metric, actual_slices_size, reference_slices_size, model, dataset))
+            for test in tests:
+                test_result = self._diff_test(s, model, dataset, test, threshold)
+                if not test_result.passed:
+                    issues.append(Issue(s, model, dataset, test_result))
 
         return issues
 
-    def _diff_test(self, data_slice, test, threshold):
+    def _diff_test(self, slice_fn, model, dataset, test, threshold):
         # Convert slice to Giskard Dataframe
-        slice_dataset = Dataset(data_slice.data)
+        sliced_dataset = self.dataset.slice(slice_fn)
         # target_col=self.dataset.target,
         # column_types=self.dataset.column_types
 
         # Apply the test
         test_res = test(
-            actual_slice=slice_dataset,
-            reference_slice=self.dataset,  # Could exclude slice_dataset for independence
-            model=self.model,
+            actual_slice=sliced_dataset,
+            reference_slice=dataset,  # Could exclude slice_dataset for independence
+            model=model,
             threshold=threshold,
         )
 
