@@ -355,7 +355,7 @@ message DatasetProcessFunctionMeta {
   string type = 11;
   bool cellLevel = 12;
   optional string columnType = 13;
-  bool noCode = 14;
+  string processType = 14;
 }
 
 
