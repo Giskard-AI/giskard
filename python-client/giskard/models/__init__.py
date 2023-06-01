@@ -4,7 +4,7 @@ from typing import Callable, Optional, Iterable, Any
 import pandas as pd
 
 from giskard.core.core import ModelType
-from giskard.core.validation import validate_args
+from giskard.core.validation import configured_validate_arguments
 from giskard.models.catboost import CatboostModel
 from giskard.models.huggingface import HuggingFaceModel
 from giskard.models.pytorch import PyTorchModel
@@ -28,7 +28,7 @@ def get_class(_lib, _class):
     return getattr(import_module(_lib), _class)
 
 
-@validate_args
+@configured_validate_arguments
 def model(clf,
           model_type: ModelType,
           data_preprocessing_function: Callable[[pd.DataFrame], Any] = None,
@@ -63,7 +63,7 @@ def model(clf,
     )
 
 
-@validate_args
+@configured_validate_arguments
 def model_from_sklearn(clf,
                        model_type: ModelType,
                        name: Optional[str] = None,
@@ -82,7 +82,7 @@ def model_from_sklearn(clf,
                         classification_labels=classification_labels)
 
 
-@validate_args
+@configured_validate_arguments
 def model_from_catboost(clf,
                         model_type: ModelType,
                         name: Optional[str] = None,
@@ -101,7 +101,7 @@ def model_from_catboost(clf,
                          classification_labels=classification_labels)
 
 
-@validate_args
+@configured_validate_arguments
 def model_from_pytorch(clf,
                        model_type: ModelType,
                        torch_dtype: Optional[torch.dtype] = torch.float32,
@@ -126,7 +126,7 @@ def model_from_pytorch(clf,
                         iterate_dataset=iterate_dataset)
 
 
-@validate_args
+@configured_validate_arguments
 def model_from_tensorflow(clf,
                           model_type: ModelType,
                           name: Optional[str] = None,
@@ -145,7 +145,7 @@ def model_from_tensorflow(clf,
                            classification_labels=classification_labels)
 
 
-@validate_args
+@configured_validate_arguments
 def model_from_huggingface(clf,
                            model_type: ModelType,
                            name: Optional[str] = None,
