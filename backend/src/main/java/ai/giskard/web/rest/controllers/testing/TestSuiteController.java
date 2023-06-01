@@ -8,6 +8,7 @@ import ai.giskard.service.TestSuiteExecutionService;
 import ai.giskard.service.TestSuiteService;
 import ai.giskard.web.dto.*;
 import ai.giskard.web.dto.mapper.GiskardMapper;
+import ai.giskard.web.dto.ml.TestSuiteExecutionDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -18,7 +19,9 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 
 @RestController
@@ -109,6 +112,20 @@ public class TestSuiteController {
                                            @Valid @RequestBody List<FunctionInputDTO> inputs) {
         return testSuiteService.scheduleTestSuiteExecution(projectId, suiteId, inputs);
     }
+
+    @PostMapping("project/{projectId}/suite/{suiteId}/try")
+    @PreAuthorize("@permissionEvaluator.canReadProject(#projectId)")
+    public TestSuiteExecutionDTO tryTestSuite(@PathVariable("projectId") @NotNull Long projectId,
+                                              @PathVariable("suiteId") @NotNull Long suiteId,
+                                              @Valid @RequestBody List<FunctionInputDTO> inputs) {
+        TestSuite testSuite = testSuiteService.getInitialized(suiteId);
+        Map<String, String> suiteInputs = testSuiteService.getSuiteInputs(projectId, suiteId).entrySet().stream()
+            .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().getType()));
+
+        return giskardMapper.toDTO(testSuiteService.tryTestSuiteExecution(testSuite, suiteInputs, inputs));
+
+    }
+
 
     @PutMapping("project/{projectId}/suite/{suiteId}/test/{testId}/inputs")
     @PreAuthorize("@permissionEvaluator.canWriteProject(#projectId)")

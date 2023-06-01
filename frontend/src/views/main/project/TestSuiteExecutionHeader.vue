@@ -9,6 +9,15 @@
         <div>
             <h2>
                 {{ suite.name }}
+                <v-tooltip right v-if="tryMode">
+                    <template v-slot:activator="{ on, attrs }">
+                        <v-chip color="purple" outlined v-bind="attrs" v-on="on">Sample data</v-chip>
+                    </template>
+                    <span>
+                        This test suite has been executed on sample data and this result will not saved!
+                    </span>
+                </v-tooltip>
+
             </h2>
             <h4 v-if="!props.execution">
                 No execution has been performed yet!
@@ -49,12 +58,13 @@ import {useTestSuiteStore} from '@/stores/test-suite';
 import EditTestSuiteModal from "@/views/main/project/modals/EditTestSuiteModal.vue";
 
 const props = defineProps<{
-  tests: {
-    suiteTest: SuiteTestDTO
-      result?: SuiteTestExecutionDTO
-  }[],
-  execution?: TestSuiteExecutionDTO,
-  compact: boolean
+    tests: {
+        suiteTest: SuiteTestDTO
+        result?: SuiteTestExecutionDTO
+    }[],
+    execution?: TestSuiteExecutionDTO,
+    compact: boolean,
+    tryMode: boolean
 }>();
 
 const {suite, projectId} = storeToRefs(useTestSuiteStore());

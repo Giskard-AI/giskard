@@ -14,10 +14,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.persistence.*;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 @Entity(name = "datasets")
 @NoArgsConstructor
@@ -58,4 +55,11 @@ public class Dataset extends AbstractAuditingEntity {
     private Long originalSizeBytes;
 
     private Long compressedSizeBytes;
+
+    private long numberOfRows;
+
+    @Column(columnDefinition = "VARCHAR")
+    @Convert(converter = SimpleJSONStringAttributeConverter.class)
+    private Map<String, List<String>> categoryFeatures;
+
 }

@@ -54,11 +54,17 @@
           <v-btn :disabled='!canNext' icon @click='next'>
               <v-icon>mdi-skip-next</v-icon>
           </v-btn>
+
           <span class='caption grey--text' v-if="totalRows > 0">
           Entry #{{ totalRows === 0 ? 0 : rowNb + 1 }} / {{ totalRows }}
         </span>
           <span v-show="originalData && isDefined(originalData['Index'])" class='caption grey--text'
                 style='margin-left: 15px'>Row Index {{ originalData['Index'] + 1 }}</span>
+          <v-chip class="ml-2" outlined link
+                  :color="inspection.sample ? 'purple' : 'primary'"
+                  @click="handleSwitchSample">
+              {{ inspection.sample ? 'Sample' : 'Whole' }} data
+          </v-chip>
       </v-toolbar>
         <v-spacer/>
 
@@ -142,6 +148,8 @@ import SlicingFunctionSelector from "@/views/main/utils/SlicingFunctionSelector.
 import {useCatalogStore} from "@/stores/catalog";
 import {storeToRefs} from "pinia";
 import {useInspectionStore} from "@/stores/inspection";
+import {$vfm} from "vue-final-modal";
+import BlockingLoadingModal from "@/views/main/project/modals/BlockingLoadingModal.vue";
 
 interface CreatedFeedbackCommonDTO {
     targetFeature?: string | null;
@@ -317,7 +325,7 @@ async function fetchRows(rowIdxInResults: number, forceFetch: boolean) {
                   inspectionId: props.inspectionId
               },
               removeRows: dataProcessingResult.value?.filteredRows
-          })
+          }, inspection.value!.sample)
       rows.value = result.content;
       numberOfRows.value = result.totalItems;
   }
@@ -364,7 +372,6 @@ const transformationPipeline = computed(() => Object.values(transformationFuncti
 watch(() => transformationPipeline.value, processDataset, {deep: true})
 
 async function processDataset() {
-    console.log(transformationFunctions.value)
     const pipeline = [selectedSlicingFunction.value, ...transformationPipeline.value]
         .filter(callable => !!callable.uuid) as Array<ParameterizedCallableDTO>;
 
@@ -389,14 +396,40 @@ async function init() {
 }
 
 onMounted(async () => {
-  labels.value = await api.getLabelsForTarget(props.inspectionId);
-  bindKeys();
-  await init();
+    labels.value = await api.getLabelsForTarget(props.inspectionId);
+    bindKeys();
+    await init();
 });
 
 onUnmounted(() => {
-  resetKeys();
+    resetKeys();
 });
+
+async function handleSwitchSample() {
+
+    await $vfm.show({
+        component: BlockingLoadingModal,
+        bind: {
+            title: "Preprocessing dataset",
+            text: "Please wait. This operation might take some time."
+        },
+        on: {
+            async mounted(close) {
+                try {
+                    inspection.value = await api.updateInspectionName(inspection.value!.id, {
+                        name: inspection.value!.name,
+                        datasetId: inspection.value!.dataset.id,
+                        modelId: inspection.value!.model.id,
+                        sample: !inspection.value!.sample
+                    });
+                    await updateRow(true);
+                } finally {
+                    close();
+                }
+            }
+        }
+    });
+}
 </script>
 
 <style scoped>
