@@ -32,7 +32,7 @@ message MLWorkerInfo{
   string interpreter = 2;
   string interpreter_version = 3;
   map<string, string> installed_packages = 4;
-  uint32 internal_grpc_port = 5;
+  string internal_grpc_address = 5;
   bool is_remote = 6;
   uint32 pid = 7;
   uint64 process_start_time = 8;
