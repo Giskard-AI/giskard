@@ -90,7 +90,7 @@ jobs:
       - name: Cache Giskard test resources
         uses: actions/cache@v3
         with:
-          path: $HOME/.giskard
+          path: ~/.giskard
           key: giskard-test-resources
           restore-keys: giskard-test-resources
 
