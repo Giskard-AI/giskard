@@ -70,21 +70,21 @@
                             />
                         </template>
                         <v-select
-                                v-else
-                                clearable
-                                outlined
-                                v-model="props.modelValue[input.name].value"
-                                :items="sharedInputs.filter(i => i.type === input.type)"
-                                item-text="name"
-                                item-value="name"
-                                dense
-                                hide-details
+                            v-else
+                            clearable
+                            outlined
+                            v-model="props.modelValue[input.name].value"
+                            :items="aliases[input.type] ?? []"
+                            item-text="name"
+                            item-value="name"
+                            dense
+                            hide-details
                         >
                             <template v-slot:prepend-item>
                                 <v-list-item
-                                        ripple
-                                        @mousedown.prevent
-                                        @click="() => createAlias(input.name, input.type)"
+                                    ripple
+                                    @mousedown.prevent
+                                    @click="() => createAlias(input.name, input.type)"
                                 >
                                     <v-list-item-action>
                                         <v-icon>
@@ -124,26 +124,41 @@ const props = defineProps<{
     test?: TestFunctionDTO,
     projectId: number,
     inputs: { [name: string]: string },
-    modelValue?: { [name: string]: TestInputDTO },
-    sharedInputs?: Array<TestInputDTO>
+    modelValue?: { [name: string]: TestInputDTO }
 }>();
 
-const {models, datasets} = storeToRefs(useTestSuiteStore());
-
+const {models, datasets, suite} = storeToRefs(useTestSuiteStore());
 
 const inputs = computed(() => Object.keys(props.inputs).map((name) => ({
     name,
     type: props.inputs[name]
 })));
 
-
 const buttonToggleValues = ref<{ [name: string]: number | null }>({});
+
+const aliases = computed(() =>
+    chain([
+        ...suite.value!.testInputs,
+        ...chain(suite.value!.tests)
+            .flatMap(test => Object.values(test.testInputs))
+            .filter(input => input.isAlias)
+            .value(),
+        ...chain(Object.values(props.modelValue!))
+            .filter(input => input.isAlias)
+            .value()
+    ])
+        .groupBy('type')
+        .mapValues(v => chain(v)
+            .map('value')
+            .uniq()
+            .value())
+        .value()
+)
 
 watch(() => [props.modelValue, props.inputs], () => {
     if (props.modelValue) {
         buttonToggleValues.value = chain(props.inputs)
             .mapValues((_, name) => {
-                console.log(name, props.modelValue)
                 if (!props.modelValue!.hasOwnProperty(name)) {
                     return 0;
                 } else if (props.modelValue![name].isAlias) {
@@ -156,7 +171,7 @@ watch(() => [props.modelValue, props.inputs], () => {
     } else {
         buttonToggleValues.value = {};
     }
-}, {deep: true})
+}, {deep: true});
 
 function handleTypeSelected(input: string, item: number) {
     switch (item) {
@@ -188,6 +203,11 @@ async function createAlias(name: string, type: string) {
         bind: {
             name,
             type
+        },
+        on: {
+            async save(input: TestInputDTO) {
+                props.modelValue![name] = input
+            }
         }
     });
 }
