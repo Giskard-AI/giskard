@@ -22,6 +22,48 @@ def match_url_patterns(httpretty_requests, url_pattern):
                 assert req.headers.get(header_name) == headers_to_match[header_name]
 
 
+class MockedClient:
+    artifact_url_pattern = re.compile(
+        "http://giskard-host:12345/api/v2/artifacts/test-project/models/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/.*"
+    )
+    models_url_pattern = re.compile("http://giskard-host:12345/api/v2/project/test-project/models")
+    settings_url_pattern = re.compile("http://giskard-host:12345/api/v2/settings")
+    ml_worker_connect_url_pattern = re.compile("http://giskard-host:12345/api/v2/settings/ml-worker-connect")
+
+    mocked_requests: requests_mock.Mocker = None
+    client: GiskardClient = None
+    mock_all: bool
+
+    def __init__(self, mock_all=True) -> None:
+        self.mock_all = mock_all
+
+    def __enter__(self):
+        self.mocked_requests = requests_mock.Mocker()
+        self.mocked_requests.__enter__()
+        if self.mock_all:
+            api_pattern = re.compile(r"http://giskard-host:12345/api/v2/.*")
+
+            self.mocked_requests.register_uri(requests_mock.GET, api_pattern, json={})
+            self.mocked_requests.register_uri(requests_mock.POST, api_pattern, json={})
+            self.mocked_requests.register_uri(requests_mock.PUT, api_pattern, json={})
+
+        self.mocked_requests.register_uri(requests_mock.GET, self.ml_worker_connect_url_pattern,
+                                          json={
+                                              "externalMlWorkerEntrypointPort": 40051,
+                                              "externalMlWorkerEntrypointHost": None,
+                                              "encryptionKey": "7J2oBM4si/GciQScXjjs6w==",
+                                              "keyId": "fh1sjr7h"}
+                                          )
+
+        url = "http://giskard-host:12345"
+        token = "SECRET_TOKEN"
+        return GiskardClient(url, token), self.mocked_requests
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        if self.mocked_requests:
+            self.mocked_requests.__exit__(exc_type, exc_val, exc_tb)
+
+
 def verify_model_upload(my_model, my_data):
     artifact_url_pattern = re.compile(
         "http://giskard-host:12345/api/v2/artifacts/test-project/models/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/.*"
