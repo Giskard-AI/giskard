@@ -22,7 +22,7 @@
 
         <v-card-text>
           <v-list>
-            <v-list-item v-for="input in inputs" class="pl-0 pr-0">
+            <v-list-item v-for="input in inputs" :track-by="input" class="pl-0 pr-0">
               <v-row>
                 <v-col>
                   <v-list-item-content>

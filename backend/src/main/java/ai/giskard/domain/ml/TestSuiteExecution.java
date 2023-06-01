@@ -19,14 +19,14 @@ public class TestSuiteExecution extends WorkerJob {
 
 
     @ManyToOne
-    TestSuiteNew suite;
+    private TestSuiteNew suite;
 
     @Column(columnDefinition = "VARCHAR")
     @Convert(converter = SimpleJSONStringAttributeConverter.class)
     private Map<String, String> inputs;
 
     @Enumerated(EnumType.STRING)
-    TestResult result;
+    private TestResult result;
 
     @OneToMany(mappedBy = "execution", cascade = CascadeType.ALL)
     private List<SuiteTestExecution> results = new ArrayList<>();

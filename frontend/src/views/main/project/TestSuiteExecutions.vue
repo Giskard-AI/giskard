@@ -8,14 +8,14 @@
   <p v-else-if="executions.length === 0">No execution has been performed yet!</p>
   <v-tabs v-else vertical icons-and-text v-model="tab"
   >
-    <v-tab v-for="execution in executions" :disabled="!execution.completionDate">
+    <v-tab v-for="execution in executions" :track-by="execution.executionDate" :disabled="!execution.completionDate">
       <v-chip class="mr-2" x-small :color="executionStatusColor(execution)">
         {{ executionStatusMessage(execution) }}
       </v-chip>
       <p>{{ execution.executionDate }}</p>
     </v-tab>
     <v-tabs-items v-model="tab">
-      <v-tab-item v-for="execution in executions" :transition="false">
+      <v-tab-item v-for="execution in executions" :track-by="execution.executionDate" :transition="false">
         <div class="pl-4">
           <div class="pt-5">
             <span class="text-h6">Inputs</span>

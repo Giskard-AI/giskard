@@ -24,6 +24,7 @@ public class SuiteTestExecution extends BaseEntity {
 
     @ManyToOne(optional = false)
     private SuiteTest test;
+
     @ManyToOne
     @JsonIgnore
     private TestSuiteExecution execution;
@@ -39,21 +40,30 @@ public class SuiteTestExecution extends BaseEntity {
     @Column(columnDefinition = "VARCHAR")
     @Convert(converter = SimpleJSONStringAttributeConverter.class)
     private List<Integer> referenceSlicesSize;
+
     private boolean passed;
 
     @Column(columnDefinition = "VARCHAR")
     @Convert(converter = SimpleJSONStringAttributeConverter.class)
     private List<Integer> partialUnexpectedIndexList;
+
     @Column(columnDefinition = "VARCHAR")
     @Convert(converter = SimpleJSONStringAttributeConverter.class)
     private List<Integer> unexpectedIndexList;
+
     private Integer missingCount;
+
     private Double missingPercent;
+
     private Integer unexpectedCount;
+
     private Double unexpectedPercent;
+
     private Double unexpectedPercentTotal;
+
     private Double unexpectedPercentNonmissing;
 
+    @Column(nullable = false)
     private float metric;
 
     public SuiteTestExecution(SuiteTest test, TestSuiteExecution execution, SingleTestResult message) {

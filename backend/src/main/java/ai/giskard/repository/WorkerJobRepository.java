@@ -9,6 +9,7 @@ import java.util.List;
 
 @NoRepositoryBean
 public interface WorkerJobRepository<S extends WorkerJob> extends JpaRepository<S, Long> {
+    
     @Query("""
         SELECT e
         FROM #{#entityName} e

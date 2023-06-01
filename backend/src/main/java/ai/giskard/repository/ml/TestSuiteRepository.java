@@ -19,5 +19,4 @@ public interface TestSuiteRepository extends JpaRepository<TestSuite, Long> {
     List<TestSuite> findByDatasetId(@Param("id") UUID datasetId);
 
     List<TestSuite> findByModelId(UUID modelId);
-
 }
