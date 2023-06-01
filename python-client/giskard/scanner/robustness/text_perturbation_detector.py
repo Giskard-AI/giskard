@@ -67,7 +67,7 @@ class TextPerturbationDetector(Detector):
             logging.debug(f"Running '{transformation.name}'")
 
             transformation_fn = transformation(column=feature)
-            transformed = dataset.select_columns([feature, dataset.target]).transform(transformation_fn)
+            transformed = dataset.transform(transformation_fn)
 
             # Select only the records which were changed
             changed_idx = dataset.df.index[transformed.df[feature] != dataset.df[feature]]
