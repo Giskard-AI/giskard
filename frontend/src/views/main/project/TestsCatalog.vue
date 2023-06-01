@@ -4,9 +4,10 @@
       <v-container class="main-container vc">
         <v-row class="fill-height">
           <v-col cols="4" class="vc fill-height">
+            <v-text-field label="Search test" v-model="searchFilter"></v-text-field>
             <v-list three-line v-if="testFunctions">
               <v-list-item-group v-model="selected" color="primary" mandatory>
-                <template v-for="(test, index) in testFunctions">
+                <template v-for="(test, index) in filteredTestFunctions">
                   <v-divider/>
                   <v-list-item :value="test">
                     <v-list-item-content>
@@ -140,6 +141,7 @@ let props = defineProps<{
 
 const editor = ref(null)
 
+const searchFilter = ref<string>("");
 let registry = ref<TestFunctionDTO[]>([]);
 let selected = ref<TestFunctionDTO | null>(null);
 let tryMode = ref(true)
@@ -201,6 +203,22 @@ const testFunctions = computed(() => {
           .value())
       .values()
       .sortBy('name')
+      .value();
+})
+
+const filteredTestFunctions = computed(() => {
+  return chain(testFunctions.value)
+      .filter((func) => {
+        const keywords = searchFilter.value.split(' ')
+            .map(keyword => keyword.trim().toLowerCase())
+            .filter(keyword => keyword !== '');
+
+        return keywords.filter(keyword =>
+            func.name.toLowerCase().includes(keyword)
+            || func.doc?.toLowerCase()?.includes(keyword)
+            || func.displayName?.toLowerCase()?.includes(keyword)
+        ).length === keywords.length;
+      })
       .value();
 })
 
