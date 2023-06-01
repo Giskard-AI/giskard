@@ -74,4 +74,6 @@ class Artifact(Generic[SMT], ABC):
         if data is None:
             assert client is not None, f"Cannot find existing {name} {uuid}"
             client.load_artifact(local_dir, posixpath.join(project_key or "global", name, uuid))
-            return cls.load(local_dir, uuid, meta)
+            data = cls.load(local_dir, uuid, meta)
+
+        return data
