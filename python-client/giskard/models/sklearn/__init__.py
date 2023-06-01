@@ -33,9 +33,9 @@ class SKLearnModel(MLFlowBasedModel):
                                   pyfunc_predict_fn=pyfunc_predict_fn,
                                   mlflow_model=mlflow_meta)
 
-    @staticmethod
-    def read_model_from_local_dir(local_path):
-        return mlflow.sklearn.load_model(local_path)
+    @classmethod
+    def load_clf(cls, local_dir):
+        return mlflow.sklearn.load_model(local_dir)
 
     def clf_predict(self, df):
         if self.is_regression:
