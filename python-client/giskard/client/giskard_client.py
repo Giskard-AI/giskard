@@ -19,7 +19,6 @@ from giskard.client.analytics_collector import GiskardAnalyticsCollector, anonym
 from giskard.client.project import Project
 from giskard.client.python_utils import warning
 from giskard.core.core import ModelMeta, DatasetMeta
-from giskard.core.core import SupportedModelTypes
 
 logger = logging.getLogger(__name__)
 
@@ -174,8 +173,6 @@ class GiskardClient:
             "threshold": meta.classification_threshold,
             "featureNames": meta.feature_names,
             "classificationLabels": meta.classification_labels,
-            "loader_module": meta.loader_module,
-            "loader_class": meta.loader_class,
             "id": str(model_id),
             "project": project_key,
             "name": meta.name,

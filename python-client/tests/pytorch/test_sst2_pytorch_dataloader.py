@@ -1,6 +1,5 @@
 import re
 
-import httpretty
 import pandas as pd
 import requests_mock
 import torch
@@ -83,9 +82,9 @@ def test_sst2_pytorch_dataloader():
     settings_url_pattern = re.compile("http://giskard-host:12345/api/v2/settings")
 
     with requests_mock.Mocker() as m:
-        m.register_uri(httpretty.POST, artifact_url_pattern)
-        m.register_uri(httpretty.POST, models_url_pattern)
-        m.register_uri(httpretty.GET, settings_url_pattern)
+        m.register_uri(requests_mock.POST, artifact_url_pattern)
+        m.register_uri(requests_mock.POST, models_url_pattern)
+        m.register_uri(requests_mock.GET, settings_url_pattern)
 
         url = "http://giskard-host:12345"
         token = "SECRET_TOKEN"

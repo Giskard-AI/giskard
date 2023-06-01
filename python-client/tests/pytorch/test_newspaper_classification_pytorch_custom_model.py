@@ -1,21 +1,18 @@
-import os
 import re
 
-import httpretty
+import numpy as np
 import pandas as pd
+import requests_mock
 import torch
-
 from torch import nn
-from torch.utils.data import Dataset as torch_dataset
 from torchtext.data.functional import to_map_style_dataset
 from torchtext.data.utils import get_tokenizer
 from torchtext.datasets import AG_NEWS
 from torchtext.vocab import build_vocab_from_iterator
 
-from giskard import PyTorchModel, Dataset
-import numpy as np
-from giskard.client.giskard_client import GiskardClient
 import tests.utils
+from giskard import PyTorchModel, Dataset
+from giskard.client.giskard_client import GiskardClient
 
 train_iter = AG_NEWS(split='train')
 test_iter = AG_NEWS(split='test')
@@ -38,22 +35,9 @@ vocab.set_default_index(vocab["<unk>"])
 
 text_pipeline = lambda x: vocab(tokenizer(x))
 
-
-class PandasToTorch(torch_dataset):
-    def __init__(self, df: pd.DataFrame):
-        # copy original df
-        self.entries = df.copy()
-        # transformation step
-        self.entries['text'] = df['text'].apply(text_pipeline)
-
-    def __len__(self):
-        return len(self.entries)
-
-    def __getitem__(self, idx):
-        return torch.tensor(self.entries['text'].iloc[idx]), torch.tensor([0])
-
 def softmax(x):
     return np.exp(x) / np.sum(np.exp(x), axis=0)
+
 
 class TextClassificationModel(nn.Module):
 
@@ -75,7 +59,6 @@ class TextClassificationModel(nn.Module):
 
 
 # @pytest.mark.skip(reason="WIP")
-@httpretty.activate(verbose=True, allow_net_connect=False)
 def test_newspaper_classification_pytorch_custom_model():
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -105,12 +88,11 @@ def test_newspaper_classification_pytorch_custom_model():
 
             return prediction_function(df)
 
-
-    my_model = my_PyTorchModel(name = "my_custom_BertForSequenceClassification",
-                               clf = model,
-                               feature_names = feature_names,
-                               model_type = "classification",
-                               classification_labels = list(ag_news_label.values()))
+    my_model = my_PyTorchModel(name="my_custom_BertForSequenceClassification",
+                               clf=model,
+                               feature_names=feature_names,
+                               model_type="classification",
+                               classification_labels=list(ag_news_label.values()))
 
     # defining the giskard dataset
     my_test_dataset = Dataset(df.head(), name="test dataset", target="label")
@@ -121,17 +103,16 @@ def test_newspaper_classification_pytorch_custom_model():
     models_url_pattern = re.compile("http://giskard-host:12345/api/v2/project/test-project/models")
     settings_url_pattern = re.compile("http://giskard-host:12345/api/v2/settings")
 
-    httpretty.register_uri(httpretty.POST, artifact_url_pattern)
-    httpretty.register_uri(httpretty.POST, models_url_pattern)
-    httpretty.register_uri(httpretty.GET, settings_url_pattern)
+    with requests_mock.Mocker() as m:
+        m.register_uri(requests_mock.POST, artifact_url_pattern)
+        m.register_uri(requests_mock.POST, models_url_pattern)
+        m.register_uri(requests_mock.GET, settings_url_pattern)
 
-    url = "http://giskard-host:12345"
-    token = "SECRET_TOKEN"
-    client = GiskardClient(url, token)
-    my_model.upload(client, 'test-project', my_test_dataset)
+        url = "http://giskard-host:12345"
+        token = "SECRET_TOKEN"
+        client = GiskardClient(url, token)
+        my_model.upload(client, 'test-project', my_test_dataset)
 
-    tests.utils.match_model_id(my_model.id)
-    tests.utils.match_url_patterns(httpretty.latest_requests(), artifact_url_pattern)
-    tests.utils.match_url_patterns(httpretty.latest_requests(), models_url_pattern)
-
-    os.system("rm -r output enron_with_categories")
+        tests.utils.match_model_id(my_model.id)
+        tests.utils.match_url_patterns(m.request_history, artifact_url_pattern)
+        tests.utils.match_url_patterns(m.request_history, models_url_pattern)

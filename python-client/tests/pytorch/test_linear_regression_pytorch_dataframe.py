@@ -1,18 +1,18 @@
 import re
 
-import httpretty
 import numpy as np
 import pandas as pd
+import requests_mock
 import torch
 import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import TensorDataset, DataLoader
 from torch.utils.data.dataset import random_split
 
+import tests.utils
 from giskard import PyTorchModel, Dataset
 from giskard.client.giskard_client import GiskardClient
 
-import tests.utils
 
 class ManualLinearRegression(nn.Module):
     def __init__(self):
@@ -57,7 +57,6 @@ def make_train_step(model, loss_fn, optimizer):
     return train_step
 
 
-@httpretty.activate(verbose=True, allow_net_connect=False)
 def test_linear_regression_pytorch_dataframe():
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
@@ -134,15 +133,16 @@ def test_linear_regression_pytorch_dataframe():
     models_url_pattern = re.compile("http://giskard-host:12345/api/v2/project/test-project/models")
     settings_url_pattern = re.compile("http://giskard-host:12345/api/v2/settings")
 
-    httpretty.register_uri(httpretty.POST, artifact_url_pattern)
-    httpretty.register_uri(httpretty.POST, models_url_pattern)
-    httpretty.register_uri(httpretty.GET, settings_url_pattern)
+    with requests_mock.Mocker() as m:
+        m.register_uri(requests_mock.POST, artifact_url_pattern)
+        m.register_uri(requests_mock.POST, models_url_pattern)
+        m.register_uri(requests_mock.GET, settings_url_pattern)
 
-    url = "http://giskard-host:12345"
-    token = "SECRET_TOKEN"
-    client = GiskardClient(url, token)
-    my_model.upload(client, 'test-project', my_test_dataset)
+        url = "http://giskard-host:12345"
+        token = "SECRET_TOKEN"
+        client = GiskardClient(url, token)
+        my_model.upload(client, 'test-project', my_test_dataset)
 
-    tests.utils.match_model_id(my_model.id)
-    tests.utils.match_url_patterns(httpretty.latest_requests(), artifact_url_pattern)
-    tests.utils.match_url_patterns(httpretty.latest_requests(), models_url_pattern)
+        tests.utils.match_model_id(my_model.id)
+        tests.utils.match_url_patterns(m.request_history, artifact_url_pattern)
+        tests.utils.match_url_patterns(m.request_history, models_url_pattern)
