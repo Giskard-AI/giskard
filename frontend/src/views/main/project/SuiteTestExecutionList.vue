@@ -19,7 +19,7 @@
                           text
                           icon
                           color="green"
-                          :to="{name: 'llm-inspector'}"
+                          disabled
                   >
                       <v-icon>mdi-bug</v-icon>
                   </v-btn>
@@ -56,8 +56,8 @@ import {SuiteTestDTO, SuiteTestExecutionDTO, TestFunctionDTO} from '@/generated-
 import {Colors} from '@/utils/colors';
 import {$vfm} from 'vue-final-modal';
 import SuiteTestInfoModal from '@/views/main/project/modals/SuiteTestInfoModal.vue';
-import ConfirmModal from '@/views/main/project/modals/ExecutionLogsModal.vue';
 import {api} from '@/api';
+import ConfirmModal from "@/views/main/project/modals/ConfirmModal.vue";
 
 const props = withDefaults(defineProps<{
   tests: {

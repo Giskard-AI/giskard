@@ -102,7 +102,7 @@ import {FeedbackMinimalDTO} from "@/generated-sources";
 import {computed, onActivated, ref, watch} from 'vue';
 import {useRoute, useRouter} from 'vue-router/composables';
 import {$vfm} from 'vue-final-modal';
-import ConfirmModal from '@/views/main/project/modals/ExecutionLogsModal.vue';
+import ConfirmModal from "@/views/main/project/modals/ConfirmModal.vue";
 
 const route = useRoute();
 const router = useRouter();
