@@ -6,13 +6,10 @@ import ai.giskard.domain.ml.SuiteTest;
 import ai.giskard.domain.ml.TestInput;
 import ai.giskard.domain.ml.TestSuite;
 import ai.giskard.domain.ml.TestSuiteExecution;
-import ai.giskard.domain.ColumnType;
-import ai.giskard.domain.ml.*;
 import ai.giskard.jobs.JobType;
 import ai.giskard.ml.MLWorkerClient;
 import ai.giskard.repository.ProjectRepository;
 import ai.giskard.repository.ml.TestFunctionRepository;
-import ai.giskard.repository.ml.TestInputRepository;
 import ai.giskard.repository.ml.TestSuiteRepository;
 import ai.giskard.service.ml.MLWorkerService;
 import ai.giskard.web.dto.*;
@@ -22,7 +19,6 @@ import ai.giskard.worker.*;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import lombok.RequiredArgsConstructor;
-import org.apache.logging.log4j.util.Strings;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -50,7 +46,6 @@ public class TestSuiteService {
 
         Map<String, RequiredInputDTO> res = new HashMap<>();
 
-
         suite.getTests().forEach(test -> {
             ImmutableMap<String, TestInput> providedInputs = Maps.uniqueIndex(test.getTestInputs(), TestInput::getName);
 
@@ -62,15 +57,8 @@ public class TestSuiteService {
                     if (!providedInputs.containsKey(a.getName())) {
                         name = a.getName();
                     } else if (providedInputs.get(a.getName()).isAlias()) {
-                        String sharedInputName = providedInputs.get(a.getName()).getValue();
-
-                        if (suite.getTestInputs().stream()
-                            .noneMatch(shared -> shared.getName().equals(sharedInputName)
-                                && Strings.isNotBlank(shared.getValue()))) {
-                            // Shared input value is not set globally
-                            name = sharedInputName;
-                            isShared = true;
-                        }
+                        name = providedInputs.get(a.getName()).getValue();
+                        isShared = true;
                     }
                     if (name != null) {
                         if (res.containsKey(name) && !a.getType().equals(res.get(name).getType())) {
