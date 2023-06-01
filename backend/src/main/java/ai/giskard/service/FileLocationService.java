@@ -25,11 +25,11 @@ public class FileLocationService {
     }
 
     public Path resolvedDatasetPath(String projectKey, String datasetId) {
-        return resolvedProjectHome(projectKey).resolve("datasets").resolve(createZSTname("data_", datasetId.toString()));
+        return datasetsDirectory(projectKey).resolve(datasetId);
     }
 
     public Path resolvedModelPath(String projectKey, String modelId) {
-        return modelsDirectory(projectKey).resolve(createZSTname("model_", modelId));
+        return modelsDirectory(projectKey).resolve(modelId);
     }
 
     public Path resolvedInspectionPath(String projectKey, Long inspectionId) {
@@ -42,9 +42,5 @@ public class FileLocationService {
 
     public Path giskardHome() {
         return applicationProperties.getHome();
-    }
-
-    public static String createZSTname(String prefix, String id) {
-        return prefix + id + ".zst";
     }
 }

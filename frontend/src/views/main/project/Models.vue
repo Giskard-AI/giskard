@@ -25,7 +25,7 @@
         <v-row class="px-2 py-1 align-center">
           <v-col cols="4">
             <div class="secondary--text font-weight-bold">
-              {{ m.name }}
+              {{ m.name || m.id }}
             </div>
           </v-col>
           <v-col cols="1">

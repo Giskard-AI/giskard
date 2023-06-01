@@ -58,14 +58,6 @@ public class ModelController {
         return giskardMapper.modelsToModelDTOs(modelRepository.findAllByProjectId(projectId));
     }
 
-    //@GetMapping("models/{modelId}/metadata")
-    //@Transactional
-    //public ModelMetadataDTO getModelMetadata(@PathVariable @NotNull String modelId) {
-    //    ProjectModel model = modelRepository.getById(modelId);
-    //    permissionEvaluator.validateCanReadProject(model.getProject().getId());
-    //    return giskardMapper.modelToModelMetadataDTO(model);
-    //}
-
     @PostMapping("models/{modelId}/explain/{datasetId}")
     @Transactional
     public ExplainResponseDTO explain(@PathVariable @NotNull String modelId, @PathVariable @NotNull String datasetId, @RequestBody @NotNull PredictionInputDTO data) throws IOException {
