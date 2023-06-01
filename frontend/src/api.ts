@@ -386,10 +386,10 @@ export const api = {
     async executeTestSuite(suiteId: number) {
         return apiV2.post<unknown, Array<TestExecutionResultDTO>>(`/testing/suites/execute`, {suiteId});
     },
-    async getTestsRegistry() {
-        return apiV2.get<unknown, Array<any>>(`/testing/tests/test-templates`);
+    async getTestsRegistry(projectId: number) {
+        return apiV2.get<unknown, Array<any>>(`/testing/tests/test-templates`, {params: {projectId}});
     },
-    async runAdHocTest(testId: string, inputs: { [key: string]: string }) {
-        return apiV2.post<unknown, TestExecutionResultDTO>(`/testing/tests/run-test`, {testId, inputs});
+    async runAdHocTest(projectId: number, testId: string, inputs: { [key: string]: string }) {
+        return apiV2.post<unknown, TestExecutionResultDTO>(`/testing/tests/run-test`, {projectId, testId, inputs});
     },
 };
