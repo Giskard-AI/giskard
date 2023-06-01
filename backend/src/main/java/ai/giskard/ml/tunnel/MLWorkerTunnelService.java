@@ -31,7 +31,7 @@ public class MLWorkerTunnelService {
     private final ApplicationProperties applicationProperties;
 
     @Getter
-    private Optional<Integer> tunnelPort = Optional.empty();
+    private Optional<InnerServerStartResponse> innerServerDetails = Optional.empty();
 
 
     public MLWorkerTunnelService(ApplicationProperties applicationProperties) {
@@ -70,12 +70,8 @@ public class MLWorkerTunnelService {
 
         outerChannelHandler.getEventBus().register(new EventListener() {
             @Subscribe
-            public void onInnerServerStarted(Optional<OuterChannelHandler.InnerServerStartResponse> event) {
-                if (event.isEmpty()) {
-                    tunnelPort = Optional.empty();
-                } else {
-                    tunnelPort = Optional.of(event.get().port());
-                }
+            public void onInnerServerStarted(Optional<InnerServerStartResponse> event) {
+                innerServerDetails = event;
             }
         });
         ChannelFuture f = b.bind().addListener(future -> {
