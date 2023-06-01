@@ -1,4 +1,8 @@
 import hashlib
+import inspect
+import pickle
+import sys
+from pathlib import Path
 from typing import Union, Callable, Any
 
 import cloudpickle
@@ -64,6 +68,22 @@ class GiskardTest(Savable[Any, TestFunctionMeta]):
     def _should_upload(self) -> bool:
         return self.meta.version is None
 
+    @classmethod
+    def _read_from_local_dir(cls, local_dir: Path, meta: TestFunctionMeta):
+        if meta.module is '__main__':
+            func = getattr(sys.modules[meta.module], meta.name)
+        else:
+            if not local_dir.exists():
+                return None
+            with open(Path(local_dir) / 'data.pkl', 'rb') as f:
+                print(f)
+                func = pickle.load(f)
+
+        if inspect.isclass(func):
+            return func()
+        else:
+            return GiskardTestMethod(func)
+
 
 Function = Callable[..., Result]
 
@@ -87,3 +107,4 @@ class GiskardTestMethod(GiskardTest):
 
     def execute(self) -> Result:
         return self.data(**self.params)
+

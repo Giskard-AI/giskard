@@ -77,7 +77,7 @@ class Savable(Generic[DT, SMT]):
         if local_dir is not None:
             client.log_artifacts(local_dir, posixpath.join(project_key or "global", name, self.meta.uuid))
 
-        client.save_meta(self._get_meta_endpoint(self.meta.uuid, project_key), self.meta)
+        self.meta = client.save_meta(self._get_meta_endpoint(self.meta.uuid, project_key), self.meta)
 
         return self.meta.uuid
 
@@ -97,14 +97,13 @@ class Savable(Generic[DT, SMT]):
                 assert f"Cannot find existing {name} {uuid}"
             client.load_artifact(local_dir, posixpath.join(project_key or "global", name, uuid))
 
-        data = cls._read_from_local_dir(local_dir, meta)
+        return cls._read_from_local_dir(local_dir, meta)
 
-        return cls(data, meta)
 
     @classmethod
-    def _read_from_local_dir(cls, local_dir: Path, meta: SMT) -> Optional[DT]:
+    def _read_from_local_dir(cls, local_dir: Path, meta: SMT):
         if not local_dir.exists():
             return None
-        else:
-            with open(Path(local_dir) / 'data.pkl', 'rb') as f:
-                return cloudpickle.load(f)
+        with open(Path(local_dir) / 'data.pkl', 'rb') as f:
+            return cls(cloudpickle.load(f), meta)
+
