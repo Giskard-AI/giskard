@@ -19,7 +19,7 @@ from giskard.client.analytics_collector import GiskardAnalyticsCollector, anonym
 from giskard.client.dtos import TestSuiteNewDTO
 from giskard.client.project import Project
 from giskard.client.python_utils import warning
-from giskard.core.core import ModelMeta, DatasetMeta, SupportedModelTypes
+from giskard.core.core import ModelMeta, DatasetMeta
 
 logger = logging.getLogger(__name__)
 
@@ -149,14 +149,7 @@ class GiskardClient:
 
     def load_model_meta(self, project_key: str, uuid: str):
         res = self._session.get(f"project/{project_key}/models/{uuid}").json()
-
-        return ModelMeta(
-            name=res["name"],
-            feature_names=res["featureNames"],
-            model_type=SupportedModelTypes[res["modelType"]],
-            classification_labels=res["classificationLabels"],
-            classification_threshold=res["threshold"],
-        )
+        return res
 
     def load_dataset_meta(self, project_key: str, uuid: str) -> DatasetMeta:
         res = self._session.get(f"project/{project_key}/datasets/{uuid}").json()
