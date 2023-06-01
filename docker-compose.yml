@@ -72,7 +72,10 @@ services:
       - backend
     env_file:
       - .env
+    volumes:
+      - git-data:/git
 
 volumes:
   app-db-data:
+  git-data:
   giskard-home:
