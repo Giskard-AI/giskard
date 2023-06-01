@@ -9,6 +9,7 @@ import cloudpickle
 import mlflow.sklearn
 import numpy
 import pandas as pd
+import yaml
 from mlflow.pyfunc import PyFuncModel
 from pydantic import BaseModel
 
@@ -78,12 +79,13 @@ class Model:
         with tempfile.TemporaryDirectory(prefix="giskard-model-") as f:
             info = self.save_to_local_dir(f)
             self.save_data_preparation_funciton(f)
-            client.log_artifacts(f, posixpath.join(project_key, "models", info.model_uuid))
-            client.save_model_meta(project_key,
-                                   info.model_uuid,
-                                   self.meta,
-                                   info.flavors['python_function']['python_version'],
-                                   get_size(f))
+            if client is not None:
+                client.log_artifacts(f, posixpath.join(project_key, "models", info.model_uuid))
+                client.save_model_meta(project_key,
+                                       info.model_uuid,
+                                       self.meta,
+                                       info.flavors['python_function']['python_version'],
+                                       get_size(f))
         return info.model_uuid
 
     def save_data_preparation_funciton(self, path):
@@ -108,6 +110,9 @@ class Model:
             raise ValueError('Unsupported model type')
 
         mlflow.sklearn.save_model(self.model, path=local_path, pyfunc_predict_fn=pyfunc_predict_fn)
+        with open(Path(local_path) / 'giskard-model-meta.yaml', 'w') as f:
+            yaml.dump(self.meta.__dict__, f, default_flow_style=False)
+
         return mlflow.models.Model.load(local_path)
 
     @classmethod
@@ -116,9 +121,15 @@ class Model:
 
     @classmethod
     def load(cls, client: GiskardClient, project_key, model_id):
-        local_dir = settings.home_dir / "cache" / project_key / "models" / model_id
-        client.load_artifact(local_dir, posixpath.join(project_key, "models", model_id))
-        meta = client.load_model_meta(project_key, model_id)
+        local_dir = settings.home_dir / settings.cache_dir / project_key / "models" / model_id
+        if client is None:
+            # internal worker case, no token based http client
+            assert local_dir.exists(), f"Cannot find existing model {project_key}.{model_id}"
+            with open(Path(local_dir) / 'giskard-model-meta.yaml') as f:
+                meta = ModelMeta(**yaml.load(f, Loader=yaml.Loader))
+        else:
+            client.load_artifact(local_dir, posixpath.join(project_key, "models", model_id))
+            meta = client.load_model_meta(project_key, model_id)
         return cls(
             model=cls.read_model_from_local_dir(local_dir),
             data_preparation_function=cls.read_data_preparation_function_from_artifact(local_dir),

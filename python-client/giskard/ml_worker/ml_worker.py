@@ -39,7 +39,7 @@ async def start_ml_worker(is_server=False, backend_url: AnyHttpUrl = None, api_k
 
     tasks = []
 
-    client = GiskardClient(backend_url, api_key)
+    client = GiskardClient(backend_url, api_key) if api_key != 'INTERNAL_ML_WORKER' else None
 
     server, grpc_server_port = await _start_grpc_server(client, is_server)
     if not is_server:
