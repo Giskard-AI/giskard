@@ -5,6 +5,22 @@ $color-pack: false;
 @import "./font-awesome/scss/solid.scss";
 @import "./font-awesome/scss/brands.scss";
 
+@font-face {
+  font-family: 'Fira Code';
+  font-style: normal;
+  font-weight: 100 900;
+  font-stretch: 0% 200%;
+  src: url('@/assets/fonts/FiraCode-VariableFont_wght.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: 'Roboto Mono';
+  font-style: normal;
+  font-weight: 100 900;
+  font-stretch: 0% 200%;
+  src: url('@/assets/fonts/RobotoMono-VariableFont_wght.ttf') format('truetype');
+}
+
 html {
   scrollbar-width: thin;
 
