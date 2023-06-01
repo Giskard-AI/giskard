@@ -34,20 +34,20 @@
 <script setup lang="ts">
 
 import {
-  SuiteTestDTO,
-  SuiteTestExecutionDTO,
-  TestFunctionDTO,
-  TestResult,
-  TestSuiteExecutionDTO
+    SuiteTestDTO,
+    SuiteTestExecutionDTO,
+    TestFunctionDTO,
+    TestResult,
+    TestSuiteExecutionDTO
 } from '@/generated-sources';
 import {computed} from 'vue';
 import {Colors, pickHexLinear, rgbToHex, SUCCESS_GRADIENT} from '@/utils/colors';
 import {api} from '@/api';
 import {$vfm} from 'vue-final-modal';
-import CreateTestSuiteModal from '@/views/main/project/modals/CreateTestSuiteModal.vue';
 import ExecutionLogsModal from '@/views/main/project/modals/ExecutionLogsModal.vue';
 import {storeToRefs} from 'pinia';
 import {useTestSuiteStore} from '@/stores/test-suite';
+import EditTestSuiteModal from "@/views/main/project/modals/EditTestSuiteModal.vue";
 
 const props = defineProps<{
   tests: {
@@ -81,23 +81,24 @@ const executedTests = computed(() => !props.execution || props.execution.result 
 
 
 const successRatio = computed(() => ({
-  passed: executedTests.value.filter(({result}) => result!.passed).length,
-  executed: executedTests.value.length
+    passed: executedTests.value.filter(({result}) => result!.passed).length,
+    executed: executedTests.value.length
 }))
 
 const successColor = computed(() => successRatio.value.executed === 0 ? Colors.PASS :
     rgbToHex(pickHexLinear(SUCCESS_GRADIENT, successRatio.value.passed / successRatio.value.executed)));
 
+
 async function openSettings() {
-  const project = await api.getProject(projectId.value!)
-  $vfm.show({
-    component: CreateTestSuiteModal,
-    bind: {
-      projectKey: project.key,
-      projectId: project.id,
-      suite: suite.value
-    }
-  });
+    const project = await api.getProject(projectId.value!)
+    $vfm.show({
+        component: EditTestSuiteModal,
+        bind: {
+            projectKey: project.key,
+            projectId: project.id,
+            suite: suite.value
+        }
+    });
 }
 
 function openLogs() {
