@@ -7,6 +7,8 @@ import ai.giskard.domain.ml.TestSuiteExecution;
 import ai.giskard.ml.MLWorkerClient;
 import ai.giskard.repository.TestSuiteExecutionRepository;
 import ai.giskard.service.ml.MLWorkerService;
+import ai.giskard.web.dto.mapper.GiskardMapper;
+import ai.giskard.web.dto.ml.TestSuiteExecutionDTO;
 import ai.giskard.worker.RunTestSuiteRequest;
 import ai.giskard.worker.TestFunction;
 import ai.giskard.worker.TestRegistryResponse;
@@ -20,6 +22,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -34,6 +37,12 @@ public class TestSuiteExecutionService {
     private final MLWorkerService mlWorkerService;
     private final TestArgumentService testArgumentService;
     private final TestSuiteExecutionRepository testSuiteExecutionRepository;
+    private final GiskardMapper giskardMapper;
+
+    @Transactional(readOnly = true)
+    public List<TestSuiteExecutionDTO> listAllExecution(long suiteId) {
+        return giskardMapper.testSuiteExecutionToDTOs(testSuiteExecutionRepository.findAllBySuiteId(suiteId));
+    }
 
     @Async
     @Transactional
