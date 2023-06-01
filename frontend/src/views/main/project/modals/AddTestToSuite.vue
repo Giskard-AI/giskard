@@ -29,11 +29,11 @@
                   ></v-select>
                 </ValidationProvider>
                 <p class="text-h6 pt-4">Inputs</p>
-                <TestInputListSelector
-                    :editing="true"
-                    :project-id="projectId"
-                    :inputs="inputs"
-                    :model-value="testInputs" />
+                <SuiteInputListSelector
+                        :editing="true"
+                        :project-id="projectId"
+                        :inputs="inputs"
+                        :model-value="testInputs"/>
               </v-col>
             </v-row>
           </v-card-text>
@@ -62,7 +62,7 @@
 import {computed, onMounted, ref} from 'vue';
 import {api} from '@/api';
 import {SuiteTestDTO, TestFunctionDTO, TestInputDTO, TestSuiteDTO} from '@/generated-sources';
-import TestInputListSelector from '@/components/TestInputListSelector.vue';
+import SuiteInputListSelector from '@/components/SuiteInputListSelector.vue';
 import {chain} from 'lodash';
 
 const {projectId, test, suiteId, testArguments} = defineProps<{
