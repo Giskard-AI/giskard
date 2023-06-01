@@ -20,9 +20,9 @@ const searchInspection = ref("");
 const displayComponents = computed(() => props.activeInspectionId === null);
 
 const filteredInspections = computed(() => {
-  if (searchInspection.value.length == 0) return inspections.value;
+  if (searchInspection.value.length == 0) return orderByDate(inspections.value);
 
-  return inspections.value.filter((inspection) => {
+  return orderByDate(inspections.value.filter((inspection) => {
     const dataset = inspection.dataset;
     const model = inspection.model;
 
@@ -35,7 +35,7 @@ const filteredInspections = computed(() => {
       model.name.toLowerCase().includes(search) ||
       model.id.toString().includes(search)
     );
-  });
+  }));
 
 })
 
@@ -74,6 +74,15 @@ function formatDate(dateStr: string): string {
     "-" + date.getDate().toString().padStart(2, "0") +
     " " + date.getHours().toString().padStart(2, "0") +
     ":" + date.getMinutes().toString().padStart(2, "0");
+}
+
+function orderByDate(inspections: InspectionDTO[]): InspectionDTO[] {
+  return inspections.sort((a, b) => {
+    const aDate = new Date(a.createdDate);
+    const bDate = new Date(b.createdDate);
+
+    return bDate.getTime() - aDate.getTime();
+  });
 }
 
 onActivated(() => loadInspections());
