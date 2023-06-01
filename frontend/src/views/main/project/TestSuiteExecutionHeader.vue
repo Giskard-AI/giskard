@@ -106,7 +106,7 @@ function openLogs() {
 .text-alert {
     font-style: normal;
     font-weight: 500;
-    font-size: 16px;
+    font-size: 1em;
     line-height: 24px;
     letter-spacing: 0.005em;
     font-feature-settings: 'liga' off;

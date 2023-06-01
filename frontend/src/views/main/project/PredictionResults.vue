@@ -316,8 +316,8 @@ div.center-center {
 }
 
 div.caption {
-  font-size: 11px !important;
-  line-height: 1rem !important;
+    font-size: 0.6875em !important;
+    line-height: 1rem !important;
 }
 
 #labels-container {

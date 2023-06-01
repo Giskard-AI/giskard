@@ -177,7 +177,7 @@ async function openSettings() {
 .tab-item-text {
     font-style: normal;
     font-weight: 500;
-    font-size: 14px;
+    font-size: 0.875em;
     line-height: 17px;
     display: flex;
     align-items: flex-end;
