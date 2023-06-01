@@ -240,7 +240,7 @@ suite.run(model=wrapped_model, dataset=wrapped_dataset, reference_dataset=sliced
 :::
 ::::
 
-## 4. Create a custom test
+## 4. Create your own test
 
 ::::{tab-set}
 :::{tab-item} Using function
@@ -248,7 +248,7 @@ suite.run(model=wrapped_model, dataset=wrapped_dataset, reference_dataset=sliced
 ```python
 from giskard import test, Dataset, TestResult
 
-@test(name="Custom Test Example", tags=["quality", "custom"])
+@test(name="My Example", tags=["quality", "custom"])
 def uniqueness_test_function(dataset: Dataset,
                              column_name: str = None,
                              category: str = None,
@@ -261,7 +261,7 @@ def uniqueness_test_function(dataset: Dataset,
 
 #### Description
 
-In order to define a custom test function, you just need to declare a method with its parameters and return a result.
+In order to define your own test function, you just need to declare a method with its parameters and return a result.
 It's pretty simple, however, it does not allow autocompletion during the test suite creation, contrary to the
 class-based method.
 
@@ -315,7 +315,7 @@ class DataQuality(GiskardTest):
 
 #### Description
 
-In order to define a custom test class, you need to extends `GiskardTest` and implement the `execute` method
+In order to define your own test class, you need to extends `GiskardTest` and implement the `execute` method
 
 #### Main methods \[Reference]
 
