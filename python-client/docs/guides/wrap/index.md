@@ -61,8 +61,8 @@ If your ML model contains preprocessing functions (categorical encoding, scaling
 `clf` or inside the `data_preprocessing_function` of the Giskard model you create.
 :::
 
-::::{tab-set}
-:::{tab-item} model
+:::::{tab-set}
+::::{tab-item} model
 
 #### Example
 
@@ -75,7 +75,7 @@ my_model = wrap_model(my_model_obj,
                       classification_labels=["label1", "label2", ...])
 ```
 
-:::{info}
+:::{hint}
 Most classes in sklearn and catboost
 have [classes_](https://scikit-learn.org/stable/modules/generated/sklearn.feature_selection.RFE.html#sklearn.feature_selection.RFE.classes_)
 and [feature_names_in_](https://scikit-learn.org/stable/modules/generated/sklearn.pipeline.Pipeline.html#sklearn.pipeline.Pipeline.feature_names_in_)
@@ -88,7 +88,7 @@ respectively.
 
 #### Main parameters [Reference]
 
-- `model_obj: the model object. Could be any model from the . The standard model output required for Giskard is:
+- `model_obj`: the model object. Could be any model from the . The standard model output required for Giskard is:
   - if classification: an array of probabilities corresponding to data entries (rows of pandas.DataFrame) and
     classification_labels. In the case of binary classification, an array of probabilities is also accepted. Make sure
     that the probability provided is for the first label provided in classification_labels.
@@ -110,9 +110,9 @@ respectively.
 - model_postprocessing_function(Callable[any, any], optional, None): a function that takes a clf output as input,
   applies postprocessing and returns an object of the same type and shape as the clf output.
 
-:::
+::::
 
-:::{tab-item} Custom mode
+::::{tab-item} Custom mode
 
 #### Example
 
@@ -139,8 +139,8 @@ my_model = my_giskard_model(
 )
 ```
 
-:::
 ::::
+:::::
 
 ### 3. Create a Giskard dataset
 
