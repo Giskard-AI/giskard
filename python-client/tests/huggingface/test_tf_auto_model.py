@@ -1,17 +1,20 @@
 from transformers import AutoTokenizer, TFAutoModel # This is old code
-#from transformers import AutoTokenizer, TFBertModel # This is updated code
 
 from os.path import join, dirname
 import pandas as pd
 import tensorflow as tf
-
 import sys
-
 import numpy as np
-
 import logging
 
+from giskard.client.giskard_client import GiskardClient
+from giskard import HuggingFaceModel, Dataset
+
 logging.basicConfig(level=logging.INFO)
+
+import re
+import requests_mock
+import tests.utils
 
 def load_transformer_models(bert, special_tokens):
 	"""
@@ -31,7 +34,6 @@ def load_transformer_models(bert, special_tokens):
 	tokenizer.add_special_tokens({'additional_special_tokens': special_tokens})
 
 	transformer_model = TFAutoModel.from_pretrained(bert) # This is old code
-	#transformer_model = TFBertModel.from_pretrained(bert) # This is updated code
 
 	return tokenizer, transformer_model
 
@@ -102,6 +104,15 @@ def get_inputs(tokenizer, sentences, max_length):
 
 pd.set_option('display.max_colwidth', None)
 
+models = {'complaints': 'comp_debiased_10'} #model_complaints_mbert_20220317
+special_tokens = []
+max_length = {'complaints': 64}
+intent = 'complaints'
+tokenizer, transformer_model = load_transformer_models("distilbert-base-multilingual-cased", special_tokens)
+model = get_model(max_length.get(intent), transformer_model, num_labels=1,
+                  name_model=models.get(intent))
+
+
 def test_tf_auto_model():
     data_dict = {
         "I’m not buying from this online shop ever again": 1,
@@ -122,69 +133,36 @@ def test_tf_auto_model():
     data = pd.DataFrame(columns = ["text", "label"])
     data.loc[:, 'text'] = data_dict.keys()
     data.loc[:, 'label'] = data_dict.values()
-    data
 
-    """### 🎗️ If we add the model creation part inside the predict function, a new model is created everytime the function runs as  'comp_debiased_101.h5'  is not available in the giskard path. So we have extracted the model creation part out of the predict function"""
-
-    models = {'complaints': 'comp_debiased_10'} #model_complaints_mbert_20220317
-    special_tokens = []
-    max_length = {'complaints': 64}
-    intent = 'complaints'
-    tokenizer, transformer_model = load_transformer_models("distilbert-base-multilingual-cased", special_tokens)
-    model = get_model(max_length.get(intent), transformer_model, num_labels=1,
-                  name_model=models.get(intent))
-
-    """### Wrapper function (See Giskard model upload docs)
-    
-    ### In the old code which is now commented, when the model 'comp_debiased_101.h5' was not found, it created a new model from scratch which predicted different output for the same data.
-    """
-
-    def predict_proba(data):
-         #models = {'complaints': 'comp_debiased_10'} #model_complaints_mbert_20220317
-         #data_path = {'complaints': join(PATH_REPO, 'data')}
-         #special_tokens = []
-         #max_length = {'complaints': 64}
-         #intent = 'complaints'
-         #tokenizer, transformer_model = load_transformer_models("distilbert-base-multilingual-cased", special_tokens)
-         #model = get_model(max_length.get(intent), transformer_model, num_labels=1,
-         #                name_model=models.get(intent),
-         #                PATH_MODELS=join(data_path.get(intent)))
-
-        sentences = data.loc[:, f'text'].astype(str).values
+    def preprocessing_function(df):
+        sentences = df.loc[:, f'text'].astype(str).values
         inputs = get_inputs(tokenizer, list(sentences), max_length.get(intent))
-        y = model.predict(inputs)
-        return np.column_stack((y,1-y))
+        return inputs
 
-    print(predict_proba(data))
+    my_model = HuggingFaceModel(name="huggingface_model",
+                               clf=model,
+                               feature_names=['text'],
+                               model_type="classification",
+                               classification_labels=['0', '1'],
+                               data_preprocessing_function=preprocessing_function)
 
-    """Complaints.upload_model_and_df(
-        prediction_function=predict_proba,
-        model_type='classification',
-        df=data,
-        column_types={
-            'label': 'category',
-            'text': 'text',
-            },
-        target = 'label',
-        feature_names=['text'],
-        classification_labels=['0', '1'],
-        model_name="translation_comp",
-        dataset_name="translation"
-        )
+    my_test_dataset = Dataset(data.head(), name="test dataset", target="label")
 
-    def run_prediction(data, function):
-        feature_names = ['text']
-        test_df = data[feature_names][:5]
-        result = function(test_df)
-        return result
+    artifact_url_pattern = re.compile(
+        "http://giskard-host:12345/api/v2/artifacts/test-project/models/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/.*")
+    models_url_pattern = re.compile("http://giskard-host:12345/api/v2/project/test-project/models")
+    settings_url_pattern = re.compile("http://giskard-host:12345/api/v2/settings")
 
-    def test_deterministic_model():
-      # The following test asserts if the model predction does not change when running prediction on the same data twice
-      iter1 = run_prediction(data, predict_proba)
-      iter2 = run_prediction(data, predict_proba)
-      assert np.array_equal(iter1, iter2), "Model is stochastic and not deterministic"
+    with requests_mock.Mocker() as m:
+        m.register_uri(requests_mock.POST, artifact_url_pattern)
+        m.register_uri(requests_mock.POST, models_url_pattern)
+        m.register_uri(requests_mock.GET, settings_url_pattern)
 
-    test_deterministic_model()"""
+        url = "http://giskard-host:12345"
+        token = "SECRET_TOKEN"
+        client = GiskardClient(url, token)
+        my_model.upload(client, 'test-project', my_test_dataset)
 
-if __name__=="__main__":
-    test_tf_auto_model()
+        tests.utils.match_model_id(my_model.id)
+        tests.utils.match_url_patterns(m.request_history, artifact_url_pattern)
+        tests.utils.match_url_patterns(m.request_history, models_url_pattern)
