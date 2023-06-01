@@ -335,7 +335,7 @@ class DriftTests(AbstractTestCollection):
 
         result = self._calculate_ks(actual_series, reference_series)
 
-        passed = result.pvalue >= threshold
+        passed = bool(result.pvalue >= threshold)
 
         messages = self._generate_message_ks(passed, result, threshold, "data")
 
@@ -388,7 +388,7 @@ class DriftTests(AbstractTestCollection):
 
         metric = self._calculate_earth_movers_distance(actual_series, reference_series)
 
-        passed = metric <= threshold
+        passed = bool(metric <= threshold)
 
         messages: Union[typing.List[TestMessage], None] = None
 
@@ -486,7 +486,7 @@ class DriftTests(AbstractTestCollection):
         threshold,
     ):
         total_psi, output_data = self._calculate_drift_psi(actual_series, reference_series, max_categories)
-        passed = True if threshold is None else total_psi <= threshold
+        passed = True if threshold is None else bool(total_psi <= threshold)
         main_drifting_modalities_bool = output_data["Psi"] > psi_contribution_percent * total_psi
         messages = self._generate_message_modalities(main_drifting_modalities_bool, output_data, test_data)
         return messages, passed, total_psi
@@ -583,7 +583,7 @@ class DriftTests(AbstractTestCollection):
         threshold,
     ):
         chi_square, p_value, output_data = self._calculate_chi_square(actual_series, reference_series, max_categories)
-        passed = p_value > threshold
+        passed = bool(p_value > threshold)
         main_drifting_modalities_bool = output_data["Chi_square"] > chi_square_contribution_percent * chi_square
         messages = self._generate_message_modalities(main_drifting_modalities_bool, output_data, test_data)
         return messages, p_value, passed
@@ -649,7 +649,7 @@ class DriftTests(AbstractTestCollection):
 
         result: Ks_2sampResult = self._calculate_ks(prediction_reference, prediction_actual)
 
-        passed = True if threshold is None else result.pvalue >= threshold
+        passed = True if threshold is None else bool(result.pvalue >= threshold)
 
         messages = self._generate_message_ks(passed, result, threshold, "prediction")
 
@@ -731,7 +731,7 @@ class DriftTests(AbstractTestCollection):
 
         metric = self._calculate_earth_movers_distance(prediction_reference, prediction_actual)
 
-        passed = True if threshold is None else metric <= threshold
+        passed = True if threshold is None else bool(metric <= threshold)
         messages: Union[typing.List[TestMessage], None] = None
 
         if not passed:
@@ -746,7 +746,7 @@ class DriftTests(AbstractTestCollection):
             SingleTestResult(
                 actual_slices_size=[len(actual_slice)],
                 reference_slices_size=[len(reference_slice)],
-                passed=True if threshold is None else metric <= threshold,
+                passed=bool(True if threshold is None else metric <= threshold),
                 metric=metric,
                 messages=messages,
             )
