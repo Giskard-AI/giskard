@@ -15,7 +15,6 @@ from sklearn.metrics import (
 from giskard import test
 from giskard.core.model import Model
 from giskard.ml_worker.core.dataset import Dataset
-from giskard.ml_worker.core.suite import Suite
 from giskard.ml_worker.generated.ml_worker_pb2 import SingleTestResult
 from giskard.ml_worker.testing.registry.giskard_test import GiskardTest
 

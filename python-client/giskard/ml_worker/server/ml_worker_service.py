@@ -5,8 +5,8 @@ import re
 import sys
 import time
 from io import StringIO
+from typing import List
 
-import google.protobuf
 import grpc
 import numpy as np
 import pandas as pd
@@ -22,10 +22,7 @@ from giskard.ml_worker.core.model_explanation import (
     explain,
     explain_text,
 )
-from giskard.ml_worker.core.suite import Suite
-from giskard.ml_worker.core.test_runner import run_test
-from giskard.ml_worker.core.test_function import GiskardTestReference
-from giskard.ml_worker.core.test_result import TestResult, TestMessageLevel
+from giskard.ml_worker.core.suite import Suite, map_result_to_single_test_result
 from giskard.ml_worker.exceptions.IllegalArgumentError import IllegalArgumentError
 from giskard.ml_worker.exceptions.giskard_exception import GiskardException
 from giskard.ml_worker.generated.ml_worker_pb2 import (
@@ -47,9 +44,9 @@ from giskard.ml_worker.generated.ml_worker_pb2 import (
     TestResultMessage,
     UploadStatus,
     FileUploadMetadata, FileType, StatusCode, FilterDatasetResponse, RunAdHocTestRequest, NamedSingleTestResult,
-    RunTestSuiteRequest, TestSuiteResultMessage, SingleTestResult, TestMessage, TestMessageType,
-    Partial_unexpected_counts, )
+    RunTestSuiteRequest, TestSuiteResultMessage )
 from giskard.ml_worker.generated.ml_worker_pb2_grpc import MLWorkerServicer
+from giskard.ml_worker.testing.registry.giskard_test import GiskardTest
 from giskard.ml_worker.testing.registry.registry import tests_registry
 from giskard.ml_worker.utils.logging import Timer
 from giskard.path_utils import model_path, dataset_path
@@ -143,12 +140,12 @@ class MLWorkerServiceImpl(MLWorkerServicer):
     def runAdHocTest(self, request: RunAdHocTestRequest,
                      context: grpc.ServicerContext) -> TestResultMessage:
 
-        test = tests_registry.get_test(request.testId)
+        test: GiskardTest = GiskardTest.load(request.testUuid, self.client, None)
 
         arguments = self.parse_test_arguments(request.arguments)
 
-        logger.info(f"Executing {test.name}")
-        test_result = run_test(test.fn, arguments)
+        logger.info(f"Executing {test.meta.display_name or f'{test.meta.module}.{test.meta.name}'}")
+        test_result = test.set_params(arguments).execute()
 
         return TestResultMessage(results=[
             NamedSingleTestResult(name=test.meta.uuid, result=map_result_to_single_test_result(test_result))
@@ -156,24 +153,28 @@ class MLWorkerServiceImpl(MLWorkerServicer):
 
     def runTestSuite(self, request: RunTestSuiteRequest,
                      context: grpc.ServicerContext) -> TestSuiteResultMessage:
-        tests = list(map(tests_registry.get_test, request.testId))
+        tests: List[GiskardTest] = list(
+            map(lambda test_uuid: GiskardTest.load(test_uuid, self.client, None), request.testUuid)
+        )
 
         global_arguments = self.parse_test_arguments(request.globalArguments)
 
-        logger.info(f"Executing test suite: {list(map(lambda t: t.name, tests))}")
+        logger.info(f"Executing test suite: {list(map(lambda t: t.meta.display_name or f'{t.meta.module}.{t.meta.name}', tests))}")
 
         suite = Suite()
         for test in tests:
             fixed_arguments = self.parse_test_arguments(
-                next(x for x in request.fixedArguments if x.testId == test.id).arguments)
-            suite.add_test(test.fn, **fixed_arguments)
+                next(x for x in request.fixedArguments if x.testUuid == test.meta.uuid).arguments
+            )
+            suite.add_test(test.set_params(**fixed_arguments))
 
         is_pass, results = suite.run(**global_arguments)
 
         named_single_test_result = []
         for i in range(len(tests)):
-            named_single_test_result.append(NamedSingleTestResult(name=tests[i].uuid,
-                                                                  result=map_result_to_single_test_result(results[i])))
+            named_single_test_result.append(
+                NamedSingleTestResult(name=tests[i].meta.uuid, result=map_result_to_single_test_result(results[i]))
+            )
 
         return TestSuiteResultMessage(is_pass=is_pass, results=named_single_test_result)
 
