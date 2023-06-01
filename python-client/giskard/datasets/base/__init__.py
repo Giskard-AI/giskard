@@ -86,6 +86,7 @@ class DataProcessor:
             target=dataset.target,
             cat_columns=dataset.cat_columns,
             column_types=dataset.column_types,
+            validation=False
         )
 
         if len(self.pipeline):
@@ -137,7 +138,8 @@ class Dataset(ColumnMetadataMixin):
             target: Optional[str] = None,
             cat_columns: Optional[List[str]] = [],
             column_types: Optional[Dict[str, str]] = None,
-            id: Optional[uuid.UUID] = None
+            id: Optional[uuid.UUID] = None,
+            validation=True
     ) -> None:
         """
         Initializes a Dataset object.
@@ -147,7 +149,7 @@ class Dataset(ColumnMetadataMixin):
             name (Optional[str]): The name of the dataset.
             target (Optional[str]): The column name in df corresponding to the actual target variable (ground truth).
             cat_columns (Optional[List[str]]): A list of column names that are categorical.
-            column_types (Optional[Dict[Union[str, int], str]]): A dictionary mapping column names to their types.
+            column_types (Optional[Dict[Union[str], str]]): A dictionary mapping column names to their types.
             id (Optional[uuid.UUID]): A UUID that uniquely identifies this dataset.
 
         Notes:
@@ -162,25 +164,29 @@ class Dataset(ColumnMetadataMixin):
         self.df = pd.DataFrame(df)
         self.target = target
 
-
-        from giskard.core.dataset_validation import validate_target
-
-        validate_target(self)
+        if validation:
+            from giskard.core.dataset_validation import validate_target
+            validate_target(self)
 
         if not self.df.empty:
             self.check_hashability(self.df)
         self.column_dtypes = self.extract_column_dtypes(self.df)
-
-        from giskard.core.dataset_validation import validate_column_categorization, validate_column_types
 
         # used in the inference of category columns
         self.category_threshold = round(np.log10(len(self.df))) if len(self.df) >= 100 else 2
         if column_types:
             column_types.pop(self.target, None)  # no need for target type
             self.column_types = column_types
-            validate_column_types(self)
+            if validation:
+                from giskard.core.dataset_validation import validate_column_types
+                validate_column_types(self)
         else:
             self.column_types = self._infer_column_types(cat_columns)
+
+        if validation:
+            from giskard.core.dataset_validation import validate_column_categorization, validate_numeric_columns
+            validate_column_categorization(self)
+            validate_numeric_columns(self)
 
         self.number_of_rows = len(self.df.index)
         self.category_features = {
@@ -189,16 +195,13 @@ class Dataset(ColumnMetadataMixin):
             if column_type == 'category'
         }
 
-        validate_column_categorization(self)
-
-        from giskard.core.dataset_validation import validate_numeric_columns
-        validate_numeric_columns(self)
-        print("Your 'pandas.DataFrame' is successfully wrapped by Giskard's 'Dataset' wrapper class.")
-
         self.data_processor = DataProcessor()
 
         from ...core.dataset_caching import generate_row_hashes
         generate_row_hashes(self)
+
+        logger.info("Your 'pandas.DataFrame' is successfully wrapped by Giskard's 'Dataset' wrapper class.")
+
 
     def add_slicing_function(self, slicing_function: SlicingFunction):
         """
@@ -552,6 +555,7 @@ class Dataset(ColumnMetadataMixin):
             df=df,
             target=self.target if self.target in df.columns else None,
             column_types={key: val for key, val in self.column_types.items() if key in df.columns},
+            validation=False,
         )
 
 
