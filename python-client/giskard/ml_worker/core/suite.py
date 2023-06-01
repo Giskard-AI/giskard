@@ -20,7 +20,9 @@ suite_input_types: List[type] = [Dataset, BaseModel, str, bool, int, float]
 class TestSuiteResult(tuple):
     def _repr_html_(self):
         passed = self[0]
-        tests_results = ''.join([f"<h3>Test: {key}</h3>{value._repr_html_()}" for key, value in self[1]])
+        tests_results = ''.join(
+            [f"<h3>Test: {key}</h3>{(TestResult(passed=value) if type(value) == bool else value)._repr_html_()}" for
+             key, value in self[1]])
         return """
                <h2><span style="color:{0};">{1}</span> Test suite {2}</h2>
                {3}
@@ -122,13 +124,7 @@ class Suite:
             result = test_partial.giskard_test.get_builder()(**test_params).execute()
             res.append((test_partial.test_name, result))
             if verbose:
-                print("""
-                      Executed '{0}' with arguments {1}:
-                      {2}
-                      
-                      """
-                      .format(test_partial.test_name, test_params, result)
-                      )
+                print("""Executed '{0}' with arguments {1}: {2}""".format(test_partial.test_name, test_params, result))
 
         result = single_binary_result([result for name, result in res])
 
