@@ -44,7 +44,7 @@ def _test_classification_score(score_fn, model: BaseModel, gsk_dataset: Dataset,
     if is_binary_classification:
         metric = score_fn(actual_target, prediction, pos_label=model.meta.classification_labels[1])
     else:
-        metric = score_fn(actual_target, prediction, average="macro")
+        metric = score_fn(actual_target, prediction, average="micro")
 
     return TestResult(actual_slices_size=[len(gsk_dataset)], metric=metric, passed=bool(metric >= threshold))
 

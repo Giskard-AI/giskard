@@ -4,7 +4,6 @@ from typing import List, Iterable, Union, Callable, Any, Optional
 import numpy as np
 import pandas as pd
 import yaml
-from pandas.core.dtypes.common import is_string_dtype
 
 from giskard.client.python_utils import warning
 from giskard.core.core import ModelMeta, ModelType
@@ -201,13 +200,6 @@ def validate_classification_threshold_label(classification_labels: Union[np.ndar
 def validate_label_with_target(model_name: str, classification_labels: Union[np.ndarray, List, None],
                                target_values: Union[np.ndarray, List, None] = None, target_name: str = None):
     if target_values is not None:
-        if not is_string_dtype(target_values):
-            print(
-                'Hint: "Your target variable values are numeric. '
-                "It is recommended to have Human readable string as your target values "
-                'to make results more understandable in Giskard."'
-            )
-
         to_append = " of the model: " + model_name if model_name else ""
         target_values = list(target_values)
         if not set(target_values).issubset(set(classification_labels)):

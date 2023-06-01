@@ -1,10 +1,11 @@
 from ..models.base import BaseModel
 from ..datasets.base import Dataset
 from .scanner import Scanner
-
+from .logger import logger
 
 _default_detectors = [
     ".performance.model_bias_detector",
+    ".robustness.text_perturbation_detector",
 ]
 
 
@@ -18,7 +19,7 @@ def _register_default_detectors():
 _register_default_detectors()
 
 
-def scan(model: BaseModel, dataset: Dataset, params=None, only=None):
+def scan(model: BaseModel, dataset: Dataset, params=None, only=None, verbose=True):
     """
     Scan a model with a dataset.
 
@@ -31,7 +32,7 @@ def scan(model: BaseModel, dataset: Dataset, params=None, only=None):
             Scanner configuration.
     """
     scanner = Scanner(params, only=only)
-    return scanner.analyze(model, dataset)
+    return scanner.analyze(model, dataset, verbose=verbose)
 
 
-__all__ = ["scan", "Scanner"]
+__all__ = ["scan", "Scanner", "logger"]
