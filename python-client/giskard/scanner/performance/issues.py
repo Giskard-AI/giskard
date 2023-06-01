@@ -60,10 +60,16 @@ class PerformanceIssue(Issue):
 
     def examples(self, n=3):
         # @TODO: improve this once we support metadata
-        ex_dataset = self.dataset.slice(self.info.slice_fn).slice(lambda df: df.sample(n), row_level=False)
-        examples = ex_dataset.df
+        ex_dataset = self.dataset.slice(self.info.slice_fn)
         predictions = self.model.predict(ex_dataset).prediction
+        examples = ex_dataset.df.copy()
         examples["predicted_label"] = predictions
+        examples = examples[examples[self.dataset.target] != examples["predicted_label"]]
+
+        n = min(len(examples), n)
+        if n > 0:
+            return examples.sample(n, random_state=142)
+
         return examples
 
     @property

@@ -17,7 +17,6 @@ import ai.giskard.web.dto.ml.DatasetDTO;
 import ai.giskard.web.dto.ml.DatasetDetailsDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -53,10 +52,9 @@ public class DatasetsController {
 
     @GetMapping("project/{projectKey}/datasets/{datasetId}")
     @PreAuthorize("@permissionEvaluator.canWriteProjectKey(#projectKey)")
-    @Transactional
     public DatasetDTO getDatasetMeta(@PathVariable("projectKey") @NotNull String projectKey,
                                      @PathVariable("datasetId") @NotNull UUID datasetId) {
-        return giskardMapper.datasetToDatasetDTO(datasetRepository.getById(datasetId));
+        return giskardMapper.datasetToDatasetDTO(datasetRepository.getMandatoryById(datasetId));
     }
 
 
@@ -103,7 +101,6 @@ public class DatasetsController {
 
     @PostMapping("project/{projectKey}/datasets")
     @PreAuthorize("@permissionEvaluator.canWriteProjectKey(#projectKey)")
-    @Transactional
     public void createDatasetMeta(@PathVariable("projectKey") @NotNull String projectKey, @RequestBody @NotNull DatasetDTO dto) {
         Project project = projectRepository.getOneByKey(projectKey);
         if (datasetRepository.existsById(dto.getId())) {

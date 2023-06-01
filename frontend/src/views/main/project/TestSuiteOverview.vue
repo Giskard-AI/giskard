@@ -1,5 +1,5 @@
 <template>
-  <TestSuiteExecutionOverview v-else :execution="latestExecution"/>
+  <TestSuiteExecutionOverview :execution="latestExecution"/>
 </template>
 
 <script setup lang="ts">

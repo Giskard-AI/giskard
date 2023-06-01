@@ -9,14 +9,12 @@ import ai.giskard.worker.FuncArgument;
 import ai.giskard.worker.SuiteTestArgument;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
-@Transactional
 @RequiredArgsConstructor
 public class TestArgumentService {
 

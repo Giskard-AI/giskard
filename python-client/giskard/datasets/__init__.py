@@ -11,6 +11,10 @@ from .metadata.text_metadata_provider import TextMetadataProvider
 # Register metadata providers on import
 MetadataProviderRegistry.register(TextMetadataProvider())
 
+# threshold below which we don't perform:
+# - validate_column_categorization
+low_stat_threshold = 100
+
 
 @configured_validate_arguments
 def wrap_dataset(

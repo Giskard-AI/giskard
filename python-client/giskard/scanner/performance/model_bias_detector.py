@@ -29,6 +29,11 @@ class ModelBiasDetector:
             warning("Skipping model bias scan: the dataset is too small.")
             return []
 
+        # If the dataset is very large, limit to a subsample
+        max_data_size = 1_000_000 // len(model.meta.feature_names)
+        if len(dataset) > max_data_size:
+            dataset = dataset.slice(lambda df: df.sample(max_data_size, random_state=42), row_level=False)
+
         # Calculate loss
         meta = self._calculate_meta(model, dataset)
 

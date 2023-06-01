@@ -11,7 +11,6 @@ import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.FileSystemUtils;
 
 import java.io.IOException;
@@ -31,9 +30,8 @@ public class ProjectFileDeletionService {
     final FeedbackRepository feedbackRepository;
     final PermissionEvaluator permissionEvaluator;
 
-    @Transactional
     public void deleteDataset(UUID datasetId) {
-        Dataset dataset = datasetRepository.getById(datasetId);
+        Dataset dataset = datasetRepository.getMandatoryById(datasetId);
         permissionEvaluator.validateCanWriteProject(dataset.getProject().getId());
 
         log.info("Deleting inspections linked to dataset {}", datasetId);
@@ -57,9 +55,8 @@ public class ProjectFileDeletionService {
 
     }
 
-    @Transactional
     public void deleteModel(UUID modelId) {
-        ProjectModel model = modelRepository.getById(modelId);
+        ProjectModel model = modelRepository.getMandatoryById(modelId);
         permissionEvaluator.validateCanWriteProject(model.getProject().getId());
 
         log.info("Deleting feedbacks for model: {}", model.getId());

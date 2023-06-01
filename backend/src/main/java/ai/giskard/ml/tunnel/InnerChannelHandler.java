@@ -39,7 +39,7 @@ public class InnerChannelHandler extends ChannelInboundHandlerAdapter {
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
         super.channelInactive(ctx);
         ChannelId innerChannelId = ctx.channel().id();
-        log.info("Connection to inner server closed, channel id {}", innerChannelId);
+        log.debug("Connection to inner server closed, channel id {}", innerChannelId);
         Channel outerChannel = channelRegistry.getOuterChannelByInnerChannelId(innerChannelId);
         outerChannel.close().sync();
         channelRegistry.removeInnerChannel(innerChannelId);
@@ -50,7 +50,7 @@ public class InnerChannelHandler extends ChannelInboundHandlerAdapter {
     public void channelActive(ChannelHandlerContext ctx) {
         Channel innerChannel = ctx.channel();
         String innerChannelShortName = innerChannel.id().asShortText();
-        log.info("New connection to inner server, channel id {}", ctx.channel().id());
+        log.debug("New connection to inner server, channel id {}", ctx.channel().id());
 
         channelRegistry.addInnerChannel(innerChannel);
         innerChannelFuture.set(innerChannel);
@@ -62,7 +62,7 @@ public class InnerChannelHandler extends ChannelInboundHandlerAdapter {
         ByteBuf out = Unpooled.buffer();
         out.writeBytes(Unpooled.copiedBuffer(innerChannelShortName, StandardCharsets.UTF_8));
         out.writeByte(REGISTER_CLIENT_CHANNEL);
-        log.info("Linking inner channel {} with new outer channel through service channel {}", innerChannelShortName, serviceOuterChannel.id());
+        log.debug("Linking inner channel {} with new outer channel through service channel {}", innerChannelShortName, serviceOuterChannel.id());
         serviceOuterChannel.writeAndFlush(
             Unpooled.wrappedBuffer(encryptor.encrypt(ByteBufUtil.getBytes(out)))
         );

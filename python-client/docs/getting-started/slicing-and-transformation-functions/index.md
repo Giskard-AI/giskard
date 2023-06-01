@@ -8,7 +8,7 @@ see [🔬 Scan your ML model](../scan/index.md)
 ## Apply a slicing function to your dataset
 
 :::{hint}
-You can see all our slicing function in the [🔪 Slicing Function Catalog](../slicing-function-catalog/index.rst)
+You can see all our slicing function in the [🔪 Slicing Function Catalog](../../guides/slicing-function-catalog/index.rst)
 :::
 
 ::::{tab-set}
@@ -71,7 +71,7 @@ ten_firsts_slice.df.head()
 ## Apply a transformation function to your dataset
 
 :::{hint}
-You can see all our slicing function in the [🔪 Slicing Function Catalog](../slicing-function-catalog/index.rst)
+You can see all our slicing function in the [🔪 Slicing Function Catalog](../../guides/slicing-function-catalog/index.rst)
 :::
 
 ::::{tab-set}
