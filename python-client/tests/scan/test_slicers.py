@@ -83,6 +83,6 @@ def test_text_slicer_warns_if_vocabulary_is_empty():
     dataset = Dataset(df)
     slicer = TextSlicer(dataset)
     with pytest.warns(match="Could not get meaningful tokens"):
-        slices = slicer.find_top_tokens_slices("feature1", "loss")
+        slices = slicer.find_token_based_slices("feature1", "loss")
 
     assert len(slices) == 0

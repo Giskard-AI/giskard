@@ -21,7 +21,6 @@ const dialog = ref(false);
 const sessionName = ref("");
 const selectedDataset = ref<DatasetDTO | null>(null);
 const selectedModel = ref<ModelDTO | null>(null);
-const isSample = ref<boolean>(true);
 
 const missingValues = computed(() => {
   if (selectedDataset.value === null || selectedModel.value === null) {
@@ -38,7 +37,7 @@ async function createNewDebugginSession() {
         datasetId: selectedDataset.value!.id,
         modelId: selectedModel.value!.id,
         name: sessionName.value,
-        sample: isSample.value
+        sample: true
     });
     loading.value = false;
 
@@ -92,10 +91,6 @@ onActivated(() => {
                   <v-spacer></v-spacer>
                   <DatasetSelector :projectId="projectId" :value.sync="selectedDataset" :return-object="true"
                                    label="Dataset" class="selector"></DatasetSelector>
-                  <v-switch label="Sample mode" v-model="isSample"></v-switch>
-                  <v-alert type="warning" v-if="!isSample">
-                      Opening the debugger on the whole data might cause performance issues
-                  </v-alert>
               </v-card-text>
               <v-card-actions>
                   <v-btn text @click="closeDialog">Cancel</v-btn>
