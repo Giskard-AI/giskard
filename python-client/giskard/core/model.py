@@ -69,6 +69,12 @@ class Model(ABC):
             classification_threshold=classification_threshold,
         )
 
+    # alias for the utility function make_model in giskard.models
+    @staticmethod
+    def auto_make(clf, *args, **kwargs):
+        from giskard.models import make_model
+        return make_model(clf, *args, **kwargs)
+
     @property
     def is_classification(self):
         return self.meta.model_type == SupportedModelTypes.CLASSIFICATION
