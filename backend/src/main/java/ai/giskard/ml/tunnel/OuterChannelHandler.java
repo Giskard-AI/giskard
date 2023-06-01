@@ -14,7 +14,6 @@ import io.netty.channel.socket.SocketChannel;
 import io.netty.handler.logging.ByteBufFormat;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
-import io.netty.util.IllegalReferenceCountException;
 import lombok.Getter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

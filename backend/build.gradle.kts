@@ -176,7 +176,7 @@ dependencies {
 
     liquibaseRuntime("org.liquibase:liquibase-core")
     liquibaseRuntime("org.liquibase.ext:liquibase-hibernate5:${liquibaseHibernate5Version}")
-    liquibaseRuntime("org.postgresql:postgresql:42.5.0")
+    liquibaseRuntime("org.postgresql:postgresql:42.5.2")
 //    liquibaseRuntime("info.picocli:picocli:4.7.0")
     liquibaseRuntime(sourceSets.main.get().compileClasspath)
 
@@ -229,13 +229,13 @@ dependencies {
     annotationProcessor("org.mapstruct:mapstruct-processor:${mapstructVersion}")
 
     implementation(files("$projectDir/src/main/resources/third-party/j2ts-api.jar"))
-    implementation(group = "com.fasterxml.jackson.dataformat", name = "jackson-dataformat-yaml", version = "2.13.3")
+    implementation(group = "com.fasterxml.jackson.dataformat", name = "jackson-dataformat-yaml", version = "2.14.2")
     implementation(group = "com.github.luben", name = "zstd-jni", version = "1.5.2-3")
     implementation("org.apache.commons:commons-compress:1.21")
 
     implementation("commons-codec:commons-codec:1.15")
     implementation("com.google.protobuf:protobuf-java-util:3.21.9")
-    implementation("com.github.blagerweij:liquibase-sessionlock:1.6.0")
+    implementation("com.github.blagerweij:liquibase-sessionlock:1.6.2")
 
     implementation("commons-fileupload:commons-fileupload:1.4")
 }
@@ -272,7 +272,7 @@ sourceSets {
 }
 
 tasks {
-    withType<Test>() {
+    withType<Test> {
         useJUnitPlatform()
         maxParallelForks = Runtime.getRuntime().availableProcessors()
     }
