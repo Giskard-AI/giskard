@@ -264,11 +264,6 @@ async function editProject(data: ProjectPostDTO) {
   }
 }
 
-function exportProject() {
-  mixpanel.track('Export project', { project: project.value!.id });
-  projectStore.exportProject(project.value!.id);
-}
-
 async function deleteProject() {
   if (project.value) {
     try {
