@@ -9,10 +9,10 @@ from giskard.ml_worker.core.test_result import TestResult
 
 @test(name="Right Label", tags=["heuristic", "classification"])
 def test_right_label(
-        actual_slice: Dataset,
-        model: Model,
-        classification_label: str,
-        threshold: float = 0.5,
+    actual_slice: Dataset,
+    model: Model,
+    classification_label: str,
+    threshold: float = 0.5,
 ) -> TestResult:
     """
     Summary: Test if the model returns the right classification label for a slice
@@ -45,7 +45,7 @@ def test_right_label(
     actual_slice.df.reset_index(drop=True, inplace=True)
     prediction_results = model.predict(actual_slice).prediction
     assert (
-            classification_label in model.meta.classification_labels
+        classification_label in model.meta.classification_labels
     ), f'"{classification_label}" is not part of model labels: {",".join(model.meta.classification_labels)}'
 
     passed_idx = actual_slice.df.loc[prediction_results == classification_label].index.values
@@ -60,12 +60,12 @@ def test_right_label(
 
 @test(name="Output in range", tags=["heuristic", "classification", "regression"])
 def test_output_in_range(
-        actual_slice: Dataset,
-        model: Model,
-        classification_label: str = None,
-        min_range: float = 0.3,
-        max_range: float = 0.7,
-        threshold: float = 0.5,
+    actual_slice: Dataset,
+    model: Model,
+    classification_label: str = None,
+    min_range: float = 0.3,
+    max_range: float = 0.7,
+    threshold: float = 0.5,
 ) -> TestResult:
     """
     Summary: Test if the model output belongs to the right range for a slice
@@ -117,7 +117,7 @@ def test_output_in_range(
 
     elif model.meta.model_type == "classification":
         assert (
-                classification_label in model.classification_labels
+            classification_label in model.classification_labels
         ), f'"{classification_label}" is not part of model labels: {",".join(model.classification_labels)}'
         results_df["output"] = prediction_results.all_predictions[classification_label]
 
@@ -126,7 +126,7 @@ def test_output_in_range(
 
     passed_idx = actual_slice.df.loc[
         (results_df["output"] <= max_range) & (results_df["output"] >= min_range)
-        ].index.values
+    ].index.values
 
     passed_ratio = len(passed_idx) / len(actual_slice)
 
