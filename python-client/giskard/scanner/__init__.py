@@ -18,7 +18,7 @@ def _register_default_detectors():
 _register_default_detectors()
 
 
-def scan(model: BaseModel, dataset: Dataset, params=None):
+def scan(model: BaseModel, dataset: Dataset, params=None, only=None):
     """
     Scan a model with a dataset.
 
@@ -30,7 +30,7 @@ def scan(model: BaseModel, dataset: Dataset, params=None):
         params (dict):
             Scanner configuration.
     """
-    scanner = Scanner(params)
+    scanner = Scanner(params, only=only)
     return scanner.analyze(model, dataset)
 
 
