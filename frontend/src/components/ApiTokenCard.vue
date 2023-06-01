@@ -12,7 +12,7 @@
       <v-row>
         <v-col>
           <div class="token-area-wrapper" v-if="apiAccessToken && apiAccessToken.id_token">
-            <span class="token-area" ref="apiAccessTokenSpan">{{ apiAccessToken.id_token }}</span>
+            <CodeSnippet :code-content="apiAccessToken.id_token"/>
           </div>
         </v-col>
       </v-row>
@@ -26,11 +26,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
-import { JWTToken } from "@/generated-sources";
-import { api } from "@/api";
-import { copyToClipboard } from "@/global-keys";
-import { useMainStore } from "@/stores/main";
+import {ref} from "vue";
+import {JWTToken} from "@/generated-sources";
+import {api} from "@/api";
+import {copyToClipboard} from "@/global-keys";
+import {useMainStore} from "@/stores/main";
+import {TYPE} from "vue-toastification";
+import CodeSnippet from "@/components/CodeSnippet.vue";
 
 const mainStore = useMainStore();
 
@@ -43,13 +45,13 @@ async function generateToken() {
     mainStore.removeNotification(loadingNotification);
     apiAccessToken.value = await api.getApiAccessToken();
   } catch (error) {
-    mainStore.removeNotification(loadingNotification);
-    mainStore.addNotification({ content: 'Could not reach server', color: 'error' });
+      mainStore.removeNotification(loadingNotification);
+      mainStore.addNotification({content: 'Could not reach server', color: TYPE.ERROR});
   }
 }
 
 async function copyToken() {
-  await copyToClipboard(apiAccessToken.value?.id_token);
-  mainStore.addNotification({ content: "Copied to clipboard", color: "success" });
+    await copyToClipboard(apiAccessToken.value?.id_token);
+    mainStore.addNotification({content: "Copied to clipboard", color: TYPE.SUCCESS});
 }
 </script>
