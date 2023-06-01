@@ -63,45 +63,52 @@
                                     dense
                                 />
                             </ValidationProvider>
-                            <v-text-field
-                                v-model="editedInputs[input.name].value"
-                                v-else-if="input.type === 'str'"
-                                hide-details
-                                single-line
-                                type="text"
-                                outlined
-                                dense
-                            />
+                            <ValidationProvider v-else-if="input.type === 'str'"
+                                                name="input"
+                                                mode="eager" rules="required"
+                                                v-slot="{errors}">
+                                <v-text-field
+                                    v-model="editedInputs[input.name].value"
+                                    :error-messages="errors"
+                                    single-line
+                                    type="text"
+                                    outlined
+                                    dense
+                                />
+                            </ValidationProvider>
                         </template>
-                        <v-select
-                            v-else
-                            clearable
-                            outlined
-                            v-model="editedInputs[input.name].value"
-                            :items="aliases[input.type] ?? []"
-                            dense
-                            hide-details
-                        >
-                            <template v-slot:prepend-item>
-                                <v-list-item
-                                    ripple
-                                    @mousedown.prevent
-                                    @click="() => createAlias(input.name, input.type)"
-                                >
-                                    <v-list-item-action>
-                                        <v-icon>
-                                            add
-                                        </v-icon>
-                                    </v-list-item-action>
-                                    <v-list-item-content>
-                                        <v-list-item-title>
-                                            Create new alias
-                                        </v-list-item-title>
-                                    </v-list-item-content>
-                                </v-list-item>
-                                <v-divider class="mt-2"></v-divider>
-                            </template>
-                        </v-select>
+                        <ValidationProvider v-else name="alias"
+                                            mode="eager" rules="required"
+                                            v-slot="{errors}">
+                            <v-select
+                                clearable
+                                outlined
+                                v-model="editedInputs[input.name].value"
+                                :items="aliases[input.type] ?? []"
+                                dense
+                                :error-messages="errors"
+                            >
+                                <template v-slot:prepend-item>
+                                    <v-list-item
+                                        ripple
+                                        @mousedown.prevent
+                                        @click="() => createAlias(input.name, input.type)"
+                                    >
+                                        <v-list-item-action>
+                                            <v-icon>
+                                                add
+                                            </v-icon>
+                                        </v-list-item-action>
+                                        <v-list-item-content>
+                                            <v-list-item-title>
+                                                Create new alias
+                                            </v-list-item-title>
+                                        </v-list-item-content>
+                                    </v-list-item>
+                                    <v-divider class="mt-2"></v-divider>
+                                </template>
+                            </v-select>
+                        </ValidationProvider>
                     </div>
 
                 </v-col>
