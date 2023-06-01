@@ -2,9 +2,7 @@ package ai.giskard.service;
 
 import ai.giskard.domain.TestFunction;
 import ai.giskard.domain.TestFunctionArgument;
-import ai.giskard.repository.ProjectRepository;
 import ai.giskard.repository.ml.TestFunctionRepository;
-import ai.giskard.service.ml.MLWorkerCacheService;
 import ai.giskard.web.dto.TestFunctionArgumentDTO;
 import ai.giskard.web.dto.TestFunctionDTO;
 import ai.giskard.web.dto.mapper.GiskardMapper;
@@ -12,10 +10,12 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
-import java.util.*;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
@@ -23,8 +23,6 @@ public class TestFunctionService {
 
     private final GiskardMapper giskardMapper;
     private final TestFunctionRepository testFunctionRepository;
-    private final ProjectRepository projectRepository;
-    private final MLWorkerCacheService mlWorkerCacheService;
 
     @Transactional
     public void saveAll(Collection<TestFunctionDTO> testFunctions) {
@@ -90,13 +88,6 @@ public class TestFunctionService {
         });
 
         return existing;
-    }
-
-    @Transactional
-    public List<TestFunctionDTO> findAll(long projectId) {
-        return Stream.concat(testFunctionRepository.findAll().stream().map(giskardMapper::toDTO),
-                mlWorkerCacheService.findGiskardTest(projectRepository.getById(projectId).isUsingInternalWorker()).stream())
-            .toList();
     }
 
 }
