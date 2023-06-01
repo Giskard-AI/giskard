@@ -18,14 +18,14 @@ export default function useRouterParamSynchronization<T>(
     function onRouteUpdated() {
         if (route.name === routeName) {
             const executionId = Number(route.params[param]);
-            selectedValue.value = values.find(execution => execution[id] === executionId) ?? null;
+            selectedValue.value = values?.find(execution => execution[id] === executionId) ?? null;
         }
     }
 
     watch(() => selectedValue.value, (val) => onSelectedValueUpdated(val));
 
     function onSelectedValueUpdated(val: T | null) {
-        if (val === null || val === undefined) {
+        if (val === null || val === undefined || route.params[param] === val[id].toString(10)) {
             return;
         }
 

@@ -22,7 +22,7 @@ export default function useRouterTabsSynchronization(
     watch(() => selectedValue.value, (val) => onSelectedTabUpdated(val));
 
     function onSelectedTabUpdated(tab: number | null) {
-        if (tab === null || tab === undefined) {
+        if (tab === null || tab === undefined || route.name === routeNames[tab]) {
             return;
         }
 
