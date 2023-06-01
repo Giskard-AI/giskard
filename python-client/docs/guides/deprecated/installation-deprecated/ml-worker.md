@@ -12,7 +12,7 @@ component.&#x20;
 * It opens a secured connection between your working Python environment and the Giskard platform you've installed
 * It executes the model in your working Python environment (notebook, Python IDE, etc)
 
-:::{info}
+:::{hint}
 When Giskard is [installed](./) it comes with a default embedded ML Worker based on python 3.7. This default worker is
 only used by demo projects provided by Giskard.
 :::
@@ -47,7 +47,7 @@ The default port on which the Giskard server is listening for external ML Worker
 that this port is open on the Giskard server machine.
 :::
 
-:::{info}
+:::{hint}
 To see all available arguments, add `--help` to the command.
 :::
 
@@ -57,14 +57,14 @@ To start ML Worker as a daemon and let it run in the background, add `-d` argume
 
 `giskard worker start -d`
 
-:::{info}
+:::{hint}
 When started from Jupyter notebook, ML Worker should be run as a daemon. Otherwise, it'll block further notebook
 execution, so the command to start it is:
 
 `!giskard worker start -d`
 :::
 
-:::{info}
+:::{hint}
 In case `giskard` command isn't available in the PATH, it's possible to start worker from running python process (
 jupyter kernel for example) by executing the following command:
 
@@ -114,8 +114,19 @@ Admin users can find information about an ML Worker that is currently active in 
 
 By default, ML Worker execution logs are located in `$HOME/giskard-home/run/ml-worker.log.`
 
-You can access the logs by executing the following command in your notebook:
 
-```shell
-!tail -f $HOME/giskard-home/run/ml-worker.log
-```
+You can access the logs by executing the following command:
+
+`giskard worker logs`
+
+:::{hint}
+By default, the last 10 logs will be displayed. You can use the option -n to change this value:
+
+`giskard worker logs -n 100`
+:::
+
+:::{hint}
+If you want to see new logs in real time, simply add the -f option
+
+`giskard worker logs -f`
+:::

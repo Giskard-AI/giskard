@@ -9,7 +9,7 @@ Giskard enables you to create test suites on AI models. It provides **presets** 
 Here are the 3 steps to create and execute tests: \
 
 
-:::{info}
+:::{hint}
 If you have **custom tests**, go to the [Create your custom test](create-your-custom-test.md) section
 :::
 
@@ -43,11 +43,11 @@ Giskard proposes 5 families of tests that you can customize (see [documentation]
 
 ![](<../../.gitbook/assets/Screenshot 2022-07-18 at 10.29.32.png>)
 
-:::{info}
+:::{hint}
 To have detailed **documentation** on these tests, go to [https://github.com/Giskard-AI/giskard/tree/main/python-client/giskard/ml\_worker/testing](https://github.com/Giskard-AI/giskard/tree/main/python-client/giskard/ml\_worker/testing)
 :::
 
-:::{info}
+:::{hint}
 If you have **custom tests**, go to the [Create your custom test](create-your-custom-test.md) section
 :::
 
@@ -76,7 +76,7 @@ model_id = upload_model(...)
 model_id, ds_id = upload_model_and_df(...)
 ```
 
-:::{info}
+:::{hint}
 You can also find all your ids in the Giskard UI
 :::
 
@@ -98,7 +98,7 @@ project.execute_test_suite(
     model_id=None)
 ```
 
-:::{info}
+:::{hint}
 When the optional arguments (**model / actual\_ds / reference\_ds**) are provided, they replace the existing ones in the test suites. If they're not provided, the old values (model / actual\_ds / reference\_ds) remain unchanged in the test suite settings.
 :::
 

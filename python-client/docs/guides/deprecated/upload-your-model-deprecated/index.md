@@ -38,7 +38,7 @@ and re-installing again
 
 If ML Worker manages to connect to the Giskard instance, you should see the following message in the worker logs: **"Connected to Giskard server."**&#x20;
 
-:::{info}
+:::{hint}
 * If you work from your notebook, you will need to start Giskard as a daemon with:
 
 `giskard worker start -d -h [GISKARD IP ADDRESS]`
@@ -64,7 +64,7 @@ project = client.create_project("project_key", "PROJECT_NAME", "DESCRIPTION") #C
 #If your project is already created use project = client.get_project("existing_project_key")
 ```
 
-:::{info}
+:::{hint}
 If you want to use an **existing project**, use `project=client.get_project("EXISTING_PROJECT_KEY")`to load the existing project, then use:
 
 * `upload_model` to **upload a new version of the model** you want to inspect/test
@@ -131,7 +131,7 @@ credit_scoring.upload_model_and_df(
     )
 ```
 
-:::{info}
+:::{hint}
 **Example notebooks:**
 
 * You can download an **example notebook** [here](https://github.com/Giskard-AI/demo-notebooks) to execute it in your working environment
