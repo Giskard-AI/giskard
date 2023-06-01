@@ -51,7 +51,10 @@ class DataProcessor:
             Return a string representation of the DataProcessor object, showing the number of steps in its pipeline.
     """
 
-    pipeline: List[Union[SlicingFunction, TransformationFunction]] = []
+    pipeline: List[Union[SlicingFunction, TransformationFunction]]
+
+    def __init__(self):
+        self.pipeline = []
 
     @configured_validate_arguments
     def add_step(self, processor: Union[SlicingFunction, TransformationFunction]):
@@ -117,7 +120,7 @@ class Dataset:
     column_types: Dict[str, str]
     df: pd.DataFrame
     id: uuid.UUID
-    data_processor: DataProcessor = DataProcessor()
+    data_processor: DataProcessor
 
     @configured_validate_arguments
     def __init__(
@@ -174,6 +177,8 @@ class Dataset:
         from giskard.core.dataset_validation import validate_numeric_columns
 
         validate_numeric_columns(self)
+
+        self.data_processor = DataProcessor()
 
     def add_slicing_function(self, slicing_function: SlicingFunction):
         """
