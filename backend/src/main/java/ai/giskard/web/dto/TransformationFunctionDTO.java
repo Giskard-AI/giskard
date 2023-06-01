@@ -10,5 +10,6 @@ import lombok.EqualsAndHashCode;
 @AllArgsConstructor
 @UIModel
 public class TransformationFunctionDTO extends CallableDTO {
-
+    private boolean cellLevel;
+    private String columnType;
 }
