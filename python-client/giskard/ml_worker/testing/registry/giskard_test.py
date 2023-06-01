@@ -44,8 +44,8 @@ class GiskardTest(Savable[Any, TestFunctionMeta]):
             meta = tests_registry.get_test(test_uuid)
         super(GiskardTest, self).__init__(type(self), meta)
 
-    def set_params(self):
-        pass
+    def set_params(self, params: ...):
+        return self
 
     def execute(self) -> Result:
         """
@@ -104,6 +104,7 @@ class GiskardTestMethod(GiskardTest):
 
     def set_params(self, **kwargs):
         self.params = kwargs
+        return self
 
     def execute(self) -> Result:
         return self.data(**self.params)
