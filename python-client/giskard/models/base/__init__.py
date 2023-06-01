@@ -541,15 +541,11 @@ class WrapperModel(BaseModel, ABC):
         # prediction as `1 - p`.
         if self.is_binary_classification and raw_predictions.shape[-1] == 1:
             logger.warning(
-                f"\nYour binary classification model prediction is of the shape {raw_predictions.shape}. \n"
-                f"In Giskard we expect the shape {(raw_predictions.shape[0], 2)} for binary classification models. \n"
-                "We automatically inferred the second class prediction but please make sure that \n"
-                "the probability output of your model corresponds to the first label of the \n"
-                f"classification_labels ({self.meta.classification_labels}) you provided us with.",
+                "Please make sure that your model's output corresponds to the second label in classification_labels.",
                 exc_info=True,
             )
 
-            raw_predictions = np.append(raw_predictions, 1 - raw_predictions, axis=1)
+            raw_predictions = np.append(1 - raw_predictions, raw_predictions, axis=1)
 
         # For classification models, the last dimension must be equal to the number of classes
         if raw_predictions.shape[-1] != len(self.meta.classification_labels):

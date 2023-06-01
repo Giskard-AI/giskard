@@ -1,6 +1,5 @@
 import asyncio
 import logging
-import math
 import os
 import platform
 import sys
@@ -11,6 +10,7 @@ from pathlib import Path
 
 import google
 import grpc
+import math
 import numpy as np
 import pandas as pd
 import pkg_resources
@@ -278,7 +278,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
             )
 
         except Exception as exc:
-            logger.error("An unexpected error arose during the test suite execution: %s", exc)
+            logger.exception("An unexpected error arose during the test suite execution: %s", exc)
             return ml_worker_pb2.TestSuiteResultMessage(
                 is_error=True,
                 is_pass=False,

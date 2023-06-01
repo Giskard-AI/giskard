@@ -1,10 +1,12 @@
+import pickle
+from pathlib import Path
+from typing import Union
+
 import cloudpickle
 from giskard.core.model import Model
 from langchain import OpenAI
 from langchain.chains import RetrievalQA
 from langchain.vectorstores import Chroma
-from pathlib import Path
-from typing import Union
 
 
 class RetrievalQAModel(Model):
@@ -45,7 +47,7 @@ class RetrievalQAModel(Model):
         clone.persist()
 
         with open(Path(local_path) / "embedding_function.pkl", "wb") as f:
-            cloudpickle.dump(vectorstore._embedding_function, f)
+            cloudpickle.dump(vectorstore._embedding_function, f, protocol=pickle.DEFAULT_PROTOCOL)
 
     def predict_df(self, df):
         return self.model.apply(list(df))
