@@ -70,7 +70,7 @@
     </v-row>
     <v-row>
       <v-col>
-        <v-card height="100%">
+        <v-card>
           <v-card-title class="font-weight-light secondary--text d-flex">
             <span>ML Worker</span>
             <v-spacer/>
