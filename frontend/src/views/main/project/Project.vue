@@ -88,7 +88,7 @@
         <v-card-title flat>
           Quick start guide
           <v-spacer></v-spacer>
-          <v-btn class="primaryLightBtn" color="primaryLight" href="https://docs.giskard.ai/start/" target="_blank">
+          <v-btn color="secondary" href="https://docs.giskard.ai/start/" target="_blank">
             <v-icon left>mdi-file-document-outline</v-icon>
             <span>Documentation</span>
           </v-btn>
