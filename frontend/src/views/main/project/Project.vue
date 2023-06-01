@@ -203,16 +203,4 @@ onMounted(async () => {
 #container-project-tab {
   padding-top: 4px !important;
 }
-
-#no-background-hover {
-  cursor: default;
-}
-
-#no-background-hover::before {
-  background-color: transparent !important;
-}
-
-#no-background-hover span {
-  cursor: pointer;
-}
 </style>
