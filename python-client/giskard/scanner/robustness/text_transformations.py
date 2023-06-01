@@ -114,9 +114,9 @@ class TextGenderTransformation(TextTransformation):
 
     def _switch(self, word):
         for pair in gender_switch_en:
-            if word == pair[0]:
+            if word.lower() == pair[0]:
                 return pair[1]
-            elif word == pair[1]:
+            elif word.lower() == pair[1]:
                 return pair[0]
             else:
                 return word
