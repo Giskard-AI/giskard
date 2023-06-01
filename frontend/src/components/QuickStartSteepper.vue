@@ -74,15 +74,9 @@ onMounted(async () => {
           <v-btn-toggle v-model="toggleArtifactType" borderless mandatory color="primary">
             <v-btn value="dataset" class="py-5 px-4">
               <span>Dataset</span>
-              <v-icon end class="pb-1 pl-1" :color="toggleArtifactType === 'dataset' ? 'primary' : ''">
-                stacked_bar_chart
-              </v-icon>
             </v-btn>
             <v-btn value="model" class="py-5 px-4">
               <span>Model</span>
-              <v-icon end class="pb-1 pl-1" :color="toggleArtifactType === 'model' ? 'primary' : ''">
-                settings_suggest
-              </v-icon>
             </v-btn>
           </v-btn-toggle>
           <p class="mt-4 mb-2">Then, create the artifact with the following Python code:</p>
