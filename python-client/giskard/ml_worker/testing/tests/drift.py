@@ -159,8 +159,6 @@ def _validate_series_notempty(actual_series, reference_series):
 
 
 def _extract_series(actual_ds, reference_ds, column_name, feature_type):
-    actual_ds.df.reset_index(drop=True, inplace=True)
-    reference_ds.df.reset_index(drop=True, inplace=True)
     _validate_column_name(actual_ds, reference_ds, column_name)
     _validate_feature_type(actual_ds, column_name, feature_type)
     _validate_feature_type(reference_ds, column_name, feature_type)
@@ -481,8 +479,6 @@ def test_drift_prediction_psi(model: BaseModel, actual_dataset: Dataset, referen
         reference_dataset = reference_dataset.slice(slicing_function)
         check_slice_not_empty(sliced_dataset=reference_dataset, dataset_name="reference_dataset", test_name=test_name)
 
-    actual_dataset.df.reset_index(drop=True, inplace=True)
-    reference_dataset.df.reset_index(drop=True, inplace=True)
     prediction_reference = pd.Series(model.predict(reference_dataset).prediction)
     prediction_actual = pd.Series(model.predict(actual_dataset).prediction)
     messages, passed, total_psi = _test_series_drift_psi(
@@ -580,8 +576,6 @@ def test_drift_prediction_chi_square(model: BaseModel, actual_dataset: Dataset, 
         reference_dataset = reference_dataset.slice(slicing_function)
         check_slice_not_empty(sliced_dataset=reference_dataset, dataset_name="reference_dataset", test_name=test_name)
 
-    actual_dataset.df.reset_index(drop=True, inplace=True)
-    reference_dataset.df.reset_index(drop=True, inplace=True)
     prediction_reference = pd.Series(model.predict(reference_dataset).prediction)
     prediction_actual = pd.Series(model.predict(actual_dataset).prediction)
 
@@ -663,9 +657,6 @@ def test_drift_prediction_ks(model: BaseModel, actual_dataset: Dataset, referenc
         check_slice_not_empty(sliced_dataset=actual_dataset, dataset_name="actual_dataset", test_name=test_name)
         reference_dataset = reference_dataset.slice(slicing_function)
         check_slice_not_empty(sliced_dataset=reference_dataset, dataset_name="reference_dataset", test_name=test_name)
-
-    actual_dataset.df.reset_index(drop=True, inplace=True)
-    reference_dataset.df.reset_index(drop=True, inplace=True)
 
     prediction_reference = (
         pd.Series(model.predict(reference_dataset).all_predictions[classification_label].values)
@@ -750,9 +741,6 @@ def test_drift_prediction_earth_movers_distance(model: BaseModel, actual_dataset
         check_slice_not_empty(sliced_dataset=actual_dataset, dataset_name="actual_dataset", test_name=test_name)
         reference_dataset = reference_dataset.slice(slicing_function)
         check_slice_not_empty(sliced_dataset=reference_dataset, dataset_name="reference_dataset", test_name=test_name)
-
-    actual_dataset.df.reset_index(drop=True, inplace=True)
-    reference_dataset.df.reset_index(drop=True, inplace=True)
 
     prediction_reference = (
         model.predict(reference_dataset).all_predictions[classification_label].values
