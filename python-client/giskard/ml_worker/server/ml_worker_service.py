@@ -33,9 +33,9 @@ from giskard.ml_worker.generated.ml_worker_pb2_grpc import MLWorkerServicer
 from giskard.ml_worker.ml_worker import MLWorker
 from giskard.ml_worker.testing.registry.giskard_test import GiskardTest
 from giskard.ml_worker.testing.registry.registry import tests_registry
+from giskard.ml_worker.testing.registry.slice_function import SliceFunction
 from giskard.models.base import BaseModel
 from giskard.path_utils import model_path, dataset_path
-from ml_worker_pb2 import SliceFunction
 
 logger = logging.getLogger(__name__)
 
@@ -199,7 +199,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
             elif arg.HasField("model"):
                 value = BaseModel.download(self.client, arg.model.project_key, arg.model.id)
             elif arg.HasField("sliceFunction"):
-                value = SliceFunction.download(self.client, arg.sliceFunction.project_key, arg.sliceFunction.id)
+                value = SliceFunction.load(arg.sliceFunction.id, self.client, None)
             elif arg.HasField("float"):
                 value = float(arg.float)
             elif arg.HasField("int"):
