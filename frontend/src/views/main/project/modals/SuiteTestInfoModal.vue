@@ -47,9 +47,9 @@
         </v-card-text>
           <v-card-actions>
               <v-spacer/>
-              <v-btn color="green" @click="close" disabled>
-                  <v-icon>mdi-bug</v-icon>
-                  Debug
+              <v-btn color="error" text @click="() => removeTest(close)" class="pr-2">
+                  <v-icon>delete</v-icon>
+                  Remove test
               </v-btn>
               <v-btn color="primary" @click="() => saveEditedInputs(close)" :disabled="invalid">
                   <v-icon>save</v-icon>
@@ -73,6 +73,8 @@ import {api} from '@/api';
 import {editor} from 'monaco-editor';
 import TestInputListSelector from "@/components/TestInputListSelector.vue";
 import {useCatalogStore} from "@/stores/catalog";
+import {$vfm} from "vue-final-modal";
+import ConfirmModal from "@/views/main/project/modals/ConfirmModal.vue";
 import IEditorOptions = editor.IEditorOptions;
 
 const l = MonacoEditor;
@@ -131,6 +133,24 @@ const inputType = computed(() => chain(sortedArguments.value)
     .value()
 );
 
+async function removeTest(close) {
+    await $vfm.show({
+        component: ConfirmModal,
+        bind: {
+            title: 'Remove test',
+            text: `Are you sure that you want to remove this test from the test suite?`,
+            isWarning: true
+        },
+        on: {
+            async confirm(closeConfirm) {
+                await api.removeTest(suite.value!.projectKey!, suite.value!.id!, props.suiteTest.id!);
+                await useTestSuiteStore().reload();
+                closeConfirm();
+                close();
+            }
+        }
+    });
+}
 </script>
 
 <style scoped>
