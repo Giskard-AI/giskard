@@ -55,13 +55,6 @@
             </v-list-item-content>
           </v-list-item>
           <v-divider />
-          <v-list-item to="/main/projects" exact>
-            <v-list-item-content>
-              <v-icon>web</v-icon>
-              <div class="caption">Projects</div>
-            </v-list-item-content>
-          </v-list-item>
-          <v-divider />
           <v-list-item v-show="hasAdminAccess" to="/main/admin/">
             <v-list-item-content>
               <v-icon>mdi-cog</v-icon>
