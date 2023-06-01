@@ -1776,21 +1776,13 @@ var hljs = function () {
   // Tabs
   var rows = document.querySelectorAll("#gsk-scan .gsk-issue");
   rows.forEach(function (rowEl) {
-    {
-      rowEl.addEventListener("click", function (event) {
-        {
-          event.preventDefault();
-          if (event.target.classList.contains("gsk-debug")) {
-            {
-              alert("Not implemented yet");
-              return;
-            }
-          }
-          rowEl.classList.toggle("open");
-          rowEl.classList.toggle("bg-zinc-700");
-        }
-      });
-    }
+    rowEl.addEventListener("click", function (event) {
+      {
+        event.preventDefault();
+        rowEl.classList.toggle("open");
+        rowEl.classList.toggle("bg-zinc-700");
+      }
+    });
   });
   var tabs = document.querySelectorAll("#gsk-scan [role='tabpanel']");
   var tabHeaders = document.querySelectorAll("#gsk-scan [data-tab-target]");
