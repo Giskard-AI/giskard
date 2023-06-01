@@ -18,7 +18,6 @@ from giskard.client.giskard_client import GiskardClient
 from giskard.core.model import Model
 from giskard.ml_worker.core.dataset import Dataset
 from giskard.ml_worker.core.log_listener import LogListener
-
 from giskard.ml_worker.core.model_explanation import (
     explain,
     explain_text,
@@ -186,7 +185,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
         arguments = {}
         for arg in request_arguments:
             if arg.HasField("dataset"):
-                value = Dataset.load(self.client, arg.dataset.project_key, arg.dataset.id)
+                value = Dataset.download(self.client, arg.dataset.project_key, arg.dataset.id)
             elif arg.HasField("model"):
                 value = Model.download(self.client, arg.model.project_key, arg.model.id)
             elif arg.HasField("float"):
@@ -212,11 +211,11 @@ class MLWorkerServiceImpl(MLWorkerServicer):
         tests = GiskardTestFunctions()
         _globals = {"model": model, "tests": tests}
         if request.reference_ds.id:
-            _globals["reference_ds"] = Dataset.load(
+            _globals["reference_ds"] = Dataset.download(
                 self.client, request.reference_ds.project_key, request.reference_ds.id
             )
         if request.actual_ds.id:
-            _globals["actual_ds"] = Dataset.load(self.client, request.actual_ds.project_key, request.actual_ds.id)
+            _globals["actual_ds"] = Dataset.download(self.client, request.actual_ds.project_key, request.actual_ds.id)
         try:
             timer = Timer()
             exec(request.code, _globals)
@@ -233,7 +232,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
 
     def explain(self, request: ml_worker_pb2.ExplainRequest, context) -> ml_worker_pb2.ExplainResponse:
         model = Model.download(self.client, request.model.project_key, request.model.id)
-        dataset = Dataset.load(self.client, request.dataset.project_key, request.dataset.id)
+        dataset = Dataset.download(self.client, request.dataset.project_key, request.dataset.id)
         explanations = explain(model, dataset, request.columns)
 
         return ml_worker_pb2.ExplainResponse(
@@ -287,7 +286,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
     def runModel(self, request: ml_worker_pb2.RunModelRequest, context) -> ml_worker_pb2.RunModelResponse:
         try:
             model = Model.download(self.client, request.model.project_key, request.model.id)
-            dataset = Dataset.load(self.client, request.dataset.project_key, request.dataset.id)
+            dataset = Dataset.download(self.client, request.dataset.project_key, request.dataset.id)
         except ValueError as e:
             if "unsupported pickle protocol" in str(e):
                 raise ValueError(
