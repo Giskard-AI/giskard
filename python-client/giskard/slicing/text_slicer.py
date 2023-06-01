@@ -114,7 +114,7 @@ class TextSlicer(BaseSlicer):
         sorted_global_tfidf_indices = global_tfidf.argsort()[::-1]
 
         # Get the top n words sorted by global TF-IDF score.
-        top_words = [inv_vocab[sorted_global_tfidf_indices[i]] for i in range(n)]
+        top_words = [inv_vocab[idx] for idx in sorted_global_tfidf_indices[:n]]
 
         return top_words
 
