@@ -469,9 +469,41 @@ the scan to a CSV or HTML file.
 ```python
 results_df = results.to_dataframe()
 results_df.to_csv("scan_results_my_model.csv")
-```  
+```
 
-## 5. Upload your model and dataset to giskard UI
+## 5. Automatically generate a test suite based on the scan results
+
+If the automatic scan with `giskard.scan` found some issues with your model, you can automatically generate a set of tests (a test suite) that will reproduce those issues.
+You can then interactively debug the problems by uploading the generate test suite to Giskard UI.
+
+```python
+results = giskard.scan(wrapped_model, wrapped_dataset)
+
+test_suite = results.generate_test_suite("My first test suite")
+
+# You can run the test suite locally to verify that it reproduces the issues
+test_suite.run()
+```
+
+To debug the test suite in the Giskard UI, first make sure you have configured the Giskard server and started your local worker ([see documentation here](../../guides/installation/index.md)).
+
+Then, you can create a project and upload your test suite:
+
+```python
+from giskard import GiskardClient
+
+url = "http://localhost:19000"
+token = "my_API_Access_Token"
+client = GiskardClient(url, token)
+my_project = client.create_project("my_project", "PROJECT_NAME", "DESCRIPTION")
+
+test_suite.upload(client, "my_project")
+```
+
+Head over the to the UI (on http://localhost:8080 if you are running Giskard from a local Docker container) and you will find your new test suite ready to be debugged.
+
+
+## 6. Upload your model and dataset to giskard UI
 
 Now that you create your model (in Create a Giskard model) and your data (in Create a Giskard dataset). You can create a
 project and upload them to giskard as follows:
