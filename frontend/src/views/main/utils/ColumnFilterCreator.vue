@@ -2,6 +2,7 @@
     <v-row>
         <v-col cols="4">
             <v-select
+                class="input-md"
                 :items="columnNames"
                 :value="columnName"
                 @input="handleColumnNameInput"
@@ -10,6 +11,7 @@
         </v-col>
         <v-col cols="4">
             <v-select
+                class="input-md"
                 :items="AVAILABLE_SLICING_TYPE[columnType]"
                 :value="slicingType"
                 @input="handleSlicingTypeInput"
@@ -25,17 +27,22 @@
             </v-select>
         </v-col>
         <v-col cols="4">
-            <v-text-field v-if="columnType === ColumnType.TEXT" type="text"
-                          label="Value"
-                          :value="value"
-                          @input="handleValueInput"
-                          :disabled="!slicingType || !SLICING_TYPE_WITH_VALUE.includes(slicingType)"/>
-            <v-text-field v-else-if="columnType === ColumnType.NUMERIC"
-                          label="Value"
-                          :value="value"
-                          @input="handleValueInput"
-                          type="number" :disabled="!slicingType"/>
+            <v-text-field
+                class="input-md"
+                v-if="columnType === ColumnType.TEXT" type="text"
+                label="Value"
+                :value="value"
+                @input="handleValueInput"
+                :disabled="!slicingType || !SLICING_TYPE_WITH_VALUE.includes(slicingType)"/>
+            <v-text-field
+                class="input-md"
+                v-else-if="columnType === ColumnType.NUMERIC"
+                label="Value"
+                :value="value"
+                @input="handleValueInput"
+                type="number" :disabled="!slicingType"/>
             <v-select
+                class="input-md"
                 v-else
                 :items="dataset.categoryFeatures[columnName]"
                 :value="value"
@@ -125,3 +132,9 @@ function handleValueInput(input) {
 }
 
 </script>
+
+<style scoped lang="scss">
+.input-md {
+    width: 16rem;
+}
+</style>
