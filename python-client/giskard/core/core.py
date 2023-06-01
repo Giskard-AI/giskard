@@ -172,7 +172,7 @@ class CallableMeta(SavableMeta, ABC):
         return inspect.getmodule(func_doc).__doc__.strip() if inspect.getmodule(func_doc).__doc__ else None
 
     def populate_tags(self, tags=None):
-        tags = [] if not tags else tags
+        tags = [] if not tags else tags.copy()
         if self.full_name.partition(".")[0] == "giskard":
             tags.append("giskard")
         elif self.full_name.startswith('__main__'):
