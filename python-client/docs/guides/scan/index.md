@@ -1,4 +1,4 @@
-# Scan your ML model
+# 🔬 Scan your ML model
 
 How to scan your Machine Learning model for vulnerabilities with Giskard?
 
@@ -11,9 +11,29 @@ To scan your ML model for vulnerabilities, you need:
 - A **pandas dataframe** composed of the examples you want to inspect. For example, it could be your test dataset or a
   dataset composed of some wrong predictions of your model.
 
-## Steps to scan your model
+## 1. Install the Giskard library
 
-### 1. Wrap your model
+In order to scan your model for vulnerabilities, you'll need to install the `giskard` library with `pip`:
+
+::::{tab-set}
+:::{tab-item} Windows
+
+```sh
+pip install "git+https://github.com/Giskard-AI/giskard.git@feature/ai-test-v2-merged#subdirectory=python-client" --user
+```
+
+:::
+
+:::{tab-item} Mac and Linux
+
+```sh
+pip install "git+https://github.com/Giskard-AI/giskard.git@feature/ai-test-v2-merged#subdirectory=python-client"
+```
+
+:::
+::::
+
+## 2. Wrap your model
 
 We currently support all **tabular** and **NLP** models from the following:
 
@@ -29,7 +49,7 @@ To create your Giskard model, you can simply wrap your model with `giskard.wrap_
 
 :::{warning}
 If your ML model contains preprocessing functions (categorical encoding, scaling, etc.), it should be either inside your
-`clf` or inside the `data_preprocessing_function` of the Giskard model you create.
+`model` or inside the `data_preprocessing_function` of the Giskard model you create.
 :::
 
 #### Example
@@ -58,7 +78,7 @@ respectively.
 .. autofunction:: giskard.wrap_model 
 ```
 
-### 3. Wrap your dataset
+## 3. Wrap your dataset
 
 The Giskard dataset is a wrapper of `pandas.DataFrame`. It contains additional properties like the name of the target
 column (ground truth variable), the categorical columns, etc. This object gets passed to the Giskard model (see Create
@@ -100,7 +120,7 @@ my_dataset = wrap_dataset(some_df,
 ```
 
 
-### 4. Validate your model
+## 4. Validate your model
 
 To make sure your model is working in Giskard, you can simply execute the following line:
 
@@ -110,9 +130,9 @@ from giskard.core.model_validation import validate_model
 validate_model(my_model, my_dataset)
 ```
 
-### 5. Scan your model for vulnerabilities
+## 5. Scan your model for vulnerabilities
 
-Finally, you can scan your model for vulnerabilities using:
+Finally 🎉, you can scan your model for vulnerabilities using:
 ```python
 import giskard
 
@@ -122,7 +142,7 @@ display(results) # in your notebook
 ```
   
 
-### 6. Upload your model and dataset to giskard UI
+## 6. Upload your model and dataset to giskard UI
 
 Now that you create your model (in Create a Giskard model) and your data (in Create a Giskard dataset). You can create a
 project and upload them to giskard as follows:
@@ -141,7 +161,7 @@ model_id = my_model.upload(client, "project_key")
 dataset_id = my_test_dataset.upload(client, "project_key")
 ```
 
-### Troubleshooting
+## Troubleshooting
 
 If you encounter any issues, join our [Discord](https://discord.gg/fkv7CAr3FE) on our #support channel. Our community
 will help! 

@@ -5,9 +5,10 @@ Getting started
    :maxdepth: 2
 
    installation/index
-   wrap/index
+   scan/index
    test-suite/index
    create-slices-and-transformation-functions/index
-   troubleshooting/index
+
+   installation/index
    test-catalog/index
 
