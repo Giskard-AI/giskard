@@ -1,3 +1,4 @@
+import builtins
 import importlib
 import logging
 import pickle
@@ -22,9 +23,13 @@ from giskard.core.core import ModelMeta, SupportedModelTypes, ModelType
 from giskard.core.validation import configured_validate_arguments
 from giskard.datasets.base import Dataset
 from giskard.ml_worker.utils.logging import Timer
+from giskard.models.cache import ModelCache
 from giskard.path_utils import get_size
 from giskard.settings import settings
+from ..cache import get_cache_enabled
 from ..utils import np_types_to_native
+
+META_FILENAME = "giskard-model-meta.yaml"
 
 MODEL_CLASS_PKL = "ModelClass.pkl"
 
@@ -61,17 +66,19 @@ class BaseModel(ABC):
 
             If duplicate values are found in the classification_labels.
     """
+
     should_save_model_class = False
     id: uuid.UUID = None
+    _cache: ModelCache
 
     @configured_validate_arguments
     def __init__(
-            self,
-            model_type: ModelType,
-            name: Optional[str] = None,
-            feature_names: Optional[Iterable] = None,
-            classification_threshold: Optional[float] = 0.5,
-            classification_labels: Optional[Iterable] = None,
+        self,
+        model_type: ModelType,
+        name: Optional[str] = None,
+        feature_names: Optional[Iterable] = None,
+        classification_threshold: Optional[float] = 0.5,
+        classification_labels: Optional[Iterable] = None,
     ) -> None:
         """
         Initialize a new instance of the BaseModel class.
@@ -104,9 +111,9 @@ class BaseModel(ABC):
         if classification_labels is not None:
             classification_labels = list(classification_labels)
             if len(classification_labels) != len(set(classification_labels)):
-                raise ValueError(
-                    "Duplicates are found in 'classification_labels', please only provide unique values."
-                )
+                raise ValueError("Duplicates are found in 'classification_labels', please only provide unique values.")
+
+        self._cache = ModelCache(model_type)
 
         self.meta = ModelMeta(
             name=name if name is not None else self.__class__.__name__,
@@ -130,6 +137,10 @@ class BaseModel(ABC):
     def is_regression(self):
         return self.meta.model_type == SupportedModelTypes.REGRESSION
 
+    @property
+    def is_generative(self):
+        return self.meta.model_type == SupportedModelTypes.GENERATIVE
+
     @classmethod
     def determine_model_class(cls, meta, local_dir):
         class_file = Path(local_dir) / MODEL_CLASS_PKL
@@ -143,7 +154,7 @@ class BaseModel(ABC):
             return getattr(importlib.import_module(meta.loader_module), meta.loader_class)
 
     def save_meta(self, local_path):
-        with open(Path(local_path) / "giskard-model-meta.yaml", "w") as f:
+        with open(Path(local_path) / META_FILENAME, "w") as f:
             yaml.dump(
                 {
                     "language_version": platform.python_version(),
@@ -165,6 +176,7 @@ class BaseModel(ABC):
     def save(self, local_path: Union[str, Path]) -> None:
         if self.id is None:
             self.id = uuid.uuid4()
+            self._cache.set_id(str(self.id))
         if self.should_save_model_class:
             self.save_model_class(local_path)
         self.save_meta(local_path)
@@ -245,11 +257,15 @@ class BaseModel(ABC):
               The `all_predictions` field will contain the predicted probabilities for all class labels for each example in the input dataset.
         """
         timer = Timer()
-        df = self.prepare_dataframe(dataset.df, column_dtypes=dataset.column_dtypes, target=dataset.target)
 
-        raw_prediction = self.predict_df(df)
+        if get_cache_enabled():
+                raw_prediction = self._predict_from_cache(dataset)
+        else:
+            raw_prediction = self.predict_df(
+                self.prepare_dataframe(dataset.df, column_dtypes=dataset.column_dtypes, target=dataset.target)
+            )
 
-        if self.is_regression:
+        if self.is_regression or self.is_generative:
             result = ModelPredictionResults(
                 prediction=raw_prediction, raw_prediction=raw_prediction, raw=raw_prediction
             )
@@ -276,7 +292,7 @@ class BaseModel(ABC):
             )
         else:
             raise ValueError(f"Prediction task is not supported: {self.meta.model_type}")
-        timer.stop(f"Predicted dataset with shape {df.shape}")
+        timer.stop(f"Predicted dataset with shape {dataset.df.shape}")
         return result
 
     @abstractmethod
@@ -286,6 +302,23 @@ class BaseModel(ABC):
         :param df: dataframe to predict
         """
         ...
+
+    def _predict_from_cache(self, dataset: Dataset):
+        cached_predictions = self._cache.read_from_cache(dataset.row_hashes)
+        missing = cached_predictions.isna()
+
+        missing_slice = dataset.slice(lambda x: dataset.df[missing], row_level=False)
+        df = self.prepare_dataframe(
+            missing_slice.df, column_dtypes=missing_slice.column_dtypes, target=missing_slice.target
+        )
+
+        if len(df) > 0:
+            raw_prediction = self.predict_df(df)
+            self._cache.set_cache(dataset.row_hashes[missing], raw_prediction)
+            cached_predictions.loc[missing] = raw_prediction.tolist()
+
+        # TODO: check if there is a better solution
+        return np.array(np.array(cached_predictions).tolist())
 
     def upload(self, client: GiskardClient, project_key, validate_ds=None) -> None:
         """
@@ -331,29 +364,30 @@ class BaseModel(ABC):
         if client is None:
             # internal worker case, no token based http client
             assert local_dir.exists(), f"Cannot find existing model {project_key}.{model_id} in {local_dir}"
-            with open(Path(local_dir) / "giskard-model-meta.yaml") as f:
-                saved_meta = yaml.load(f, Loader=yaml.Loader)
+            with open(Path(local_dir) / META_FILENAME) as f:
+                file_meta = yaml.load(f, Loader=yaml.Loader)
                 meta = ModelMeta(
-                    name=saved_meta["name"],
-                    model_type=SupportedModelTypes[saved_meta["model_type"]],
-                    feature_names=saved_meta["feature_names"],
-                    classification_labels=saved_meta["classification_labels"],
-                    classification_threshold=saved_meta["threshold"],
-                    loader_module=saved_meta["loader_module"],
-                    loader_class=saved_meta["loader_class"],
+                    name=file_meta["name"],
+                    model_type=SupportedModelTypes[file_meta["model_type"]],
+                    feature_names=file_meta["feature_names"],
+                    classification_labels=file_meta["classification_labels"],
+                    classification_threshold=file_meta["threshold"],
+                    loader_module=file_meta["loader_module"],
+                    loader_class=file_meta["loader_class"],
                 )
         else:
             client.load_artifact(local_dir, posixpath.join(project_key, "models", model_id))
             meta_response = client.load_model_meta(project_key, model_id)
             # internal worker case, no token based http client
             assert local_dir.exists(), f"Cannot find existing model {project_key}.{model_id} in {local_dir}"
-            with open(Path(local_dir) / "giskard-model-meta.yaml") as f:
+            with open(Path(local_dir) / META_FILENAME) as f:
                 file_meta = yaml.load(f, Loader=yaml.Loader)
+                classification_labels = cls.cast_labels(meta_response)
                 meta = ModelMeta(
                     name=meta_response["name"],
                     model_type=SupportedModelTypes[meta_response["modelType"]],
                     feature_names=meta_response["featureNames"],
-                    classification_labels=meta_response["classificationLabels"],
+                    classification_labels=classification_labels,
                     classification_threshold=meta_response["threshold"],
                     loader_module=file_meta["loader_module"],
                     loader_class=file_meta["loader_class"],
@@ -364,7 +398,20 @@ class BaseModel(ABC):
         constructor_params = meta.__dict__
         del constructor_params["loader_module"]
         del constructor_params["loader_class"]
-        return clazz.load(local_dir, **constructor_params)
+
+        model = clazz.load(local_dir, **constructor_params)
+        model.id = model_id
+        model._cache = ModelCache(meta.model_type, model.id)
+        return model
+
+    @classmethod
+    def cast_labels(cls, meta_response):
+        labels_ = meta_response["classificationLabels"]
+        labels_dtype = meta_response["classificationLabelsDtype"]
+        if labels_ and labels_dtype and builtins.hasattr(builtins, labels_dtype):
+            dtype = builtins.getattr(builtins, labels_dtype)
+            labels_ = [dtype(i) for i in labels_]
+        return labels_
 
     @classmethod
     def load(cls, local_dir, **kwargs):
@@ -393,15 +440,15 @@ class WrapperModel(BaseModel, ABC):
 
     @configured_validate_arguments
     def __init__(
-            self,
-            model: Any,
-            model_type: ModelType,
-            data_preprocessing_function: Callable[[pd.DataFrame], Any] = None,
-            model_postprocessing_function: Callable[[Any], Any] = None,
-            name: Optional[str] = None,
-            feature_names: Optional[Iterable] = None,
-            classification_threshold: Optional[float] = 0.5,
-            classification_labels: Optional[Iterable] = None,
+        self,
+        model: Any,
+        model_type: ModelType,
+        data_preprocessing_function: Callable[[pd.DataFrame], Any] = None,
+        model_postprocessing_function: Callable[[Any], Any] = None,
+        name: Optional[str] = None,
+        feature_names: Optional[Iterable] = None,
+        classification_threshold: Optional[float] = 0.5,
+        classification_labels: Optional[Iterable] = None,
     ) -> None:
         """
         Initialize a new instance of the WrapperModel class.
@@ -430,12 +477,12 @@ class WrapperModel(BaseModel, ABC):
             sign_len = len(signature(self.data_preprocessing_function).parameters)
             if sign_len != 1:
                 raise ValueError(
-                    f"data_preprocessing_function only takes 1 argument (a pandas.DataFrame) but {sign_len} were provided.")
+                    f"data_preprocessing_function only takes 1 argument (a pandas.DataFrame) but {sign_len} were provided."
+                )
         if self.model_postprocessing_function:
             sign_len = len(signature(self.model_postprocessing_function).parameters)
             if sign_len != 1:
-                raise ValueError(
-                    f"model_postprocessing_function only takes 1 argument but {sign_len} were provided.")
+                raise ValueError(f"model_postprocessing_function only takes 1 argument but {sign_len} were provided.")
 
     def _postprocess(self, raw_predictions):
         # User specified a custom postprocessing function
@@ -583,6 +630,7 @@ class MLFlowBasedModel(WrapperModel, ABC):
         """
         if not self.id:
             self.id = uuid.uuid4()
+            self._cache.set_id(str(self.id))
         self.save_model(local_path, mlflow.models.Model(model_uuid=str(self.id)))
         super().save(local_path)
 
@@ -607,7 +655,8 @@ class CloudpickleBasedModel(WrapperModel, ABC):
         except ValueError:
             raise ValueError(
                 "We couldn't save your model with cloudpickle. Please provide us with your own "
-                "serialisation method by overriding the save_model() and load_model() methods.")
+                "serialisation method by overriding the save_model() and load_model() methods."
+            )
 
     @classmethod
     def load_model(cls, local_dir):
@@ -620,7 +669,8 @@ class CloudpickleBasedModel(WrapperModel, ABC):
         else:
             raise ValueError(
                 "We couldn't load your model with cloudpickle. Please provide us with your own "
-                "serialisation method by overriding the save_model() and load_model() methods.")
+                "serialisation method by overriding the save_model() and load_model() methods."
+            )
 
 
 class CustomModel(BaseModel, ABC):
