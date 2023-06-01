@@ -144,7 +144,6 @@ class PyTorchModel(MLFlowBasedModel):
         super().save(local_path)
         self.save_pytorch_meta(local_path)
 
-
     @classmethod
     def load(cls, local_dir, **kwargs):
         pytorch_meta_file = Path(local_dir) / 'giskard-model-pytorch-meta.yaml'
