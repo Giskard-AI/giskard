@@ -12,19 +12,20 @@
                 </td>
                 <td class="p-3">
                     <code class="mono text-blue-300">
-                    {{issue.slice_fn|replace("&", "<br>")}}
+                    {{issue.domain|replace("&", "<br>")}}
                 </code>
                 </td>
                 <td class="p-3">
-                    {{issue.test_name}}
+                    {{ issue.metric }}
                 </td>
                 <td class="p-3">
-                    <span class="{{'text-red-400' if issue.is_major else 'text-amber-200'}}">{{"{:.2f}".format(issue.test_results.metric * 100) }}% than
-                        global</span>
+                    <span class="{{'text-red-400' if issue.is_major else 'text-amber-200'}}">
+                        {{ issue.deviation }}
+                    </span>
                 </td>
                 <td class="p-3">
                     <span class="text-gray-400">
-                        {{issue.test_results.actual_slices_size[0]}} samples ({{ '{:.2f}'.format(100 * issue.test_results.actual_slices_size[0] / issue.test_results.reference_slices_size[0])}}%)
+                        {{ issue.description }}
                     </span>
                 </td>
                 <td class="p-3 text-xs text-right space-x-1">
