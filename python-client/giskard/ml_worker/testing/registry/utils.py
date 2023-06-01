@@ -3,5 +3,4 @@ def is_in_ipython():
 
 
 def is_local_function(full_name: str):
-    return full_name.startswith('__main__') \
-        or full_name.startswith('tests')
+    return full_name.startswith('__main__')
