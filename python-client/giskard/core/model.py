@@ -312,8 +312,16 @@ class WrapperModel(Model, ABC):
                 )
 
         # Ensure this is 2-dimensional
-        if raw_prediction.ndim <= 1 and self.is_classification:
-            raw_prediction = raw_prediction.reshape(-1, 1)
+        if raw_prediction.ndim <= 1 and self.is_binary_classification:
+            # case of scalar model output
+            if raw_prediction.ndim == 0:
+                raw_prediction = raw_prediction.reshape(-1, 1)
+            # case of one data entry but provided probabilities for all classification_labels
+            elif raw_prediction.shape[0] == len(self.meta.classification_labels):
+                raw_prediction = raw_prediction.reshape(1, -1)
+            # case of many (or one) data entries but provided probabilities for only one classification_label
+            else:
+                raw_prediction = raw_prediction.reshape(-1, 1)
 
         if self.is_binary_classification and raw_prediction.shape[1] == 1:
             logger.warning(
