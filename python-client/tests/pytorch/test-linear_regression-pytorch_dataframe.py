@@ -20,6 +20,45 @@ content_type = "application/json"
 model_name = "uploaded model"
 b_content_type = b"application/json"
 
+class ManualLinearRegression(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.linear = nn.Linear(1, 1)
+
+    def forward(self, x):
+        return self.linear(x)
+
+class FeedforwardNeuralNetModel(nn.Module):
+    def __init__(self, input_dim, hidden_dim, output_dim):
+        super(FeedforwardNeuralNetModel, self).__init__()
+        self.input_dim=input_dim
+        # Linear function
+        self.fc1 = nn.Linear(input_dim, hidden_dim)
+        # Non-linearity
+        self.relu = nn.ReLU()
+        # Linear function (readout)
+        self.fc2 = nn.Linear(hidden_dim, output_dim)
+
+    def forward(self, x):
+        # Linear function
+        out = self.fc1(x) #torch.transpose(x,0,1)
+        # Non-linearity
+        out = self.relu(out)
+        # Linear function (readout)
+        out = self.fc2(out)
+        return out
+
+def make_train_step(model, loss_fn, optimizer):
+    def train_step(x, y):
+        model.train()
+        yhat = model(x)
+        loss = loss_fn(y, yhat)
+        loss.backward()
+        optimizer.step()
+        optimizer.zero_grad()
+        return loss.item()
+    return train_step
+
 @httpretty.activate(verbose=True, allow_net_connect=False)
 def test_linear_regression_pytorch_dataloader():
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
@@ -38,45 +77,6 @@ def test_linear_regression_pytorch_dataloader():
 
     train_loader = DataLoader(dataset=train_dataset, batch_size=16)
     val_loader = DataLoader(dataset=val_dataset, batch_size=20)
-
-    class ManualLinearRegression(nn.Module):
-        def __init__(self):
-            super().__init__()
-            self.linear = nn.Linear(1, 1)
-
-        def forward(self, x):
-            return self.linear(x)
-
-    class FeedforwardNeuralNetModel(nn.Module):
-        def __init__(self, input_dim, hidden_dim, output_dim):
-            super(FeedforwardNeuralNetModel, self).__init__()
-            self.input_dim=input_dim
-            # Linear function
-            self.fc1 = nn.Linear(input_dim, hidden_dim)
-            # Non-linearity
-            self.relu = nn.ReLU()
-            # Linear function (readout)
-            self.fc2 = nn.Linear(hidden_dim, output_dim)
-
-        def forward(self, x):
-            # Linear function
-            out = self.fc1(x) #torch.transpose(x,0,1)
-            # Non-linearity
-            out = self.relu(out)
-            # Linear function (readout)
-            out = self.fc2(out)
-            return out
-
-    def make_train_step(model, loss_fn, optimizer):
-        def train_step(x, y):
-            model.train()
-            yhat = model(x)
-            loss = loss_fn(y, yhat)
-            loss.backward()
-            optimizer.step()
-            optimizer.zero_grad()
-            return loss.item()
-        return train_step
 
     # Estimate a and b
     torch.manual_seed(42)
@@ -155,3 +155,6 @@ def test_linear_regression_pytorch_dataloader():
         assert req.headers.get("Authorization") == auth
         assert int(req.headers.get("Content-Length")) > 0
         assert req.headers.get("Content-Type") == "application/json"
+
+if __name__ == "__main__":
+    test_linear_regression_pytorch_dataloader()
