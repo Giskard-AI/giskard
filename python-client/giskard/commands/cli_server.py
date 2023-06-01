@@ -370,21 +370,26 @@ def clean(delete_data):
     """
     logger.info("Removing Giskard Server")
     client = create_docker_client()
+    container_name = get_container_name()
+    image_name = get_image_name()
     try:
-        container = client.containers.get(get_container_name())
+        container = client.containers.get(container_name)
         container.stop()
         container.remove()
-        logger.info(f"Container {container.name} has been deleted")
+        logger.info(f"Container {container_name} has been deleted")
     except NotFound:
-        pass
+        logger.info(f"Container {container_name} does not exist")
     try:
-        image_name = get_image_name()
         client.images.get(image_name).remove()
         logger.info(f"Image {image_name} has been deleted")
     except NotFound:
-        pass
+        logger.info(f"Image {image_name} does not exist")
 
-    if delete_data and click.confirm("Are you sure you want to delete user data (giskard-home volume)? "
-                                     "This will permanently erase all of the Giskard activity results"):
-        client.volumes.get('giskard-home').remove()
-        logger.info("User data has been deleted in 'giskard-home' volume")
+    try:
+        volume = client.volumes.get('giskard-home')
+        if delete_data and click.confirm("Are you sure you want to delete user data (giskard-home volume)? "
+                                         "This will permanently erase all of the Giskard activity results"):
+            volume.remove()
+            logger.info("User data has been deleted in 'giskard-home' volume")
+    except NotFound:
+        logger.info("Volume 'giskard-home' does not exist")
