@@ -2,14 +2,10 @@ from typing import Callable, Iterable, Any, Optional
 
 import pandas as pd
 
+import mlflow
 from giskard.core.core import ModelType
 from giskard.core.validation import validate_args
 from giskard.models.base import MLFlowBasedModel
-
-try:
-    import mlflow
-except ImportError as e:
-    raise ImportError("Please install it via 'pip install mlflow-skinny'") from e
 
 
 class SKLearnModel(MLFlowBasedModel):
