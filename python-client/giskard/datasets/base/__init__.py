@@ -3,6 +3,7 @@ import logging
 import posixpath
 import tempfile
 import uuid
+from functools import cached_property
 from pathlib import Path
 from typing import Dict, Optional, List, Union
 
@@ -85,11 +86,6 @@ class DataProcessor:
             if apply_only_last:
                 break
 
-        if dataset._dataset_hash is not None:
-            df = ds.df
-            ds._dataset_hash = dataset._dataset_hash.loc[df.index]
-            ds._dataset_hash.loc[df[dataset.df.loc[df.index].ne(df)].dropna(how='all').index] = float('NaN')
-
         if len(self.pipeline):
             ds.data_processor = self
 
@@ -131,8 +127,6 @@ class Dataset(ColumnMetadataMixin):
     df: pd.DataFrame
     id: uuid.UUID
     data_processor: DataProcessor
-    _dataset_hash: Optional[pd.Series]
-    _dataset_hash_initialized = False
 
     @configured_validate_arguments
     def __init__(
@@ -143,8 +137,7 @@ class Dataset(ColumnMetadataMixin):
             cat_columns: Optional[List[str]] = None,
             column_types: Optional[Dict[str, str]] = None,
             id: Optional[uuid.UUID] = None,
-            validation=True,
-            dataset_hash: Optional[pd.DataFrame] = None
+            validation=True
     ) -> None:
         """
         Initializes a Dataset object.
@@ -199,7 +192,6 @@ class Dataset(ColumnMetadataMixin):
         }
 
         self.data_processor = DataProcessor()
-        self._dataset_hash = dataset_hash
 
         logger.info("Your 'pandas.DataFrame' is successfully wrapped by Giskard's 'Dataset' wrapper class.")
 
@@ -223,21 +215,11 @@ class Dataset(ColumnMetadataMixin):
         self.data_processor.add_step(transformation_function)
         return self
 
-    def dataset_hash(self):
-        if not self._dataset_hash_initialized:
-            if self._dataset_hash is not None:
-                unknown_values = self._dataset_hash.isna()
-                self._dataset_hash[unknown_values] = list(
-                    map(lambda row: xxh3_128_hexdigest(f"({', '.join(map(lambda x: str(x), row))}".encode('utf-8')),
-                        self.df.loc[unknown_values].values))
-            else:
-                self._dataset_hash = pandas.Series(
-                    map(lambda row: xxh3_128_hexdigest(f"({', '.join(map(lambda x: str(x), row))}".encode('utf-8')),
-                        self.df.values), index=self.df.index)
-
-            self._dataset_hash_initialized = True
-
-        return self._dataset_hash
+    @cached_property
+    def _row_hashes(self):
+        return pandas.Series(
+            map(lambda row: xxh3_128_hexdigest(f"({', '.join(map(lambda x: str(x), row))}".encode('utf-8')),
+                self.df.values), index=self.df.index)
 
     @configured_validate_arguments
     def slice(
@@ -393,7 +375,7 @@ class Dataset(ColumnMetadataMixin):
         Returns:
             dict: A dictionary where the keys are the column names and the values are the corresponding data types as strings.
         """
-        return {key: value for key, value in df.dtypes.apply(lambda x: x.name).to_dict().items()}
+        return df.dtypes.apply(lambda x: x.name).to_dict()
 
     def upload(self, client: GiskardClient, project_key: str):
         """
