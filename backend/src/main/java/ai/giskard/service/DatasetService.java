@@ -6,7 +6,6 @@ import ai.giskard.repository.ml.DatasetRepository;
 import ai.giskard.security.PermissionEvaluator;
 import ai.giskard.web.dto.DatasetPageDTO;
 import ai.giskard.web.dto.RowFilterDTO;
-import ai.giskard.web.dto.ml.DatasetDetailsDTO;
 import ai.giskard.web.rest.errors.Entity;
 import ai.giskard.web.rest.errors.EntityNotFoundException;
 import com.univocity.parsers.common.TextParsingException;
@@ -76,22 +75,7 @@ public class DatasetService {
             .resolve(dataset.getId().toString())
             .resolve(sample ? DATA_SAMPLE_FILE : DATA_FILE);
     }
-
-    /**
-     * Get details of dataset
-     *
-     * @param id dataset's id
-     * @return details dto of the dataset
-     */
-    public DatasetDetailsDTO getDetails(@NotNull UUID id) {
-        // TODO: this is overkill to load all data in memory in order to get metadata
-        Table table = readTableByDatasetId(id, false);
-        DatasetDetailsDTO details = new DatasetDetailsDTO();
-        details.setNumberOfRows(table.rowCount());
-        details.setColumns(table.columnNames());
-        return details;
-    }
-
+    
     /**
      * Get filtered rows
      *
