@@ -39,9 +39,7 @@
     <v-container v-else class="vc mt-6">
       <v-alert class="text-center">
         <p class="headline font-weight-medium grey--text text--darken-2">
-          No feedbacks were added to this project yet.
-          <br>
-          Please add your first feedback inside a debugging session.
+          Get your first model feedback by clicking on <v-icon class="mx-2" color="primary">mdi-message-plus</v-icon> in a debugging session.
         </p>
       </v-alert>
       <div class="d-flex justify-center mb-6">
