@@ -7,11 +7,9 @@ build:
   jobs:
     post_create_environment:
       - pip install pdm
-      - pdm export -p python-client --without-hashes -G doc -o requirements-sphinx.txt
+      - pdm config python.use_venv false
+    post_install:
+      - pdm install -p python-client -G doc
 
 sphinx:
   configuration: python-client/docs/conf.py
-
-python:
-  install:
-    - requirements: requirements-sphinx.txt
