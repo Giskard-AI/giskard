@@ -13,10 +13,10 @@ from sklearn.metrics import (
 )
 
 from giskard import test
-from giskard.models.base import BaseModel
 from giskard.datasets.base import Dataset
 from giskard.ml_worker.core.test_result import TestResult
 from giskard.ml_worker.testing.registry.giskard_test import GiskardTest
+from giskard.models.base import BaseModel
 
 
 def _verify_target_availability(dataset):
@@ -132,7 +132,7 @@ class AucTest(GiskardTest):
               passed:
                 TRUE if AUC metrics >= threshold
             """
-        return test_auc(self.actual_slice, self.model, self.threshold)
+        return test_auc.test_fn(actual_slice=self.actual_slice, model=self.model, threshold=self.threshold)
 
 
 @test(name='AUC', tags=['performance', 'classification', 'ground_truth'])
@@ -403,7 +403,7 @@ def test_diff_accuracy(actual_slice: Dataset, reference_slice: Dataset, model: B
           TRUE if Accuracy difference < threshold
     """
     return _test_diff_prediction(
-        test_accuracy,
+        test_accuracy.test_fn,
         model,
         actual_slice,
         reference_slice,
@@ -413,7 +413,9 @@ def test_diff_accuracy(actual_slice: Dataset, reference_slice: Dataset, model: B
 
 
 @test(name='F1 difference', tags=['performance', 'classification', 'ground_truth'])
-def test_diff_f1(actual_slice: Dataset, reference_slice: Dataset, model: BaseModel,
+def test_diff_f1(actual_slice: Dataset,
+                 reference_slice: Dataset,
+                 model: BaseModel,
                  threshold: float = 0.1):
     """
     Test if the absolute percentage change in model F1 Score between two samples is lower than a threshold
@@ -445,7 +447,7 @@ def test_diff_f1(actual_slice: Dataset, reference_slice: Dataset, model: BaseMod
           TRUE if F1 Score difference < threshold
     """
     return _test_diff_prediction(
-        test_f1, model, actual_slice, reference_slice, threshold, test_name="F1 Score"
+        test_f1.test_fn, model, actual_slice, reference_slice, threshold, test_name="F1 Score"
     )
 
 
@@ -481,7 +483,7 @@ def test_diff_precision(actual_slice: Dataset, reference_slice: Dataset, model: 
           TRUE if Precision difference < threshold
     """
     return _test_diff_prediction(
-        test_precision,
+        test_precision.test_fn,
         model,
         actual_slice,
         reference_slice,
@@ -522,7 +524,7 @@ def test_diff_recall(actual_slice: Dataset, reference_slice: Dataset, model: Bas
           TRUE if Recall difference < threshold
     """
     return _test_diff_prediction(
-        test_recall, model, actual_slice, reference_slice, threshold, test_name="Recall"
+        test_recall.test_fn, model, actual_slice, reference_slice, threshold, test_name="Recall"
     )
 
 
@@ -559,13 +561,13 @@ def test_diff_reference_actual_f1(reference_slice: Dataset, actual_slice: Datase
           TRUE if F1 Score difference < threshold
     """
     return _test_diff_prediction(
-        test_f1, model, reference_slice, actual_slice, threshold, test_name="F1 Score"
+        test_f1.test_fn, model, reference_slice, actual_slice, threshold, test_name="F1 Score"
     )
 
 
 @test(name='Accuracy Reference Actual difference', tags=['performance', 'classification', 'ground_truth'])
 def test_diff_reference_actual_accuracy(
-    reference_slice: Dataset, actual_slice: Dataset, model: BaseModel, threshold: float = 0.1
+        reference_slice: Dataset, actual_slice: Dataset, model: BaseModel, threshold: float = 0.1
 ):
     """
     Test if the absolute percentage change in model Accuracy between reference and actual data
@@ -597,7 +599,7 @@ def test_diff_reference_actual_accuracy(
           TRUE if Accuracy difference < threshold
     """
     return _test_diff_prediction(
-        test_accuracy,
+        test_accuracy.test_fn,
         model,
         reference_slice,
         actual_slice,
@@ -639,7 +641,7 @@ def test_diff_rmse(actual_slice: Dataset, reference_slice: Dataset, model: BaseM
           TRUE if RMSE difference < threshold
     """
     return _test_diff_prediction(
-        test_rmse, model, actual_slice, reference_slice, threshold, test_name="RMSE"
+        test_rmse.test_fn, model, actual_slice, reference_slice, threshold, test_name="RMSE"
     )
 
 
@@ -676,5 +678,5 @@ def test_diff_reference_actual_rmse(reference_slice: Dataset, actual_slice: Data
           TRUE if RMSE difference < threshold
     """
     return _test_diff_prediction(
-        test_rmse, model, reference_slice, actual_slice, threshold, test_name="RMSE"
+        test_rmse.test_fn, model, reference_slice, actual_slice, threshold, test_name="RMSE"
     )
