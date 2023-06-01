@@ -83,11 +83,11 @@ const params = computed(() => props.isPastExecution
 
 function mapValue(value: string, type: string): string {
     if (type === 'SlicingFunction') {
-        let slicingFunction = slicingFunctionsByUuid.value[value];
-        return slicingFunction.displayName ?? slicingFunction.name
+        const slicingFunction = slicingFunctionsByUuid.value[value];
+        return slicingFunction?.displayName ?? slicingFunction?.name ?? value
     } else if (type === 'TransformationFunction') {
-        let transformationFunction = transformationFunctionsByUuid.value[value];
-        return transformationFunction.displayName ?? transformationFunction.name
+        const transformationFunction = transformationFunctionsByUuid.value[value];
+        return transformationFunction?.displayName ?? transformationFunction?.name ?? value
     } else if (type === 'BaseModel') {
         const model = models.value[value]
         return model.name ?? value
