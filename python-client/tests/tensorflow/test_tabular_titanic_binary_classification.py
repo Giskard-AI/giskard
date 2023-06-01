@@ -50,7 +50,3 @@ def test_tabular_titanic_binary_classification():
     my_test_dataset = Dataset(new_data, name="test dataset")
 
     tests.utils.verify_model_upload(my_model, my_test_dataset)
-
-
-if __name__ == "__main__":
-    test_tabular_titanic_binary_classification()
