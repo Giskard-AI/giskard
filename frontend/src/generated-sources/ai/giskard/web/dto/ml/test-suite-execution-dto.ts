@@ -1,4 +1,4 @@
-import type {TestExecutionDto} from './test-execution-dto';
+import type {SuiteTestExecutionDTO} from './suite-test-execution-dto';
 import type {TestResult} from './../../../domain/ml/test-result';
 import type {WorkerJobDTO} from './worker-job-dto';
 
@@ -8,6 +8,6 @@ import type {WorkerJobDTO} from './worker-job-dto';
 export interface TestSuiteExecutionDTO extends WorkerJobDTO {
     inputs: {[key: string]: string};
     result?: TestResult | null;
-    results?: TestExecutionDto[] | null;
+    results?: SuiteTestExecutionDTO[] | null;
     suiteId: number;
 }

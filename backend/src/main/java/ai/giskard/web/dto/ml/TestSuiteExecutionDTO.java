@@ -20,6 +20,6 @@ public class TestSuiteExecutionDTO extends WorkerJobDTO {
     @UINullable
     TestResult result;
     @UINullable
-    private List<TestExecutionDto> results;
+    private List<SuiteTestExecutionDTO> results;
 
 }

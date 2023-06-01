@@ -64,7 +64,7 @@
                                  :registry="registry"
                                  :models="allModels"
                                  :datasets="allDatasets"
-                                 :inputs="inputs"/>
+                                 :inputTypes="inputs"/>
           </v-tab-item>
         </v-tabs-items>
       </v-col>
