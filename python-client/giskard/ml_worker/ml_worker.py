@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import sys
 
 import grpc
 from grpc.aio._server import Server
@@ -48,8 +49,15 @@ class MLWorker:
             address = f"{settings.host}:{port}"
         else:
             worker_id = cli_utils.ml_worker_id(is_server, client.host_url)
-            self.socket_file_location = f"{settings.home_dir / 'run' / f'ml-worker-{worker_id}.sock'}"
-            address = f"unix://{self.socket_file_location}"
+            # On Windows, we cannot use Unix sockets, so we use TCP.
+            # Port 40052 is only used internally between the worker and the bridge.
+            if sys.platform == "win32":
+                # Find random open port
+                port = find_free_port()
+                address = f"localhost:{port}"
+            else:
+                self.socket_file_location = f"{settings.home_dir / 'run' / f'ml-worker-{worker_id}.sock'}"
+                address = f"unix://{self.socket_file_location}"
 
         add_MLWorkerServicer_to_server(MLWorkerServiceImpl(self, client, address, not is_server), server)
         server.add_insecure_port(address)

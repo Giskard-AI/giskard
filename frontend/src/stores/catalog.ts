@@ -43,6 +43,9 @@ export const useCatalogStore = defineStore('catalog', {
         transformationFunctions(state: State) {
             return latestVersions(state.catalog?.transformations)
         },
+        transformationFunctionsByUuid(state: State) {
+            return keyByUuid(state.catalog?.transformations)
+        },
     },
     actions: {
         async loadCatalog(projectId: number) {

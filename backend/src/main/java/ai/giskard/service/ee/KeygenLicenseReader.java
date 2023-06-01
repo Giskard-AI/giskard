@@ -49,7 +49,7 @@ public class KeygenLicenseReader {
         JsonNode licenseAttributes = json.get("data").get("attributes"); // NOSONAR
         license.setActive("ACTIVE".equals(licenseAttributes.get("status").asText()));
         license.setExpiresOn(ZonedDateTime.parse(licenseAttributes.get("expiry").asText()).toInstant());
-
+        license.setId(json.get("data").get("id").asText());
         return license;
     }
 }

@@ -26,6 +26,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Nullable;
 import java.io.*;
@@ -62,6 +64,10 @@ public class MLWorkerService {
         }
     }
 
+    /**
+     * ML Worker operations are time-consuming, we shouldn't perform them inside DB transactions
+     */
+    @Transactional(propagation = Propagation.NEVER)
     public MLWorkerClient createClient(boolean isInternal) {
         try {
             ClientInterceptor clientInterceptor = new MLWorkerClientErrorInterceptor();

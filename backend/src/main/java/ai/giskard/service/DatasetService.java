@@ -13,7 +13,6 @@ import ai.giskard.web.rest.errors.EntityNotFoundException;
 import com.univocity.parsers.common.TextParsingException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import tech.tablesaw.api.IntColumn;
 import tech.tablesaw.api.Table;
 import tech.tablesaw.io.csv.CsvReadOptions;
@@ -27,7 +26,6 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
-@Transactional
 @RequiredArgsConstructor
 public class DatasetService {
     public static final String GISKARD_DATASET_INDEX_COLUMN_NAME = "_GISKARD_INDEX_";
@@ -44,7 +42,7 @@ public class DatasetService {
      * @return the table
      */
     public Table readTableByDatasetId(@NotNull UUID datasetId) {
-        Dataset dataset = datasetRepository.findById(datasetId).orElseThrow(() -> new EntityNotFoundException(Entity.DATASET, datasetId.toString()));
+        Dataset dataset = datasetRepository.getMandatoryById(datasetId);
         Map<String, tech.tablesaw.api.ColumnType> columnDtypes = dataset.getColumnTypes().entrySet().stream()
             .collect(Collectors.toMap(Map.Entry::getKey, e -> ColumnType.featureToColumn.get(e.getValue())));
         Path filePath = locationService.datasetsDirectory(dataset.getProject().getKey())
@@ -81,7 +79,7 @@ public class DatasetService {
     }
 
     public DatasetMetadataDTO getMetadata(@NotNull UUID id) {
-        Dataset dataset = this.datasetRepository.getById(id);
+        Dataset dataset = this.datasetRepository.getMandatoryById(id);
         DatasetMetadataDTO metadata = new DatasetMetadataDTO();
         metadata.setId(id);
         metadata.setColumnDtypes(dataset.getColumnDtypes());
@@ -107,9 +105,8 @@ public class DatasetService {
             .toList());
     }
 
-    @Transactional
     public List<FeatureMetadataDTO> getFeaturesWithDistinctValues(UUID datasetId) {
-        Dataset dataset = datasetRepository.getById(datasetId);
+        Dataset dataset = datasetRepository.getMandatoryById(datasetId);
         permissionEvaluator.validateCanReadProject(dataset.getProject().getId());
 
         Table data = readTableByDatasetId(datasetId);
@@ -128,7 +125,6 @@ public class DatasetService {
         }).toList();
     }
 
-    @Transactional
     public Dataset renameDataset(UUID datasetId, String name) {
         Dataset dataset = datasetRepository.findById(datasetId)
             .orElseThrow(() -> new EntityNotFoundException(Entity.DATASET, datasetId.toString()));

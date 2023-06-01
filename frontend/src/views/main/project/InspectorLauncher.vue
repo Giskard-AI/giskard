@@ -78,13 +78,12 @@ async function launchInspector() {
     creatingInspection.value = true;
     const inspection = await api.prepareInspection({ datasetId: datasetSelected.value!.id, modelId: props.model.id, name: "" });
     await router.push({
-      name: 'project-debugger',
+      name: 'inspection',
       params: {
-        id: props.projectId.toString(),
+        projectId: props.projectId.toString(),
         inspectionId: inspection.id.toString()
       }
     })
-
     reset();
   } finally {
     creatingInspection.value = false;
