@@ -206,10 +206,12 @@
                 </div>
               </v-container>
             </v-card-text>
-
-
           </v-card-text>
-
+          <v-card-actions v-if="currentWorker">
+            <v-col class="text-right">
+              <v-btn @click="stopMLWorker()">Stop ML Worker</v-btn>
+            </v-col>
+          </v-card-actions>
         </v-card>
       </v-col>
     </v-row>
@@ -297,6 +299,11 @@ async function copyMLWorkerCommand() {
 
 function epochToDate(epoch: number) {
   return moment.unix(epoch).format('DD/MM/YYYY HH:mm:ss');
+}
+
+async function stopMLWorker() {
+  await api.stopMLWorker(!externalWorkerSelected.value);
+  await initMLWorkerInfo();
 }
 </script>
 
