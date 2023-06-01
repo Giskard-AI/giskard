@@ -25,7 +25,11 @@ b_content_type = b"application/json"
 
 train_iter = AG_NEWS(split='train')
 test_iter = AG_NEWS(split='test')
-num_class = len(set([label for (label, text) in train_iter]))
+ag_news_label = {1: "World",
+                 2: "Sports",
+                 3: "Business",
+                 4: "Sci/Tec"}
+num_class = len(ag_news_label.keys())
 
 tokenizer = get_tokenizer('basic_english')
 
@@ -82,11 +86,6 @@ def test_newspaper_classification_pytorch_dataset():
     vocab_size = len(vocab)
     emsize = 64
     model = TextClassificationModel(vocab_size, emsize, num_class).to(device)
-
-    ag_news_label = {1: "World",
-                     2: "Sports",
-                     3: "Business",
-                     4: "Sci/Tec"}
 
     test_dataset = to_map_style_dataset(test_iter)
     raw_data = {"text": [value[1] for value in test_dataset],
