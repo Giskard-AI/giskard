@@ -99,13 +99,19 @@ def test_output_in_range_reg(data, model, threshold, expected_metric, actual_sli
     assert results.passed
 
 
-def test_disparate_impact(german_credit_data, german_credit_model):
+@pytest.mark.parametrize(
+    "data,model",
+    [("german_credit_data", "german_credit_model")],
+)
+def test_disparate_impact(data, model, request):
     tests = GiskardTestFunctions()
+    data = request.getfixturevalue(data)
+    model = request.getfixturevalue(model)
     results = tests.statistical.test_disparate_impact(
-        gsk_dataset=german_credit_data,
+        gsk_dataset=data,
         protected_slice=lambda df: df[df.sex == "female"],
         unprotected_slice=lambda df: df[df.sex == "male"],
-        model=german_credit_model,
+        model=model,
         positive_outcome="Not default",
     )
     assert results.passed, f"DI = {results.metric}"
