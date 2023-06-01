@@ -1,17 +1,18 @@
-import cloudpickle
 import logging
-import mlflow.sklearn
-import numpy
-import pandas as pd
 import pickle
 import posixpath
 import tempfile
 import uuid
+from pathlib import Path
+from typing import Optional, Any, Union
+
+import cloudpickle
+import mlflow.sklearn
+import numpy
+import pandas as pd
 import yaml
 from mlflow.pyfunc import PyFuncModel
-from pathlib import Path
 from pydantic import BaseModel
-from typing import Optional, Any, Union
 
 from giskard.client.giskard_client import GiskardClient
 from giskard.core.core import ModelMeta
@@ -109,11 +110,15 @@ class Model:
         else:
             raise ValueError('Unsupported model type')
 
-        info = self._new_mlflow_model_meta()
-        mlflow.sklearn.save_model(self.clf,
-                                  path=local_path,
-                                  pyfunc_predict_fn=pyfunc_predict_fn,
-                                  mlflow_model=info)
+        meta = self._new_mlflow_model_meta()
+        self._save_model_to_local_dir(local_path,
+                                      pyfunc_predict_fn=pyfunc_predict_fn,
+                                      mlflow_model=meta)
+        self._save_giskard_model_meta_to_local_dir(meta, local_path)
+
+        return meta
+
+    def _save_giskard_model_meta_to_local_dir(self, info, local_path):
         with open(Path(local_path) / 'giskard-model-meta.yaml', 'w') as f:
             yaml.dump(
                 {
@@ -128,7 +133,8 @@ class Model:
                     "size": get_size(local_path),
                 }, f, default_flow_style=False)
 
-        return info
+    def _save_model_to_local_dir(self, local_path, **kwargs):
+        return mlflow.sklearn.save_model(self.clf, path=local_path, **kwargs)
 
     @staticmethod
     def _new_mlflow_model_meta():
