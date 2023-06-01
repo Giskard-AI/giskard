@@ -1,0 +1,138 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.1.xsd">
+    <changeSet author="kevinmessiaen (generated)" id="1678179519209-6">
+        <createTable tableName="test_function_arguments">
+            <column autoIncrement="true" name="id" type="BIGINT">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="test_function_argumentsPK"/>
+            </column>
+            <column name="default_value" type="VARCHAR(255)"/>
+            <column name="name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="optional" type="BOOLEAN">
+                <constraints nullable="false"/>
+            </column>
+            <column name="type" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="test_function_uuid" type="UUID"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="kevinmessiaen (generated)" id="1678179519209-7">
+        <createTable tableName="test_functions">
+            <column name="uuid" type="UUID">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="test_functionsPK"/>
+            </column>
+            <column name="code" type="VARCHAR">
+                <constraints nullable="false"/>
+            </column>
+            <column name="display_name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="doc" type="VARCHAR"/>
+            <column name="module" type="VARCHAR(255)"/>
+            <column name="module_doc" type="VARCHAR"/>
+            <column name="name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="tags" type="VARCHAR"/>
+            <column name="version" type="INT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="kevinmessiaen (generated)" id="1678179519209-8">
+        <addColumn tableName="test_suite_execution">
+            <column name="logs" type="VARCHAR"/>
+        </addColumn>
+    </changeSet>
+    <changeSet author="kevinmessiaen (generated)" id="1678179519209-9">
+        <addColumn tableName="suite_test">
+            <column name="test_function_uuid" type="uuid">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
+    <changeSet author="kevinmessiaen (generated)" id="1678179519209-10">
+        <addUniqueConstraint columnNames="test_function_uuid, name" constraintName="UK3dq1q3xxhetk289a1rsyvmel6"
+                             tableName="test_function_arguments"/>
+    </changeSet>
+    <changeSet author="kevinmessiaen (generated)" id="1678179519209-11">
+        <addUniqueConstraint columnNames="name, module, version" constraintName="UK3vm4b9ix9990e0p05jjc7tu43"
+                             tableName="test_functions"/>
+    </changeSet>
+    <changeSet author="kevinmessiaen (generated)" id="1678179519209-12">
+        <addForeignKeyConstraint baseColumnNames="suite_id" baseTableName="test_suite_execution"
+                                 constraintName="FK7xgbcx2dwf7drbhbti2mka3xb" deferrable="false"
+                                 initiallyDeferred="false" referencedColumnNames="id" referencedTableName="test_suite"
+                                 validate="true"/>
+    </changeSet>
+    <changeSet author="kevinmessiaen (generated)" id="1678179519209-13">
+        <addForeignKeyConstraint baseColumnNames="test_function_uuid" baseTableName="suite_test"
+                                 constraintName="FKm2ciegbp0qa646t3tr3velwna" deferrable="false"
+                                 initiallyDeferred="false" referencedColumnNames="uuid"
+                                 referencedTableName="test_functions" validate="true"/>
+    </changeSet>
+    <changeSet author="kevinmessiaen (generated)" id="1678179519209-14">
+        <addForeignKeyConstraint baseColumnNames="test_suite" baseTableName="suite_test"
+                                 constraintName="FKmbqkdmuw56y7rlf2os5330ous" deferrable="false"
+                                 initiallyDeferred="false" referencedColumnNames="id" referencedTableName="test_suite"
+                                 validate="true"/>
+    </changeSet>
+    <changeSet author="kevinmessiaen (generated)" id="1678179519209-15">
+        <addForeignKeyConstraint baseColumnNames="test_function_uuid" baseTableName="test_function_arguments"
+                                 constraintName="FKsdla96ceod1qatvl2sik5to35" deferrable="false"
+                                 initiallyDeferred="false" referencedColumnNames="uuid"
+                                 referencedTableName="test_functions" validate="true"/>
+    </changeSet>
+    <changeSet author="kevinmessiaen (generated)" id="1678179519209-16">
+        <dropForeignKeyConstraint baseTableName="TEST_EXECUTION" constraintName="FK1D9G3PQKL379JC19KD3XCXF99"/>
+    </changeSet>
+    <changeSet author="kevinmessiaen (generated)" id="1678179519209-17">
+        <dropForeignKeyConstraint baseTableName="SUITE_TEST" constraintName="FKAQHNJ6JTPE2WECKWSNVG2HUY4"/>
+    </changeSet>
+    <changeSet author="kevinmessiaen (generated)" id="1678179519209-18">
+        <dropForeignKeyConstraint baseTableName="TEST_SUITE_EXECUTION" constraintName="FKDE5RSS3IFE5AIOBXVGIIKJQ7W"/>
+    </changeSet>
+    <changeSet author="kevinmessiaen (generated)" id="1678179519209-19">
+        <dropForeignKeyConstraint baseTableName="TEST_SUITE" constraintName="FKEEY8LX8JKYDL6RRJJE22GLV45"/>
+    </changeSet>
+    <changeSet author="kevinmessiaen (generated)" id="1678179519209-20">
+        <dropForeignKeyConstraint baseTableName="TEST_SUITE_NEW" constraintName="FKH0GSRNK26AWF8IP6AW9FTNPXO"/>
+    </changeSet>
+    <changeSet author="kevinmessiaen (generated)" id="1678179519209-21">
+        <dropForeignKeyConstraint baseTableName="TEST" constraintName="FKM67RMF2X1WA80068ISIB8PM8E"/>
+    </changeSet>
+    <changeSet author="kevinmessiaen (generated)" id="1678179519209-22">
+        <dropForeignKeyConstraint baseTableName="TEST_SUITE" constraintName="FKNWIQW82VBN8CXVXYRTRLVEABN"/>
+    </changeSet>
+    <changeSet author="kevinmessiaen (generated)" id="1678179519209-23">
+        <dropForeignKeyConstraint baseTableName="TEST_SUITE" constraintName="FKPDNYW2EU2HGUNI9M08CLWSTFO"/>
+    </changeSet>
+    <changeSet author="kevinmessiaen (generated)" id="1678179519209-24">
+        <dropTable tableName="TEST"/>
+    </changeSet>
+    <changeSet author="kevinmessiaen (generated)" id="1678179519209-25">
+        <dropTable tableName="TEST_EXECUTION"/>
+    </changeSet>
+    <changeSet author="kevinmessiaen (generated)" id="1678179519209-26">
+        <dropTable tableName="TEST_SUITE_NEW"/>
+    </changeSet>
+    <changeSet author="kevinmessiaen (generated)" id="1678179519209-27">
+        <dropColumn columnName="ACTUAL_DATASET_ID" tableName="TEST_SUITE"/>
+    </changeSet>
+    <changeSet author="kevinmessiaen (generated)" id="1678179519209-28">
+        <dropColumn columnName="MODEL_ID" tableName="TEST_SUITE"/>
+    </changeSet>
+    <changeSet author="kevinmessiaen (generated)" id="1678179519209-29">
+        <dropColumn columnName="REFERENCE_DATASET_ID" tableName="TEST_SUITE"/>
+    </changeSet>
+    <changeSet author="kevinmessiaen (generated)" id="1678179519209-30">
+        <dropColumn columnName="TEST_ID" tableName="SUITE_TEST"/>
+    </changeSet>
+    <changeSet author="kevinmessiaen (generated)" id="1678179519209-1">
+        <dropNotNullConstraint columnDataType="varchar(255)" columnName="name" tableName="test_suite"/>
+    </changeSet>
+</databaseChangeLog>
