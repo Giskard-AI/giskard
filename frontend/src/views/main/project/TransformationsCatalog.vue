@@ -114,7 +114,7 @@
                                             <v-expansion-panel>
                                                 <v-expansion-panel-header class="grey lighten-5 pl-6 pr-4 py-2">Code</v-expansion-panel-header>
                                                 <v-divider></v-divider>
-                                                <v-expansion-panel-content class="pl-0 pr-1 pt-2">
+                                                <v-expansion-panel-content class="pl-0 pr-1">
                                                     <MonacoEditor ref="editor" v-model='selected.code' class='editor' language='python' style="height: 300px; min-height: 300px" :options="monacoOptions" />
                                                 </v-expansion-panel-content>
                                             </v-expansion-panel>
