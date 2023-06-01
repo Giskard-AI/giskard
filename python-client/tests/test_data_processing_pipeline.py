@@ -43,6 +43,14 @@ def test_slicing(german_credit_data: Dataset):
     assert len(ds.df) == 568
 
 
+def test_slicing_using_lambda(german_credit_data: Dataset):
+    assert len(german_credit_data.df) == 1000
+    ds = german_credit_data.slice(lambda x: x.credit_amount > 1000)
+    assert len(ds.df) == 884
+    ds = ds.slice(lambda x: x.credit_amount > 2000)
+    assert len(ds.df) == 568
+
+
 def test_chain(german_credit_data: Dataset):
     assert len(german_credit_data.df) == 1000
     german_credit_data.add_slicing_function(filter_without_parenthesis)
@@ -58,6 +66,17 @@ def test_transformation(german_credit_data: Dataset):
     assert np.all(ds.df.credit_amount == -2)
     ds = german_credit_data.transform(transform_with_parenthesis)
     assert np.all(ds.df.credit_amount == -1)
+    assert len(german_credit_data.df) == 1000
+    assert len(german_credit_data.df.credit_amount.unique()) > 1
+
+
+def test_transformation_without_annotation(german_credit_data: Dataset):
+    def transform_without_annotation(x: pd.Series) -> pd.Series:
+        x.credit_amount = -2
+        return x
+
+    ds = german_credit_data.transform(transform_without_annotation)
+    assert np.all(ds.df.credit_amount == -2)
     assert len(german_credit_data.df) == 1000
     assert len(german_credit_data.df.credit_amount.unique()) > 1
 

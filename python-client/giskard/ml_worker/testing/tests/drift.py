@@ -15,6 +15,7 @@ from giskard.ml_worker.testing.registry.decorators import test
 from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction
 from giskard.ml_worker.testing.utils import validate_classification_label
 from giskard.models.base import BaseModel
+from ..utils import check_slice_not_empty
 
 other_modalities_pattern = "^other_modalities_[a-z0-9]{32}$"
 
@@ -208,8 +209,15 @@ def test_drift_psi(actual_dataset: Dataset, reference_dataset: Dataset, column_n
         passed:
             TRUE if total_psi <= threshold
     """
-    actual_series, reference_series = _extract_series(actual_dataset.slice(slicing_function),
-                                                      reference_dataset.slice(slicing_function),
+    if slicing_function:
+        test_name = "test_drift_psi"
+        actual_dataset = actual_dataset.slice(slicing_function)
+        check_slice_not_empty(sliced_dataset=actual_dataset, dataset_name="actual_dataset", test_name=test_name)
+        reference_dataset = reference_dataset.slice(slicing_function)
+        check_slice_not_empty(sliced_dataset=reference_dataset, dataset_name="reference_dataset", test_name=test_name)
+
+    actual_series, reference_series = _extract_series(actual_dataset,
+                                                      reference_dataset,
                                                       column_name, "category")
 
     messages, passed, total_psi = _test_series_drift_psi(
@@ -270,8 +278,15 @@ def test_drift_chi_square(actual_dataset: Dataset, reference_dataset: Dataset, c
         passed:
             TRUE if metric > threshold
     """
-    actual_series, reference_series = _extract_series(actual_dataset.slice(slicing_function),
-                                                      reference_dataset.slice(slicing_function),
+    if slicing_function:
+        test_name = "test_drift_chi_square"
+        actual_dataset = actual_dataset.slice(slicing_function)
+        check_slice_not_empty(sliced_dataset=actual_dataset, dataset_name="actual_dataset", test_name=test_name)
+        reference_dataset = reference_dataset.slice(slicing_function)
+        check_slice_not_empty(sliced_dataset=reference_dataset, dataset_name="reference_dataset", test_name=test_name)
+
+    actual_series, reference_series = _extract_series(actual_dataset,
+                                                      reference_dataset,
                                                       column_name, "category")
 
     messages, p_value, passed = _test_series_drift_chi(
@@ -326,8 +341,15 @@ def test_drift_ks(actual_dataset: Dataset, reference_dataset: Dataset, column_na
         passed:
             TRUE if metric >= threshold
     """
-    actual_series, reference_series = _extract_series(actual_dataset.slice(slicing_function),
-                                                      reference_dataset.slice(slicing_function),
+    if slicing_function:
+        test_name = "test_drift_ks"
+        actual_dataset = actual_dataset.slice(slicing_function)
+        check_slice_not_empty(sliced_dataset=actual_dataset, dataset_name="actual_dataset", test_name=test_name)
+        reference_dataset = reference_dataset.slice(slicing_function)
+        check_slice_not_empty(sliced_dataset=reference_dataset, dataset_name="reference_dataset", test_name=test_name)
+
+    actual_series, reference_series = _extract_series(actual_dataset,
+                                                      reference_dataset,
                                                       column_name, "numeric")
 
     result = _calculate_ks(actual_series, reference_series)
@@ -378,8 +400,15 @@ def test_drift_earth_movers_distance(actual_dataset: Dataset, reference_dataset:
         passed:
             TRUE if metric <= threshold
     """
-    actual_series, reference_series = _extract_series(actual_dataset.slice(slicing_function),
-                                                      reference_dataset.slice(slicing_function),
+    if slicing_function:
+        test_name = "test_drift_earth_movers_distance"
+        actual_dataset = actual_dataset.slice(slicing_function)
+        check_slice_not_empty(sliced_dataset=actual_dataset, dataset_name="actual_dataset", test_name=test_name)
+        reference_dataset = reference_dataset.slice(slicing_function)
+        check_slice_not_empty(sliced_dataset=reference_dataset, dataset_name="reference_dataset", test_name=test_name)
+
+    actual_series, reference_series = _extract_series(actual_dataset,
+                                                      reference_dataset,
                                                       column_name, "numeric")
 
     metric = _calculate_earth_movers_distance(actual_series, reference_series)
@@ -445,8 +474,13 @@ def test_drift_prediction_psi(actual_dataset: Dataset, reference_dataset: Datase
         messages:
             Psi result message
     """
-    actual_dataset = actual_dataset.slice(slicing_function)
-    reference_dataset = reference_dataset.slice(slicing_function)
+    if slicing_function:
+        test_name = "test_drift_prediction_psi"
+        actual_dataset = actual_dataset.slice(slicing_function)
+        check_slice_not_empty(sliced_dataset=actual_dataset, dataset_name="actual_dataset", test_name=test_name)
+        reference_dataset = reference_dataset.slice(slicing_function)
+        check_slice_not_empty(sliced_dataset=reference_dataset, dataset_name="reference_dataset", test_name=test_name)
+
     actual_dataset.df.reset_index(drop=True, inplace=True)
     reference_dataset.df.reset_index(drop=True, inplace=True)
     prediction_reference = pd.Series(model.predict(reference_dataset).prediction)
@@ -540,8 +574,13 @@ def test_drift_prediction_chi_square(actual_dataset: Dataset, reference_dataset:
         messages:
             Message describing if prediction is drifting or not
     """
-    actual_dataset = actual_dataset.slice(slicing_function)
-    reference_dataset = reference_dataset.slice(slicing_function)
+    if slicing_function:
+        test_name = "test_drift_prediction_chi_square"
+        actual_dataset = actual_dataset.slice(slicing_function)
+        check_slice_not_empty(sliced_dataset=actual_dataset, dataset_name="actual_dataset", test_name=test_name)
+        reference_dataset = reference_dataset.slice(slicing_function)
+        check_slice_not_empty(sliced_dataset=reference_dataset, dataset_name="reference_dataset", test_name=test_name)
+
     actual_dataset.df.reset_index(drop=True, inplace=True)
     reference_dataset.df.reset_index(drop=True, inplace=True)
     prediction_reference = pd.Series(model.predict(reference_dataset).prediction)
@@ -619,8 +658,13 @@ def test_drift_prediction_ks(actual_dataset: Dataset, reference_dataset: Dataset
         messages:
             Kolmogorov-Smirnov result message
     """
-    actual_dataset = actual_dataset.slice(slicing_function)
-    reference_dataset = reference_dataset.slice(slicing_function)
+    if slicing_function:
+        test_name = "test_drift_prediction_ks"
+        actual_dataset = actual_dataset.slice(slicing_function)
+        check_slice_not_empty(sliced_dataset=actual_dataset, dataset_name="actual_dataset", test_name=test_name)
+        reference_dataset = reference_dataset.slice(slicing_function)
+        check_slice_not_empty(sliced_dataset=reference_dataset, dataset_name="reference_dataset", test_name=test_name)
+
     actual_dataset.df.reset_index(drop=True, inplace=True)
     reference_dataset.df.reset_index(drop=True, inplace=True)
 
@@ -701,8 +745,13 @@ def test_drift_prediction_earth_movers_distance(actual_dataset: Dataset, referen
             Earth Mover's Distance value
 
     """
-    actual_dataset = actual_dataset.slice(slicing_function)
-    reference_dataset = reference_dataset.slice(slicing_function)
+    if slicing_function:
+        test_name = "test_drift_prediction_earth_movers_distance"
+        actual_dataset = actual_dataset.slice(slicing_function)
+        check_slice_not_empty(sliced_dataset=actual_dataset, dataset_name="actual_dataset", test_name=test_name)
+        reference_dataset = reference_dataset.slice(slicing_function)
+        check_slice_not_empty(sliced_dataset=reference_dataset, dataset_name="reference_dataset", test_name=test_name)
+
     actual_dataset.df.reset_index(drop=True, inplace=True)
     reference_dataset.df.reset_index(drop=True, inplace=True)
 

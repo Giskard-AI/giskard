@@ -8,6 +8,7 @@ from giskard.ml_worker.core.test_result import TestResult, TestMessage, TestMess
 from giskard.ml_worker.testing.utils import validate_classification_label
 from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction
 from giskard.models.base import BaseModel
+from ..utils import check_slice_not_empty
 
 
 @test(name="Right Label", tags=["heuristic", "classification"])
@@ -49,7 +50,10 @@ def test_right_label(
       passed:
           TRUE if passed_ratio > threshold
     """
-    dataset = dataset.slice(slicing_function)
+    if slicing_function:
+        dataset = dataset.slice(slicing_function)
+        check_slice_not_empty(sliced_dataset=dataset, dataset_name="dataset", test_name="test_right_label")
+
     dataset.df.reset_index(drop=True, inplace=True)
     prediction_results = model.predict(dataset).prediction
 
@@ -66,13 +70,13 @@ def test_right_label(
 @test(name="Output in range", tags=["heuristic", "classification", "regression"])
 @validate_classification_label
 def test_output_in_range(
-    dataset: Dataset,
-    model: BaseModel,
-    slicing_function: SlicingFunction = None,
-    classification_label: str = None,
-    min_range: float = 0.3,
-    max_range: float = 0.7,
-    threshold: float = 0.5,
+        dataset: Dataset,
+        model: BaseModel,
+        slicing_function: SlicingFunction = None,
+        classification_label: str = None,
+        min_range: float = 0.3,
+        max_range: float = 0.7,
+        threshold: float = 0.5,
 ) -> TestResult:
     """
     Summary: Test if the model output belongs to the right range for a slice
@@ -116,7 +120,10 @@ def test_output_in_range(
         passed:
             TRUE if metric > threshold
     """
-    dataset = dataset.slice(slicing_function)
+    if slicing_function:
+        dataset = dataset.slice(slicing_function)
+        check_slice_not_empty(sliced_dataset=dataset, dataset_name="dataset", test_name="test_output_in_range")
+
     results_df = pd.DataFrame()
     dataset.df.reset_index(drop=True, inplace=True)
 
@@ -200,7 +207,10 @@ def test_disparate_impact(
           passed:
               TRUE if the disparate impact ratio > min_threshold && disparate impact ratio < max_threshold
     """
-    dataset = dataset.slice(slicing_function)
+    if slicing_function:
+        dataset = dataset.slice(slicing_function)
+        check_slice_not_empty(sliced_dataset=dataset, dataset_name="dataset", test_name="test_disparate_impact")
+
     if positive_outcome not in list(model.meta.classification_labels):
         raise ValueError(
             f"The positive outcome chosen {positive_outcome} is not part of the dataset target values {list(model.meta.classification_labels)}."
