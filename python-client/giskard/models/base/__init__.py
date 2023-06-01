@@ -16,8 +16,6 @@ import numpy as np
 import pandas as pd
 import pydantic
 import yaml
-from pandas.errors import EmptyDataError
-from zstandard import ZstdDecompressor
 
 from giskard.client.giskard_client import GiskardClient
 from giskard.client.io_utils import save_df, compress
@@ -28,6 +26,7 @@ from giskard.ml_worker.utils.logging import Timer
 from giskard.models.base.cache import ModelCache
 from giskard.path_utils import get_size
 from giskard.settings import settings
+from ..utils import np_types_to_native
 
 META_FILENAME = "giskard-model-meta.yaml"
 
@@ -123,7 +122,7 @@ class BaseModel(ABC):
             name=name if name is not None else self.__class__.__name__,
             model_type=model_type,
             feature_names=list(feature_names) if feature_names else None,
-            classification_labels=classification_labels,
+            classification_labels=np_types_to_native(classification_labels),
             loader_class=self.__class__.__name__,
             loader_module=self.__module__,
             classification_threshold=classification_threshold,
@@ -192,7 +191,7 @@ class BaseModel(ABC):
         with open(class_file, "wb") as f:
             cloudpickle.dump(self.__class__, f, protocol=pickle.DEFAULT_PROTOCOL)
 
-    def prepare_dataframe(self, dataset: Dataset):
+    def prepare_dataframe(self, df, column_dtypes=None, target=None):
         """
         Prepares a Pandas DataFrame for inference by ensuring the correct columns are present and have the correct data types.
 
@@ -206,24 +205,23 @@ class BaseModel(ABC):
             ValueError: If the target column is found in the dataset.
             ValueError: If a specified feature name is not found in the dataset.
         """
-        df = dataset.df.copy()
-        df = df[dataset.columns]
-        column_dtypes = dict(dataset.column_dtypes) if dataset.column_dtypes else None
+        df = df.copy()
+        column_dtypes = dict(column_dtypes) if column_dtypes else None
 
         if column_dtypes:
             for cname, ctype in column_dtypes.items():
                 if cname not in df:
                     df[cname] = None
 
-        if dataset.target:
-            if dataset.target in df.columns:
-                df.drop(dataset.target, axis=1, inplace=True)
-            if column_dtypes and dataset.target in column_dtypes:
-                del column_dtypes[dataset.target]
+        if target:
+            if target in df.columns:
+                df.drop(target, axis=1, inplace=True)
+            if column_dtypes and target in column_dtypes:
+                del column_dtypes[target]
 
         if self.meta.feature_names:
-            if set(self.meta.feature_names) > set(dataset.columns):
-                column_names = set(self.meta.feature_names) - set(dataset.columns)
+            if set(self.meta.feature_names) > set(df.columns):
+                column_names = set(self.meta.feature_names) - set(df.columns)
                 raise ValueError(
                     f"The following columns are not found in the dataset: {', '.join(sorted(column_names))}"
                 )
@@ -265,7 +263,7 @@ class BaseModel(ABC):
         """
         timer = Timer()
 
-        raw_prediction = self.predict_df(self.prepare_dataframe(dataset)) if self.disable_cache \
+        raw_prediction = self.predict_df(self.prepare_dataframe(dataset.df, column_dtypes=dataset.column_dtypes, target=dataset.target)) if self.disable_cache \
             else self._predict_from_cache(dataset)
 
         if self.is_regression:
@@ -295,7 +293,7 @@ class BaseModel(ABC):
             )
         else:
             raise ValueError(f"Prediction task is not supported: {self.meta.model_type}")
-        timer.stop(f"Predicted dataset with shape {dataset.df.shape}")
+        timer.stop(f"Predicted dataset with shape {df.shape}")
         return result
 
     @abstractmethod
@@ -312,7 +310,7 @@ class BaseModel(ABC):
         if len(missing.shape) > 1:
             missing = missing.any(axis=1)
 
-        df = self.prepare_dataframe(dataset.slice(lambda x: dataset.df[missing], row_level=False))
+        df = self.prepare_dataframe(self.prepare_dataframe(dataset.slice(lambda x: dataset.df[missing], row_level=False).df, column_dtypes=dataset.column_dtypes, target=dataset.target))
 
         if len(df) > 0:
             raw_prediction = self.predict_df(df)

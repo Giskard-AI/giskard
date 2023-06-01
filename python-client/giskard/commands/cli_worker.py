@@ -20,11 +20,11 @@ from giskard.cli_utils import (
     run_daemon,
     get_log_path,
     tail,
-    follow_file, analytics, validate_url,
+    follow_file, validate_url,
 )
-from giskard.client.analytics_collector import anonymize
 from giskard.path_utils import run_dir
 from giskard.settings import settings
+from giskard.utils.analytics_collector import anonymize, analytics
 
 logger = logging.getLogger(__name__)
 
