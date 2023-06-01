@@ -105,25 +105,26 @@ const showInspectDialog = ref<boolean>(false);
 const modelToInspect = ref<ModelDTO | null>(null);
 const apiAccessToken = ref<JWTToken | null>(null);
 
-const codeContent = computed(() =>
-  `# Create a Giskard client
-from giskard import GiskardClient
-url = "${apiURL}" # URL of your Giskard instance
-token = "${apiAccessToken.value!.id_token}" # Your API Access Token
+const codeContent = computed(
+// language=Python
+    () =>
+  `from giskard import Model, GiskardClient
+from giskard.demo import titanic  # for demo purposes only 🛳️
 
-# Load your model (example: SKLearn model)
-from joblib import load
-my_sklearn_regressor = load("sklearn_regressor.joblib")
+original_model, _ = titanic()  # Replace with your model creation
 
-# Create a Giskard Model
-from giskard import SKLearnModel
-my_giskard_model = SKLearnModel(my_sklearn_regressor, 
-                                model_type="regression",
-                                name="My SKLearn Regressor")
+# Create a Giskard client
+token = "${apiAccessToken.value!.id_token}"
+client = GiskardClient(
+    url="${apiURL}",  # URL of your Giskard instance
+    token=token
+)
 
-# Upload your model on Giskard
-project_key = "${project.value!.key}" # Current project key
-my_giskard_model.upload(client, project_key)`
+# Wrap your model with Giskard model
+giskard_model = Model(original_model, model_type="classification", name="Titanic model")
+
+# Upload to the current project
+giskard_model.upload(client, "${project.value!.key}")`
 )
 
 const project = computed(() => {
