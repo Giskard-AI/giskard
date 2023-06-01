@@ -11,7 +11,9 @@ from giskard.ml_worker.generated.ml_worker_pb2 import SingleTestResult
 from giskard.ml_worker.testing.abstract_test_collection import AbstractTestCollection
 from giskard.ml_worker.testing.registry.decorators import test
 from giskard.ml_worker.utils.logging import configure_logging
+from giskard.models.pytorch import PyTorchModel
 from giskard.models.sklearn import SKLearnModel
+from giskard.models.tensorflow import TensorFlowModel
 
 configure_logging()
 if sys.version_info >= (3, 8):
@@ -38,4 +40,6 @@ __all__ = [
     'GiskardClient',
     'AbstractTestCollection',
     'test',
+    'PyTorchModel',
+    'TensorFlowModel'
 ]

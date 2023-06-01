@@ -39,7 +39,7 @@ def explain(model: Model, dataset: Dataset, input_data: Dict):
 
     example = background_example(df, dataset.feature_types)
     kernel = shap.KernelExplainer(predict_array, example)
-    shap_values = kernel.shap_values(input_df)
+    shap_values = kernel.shap_values(input_df, silent=True)
 
     if model.is_regression:
         explanation_chart_data = summary_shap_regression(shap_values=shap_values, feature_names=feature_names)
