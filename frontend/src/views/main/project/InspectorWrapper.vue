@@ -54,11 +54,17 @@
           <v-btn :disabled='!canNext' icon @click='next'>
               <v-icon>mdi-skip-next</v-icon>
           </v-btn>
+
           <span class='caption grey--text' v-if="totalRows > 0">
           Entry #{{ totalRows === 0 ? 0 : rowNb + 1 }} / {{ totalRows }}
         </span>
           <span v-show="originalData && isDefined(originalData['Index'])" class='caption grey--text'
                 style='margin-left: 15px'>Row Index {{ originalData['Index'] + 1 }}</span>
+          <v-chip class="ml-2" outlined link
+                  :color="inspection.sample ? 'purple' : 'primary'"
+                  @click="handleSwitchSample" x-small>
+              {{ inspection.sample ? 'Sample' : 'Whole' }} data
+          </v-chip>
       </v-toolbar>
         <v-spacer/>
 
@@ -142,6 +148,9 @@ import SlicingFunctionSelector from "@/views/main/utils/SlicingFunctionSelector.
 import {useCatalogStore} from "@/stores/catalog";
 import {storeToRefs} from "pinia";
 import {useInspectionStore} from "@/stores/inspection";
+import {$vfm} from "vue-final-modal";
+import BlockingLoadingModal from "@/views/main/project/modals/BlockingLoadingModal.vue";
+import {confirm} from "@/utils/confirmation.utils";
 
 interface CreatedFeedbackCommonDTO {
     targetFeature?: string | null;
@@ -199,7 +208,7 @@ const regressionThreshold = ref(0.1);
 const percentRegressionUnit = ref(true);
 
 const canPrevious = computed(() => !shuffleMode.value && rowNb.value > 0);
-const canNext = computed(() => !shuffleMode.value && rowNb.value < totalRows.value - 1);
+const canNext = computed(() => rowNb.value < totalRows.value - 1);
 const {transformationFunctions} = storeToRefs(useInspectionStore());
 
 function commonFeedbackData(): CreatedFeedbackCommonDTO {
@@ -317,7 +326,7 @@ async function fetchRows(rowIdxInResults: number, forceFetch: boolean) {
                   inspectionId: props.inspectionId
               },
               removeRows: dataProcessingResult.value?.filteredRows
-          })
+          }, inspection.value!.sample, shuffleMode.value)
       rows.value = result.content;
       numberOfRows.value = result.totalItems;
   }
@@ -364,7 +373,6 @@ const transformationPipeline = computed(() => Object.values(transformationFuncti
 watch(() => transformationPipeline.value, processDataset, {deep: true})
 
 async function processDataset() {
-    console.log(transformationFunctions.value)
     const pipeline = [selectedSlicingFunction.value, ...transformationPipeline.value]
         .filter(callable => !!callable.uuid) as Array<ParameterizedCallableDTO>;
 
@@ -385,18 +393,51 @@ function resetKeys() {
 
 async function init() {
     inspection.value = await api.getInspection(props.inspectionId);
+    useInspectionStore().$reset();
     await useCatalogStore().loadCatalog(props.projectId);
 }
 
 onMounted(async () => {
-  labels.value = await api.getLabelsForTarget(props.inspectionId);
-  bindKeys();
-  await init();
+    labels.value = await api.getLabelsForTarget(props.inspectionId);
+    bindKeys();
+    await init();
 });
 
 onUnmounted(() => {
-  resetKeys();
+    resetKeys();
 });
+
+async function handleSwitchSample() {
+    if (inspection.value!.sample) {
+        const confirmed = await confirm($vfm, 'Inspect whole dataset', 'Opening the debugger on the whole data might cause performance issues', true);
+        if (!confirmed) {
+            return;
+        }
+    }
+
+    await $vfm.show({
+        component: BlockingLoadingModal,
+        bind: {
+            title: "Preprocessing dataset",
+            text: "Please wait. This operation might take some time."
+        },
+        on: {
+            async mounted(close) {
+                try {
+                    inspection.value = await api.updateInspectionName(inspection.value!.id, {
+                        name: inspection.value!.name,
+                        datasetId: inspection.value!.dataset.id,
+                        modelId: inspection.value!.model.id,
+                        sample: !inspection.value!.sample
+                    });
+                    await updateRow(true);
+                } finally {
+                    close();
+                }
+            }
+        }
+    });
+}
 </script>
 
 <style scoped>
