@@ -63,7 +63,7 @@ class TestResult:
                """.format('green' if self.passed else 'red',
                           '✓' if self.passed else '𐄂',
                           'succeed' if self.passed else 'failed',
-                          self.metric,
+                          'No metric' if self.metric is None else str(round(self.metric, 2)),
                           ''.join([] if self.messages is None else [m._repr_html_() for m in self.messages]))
 
     def __repr__(self):
@@ -72,5 +72,5 @@ class TestResult:
                Metric: {1}
                {2}
                """.format('succeed' if self.passed else 'failed',
-                          self.metric,
+                          'No metric' if self.metric is None else str(round(self.metric, 2)),
                           '\n'.join([] if self.messages is None else [m.__repr__() for m in self.messages]))
