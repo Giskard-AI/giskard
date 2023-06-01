@@ -121,7 +121,6 @@ export * from './ai/giskard/web/dto/dataset-process-function-dto';
 export * from './ai/giskard/web/dto/dataset-processing-result-dto';
 export * from './ai/giskard/web/dto/explain-response-dto';
 export * from './ai/giskard/web/dto/explain-text-response-dto';
-export * from './ai/giskard/web/dto/feature-metadata-dto';
 export * from './ai/giskard/web/dto/feedback-dto';
 export * from './ai/giskard/web/dto/feedback-minimal-dto';
 export * from './ai/giskard/web/dto/feedback-reply-dto';
