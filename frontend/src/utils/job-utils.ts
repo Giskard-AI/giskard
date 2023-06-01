@@ -19,3 +19,41 @@ export async function trackJob(uuid: string, onUpdate?: (JobDTO) => void): Promi
 
     return job;
 }
+
+/**
+ * Different from setInterval since it wait the tasks to end before rescheduling
+ */
+export function schedulePeriodicJob(task: () => Promise<void>, delayMs: number): () => void {
+    const state = {
+        cancelled: false
+    }
+
+    const periodicTask = async () => {
+        if (!state.cancelled) {
+            await task();
+            setTimeout(periodicTask, delayMs);
+        }
+    }
+    setTimeout(periodicTask, 0);
+
+
+    return () => state.cancelled = true;
+}
+
+const MAX_DELAY = 5000;
+const BASE_DELAY = 1000;
+const EXPONENT = 1.01;
+
+export async function exponentialRetry<T>(task: () => Promise<T>): Promise<T> {
+    let delay = 0;
+
+    while (true) {
+        try {
+            return await task();
+        } catch (e) {
+            delay = Math.min(MAX_DELAY, Math.max(BASE_DELAY, Math.pow(delay, EXPONENT)));
+            console.log(delay);
+            await sleep(delay);
+        }
+    }
+}
