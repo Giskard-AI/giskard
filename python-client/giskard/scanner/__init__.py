@@ -1,7 +1,7 @@
-from ..models.base import BaseModel
-from ..datasets.base import Dataset
-from .scanner import Scanner
 from .logger import logger
+from giskard import Dataset
+from giskard.models.base import BaseModel
+from .scanner import Scanner
 
 _default_detectors = [
     ".performance.performance_bias_detector",

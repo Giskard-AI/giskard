@@ -1,8 +1,10 @@
+from typing import Sequence
+from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction
+from ...performance import PerformanceIssue
 from ....models.base import BaseModel
 from ....datasets.base import Dataset
 from ...logger import logger
-
-from giskard.scanner.performance.performance_bias_detector import PerformanceBiasDetector
+from giskard.scanner.performance.performance_bias_detector import PerformanceBiasDetector, IssueFinder
 from abc import abstractmethod
 
 
@@ -43,3 +45,19 @@ class PredictionBiasDetector(PerformanceBiasDetector):
     @abstractmethod
     def _get_meta(self, model, dataset):
         ...
+
+    def _find_issues(
+        self,
+        slices: Sequence[SlicingFunction],
+        model: BaseModel,
+        dataset: Dataset,
+    ) -> Sequence[PerformanceIssue]:
+        # Use a precooked model to speed up the tests
+        detector = IssueFinder(self.metrics, self.threshold)
+        issues = detector.detect(model, dataset, slices)
+
+        # Restore the original model
+        for issue in issues:
+            issue.model = model
+
+        return issues

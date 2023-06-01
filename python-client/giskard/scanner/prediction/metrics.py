@@ -1,8 +1,9 @@
 from giskard.scanner.performance.metrics import PerformanceMetric
 from giskard.models.base import BaseModel
 from giskard.datasets.base import Dataset
-from giskard.scanner.prediction.loss_generators.borderline import BorderlineDatasetGenerator
-from giskard.scanner.prediction.loss_generators.overconfidence import OverconfidenceDatasetGenerator
+from giskard.scanner.prediction.computing.borderline import ComputeBorderline
+from giskard.scanner.prediction.computing.overconfidence import ComputeOverconfidence
+import pandas as pd
 
 
 class OverconfidenceMAE(PerformanceMetric):
@@ -12,13 +13,10 @@ class OverconfidenceMAE(PerformanceMetric):
     def __call__(self, model: BaseModel, dataset: Dataset) -> float:
         if not model.is_classification:
             raise ValueError(f"Metric '{self.name}' is only defined for classification models.")
+        return self._calculate_metric(model, dataset)
 
-        ocd = OverconfidenceDatasetGenerator(model, dataset)
-
-        return self._calculate_metric(ocd)
-
-    def _calculate_metric(self, ocd) -> float:
-        return ocd.get_proba_rmse()
+    def _calculate_metric(self, model, dataset) -> float:
+        return ComputeOverconfidence(model, dataset).get_metric()
 
 
 class BorderlineMAE(PerformanceMetric):
@@ -29,9 +27,9 @@ class BorderlineMAE(PerformanceMetric):
         if not model.is_classification:
             raise ValueError(f"Metric '{self.name}' is only defined for classification models.")
 
-        bld = BorderlineDatasetGenerator(model, dataset)
 
-        return self._calculate_metric(bld)
 
-    def _calculate_metric(self, bld) -> float:
-        return bld.get_proba_rmse()
+        return self._calculate_metric(model,dataset)
+
+    def _calculate_metric(self, model,dataset) -> float:
+        return ComputeBorderline(model,dataset).get_metric()
