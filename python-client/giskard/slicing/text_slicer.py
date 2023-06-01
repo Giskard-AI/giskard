@@ -98,12 +98,17 @@ class TextSlicer(BaseSlicer):
         feature_data = self.dataset.df[feature]
         raw_stopwords = sw_en + sw_fr
 
-        tokenizer = TfidfVectorizer().build_tokenizer()
-        tokenized_stopwords = sum([tokenizer(stop_word) for stop_word in raw_stopwords], [])
+        try:
+            tokenizer = TfidfVectorizer().build_tokenizer()
+            tokenized_stopwords = sum([tokenizer(stop_word) for stop_word in raw_stopwords], [])
 
-        text_data = feature_data.values.astype("U")
-        vectorizer = TfidfVectorizer(stop_words=tokenized_stopwords)
-        tfidf = vectorizer.fit_transform(text_data)
+            text_data = feature_data.values.astype("U")
+            vectorizer = TfidfVectorizer(stop_words=tokenized_stopwords)
+            tfidf = vectorizer.fit_transform(text_data)
+        except ValueError:
+            # Could not get meaningful tokens (e.g. all stop words)
+            warning(f"Could not get meaningful tokens for textual feature {feature}. Are you sure this is text?")
+            return []
 
         order = np.argsort(tfidf.max(axis=0).toarray().squeeze())[::-1]
         top_words = vectorizer.get_feature_names_out()[order[:max_tokens]]
