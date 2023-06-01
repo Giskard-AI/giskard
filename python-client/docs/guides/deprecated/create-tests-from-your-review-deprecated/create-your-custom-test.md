@@ -113,7 +113,7 @@ You can try and execute your test manually, to do so you will need to wrap your 
 
 ```
 # Wrap your clf with SKLearnModel from Giskard
-my_model = SKLearnModel(clf=clf, model_type="classification")
+wrapped_model = SKLearnModel(clf=clf, model_type="classification")
 
 # Wrap your dataset with Dataset from Giskard
 my_test_dataset = Dataset(test_data, name="test dataset", target="Target", feature_types=column_types)
@@ -239,7 +239,7 @@ class DataQuality(GiskardTest):
 
 
 passed, result = Suite()
-.add_test(UniquenessTest(dataset=my_dataset, column_name='sex'), 'quality')
+.add_test(UniquenessTest(dataset=wrapped_dataset, column_name='sex'), 'quality')
 .run(category='male')
 
 print(f"result: {passed} with a metric of {result['quality'].metric}")
