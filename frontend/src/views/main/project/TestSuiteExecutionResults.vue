@@ -1,55 +1,42 @@
 <template>
-  <v-tabs vertical icons-and-text v-model="tab"
-  >
-    <v-tab v-for="result in props.execution.results" :track-by="result.test.testId">
-      <v-chip class="mr-2" x-small :color="result.passed ? '#4caf50' : '#f44336'">
-        {{ result.passed ? 'pass' : 'fail' }}
-      </v-chip>
-      <p>{{ registry.tests[result.test.testId].name }}</p>
-    </v-tab>
-    <v-tabs-items v-model="tab">
-      <v-tab-item v-for="result in props.execution.results" :track-by="result.test.testId" :transition="false">
-        <p>metric: {{ result.metric }} </p>
-      </v-tab-item>
-    </v-tabs-items>
-  </v-tabs>
+  <v-row>
+    <v-col cols="3">
+      <v-list three-line>
+        <v-list-item-group v-model="selectedResult" color="primary" mandatory>
+          <template v-for="result in props.execution.results">
+            <v-divider/>
+            <v-list-item :value="result">
+              <v-list-item-content>
+                <v-list-item-title v-text="registry.tests[result.test.testId].name"></v-list-item-title>
+                <v-list-item-subtitle>
+                  <v-chip class="mr-2" x-small :color="result.passed ? '#4caf50' : '#f44336'">
+                    {{ result.passed ? 'pass' : 'fail' }}
+                  </v-chip>
+                </v-list-item-subtitle>
+              </v-list-item-content>
+            </v-list-item>
+          </template>
+        </v-list-item-group>
+      </v-list>
+    </v-col>
+    <v-col v-if="selectedResult">
+      <div class="pl-4">
+        <p>metric: {{ selectedResult.metric }}</p>
+      </div>
+    </v-col>
+  </v-row>
 </template>
 
 <script setup lang="ts">
 
 import {ref} from 'vue';
-import {TestCatalogDTO, TestResult, TestSuiteExecutionDTO} from '@/generated-sources';
+import {TestCatalogDTO, TestExecutionDto, TestSuiteExecutionDTO} from '@/generated-sources';
 
 const props = defineProps<{
   execution: TestSuiteExecutionDTO,
   registry: TestCatalogDTO
 }>();
 
-const tab = ref<any>(null);
-
-function executionStatusMessage(execution: TestSuiteExecutionDTO): string {
-  switch (execution.result) {
-    case TestResult.PASSED:
-      return "pass";
-    case TestResult.ERROR:
-      return "error";
-    case TestResult.FAILED:
-      return "fail";
-    default:
-      return "in progress";
-  }
-}
-
-function executionStatusColor(execution: TestSuiteExecutionDTO): string {
-  switch (execution.result) {
-    case TestResult.PASSED:
-      return "#4caf50";
-    case TestResult.ERROR:
-    case TestResult.FAILED:
-      return "#f44336";
-    default:
-      return "#607d8b";
-  }
-}
+const selectedResult = ref<TestExecutionDto | null>(null);
 
 </script>
