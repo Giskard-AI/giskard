@@ -6,7 +6,7 @@ import ai.giskard.domain.Project;
 import ai.giskard.domain.User;
 import ai.giskard.domain.ml.Dataset;
 import ai.giskard.domain.ml.ProjectModel;
-import ai.giskard.domain.ml.TestSuiteNew;
+import ai.giskard.domain.ml.TestSuite;
 import ai.giskard.exception.EntityAlreadyExistsException;
 import ai.giskard.repository.ProjectRepository;
 import ai.giskard.repository.UserRepository;
@@ -171,12 +171,12 @@ public class ProjectService {
         Path modelsMetadatPath = locationService.resolvedMetadataPath(temporaryExportDirectory, ProjectModel.class.getSimpleName());
         Path datasetsMetadataPath = locationService.resolvedMetadataPath(temporaryExportDirectory, Dataset.class.getSimpleName());
         Path feedBacksMetadataPath = locationService.resolvedMetadataPath(temporaryExportDirectory, Feedback.class.getSimpleName());
-        Path testSuiteMetadataPath = testSuiteService.resolvedMetadataPath(temporaryExportDirectory, TestSuiteNew.class.getSimpleName());
+        Path testSuiteMetadataPath = testSuiteService.resolvedMetadataPath(temporaryExportDirectory, TestSuite.class.getSimpleName());
         YAMLConverter.exportEntityToYAML(project, projectMetadataPath);
         YAMLConverter.exportEntitiesToYAML(project.getModels(), modelsMetadatPath);
         YAMLConverter.exportEntitiesToYAML(project.getDatasets(), datasetsMetadataPath);
         YAMLConverter.exportEntitiesToYAML(project.getFeedbacks(), feedBacksMetadataPath);
-        YAMLConverter.exportEntitiesToYAML(project.getTestSuiteNews(), testSuiteMetadataPath);
+        YAMLConverter.exportEntitiesToYAML(project.getTestSuites(), testSuiteMetadataPath);
     }
 
     public Path unzipProject(MultipartFile zipFile) throws IOException {

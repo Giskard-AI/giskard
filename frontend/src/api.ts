@@ -33,11 +33,10 @@ import {
     RoleDTO,
     SliceDTO,
     TestCatalogDTO,
-    TestExecutionResultDTO,
     TestSuiteCompleteDTO,
     TestSuiteDTO,
     TestSuiteExecutionDTO,
-    TestSuiteNewDTO,
+    TestTemplateExecutionResultDTO,
     TokenAndPasswordVM,
     UpdateMeDTO,
     UserDTO
@@ -337,23 +336,23 @@ export const api = {
     async getProjectDatasets(projectId: number) {
         return axiosProject.get<unknown, DatasetDTO[]>(`/${projectId}/datasets`);
     },
-    async getTestSuitesNew(projectId: number) {
-        return apiV2.get<unknown, TestSuiteNewDTO[]>(`testing/project/${projectId}/suites-new`);
+    async getTestSuites(projectId: number) {
+        return apiV2.get<unknown, TestSuiteDTO[]>(`testing/project/${projectId}/suites`);
     },
-    async getTestSuiteNew(projectId: number, suiteId: number) {
-        return apiV2.get<unknown, TestSuiteNewDTO>(`testing/project/${projectId}/suite-new/${suiteId}`);
+    async getTestSuite(projectId: number, suiteId: number) {
+        return apiV2.get<unknown, TestSuiteDTO>(`testing/project/${projectId}/suite/${suiteId}`);
     },
     async getTestSuiteComplete(projectId: number, suiteId: number) {
-        return apiV2.get<unknown, TestSuiteCompleteDTO>(`testing/project/${projectId}/suite-new/${suiteId}/complete`);
+        return apiV2.get<unknown, TestSuiteCompleteDTO>(`testing/project/${projectId}/suite/${suiteId}/complete`);
     },
     async getProjectSlices(id: number) {
         return axiosProject.get<unknown, SliceDTO[]>(`/${id}/slices`);
     },
-    async executeTestSuiteNew(projectId: number, suiteId: number, inputs: { [key: string]: string }) {
-        return apiV2.post<unknown, any>(`testing/project/${projectId}/suite-new/${suiteId}/schedule-execution`, inputs);
+    async executeTestSuite(projectId: number, suiteId: number, inputs: { [key: string]: string }) {
+        return apiV2.post<unknown, any>(`testing/project/${projectId}/suite/${suiteId}/schedule-execution`, inputs);
     },
     async updateTestInputs(projectId: number, suiteId: number, testId: string, inputs: { [key: string]: string }) {
-        return apiV2.put<unknown, TestSuiteExecutionDTO[]>(`testing/project/${projectId}/suite-new/${encodeURIComponent(suiteId)}/test/${testId}/inputs`, inputs);
+        return apiV2.put<unknown, TestSuiteExecutionDTO[]>(`testing/project/${projectId}/suite/${encodeURIComponent(suiteId)}/test/${testId}/inputs`, inputs);
     },
     async getInspection(inspectionId: number) {
         return apiV2.get<unknown, InspectionDTO>(`/inspection/${inspectionId}`);
@@ -400,12 +399,6 @@ export const api = {
     async deleteFeedback(id: number) {
         return apiV2.delete<unknown, void>(`/feedbacks/${id}`);
     },
-    /**
-     * @deprecated
-     */
-    async getTestSuites(projectId: number) {
-        return apiV2.get<unknown, Array<TestSuiteDTO>>(`/testing/suites/${projectId}`);
-    },
     async createSlice(projectId: number, name: string, code: string) {
         return apiV2.post<unknown, SliceDTO>(`/slices`, {
             name: name,
@@ -434,7 +427,11 @@ export const api = {
         return apiV2.get<unknown, TestCatalogDTO>(`/testing/tests/test-catalog`, {params: {projectId}});
     },
     async runAdHocTest(projectId: number, testId: string, inputs: { [key: string]: string }) {
-        return apiV2.post<unknown, TestExecutionResultDTO>(`/testing/tests/run-test`, {projectId, testId, inputs});
+        return apiV2.post<unknown, TestTemplateExecutionResultDTO>(`/testing/tests/run-test`, {
+            projectId,
+            testId,
+            inputs
+        });
     },
 
 };

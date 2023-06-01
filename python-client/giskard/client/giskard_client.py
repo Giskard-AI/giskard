@@ -16,7 +16,7 @@ from requests_toolbelt import sessions
 
 import giskard
 from giskard.client.analytics_collector import GiskardAnalyticsCollector, anonymize
-from giskard.client.dtos import TestSuiteNewDTO
+from giskard.client.dtos import TestSuiteDTO
 from giskard.client.project import Project
 from giskard.client.python_utils import warning
 from giskard.core.core import ModelMeta, DatasetMeta
@@ -273,5 +273,5 @@ class GiskardClient:
     def get_server_info(self):
         return self._session.get("settings/ml-worker-connect").json()
 
-    def save_test_suite(self, dto: TestSuiteNewDTO):
-        return self._session.post(f"testing/project/{dto.project_key}/suites-new", json=dto.dict()).json()
+    def save_test_suite(self, dto: TestSuiteDTO):
+        return self._session.post(f"testing/project/{dto.project_key}/suites", json=dto.dict()).json()

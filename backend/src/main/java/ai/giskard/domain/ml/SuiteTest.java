@@ -25,7 +25,7 @@ public class SuiteTest {
     @ManyToOne
     @JoinColumn(name = "test_suite")
     @NotNull
-    private TestSuiteNew suite;
+    private TestSuite suite;
 
     @OneToMany(mappedBy = "test", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<TestInput> testInputs = new java.util.ArrayList<>();
