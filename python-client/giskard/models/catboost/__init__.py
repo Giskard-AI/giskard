@@ -1,9 +1,11 @@
 from typing import Union
-
-import mlflow
-
 from giskard.core.core import SupportedModelTypes
 from giskard.models.base import MLFlowBasedModel
+
+try:
+    import mlflow
+except ImportError:
+    pass
 
 
 class CatboostModel(MLFlowBasedModel):

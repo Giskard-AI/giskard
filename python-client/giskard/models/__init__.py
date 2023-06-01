@@ -1,5 +1,4 @@
 from importlib import import_module
-import torch  # TODO: to be omitted in another PR
 from typing import Union
 from giskard.core.core import SupportedModelTypes
 from giskard.models.sklearn import SKLearnModel
@@ -7,6 +6,11 @@ from giskard.models.catboost import CatboostModel
 from giskard.models.pytorch import PyTorchModel
 from giskard.models.tensorflow import TensorFlowModel
 from giskard.models.huggingface import HuggingFaceModel
+
+try:
+    import torch
+except ImportError:
+    pass
 
 # format: dict[GiskardModel: list(tuple(module, base_class))]
 _libraries = {HuggingFaceModel: [("transformers", "PreTrainedModel")],
