@@ -241,9 +241,7 @@ public class InspectionService {
     }
 
     public List<Inspection> getInspectionsByProjectId(Long projectId) {
-        List<Inspection> inspections =  getInspections();
-        inspections.removeIf(inspection -> !inspection.getModel().getProject().getId().equals(projectId));
-        return inspections;
+        return inspectionRepository.findAllByModelProjectId(projectId);
     }
 
     public void deleteInspection(Long inspectionId) {
