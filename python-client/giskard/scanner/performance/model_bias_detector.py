@@ -43,7 +43,8 @@ class ModelBiasDetector:
         meta = self._calculate_meta(model, dataset)
 
         # Find slices
-        slices = self._find_slices(dataset.select_columns(model.meta.feature_names), meta)
+        dataset_to_slice = dataset.select_columns(model.meta.feature_names) if model.meta.feature_names else dataset
+        slices = self._find_slices(dataset_to_slice, meta)
 
         # Keep only slices of size at least 5% of the dataset
         slices = [s for s in slices if 0.05 * len(dataset) <= len(dataset.slice(s))]
