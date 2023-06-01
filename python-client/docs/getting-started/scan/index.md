@@ -49,15 +49,15 @@ import pandas as pd
 
 iris_df = pd.DataFrame({"sepal length": [5.1],
                         "sepal width": [3.5],
-                        "color": ["green"],
-                        "iris_type": ["Setosa"]})
+                        "size": ["medium"],
+                        "species": ["Setosa"]})
 
 from giskard import wrap_dataset
 
 wrapped_dataset = wrap_dataset(
   dataset=iris_df, 
-  target="iris_type", # Optional but a MUST if available
-  cat_columns=["color"] # Optional but a MUST if available. Inferred automatically if not.
+  target="species", # Optional but a MUST if available
+  cat_columns=["size"] # Optional but a MUST if available. Inferred automatically if not.
   # name="my_iris_dataset", # Optional
   # column_types=None # # Optional: if not provided, it is inferred automatically
   )
@@ -70,7 +70,9 @@ wrapped_dataset = wrap_dataset(
   * `target`: The column name in `dataset` corresponding to the actual target variable (ground truth).
   * `name`: Name of the wrapped dataset.
   * One of:
-    * `cat_columns`: A list of strings representing the names of categorical columns. 
+    * `cat_columns`: A list of strings representing the names of categorical columns. These are columns that are 
+       processed by the model with common categorical preprocessing, such as one hot encoding. It can be binary, 
+       numerical or textual with few unique values.
        If not provided, the columns types will be automatically inferred.
     * `column_types`: A dictionary of column names and their types (numeric, category or text) for all columns of `dataset`. 
        If not provided, the categorical columns will be automatically inferred.
