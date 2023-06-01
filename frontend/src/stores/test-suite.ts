@@ -1,7 +1,16 @@
-import {DatasetDTO, ModelDTO, TestCatalogDTO, TestSuiteExecutionDTO, TestSuiteNewDTO} from '@/generated-sources';
+import {
+    DatasetDTO,
+    JobDTO,
+    ModelDTO,
+    TestCatalogDTO,
+    TestSuiteExecutionDTO,
+    TestSuiteNewDTO
+} from '@/generated-sources';
 import {defineStore} from 'pinia';
 import {api} from '@/api';
 import {chain} from 'lodash';
+import {trackJob} from '@/utils/job-utils';
+import {useMainStore} from '@/stores/main';
 
 interface State {
     projectId: number | null,
@@ -10,8 +19,11 @@ interface State {
     registry: TestCatalogDTO | null,
     datasets: { [key: string]: DatasetDTO },
     models: { [key: string]: ModelDTO },
-    executions: TestSuiteExecutionDTO[]
+    executions: TestSuiteExecutionDTO[],
+    trackedJobs: { [uuid: string]: JobDTO }
 }
+
+const mainStore = useMainStore();
 
 export const useTestSuiteStore = defineStore('testSuite', {
     state: (): State => ({
@@ -21,7 +33,8 @@ export const useTestSuiteStore = defineStore('testSuite', {
         registry: null,
         datasets: {},
         models: {},
-        executions: []
+        executions: [],
+        trackedJobs: {}
     }),
     getters: {
         suiteId: ({suite}) => suite === null ? null : suite.id,
@@ -39,7 +52,7 @@ export const useTestSuiteStore = defineStore('testSuite', {
                 ))
                 .flatten()
                 .groupBy(result => result.testResult.test.testId)
-                .values();
+                .value();
         }
     },
     actions: {
@@ -71,6 +84,31 @@ export const useTestSuiteStore = defineStore('testSuite', {
             this.datasets = Object.fromEntries(datasets.map(x => [x.id, x]));
             this.models = Object.fromEntries(models.map(x => [x.id, x]));
             this.executions = executions;
+        },
+        async trackJob(uuid: string) {
+            console.log(uuid);
+            const result = await trackJob(uuid, (res) => this.trackedJobs = {
+                ...this.trackedJobs,
+                [uuid]: res
+            });
+
+            const res = {...this.trackedJobs};
+            delete res[uuid]
+            this.trackedJobs = res;
+
+            if (result) {
+                mainStore.addNotification({
+                    content: 'Test suite execution has been executed successfully',
+                    color: 'success'
+                });
+            } else {
+                mainStore.addNotification({
+                    content: 'An error has happened during the test suite execution',
+                    color: 'error'
+                });
+            }
+
+            await this.reload();
         }
     }
 });

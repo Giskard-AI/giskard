@@ -5,8 +5,8 @@
         <v-card-title>{{ comparison.execution.completionDate | date }}</v-card-title>
         <v-card-text>
           <p class="text-h6">Inputs</p>
-          <TestInputList :models="props.models" :inputs="comparison.execution.inputs"
-                         :input-types="props.inputTypes" :datasets="props.datasets"/>
+          <TestInputList :models="models" :inputs="comparison.execution.inputs"
+                         :input-types="inputs" :datasets="datasets"/>
           <p class="text-h6">Test passed: {{ countPassedTests(comparison) }}</p>
           <p class="text-h6">Best performing tests: {{ countBestPerformingTests(comparison) }}</p>
           <v-list-item v-for="result in comparison.tests" :key="result.test.test.testId">
@@ -28,25 +28,14 @@
 
 <script lang="ts" setup>
 
-import {
-  DatasetDTO,
-  ModelDTO,
-  SuiteTestExecutionDTO,
-  TestCatalogDTO,
-  TestResult,
-  TestSuiteExecutionDTO
-} from '@/generated-sources';
+import {SuiteTestExecutionDTO, TestResult, TestSuiteExecutionDTO} from '@/generated-sources';
 import {computed, ComputedRef} from 'vue';
 import TestInputList from '@/components/TestInputList.vue';
 import {chain} from 'lodash';
+import {storeToRefs} from 'pinia';
+import {useTestSuiteStore} from '@/stores/test-suite';
 
-const props = defineProps<{
-  executions?: TestSuiteExecutionDTO[],
-  models: { [key: string]: ModelDTO },
-  datasets: { [key: string]: DatasetDTO },
-  inputTypes: { [name: string]: string },
-  registry: TestCatalogDTO,
-}>();
+const {executions, models, datasets, inputs, registry} = storeToRefs(useTestSuiteStore());
 
 type ExecutionComparison = {
   execution: TestSuiteExecutionDTO,
@@ -59,8 +48,8 @@ type ExecutionComparison = {
 }
 
 const executionComparisons: ComputedRef<ExecutionComparison[]> = computed(() => {
-  const results: ExecutionComparison[] = props.executions ?
-      props.executions
+  const results: ExecutionComparison[] = executions.value ?
+      executions.value
           .filter(execution => execution.result === TestResult.PASSED || execution.result === TestResult.FAILED)
           .map(execution => ({execution} as ExecutionComparison))
       : [];
