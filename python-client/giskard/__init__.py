@@ -9,7 +9,6 @@ from giskard.datasets import dataset
 from giskard.datasets.base import Dataset
 from giskard.ml_worker.core.suite import Suite
 from giskard.ml_worker.generated.ml_worker_pb2 import SingleTestResult
-from giskard.ml_worker.testing.abstract_test_collection import AbstractTestCollection
 from giskard.ml_worker.testing.registry.decorators import test
 from giskard.ml_worker.testing.tests.drift import test_drift_psi, test_drift_chi_square, test_drift_ks, \
     test_drift_earth_movers_distance, test_drift_prediction_psi, test_drift_prediction_chi_square, \
@@ -49,7 +48,6 @@ __all__ = [
     'dataset',
     'Dataset',
     'GiskardClient',
-    'AbstractTestCollection',
     'test',
     'model',
     'model_from_catboost',

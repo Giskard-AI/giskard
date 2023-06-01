@@ -16,6 +16,7 @@ from giskard import test
 from giskard.datasets.base import Dataset
 from giskard.ml_worker.core.test_result import TestResult
 from giskard.ml_worker.testing.registry.giskard_test import GiskardTest
+from giskard.ml_worker.testing.registry.slice_function import slicing_function
 from giskard.models.base import BaseModel
 
 
@@ -567,6 +568,12 @@ def test_diff_reference_actual_f1(reference_slice: Dataset, actual_slice: Datase
     )
 
 
+@slicing_function()
+def foo(x: str):
+    print('HOHO')
+    return True
+
+
 @test(name='Accuracy Reference Actual difference', tags=['performance', 'classification', 'ground_truth'])
 def test_diff_reference_actual_accuracy(
         reference_slice: Dataset, actual_slice: Dataset, model: BaseModel, threshold: float = 0.1
@@ -578,7 +585,7 @@ def test_diff_reference_actual_accuracy(
     Example : The test is passed when the Accuracy for reference dataset has a difference lower than 10% from the
     Accuracy for actual dataset. For example, if the Accuracy for reference dataset is 0.8 (reference_slice) and the
      Accuracy  for actual dataset is 0.6 (actual_slice) then the absolute percentage Accuracy
-    change is 0.2 / 0.8 = 0.25 and the test will fail.
+    change is 0.2 / 0.8 = 0.25 and the test     will fail.
 
 
     Args:

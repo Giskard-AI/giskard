@@ -227,4 +227,10 @@ public class TestSuiteService {
 
         return giskardMapper.toDTO(testSuiteRepository.save(testSuite));
     }
+
+    @Transactional
+
+    public void deleteTestSuite(long suiteId) {
+        testSuiteRepository.deleteById(suiteId);
+    }
 }
