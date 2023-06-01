@@ -8,20 +8,13 @@ The `pandas.DataFrame` you provide should contain the raw data before prepocessi
 etc.).
 
 ```python
-import pandas as pd
-
-iris_df = pd.DataFrame({"sepal length": [5.1],
-                        "sepal width": [3.5],
-                        "petal size": ["medium"],
-                        "species": ["Setosa"]})
-
-from giskard import Dataset
+from giskard import demo, Dataset
 
 wrapped_dataset = Dataset(
-  df=iris_df,
-  target="species",  # Optional but a MUST if available
-  cat_columns=["petal size"]  # Optional but a MUST if available. Inferred automatically if not.
-  # name="my_iris_dataset", # Optional
+  df=demo.titanic_df(),
+  target="Survived",  # Optional but a MUST if available
+  cat_columns=['Pclass', 'Sex', "SibSp", "Parch", "Embarked"] # Optional but a MUST if available. Inferred automatically if not.
+  # name="titanic_dataset", # Optional
   # column_types=None # # Optional: if not provided, it is inferred automatically
 )
 ```
