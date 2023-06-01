@@ -165,7 +165,7 @@ class GiskardTestRegistry:
                     for name in parameters
                 },
             )
-            logger.info(f"Registered test function: {full_name}")
+            logger.debug(f"Registered test function: {full_name}")
 
     @staticmethod
     def _extract_doc(func):

@@ -44,6 +44,14 @@ public class TestSuiteController {
         return savedSuite.getId();
     }
 
+    @PostMapping("project/{projectKey}/suites/generate")
+    @PreAuthorize("@permissionEvaluator.canWriteProjectKey(#projectKey)")
+    @Transactional
+    public Long generateTestSuite(@PathVariable("projectKey") @NotNull String projectKey,
+                                  @Valid @RequestBody GenerateTestSuiteDTO dto) {
+        return testSuiteService.generateTestSuite(projectKey, dto);
+    }
+
     @GetMapping("project/{projectId}/suites")
     @PreAuthorize("@permissionEvaluator.canReadProject(#projectId)")
     @Transactional
@@ -72,6 +80,15 @@ public class TestSuiteController {
             testSuiteExecutionService.listAllExecution(suiteId),
             testSuiteService.getSuiteInputs(projectId, suiteId)
         );
+    }
+
+    @PostMapping("project/{projectId}/suite/{suiteId}/test")
+    @PreAuthorize("@permissionEvaluator.canWriteProject(#projectId)")
+    @Transactional
+    public TestSuiteDTO addTestToSuite(@PathVariable("projectId") long projectId,
+                                          @PathVariable("suiteId") long suiteId,
+                                          @Valid @RequestBody SuiteTestDTO suiteTest) {
+        return giskardMapper.toDTO(testSuiteService.addTestToSuite(suiteId, suiteTest));
     }
 
     @PostMapping("project/{projectId}/suite/{suiteId}/schedule-execution")

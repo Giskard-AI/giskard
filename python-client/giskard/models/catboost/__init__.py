@@ -7,16 +7,15 @@ from giskard.core.model import MLFlowBasedModel
 
 
 class CatboostModel(MLFlowBasedModel):
-    def __init__(
-        self,
-        clf,
-        model_type: Union[SupportedModelTypes, str],
-        data_preprocessing_function=None,
-        name: str = None,
-        feature_names=None,
-        classification_threshold=0.5,
-        classification_labels=None,
-    ) -> None:
+    def __init__(self,
+                 clf,
+                 model_type: Union[SupportedModelTypes, str],
+                 name: str = None,
+                 data_preprocessing_function=None,
+                 model_postprocessing_function=None,
+                 feature_names=None,
+                 classification_threshold=0.5,
+                 classification_labels=None) -> None:
 
         if classification_labels is None and hasattr(clf, "classes_"):
             classification_labels = list(getattr(clf, "classes_"))
@@ -27,6 +26,7 @@ class CatboostModel(MLFlowBasedModel):
             clf=clf,
             model_type=model_type,
             data_preprocessing_function=data_preprocessing_function,
+            model_postprocessing_function=model_postprocessing_function,
             name=name,
             feature_names=feature_names,
             classification_threshold=classification_threshold,

@@ -22,6 +22,7 @@ service MLWorker {
   rpc echo(EchoMsg) returns (EchoMsg){}
   rpc getTestRegistry(google.protobuf.Empty) returns (TestRegistryResponse) {}
   rpc filterDataset(stream FilterDatasetRequest) returns (stream FilterDatasetResponse) {}
+  rpc generateTestSuite(GenerateTestSuiteRequest) returns (GenerateTestSuiteResponse) {}
 }
 
 message MLWorkerInfoRequest{
@@ -139,15 +140,15 @@ message RunAdHocTestRequest {
   repeated TestArgument arguments = 2;
 }
 
-message RunTestSuiteRequest {
-  repeated string testId = 1;
-  repeated TestArgument globalArguments = 2;
-  repeated FixedTestArgument fixedArguments = 3;
+message SuiteTestArgument {
+  int64 id = 1;
+  string testId = 2;
+  repeated TestArgument arguments = 3;
 }
 
-message FixedTestArgument {
-  string testId = 1;
-  repeated TestArgument arguments = 2;
+message RunTestSuiteRequest {
+  repeated SuiteTestArgument tests = 1;
+  repeated TestArgument globalArguments = 2;
 }
 
 message TestArgument{
@@ -181,6 +182,11 @@ message Partial_unexpected_counts {
 
 message NamedSingleTestResult{
   string name = 1;
+  SingleTestResult result = 2;
+}
+
+message IdentifierSingleTestResult{
+  int64 id = 1;
   SingleTestResult result = 2;
 }
 
@@ -220,8 +226,10 @@ message TestResultMessage {
 }
 
 message TestSuiteResultMessage {
-  bool is_pass = 1;
-  repeated NamedSingleTestResult results = 2;
+  bool is_error = 1; // True when an unhandled exception happened (!= test failed)
+  bool is_pass = 2;
+  repeated IdentifierSingleTestResult results = 3;
+  string logs = 4;
 }
 
 message ArtifactRef{
@@ -273,6 +281,41 @@ message TestRegistryResponse{
 message MLWorkerErrorInfo{
   string error = 1;
   string stack = 2;
+}
+
+message SuiteInput{
+  string name = 1;
+  string type = 2;
+  optional ModelMeta model_meta = 3;
+  optional DatasetMeta dataset_meta = 4;
+}
+
+message ModelMeta{
+  optional string model_type = 1;
+}
+
+message DatasetMeta {
+  optional string target = 1;
+}
+
+message GenerateTestSuiteRequest{
+  string project_key = 1;
+  repeated SuiteInput inputs = 2;
+}
+
+message GenerateTestSuiteResponse{
+  repeated GeneratedTest tests = 1;
+}
+
+message GeneratedTest{
+  string test_id = 1;
+  repeated GeneratedTestInput inputs = 2;
+}
+
+message GeneratedTestInput{
+  string name = 1;
+  string value = 2;
+  bool is_alias = 3;
 }
 
 message FilterDatasetRequest {
