@@ -4,6 +4,7 @@ import ai.giskard.domain.ColumnType;
 import ai.giskard.domain.ml.Dataset;
 import ai.giskard.repository.ml.DatasetRepository;
 import ai.giskard.security.PermissionEvaluator;
+import ai.giskard.utils.StreamUtils;
 import ai.giskard.web.dto.DatasetMetadataDTO;
 import ai.giskard.web.dto.DatasetPageDTO;
 import ai.giskard.web.dto.FeatureMetadataDTO;
@@ -116,7 +117,7 @@ public class DatasetService {
 
         return new DatasetPageDTO(table.rowCount(), table.inRange(rangeMin, Math.min(table.rowCount(), rangeMax)).stream()
             .map(row -> row.columnNames().stream()
-                .collect(Collectors.toMap(Function.identity(), row::getObject)))
+                .collect(StreamUtils.toMapAllowNulls(Function.identity(), row::getObject)))
             .toList());
     }
 

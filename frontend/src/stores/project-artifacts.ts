@@ -1,7 +1,8 @@
-import { DatasetDTO, ModelDTO } from '@/generated-sources';
-import { defineStore } from 'pinia';
-import { useMainStore } from '@/stores/main';
-import { api } from '@/api';
+import {DatasetDTO, ModelDTO} from '@/generated-sources';
+import {defineStore} from 'pinia';
+import {useMainStore} from '@/stores/main';
+import {api} from '@/api';
+import {TYPE} from "vue-toastification";
 
 interface State {
   projectId: number | null;
@@ -31,7 +32,7 @@ export const useProjectArtifactsStore = defineStore('projectArtifacts', {
         mainStore.removeNotification(loadingNotification);
       } catch (error) {
         mainStore.removeNotification(loadingNotification);
-        mainStore.addNotification({ content: `Error: ${error.message}`, color: 'error' });
+        mainStore.addNotification({content: `Error: ${error.message}`, color: TYPE.ERROR});
         await mainStore.checkApiError(error);
       }
     },
@@ -50,7 +51,7 @@ export const useProjectArtifactsStore = defineStore('projectArtifacts', {
         mainStore.removeNotification(loadingNotification);
       } catch (error) {
         mainStore.removeNotification(loadingNotification);
-        mainStore.addNotification({ content: `Error: ${error.message}`, color: 'error' });
+        mainStore.addNotification({content: `Error: ${error.message}`, color: TYPE.ERROR});
         await mainStore.checkApiError(error);
       }
     },
@@ -72,7 +73,7 @@ export const useProjectArtifactsStore = defineStore('projectArtifacts', {
           mainStore.removeNotification(loadingNotification);
         } catch (error) {
           mainStore.removeNotification(loadingNotification);
-          mainStore.addNotification({ content: `Error: ${error.message}`, color: 'error' });
+          mainStore.addNotification({content: `Error: ${error.message}`, color: TYPE.ERROR});
           await mainStore.checkApiError(error);
         }
       } else {

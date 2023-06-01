@@ -96,6 +96,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             .and()
             .authorizeRequests()
             .antMatchers("/api/v2/settings/license").permitAll()
+            .antMatchers("/api/v2/settings/ml-worker-connect").hasAuthority(AuthoritiesConstants.API)
             .antMatchers("/api/v2/settings").permitAll()
             .antMatchers("/api/v2/setup").permitAll()
             .antMatchers("/api/v2/ee/license").permitAll()

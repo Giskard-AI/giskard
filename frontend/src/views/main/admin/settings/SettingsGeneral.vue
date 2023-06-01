@@ -84,21 +84,25 @@
               <span>ML Worker</span>
               <v-spacer/>
               <v-tabs class="worker-tabs" v-model="selectedWorkerTab">
-                <v-tab :disabled="mlWorkerSettingsLoading" class="worker-tab">
-                  <span>external</span>
-                  <v-icon v-show="!mlWorkerSettingsLoading" size="10"
-                          :color="isWorkerAvailable(false) ? 'green': 'red'">mdi-circle
-                  </v-icon>
-                  <v-progress-circular size="20" indeterminate v-show="mlWorkerSettingsLoading"/>
-                </v-tab>
-                <v-tab :disabled="mlWorkerSettingsLoading" class="worker-tab">
-                  <span>internal</span>
-                  <v-icon v-show="!mlWorkerSettingsLoading" size="10" :color="isWorkerAvailable(true) ? 'green': 'red'">
-                    mdi-circle
-                  </v-icon>
-                  <v-progress-circular size="20" indeterminate v-show="mlWorkerSettingsLoading"/>
-                </v-tab>
+                  <v-tab :disabled="mlWorkerSettingsLoading" class="worker-tab">
+                      <span>external</span>
+                      <v-icon v-show="!mlWorkerSettingsLoading" size="10"
+                              :color="isWorkerAvailable(false) ? 'green': 'red'">mdi-circle
+                      </v-icon>
+                      <v-progress-circular size="20" indeterminate v-show="mlWorkerSettingsLoading"/>
+                  </v-tab>
+                  <v-tab :disabled="mlWorkerSettingsLoading" class="worker-tab">
+                      <span>internal</span>
+                      <v-icon v-show="!mlWorkerSettingsLoading" size="10"
+                              :color="isWorkerAvailable(true) ? 'green': 'red'">
+                          mdi-circle
+                      </v-icon>
+                      <v-progress-circular size="20" indeterminate v-show="mlWorkerSettingsLoading"/>
+                  </v-tab>
               </v-tabs>
+                <v-btn icon @click="initMLWorkerInfo">
+                    <v-icon>refresh</v-icon>
+                </v-btn>
             </v-card-title>
             <v-card-text>
               <v-alert
@@ -208,7 +212,7 @@
 </template>
 
 <script setup lang="ts">
-import {computed, onBeforeMount, onUnmounted, ref, watch} from "vue";
+import {computed, onBeforeMount, ref, watch} from "vue";
 import {GeneralSettings, MLWorkerInfoDTO} from "@/generated-sources";
 import mixpanel from "mixpanel-browser";
 import {api} from "@/api";
@@ -217,7 +221,6 @@ import {useMainStore} from "@/stores/main";
 import ApiTokenCard from "@/components/ApiTokenCard.vue";
 import PlanUpgradeCard from "@/components/ee/PlanUpgradeCard.vue";
 import StartWorkerInstructions from "@/components/StartWorkerInstructions.vue";
-import {schedulePeriodicJob} from "@/utils/job-utils";
 
 const mainStore = useMainStore();
 
@@ -237,13 +240,10 @@ const installedPackagesHeaders = [{text: 'Name', value: 'name', width: '70%'}, {
     width: '30%'
 }];
 
-const refreshingRef = ref<() => void>();
 
 onBeforeMount(async () => {
-    refreshingRef.value = schedulePeriodicJob(initMLWorkerInfo, 1000)
+    await initMLWorkerInfo();
 })
-
-onUnmounted(() => refreshingRef.value!())
 
 const externalWorkerSelected = computed(() => selectedWorkerTab.value == 0);
 
@@ -272,11 +272,15 @@ async function saveGeneralSettings(settings: GeneralSettings) {
 }
 
 async function initMLWorkerInfo() {
-  try {
-      allMLWorkerSettings.value = await api.getMLWorkerSettings();
-      currentWorker.value = allMLWorkerSettings.value.find(value => value.isRemote === externalWorkerSelected.value) || null;
-  } catch (error) {
-  }
+    try {
+        currentWorker.value = null;
+        mlWorkerSettingsLoading.value = true;
+        allMLWorkerSettings.value = await api.getMLWorkerSettings();
+        currentWorker.value = allMLWorkerSettings.value.find(value => value.isRemote === externalWorkerSelected.value) || null;
+    } catch (error) {
+    } finally {
+        mlWorkerSettingsLoading.value = false;
+    }
 }
 
 function epochToDate(epoch: number) {
