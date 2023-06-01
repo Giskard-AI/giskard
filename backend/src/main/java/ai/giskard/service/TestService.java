@@ -96,7 +96,7 @@ public class TestService {
                 requestBuilder.setActualDs(grpcMapper.createRef(actualDS));
             }
             RunTestRequest request = requestBuilder.build();
-            logger.debug("Sending requiest to ML Worker: {}", request);
+            logger.debug("Sending request to ML Worker: {}", request);
             try {
                 testResult = client.getBlockingStub().runTest(request);
                 res.setResult(testResult);
