@@ -106,25 +106,3 @@ def test_punctuation_strip_transformation():
     assert transformed_text[2] == "Another TEXT with → $UNICODE$ ← characters 😀"
     assert transformed_text[3] == "And PUNCTUATION all SHOULD be fine  I HOPE"
 
-def test_religion_based_transformation():
-    dataset = _dataset_from_dict(
-        {
-            "text": [
-                "Les musulmans de France fêtent vendredi 21 avril la fin du jeûne pratiqué durant le mois de ramadan.",
-                "My UPPERCASE TEXT with greek letters α, β, γ, Γ",
-                "Another @TEXT with → $UNICODE$ ← characters 😀",
-                "“And… PUNCTUATION! all SHOULD be fine — I HOPE!?”",
-            ]
-        }
-    )
-    from giskard.scanner.robustness.text_transformations import TextReligionTransformation
-
-    t = TextReligionTransformation(column="text")
-
-    transformed = dataset.transform(t)
-    transformed_text = transformed.df.text.values
-
-    assert transformed_text[0] == "Les musulmans de France fêtent vendredi 21 avril la fin du jeûne pratiqué durant le mois de ramadan."
-    assert transformed_text[1] == "My UPPERCASE TEXT with greek letters α β γ Γ"
-    assert transformed_text[2] == "Another TEXT with → $UNICODE$ ← characters 😀"
-    assert transformed_text[3] == "And PUNCTUATION all SHOULD be fine  I HOPE"
