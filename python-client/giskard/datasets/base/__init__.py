@@ -29,6 +29,8 @@ from giskard.settings import settings
 from ..metadata.indexing import ColumnMetadataMixin
 from ...ml_worker.utils.file_utils import get_file_name
 
+SAMPLE_SIZE = 1000
+
 logger = logging.getLogger(__name__)
 
 
@@ -216,7 +218,7 @@ class Dataset(ColumnMetadataMixin):
         return self
 
     @cached_property
-    def _row_hashes(self):
+    def row_hashes(self):
         return pandas.Series(
             map(
                 lambda row: xxh3_128_hexdigest(f"{', '.join(map(lambda x: repr(x), row))}".encode('utf-8')),
@@ -502,7 +504,7 @@ class Dataset(ColumnMetadataMixin):
             f.write(compressed_bytes)
             original_size_bytes, compressed_size_bytes = len(uncompressed_bytes), len(compressed_bytes)
 
-            uncompressed_bytes = save_df(self.df.sample(min(1000, len(self.df.index))))
+            uncompressed_bytes = save_df(self.df.sample(min(SAMPLE_SIZE, len(self.df.index))))
             compressed_bytes = compress(uncompressed_bytes)
             f_sample.write(compressed_bytes)
 
