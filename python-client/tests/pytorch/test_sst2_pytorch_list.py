@@ -9,7 +9,8 @@ from torchtext.datasets import SST2
 from torchtext.models import RobertaClassificationHead, XLMR_BASE_ENCODER
 
 import tests.utils
-from giskard import PyTorchModel, Dataset
+from giskard import Dataset
+from giskard.models.pytorch import PyTorchModel
 
 torch_softmax = nn.Softmax(dim=1)
 device = "cuda" if torch.cuda.is_available() else "cpu"

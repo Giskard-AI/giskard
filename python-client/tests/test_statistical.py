@@ -1,6 +1,6 @@
 import pytest
 
-import giskard.ml_worker.testing.tests.statistic as statistical
+import giskard.testing.tests.statistic as statistical
 from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction
 
 

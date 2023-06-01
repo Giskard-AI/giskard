@@ -80,7 +80,7 @@ class RobustnessIssue(Issue):
         return self.info.fail_ratio
 
     def generate_tests(self) -> list:
-        from ...ml_worker.testing.tests.metamorphic import test_metamorphic_invariance
+        from giskard.testing.tests.metamorphic import test_metamorphic_invariance
 
         return [
             test_metamorphic_invariance(

@@ -3,8 +3,9 @@ import pandas as pd
 
 from transformers import pipeline
 
-from giskard import HuggingFaceModel, Dataset
+from giskard import Dataset
 import tests.utils
+from giskard.models.huggingface import HuggingFaceModel
 
 
 def test_sequence_classification_distilbert_base_uncased_pytorch_pipeline():
