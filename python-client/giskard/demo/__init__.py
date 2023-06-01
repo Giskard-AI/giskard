@@ -13,6 +13,8 @@ from sklearn.linear_model import LinearRegression
 def titanic_df():
     df = pd.read_csv("https://raw.githubusercontent.com/Giskard-AI/giskard-examples/main/datasets/titanic_train.csv")
     df.drop(["Ticket", "Cabin"], axis=1, inplace=True)
+    _classification_labels = {0: "no", 1: "yes"}
+    df["Survived"] = df["Survived"].apply(lambda x: _classification_labels[x])
     return df
 
 
