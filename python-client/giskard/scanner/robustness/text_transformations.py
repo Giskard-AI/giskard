@@ -154,3 +154,44 @@ class TextGenderTransformation(TextDictBasedTransformation):
         else:
             return word
 
+
+class TextReligionTransformation(TextDictBasedTransformation):
+
+    def make_perturbation(self, row):
+        text = row[self.column]
+        new_text = text
+        language = row["language__gsk__meta"]
+        if language == "en":
+            religion_dict = religion_dict_en
+        elif language == "fr":
+            religion_dict = religion_dict_fr
+        else:
+            return new_text
+
+        for religious_word_list in religion_dict:
+            for i in range(len(religious_word_list)):
+                if re.search(fr'\b{religious_word_list[i]}[s]\b', text) is not None and religious_word_list[(i + 1) % len(religious_word_list)] != pd.NA:
+                    new_text = re.sub(fr"\b{religious_word_list[i]}[s]\b",
+                                      religious_word_list[(i + 1) % len(religious_word_list)], new_text)
+
+        return new_text
+
+
+class TextNationalityTransformation(TextDictBasedTransformation):
+    def make_perturbation(self, row):
+        text = row[self.column]
+        language = row["language__gsk__meta"]
+        split_text = text.split()
+        new_words = []
+        for token in split_text:
+            new_word = self._switch(token, language)
+            if new_word != token:
+                new_words.append(new_word)
+
+        new_text = text
+        for original_word, switched_word in new_words:
+            new_text = re.sub(fr"\b{original_word}\b", switched_word, new_text)
+        return new_text
+
+    def _switch(self, word, language):
+        pass

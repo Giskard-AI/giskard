@@ -859,7 +859,7 @@ gender_switch_en = {'abbess': 'abbot',
 
 # Modifying the religion_dict using the list of religions from the ethnicity_dict
 import pandas as pd
-religion_dict = [
+religion_dict_en = [
     ['buddhism', 'christianity', 'hinduism', 'islam', 'judaism'],
     ['siddhartha gautama', 'jesus christ', pd.NA, 'muhammad', 'abraham'],
     ['buddhist', 'christian', 'hindu', 'muslim', 'jew'],
@@ -869,31 +869,16 @@ religion_dict = [
     ["tripitaka", "bible", "veda", "quran", "talmud"],
     ['dalai lama', 'pope', pd.NA, "imam", "rabbi"]]
 
-minority_groups = [
-    'african american',
-    'black',
-    'hispanic',
-    'latinx',
-    'native american',
-    'indigenous',
-    'asian american',
-    'pacific islander',
-    'middle eastern',
-    'arab',
-    'south asian',
-    'desi',
-    'jewish',
-    'roma',
-    'romani',
-    'afro-latinx',
-    'afro-caribbean',
-    'afro-asian',
-    'afro-arab',
-    'indigenous peoples of south america, central america, and the caribbean',
-    'other indigenous peoples',
-    'mixed',
-    'multiracial individuals',
-]
+religion_dict_fr = [
+     ['bouddhisme', 'christianisme', 'hindouisme', 'islam', 'judaïsme'],
+     ['siddhartha gautama', 'jesus christ', pd.NA, 'muhammad', 'abraham'],
+     ['bouddhiste', 'chrétien', 'hindou', 'musulman', 'juif'],
+     [pd.NA, 'dieu', pd.NA, 'allah', 'dieu'],
+     ['temple', 'église', 'temple', 'mosquée', 'synagogue'],
+     ['bodh gaya', "vatican", "kumbh mela", "la mecque", "jérusalem"],
+     ["tripitaka", "bible", "veda", "coran", "talmud"],
+     ['dalai lama', 'pape', pd.NA, "imam", "rabbin"]]
+
 
 typos = {
     'a': ['s', 'z', 'q', 'w', 'x'],
