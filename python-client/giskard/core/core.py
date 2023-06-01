@@ -97,6 +97,7 @@ class DatasetMeta:
     number_of_rows: int
     category_features: Dict[str, List[str]]
 
+
 @dataclass
 class FunctionArgument:
     name: str
