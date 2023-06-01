@@ -14,6 +14,7 @@ def validate_dataset(dataset: Dataset):
 
     validate_column_types(dataset)
     validate_column_categorization(dataset)
+    validate_column_types_vs_dtypes(dataset)
 
 
 def validate_column_types(ds: Dataset):
@@ -23,7 +24,7 @@ def validate_column_types(ds: Dataset):
     """
     if ds.column_types and isinstance(ds.column_types, dict):
         if not set(ds.column_types.values()).issubset(
-            set(column_type.value for column_type in SupportedColumnTypes)
+                set(column_type.value for column_type in SupportedColumnTypes)
         ):
             raise ValueError(
                 f"Invalid column_types parameter: {ds.column_types}"
@@ -60,8 +61,8 @@ def validate_column_categorization(ds: Dataset):
         if column == ds.target:
             continue
         if nuniques[column] <= Nuniques.CATEGORY.value and (
-            ds.column_types[column] == SupportedColumnTypes.NUMERIC.value
-            or ds.column_types[column] == SupportedColumnTypes.TEXT.value
+                ds.column_types[column] == SupportedColumnTypes.NUMERIC.value
+                or ds.column_types[column] == SupportedColumnTypes.TEXT.value
         ):
             warning(
                 f"Feature '{column}' is declared as '{ds.column_types[column]}' but has {nuniques[column]} "
@@ -69,12 +70,12 @@ def validate_column_categorization(ds: Dataset):
                 f"you sure it is not a 'category' feature?"
             )
         elif (
-            nuniques[column] > Nuniques.TEXT.value
-            and is_string_dtype(ds.df[column])
-            and (
-                ds.column_types[column] == SupportedColumnTypes.CATEGORY.value
-                or ds.column_types[column] == SupportedColumnTypes.NUMERIC.value
-            )
+                nuniques[column] > Nuniques.TEXT.value
+                and is_string_dtype(ds.df[column])
+                and (
+                        ds.column_types[column] == SupportedColumnTypes.CATEGORY.value
+                        or ds.column_types[column] == SupportedColumnTypes.NUMERIC.value
+                )
         ):
             warning(
                 f"Feature '{column}' is declared as '{ds.column_types[column]}' but has {nuniques[column]} "
@@ -82,15 +83,38 @@ def validate_column_categorization(ds: Dataset):
                 f"you sure it is not a 'text' feature?"
             )
         elif (
-            nuniques[column] > Nuniques.NUMERIC.value
-            and is_numeric_dtype(ds.df[column])
-            and (
-                ds.column_types[column] == SupportedColumnTypes.CATEGORY.value
-                or ds.column_types[column] == SupportedColumnTypes.TEXT.value
-            )
+                nuniques[column] > Nuniques.NUMERIC.value
+                and is_numeric_dtype(ds.df[column])
+                and (
+                        ds.column_types[column] == SupportedColumnTypes.CATEGORY.value
+                        or ds.column_types[column] == SupportedColumnTypes.TEXT.value
+                )
         ):
             warning(
                 f"Feature '{column}' is declared as '{ds.column_types[column]}' but has {nuniques[column]} "
                 f"(> Nuniques.NUMERIC.value={Nuniques.NUMERIC.value}) distinct values. Are "
                 f"you sure it is not a 'numeric' feature?"
             )
+
+
+def validate_column_types_vs_dtypes(ds: Dataset):
+    """
+    Verifies that declared column_types are consistent with the extracted column_dtypes
+    :param ds: Dataset to be validated
+    """
+    for col, col_type in ds.column_types.items():
+        if col == ds.target:
+            break
+        if ds.column_dtypes[col] == SupportedColumnTypes.NUMERIC:
+            try:
+                ds[col] = ds[col].astype(float)
+            except TypeError as e:
+                raise TypeError(
+                    f"You declared your column '{col}' as 'numeric' but we were unable to cast it into 'float'. "
+                    f"Please check that you declared the type of '{col}' correctly in 'column_types'.") from e
+        elif ds.column_dtypes[col] == SupportedColumnTypes.TEXT:
+            try:
+                ds[col] = ds[col].astype(str)
+            except TypeError as e:
+                raise TypeError(f"You declared your column '{col}' as 'text' but we were unable to cast it into 'str'. "
+                                f"Please check that you declared the type of '{col}' correctly in 'column_types'.") from e
