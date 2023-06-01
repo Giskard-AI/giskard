@@ -1,15 +1,18 @@
 import logging
 from typing import Optional, Iterable, Any, Callable
+
+import mlflow
 import pandas as pd
+
 from giskard.core.core import ModelType
-from giskard.core.validation import validate_args
+from giskard.core.validation import configured_validate_arguments
 from giskard.models.base import MLFlowBasedModel
 
 logger = logging.getLogger(__name__)
 
 
 class TensorFlowModel(MLFlowBasedModel):
-    @validate_args
+    @configured_validate_arguments
     def __init__(self,
                  clf,
                  model_type: ModelType,
@@ -30,11 +33,9 @@ class TensorFlowModel(MLFlowBasedModel):
 
     @classmethod
     def load_clf(cls, local_path):
-        import mlflow
         return mlflow.tensorflow.load_model(local_path)
 
     def save_with_mlflow(self, local_path, mlflow_meta: mlflow.models.Model):
-        import mlflow
         mlflow.tensorflow.save_model(self.clf,
                                      path=local_path,
                                      mlflow_model=mlflow_meta)
