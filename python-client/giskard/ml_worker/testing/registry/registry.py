@@ -1,4 +1,3 @@
-import cloudpickle
 import hashlib
 import importlib.util
 import inspect
@@ -10,6 +9,8 @@ import sys
 import uuid
 from pathlib import Path
 from typing import Optional, Dict, Any
+
+import cloudpickle
 
 from giskard.core.core import TestFunctionMeta, TestFunctionArgument
 from giskard.ml_worker.testing.registry.udf_repository import udf_repo_available, udf_root
@@ -38,7 +39,7 @@ def _get_plugin_method_full_name(func):
 
 def generate_func_id(name) -> str:
     rd = random.Random()
-    rd.seed(hashlib.sha1(name.encode('utf-8')).hexdigest())
+    rd.seed(hashlib.sha512(name.encode('utf-8')).hexdigest())
     func_id = str(uuid.UUID(int=rd.getrandbits(128), version=4))
     return str(func_id)
 
@@ -48,7 +49,7 @@ def get_test_uuid(func) -> str:
 
     if func_name.startswith('__main__'):
         reference = cloudpickle.dumps(func)
-        func_name += hashlib.sha1(reference).hexdigest()
+        func_name += hashlib.sha512(reference).hexdigest()
 
     return generate_func_id(func_name)
 
