@@ -143,7 +143,10 @@ class MLWorkerServiceImpl(MLWorkerServicer):
 
         global_arguments = self.parse_test_arguments(request.globalArguments)
 
-        logger.info(f"Executing test suite: {list(map(lambda t: t['test'].meta.display_name or (t['test'].meta.module + '.' + t['test'].meta.name, tests)))}")
+        test_names = list(
+            map(lambda t: t['test'].meta.display_name or f"{t['test'].meta.module + '.' + t['test'].meta.name}", tests)
+        )
+        logger.info(f"Executing test suite: {test_names}")
 
         suite = Suite()
         for t in tests:
@@ -152,7 +155,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
         is_pass, results = suite.run(**global_arguments)
 
         identifier_single_test_results = []
-        for identifier, result in results:
+        for identifier, result in results.items():
             identifier_single_test_results.append(
                 ml_worker_pb2.IdentifierSingleTestResult(
                     id=identifier, result=map_result_to_single_test_result(result)
