@@ -8,7 +8,6 @@ import shap
 from bs4 import BeautifulSoup
 from eli5.lime import TextExplainer
 
-from giskard.core.core import SupportedModelTypes
 from giskard.core.model import Model
 from giskard.ml_worker.core.dataset import Dataset
 from giskard.ml_worker.utils.logging import timer

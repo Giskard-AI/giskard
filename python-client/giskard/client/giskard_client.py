@@ -281,3 +281,9 @@ class GiskardClient:
 
     def get_server_info(self):
         return self._session.get("settings").json()
+
+    def save_test_suite(self, project_key, name, params):
+        self._session.post(f"testing/project/{project_key}/suite", json={
+            "name": name,
+            "inputsByTestId": params
+        })

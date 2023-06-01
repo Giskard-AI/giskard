@@ -4,8 +4,9 @@ from dataclasses import dataclass
 from typing import *
 
 from giskard.client.giskard_client import GiskardClient
+from giskard.core.model import Model
+from giskard.ml_worker.core.dataset import Dataset
 from giskard.ml_worker.testing.registry.registry import create_test_function_id
-from ml_worker_pb2 import SingleTestResult
 
 logger = logging.getLogger(__name__)
 
@@ -30,7 +31,7 @@ def single_binary_result(test_results: List):
     for r in test_results:
         if type(r) == bool:
             passed = passed and r
-        elif type(r) == SingleTestResult:
+        elif hasattr(r, 'passed'):
             passed = passed and r.passed
         else:
             logger.error(f"Invalid test result: {r.__class__.__name__}")
@@ -41,10 +42,12 @@ def single_binary_result(test_results: List):
 class Suite:
     tests: List[TestPartial]
     suite_params: Mapping[str, SuiteInput]
+    name: str
 
-    def __init__(self) -> None:
+    def __init__(self, name=None) -> None:
         self.suite_params = {}
         self.tests = []
+        self.name = name
 
     def run(self, **suite_run_args):
         res = []
@@ -73,29 +76,20 @@ class Suite:
         return test_params
 
     def save(self, client: GiskardClient, project_key: str):
+        test_configs = {}
         for t in self.tests:
-            print("Saving", create_test_function_id(t.test_func))
+            test_configs[create_test_function_id(t.test_func)] = {}
             for pname, p in t.provided_inputs.items():
-                print(pname, p)
+                value = p
+                if issubclass(type(p), Dataset) or issubclass(type(p), Model):
+                    value = p.save(client, project_key)
+                test_configs[create_test_function_id(t.test_func)][pname] = value
+
+        suite_id = client.save_test_suite(project_key, self.name, test_configs)
         return self
 
     def add_test(self, test_fn: Callable[[Any], Union[bool]], **params):
-        # TODO: validate params vs test_fn declared inputs
         self.tests.append(TestPartial(test_fn, params))
-        # input_mapping = {}
-        # for pname, p in params.items():
-        #     if isinstance(p, SuiteInput):
-        #         if pname not in self.suite_params:
-        #             self.suite_params[p.name] = p
-        #         elif self.suite_params[p.name] != p:
-        #             raise ValueError(
-        #                 f'parameter "{p.name}" is already declared as suite input of type {p.__class__.__name__}')
-        #         input_mapping[pname] = p.name
-        # for p in inspect.signature(test_fn).parameters.values():
-        #     if p.name not in self.suite_params and p.name not in params:
-        #         self.suite_params[p.name] = SuiteInput(p.name, p.annotation)
-        # # self.params = self.params.union(inspect.signature(test_fn).parameters.keys() - params.keys())
-        # self.tests.append(TestPartial(partial(test_fn, **params), input_mapping))
         return self
 
     def find_required_params(self):
