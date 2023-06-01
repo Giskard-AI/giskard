@@ -7,7 +7,7 @@
           Reload
           <v-icon right>refresh</v-icon>
         </v-btn>
-        <v-btn v-if="projectArtifactsStore.models.length > 0" color="primary" class="ml-2" @click="openDialog = true">
+        <v-btn v-if="projectArtifactsStore.models.length > 0" color="primary" class="ml-2" @click="openUploadDialog">
           Upload with API
           <v-icon right>mdi-application-braces-outline</v-icon>
         </v-btn>
@@ -74,34 +74,14 @@
       <CodeSnippet :code-content="codeContent" :language="'python'"></CodeSnippet>
       <p class="mt-4 font-weight-medium secondary--text">Check out the <a href="https://docs.giskard.ai/start/~/changes/QkDrbY9gX75RDMmAWKjX/guides/upload-your-model#2.-create-a-giskard-model" target="_blank">full documentation</a> for more information.</p>
     </v-container>
-
-    <!-- Upload dialog -->
-    <v-dialog v-model="openDialog" max-width="800px">
-      <v-card>
-        <v-card-title>
-          Upload a model
-          <v-spacer></v-spacer>
-          <v-btn text href="https://docs.giskard.ai/start/" target="_blank">
-            <span>Documentation</span>
-            <v-icon right>mdi-open-in-new</v-icon>
-          </v-btn>
-        </v-card-title>
-        <v-card-text>
-          <CodeSnippet :code-content="codeContent" :language="'python'"></CodeSnippet>
-        </v-card-text>
-        <v-card-actions>
-          <v-spacer></v-spacer>
-          <v-btn text class="mr-2 mb-2" color="primary" @click="openDialog = false">Close</v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
   </div>
 </template>
 
 <script setup lang="ts">
-import {api} from '@/api';
-import {apiURL} from "@/env";
-import {Role} from "@/enums";
+import { api } from '@/api';
+import { apiURL } from "@/env";
+import { Role } from "@/enums";
+import { $vfm } from 'vue-final-modal';
 import InspectorLauncher from './InspectorLauncher.vue';
 import {JWTToken, ModelDTO} from '@/generated-sources';
 import mixpanel from "mixpanel-browser";
@@ -113,36 +93,36 @@ import {useProjectStore} from "@/stores/project";
 import {useMainStore} from "@/stores/main";
 import {useProjectArtifactsStore} from "@/stores/project-artifacts";
 import CodeSnippet from '@/components/CodeSnippet.vue';
+import UploadArtifactModal from "./modals/UploadArtifactModal.vue";
 
 const userStore = useUserStore();
 const projectStore = useProjectStore();
 const projectArtifactsStore = useProjectArtifactsStore();
 
 interface Props {
-    projectId: number,
+  projectId: number,
 }
 
 const props = defineProps<Props>();
 
 const showInspectDialog = ref<boolean>(false);
 const modelToInspect = ref<ModelDTO | null>(null);
-const openDialog = ref<boolean>(false);
 const apiAccessToken = ref<JWTToken | null>(null);
 
 const codeContent = computed(
-// language=Python
-    () =>
-        `from giskard import Model, GiskardClient
-        from giskard.demo import titanic  # for demo purposes only 🛳️
+  // language=Python
+  () =>
+    `from giskard import Model, GiskardClient
+from giskard.demo import titanic  # for demo purposes only 🛳️
 
-        original_model, _ = titanic()  # Replace with your model creation
+original_model, _ = titanic()  # Replace with your model creation
 
-        # Create a Giskard client
-        token = "${apiAccessToken.value?.id_token}"
-        client = GiskardClient(
-            url="${apiURL}",  # URL of your Giskard instance
-            token=token
-        )
+# Create a Giskard client
+token = "${apiAccessToken.value?.id_token}"
+client = GiskardClient(
+    url="${apiURL}",  # URL of your Giskard instance
+    token=token
+)
 
         # Wrap your model with Giskard model 🎁
         giskard_model = Model(original_model, model_type="classification", name="Titanic model")
@@ -166,6 +146,16 @@ const isProjectOwnerOrAdmin = computed(() => {
 const isUserProjectOwner = computed(() => {
   return project.value && userProfile.value ? project.value?.owner.id == userProfile.value?.id : false;
 });
+
+function openUploadDialog() {
+  $vfm.show({
+    component: UploadArtifactModal,
+    bind: {
+      title: 'Upload a model',
+      codeContent: codeContent.value,
+    },
+  });
+}
 
 async function deleteModelPickle(id: string) {
   mixpanel.track('Delete model', { id });

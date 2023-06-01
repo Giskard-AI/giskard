@@ -28,12 +28,12 @@
 </template>
 
 <script setup lang="ts">
-import {onActivated, onDeactivated, ref} from "vue";
-import {useCatalogStore} from "@/stores/catalog";
-import {storeToRefs} from "pinia";
+import { onActivated, onDeactivated, ref, watch } from "vue";
+import { useCatalogStore } from "@/stores/catalog";
+import { storeToRefs } from "pinia";
 import LoadingFullscreen from "@/components/LoadingFullscreen.vue";
 import { useRouter, useRoute } from "vue-router/composables";
-import {schedulePeriodicJob} from "@/utils/job-utils";
+import { schedulePeriodicJob } from "@/utils/job-utils";
 
 const router = useRouter();
 const route = useRoute();
@@ -46,20 +46,29 @@ let props = defineProps<{
 const catalogStore = useCatalogStore();
 const { catalog } = storeToRefs(catalogStore);
 
-const defaultRoute = 'project-catalog-datasets';
+const componentRoute = 'project-catalog';
+const defaultRoute = 'project-catalog-tests';
 
 const refreshingRef = ref<() => void>();
+
+async function checkAndRedirect() {
+    if (route.name === componentRoute) {
+        router.push({ name: defaultRoute });
+    }
+}
+
+watch(() => route.name, async (name) => {
+    await checkAndRedirect();
+})
+
 
 onActivated(async () => {
     refreshingRef.value = schedulePeriodicJob(async () => await catalogStore.loadCatalog(props.projectId), 1000)
     await catalogStore.loadCatalog(props.projectId)
-    if (route.name === 'project-catalog') {
-        await router.push({ name: defaultRoute });
-    }
+    await checkAndRedirect();
 });
 
 onDeactivated(() => {
-    console.log('onUnmounted')
     refreshingRef.value!()
 })
 </script>
