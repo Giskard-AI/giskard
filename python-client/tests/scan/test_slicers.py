@@ -9,7 +9,7 @@ from giskard.slicing.text_slicer import TextSlicer
 from giskard.slicing.tree_slicer import DecisionTreeSlicer
 
 
-def _make_demo_dataset():
+def _make_demo_dataset(**kwargs):
     feature1 = np.arange(1000)
     loss = np.zeros(1000)
     loss[0:200] = 2
@@ -22,7 +22,7 @@ def _make_demo_dataset():
 
     df = pd.DataFrame({"feature1": feature1, "loss": loss})
 
-    return Dataset(df)
+    return Dataset(df, **kwargs)
 
 
 def _get_slice_interval(slice_fn: QueryBasedSliceFunction, column: str):
@@ -71,7 +71,7 @@ def test_slicer_on_numerical_feature(slicer_cls):
 
 
 def test_text_slicer_enforces_cast_to_string():
-    dataset = _make_demo_dataset()
+    dataset = _make_demo_dataset(column_types={"feature1": "text", "loss": "numeric"})
 
     slicer = TextSlicer(dataset)
     slices = slicer.find_metadata_slices("feature1", "loss")
