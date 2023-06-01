@@ -40,7 +40,7 @@ public class DownloadController {
         ProjectModel model = modelRepository.getById(modelId);
         permissionEvaluator.validateCanReadProject(model.getProject().getId());
 
-        Path path = fileLocationService.resolvedModelPath(model.getProject().getKey(), modelId);
+        Path path = fileLocationService.resolvedModelPath(model);
         String name = "giskard_model_" + (model.getName() != null ? model.getName() : model.getId());
         return createDecompressedStreamResponse(path, name);
     }
@@ -51,7 +51,7 @@ public class DownloadController {
         Dataset dataset = datasetRepository.getById(datasetId);
         permissionEvaluator.validateCanReadProject(dataset.getProject().getId());
 
-        Path path = fileLocationService.resolvedDatasetPath(dataset.getProject().getKey(), datasetId);
+        Path path = fileLocationService.resolvedDatasetPath(dataset);
         String name = "giskard_dataset_" + (dataset.getName() != null ? dataset.getName() : dataset.getId());
         return createDecompressedStreamResponse(path, name);
     }

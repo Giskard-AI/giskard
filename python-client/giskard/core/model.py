@@ -3,7 +3,7 @@ import pickle
 import posixpath
 import tempfile
 from pathlib import Path
-from typing import *
+from typing import Optional
 
 import cloudpickle
 import mlflow.sklearn

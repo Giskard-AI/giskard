@@ -65,7 +65,7 @@ public class DatasetsController {
      */
 
     @GetMapping("/dataset/{datasetId}/rows")
-    public String getRows(@PathVariable @NotNull String datasetId, @NotNull int offset, @NotNull int size) throws IOException {
+    public String getRows(@PathVariable @NotNull String datasetId, @NotNull int offset, @NotNull int size) {
         Table filteredTable = datasetService.getRows(datasetId, offset, offset + size);
         return filteredTable.write().toString("json");
     }
