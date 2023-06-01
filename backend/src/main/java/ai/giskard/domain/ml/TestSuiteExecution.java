@@ -35,13 +35,18 @@ public class TestSuiteExecution extends BaseEntity {
     @Column(columnDefinition = "VARCHAR")
     @Convert(converter = SimpleJSONStringAttributeConverter.class)
     private Map<String, String> inputs;
-    
+
     @Enumerated(EnumType.STRING)
     TestResult result;
 
     @Column(columnDefinition = "VARCHAR")
     @Convert(converter = SingleTestResultConverter.class)
+    // TODO @OneToMany to another entity + save for catalog too
     private Map<String, SingleTestResultDTO> results;
+
+    // TODO: add status for job in progress
+
+    // TODO: add information (run duration, error message)
 
     public TestSuiteExecution(TestSuiteNew suite) {
         this.suite = suite;
