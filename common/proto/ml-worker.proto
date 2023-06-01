@@ -13,8 +13,7 @@ package worker;
 service MLWorker {
   rpc getInfo(MLWorkerInfoRequest) returns (MLWorkerInfo){}
   rpc runAdHocTest (RunAdHocTestRequest) returns (TestResultMessage) {}
-  rpc runAdHocSlicing (RunAdHocSlicingRequest) returns (SlicingResultMessage) {}
-  rpc runAdHocTransformation (RunAdHocTransformationRequest) returns (TransformationResultMessage) {}
+  rpc datasetProcessing (DatasetProcessingRequest) returns (DatasetProcessingResultMessage) {}
   rpc runTestSuite (RunTestSuiteRequest) returns (TestSuiteResultMessage) {}
   rpc runModel(RunModelRequest) returns (google.protobuf.Empty) {}
   rpc runModelForDataFrame(RunModelForDataFrameRequest) returns (RunModelForDataFrameResponse) {}
@@ -146,17 +145,17 @@ message RunAdHocTestRequest {
   repeated FuncArgument arguments = 2;
 }
 
-message RunAdHocSlicingRequest {
-  string slicingFunctionUuid = 1;
-  ArtifactRef dataset = 2;
-  repeated FuncArgument arguments = 3;
+message DatasetProcessingRequest {
+  ArtifactRef dataset = 1;
+  repeated DatasetProcessingFunction functions = 2;
 }
 
-message RunAdHocTransformationRequest {
-  string transformationFunctionUuid = 1;
-  ArtifactRef dataset = 2;
+message DatasetProcessingFunction {
+  oneof function {
+    ArtifactRef slicingFunction = 1;
+    ArtifactRef transformationFunction = 2;
+  }
   repeated FuncArgument arguments = 3;
-  repeated int32 rows = 4;
 }
 
 message SuiteTestArgument {
@@ -240,23 +239,17 @@ message TestResultMessage {
   repeated NamedSingleTestResult results = 1;
 }
 
-message SlicingResultMessage {
+message DatasetProcessingResultMessage {
   string datasetId = 1;
   uint32 totalRows = 2;
   repeated uint32 filteredRows = 3;
-}
-
-message TransformationResultMessage {
-  string datasetId = 1;
-  uint32 totalRows = 2;
-  repeated DatasetRowModificationResult modifications = 3;
+  repeated DatasetRowModificationResult modifications = 4;
 }
 
 message DatasetRowModificationResult {
   uint32 rowId = 1;
   map<string, string> modifications = 2;
 }
-
 
 message TestSuiteResultMessage {
   bool is_error = 1; // True when an unhandled exception happened (!= test failed)

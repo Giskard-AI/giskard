@@ -11,6 +11,7 @@ import {
     CreateFeedbackReplyDTO,
     DatasetDTO,
     DatasetPageDTO,
+    DatasetProcessingResultDTO,
     ExplainResponseDTO,
     ExplainTextResponseDTO,
     FeatureMetadataDTO,
@@ -28,6 +29,7 @@ import {
     MessageDTO,
     MLWorkerInfoDTO,
     ModelDTO,
+    ParameterizedCallableDTO,
     PasswordResetRequest,
     PredictionDTO,
     PredictionInputDTO,
@@ -36,16 +38,13 @@ import {
     ProjectDTO,
     ProjectPostDTO,
     RoleDTO,
-    RunAdHocTransformationDTO,
     SliceDTO,
-    SlicingResultDTO,
     SuiteTestDTO,
     TestSuiteCompleteDTO,
     TestSuiteDTO,
     TestSuiteExecutionDTO,
     TestTemplateExecutionResultDTO,
     TokenAndPasswordVM,
-    TransformationResultDTO,
     UpdateMeDTO,
     UserDTO
 } from './generated-sources';
@@ -501,12 +500,8 @@ export const api = {
             license: license
         });
     },
-    async runAdHocSlicingFunction(slicingFnUuid: string, datasetUuid: string, inputs: { [key: string]: string }) {
-        return apiV2.post<unknown, SlicingResultDTO>(
-            `/slices/${encodeURIComponent(slicingFnUuid)}/dataset/${encodeURIComponent(datasetUuid)}`, inputs);
-    },
-    async runAdHocTransformationFunction(transformationFnUuid: string, datasetUuid: string, request: RunAdHocTransformationDTO) {
-        return apiV2.post<unknown, TransformationResultDTO>(
-            `/transformations/${encodeURIComponent(transformationFnUuid)}/dataset/${encodeURIComponent(datasetUuid)}`, request);
+    async datasetProcessing(projectId: number, datasetUuid: string, functions: Array<ParameterizedCallableDTO>) {
+        return apiV2.post<unknown, DatasetProcessingResultDTO>(
+            `/project/${projectId}/datasets/${encodeURIComponent(datasetUuid)}/process`, functions);
     },
 };
