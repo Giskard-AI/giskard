@@ -1,5 +1,5 @@
 import pandas as pd
-from giskard import wrap_dataset
+from giskard.datasets import wrap_dataset
 
 
 def _dataset_from_dict(data):
