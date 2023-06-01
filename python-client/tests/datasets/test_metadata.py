@@ -32,15 +32,14 @@ def test_dataset_metadata_indexer():
     assert "test1" in metadata.columns
     assert "test2" in metadata.columns
     assert metadata["test1"].tolist() == [1, 2]
-    
+
     # Metadata are cached, no extra calls should be done to the metadata provider
     metadata = dataset.column_meta["col1", "test_meta"]
     assert provider.generate_metadata.is_called_once()
-    
+
     assert "test1" in metadata.columns
     assert "test2" in metadata.columns
     assert metadata["test1"].tolist() == [1, 2]
-
 
 
 def test_text_metadata_provider():
