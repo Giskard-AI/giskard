@@ -34,7 +34,6 @@ import {
     RoleDTO,
     SliceDTO,
     SuiteTestDTO,
-    TestCatalogDTO,
     TestDTO,
     TestExecutionResultDTO,
     TestFunctionDTO,

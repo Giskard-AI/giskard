@@ -380,7 +380,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
         return ml_worker_pb2.GenerateTestSuiteResponse(
             tests=[
                 ml_worker_pb2.GeneratedTest(
-                    test_id=test.testId,
+                    test_uuid=test.testUuid,
                     inputs=[
                         ml_worker_pb2.GeneratedTestInput(
                             name=i.name,

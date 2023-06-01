@@ -37,6 +37,7 @@ public class SuiteTest {
 
     public SuiteTest(TestSuiteNew suite, GeneratedTest test, TestFunction testFunction) {
         this.suite = suite;
+        this.testFunction = testFunction;
         this.testInputs.addAll(test.getInputsList().stream()
             .map(testInput -> new TestInput(this, testInput))
             .toList());
