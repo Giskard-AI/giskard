@@ -125,7 +125,7 @@ onActivated(() => {
           <v-stepper-content step="3">
             <v-card>
               <v-card-text>
-                <v-text-field label="Inspection name (optional)" v-model="inspectionName" outlined dense hide-details></v-text-field>
+                <v-text-field label="Inspection name (optional)" class="selector" v-model="inspectionName" outlined dense hide-details></v-text-field>
               </v-card-text>
               <v-card-actions class="d-flex justify-space-between">
                 <v-btn text @click="closeDialog">Cancel</v-btn>
@@ -140,7 +140,7 @@ onActivated(() => {
           <v-stepper-content step="4">
             <v-card>
               <v-card-text>
-                <v-list>
+                <v-list class="d-flex">
                   <v-list-item>
                     <v-list-item-content>
                       <v-list-item-title>Model</v-list-item-title>
@@ -156,7 +156,7 @@ onActivated(() => {
                   <v-list-item>
                     <v-list-item-content>
                       <v-list-item-title>Inspection name</v-list-item-title>
-                      <v-list-item-subtitle>{{ inspectionName }}</v-list-item-subtitle>
+                      <v-list-item-subtitle>{{ inspectionName || '-' }}</v-list-item-subtitle>
                     </v-list-item-content>
                   </v-list-item>
                 </v-list>
