@@ -129,4 +129,20 @@ public class FeedbackController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
+    @Transactional
+    @DeleteMapping("/{feedbackId}")
+    public ResponseEntity<Void> deleteFeedback(@PathVariable("feedbackId") long feedbackId) {
+        Feedback feedback = feedbackRepository.findOneById(feedbackId);
+
+        Long currUserId = SecurityUtils.getCurrentAuthenticatedUserId();
+        if (SecurityUtils.isCurrentUserAdmin() ||
+            feedback.getProject().getOwner().getId().equals(currUserId) ||
+            feedback.getUser().getId().equals(currUserId)
+        ) {
+            feedbackRepository.delete(feedback);
+            return ResponseEntity.noContent().build();
+        } else {
+            throw new UnauthorizedException("Delete", Entity.FEEDBACK);
+        }
+    }
 }
