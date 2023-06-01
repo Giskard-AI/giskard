@@ -1,3 +1,4 @@
+import importlib
 import logging
 import pickle
 import posixpath
@@ -5,9 +6,9 @@ import tempfile
 import uuid
 from pathlib import Path
 from typing import Optional, Any, Union
-import importlib
 
 import cloudpickle
+import mlflow.sklearn
 import mlflow.sklearn
 import numpy
 import pandas as pd
@@ -247,6 +248,10 @@ class Model:
             df = df[self.meta.feature_names]
             if column_types:
                 column_types = {k: v for k, v in column_types.items() if k in self.meta.feature_names}
+
+        for cname, ctype in column_types.items():
+            if cname not in df:
+                df[cname] = None
 
         if column_types:
             df = Dataset.cast_column_to_types(df, column_types)
