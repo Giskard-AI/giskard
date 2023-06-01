@@ -193,7 +193,6 @@ class Model(ABC):
         """
         ...
 
-
 class WrapperModel(Model, ABC):
     """
     A subclass of a Model that wraps an existing model object (clf) and uses it to make inference
@@ -268,6 +267,7 @@ class WrapperModel(Model, ABC):
                 )
         else:
             client.load_artifact(local_dir, posixpath.join(project_key, "models", model_id))
+
             assert local_dir.exists(), f"Cannot find existing model {project_key}.{model_id}"
             with open(Path(local_dir) / 'giskard-model-meta.yaml') as f:
                 saved_meta = yaml.load(f, Loader=yaml.Loader)
