@@ -4,62 +4,63 @@
 
       <v-toolbar id='data-explorer-toolbar' flat>
         <v-tooltip bottom>
-          <template v-slot:activator="{ on, attrs }">
-            <v-icon v-on="on" class="pr-5" medium>info</v-icon>
-          </template>
-          <h3> Debugging session </h3>
-          <div class="d-flex">
-            <div> Id</div>
-            <v-spacer />
-            <div> {{ inspection.id }}</div>
-          </div>
-          <div class="d-flex">
-            <div> Name</div>
-            <v-spacer />
-            <div class="pl-5"> {{ inspection.name || "-" }}</div>
-          </div>
-          <br />
-          <h3> Model </h3>
-          <div class="d-flex">
-            <div> Id</div>
-            <v-spacer />
-            <div> {{ inspection.model.id }}</div>
-          </div>
-          <div class="d-flex">
-            <div> Name</div>
-            <v-spacer />
-            <div class="pl-5"> {{ inspection.model.name }}</div>
-          </div>
-          <br />
-          <h3> Dataset </h3>
-          <div class="d-flex">
-            <div> Id</div>
-            <v-spacer />
-            <div> {{ inspection.dataset.id }}</div>
-          </div>
-          <div class="d-flex pb-3">
-            <div> Name</div>
-            <v-spacer />
-            <div class="pl-5"> {{ inspection.dataset.name }}</div>
-          </div>
+            <template v-slot:activator="{ on, attrs }">
+                <v-icon v-on="on" class="pr-5" medium>info</v-icon>
+            </template>
+            <h3> Debugging session </h3>
+            <div class="d-flex">
+                <div> Id</div>
+                <v-spacer/>
+                <div> {{ inspection.id }}</div>
+            </div>
+            <div class="d-flex">
+                <div> Name</div>
+                <v-spacer/>
+                <div class="pl-5"> {{ inspection.name || "-" }}</div>
+            </div>
+            <br/>
+            <h3> Model </h3>
+            <div class="d-flex">
+                <div> Id</div>
+                <v-spacer/>
+                <div> {{ inspection.model.id }}</div>
+            </div>
+            <div class="d-flex">
+                <div> Name</div>
+                <v-spacer/>
+                <div class="pl-5"> {{ inspection.model.name }}</div>
+            </div>
+            <br/>
+            <h3> Dataset </h3>
+            <div class="d-flex">
+                <div> Id</div>
+                <v-spacer/>
+                <div> {{ inspection.dataset.id }}</div>
+            </div>
+            <div class="d-flex pb-3">
+                <div> Name</div>
+                <v-spacer/>
+                <div class="pl-5"> {{ inspection.dataset.name }}</div>
+            </div>
         </v-tooltip>
-        <span class='subtitle-1 mr-2'>Dataset Explorer</span>
-        <v-btn icon @click='shuffleMode = !shuffleMode'>
-          <v-icon v-if='shuffleMode' color='primary'>mdi-shuffle-variant</v-icon>
-          <v-icon v-else>mdi-shuffle-variant</v-icon>
-        </v-btn>
-        <v-btn :disabled='!canPrevious' icon @click='previous'>
-          <v-icon>mdi-skip-previous</v-icon>
-        </v-btn>
-        <v-btn :disabled='!canNext' icon @click='next'>
-          <v-icon>mdi-skip-next</v-icon>
-        </v-btn>
-        <span class='caption grey--text' v-if="totalRows > 0">
+          <span class='subtitle-1 mr-2'>Dataset Explorer</span>
+          <v-btn icon @click='shuffleMode = !shuffleMode'>
+              <v-icon v-if='shuffleMode' color='primary'>mdi-shuffle-variant</v-icon>
+              <v-icon v-else>mdi-shuffle-variant</v-icon>
+          </v-btn>
+          <v-btn :disabled='!canPrevious' icon @click='previous'>
+              <v-icon>mdi-skip-previous</v-icon>
+          </v-btn>
+          <v-btn :disabled='!canNext' icon @click='next'>
+              <v-icon>mdi-skip-next</v-icon>
+          </v-btn>
+          <span class='caption grey--text' v-if="totalRows > 0">
           Entry #{{ totalRows === 0 ? 0 : rowNb + 1 }} / {{ totalRows }}
         </span>
-        <span v-show="originalData && isDefined(originalData['Index'])" class='caption grey--text' style='margin-left: 15px'>Row Index {{ originalData['Index'] + 1 }}</span>
+          <span v-show="originalData && isDefined(originalData['Index'])" class='caption grey--text'
+                style='margin-left: 15px'>Row Index {{ originalData['Index'] + 1 }}</span>
       </v-toolbar>
-      <v-spacer />
+        <v-spacer/>
 
         <SlicingFunctionSelector label="Slice to apply" :project-id="projectId"
                                  :full-width="false" :icon="true" class="mr-3"
@@ -67,74 +68,92 @@
                                  :value.sync="selectedSlicingFunction.uuid"
                                  :args.sync="selectedSlicingFunction.params"/>
 
-      <InspectionFilter :is-target-available="isDefined(inspection.dataset.target)" :labels="labels" :model-type="inspection.model.modelType" @input="f => filter = f" />
+        <InspectionFilter :is-target-available="isDefined(inspection.dataset.target)" :labels="labels"
+                          :model-type="inspection.model.modelType" @input="f => filter = f"/>
     </v-row>
-    <Inspector :dataset='inspection.dataset' :inputData.sync='inputData' :model='inspection.model' :originalData='originalData' class='px-0' @reset='resetInput' @submitValueFeedback='submitValueFeedback' @submitValueVariationFeedback='submitValueVariationFeedback' v-if="totalRows > 0" />
-    <v-alert v-else border="bottom" colored-border type="warning" class="mt-8" elevation="2">
-      No data matches the selected filter.<br />
-      In order to show data, please refine the filter's criteria.
-    </v-alert>
+      <Inspector :dataset='inspection.dataset' :inputData.sync='inputData' :model='inspection.model'
+                 :originalData='originalData'
+                 :transformationModifications="{}"
+                 class='px-0' @reset='resetInput' @submitValueFeedback='submitValueFeedback'
+                 @submitValueVariationFeedback='submitValueVariationFeedback' v-if="totalRows > 0"/>
+      <v-alert v-else border="bottom" colored-border type="warning" class="mt-8" elevation="2">
+          No data matches the selected filter.<br/>
+          In order to show data, please refine the filter's criteria.
+      </v-alert>
 
 
-    <!-- For general feedback -->
-    <v-tooltip left>
-      <template v-slot:activator='{ on, attrs }'>
-        <v-btn :class="feedbackPopupToggle ? 'secondary' : 'primary'" bottom fab fixed class="zindex-10" right v-bind='attrs' @click='feedbackPopupToggle = !feedbackPopupToggle' v-on='on'>
-          <v-icon v-if='feedbackPopupToggle'>mdi-close</v-icon>
-          <v-icon v-else>mdi-message-plus</v-icon>
-        </v-btn>
-      </template>
-      <span v-if='feedbackPopupToggle'>Close</span>
-      <span v-else>Feedback</span>
-    </v-tooltip>
-    <v-overlay :value='feedbackPopupToggle' :z-index='10'></v-overlay>
-    <v-card v-if='feedbackPopupToggle' id='feedback-card' color='primary' dark>
-      <v-card-title>Is this input case insightful?</v-card-title>
-      <v-card-text class='px-3 py-0'>
-        <v-radio-group v-model='feedbackChoice' class='mb-2 mt-0' dark hide-details row>
-          <v-radio label='Yes' value='yes'></v-radio>
-          <v-radio label='No' value='no'></v-radio>
-          <v-radio label='Other' value='other'></v-radio>
-        </v-radio-group>
-        <v-textarea v-model='feedback' :disabled='feedbackSubmitted' hide-details no-resize outlined placeholder='Why?' rows='2'></v-textarea>
-      </v-card-text>
-      <p v-if='feedbackError' class='caption error--text mb-0'>{{ feedbackError }}</p>
-      <v-card-actions>
-        <v-spacer></v-spacer>
-        <v-btn :disabled='feedbackSubmitted' light small text @click='clearFeedback'>Cancel</v-btn>
-        <v-btn :disabled='!(feedback && feedbackChoice) || feedbackSubmitted' class='mx-1' color='white' light small @click='submitGeneralFeedback'>
-          Send
-        </v-btn>
-        <v-icon v-show='feedbackSubmitted' color='white'>mdi-check</v-icon>
-      </v-card-actions>
-    </v-card>
-    <!-- End For general feedback -->
+      <!-- For general feedback -->
+      <v-tooltip left>
+          <template v-slot:activator='{ on, attrs }'>
+              <v-btn :class="feedbackPopupToggle ? 'secondary' : 'primary'" bottom fab fixed class="zindex-10" right
+                     v-bind='attrs' @click='feedbackPopupToggle = !feedbackPopupToggle' v-on='on'>
+                  <v-icon v-if='feedbackPopupToggle'>mdi-close</v-icon>
+                  <v-icon v-else>mdi-message-plus</v-icon>
+              </v-btn>
+          </template>
+          <span v-if='feedbackPopupToggle'>Close</span>
+          <span v-else>Feedback</span>
+      </v-tooltip>
+      <v-overlay :value='feedbackPopupToggle' :z-index='10'></v-overlay>
+      <v-card v-if='feedbackPopupToggle' id='feedback-card' color='primary' dark>
+          <v-card-title>Is this input case insightful?</v-card-title>
+          <v-card-text class='px-3 py-0'>
+              <v-radio-group v-model='feedbackChoice' class='mb-2 mt-0' dark hide-details row>
+                  <v-radio label='Yes' value='yes'></v-radio>
+                  <v-radio label='No' value='no'></v-radio>
+                  <v-radio label='Other' value='other'></v-radio>
+              </v-radio-group>
+              <v-textarea v-model='feedback' :disabled='feedbackSubmitted' hide-details no-resize outlined
+                          placeholder='Why?' rows='2'></v-textarea>
+          </v-card-text>
+          <p v-if='feedbackError' class='caption error--text mb-0'>{{ feedbackError }}</p>
+          <v-card-actions>
+              <v-spacer></v-spacer>
+              <v-btn :disabled='feedbackSubmitted' light small text @click='clearFeedback'>Cancel</v-btn>
+              <v-btn :disabled='!(feedback && feedbackChoice) || feedbackSubmitted' class='mx-1' color='white' light
+                     small @click='submitGeneralFeedback'>
+                  Send
+              </v-btn>
+              <v-icon v-show='feedbackSubmitted' color='white'>mdi-check</v-icon>
+          </v-card-actions>
+      </v-card>
+      <!-- End For general feedback -->
   </v-container>
 </template>
 
 <script setup lang='ts'>
-import { onMounted, onUnmounted, ref, computed, watch } from 'vue';
-import { api } from '@/api';
+import {computed, onMounted, onUnmounted, ref, watch} from 'vue';
+import {api} from '@/api';
 import Inspector from './Inspector.vue';
 import Mousetrap from 'mousetrap';
-import { CreateFeedbackDTO, Filter, InspectionDTO, ModelType, RowFilterType, SliceDTO } from '@/generated-sources';
+import {
+    CreateFeedbackDTO,
+    DatasetProcessingResultDTO,
+    Filter,
+    InspectionDTO,
+    ModelType,
+    ParameterizedCallableDTO,
+    RowFilterType
+} from '@/generated-sources';
 import mixpanel from "mixpanel-browser";
 import _ from "lodash";
 import InspectionFilter from './InspectionFilter.vue';
+import SlicingFunctionSelector from "@/views/main/utils/SlicingFunctionSelector.vue";
+import {useCatalogStore} from "@/stores/catalog";
 
 interface CreatedFeedbackCommonDTO {
-  targetFeature?: string | null;
-  userData: string;
-  modelId: string;
-  datasetId: string;
-  originalData: string;
-  projectId: number
+    targetFeature?: string | null;
+    userData: string;
+    modelId: string;
+    datasetId: string;
+    originalData: string;
+    projectId: number
 };
 
 interface Props {
-  inspectionId: number;
-  projectId: number;
-  isProjectOwnerOrAdmin: boolean;
+    inspectionId: number;
+    projectId: number;
+    isProjectOwnerOrAdmin: boolean;
 }
 
 const props = defineProps<Props>();
@@ -142,7 +161,7 @@ const props = defineProps<Props>();
 const inspection = ref<InspectionDTO | null>(null);
 const mouseTrap = new Mousetrap();
 const loadingData = ref(false);
-const loadingSlice = ref(false); // specific boolean for slice loading because it can take a while...
+const loadingProcessedDataset = ref(false); // specific boolean for slice loading because it can take a while...
 const inputData = ref({});
 const originalData = ref<any>({});
 const rowNb = ref(0);
@@ -156,11 +175,11 @@ const feedbackError = ref('');
 const feedbackSubmitted = ref(false);
 const labels = ref<string[]>([]);
 const filter = ref<Filter>({
-    inspectionId: this.inspectionId,
+    inspectionId: props.inspectionId,
     type: RowFilterType.ALL
 });
 
-const selectedSlicingFunction = ref<ParameterizedCallableDTO>({
+const selectedSlicingFunction = ref<Partial<ParameterizedCallableDTO>>({
     uuid: undefined,
     params: [],
     type: 'SLICING'
@@ -288,16 +307,16 @@ async function fetchRows(rowIdxInResults: number, forceFetch: boolean) {
   const remainder = rowIdxInResults % itemsPerPage;
   const newPage = Math.floor(rowIdxInResults / itemsPerPage);
   if ((rowIdxInResults > 0 && remainder === 0) || forceFetch) {
-      const result = await api.getDatasetRows(this.inspection!.dataset.id,
-          newPage * this.itemsPerPage, this.itemsPerPage, {
+      const result = await api.getDatasetRows(inspection.value!.dataset.id,
+          newPage * itemsPerPage, itemsPerPage, {
               filter: {
-                  ...this.filter,
-                  inspectionId: this.inspectionId
+                  ...filter.value,
+                  inspectionId: props.inspectionId
               },
-              removeRows: this.dataProcessingResult?.filteredRows
+              removeRows: dataProcessingResult.value?.filteredRows
           })
-      this.rows.value = result.content;
-      this.numberOfRows.value = result.totalItems;
+      rows.value = result.content;
+      numberOfRows.value = result.totalItems;
   }
 }
 
@@ -318,8 +337,8 @@ function assignCurrentRow(forceFetch: boolean) {
 
 function resetInput() {
   inputData.value = {
-      ...this.originalData,
-      ...this.dataProcessingResult?.modifications?.find(m => m.rowId === this.originalData['Index'])?.modifications ?? {}
+      ...originalData.value,
+      ...dataProcessingResult.value?.modifications?.find(m => m.rowId === this.originalData['Index'])?.modifications ?? {}
   };
 }
 
@@ -335,12 +354,12 @@ async function doSubmitFeedback(payload: CreateFeedbackDTO) {
 }
 
 async function processDataset() {
-    const pipeline = [this.selectedSlicingFunction]
+    const pipeline = [selectedSlicingFunction.value]
         .filter(callable => !!callable.uuid) as Array<ParameterizedCallableDTO>;
 
-    this.loadingProcessedDataset = true;
-    this.dataProcessingResult = await api.datasetProcessing(this.projectId, this.inspection!.dataset.id, pipeline)
-    this.loadingProcessedDataset = false;
+    loadingProcessedDataset.value = true;
+    dataProcessingResult.value = await api.datasetProcessing(props.projectId, inspection.value!.dataset.id, pipeline)
+    loadingProcessedDataset.value = false;
 }
 
 function bindKeys() {
@@ -354,7 +373,8 @@ function resetKeys() {
 
 
 async function init() {
-  inspection.value = await api.getInspection(props.inspectionId);
+    inspection.value = await api.getInspection(props.inspectionId);
+    await useCatalogStore().loadCatalog(props.projectId);
 }
 
 onMounted(async () => {
