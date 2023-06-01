@@ -1,4 +1,4 @@
-User Guide
+Scan your ML model
 ===============
 
 .. toctree::
@@ -12,8 +12,6 @@ User Guide
    data_leakage/index
    stochasticity/index
 
-Scan your ML model
-------------------
 
 How to scan your Machine Learning model for vulnerabilities with Giskard?
 
