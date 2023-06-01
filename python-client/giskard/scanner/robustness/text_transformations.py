@@ -39,6 +39,7 @@ text_titlecase.name = "Transform to title case"
 
 
 class TextTransformation(TransformationFunction):
+    name: str
     row_level = False
 
     def __init__(self, column):
