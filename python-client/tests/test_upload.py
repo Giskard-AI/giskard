@@ -66,7 +66,7 @@ def _test_upload_model_exceptions(model: SKLearnModel, ds: Dataset):
                 name=model_name,
                 classification_labels=model.meta.classification_labels,
             ).upload(client, "test-project", ds)
-        assert e.match("Value mentioned in  feature_names is  not available in validate_df")
+        assert e.match("Value mentioned in feature_names is not available in validate_df")
 
         if model.is_classification:
             # Error Scenario: Target has values not declared in Classification Label

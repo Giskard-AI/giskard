@@ -18,56 +18,54 @@
       </v-container>
       <v-row v-else class="fill-height">
         <v-col cols="3" class="vc fill-height">
-            <v-tooltip top>
-                <template v-slot:activator="{ on, attrs }">
-                    <div v-bind="attrs" v-on="on">
-                        <v-btn text class='mx-1' @click='compare()' color="primary"
-                               :disabled="compareSelectedItems.length < 2">
-                            <v-icon>compare</v-icon>
-                            Compare selected executions
-                        </v-btn>
-                    </div>
-                </template>
-                <span v-if="compareSelectedItems.length < 2">Select at least two executions to compare</span>
-                <span v-else>Show comparison of selected executions</span>
-            </v-tooltip>
+          <v-tooltip top>
+            <template v-slot:activator="{ on, attrs }">
+              <div v-bind="attrs" v-on="on">
+                <v-btn text class='mx-1' @click='compare()' color="primary" :disabled="compareSelectedItems.length < 2">
+                  <v-icon>compare</v-icon>
+                  Compare selected executions
+                </v-btn>
+              </div>
+            </template>
+            <span v-if="compareSelectedItems.length < 2">Select at least two executions to compare</span>
+            <span v-else>Show comparison of selected executions</span>
+          </v-tooltip>
 
-            <v-list three-line>
-                <v-list-item-group color="primary" mandatory>
-                    <div v-for="e in executionsAndJobs" :key="e.execution?.id ?? e.date">
-                        <v-divider/>
-                        <v-list-item :disabled="e.disabled"
-                                     :to="e.disabled ? null : { name: 'test-suite-execution', params: { executionId: e.execution.id } }">
-                            <v-list-item-icon>
-                                <v-icon :color="e.color" size="40">{{
-                                    e.icon
-                                    }}
-                                </v-icon>
-                            </v-list-item-icon>
-                            <v-list-item-content>
-                                <v-list-item-title>
-                                    <div class="d-flex justify-space-between">
-                                        <div>
-                                            <span v-if="getModel(e)">Model: {{ getModel(e) }}<br/></span>
-                                            <span>{{ (e.disabled ? e.date : e.execution.executionDate) | date }}</span>
-                                        </div>
-                                        <v-tooltip bottom v-if="!e.disabled">
-                                            <template v-slot:activator="{ on, attrs }">
-                                                <div v-bind="attrs" v-on="on">
-                                                    <v-checkbox v-model="compareSelectedItems"
-                                                                :value="e.execution.id"/>
-                                                </div>
-                                            </template>
-                                            <span v-if="compareSelectedItems.includes(e.execution.id)">Remove from comparison</span>
-                                            <span v-else>Add to comparison</span>
-                                        </v-tooltip>
-                                    </div>
-                                </v-list-item-title>
-                            </v-list-item-content>
-                        </v-list-item>
-                    </div>
-                </v-list-item-group>
-            </v-list>
+          <v-list three-line>
+            <v-list-item-group color="primary" mandatory>
+              <div v-for="e in executionsAndJobs" :key="e.execution?.id ?? e.date">
+                <v-divider />
+                <v-list-item :disabled="e.disabled" :to="e.disabled ? null : { name: 'test-suite-execution', params: { executionId: e.execution.id } }">
+                  <v-list-item-icon>
+                    <v-icon :color="e.color" size="40">{{
+                      e.icon
+                    }}
+                    </v-icon>
+                  </v-list-item-icon>
+                  <v-list-item-content>
+                    <v-list-item-title>
+                      <div class="d-flex justify-space-between">
+                        <div>
+                          <span v-if="getModel(e)">Model: {{ getModel(e) }}<br /></span>
+                          <span v-if="getDataset(e)">Dataset: {{ getDataset(e) }}<br /></span>
+                          <span>{{ (e.disabled ? e.date : e.execution.executionDate) | date }}</span>
+                        </div>
+                        <v-tooltip bottom v-if="!e.disabled">
+                          <template v-slot:activator="{ on, attrs }">
+                            <div v-bind="attrs" v-on="on">
+                              <v-checkbox v-model="compareSelectedItems" :value="e.execution.id" />
+                            </div>
+                          </template>
+                          <span v-if="compareSelectedItems.includes(e.execution.id)">Remove from comparison</span>
+                          <span v-else>Add to comparison</span>
+                        </v-tooltip>
+                      </div>
+                    </v-list-item-title>
+                  </v-list-item-content>
+                </v-list-item>
+              </div>
+            </v-list-item-group>
+          </v-list>
         </v-col>
         <v-col class="vc fill-height">
           <router-view></router-view>
@@ -79,17 +77,17 @@
 
 <script setup lang="ts">
 
-import {computed, onMounted} from 'vue';
-import {JobDTO, JobState, TestResult, TestSuiteExecutionDTO} from '@/generated-sources';
-import {Colors} from '@/utils/colors';
-import {Comparators} from '@/utils/comparators';
-import {storeToRefs} from 'pinia';
-import {useTestSuiteStore} from '@/stores/test-suite';
-import {useRoute, useRouter} from 'vue-router/composables';
-import {useTestSuiteCompareStore} from '@/stores/test-suite-compare';
-import {$vfm} from 'vue-final-modal';
+import { computed, onMounted } from 'vue';
+import { JobDTO, JobState, TestResult, TestSuiteExecutionDTO } from '@/generated-sources';
+import { Colors } from '@/utils/colors';
+import { Comparators } from '@/utils/comparators';
+import { storeToRefs } from 'pinia';
+import { useTestSuiteStore } from '@/stores/test-suite';
+import { useRoute, useRouter } from 'vue-router/composables';
+import { useTestSuiteCompareStore } from '@/stores/test-suite-compare';
+import { $vfm } from 'vue-final-modal';
 import RunTestSuiteModal from '@/views/main/project/modals/RunTestSuiteModal.vue';
-import {chain} from "lodash";
+import { chain } from "lodash";
 
 const {
     models,
@@ -187,43 +185,55 @@ onMounted(() => {
 })
 
 async function compare() {
-    await router.push({
-        name: 'test-suite-compare-executions',
-        query: {selectedIds: JSON.stringify(compareSelectedItems.value)}
-    })
-    testSuiteCompareStore.reset();
+  await router.push({
+    name: 'test-suite-compare-executions',
+    query: { selectedIds: JSON.stringify(compareSelectedItems.value) }
+  })
+  testSuiteCompareStore.reset();
 }
 
 async function openRunTestSuite(compareMode: boolean) {
   await $vfm.show({
-      component: RunTestSuiteModal,
-      bind: {
-          projectId: projectId.value,
-          suiteId: suite.value!.id,
-          inputs: inputs.value,
-          compareMode,
-          previousParams: executions.value.length === 0 ? {} : executions.value[0].inputs
-      }
+    component: RunTestSuiteModal,
+    bind: {
+      projectId: projectId.value,
+      suiteId: suite.value!.id,
+      inputs: inputs.value,
+      compareMode,
+      previousParams: executions.value.length === 0 ? {} : executions.value[0].inputs
+    }
   });
 }
 
 const modelByUuid = computed(() => chain(models.value)
-    .keyBy('id')
-    .value()
+  .keyBy('id')
+  .value()
 )
 
+function getDataset(e: ExecutionTabItem): string | null {
+  if (e.disabled || !e.execution) {
+    return null;
+  }
+  const value = e.execution.inputs.find(e => e.type === 'Dataset')?.value;
+
+  if (value) {
+    return datasets.value[value]?.name ?? datasets.value[value]?.id;
+  }
+  return value ?? null;
+}
+
 function getModel(e: ExecutionTabItem): string | null {
-    if (e.disabled || !e.execution) {
-        return null;
-    }
+  if (e.disabled || !e.execution) {
+    return null;
+  }
 
-    const value = e.execution.inputs.find(e => e.type === 'BaseModel')?.value;
+  const value = e.execution.inputs.find(e => e.type === 'BaseModel')?.value;
 
-    console.log(value);
-    if (value) {
-        return modelByUuid.value[value]?.name ?? null;
-    }
-    return value ?? null;
+  console.log(value);
+  if (value) {
+    return modelByUuid.value[value]?.name ?? null;
+  }
+  return value ?? null;
 }
 
 </script>

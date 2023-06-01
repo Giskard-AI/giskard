@@ -245,7 +245,6 @@ def test_diff_accuracy(model, data, threshold, expected_metric, request):
         ("test_diff_f1", "german_credit_data", "german_credit_always_default_model", 0, 0),
         ("test_diff_precision", "german_credit_data", "german_credit_always_default_model", 0, 0),
         ("test_diff_recall", "german_credit_data", "german_credit_always_default_model", 0, 0),
-        ("test_diff_reference_actual_f1", "german_credit_data", "german_credit_always_default_model", 0, 0),
     ],
 )
 def test_diff_always_default(test_fn_name, data, model, threshold, expected_metric, request):
@@ -319,74 +318,6 @@ def test_diff_rmse(model, data, threshold, expected_metric, actual_slices_size, 
     assert result.actual_slices_size[0] == actual_slices_size
     assert round(result.metric, 2) == expected_metric
     assert result.passed
-
-
-@pytest.mark.parametrize(
-    "model,data,threshold,expected_metric",
-    [
-        ("german_credit_model", "german_credit_data", 0.1, 0.03),
-        ("enron_model", "enron_data", 0.5, -0.02),
-    ],
-)
-def test_diff_reference_actual_f1(model, data, threshold, expected_metric, request):
-    data = request.getfixturevalue(data)
-
-    actual_slice = data.slice(lambda df: df.iloc[:len(df) // 3], row_level=False)
-    reference_slice = data.slice(lambda df: df.iloc[len(df) // 3:], row_level=False)
-
-    result = performance.test_diff_reference_actual_f1(
-        model=request.getfixturevalue(model),
-        actual_dataset=actual_slice,
-        reference_dataset=reference_slice,
-        threshold=threshold,
-    ).execute()
-    assert round(result.metric, 2) == expected_metric
-    assert result.passed
-
-
-@pytest.mark.parametrize(
-    "model,data,threshold,expected_metric",
-    [
-        ("german_credit_model", "german_credit_data", 0.1, -0.03),
-        ("enron_model", "enron_data", 0.5, 0.00),
-    ],
-)
-def test_diff_reference_actual_accuracy(model, data, threshold, expected_metric, request):
-    data = request.getfixturevalue(data)
-    result = performance.test_diff_reference_actual_accuracy(
-        model=request.getfixturevalue(model),
-        actual_dataset=data.slice(SlicingFunction(lambda df: df.tail(len(df) // 2), row_level=False)),
-        reference_dataset=data.slice(SlicingFunction(lambda df: df.head(len(df) // 2), row_level=False)),
-        threshold=threshold,
-    ).execute()
-    assert round(result.metric, 2) == expected_metric
-    assert result.passed
-
-
-@pytest.mark.parametrize(
-    "model,data,threshold,expected_metric",
-    [("linear_regression_diabetes", "diabetes_dataset_with_target", 0.1, -0.02)],
-)
-def test_diff_reference_actual_rmse(model, data, threshold, expected_metric, request):
-    data = request.getfixturevalue(data)
-    result = performance.test_diff_reference_actual_rmse(
-        model=request.getfixturevalue(model),
-        actual_dataset=data.slice(SlicingFunction(lambda df: df.tail(len(df) // 2), row_level=False)),
-        reference_dataset=data.slice(SlicingFunction(lambda df: df.head(len(df) // 2), row_level=False)),
-        threshold=threshold,
-    ).execute()
-    assert round(result.metric, 2) == expected_metric
-    assert result.passed
-
-    # Test with direction
-    result = performance.test_diff_reference_actual_rmse(
-        actual_dataset=data.slice(SlicingFunction(lambda df: df.tail(len(df) // 2), row_level=False)),
-        reference_dataset=data.slice(SlicingFunction(lambda df: df.head(len(df) // 2), row_level=False)),
-        model=request.getfixturevalue(model),
-        threshold=0,
-        direction=Direction.Increasing,
-    ).execute()
-    assert not result.passed
 
 
 @pytest.mark.parametrize(
