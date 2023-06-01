@@ -9,14 +9,14 @@
     <div class="text-center">
       <v-card>
         <v-card-title>
-            {{ suiteTest.testFunction.displayName ?? suiteTest.testFunction.name }}
+            {{ suiteTest.test.displayName ?? suiteTest.test.name }}
         </v-card-title>
           <v-card-text class="card-content">
-              <pre class="test-doc caption pt-5">{{ suiteTest.testFunction.doc }}</pre>
+              <pre class="test-doc caption pt-5">{{ suiteTest.test.doc }}</pre>
               <div class="d-flex align-center">
                   <p class="text-h6 pt-4">Inputs</p>
               </div>
-              <TestInputListSelector v-if="suiteTest.testFunction.args"
+              <TestInputListSelector v-if="suiteTest.test.args"
                                      :test-inputs="suiteTest.testInputs"
                                      :test="testFunctionsByUuid[suiteTest.testUuid]"
                                      :model-value="editedInputs"
@@ -33,11 +33,11 @@
                               <v-expansion-panel-content class="pa-0">
                                   <MonacoEditor
                                           ref="editor"
-                                          v-model='suiteTest.testFunction.code'
+                                          v-model='suiteTest.test.code'
                                           class='editor'
-                            language='python'
-                            style="height: 300px; min-height: 300px"
-                            :options="monacoOptions"
+                                          language='python'
+                                          style="height: 300px; min-height: 300px"
+                                          :options="monacoOptions"
                     />
                   </v-expansion-panel-content>
                 </v-expansion-panel>
@@ -92,7 +92,7 @@ const editor = ref(null)
 const {testFunctionsByUuid} = storeToRefs(useCatalogStore())
 
 const sortedArguments = computed(() => {
-    return _.sortBy(_.values(props.suiteTest.testFunction.args), value => {
+    return _.sortBy(_.values(props.suiteTest.test.args), value => {
         return !_.isUndefined(props.suiteTest.testInputs[value.name]);
     }, 'name');
 })

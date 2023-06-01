@@ -71,9 +71,9 @@ export const GENERATED_MAPPING = {
     'ai.giskard.web.dto.RunAdhocTestRequest' : 'RunAdhocTestRequest',
     'ai.giskard.web.dto.SetupDTO' : 'SetupDTO',
     'ai.giskard.web.dto.SliceCreateDTO' : 'SliceCreateDTO',
-    'ai.giskard.web.dto.SlicingFunctionDTO' : 'SlicingFunctionDTO',
     'ai.giskard.web.dto.SlicePutDTO' : 'SlicePutDTO',
     'ai.giskard.web.dto.SliceValidateDTO' : 'SliceValidateDTO',
+    'ai.giskard.web.dto.SlicingFunctionDTO' : 'SlicingFunctionDTO',
     'ai.giskard.web.dto.SlicingResultDTO' : 'SlicingResultDTO',
     'ai.giskard.web.dto.SuiteTestDTO' : 'SuiteTestDTO',
     'ai.giskard.web.dto.TestFunctionArgumentDTO' : 'TestFunctionArgumentDTO',
@@ -160,9 +160,9 @@ export * from './ai/giskard/web/dto/required-input-dto';
 export * from './ai/giskard/web/dto/run-adhoc-test-request';
 export * from './ai/giskard/web/dto/setup-dto';
 export * from './ai/giskard/web/dto/slice-create-dto';
-export * from './ai/giskard/web/dto/slicing-function-d-t-o';
 export * from './ai/giskard/web/dto/slice-put-dto';
 export * from './ai/giskard/web/dto/slice-validate-dto';
+export * from './ai/giskard/web/dto/slicing-function-dto';
 export * from './ai/giskard/web/dto/slicing-result-dto';
 export * from './ai/giskard/web/dto/suite-test-dto';
 export * from './ai/giskard/web/dto/test-function-argument-dto';

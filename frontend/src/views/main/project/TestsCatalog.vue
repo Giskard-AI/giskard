@@ -222,14 +222,18 @@ function resizeEditor() {
 }
 
 function castDefaultValueToType(arg: TestFunctionArgumentDTO) {
-  switch (arg.type) {
-    case 'float':
-      return parseFloat(arg.defaultValue)
-    case 'int':
-      return parseInt(arg.defaultValue)
-    default:
-      return arg.defaultValue;
-  }
+    if (arg.defaultValue === 'None') {
+        return null;
+    }
+    
+    switch (arg.type) {
+        case 'float':
+            return parseFloat(arg.defaultValue)
+        case 'int':
+            return parseInt(arg.defaultValue)
+        default:
+            return arg.defaultValue;
+    }
 }
 
 watch(selected, (value) => {
