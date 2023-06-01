@@ -2,7 +2,7 @@
 import { computed, ref, onActivated, watch, onMounted } from "vue";
 import { $vfm } from 'vue-final-modal';
 import { api } from '@/api';
-import { useRoute, useRouter } from 'vue-router/composables';
+import { useRouter } from 'vue-router/composables';
 import { useDebuggingSessionsStore } from "@/stores/debugging-sessions";
 import { useProjectStore } from "@/stores/project";
 import { InspectionDTO, MLWorkerInfoDTO } from "@/generated-sources";
@@ -11,8 +11,6 @@ import InlineEditText from '@/components/InlineEditText.vue';
 import ConfirmModal from './modals/ConfirmModal.vue';
 import StartWorkerInstructions from "@/components/StartWorkerInstructions.vue";
 
-
-const route = useRoute();
 const router = useRouter();
 
 const projectStore = useProjectStore();
@@ -213,7 +211,7 @@ onActivated(async () => {
       <v-alert class="text-center">
         <p class="headline font-weight-medium grey--text text--darken-2">You haven't created any debugging session for this project. <br>Please create your first session to start debugging your model.</p>
       </v-alert>
-      <AddDebuggingSessionModal v-bind:project-id="projectId" v-on:createDebuggingSession="createDebuggingSession"></AddDebuggingSessionModal>
+      <AddDebuggingSessionModal :projectId="projectId" v-on:createDebuggingSession="createDebuggingSession"></AddDebuggingSessionModal>
       <div class="d-flex justify-center mb-6">
         <img src="@/assets/logo_debugger.png" class="debugger-logo" title="Debugger tab logo" alt="A turtle using a magnifying glass">
       </div>
