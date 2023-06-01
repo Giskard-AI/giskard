@@ -167,6 +167,7 @@ public interface GiskardMapper {
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "suite", ignore = true)
+    @Mapping(target = "testFunction", source = "testUuid")
     @Mapping(target = "executions", ignore = true)
     SuiteTest fromDTO(SuiteTestDTO dto);
 
@@ -194,6 +195,7 @@ public interface GiskardMapper {
     TestSuiteDTO toDTO(TestSuite suite);
 
     @Mapping(target = "testUuid", source = "testFunction.uuid")
+    @Mapping(target = "test", source = "testFunction")
     SuiteTestDTO toDTO(SuiteTest dto);
 
     default Map<String, TestInputDTO> map(List<TestInput> value) {

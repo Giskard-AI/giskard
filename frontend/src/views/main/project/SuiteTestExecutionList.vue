@@ -12,7 +12,7 @@
               <v-list-item-content>
                   <v-list-item-title>
                       <div class="d-flex justify-space-between">
-                          <span>{{ getTestName(suiteTest.testFunction) }}</span>
+                          <span>{{ getTestName(suiteTest.test) }}</span>
                           <div>
                               <v-btn
                                       v-if="result !== undefined && !result.passed"
@@ -40,7 +40,7 @@
           </v-list-item-subtitle>
           <v-list-item-subtitle v-else>
             {{ result ? `Metric : ${result.metric}` : "Not executed" }}<br/>
-              UUID: {{ suiteTest.testFunction.uuid }}
+              UUID: {{ suiteTest.test.uuid }}
           </v-list-item-subtitle>
         </v-list-item-content>
       </v-list-item>
