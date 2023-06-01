@@ -165,10 +165,9 @@ public class FeedbackController {
     }
 
 
-    @DeleteMapping("/feedback-replies/{feedbackReplyId}")
-    public ResponseEntity<Void> deleteFeedbackReply(@PathVariable("feedbackReplyId") long feedbackReplyId) {
+    @DeleteMapping("/{feedbackId}/replies/{feedbackReplyId}")
+    public ResponseEntity<Void> deleteFeedbackReply(@PathVariable("feedbackId") long feedbackId, @PathVariable("feedbackReplyId") long feedbackReplyId) {
         FeedbackReply feedbackReply = feedbackReplyRepository.findOneById(feedbackReplyId);
-
         Long currUserId = SecurityUtils.getCurrentAuthenticatedUserId();
         if (SecurityUtils.isCurrentUserAdmin() ||
             feedbackReply.getFeedback().getProject().getOwner().getId().equals(currUserId) ||
