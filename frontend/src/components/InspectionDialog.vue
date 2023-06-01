@@ -1,5 +1,9 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { api } from '@/api';
+import { DatasetDTO, ModelDTO } from "@/generated-sources";
+import DatasetSelector from '@/views/main/utils/DatasetSelector.vue';
+import ModelSelector from '@/views/main/utils/ModelSelector.vue';
+import { computed, onActivated, ref } from "vue";
 
 interface Props {
   projectId: number;
@@ -7,69 +11,48 @@ interface Props {
 
 const props = defineProps<Props>();
 
-const datasets = ref([
-  {
-    "id": 1,
-    "name": "Dataset 1"
-  },
-  {
-    "id": 2,
-    "name": "Dataset 2"
-  },
-  {
-    "id": 3,
-    "name": "Dataset 3"
-  }
-]);
-
-const models = ref([
-  {
-    "id": 1,
-    "name": "Model 1"
-  },
-  {
-    "id": 2,
-    "name": "Model 2"
-  },
-  {
-    "id": 3,
-    "name": "Model 3"
-  }
-]);
+const datasets = ref<DatasetDTO[]>([]);
+const models = ref<ModelDTO[]>([]);
 
 const dialog = ref(false);
 const inspectionName = ref("");
-const datasetSelected = ref({});
-const modelSelected = ref({});
-
-const datasetsFormatted = computed(() => datasets.value.map(({ name, id }) => appendIdToName(name, id)));
-const modelsFormatted = computed(() => models.value.map(({ name, id }) => appendIdToName(name, id)));
+const selectedDataset = ref<DatasetDTO | null>(null);
+const selectedModel = ref<ModelDTO | null>(null);
 
 const missingValues = computed(() => {
-  return Object.keys(datasetSelected.value).length === 0 || Object.keys(modelSelected.value).length === 0;
+  if (selectedDataset.value === null || selectedModel.value === null) {
+    return true;
+  }
+  return false;
 });
 
 const newInspection = computed(() => {
   return {
     "name": inspectionName.value,
     "createdDate": new Date(),
-    "dataset": datasetSelected.value,
-    "model": modelSelected.value
+    "dataset": selectedDataset.value,
+    "model": selectedModel.value
   }
 });
 
 const emit = defineEmits(['createInspection'])
 
+async function loadDatasets() {
+  datasets.value = await api.getProjectDatasets(props.projectId);
+}
+
+async function loadModels() {
+  models.value = await api.getProjectModels(props.projectId);
+}
+
 function createInspection() {
   emit('createInspection', newInspection.value);
 }
 
-function appendIdToName(name: string, id: number): string {
-  if (name === "") {
-    return id.toString();
-  }
-  return name + " (" + id + ")";
-}
+onActivated(() => {
+  loadDatasets();
+  loadModels();
+});
 </script>
 
 <template>
@@ -84,9 +67,11 @@ function appendIdToName(name: string, id: number): string {
       <v-card>
         <v-card-title class="headline">Create Inspection</v-card-title>
         <v-card-text>
-          <v-text-field label="Inspection name (optional)" v-model="inspectionName"></v-text-field>
-          <v-select label="Dataset" :items="datasetsFormatted" v-model="datasetSelected" required></v-select>
-          <v-select label="Model" :items="modelsFormatted" v-model="modelSelected" required></v-select>
+          <v-text-field label="Inspection name (optional)" v-model="inspectionName" outlined dense hide-details></v-text-field>
+          <ModelSelector :projectId="projectId" :value.sync="selectedModel" class="selector"></ModelSelector>
+          <v-spacer></v-spacer>
+          <DatasetSelector :projectId="projectId" :value.sync="selectedDataset" :label="'Dataset'" class="selector"></DatasetSelector>
+
         </v-card-text>
         <v-card-actions>
           <v-btn text @click="dialog = false">Cancel</v-btn>
@@ -98,4 +83,8 @@ function appendIdToName(name: string, id: number): string {
   </div>
 </template>
 
-<style scoped></style>
+<style scoped>
+.selector {
+  margin-top: 1.5rem;
+}
+</style>
