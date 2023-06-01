@@ -212,8 +212,7 @@ def test_text_sentiment_ngrams_tutorial():
     # defining the giskard dataset
     my_test_dataset = Dataset(df.head(), name="test dataset", target="label")
 
-    my_output = my_model.predict(my_test_dataset)
-    print(my_wrapped_model.predict(my_test_dataset))
+    my_output = my_wrapped_model.predict(my_test_dataset)
 
     validate_model(my_wrapped_model, validate_ds=my_test_dataset)
 
