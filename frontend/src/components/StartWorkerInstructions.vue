@@ -23,7 +23,7 @@
                 </v-btn>
             </p>
             <p class="mt-4 mb-0">to connect to this Giskard server.</p>
-            <p v-if="route.name !== 'admin-general'">You can check the status of an ML Worker in on the
+            <p v-if="route.name !== 'admin-general'">You can check the status of an ML Worker and generate a new API token on the
                 <router-link :to="{ name: 'admin-general' }">Settings</router-link>
                 page
             </p>
@@ -37,6 +37,7 @@ import {useMainStore} from "@/stores/main";
 import {copyToClipboard} from "@/global-keys";
 import {useRoute} from "vue-router/composables";
 import {apiURL} from "@/env";
+import {TYPE} from "vue-toastification";
 
 const appSettings = computed(() => mainStore.appSettings);
 
@@ -45,6 +46,6 @@ const route = useRoute();
 
 async function copyMLWorkerCommand() {
     await copyToClipboard(`giskard worker start -u ${apiURL}`);
-    mainStore.addNotification({content: 'Copied', color: '#262a2d'});
+    mainStore.addNotification({content: 'Copied', color: TYPE.INFO});
 }
 </script>

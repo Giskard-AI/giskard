@@ -49,17 +49,17 @@ public class MLWorkerCacheService {
 
         return CatalogDTO.builder()
             .tests(Stream.concat(
-                    testFunctionRepository.findAllPickles().stream().map(giskardMapper::toDTO),
+                    testFunctionRepository.findAll().stream().map(giskardMapper::toDTO),
                     catalog.getTests().stream()
                 )
                 .toList())
             .slices(Stream.concat(
-                    slicingFunctionRepository.findAllPickles().stream().map(giskardMapper::toDTO),
+                    slicingFunctionRepository.findAll().stream().map(giskardMapper::toDTO),
                     catalog.getSlices().stream()
                 )
                 .toList())
             .transformations(Stream.concat(
-                    transformationFunctionRepository.findAllPickles().stream().map(giskardMapper::toDTO),
+                    transformationFunctionRepository.findAll().stream().map(giskardMapper::toDTO),
                     catalog.getTransformations().stream()
                 )
                 .toList())
