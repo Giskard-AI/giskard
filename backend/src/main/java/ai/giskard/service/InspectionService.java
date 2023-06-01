@@ -47,12 +47,12 @@ public class InspectionService {
         return Table.read().csv(reader);
     }
 
-    public Table getTableFromBucketFile(String location, ColumnType[] columnTypes) throws FileNotFoundException {
+    public Table getTableFromBucketFile(String location, ColumnDType[] columnDTypes) throws FileNotFoundException {
         InputStreamReader reader = new InputStreamReader(
             new FileInputStream(location));
         CsvReadOptions csvReadOptions = CsvReadOptions
             .builder(reader)
-            .columnTypes(columnTypes)
+            .columnDTypes(columnDTypes)
             .build();
         return Table.read().csv(csvReadOptions);
     }
@@ -144,8 +144,8 @@ public class InspectionService {
 
     private Selection getSelection(Inspection inspection, Filter filter) throws FileNotFoundException {
         Table predsTable = getTableFromBucketFile(getPredictionsPath(inspection).toString());
-        ColumnType[] columnTypes = {ColumnType.STRING, ColumnType.STRING, ColumnType.DOUBLE};
-        Table calculatedTable = getTableFromBucketFile(getCalculatedPath(inspection).toString(), columnTypes);
+        ColumnDType[] columnDTypes = {ColumnDType.STRING, ColumnDType.STRING, ColumnDType.DOUBLE};
+        Table calculatedTable = getTableFromBucketFile(getCalculatedPath(inspection).toString(), columnDTypes);
         StringColumn predictedClass = calculatedTable.stringColumn(0);
         Selection selection = predictedClass.isNotMissing();
         if (inspection.getDataset().getTarget() != null) {

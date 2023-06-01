@@ -138,10 +138,10 @@ class DriftTests(AbstractTestCollection):
         return chi_square, p_value, output_data
 
     @staticmethod
-    def _validate_feature_type(gsk_dataset, column_name, feature_type):
+    def _validate_column_type(gsk_dataset, column_name, column_type):
         assert (
-            gsk_dataset.feature_types[column_name] == feature_type
-        ), f'Column "{column_name}" is not of type "{feature_type}"'
+            gsk_dataset.column_types[column_name] == column_type
+        ), f'Column "{column_name}" is not of type "{column_type}"'
 
     @staticmethod
     def _validate_column_name(actual_ds, reference_ds, column_name):
@@ -159,12 +159,12 @@ class DriftTests(AbstractTestCollection):
         if reference_series.empty:
             raise ValueError("Reference Series computed from the column is empty")
 
-    def _extract_series(self, actual_ds, reference_ds, column_name, feature_type):
+    def _extract_series(self, actual_ds, reference_ds, column_name, column_type):
         actual_ds.df.reset_index(drop=True, inplace=True)
         reference_ds.df.reset_index(drop=True, inplace=True)
         self._validate_column_name(actual_ds, reference_ds, column_name)
-        self._validate_feature_type(actual_ds, column_name, feature_type)
-        self._validate_feature_type(reference_ds, column_name, feature_type)
+        self._validate_column_type(actual_ds, column_name, column_type)
+        self._validate_column_type(reference_ds, column_name, column_type)
         actual_series = actual_ds.df[column_name]
         reference_series = reference_ds.df[column_name]
         self._validate_series_notempty(actual_series, reference_series)

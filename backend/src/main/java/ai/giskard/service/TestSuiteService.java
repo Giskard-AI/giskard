@@ -1,6 +1,6 @@
 package ai.giskard.service;
 
-import ai.giskard.domain.FeatureType;
+import ai.giskard.domain.ColumnType;
 import ai.giskard.domain.ml.*;
 import ai.giskard.domain.ml.testing.Test;
 import ai.giskard.jobs.JobType;
@@ -103,18 +103,18 @@ public class TestSuiteService {
         }
         Dataset ds = suite.getReferenceDataset() != null ? suite.getReferenceDataset() : suite.getActualDataset();
         if (ds != null) {
-            ds.getFeatureTypes().forEach((fName, fType) -> {
+            ds.getColumnTypes().forEach((fName, fType) -> {
                 if (fName.equals(ds.getTarget())) {
                     substitutions.putIfAbsent("TARGET NAME", fName);
                 } else {
                     substitutions.putIfAbsent("FEATURE NAME", fName);
-                    if (fType == FeatureType.CATEGORY) {
+                    if (fType == ColumnType.CATEGORY) {
                         substitutions.putIfAbsent("CATEGORICAL FEATURE NAME", fName);
                     }
-                    if (fType == FeatureType.NUMERIC) {
+                    if (fType == ColumnType.NUMERIC) {
                         substitutions.putIfAbsent("NUMERIC FEATURE NAME", fName);
                     }
-                    if (fType == FeatureType.TEXT) {
+                    if (fType == ColumnType.TEXT) {
                         substitutions.putIfAbsent("TEXTUAL FEATURE NAME", fName);
                     }
                 }

@@ -1,5 +1,5 @@
 export const GENERATED_MAPPING = {
-    'ai.giskard.domain.FeatureType' : 'FeatureType',
+    'ai.giskard.domain.ColumnType' : 'ColumnType',
     'ai.giskard.domain.GeneralSettings' : 'GeneralSettings',
     'ai.giskard.domain.InspectionSettings' : 'InspectionSettings',
     'ai.giskard.domain.ml.CodeLanguage' : 'CodeLanguage',
@@ -94,7 +94,7 @@ export const GENERATED_MAPPING = {
     'ai.giskard.web.rest.vm.TokenAndPasswordVM' : 'TokenAndPasswordVM'
 
 };
-export * from './ai/giskard/domain/feature-type';
+export * from './ai/giskard/domain/column-type';
 export * from './ai/giskard/domain/general-settings';
 export * from './ai/giskard/domain/inspection-settings';
 export * from './ai/giskard/domain/ml/code-language';

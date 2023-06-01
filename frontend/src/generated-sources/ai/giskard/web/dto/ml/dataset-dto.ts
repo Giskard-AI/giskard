@@ -1,14 +1,14 @@
-import type {FeatureType} from './../../../domain/feature-type';
+import type {ColumnType} from '../../../domain/column-type';
 import type {ProjectDTO} from './project-dto';
 
 /**
  * Generated from ai.giskard.web.dto.ml.DatasetDTO
  */
 export interface DatasetDTO {
-    columnTypes: {[key: string]: string};
+    columnDTypes: {[key: string]: string};
     compressedSizeBytes: number;
     createdDate: any /* TODO: Missing translation of java.time.Instant */;
-    featureTypes: {[key: string]: FeatureType};
+    columnTypes: {[key: string]: ColumnType};
     id: string;
     name: string;
     originalSizeBytes: number;
