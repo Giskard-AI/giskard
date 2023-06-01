@@ -393,6 +393,7 @@ function resetKeys() {
 
 async function init() {
     inspection.value = await api.getInspection(props.inspectionId);
+    useInspectionStore().$reset();
     await useCatalogStore().loadCatalog(props.projectId);
 }
 
