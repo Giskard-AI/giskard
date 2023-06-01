@@ -6,6 +6,7 @@ import numpy as np
 from giskard.core.core import SupportedModelTypes
 from giskard.core.model import MLFlowBasedModel
 
+
 class TensorFlowModel(MLFlowBasedModel):
     def __init__(self,
                  clf,
@@ -26,15 +27,14 @@ class TensorFlowModel(MLFlowBasedModel):
                          classification_threshold=classification_threshold,
                          classification_labels=classification_labels)
 
-
     @classmethod
     def read_model_from_local_dir(cls, local_path):
         return mlflow.tensorflow.load_model(local_path)
 
     def save_with_mflow(self, local_path, mlflow_meta: mlflow.models.Model):
         mlflow.tensorflow.save_model(self.clf,
-                                  path=local_path,
-                                  mlflow_model=mlflow_meta)
+                                     path=local_path,
+                                     mlflow_model=mlflow_meta)
 
     def clf_predict(self, data):
         if self.is_regression:
@@ -43,7 +43,7 @@ class TensorFlowModel(MLFlowBasedModel):
             predictions = self.clf.predict(data)
             predictions = np.squeeze(np.array(predictions))
 
-            if predictions.shape[1]==1:
+            if predictions.shape[1] == 1:
                 predictions = np.insert(predictions, 1, 1 - predictions[:, 0], axis=1)
 
             return predictions
