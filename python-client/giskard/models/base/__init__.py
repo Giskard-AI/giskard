@@ -23,7 +23,7 @@ from giskard.client.giskard_client import GiskardClient
 from giskard.client.io_utils import save_df, compress
 from giskard.core.core import ModelMeta, SupportedModelTypes, ModelType
 from giskard.core.validation import configured_validate_arguments
-from giskard.datasets.base import Dataset, GISKARD_HASH_COLUMN
+from giskard.datasets.base import Dataset
 from giskard.ml_worker.utils.logging import Timer
 from giskard.models.base.cache import ModelCache
 from giskard.path_utils import get_size
@@ -263,7 +263,8 @@ class BaseModel(ABC):
         timer = Timer()
 
         # Read cache
-        cached_predictions = self.model_cache.read_from_cache(dataset.df[GISKARD_HASH_COLUMN])
+        dataset_hash = dataset.dataset_hash()
+        cached_predictions = self.model_cache.read_from_cache(dataset_hash)
         missing = pd.isna(cached_predictions)
         if len(missing.shape) > 1:
             missing = np.any(missing, axis=1)
@@ -272,7 +273,7 @@ class BaseModel(ABC):
 
         if len(df) > 0:
             raw_prediction = self.predict_df(df)
-            self.model_cache.set_cache(dataset.df[missing][GISKARD_HASH_COLUMN], raw_prediction)
+            self.model_cache.set_cache(dataset_hash.df[missing], raw_prediction)
             cached_predictions[missing] = raw_prediction
 
         if self.is_regression:
