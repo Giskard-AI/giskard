@@ -70,26 +70,37 @@
     </v-row>
 
     <v-divider class="my-6"></v-divider>
+    <div class="mb-6 d-flex">
+      <h1 class="headline">Data Objects</h1>
+      <div class="d-flex justify-end align-center flex-grow-1">
+        <v-btn tile small color="primaryLight" class="mx-2 primaryLighBtn" href="https://docs.giskard.ai/start/guides/upload-your-model" target="_blank">
+          Upload with API
+        </v-btn>
+        <v-btn text @click="reloadDataObjects()" color="secondary">Reload
+          <v-icon right>refresh</v-icon>
+        </v-btn>
+      </div>
+    </div>
 
     <v-row>
       <v-col cols="6">
-        <v-card>
+        <v-card height="100%">
           <v-card-title>
             Datasets
           </v-card-title>
           <v-card-text>
-            <Datasets :projectId="projectId" :isProjectOwnerOrAdmin="isProjectOwnerOrAdmin"></Datasets>
+            <Datasets ref="datasetsComponentRef" :projectId="projectId" :isProjectOwnerOrAdmin="isProjectOwnerOrAdmin"></Datasets>
           </v-card-text>
         </v-card>
       </v-col>
 
       <v-col cols="6">
-        <v-card>
+        <v-card height="100%">
           <v-card-title>
             Models
           </v-card-title>
           <v-card-text>
-            <Models :projectId="projectId" :isProjectOwnerOrAdmin="isProjectOwnerOrAdmin"></Models>
+            <Models ref="modelsComponentRef" :projectId="projectId" :isProjectOwnerOrAdmin="isProjectOwnerOrAdmin"></Models>
           </v-card-text>
         </v-card>
       </v-col>
@@ -97,7 +108,58 @@
   </v-container>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
+// import { Component, Prop, Vue } from 'vue-property-decorator';
+import { getUserFullDisplayName } from '@/utils';
+import Models from '@/views/main/project/Models.vue';
+import Datasets from '@/views/main/project/Datasets.vue';
+// import FeedbackList from '@/views/main/project/FeedbackList.vue';
+import { IUserProfileMinimal } from '@/interfaces';
+import mixpanel from "mixpanel-browser";
+import { useProjectStore } from "@/stores/project";
+import { computed, ref } from 'vue';
+import { mode } from 'crypto-js';
+
+interface Props {
+  projectId: number;
+  isProjectOwnerOrAdmin: boolean;
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  isProjectOwnerOrAdmin: false
+});
+
+const datasetsComponentRef = ref<any>(null);
+const modelsComponentRef = ref<any>(null);
+
+const project = computed(() => useProjectStore().project(props.projectId))
+
+
+function reloadDataObjects() {
+  datasetsComponentRef.value.loadDatasets();
+  modelsComponentRef.value.loadModelPickles();
+}
+
+async function cancelUserInvitation(user: IUserProfileMinimal) {
+  // const confirm = await this.$dialog.confirm({
+  //   text: `Are you sure you want to cancel invitation of user <strong>${user.user_id}</strong>?`,
+  //   title: 'Cancel user invitation'
+  // });
+  // if (project && confirm) {
+
+  if (project) {
+    try {
+      mixpanel.track('Cancel user invitation to project', { projectId: project.id, userId: user.id });
+      await useProjectStore().uninviteUserFromProject({ projectId: project.id, userId: user.id })
+    } catch (e) {
+      console.error(e)
+    }
+  }
+}
+
+</script>
+
+<!-- <script lang="ts">
 import { Component, Prop, Vue } from 'vue-property-decorator';
 import { getUserFullDisplayName } from '@/utils';
 import Models from '@/views/main/project/Models.vue';
@@ -138,7 +200,7 @@ export default class ProjectSettings extends Vue {
     }
   }
 }
-</script>
+</script> -->
 
 <style scoped lang="scss">
 .properties-table-c1 {

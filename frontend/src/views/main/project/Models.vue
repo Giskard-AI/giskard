@@ -21,7 +21,7 @@
           <v-col cols="3">Actions</v-col>
         </v-row>
       </v-card>
-      <v-card outlined tile class="grey lighten-5" v-for="m in                 models                " :key="m.id">
+      <v-card outlined tile class="grey lighten-5" v-for="m in                                          models                                         " :key="m.id">
         <v-row class="px-2 py-1 align-center">
           <v-col cols="4">
             <InlineEditText :text="m.name" :can-edit="isProjectOwnerOrAdmin" @save="(name) => renameModel(m.id, name)">
@@ -93,9 +93,7 @@ const models = ref<ModelDTO[]>([]);
 const showInspectDialog = ref<boolean>(false);
 const modelToInspect = ref<ModelDTO | null>(null);
 
-onActivated(() => loadModelPickles());
-
-async function loadModelPickles() {
+const loadModelPickles = async () => {
   models.value = await api.getProjectModels(props.projectId)
   models.value.sort((a, b) => new Date(a.createdDate) < new Date(b.createdDate) ? 1 : -1);
 }
@@ -125,6 +123,11 @@ async function renameModel(id: string, name: string) {
   models.value = [...models.value];
 }
 
+onActivated(() => loadModelPickles());
+
+defineExpose({
+  loadModelPickles
+})
 </script>
 
 <style>
