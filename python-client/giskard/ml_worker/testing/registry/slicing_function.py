@@ -136,6 +136,7 @@ class SlicingFunction(Savable[Any, DatasetProcessFunctionMeta]):
         from ....slicing.slice import QueryBasedSliceFunction
         return QueryBasedSliceFunction(eval(meta.code))
 
+
 def slicing_function(_fn=None, row_level=True, name=None, tags: Optional[List[str]] = None, cell_level=False):
     """
     Decorator that registers a slicing function with the testing registry and returns a SlicingFunction instance.
