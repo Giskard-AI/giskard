@@ -4,6 +4,8 @@ import pandas as pd
 from collections import defaultdict
 from typing import Sequence
 
+from ..ml_worker.testing.registry.slice_function import SliceFunction
+
 # @TODO: simplify this module, don’t need this complexity.
 
 
@@ -12,6 +14,8 @@ class Clause:
 
 
 class ComparisonClause(Clause):
+    _operator: str
+
     def __init__(self, column, value, equal=False):
         self.column = column
         self.value = value
@@ -58,6 +62,8 @@ class EqualTo(ComparisonClause):
 
 
 class Query:
+    clauses: defaultdict
+
     def __init__(self, clauses, optimize=False):
         self.clauses = defaultdict(list)
         for clause in clauses:
@@ -82,7 +88,7 @@ class Query:
     def get_all_clauses(self):
         return list(itertools.chain(*self.clauses.values()))
 
-    def run(self, df: pd.DataFrame):
+    def run(self, df: pd.DataFrame) -> pd.DataFrame:
         if len(self.clauses) < 1:
             return df
 
@@ -165,3 +171,13 @@ class DataSlice:
 
     def __len__(self):
         return len(self.data)
+
+
+class QueryBasedSliceFunction(SliceFunction):
+    row_level = False
+
+    def __init__(self, query: Query):
+        self.query = query
+
+    def __call__(self, data: pd.DataFrame):
+        return self.query.run(data)

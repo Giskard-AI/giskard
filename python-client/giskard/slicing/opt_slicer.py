@@ -1,7 +1,7 @@
 import pandas as pd
 
 from .filters import SignificanceFilter
-from .slice import DataSlice, GreaterThan, LowerThan, Query
+from .slice import DataSlice, GreaterThan, LowerThan, Query, QueryBasedSliceFunction
 
 from .base import BaseSlicer
 
@@ -34,13 +34,11 @@ class OptSlicer(BaseSlicer):
             # min_mean_diff=0.01,
         )
 
-        optb.fit(self.data[feature], self.data[target])
-        slice_candidates = make_slices_from_splits(self.data, optb.splits, features)
+        data = self.dataset.df
+        optb.fit(data[feature], data[target])
+        slice_candidates = make_slices_from_splits(data, optb.splits, features)
 
-        filt = SignificanceFilter(target)
-        slices = filt.filter(slice_candidates)
-
-        return slices
+        return slice_candidates
 
 
 def make_slices_from_splits(data: pd.DataFrame, splits: list[float], feature_names: str):
@@ -54,6 +52,6 @@ def make_slices_from_splits(data: pd.DataFrame, splits: list[float], feature_nam
         if right is not None:
             clauses.append(LowerThan(feature_names[0], right))
 
-        slices.append(DataSlice(Query(clauses, False), data))
+        slices.append(QueryBasedSliceFunction(Query(clauses, False)))
 
     return slices
