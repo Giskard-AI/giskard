@@ -64,8 +64,8 @@ wrapped_model = wrap_model(...)
 train_df = wrap_dataset(...)
 test_df = wrap_dataset(...)
 
-result = test_drift_prediction_ks(reference_slice=train_df,
-                                  actual_slice=test_df,
+result = test_drift_prediction_ks(reference_dataset=train_df,
+                                  actual_dataset=test_df,
                                   model=wrapped_model,
                                   classification_label='CALIFORNIA CRISIS',
                                   threshold=0.5).execute()
@@ -90,7 +90,7 @@ from giskard import wrap_model, wrap_dataset, test_f1
 wrapped_model = wrap_model(...)
 dataset = wrap_dataset(...)
 
-result = test_f1(actual_slice=dataset, model=wrapped_model).execute()
+result = test_f1(actual_dataset=dataset, model=wrapped_model).execute()
 print(f"result: {result.passed} with metric {result.metric}")
 ```
 
@@ -249,7 +249,7 @@ wrapped_dataset = wrap_dataset(...)
 # Note that all the parameters are specified excect dataset
 # Which means that we will need to specify dataset everytime we run the suite
 suite = Suite()
-    .add_test(test_f1, "f1", actual_slice=wrapped_dataset)
+    .add_test(test_f1, "f1", actual_dataset=wrapped_dataset)
     .add_test(DataQuality(dataset=wrapped_dataset, column_name='Month', category='August'), "quality")
 
 # Create our first model
@@ -308,7 +308,7 @@ client = GiskardClient(url, token)
 client.create_project(project_name, "Email Classification", "Email Classification")
 
 suite = Suite()
-.add_test(test_f1, actual_slice=wrapped_dataset)
+.add_test(test_f1, actual_dataset=wrapped_dataset)
 .add_test(DataQuality(dataset=wrapped_dataset, column_name='Month', category='August'))
 .save(client, project_name)
 ```

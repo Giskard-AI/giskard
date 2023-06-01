@@ -86,7 +86,7 @@ def custom_test(model: Model, dataset: Dataset, threshold: float = 0.5) -> TestR
 
 # 2. Create your custom test 
 class CustomTest(GiskardTest):
-    actual_slice: Dataset
+    actual_dataset: Dataset
     model: Model
     threshold: float
 
@@ -94,8 +94,8 @@ class CustomTest(GiskardTest):
     # They can be a Model, a Dataset or a primitive type
     # If their is no default value, you should set None as default
     # This is for autocomplete purpose
-    def __init__(self, actual_slice: Dataset = None, model: Model = None, threshold: float = 0.5):
-        self.actual_slice = actual_slice
+    def __init__(self, actual_dataset: Dataset = None, model: Model = None, threshold: float = 0.5):
+        self.actual_dataset = actual_dataset
         self.model = model
         self.threshold = threshold
         super().__init__()
@@ -131,8 +131,8 @@ catalog [#accessing-the-giskard-catalog](create-your-custom-test-wip-v2.md#acces
 
 ```
 is_pass, results = Suite()
-        .add_test(AucTest(actual_slice=german_credit_data_a, threshold=0.3))
-        .add_test(test_f1, actual_slice=german_credit_data_b, threshold=0.2)
+        .add_test(AucTest(actual_dataset=german_credit_data_a, threshold=0.3))
+        .add_test(test_f1, actual_dataset=german_credit_data_b, threshold=0.2)
         .run(model=german_credit_model)
 ```
 
@@ -174,8 +174,8 @@ token = "" # you can generate your API token in the Admin tab of the Giskard app
 client = GiskardClient(url, token)
 
 Suite()
-  .add_test(AucTest(actual_slice=german_credit_data_a, threshold=0.3))
-  .add_test(test_f1, actual_slice=german_credit_data_b, threshold=0.2)
+  .add_test(AucTest(actual_dataset=german_credit_data_a, threshold=0.3))
+  .add_test(test_f1, actual_dataset=german_credit_data_b, threshold=0.2)
   .save(client, "test_project_key")
 ```
 
