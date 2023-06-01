@@ -36,14 +36,14 @@ nearbykeys = {
 }
 
 
-@transformation_function(name="Keyboard typo", tags=['text'])
-def keyboard_typo_transformation(x: pd.Series, column_name: str, rate: float = 0.1) -> pd.Series:
+@transformation_function(name="Keyboard typo", tags=['text'], cell_level=True)
+def keyboard_typo_transformation(text: str, rate: float = 0.1) -> str:
     """
     Generate a random typo from words of the text of 'column_name'
     Typos are generated through character substitution based on keyboard proximity
     """
     # Split the text into words
-    words = x[column_name].split(" ")
+    words = text.split(" ")
 
     # Introduce typos into some of the words
     for i in range(len(words)):
@@ -57,8 +57,7 @@ def keyboard_typo_transformation(x: pd.Series, column_name: str, rate: float = 0
                     words[i] = word[:j] + replacement + word[j + 1:]
 
     # Join the words back into a string
-    x[column_name] = ' '.join(words)
-    return x
+    return ' '.join(words)
 
 
 @transformation_function(name="To uppercase", tags=['text'], cell_level=True)
@@ -77,13 +76,12 @@ def lowercase_transformation(text: str) -> str:
     return text.lower()
 
 
-@transformation_function(name="Strip punctuation", tags=['text'])
-def strip_punctuation(x: pd.Series, column_name: str):
+@transformation_function(name="Strip punctuation", tags=['text'], cell_level=True)
+def strip_punctuation(text: str) -> str:
     """
     Remove all punctuation symbols (e.g., ., !, ?) from the text of the column 'column_name'
     """
-    x[column_name] = x[column_name].translate(str.maketrans('', '', string.punctuation))
-    return x
+    return text.translate(str.maketrans('', '', string.punctuation))
 
 
 @transformation_function(name="Change writing style", row_level=False, tags=['text'])
