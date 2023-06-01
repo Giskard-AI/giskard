@@ -1,4 +1,3 @@
-import pandas as pd
 from pandas.core.dtypes.common import is_string_dtype, is_numeric_dtype
 
 from giskard.client.python_utils import warning
@@ -13,33 +12,33 @@ def validate_dataset(dataset: Dataset):
     if dataset.target is not None:
         validate_target(dataset.target, df.keys())
 
-    validate_feature_types(dataset.df, dataset.feature_types, dataset.target)
-    validate_column_categorization(df, dataset.feature_types, dataset.target)
+    validate_feature_types(dataset)
+    validate_column_categorization(dataset)
 
 
-def validate_feature_types(df, feature_types, target):
+def validate_feature_types(ds: Dataset):
     """
     Verifies that declared feature_types are correct with regard to SupportedFeatureTypes
-    :param feature_types: Map of feature name to one of the SupportedFeatureTypes values
+    :param ds: Dataset to be validated
     """
-    if feature_types and isinstance(feature_types, dict):
-        if not set(feature_types.values()).issubset(
+    if ds.feature_types and isinstance(ds.feature_types, dict):
+        if not set(ds.feature_types.values()).issubset(
                 set(column_type.value for column_type in SupportedFeatureTypes)
         ):
             raise ValueError(
-                f"Invalid feature_types parameter: {feature_types}"
+                f"Invalid feature_types parameter: {ds.feature_types}"
                 + f"Please choose types among {[column_type.value for column_type in SupportedFeatureTypes]}."
             )
     else:
-        raise ValueError(f"Invalid feature_types parameter: {feature_types}. Please specify non-empty dictionary.")
+        raise ValueError(f"Invalid feature_types parameter: {ds.feature_types}. Please specify non-empty dictionary.")
 
-    columns_with_types = set(feature_types.keys())
+    columns_with_types = set(ds.feature_types.keys())
 
-    if target in df.columns:
-        df = df.drop(target, axis=1)
+    if ds.target in ds.df.columns:
+        df = ds.df.drop(ds.target, axis=1)
 
     df_columns = set(df.columns)
-    columns_with_types.discard(target)
+    columns_with_types.discard(ds.target)
 
     if not columns_with_types.issubset(df_columns):
         missing_columns = columns_with_types - df_columns
@@ -55,36 +54,36 @@ def validate_feature_types(df, feature_types, target):
             )
 
 
-def validate_column_categorization(df: pd.DataFrame, feature_types, target):
-    nuniques = df.nunique()
+def validate_column_categorization(ds: Dataset):
+    nuniques = ds.df.nunique()
     nuniques_category = 2
     nuniques_numeric = 100
     nuniques_text = 1000
 
-    for column in df.columns:
-        if column == target:
+    for column in ds.df.columns:
+        if column == ds.target:
             continue
         if nuniques[column] <= nuniques_category and \
-                (feature_types[column] == SupportedFeatureTypes.NUMERIC.value or
-                 feature_types[column] == SupportedFeatureTypes.TEXT.value):
+                (ds.feature_types[column] == SupportedFeatureTypes.NUMERIC.value or
+                 ds.feature_types[column] == SupportedFeatureTypes.TEXT.value):
             warning(
-                f"Feature '{column}' is declared as '{feature_types[column]}' but has {nuniques[column]} "
+                f"Feature '{column}' is declared as '{ds.feature_types[column]}' but has {nuniques[column]} "
                 f"(<= nuniques_category={nuniques_category}) distinct values. Are "
                 f"you sure it is not a 'category' feature?"
             )
-        elif nuniques[column] > nuniques_text and is_string_dtype(df[column]) and \
-                (feature_types[column] == SupportedFeatureTypes.CATEGORY.value or
-                 feature_types[column] == SupportedFeatureTypes.NUMERIC.value):
+        elif nuniques[column] > nuniques_text and is_string_dtype(ds.df[column]) and \
+                (ds.feature_types[column] == SupportedFeatureTypes.CATEGORY.value or
+                 ds.feature_types[column] == SupportedFeatureTypes.NUMERIC.value):
             warning(
-                f"Feature '{column}' is declared as '{feature_types[column]}' but has {nuniques[column]} "
+                f"Feature '{column}' is declared as '{ds.feature_types[column]}' but has {nuniques[column]} "
                 f"(> nuniques_text={nuniques_text}) distinct values. Are "
                 f"you sure it is not a 'text' feature?"
             )
-        elif nuniques[column] > nuniques_numeric and is_numeric_dtype(df[column]) and \
-                (feature_types[column] == SupportedFeatureTypes.CATEGORY.value or
-                 feature_types[column] == SupportedFeatureTypes.TEXT.value):
+        elif nuniques[column] > nuniques_numeric and is_numeric_dtype(ds.df[column]) and \
+                (ds.feature_types[column] == SupportedFeatureTypes.CATEGORY.value or
+                 ds.feature_types[column] == SupportedFeatureTypes.TEXT.value):
             warning(
-                f"Feature '{column}' is declared as '{feature_types[column]}' but has {nuniques[column]} "
+                f"Feature '{column}' is declared as '{ds.feature_types[column]}' but has {nuniques[column]} "
                 f"(> nuniques_numeric={nuniques_numeric}) distinct values. Are "
                 f"you sure it is not a 'numeric' feature?"
             )
