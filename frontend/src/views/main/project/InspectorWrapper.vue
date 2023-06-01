@@ -415,14 +415,13 @@ async function handleSwitchSample() {
         },
         on: {
             async mounted(close) {
-                inspection.value = await api.updateInspectionName(inspection.value!.id, {
-                    name: inspection.value!.name,
-                    datasetId: inspection.value!.dataset.id,
-                    modelId: inspection.value!.model.id,
-                    sample: !inspection.value!.sample
-                });
-
                 try {
+                    inspection.value = await api.updateInspectionName(inspection.value!.id, {
+                        name: inspection.value!.name,
+                        datasetId: inspection.value!.dataset.id,
+                        modelId: inspection.value!.model.id,
+                        sample: !inspection.value!.sample
+                    });
                     await updateRow(true);
                 } finally {
                     close();
