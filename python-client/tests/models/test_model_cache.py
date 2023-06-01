@@ -1,5 +1,5 @@
 import math
-
+import copy
 import numpy as np
 import pandas as pd
 import xxhash
@@ -9,7 +9,7 @@ from giskard import Model, Dataset
 from giskard.models.cache import ModelCache
 
 
-def test_predict_once():
+def test_model_prediction_is_cached_on_regression_model():
     called_indexes = []
 
     def prediction_function(df: pd.DataFrame) -> np.ndarray:
@@ -18,16 +18,48 @@ def test_predict_once():
 
     wrapped_model = Model(prediction_function, model_type="regression")
 
-    wrapped_dataset = Dataset(df=pd.DataFrame([0, 1]))
+    wrapped_dataset = Dataset(df=pd.DataFrame([12.0, 1, 23, 4, 5, 6, 7, 8, 9, 10.0]))
 
     prediction = wrapped_model.predict(wrapped_dataset)
     cached_prediction = wrapped_model.predict(wrapped_dataset)
 
     assert called_indexes == list(wrapped_dataset.df.index), 'The  prediction should have been called once'
+    assert list(prediction.raw) == [12.0, 1, 23, 4, 5, 6, 7, 8, 9, 10.0]
     assert list(prediction.raw) == list(cached_prediction.raw)
     assert list(prediction.raw_prediction) == list(cached_prediction.raw_prediction)
     assert list(prediction.prediction) == list(cached_prediction.prediction)
     assert prediction.probabilities == cached_prediction.probabilities
+
+
+def test_model_prediction_is_cached_on_classification_model(german_credit_catboost, german_credit_data):
+    model = german_credit_catboost
+    dataset = german_credit_data
+
+    _predict_df = copy.copy(model.predict_df)
+
+    def predict_df(*args, **kwargs):
+        predict_df.num_calls += 1
+        return _predict_df(*args, **kwargs)
+
+    predict_df.num_calls = 0
+    model.predict_df = predict_df
+
+    prediction = model.predict(dataset)
+    model.predict(dataset)
+    model.predict(dataset)
+    cached_prediction = model.predict(dataset)
+
+    assert predict_df.num_calls == 1, 'The prediction should have been called once'
+    assert (prediction.raw == cached_prediction.raw).all()
+    assert (prediction.raw_prediction == cached_prediction.raw_prediction).all()
+    assert list(prediction.prediction) == list(cached_prediction.prediction)
+
+    # Test with no cache
+    with giskard.models.no_cache():
+        model.predict(dataset)
+        assert model.predict_df.num_calls == 2
+        model.predict(dataset)
+        assert model.predict_df.num_calls == 3
 
 
 def test_predict_disabled_cache():
