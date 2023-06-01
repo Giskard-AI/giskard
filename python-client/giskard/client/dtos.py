@@ -1,20 +1,20 @@
 from typing import List, Dict, Optional
 
-from pydantic import Model
+from pydantic import BaseModel
 
 
-class TestInputDTO(Model):
+class TestInputDTO(BaseModel):
     name: str
     value: str
     is_alias: bool = False
 
 
-class SuiteTestDTO(Model):
+class SuiteTestDTO(BaseModel):
     testId: str
     testInputs: Dict[str, TestInputDTO]
 
 
-class TestSuiteNewDTO(Model):
+class TestSuiteNewDTO(BaseModel):
     name: Optional[str]
     project_key: str
     tests: List[SuiteTestDTO]
