@@ -1,19 +1,17 @@
 from pathlib import Path
 
-import tensorflow as tf
 import pandas as pd
+import tensorflow as tf
 from tensorflow.keras import layers
 
-from giskard import Dataset
-
 import tests.utils
+from giskard import Dataset
 from giskard.models.tensorflow import TensorFlowModel
-
-data_url = "https://ai.stanford.edu/~amaas/data/sentiment/aclImdb_v1.tar.gz"
 
 dataset = tf.keras.utils.get_file("aclImdb",
                                   "https://ai.stanford.edu/~amaas/data/sentiment/aclImdb_v1.tar.gz",
-                                  untar=True)
+                                  untar=True,
+                                  cache_dir=Path.home() / ".giskard")
 
 
 def test_text_classification_2d_output():

@@ -1,5 +1,6 @@
 import datetime
 import warnings
+from collections import Counter
 from time import perf_counter
 from typing import Optional, Sequence
 
@@ -11,7 +12,8 @@ from .registry import DetectorRegistry
 from .result import ScanResult
 from ..core.model_validation import validate_model
 from ..datasets.base import Dataset
-from ..models.base import BaseModel
+from ..models.base import BaseModel, WrapperModel
+from ..utils import fullname
 from ..utils.analytics_collector import analytics
 
 MAX_ISSUES_PER_DETECTOR = 15
@@ -69,6 +71,7 @@ class Scanner:
         )
 
         issues = self._postprocess(issues)
+        self._collect_analytics(model, dataset, issues, elapsed)
 
         return ScanResult(issues)
 
@@ -83,14 +86,20 @@ class Scanner:
 
         return issues
 
-    def _collect_analytics(self, model, dataset):
+    def _collect_analytics(self, model, dataset, issues, elapsed):
+        inner_model_class = fullname(model.model) if isinstance(model, WrapperModel) else None
+        issues_cnt = Counter([fullname(i) for i in issues]) if issues else {}
+
         analytics.track(
             "scan",
             {
-                "model_class": model.__class__.__name__,
+                "model_class": fullname(model),
+                "inner_model_class": inner_model_class,
                 "model_id": str(model.id),
                 "model_type": model.meta.model_type.value,
                 "dataset_id": str(dataset.id),
+                "elapsed": elapsed,
+                **issues_cnt
             },
         )
 
