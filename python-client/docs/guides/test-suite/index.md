@@ -163,8 +163,8 @@ class-based method.
 
 * <mark style="color:red;">**`parameters`**</mark> : **Your parameters need to have a type defined.** Here is the type
   allowed as your test parameters:
-    * `Dataset` A giskard dataset, [wrap your dataset](../scan/index.md#3-wrap-your-dataset)
-    * `BaseModel` A giskard model, [wrap your model](../scan/index.md#2-wrap-your-model)
+    * `Dataset` A giskard dataset, [wrap your dataset](../scan/index.md#wrap-your-dataset)
+    * `BaseModel` A giskard model, [wrap your model](../scan/index.md#wrap-your-model)
     * `int/float/bool/str`  Any primitive type can be used
 * <mark style="color:red;">**`return`**</mark> The result of your test must be either a bool or a TestResult:
     * `bool` Either `True` if the test passed or `False` if it failed
@@ -247,8 +247,8 @@ wrapped_dataset = wrap_dataset(...)
 # Note that all the parameters are specified excect dataset
 # Which means that we will need to specify dataset everytime we run the suite
 suite = Suite()
-    .add_test(test_f1, "f1", dataset=wrapped_dataset)
-    .add_test(DataQuality(dataset=wrapped_dataset, column_name='Month', category='August'), "quality")
+.add_test(test_f1(dataset=wrapped_dataset))
+.add_test(DataQuality(dataset=wrapped_dataset, column_name='Month', category='August'))
 
 # Create our first model
 my_first_model = wrap_model(...)
@@ -297,10 +297,10 @@ project_name = "enron"
 client = GiskardClient(url, token)
 
 # Create a project
-client.create_project(project_name, "Email Classification", "Email Classification")
+client.create_project(project_name, "Project name", "Small description of the project")
 
 suite = Suite()
-.add_test(test_f1, dataset=wrapped_dataset)
+.add_test(test_f1(dataset=wrapped_dataset))
 .add_test(DataQuality(dataset=wrapped_dataset, column_name='Month', category='August'))
 .save(client, project_name)
 ```

@@ -1,6 +1,5 @@
 import logging
 import numpy as np
-import pandas as pd
 from scipy import stats
 from typing import Optional, Sequence
 from sklearn.tree import DecisionTreeRegressor
@@ -11,7 +10,7 @@ from .base import BaseSlicer
 from .slice import Query, LowerThan, GreaterThan, QueryBasedSliceFunction
 
 
-def make_slices_from_tree(data: pd.DataFrame, tree: SklearnTree, feature_names: Optional[Sequence] = None):
+def make_slices_from_tree(tree: SklearnTree, feature_names: Optional[Sequence] = None):
     """Builds data slices from a decision tree."""
     node_clauses = np.empty(tree.node_count, dtype=list)
     node_clauses[0] = []
@@ -82,7 +81,7 @@ class DecisionTreeSlicer(BaseSlicer):
         logging.debug(f"Decision tree target correlation: {corr:.2f}")
 
         # Make test slices
-        slice_candidates = make_slices_from_tree(data, dt.tree_, features)
+        slice_candidates = make_slices_from_tree(dt.tree_, features)
 
         return slice_candidates
 
