@@ -1,7 +1,6 @@
 package ai.giskard.jobs;
 
 import ai.giskard.domain.MLWorkerType;
-import ai.giskard.service.TestService;
 import ai.giskard.web.dto.JobDTO;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.LoggerFactory;
@@ -11,7 +10,7 @@ import java.util.UUID;
 
 @RequiredArgsConstructor
 public class UndeterminedJob implements GiskardJob {
-    private static final org.slf4j.Logger logger = LoggerFactory.getLogger(TestService.class);
+    private static final org.slf4j.Logger logger = LoggerFactory.getLogger(UndeterminedJob.class);
     private final Runnable runnable;
     private final Date scheduledDate = new Date();
     private final UUID uuid = UUID.randomUUID();

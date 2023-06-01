@@ -10,10 +10,7 @@ import ai.giskard.service.ml.MLWorkerService;
 import ai.giskard.web.dto.mapper.GiskardMapper;
 import ai.giskard.web.dto.ml.TestSuiteExecutionDTO;
 import ai.giskard.worker.RunTestSuiteRequest;
-import ai.giskard.worker.TestFunction;
-import ai.giskard.worker.TestRegistryResponse;
 import ai.giskard.worker.TestSuiteResultMessage;
-import com.google.protobuf.Empty;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,20 +44,16 @@ public class TestSuiteExecutionService {
     public void executeScheduledTestSuite(TestSuiteExecution execution, Map<String, String> suiteInputs) {
 
         try (MLWorkerClient client = mlWorkerService.createClient(execution.getSuite().getProject().isUsingInternalWorker())) {
-            TestRegistryResponse response = client.getBlockingStub().getTestRegistry(Empty.newBuilder().build());
-            Map<String, TestFunction> registry = response.getTestsMap().values().stream()
-                .collect(Collectors.toMap(TestFunction::getId, Function.identity()));
-
             RunTestSuiteRequest.Builder builder = RunTestSuiteRequest.newBuilder();
 
             for (Map.Entry<String, String> entry : execution.getInputs().entrySet()) {
-                builder.addGlobalArguments(testArgumentService
-                    .buildTestArgument(suiteInputs, entry.getKey(), entry.getValue(), execution.getSuite().getProject().getKey()));
+                builder.addGlobalArguments(testArgumentService.buildTestArgument(suiteInputs, entry.getKey(),
+                    entry.getValue(), execution.getSuite().getProject().getKey()));
             }
 
             for (SuiteTest suiteTest : execution.getSuite().getTests()) {
                 builder.addTests(testArgumentService
-                    .buildFixedTestArgument(suiteTest, registry.get(suiteTest.getTestId()), execution.getSuite().getProject().getKey()));
+                    .buildFixedTestArgument(suiteTest, execution.getSuite().getProject().getKey()));
             }
 
             TestSuiteResultMessage testSuiteResultMessage = client.getBlockingStub().runTestSuite(builder.build());

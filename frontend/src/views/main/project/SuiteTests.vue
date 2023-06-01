@@ -31,7 +31,7 @@
 
 import {api} from "@/api";
 import {onMounted, ref} from "vue";
-import {TestCatalogDTO, TestSuiteDTO} from "@/generated-sources";
+import {TestFunctionDTO, TestSuiteDTO} from "@/generated-sources";
 
 const props = defineProps<{
   projectId: number,
@@ -39,11 +39,12 @@ const props = defineProps<{
 }>();
 
 let suite = ref<TestSuiteDTO | null>(null);
-let registry = ref<TestCatalogDTO | null>(null);
+let registry = ref<TestFunctionDTO[]>([]);
 let tab = ref<any>(null);
+
 onMounted(async () => {
   suite.value = await api.getTestSuite(props.projectId, props.suiteId);
-  registry.value = await api.getTestsCatalog(props.projectId);
+  registry.value = await api.getTestFunctions();
 })
 
 
