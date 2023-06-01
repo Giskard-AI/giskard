@@ -45,20 +45,9 @@ class PyTorchModel(MLFlowBasedModel):
     MLFlowBasedModel class.
 
     Attributes:
-        model (nn.Module): The PyTorch model to be used for prediction.
-        model_type (ModelType): The type of the model, either 'classification' or 'regression'.
-        torch_dtype (TorchDType, optional): The data type to be used for input tensors. Defaults to 'float32'.
-        device (str, optional): The device to run the model on, either 'cpu' or 'cuda'. Defaults to 'cpu'.
-        name (str, optional): The name of the model. Defaults to None.
-        data_preprocessing_function (callable, optional): A function to preprocess input data. Defaults to None.
-        model_postprocessing_function (callable, optional): A function to postprocess model output. Defaults to None.
-        feature_names (list[str], optional): A list of feature names. Defaults to None.
-        classification_threshold (float, optional): The threshold value for classification. Defaults to 0.5.
-        classification_labels (list[str], optional): A list of classification labels. Defaults to None.
         iterate_dataset (bool, optional): Whether to iterate over the dataset for prediction. Defaults to True.
         device (str): The device to run the model on.
         torch_dtype (TorchDType): The data type to be used for input tensors.
-        iterate_dataset (bool): Whether to iterate over the dataset for prediction.
     """
 
     def __init__(
