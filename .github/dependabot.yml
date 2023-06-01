@@ -6,12 +6,12 @@
 version: 2
 updates:
   - package-ecosystem: "gradle"
-    directory: "/giskard-server"
+    directory: "/backend"
     schedule:
       interval: "weekly"
 
   - package-ecosystem: "npm"
-    directory: "/giskard-frontend"
+    directory: "/frontend"
     schedule:
       interval: "weekly"
 
