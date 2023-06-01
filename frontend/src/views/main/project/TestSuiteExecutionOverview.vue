@@ -23,8 +23,11 @@
           {{ successRatio.executed }}</h4>
       </div>
       <div class="flex-grow-1"/>
+      <v-btn icon @click="openLogs" color="secondary">
+        <v-icon>text_snippet</v-icon>
+      </v-btn>
       <v-btn icon @click="openSettings" color="secondary">
-        <v-icon left>settings</v-icon>
+        <v-icon>settings</v-icon>
       </v-btn>
     </div>
 
@@ -117,7 +120,8 @@ import {computed, ref} from 'vue';
 import {chain} from 'lodash';
 import {$vfm} from 'vue-final-modal';
 import SuiteTestInfoModal from '@/views/main/project/modals/SuiteTestInfoModal.vue';
-import ConfirmModal from '@/views/main/project/modals/ConfirmModal.vue';
+import ConfirmModal from '@/views/main/project/modals/ExecutionLogsModal.vue';
+import ExecutionLogsModal from '@/views/main/project/modals/ExecutionLogsModal.vue';
 import {api} from '@/api';
 import CreateTestSuiteModal from '@/views/main/project/modals/CreateTestSuiteModal.vue';
 
@@ -247,6 +251,15 @@ async function openSettings() {
       projectKey: project.key,
       projectId: project.id,
       suite: suite.value
+    }
+  });
+}
+
+function openLogs() {
+  $vfm.show({
+    component: ExecutionLogsModal,
+    bind: {
+      logs: props.execution?.logs
     }
   });
 }

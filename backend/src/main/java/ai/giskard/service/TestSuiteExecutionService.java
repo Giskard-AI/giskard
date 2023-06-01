@@ -78,7 +78,7 @@ public class TestSuiteExecutionService {
         } catch (Exception e) {
             log.error("Error while executing test suite {}", execution.getSuite().getName(), e);
             execution.setResult(TestResult.ERROR);
-            execution.setMessage(e.getMessage());
+            execution.setLogs(e.getMessage());
             throw e;
         } finally {
             execution.setCompletionDate(new Date());
