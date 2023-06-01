@@ -43,6 +43,3 @@ def test_sequence_classification_distilbert_base_uncased_tensorflow():
     my_test_dataset = Dataset(test_df, name="test dataset", target="label")
 
     tests.utils.verify_model_upload(my_model, my_test_dataset)
-
-if __name__ == "__main__":
-    test_sequence_classification_distilbert_base_uncased_tensorflow()
