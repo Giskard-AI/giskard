@@ -1,10 +1,10 @@
-import random
 import re
-
+import json
+import random
 import pandas as pd
+from pathlib import Path
 
-from .entity_swap import typos
-from ... import Dataset
+from ...datasets import Dataset
 from ...core.core import DatasetProcessFunctionMeta
 from ...ml_worker.testing.registry.registry import get_object_uuid
 from ...ml_worker.testing.registry.transformation_function import TransformationFunction
@@ -63,6 +63,12 @@ class TextTitleCase(TextTransformation):
 class TextTypoTransformation(TextTransformation):
     name = "Add typos"
 
+    def __init__(self, column):
+        super().__init__(column)
+        from .entity_swap import typos
+
+        self._typos = typos
+
     def make_perturbation(self, x):
         split_text = x.split(" ")
         new_text = []
@@ -88,8 +94,8 @@ class TextTypoTransformation(TextTransformation):
             elif perturbation_type == 'replace':
                 j = random.randint(0, len(word) - 1)
                 c = word[j]
-                if c in typos:
-                    replacement = random.choice(typos[c])
+                if c in self._typos:
+                    replacement = random.choice(self._typos[c])
                     text_modified = word[:j] + replacement + word[j + 1 :]
                     return text_modified
         return word
@@ -113,7 +119,14 @@ class TextPunctuationRemovalTransformation(TextTransformation):
 
 class TextLanguageBasedTransformation(TextTransformation):
     needs_dataset = True
-    dict_with_all_language = None
+
+    def __init__(self, column):
+        super().__init__(column)
+        self._lang_dictionary = dict()
+        self._load_dictionaries()
+
+    def _load_dictionaries(self):
+        raise NotImplementedError()
 
     def execute(self, dataset: Dataset) -> pd.DataFrame:
         feature_data = dataset.df.loc[:, (self.column,)].dropna().astype(str)
@@ -129,64 +142,60 @@ class TextLanguageBasedTransformation(TextTransformation):
         raise NotImplementedError()
 
     def _select_dict(self, language):
-        if pd.isna(language):
+        try:
+            return self._lang_dictionary[language]
+        except KeyError:
             return None
-        elif language == "en":
-            return self.dict_with_all_language["dict_en"]
-        elif language == "fr":
-            return self.dict_with_all_language["dict_fr"]
 
 
 class TextGenderTransformation(TextLanguageBasedTransformation):
     name = "Switch Gender"
-    dict_with_all_language = None
 
-    def __init__(self, column):
-        super().__init__(column)
+    def _load_dictionaries(self):
         from .entity_swap import gender_switch_en, gender_switch_fr
 
-        self.dict_with_all_language = {"dict_en": gender_switch_en, "dict_fr": gender_switch_fr}
+        self._lang_dictionary = {"en": gender_switch_en, "fr": gender_switch_fr}
 
     def make_perturbation(self, row):
         text = row[self.column]
-        new_text = text
         language = row["language__gsk__meta"]
-        gender_dict = self._select_dict(language)
-        if gender_dict is None:
-            return new_text
-        split_text = text.split()
-        new_words = []
-        for token in split_text:
-            new_word = self._switch(token, gender_dict)
-            if new_word is not None:
-                new_words.append(new_word)
 
-        for original_word, switched_word in new_words:
+        if language not in self._lang_dictionary:
+            return text
+
+        replacements = [self._switch(token, language) for token in text.split()]
+        replacements = [r for r in replacements if r is not None]
+
+        new_text = text
+        for original_word, switched_word in replacements:
             new_text = re.sub(fr"\b{original_word}\b", switched_word, new_text)
+
         return new_text
 
-    def _switch(self, word, gender_dict):
-        if word.lower() in gender_dict:
-            return [word, gender_dict[word.lower()]]
+    def _switch(self, word, language):
+        try:
+            return (word, self._lang_dictionary[language][word.lower()])
+        except KeyError:
+            return None
 
 
 class TextReligionTransformation(TextLanguageBasedTransformation):
     name = "Switch Religion"
-    dict_with_all_language = None
 
-    def __init__(self, column):
-        super().__init__(column)
+    def _load_dictionaries(self):
         from .entity_swap import religion_dict_en, religion_dict_fr
 
-        self.dict_with_all_language = {"dict_en": religion_dict_en, "dict_fr": religion_dict_fr}
+        self._lang_dictionary = {"en": religion_dict_en, "fr": religion_dict_fr}
 
     def make_perturbation(self, row):
         # Get text
         text = row[self.column]
         new_text = text
+
         # Get language and corresponding dictionary
         language = row["language__gsk__meta"]
         religion_dict = self._select_dict(language)
+
         # Check if we support this language
         if religion_dict is None:
             return new_text
@@ -209,16 +218,11 @@ class TextReligionTransformation(TextLanguageBasedTransformation):
 
 class TextNationalityTransformation(TextLanguageBasedTransformation):
     name = "Switch nationality"
-    dict_with_all_language = None
 
-    def __init__(self, column):
-        super().__init__(column)
-        import json
-        from pathlib import Path
-
+    def _load_dictionaries(self):
         with Path(__file__).parent.joinpath("nationalities.json").open("r") as f:
             nationalities_dict = json.load(f)
-        self.dict_with_all_language = {"dict_en": nationalities_dict["en"], "dict_fr": nationalities_dict["fr"]}
+        self._lang_dictionary = {"en": nationalities_dict["en"], "fr": nationalities_dict["fr"]}
 
     def make_perturbation(self, row):
         text = row[self.column]
