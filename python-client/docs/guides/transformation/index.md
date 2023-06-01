@@ -93,6 +93,45 @@ transformed_dataset = dataset.transform(my_func3(offset=20), column_name='Age')
 ::::
 :::::
 
+## AI-based tranformation function
+Transformation functions can be very powerful to detect complex behaviour when they are used as fixtures inside your test suite. With the Giskard framework you can easily, create complex transformation functions. For instance:
+
+```
+@transformation_function(name="Change writing style", row_level=False, tags=['text'])
+def change_writing_style(x: pd.DataFrame, index: int, column_name: str, style: str,
+                         OPENAI_API_KEY: str) -> pd.DataFrame:
+    os.environ["OPENAI_API_KEY"] = OPENAI_API_KEY
+    rewrite_prompt_template = """
+    As a text rewriting robot, your task is to rewrite a given text using a specified rewriting style. You will receive a prompt with the following format:
+    ```
+    "TEXT"
+    ===
+    "REWRITING STYLE"
+    ```
+    Your goal is to rewrite the provided text according to the specified style. The purpose of this task is to evaluate how the rewritten text will affect our machine learning models.
+
+    Your response should be in the following format:
+    ```
+    REWRITTEN TEXT
+    ```
+    Please ensure that your rewritten text is grammatically correct and retains the meaning of the original text as much as possible. Good luck!
+    ```
+    "TEXT": {text}
+    ===
+    "REWRITING STYLE": {style}
+    ```
+    """
+
+    from langchain import PromptTemplate
+    from langchain import LLMChain
+    from langchain import OpenAI
+
+    rewrite_prompt = PromptTemplate(input_variables=['text', 'style'], template=rewrite_prompt_template)
+    chain_rewrite = LLMChain(llm=OpenAI(), prompt=rewrite_prompt)
+
+    x.at[index, column_name] = chain_rewrite.run({'text': x.at[index, column_name], 'style': style})
+    return x
+```
 
 ## Save your transformation function
 Saving your transformation function in the Giskard server will enable you to:
