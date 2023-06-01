@@ -202,16 +202,29 @@ export default new Router({
                                             }
                                         },
                                         {
-                                            path: 'execution/:executionId?',
-                                            name: 'test-suite-new-execution',
+                                            path: 'execution',
+                                            name: 'test-suite-new-executions',
                                             component: () => import('./views/main/project/TestSuiteExecutions.vue'),
                                             props: (route) => {
                                                 return {
                                                     suiteId: Number(route.params.suiteId),
                                                     projectId: Number(route.params.id),
-                                                    executionDate: Number(route.params.executionId)
                                                 }
-                                            }
+                                            },
+                                            children: [
+                                                {
+                                                    path: ':executionId',
+                                                    name: 'test-suite-new-execution',
+                                                    component: () => import('./views/main/project/TestSuiteExecution.vue'),
+                                                    props: (route) => {
+                                                        return {
+                                                            suiteId: Number(route.params.suiteId),
+                                                            projectId: Number(route.params.id),
+                                                            executionId: Number(route.params.executionId)
+                                                        }
+                                                    }
+                                                }
+                                            ]
                                         }
                                     ]
                                 },
