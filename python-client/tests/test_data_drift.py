@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-import giskard.ml_worker.testing.tests.drift as drift
+import giskard.testing.tests.drift as drift
 from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction
 
 

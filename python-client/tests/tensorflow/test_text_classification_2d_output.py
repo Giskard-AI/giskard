@@ -4,9 +4,10 @@ import tensorflow as tf
 import pandas as pd
 from tensorflow.keras import layers
 
-from giskard import TensorFlowModel, Dataset
+from giskard import Dataset
 
 import tests.utils
+from giskard.models.tensorflow import TensorFlowModel
 
 data_url = "https://ai.stanford.edu/~amaas/data/sentiment/aclImdb_v1.tar.gz"
 

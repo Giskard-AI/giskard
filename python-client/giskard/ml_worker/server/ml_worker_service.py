@@ -19,14 +19,9 @@ import tqdm
 
 import giskard
 from giskard.client.giskard_client import GiskardClient
+from giskard.core.suite import Suite, ModelInput, DatasetInput, SuiteInput
 from giskard.datasets.base import Dataset
 from giskard.ml_worker.core.log_listener import LogListener
-from giskard.ml_worker.core.model_explanation import (
-    explain,
-    explain_text,
-)
-from giskard.ml_worker.core.suite import Suite, ModelInput, DatasetInput, SuiteInput
-from giskard.ml_worker.core.test_result import TestResult, TestMessageLevel
 from giskard.ml_worker.exceptions.IllegalArgumentError import IllegalArgumentError
 from giskard.ml_worker.exceptions.giskard_exception import GiskardException
 from giskard.ml_worker.generated import ml_worker_pb2
@@ -36,8 +31,13 @@ from giskard.ml_worker.testing.registry.giskard_test import GiskardTest
 from giskard.ml_worker.testing.registry.registry import tests_registry
 from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction
 from giskard.ml_worker.testing.registry.transformation_function import TransformationFunction
+from giskard.ml_worker.testing.test_result import TestResult, TestMessageLevel
 from giskard.ml_worker.utils.file_utils import get_file_name
 from giskard.models.base import BaseModel
+from giskard.models.model_explanation import (
+    explain,
+    explain_text,
+)
 from giskard.path_utils import model_path, dataset_path
 
 logger = logging.getLogger(__name__)
@@ -356,7 +356,9 @@ class MLWorkerServiceImpl(MLWorkerServicer):
 
     def runModelForDataFrame(self, request: ml_worker_pb2.RunModelForDataFrameRequest, context):
         model = BaseModel.download(self.client, request.model.project_key, request.model.id)
-        ds = Dataset(pd.DataFrame([r.columns for r in request.dataframe.rows]), target=None,
+        df = pd.DataFrame.from_records([r.columns for r in request.dataframe.rows])
+        ds = Dataset(model.prepare_dataframe(df, column_dtypes=request.column_dtypes),
+                     target=None,
                      column_types=request.column_types)
         predictions = model.predict(ds)
         if model.is_classification:
