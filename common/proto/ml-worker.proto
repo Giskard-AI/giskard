@@ -227,8 +227,10 @@ message TestResultMessage {
 }
 
 message TestSuiteResultMessage {
-  bool is_pass = 1;
-  repeated IdentifierSingleTestResult results = 2;
+  bool is_error = 1; // True when an unhandled exception happened (!= test failed)
+  bool is_pass = 2;
+  repeated IdentifierSingleTestResult results = 3;
+  string logs = 4;
 }
 
 message ArtifactRef{

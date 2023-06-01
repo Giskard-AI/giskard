@@ -61,11 +61,13 @@ public class TestSuiteExecutionService {
             Map<Long, SuiteTest> tests = execution.getSuite().getTests().stream()
                 .collect(Collectors.toMap(SuiteTest::getId, Function.identity()));
 
-            execution.setResult(testSuiteResultMessage.getIsPass() ? TestResult.PASSED : TestResult.FAILED);
+            execution.setResult(testSuiteResultMessage.getIsError() ? TestResult.ERROR :
+                testSuiteResultMessage.getIsPass() ? TestResult.PASSED : TestResult.FAILED);
             execution.setResults(testSuiteResultMessage.getResultsList().stream()
                 .map(identifierSingleTestResult ->
                     new SuiteTestExecution(tests.get(identifierSingleTestResult.getId()), execution, identifierSingleTestResult.getResult()))
                 .collect(Collectors.toList()));
+            execution.setLogs(testSuiteResultMessage.getLogs());
         } catch (Exception e) {
             log.error("Error while executing test suite {}", execution.getSuite().getName(), e);
             execution.setResult(TestResult.ERROR);

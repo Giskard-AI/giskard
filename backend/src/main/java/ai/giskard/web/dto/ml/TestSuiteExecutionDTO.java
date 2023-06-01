@@ -24,6 +24,8 @@ public class TestSuiteExecutionDTO {
     @UINullable
     private String message;
     @UINullable
+    private String logs;
+    @UINullable
     private List<SuiteTestExecutionDTO> results;
 
     private Date executionDate;
