@@ -283,7 +283,7 @@ message GenerateTestSuiteResponse{
 }
 
 message GeneratedTest{
-  string test_id = 1;
+  string test_uuid = 1;
   repeated GeneratedTestInput inputs = 2;
 }
 

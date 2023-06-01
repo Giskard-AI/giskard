@@ -44,13 +44,11 @@ public class TestSuiteExecutionService {
     public void executeScheduledTestSuite(TestSuiteExecution execution, Map<String, String> suiteInputs) {
 
         try (MLWorkerClient client = mlWorkerService.createClient(execution.getSuite().getProject().isUsingInternalWorker())) {
-            RunTestSuiteRequest.Builder builder = RunTestSuiteRequest.newBuilder()
-                .addAllTestUuid(execution.getSuite().getTests().stream()
-                    .map(test -> test.getTestFunction().getUuid().toString())
-                    .collect(Collectors.toList()));
+            RunTestSuiteRequest.Builder builder = RunTestSuiteRequest.newBuilder();
 
             for (Map.Entry<String, String> entry : execution.getInputs().entrySet()) {
-                builder.addGlobalArguments(testArgumentService.buildTestArgument(suiteInputs, entry.getValue()));
+                builder.addGlobalArguments(testArgumentService.buildTestArgument(suiteInputs, entry.getKey(),
+                    entry.getValue(), execution.getSuite().getProject().getKey()));
             }
 
             for (SuiteTest suiteTest : execution.getSuite().getTests()) {
