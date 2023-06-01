@@ -1,4 +1,3 @@
-import inspect
 import sklearn.metrics
 from abc import ABC, ABCMeta, abstractmethod
 
