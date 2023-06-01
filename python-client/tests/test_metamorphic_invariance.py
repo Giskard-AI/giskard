@@ -1,6 +1,7 @@
-from giskard.ml_worker.testing.functions import GiskardTestFunctions
 import numpy as np
 import pytest
+
+from giskard.ml_worker.testing.functions import GiskardTestFunctions
 from giskard.ml_worker.testing.stat_utils import equivalence_t_test, paired_t_test
 from giskard.ml_worker.testing.stat_utils import equivalence_wilcoxon, paired_wilcoxon
 from giskard.ml_worker.testing.utils import Direction
@@ -68,7 +69,9 @@ def test_metamorphic_invariance_some_rows(german_credit_test_data, german_credit
 
 
 def test_metamorphic_invariance_regression(diabetes_dataset_with_target, linear_regression_diabetes):
-    perturbation = {"sex": lambda x: -0.044641636506989 if x.sex == 0.0506801187398187 else x.sex}
+    sex_values = list(diabetes_dataset_with_target.df.sex.unique())
+    assert len(sex_values) == 2
+    perturbation = {"sex": lambda x: sex_values[1] if x.sex == sex_values[0] else x.sex}
     tests = GiskardTestFunctions()
     results = tests.metamorphic.test_metamorphic_invariance(
         df=diabetes_dataset_with_target,
@@ -90,7 +93,7 @@ def test_metamorphic_invariance_regression(diabetes_dataset_with_target, linear_
     ],
 )
 def test_metamorphic_compare_t_test(
-    loc_pop, scale_pop, loc_perturb, scale_perturb, direction, window_size, critical_quantile
+        loc_pop, scale_pop, loc_perturb, scale_perturb, direction, window_size, critical_quantile
 ):
     population = np.random.normal(loc_pop, scale_pop, size=100)
     perturbation = np.random.normal(loc_perturb, scale_perturb, size=100)
@@ -125,7 +128,7 @@ def test_metamorphic_compare_t_test(
     ],
 )
 def test_metamorphic_compare_wilcoxon(
-    loc_pop, scale_pop, loc_perturb, scale_perturb, direction, window_size, critical_quantile
+        loc_pop, scale_pop, loc_perturb, scale_perturb, direction, window_size, critical_quantile
 ):
     population = np.random.normal(loc_pop, scale_pop, size=100)
     perturbation = np.random.normal(loc_perturb, scale_perturb, size=100)
