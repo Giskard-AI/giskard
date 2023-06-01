@@ -23,7 +23,7 @@
                 </v-btn>
             </p>
             <p class="mt-4 mb-0">to connect to this Giskard server.</p>
-            <p v-if="route.name !== 'admin-general'">You can check the status of an ML Worker in on the
+            <p v-if="route.name !== 'admin-general'">You can check the status of an ML Worker and generate a new API token on the
                 <router-link :to="{ name: 'admin-general' }">Settings</router-link>
                 page
             </p>
