@@ -72,7 +72,7 @@ class TransformationFunction(Savable[TransformationFunctionType, DatasetProcessF
             return self.func(data, **self.params)
 
     def _should_save_locally(self) -> bool:
-        return is_local_function(self.data.__module__)
+        return True
 
     def _should_upload(self) -> bool:
         return self.meta.version is None
