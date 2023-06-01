@@ -1,5 +1,6 @@
 import logging
 import pickle
+import platform
 import posixpath
 import tempfile
 import uuid
@@ -22,6 +23,8 @@ from giskard.ml_worker.utils.logging import Timer
 from giskard.path_utils import get_size
 from giskard.settings import settings
 
+MODEL_CLASS_PKL = "ModelClass.pkl"
+
 logger = logging.getLogger(__name__)
 
 
@@ -37,6 +40,7 @@ class Model:
     meta: ModelMeta
     clf: PyFuncModel
     data_preprocessing_function: any
+    save_model_class = False
 
     def __init__(self,
                  clf,
@@ -115,14 +119,21 @@ class Model:
                                       pyfunc_predict_fn=pyfunc_predict_fn,
                                       mlflow_model=meta)
         self._save_giskard_model_meta_to_local_dir(meta, local_path)
+        if self.save_model_class:
+            self._save_model_class_to_local_dir(local_path)
 
         return meta
+
+    def _save_model_class_to_local_dir(self, local_path):
+        class_file = Path(local_path) / MODEL_CLASS_PKL
+        with open(class_file, 'wb') as f:
+            cloudpickle.dump(self.__class__, f, protocol=pickle.DEFAULT_PROTOCOL)
 
     def _save_giskard_model_meta_to_local_dir(self, info, local_path):
         with open(Path(local_path) / 'giskard-model-meta.yaml', 'w') as f:
             yaml.dump(
                 {
-                    "language_version": info.flavors['python_function']['python_version'],
+                    "language_version": platform.python_version(),
                     "language": "PYTHON",
                     "model_type": self.meta.model_type.name.upper(),
                     "threshold": self.meta.classification_threshold,
@@ -162,9 +173,10 @@ class Model:
         else:
             client.load_artifact(local_dir, posixpath.join(project_key, "models", model_id))
             meta = client.load_model_meta(project_key, model_id)
-        return cls(
-            clf=cls.read_model_from_local_dir(local_dir),
-            data_preprocessing_function=cls.read_data_preprocessing_function_from_artifact(local_dir),
+        clazz = cls.determine_model_class(local_dir)
+        return clazz(
+            clf=clazz.read_model_from_local_dir(local_dir),
+            data_preprocessing_function=clazz.read_data_preprocessing_function_from_artifact(local_dir),
             **meta.__dict__
         )
 
@@ -243,3 +255,22 @@ class Model:
         if column_types:
             df = Dataset.cast_column_to_types(df, column_types)
         return df
+
+    @classmethod
+    def determine_model_class(cls, local_dir):
+        class_file = Path(local_dir) / MODEL_CLASS_PKL
+        if class_file.exists():
+            with open(class_file, 'rb') as f:
+                clazz = cloudpickle.load(f)
+                if issubclass(clazz, Model):
+                    raise ValueError(f"Unknown model class: {clazz}. Models should inherit from 'Model' class")
+                return clazz
+        else:
+            return cls
+
+
+class CustomModel(Model):
+    """
+    Helper class to extend in case a user needs to extend a Model
+    """
+    save_model_class = True
