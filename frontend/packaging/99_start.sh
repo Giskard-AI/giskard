@@ -1,6 +1,6 @@
 #!/bin/sh
 
-if [[ ! -e /git/HEAD ]]
+if [[! -e /git/HEAD ]]
 then
     cd /git && \
     git --bare init && \

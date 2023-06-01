@@ -8,6 +8,7 @@ from giskard.client.dtos import TestSuiteNewDTO, SuiteTestDTO, TestInputDTO
 from giskard.client.giskard_client import GiskardClient
 from giskard.core.model import Model
 from giskard.ml_worker.core.dataset import Dataset
+from giskard.ml_worker.core.test_function import TestFunction
 from giskard.ml_worker.testing.registry.registry import create_test_function_id
 
 logger = logging.getLogger(__name__)
@@ -24,7 +25,7 @@ class SuiteInput:
 
 @dataclass
 class TestPartial:
-    test_func: Any
+    function_reference: TestFunction
     provided_inputs: Mapping[str, Any]
 
 
@@ -61,14 +62,14 @@ class Suite:
 
         for test_partial in self.tests:
             test_params = self.create_test_params(test_partial, suite_run_args)
-            res.append(test_partial.test_func(**test_params))
+            res.append(test_partial.function_reference.func(**test_params))
 
         return single_binary_result(res), res
 
     @staticmethod
     def create_test_params(test_partial, kwargs):
         test_params = {}
-        for pname, p in inspect.signature(test_partial.test_func).parameters.items():
+        for pname, p in inspect.signature(test_partial.function_reference.func).parameters.items():
             if pname in test_partial.provided_inputs:
                 if isinstance(test_partial.provided_inputs[pname], SuiteInput):
                     test_params[pname] = kwargs[test_partial.provided_inputs[pname].name]
@@ -92,27 +93,31 @@ class Suite:
                     inputs[pname] = TestInputDTO(name=pname, value=p)
 
             suite_tests.append(SuiteTestDTO(
-                testId=create_test_function_id(t.test_func),
+                testId=t.function_reference.save(client, project_key),
                 testInputs=inputs
             ))
         self.id = client.save_test_suite(TestSuiteNewDTO(name=self.name, project_key=project_key, tests=suite_tests))
         return self
 
-    def add_test(self, test_fn: Callable[[Any], Union[bool]], **params):
-        self.tests.append(TestPartial(test_fn, params))
+    def add_test(self, test_fn: Union[TestFunction, Callable[[Any], Union[bool]]], **params):
+        func_ref = test_fn
+        if not isinstance(test_fn, TestFunction):
+            func_ref = TestFunction.of(test_fn)
+
+        self.tests.append(TestPartial(func_ref, params))
         return self
 
     def find_required_params(self):
         res = {}
         for test_partial in self.tests:
-            for p in inspect.signature(test_partial.test_func).parameters.values():
+            for p in inspect.signature(test_partial.function_reference.func).parameters.values():
                 if p.default == inspect.Signature.empty:
                     if p.name not in test_partial.provided_inputs:
                         res[p.name] = p.annotation
                     elif isinstance(test_partial.provided_inputs[p.name], SuiteInput):
                         if test_partial.provided_inputs[p.name].type != p.annotation:
                             raise ValueError(
-                                f'Test {test_partial.test_func.__name__} requires {p.name} input to '
+                                f'Test {test_partial.function_reference.func.__name__} requires {p.name} input to '
                                 f'be {p.annotation.__name__} '
                                 f'but {test_partial.provided_inputs[p.name].type.__name__} was provided')
                         res[test_partial.provided_inputs[p.name].name] = p.annotation
