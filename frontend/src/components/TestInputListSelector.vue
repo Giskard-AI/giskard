@@ -40,11 +40,10 @@
                             <ModelSelector :project-id="projectId" :label="input.name" :return-object="false"
                                            v-else-if="input.type === 'BaseModel'"
                                            :value.sync="editedInputs[input.name].value"/>
-                            <SlicingFunctionSelector :project-id="projectId" :label="input.name" :return-object="false"
+                            <SlicingFunctionSelector :project-id="projectId" :label="input.name"
                                                      v-else-if="input.type === 'SlicingFunction'"
                                                      :value.sync="editedInputs[input.name].value"/>
                             <TransformationFunctionSelector :project-id="projectId" :label="input.name"
-                                                            :return-object="false"
                                                             v-else-if="input.type === 'TransformationFunction'"
                                                             :value.sync="editedInputs[input.name].value"/>
                             <ValidationProvider
