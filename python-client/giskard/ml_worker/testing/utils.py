@@ -34,7 +34,7 @@ def validate_classification_label(func):
         reference_slice = kwargs.get('reference_slice', None)
         actual_slice = kwargs.get('actual_slice', None)
         model = kwargs.get('model', None)
-        classification_label = kwargs.get('classification_label', None)
+        classification_label = str(kwargs.get('classification_label', None))
         target = getattr(reference_slice, 'target', getattr(actual_slice, 'target', None))
         if target and classification_label and model:
             assert (classification_label != target

@@ -257,16 +257,13 @@ def test_metamorphic_increasing(
         passed:
           TRUE if metric > threshold
     """
-    assert (
-            not model.is_classification or str(classification_label) in model.meta.classification_labels
-    ), f'"{classification_label}" is not part of model labels: {",".join(model.meta.classification_labels)}'
 
     return _test_metamorphic(
         direction=Direction.Increasing,
         actual_slice=df,
         model=model,
         perturbation_dict=perturbation_dict,
-        classification_label=classification_label,
+        classification_label=str(classification_label),
         threshold=threshold,
     )
 
@@ -314,16 +311,12 @@ def test_metamorphic_decreasing(
           TRUE if metric > threshold
     """
 
-    assert (
-            not model.is_classification or classification_label in model.meta.classification_labels
-    ), f'"{classification_label}" is not part of model labels: {",".join(model.meta.classification_labels)}'
-
     return _test_metamorphic(
         direction=Direction.Decreasing,
         actual_slice=df,
         model=model,
         perturbation_dict=perturbation_dict,
-        classification_label=classification_label,
+        classification_label=str(classification_label),
         threshold=threshold,
     )
 
@@ -395,16 +388,12 @@ def test_metamorphic_decreasing_t_test(
             TRUE if the p-value of the t-test between (A) and (B) is below the critical value
     """
 
-    assert (
-            not model.is_classification or str(classification_label) in model.meta.classification_labels
-    ), f'"{classification_label}" is not part of model labels: {",".join(model.meta.classification_labels)}'
-
     return _test_metamorphic_t_test(
         direction=Direction.Decreasing,
         actual_slice=df,
         model=model,
         perturbation_dict=perturbation_dict,
-        classification_label=classification_label,
+        classification_label=str(classification_label),
         window_size=float("nan"),
         critical_quantile=critical_quantile,
     )
@@ -448,16 +437,12 @@ def test_metamorphic_increasing_t_test(
             TRUE if the p-value of the t-test between (A) and (B) is below the critical value
     """
 
-    assert (
-            not model.is_classification or str(classification_label) in model.meta.classification_labels
-    ), f'"{classification_label}" is not part of model labels: {",".join(model.meta.classification_labels)}'
-
     return _test_metamorphic_t_test(
         direction=Direction.Increasing,
         actual_slice=df,
         model=model,
         perturbation_dict=perturbation_dict,
-        classification_label=classification_label,
+        classification_label=str(classification_label),
         window_size=float("nan"),
         critical_quantile=critical_quantile,
     )
@@ -585,16 +570,12 @@ def test_metamorphic_decreasing_wilcoxon(
             TRUE if the p-value of the Wilcoxon signed-rank test between (A) and (B) is below the critical value
     """
 
-    assert (
-            not model.is_classification or str(classification_label) in model.meta.classification_labels
-    ), f'"{classification_label}" is not part of model labels: {",".join(model.meta.classification_labels)}'
-
     return _test_metamorphic_wilcoxon(
         direction=Direction.Decreasing,
         actual_slice=df,
         model=model,
         perturbation_dict=perturbation_dict,
-        classification_label=classification_label,
+        classification_label=str(classification_label),
         window_size=float("nan"),
         critical_quantile=critical_quantile,
     )
@@ -637,16 +618,12 @@ def test_metamorphic_increasing_wilcoxon(
             TRUE if the p-value of the Wilcoxon signed-rank test between (A) and (B) is below the critical value
     """
 
-    assert (
-            not model.is_classification or str(classification_label) in model.meta.classification_labels
-    ), f'"{classification_label}" is not part of model labels: {",".join(model.meta.classification_labels)}'
-
     return _test_metamorphic_wilcoxon(
         direction=Direction.Increasing,
         actual_slice=df,
         model=model,
         perturbation_dict=perturbation_dict,
-        classification_label=classification_label,
+        classification_label=str(classification_label),
         window_size=float("nan"),
         critical_quantile=critical_quantile,
     )
