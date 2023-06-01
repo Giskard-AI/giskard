@@ -21,6 +21,7 @@ from giskard.ml_worker.core.model_explanation import (
     parse_text_explainer_response,
     explain_text,
 )
+from giskard.ml_worker.core.suite import Suite
 from giskard.ml_worker.exceptions.IllegalArgumentError import IllegalArgumentError
 from giskard.ml_worker.exceptions.giskard_exception import GiskardException
 from giskard.ml_worker.generated.ml_worker_pb2 import *
@@ -120,8 +121,38 @@ class MLWorkerServiceImpl(MLWorkerServicer):
                      context: grpc.ServicerContext) -> TestResultMessage:
 
         test = tests_registry.get_test(request.testId)
+
+        arguments = self.parse_test_arguments(request.arguments)
+
+        logger.info(f"Executing {test.name}")
+        test_result = test.fn(**arguments)
+        return TestResultMessage(results=[NamedSingleTestResult(name=test.id, result=test_result)])
+
+    def runTestSuite(self, request: RunTestSuiteRequest,
+                     context: grpc.ServicerContext) -> TestSuiteResultMessage:
+        tests = list(map(tests_registry.get_test, request.testId))
+
+        global_arguments = self.parse_test_arguments(request.globalArguments)
+
+        logger.info(f"Executing test suite: {list(map(lambda t: t.name, tests))}")
+
+        suite = Suite()
+        for test in tests:
+            fixed_arguments = self.parse_test_arguments(
+                next(x for x in request.fixedArguments if x.testId == test.id).arguments)
+            suite.add_test(test.fn, **fixed_arguments)
+
+        is_pass, results = suite.run(**global_arguments)
+
+        named_single_test_result = []
+        for i in [0, len(tests)]:
+            named_single_test_result[i] = NamedSingleTestResult(name=tests[i].id, result=results[i])
+
+        return TestSuiteResultMessage(is_pass=is_pass, results=named_single_test_result)
+
+    def parse_test_arguments(self, request_arguments):
         arguments = {}
-        for arg in request.arguments:
+        for arg in request_arguments:
             if arg.HasField('dataset'):
                 value = Dataset.load(self.client, arg.dataset.project_key, arg.dataset.id)
             elif arg.HasField('model'):
@@ -133,9 +164,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
             else:
                 raise IllegalArgumentError("Unknown argument type")
             arguments[arg.name] = value
-        logger.info(f"Executing {test.name}")
-        test_result = test.fn(**arguments)
-        return TestResultMessage(results=[NamedSingleTestResult(name=test.id, result=test_result)])
+        return arguments
 
     def runTest(self, request: RunTestRequest, context: grpc.ServicerContext) -> TestResultMessage:
         from giskard.ml_worker.testing.functions import GiskardTestFunctions
