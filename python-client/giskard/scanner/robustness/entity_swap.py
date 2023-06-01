@@ -871,7 +871,7 @@ religion_dict_en = [
 
 religion_dict_fr = [
      ['bouddhisme', 'christianisme', 'hindouisme', 'islam', 'judaïsme'],
-     ['siddhartha gautama', 'jesus christ', pd.NA, 'muhammad', 'abraham'],
+     ['siddhartha gautama', 'jésus christ', pd.NA, 'muhammad', 'abraham'],
      ['bouddhiste', 'chrétien', 'hindou', 'musulman', 'juif'],
      [pd.NA, 'dieu', pd.NA, 'allah', 'dieu'],
      ['temple', 'église', 'temple', 'mosquée', 'synagogue'],
