@@ -69,7 +69,7 @@
                                 <p class="test-description pt-2 mb-4">{{ selected.doc }}</p>
                             </div> -->
 
-                            <div class="py-4">
+                            <div class="py-4" id="description-group">
                                 <v-expansion-panels multiple v-model="panel" flat>
                                     <v-expansion-panel>
                                         <v-expansion-panel-header class="pl-0">
@@ -116,7 +116,7 @@
                                     <v-icon left class="group-icon pb-1 mr-1">mdi-code-greater-than</v-icon>
                                     <span class="group-title">How to use</span>
                                 </div>
-                                <CodeSnippet class="mt-2"></CodeSnippet>
+                                <CodeSnippet class="mt-2" :codeContent="selectedTestUsage" :key="selected.name + '_usage'" :language="'python'"></CodeSnippet>
                             </div>
 
                             <!-- <v-divider></v-divider> -->
@@ -126,7 +126,7 @@
                                     <v-icon left class="group-icon pb-1 mr-1">mdi-code-braces-box</v-icon>
                                     <span class="group-title">Source code</span>
                                 </div>
-                                <CodeSnippet class="mt-2" :codeContent="selected.code" :key="selected.name"></CodeSnippet>
+                                <CodeSnippet class="mt-2" :codeContent="selected.code" :key="selected.name + '_source_code'"></CodeSnippet>
                             </div>
                         </div>
                     </v-col>
@@ -175,6 +175,57 @@ const selectedTestDescription = computed(() => {
     }
 
     return selected.value.doc.split("Args:")[0];
+})
+
+const selectedTestUsage = computed(() => {
+
+    if (selected.value === null) {
+        return '';
+    }
+
+    let imports = 'from giskard import ';
+    let content = '';
+
+    const requiredArgs = selected.value.args.filter(arg => !arg.optional && arg.name !== 'kwargs');
+    let uniqueImports = chain(requiredArgs)
+        .map('type')
+        .uniq()
+        .value();
+    uniqueImports = uniqueImports.filter(i => i !== 'str');
+    uniqueImports.push(selected.value.name);
+
+    imports += uniqueImports.join(', ');
+
+    for (const [index, arg] of requiredArgs.entries()) {
+        content += `${arg.name} = ${arg.type}(...)`;
+        content += '\n';
+    }
+
+    content += '\n';
+    content += 'test_result, passed = ';
+    content += selected.value.name + '(';
+    for (const [index, arg] of selected.value.args.entries()) {
+        if (arg.name === 'kwargs') {
+            content += '**';
+        }
+
+        content += arg.name;
+
+        if (arg.optional) {
+            content += '=';
+            content += arg.defaultValue;
+        }
+
+        if (index < selected.value.args.length - 1) {
+            content += ', ';
+        }
+    }
+    content += ')';
+    content += '\n\n';
+    content += `print(f"TEST RESULT: {test_result} - PASSED: {passed}")`;
+
+    content = imports + '\n\n' + content;
+    return content;
 })
 
 
