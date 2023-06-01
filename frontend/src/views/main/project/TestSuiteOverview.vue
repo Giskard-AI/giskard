@@ -63,6 +63,14 @@
                   <v-btn
                       text
                       icon
+                      color="primary"
+                      @click.stop="testInfo(suiteTest, test)"
+                  >
+                    <v-icon>info</v-icon>
+                  </v-btn>
+                  <v-btn
+                      text
+                      icon
                       color="error"
                       @click.stop="removeTest(suiteTest)"
                   >
@@ -91,6 +99,7 @@ import {chain} from 'lodash';
 import {$vfm} from 'vue-final-modal';
 import ConfirmModal from '@/views/main/project/modals/ConfirmModal.vue';
 import {api} from '@/api';
+import SuiteTestInfoModal from '@/views/main/project/modals/SuiteTestInfoModal.vue';
 
 const {executions, registry, models, datasets, suite} = storeToRefs(useTestSuiteStore());
 const testSuiteStore = useTestSuiteStore();
@@ -164,6 +173,16 @@ function getIcon(result?: SuiteTestExecutionDTO): string {
   } else {
     return 'close';
   }
+}
+
+async function testInfo(suiteTest: SuiteTestDTO, test: TestFunctionDTO) {
+  await $vfm.show({
+    component: SuiteTestInfoModal,
+    bind: {
+      suiteTest,
+      test
+    }
+  });
 }
 
 async function removeTest(suiteTest: SuiteTestDTO) {
