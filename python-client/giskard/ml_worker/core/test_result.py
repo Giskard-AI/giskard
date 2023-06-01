@@ -5,7 +5,7 @@ from typing import List, Dict
 
 
 class TestMessageLevel(Enum):
-    ERROR = 1,
+    ERROR = (1,)
     INFO = 2
 
 
