@@ -72,6 +72,7 @@ class BearerAuth(AuthBase):
 
 class GiskardClient:
     def __init__(self, url: str, token: str):
+        self.host_url = url
         base_url = urljoin(url, "/api/v2/")
         self._session = sessions.BaseUrlSession(base_url=base_url)
         self._session.mount(base_url, ErrorHandlingAdapter())
@@ -281,7 +282,7 @@ class GiskardClient:
         )
 
     def get_server_info(self):
-        return self._session.get("settings").json()
+        return self._session.get("settings/ml-worker-connect").json()
 
     def save_test_suite(self, dto: TestSuiteNewDTO):
         return self._session.post(f"testing/project/{dto.project_key}/suites-new", json=dto.dict()).json()

@@ -10,6 +10,7 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
+import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
 import io.netty.handler.logging.ByteBufFormat;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
@@ -26,6 +27,7 @@ import java.util.Optional;
 @Service
 public class MLWorkerTunnelService {
     private static final Logger log = LoggerFactory.getLogger(MLWorkerTunnelService.class);
+    public static final int LENGTH_FIELD_LENGTH_BYTES = 4;
     private final ApplicationProperties applicationProperties;
 
     @Getter
@@ -55,6 +57,7 @@ public class MLWorkerTunnelService {
 
                 outerChannel.pipeline().addLast(
                     new LoggingHandler("Outer channel", LogLevel.DEBUG, ByteBufFormat.SIMPLE),
+                    new LengthFieldBasedFrameDecoder(Integer.MAX_VALUE, 0, LENGTH_FIELD_LENGTH_BYTES, 0, LENGTH_FIELD_LENGTH_BYTES),
                     outerChannelHandler
                 );
             }

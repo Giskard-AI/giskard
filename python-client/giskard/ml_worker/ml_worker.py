@@ -1,13 +1,13 @@
 import asyncio
 import logging
-from os import environ
+from concurrent.futures import ThreadPoolExecutor
 
 import grpc
 from pydantic import AnyHttpUrl
 
 from giskard.client.giskard_client import GiskardClient
-from giskard.ml_worker.utils.error_interceptor import ErrorInterceptor
 from giskard.ml_worker.testing.registry.registry import load_plugins
+from giskard.ml_worker.utils.error_interceptor import ErrorInterceptor
 from giskard.settings import settings
 
 logger = logging.getLogger(__name__)
@@ -48,13 +48,8 @@ async def start_ml_worker(is_server=False, backend_url: AnyHttpUrl = None, api_k
         logger.info(
             "Remote server host and port are specified, connecting as an external ML Worker"
         )
-        info = client.get_server_info()
-        app_settings = info.get("app")
-        remote_worker_host = app_settings.get("externalMlWorkerEntrypointHost") or environ.get(
-            'GSK_EXTERNAL_ML_WORKER_HOST', backend_url.host)
-        remote_worker_port = app_settings.get("externalMlWorkerEntrypointPort") or environ.get(
-            'GSK_EXTERNAL_ML_WORKER_PORT', 40051)
-        tunnel = MLWorkerBridge(grpc_server_port, remote_worker_host, remote_worker_port)
+
+        tunnel = MLWorkerBridge(grpc_server_port, client)
         tasks.append(asyncio.create_task(tunnel.start()))
 
     tasks.append(asyncio.create_task(server.wait_for_termination()))
