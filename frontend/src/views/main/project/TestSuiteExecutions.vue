@@ -5,7 +5,7 @@
       ></v-breadcrumbs>
     <v-progress-linear
         indeterminate
-        v-if="!props.executions"
+        v-if="props.executions === undefined"
         color="primary"
         class="mt-2"
     ></v-progress-linear>
@@ -66,7 +66,7 @@ const props = defineProps<{
   models: { [key: string]: ModelDTO },
   datasets: { [key: string]: DatasetDTO },
   inputTypes: { [name: string]: string },
-  executions: TestSuiteExecutionDTO[]
+  executions?: TestSuiteExecutionDTO[]
 }>();
 
 const selectedExecution = ref<TestSuiteExecutionDTO | null>(null);
