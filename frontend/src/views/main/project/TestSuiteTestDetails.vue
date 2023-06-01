@@ -119,6 +119,6 @@ watch(() => props.test, () => editedInputs.value = null);
 const inputType = computed(() => chain(sortedArguments.value)
     .keyBy('name')
     .mapValues('type')
-    .values()
+    .value()
 );
 </script>
