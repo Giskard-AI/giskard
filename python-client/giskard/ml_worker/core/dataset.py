@@ -152,7 +152,8 @@ class Dataset:
             df=slice_fn(self.df),
             name=self.name,
             target=self.target,
-            cat_columns=self.cat_columns)
+            feature_types=self.feature_types
+        )
 
     def __len__(self):
         return len(self.df)
