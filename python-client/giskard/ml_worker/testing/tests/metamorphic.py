@@ -124,7 +124,7 @@ def _compare_probabilities_wilcoxon(result_df, direction, window_size=0.2, criti
 
     return p_value
 
-@validate_classification_label
+
 def _test_metamorphic(
         direction: Direction,
         actual_slice: Dataset,
@@ -216,6 +216,7 @@ def test_metamorphic_invariance(
 
 
 # TODO: once perturbation are implemented:@test(name="Increasing (proportion)")
+@validate_classification_label
 def test_metamorphic_increasing(
         df: Dataset, model: BaseModel, perturbation_dict, threshold=0.5, classification_label=None
 ):
@@ -271,6 +272,7 @@ def test_metamorphic_increasing(
 
 
 # TODO: once perturbation are implemented:@test(name="Decreasing (proportion)")
+@validate_classification_label
 def test_metamorphic_decreasing(
         df: Dataset, model: BaseModel, perturbation_dict, threshold=0.5, classification_label=None
 ):
@@ -325,7 +327,7 @@ def test_metamorphic_decreasing(
         threshold=threshold,
     )
 
-@validate_classification_label
+
 def _test_metamorphic_t_test(
 
         direction: Direction,
@@ -356,6 +358,7 @@ def _test_metamorphic_t_test(
 
 
 # TODO: once perturbation are implemented: @test(name="Decreasing (t-test)")
+@validate_classification_label
 def test_metamorphic_decreasing_t_test(
         df: Dataset, model: BaseModel, perturbation_dict, critical_quantile=0.05, classification_label=None
 ):
@@ -408,6 +411,7 @@ def test_metamorphic_decreasing_t_test(
 
 
 # TODO: once perturbation are implemented:@test(name="Increasing (t-test)")
+@validate_classification_label
 def test_metamorphic_increasing_t_test(
         df: Dataset, model: BaseModel, perturbation_dict, critical_quantile=0.05, classification_label=None
 ):
@@ -514,7 +518,7 @@ def test_metamorphic_invariance_t_test(
         critical_quantile=critical_quantile,
     )
 
-@validate_classification_label
+
 def _test_metamorphic_wilcoxon(
         direction: Direction,
         actual_slice: Dataset,
@@ -544,6 +548,7 @@ def _test_metamorphic_wilcoxon(
 
 
 # TODO: once perturbation are implemented: @test(name="Decreasing (Wilcoxon)")
+@validate_classification_label
 def test_metamorphic_decreasing_wilcoxon(
         df: Dataset, model: BaseModel, perturbation_dict, critical_quantile=0.05, classification_label=None
 ):
@@ -595,6 +600,7 @@ def test_metamorphic_decreasing_wilcoxon(
     )
 
 
+@validate_classification_label
 def test_metamorphic_increasing_wilcoxon(
         df: Dataset, model, perturbation_dict, critical_quantile=0.05, classification_label=None
 ):
