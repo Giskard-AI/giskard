@@ -1,14 +1,15 @@
-import pandas as pd
-import numpy as np
 from dataclasses import dataclass
 
-from ..issues import Issue, IssueInfo
-from ...models.base import BaseModel, ModelPredictionResults
+import numpy as np
+import pandas as pd
+
+from ..issues import Issue
 from ...datasets.base import Dataset
+from ...models.base import BaseModel, ModelPredictionResults
 
 
 @dataclass
-class RobustnessIssueInfo(IssueInfo):
+class RobustnessIssueInfo:
     feature: str
     perturbation_name: str
     fail_ratio: float
