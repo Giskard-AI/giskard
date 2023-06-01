@@ -11,7 +11,7 @@
             <v-row>
               <v-col cols=12>
                 <ValidationProvider name="Test suite" mode="eager" rules="required" v-slot="{ errors }">
-                  <v-select outlined label="Test suite" v-model="selectedSuite" :items="[...testSuites, { id: 'create-new', name: '+ New test suite' }]" :item-text="'name'" :item-value="'id'" dense hide-details @change="checkIfCreateNew">
+                  <v-select outlined label="Test suite" v-model="selectedSuite" :items="[...testSuites, { id: 0, name: '+ New test suite' }]" :item-text="'name'" :item-value="'id'" dense hide-details @change="checkIfCreateNew">
                   </v-select>
                 </ValidationProvider>
                 <p class="text-h6 pt-4">Fixed inputs</p>
@@ -107,7 +107,7 @@ async function submit(close) {
 }
 
 async function checkIfCreateNew() {
-  if (selectedSuite.value === 'create-new') {
+  if (selectedSuite.value === 0) {
     await createTestSuite();
   }
 }
@@ -124,7 +124,7 @@ async function createTestSuite() {
 
   await loadData();
 
-  selectedSuite.value = testSuites.value.slice(-1)[0].id;
+  selectedSuite.value = testSuites.value.slice(-1)[0].id!;
 }
 
 </script>
