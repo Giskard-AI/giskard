@@ -1,6 +1,5 @@
 import inspect
 import logging
-import uuid
 from dataclasses import dataclass
 from typing import List, Any, Union, Dict, Mapping, Optional
 
@@ -21,7 +20,7 @@ suite_input_types: List[type] = [Dataset, BaseModel, str, bool, int, float]
 class TestSuiteResult(tuple):
     def _repr_html_(self):
         passed = self[0]
-        tests_results = ''.join([f"<h3>Test: {key}</h3>{value._repr_html_()}" for key, value in self[1].items()])
+        tests_results = ''.join([f"<h3>Test: {key}</h3>{value._repr_html_()}" for key, value in self[1]])
         return """
                <h2><span style="color:{0};">{1}</span> Test suite {2}</h2>
                {3}
@@ -61,7 +60,7 @@ class ModelInput(SuiteInput):
 class TestPartial:
     giskard_test: GiskardTest
     provided_inputs: Mapping[str, Any]
-    test_identifier: Union[int, str]
+    test_name: Union[int, str]
 
 
 def single_binary_result(test_results: List):
@@ -108,9 +107,11 @@ class Suite:
             overridden. If any inputs on the test suite are missing, an error will be raised.
         :return:  A tuple with the following values:
             - (bool) A boolean value representing whether all the tests in the suite passed or not.
-            - (dict) A dictionary with the results of each test run. The keys are the test names, and the result of the test execution
+            - (list) A list containing tuple of test name and test result, it keeps the order of the add_test sequence
+                - (str) The test_name
+                - (bool | TestResult) The result of the test execution
         """
-        res: Dict[str, Union[bool, TestResult]] = dict()
+        res: List[(str, Union[bool, TestResult])] = list()
         required_params = self.find_required_params()
         undefined_params = {k: v for k, v in required_params.items() if k not in suite_run_args}
         if len(undefined_params):
@@ -118,16 +119,22 @@ class Suite:
 
         for test_partial in self.tests:
             test_params = self.create_test_params(test_partial, suite_run_args)
-            res[test_partial.test_identifier] = test_partial.giskard_test.get_builder()(**test_params).execute()
+            result = test_partial.giskard_test.get_builder()(**test_params).execute()
+            res.append((test_partial.test_name, result))
             if verbose:
-                print(
-                    f"Executed {test_partial.test_identifier} with arguments {test_params}: {res[test_partial.test_identifier]}")
+                print("""
+                      Executed '{0}' with arguments {1}:
+                      {2}
+                      
+                      """
+                      .format(test_partial.test_name, test_params, result)
+                      )
 
-        result = single_binary_result(list(res.values()))
+        result = single_binary_result([result for name, result in res])
 
         logger.info(f"Executed test suite '{self.name or 'unnamed'}'")
         logger.info(f"result: {'success' if result else 'failed'}")
-        for (test_name, r) in res.items():
+        for test_name, r in res:
             logger.info(f"{test_name}: {format_test_result(r)}")
         return TestSuiteResult((result, res))
 
@@ -215,12 +222,7 @@ class Suite:
             test_fn = GiskardTestMethod(test_fn)
 
         if test_name is None:
-            test_name = f"{test_fn.meta.module}.{test_fn.meta.name}"
-            if any([test for test in self.tests if test.test_identifier == test_name]):
-                test_name = f"{test_name}-{str(uuid.uuid4())}"
-        else:
-            assert not any([test for test in self.tests if
-                            test.test_identifier == test_name]), f"The test identifier {test_name} as already been assigned to a test"
+            test_name = test_fn.meta.name if test_fn.meta.display_name is None else test_fn.meta.display_name
 
         self.tests.append(TestPartial(test_fn, params, test_name))
 
