@@ -6,15 +6,24 @@ from pathlib import Path
 from typing import Callable, Dict, Optional, List
 
 import pandas as pd
+from pandas.api.types import is_numeric_dtype
+from enum import Enum
 import yaml
 from zstandard import ZstdDecompressor
 
 from giskard.client.giskard_client import GiskardClient
+from giskard.client.python_utils import warning
 from giskard.client.io_utils import save_df, compress
 from giskard.core.core import DatasetMeta, SupportedFeatureTypes
 from giskard.settings import settings
 
 logger = logging.getLogger(__name__)
+
+
+class Nuniques(Enum):
+    CATEGORY = 2
+    NUMERIC = 100
+    TEXT = 1000
 
 
 class Dataset:
@@ -29,27 +38,46 @@ class Dataset:
         name: Optional[str] = None,
         target: Optional[str] = None,
         cat_columns: Optional[List[str]] = None,
+        infer_cat_columns: Optional[bool] = False,
         feature_types: Optional[Dict[str, str]] = None,
     ) -> None:
         self.name = name
         self.df = pd.DataFrame(df)
         self.target = target
         self.column_types = self.extract_column_types(self.df)
-        self.feature_types = feature_types if feature_types else self.extract_feature_types(
-            list(self.column_types.keys()), cat_columns)
+        if feature_types:
+            self.feature_types = feature_types
+        elif cat_columns:
+            self.feature_types = self.extract_feature_types(self.column_types, cat_columns)
+        elif infer_cat_columns:
+            self.feature_types = self.infer_feature_types(self.df, self.column_types)
+        else:
+            self.feature_types = self.infer_feature_types(self.df, self.column_types, no_cat=True)
+            warning("You did not provide any of [feature_types, cat_columns, infer_cat_columns = True] for your Dataset."
+                    "In this case, we assume that there's no categorical columns in your Dataset.")
 
     @staticmethod
-    def extract_feature_types(all_columns, cat_columns):
+    def infer_feature_types(df, column_types, no_cat=False):
+        # TODO: improve this method
+        nuniques = df.nunique()
         feature_types = {}
-        if cat_columns:
-            for cat_col in cat_columns:
-                feature_types[cat_col] = SupportedFeatureTypes.CATEGORY.value
-            for col in all_columns:
-                if col not in cat_columns:
-                    feature_types[col] = SupportedFeatureTypes.NUMERIC.value if type(col) != str else SupportedFeatureTypes.TEXT.value
-        else:  # TODO: Implement smarter inference
-            for col in all_columns:
-                feature_types[col] = SupportedFeatureTypes.NUMERIC.value if type(col) != str else SupportedFeatureTypes.TEXT.value
+        for col, col_type in column_types.items():
+            if nuniques[col] <= Nuniques.CATEGORY.value and not no_cat:
+                feature_types[col] = SupportedFeatureTypes.CATEGORY.value
+            elif is_numeric_dtype(df[col]):
+                feature_types[col] = SupportedFeatureTypes.NUMERIC.value
+            else:
+                feature_types[col] = SupportedFeatureTypes.TEXT.value
+        return feature_types
+
+    @staticmethod
+    def extract_feature_types(column_types, cat_columns):
+        feature_types = {}
+        for cat_col in cat_columns:
+            feature_types[cat_col] = SupportedFeatureTypes.CATEGORY.value
+        for col, col_type in column_types.items():
+            if col not in cat_columns:
+                feature_types[col] = SupportedFeatureTypes.NUMERIC.value if is_numeric_dtype(col_type) else SupportedFeatureTypes.TEXT.value
 
         return feature_types
 
