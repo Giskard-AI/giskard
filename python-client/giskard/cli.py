@@ -22,6 +22,7 @@ from giskard.settings import settings
 run_dir.mkdir(parents=True, exist_ok=True)
 
 logger = logging.getLogger(__name__)
+logging.getLogger().setLevel(logging.INFO)
 analytics = GiskardAnalyticsCollector()
 
 
