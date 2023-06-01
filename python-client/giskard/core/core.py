@@ -304,14 +304,14 @@ class DatasetProcessFunctionMeta(CallableMeta):
             **json,
             'cellLevel': self.cell_level,
             'columnType': self.column_type,
-            'processType': self.process_type
+            'processType': self.process_type.value
         }
 
     def init_from_json(self, json: Dict[str, Any]):
         super().init_from_json(json)
         self.cell_level = json["cellLevel"]
         self.column_type = json["columnType"]
-        self.process_type = json["processType"]
+        self.process_type = DatasetProcessFunctionType[json["processType"]]
 
 
 DT = TypeVar('DT')
