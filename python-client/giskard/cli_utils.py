@@ -6,9 +6,6 @@ import os
 import sys
 from time import sleep
 
-from daemon import DaemonContext
-from daemon.daemon import change_working_directory
-from daemon.runner import is_pidfile_stale
 from lockfile.pidlockfile import PIDLockFile
 from pydantic import AnyHttpUrl, parse_obj_as
 
@@ -19,9 +16,18 @@ logger = logging.getLogger(__name__)
 
 
 def remove_stale_pid_file(pid_file):
-    if is_pidfile_stale(pid_file):
+    if check_pid(pid_file.read_pid()):
         logger.debug("Stale PID file found, removing it")
         pid_file.break_lock()
+
+
+def check_pid(pid):
+    try:
+        os.kill(pid, 0)
+    except OSError:
+        return False
+    else:
+        return True
 
 
 def create_pid_file_path(is_server, url):
@@ -43,6 +49,8 @@ def validate_url(_ctx, _param, value) -> AnyHttpUrl:
 
 def run_daemon(is_server, url, api_key):
     from giskard.ml_worker.ml_worker import MLWorker
+    from daemon import DaemonContext
+    from daemon.daemon import change_working_directory
 
     log_path = get_log_path()
     logger.info(f"Writing logs to {log_path}")
