@@ -176,7 +176,7 @@ client = GiskardClient(url, token)
 Suite()
   .add_test(AucTest(actual_dataset=german_credit_data_a, threshold=0.3))
   .add_test(test_f1, actual_dataset=german_credit_data_b, threshold=0.2)
-  .save(client, "test_project_key")
+  .upload(client, "test_project_key")
 ```
 
 :::{hint}
