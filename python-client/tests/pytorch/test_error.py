@@ -1,12 +1,12 @@
 import numpy as np
 import pandas as pd
-import torch
 import pytest
-
+import torch
 import torch.nn as nn
 
-from giskard.core.model_validation import validate_model
 from giskard import PyTorchModel, Dataset
+from giskard.core.model_validation import validate_model
+
 
 class ManualLinearRegression(nn.Module):
     def __init__(self):
@@ -16,12 +16,14 @@ class ManualLinearRegression(nn.Module):
     def forward(self, x):
         return self.linear(x)
 
+
 def test_error():
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
     model = ManualLinearRegression().to(device)
 
     df = pd.DataFrame({"x": np.array([1]), "y": np.array([2])})
+
     def preproc_func(df):
         return df.values.tolist()
 
@@ -34,7 +36,7 @@ def test_error():
     my_test_dataset = Dataset(df.head(), name="test dataset", target="label")
 
     with pytest.raises(Exception) as e:
-        validate_model(my_model,validate_ds=my_test_dataset)
+        validate_model(my_model, validate_ds=my_test_dataset)
         assert e.match(f"The output of data_preprocessing_function is of type={type(df.values.tolist())}.\n \
                             Make sure that your data_preprocessing_function outputs one of the following: \n \
                             - pandas.DataFrame \n \
