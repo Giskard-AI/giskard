@@ -128,8 +128,8 @@
             <div class="flex-1"></div>
           </v-card-title>
           <v-card-text>
-            <Datasets v-show="toggleObject === 'datasets'" :projectId="projectId" :isProjectOwnerOrAdmin="isProjectOwnerOrAdmin"></Datasets>
-            <Models v-show="toggleObject === 'models'" :projectId="projectId" :isProjectOwnerOrAdmin="isProjectOwnerOrAdmin"></Models>
+            <Datasets v-show="toggleObject === 'datasets'" :projectId="projectId" :projectKey="project.key" :isProjectOwnerOrAdmin="isProjectOwnerOrAdmin"></Datasets>
+            <Models v-show="toggleObject === 'models'" :projectId="projectId" :projectKey="project.key" :isProjectOwnerOrAdmin="isProjectOwnerOrAdmin"></Models>
           </v-card-text>
         </v-card>
       </v-col>
