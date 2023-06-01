@@ -27,7 +27,7 @@ raw_data = {
 df = pd.DataFrame(raw_data, columns=["text", "label"])
 ```
 ```python
-wrapped_dataset = wrap_dataset(df.head(),
+wrapped_dataset = Dataset(df.head(),
                                name="test dataset",
                                target="label")
 ```
@@ -97,7 +97,7 @@ def my_softmax(x):
     return torch_softmax(x)
 ```
 ```python
-my_model = wrap_model(model=model,
+my_model = Model(model=model,
                       feature_names=feature_names,
                       model_type="classification",
                       classification_labels=list(ag_news_label.values()),

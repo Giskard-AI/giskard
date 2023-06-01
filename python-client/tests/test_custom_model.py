@@ -2,7 +2,8 @@ import re
 from pathlib import Path
 from typing import Union
 
-from giskard import BaseModel, SKLearnModel
+from giskard.models.base import BaseModel
+from giskard.models.sklearn import SKLearnModel
 from giskard.core.core import SupportedModelTypes
 from giskard.models.base import MODEL_CLASS_PKL, WrapperModel
 from tests.utils import MockedClient
