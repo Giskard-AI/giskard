@@ -1,12 +1,14 @@
-from huggingface_hub import hf_hub_url, cached_download
 import joblib
 import pandas as pd
+import pytest
+from huggingface_hub import hf_hub_url, cached_download
 from tensorflow.keras.models import load_model
 
-from giskard import TensorFlowModel, Dataset
 import tests.utils
+from giskard import TensorFlowModel, Dataset
 
 
+@pytest.mark.skip(reason="it uses uncompatible version of scikit-learn==1.1.1")
 def test_tabular_titanic_binary_classification():
     REPO_ID = 'danupurnomo/dummy-titanic'
     PIPELINE_FILENAME = 'final_pipeline.pkl'
