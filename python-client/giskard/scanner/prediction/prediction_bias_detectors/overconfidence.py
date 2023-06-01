@@ -1,6 +1,6 @@
 
-from scanner.prediction.loss_generators.overconfidence import OverconfidenceDatasetGenerator
-from . import PredictionBiasDetector
+from giskard.scanner.prediction.loss_generators.overconfidence import OverconfidenceDatasetGenerator
+from giskard.scanner.prediction.prediction_bias_detectors import PredictionBiasDetector
 
 class OverconfidenceBiasDetector(PredictionBiasDetector):
     def _get_meta(self, model, dataset):
