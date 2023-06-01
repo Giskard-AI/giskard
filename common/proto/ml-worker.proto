@@ -140,15 +140,15 @@ message RunAdHocTestRequest {
   repeated TestArgument arguments = 2;
 }
 
-message RunTestSuiteRequest {
-  repeated string testId = 1;
-  repeated TestArgument globalArguments = 2;
-  repeated FixedTestArgument fixedArguments = 3;
+message SuiteTestArgument {
+  int64 id = 1;
+  string testId = 2;
+  repeated TestArgument arguments = 3;
 }
 
-message FixedTestArgument {
-  string testId = 1;
-  repeated TestArgument arguments = 2;
+message RunTestSuiteRequest {
+  repeated SuiteTestArgument tests = 1;
+  repeated TestArgument globalArguments = 2;
 }
 
 message TestArgument{
@@ -182,6 +182,11 @@ message Partial_unexpected_counts {
 
 message NamedSingleTestResult{
   string name = 1;
+  SingleTestResult result = 2;
+}
+
+message IdentifierSingleTestResult{
+  int64 id = 1;
   SingleTestResult result = 2;
 }
 
@@ -222,7 +227,7 @@ message TestResultMessage {
 
 message TestSuiteResultMessage {
   bool is_pass = 1;
-  repeated NamedSingleTestResult results = 2;
+  repeated IdentifierSingleTestResult results = 2;
 }
 
 message ArtifactRef{

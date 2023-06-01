@@ -51,10 +51,7 @@ public class TestSuiteExecutionService {
             Map<String, TestFunction> registry = response.getTestsMap().values().stream()
                 .collect(Collectors.toMap(TestFunction::getId, Function.identity()));
 
-            RunTestSuiteRequest.Builder builder = RunTestSuiteRequest.newBuilder()
-                .addAllTestId(execution.getSuite().getTests().stream()
-                    .map(test -> String.valueOf(test.getTestId()))
-                    .collect(Collectors.toList()));
+            RunTestSuiteRequest.Builder builder = RunTestSuiteRequest.newBuilder();
 
             for (Map.Entry<String, String> entry : execution.getInputs().entrySet()) {
                 builder.addGlobalArguments(testArgumentService
@@ -62,19 +59,19 @@ public class TestSuiteExecutionService {
             }
 
             for (SuiteTest suiteTest : execution.getSuite().getTests()) {
-                builder.addFixedArguments(testArgumentService
+                builder.addTests(testArgumentService
                     .buildFixedTestArgument(suiteTest, registry.get(suiteTest.getTestId()), execution.getSuite().getProject().getKey()));
             }
 
             TestSuiteResultMessage testSuiteResultMessage = client.getBlockingStub().runTestSuite(builder.build());
 
-            Map<String, SuiteTest> tests = execution.getSuite().getTests().stream()
-                .collect(Collectors.toMap(SuiteTest::getTestId, Function.identity()));
+            Map<Long, SuiteTest> tests = execution.getSuite().getTests().stream()
+                .collect(Collectors.toMap(SuiteTest::getId, Function.identity()));
 
             execution.setResult(testSuiteResultMessage.getIsPass() ? TestResult.PASSED : TestResult.FAILED);
             execution.setResults(testSuiteResultMessage.getResultsList().stream()
-                .map(namedSingleTestResult ->
-                    new SuiteTestExecution(tests.get(namedSingleTestResult.getName()), execution, namedSingleTestResult.getResult()))
+                .map(identifierSingleTestResult ->
+                    new SuiteTestExecution(tests.get(identifierSingleTestResult.getId()), execution, identifierSingleTestResult.getResult()))
                 .collect(Collectors.toList()));
         } catch (Exception e) {
             log.error("Error while executing test suite {}", execution.getSuite().getName(), e);

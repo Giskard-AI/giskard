@@ -15,9 +15,10 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class TestArgumentService {
 
-    public FixedTestArgument buildFixedTestArgument(SuiteTest test, TestFunction testFunction, String projectKey) {
-        FixedTestArgument.Builder builder = FixedTestArgument.newBuilder()
-            .setTestId(test.getTestId());
+    public SuiteTestArgument buildFixedTestArgument(SuiteTest test, TestFunction testFunction, String projectKey) {
+        SuiteTestArgument.Builder builder = SuiteTestArgument.newBuilder()
+            .setTestId(test.getTestId())
+            .setId(test.getId());
 
         Map<String, String> argumentTypes = Maps.transformValues(testFunction.getArgumentsMap(), TestFunctionArgument::getType);
 
