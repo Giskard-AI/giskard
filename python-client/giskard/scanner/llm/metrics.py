@@ -4,6 +4,8 @@ from ctypes import Union
 import evaluate
 from typing import List, Union, Iterable
 
+import pandas as pd
+
 
 class LlmMetric:
     @abstractmethod
@@ -22,7 +24,8 @@ class RougeScore(LlmMetric):
                                 references=references,
                                 rouge_types=rouge_types,
                                 use_aggregator=False)
-        return results
+        rouge_list = list(results.values())[0]
+        return pd.Series(rouge_list)
 
 
 class Rouge1(RougeScore):
