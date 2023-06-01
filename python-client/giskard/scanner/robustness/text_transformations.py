@@ -83,14 +83,14 @@ class TextTypoTransformation(TextTransformation):
                 return word
             elif perturbation_type == 'delete':
                 idx = random.randint(0, len(word) - 1)
-                word = word[:idx] + word[idx + 1:]
+                word = word[:idx] + word[idx + 1 :]
                 return word
             elif perturbation_type == 'replace':
                 j = random.randint(0, len(word) - 1)
                 c = word[j]
                 if c in typos:
                     replacement = random.choice(typos[c])
-                    text_modified = word[:j] + replacement + word[j + 1:]
+                    text_modified = word[:j] + replacement + word[j + 1 :]
                     return text_modified
         return word
 
@@ -144,8 +144,8 @@ class TextGenderTransformation(TextLanguageBasedTransformation):
     def __init__(self, column):
         super().__init__(column)
         from .entity_swap import gender_switch_en, gender_switch_fr
-        self.dict_with_all_language = {"dict_en": gender_switch_en,
-                                       "dict_fr": gender_switch_fr}
+
+        self.dict_with_all_language = {"dict_en": gender_switch_en, "dict_fr": gender_switch_fr}
 
     def make_perturbation(self, row):
         text = row[self.column]
@@ -177,9 +177,8 @@ class TextReligionTransformation(TextLanguageBasedTransformation):
     def __init__(self, column):
         super().__init__(column)
         from .entity_swap import religion_dict_en, religion_dict_fr
-        self.dict_with_all_language = {"dict_en": religion_dict_en,
-                                       "dict_fr": religion_dict_fr
-                                       }
+
+        self.dict_with_all_language = {"dict_en": religion_dict_en, "dict_fr": religion_dict_fr}
 
     def make_perturbation(self, row):
         # Get text
@@ -197,8 +196,11 @@ class TextReligionTransformation(TextLanguageBasedTransformation):
                 match = self._search_for_word_with_plural(word=religious_word_list[i], target_text=text)
                 if match is not None and not pd.isna(religious_word_list[(i + 1) % len(religious_word_list)]):
                     lwbound, upbound = match.span()
-                    new_text = new_text[:lwbound] + religious_word_list[(i + 1) % len(religious_word_list)] + new_text[
-                                                                                                              upbound:]
+                    new_text = (
+                        new_text[:lwbound]
+                        + religious_word_list[(i + 1) % len(religious_word_list)]
+                        + new_text[upbound:]
+                    )
         return new_text
 
     def _search_for_word_with_plural(self, word, target_text):
@@ -213,10 +215,10 @@ class TextNationalityTransformation(TextLanguageBasedTransformation):
         super().__init__(column)
         import json
         from pathlib import Path
+
         with Path(__file__).parent.joinpath("nationalities.json").open("r") as f:
             nationalities_dict = json.load(f)
-        self.dict_with_all_language = {"dict_en": nationalities_dict["en"],
-                                       "dict_fr": nationalities_dict["fr"]}
+        self.dict_with_all_language = {"dict_en": nationalities_dict["en"], "dict_fr": nationalities_dict["fr"]}
 
     def make_perturbation(self, row):
         text = row[self.column]
@@ -235,8 +237,10 @@ class TextNationalityTransformation(TextLanguageBasedTransformation):
                     match = re.search(fr'\b{location}\b', text.lower(), re.IGNORECASE)
                     if match is not None:
                         lwbound, upbound = match.span()
-                        new_text = new_text[:lwbound] + random.choice(
-                            nationalities_word_dict[location_type][income_list[(income_id + 1) % 2]]) + new_text[
-                                                                                                        upbound:]
+                        new_text = (
+                            new_text[:lwbound]
+                            + random.choice(nationalities_word_dict[location_type][income_list[(income_id + 1) % 2]])
+                            + new_text[upbound:]
+                        )
 
         return new_text
