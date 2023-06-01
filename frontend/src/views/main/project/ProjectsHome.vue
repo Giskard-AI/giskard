@@ -47,7 +47,7 @@
         </v-row>
       </v-card>
       <v-hover v-slot="{ hover }" v-for="p in projects" :key="p.id">
-        <v-card outlined tile class="grey lighten-5 project" :class="[{ 'info': hover }]" :to="{ name: defaultTab, params: { id: p.id } }" v-show="creatorFilter === 0 || creatorFilter === 1 && p.owner.id === userProfile.id || creatorFilter === 2 && p.owner.id !== userProfile.id">
+        <v-card outlined tile class="grey lighten-5 project" :class="[{ 'info': hover }]" :to="{ name: defaultRoute, params: { id: p.id } }" v-show="creatorFilter === 0 || creatorFilter === 1 && p.owner.id === userProfile.id || creatorFilter === 2 && p.owner.id !== userProfile.id">
           <v-row class="pa-2">
             <v-col cols=2>
               <div class="subtitle-2 primary--text text--darken-1">{{ p.name }}</div>
@@ -202,7 +202,7 @@ const loginsCurrentInstance = ref<string[]>([]);
 const loginsImportedProject = ref<string[]>([]);
 const mapLogins = ref<{ [key: string]: string }>({});
 const preparingImport = ref<boolean>(false);
-const defaultTab = ref<string>('project-datasets')
+const defaultRoute = ref<string>('project-settings')
 
 // template ref
 const dialogForm = ref<InstanceType<typeof ValidationObserver> | null>(null);
@@ -296,7 +296,7 @@ async function ImportIfNoConflictKey() {
     }
     api.importProject(postImportProject)
       .then((p) => {
-        router.push({ name: 'project-overview', params: { id: p.id } })
+        router.push({ name: 'project-settings', params: { id: p.id } })
       })
   }
 }

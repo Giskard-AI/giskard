@@ -10,7 +10,7 @@
         </span>
       </v-toolbar-title>
       <v-spacer></v-spacer>
-      <v-btn small tile color="primaryLight" class="primaryLightBtn mr-2" :to="{ name: 'project-overview' }" @click="tab = null">
+      <v-btn small tile color="primaryLight" class="primaryLightBtn mr-2" :to="{ name: 'project-settings' }" @click="tab = null">
         Project settings
       </v-btn>
       <v-tooltip :disabled="mainStore.authAvailable" bottom>
