@@ -38,11 +38,7 @@ def test_text_perturbation_works_with_nan_values():
 def test_llm_text_transformation():
     from langchain import LLMChain, PromptTemplate
     from langchain.chat_models import ChatOpenAI
-    import os
     from giskard import Model, Dataset
-
-    OPENAI_API_KEY = "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"
-    os.environ["OPENAI_API_KEY"] = OPENAI_API_KEY
 
     llm = ChatOpenAI(model="gpt-3.5-turbo")
     prompt = PromptTemplate(template="{instruct}: {question}", input_variables=["instruct", "question"])
@@ -50,13 +46,18 @@ def test_llm_text_transformation():
 
     model = Model(chain, model_type='generative')
 
-    dataset = Dataset(pd.DataFrame({
-        "instruct": ["Paraphrase this", "Answer this question"],
-        "question": ["Who is the mayor of Rome?", "How many bridges are there in Paris?"]
-    }), column_types={"instruct": "text", "question": "text"})
+    dataset = Dataset(
+        pd.DataFrame(
+            {
+                "instruct": ["Paraphrase this", "Answer this question"],
+                "question": ["Who is the mayor of Rome?", "How many bridges are there in Paris?"],
+            }
+        ),
+        column_types={"instruct": "text", "question": "text"},
+    )
 
     prediction = model.predict(dataset)
+    assert prediction
 
     analyzer = TextPerturbationDetector()
-    res = analyzer.run(model, dataset)
-    assert prediction
+    analyzer.run(model, dataset)
