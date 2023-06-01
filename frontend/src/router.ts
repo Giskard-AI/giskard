@@ -11,7 +11,6 @@ async function routeGuard(to, from, next) {
     const userStore = useUserStore();
     const mainStore = useMainStore();
     if (!mainStore.license) {
-
         await exponentialRetry(mainStore.fetchLicense);
     }
     if (!mainStore.license?.active) {
