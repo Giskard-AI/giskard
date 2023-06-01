@@ -29,7 +29,7 @@ def test_sequence_classification_distilbert_base_uncased_pytorch_pipeline():
 
     my_model = HuggingFaceModel(
         name="stevhliu/my_awesome_model",
-        clf=my_classifier,
+        model=my_classifier,
         feature_names=feature_names,
         model_type="classification",
         classification_labels=list(label2id.keys()),

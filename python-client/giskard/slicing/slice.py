@@ -33,7 +33,7 @@ class ComparisonClause(Clause):
 
     def to_pandas(self):
         val = f"'{self.value}'" if isinstance(self.value, str) else self.value
-        return f"{self.column} {self.operator} {val}"
+        return f"`{self.column}` {self.operator} {val}"
 
 
 class StringContains(Clause):
@@ -49,7 +49,7 @@ class StringContains(Clause):
 
     def to_pandas(self):
         value = self.value.lower().replace("'", "\\'")
-        return f"{self.column}.str.lower().str.contains('{value}')"
+        return f"`{self.column}`.str.lower().str.contains('{value}')"
 
 
 class GreaterThan(ComparisonClause):
