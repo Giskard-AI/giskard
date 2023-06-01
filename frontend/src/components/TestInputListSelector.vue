@@ -47,7 +47,7 @@
                                              v-if="input.type === 'Dataset'"
                                              :value.sync="props.modelValue[input.name].value"/>
                             <ModelSelector :project-id="projectId" :label="input.name" :return-object="false"
-                                           v-else-if="input.type === 'Model'"
+                                           v-else-if="input.type === 'BaseModel'"
                                            :value.sync="props.modelValue[input.name].value"/>
                             <v-text-field
                                     :step='input.type === "float" ? 0.1 : 1'

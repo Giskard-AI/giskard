@@ -52,8 +52,8 @@
                       </td>
                       <td>
                         <v-btn icon @click="() => handleInputSettingsClick(input)"
-                               v-if="['Model', 'Dataset'].indexOf(input.type) !== -1">
-                          <v-icon>settings</v-icon>
+                               v-if="['BaseModel', 'Dataset'].indexOf(input.type) !== -1">
+                            <v-icon>settings</v-icon>
                         </v-btn>
                         <v-btn icon @click="() => suiteInputs.splice(index, 1)">
                           <v-icon color="accent">delete</v-icon>
@@ -112,8 +112,8 @@
                       <td>
                         <DatasetSelector :project-id="projectId" :label="input.name" :return-object="false"
                                          v-if="input.type === 'Dataset'" :value.sync="input.value"/>
-                        <ModelSelector :project-id="projectId" :label="input.name" :return-object="false"
-                                       v-else-if="input.type === 'Model'" :value.sync="input.value"/>
+                          <ModelSelector :project-id="projectId" :label="input.name" :return-object="false"
+                                         v-else-if="input.type === 'BaseModel'" :value.sync="input.value"/>
                         <v-text-field
                             :step='input.type === "float" ? 0.1 : 1'
                             v-model="input.value"
@@ -201,7 +201,7 @@ onMounted(() => {
   }
 })
 
-const availableTypes = ['Model', 'Dataset', 'str', 'bool', 'int', 'float']
+const availableTypes = ['BaseModel', 'Dataset', 'str', 'bool', 'int', 'float']
 
 async function submit(close) {
   isLoading.value = true;
