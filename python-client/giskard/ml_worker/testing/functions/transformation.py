@@ -1,4 +1,5 @@
-from random import randint
+import random
+import string
 
 import pandas as pd
 
@@ -31,19 +32,43 @@ nearbykeys = {
     'x': ['z', 's', 'd', 'c'],
     'y': ['t', 'g', 'h', 'u'],
     'z': ['a', 's', 'x'],
-    ' ': ['c', 'v', 'b', 'n', 'm']
 }
 
 
 @transformation_function(name="Keyboard typo")
-def keyboard_typo_transformation(x: pd.Series, column_name: str, rate: float = 0.01) -> pd.Series:
-    text = list(x[column_name])
-    typos = int(len(text) * rate)
-    for i in range(typos):
-        pos = randint(0, len(text) - 1)
-        if text[pos] in nearbykeys:
-            keys = nearbykeys[text[pos]]
-            text[pos] = keys[randint(0, len(keys) - 1)]
+def keyboard_typo_transformation(x: pd.Series, column_name: str, rate: float = 0.1) -> pd.Series:
+    # Split the text into words
+    words = x[column_name].split(" ")
 
-    x[column_name] = "".join(text)
+    # Introduce typos into some of the words
+    for i in range(len(words)):
+        if random.random() < rate:
+            word = words[i]
+            if len(word) > 1:
+                j = random.randint(0, len(word) - 1)
+                c = word[j]
+                if c in nearbykeys:
+                    replacement = random.choice(nearbykeys[c])
+                    words[i] = word[:j] + replacement + word[j + 1:]
+
+    # Join the words back into a string
+    x[column_name] = ' '.join(words)
+    return x
+
+
+@transformation_function(name="To uppercase")
+def uppercase_transformation(x: pd.Series, column_name: str) -> pd.Series:
+    x[column_name] = x[column_name].upper()
+    return x
+
+
+@transformation_function(name="To lowercase")
+def lowercase_transformation(x: pd.Series, column_name: str) -> pd.Series:
+    x[column_name] = x[column_name].lower()
+    return x
+
+
+@transformation_function(name="Strip punctuation")
+def strip_punctuation(x: pd.Series, column_name: str):
+    x[column_name] = x[column_name].translate(str.maketrans('', '', string.punctuation))
     return x
