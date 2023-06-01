@@ -14,7 +14,7 @@ import giskard.ml_worker.testing.tests.performance as performance
 )
 def test_f1(data, model, threshold, expected_metric, actual_slices_size, request):
     results = performance.test_f1(
-        actual_slice=request.getfixturevalue(data),
+        actual_ds=request.getfixturevalue(data),
         model=request.getfixturevalue(model),
         threshold=threshold,
     ).execute()
@@ -51,7 +51,7 @@ def test_auc(data, model, threshold, expected_metric, actual_slices_size, reques
 def test_auc_with_unique_target_no_exception(data, model, threshold, expected_metric, actual_slices_size, request):
     data = request.getfixturevalue(data)
     results = performance.test_auc(
-        actual_slice=data.slice(lambda df: df.drop_duplicates("Target"), row_level=False),
+        actual_slice=data.slice(lambda df: df.drop_duplicates("Target")),
         model=request.getfixturevalue(model),
         threshold=threshold,
     ).execute()
@@ -69,7 +69,7 @@ def test_auc_with_unique_target_raise_exception(data, model, threshold, expected
     with pytest.raises(AssertionError) as e:
         data = request.getfixturevalue(data)
         performance.test_auc(
-            actual_slice=data.slice(lambda df: df.drop_duplicates("Target").head(), row_level=False),
+            actual_slice=data.slice(lambda df: df.drop_duplicates("Target").head()),
             model=request.getfixturevalue(model),
             threshold=threshold,
         ).execute()
@@ -189,8 +189,8 @@ def test_r2(data, model, threshold, expected_metric, actual_slices_size, request
 def test_diff_f1(data, model, threshold, expected_metric, request):
     data = request.getfixturevalue(data)
     result = performance.test_diff_f1(
-        actual_slice=data.slice(lambda df: df[df.sex == "male"], row_level=False),
-        reference_slice=data.slice(lambda df: df[df.sex == "female"], row_level=False),
+        actual_slice=data.slice(lambda df: df[df.sex == "male"]),
+        reference_slice=data.slice(lambda df: df[df.sex == "female"]),
         model=request.getfixturevalue(model),
         threshold=threshold,
     ).execute()
@@ -206,8 +206,8 @@ def test_diff_f1(data, model, threshold, expected_metric, request):
 def test_diff_accuracy(data, model, threshold, expected_metric, request):
     data = request.getfixturevalue(data)
     result = performance.test_diff_accuracy(
-        actual_slice=data.slice(lambda df: df[df.sex == "male"], row_level=False),
-        reference_slice=data.slice(lambda df: df[df.sex == "female"], row_level=False),
+        actual_slice=data.slice(lambda df: df[df.sex == "male"]),
+        reference_slice=data.slice(lambda df: df[df.sex == "female"]),
         model=request.getfixturevalue(model),
         threshold=threshold,
     ).execute()
@@ -233,8 +233,8 @@ def test_diff_always_default(test_fn_name, data, model, threshold, expected_metr
     test_fn = getattr(performance, test_fn_name)
 
     result = test_fn(
-        actual_slice=data.slice(lambda df: df[df.sex == "male"], row_level=False),
-        reference_slice=data.slice(lambda df: df[(df.sex == "female") & (df.default == "Not default")], row_level=False),
+        actual_slice=data.slice(lambda df: df[df.sex == "male"]),
+        reference_slice=data.slice(lambda df: df[(df.sex == "female") & (df.default == "Not default")]),
         model=request.getfixturevalue(model),
         threshold=threshold,
     ).execute()
@@ -256,8 +256,8 @@ def test_diff_always_default(test_fn_name, data, model, threshold, expected_metr
 def test_diff_recall(data, model, threshold, expected_metric, request):
     data = request.getfixturevalue(data)
     result = performance.test_diff_recall(
-        actual_slice=data.slice(lambda df: df[df.sex == "male"], row_level=False),
-        reference_slice=data.slice(lambda df: df[df.sex == "female"], row_level=False),
+        actual_slice=data.slice(lambda df: df[df.sex == "male"]),
+        reference_slice=data.slice(lambda df: df[df.sex == "female"]),
         model=request.getfixturevalue(model),
         threshold=threshold,
     ).execute()
@@ -272,8 +272,8 @@ def test_diff_recall(data, model, threshold, expected_metric, request):
 def test_diff_precision(data, model, threshold, expected_metric, request):
     data = request.getfixturevalue(data)
     result = performance.test_diff_precision(
-        actual_slice=data.slice(lambda df: df[df.sex == "male"], row_level=False),
-        reference_slice=data.slice(lambda df: df[df.sex == "female"], row_level=False),
+        actual_slice=data.slice(lambda df: df[df.sex == "male"]),
+        reference_slice=data.slice(lambda df: df[df.sex == "female"]),
         model=request.getfixturevalue(model),
         threshold=threshold,
     ).execute()
@@ -288,8 +288,8 @@ def test_diff_precision(data, model, threshold, expected_metric, request):
 def test_diff_rmse(data, model, threshold, expected_metric, actual_slices_size, request):
     data = request.getfixturevalue(data)
     result = performance.test_diff_rmse(
-        actual_slice=data.slice(lambda df: df[df.sex > 0], row_level=False),
-        reference_slice=data.slice(lambda df: df[df.sex < 0], row_level=False),
+        actual_slice=data.slice(lambda df: df[df.sex > 0]),
+        reference_slice=data.slice(lambda df: df[df.sex < 0]),
         model=request.getfixturevalue(model),
         threshold=threshold,
     ).execute()
@@ -308,8 +308,8 @@ def test_diff_rmse(data, model, threshold, expected_metric, actual_slices_size, 
 def test_diff_reference_actual_f1(data, model, threshold, expected_metric, request):
     data = request.getfixturevalue(data)
     result = performance.test_diff_reference_actual_f1(
-        reference_slice=data.slice(lambda df: df.head(len(df) // 2), row_level=False),
-        actual_slice=data.slice(lambda df: df.tail(len(df) // 2), row_level=False),
+        reference_slice=data.slice(lambda df: df.head(len(df) // 2)),
+        actual_slice=data.slice(lambda df: df.tail(len(df) // 2)),
         model=request.getfixturevalue(model),
         threshold=threshold,
     ).execute()
@@ -327,8 +327,8 @@ def test_diff_reference_actual_f1(data, model, threshold, expected_metric, reque
 def test_diff_reference_actual_accuracy(data, model, threshold, expected_metric, request):
     data = request.getfixturevalue(data)
     result = performance.test_diff_reference_actual_accuracy(
-        reference_slice=data.slice(lambda df: df.head(len(df) // 2), row_level=False),
-        actual_slice=data.slice(lambda df: df.tail(len(df) // 2), row_level=False),
+        reference_slice=data.slice(lambda df: df.head(len(df) // 2)),
+        actual_slice=data.slice(lambda df: df.tail(len(df) // 2)),
         model=request.getfixturevalue(model),
         threshold=threshold,
     ).execute()
@@ -343,8 +343,8 @@ def test_diff_reference_actual_accuracy(data, model, threshold, expected_metric,
 def test_diff_reference_actual_rmse(data, model, threshold, expected_metric, request):
     data = request.getfixturevalue(data)
     result = performance.test_diff_reference_actual_rmse(
-        reference_slice=data.slice(lambda df: df.head(len(df) // 2), row_level=False),
-        actual_slice=data.slice(lambda df: df.tail(len(df) // 2), row_level=False),
+        reference_slice=data.slice(lambda df: df.head(len(df) // 2)),
+        actual_slice=data.slice(lambda df: df.tail(len(df) // 2)),
         model=request.getfixturevalue(model),
         threshold=threshold,
     ).execute()

@@ -17,7 +17,7 @@ from giskard import test
 from giskard.datasets.base import Dataset
 from giskard.ml_worker.core.test_result import TestResult
 from giskard.ml_worker.testing.registry.giskard_test import GiskardTest
-from giskard.ml_worker.testing.registry.slicing_function import slicing_function, SlicingFunction
+from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction
 from giskard.models.base import BaseModel
 
 
@@ -130,7 +130,7 @@ class AucTest(GiskardTest):
 
             :return:
               actual_slices_size:
-                Length of actual_slice tested
+                Length of actual_ds tested
               metric:
                 The AUC performance metric
               passed:
@@ -157,7 +157,7 @@ def test_auc(actual_slice: Dataset, model: BaseModel, threshold: float = 1.0):
 
     Returns:
       actual_slices_size:
-          Length of actual_slice tested
+          Length of actual_ds tested
       metric:
           The AUC performance metric
       passed:
@@ -187,7 +187,7 @@ def test_auc(actual_slice: Dataset, model: BaseModel, threshold: float = 1.0):
 
 
 @test(name='F1', tags=['performance', 'classification', 'ground_truth'])
-def test_f1(actual_slice: Dataset, model: BaseModel, threshold: float = 1.0):
+def test_f1(actual_ds: Dataset, model: BaseModel, slicing_function: SlicingFunction = None, threshold: float = 1.0):
     """
     Test if the model F1 score is higher than a defined threshold for a given slice
 
@@ -195,7 +195,7 @@ def test_f1(actual_slice: Dataset, model: BaseModel, threshold: float = 1.0):
 
 
     Args:
-        actual_slice(Dataset):
+        actual_ds(Dataset):
           Slice of the actual dataset
         model(BaseModel):
           Model used to compute the test
@@ -210,7 +210,7 @@ def test_f1(actual_slice: Dataset, model: BaseModel, threshold: float = 1.0):
         passed:
           TRUE if F1 Score metrics >= threshold
     """
-    return _test_classification_score(f1_score, actual_slice, model, threshold)
+    return _test_classification_score(f1_score, actual_ds.slice(slicing_function), model, threshold)
 
 
 @test(name='Accuracy', tags=['performance', 'classification', 'ground_truth'])
@@ -231,7 +231,7 @@ def test_accuracy(actual_slice: Dataset, model: BaseModel, threshold: float = 1.
 
     Returns:
       actual_slices_size:
-          Length of actual_slice tested
+          Length of actual_ds tested
       metric:
           The Accuracy metric
       passed:
@@ -257,7 +257,7 @@ def test_precision(actual_slice: Dataset, model: BaseModel, threshold: float = 1
           Threshold value for Precision
     Returns:
         actual_slices_size:
-          Length of actual_slice tested
+          Length of actual_ds tested
         metric:
           The Precision metric
         passed:
@@ -283,7 +283,7 @@ def test_recall(actual_slice: Dataset, model: BaseModel, threshold: float = 1.0)
           Threshold value for Recall
     Returns:
         actual_slices_size:
-          Length of actual_slice tested
+          Length of actual_ds tested
         metric:
           The Recall metric
         passed:
@@ -309,7 +309,7 @@ def test_rmse(actual_slice: Dataset, model: BaseModel, threshold: float = 1.0):
           Threshold value for RMSE
     Returns:
         actual_slices_size:
-          Length of actual_slice tested
+          Length of actual_ds tested
         metric:
           The RMSE metric
         passed:
@@ -336,7 +336,7 @@ def test_mae(actual_slice: Dataset, model: BaseModel, threshold: float = 1.0):
 
     Returns:
         actual_slices_size:
-          Length of actual_slice tested
+          Length of actual_ds tested
         reference_slices_size:
           Length of reference_slice tested
         metric:
@@ -365,7 +365,7 @@ def test_r2(actual_slice: Dataset, model: BaseModel, threshold: float = 1.0):
 
     Returns:
         actual_slices_size:
-          Length of actual_slice tested
+          Length of actual_ds tested
         metric:
           The R-Squared metric
         passed:
@@ -382,7 +382,7 @@ def test_diff_accuracy(actual_slice: Dataset, reference_slice: Dataset, model: B
     Test if the absolute percentage change of model Accuracy between two samples is lower than a threshold
 
     Example : The test is passed when the Accuracy for females has a difference lower than 10% from the
-    Accuracy for males. For example, if the Accuracy for males is 0.8 (actual_slice) and the Accuracy  for
+    Accuracy for males. For example, if the Accuracy for males is 0.8 (actual_ds) and the Accuracy  for
     females is 0.6 (reference_slice) then the absolute percentage Accuracy change is 0.2 / 0.8 = 0.25
     and the test will fail
 
@@ -398,7 +398,7 @@ def test_diff_accuracy(actual_slice: Dataset, reference_slice: Dataset, model: B
           Threshold value for Accuracy Score difference
     Returns:
         actual_slices_size:
-          Length of actual_slice tested
+          Length of actual_ds tested
         reference_slices_size:
           Length of reference_slice tested
         metric:
@@ -415,23 +415,16 @@ def test_diff_accuracy(actual_slice: Dataset, reference_slice: Dataset, model: B
         test_name="Accuracy",
     )
 
-
-@slicing_function(name="None")
-def identity_slicing_function(row: pd.Series):
-    return True
-
-
 @test(name='F1 difference', tags=['performance', 'classification', 'ground_truth'])
 def test_diff_f1(actual_slice: Dataset,
                  reference_slice: Dataset,
                  model: BaseModel,
-                 threshold: float = 0.1,
-                 slicing_function: SlicingFunction = identity_slicing_function):
+                 threshold: float = 0.1):
     """
     Test if the absolute percentage change in model F1 Score between two samples is lower than a threshold
 
     Example : The test is passed when the F1 Score for females has a difference lower than 10% from the
-    F1 Score for males. For example, if the F1 Score for males is 0.8 (actual_slice) and the F1 Score  for
+    F1 Score for males. For example, if the F1 Score for males is 0.8 (actual_ds) and the F1 Score  for
     females is 0.6 (reference_slice) then the absolute percentage F1 Score  change is 0.2 / 0.8 = 0.25
     and the test will fail
 
@@ -448,7 +441,7 @@ def test_diff_f1(actual_slice: Dataset,
 
     Returns:
         actual_slices_size:
-          Length of actual_slice tested
+          Length of actual_ds tested
         reference_slices_size:
           Length of reference_slice tested
         metric:
@@ -468,7 +461,7 @@ def test_diff_precision(actual_slice: Dataset, reference_slice: Dataset, model: 
     Test if the absolute percentage change of model Precision between two samples is lower than a threshold
 
     Example : The test is passed when the Precision for females has a difference lower than 10% from the
-    Accuracy for males. For example, if the Precision for males is 0.8 (actual_slice) and the Precision  for
+    Accuracy for males. For example, if the Precision for males is 0.8 (actual_ds) and the Precision  for
     females is 0.6 (reference_slice) then the absolute percentage Precision change is 0.2 / 0.8 = 0.25
     and the test will fail
 
@@ -484,7 +477,7 @@ def test_diff_precision(actual_slice: Dataset, reference_slice: Dataset, model: 
           Threshold value for Precision difference
     Returns:
         actual_slices_size:
-          Length of actual_slice tested
+          Length of actual_ds tested
         reference_slices_size:
           Length of reference_slice tested
         metric:
@@ -509,7 +502,7 @@ def test_diff_recall(actual_slice: Dataset, reference_slice: Dataset, model: Bas
     Test if the absolute percentage change of model Recall between two samples is lower than a threshold
 
     Example : The test is passed when the Recall for females has a difference lower than 10% from the
-    Accuracy for males. For example, if the Recall for males is 0.8 (actual_slice) and the Recall  for
+    Accuracy for males. For example, if the Recall for males is 0.8 (actual_ds) and the Recall  for
     females is 0.6 (reference_slice) then the absolute percentage Recall change is 0.2 / 0.8 = 0.25
     and the test will fail
 
@@ -525,7 +518,7 @@ def test_diff_recall(actual_slice: Dataset, reference_slice: Dataset, model: Bas
           Threshold value for Recall difference
     Returns:
         actual_slices_size:
-          Length of actual_slice tested
+          Length of actual_ds tested
         reference_slices_size:
           Length of reference_slice tested
         metric:
@@ -547,7 +540,7 @@ def test_diff_reference_actual_f1(reference_slice: Dataset, actual_slice: Datase
 
     Example : The test is passed when the F1 Score for reference dataset has a difference lower than 10% from the
     F1 Score for actual dataset. For example, if the F1 Score for reference dataset is 0.8 (reference_slice) and the
-     F1 Score  for actual dataset is 0.6 (actual_slice) then the absolute percentage F1 Score  change is
+     F1 Score  for actual dataset is 0.6 (actual_ds) then the absolute percentage F1 Score  change is
     0.2 / 0.8 = 0.25 and the test will fail.
 
 
@@ -562,7 +555,7 @@ def test_diff_reference_actual_f1(reference_slice: Dataset, actual_slice: Datase
           Threshold value for F1 Score difference
     Returns:
       actual_slices_size:
-          Length of actual_slice tested
+          Length of actual_ds tested
       reference_slices_size:
           Length of reference_slice tested
       metric:
@@ -574,13 +567,6 @@ def test_diff_reference_actual_f1(reference_slice: Dataset, actual_slice: Datase
         test_f1.test_fn, model, reference_slice, actual_slice, threshold, test_name="F1 Score"
     )
 
-
-@slicing_function()
-def foo(x: str):
-    print('HOHO')
-    return True
-
-
 @test(name='Accuracy Reference Actual difference', tags=['performance', 'classification', 'ground_truth'])
 def test_diff_reference_actual_accuracy(
         reference_slice: Dataset, actual_slice: Dataset, model: BaseModel, threshold: float = 0.1
@@ -591,7 +577,7 @@ def test_diff_reference_actual_accuracy(
 
     Example : The test is passed when the Accuracy for reference dataset has a difference lower than 10% from the
     Accuracy for actual dataset. For example, if the Accuracy for reference dataset is 0.8 (reference_slice) and the
-     Accuracy  for actual dataset is 0.6 (actual_slice) then the absolute percentage Accuracy
+     Accuracy  for actual dataset is 0.6 (actual_ds) then the absolute percentage Accuracy
     change is 0.2 / 0.8 = 0.25 and the test     will fail.
 
 
@@ -606,7 +592,7 @@ def test_diff_reference_actual_accuracy(
           Threshold value for Accuracy difference
     Returns:
         actual_slices_size:
-          Length of actual_slice tested
+          Length of actual_ds tested
         reference_slices_size:
           Length of reference_slice tested
         metric:
@@ -631,7 +617,7 @@ def test_diff_rmse(actual_slice: Dataset, reference_slice: Dataset, model: BaseM
     Test if the absolute percentage change of model RMSE between two samples is lower than a threshold
 
     Example : The test is passed when the RMSE for females has a difference lower than 10% from the
-    RMSE for males. For example, if the RMSE for males is 0.8 (actual_slice) and the RMSE  for
+    RMSE for males. For example, if the RMSE for males is 0.8 (actual_ds) and the RMSE  for
     females is 0.6 (reference_slice) then the absolute percentage RMSE change is 0.2 / 0.8 = 0.25
     and the test will fail
 
@@ -648,7 +634,7 @@ def test_diff_rmse(actual_slice: Dataset, reference_slice: Dataset, model: BaseM
 
     Returns:
         actual_slices_size:
-          Length of actual_slice tested
+          Length of actual_ds tested
         reference_slices_size:
           Length of reference_slice tested
         metric:
@@ -670,7 +656,7 @@ def test_diff_reference_actual_rmse(reference_slice: Dataset, actual_slice: Data
 
     Example : The test is passed when the RMSE for reference dataset has a difference lower than 10% from the
     RMSE for actual dataset. For example, if the RMSE for reference dataset is 0.8 (reference_slice) and the RMSE
-    for actual dataset is 0.6 (actual_slice) then the absolute percentage RMSE  change is 0.2 / 0.8 = 0.25
+    for actual dataset is 0.6 (actual_ds) then the absolute percentage RMSE  change is 0.2 / 0.8 = 0.25
     and the test will fail.
 
 
@@ -685,7 +671,7 @@ def test_diff_reference_actual_rmse(reference_slice: Dataset, actual_slice: Data
           Threshold value for RMSE difference
     Returns:
       actual_slices_size:
-          Length of actual_slice tested
+          Length of actual_ds tested
       reference_slices_size:
           Length of reference_slice tested
       metric:
