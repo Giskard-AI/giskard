@@ -2,35 +2,32 @@
 
 :::{warning}
 First you'll need to create a Model and a dataset (And scan your model),
-see [upload-your-model](upload-your-model/ "mention")
+see [🔬 Scan your ML model](../scan/index.md)
 :::
 
-:::{warning}
-This feature is under development and only available in the branch \`poc/ai-test-v2-merged\`
+## 1. Install the Giskard library
+
+In order to test your model, you'll need to install the `giskard` library with `pip`:
+
+::::{tab-set}
+:::{tab-item} Windows
+
+```sh
+pip install "git+https://github.com/Giskard-AI/giskard.git@feature/ai-test-v2-merged#subdirectory=python-client" --user
+```
+
 :::
 
-## How to start Giskard with this feature
+:::{tab-item} Mac and Linux
 
 ```sh
-# Clone giskard
-git clone https://github.com/Giskard-AI/giskard.git
-# Go to giskard directory
-cd giskard
-# Pull the docker and start it
-export TAG=feature-ai-test-v2-merged
-docker compose pull
-docker compose up -d --force-recreate --no-build
-
+pip install "git+https://github.com/Giskard-AI/giskard.git@feature/ai-test-v2-merged#subdirectory=python-client"
 ```
 
-## Install Giskard Python library
+:::
+::::
 
-```sh
-# Download preview wheel
-pip install https://github.com/Giskard-AI/giskard-examples/blob/feature/new-upload-api/preview-dist/giskard-1.9.0-py3-none-any.whl?raw=true
-```
-
-## Access the Jupyter notebook to get our examples
+## 2. Access the Jupyter notebook to get our examples
 
 ```sh
 # Clone giskard-examples
@@ -51,17 +48,17 @@ You can generate an API token in the Admin page of Giskard
 If you want a quick introduction, you can follow the \`AI test v2 preview\` notebook. All the feature displayed in this
 notebook will be shown below.
 
-## Execute a Giskard test
+## 3. Execute a Giskard test
 
 ::::{tab-set}
 :::{tab-item} Drift tests
 
 ```python
-from giskard import SKLearnModel, GiskardDataset, test_drift_prediction_ks
+from giskard import wrap_model, wrap_dataset, test_drift_prediction_ks
 
-my_model = SKLearnModel(...)
-train_df = GiskardDataset(...)
-test_df = GiskardDataset(...)
+my_model = wrap_model(...)
+train_df = wrap_dataset(...)
+test_df = wrap_dataset(...)
 
 result = test_drift_prediction_ks(reference_slice=train_df,
                                   actual_slice=test_df,
@@ -78,20 +75,21 @@ print(f"Metric: {result.metric}")
 
 &#x20;In order to execute the test provided by Giskard. You first need to wrap your dataset and model into Giskard's
 one. Then you simply need to call the test, it will return a **TestResult**.
+
 :::
 
 :::{tab-item} Performance tests
-<pre class="language-python"><code class="lang-python">from giskard import SKLearnModel, GiskardDataset, test_f1
 
-my_model = SKLearnModel(...)
-dataset = GiskardDataset(...)
+```python
+from giskard import wrap_model, wrap_dataset, test_f1
 
-<strong>result = test_f1(actual_slice=dataset, model=my_model)
-</strong><strong>
-</strong>
+my_model = wrap_model(...)
+dataset = wrap_dataset(...)
+
+result = test_f1(actual_slice=dataset, model=my_model)
 print(f"result: {result.passed} with metric {result.metric}")
+```
 
-</code></pre>
 :::
 
 :::{tab-item} Metamorphic tets
@@ -111,7 +109,7 @@ print(f"result: {result.passed} with metric {result.metric}")
 :::
 ::::
 
-## Create a custom test
+## 4. Create a custom test
 
 ::::{tab-set}
 :::{tab-item} Using function
@@ -200,46 +198,48 @@ In order to define a custom test class, you need to extends `GiskardTest` and im
     * `TestResult` An object containing more details:
         * `passed` A required bool to know if the test passed
         * `metric` A float value with the score of the test
-          :::
-          ::::
 
-## Execute a test suite
+:::
+::::
+
+## 5. Execute a test suite
 
 ::::{tab-set}
 
 :::{tab-item} Model as input
 Example using a performance test and the DataQuality test created previously
 
-<pre class="language-python"><code class="lang-python">from giskard import SKLearnModel, GiskardDataset, test_f1, suite
+```python
+from giskard import wrap_model, wrap_dataset, test_f1, Suite
 
 # Define our Giskard Model
-my_dataset = GiskardDataset(...)
-<strong>
-</strong># Create a suite and add a F1 test and a DataQuality test
+my_dataset = wrap_dataset(...)
+
+# Create a suite and add a F1 test and a DataQuality test
 # Note that all the parameters are specified excect dataset
 # Which means that we will need to specify dataset everytime we run the suite
-<strong>suite = Suite() \
-</strong>    .add_test(test_f1, "f1", actual_slice=my_dataset) \
+suite = Suite()
+    .add_test(test_f1, "f1", actual_slice=my_dataset)
     .add_test(DataQuality(dataset=my_dataset, column_name='Month', category='August'), "quality")
 
 # Create our first model
-my_first_model = SKLearnModel(...)
+my_first_model = wrap_model(...)
 
 # Run the suite by specifying our model and display the results
-passed, result suite.run(model=my_first_model)
+passed, results = suite.run(model=my_first_model)
 print(f"Result: {passed}")
 print(f"F1: {results['f1'].passed} {results['f1'].metric}")
 print(f"DataQuality: {results['quality'].passed} {results['quality'].metric}")
 
 # Create an improved version of our model
-my_improved_model = SKLearnModel(...)
+my_improved_model = wrap_model(...)
 
 # Run the suite with our new version and check if the results improved
-passed, result suite.run(model=my_improved_model)
+passed, results = suite.run(model=my_improved_model)
 print(f"Result of the improved model: {passed}")
 print(f"F1: {results['f1'].passed} {results['f1'].metric}")
 print(f"DataQuality: {results['quality'].passed} {results['quality'].metric}")
-</code></pre>
+```
 
 #### Description
 
@@ -258,7 +258,7 @@ a test class or a test function.
 :::
 ::::
 
-## Save a test suite
+## 6. Save a test suite
 
 ::::{tab-set}
 :::{tab-item} Test suite saving
