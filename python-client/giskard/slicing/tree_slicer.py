@@ -1,6 +1,5 @@
 import logging
 import numpy as np
-import pandas as pd
 from scipy import stats
 from typing import Optional, Sequence
 from sklearn.tree import DecisionTreeRegressor
