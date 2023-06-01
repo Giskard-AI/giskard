@@ -1,15 +1,13 @@
 package ai.giskard.web.rest.controllers;
 
-import ai.giskard.domain.Callable;
-import ai.giskard.domain.FunctionArgument;
-import ai.giskard.domain.Project;
-import ai.giskard.domain.SlicingFunction;
+import ai.giskard.domain.*;
 import ai.giskard.domain.ml.Dataset;
 import ai.giskard.ml.MLWorkerClient;
 import ai.giskard.repository.ProjectRepository;
 import ai.giskard.repository.ml.DatasetRepository;
 import ai.giskard.service.*;
 import ai.giskard.service.ml.MLWorkerService;
+import ai.giskard.utils.FunctionArguments;
 import ai.giskard.web.dto.*;
 import ai.giskard.web.dto.mapper.GiskardMapper;
 import ai.giskard.web.dto.ml.DatasetDTO;
@@ -139,7 +137,7 @@ public class DatasetsController {
         Dataset dataset = datasetRepository.getMandatoryById(datasetUuid);
         Project project = dataset.getProject();
 
-        Map<UUID, Callable> callables = processingFunctions.stream()
+        Map<UUID, DatasetProcessFunction> callables = processingFunctions.stream()
             .map(processingFunction -> switch (processingFunction.getType()) {
                 case "SLICING" -> slicingFunctionService.getInitialized(processingFunction.getUuid());
                 case "TRANSFORMATION" -> transformationFunctionService.getInitialized(processingFunction.getUuid());
@@ -157,9 +155,13 @@ public class DatasetsController {
             processingFunctions.forEach(processingFunction -> {
                 DatasetProcessingFunction.Builder functionBuilder = DatasetProcessingFunction.newBuilder();
 
-                Callable callable = callables.get(processingFunction.getUuid());
+                DatasetProcessFunction callable = callables.get(processingFunction.getUuid());
                 Map<String, FunctionArgument> arguments = callable.getArgs().stream()
                     .collect(Collectors.toMap(FunctionArgument::getName, Function.identity()));
+
+                if (callable.isCellLevel()) {
+                    arguments.put("column_name", FunctionArguments.COLUMN_NAME);
+                }
 
                 ArtifactRef artifactRef = ArtifactRef.newBuilder()
                     .setId(callable.getUuid().toString())
