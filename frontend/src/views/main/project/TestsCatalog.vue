@@ -12,13 +12,13 @@
                         <v-list three-line class="vc fill-height">
                             <v-list-item-group v-model="selected" color="primary" mandatory>
                                 <template v-for="test in filteredTestFunctions">
-                                    <v-divider/>
+                                    <v-divider />
                                     <v-list-item :value="test">
                                         <v-list-item-content>
                                             <v-list-item-title class="test-title">
                                                 <div class="d-flex align-center">
                                                     {{ test.displayName ?? test.name }}
-                                                    <v-spacer class="flex-grow-1"/>
+                                                    <v-spacer class="flex-grow-1" />
                                                     <v-tooltip bottom v-if="test.potentiallyUnavailable">
                                                         <template v-slot:activator="{ on, attrs }">
                                                             <div v-bind="attrs" v-on="on">
@@ -60,13 +60,9 @@
                             <div class="pt-5">
                                 <div class="d-flex justify-space-between">
                                     <span class="text-h6">Inputs</span>
-                                    <v-btn width="100" small tile outlined @click="tryMode = !tryMode">{{
-                                        tryMode ? 'Cancel' : 'Try it'
-                                    }}
-                                    </v-btn>
                                 </div>
-                                <SuiteInputListSelector :editing="tryMode" :model-value="testArguments" :inputs="inputType" :project-id="props.projectId" />
-                                <v-row v-show="tryMode">
+                                <SuiteInputListSelector :editing="true" :model-value="testArguments" :inputs="inputType" :project-id="props.projectId" />
+                                <v-row>
                                     <v-col :align="'right'">
                                         <v-btn width="100" small tile outlined class="primary" color="white" @click="runTest">
                                             Run
@@ -104,19 +100,19 @@
 </template>
 
 <script setup lang="ts">
-import {api} from "@/api";
-import _, {chain} from "lodash";
-import {computed, inject, onActivated, ref, watch} from "vue";
-import {pasterColor} from "@/utils";
+import { api } from "@/api";
+import _, { chain } from "lodash";
+import { computed, inject, onActivated, ref, watch } from "vue";
+import { pasterColor } from "@/utils";
 import MonacoEditor from 'vue-monaco';
 import TestExecutionResultBadge from "@/views/main/project/TestExecutionResultBadge.vue";
-import {editor} from "monaco-editor";
-import {TestFunctionDTO, TestInputDTO, TestTemplateExecutionResultDTO} from "@/generated-sources";
+import { editor } from "monaco-editor";
+import { TestFunctionDTO, TestInputDTO, TestTemplateExecutionResultDTO } from "@/generated-sources";
 import AddTestToSuite from '@/views/main/project/modals/AddTestToSuite.vue';
-import {$vfm} from 'vue-final-modal';
+import { $vfm } from 'vue-final-modal';
 import StartWorkerInstructions from "@/components/StartWorkerInstructions.vue";
-import {storeToRefs} from "pinia";
-import {useCatalogStore} from "@/stores/catalog";
+import { storeToRefs } from "pinia";
+import { useCatalogStore } from "@/stores/catalog";
 import SuiteInputListSelector from "@/components/SuiteInputListSelector.vue";
 import IEditorOptions = editor.IEditorOptions;
 
@@ -131,7 +127,6 @@ const editor = ref(null)
 const searchFilter = ref<string>("");
 let { testFunctions } = storeToRefs(useCatalogStore());
 let selected = ref<TestFunctionDTO | null>(null);
-let tryMode = ref(true)
 let testArguments = ref<{ [name: string]: TestInputDTO }>({})
 let testResult = ref<TestTemplateExecutionResultDTO | null>(null);
 
@@ -152,7 +147,6 @@ function resizeEditor() {
 
 watch(selected, (value) => {
     testResult.value = null;
-    tryMode.value = false;
 
     if (value === null || value === undefined) {
         return;
