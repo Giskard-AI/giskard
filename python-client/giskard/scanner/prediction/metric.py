@@ -47,6 +47,11 @@ class OverconfidenceDetector:
         row_as_list = x.values.flatten().tolist()
         max_val = max(row_as_list)
         diff = abs(max_val - x["true_proba"])
+        ############
+        # row_as_list.remove(max_val)
+        # max_val_m1 = max(row_as_list)
+        # diff = abs(max_val - max_val_m1)
+        ############
         return diff
 
     def get_dataset(self):
