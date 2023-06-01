@@ -1,5 +1,5 @@
 from transformers import AutoTokenizer, TFAutoModel
-from giskard.client.giskard_client import GiskardClient
+
 from giskard import TensorFlowModel, Dataset
 
 import pandas as pd
@@ -7,8 +7,6 @@ import tensorflow as tf
 import numpy as np
 import logging
 
-import re
-import requests_mock
 import tests.utils
 
 logging.basicConfig(level=logging.INFO)
@@ -135,21 +133,4 @@ def test_tf_auto_model_as_embedding_layer():
 
     my_test_dataset = Dataset(data.head(), name="test dataset", target="label")
 
-    artifact_url_pattern = re.compile(
-        "http://giskard-host:12345/api/v2/artifacts/test-project/models/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/.*")
-    models_url_pattern = re.compile("http://giskard-host:12345/api/v2/project/test-project/models")
-    settings_url_pattern = re.compile("http://giskard-host:12345/api/v2/settings")
-
-    with requests_mock.Mocker() as m:
-        m.register_uri(requests_mock.POST, artifact_url_pattern)
-        m.register_uri(requests_mock.POST, models_url_pattern)
-        m.register_uri(requests_mock.GET, settings_url_pattern)
-
-        url = "http://giskard-host:12345"
-        token = "SECRET_TOKEN"
-        client = GiskardClient(url, token)
-        my_model.upload(client, 'test-project', my_test_dataset)
-
-        tests.utils.match_model_id(my_model.id)
-        tests.utils.match_url_patterns(m.request_history, artifact_url_pattern)
-        tests.utils.match_url_patterns(m.request_history, models_url_pattern)
+    tests.utils.verify_model_upload(my_model, my_test_dataset)
