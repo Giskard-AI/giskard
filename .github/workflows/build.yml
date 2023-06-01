@@ -125,6 +125,8 @@ jobs:
           value: '${{ steps.read_toml.outputs.value }}.dev${{ steps.current_date.outputs.CURRENT_DATE }}'
 
       - name: Build
+        env:
+          GSK_DISABLE_ANALYTICS: True
         run: ./gradlew build test integrationTest :python-client:lint :python-client:package jacocoTestReport --info --parallel
 
       - name: Analyze with Sonar
