@@ -37,7 +37,7 @@ Giskard lets you instantly see your model's prediction for a given set of featur
 
 Saw anything strange? Leave a feedback directly within Giskard, so that your team can explore the query that generated the faulty result. Designed for both tech and business users, Giskard is super intuitive to use! 👌
 
-And of course, Giskard works with any model, any environment and integrates seemlessly with your favorite tools ⤵️ <br/>
+And of course, Giskard works with any model, any environment and integrates seamlessly with your favorite tools ⤵️ <br/>
 <p>
   <img width='600' src="readme/tools.png">
 </p>
