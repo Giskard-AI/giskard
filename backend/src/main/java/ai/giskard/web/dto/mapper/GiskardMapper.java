@@ -5,6 +5,7 @@ import ai.giskard.domain.ml.*;
 import ai.giskard.repository.ProjectRepository;
 import ai.giskard.repository.ml.DatasetRepository;
 import ai.giskard.repository.ml.ModelRepository;
+import ai.giskard.repository.ml.TestFunctionRepository;
 import ai.giskard.utils.JSON;
 import ai.giskard.web.dto.*;
 import ai.giskard.web.dto.ml.*;
@@ -22,6 +23,7 @@ import java.util.stream.Collectors;
         DatasetRepository.class,
         ModelRepository.class,
         ProjectRepository.class,
+        TestFunctionRepository.class,
         JSON.class
     }
 )
@@ -175,6 +177,7 @@ public interface GiskardMapper {
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "suite", ignore = true)
+    @Mapping(target = "testFunction", source = "testUuid")
     SuiteTest fromDTO(SuiteTestDTO dto);
 
     @AfterMapping
@@ -198,6 +201,9 @@ public interface GiskardMapper {
 
     @Mapping(target = "projectKey", source = "project.key")
     TestSuiteNewDTO toDTO(TestSuiteNew suite);
+
+    @Mapping(target = "testUuid", source = "testFunction.uuid")
+    SuiteTestDTO toDTO(SuiteTest dto);
 
     default Map<String, TestInputDTO> map(List<TestInput> value){
         return value.stream().collect(Collectors.toMap(TestInput::getName, this::toDTO));

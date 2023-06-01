@@ -315,7 +315,7 @@ class GiskardClient:
                 arg["name"]: TestFunctionArgument(
                     name=arg["name"],
                     type=arg["type"],
-                    default=arg["default"],
+                    default=arg["defaultValue"],
                     optional=arg["optional"]
                 ) for arg in res["args"]
             }

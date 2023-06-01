@@ -9,7 +9,6 @@ from giskard.client.giskard_client import GiskardClient
 from giskard.core.model import Model
 from giskard.ml_worker.core.dataset import Dataset
 from giskard.ml_worker.core.test_function import TestFunction
-from giskard.ml_worker.testing.registry.registry import create_test_function_id
 
 logger = logging.getLogger(__name__)
 
@@ -80,7 +79,7 @@ class Suite:
         return test_params
 
     def save(self, client: GiskardClient, project_key: str):
-        suite_tests: list[SuiteTestDTO] = list()
+        suite_tests: List[SuiteTestDTO] = list()
         for t in self.tests:
             inputs = {}
             for pname, p in t.provided_inputs.items():
@@ -93,7 +92,7 @@ class Suite:
                     inputs[pname] = TestInputDTO(name=pname, value=p)
 
             suite_tests.append(SuiteTestDTO(
-                testId=t.function_reference.save(client),
+                testUuid=t.function_reference.save(client),
                 testInputs=inputs
             ))
         self.id = client.save_test_suite(TestSuiteNewDTO(name=self.name, project_key=project_key, tests=suite_tests))
