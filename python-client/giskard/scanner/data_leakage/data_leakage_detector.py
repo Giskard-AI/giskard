@@ -3,6 +3,7 @@ import numpy as np
 from dataclasses import dataclass
 
 from giskard import Dataset
+from giskard.models import cache as models_cache
 from giskard.models.base import BaseModel
 from giskard.scanner.decorators import detector
 from giskard.scanner.issues import Issue
@@ -17,7 +18,6 @@ class DataLeakageDetector:
         # Dataset prediction
         ds_predictions = pd.Series(list(model.predict(dataset).raw), dataset.df.index, dtype=object)
 
-        # @TODO: remember to disable cache
         # Predict on single samples
         sample_idx = dataset.df.sample(min(len(dataset), 100), random_state=23).index.values
         fail_samples = pd.DataFrame(columns=["Whole-dataset prediction", "Single-sample prediction"])
@@ -30,7 +30,8 @@ class DataLeakageDetector:
 
         for idx, expected_pred in zip(sample_idx, ds_predictions.loc[sample_idx].values):
             row_dataset = dataset.slice(slice_single_sample(idx), row_level=False)
-            row_pred = model.predict(row_dataset).raw[0]
+            with models_cache.no_cache():
+                row_pred = model.predict(row_dataset).raw[0]
 
             if not np.isclose(row_pred, expected_pred).all():
                 fail_samples.loc[idx, "Whole-dataset prediction"] = expected_pred
