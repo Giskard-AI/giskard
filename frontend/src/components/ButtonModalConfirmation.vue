@@ -43,7 +43,3 @@ const props = withDefaults(defineProps<Props>(), {
 const opened = ref<boolean>(false);
 
 </script>
-
-<style>
-
-</style>

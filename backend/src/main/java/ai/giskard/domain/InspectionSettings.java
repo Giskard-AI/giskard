@@ -2,7 +2,10 @@ package ai.giskard.domain;
 
 import ai.giskard.config.ApplicationProperties;
 import ai.giskard.config.SpringContext;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.io.Serializable;
 
