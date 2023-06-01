@@ -2,12 +2,11 @@
   <div v-if="project" class="vertical-container">
     <v-toolbar flat dense light class="secondary--text text--lighten-2">
       <v-toolbar-title>
-        <router-link to="/main/projects">
-          Projects
+        <router-link :to="{ name: 'project-properties', params: { id } }">
+          <span class="text-subtitle-1">
+            {{ project.name }}
+          </span>
         </router-link>
-        <span class="text-subtitle-1">
-          <span class="mr-1">/</span>{{ project.name }}
-        </span>
       </v-toolbar-title>
       <v-spacer></v-spacer>
       <v-btn small tile color="primaryLight" class="primaryLightBtn mr-2" :to="{ name: 'project-properties' }" @click="tab = null">
@@ -85,24 +84,6 @@
     </v-dialog>
 
     <v-container fluid id="container-project-tab" class="vertical-container pb-0">
-      <v-tabs v-model=" tab " optional>
-        <v-tab :to=" { name: 'project-feedbacks' } " value="feedbacks">
-          <v-icon left small>mdi-comment-multiple-outline</v-icon>
-          Feedback
-        </v-tab>
-        <v-tab :to=" { name: 'project-debugger' } " value="debugger">
-          <v-icon left small>mdi-debug-step-over</v-icon>
-          Debugger
-        </v-tab>
-        <v-tab :to=" { name: 'project-test-suites' } " value="test-suites">
-          <v-icon left small>mdi-list-status</v-icon>
-          Test suites️
-        </v-tab>
-        <v-tab :to=" { name: 'project-catalog-tests' } " value="catalog-tests">
-          <v-icon left small>mdi-list-status</v-icon>
-          Catalog
-        </v-tab>
-      </v-tabs>
       <keep-alive>
         <router-view :isProjectOwnerOrAdmin=" isProjectOwnerOrAdmin "></router-view>
       </keep-alive>
