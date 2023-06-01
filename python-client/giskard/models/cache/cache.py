@@ -1,4 +1,5 @@
 import csv
+import os
 import uuid
 from pathlib import Path
 from typing import Dict, List, Any, Iterable, Optional
@@ -10,7 +11,7 @@ from giskard.settings import settings
 
 NaN = float('NaN')
 
-CACHE_CSV_FILENAME = "giskard-model-cache.csv.zst"
+CACHE_CSV_FILENAME = "giskard-model-cache.csv"
 
 
 def flatten(xs):
@@ -24,7 +25,7 @@ def flatten(xs):
 class ModelCache:
     # @TODO: improve this
     id: uuid.UUID
-    prediction_cache: Dict[str, Any]
+    prediction_cache: Dict[str, Any] = None
 
     vectorized_get_cache_or_na = None
 
@@ -32,11 +33,13 @@ class ModelCache:
         self.id = id
 
         if id is not None:
-            with open(Path(settings.home_dir / settings.cache_dir / "prediction_cache" / str(id) / CACHE_CSV_FILENAME),
-                      "r") as pred_f:
-                reader = csv.reader(pred_f)
-                self.prediction_cache = dict(reader)
-        else:
+            local_dir = Path(settings.home_dir / settings.cache_dir / "global/prediction_cache" / str(id))
+            if local_dir.exists():
+                with open(local_dir / CACHE_CSV_FILENAME, "r") as pred_f:
+                    reader = csv.reader(pred_f)
+                    self.prediction_cache = dict(reader)
+
+        if self.prediction_cache is None:
             self.prediction_cache = {}
 
         self.vectorized_get_cache_or_na = np.vectorize(self.get_cache_or_na, otypes=[object])
@@ -55,7 +58,7 @@ class ModelCache:
             self.prediction_cache[keys.iloc[i]] = values[i]
 
         if self.id:
-            with open(Path(settings.home_dir / settings.cache_dir / "prediction_cache" / str(
+            with open(Path(settings.home_dir / settings.cache_dir / "global/prediction_cache" / str(
                     self.id) / CACHE_CSV_FILENAME),
                       "a") as pred_f:
                 writer = csv.writer(pred_f)
@@ -75,8 +78,9 @@ class ModelCache:
         self.id = id
 
         if len(self.prediction_cache.keys()) > 0:
-            with open(Path(settings.home_dir / settings.cache_dir / "prediction_cache" / str(id) / CACHE_CSV_FILENAME),
-                      "w") as pred_f:
+            local_dir = Path(settings.home_dir / settings.cache_dir / "global/prediction_cache" / str(id))
+            os.makedirs(os.path.dirname(local_dir), exist_ok=True)
+            with open(local_dir / CACHE_CSV_FILENAME, "w") as pred_f:
                 writer = csv.writer(pred_f)
                 for key, value in self.prediction_cache.items():
                     writer.writerow([key, value])
