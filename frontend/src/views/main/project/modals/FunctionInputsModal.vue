@@ -5,44 +5,43 @@
         classes="modal-container"
         content-class="modal-content"
         v-on="$listeners"
+        @click-outside="() => cancel()"
     >
         <v-form @submit.prevent="">
-            <ValidationObserver ref="observer" v-slot="{ invalid }">
-                <v-card class="modal-card">
-                    <v-card-title>
-                        {{ title }}
-                    </v-card-title>
-                    <v-card-text>
-                        <SuiteInputListSelector
-                            class="pt-4"
-                            :editing="true"
-                            :project-id="projectId"
-                            :inputs="inputs"
-                            :model-value="functionInputs"/>
-                    </v-card-text>
+            <v-card class="modal-card">
+                <v-card-title>
+                    {{ title }}
+                </v-card-title>
+                <v-card-text>
+                    <SuiteInputListSelector
+                        class="pt-4"
+                        :editing="true"
+                        :project-id="projectId"
+                        :inputs="inputs"
+                        :model-value="functionInputs"/>
+                </v-card-text>
 
-                    <v-divider></v-divider>
+                <v-divider></v-divider>
 
-                    <v-card-actions>
-                        <v-spacer></v-spacer>
-                        <v-btn
-                            color="secondary"
-                            text
-                            @click="cancel(close)"
-                        >
-                            Cancel
-                        </v-btn>
-                        <v-btn
-                            color="primary"
-                            text
-                            @click="save(close)"
-                            :disabled="invalid"
-                        >
-                            Save
-                        </v-btn>
-                    </v-card-actions>
-                </v-card>
-            </ValidationObserver>
+                <v-card-actions>
+                    <v-spacer></v-spacer>
+                    <v-btn
+                        color="secondary"
+                        text
+                        @click="cancel(close)"
+                    >
+                        Cancel
+                    </v-btn>
+                    <v-btn
+                        color="primary"
+                        text
+                        @click="save(close)"
+                        :disabled="invalid"
+                    >
+                        Save
+                    </v-btn>
+                </v-card-actions>
+            </v-card>
         </v-form>
     </vue-final-modal>
 </template>
@@ -81,13 +80,15 @@ async function loadData() {
     }, {} as { [name: string]: FunctionInputDTO })
 }
 
-
 const inputs = computed(() =>
     chain(props.function.args)
         .keyBy('name')
         .mapValues('type')
         .value()
 );
+
+const invalid = computed(() => Object.values(functionInputs.value)
+    .findIndex(param => param.value === null || param.value.trim() === '') !== -1)
 
 const mainStore = useMainStore();
 
@@ -96,9 +97,11 @@ async function save(close) {
     close();
 }
 
-async function cancel(close) {
+async function cancel(close?) {
     emits('cancel', props.defaultValue)
-    close();
+    if (close) {
+        close();
+    }
 }
 
 </script>
