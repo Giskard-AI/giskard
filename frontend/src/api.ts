@@ -34,9 +34,6 @@ import {
     RoleDTO,
     SliceDTO,
     SuiteTestDTO,
-    TestCatalogDTO,
-    TestExecutionResultDTO,
-    TestFunctionDTO,
     TestSuiteCompleteDTO,
     TestSuiteDTO,
     TestSuiteExecutionDTO,
@@ -435,6 +432,10 @@ export const api = {
         });
     },
     async runAdHocTest(projectId: number, testUuid: string, inputs: { [key: string]: string }) {
-        return apiV2.post<unknown, TestExecutionResultDTO>(`/testing/tests/run-test`, {projectId, testUuid, inputs});
+        return apiV2.post<unknown, TestTemplateExecutionResultDTO>(`/testing/tests/run-test`, {
+            projectId,
+            testUuid,
+            inputs
+        });
     },
 };
