@@ -1,6 +1,5 @@
 <template>
   <div class="vertical-container">
-    <!-- <v-container v-if="models.length > 0" fluid class="vc"> -->
     <v-container v-if="projectArtifactsStore.getModels.length > 0" fluid class="vc">
       <v-card flat>
         <v-row class="px-2 py-1 caption secondary--text text--lighten-3">
