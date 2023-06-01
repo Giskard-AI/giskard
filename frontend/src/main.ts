@@ -23,8 +23,11 @@ import _ from "lodash";
 
 import './styles/global.scss';
 import './styles/colors.scss';
+import vfmPlugin from 'vue-final-modal'
 
 Vue.config.productionTip = false;
+
+Vue.use(vfmPlugin);
 
 new Vue({
     router,
