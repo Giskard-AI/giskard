@@ -129,7 +129,7 @@ from giskard.demo import titanic  # for demo purposes only 🛳️
 _, df = titanic()  # Replace with your dataframe creation
 
 # Create a Giskard client
-token = "${apiAccessToken.value!.id_token}"
+token = "${apiAccessToken.value?.id_token}"
 client = GiskardClient(
     url="${apiURL}",  # URL of your Giskard instance
     token=token
