@@ -193,4 +193,11 @@ public class TestSuiteService {
         return builder.build();
     }
 
+    public TestSuiteDTO removeSuiteTest(long suiteId, long suiteTestId) {
+        TestSuite testSuite = testSuiteRepository.getById(suiteId);
+
+        testSuite.getTests().removeIf(suiteTest -> suiteTest.getId() == suiteTestId);
+
+        return giskardMapper.toDTO(testSuiteRepository.save(testSuite));
+    }
 }
