@@ -61,12 +61,33 @@
                                 <StartWorkerInstructions />
                             </v-alert>
 
-                            <div id="description-group" class="py-4">
+                            <!-- <div id="description-group" class="py-4">
                                 <div class="d-flex">
                                     <v-icon left class="group-icon pb-1 mr-1">mdi-text-box</v-icon>
                                     <span class="group-title">Description</span>
                                 </div>
                                 <p class="test-description pt-2 mb-4">{{ selected.doc }}</p>
+                            </div> -->
+
+                            <div class="py-4">
+                                <v-expansion-panels multiple v-model="panel" flat>
+                                    <v-expansion-panel>
+                                        <v-expansion-panel-header class="pl-0">
+                                            <div class="d-flex align-center">
+                                                <v-icon left class="group-icon pb-1 mr-1">mdi-text-box</v-icon>
+                                                <span class="group-title">Description</span>
+                                                <v-icon v-if="panel.includes(0)" right>mdi-chevron-up</v-icon>
+                                                <v-icon v-else right>mdi-chevron-down</v-icon>
+                                            </div>
+                                            <template v-slot:actions>
+                                                <span></span>
+                                            </template>
+                                        </v-expansion-panel-header>
+                                        <v-expansion-panel-content>
+                                            <p class="test-description pt-2 mb-4">{{ selected.doc }}</p>
+                                        </v-expansion-panel-content>
+                                    </v-expansion-panel>
+                                </v-expansion-panels>
                             </div>
 
                             <!-- <v-divider></v-divider> -->
@@ -145,6 +166,8 @@ let { testFunctions } = storeToRefs(useCatalogStore());
 let selected = ref<TestFunctionDTO | null>(null);
 let testArguments = ref<{ [name: string]: TestInputDTO }>({})
 let testResult = ref<TestTemplateExecutionResultDTO | null>(null);
+
+const panel = ref<number[]>([]);
 
 
 async function runTest() {
@@ -251,9 +274,9 @@ const inputType = computed(() => chain(selected.value?.args ?? [])
 .test-description {
     font-family: 'Roboto Mono', monospace;
     white-space: break-spaces;
-    font-size: 1rem;
+    font-size: 0.925rem;
     line-height: 1.5rem;
-    // word-spacing: 0.25rem;
+    word-spacing: -0.125rem;
     opacity: 0.875;
     font-weight: 500;
 }
