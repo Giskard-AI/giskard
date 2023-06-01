@@ -166,7 +166,7 @@ your_project = client.create_project("project_key", "PROJECT_NAME", "DESCRIPTION
 
 # Upload your model and dataset
 model_id = wrapped_model.upload(client, "project_key")
-dataset_id = my_test_dataset.upload(client, "project_key")
+dataset_id = wrapped_dataset.upload(client, "project_key")
 ```
 
 ## Troubleshooting
