@@ -7,7 +7,7 @@ from giskard.client.dtos import TestSuiteDTO, TestInputDTO, SuiteTestDTO
 from giskard.client.giskard_client import GiskardClient
 from giskard.core.core import TestFunctionMeta
 from giskard.datasets.base import Dataset
-from giskard.ml_worker.core.savable import Savable
+from giskard.ml_worker.core.savable import Artifact
 from giskard.ml_worker.testing.registry.giskard_test import GiskardTest, Test, GiskardTestMethod
 from giskard.ml_worker.testing.registry.registry import tests_registry
 from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction
@@ -86,7 +86,7 @@ def build_test_input_dto(client, p, pname, ptype, project_key, uploaded_uuids):
             p.upload(client, project_key)
         uploaded_uuids.append(str(p.id))
         return TestInputDTO(name=pname, value=str(p.id), type=ptype)
-    elif issubclass(type(p), Savable):
+    elif issubclass(type(p), Artifact):
         if str(p.meta.uuid) not in uploaded_uuids:
             p.upload(client)
         uploaded_uuids.append(str(p.meta.uuid))
@@ -170,7 +170,7 @@ class Suite:
     @staticmethod
     def create_test_params(test_partial, kwargs):
         if isinstance(test_partial.giskard_test, GiskardTestMethod):
-            available_params = inspect.signature(test_partial.giskard_test.data).parameters.items()
+            available_params = inspect.signature(test_partial.giskard_test.test_fn).parameters.items()
         else:
             available_params = inspect.signature(test_partial.giskard_test.__init__).parameters.items()
 
@@ -253,7 +253,7 @@ class Suite:
 
         for test_partial in self.tests:
             if isinstance(test_partial.giskard_test, GiskardTestMethod):
-                available_params = inspect.signature(test_partial.giskard_test.data).parameters.values()
+                available_params = inspect.signature(test_partial.giskard_test.test_fn).parameters.values()
             else:
                 available_params = inspect.signature(test_partial.giskard_test.__init__).parameters.values()
 
