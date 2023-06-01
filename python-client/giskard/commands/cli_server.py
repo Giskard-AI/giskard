@@ -333,7 +333,7 @@ def status():
     """
     settings = _get_settings()
     if not settings:
-        logger.info(f"Giskard Server is not installed. Install using $giskard server start")
+        logger.info(f"Giskard Server is not installed. Install using `giskard server start`")
         return
     else:
         version = settings["version"]
