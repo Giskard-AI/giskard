@@ -1,6 +1,7 @@
 import uuid
 from typing import Union
 import logging
+
 from scipy import special
 import torch
 from pathlib import Path
@@ -9,8 +10,7 @@ import yaml
 from giskard.core.core import SupportedModelTypes
 from giskard.core.model import WrapperModel
 
-from transformers import pipelines, AutoModel
-import tensorflow as tf
+from transformers import pipeline, pipelines
 
 
 logger = logging.getLogger(__name__)
@@ -37,7 +37,19 @@ class HuggingFaceModel(WrapperModel):
                          classification_threshold=classification_threshold,
                          classification_labels=classification_labels)
 
-        self.from_tf = True if isinstance(clf, tf.keras.Model) else False
+        self.huggingface_module = clf.__class__
+        self.pipeline_task = clf.task if isinstance(clf, pipelines.Pipeline) else None
+
+    # This works, but the problem with AutoModels (loaded model in that context) is that their
+    # output are different from the original saved model output
+    """@classmethod
+    def load_clf(cls, local_path):
+        huggingface_meta_file = Path(local_path) / 'giskard-model-huggingface-meta.yaml'
+        if huggingface_meta_file.exists():
+            with open(huggingface_meta_file) as f:
+                huggingface_meta_file = yaml.load(f, Loader=yaml.Loader)
+
+        return AutoModel.from_pretrained(local_path, from_tf=huggingface_meta_file["from_tf"])"""
 
     @classmethod
     def load_clf(cls, local_path):
@@ -46,13 +58,17 @@ class HuggingFaceModel(WrapperModel):
             with open(huggingface_meta_file) as f:
                 huggingface_meta_file = yaml.load(f, Loader=yaml.Loader)
 
-        return AutoModel.from_pretrained(local_path, from_tf=huggingface_meta_file["from_tf"])
+        if huggingface_meta_file["pipeline_task"]:
+            return pipeline(huggingface_meta_file["pipeline_task"], local_path)
+
+        return huggingface_meta_file["huggingface_module"].from_pretrained(local_path)
 
     def save_huggingface_meta(self, local_path):
         with open(Path(local_path) / "giskard-model-huggingface-meta.yaml", "w") as f:
             yaml.dump(
                 {
-                    "from_tf": self.from_tf,
+                    "huggingface_module": self.huggingface_module,
+                    "pipeline_task": self.pipeline_task,
                 }, f, default_flow_style=False)
 
     def save(self, local_path: Union[str, Path]) -> None:
@@ -65,19 +81,6 @@ class HuggingFaceModel(WrapperModel):
 
     def save_with_huggingface(self, local_path):
         self.clf.save_pretrained(local_path)
-
-    """@classmethod
-    def load(cls, local_dir, **kwargs):
-        huggingface_meta_file = Path(local_dir) / 'giskard-model-huggingface-meta.yaml'
-        if huggingface_meta_file.exists():
-            with open(huggingface_meta_file) as f:
-                pytorch_meta = yaml.load(f, Loader=yaml.Loader)
-                kwargs['from_tf'] = pytorch_meta['from_tf']
-                super().load(local_dir, **kwargs)
-        else:
-            raise ValueError(
-                f"Cannot load model ({cls.__module__}.{cls.__name__}), "
-                f"{huggingface_meta_file} file not found")"""
 
     def clf_predict(self, data):
         if isinstance(self.clf, torch.nn.Module):
