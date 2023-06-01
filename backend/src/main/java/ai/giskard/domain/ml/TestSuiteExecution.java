@@ -20,7 +20,7 @@ public class TestSuiteExecution extends BaseEntity {
 
 
     @ManyToOne
-    private TestSuiteNew suite;
+    private TestSuite suite;
 
     @Column(columnDefinition = "VARCHAR")
     @Convert(converter = SimpleJSONStringAttributeConverter.class)
@@ -37,7 +37,7 @@ public class TestSuiteExecution extends BaseEntity {
     private Date executionDate = new Date();
     private Date completionDate;
 
-    public TestSuiteExecution(TestSuiteNew suite) {
+    public TestSuiteExecution(TestSuite suite) {
         this.suite = suite;
     }
 }

@@ -118,17 +118,17 @@ export default new Router({
                                     },
                                 },
                                 {
-                                    path: 'test-suites-new',
-                                    name: 'project-test-suites-new',
-                                    component: () => import('./views/main/project/TestSuitesNew.vue'),
+                                    path: 'test-suites',
+                                    name: 'project-test-suites',
+                                    component: () => import('./views/main/project/TestSuites.vue'),
                                     props: (route) => {
                                         return {projectId: Number(route.params.id)}
                                     },
                                     children: []
                                 }, {
-                                    path: 'test-suite-new/:suiteId',
-                                    name: 'test-suite-new',
-                                    component: () => import('./views/main/project/TestSuiteNew.vue'),
+                                    path: 'test-suite/:suiteId',
+                                    name: 'test-suite',
+                                    component: () => import('./views/main/project/TestSuite.vue'),
                                     props: (route) => {
                                         return {
                                             projectId: Number(route.params.id),
@@ -138,8 +138,8 @@ export default new Router({
                                     children: [
                                         {
                                             path: 'inputs',
-                                            name: 'test-suite-new-inputs',
-                                            component: () => import('./views/main/project/TestSuiteNewInputs.vue'),
+                                            name: 'test-suite-inputs',
+                                            component: () => import('./views/main/project/TestSuiteInputs.vue'),
                                             props: (route) => {
                                                 return {
                                                     projectId: Number(route.params.id),
@@ -149,8 +149,8 @@ export default new Router({
                                         },
                                         {
                                             path: 'test',
-                                            name: 'test-suite-new-tests',
-                                            component: () => import('./views/main/project/TestSuiteNewTests.vue'),
+                                            name: 'test-suite-tests',
+                                            component: () => import('./views/main/project/TestSuiteTests.vue'),
                                             props: (route) => {
                                                 return {
                                                     projectId: Number(route.params.id),
@@ -160,8 +160,8 @@ export default new Router({
                                         },
                                         {
                                             path: 'configuration',
-                                            name: 'test-suite-new-configuration',
-                                            component: () => import('./views/main/project/TestSuiteNewConfiguration.vue'),
+                                            name: 'test-suite-configuration',
+                                            component: () => import('./views/main/project/TestSuiteConfiguration.vue'),
                                             props: (route) => {
                                                 return {
                                                     projectId: Number(route.params.id),
@@ -171,7 +171,7 @@ export default new Router({
                                         },
                                         {
                                             path: 'execution/compare',
-                                            name: 'test-suite-new-compare-executions',
+                                            name: 'test-suite-compare-executions',
                                             component: () => import('./views/main/project/TestSuiteCompareExecutions.vue'),
                                             props: (route) => {
                                                 return {
@@ -182,7 +182,7 @@ export default new Router({
                                         },
                                         {
                                             path: 'test/:testId/compare',
-                                            name: 'test-suite-new-compare-test',
+                                            name: 'test-suite-compare-test',
                                             component: () => import('./views/main/project/TestSuiteCompareTest.vue'),
                                             props: (route) => {
                                                 return {
@@ -194,7 +194,7 @@ export default new Router({
                                         },
                                         {
                                             path: 'execution',
-                                            name: 'test-suite-new-executions',
+                                            name: 'test-suite-executions',
                                             component: () => import('./views/main/project/TestSuiteExecutions.vue'),
                                             props: (route) => {
                                                 return {
@@ -205,7 +205,7 @@ export default new Router({
                                             children: [
                                                 {
                                                     path: ':executionId',
-                                                    name: 'test-suite-new-execution',
+                                                    name: 'test-suite-execution',
                                                     component: () => import('./views/main/project/TestSuiteExecution.vue'),
                                                     props: (route) => {
                                                         return {

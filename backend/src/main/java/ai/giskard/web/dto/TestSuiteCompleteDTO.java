@@ -14,7 +14,7 @@ import java.util.Map;
 @AllArgsConstructor
 @UIModel
 public class TestSuiteCompleteDTO {
-    private TestSuiteNewDTO suite;
+    private TestSuiteDTO suite;
     private TestCatalogDTO registry;
     private List<DatasetDTO> datasets;
     private List<ModelDTO> models;

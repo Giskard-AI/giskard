@@ -4,7 +4,7 @@
       <v-breadcrumbs
           :items="executionBreadcrumbs"
       ></v-breadcrumbs>
-      <v-btn text color="secondary" :to="{name: 'test-suite-new-compare-executions'}">
+      <v-btn text color="secondary" :to="{name: 'test-suite-compare-executions'}">
         Compare executions
         <v-icon>compare</v-icon>
       </v-btn>
@@ -36,7 +36,7 @@
                   </v-list-item-content>
                 </v-list-item>
                 <v-list-item v-else
-                             :to="{name: 'test-suite-new-execution', params: {executionId: e.execution.id}}">
+                             :to="{name: 'test-suite-execution', params: {executionId: e.execution.id}}">
                   <v-list-item-content>
                     <v-list-item-title>
                       <div class="d-flex justify-space-between">
@@ -183,7 +183,7 @@ const router = useRouter();
 
 onMounted(() => {
   if (executions.value && !route.params.executionId) {
-    router.push({name: 'test-suite-new-execution', params: {executionId: executions.value[0].id.toString()}})
+    router.push({name: 'test-suite-execution', params: {executionId: executions.value[0].id.toString()}})
   }
 })
 </script>

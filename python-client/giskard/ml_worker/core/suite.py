@@ -3,7 +3,7 @@ import logging
 from dataclasses import dataclass
 from typing import List, Any, Union, Dict, Mapping, Callable
 
-from giskard.client.dtos import TestSuiteNewDTO, SuiteTestDTO, TestInputDTO
+from giskard.client.dtos import TestSuiteDTO, TestInputDTO, SuiteTestDTO
 from giskard.client.giskard_client import GiskardClient
 from giskard.core.model import Model
 from giskard.ml_worker.core.dataset import Dataset
@@ -102,7 +102,7 @@ class Suite:
                     inputs[pname] = TestInputDTO(name=pname, value=p)
 
             suite_tests.append(SuiteTestDTO(testId=create_test_function_id(t.test_func), testInputs=inputs))
-        self.id = client.save_test_suite(TestSuiteNewDTO(name=self.name, project_key=project_key, tests=suite_tests))
+        self.id = client.save_test_suite(TestSuiteDTO(name=self.name, project_key=project_key, tests=suite_tests))
         return self
 
     def add_test(self, test_fn: Union[Callable[[Any], Union[bool]], GiskardTest], **params):

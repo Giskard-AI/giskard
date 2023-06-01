@@ -29,4 +29,7 @@
     <changeSet author="kevinmessiaen (generated)" id="1677679858830-17">
         <dropTable tableName="TEST_SUITE"/>
     </changeSet>
+    <changeSet author="kevinmessiaen (generated)" id="1677679858830-18">
+        <renameTable oldTableName="TEST_SUITE_NEW" newTableName="TEST_SUITE"/>
+    </changeSet>
 </databaseChangeLog>
