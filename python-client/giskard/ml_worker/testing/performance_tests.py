@@ -60,7 +60,7 @@ class PerformanceTests(AbstractTestCollection):
             metric = roc_auc_score(actual_slice.df[actual_slice.target], predictions, multi_class="ovr")
 
         return self.save_results(
-            SingleTestResult(actual_slices_size=[len(actual_slice)], metric=metric, passed=metric >= threshold)
+            SingleTestResult(actual_slices_size=[len(actual_slice)], metric=metric, passed=bool(metric >= threshold))
         )
 
     def _test_classification_score(self, score_fn, gsk_dataset: Dataset, model: Model, threshold=1.0):
@@ -75,7 +75,7 @@ class PerformanceTests(AbstractTestCollection):
             metric = score_fn(actual_target, prediction, average="macro")
 
         return self.save_results(
-            SingleTestResult(actual_slices_size=[len(gsk_dataset)], metric=metric, passed=metric >= threshold)
+            SingleTestResult(actual_slices_size=[len(gsk_dataset)], metric=metric, passed=bool(metric >= threshold))
         )
 
     def _test_accuracy_score(self, gsk_dataset: Dataset, model: Model, threshold=1.0):
@@ -87,7 +87,7 @@ class PerformanceTests(AbstractTestCollection):
         metric = accuracy_score(actual_target, prediction)
 
         return self.save_results(
-            SingleTestResult(actual_slices_size=[len(gsk_dataset)], metric=metric, passed=metric >= threshold)
+            SingleTestResult(actual_slices_size=[len(gsk_dataset)], metric=metric, passed=bool(metric >= threshold))
         )
 
     def _test_regression_score(self, score_fn, giskard_ds, model: Model, threshold=1.0, r2=False):
@@ -104,7 +104,7 @@ class PerformanceTests(AbstractTestCollection):
             SingleTestResult(
                 actual_slices_size=[len(giskard_ds)],
                 metric=metric,
-                passed=metric >= threshold if r2 else metric <= threshold,
+                passed=bool(metric >= threshold if r2 else metric <= threshold),
             )
         )
 
@@ -309,7 +309,7 @@ class PerformanceTests(AbstractTestCollection):
                 actual_slices_size=[len(actual_slice)],
                 reference_slices_size=[len(reference_slice)],
                 metric=change_pct,
-                passed=change_pct < threshold,
+                passed=bool(change_pct < threshold),
             )
         )
 
