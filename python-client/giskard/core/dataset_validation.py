@@ -37,7 +37,7 @@ def validate_column_types(ds: Dataset):
 
     df_columns_set = set(ds.columns)
     df_columns_set.discard(ds.target)
-    column_types_set = set([col for col in ds.column_types.keys() if not col.startswith(GISKARD_COLUMN_PREFIX)])
+    column_types_set = set([col for col in ds.column_types.keys() if not str(col).startswith(GISKARD_COLUMN_PREFIX)])
     column_types_set.discard(ds.target)
 
     if column_types_set > df_columns_set:
