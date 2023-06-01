@@ -4,6 +4,7 @@ import type {RowFilterType} from './row-filter-type';
  * Generated from ai.giskard.domain.ml.table.Filter
  */
 export interface Filter {
+    inspectionId: number;
     maxDiffThreshold?: number | null;
     maxLabelThreshold?: number | null;
     maxThreshold?: number | null;
@@ -12,7 +13,6 @@ export interface Filter {
     minThreshold?: number | null;
     predictedLabel?: string[] | null;
     regressionUnit?: string | null;
-    sliceId?: number | null;
     targetLabel?: string[] | null;
     thresholdLabel?: string | null;
     type: RowFilterType;

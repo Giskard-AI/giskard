@@ -1,6 +1,6 @@
-import type {CallableDTO} from './callable-dto';
+import type {DatasetProcessFunctionDTO} from './dataset-process-function-dto';
 
 /**
  * Generated from ai.giskard.web.dto.SlicingFunctionDTO
  */
-export interface SlicingFunctionDTO extends CallableDTO {}
+export interface SlicingFunctionDTO extends DatasetProcessFunctionDTO {}
