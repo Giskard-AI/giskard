@@ -259,7 +259,7 @@ class BaseModel(ABC):
         timer = Timer()
 
         if get_cache_enabled():
-                raw_prediction = self._predict_from_cache(dataset)
+            raw_prediction = self._predict_from_cache(dataset)
         else:
             raw_prediction = self.predict_df(
                 self.prepare_dataframe(dataset.df, column_dtypes=dataset.column_dtypes, target=dataset.target)
