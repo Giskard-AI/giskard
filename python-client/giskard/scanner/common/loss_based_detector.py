@@ -4,6 +4,8 @@ import pandas as pd
 from typing import Sequence
 from abc import abstractmethod
 
+from ..registry import Detector
+
 from ...models.base import BaseModel
 from ...datasets.base import Dataset
 from ...slicing.utils import get_slicer
@@ -14,7 +16,7 @@ from ..logger import logger
 from ..issues import Issue
 
 
-class LossBasedDetector:
+class LossBasedDetector(Detector):
     MIN_DATASET_LENGTH = 100
     MAX_DATASET_SIZE = 10_000_000
     LOSS_COLUMN_NAME = "__gsk__loss"
@@ -81,7 +83,7 @@ class LossBasedDetector:
         )
 
         # For performance
-        dataset_with_meta._load_metadata_from_instance(dataset.column_meta)
+        dataset_with_meta.load_metadata_from_instance(dataset.column_meta)
 
         # Columns by type
         cols_by_type = {
