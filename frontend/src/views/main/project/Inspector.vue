@@ -22,71 +22,81 @@
                   </v-btn>
                 </template>
                 <v-list dense tile>
-                  <v-list-item>
-                    <v-btn tile small text color="primary"
-                           @click="featuresToView = inputMetaData.map(e => e.name)">All
-                    </v-btn>
-                    <v-btn tile small text color="secondary" @click="featuresToView = []">None</v-btn>
-                  </v-list-item>
-                  <v-list-item v-for="f in inputMetaData" :key="f.name">
-                    <v-checkbox
-                        :label="f.name" :value="f.name"
-                        v-model="featuresToView"
-                        hide-details class="mt-1"
-                    ></v-checkbox>
-                  </v-list-item>
+                    <v-list-item>
+                        <v-btn tile small text color="primary"
+                               @click="featuresToView = inputMetaData.map(e => e.name)">All
+                        </v-btn>
+                        <v-btn tile small text color="secondary" @click="featuresToView = []">None</v-btn>
+                    </v-list-item>
+                    <v-list-item v-for="f in inputMetaData" :key="f.name">
+                        <v-checkbox
+                                :label="f.name" :value="f.name"
+                                v-model="featuresToView"
+                                hide-details class="mt-1"
+                        ></v-checkbox>
+                    </v-list-item>
                 </v-list>
               </v-menu>
+
             </v-card-title>
             <v-card-text v-if="!errorLoadingMetadata && Object.keys(inputMetaData).length > 0" id="inputTextCard">
               <div class="caption error--text">{{ dataErrorMsg }}</div>
               <v-form lazy-validation>
                 <div v-for="c in datasetNonTargetColumns" :key="c.name"
                      v-show="featuresToView.includes(c.name)">
-                  <ValidationProvider
-                      :name="c.name"
-                      v-slot="{ dirty }"
-                  >
-                    <div class="py-1 d-flex" v-if="isFeatureEditable(c.name)">
-                      <label class="info--text">{{ c.name }}</label>
-                      <input type="number" v-if="c.type === 'numeric'"
-                             v-model="inputData[c.name]"
-                             class="common-style-input"
-                             :class="{'is-dirty': dirty || inputData[c.name] !== originalData[c.name]}"
-                             @change="onValuePerturbation(c)"
-                             required
-                      />
-                      <textarea v-if="c.type === 'text'"
-                                v-model="inputData[c.name]"
-                                :rows="!inputData[c.name] ? 1 : Math.min(15, parseInt(inputData[c.name].length / 40) + 1)"
-                                class="common-style-input"
-                                :class="{'is-dirty': dirty || inputData[c.name] !== originalData[c.name]}"
-                                @change="onValuePerturbation(c)"
-                                required
-                      ></textarea>
-                      <select v-if="c.type === 'category'"
-                              v-model="inputData[c.name]"
-                              class="common-style-input"
-                              :class="{'is-dirty': dirty || inputData[c.name] !== originalData[c.name]}"
-                              @change="onValuePerturbation(c)"
-                              required
-                      >
-                        <option v-for="k in c.values" :key="k" :value="k">{{ k }}</option>
-                      </select>
-                      <FeedbackPopover
-                          v-if="!isMiniMode"
-                          :inputLabel="c.name"
-                          :inputValue="inputData[c.name]"
-                          :originalValue="originalData[c.name]"
-                          :inputType="c.type"
-                          @submit="$emit(dirty ? 'submitValueVariationFeedback' : 'submitValueFeedback', arguments[0])"
-                      />
-                    </div>
-                    <div class="py-1 d-flex" v-else>
-                      <label class="info--text">{{ c.name }}</label>
-                      <span>{{ inputData[c.name] }}</span>
-                    </div>
-                  </ValidationProvider>
+                    <ValidationProvider
+                            :name="c.name"
+                            v-slot="{ dirty }"
+                    >
+                        <div class="py-1 d-flex" v-if="isFeatureEditable(c.name)">
+                            <label class="info--text">{{ c.name }}</label>
+                            <input type="number" v-if="c.type === 'numeric'"
+                                   v-model="inputData[c.name]"
+                                   class="common-style-input"
+                                   :class="{
+                                 'is-transformed': !dirty && transformationModifications.hasOwnProperty(c.name) && inputData[c.name] === transformationModifications[c.name],
+                                 'is-dirty': dirty || inputData[c.name] !== originalData[c.name]
+                             }"
+                                   @change="onValuePerturbation(c)"
+                                   required
+                            />
+                            <textarea v-if="c.type === 'text'"
+                                      v-model="inputData[c.name]"
+                                      :rows="!inputData[c.name] ? 1 : Math.min(15, parseInt(inputData[c.name].length / 40) + 1)"
+                                      class="common-style-input"
+                                      :class="{
+                                 'is-transformed': !dirty && transformationModifications.hasOwnProperty(c.name) && inputData[c.name] === transformationModifications[c.name],
+                                 'is-dirty': dirty || inputData[c.name] !== originalData[c.name]
+                             }"
+                                      @change="onValuePerturbation(c)"
+                                      required
+                            ></textarea>
+                            <select v-if="c.type === 'category'"
+                                    v-model="inputData[c.name]"
+                                    class="common-style-input"
+                                    :class="{
+                                 'is-transformed': !dirty && transformationModifications.hasOwnProperty(c.name) && inputData[c.name] === transformationModifications[c.name],
+                                 'is-dirty': dirty || inputData[c.name] !== originalData[c.name]
+                             }"
+                                    @change="onValuePerturbation(c)"
+                                    required
+                            >
+                                <option v-for="k in c.values" :key="k" :value="k">{{ k }}</option>
+                            </select>
+                            <FeedbackPopover
+                                    v-if="!isMiniMode"
+                                    :inputLabel="c.name"
+                                    :inputValue="inputData[c.name]"
+                                    :originalValue="originalData[c.name]"
+                                    :inputType="c.type"
+                                    @submit="$emit(dirty ? 'submitValueVariationFeedback' : 'submitValueFeedback', arguments[0])"
+                            />
+                        </div>
+                        <div class="py-1 d-flex" v-else>
+                            <label class="info--text">{{ c.name }}</label>
+                            <span>{{ inputData[c.name] }}</span>
+                        </div>
+                    </ValidationProvider>
                 </div>
               </v-form>
             </v-card-text>
@@ -185,79 +195,80 @@ import _ from 'lodash';
   components: {OverlayLoader, PredictionResults, FeedbackPopover, PredictionExplanations, TextExplanation}
 })
 export default class Inspector extends Vue {
-  @Prop({required: true}) model!: ModelDTO
-  @Prop({required: true}) dataset!: DatasetDTO
-  @Prop({required: true}) originalData!: object // used for the variation feedback
-  @Prop({required: true}) inputData!: { [key: string]: string }
-  @Prop({default: false}) isMiniMode!: boolean;
-  loadingData = false;
-  inputMetaData: FeatureMetadataDTO[] = [];
-  featuresToView: string[] = []
-  errorLoadingMetadata = ""
-  dataErrorMsg = ""
-  classificationResult = null
-  isClassification = isClassification
-  debouncingTimeout: number = 500;
+    @Prop({required: true}) model!: ModelDTO
+    @Prop({required: true}) dataset!: DatasetDTO
+    @Prop({required: true}) originalData!: object // used for the variation feedback
+    @Prop({required: true}) transformationModifications!: object // used for the variation feedback
+    @Prop({required: true}) inputData!: { [key: string]: string }
+    @Prop({default: false}) isMiniMode!: boolean;
+    loadingData = false;
+    inputMetaData: FeatureMetadataDTO[] = [];
+    featuresToView: string[] = []
+    errorLoadingMetadata = ""
+    dataErrorMsg = ""
+    classificationResult = null
+    isClassification = isClassification
+    debouncingTimeout: number = 500;
 
-  async mounted() {
-    await this.loadMetaData();
-  }
-
-  @Watch('originalData')
-  public resetInput() {
-    this.$emit('reset');
-    (this.$refs.dataFormObserver as HTMLFormElement).reset();
-  }
-
-  @Watch('model.id')
-  @Watch('dataset.id')
-  async loadMetaData() {
-    this.loadingData = true;
-    try {
-      this.inputMetaData = await api.getFeaturesMetadata(this.dataset.id)
-      this.featuresToView = this.inputMetaData.map(e => e.name)
-
-      this.errorLoadingMetadata = ""
-    } catch (e) {
-      this.errorLoadingMetadata = e.response.data.detail
-    } finally {
-      this.loadingData = false;
+    async mounted() {
+        await this.loadMetaData();
     }
-  }
 
-  get isInputNotOriginal() { // used in case of opening a feedback where original data and input data passed are different
-    return JSON.stringify(this.inputData) !== JSON.stringify(this.originalData)
-  }
-
-  get textFeatureNames() {
-    return this.inputMetaData.filter(e => e.type == 'text').map(e => e.name)
-  }
-
-  public setResult(r) {
-    if (isClassification(this.model.modelType)) {
-      this.classificationResult = r
+    @Watch('originalData')
+    public resetInput() {
+        this.$emit('reset');
+        (this.$refs.dataFormObserver as HTMLFormElement).reset();
     }
-  }
 
-  async onValuePerturbation(featureMeta: FeatureMetadataDTO) {
-    mixpanel.track("Feature perturbation", {
-      columnType: featureMeta.type,
-      featureName: anonymize(featureMeta.name),
-      modelId: this.model.id,
-      datasetId: this.dataset.id
-    })
-    this.$emit('update:inputData', this.inputData)
-  }
+    @Watch('model.id')
+    @Watch('dataset.id')
+    async loadMetaData() {
+        this.loadingData = true;
+        try {
+            this.inputMetaData = await api.getFeaturesMetadata(this.dataset.id)
+            this.featuresToView = this.inputMetaData.map(e => e.name)
 
-  isFeatureEditable(featureName: string) {
-    if (!this.model.featureNames || this.model.featureNames.length == 0) {
-      // if user doesn't specify feature names consider all columns as feature names
-      return true;
+            this.errorLoadingMetadata = ""
+        } catch (e) {
+            this.errorLoadingMetadata = e.response.data.detail
+        } finally {
+            this.loadingData = false;
+        }
     }
-    return this.model.featureNames.includes(featureName)
-  }
 
-  get modelFeatures() {
+    get isInputNotOriginal() { // used in case of opening a feedback where original data and input data passed are different
+        return JSON.stringify(this.inputData) !== JSON.stringify({...this.originalData, ...this.transformationModifications})
+    }
+
+    get textFeatureNames() {
+        return this.inputMetaData.filter(e => e.type == 'text').map(e => e.name)
+    }
+
+    public setResult(r) {
+        if (isClassification(this.model.modelType)) {
+            this.classificationResult = r
+        }
+    }
+
+    async onValuePerturbation(featureMeta: FeatureMetadataDTO) {
+        mixpanel.track("Feature perturbation", {
+            columnType: featureMeta.type,
+            featureName: anonymize(featureMeta.name),
+            modelId: this.model.id,
+            datasetId: this.dataset.id
+        })
+        this.$emit('update:inputData', this.inputData)
+    }
+
+    isFeatureEditable(featureName: string) {
+        if (!this.model.featureNames || this.model.featureNames.length == 0) {
+            // if user doesn't specify feature names consider all columns as feature names
+            return true;
+        }
+        return this.model.featureNames.includes(featureName)
+    }
+
+    get modelFeatures() {
     return this.inputMetaData
         .filter(x => (x.name !== this.dataset.target) && (!this.model.featureNames || this.model.featureNames.includes(x.name)))
         .map(x => x.name);
@@ -304,6 +315,10 @@ select.common-style-input {
 
 .common-style-input.is-dirty {
   background-color: #AD14572B; /* accent color but with opacity */
+}
+
+.common-style-input.is-transformed {
+  background-color: #d1ecf1;
 }
 
 .v-card__subtitle, .v-card__text, .v-card__title {

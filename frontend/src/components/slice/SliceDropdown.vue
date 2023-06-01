@@ -6,6 +6,7 @@
                     placeholder="Select a slice..."
                     :loading="loading"
                     clearable
+                    prepend-inner-icon="mdi-knife"
                     ref="autocomplete">
       <template v-slot:item="data">
         {{ data.item.text }}
@@ -88,7 +89,7 @@ interface Props {
   loading?: boolean,
   create?: boolean,
   isProjectOwnerOrAdmin?: boolean,
-  defaultDatasetId?: number
+    defaultDatasetId?: string
 }
 
 const props = defineProps<Props>();
@@ -102,7 +103,7 @@ const sliceName = ref<string>("");
 const sliceCode = ref<string>("");
 const sliceId = ref<number>(-1);
 const datasets = ref<DatasetDTO[]>([]);
-const selectedDatasetId = ref<number>(-1);
+const selectedDatasetId = ref<string | null>(null);
 
 const autocomplete = ref<any | null>(null);
 const editor = ref<any | null>(null);

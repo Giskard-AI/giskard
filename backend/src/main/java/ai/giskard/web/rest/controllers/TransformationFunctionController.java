@@ -10,6 +10,8 @@ import ai.giskard.repository.ml.TransformationFunctionRepository;
 import ai.giskard.service.TestArgumentService;
 import ai.giskard.service.TransformationFunctionService;
 import ai.giskard.service.ml.MLWorkerService;
+import ai.giskard.web.dto.FunctionInputDTO;
+import ai.giskard.web.dto.RunAdHocTransformationDTO;
 import ai.giskard.web.dto.TransformationFunctionDTO;
 import ai.giskard.web.dto.TransformationResultDTO;
 import ai.giskard.web.dto.mapper.GiskardMapper;
@@ -50,7 +52,7 @@ public class TransformationFunctionController {
     @PostMapping("/transformations/{transformationFnUuid}/dataset/{datasetUuid}")
     public TransformationResultDTO runAdHocTransformation(@PathVariable("transformationFnUuid") @NotNull UUID sliceFnUuid,
                                                           @PathVariable("datasetUuid") @NotNull UUID datasetUuid,
-                                                          @RequestBody Map<String, String> inputs) {
+                                                          @RequestBody RunAdHocTransformationDTO request) {
         TransformationFunction transformationFunction = transformationFunctionService.getInitialized(sliceFnUuid);
         Dataset dataset = datasetRepository.getMandatoryById(datasetUuid);
         Project project = dataset.getProject();
@@ -66,12 +68,15 @@ public class TransformationFunctionController {
                     .setProjectKey(dataset.getProject().getKey())
                     .build());
 
-            for (Map.Entry<String, String> entry : inputs.entrySet()) {
+            for (FunctionInputDTO input : request.getFunctionInputs()) {
                 builder.addArguments(testArgumentService
-                    .buildTestArgument(argumentTypes, entry.getKey(), entry.getValue(), project.getKey(), Collections.emptyList()));
+                    .buildTestArgument(argumentTypes, input.getName(), input.getValue(), project.getKey(), Collections.emptyList()));
             }
 
-
+            if (request.getRows() != null) {
+                builder.addAllRows(request.getRows());
+            }
+            
             TransformationResultMessage transformationResultMessage = client.getBlockingStub().runAdHocTransformation(builder.build());
 
             return convertGRPCObject(transformationResultMessage, TransformationResultDTO.class);

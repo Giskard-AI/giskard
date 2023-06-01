@@ -195,7 +195,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
         transformation_function = TransformationFunction.load(request.transformationFunctionUuid, self.client, None)
         dataset = Dataset.download(self.client, request.dataset.project_key, request.dataset.id)
 
-        selected_rows = dataset.slice(lambda df: df.iloc[request.rows], row_level=False) if len(
+        selected_rows = dataset.slice(lambda df: df.iloc[list(request.rows)], row_level=False) if len(
             request.rows) > 0 else dataset
 
         arguments = self.parse_function_arguments(request.arguments)
