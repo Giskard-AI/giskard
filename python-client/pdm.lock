@@ -2671,8 +2671,7 @@ dependencies = [
 [metadata]
 lock_version = "4.2"
 groups = ["default", "dev", "doc", "proto", "test"]
-content_hash = "sha256:3912e4ee6e462f8f08d023f6ae745d780b7b6a039a324db5fccdb5d689b47d66"
-
+content_hash = "sha256:b4504692c51979c382144edecc48e2b54b461e157795aac3e86656e9fda15aa8"
 
 [metadata.files]
 "absl-py 1.4.0" = [
