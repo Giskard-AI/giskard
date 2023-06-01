@@ -1,13 +1,13 @@
 <script setup lang="ts">
-import { api } from '@/api';
-import { DatasetDTO, ModelDTO } from "@/generated-sources";
+import {api} from '@/api';
+import {DatasetDTO, ModelDTO} from "@/generated-sources";
 import DatasetSelector from '@/views/main/utils/DatasetSelector.vue';
 import ModelSelector from '@/views/main/utils/ModelSelector.vue';
-import { computed, onActivated, ref } from "vue";
+import {computed, onActivated, ref} from "vue";
 
 
 interface Props {
-  projectId: number;
+    projectId: number;
 }
 
 const props = defineProps<Props>();
@@ -79,12 +79,14 @@ onActivated(() => {
       </template>
       <v-card>
         <v-card-title class="headline">Create a new debugging session</v-card-title>
-        <v-card-text>
-          <v-text-field label="Session name (optional)" v-model="sessionName" class="selector" outlined dense hide-details></v-text-field>
-          <ModelSelector :projectId="projectId" :value.sync="selectedModel" class="selector"></ModelSelector>
-          <v-spacer></v-spacer>
-          <DatasetSelector :projectId="projectId" :value.sync="selectedDataset" label="Dataset" class="selector"></DatasetSelector>
-        </v-card-text>
+          <v-card-text>
+              <v-text-field label="Session name (optional)" v-model="sessionName" class="selector" outlined dense
+                            hide-details></v-text-field>
+              <ModelSelector :projectId="projectId" :value.sync="selectedModel" class="selector"></ModelSelector>
+              <v-spacer></v-spacer>
+              <DatasetSelector :projectId="projectId" :value.sync="selectedDataset" :return-object="true"
+                               label="Dataset" class="selector"></DatasetSelector>
+          </v-card-text>
         <v-card-actions>
           <v-btn text @click="closeDialog">Cancel</v-btn>
           <v-spacer></v-spacer>

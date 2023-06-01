@@ -98,7 +98,7 @@ public class ModelService {
         return response;
     }
 
-    public Inspection createInspection(String name, UUID modelId, UUID datasetId) throws IOException {
+    public Inspection createInspection(String name, UUID modelId, UUID datasetId) {
         log.info("Creating inspection for model {} and dataset {}", modelId, datasetId);
         ProjectModel model = modelRepository.getById(modelId);
         Dataset dataset = datasetRepository.getById(datasetId);
