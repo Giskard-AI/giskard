@@ -93,7 +93,8 @@ class Model(CloudpickleBasedModel):
             # if the Auto class is called (thus == Auto) -> get the methods from the inferred class
             # if giskard_cls == None -> get the methods from CloudpickleBasedModel
             methods_holding_class = cls if cls.__name__ != 'Model' else giskard_cls if giskard_cls else CloudpickleBasedModel
-            output_cls = type(cls.__name__, (giskard_cls,), dict(methods_holding_class.__dict__))
+            methods = dict(methods_holding_class.__dict__)
+            output_cls = type(methods_holding_class.__name__, (giskard_cls,), methods)
 
             return output_cls(
                 model=model,
