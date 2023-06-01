@@ -32,43 +32,42 @@
   </div>
 </template>
 
-<script>
-import {readUserProfile} from '@/store/main/getters';
-import store from "@/store";
+<script setup lang="ts">
+import {computed, ref} from "vue";
+import {useUserStore} from "@/stores/user";
 
-export default {
-  name: 'message-reply',
-  props: {
-    author: {type: Object, required: true},
-    createdOn: {type: String, required: true},
-    content: {type: String, required: true},
-    repliable: {type: Boolean, default: false},
-    hideableBox: {type: Boolean, default: true},
-    replies: {type: Array}
-  },
-  data() {
-    return {
-      replyBoxToggle: false,
-      reply: ''
-    }
-  },
-  computed: {
-    isCurrentUser: function () {
-      return readUserProfile(store).user_id === this.author.user_id
-    },
-    openReplyBox: function () {
-      return !this.hideableBox || this.replyBoxToggle
-    }
-  },
-  methods: {
-    emitSendReply() {
-      this.$emit('reply', this.reply)
-      this.reply = ''
-      this.replyBoxToggle = false
-    }
-  }
+const userStore = useUserStore();
+
+interface Props {
+  author: any,
+  createdOn: string,
+  content: string,
+  repliable: boolean,
+  hideableBox: boolean,
+  replies: any[]
+}
+
+const props = defineProps<Props>();
+const emit = defineEmits(["reply"])
+
+const replyBoxToggle = ref<boolean>(false);
+const reply = ref<string>("");
+
+const isCurrentUser = computed(() => {
+  return userStore.userProfile!.user_id === props.author.user_id;
+});
+
+const openReplyBox = computed(() => {
+  return !props.hideableBox || replyBoxToggle.value;
+});
+
+function emitSendReply() {
+  emit('reply', reply.value);
+  reply.value = '';
+  replyBoxToggle.value = false;
 }
 </script>
+
 <style>
 div.indented {
   margin-left: 5%

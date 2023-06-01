@@ -10,6 +10,7 @@ import ai.giskard.repository.UserRepository;
 import ai.giskard.repository.ml.DatasetRepository;
 import ai.giskard.repository.ml.ModelRepository;
 import ai.giskard.security.AuthoritiesConstants;
+import ai.giskard.service.ee.FeatureFlagService;
 import ai.giskard.web.dto.DataUploadParamsDTO;
 import ai.giskard.web.dto.ModelUploadParamsDTO;
 import ai.giskard.web.dto.mapper.GiskardMapper;
@@ -69,6 +70,7 @@ public class InitService {
     private final Logger logger = LoggerFactory.getLogger(InitService.class);
     private final GeneralSettingsService generalSettingsService;
     private final FileLocationService fileLocationService;
+    private final FeatureFlagService featureFlagService;
     private Map<String, ProjectConfig> projects;
     String[] mockKeys = stream(AuthoritiesConstants.AUTHORITIES).map(key -> key.replace("ROLE_", "")).toArray(String[]::new);
     private final Map<String, String> users = stream(mockKeys).collect(Collectors.toMap(String::toLowerCase, String::toLowerCase));
@@ -164,6 +166,16 @@ public class InitService {
                 saveUser(key, "ROLE_" + key);
             }
         });
+
+        if (!featureFlagService.hasFlag(FeatureFlagService.FeatureFlag.AUTH)) {
+            // Given the loop above, we can safely assume that the user at least exists.
+            userRepository.findOneByLogin("admin").ifPresent(admin -> {
+                if (!admin.isEnabled()) {
+                    admin.setEnabled(true);
+                    userRepository.save(admin);
+                }
+            });
+        }
     }
 
     /**
