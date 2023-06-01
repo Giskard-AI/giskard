@@ -4,7 +4,7 @@
             <div v-if="testSuitesStore.currentTestSuiteId === null">
                 <v-row>
                     <v-col cols="4">
-                        <!-- <v-text-field label="Search for a test suite" append-icon="search" outlined v-model="searchSession"></v-text-field> -->
+                        <v-text-field label="Search for a test suite" append-icon="search" outlined v-model="searchSession" style="visibility: hidden" disabled></v-text-field>
                     </v-col>
                     <v-col cols="8">
                         <div class="d-flex justify-end">
