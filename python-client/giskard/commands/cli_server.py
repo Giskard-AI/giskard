@@ -4,13 +4,15 @@ import os
 import click
 import requests
 import yaml
+from docker.errors import NotFound
 
+from giskard.cli_utils import common_options
 from giskard.settings import settings
 
 logger = logging.getLogger(__name__)
 
 giskard_home_path = settings.home_dir
-giskard_settings_path = giskard_home_path + "/giskard-settings.yml"
+giskard_settings_path = giskard_home_path / "giskard-settings.yml"
 
 try:
     import docker
@@ -40,6 +42,7 @@ def update_options(fn):
 
 
 @server.command("start")
+@common_options
 @click.option("--attach",
               "-a",
               "attached",
@@ -54,17 +57,17 @@ def start(attached):
     You can attach to it by using -a
     """
     logger.info("Starting Giskard Server")
-    settings = _get_settings()
-    if not settings:
+    app_settings = _get_settings()
+    if not app_settings:
         version = _fetch_latest_tag()
         logger.info(f"Giskard Server not installed. Installing {version} now.")
         _write_settings({"version": version})
     else:
-        version = settings["version"]
+        version = app_settings["version"]
 
     _pull_image(version.replace('v', ''))
 
-    db_volume, home_volume = _get_volumes()
+    home_volume = _get_home_volume()
 
     try:
         container = docker_client.containers.get(f"giskard-server.{version.replace('v', '')}")
@@ -73,29 +76,36 @@ def start(attached):
                                                     detach=not attached,
                                                     name=f"giskard-server.{version.replace('v', '')}",
                                                     ports={7860: 19000},
-                                                    volumes={db_volume.name: {'bind': '/var/lib/postgresql/data',
-                                                                              'mode': 'rw'},
-                                                             home_volume.name: {'bind': '/app/giskard-home',
-                                                                                'mode': 'rw'}}, )
+                                                    volumes={
+                                                        home_volume.name: {'bind': '/home/giskard/datadir', 'mode': 'rw'}
+                                                    })
     container.start()
     logger.info(f"Giskard Server {version} started. You can access it at http://localhost:19000")
 
 
 @server.command("stop")
+@common_options
 def stop():
     """\b
     Stop Giskard Server.
 
     Stops any running Giskard server. Does nothing if Giskard server is not running.
     """
-    logger.info("Stopping Giskard Server")
 
     version = _get_settings()["version"]
-    container = docker_client.containers.get(f"giskard-server.{version.replace('v', '')}")
-    container.stop()
+    try:
+        container = docker_client.containers.get(f"giskard-server.{version.replace('v', '')}")
+        if container.status != 'exited':
+            logger.info("Stopping Giskard Server")
+            container.stop()
+        else:
+            logger.info(f"Giskard {version} is not running")
+    except NotFound:
+        logger.info(f"Giskard {version} is not found")
 
 
 @server.command("restart")
+@common_options
 def restart():
     """\b
     Restart Giskard Server.
@@ -109,6 +119,7 @@ def restart():
 
 
 @server.command("logs")
+@common_options
 @click.argument("service", default="backend", type=click.Choice(["backend", "frontend", "worker"]), required=True)
 def logs(service):
     """\b
@@ -118,6 +129,7 @@ def logs(service):
 
 
 @server.command("update")
+@common_options
 @click.option(
     "--version",
     "-v",
@@ -139,6 +151,7 @@ def update(version):
 
 
 @server.command("info")
+@common_options
 def info():
     """\b
     Get information about the Giskard Server.
@@ -159,11 +172,13 @@ def info():
 
 
 def _check_downloaded(ver: str):
+    tag = f"giskardai/giskard:{ver}"
     try:
-        docker_client.images.get(f"giskardai/giskard:{ver}")
-        logger.debug(f"Docker image for version {ver} found.")
+        docker_client.images.get(tag)
+        logger.debug(f"Docker image exists: {tag}")
         return True
     except docker.errors.ImageNotFound:
+        logger.debug(f"Docker image not found locally: {tag}")
         return False
 
 
@@ -197,15 +212,12 @@ def _get_settings():
     return yaml.safe_load(open(giskard_settings_path, "r"))
 
 
-def _get_volumes():
+def _get_home_volume():
     try:
-        db_volume = docker_client.volumes.get("giskard-db-data")
+        logger.debug("Found existing 'giskard-home' volume, reusing it")
+        home_volume = docker_client.volumes.get("giskard-home")
     except docker.errors.NotFound:
-        db_volume = docker_client.volumes.create("giskard-db-data")
+        logger.info("Creating a new volume: 'giskard-home'")
+        home_volume = docker_client.volumes.create("giskard-home")
 
-    try:
-        home_volume = docker_client.volumes.get("giskard-home-data")
-    except docker.errors.NotFound:
-        home_volume = docker_client.volumes.create("giskard-home-data")
-
-    return db_volume, home_volume
+    return home_volume

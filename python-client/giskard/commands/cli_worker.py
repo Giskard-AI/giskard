@@ -1,4 +1,5 @@
 import asyncio
+import functools
 import logging
 import os
 import platform
@@ -12,6 +13,7 @@ from click import INT, STRING
 from lockfile.pidlockfile import PIDLockFile, read_pid_from_pidfile, remove_existing_pidfile
 from pydantic import AnyHttpUrl
 
+from giskard.cli_utils import common_options
 from giskard.cli_utils import (
     create_pid_file_path,
     remove_stale_pid_file,
@@ -34,37 +36,32 @@ def worker() -> None:
     """
 
 
-def start_stop_options(fn):
-    fn = click.option(
+def start_stop_options(func):
+    @click.option(
         "--url",
         "-u",
         type=STRING,
         default="http://localhost:19000",
         help="Remote Giskard server url",
         callback=validate_url,
-    )(fn)
-    fn = click.option(
+    )
+    @click.option(
         "--server",
         "-s",
         "is_server",
         is_flag=True,
         default=False,
         help="Server mode. Used by Giskard embedded ML Worker",
-    )(fn)
-    fn = click.option(
-        "--verbose",
-        "-v",
-        is_flag=True,
-        callback=set_verbose,
-        default=False,
-        expose_value=False,
-        is_eager=True,
-        help="Enable verbose logging",
-    )(fn)
-    return fn
+    )
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        return func(*args, **kwargs)
+
+    return wrapper
 
 
 @worker.command("start")
+@common_options
 @start_stop_options
 @click.option(
     "--key",
@@ -161,6 +158,7 @@ def _ml_worker_description(is_server, url):
 
 
 @worker.command("stop", help="Stop running ML Workers")
+@common_options
 @start_stop_options
 @click.option("--all", "-a", "stop_all", is_flag=True, default=False, help="Stop all running ML Workers")
 def stop_command(is_server, url, stop_all):
@@ -176,6 +174,7 @@ def stop_command(is_server, url, stop_all):
 
 
 @worker.command("restart", help="Restart ML Worker")
+@common_options
 @start_stop_options
 @click.option("--api-key", "-k", "api_key", help="Giskard server API key")
 def restart_command(is_server, url, api_key):
@@ -211,6 +210,7 @@ def _find_and_stop(is_server, url):
 
 
 @worker.command("logs")
+@common_options
 @click.option(
     "--lines",
     "-n",
