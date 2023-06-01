@@ -31,7 +31,7 @@ class Dataset:
             cat_columns: Optional[List[str]] = None
     ) -> None:
         self.name = name
-        self.df = df
+        self.df = pd.DataFrame(df)
         self.target = target
         self.column_types = self.extract_column_types(self.df)
         if cat_columns:
