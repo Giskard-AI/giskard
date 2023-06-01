@@ -124,7 +124,7 @@ class CalibrationIssue(Issue):
 
         return examples
 
-    def generate_tests(self) -> list:
+    def generate_tests(self, with_names=False) -> list:
         return []
 
 

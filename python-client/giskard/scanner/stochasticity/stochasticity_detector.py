@@ -67,5 +67,5 @@ class StochasticityIssue(Issue):
     def importance(self) -> float:
         return 1
 
-    def generate_tests(self) -> list:
+    def generate_tests(self, with_names=False) -> list:
         return []
