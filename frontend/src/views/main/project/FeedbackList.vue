@@ -199,7 +199,7 @@ div.v-input.flex-1 {
 
 
 .feedback-logo {
-  max-width: 30%;
+  height: max(35vh, 150px);
   margin-top: 2rem;
 }
 </style>
