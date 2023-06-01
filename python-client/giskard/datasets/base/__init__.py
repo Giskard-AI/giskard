@@ -175,6 +175,7 @@ class Dataset(ColumnMetadataMixin):
         from giskard.core.dataset_validation import validate_numeric_columns
 
         validate_numeric_columns(self)
+        print("Your 'pandas.DataFrame' is successfully wrapped by Giskard's 'Dataset' wrapper class.")
 
     def add_slicing_function(self, slicing_function: SlicingFunction):
         """
