@@ -54,7 +54,7 @@ class PyTorchModel(MLFlowBasedModel):
     def load_clf(cls, local_dir):
         return mlflow.pytorch.load_model(local_dir)
 
-    def save_with_mflow(self, local_path, mlflow_meta: mlflow.models.Model):
+    def save_with_mlflow(self, local_path, mlflow_meta: mlflow.models.Model):
         mlflow.pytorch.save_model(self.clf,
                                   path=local_path,
                                   mlflow_model=mlflow_meta)
