@@ -5,8 +5,6 @@ build:
   tools:
     python: "3.10"
   jobs:
-    #    pre_build:
-    ##      - sphinx-apidoc -o python-client/docs python-client/giskard
     post_create_environment:
       - pip install pdm
       - pdm export -p python-client --without-hashes -G doc -o requirements-sphinx.txt
