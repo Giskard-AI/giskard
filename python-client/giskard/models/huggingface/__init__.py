@@ -1,11 +1,12 @@
-import mlflow
+import uuid
 from typing import Union
 import logging
 from scipy import special
 import torch
+from pathlib import Path
 
 from giskard.core.core import SupportedModelTypes
-from giskard.core.model import MLFlowBasedModel
+from giskard.core.model import WrapperModel
 
 from transformers import PreTrainedModel, pipelines
 
@@ -13,8 +14,7 @@ from transformers import PreTrainedModel, pipelines
 logger = logging.getLogger(__name__)
 
 
-class HuggingFaceModel(MLFlowBasedModel):
-    # TODO: add this always should_save_model_class = True
+class HuggingFaceModel(WrapperModel):
     def __init__(self,
                  clf,
                  model_type: Union[SupportedModelTypes, str],
@@ -38,10 +38,16 @@ class HuggingFaceModel(MLFlowBasedModel):
     def load_clf(cls, local_path):
         return PreTrainedModel.from_pretrained(local_path)
 
-    def save_with_mlflow(self, local_path, mlflow_meta: mlflow.models.Model):
+    def save(self, local_path: Union[str, Path]) -> None:
+        super().save(local_path)
+
+        if not self.id:
+            self.id = uuid.uuid4()
+        self.save_with_huggingface(local_path)
+
+    def save_with_huggingface(self, local_path):
         self.clf.save_pretrained(local_path)
 
-    # TODO: abstract clf_predict (extreme plan B)
     def clf_predict(self, data):
         if isinstance(self.clf, torch.nn.Module):
             with torch.no_grad():
