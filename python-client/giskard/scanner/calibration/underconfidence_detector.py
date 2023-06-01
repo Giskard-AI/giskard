@@ -54,6 +54,9 @@ class UnderconfidenceDetector(LossBasedDetector):
             target=dataset.target,
             column_types=dataset.column_types,
         )
+        # For performance
+        dataset_with_meta._load_metadata_from_instance(dataset.column_meta)
+
         mean_loss = dataset_with_meta.df[self.LOSS_COLUMN_NAME].mean()
 
         issues = []

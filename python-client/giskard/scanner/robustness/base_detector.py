@@ -75,10 +75,16 @@ class BaseTextPerturbationDetector(Detector):
                 changed_idx = changed_idx[rng.choice(len(changed_idx), self.num_samples)]
 
             original_data = Dataset(
-                dataset.df.loc[changed_idx], target=dataset.target, column_types=dataset.column_types
+                dataset.df.loc[changed_idx],
+                target=dataset.target,
+                column_types=dataset.column_types,
+                validation=False,
             )
             perturbed_data = Dataset(
-                transformed.df.loc[changed_idx], target=dataset.target, column_types=dataset.column_types
+                transformed.df.loc[changed_idx],
+                target=dataset.target,
+                column_types=dataset.column_types,
+                validation=False,
             )
 
             # Calculate predictions
