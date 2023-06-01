@@ -289,16 +289,17 @@ class WrapperModel(Model, ABC):
         self.data_preprocessing_function = data_preprocessing_function
         self.model_postprocessing_function = model_postprocessing_function
 
-    def post_processing(self, raw_prediction):
-        warning_message = f"\nYour binary classification model prediction is of the shape {raw_prediction.shape}. \n" + \
-                          f"In Giskard we expect the shape {(raw_prediction.shape[0], 2)} for binary classification models. \n" + \
-                          "We automatically infered the second class prediction but please make sure that \n" + \
-                          "the probability output of your model corresponds to the first label of the \n" + \
-                          f"classification_labels ({self.meta.classification_labels}) you provided us with."
+    def _post_processing(self, raw_prediction):
 
         is_binary_classification = self.is_classification and len(self.meta.classification_labels) == 2
 
         if is_binary_classification:
+            warning_message = f"\nYour binary classification model prediction is of the shape {raw_prediction.shape}. \n" + \
+                              f"In Giskard we expect the shape {(raw_prediction.shape[0], 2)} for binary classification models. \n" + \
+                              "We automatically inferred the second class prediction but please make sure that \n" + \
+                              "the probability output of your model corresponds to the first label of the \n" + \
+                              f"classification_labels ({self.meta.classification_labels}) you provided us with."
+            
             if len(raw_prediction.shape) < 1:
                 logger.warning(warning_message, exc_info=True)
                 raw_prediction = np.stack([raw_prediction, 1 - raw_prediction], axis=1)
@@ -318,7 +319,7 @@ class WrapperModel(Model, ABC):
             df = self.data_preprocessing_function(df)
 
         raw_prediction = self.clf_predict(df)
-        raw_prediction = self.post_processing(raw_prediction)
+        raw_prediction = self._post_processing(raw_prediction)
 
         return raw_prediction
 
